@@ -1,6 +1,4 @@
 
-import { Request, Response } from 'express';
-import { v4 as uuidv4 } from 'uuid';
 import { redisService } from 'ondc-automation-cache-lib';
 import { SessionData } from '../interfaces/sessionData';
 // import redisClient from '../config/redisConfig';
@@ -8,9 +6,9 @@ import { SessionData } from '../interfaces/sessionData';
 
 const SESSION_EXPIRY = 3600; // 1 hour
 
-export const createSessionService = async (sessionId: string ,data: SessionData) => {
+export const createSessionService = async (sessionId: string, data: SessionData) => {
     const { subscriberId, participantType, domain } = data;
- 
+
     const sessionData: SessionData = {
         sessionId,
         subscriberId,
@@ -25,8 +23,8 @@ export const createSessionService = async (sessionId: string ,data: SessionData)
         // await redisClient.set(sessionId, JSON.stringify(sessionData), 'EX', 3600);
         return 'Session created successfully';
 
-    } catch (error) {
-        throw new Error(`Error creating session`)
+    } catch (error: any) {
+        throw new Error(`${error.message}`)
     }
 };
 
@@ -37,15 +35,15 @@ export const getSessionService = async (sessionId: string) => {
         // const sessionData = await redisClient.get(sessionId);
         const sessionData = await redisService.getKey(sessionId);
         if (!sessionData) {
-            return null;
+            throw new Error('Session not found');
         }
 
         // Return the session data if found
         return JSON.parse(sessionData);
 
-    } catch (error) {
+    } catch (error: any) {
         // Return a 500 error in case of any issues
-        throw new Error('Error fetching session data')
+        throw new Error(`${error.message}`)
     }
 
 };
@@ -87,9 +85,7 @@ export const updateSessionService = async (sessionId: string, data: any) => {
         return 'Session updated successfully';
 
 
-    } catch (error) {
-        console.log(error);
-
-        throw new Error('Error updating session');
+    } catch (error: any) {
+        throw new Error(`${error.message}`);
     }
 };
