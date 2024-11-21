@@ -1,0 +1,15 @@
+services:
+  redis:
+    image: redis:latest
+    container_name: redis-server
+    ports:
+      - "6380:6379" # Expose port 6379 to the host
+    volumes:
+      - ./redis.conf:/usr/local/etc/redis/redis.conf
+    command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
+#     networks:
+#       - redis-network
+
+# networks:
+#   redis-network:
+#     driver: bridge
