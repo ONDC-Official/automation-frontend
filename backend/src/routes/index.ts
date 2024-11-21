@@ -7,7 +7,5 @@ const router = Router();
 // Mount session-related routes
 router.use('/sessions', sessionRoutes);
 
-// Mount cache-related routes
-router.use('/cache', cacheRoutes);
 
 export default router;
