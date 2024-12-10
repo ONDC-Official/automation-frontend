@@ -10,6 +10,7 @@ const setSessionCookie = (res: Response, sessionId: string) => {
 };
 
 export const createSession = async (req: Request, res: Response) => {
+    
     const sessionId = req.sessionID;
 
     if (!sessionId) {
@@ -28,15 +29,15 @@ export const createSession = async (req: Request, res: Response) => {
 };
 
 export const getSession = async (req: Request, res: Response) => {
-    const sessionId = req.query.sessionId as string;
+    const sessionKey = req.query.sessionKey as string;
 
-    if (!sessionId) {
+    if (!sessionKey) {
         res.status(400).send({ message: 'Session ID is required.' });
         return;
     }
 
     try {
-        const sessionData = await getSessionService(sessionId);
+        const sessionData = await getSessionService(sessionKey);
         res.status(200).send(sessionData);
     } catch (error: any) {
         console.error(error); 
