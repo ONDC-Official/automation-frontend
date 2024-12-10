@@ -1,0 +1,10 @@
+domain:
+  -  name: TRV11
+     flows:
+      - id: flow_id
+        description: "some description of the flow"
+        sequence: 
+          search1: 
+            description: "User search for all available stops"
+          search2: 
+            description: "User search for specific stops"

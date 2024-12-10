@@ -29,15 +29,15 @@ export const createSession = async (req: Request, res: Response) => {
 };
 
 export const getSession = async (req: Request, res: Response) => {
-    const sessionKey = req.query.sessionKey as string;
+    const subscriber_url = req.query.subscriber_url as string;
 
-    if (!sessionKey) {
-        res.status(400).send({ message: 'Session ID is required.' });
+    if (!subscriber_url) {
+        res.status(400).send({ message: 'Session Key is required.' });
         return;
     }
 
     try {
-        const sessionData = await getSessionService(sessionKey);
+        const sessionData = await getSessionService(subscriber_url);
         res.status(200).send(sessionData);
     } catch (error: any) {
         console.error(error); 
@@ -46,17 +46,17 @@ export const getSession = async (req: Request, res: Response) => {
 };
 
 export const updateSession = async (req: Request, res: Response) => {
-    const sessionId = req.query.sessionId as string;
+    const subscriber_url = req.query.subscriber_url as string;
 
-    if (!sessionId) {
-        res.status(400).send({ message: 'Session ID is required.' });
+    if (!subscriber_url) {
+        res.status(400).send({ message: 'subscriber url is required.' });
         return;
     }
 
     const sessionData = req.body;
     try {
-        const response = await updateSessionService(sessionId, sessionData);
-        setSessionCookie(res, sessionId);
+        const response = await updateSessionService(subscriber_url, sessionData);
+        setSessionCookie(res, subscriber_url);
         res.status(200).send({ message: response });
     } catch (error: any) {
         console.error(error); 

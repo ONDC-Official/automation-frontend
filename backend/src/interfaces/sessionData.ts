@@ -9,7 +9,7 @@ export interface SessionData {
   city: string;
   createdAt: string; // ISO timestamp
   domain: string;
-  flowId: string;
+  flowId?: string;
   participantType: participantType;
   sessionId: sessionId;
   subscriberId: string;
@@ -33,7 +33,7 @@ export interface TransformedSessionData {
   version: string;
   city: string;
   np_id: string;
-  current_flow_id: string;
+  current_flow_id?: string;
   session_payloads: Record<string, any>;
   context_cache: ContextCache;
 }
