@@ -16,6 +16,7 @@
   "devDependencies": {
     "@types/connect-redis": "^0.0.23",
     "@types/cookie-parser": "^1.4.7",
+    "@types/cors": "^2.8.17",
     "@types/express": "^5.0.0",
     "@types/express-session": "^1.18.0",
     "@types/js-yaml": "^4.0.9",

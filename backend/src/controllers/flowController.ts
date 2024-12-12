@@ -27,7 +27,7 @@ export const generateReport = async (req: Request, res: Response): Promise<void>
     try {
         const response = await axios.get(`${process.env.REPORTING_SERVICE}/generate-report?sessionId=${sessionId}`);
         if (response.status === 200) {
-            res.status(200).json({ message: 'Report generated successfully' });
+            res.status(200).json({ message: 'Report generated successfully', data: response.data });
         }
     } catch (error: any) {
         console.log(error);

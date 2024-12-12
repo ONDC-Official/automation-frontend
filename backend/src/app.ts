@@ -5,6 +5,7 @@ import cookieParser from 'cookie-parser';
 // import redisClient from './config/redisConfig'; // Import the Redis client
 import session from 'express-session';
 import redisClient from './config/redisConfig';
+import cors from "cors"
 const RedisStore = require("connect-redis").default;
 
 const app = express();
@@ -37,6 +38,7 @@ let redisStore = new RedisStore({
     }
   }));
 
+app.use(cors())
 app.use(express.json());
 // Middleware to parse cookies
 app.use(cookieParser());
