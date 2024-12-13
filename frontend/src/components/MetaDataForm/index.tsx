@@ -23,7 +23,7 @@ const MetaDataForm = () => {
   const createSession = async (data: any) => {
     try {
       const response = await axios.post(
-        `${import.meta.env.VITE_SOME_KEY}/sessions`,
+        `${import.meta.env.VITE_BACKEND_URL}/sessions`,
         data
       );
       console.log("response", response.data);
