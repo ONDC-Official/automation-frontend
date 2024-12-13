@@ -22,7 +22,10 @@ const MetaDataForm = () => {
 
   const createSession = async (data: any) => {
     try {
-      const response = await axios.post("http://localhost:4000/sessions", data);
+      const response = await axios.post(
+        `${import.meta.env.VITE_SOME_KEY}/sessions`,
+        data
+      );
       console.log("response", response.data);
 
       localStorage.setItem("session", JSON.stringify(data));
@@ -77,7 +80,7 @@ const MetaDataForm = () => {
                   <option disabled value="">
                     -- Select an option --
                   </option>
-                  <option value="TRV:11">TRV:11</option>
+                  <option value="ONDC:TRV:11">ONDC:TRV:11</option>
                 </SelectConatiner>
               )}
             />
@@ -148,7 +151,7 @@ const MetaDataForm = () => {
                   <option disabled value="">
                     -- Select an option --
                   </option>
-                  <option value="2.0.0">2.0.0</option>
+                  <option value="2.0.1">2.0.1</option>
                 </SelectConatiner>
               )}
             />
