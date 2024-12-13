@@ -28,7 +28,10 @@ const Flows = () => {
   const navigate = useNavigate();
 
   const getFlows = async () => {
-    const response = await axios.get("http://localhost:4000/flow", {});
+    const response = await axios.get(
+      `${import.meta.env.VITE_SOME_KEY}/flow`,
+      {}
+    );
 
     console.log("Response flow list", response.data);
 
@@ -46,7 +49,9 @@ const Flows = () => {
 
     var config = {
       method: "put",
-      url: `http://localhost:4000/sessions?subscriber_url=${session.subscriberUrl}`,
+      url: `${import.meta.env.VITE_SOME_KEY}/sessions?subscriber_url=${
+        session.subscriberUrl
+      }`,
       headers: {
         "Content-Type": "application/json",
       },
