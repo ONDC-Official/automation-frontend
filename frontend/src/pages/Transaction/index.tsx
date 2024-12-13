@@ -19,7 +19,7 @@ const Flow = () => {
     console.log("sessionData.active_session_id", sessionId);
     try {
       const response = await axios.get(
-        `${import.meta.env.VITE_SOME_KEY}/flow/report?sessionId=${sessionId}`
+        `${import.meta.env.VITE_BACKEND_URL}/flow/report?sessionId=${sessionId}`
       );
 
       const reporthtml = response.data.data;
@@ -46,7 +46,7 @@ const Flow = () => {
       const session = JSON.parse(localStorage.getItem("session") || "{}");
 
       const response = await axios.get(
-        `${import.meta.env.VITE_SOME_KEY}/sessions?subscriber_url=${
+        `${import.meta.env.VITE_BACKEND_URL}/sessions?subscriber_url=${
           session.subscriberUrl
         }`
       );
@@ -73,7 +73,7 @@ const Flow = () => {
       };
 
       const response = await axios.post(
-        `${import.meta.env.VITE_SOME_KEY}/flow/trigger`,
+        `${import.meta.env.VITE_BACKEND_URL}/flow/trigger`,
         data
       );
 
