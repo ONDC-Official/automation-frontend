@@ -29,7 +29,7 @@ const Flows = () => {
 
   const getFlows = async () => {
     const response = await axios.get(
-      `${import.meta.env.VITE_SOME_KEY}/flow`,
+      `${import.meta.env.VITE_BACKEND_URL}/flow`,
       {}
     );
 
@@ -49,7 +49,7 @@ const Flows = () => {
 
     var config = {
       method: "put",
-      url: `${import.meta.env.VITE_SOME_KEY}/sessions?subscriber_url=${
+      url: `${import.meta.env.VITE_BACKEND_URL}/sessions?subscriber_url=${
         session.subscriberUrl
       }`,
       headers: {
