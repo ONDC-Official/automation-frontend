@@ -65,18 +65,16 @@ export const validatePayload =  async (req: Request, res: Response): Promise<voi
     const action = req.params.action
     const payload = req.body
 
-    console.log("payload", payload)
-    console.log("action", action)
-
     if(!action) {
         res.status(400).send({ message: "action is required param"})
     }
-
+console.log("process.env.API_SERVICE", process.env.API_SERVICE)
     try {
-        const response = await axios.post(`${process.env.API_SERVICE as string}/trigger`, payload);
+        const response = await axios.post(`${process.env.API_SERVICE as string}/test/${action}`, payload);
 
         res.send(response.data)
     } catch(e) {
+        console.log("er", e)
         res.status(500).send(ERROR)
     }
 }
