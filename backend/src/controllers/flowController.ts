@@ -60,3 +60,23 @@ export const handleTriggerRequest = async (req: Request, res: Response): Promise
         }
     }
 };
+
+export const validatePayload =  async (req: Request, res: Response): Promise<void> => {
+    const action = req.params.action
+    const payload = req.body
+
+    console.log("payload", payload)
+    console.log("action", action)
+
+    if(!action) {
+        res.status(400).send({ message: "action is required param"})
+    }
+
+    try {
+        const response = await axios.post(`${process.env.API_SERVICE as string}/trigger`, payload);
+
+        res.send(response.data)
+    } catch(e) {
+        res.status(500).send(ERROR)
+    }
+}
