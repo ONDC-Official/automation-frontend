@@ -121,10 +121,10 @@ function RenderFlows({
 				<div>Loading...</div>
 			)}
 			<button
-				className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition-colors"
+				className="bg-sky-500 text-white px-4 py-2 mt-2 rounded hover:bg-sky-600 transition-colors"
 				onClick={() => setStep((s: any) => s + 1)}
 			>
-				End Session
+				generate report
 			</button>
 			<div className="flex flex-wrap w-full">
 				<div className="mt-2 w-[50%]">
