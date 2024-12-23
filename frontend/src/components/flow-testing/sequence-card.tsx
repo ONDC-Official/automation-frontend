@@ -4,6 +4,8 @@ import { MdCheckCircle, MdError, MdHourglassEmpty } from "react-icons/md";
 import { SequenceCardProps, State } from "../../types/session-types";
 import { GetCurrentState, getRequestResponse } from "../../utils/flow-utils";
 import "../../styles/animation.css";
+import CustomTooltip from "../ui/mini-components/tooltip";
+import { IoMdSettings } from "react-icons/io";
 // Reusable StateCard component with CSS-based animation
 const StateCard: React.FC<{
 	data: State;
@@ -71,48 +73,35 @@ const StateCard: React.FC<{
 		}
 	}, [data.state, prevState]);
 
-	return (
-		<button
-			className={`${animate ? "animate-pop" : ""} ${
-				styles.className
-			} rounded-md p-4 flex-1 h-40 relative transition-transform duration-300 ease-in-out transform
-			 hover:bg-slate-50
-			`}
-			onClick={() =>
-				data.setSideView(
-					getRequestResponse(
-						index,
-						data.cachedData.session_payloads[data.flowId],
-						data.type
-					)
-				)
-			}
-		>
-			{/* Loader */}
-			{data.state === "pending" && (
-				<div className="absolute bottom-2 right-2">
-					<div className="w-7 h-7 border-2 border-t-2 border-gray-300 border-t-yellow-500 rounded-full animate-spin"></div>
-				</div>
-			)}
+	const handleClick = () => {
+		console.log("Clicked");
+		data.setSideView(
+			getRequestResponse(
+				index,
+				data.cachedData.session_payloads[data.flowId],
+				data.type
+			)
+		);
+	};
 
-			{/* Main Content */}
-			<div className="flex items-center mb-2">
-				{styles.icon}
-				<h3 className={`text-lg font-semibold ml-2`}>
-					{data.stepIndex}
-					{"."} {data.type}
-				</h3>
-			</div>
-			<p className="text-sm text-gray-600">{data.description}</p>
-			{/* {(data.state === "success" || data.state === "error") && (
-				<button
-					className="mt-2 text-blue-600 hover:text-blue-800 text-sm font-medium"
-					
-				>
-					View Request & Response
-				</button>
-			)} */}
-		</button>
+	return (
+		<CustomTooltip content={data.description}>
+			<button
+				className={`${animate ? "animate-pop" : ""} ${
+					styles.className
+				} rounded-md p-2 w-full flex items-center justify-between relative transition-transform duration-300 ease-in-out transform hover:bg-slate-50`}
+				onClick={() => handleClick()}
+			>
+				<div className="flex items-center space-x-2">
+					{styles.icon}
+					<h3 className="text-md font-semibold">{`${data.stepIndex}. ${data.type}`}</h3>
+					{data.state === "pending" && (
+						<div className="w-4 h-4 border-2 border-t-2 border-gray-300 border-t-yellow-500 rounded-full animate-spin-slow ml-2"></div>
+					)}
+				</div>
+				<IoMdSettings className="text-lg" />
+			</button>
+		</CustomTooltip>
 	);
 };
 

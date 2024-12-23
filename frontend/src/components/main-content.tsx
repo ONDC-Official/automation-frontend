@@ -10,7 +10,6 @@ import ApiTesting from "./api-testing";
 import NotFoundPage from "./ui/not-found";
 import FlowContent from "./flow-testing/flow-page";
 
-
 const MainContent = () => {
 	const [isSidebarOpen, setIsSidebarOpen] = useState(true); // Sidebar starts expanded
 	const [activeTab, setActiveTab] = useState("home");
@@ -33,15 +32,16 @@ const MainContent = () => {
 						icon: <FaHome className="text-xl" />,
 					},
 					{
-						id: "flows",
-						label: "Flow Challenges",
-						icon: <GoWorkflow className="text-xl" />,
-					},
-					{
 						id: "test",
 						label: "Unit Api Testing",
 						icon: <TbTestPipe2Filled className="text-xl" />,
 					},
+					{
+						id: "flows",
+						label: "Flow Challenges",
+						icon: <GoWorkflow className="text-xl" />,
+					},
+
 					{
 						id: "flowsWorkbench",
 						label: "Custom Flow Workbench",
@@ -55,20 +55,26 @@ const MainContent = () => {
 					isSidebarOpen ? " ml-64" : "ml-20"
 				}`}
 			>
-				<GetMainContent activeTab={activeTab} isSidebarOpen={isSidebarOpen}/>
+				<GetMainContent activeTab={activeTab} isSidebarOpen={isSidebarOpen} />
 			</div>
 		</div>
 	);
 };
 
-function GetMainContent({ activeTab, isSidebarOpen }: { activeTab: string; isSidebarOpen: boolean }) {
+function GetMainContent({
+	activeTab,
+	isSidebarOpen,
+}: {
+	activeTab: string;
+	isSidebarOpen: boolean;
+}) {
 	switch (activeTab) {
 		case "home":
 			return <h1>Add Home</h1>;
 		case "flows":
 			return <FlowContent />;
 		case "test":
-			return <ApiTesting isSidebarOpen={isSidebarOpen}/>;
+			return <ApiTesting isSidebarOpen={isSidebarOpen} />;
 		default:
 			return <NotFoundPage />;
 	}

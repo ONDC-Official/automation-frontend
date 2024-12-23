@@ -2,13 +2,16 @@ import axios from "axios";
 import { CacheSessionData } from "../types/session-types";
 import { toast } from "react-toastify";
 
-export const triggerSearch = async (session: CacheSessionData) => {
+export const triggerSearch = async (
+	session: CacheSessionData,
+	subUrl: string
+) => {
 	if (session.type === "BAP") {
 		return;
 	}
-
+	console.log("session", session);
 	const data = {
-		subscriberUrl: session.subscriberUrl,
+		subscriberUrl: subUrl,
 		initiateSearch: true,
 	};
 
