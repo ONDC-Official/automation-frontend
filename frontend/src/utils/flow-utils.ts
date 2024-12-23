@@ -24,7 +24,22 @@ export function GetCurrentState(
 	}
 }
 
-// "message": {
-//             "ack": {
-//               "status": "NACK"
-//             }
+export function getRequestResponse(
+	index: number,
+	flowData: {
+		request: any;
+		response: any;
+	}[],
+	action: string
+) {
+	if (flowData.length > index) {
+		return {
+			action: action,
+			...flowData[index],
+		};
+	}
+	return {
+		action: action,
+		request: "request not yet made",
+	};
+}

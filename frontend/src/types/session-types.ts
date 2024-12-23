@@ -18,6 +18,7 @@ export interface State {
 	state?: "success" | "error" | "pending" | "inactive";
 	flowId: string;
 	cachedData: CacheSessionData;
+	setSideView: React.Dispatch<any>;
 }
 
 export interface SequenceCardProps {
