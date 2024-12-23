@@ -1,11 +1,14 @@
 import { useEffect, useRef, useState } from "react";
-import { FetchFlowsResponse, Flow, SequenceStep } from "../../types/flow-types";
+import { FetchFlowsResponse } from "../../types/flow-types";
 import InfoCard from "../ui/info-card";
-import SequenceCard from "./sequence-card";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { CacheSessionData } from "../../types/session-types";
-import { putCacheData, triggerSearch } from "../../utils/request-utils";
+import { putCacheData } from "../../utils/request-utils";
+import { Accordion } from "./flow-accordian";
+import Loader from "../ui/mini-components/loader";
+import JsonView from "@uiw/react-json-view";
+import { githubDarkTheme } from "@uiw/react-json-view/githubDark";
 
 interface SessionData {
 	city: string;
@@ -28,6 +31,7 @@ function RenderFlows({
 	const [activeFlow, setActiveFlow] = useState<string | null>(null);
 	const activeFlowRef = useRef<string | null>(activeFlow);
 	const [cacheData, setCacheData] = useState<CacheSessionData | null>(null);
+	const [sideView, setSideView] = useState<any>({});
 	useEffect(() => {
 		fetchSessionData();
 	}, [subUrl]);
@@ -108,26 +112,35 @@ function RenderFlows({
 	}
 
 	return (
-		<div className=" w-full">
-			{sessionData ? (
-				<InfoCard
-					data={{
-						...sessionData,
-						SubscriberUrl: subUrl,
-						acitveFlow: activeFlow || "N/A",
-					}}
-				/>
-			) : (
-				<div>Loading...</div>
-			)}
-			<button
-				className="bg-sky-500 text-white px-4 py-2 mt-2 rounded hover:bg-sky-600 transition-colors"
-				onClick={() => setStep((s: any) => s + 1)}
-			>
-				generate report
-			</button>
-			<div className="flex flex-wrap w-full">
-				<div className="mt-2 w-[50%]">
+		<div className="w-full min-h-screen flex flex-col">
+			{/* Header Section */}
+			<div className="space-y-2 p-4">
+				{/* InfoCard */}
+				{sessionData ? (
+					<InfoCard
+						data={{
+							...sessionData,
+							SubscriberUrl: subUrl,
+							activeFlow: activeFlow || "N/A",
+						}}
+					/>
+				) : (
+					<div>Loading...</div>
+				)}
+				<div className="flex justify-end">
+					<button
+						className="bg-sky-500 text-white px-4 py-2 mt-2 rounded hover:bg-sky-600 shadow-md transition-colors"
+						onClick={() => setStep((s) => s + 1)}
+					>
+						Generate Report
+					</button>
+				</div>
+			</div>
+
+			{/* Main Content Area */}
+			<div className="flex flex-1 w-full">
+				{/* Left Column - Main Content */}
+				<div className="w-full sm:w-[60%] overflow-y-auto p-4">
 					{flows.domain.map((domain) => (
 						<div key={domain.name} className="mb-8">
 							{domain.flows.map((flow) => (
@@ -137,15 +150,31 @@ function RenderFlows({
 									activeFlow={activeFlow}
 									setActiveFlow={setActiveFlow}
 									cacheData={cacheData}
+									setSideView={setSideView}
 								/>
 							))}
 						</div>
 					))}
 				</div>
-				<div className="w-full sm:w-[50%] break-words bg-black h-screen overflow-auto">
-					<pre className=" text-white">
-						{JSON.stringify(cacheData, null, 2)}
-					</pre>
+
+				{/* Right Column - Sticky Request & Response */}
+				<div className="w-full sm:w-[40%] p-4">
+					{/* Sticky Container */}
+					<div className="bg-white rounded-md shadow-md border sticky top-20">
+						<h2 className="m-1 text-lg font-semibold">Request & Response</h2>
+						<div className="p-2 overflow-auto">
+							{cacheData ? (
+								<JsonView
+									value={sideView}
+									style={githubDarkTheme}
+									className="rounded-md"
+									displayDataTypes={false}
+								/>
+							) : (
+								<Loader />
+							)}
+						</div>
+					</div>
 				</div>
 			</div>
 		</div>
@@ -153,156 +182,5 @@ function RenderFlows({
 }
 
 // Accordion component for each flow
-interface AccordionProps {
-	flow: Flow;
-	activeFlow: string | null;
-	setActiveFlow: (flowId: string | null) => void;
-	cacheData?: CacheSessionData | null;
-}
-
-function Accordion({
-	flow,
-	activeFlow,
-	setActiveFlow,
-	cacheData,
-}: AccordionProps) {
-	const [isOpen, setIsOpen] = useState(false);
-
-	// Process the sequence to align steps with their pairs
-	const steps = getOrderedSteps(flow.sequence);
-
-	const startFlow = async () => {
-		setActiveFlow(flow.id);
-		if (!cacheData) return;
-		if (!cacheData.session_payloads[flow.id]) return;
-		try {
-			if (cacheData.session_payloads[flow.id].length === 0) {
-				await triggerSearch(cacheData);
-			}
-		} catch (e) {
-			toast.error("Error while starting flow");
-			console.error(e);
-		}
-	};
-	let stepIndex = 0;
-	if (!cacheData) return <div>Loading...</div>;
-	return (
-		<div className="rounded-md border border-zinc-300 mb-4 shadow-lg w-full ml-1">
-			{/* Flex container for header and Run button */}
-			<div className="flex items-center justify-between px-4 py-3 bg-gray-100 hover:bg-gray-200">
-				{/* Header button */}
-				<button
-					onClick={() => setIsOpen(!isOpen)}
-					className="flex items-center justify-between flex-1"
-				>
-					<h3 className="text-base font-medium">Flow Id: {flow.id}</h3>
-					<div className="flex">
-						{!activeFlow && (
-							<button
-								onClick={async () => await startFlow()}
-								className=" mr-2 text-sky-600 border border-sky-600 p-1 ml-4 rounded hover:bg-sky-600 hover:text-white transition-colors"
-							>
-								start
-							</button>
-						)}
-						{
-							// If the flow is active, show a "Stop" button instead
-							activeFlow === flow.id && (
-								<>
-									<button
-										onClick={() => setActiveFlow(null)}
-										className="mr-2 text-red-500 border border-red-500 p-1 ml-4 rounded hover:bg-red-500 hover:text-white transition-colors flex justify-start items-center"
-									>
-										stop
-									</button>
-								</>
-							)
-						}
-						<svg
-							className={`w-6 h-6 transform transition-transform duration-200 ${
-								isOpen ? "rotate-180" : ""
-							}`}
-							fill="none"
-							stroke="currentColor"
-							viewBox="0 0 24 24"
-						>
-							<path
-								strokeLinecap="round"
-								strokeLinejoin="round"
-								strokeWidth={2}
-								d="M5 15l7-7 7 7"
-							/>
-						</svg>
-					</div>
-				</button>
-			</div>
-
-			{/* Accordion content */}
-			{isOpen && (
-				<div className="px-4 py-5 bg-white">
-					<p className="text-gray-700 mb-6">{flow.description}</p>
-					<div className="space-y-4 relative">
-						{steps.map((stepPair, index) => {
-							stepIndex += 2;
-							const pairData = stepPair.pair
-								? {
-										...stepPair.pair,
-										stepIndex: stepIndex,
-										cachedData: cacheData,
-										flowId: flow.id,
-								  }
-								: undefined;
-							return (
-								<div key={index}>
-									<SequenceCard
-										step={{
-											...stepPair.step,
-											stepIndex: stepIndex - 1,
-											cachedData: cacheData,
-											flowId: flow.id,
-										}}
-										pair={pairData}
-									/>
-								</div>
-							);
-						})}
-					</div>
-				</div>
-			)}
-		</div>
-	);
-}
-
-// Component for each sequence step (with optional pair)
-
-// Helper function to order steps and align pairs
-function getOrderedSteps(sequence: SequenceStep[]): {
-	step: SequenceStep;
-	pair?: SequenceStep;
-}[] {
-	const visited = new Set<string>();
-	const steps = [];
-
-	for (const step of sequence) {
-		if (visited.has(step.key)) continue;
-
-		visited.add(step.key);
-
-		let pairStep: SequenceStep | undefined;
-		if (step.pair) {
-			pairStep = sequence.find((s) => s.key === step.pair);
-			if (pairStep && !visited.has(pairStep.key)) {
-				visited.add(pairStep.key);
-			}
-		}
-
-		steps.push({
-			step,
-			pair: pairStep,
-		});
-	}
-
-	return steps;
-}
 
 export default RenderFlows;

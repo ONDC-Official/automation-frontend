@@ -1,3 +1,5 @@
+import FullPageLoader from "../mini-components/fullpage-loader";
+
 const baseButtonClass = `
   flex items-center justify-center px-4 py-2 text-white font-semibold 
   transition-all duration-300 rounded focus:outline-none focus:ring-2 focus:ring-opacity-50
@@ -29,6 +31,7 @@ const LoadingButton = ({
 			className={buttonClass}
 		>
 			{buttonText}
+			{isLoading && <FullPageLoader />}
 		</button>
 	);
 };
