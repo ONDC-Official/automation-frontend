@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { FetchFlowsResponse } from "../../types/flow-types";
 import InfoCard from "../ui/info-card";
 import axios from "axios";
@@ -25,7 +25,7 @@ function RenderFlows({
 }: {
 	flows: FetchFlowsResponse;
 	subUrl: string;
-	setStep: any;
+	setStep: React.Dispatch<React.SetStateAction<number>>;
 }) {
 	const [sessionData, setSessionData] = useState<SessionData | null>(null);
 	const [activeFlow, setActiveFlow] = useState<string | null>(null);
@@ -99,7 +99,7 @@ function RenderFlows({
 			})
 			.then((response) => {
 				const filteredData = Object.entries(response.data)
-					.filter(([key, value]) => typeof value === "string")
+					.filter(([_, value]) => typeof value === "string")
 					.reduce((acc: any, [key, value]) => {
 						acc[key] = value;
 						return acc;
@@ -107,15 +107,12 @@ function RenderFlows({
 				delete filteredData["active_session_id"];
 				setSessionData(filteredData);
 				setCacheData(response.data);
-				console.log("sessionData", filteredData);
 			});
 	}
 
 	return (
 		<div className="w-full min-h-screen flex flex-col">
-			{/* Header Section */}
 			<div className="space-y-2 p-4">
-				{/* InfoCard */}
 				{sessionData ? (
 					<InfoCard
 						data={{
@@ -129,8 +126,8 @@ function RenderFlows({
 				)}
 				<div className="flex justify-end">
 					<button
-						className="bg-sky-500 text-white px-4 py-2 mt-2 rounded hover:bg-sky-600 shadow-md transition-colors"
-						onClick={() => setStep((s) => s + 1)}
+						className="bg-sky-500 text-white px-4 py-2 mt-1 rounded hover:bg-sky-600 shadow-md transition-colors"
+						onClick={() => setStep((s: number) => s + 1)}
 					>
 						Generate Report
 					</button>
@@ -151,6 +148,7 @@ function RenderFlows({
 									setActiveFlow={setActiveFlow}
 									cacheData={cacheData}
 									setSideView={setSideView}
+									subUrl={subUrl}
 								/>
 							))}
 						</div>
@@ -162,14 +160,19 @@ function RenderFlows({
 					{/* Sticky Container */}
 					<div className="bg-white rounded-md shadow-md border sticky top-20">
 						<h2 className="m-1 text-lg font-semibold">Request & Response</h2>
-						<div className="p-2 overflow-auto">
+						<div className="p-2">
 							{cacheData ? (
-								<JsonView
-									value={sideView}
-									style={githubDarkTheme}
-									className="rounded-md"
-									displayDataTypes={false}
-								/>
+								<div
+									className="rounded-md overflow-auto"
+									style={{ maxHeight: "500px" }} // Adjust maxHeight as needed
+								>
+									<JsonView
+										value={sideView}
+										style={githubDarkTheme}
+										className="rounded-md"
+										displayDataTypes={false}
+									/>
+								</div>
 							) : (
 								<Loader />
 							)}

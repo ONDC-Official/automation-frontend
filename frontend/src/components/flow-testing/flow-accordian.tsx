@@ -11,6 +11,7 @@ interface AccordionProps {
 	setActiveFlow: (flowId: string | null) => void;
 	cacheData?: CacheSessionData | null;
 	setSideView: React.Dispatch<any>;
+	subUrl: string;
 }
 
 export function Accordion({
@@ -19,6 +20,7 @@ export function Accordion({
 	setActiveFlow,
 	cacheData,
 	setSideView,
+	subUrl,
 }: AccordionProps) {
 	const [isOpen, setIsOpen] = useState(false);
 	const contentRef = useRef<HTMLDivElement>(null);
@@ -40,7 +42,7 @@ export function Accordion({
 		if (!cacheData.session_payloads[flow.id]) return;
 		try {
 			if (cacheData.session_payloads[flow.id].length === 0) {
-				await triggerSearch(cacheData);
+				await triggerSearch(cacheData, subUrl);
 			}
 		} catch (e) {
 			toast.error("Error while starting flow");

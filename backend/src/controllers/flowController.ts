@@ -55,6 +55,7 @@ export const handleTriggerRequest = async (
 	res: Response
 ): Promise<void> => {
 	try {
+		console.log("triggring flow");
 		if (!req.body.subscriberUrl) {
 			res.status(400).send("Bad Request");
 			return;
@@ -72,6 +73,7 @@ export const handleTriggerRequest = async (
 			res.status(response.status).send("unknown");
 		}
 	} catch (error: any) {
+		console.error("error while tirggering", error);
 		if (error.response && error.response.status === 400) {
 			res.status(400).send(NACK);
 		} else if (error.response && error.response.status === 500) {
