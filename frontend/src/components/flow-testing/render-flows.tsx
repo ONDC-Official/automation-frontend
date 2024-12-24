@@ -117,7 +117,7 @@ function RenderFlows({
 					<InfoCard
 						data={{
 							...sessionData,
-							SubscriberUrl: subUrl,
+							// SubscriberUrl: subUrl,
 							activeFlow: activeFlow || "N/A",
 						}}
 					/>
