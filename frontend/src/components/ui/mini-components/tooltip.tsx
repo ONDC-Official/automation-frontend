@@ -1,6 +1,5 @@
 import Tippy from "@tippyjs/react";
-import "tippy.js/dist/tippy.css"; // Basic Tippy styles
-import "tippy.js/themes/material.css"; // Optional theme
+
 import "tippy.js/animations/perspective-subtle.css";
 
 const CustomTooltip = ({
@@ -13,11 +12,15 @@ const CustomTooltip = ({
 	return (
 		<Tippy
 			content={
-				<div className="p-2 text-white rounded shadow-md">{content}</div>
+				<div className="p-2 max-w-xs rounded-lg shadow-lg bg-white/30 backdrop-blur-lg text-black text-sm font-semibold text-center border border-white/2">
+					{content}
+				</div>
 			}
 			interactive={true}
-			placement="top"
+			placement="right"
 			animation="perspective-subtle"
+			zIndex={9999}
+			appendTo={document.body} // Ensures the tooltip is rendered outside parent containers
 		>
 			{children}
 		</Tippy>

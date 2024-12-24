@@ -115,7 +115,7 @@ export default function FlowContent() {
 				return <RenderFlows flows={flows} subUrl={subUrl} setStep={setStep} />;
 			case 3:
 				if (!session) return <h1>Loading...</h1>;
-				return <ReportPage sessionID={session} />;
+				return <ReportPage sessionID={session} subUrl={subUrl} />;
 			default:
 				return <h1>hello</h1>;
 		}

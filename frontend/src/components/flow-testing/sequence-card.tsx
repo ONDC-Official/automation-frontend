@@ -85,23 +85,25 @@ const StateCard: React.FC<{
 	};
 
 	return (
-		<CustomTooltip content={data.description}>
-			<button
-				className={`${animate ? "animate-pop" : ""} ${
-					styles.className
-				} rounded-md p-2 w-full flex items-center justify-between relative transition-transform duration-300 ease-in-out transform hover:bg-slate-50`}
-				onClick={() => handleClick()}
-			>
-				<div className="flex items-center space-x-2">
-					{styles.icon}
-					<h3 className="text-md font-semibold">{`${data.stepIndex}. ${data.type}`}</h3>
-					{data.state === "pending" && (
-						<div className="w-4 h-4 border-2 border-t-2 border-gray-300 border-t-yellow-500 rounded-full animate-spin-slow ml-2"></div>
-					)}
-				</div>
-				<IoMdSettings className="text-lg" />
-			</button>
-		</CustomTooltip>
+		<button
+			className={`${animate ? "animate-pop" : ""} ${
+				styles.className
+			} rounded-md p-2 w-full flex items-center justify-between relative transition-transform duration-300 ease-in-out transform hover:bg-slate-50`}
+			onClick={() => handleClick()}
+		>
+			<div className="flex items-center space-x-2">
+				{styles.icon}
+				<h3 className="text-md font-semibold">{`${data.stepIndex}. ${data.type}`}</h3>
+				{data.state === "pending" && (
+					<div className="w-4 h-4 border-2 border-t-2 border-gray-300 border-t-yellow-500 rounded-full animate-spin-slow ml-2"></div>
+				)}
+			</div>
+			<CustomTooltip content={data.description}>
+				<button>
+					<IoMdSettings className="text-lg cursor-pointer" />
+				</button>
+			</CustomTooltip>
+		</button>
 	);
 };
 
