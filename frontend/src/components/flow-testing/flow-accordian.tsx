@@ -66,7 +66,8 @@ export function Accordion({
 			>
 				{/* Header */}
 				<h3 className="text-base font-bold text-sky-700">
-					Flow Id: <h2>{flow.id}</h2>
+					<pre>Flow Id:</pre>{" "}
+					<h2 className="text-black font-medium">{flow.id}</h2>
 				</h3>
 				<div className="flex items-center">
 					{!activeFlow && (
