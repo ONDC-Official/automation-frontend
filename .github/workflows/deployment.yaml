@@ -72,18 +72,12 @@ jobs:
           echo ".env and docker-compose.yml files found."
           EOF
 
-      - name: Automation Mock Server Deployment
+      - name: Automation UI Deployment
         run: |
           echo "Deploying with Docker Compose"
           ssh -i ./key.pem ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} <<EOF
           REPO_DIR=~/ONDC-automation-framework/automation-frontend
           cd \$REPO_DIR
-
-          # Ensure the .env and docker-compose.yml files exist
-          if [ ! -f .env ]; then
-            echo ".env file not found!"
-            exit 1
-          fi
 
           if [ ! -f docker-compose.yml ]; then
             echo "docker-compose.yml file not found!"
