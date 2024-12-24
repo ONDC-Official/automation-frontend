@@ -44,6 +44,7 @@ export function Accordion({
 			if (cacheData.session_payloads[flow.id].length === 0) {
 				await triggerSearch(cacheData, subUrl);
 			}
+			setIsOpen(true);
 		} catch (e) {
 			toast.error("Error while starting flow");
 			console.error(e);
@@ -64,7 +65,9 @@ export function Accordion({
 				aria-controls={`accordion-content-${flow.id}`}
 			>
 				{/* Header */}
-				<h3 className="text-base font-medium">Flow Id: {flow.id}</h3>
+				<h3 className="text-base font-bold text-sky-700">
+					Flow Id: <h2>{flow.id}</h2>
+				</h3>
 				<div className="flex items-center">
 					{!activeFlow && (
 						<button
@@ -82,6 +85,7 @@ export function Accordion({
 							onClick={(e) => {
 								e.stopPropagation(); // Prevent accordion toggle
 								setActiveFlow(null);
+								setIsOpen(false);
 							}}
 							className="mr-2 text-red-500 border border-red-500 p-1 ml-4 rounded hover:bg-red-500 hover:text-white transition-colors flex justify-start items-center"
 						>
