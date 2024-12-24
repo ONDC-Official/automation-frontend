@@ -1,0 +1,10 @@
+.grid-background {
+	@apply bg-gray-50; /* Slightly lighter background for a subtle look */
+	background-image: radial-gradient(
+		circle,
+		rgba(0, 0, 0, 0.1) 1px,
+		transparent 1px
+	);
+	background-size: 20px 20px; /* Adjust spacing for the dots */
+	background-position: center;
+}
