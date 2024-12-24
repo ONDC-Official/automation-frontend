@@ -10,6 +10,7 @@ export function ReportPage({
 	sessionID: string;
 	subUrl: string;
 }) {
+	console.log(subUrl);
 	const [response, setResponse] = useState("");
 	function generateReport() {
 		axios
