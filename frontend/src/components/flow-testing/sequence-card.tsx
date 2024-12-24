@@ -5,7 +5,7 @@ import { SequenceCardProps, State } from "../../types/session-types";
 import { GetCurrentState, getRequestResponse } from "../../utils/flow-utils";
 import "../../styles/animation.css";
 import CustomTooltip from "../ui/mini-components/tooltip";
-import { IoMdSettings } from "react-icons/io";
+import { IoIosInformationCircleOutline } from "react-icons/io";
 // Reusable StateCard component with CSS-based animation
 const StateCard: React.FC<{
 	data: State;
@@ -100,7 +100,7 @@ const StateCard: React.FC<{
 			</div>
 			<CustomTooltip content={data.description}>
 				<button>
-					<IoMdSettings className="text-lg cursor-pointer" />
+					<IoIosInformationCircleOutline className=" text-2xl cursor-pointer" />
 				</button>
 			</CustomTooltip>
 		</button>
@@ -109,6 +109,7 @@ const StateCard: React.FC<{
 
 // SequenceCard remains unchanged
 function SequenceCard({ step, pair }: SequenceCardProps) {
+	console.log("Rendering Sequence Card");
 	return (
 		<div className="flex items-center space-x-4 bg-white p-1">
 			{/* Step Card */}

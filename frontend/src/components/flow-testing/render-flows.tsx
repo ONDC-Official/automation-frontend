@@ -105,6 +105,7 @@ function RenderFlows({
 						return acc;
 					}, {});
 				delete filteredData["active_session_id"];
+				delete filteredData["current_flow_id"];
 				setSessionData(filteredData);
 				setCacheData(response.data);
 			});
@@ -117,7 +118,6 @@ function RenderFlows({
 					<InfoCard
 						data={{
 							...sessionData,
-							// SubscriberUrl: subUrl,
 							activeFlow: activeFlow || "N/A",
 						}}
 					/>
