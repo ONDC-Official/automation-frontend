@@ -1,5 +1,5 @@
 import { redisService } from "ondc-automation-cache-lib";
-import { SessionData } from "../interfaces/sessionData";
+import { ContextCache, SessionData } from "../interfaces/sessionData";
 import {
 	TransformedSessionData,
 	SessionKeyType,
@@ -30,8 +30,16 @@ export const createSessionService = async (
 		throw new Error("Invalid domain");
 	}
 	let session_payloads: Record<string, any[]> = {};
+	let contextCache: Record<string, ContextCache> = {};
 	keys.forEach((key) => {
 		session_payloads[key] = [];
+		contextCache[key] = {
+			latest_timestamp: new Date().toISOString(),
+			latest_action: "",
+			subscriber_id: subscriberId,
+			subscriber_url: subscriberUrl,
+			message_ids: [],
+		};
 	});
 	const transformedData: TransformedSessionData = {
 		active_session_id: sessionId,
@@ -41,13 +49,7 @@ export const createSessionService = async (
 		city,
 		np_id: subscriberId,
 		session_payloads: session_payloads,
-		context_cache: {
-			latest_timestamp: new Date().toISOString(),
-			latest_action: "",
-			subscriber_id: subscriberId,
-			subscriber_url: subscriberUrl,
-			message_ids: [],
-		},
+		context_cache: contextCache,
 		difficulty_cache: {},
 	};
 
