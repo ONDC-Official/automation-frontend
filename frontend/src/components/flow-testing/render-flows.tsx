@@ -84,6 +84,7 @@ function RenderFlows({
 			};
 
 			setCacheData(data);
+			setSideView(response.data);
 		} catch (e) {
 			toast.error("Error while fetching payloads");
 			console.error("error while fetching payloads", e);
@@ -108,7 +109,6 @@ function RenderFlows({
 				delete filteredData["current_flow_id"];
 				setSessionData(filteredData);
 				setCacheData(response.data);
-				setSideView(response.data);
 			});
 	}
 
