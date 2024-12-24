@@ -108,6 +108,7 @@ function RenderFlows({
 				delete filteredData["current_flow_id"];
 				setSessionData(filteredData);
 				setCacheData(response.data);
+				setSideView(response.data);
 			});
 	}
 
