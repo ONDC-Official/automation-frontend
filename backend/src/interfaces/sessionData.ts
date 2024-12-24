@@ -33,7 +33,7 @@ export interface TransformedSessionData {
 	np_id: string;
 	current_flow_id?: string;
 	session_payloads: Record<string, any[]>;
-	context_cache: ContextCache;
+	context_cache: Record<string, ContextCache>;
 	difficulty_cache: Record<string, boolean>;
 }
 
