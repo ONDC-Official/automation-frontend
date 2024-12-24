@@ -31,6 +31,8 @@ export interface TransformedSessionData {
 	version: string;
 	city: string;
 	np_id: string;
+	subscriber_id: string;
+	subscriber_url: subscriberUrl;
 	current_flow_id?: string;
 	session_payloads: Record<string, any[]>;
 	context_cache: Record<string, ContextCache>;
@@ -40,8 +42,6 @@ export interface TransformedSessionData {
 export interface ContextCache {
 	latest_timestamp: string; // ISO timestamp
 	latest_action: string;
-	subscriber_id: string;
-	subscriber_url: subscriberUrl;
 	message_ids: string[];
 }
 

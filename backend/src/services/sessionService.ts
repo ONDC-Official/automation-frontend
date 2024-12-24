@@ -36,8 +36,6 @@ export const createSessionService = async (
 		contextCache[key] = {
 			latest_timestamp: new Date().toISOString(),
 			latest_action: "",
-			subscriber_id: subscriberId,
-			subscriber_url: subscriberUrl,
 			message_ids: [],
 		};
 	});
@@ -47,6 +45,8 @@ export const createSessionService = async (
 		domain,
 		version,
 		city,
+		subscriber_id: subscriberId,
+		subscriber_url: subscriberUrl,
 		np_id: subscriberId,
 		session_payloads: session_payloads,
 		context_cache: contextCache,
@@ -113,7 +113,8 @@ export const updateSessionService = async (
 		const session: TransformedSessionData = JSON.parse(sessionData);
 
 		// Update session data fields
-		if (subscriberId) session.context_cache.subscriber_id = subscriberId;
+		if (subscriberId) session.subscriber_id = subscriberId;
+		if (subscriberUrl) session.subscriber_url = subscriberUrl;
 		if (participantType) session.type = participantType;
 		if (domain) session.domain = domain;
 		if (flowId) session.current_flow_id = flowId;
