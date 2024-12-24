@@ -78,7 +78,7 @@ export default function FlowContent() {
 								label="Enter Version"
 								name="version"
 								required={true}
-								options={["2.0.0"]}
+								options={["2.0.1"]}
 							/>
 							<FormInput label="Enter City Code" name="city" required={true} />
 							<FormSelect
