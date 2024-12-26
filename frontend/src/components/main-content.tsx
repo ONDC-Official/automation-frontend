@@ -9,6 +9,7 @@ import { PiNetwork } from "react-icons/pi";
 import ApiTesting from "./api-testing";
 import NotFoundPage from "./ui/not-found";
 import FlowContent from "./flow-testing/flow-page";
+import ComingSoonPage from "./ui/coming-soon";
 
 const MainContent = () => {
 	const [isSidebarOpen, setIsSidebarOpen] = useState(true); // Sidebar starts expanded
@@ -75,6 +76,8 @@ function GetMainContent({
 			return <FlowContent />;
 		case "test":
 			return <ApiTesting isSidebarOpen={isSidebarOpen} />;
+		case "flowsWorkbench":
+			return <ComingSoonPage />;
 		default:
 			return <NotFoundPage />;
 	}
