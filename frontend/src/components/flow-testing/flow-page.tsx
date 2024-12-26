@@ -14,6 +14,7 @@ import { toast } from "react-toastify";
 import Heading from "../ui/mini-components/ondc-gradient-text";
 import DifficultyForm from "./difficulty-form";
 import { ReportPage } from "./report";
+import { FormGuide } from "./guides";
 
 export default function FlowContent() {
 	const [step, setStep] = useState(0);
@@ -57,43 +58,52 @@ export default function FlowContent() {
 		switch (step) {
 			case 0:
 				return (
-					<div className="w-full bg-white p-2 rounded-md shadow-md">
-						<Heading size=" text-xl" className="mb-2">
-							Details
-						</Heading>
-						<GenericForm onSubmit={onSubmit}>
-							<FormInput
-								label="Enter Subscriber Url"
-								name="subscriberUrl"
-								required={true}
-								labelInfo="your registered subscriber url"
-							/>
-							<FormSelect
-								name="domain"
-								label="Select Domain"
-								options={["ONDC:TRV11"]}
-								required
-							/>
-							<FormSelect
-								label="Enter Version"
-								name="version"
-								required={true}
-								options={["2.0.1"]}
-							/>
-							<FormInput label="Enter City Code" name="city" required={true} />
-							<FormSelect
-								name="participantType"
-								label="Select Type"
-								options={["BPP", "BAP"]}
-								required
-							/>
-							<FormSelect
-								name="Environment"
-								label="Select Environment"
-								options={["STAGING", "PRE-PRODUCTION"]}
-								required
-							/>
-						</GenericForm>
+					<div className="flex flex-1 w-full">
+						<div className="sm:w-[60%] p-2 bg-white rounded-md shadow-md border">
+							<Heading size=" text-xl" className="mb-2">
+								Details
+							</Heading>
+							<GenericForm onSubmit={onSubmit}>
+								<FormInput
+									label="Enter Subscriber Url"
+									name="subscriberUrl"
+									required={true}
+									labelInfo="your registered subscriber url"
+								/>
+								<FormSelect
+									name="domain"
+									label="Select Domain"
+									options={["ONDC:TRV11"]}
+									required
+								/>
+								<FormSelect
+									label="Enter Version"
+									name="version"
+									required={true}
+									options={["2.0.1"]}
+								/>
+								<FormInput
+									label="Enter City Code"
+									name="city"
+									required={true}
+								/>
+								<FormSelect
+									name="participantType"
+									label="Select Type"
+									options={["BPP", "BAP"]}
+									required
+								/>
+								<FormSelect
+									name="Environment"
+									label="Select Environment"
+									options={["STAGING", "PRE-PRODUCTION"]}
+									required
+								/>
+							</GenericForm>
+						</div>
+						<div className="w-full sm:w-[40%] ml-1">
+							<FormGuide />
+						</div>
 					</div>
 				);
 			case 1:
