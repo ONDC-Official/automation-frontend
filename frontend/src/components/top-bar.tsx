@@ -7,7 +7,7 @@ interface NavLink {
 
 const navLinks: NavLink[] = [
 	{ label: "Contact", href: "/contact" },
-	{ label: "Contirbute", href: "/contribute" },
+	{ label: "Contribute", href: "/contribute" },
 	{ label: "FAQs", href: "/faq" },
 ];
 
