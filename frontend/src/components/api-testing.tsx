@@ -12,6 +12,13 @@ interface IProps {
   isSidebarOpen: boolean;
 }
 
+const INSTRUCTION = [
+  `1. Lorem ipsum dolor sit amet consectetur adipisicing elit. Numquam
+perferendis consequuntur nihil debitis facere incidunt itaque aliquid,`,
+  `  2. vel excepturi aspernatur ratione id, natus dolore, quibusdam sint
+autem odio dolores voluptate!`,
+];
+
 const ApiTesting = ({ isSidebarOpen }: IProps) => {
   const [payload, setPayload] = useState("");
   const [responseValue, setResponseValue] = useState("");
@@ -65,12 +72,9 @@ const ApiTesting = ({ isSidebarOpen }: IProps) => {
     >
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
         <h1 className="text-lg font-semibold text-gray-800">Instruction</h1>
-        <p className="text-sm text-gray-600">
-          Lorem ipsum dolor sit amet consectetur adipisicing elit. Numquam
-          perferendis consequuntur nihil debitis facere incidunt itaque aliquid,
-          vel excepturi aspernatur ratione id, natus dolore, quibusdam sint
-          autem odio dolores voluptate!
-        </p>
+        {INSTRUCTION?.map((item: string) => (
+          <p className="text-sm text-gray-600">{item}</p>
+        ))}
       </Modal>
       <div className="w-3/5 p-4 gap-4 flex flex-col">
         <div className="flex flex-row items-center gap-4">
