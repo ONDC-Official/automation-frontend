@@ -11,6 +11,8 @@ const FormSelect = ({
 	setSelectedValue = (_: string) => {},
 	defaultValue,
 	labelInfo = "",
+	nonSelectedValue = false,
+	disabled = false
 }: any) => {
 	const onSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
 		console.log(e.target.value, "index");
@@ -18,14 +20,19 @@ const FormSelect = ({
 	};
 	return (
 		<>
-			<div className="mb-4">
+			<div className="mb-4 w-full">
 				<LabelWithToolTip labelInfo={labelInfo} label={label} />
 				<select
 					{...register(name)}
 					className={inputClass}
 					onChange={onSelectChange}
 					defaultValue={defaultValue}
+					disabled={disabled}
 				>
+					{
+						nonSelectedValue && <option value="" disabled selected>Select a value</option>
+					}
+
 					{options.map((option: string, index: number) => {
 						if (defaultValue === option)
 							return (
