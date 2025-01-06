@@ -7,16 +7,23 @@ import { IoMdHelp } from "react-icons/io";
 import Modal from "./modal";
 import { buttonClass } from "./ui/forms/loading-button";
 import Heading from "./ui/mini-components/ondc-gradient-text";
+import { MdEdit } from "react-icons/md";
+import ToggleButton from "./ui/mini-components/toggle-button";
+import FlowDetails from "./ui/mini-components/flow-details";
+import { GrRefresh } from "react-icons/gr";
+import Tabs from "./ui/mini-components/tabs";
 
 interface IProps {
   isSidebarOpen: boolean;
 }
 
 const INSTRUCTION = [
-  `1. Lorem ipsum dolor sit amet consectetur adipisicing elit. Numquam
-perferendis consequuntur nihil debitis facere incidunt itaque aliquid,`,
-  `  2. vel excepturi aspernatur ratione id, natus dolore, quibusdam sint
-autem odio dolores voluptate!`,
+  `1. Request can be made using just the payload to recieve response in sync or async mode`,
+  `2. Async Mode: Ack or nack is returned as the response.
+      Sync Mode: on_action payload is returned as response.`,
+  `3. Request can be manual or custom`,
+  `4. Manual: Paste any beckn payload in the request to reviceve the response.
+      Custom: Select a particular domain, usecase and type to generate the request payload and recieve response`,
 ];
 
 const ApiTesting = ({ isSidebarOpen }: IProps) => {
@@ -25,6 +32,10 @@ const ApiTesting = ({ isSidebarOpen }: IProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [mdData, setMdData] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isToggled, setIsToggled] = useState(false);
+  const [isEdittable, setIsEdittable] = useState(true);
+  const [defaultPayload, setDefaultPayload] = useState("");
+  // const [isModified, setIsModified] = useState(false);
 
   const verifyRequest = async () => {
     if (payload === "") {
@@ -32,7 +43,16 @@ const ApiTesting = ({ isSidebarOpen }: IProps) => {
       return;
     }
 
-    const parsedPayload = JSON.parse(payload);
+    let parsedPayload;
+
+    try {
+      parsedPayload = JSON.parse(payload);
+    } catch (e) {
+      console.log("error while parsing ", e);
+      toast.error("Invalid payload");
+      return;
+    }
+
     const action = parsedPayload?.context?.action;
 
     if (!action) {
@@ -68,7 +88,7 @@ const ApiTesting = ({ isSidebarOpen }: IProps) => {
     <div
       className={`fixed top-16 mt-1 h-full shadow-md flex flex-row transition-all duration-300 ${
         isSidebarOpen ? "w-4/5" : "w-11/12"
-      }`}
+      } `}
     >
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
         <h1 className="text-lg font-semibold text-gray-800">Instruction</h1>
@@ -76,44 +96,120 @@ const ApiTesting = ({ isSidebarOpen }: IProps) => {
           <p className="text-sm text-gray-600">{item}</p>
         ))}
       </Modal>
-      <div className="w-3/5 p-4 gap-4 flex flex-col">
-        <div className="flex flex-row items-center gap-4">
-          <h1 className="text-lg font-semibold text-gray-800">Request</h1>
+      <div className="w-3/6 p-4 gap-4 flex flex-col">
+        <div className="flex flex-row items-center justify-between">
+          <div className="flex flex-row items-center gap-4">
+            <h1 className="text-lg font-semibold text-gray-800">Request</h1>
+            <div
+              className="flex flex-row items-center cursor-pointer group"
+              onClick={() => setIsModalOpen(true)}
+            >
+              <Heading className="text-sm transition-all duration-300 shadow-sm group-hover:text-blue-600">
+                help
+              </Heading>
+              <IoMdHelp className="text-sky-500 transition-all duration-300 shadow-sm group-hover:bg-blue-100 group-hover:text-blue-600" />
+            </div>
+          </div>
+          <ToggleButton
+            toggleOffText="Manual"
+            toggleOnText="Predefined"
+            onToggle={(isToggle: boolean) => {
+              setIsEdittable(false);
+              setIsToggled(isToggle);
+            }}
+          />
+        </div>
+
+        <div className="flex flex-col">
           <div
-            className="flex flex-row items-center cursor-pointer group"
-            onClick={() => setIsModalOpen(true)}
+            className={`overflow-hidden transition-[max-height] duration-300 ease-in-out ${
+              isToggled ? "max-h-40" : "max-h-0"
+            }`}
           >
-            <Heading className="text-sm transition-all duration-300 shadow-sm group-hover:text-blue-600">
-              help
-            </Heading>
-            <IoMdHelp className="text-sky-500 transition-all duration-300 shadow-sm group-hover:bg-blue-100 group-hover:text-blue-600" />
+            <FlowDetails
+              onLoadPayload={(data) => {
+                {
+                  setPayload(JSON.stringify(data, null, 2));
+                  setDefaultPayload(JSON.stringify(data, null, 2));
+                }
+              }}
+            />
+          </div>
+          <div className={`relative`}>
+            {isToggled && (
+              <div
+                className={`absolute right-5 top-2 z-10 ${
+                  isEdittable ? "bg-blue-200" : "bg-gray-200"
+                } p-2 rounded-md`}
+                onClick={() => setIsEdittable(!isEdittable)}
+              >
+                <MdEdit />
+              </div>
+            )}
+            {isToggled && (
+              <div
+                className={`absolute right-5 top-12 z-10 bg-gray-200 p-2 rounded-md`}
+                onClick={() => {
+                  // setIsModified(false);
+                  setPayload(defaultPayload);
+                }}
+              >
+                <GrRefresh />
+              </div>
+            )}
+
+            <Editor
+              theme="vs"
+              height={isToggled ? "54vh" : "70vh"}
+              defaultLanguage="json"
+              onChange={(value: any) => {
+                // setIsModified(true);
+                setPayload(value);
+              }}
+              value={payload}
+              options={{
+                minimap: { enabled: false },
+                readOnly: isToggled && !isEdittable,
+              }}
+            />
           </div>
         </div>
-        <Editor
-          theme="vs-dark"
-          height="70vh"
-          defaultLanguage="json"
-          onChange={(value: any) => setPayload(value)}
-        />
-        <button
-          className={`${buttonClass}`}
-          onClick={verifyRequest}
-          disabled={payload === ""}
-        >
-          {isLoading ? "Sending" : "Send"}
-        </button>
+        <div className="flex flex-row gap-4">
+          <button className={`${buttonClass}`} onClick={() => setPayload("")}>
+            Clear
+          </button>
+          <button
+            className={`${buttonClass}`}
+            onClick={verifyRequest}
+            disabled={payload === ""}
+          >
+            {isLoading ? "Sending" : "Send"}
+          </button>
+        </div>
       </div>
-      <div className="w-2/5 flex flex-col gap-4 my-4 ">
-        <h1 className="text-lg font-semibold text-gray-800">Response</h1>
+      <div className="w-3/6 flex flex-col gap-4 my-4 ">
+        <div className="flex flex-row justify-between">
+          <h1 className="text-lg font-semibold text-gray-800">Response</h1>
+          {/* <ToggleButton
+            toggleOffText="Async Mode"
+            toggleOnText="Sync Mode"
+            onToggle={(isToggle: boolean) => {
+              // setIsEdittable(false);
+              // setIsToggled(isToggle);
+            }}
+          /> */}
+          <Tabs />
+        </div>
         <div className="h-2/5">
           <Editor
-            theme="vs-dark"
+            theme="vs"
             value={responseValue}
             defaultLanguage="json"
             options={{
               readOnly: true, // Makes the editor non-editable
               formatOnType: true, // Optional: Format as you type
               formatOnPaste: true,
+              minimap: { enabled: false },
             }}
           />
         </div>
