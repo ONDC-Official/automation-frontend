@@ -127,7 +127,7 @@ const ApiTesting = ({ isSidebarOpen }: IProps) => {
             }`}
           >
             <FlowDetails
-              onLoadPayload={(data) => {
+              onLoadPayload={(data: any) => {
                 {
                   setPayload(JSON.stringify(data, null, 2));
                   setDefaultPayload(JSON.stringify(data, null, 2));
