@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useEffect, useState} from "react";
 import { LabelWithToolTip } from "./form-input";
 import { inputClass } from "./inputClass";
 
@@ -19,9 +19,17 @@ const FormSelect = ({
 	nonSelectedValue = false,
 	disabled = false
 }: any) => {
+	const [value, setValue] = useState("")
+
+	useEffect(() => {
+		console.log(">>>>>>>>>>>>>>>>>>> changeing options <<<<<<<<<<<<<<<<<<<,")
+		setValue("")
+	}, [options])
+
 	const onSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
 		console.log(e.target.value, "index");
 		setSelectedValue(e.target.value);
+		setValue(e.target.value)
 	};
 	return (
 		<>
@@ -33,6 +41,7 @@ const FormSelect = ({
 					onChange={onSelectChange}
 					defaultValue={defaultValue}
 					disabled={disabled}
+					value={value}
 				>
 					{
 						nonSelectedValue && <option value="" disabled selected>Select a value</option>
