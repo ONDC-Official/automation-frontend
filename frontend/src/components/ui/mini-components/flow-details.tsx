@@ -4,18 +4,22 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 
-const FlowDetails = ({ onLoadPayload }) => {
+interface IProps {
+  onLoadPayload: (data: any) => void;
+}
+
+const FlowDetails = ({ onLoadPayload }: IProps) => {
   const {
     register,
     formState: { errors },
   } = useForm();
-  const [config, setConfig] = useState({});
+  const [config, setConfig] = useState<any>({});
   const [domains, setDomains] = useState([]);
   const [domain, setDomain] = useState("");
   const [usecases, setUsecases] = useState([]);
   const [usecase, setUsecase] = useState("");
   const [apis, setApis] = useState([]);
-  const [apiType, setApiType] = useState([]);
+  const [apiType, setApiType] = useState<any>([]);
 
   const getPredefinedConfig = async () => {
     // api call
@@ -36,14 +40,14 @@ const FlowDetails = ({ onLoadPayload }) => {
     }
   };
 
-  const getUsecase = (selectedDomain) => {
+  const getUsecase = (selectedDomain: any) => {
     // api call
     setDomain(selectedDomain);
-    let filteredUsecase = [];
+    let filteredUsecase: any = [];
 
     config?.domain?.map((item: any) => {
       if (item.name === selectedDomain) {
-        item?.usecase?.map((val) => {
+        item?.usecase?.map((val: any) => {
           filteredUsecase.push(val.summary);
         });
       }
@@ -52,15 +56,15 @@ const FlowDetails = ({ onLoadPayload }) => {
     setUsecases(filteredUsecase);
   };
 
-  const getApi = (selectedUsecase) => {
+  const getApi = (selectedUsecase: any) => {
     setUsecase(selectedUsecase);
-    const filteredApi = [];
+    const filteredApi: any = [];
 
     config?.domain?.map((item: any) => {
       if (item.name === domain) {
-        item?.usecase?.map((val) => {
+        item?.usecase?.map((val: any) => {
           if (val.summary === selectedUsecase) {
-            val.api?.map((apis) => {
+            val.api?.map((apis: any) => {
               filteredApi.push(apis.name);
             });
           }
@@ -71,16 +75,16 @@ const FlowDetails = ({ onLoadPayload }) => {
     setApis(filteredApi);
   };
 
-  const getType = (seletedApi) => {
-    const filteredApiType = [];
+  const getType = (seletedApi: any) => {
+    const filteredApiType: any[] = [];
 
     config?.domain?.map((item: any) => {
       if (item.name === domain) {
-        item?.usecase?.map((val) => {
+        item?.usecase?.map((val: any) => {
           if (val.summary === usecase) {
-            val.api?.map((apis) => {
+            val.api?.map((apis: any) => {
               if (apis.name === seletedApi) {
-                apis.examples?.map((ex) => {
+                apis.examples?.map((ex: any) => {
                   filteredApiType.push({ key: ex.summary, value: ex.value });
                 });
               }
@@ -125,7 +129,7 @@ const FlowDetails = ({ onLoadPayload }) => {
         register={register}
         errors={errors}
         disabled={domains.length === 0}
-        setSelectedValue={(data) => {
+        setSelectedValue={(data: any) => {
           getUsecase(data);
         }}
         nonSelectedValue
@@ -138,7 +142,7 @@ const FlowDetails = ({ onLoadPayload }) => {
         register={register}
         errors={errors}
         disabled={usecases.length === 0}
-        setSelectedValue={(data) => {
+        setSelectedValue={(data: any) => {
           getApi(data);
         }}
         nonSelectedValue
