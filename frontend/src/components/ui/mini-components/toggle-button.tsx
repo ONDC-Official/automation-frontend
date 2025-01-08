@@ -3,7 +3,7 @@ import { useState } from "react";
 interface IPorps {
   toggleOnText: string;
   toggleOffText: string;
-  onToggle: () => void;
+  onToggle: (isToggle: boolean) => void;
 }
 
 function ToggleButton({ toggleOffText, toggleOnText, onToggle }: IPorps) {

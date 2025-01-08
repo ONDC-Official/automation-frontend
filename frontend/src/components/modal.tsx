@@ -1,8 +1,12 @@
-// Modal.js
-import React from "react";
 import { IoMdClose } from "react-icons/io";
 
-const Modal = ({ isOpen, onClose, children }) => {
+interface IProps {
+  isOpen: boolean;
+  onClose: () => void;
+  children: any;
+}
+
+const Modal = ({ isOpen, onClose, children }: IProps) => {
   if (!isOpen) return null;
 
   return (
