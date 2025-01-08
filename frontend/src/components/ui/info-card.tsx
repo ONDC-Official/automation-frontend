@@ -2,15 +2,16 @@ import React from "react";
 import Heading from "./mini-components/ondc-gradient-text";
 
 interface InfoCardProps {
+	title: string;
 	data: Record<string, string>;
 }
 
-const InfoCard: React.FC<InfoCardProps> = ({ data }) => {
+const InfoCard: React.FC<InfoCardProps> = ({ title, data }) => {
 	return (
 		// <div className="w-full rounded-lg shadow-sm bg-gray-50 border border-gray-200 p-4">
 		<div className="w-full bg-white/10 backdrop-blur-md rounded-md p-6 shadow-lg">
 			<Heading size="text-xl" className=" mb-4">
-				Flow Challenges
+				{title}
 			</Heading>
 			<div className="flex flex-wrap gap-4">
 				{Object.entries(data).map(([key, value], index) => (

@@ -1,0 +1,88 @@
+domain:
+  - name: ONDC:TRV11
+    usecase:
+      - id: METRO
+        summary: Metro
+        api:
+          - name: cancel
+            examples:
+              - summary: Cancel_a_transit_ticket_booking_before_the_cancellation_period_47
+                value: ./examples/metro/cancel_1.yaml
+              - summary: Initiates_cancelling_a_ride_with_confirm_cancel_status_48
+                value: ./examples/metro/cancel_2.yaml
+              - summary: request_cancel
+                value: ./examples/metro/cancel_3.yaml
+          - name: confirm
+            examples:
+              - summary: Confirm_ticket_booking_46
+                value: ./examples/metro/confirm_1.yaml
+          - name: init
+            examples:
+              - summary: Initialize_the_order_by_providing_billing_details_45
+                value: ./examples/metro/init_1.yaml
+          - name: on_cancel
+            examples:
+              - summary: Return_cancelled_ticket_order_with_cancellation_charges_57
+                value: ./examples/metro/on_cancel_1.yaml
+              - summary: Return_cancelled_ticket_order_with_cancellation_charges_58
+                value: ./examples/metro/on_cancel_2.yaml
+              - summary: confirm_cancel_request
+                description: TBD
+                value: ./examples/metro/on_cancel_3.yaml
+          - name: on_confirm
+            examples:
+              - summary: Return_confirmed_ticket_order_with_payment_confirmation_56
+                value: ./examples/metro/on_confirm_1.yaml
+          - name: on_init
+            examples:
+              - summary: Return_draft_order_for_transit_ticket_with_settlement_details_55
+                value: ./examples/metro/on_init_1.yaml
+          - name: on_search
+            examples:
+              - summary: >-
+                  Return_a_metro_catalog_of_available_fulfillments_based_on_search_by_city_52
+                value: ./examples/metro/on_search_1.yaml
+              - summary: >-
+                  Return_a_metro_catalog_of_fare_products_based_on_station_code_or_gps_based_search_53
+                value: ./examples/metro/on_search_2.yaml
+          - name: on_select
+            examples:
+              - summary: Return_a_quote_offered_by_a_public_transit_service_provider_54
+                value: ./examples/metro/on_select_1.yaml
+          - name: on_status
+            examples:
+              - summary: Return_transit_ticket_order_with_status_-_Journey_Completed_59
+                value: ./examples/metro/on_status_1.yaml
+          - name: on_support
+            examples:
+              - summary: Return_transit_ticket_order_with_status_-_Journey_Completed_60
+                value: ./examples/metro/on_support_1.yaml
+          - name: search
+            examples:
+              - summary: Search_for_a_public_mode_of_transit_from_a_specific_position_41
+                value: ./examples/metro/search_1.yaml
+              - summary: Search_for_public__transit_for_city_and_type_of_vehicle_42
+                value: ./examples/metro/search_2.yaml
+              - summary: Search_for_public__transit_via_station_code_and_vehicle_type_43
+                value: ./examples/metro/search_3.yaml
+          - name: select
+            examples:
+              - summary: >-
+                  Get_a_quote_for_a_fare_product_selected_from_a_public_transit_catalog_44
+                value: ./examples/metro/select_1.yaml
+          - name: status
+            examples:
+              - summary: Get_latest_status_of_a_transit_ticket_booking_49
+                value: ./examples/metro/status_1.yaml
+              - summary: Get_latest_status_of_a_transit_ticket_booking_using_ref_id_50
+                value: ./examples/metro/status_2.yaml
+          - name: support
+            examples:
+              - summary: Get_latest_status_of_a_transit_ticket_booking_51
+                value: ./examples/metro/support_1.yaml
+          - name: on_update
+            examples:
+              - summary: reject_cancel_request
+                value: ./examples/metro/on_update_1.yaml
+              - summary: accep_cancel_request
+                value: ./examples/metro/on_update_2.yaml
