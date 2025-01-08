@@ -2,6 +2,11 @@ import React from "react";
 import { LabelWithToolTip } from "./form-input";
 import { inputClass } from "./inputClass";
 
+interface IOption {
+	key: string;
+	value: string;
+}
+
 const FormSelect = ({
 	register = (_: any) => {},
 	name,
@@ -33,15 +38,24 @@ const FormSelect = ({
 						nonSelectedValue && <option value="" disabled selected>Select a value</option>
 					}
 
-					{options.map((option: string, index: number) => {
+					{options.map((option: string | IOption, index: number) => {
+						let value
+
+						if(typeof option === "string") {
+							value = option
+						} else {
+							value = option.value
+							option = option.key
+						}
+
 						if (defaultValue === option)
 							return (
-								<option selected value={option} key={index}>
+								<option selected value={value} key={index}>
 									{option}
 								</option>
 							);
 						return (
-							<option value={option} key={index}>
+							<option value={value} key={index}>
 								{option}
 							</option>
 						);

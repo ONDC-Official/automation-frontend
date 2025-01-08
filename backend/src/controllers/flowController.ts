@@ -4,6 +4,7 @@ import { fetchConfigService } from "../services/flowService";
 import axios from "axios";
 import { TriggerInput } from "../interfaces/triggerData";
 import { ACK, NACK, ERROR } from "../constants/response";
+import getPredefinedFlowConfig, {fetchExampleConfig} from "../config/unittestConfig";
 
 export const fetchConfig = (req: Request, res: Response) => {
 	try {
@@ -94,7 +95,7 @@ export const validatePayload = async (
 	if (!action) {
 		res.status(400).send({ message: "action is required param" });
 	}
-	console.log("process.env.API_SERVICE", process.env.API_SERVICE);
+	
 	try {
 		const response = await axios.post(
 			`${process.env.API_SERVICE as string}/test/${action}`,
@@ -107,3 +108,32 @@ export const validatePayload = async (
 		res.status(500).send(ERROR);
 	}
 };
+
+export const getPredefinedFlows =  async (
+	_req: Request,
+	res: Response
+): Promise<void> => {
+
+	const config = getPredefinedFlowConfig()
+
+	if(!config) {
+		res.status(500).send({error: true, message: "Error while fetching config"})
+	}
+
+	res.send(config)
+}
+
+export const getExample =  async (
+	req: Request,
+	res: Response
+): Promise<void> => {
+
+	const { filePath } = req.body
+	const config = fetchExampleConfig(filePath)
+
+	if(!config) {
+		res.status(500).send({error: true, message: "Error while fetching config"})
+	}
+
+	res.send(config)
+}
