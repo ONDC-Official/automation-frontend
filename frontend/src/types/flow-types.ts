@@ -20,4 +20,5 @@ export interface SequenceStep {
 	unsolicited: boolean;
 	description: string;
 	pair: string | null;
+	owner: "BAP" | "BPP";
 }

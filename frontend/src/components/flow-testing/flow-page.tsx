@@ -90,7 +90,7 @@ export default function FlowContent() {
 								<FormSelect
 									name="participantType"
 									label="Select Type"
-									options={["BPP", "BAP"]}
+									options={["BAP","BPP"]}
 									required
 								/>
 								<FormSelect
