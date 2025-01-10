@@ -56,16 +56,27 @@ export const handleTriggerRequest = async (
 ): Promise<void> => {
 	try {
 		console.log("triggring flow");
-		if (!req.body.subscriberUrl) {
+		const action = req.params.action;
+		if (
+			!req.query.action_id ||
+			!req.query.transaction_id ||
+			!req.query.subscriber_url
+		) {
 			res.status(400).send("Bad Request");
 			return;
 		}
-
 		const triggerInput: TriggerInput = req.body;
 
 		const response = await axios.post(
-			`${process.env.MOCK_SERVICE as string}/trigger`,
-			triggerInput
+			`${process.env.MOCK_SERVICE as string}/trigger/api-service/${action}`,
+			triggerInput,
+			{
+				params: {
+					subscriber_url: req.query.subscriber_url,
+					action_id: req.query.action_id,
+					transaction_id: req.query.transaction_id,
+				},
+			}
 		);
 		if (response.status === 200) {
 			res.status(200).send(ACK);

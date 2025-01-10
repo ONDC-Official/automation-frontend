@@ -12,12 +12,15 @@ export interface CacheSessionData {
 
 export interface State {
 	type: string;
+	key: string;
 	description: string;
 	stepIndex: number;
+	owner: "BAP" | "BPP";
 	state?: "success" | "error" | "pending" | "inactive";
 	flowId: string;
 	cachedData: CacheSessionData;
 	setSideView: React.Dispatch<any>;
+	subscriberUrl: string;
 }
 
 export interface SequenceCardProps {
