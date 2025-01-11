@@ -18,10 +18,9 @@ const FormInput = ({
 	const handleChange = (e: any) => {
 		let value = e.target.value;
 		if (strip) {
-			// Replace all spaces globally
 			value = value.replace(/\s+/g, "");
 		}
-		e.target.value = value; // Set the input field's value
+		e.target.value = value;
 	};
 	const handleFocus = (e: any) => {
 		e.stopPropagation();

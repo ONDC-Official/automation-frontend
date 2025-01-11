@@ -43,13 +43,13 @@ export const triggerRequest = async (
 	actionId: string,
 	transaction_id: string,
 	subscriberUrl?: string,
-	payload?: any
+	body?: any
 ) => {
 	try {
 		console.log("triggering request", action, actionId, transaction_id);
 		const response = await axios.post(
 			`${import.meta.env.VITE_BACKEND_URL}/flow/trigger/${action}`,
-			payload,
+			body,
 			{
 				params: {
 					action_id: actionId,

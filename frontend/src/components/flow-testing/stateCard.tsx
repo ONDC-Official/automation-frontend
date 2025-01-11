@@ -8,13 +8,18 @@ import { IoIosInformationCircleOutline } from "react-icons/io";
 import SequenceCard from "./SequenceCard";
 import { v4 as uuidv4 } from "uuid";
 import { triggerRequest } from "../../utils/request-utils";
+import Popup from "../ui/pop-up/pop-up";
+import FormConfig from "../ui/forms/config-form/config-form";
+import { toast } from "react-toastify";
 
 // Reusable StateCard component with CSS-based animation
 export const StateCard: React.FC<{
 	data: State;
 }> = ({ data }) => {
 	const [animate, setAnimate] = useState(false);
-	const [prevState, setPrevState] = useState(data.state);
+	const [prevState, setPrevState] = useState("inactive");
+	const [showPopup, setShowPopup] = useState(false);
+	const [cardState, setCardState] = useState("inactive");
 
 	const getStateStyles = (state: string) => {
 		switch (state) {
@@ -52,31 +57,34 @@ export const StateCard: React.FC<{
 
 	const index = data.stepIndex - 1;
 
-	// Update the state based on current flow
-	data.state = GetCurrentState(
-		index,
-		data.cachedData.session_payloads[data.flowId],
-		data.flowId,
-		data.cachedData.current_flow_id || ""
-	);
+	useEffect(() => {
+		const state = GetCurrentState(
+			index,
+			data.cachedData.session_payloads[data.flowId],
+			data.flowId,
+			data.cachedData.current_flow_id
+		);
+		setCardState(state);
+	}, [data]);
 
-	const styles = getStateStyles(data.state);
+	const styles = getStateStyles(cardState);
 
 	useEffect(() => {
-		if (prevState !== data.state) {
+		if (prevState !== cardState) {
 			setAnimate(true);
 			const timer = setTimeout(() => {
 				setAnimate(false);
 			}, 300);
 
-			setPrevState(data.state);
+			setPrevState(cardState);
 
 			return () => clearTimeout(timer);
 		}
-		if (data.state === "pending") {
+		if (cardState === "pending") {
+			console.log("hello");
 			triggerApiRequest();
 		}
-	}, [data.state, prevState]);
+	}, [cardState, prevState]);
 
 	const handleClick = async () => {
 		data.setSideView(
@@ -89,23 +97,43 @@ export const StateCard: React.FC<{
 	};
 
 	const triggerApiRequest = async () => {
-		let txn = uuidv4();
-		if (
-			data.stepIndex > 0 &&
-			data.cachedData.session_payloads[data.flowId].length > 0
-		) {
-			txn =
-				data.cachedData.session_payloads[data.flowId][0].request.transaction_id;
-		}
+		const txn = getTransactionId(data);
 		if (data.cachedData.type === "BAP") {
 			if (data.owner === "BPP") {
-				triggerRequest(data.type, data.key, txn, data.subscriberUrl);
+				if (data.input === undefined) {
+					setShowPopup(true);
+				} else {
+					triggerRequest(data.type, data.key, txn, data.subscriberUrl);
+				}
+			} else {
+				toast.info("wating for BPP request");
 			}
 		} else {
 			if (data.owner === "BAP") {
-				triggerRequest(data.type, data.key, txn, data.subscriberUrl);
+				if (data.input === undefined) {
+					triggerRequest(data.type, data.key, txn, data.subscriberUrl);
+				} else {
+					setShowPopup(true);
+				}
+			} else {
+				toast.info("wating for BAP request");
 			}
 		}
+	};
+
+	const handlePopupSubmit = async (formData: Record<string, string>) => {
+		const jsonPathChanges = {
+			json_path_changes: formData,
+		};
+		const txn = getTransactionId(data);
+		triggerRequest(
+			data.type,
+			data.key,
+			txn,
+			data.subscriberUrl,
+			jsonPathChanges
+		);
+		setShowPopup(false);
 	};
 
 	return (
@@ -119,9 +147,8 @@ export const StateCard: React.FC<{
 				{styles.icon}
 				<h3 className="text-md font-semibold">
 					{`${data.stepIndex}. ${data.type} `}
-					<span className="text-gray-500 font-normal">({data.owner})</span>
 				</h3>
-				{data.state === "pending" && (
+				{cardState === "pending" && (
 					<div className="w-4 h-4 border-2 border-t-2 border-gray-300 border-t-yellow-500 rounded-full animate-spin-slow ml-2"></div>
 				)}
 			</div>
@@ -130,8 +157,24 @@ export const StateCard: React.FC<{
 					<IoIosInformationCircleOutline className=" text-2xl cursor-pointer" />
 				</button>
 			</CustomTooltip>
+			{data.input && (
+				<Popup isOpen={showPopup}>
+					<FormConfig formConfig={data.input} submitEvent={handlePopupSubmit} />
+				</Popup>
+			)}
 		</button>
 	);
 };
 
 export default SequenceCard;
+function getTransactionId(data: State) {
+	let txn = uuidv4();
+	if (
+		data.stepIndex > 0 &&
+		data.cachedData.session_payloads[data.flowId].length > 0
+	) {
+		txn =
+			data.cachedData.session_payloads[data.flowId][0].request.transaction_id;
+	}
+	return txn;
+}

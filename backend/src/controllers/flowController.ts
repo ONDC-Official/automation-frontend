@@ -78,6 +78,7 @@ export const handleTriggerRequest = async (
 				},
 			}
 		);
+		console.log("response", response);
 		if (response.status === 200) {
 			res.status(200).send(ACK);
 		} else {

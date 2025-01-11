@@ -1,3 +1,5 @@
+import { FormConfigType } from "../components/ui/forms/config-form/config-form";
+
 // Define your data types
 export interface FetchFlowsResponse {
 	domain: Domain[];
@@ -21,4 +23,5 @@ export interface SequenceStep {
 	description: string;
 	pair: string | null;
 	owner: "BAP" | "BPP";
+	input?: FormConfigType;
 }
