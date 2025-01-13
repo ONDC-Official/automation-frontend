@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { toast } from "react-toastify"; // Assuming you're using react-toastify for notifications
-import SequenceCard from "./sequence-card";
+import SequenceCard from "./SequenceCard";
 import { triggerSearch } from "../../utils/request-utils";
 import { Flow, SequenceStep } from "../../types/flow-types";
 import { CacheSessionData } from "../../types/session-types";
@@ -41,9 +41,9 @@ export function Accordion({
 		if (!cacheData) return;
 		if (!cacheData.session_payloads[flow.id]) return;
 		try {
-			if (cacheData.session_payloads[flow.id].length === 0) {
-				await triggerSearch(cacheData, subUrl);
-			}
+			// if (cacheData.session_payloads[flow.id].length === 0) {
+			// 	await triggerSearch(cacheData, subUrl);
+			// }
 			setIsOpen(true);
 		} catch (e) {
 			toast.error("Error while starting flow");
@@ -58,7 +58,6 @@ export function Accordion({
 		<div className="rounded-md border border-zinc-300 mb-4 shadow-lg w-full ml-1">
 			{/* Flex container for header and Run button */}
 			<div
-				// className="flex items-center justify-between px-4 py-3 bg-gray-100 hover:bg-gray-200 cursor-pointer"
 				className="flex items-center justify-between px-5 py-3 bg-white border rounded-md shadow-sm hover:bg-gray-50 cursor-pointer transition-colors"
 				onClick={() => setIsOpen(!isOpen)}
 				aria-expanded={isOpen}
@@ -131,6 +130,7 @@ export function Accordion({
 										cachedData: cacheData,
 										flowId: flow.id,
 										setSideView: setSideView,
+										subscriberUrl: subUrl,
 								  }
 								: undefined;
 							return (
@@ -142,6 +142,7 @@ export function Accordion({
 											cachedData: cacheData,
 											flowId: flow.id,
 											setSideView: setSideView,
+											subscriberUrl: subUrl,
 										}}
 										pair={pairData}
 									/>
