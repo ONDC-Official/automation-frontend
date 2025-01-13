@@ -1,7 +1,7 @@
 domain:
   - name: ONDC:TRV11
     flows:
-      - id: STATION_CODE_FLOW-CATALOG
+      - id: STATION_CODE_FLOW_CATALOG
         description: User uses station code for searching metro
         sequence:
           - key: search1
@@ -18,7 +18,7 @@ domain:
             description: Response with all station codes
             pair: null
             owner: BPP
-      - id: STATION_CODE_FLOW-ORDER
+      - id: STATION_CODE_FLOW_ORDER
         description: User uses station code for searching metro
         sequence:
           - key: search2
@@ -202,13 +202,27 @@ domain:
             description: Provider platform responds with the status of the order
             pair: null
             owner: BPP
-          - key: cancel
+          - key: cancel_soft
             type: cancel
             unsolicited: false
             description: User cancels the booking
             pair: on_cancel
             owner: BAP
-          - key: on_cancel
+          - key: on_cancel_soft
+            type: on_cancel
+            unsolicited: false
+            description:
+              Provider platform cancels the booking and provides the details of
+              the cancellation
+            pair: null
+            owner: BPP
+          - key: cancel_hard
+            type: cancel
+            unsolicited: false
+            description: User cancels the booking
+            pair: on_cancel
+            owner: BAP
+          - key: on_cancel_hard
             type: on_cancel
             unsolicited: false
             description:

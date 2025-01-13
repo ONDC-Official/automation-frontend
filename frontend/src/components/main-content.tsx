@@ -33,8 +33,8 @@ const MainContent = () => {
 						icon: <FaHome className="text-xl" />,
 					},
 					{
-						id: "test",
-						label: "Unit Api Testing",
+						id: "schema",
+						label: "Schema Testing",
 						icon: <TbTestPipe2Filled className="text-xl" />,
 					},
 					{
@@ -74,7 +74,7 @@ function GetMainContent({
 			return <h1>Add Home</h1>;
 		case "flows":
 			return <FlowContent />;
-		case "test":
+		case "schema":
 			return <ApiTesting isSidebarOpen={isSidebarOpen} />;
 		case "flowsWorkbench":
 			return <ComingSoonPage />;
