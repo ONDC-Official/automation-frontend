@@ -1,4 +1,3 @@
-import React from "react";
 import { FaCheck } from "react-icons/fa6";
 import { RxCross2 } from "react-icons/rx";
 

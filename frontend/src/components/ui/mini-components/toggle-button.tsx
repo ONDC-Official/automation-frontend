@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 
 interface IPorps {
-  toggleOnText: string;
-  toggleOffText: string;
+  toggleOnText?: string;
+  toggleOffText?: string;
   onToggle: (isToggle: boolean) => void;
   initialValue?: boolean;
 }
