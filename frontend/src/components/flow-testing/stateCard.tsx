@@ -1,17 +1,25 @@
 import React, { useState, useEffect } from "react";
-import { GoArrowSwitch } from "react-icons/go";
 import { MdCheckCircle, MdError, MdHourglassEmpty } from "react-icons/md";
-import { SequenceCardProps, State } from "../../types/session-types";
+import { State } from "../../types/session-types";
 import { GetCurrentState, getRequestResponse } from "../../utils/flow-utils";
 import "../../styles/animation.css";
 import CustomTooltip from "../ui/mini-components/tooltip";
 import { IoIosInformationCircleOutline } from "react-icons/io";
+import SequenceCard from "./SequenceCard";
+import { v4 as uuidv4 } from "uuid";
+import { triggerRequest } from "../../utils/request-utils";
+import Popup from "../ui/pop-up/pop-up";
+import FormConfig from "../ui/forms/config-form/config-form";
+import { toast } from "react-toastify";
+
 // Reusable StateCard component with CSS-based animation
-const StateCard: React.FC<{
+export const StateCard: React.FC<{
 	data: State;
 }> = ({ data }) => {
 	const [animate, setAnimate] = useState(false);
-	const [prevState, setPrevState] = useState(data.state);
+	const [prevState, setPrevState] = useState("inactive");
+	const [showPopup, setShowPopup] = useState(false);
+	const [cardState, setCardState] = useState("inactive");
 
 	const getStateStyles = (state: string) => {
 		switch (state) {
@@ -49,32 +57,36 @@ const StateCard: React.FC<{
 
 	const index = data.stepIndex - 1;
 
-	// Update the state based on current flow
-	data.state = GetCurrentState(
-		index,
-		data.cachedData.session_payloads[data.flowId],
-		data.flowId,
-		data.cachedData.current_flow_id || ""
-	);
-
-	const styles = getStateStyles(data.state);
-
-	// Detect state changes to trigger animation
 	useEffect(() => {
-		if (prevState !== data.state) {
+		const state = GetCurrentState(
+			index,
+			data.cachedData.session_payloads[data.flowId],
+			data.flowId,
+			data.cachedData.current_flow_id
+		);
+		setCardState(state);
+	}, [data]);
+
+	const styles = getStateStyles(cardState);
+
+	useEffect(() => {
+		if (prevState !== cardState) {
 			setAnimate(true);
 			const timer = setTimeout(() => {
 				setAnimate(false);
-			}, 300); // Duration should match the CSS animation duration
+			}, 300);
 
-			setPrevState(data.state);
+			setPrevState(cardState);
 
 			return () => clearTimeout(timer);
 		}
-	}, [data.state, prevState]);
+		if (cardState === "pending") {
+			console.log("hello");
+			triggerApiRequest();
+		}
+	}, [cardState, prevState]);
 
-	const handleClick = () => {
-		console.log("Clicked");
+	const handleClick = async () => {
 		data.setSideView(
 			getRequestResponse(
 				index,
@@ -82,6 +94,46 @@ const StateCard: React.FC<{
 				data.type
 			)
 		);
+	};
+
+	const triggerApiRequest = async () => {
+		const txn = getTransactionId(data);
+		if (data.cachedData.type === "BAP") {
+			if (data.owner === "BPP") {
+				if (data.input === undefined) {
+					setShowPopup(true);
+				} else {
+					triggerRequest(data.type, data.key, txn, data.subscriberUrl);
+				}
+			} else {
+				toast.info("wating for BPP request");
+			}
+		} else {
+			if (data.owner === "BAP") {
+				if (data.input === undefined) {
+					triggerRequest(data.type, data.key, txn, data.subscriberUrl);
+				} else {
+					setShowPopup(true);
+				}
+			} else {
+				toast.info("wating for BAP request");
+			}
+		}
+	};
+
+	const handlePopupSubmit = async (formData: Record<string, string>) => {
+		const jsonPathChanges = {
+			json_path_changes: formData,
+		};
+		const txn = getTransactionId(data);
+		triggerRequest(
+			data.type,
+			data.key,
+			txn,
+			data.subscriberUrl,
+			jsonPathChanges
+		);
+		setShowPopup(false);
 	};
 
 	return (
@@ -93,8 +145,10 @@ const StateCard: React.FC<{
 		>
 			<div className="flex items-center space-x-2">
 				{styles.icon}
-				<h3 className="text-md font-semibold">{`${data.stepIndex}. ${data.type}`}</h3>
-				{data.state === "pending" && (
+				<h3 className="text-md font-semibold">
+					{`${data.stepIndex}. ${data.type} `}
+				</h3>
+				{cardState === "pending" && (
 					<div className="w-4 h-4 border-2 border-t-2 border-gray-300 border-t-yellow-500 rounded-full animate-spin-slow ml-2"></div>
 				)}
 			</div>
@@ -103,29 +157,24 @@ const StateCard: React.FC<{
 					<IoIosInformationCircleOutline className=" text-2xl cursor-pointer" />
 				</button>
 			</CustomTooltip>
+			{data.input && (
+				<Popup isOpen={showPopup}>
+					<FormConfig formConfig={data.input} submitEvent={handlePopupSubmit} />
+				</Popup>
+			)}
 		</button>
 	);
 };
 
-// SequenceCard remains unchanged
-function SequenceCard({ step, pair }: SequenceCardProps) {
-	console.log("Rendering Sequence Card");
-	return (
-		<div className="flex items-center space-x-4 bg-white p-1">
-			{/* Step Card */}
-			<StateCard data={step} />
-
-			{/* Separator Icon */}
-			{pair && (
-				<div className="flex flex-col items-center">
-					<GoArrowSwitch className="text-2xl text-gray-500 my-2" />
-				</div>
-			)}
-
-			{/* Pair Card */}
-			{pair && <StateCard data={pair} />}
-		</div>
-	);
-}
-
 export default SequenceCard;
+function getTransactionId(data: State) {
+	let txn = uuidv4();
+	if (
+		data.stepIndex > 0 &&
+		data.cachedData.session_payloads[data.flowId].length > 0
+	) {
+		txn =
+			data.cachedData.session_payloads[data.flowId][0].request.transaction_id;
+	}
+	return txn;
+}
