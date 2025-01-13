@@ -116,6 +116,7 @@ function RenderFlows({
 			<div className="space-y-2 p-4">
 				{sessionData ? (
 					<InfoCard
+						title="Flow Challenges"
 						data={{
 							...sessionData,
 							activeFlow: activeFlow || "N/A",
