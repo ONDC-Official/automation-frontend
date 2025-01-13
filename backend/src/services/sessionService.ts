@@ -20,6 +20,7 @@ export const createSessionService = async (
 		subscriberId,
 		subscriberUrl,
 		version,
+		difficulty_cache
 	} = data;
 
 	const flowConfig = fetchConfigService();
@@ -50,7 +51,7 @@ export const createSessionService = async (
 		np_id: subscriberId,
 		session_payloads: session_payloads,
 		context_cache: contextCache,
-		difficulty_cache: {},
+		difficulty_cache,
 	};
 
 	try {

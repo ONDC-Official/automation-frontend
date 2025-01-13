@@ -6,12 +6,16 @@ interface NavLink {
 }
 
 const navLinks: NavLink[] = [
-	{ label: "Contact", href: "/contact" },
+	{ label: "Support", href: "/support" },
 	{ label: "Contribute", href: "/contribute" },
 	{ label: "FAQs", href: "/faq" },
 ];
 
-const TopBar = () => {
+interface IPops {
+	onSupportClick : () => void;
+}
+
+const TopBar = ({onSupportClick}: IPops) => {
 	const [isOpen, setIsOpen] = useState(false);
 
 	return (
@@ -79,7 +83,11 @@ const TopBar = () => {
 				>
 					{navLinks.map((link, index) => (
 						<li key={index}>
-							<a className="text-gray-700 hover:text-blue-500 block py-2">
+							<a className="text-gray-700 hover:text-blue-500 block py-2" onClick={() => {
+								if(link.label === "Support") {
+									onSupportClick()
+								}
+							}}>
 								{link.label}
 							</a>
 						</li>
