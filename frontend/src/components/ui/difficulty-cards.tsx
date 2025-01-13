@@ -1,11 +1,11 @@
 import Heading from "./mini-components/ondc-gradient-text";
 import ToggleButton from "./mini-components/toggle-button";
-import { IoIosArrowDropdownCircle } from "react-icons/io";
+// import { IoIosArrowDropdownCircle } from "react-icons/io";
 import { toast } from "react-toastify";
 import { putCacheData } from "../../utils/request-utils";
 import { useEffect, useState } from "react";
 
-const keyMapping = {
+const keyMapping: any = {
   stopAfterFirstNack: "Stop At Nack",
   timeValidations: "Time Validation",
   protocolValidations: "Protocol Validation",
@@ -71,7 +71,7 @@ const DifficultyCards = ({ difficulty_cache, subUrl }: IPoprs) => {
       </div>
       {Object.entries(difficultyCache).length !== 0 && (
         <div className="flex flex-wrap gap-4">
-          {Object.entries(difficultyCache).map(([key, value], index) => (
+          {Object.entries(difficultyCache).map(([key, value]: any, index: any) => (
             <div
               key={index}
               className="flex items-center justify-between bg-white rounded-md shadow p-2 w-full sm:w-auto sm:flex-1"
@@ -80,7 +80,6 @@ const DifficultyCards = ({ difficulty_cache, subUrl }: IPoprs) => {
                 {keyMapping[key]}
               </span>
               <span className="text-sm text-gray-800 font-medium ml-2">
-                {value}
                 <ToggleButton
                   initialValue={value}
                   onToggle={(value: boolean) => {

@@ -21,7 +21,7 @@ const INSTRUCTION = [
 
 const SchemaValidation = ({ isSidebarOpen }: IProps) => {
   const [payload, setPayload] = useState("");
-  const [responseValue, setResponseValue] = useState("");
+  const [_responseValue, setResponseValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [mdData, setMdData] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);

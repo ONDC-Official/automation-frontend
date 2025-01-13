@@ -198,7 +198,9 @@ const ApiTesting = ({ isSidebarOpen }: IProps) => {
               // setIsToggled(isToggle);
             }}
           /> */}
-          <Tabs option1="Sync" option2="Async"/>
+          <Tabs option1="Sync" option2="Async" onSelectOption={() => {
+            // handle selection
+          }} />
         </div>
         <div className="h-2/5">
           <Editor

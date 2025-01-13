@@ -7,12 +7,12 @@ import { FetchFlowsResponse } from "../../types/flow-types";
 import RenderFlows from "./render-flows";
 import Stepper from "../ui/mini-components/stepper";
 import { MdOutlineDomainVerification } from "react-icons/md";
-import { PiSwordBold } from "react-icons/pi";
+// import { PiSwordBold } from "react-icons/pi";
 import { HiOutlineDocumentReport } from "react-icons/hi";
 import { TbFileInfo } from "react-icons/tb";
 import { toast } from "react-toastify";
 import Heading from "../ui/mini-components/ondc-gradient-text";
-import DifficultyForm from "./difficulty-form";
+// import DifficultyForm from "./difficulty-form";
 import { ReportPage } from "./report";
 import { FormGuide } from "./guides";
 

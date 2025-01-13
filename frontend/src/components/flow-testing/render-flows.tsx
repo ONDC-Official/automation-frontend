@@ -34,7 +34,7 @@ function RenderFlows({
   const activeFlowRef = useRef<string | null>(activeFlow);
   const [cacheData, setCacheData] = useState<CacheSessionData | null>(null);
   const [sideView, setSideView] = useState<any>({});
-  const [difficultyCache, setDifficultyCache] = useState({});
+  const [difficultyCache, setDifficultyCache] = useState<any>({});
   useEffect(() => {
     fetchSessionData();
   }, [subUrl]);
@@ -102,7 +102,7 @@ function RenderFlows({
           subscriber_url: subUrl,
         },
       })
-      .then((response) => {
+      .then((response: any) => {
         const filteredData = Object.entries(response.data)
           .filter(([_, value]) => typeof value === "string")
           .reduce((acc: any, [key, value]) => {
