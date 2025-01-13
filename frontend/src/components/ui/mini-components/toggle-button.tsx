@@ -1,13 +1,25 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 interface IPorps {
   toggleOnText: string;
   toggleOffText: string;
   onToggle: (isToggle: boolean) => void;
+  initialValue?: boolean;
 }
 
-function ToggleButton({ toggleOffText, toggleOnText, onToggle }: IPorps) {
+function ToggleButton({
+  toggleOffText,
+  toggleOnText,
+  onToggle,
+  initialValue,
+}: IPorps) {
   const [isToggled, setIsToggled] = useState(false);
+
+  useEffect(() => {
+    if(initialValue) {
+      setIsToggled(initialValue)
+    }
+  }, [initialValue])
 
   return (
     <div className="flex items-center space-x-2">
