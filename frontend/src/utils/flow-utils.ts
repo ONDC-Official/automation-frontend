@@ -5,7 +5,7 @@ export function GetCurrentState(
 		response: any;
 	}[],
 	thisFlowId: string,
-	currentFlow: string
+	currentFlow: string | undefined
 ): "success" | "error" | "pending" | "inactive" {
 	if (currentFlow !== thisFlowId) {
 		return "inactive";

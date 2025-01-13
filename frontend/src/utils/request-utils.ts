@@ -37,3 +37,31 @@ export const putCacheData = async (data: any, subUrl: string) => {
 		}
 	);
 };
+
+export const triggerRequest = async (
+	action: string,
+	actionId: string,
+	transaction_id: string,
+	subscriberUrl?: string,
+	body?: any
+) => {
+	try {
+		console.log("triggering request", action, actionId, transaction_id);
+		const response = await axios.post(
+			`${import.meta.env.VITE_BACKEND_URL}/flow/trigger/${action}`,
+			body,
+			{
+				params: {
+					action_id: actionId,
+					transaction_id: transaction_id,
+					subscriber_url: subscriberUrl,
+				},
+			}
+		);
+		toast.info(`${action} triggered`);
+		return response;
+	} catch (e) {
+		toast.error(`Error triggering ${action}`);
+		console.log(e);
+	}
+};
