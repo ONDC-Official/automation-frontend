@@ -7,12 +7,12 @@ import { FetchFlowsResponse } from "../../types/flow-types";
 import RenderFlows from "./render-flows";
 import Stepper from "../ui/mini-components/stepper";
 import { MdOutlineDomainVerification } from "react-icons/md";
-import { PiSwordBold } from "react-icons/pi";
+// import { PiSwordBold } from "react-icons/pi";
 import { HiOutlineDocumentReport } from "react-icons/hi";
 import { TbFileInfo } from "react-icons/tb";
 import { toast } from "react-toastify";
 import Heading from "../ui/mini-components/ondc-gradient-text";
-import DifficultyForm from "./difficulty-form";
+// import DifficultyForm from "./difficulty-form";
 import { ReportPage } from "./report";
 import { FormGuide } from "./guides";
 
@@ -27,7 +27,17 @@ export default function FlowContent() {
 			console.log("data", data);
 			const response = await axios.post(
 				`${import.meta.env.VITE_BACKEND_URL}/sessions`,
-				data
+				{
+				...data,
+				difficulty_cache: {
+					stopAfterFirstNack: true,
+					timeValidations: true,
+					protocolValidations: true,
+					useGateway: true,
+					headerValidaton: true,
+					totalDifficulty: 100,
+				},
+				}
 			);
 			setSubUrl(data.subscriberUrl);
 			console.log("response", response.data);
@@ -106,24 +116,24 @@ export default function FlowContent() {
 						</div>
 					</div>
 				);
+			// case 1:
+			// 	return (
+			// 		<div className="w-full bg-white p-2 rounded-md shadow-md">
+			// 			<Heading size=" text-xl mt-2 p-2" className=" mb-2">
+			// 				Configure Difficulty
+			// 			</Heading>
+			// 			<DifficultyForm
+			// 				submitFunction={async () => {
+			// 					setStep((s) => s + 1);
+			// 				}}
+			// 				subUrl={subUrl}
+			// 			/>
+			// 		</div>
+			// 	);
 			case 1:
-				return (
-					<div className="w-full bg-white p-2 rounded-md shadow-md">
-						<Heading size=" text-xl mt-2 p-2" className=" mb-2">
-							Configure Difficulty
-						</Heading>
-						<DifficultyForm
-							submitFunction={async () => {
-								setStep((s) => s + 1);
-							}}
-							subUrl={subUrl}
-						/>
-					</div>
-				);
-			case 2:
 				if (!flows) return <h1>Loading...</h1>;
 				return <RenderFlows flows={flows} subUrl={subUrl} setStep={setStep} />;
-			case 3:
+			case 2:
 				if (!session) return <h1>Loading...</h1>;
 				return <ReportPage sessionID={session} subUrl={subUrl} />;
 			default:
@@ -139,10 +149,10 @@ export default function FlowContent() {
 							icon: <TbFileInfo className=" text-2xl" />,
 							label: "FILL DETAILS",
 						},
-						{
-							icon: <PiSwordBold className=" text-2xl" />,
-							label: "SELECT DIFICULTY",
-						},
+						// {
+						// 	icon: <PiSwordBold className=" text-2xl" />,
+						// 	label: "SELECT DIFICULTY",
+						// },
 						{
 							icon: <MdOutlineDomainVerification className=" text-2xl" />,
 							label: "TEST FLOWS",

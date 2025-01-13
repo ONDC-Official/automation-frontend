@@ -22,8 +22,9 @@ const FormSelect = ({
 	const [value, setValue] = useState("")
 
 	useEffect(() => {
-		console.log(">>>>>>>>>>>>>>>>>>> changeing options <<<<<<<<<<<<<<<<<<<,")
-		setValue("")
+		if(nonSelectedValue) {
+			setValue("")
+		}
 	}, [options])
 
 	const onSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
