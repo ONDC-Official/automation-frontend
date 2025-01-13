@@ -90,13 +90,13 @@ export default function FlowContent() {
 								<FormSelect
 									name="participantType"
 									label="Select Type"
-									options={["BPP", "BAP"]}
+									options={["BAP", "BPP"]}
 									required
 								/>
 								<FormSelect
 									name="Environment"
 									label="Select Environment"
-									options={["STAGING", "PRE-PRODUCTION"]}
+									options={["STAGING"]} //"PRE-PRODUCTION"
 									required
 								/>
 							</GenericForm>

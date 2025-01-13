@@ -1,3 +1,5 @@
+import { FormConfigType } from "../components/ui/forms/config-form/config-form";
+
 export interface CacheSessionData {
 	type: string;
 	current_session_id: string;
@@ -12,12 +14,16 @@ export interface CacheSessionData {
 
 export interface State {
 	type: string;
+	key: string;
 	description: string;
 	stepIndex: number;
-	state?: "success" | "error" | "pending" | "inactive";
+	owner: "BAP" | "BPP";
+	// state?: "success" | "error" | "pending" | "inactive";
 	flowId: string;
 	cachedData: CacheSessionData;
 	setSideView: React.Dispatch<any>;
+	subscriberUrl: string;
+	input?: FormConfigType;
 }
 
 export interface SequenceCardProps {
