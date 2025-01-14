@@ -1,15 +1,17 @@
-// src/routes/sessionRoutes.ts
-
-import { Router } from 'express';
-import { createSession, getSession, updateSession } from '../controllers/sessionController';
+import { Router } from "express";
+import {
+	createSession,
+	getSession,
+	updateSession,
+} from "../controllers/sessionController";
 
 const router = Router();
 
 // Define routes and use the correct async handler types
-router.post('/', createSession);
+router.post("/", createSession);
 
-router.get('/', getSession)
+router.get("/", getSession);
 
-router.put('/', updateSession)
+router.put("/", updateSession);
 
 export default router;

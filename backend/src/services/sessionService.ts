@@ -5,7 +5,6 @@ import {
 	SessionKeyType,
 } from "../interfaces/sessionData";
 import { fetchConfigService } from "./flowService";
-// import redisClient from '../config/redisConfig';
 
 const SESSION_EXPIRY = 3600; // 1 hour
 
@@ -51,7 +50,14 @@ export const createSessionService = async (
 		np_id: subscriberId,
 		session_payloads: session_payloads,
 		context_cache: contextCache,
-		difficulty_cache,
+		difficulty_cache: {
+			sensitiveTTL: true,
+			useGateway: true,
+			stopAfterFirstNack: true,
+			protocolValidations: true,
+			timeValidations: true,
+			headerValidaton: true,
+		},
 	};
 
 	try {
@@ -70,13 +76,10 @@ export const createSessionService = async (
 
 export const getSessionService = async (sessionKey: SessionKeyType) => {
 	try {
-		// Fetch session data from Redis
-		// const sessionData = await redisClient.get(sessionId);
 		const sessionData = await redisService.getKey(sessionKey);
 		if (!sessionData) {
 			throw new Error("Session not found");
 		}
-
 		// Return the session data if found
 		return JSON.parse(sessionData);
 	} catch (error: any) {
