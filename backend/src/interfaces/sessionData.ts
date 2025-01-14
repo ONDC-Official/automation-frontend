@@ -29,9 +29,9 @@ export interface TransformedSessionData {
 	type: participantType;
 	domain: string;
 	version: string;
-	city: string;
-	np_id: string;
-	subscriber_id: string;
+	city?: string;
+	np_id?: string;
+	subscriber_id?: string;
 	subscriber_url: subscriberUrl;
 	current_flow_id?: string;
 	session_payloads: Record<string, any[]>;
