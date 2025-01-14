@@ -180,7 +180,7 @@ domain:
             description:
               Consumer platform confirms the booking and provides all information
               required for confirmation as per the terms of order
-            pair: on_confirm
+            pair: on_confirm_delayed
             owner: BAP
           - key: on_confirm_delayed
             type: on_confirm
@@ -194,7 +194,7 @@ domain:
             type: status
             unsolicited: false
             description: Consumer platform requests for the status of the order
-            pair: on_status
+            pair: on_status_active
             owner: BAP
           - key: on_status_active
             type: on_status
@@ -286,7 +286,7 @@ domain:
             description:
               Consumer platform confirms the booking and provides all information
               required for confirmation as per the terms of order
-            pair: on_confirm
+            pair: on_confirm_delayed
             owner: BAP
           - key: on_confirm_delayed
             type: on_confirm
@@ -300,7 +300,7 @@ domain:
             type: status
             unsolicited: false
             description: Consumer platform requests for the status of the order
-            pair: on_status
+            pair: on_status_active
             owner: BAP
           - key: on_status_active
             type: on_status
@@ -312,7 +312,7 @@ domain:
             type: cancel
             unsolicited: false
             description: User cancels the booking
-            pair: on_cancel
+            pair: on_cancel_init
             owner: BAP
           - key: on_cancel_init
             type: on_cancel
@@ -320,7 +320,7 @@ domain:
             description:
               Provider platform cancels the booking and provides the details of
               the cancellation
-            pair: null
+            pair: cancel
             owner: BPP
           - key: on_update_accepted
             type: on_update

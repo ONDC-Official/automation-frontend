@@ -36,7 +36,14 @@ export interface TransformedSessionData {
 	current_flow_id?: string;
 	session_payloads: Record<string, any[]>;
 	context_cache: Record<string, ContextCache>;
-	difficulty_cache: Record<string, boolean>;
+	difficulty_cache: {
+		sensitiveTTL: boolean;
+		useGateway: boolean;
+		stopAfterFirstNack: boolean;
+		protocolValidations: boolean;
+		timeValidations: boolean;
+		headerValidaton: boolean;
+	};
 }
 
 export interface ContextCache {
