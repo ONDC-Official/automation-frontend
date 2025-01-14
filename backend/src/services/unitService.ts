@@ -8,10 +8,10 @@ export const createUnitSessionService = async (
 	data: any
 ) => {
 	const {
-		city,
+		// city,
 		domain,
 		participantType,
-		subscriberId,
+		// subscriberId,
 		subscriberUrl,
 		version,
 	} = data;
@@ -32,10 +32,10 @@ export const createUnitSessionService = async (
 		type: participantType,
 		domain,
 		version,
-		city,
-		subscriber_id: subscriberId,
+		// city,
+		// subscriber_id: subscriberId,
 		subscriber_url: subscriberUrl,
-		np_id: subscriberId,
+		// np_id: subscriberId,
 		session_payloads: session_payloads,
 		context_cache: contextCache,
 		difficulty_cache: {
