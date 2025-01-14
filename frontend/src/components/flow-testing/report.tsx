@@ -66,7 +66,7 @@ export function ReportPage({
             city: sessionData?.city || "-",
             flow_id: sessionData?.current_flow_id || "-",
             difficulty:
-              sessionData?.difficulty_cache?.totalDifficulty.toString() || "-",
+              sessionData?.difficulty_cache?.totalDifficulty?.toString() || "-",
             domain: sessionData?.domain || "-",
             type: sessionData?.type,
           }}

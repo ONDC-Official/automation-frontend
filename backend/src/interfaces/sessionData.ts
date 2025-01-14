@@ -4,6 +4,15 @@ type sessionId = string;
 type subscriberUrl = string;
 type participantType = "BPP" | "BAP";
 
+interface DifficultyCache {
+	stopAfterFirstNack: boolean;
+	timeValidations: boolean;
+	protocolValidations: boolean;
+	useGateway: boolean;
+	headerValidaton: boolean;
+	totalDifficulty: number;
+}
+
 export interface SessionData {
 	city: string;
 	createdAt: string; // ISO timestamp
@@ -15,6 +24,7 @@ export interface SessionData {
 	subscriberUrl: subscriberUrl;
 	transactions: Record<string, TransactionDetails>; // Example transactions object
 	version: string;
+	difficulty_cache: DifficultyCache
 }
 
 export interface TransactionDetails {
