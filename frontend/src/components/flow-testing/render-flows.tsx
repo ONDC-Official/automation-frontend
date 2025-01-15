@@ -104,7 +104,7 @@ function RenderFlows({
 						acc[key] = value;
 						return acc;
 					}, {});
-				delete filteredData["active_session_id"];
+				// delete filteredData["active_session_id"];
 				delete filteredData["current_flow_id"];
 				setSessionData(filteredData);
 				setCacheData(response.data);

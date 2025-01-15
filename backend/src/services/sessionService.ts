@@ -50,7 +50,7 @@ export const createSessionService = async (
 		session_payloads: session_payloads,
 		context_cache: contextCache,
 		difficulty_cache: {
-			sensitiveTTL: true,
+			// sensitiveTTL: true,
 			useGateway: true,
 			stopAfterFirstNack: true,
 			protocolValidations: true,
