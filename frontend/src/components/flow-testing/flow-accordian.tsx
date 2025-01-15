@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { toast } from "react-toastify"; // Assuming you're using react-toastify for notifications
 import SequenceCard from "./SequenceCard";
-import { triggerSearch } from "../../utils/request-utils";
+// import { triggerSearch } from "../../utils/request-utils";
 import { Flow, SequenceStep } from "../../types/flow-types";
 import { CacheSessionData } from "../../types/session-types";
 
