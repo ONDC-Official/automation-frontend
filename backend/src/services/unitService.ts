@@ -39,7 +39,7 @@ export const createUnitSessionService = async (
 		session_payloads: session_payloads,
 		context_cache: contextCache,
 		difficulty_cache: {
-			sensitiveTTL: false,
+			// sensitiveTTL: false,
 			useGateway: false,
 			stopAfterFirstNack: false,
 			protocolValidations: true,
