@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { FetchFlowsResponse } from "../../types/flow-types";
 import InfoCard from "../ui/info-card";
+import DifficultyCards from "../ui/difficulty-cards";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { CacheSessionData } from "../../types/session-types";
@@ -9,6 +10,7 @@ import { Accordion } from "./flow-accordian";
 import Loader from "../ui/mini-components/loader";
 import JsonView from "@uiw/react-json-view";
 import { githubDarkTheme } from "@uiw/react-json-view/githubDark";
+import Tabs from "../ui/mini-components/tabs";
 
 interface SessionData {
 	city: string;
@@ -32,9 +34,12 @@ function RenderFlows({
 	const activeFlowRef = useRef<string | null>(activeFlow);
 	const [cacheData, setCacheData] = useState<CacheSessionData | null>(null);
 	const [sideView, setSideView] = useState<any>({});
+	const [difficultyCache, setDifficultyCache] = useState<any>({});
 	useEffect(() => {
 		fetchSessionData();
 	}, [subUrl]);
+
+	console.log("Side view'", sideView);
 
 	useEffect(() => {
 		if (activeFlow) {
@@ -97,15 +102,16 @@ function RenderFlows({
 					subscriber_url: subUrl,
 				},
 			})
-			.then((response) => {
+			.then((response: any) => {
 				const filteredData = Object.entries(response.data)
 					.filter(([_, value]) => typeof value === "string")
 					.reduce((acc: any, [key, value]) => {
 						acc[key] = value;
 						return acc;
 					}, {});
-				// delete filteredData["active_session_id"];
-				delete filteredData["current_flow_id"];
+				delete filteredData["active_session_id"];
+				// delete filteredData["current_flow_id"];
+				setDifficultyCache(response.data.difficulty_cache);
 				setSessionData(filteredData);
 				setCacheData(response.data);
 			});
@@ -115,13 +121,19 @@ function RenderFlows({
 		<div className="w-full min-h-screen flex flex-col">
 			<div className="space-y-2 p-4">
 				{sessionData ? (
-					<InfoCard
-						title="Flow Challenges"
-						data={{
-							...sessionData,
-							activeFlow: activeFlow || "N/A",
-						}}
-					/>
+					<div className="flex gap-2 flex-col">
+						<InfoCard
+							title="Flow Challenges"
+							data={{
+								...sessionData,
+								activeFlow: activeFlow || "N/A",
+							}}
+						/>
+						<DifficultyCards
+							difficulty_cache={difficultyCache}
+							subUrl={subUrl}
+						/>
+					</div>
 				) : (
 					<div>Loading...</div>
 				)}
@@ -160,7 +172,15 @@ function RenderFlows({
 				<div className="w-full sm:w-[40%] p-4">
 					{/* Sticky Container */}
 					<div className="bg-white rounded-md shadow-md border sticky top-20">
-						<h2 className="m-1 text-lg font-semibold">Request & Response</h2>
+						{/* <h2 className="m-1 text-lg font-semibold">Request & Response</h2> */}
+						<Tabs
+							className="mt-4 ml-2"
+							option1="Request"
+							option2="Response"
+							onSelectOption={(value: string) =>
+								console.log("trabs selected", value)
+							}
+						/>
 						<div className="p-2">
 							{cacheData ? (
 								<div

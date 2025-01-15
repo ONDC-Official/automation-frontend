@@ -48,6 +48,10 @@ domain:
                 label: Enter end station code
                 type: text
                 payloadField: $.message.intent.fulfillment.stops[?(@.type=='END')].location.descriptor.code
+              - name: bpp_id
+                label: enter your bpp_id
+                type: text
+                payloadField: $.context.bpp_id
           - key: on_search2
             type: on_search
             unsolicited: false
@@ -140,6 +144,10 @@ domain:
                 label: Enter end station code
                 type: text
                 payloadField: $.message.intent.fulfillment.stops[?(@.type=='END')].location.descriptor.code
+              - name: bpp_id
+                label: enter your bpp_id
+                type: text
+                payloadField: $.context.bpp_id
           - key: on_search2
             type: on_search
             unsolicited: false
@@ -246,6 +254,10 @@ domain:
                 label: Enter end station code
                 type: text
                 payloadField: $.message.intent.fulfillment.stops[?(@.type=='END')].location.descriptor.code
+              - name: bpp_id
+                label: enter your bpp_id
+                type: text
+                payloadField: $.context.bpp_id
           - key: on_search2
             type: on_search
             unsolicited: false

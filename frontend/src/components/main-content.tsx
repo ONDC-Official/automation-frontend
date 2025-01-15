@@ -5,11 +5,13 @@ import { FaHome } from "react-icons/fa";
 import { TbTestPipe2Filled } from "react-icons/tb";
 import { GoWorkflow } from "react-icons/go";
 import { PiNetwork } from "react-icons/pi";
+import { MdSchema } from "react-icons/md";
 
 import ApiTesting from "./api-testing";
 import NotFoundPage from "./ui/not-found";
 import FlowContent from "./flow-testing/flow-page";
 import ComingSoonPage from "./ui/coming-soon";
+import SchemaValidation from "./schema-validation";
 
 const MainContent = () => {
 	const [isSidebarOpen, setIsSidebarOpen] = useState(true); // Sidebar starts expanded
@@ -34,7 +36,12 @@ const MainContent = () => {
 					},
 					{
 						id: "schema",
-						label: "Schema Testing",
+						label: "Schema Validation",
+						icon: <MdSchema className="text-xl" />,
+					},
+					{
+						id: "unit",
+						label: "Unit Api Testing",
 						icon: <TbTestPipe2Filled className="text-xl" />,
 					},
 					{
@@ -74,8 +81,10 @@ function GetMainContent({
 			return <h1>Add Home</h1>;
 		case "flows":
 			return <FlowContent />;
-		case "schema":
+		case "unit":
 			return <ApiTesting isSidebarOpen={isSidebarOpen} />;
+		case "schema":
+				return <SchemaValidation isSidebarOpen={isSidebarOpen} />;
 		case "flowsWorkbench":
 			return <ComingSoonPage />;
 		default:
