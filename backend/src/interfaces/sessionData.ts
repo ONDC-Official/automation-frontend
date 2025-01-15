@@ -47,7 +47,7 @@ export interface TransformedSessionData {
 	session_payloads: Record<string, any[]>;
 	context_cache: Record<string, ContextCache>;
 	difficulty_cache: {
-		sensitiveTTL: boolean;
+		// sensitiveTTL: boolean;
 		useGateway: boolean;
 		stopAfterFirstNack: boolean;
 		protocolValidations: boolean;
