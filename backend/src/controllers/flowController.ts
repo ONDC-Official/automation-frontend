@@ -4,10 +4,14 @@ import { fetchConfigService } from "../services/flowService";
 import axios from "axios";
 import { TriggerInput } from "../interfaces/triggerData";
 import { ACK, NACK, ERROR } from "../constants/response";
-import getPredefinedFlowConfig, {fetchExampleConfig} from "../config/unittestConfig";
+import getPredefinedFlowConfig, {
+	fetchExampleConfig,
+} from "../config/unittestConfig";
+import logger from "../utils/logger";
 
 export const fetchConfig = (req: Request, res: Response) => {
 	try {
+		logger.info("fetching config");
 		const config = fetchConfigService();
 		res.status(200).json(config);
 	} catch (error: any) {
@@ -44,7 +48,7 @@ export const generateReport = async (
 			});
 		}
 	} catch (error: any) {
-		console.log(error);
+		logger.info(error);
 		res
 			.status(500)
 			.json({ error: "Failed to generate report", details: error.message });
@@ -56,7 +60,7 @@ export const handleTriggerRequest = async (
 	res: Response
 ): Promise<void> => {
 	try {
-		console.log("triggring flow");
+		logger.info(`Triggering action ${req.params.action}`);
 		const action = req.params.action;
 		if (
 			!req.query.action_id ||
@@ -79,14 +83,14 @@ export const handleTriggerRequest = async (
 				},
 			}
 		);
-		console.log("response", response);
+		logger.info("response" + JSON.stringify(response));
 		if (response.status === 200) {
 			res.status(200).send(ACK);
 		} else {
 			res.status(response.status).send("unknown");
 		}
 	} catch (error: any) {
-		console.error("error while tirggering", error);
+		logger.error("error while triggering", error);
 		if (error.response && error.response.status === 400) {
 			res.status(400).send(NACK);
 		} else if (error.response && error.response.status === 500) {
@@ -107,7 +111,7 @@ export const validatePayload = async (
 	if (!action) {
 		res.status(400).send({ message: "action is required param" });
 	}
-	
+
 	try {
 		const response = await axios.post(
 			`${process.env.API_SERVICE as string}/test/${action}`,
@@ -116,36 +120,38 @@ export const validatePayload = async (
 
 		res.send(response.data);
 	} catch (e) {
-		console.log("er", e);
+		logger.error("error while validating payload", e);
 		res.status(500).send(ERROR);
 	}
 };
 
-export const getPredefinedFlows =  async (
+export const getPredefinedFlows = async (
 	_req: Request,
 	res: Response
 ): Promise<void> => {
+	const config = getPredefinedFlowConfig();
 
-	const config = getPredefinedFlowConfig()
-
-	if(!config) {
-		res.status(500).send({error: true, message: "Error while fetching config"})
+	if (!config) {
+		res
+			.status(500)
+			.send({ error: true, message: "Error while fetching config" });
 	}
 
-	res.send(config)
-}
+	res.send(config);
+};
 
-export const getExample =  async (
+export const getExample = async (
 	req: Request,
 	res: Response
 ): Promise<void> => {
+	const { filePath } = req.body;
+	const config = fetchExampleConfig(filePath);
 
-	const { filePath } = req.body
-	const config = fetchExampleConfig(filePath)
-
-	if(!config) {
-		res.status(500).send({error: true, message: "Error while fetching config"})
+	if (!config) {
+		res
+			.status(500)
+			.send({ error: true, message: "Error while fetching config" });
 	}
 
-	res.send(config)
-}
+	res.send(config);
+};
