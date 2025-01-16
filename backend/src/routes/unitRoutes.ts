@@ -2,9 +2,8 @@ import { Router } from "express";
 import {
 	createUnitSession,
 	fetchSafeActions,
-	getTriggerUnitAction,
 	triggerUnitAction,
-  getTriggerUnitAction
+	getTriggerUnitAction,
 } from "../controllers/unitController";
 import validateRequiredParams from "../middlewares/generic";
 
@@ -21,7 +20,7 @@ router.post("/unit-session", createUnitSession);
 router.get(
 	"/trigger/:action",
 	validateRequiredParams(["transaction_id", "subscriber_url", "action_id"]),
-  getTriggerUnitAction
+	getTriggerUnitAction
 );
 
 // body.payload
@@ -31,7 +30,7 @@ router.post(
 	triggerUnitAction
 );
 
-export default router
+export default router;
 
 /*
     for seller testing:
