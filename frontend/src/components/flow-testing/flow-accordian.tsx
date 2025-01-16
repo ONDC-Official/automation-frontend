@@ -26,7 +26,7 @@ export function Accordion({
 	cacheData,
 	setSideView,
 	subUrl,
-	onFlowStop
+	onFlowStop,
 }: AccordionProps) {
 	const [isOpen, setIsOpen] = useState(false);
 	const contentRef = useRef<HTMLDivElement>(null);
@@ -80,6 +80,7 @@ export function Accordion({
 							e.stopPropagation(); // Prevent accordion toggle
 							setActiveFlow(null);
 							setIsOpen(false);
+							onFlowStop();
 						}}
 					/>
 				)}
