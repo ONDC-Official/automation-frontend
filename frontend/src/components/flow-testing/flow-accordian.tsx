@@ -1,9 +1,13 @@
 import React, { useEffect, useRef, useState } from "react";
 import { toast } from "react-toastify"; // Assuming you're using react-toastify for notifications
 import SequenceCard from "./SequenceCard";
-// import { triggerSearch } from "../../utils/request-utils";
 import { Flow, SequenceStep } from "../../types/flow-types";
 import { CacheSessionData } from "../../types/session-types";
+import IconButton from "../ui/mini-components/icon-button";
+import { FaRegStopCircle } from "react-icons/fa";
+import { IoPlay } from "react-icons/io5";
+import { AiOutlineDelete } from "react-icons/ai";
+import { clearFlowData } from "../../utils/request-utils";
 
 interface AccordionProps {
 	flow: Flow;
@@ -41,9 +45,6 @@ export function Accordion({
 		if (!cacheData) return;
 		if (!cacheData.session_payloads[flow.id]) return;
 		try {
-			// if (cacheData.session_payloads[flow.id].length === 0) {
-			// 	await triggerSearch(cacheData, subUrl);
-			// }
 			setIsOpen(true);
 		} catch (e) {
 			toast.error("Error while starting flow");
@@ -54,61 +55,60 @@ export function Accordion({
 	let stepIndex = 0;
 	if (!cacheData) return <div>Loading...</div>;
 
+	function AccordionButtons() {
+		return (
+			<div className="flex items-center">
+				{!activeFlow && (
+					<IconButton
+						icon={<IoPlay className=" text-md" />}
+						label="Start flow"
+						color="sky"
+						onClick={async (e) => {
+							e.stopPropagation();
+							await startFlow();
+						}}
+					/>
+				)}
+				{activeFlow === flow.id && (
+					<IconButton
+						icon={<FaRegStopCircle className=" text-xl" />}
+						label="Stop flow"
+						color="red"
+						onClick={async (e) => {
+							e.stopPropagation(); // Prevent accordion toggle
+							setActiveFlow(null);
+							setIsOpen(false);
+						}}
+					/>
+				)}
+				{!activeFlow && (
+					<IconButton
+						icon={<AiOutlineDelete className=" text-md" />}
+						label="Clear flow data"
+						color="orange"
+						onClick={async (e) => {
+							e.stopPropagation();
+							await clearFlowData(subUrl, flow.id);
+						}}
+					/>
+				)}
+			</div>
+		);
+	}
+
 	return (
 		<div className="rounded-md border border-zinc-300 mb-4 shadow-lg w-full ml-1">
-			{/* Flex container for header and Run button */}
 			<div
 				className="flex items-center justify-between px-5 py-3 bg-white border rounded-md shadow-sm hover:bg-gray-50 cursor-pointer transition-colors"
 				onClick={() => setIsOpen(!isOpen)}
 				aria-expanded={isOpen}
 				aria-controls={`accordion-content-${flow.id}`}
 			>
-				{/* Header */}
 				<h3 className="text-base font-bold text-sky-700">
 					<pre>Flow Id:</pre>{" "}
 					<h2 className="text-black font-medium">{flow.id}</h2>
 				</h3>
-				<div className="flex items-center">
-					{!activeFlow && (
-						<button
-							onClick={async (e) => {
-								e.stopPropagation(); // Prevent accordion toggle
-								await startFlow();
-							}}
-							className="mr-2 text-sky-600 border border-sky-600 p-1 ml-4 rounded hover:bg-sky-600 hover:text-white transition-colors"
-						>
-							Start
-						</button>
-					)}
-					{activeFlow === flow.id && (
-						<button
-							onClick={(e) => {
-								e.stopPropagation(); // Prevent accordion toggle
-								setActiveFlow(null);
-								setIsOpen(false);
-							}}
-							className="mr-2 text-red-500 border border-red-500 p-1 ml-4 rounded hover:bg-red-500 hover:text-white transition-colors flex justify-start items-center"
-						>
-							Stop
-						</button>
-					)}
-					<svg
-						className={`w-6 h-6 transform transition-transform duration-200 ${
-							isOpen ? "rotate-180" : ""
-						}`}
-						fill="none"
-						stroke="currentColor"
-						viewBox="0 0 24 24"
-						xmlns="http://www.w3.org/2000/svg"
-					>
-						<path
-							strokeLinecap="round"
-							strokeLinejoin="round"
-							strokeWidth={2}
-							d="M5 15l7-7 7 7"
-						/>
-					</svg>
-				</div>
+				<AccordionButtons />
 			</div>
 
 			{/* Accordion content with drop animation */}
@@ -120,6 +120,7 @@ export function Accordion({
 			>
 				<div className="px-4 py-5 bg-white">
 					<p className="text-gray-700 mb-6">{flow.description}</p>
+
 					<div className="space-y-4 relative">
 						{steps.map((stepPair, index) => {
 							stepIndex += 2;

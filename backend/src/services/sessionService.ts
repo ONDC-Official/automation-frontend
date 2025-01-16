@@ -19,7 +19,7 @@ export const createSessionService = async (
 		subscriberId,
 		subscriberUrl,
 		version,
-		difficulty_cache
+		difficulty_cache,
 	} = data;
 
 	const flowConfig = fetchConfigService();
@@ -142,6 +142,33 @@ export const updateSessionService = async (
 		);
 
 		return "Session updated successfully";
+	} catch (error: any) {
+		throw new Error(`${error.message}`);
+	}
+};
+
+export const clearFlowService = async (
+	subscriber_url: string,
+	flowId: string
+) => {
+	try {
+		const sessionData = await redisService.getKey(subscriber_url);
+		if (!sessionData) {
+			throw new Error("Session not found");
+		}
+
+		const session: TransformedSessionData = JSON.parse(sessionData);
+		session.session_payloads[flowId] = [];
+		session.context_cache[flowId] = {
+			latest_timestamp: new Date().toISOString(),
+			latest_action: "",
+			message_ids: [],
+		};
+		await redisService.setKey(
+			subscriber_url,
+			JSON.stringify(session),
+			SESSION_EXPIRY
+		);
 	} catch (error: any) {
 		throw new Error(`${error.message}`);
 	}
