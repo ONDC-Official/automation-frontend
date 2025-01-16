@@ -16,6 +16,7 @@ interface AccordionProps {
 	cacheData?: CacheSessionData | null;
 	setSideView: React.Dispatch<any>;
 	subUrl: string;
+	onFlowStop: () => void;
 }
 
 export function Accordion({
@@ -25,6 +26,7 @@ export function Accordion({
 	cacheData,
 	setSideView,
 	subUrl,
+	onFlowStop
 }: AccordionProps) {
 	const [isOpen, setIsOpen] = useState(false);
 	const contentRef = useRef<HTMLDivElement>(null);

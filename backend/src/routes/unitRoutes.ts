@@ -4,6 +4,7 @@ import {
 	fetchSafeActions,
 	getTriggerUnitAction,
 	triggerUnitAction,
+  getTriggerUnitAction
 } from "../controllers/unitController";
 import validateRequiredParams from "../middlewares/generic";
 
@@ -19,7 +20,8 @@ router.post("/unit-session", createUnitSession);
 
 router.get(
 	"/trigger/:action",
-	validateRequiredParams(["transaction_id", "subscriber_url", "action_id"])
+	validateRequiredParams(["transaction_id", "subscriber_url", "action_id"]),
+  getTriggerUnitAction
 );
 
 // body.payload
@@ -28,6 +30,8 @@ router.post(
 	validateRequiredParams(["transaction_id", "subscriber_url", "action_id"]),
 	triggerUnitAction
 );
+
+export default router
 
 /*
     for seller testing:
