@@ -7,23 +7,23 @@ interface NavLink {
 
 const navLinks: NavLink[] = [
 	{ label: "Support", href: "/support" },
-	{ label: "Contribute", href: "/contribute" },
-	{ label: "FAQs", href: "/faq" },
+	// { label: "Contribute", href: "/contribute" },
+	// { label: "FAQs", href: "/faq" },
 ];
 
 interface IPops {
-	onSupportClick : () => void;
+	onSupportClick: () => void;
 }
 
-const TopBar = ({onSupportClick}: IPops) => {
+const TopBar = ({ onSupportClick }: IPops) => {
 	const [isOpen, setIsOpen] = useState(false);
 
 	return (
 		<header className="fixed top-0 left-0 right-0 bg-white shadow-md z-50">
 			<nav className="container mx-auto flex items-center justify-between p-4">
-				<div className="flex items-center">
+				<div className="flex items-center justify-start w-full md:w-auto">
 					<img
-						src="https://seeklogo.com/images/O/open-network-for-digital-commerce-logo-E7F55933B3-seeklogo.com.png"
+						src="https://ondc.org/assets/theme/images/ondc_registered_logo.svg?v=d864655110"
 						alt="Logo"
 						className="h-10 w-auto"
 					/>
@@ -33,7 +33,7 @@ const TopBar = ({onSupportClick}: IPops) => {
 							fontWeight: "1000",
 						}}
 					>
-						AUTOMATION TOOL
+						PROTOCOL WORKBENCH
 					</h2>
 				</div>
 
@@ -83,11 +83,14 @@ const TopBar = ({onSupportClick}: IPops) => {
 				>
 					{navLinks.map((link, index) => (
 						<li key={index}>
-							<a className="text-gray-700 hover:text-blue-500 block py-2" onClick={() => {
-								if(link.label === "Support") {
-									onSupportClick()
-								}
-							}}>
+							<a
+								className="text-gray-700 hover:text-blue-500 block py-2"
+								onClick={() => {
+									if (link.label === "Support") {
+										onSupportClick();
+									}
+								}}
+							>
 								{link.label}
 							</a>
 						</li>
