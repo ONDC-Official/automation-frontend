@@ -81,7 +81,6 @@ export const StateCard: React.FC<{
 			return () => clearTimeout(timer);
 		}
 		if (cardState === "pending") {
-			console.log("hello");
 			triggerApiRequest();
 		}
 	}, [cardState, prevState]);

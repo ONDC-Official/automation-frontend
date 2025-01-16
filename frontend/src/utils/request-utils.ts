@@ -65,3 +65,22 @@ export const triggerRequest = async (
 		console.log(e);
 	}
 };
+
+export const clearFlowData = async (subUrl: string, flowId: string) => {
+	try {
+		console.log("clearing flow", subUrl, flowId);
+		await axios.delete(
+			`${import.meta.env.VITE_BACKEND_URL}/sessions/clearFlow`,
+			{
+				params: {
+					subscriber_url: subUrl,
+					flow_id: flowId,
+				},
+			}
+		);
+		toast.info("Flow cleared");
+	} catch (e) {
+		toast.error("Error clearing flow");
+		console.log(e);
+	}
+};
