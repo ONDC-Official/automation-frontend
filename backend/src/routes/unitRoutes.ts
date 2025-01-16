@@ -2,6 +2,7 @@ import { Router } from "express";
 import {
 	createUnitSession,
 	fetchSafeActions,
+	getTriggerUnitAction,
 	triggerUnitAction,
 } from "../controllers/unitController";
 import validateRequiredParams from "../middlewares/generic";
