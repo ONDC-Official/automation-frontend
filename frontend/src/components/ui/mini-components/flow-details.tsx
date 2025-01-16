@@ -1,25 +1,42 @@
 import FormSelect from "./../forms/form-select";
+import { FormInput } from "../forms/form-input";
 import { useForm } from "react-hook-form";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
+import { buttonClass } from "./../../ui/forms/loading-button";
 
 interface IProps {
-  onLoadPayload: (data: any) => void;
+  onNpChange: (data: string) => void;
+  getSubUrl: (data: string) => void;
+  onSetListning: (data: string) => void;
+  onGetActions: () => void;
 }
 
-const FlowDetails = ({ onLoadPayload }: IProps) => {
+const FlowDetails = ({
+  onNpChange,
+  getSubUrl,
+  onSetListning,
+  onGetActions,
+}: IProps) => {
   const {
     register,
     formState: { errors },
-  } = useForm();
+  } = useForm({
+    mode: "onBlur",
+  });
   const [config, setConfig] = useState<any>({});
   const [domains, setDomains] = useState([]);
   const [domain, setDomain] = useState("");
   const [usecases, setUsecases] = useState([]);
   const [usecase, setUsecase] = useState("");
-  const [apis, setApis] = useState([]);
-  const [apiType, setApiType] = useState<any>([]);
+  const [_apis, setApis] = useState([]);
+  const [versions, setVersions] = useState([]);
+  const [version, setVersion] = useState("");
+  const [npType, setNpType] = useState("BAP");
+  const [subUrl, setSubUrl] = useState("");
+  const [isDisabled, setIsDisabled] = useState(false);
+  const [isSessionCreated, setIsSessionCreated] = useState(false);
 
   const getPredefinedConfig = async () => {
     // api call
@@ -40,15 +57,33 @@ const FlowDetails = ({ onLoadPayload }: IProps) => {
     }
   };
 
-  const getUsecase = (selectedDomain: any) => {
-    // api call
+  const getVersions = (selectedDomain: string) => {
     setDomain(selectedDomain);
-    let filteredUsecase: any = [];
+    let filteredVersions: any = [];
 
     config?.domain?.map((item: any) => {
       if (item.name === selectedDomain) {
-        item?.usecase?.map((val: any) => {
-          filteredUsecase.push(val.summary);
+        item?.version?.map((val: any) => {
+          filteredVersions.push(val.id);
+        });
+      }
+    });
+
+    setVersions(filteredVersions);
+  };
+
+  const getUsecase = (selectedVersion: any) => {
+    setVersion(selectedVersion);
+    let filteredUsecase: any = [];
+
+    config?.domain?.map((item: any) => {
+      if (item.name === domain) {
+        item?.version?.map((val: any) => {
+          if (val.id === selectedVersion) {
+            val?.usecase?.map((usecases: any) => {
+              filteredUsecase.push(usecases.summary);
+            });
+          }
         });
       }
     });
@@ -56,16 +91,28 @@ const FlowDetails = ({ onLoadPayload }: IProps) => {
     setUsecases(filteredUsecase);
   };
 
-  const getApi = (selectedUsecase: any) => {
-    setUsecase(selectedUsecase);
+  const getApi = (selectedUsecase?: any) => {
+    if (selectedUsecase) {
+      setUsecase(selectedUsecase);
+    }
     const filteredApi: any = [];
 
     config?.domain?.map((item: any) => {
       if (item.name === domain) {
-        item?.usecase?.map((val: any) => {
-          if (val.summary === selectedUsecase) {
-            val.api?.map((apis: any) => {
-              filteredApi.push(apis.name);
+        item?.version?.map((ver: any) => {
+          if (ver.id === version) {
+            console.log("version", ver);
+            ver?.usecase?.map((val: any) => {
+              if (val.summary === (selectedUsecase || usecase)) {
+                val.api?.map((apis: any) => {
+                  if (npType === "BAP" && apis?.name?.startsWith("on_")) {
+                    filteredApi.push(apis.name);
+                  }
+                  if (npType === "BPP" && !apis?.name?.startsWith("on_")) {
+                    filteredApi.push(apis.name);
+                  }
+                });
+              }
             });
           }
         });
@@ -75,41 +122,32 @@ const FlowDetails = ({ onLoadPayload }: IProps) => {
     setApis(filteredApi);
   };
 
-  const getType = (seletedApi: any) => {
-    const filteredApiType: any[] = [];
+  const createUnitSession = async () => {
+    const payload: any = {
+      domain: domain,
+      participantType: npType,
+      subscriberUrl: subUrl,
+      version: version,
+    };
 
-    config?.domain?.map((item: any) => {
-      if (item.name === domain) {
-        item?.usecase?.map((val: any) => {
-          if (val.summary === usecase) {
-            val.api?.map((apis: any) => {
-              if (apis.name === seletedApi) {
-                apis.examples?.map((ex: any) => {
-                  filteredApiType.push({ key: ex.summary, value: ex.value });
-                });
-              }
-            });
-          }
-        });
-      }
-    });
-
-    setApiType(filteredApiType);
-  };
-
-  const getPayload = async (data: any) => {
     try {
       const response = await axios.post(
-        `${import.meta.env.VITE_BACKEND_URL}/flow/examples`,
-        {
-          filePath: data,
-        }
+        `${import.meta.env.VITE_BACKEND_URL}/unit/unit-session`,
+        payload
       );
 
-      onLoadPayload(response.data);
+      console.log("Response", response.data);
+      toast.info("Session created.");
+      setIsSessionCreated(true);
+      if (npType === "BAP") {
+        onSetListning(subUrl);
+      } else {
+        onGetActions();
+      }
     } catch (e) {
-      console.log("Somthin went wrong: ", e);
-      toast.error("Something went wrong while fetching payload");
+      console.log("Error while creating unit session", e);
+      toast.error("Something went wrong");
+    } finally {
     }
   };
 
@@ -117,62 +155,111 @@ const FlowDetails = ({ onLoadPayload }: IProps) => {
     getPredefinedConfig();
   }, []);
 
+  useEffect(() => {
+    if (!npType || !subUrl || !domain || !version || !usecase) {
+      setIsDisabled(true);
+    } else {
+      setIsDisabled(false);
+    }
+  }, [npType, subUrl, domain, version, usecase]);
+
+  const getButtonText = () => {
+    if (npType === "BAP") {
+      return !isSessionCreated ? "Start Listning" : "Listning...";
+    }
+
+    return !isSessionCreated ? "Create Session" : "Session Created";
+  };
+
   return (
     <div
-      className={`bg-white pt-4 pr-4 pl-4 rounded shadow-lg mb-4 flex flex-row gap-4 grow`}
+      className={`bg-white p-4 rounded shadow-lg mb-4 flex flex-col gap-1 grow`}
     >
-      <FormSelect
-        name="domain"
-        label="Domain"
-        options={domains}
-        required
-        register={register}
-        errors={errors}
-        disabled={domains.length === 0}
-        setSelectedValue={(data: any) => {
-          getUsecase(data);
-        }}
-        nonSelectedValue
-      />
-      <FormSelect
-        name="usecase"
-        label="Usecase"
-        options={usecases}
-        required
-        register={register}
-        errors={errors}
-        disabled={usecases.length === 0}
-        setSelectedValue={(data: any) => {
-          getApi(data);
-        }}
-        nonSelectedValue
-      />
-      <FormSelect
-        name="api"
-        label="Api"
-        options={apis}
-        required
-        register={register}
-        errors={errors}
-        nonSelectedValue
-        disabled={apis.length === 0}
-        setSelectedValue={(data: any) => {
-          getType(data);
-        }}
-      />
-      <FormSelect
-        name="type"
-        label="Type"
-        options={apiType}
-        required
-        register={register}
-        errors={errors}
-        nonSelectedValue
-        disabled={apiType.length === 0}
-        setSelectedValue={(data: any) => {
-          getPayload(data);
-        }}
-      />
+      <div className="flex flex-row gap-4">
+        <FormSelect
+          name="npType"
+          label="NP Type"
+          options={["BAP", "BPP"]}
+          defaultValue="BAP"
+          required
+          register={register}
+          errors={errors}
+          setSelectedValue={(data: any) => {
+            setNpType(data);
+            onNpChange(data);
+            getApi();
+          }}
+        />
+        <FormInput
+          label="Subscriber Url"
+          name="subscriberUrl"
+          required={true}
+          register={register}
+          errors={errors}
+          validateOnBlue={true}
+          validations={{
+            pattern: {
+              value: /^https:\/\/.*/,
+              message: "URL must start with https://",
+            },
+          }}
+          onValueChange={(data: string) => {
+            getSubUrl(data);
+            setSubUrl(data);
+          }}
+        />
+        <FormSelect
+          name="domain"
+          label="Domain"
+          options={domains}
+          required
+          register={register}
+          errors={errors}
+          disabled={domains.length === 0}
+          setSelectedValue={(data: any) => {
+            getVersions(data);
+            // getUsecase(data);
+          }}
+          nonSelectedValue
+        />
+      </div>
+      <div className="flex flex-row gap-4">
+        <FormSelect
+          name="version"
+          label="Version"
+          options={versions}
+          required
+          register={register}
+          errors={errors}
+          disabled={versions.length === 0}
+          setSelectedValue={(data: any) => {
+            getUsecase(data);
+          }}
+          nonSelectedValue
+        />
+        <FormSelect
+          name="usecase"
+          label="Usecase"
+          options={usecases}
+          required
+          register={register}
+          errors={errors}
+          disabled={usecases.length === 0}
+          setSelectedValue={(data: any) => {
+            getApi(data);
+          }}
+          nonSelectedValue
+        />
+      </div>
+      <div className="flex flex-row gap-4">
+        <button
+          className={`${buttonClass} transition-colors disabled:opacity-50 disabled:cursor-not-allowed`}
+          onClick={createUnitSession}
+          disabled={isDisabled || isSessionCreated}
+        >
+          {getButtonText()}
+        </button>
+      </div>
     </div>
   );
 };

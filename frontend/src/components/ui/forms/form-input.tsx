@@ -14,6 +14,8 @@ const FormInput = ({
 	strip = false,
 	disable = false,
 	labelInfo = "",
+	validations = {},
+	onValueChange 
 }: any) => {
 	const handleChange = (e: any) => {
 		let value = e.target.value;
@@ -21,17 +23,23 @@ const FormInput = ({
 			value = value.replace(/\s+/g, "");
 		}
 		e.target.value = value;
+		if (typeof onValueChange === "function") { 
+			onValueChange(e.target.value)
+		}
 	};
 	const handleFocus = (e: any) => {
 		e.stopPropagation();
 	};
 
 	return (
-		<div className="mb-4">
+		<div className="mb-4 w-full">
 			<LabelWithToolTip labelInfo={labelInfo} label={label} />
 			<input
 				onFocus={handleFocus}
-				{...register(name, { required })}
+				{...register(name, {
+					required,
+					...validations
+				  })}
 				disabled={disable}
 				id={name}
 				type={type}
