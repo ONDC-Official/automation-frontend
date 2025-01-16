@@ -43,7 +43,7 @@ export const createUnitSessionService = async (
 			useGateway: false,
 			stopAfterFirstNack: false,
 			protocolValidations: true,
-			timeValidations: true,
+			timeValidations: false,
 			headerValidaton: false,
 		},
 		current_flow_id: "unit",

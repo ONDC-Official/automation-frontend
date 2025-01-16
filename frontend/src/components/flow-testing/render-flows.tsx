@@ -35,6 +35,7 @@ function RenderFlows({
   const [cacheData, setCacheData] = useState<CacheSessionData | null>(null);
   const [sideView, setSideView] = useState<any>({});
   const [difficultyCache, setDifficultyCache] = useState<any>({});
+  const [isFlowStopped, setIsFlowStoppped] = useState<boolean>(false)
   useEffect(() => {
     fetchSessionData();
   }, [subUrl]);
@@ -119,7 +120,7 @@ function RenderFlows({
 
   return (
     <div className="w-full min-h-screen flex flex-col">
-      <div className="space-y-2 p-4">
+      <div className="space-y-2 pt-4 pr-4 pl-4">
         {sessionData ? (
           <div className="flex gap-2 flex-col">
             <InfoCard
@@ -139,8 +140,9 @@ function RenderFlows({
         )}
         <div className="flex justify-end">
           <button
-            className="bg-sky-500 text-white px-4 py-2 mt-1 rounded hover:bg-sky-600 shadow-md transition-colors"
+            className="bg-sky-500 text-white px-4 py-2 mt-1 rounded hover:bg-sky-600 shadow-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             onClick={() => setStep((s: number) => s + 1)}
+            disabled={!isFlowStopped}
           >
             Generate Report
           </button>
@@ -162,6 +164,7 @@ function RenderFlows({
                   cacheData={cacheData}
                   setSideView={setSideView}
                   subUrl={subUrl}
+                  onFlowStop={() => setIsFlowStoppped(true)}
                 />
               ))}
             </div>
