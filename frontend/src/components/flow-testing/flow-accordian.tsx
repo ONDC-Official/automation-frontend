@@ -12,6 +12,7 @@ interface AccordionProps {
 	cacheData?: CacheSessionData | null;
 	setSideView: React.Dispatch<any>;
 	subUrl: string;
+	onFlowStop: () => void;
 }
 
 export function Accordion({
@@ -21,6 +22,7 @@ export function Accordion({
 	cacheData,
 	setSideView,
 	subUrl,
+	onFlowStop
 }: AccordionProps) {
 	const [isOpen, setIsOpen] = useState(false);
 	const contentRef = useRef<HTMLDivElement>(null);
@@ -86,6 +88,7 @@ export function Accordion({
 								e.stopPropagation(); // Prevent accordion toggle
 								setActiveFlow(null);
 								setIsOpen(false);
+								onFlowStop()
 							}}
 							className="mr-2 text-red-500 border border-red-500 p-1 ml-4 rounded hover:bg-red-500 hover:text-white transition-colors flex justify-start items-center"
 						>

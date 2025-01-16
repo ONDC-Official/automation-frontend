@@ -82,7 +82,7 @@ function GetMainContent({
 		case "flows":
 			return <FlowContent />;
 		case "unit":
-			return <ApiTesting isSidebarOpen={isSidebarOpen} />;
+			return <ApiTesting/>;
 		case "schema":
 				return <SchemaValidation isSidebarOpen={isSidebarOpen} />;
 		case "flowsWorkbench":

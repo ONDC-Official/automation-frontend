@@ -79,6 +79,12 @@ export default function FlowContent() {
 									name="subscriberUrl"
 									required={true}
 									labelInfo="your registered subscriber url"
+									validations={{
+										pattern: {
+											value: /^https:\/\/.*/, 
+											message: "URL must start with https://",
+										},
+									  }}
 								/>
 								<FormSelect
 									name="domain"

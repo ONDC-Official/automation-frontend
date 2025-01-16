@@ -72,7 +72,7 @@ export const triggerUnitAction = async (req: Request, res: Response) => {
 				},
 			}
 		);
-		console.log("response", response);
+		console.log("response mock after sending payload: ", response.data);
 		if (response.status === 200) {
 			res.status(200).send(ACK);
 		} else {
@@ -91,7 +91,7 @@ export const getTriggerUnitAction = async (req: Request, res: Response) => {
 		const action = req.params.action;
 		const { action_id, transaction_id, subscriber_url } = req.query;
 		const response = await axios.get(
-			`${process.env.MOCK_SERVICE as string}/trigger/api-service/${action}`,
+			`${process.env.MOCK_SERVICE as string}/trigger/payload/${action}`,
 			{
 				params: {
 					subscriber_url: subscriber_url,
