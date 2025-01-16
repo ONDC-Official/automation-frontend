@@ -98,15 +98,16 @@ export const StateCard: React.FC<{
 
 	const triggerApiRequest = async () => {
 		const txn = getTransactionId(data);
+		console.log("running trigger");
 		if (data.cachedData.type === "BAP") {
 			if (data.owner === "BPP") {
 				if (data.input === undefined) {
-					setShowPopup(true);
-				} else {
 					triggerRequest(data.type, data.key, txn, data.subscriberUrl);
+				} else {
+					setShowPopup(true);
 				}
 			} else {
-				toast.info("wating for BPP request");
+				toast.info("waiting for BAP request");
 			}
 		} else {
 			if (data.owner === "BAP") {
@@ -116,7 +117,7 @@ export const StateCard: React.FC<{
 					setShowPopup(true);
 				}
 			} else {
-				toast.info("wating for BAP request");
+				toast.info("waiting for BPP request");
 			}
 		}
 	};

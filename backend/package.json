@@ -2,6 +2,7 @@
   "dependencies": {
     "@types/axios": "^0.14.4",
     "axios": "^1.7.9",
+    "chalk": "^4.1.2",
     "connect-redis": "^7.1.1",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
@@ -12,7 +13,8 @@
     "js-yaml": "^4.1.0",
     "ondc-automation-cache-lib": "^1.0.2",
     "redis": "^4.7.0",
-    "uuid": "^11.0.3"
+    "uuid": "^11.0.3",
+    "winston": "^3.17.0"
   },
   "devDependencies": {
     "@types/connect-redis": "^0.0.23",
