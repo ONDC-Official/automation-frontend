@@ -58,6 +58,8 @@ jobs:
           echo "MOCK_SERVICE=${{ secrets.MOCK_SERVICE }}" >> \$REPO_DIR/backend/.env
           echo "REPORTING_SERVICE=${{ secrets.REPORTING_SERVICE }}" >> \$REPO_DIR/backend/.env
           echo "API_SERVICE=${{ secrets.API_SERVICE }}" >> \$REPO_DIR/backend/.env
+          echo "DB_SERVICE=${{ secrets.DB_SERVICE }}" >> \$REPO_DIR/backend/.env
+
           EOF
 
       - name: Verify docker-compose.yml files
