@@ -41,6 +41,7 @@ export default function FlowContent() {
 			);
 			setSubUrl(data.subscriberUrl);
 			console.log("response", response.data);
+			localStorage.setItem("sessionIdForSupport", response.data.sessionId)
 			setSession(response.data.sessionId);
 			setStep((s) => s + 1);
 		} catch (e) {
