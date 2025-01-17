@@ -1,8 +1,8 @@
-import React, { useState } from "react";
+import { useState } from "react";
 
 export default function Work() {
   const [showFlowChallenges, setShowFlowChallenges] = useState(false);
-
+  console.log(showFlowChallenges);
   const handleScrollToSection = (sectionId : any) => {
     const section = document.getElementById(sectionId);
     if (section) {
