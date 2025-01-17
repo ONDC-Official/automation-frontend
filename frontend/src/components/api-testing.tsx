@@ -48,13 +48,13 @@ const ApiTesting = () => {
     formState: { errors },
   } = useForm();
 
-  const getCompletePayload = async (session_id: string) => {
+  const getCompletePayload = async (payload_id: string) => {
     try {
       const response = await axios.get(
         `${import.meta.env.VITE_BACKEND_URL}/db/payload`,
         {
           params: {
-            session_id: session_id,
+            payload_id: payload_id,
           },
         }
       );
@@ -81,10 +81,11 @@ const ApiTesting = () => {
         if (response.data?.session_payloads?.unit?.length > 0) {
           const actionData = response.data?.session_payloads?.unit[0];
           const onActionData = response.data?.session_payloads?.unit[1];
+          console.log("data session::::::::::: ", response.data);
           if (npType === "BAP" && actionData) {
             clearInterval(intervalRef.current);
             const completePayload = await getCompletePayload(
-              response.data.active_session_id
+              actionData.payload_id
             );
 
             setResponseValue(
@@ -104,11 +105,13 @@ const ApiTesting = () => {
           }
           if (npType === "BPP" && onActionData) {
             clearInterval(intervalRef.current);
-            // const completePayload = await getCompletePayload(
-            //   response.data.active_session_id
-            // );
+            const completePayload = await getCompletePayload(
+              actionData.payload_id
+            );
 
-            setResponseValue(JSON.stringify(onActionData.request, null, 2));
+            setResponseValue(
+              JSON.stringify(completePayload || onActionData.request, null, 2)
+            );
             if (onActionData?.error?.message) {
               setMdData(onActionData?.response?.error?.message);
             } else {
@@ -148,7 +151,7 @@ const ApiTesting = () => {
       });
 
       setActions(filteredActions);
-      toast.info("Selct an action")
+      toast.info("Selct an action");
     } catch (e) {
       console.log("Error while getting actions", e);
       toast.error("Something went wrong while getting actions");
@@ -380,9 +383,10 @@ const ApiTesting = () => {
             }}
           />
         </div>
-        <div className="h-[47%] p-3 border bg-white shadow-md overflow-y-scroll ">
+        <div className="h-[47%] p-3 border bg-white shadow-md overflow-y-scroll flex flex-wrap">
           <div className="pr-4">
             <Markdown
+              className="break-words"
               components={{
                 a: ({ href, children }: any) => (
                   <a
@@ -402,7 +406,7 @@ const ApiTesting = () => {
                       {children}
                     </code>
                   ) : (
-                    <pre className="bg-gray-900 text-gray-100 p-4 rounded overflow-x-auto">
+                    <pre className="bg-gray-900 text-gray-100 p-4 rounded overflow-x-auto w-[500px]">
                       <code>{children}</code>
                     </pre>
                   ),

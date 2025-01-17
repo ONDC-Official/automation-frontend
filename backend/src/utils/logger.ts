@@ -21,7 +21,7 @@ const messageColors: Record<string, chalk.Chalk> = {
 };
 
 // Custom log format
-const logFormat = printf(({ level, message, timestamp, stack }) => {
+const logFormat = printf(({ level, message, timestamp, stack }: any) => {
 	const levelColor = levelColors[level] || levelColors.default; // Colorize level
 	const messageColor = messageColors[level] || messageColors.default; // Colorize message
 
