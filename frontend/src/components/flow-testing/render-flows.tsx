@@ -44,17 +44,20 @@ function RenderFlows({
 	}, [subUrl]);
 
 	useEffect(() => {
-		if(sideView?.payload_id) {
-			getCompletePayload(sideView.payload_id).then((data: any) => {
-				setRequestData(data)
-			})
-			setResponseData(sideView.response)
-		} else {
-			console.log("sideView", sideView)
-			setRequestData(sideView || {})
-			setResponseData(sideView || {})
-		}
-	}, [sideView])
+    if (sideView?.payload_id) {
+      getCompletePayload(sideView.payload_id).then((data: any) => {
+        setRequestData(data);
+      }).catch((e: any) => {
+		console.log("Errro while fetching payload: ", e)
+		setRequestData(sideView?.request || {}) 
+	  });
+      setResponseData(sideView?.response || {});
+    } else {
+      console.log("sideView", sideView);
+      setRequestData(sideView || {});
+      setResponseData(sideView || {});
+    }
+  }, [sideView]);
 
 	console.log("Side view'", sideView, requestData, responseData);
 
