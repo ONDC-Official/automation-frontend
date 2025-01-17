@@ -19,9 +19,21 @@ function App() {
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
         <div className="flex flex-col gap-2">
           <h1 className="text-lg font-semibold text-gray-800">Instruction</h1>
-          <p className="text-sm text-gray-600">
-            "Contact tectsupport@ondc.org for any Issues Reporting / Support."
-          </p>
+          <div className="">
+            <p className="text-sm text-gray-600">
+              Contact&nbsp;
+              <a
+                href={`mailto:tectsupport@ondc.org`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-500 underline hover:text-blue-700"
+              >
+                tectsupport@ondc.org
+              </a>
+              &nbsp;for any Issues Reporting / Support.
+            </p>
+          </div>
+
           {sessionIdForSupport && (
             <div>
               <p className="text-sm text-gray-600">{`Mention below session Id in the email for reference and quick resolution:`}</p>
