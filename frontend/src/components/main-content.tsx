@@ -12,7 +12,7 @@ import NotFoundPage from "./ui/not-found";
 import FlowContent from "./flow-testing/flow-page";
 import ComingSoonPage from "./ui/coming-soon";
 import SchemaValidation from "./schema-validation";
-
+import HomePage from "../pages/page"
 const MainContent = () => {
 	const [isSidebarOpen, setIsSidebarOpen] = useState(true); // Sidebar starts expanded
 	const [activeTab, setActiveTab] = useState("home");
@@ -78,7 +78,7 @@ function GetMainContent({
 }) {
 	switch (activeTab) {
 		case "home":
-			return <h1>Add Home</h1>;
+			return <HomePage />
 		case "flows":
 			return <FlowContent />;
 		case "unit":
