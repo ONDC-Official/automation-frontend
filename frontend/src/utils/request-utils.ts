@@ -61,7 +61,7 @@ export const triggerRequest = async (
 		toast.info(`${action} triggered`);
 		return response;
 	} catch (e) {
-		toast.error(`Error triggering ${action}`);
+		// toast.error(`Error triggering ${action}`);
 		console.log(e);
 	}
 };
