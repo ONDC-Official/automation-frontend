@@ -136,7 +136,8 @@ const FlowDetails = ({
         payload
       );
 
-      console.log("Response", response.data);
+      console.log("Response unit session", response.data);
+      localStorage.setItem("sessionIdForSupport", response.data.sessionId)
       toast.info("Session created.");
       setIsSessionCreated(true);
       if (npType === "BAP") {

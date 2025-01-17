@@ -5,13 +5,10 @@ import TopBar from "./components/top-bar";
 import Modal from "./components/modal";
 import { useState } from "react";
 
-const SupportInstruction = [
-  "1. Lorem ipsum, dolor sit amet consectetur adipisicing elit. Facilis, dolorum assumenda exercitationem beatae molestiae quae",
-  "2. debitis est accusamus labore unde atque, quo deserunt velit numquam, eligendi autem a at? Modi.",
-];
-
 function App() {
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const sessionIdForSupport = localStorage.getItem("sessionIdForSupport");
 
   return (
     <>
@@ -20,11 +17,19 @@ function App() {
         <MainContent />
       </main>
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
-        <div>
+        <div className="flex flex-col gap-2">
           <h1 className="text-lg font-semibold text-gray-800">Instruction</h1>
-          {SupportInstruction?.map((item: string) => (
-            <p className="text-sm text-gray-600">{item}</p>
-          ))}
+          <p className="text-sm text-gray-600">
+            "Contact tectsupport@ondc.org for any Issues Reporting / Support."
+          </p>
+          {sessionIdForSupport && (
+            <div>
+              <p className="text-sm text-gray-600">{`Mention below session Id in the email for reference and quick resolution:`}</p>
+              <p className="text-sm text-gray-600">
+                <b>{sessionIdForSupport}</b>
+              </p>
+            </div>
+          )}
         </div>
       </Modal>
       <ToastContainer
