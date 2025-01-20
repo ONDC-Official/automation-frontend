@@ -5,7 +5,7 @@ import DifficultyCards from "../ui/difficulty-cards";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { CacheSessionData } from "../../types/session-types";
-import { putCacheData } from "../../utils/request-utils";
+import { putCacheData, getCompletePayload } from "../../utils/request-utils";
 import { Accordion } from "./flow-accordian";
 import Loader from "../ui/mini-components/loader";
 import JsonView from "@uiw/react-json-view";
@@ -36,11 +36,30 @@ function RenderFlows({
 	const [sideView, setSideView] = useState<any>({});
 	const [difficultyCache, setDifficultyCache] = useState<any>({});
 	const [isFlowStopped, setIsFlowStoppped] = useState<boolean>(false)
+	const [selectedTab, setSelectedTab] = useState("Request")
+	const [requestData, setRequestData] = useState({})
+	const [responseData, setResponseData] = useState({})
 	useEffect(() => {
 		fetchSessionData();
 	}, [subUrl]);
 
-	console.log("Side view'", sideView);
+	useEffect(() => {
+    if (sideView?.payload_id) {
+      getCompletePayload(sideView.payload_id).then((data: any) => {
+        setRequestData(data);
+      }).catch((e: any) => {
+		console.log("Errro while fetching payload: ", e)
+		setRequestData(sideView?.request || {}) 
+	  });
+      setResponseData(sideView?.response || {});
+    } else {
+      console.log("sideView", sideView);
+      setRequestData(sideView || {});
+      setResponseData(sideView || {});
+    }
+  }, [sideView]);
+
+	console.log("Side view'", sideView, requestData, responseData);
 
 	useEffect(() => {
 		if (activeFlow) {
@@ -180,8 +199,9 @@ function RenderFlows({
 							className="mt-4 ml-2"
 							option1="Request"
 							option2="Response"
-							onSelectOption={(value: string) =>
-								console.log("trabs selected", value)
+							onSelectOption={(value: string) =>{
+								setSelectedTab(value)
+							}
 							}
 						/>
 						<div className="p-2">
@@ -191,7 +211,7 @@ function RenderFlows({
 									style={{ maxHeight: "500px" }} // Adjust maxHeight as needed
 								>
 									<JsonView
-										value={sideView}
+										value={selectedTab === "Request" ? requestData : responseData}
 										style={githubDarkTheme}
 										className="rounded-md"
 										displayDataTypes={false}

@@ -118,7 +118,7 @@ const ApiTesting = () => {
 									"\n```"
 							);
 						}
-						toast.info("Request received.");
+						toast.info("Request recieved.");
 					}
 				}
 			})

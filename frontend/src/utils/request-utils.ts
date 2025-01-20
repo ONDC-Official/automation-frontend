@@ -84,3 +84,20 @@ export const clearFlowData = async (subUrl: string, flowId: string) => {
 		console.log(e);
 	}
 };
+
+export const getCompletePayload = async (payload_id: string) => {
+    try {
+      const response = await axios.get(
+        `${import.meta.env.VITE_BACKEND_URL}/db/payload`,
+        {
+          params: {
+            payload_id: payload_id,
+          },
+        }
+      );
+
+      return response.data;
+    } catch (e: any) {
+      console.log("error while fetching complete paylaod: ", e);
+    }
+  };
