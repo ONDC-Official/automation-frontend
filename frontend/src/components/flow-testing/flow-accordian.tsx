@@ -8,6 +8,7 @@ import { FaRegStopCircle } from "react-icons/fa";
 import { IoPlay } from "react-icons/io5";
 import { AiOutlineDelete } from "react-icons/ai";
 import { clearFlowData } from "../../utils/request-utils";
+import { IoMdDownload } from "react-icons/io";
 
 interface AccordionProps {
 	flow: Flow;
@@ -57,6 +58,23 @@ export function Accordion({
 	let stepIndex = 0;
 	if (!cacheData) return <div>Loading...</div>;
 
+	const handleDownload = () => {
+		const jsonString = JSON.stringify(cacheData?.session_payloads[flow?.id] || "{}", null, 2);
+	
+		const blob = new Blob([jsonString], { type: "application/json" });
+	
+		const url = URL.createObjectURL(blob);
+	
+		const a = document.createElement("a");
+		a.href = url;
+		a.download = `${flow?.id}-${cacheData?.active_session_id}`; 
+		document.body.appendChild(a);
+	
+		a.click();
+		URL.revokeObjectURL(url);
+		document.body.removeChild(a);
+	  };
+
 	function AccordionButtons() {
 		return (
 			<div className="flex items-center">
@@ -95,6 +113,15 @@ export function Accordion({
 						}}
 					/>
 				)}
+				<IconButton
+					icon={<IoMdDownload className=" text-md" />}
+					label="Download Logs"
+					color="green"
+					onClick={async (e) => {
+						e.stopPropagation();
+						handleDownload()
+					}}
+				/>
 			</div>
 		);
 	}

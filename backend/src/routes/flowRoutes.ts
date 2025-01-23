@@ -11,7 +11,7 @@ import {
 const router = Router();
 
 router.get("/", fetchConfig);
-router.get("/report", generateReport);
+router.post("/report", generateReport);
 router.post("/trigger/:action", handleTriggerRequest);
 router.post("/validate/:action", validatePayload);
 router.get("/customFlow", getPredefinedFlows);

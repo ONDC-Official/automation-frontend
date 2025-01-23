@@ -3,6 +3,7 @@ import { FormConfigType } from "../components/ui/forms/config-form/config-form";
 export interface CacheSessionData {
 	type: string;
 	current_session_id: string;
+	active_session_id: string;
 	current_flow_id?: string;
 	session_payloads: {
 		[key: string]: {
