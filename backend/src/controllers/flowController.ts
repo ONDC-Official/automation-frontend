@@ -28,13 +28,15 @@ export const generateReport = async (
 	res: Response
 ): Promise<void> => {
 	const sessionId = req.query.sessionId as string;
+	const body = req.body
 	if (!sessionId) {
 		res.status(400).json({ error: "session_id is required" });
 		return;
 	}
 	try {
-		const response = await axios.get(
+		const response = await axios.post(
 			`${process.env.REPORTING_SERVICE}/generate-report`,
+			body,
 			{
 				params: {
 					sessionId: sessionId,
