@@ -158,6 +158,7 @@ export const clearFlowService = async (
 		}
 
 		const session: TransformedSessionData = JSON.parse(sessionData);
+		delete session.current_flow_id
 		session.session_payloads[flowId] = [];
 		session.context_cache[flowId] = {
 			latest_timestamp: new Date().toISOString(),

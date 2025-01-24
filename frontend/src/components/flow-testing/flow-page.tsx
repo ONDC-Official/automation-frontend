@@ -21,6 +21,7 @@ export default function FlowContent() {
 	const [session, setSession] = useState<string | null>(null);
 	const [subUrl, setSubUrl] = useState<string>("");
 	const [flows, setFlows] = useState<FetchFlowsResponse | null>(null);
+	const [report, setReport] = useState("")
 
 	const onSubmit = async (data: any) => {
 		try {
@@ -139,10 +140,10 @@ export default function FlowContent() {
 			// 	);
 			case 1:
 				if (!flows) return <h1>Loading...</h1>;
-				return <RenderFlows flows={flows} subUrl={subUrl} setStep={setStep} />;
+				return <RenderFlows flows={flows} subUrl={subUrl} setStep={setStep} setReport={setReport}/>;
 			case 2:
 				if (!session) return <h1>Loading...</h1>;
-				return <ReportPage sessionID={session} subUrl={subUrl} />;
+				return <ReportPage subUrl={subUrl} report={report} setStep={setStep}/>;
 			default:
 				return <h1>hello</h1>;
 		}
