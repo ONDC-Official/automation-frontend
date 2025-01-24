@@ -24,10 +24,12 @@ function RenderFlows({
 	flows,
 	subUrl,
 	setStep,
+	setReport
 }: {
 	flows: FetchFlowsResponse;
 	subUrl: string;
 	setStep: React.Dispatch<React.SetStateAction<number>>;
+	setReport: React.Dispatch<React.SetStateAction<string>>;
 }) {
 	const [sessionData, setSessionData] = useState<SessionData | null>(null);
 	const [activeFlow, setActiveFlow] = useState<string | null>(null);
@@ -49,7 +51,8 @@ function RenderFlows({
         setRequestData(data);
       }).catch((e: any) => {
 		console.log("Errro while fetching payload: ", e)
-		setRequestData(sideView?.request || {}) 
+		console.log(">>>", sideView)
+		setRequestData(sideView.request || {}) 
 	  });
       setResponseData(sideView?.response || {});
     } else {
@@ -137,6 +140,40 @@ function RenderFlows({
 			});
 	}
 
+	function generateReport() {
+		let body: any = {};
+		console.log("cachedData", cacheData)
+	
+		Object.entries(cacheData?.session_payloads || {}).map((data) => {
+		  const [key, value]: any = data;
+		  if (value.length) {
+			body[key] = value.map((val: any) => val.payload_id);
+		  }
+		});
+	
+		axios
+		  .post(`${import.meta.env.VITE_BACKEND_URL}/flow/report`, body, {
+			params: {
+			  sessionId: cacheData?.active_session_id,
+			},
+		  })
+		  .then((response) => {
+			setReport(response.data.data);
+			setStep((s: number) => s + 1)
+		  })
+		  .catch((e) => {
+			console.error(e);
+			toast.error("Error while generating report");
+		  });
+	}
+
+	const handleClearFlow = () => {
+		setRequestData({})
+		setResponseData({})
+		fetchSessionData()
+	}
+	
+
 	return (
 		<div className="w-full min-h-screen flex flex-col">
 			<div className="space-y-2 pt-4 pr-4 pl-4">
@@ -160,7 +197,7 @@ function RenderFlows({
 				<div className="flex justify-end">
 					<button
 						className="bg-sky-500 text-white px-4 py-2 mt-1 rounded hover:bg-sky-600 shadow-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-						onClick={() => setStep((s: number) => s + 1)}
+						onClick={() => generateReport()}
 						disabled={!isFlowStopped}
 					>
 						Generate Report
@@ -184,6 +221,7 @@ function RenderFlows({
 									setSideView={setSideView}
 									subUrl={subUrl}
 									onFlowStop={() => setIsFlowStoppped(true)}
+									onFlowClear={() => handleClearFlow()}
 								/>
 							))}
 						</div>

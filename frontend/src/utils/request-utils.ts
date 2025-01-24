@@ -99,5 +99,6 @@ export const getCompletePayload = async (payload_id: string) => {
       return response.data;
     } catch (e: any) {
       console.log("error while fetching complete paylaod: ", e);
+	  throw new Error(e)
     }
   };
