@@ -6,6 +6,7 @@ export const getPayloadForSessionId = async (payload_id: string) => {
   try {
     const response = await axios.get(`${DB_SERVICE}/payload/id/${payload_id}`);
 
+    console.log("repsonse", response.data);
     if (response?.data[0]?.jsonRequest) {
       return response.data[0].jsonRequest;
     } else {

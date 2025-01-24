@@ -18,6 +18,7 @@ interface AccordionProps {
 	setSideView: React.Dispatch<any>;
 	subUrl: string;
 	onFlowStop: () => void;
+	onFlowClear: () => void;
 }
 
 export function Accordion({
@@ -28,6 +29,7 @@ export function Accordion({
 	setSideView,
 	subUrl,
 	onFlowStop,
+	onFlowClear
 }: AccordionProps) {
 	const [isOpen, setIsOpen] = useState(false);
 	const contentRef = useRef<HTMLDivElement>(null);
@@ -110,6 +112,7 @@ export function Accordion({
 						onClick={async (e) => {
 							e.stopPropagation();
 							await clearFlowData(subUrl, flow.id);
+							onFlowClear()
 						}}
 					/>
 				)}
