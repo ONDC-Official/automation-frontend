@@ -18,5 +18,14 @@ export default {
 			"spin-slow": "spin 2s linear infinite",
 		},
 	},
-	plugins: [],
+	plugins: [
+		function ({ addUtilities }) {
+		  addUtilities({
+			'input:-webkit-autofill': {
+			  transition: 'background-color 5000s ease-in-out 0s',
+			  '-webkit-text-fill-color': '#000 !important',
+			},
+		  });
+		},
+	  ],
 };
