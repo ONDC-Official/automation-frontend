@@ -84,7 +84,7 @@ const TopBar = ({ onSupportClick }: IPops) => {
 					{navLinks.map((link, index) => (
 						<li key={index}>
 							<a
-								className="text-gray-700 hover:text-blue-500 block py-2"
+								className="text-gray-700 hover:text-blue-500 block py-2 cursor-pointer"
 								onClick={() => {
 									if (link.label === "Support") {
 										onSupportClick();

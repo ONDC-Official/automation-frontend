@@ -3,12 +3,7 @@ import Heading from "../ui/mini-components/ondc-gradient-text";
 import axios from "axios";
 import { useEffect, useRef, useState } from "react";
 import InfoCard from "../ui/info-card";
-import IconButton from "../ui/mini-components/icon-button";
-import { IoMdDownload } from "react-icons/io";
-import { jsPDF } from "jspdf";
-import html2canvas from "html2canvas";
-// import { PDFDownloadLink, Document, Page, View } from "@react-pdf/renderer";
-// import Html from "react-pdf-html";
+import { useReactToPrint } from "react-to-print";
 import { IoMdArrowRoundBack } from "react-icons/io";
 
 export function ReportPage({
@@ -20,10 +15,13 @@ export function ReportPage({
   report: string;
   setStep: React.Dispatch<React.SetStateAction<number>>;
 }) {
-  console.log(subUrl);
-  // const [response, setResponse] = useState("");
   const [sessionData, setSessionData] = useState<any>({});
   const htmlRef = useRef<HTMLDivElement>(null);
+
+  const handlePrint = useReactToPrint({
+    contentRef: htmlRef,
+    documentTitle: "report",
+  });
 
   async function fetchPayloads() {
     try {
@@ -42,69 +40,6 @@ export function ReportPage({
   useEffect(() => {
     fetchPayloads();
   }, []);
-
-  // useEffect(() => {
-  //   if (sessionData?.session_payloads) {
-  //     generateReport();
-  //   }
-  // }, [sessionData]);
-
-  // function generateReport() {
-  //   let body: any = {};
-
-  //   Object.entries(sessionData.session_payloads).map((data) => {
-  //     const [key, value]: any = data;
-  //     if (value.length) {
-  //       body[key] = value.map((val: any) => val.payload_id);
-  //     }
-  //   });
-
-  //   axios
-  //     .post(`${import.meta.env.VITE_BACKEND_URL}/flow/report`, body, {
-  //       params: {
-  //         sessionId: sessionID,
-  //       },
-  //     })
-  //     .then((response) => {
-  //       console.log(response.data);
-  //       setResponse(response.data.data);
-  //     })
-  //     .catch((e) => {
-  //       console.error(e);
-  //       toast.error("error while generating report");
-  //     });
-  // }
-
-  // const PdfDocument = () => (
-  //   <Document>
-  //     <Page size="A4" style={{ padding: 10 }}>
-  //       <View>
-  //         <Html>{report}</Html>
-  //       </View>
-  //     </Page>
-  //   </Document>
-  // );
-
-  const downloadAsPdf = async () => {
-    if (htmlRef.current) {
-      try {
-        // Convert the HTML div to canvas
-        const canvas = await html2canvas(htmlRef.current);
-        const imgData = canvas.toDataURL("image/png");
-
-        // Generate PDF
-        const pdf = new jsPDF();
-        const imgWidth = 190; // PDF page width in mm
-        const imgHeight = (canvas.height * imgWidth) / canvas.width;
-        pdf.addImage(imgData, "PNG", 10, 10, imgWidth, imgHeight);
-
-        // Trigger the download
-        pdf.save("download.pdf");
-      } catch (error) {
-        console.error("Error generating PDF:", error);
-      }
-    }
-  };
 
   return (
     <>
@@ -131,15 +66,12 @@ export function ReportPage({
           </PDFDownloadLink>
         </div> */}
 
-        <IconButton
-          icon={<IoMdDownload className=" text-md" />}
-          label="Download Report"
-          color="green"
-          onClick={async (e) => {
-            e.stopPropagation();
-            downloadAsPdf();
-          }}
-        />
+        <button
+          onClick={() => handlePrint()}
+          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700"
+        >
+          Download PDF
+        </button>
       </div>
 
       <div className="my-4">
@@ -155,7 +87,11 @@ export function ReportPage({
           }}
         />
       </div>
-      <div ref={htmlRef} dangerouslySetInnerHTML={{ __html: report }}></div>
+      <div
+        id="report-html"
+        ref={htmlRef}
+        dangerouslySetInnerHTML={{ __html: report }}
+      ></div>
     </>
   );
 }

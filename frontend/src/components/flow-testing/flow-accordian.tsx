@@ -116,7 +116,7 @@ export function Accordion({
 						}}
 					/>
 				)}
-				<IconButton
+				{cacheData?.session_payloads && cacheData?.session_payloads[flow.id]?.length > 0 && <IconButton
 					icon={<IoMdDownload className=" text-md" />}
 					label="Download Logs"
 					color="green"
@@ -124,7 +124,7 @@ export function Accordion({
 						e.stopPropagation();
 						handleDownload()
 					}}
-				/>
+				/>}
 			</div>
 		);
 	}
