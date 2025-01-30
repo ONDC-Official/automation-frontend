@@ -1,6 +1,7 @@
 const Support = () => {
-  const sessionIdForSupport = localStorage.getItem("sessionIdForSupport");
-
+  const sessionIdForSupport = JSON.parse(
+    localStorage.getItem("sessionIdForSupport") as string
+  );
   return (
     <div className="flex flex-col gap-2">
       <h1 className="text-lg font-semibold text-gray-800">Instruction</h1>
@@ -22,9 +23,15 @@ const Support = () => {
       {sessionIdForSupport && (
         <div>
           <p className="text-sm text-gray-600">{`Mention below session Id in the email for reference and quick resolution:`}</p>
-          <p className="text-sm text-gray-600">
-            <b>{sessionIdForSupport}</b>
-          </p>
+          <div className="flex flex-col">
+            <p className="text-sm text-gray-600">
+              Unit Session: <b>{sessionIdForSupport?.unitSession || "-"}</b>
+            </p>
+            <p className="text-sm text-gray-600">
+              Scenario Session:{" "}
+              <b>{sessionIdForSupport?.scenarioSession || "-"}</b>
+            </p>
+          </div>
         </div>
       )}
     </div>
