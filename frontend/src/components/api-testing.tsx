@@ -48,14 +48,12 @@ const ApiTesting = () => {
     formState: { errors },
   } = useForm();
 
-  const getCompletePayload = async (payload_id: string) => {
+  const getCompletePayload = async (payload_ids: string[]) => {
     try {
-      const response = await axios.get(
+      const response = await axios.post(
         `${import.meta.env.VITE_BACKEND_URL}/db/payload`,
         {
-          params: {
-            payload_id: payload_id,
-          },
+          payload_ids: payload_ids,
         }
       );
 
@@ -83,12 +81,16 @@ const ApiTesting = () => {
           const onActionData = response.data?.session_payloads?.unit[1];
           if (npType === "BAP" && actionData) {
             clearInterval(intervalRef.current);
-            const completePayload = await getCompletePayload(
-              actionData.payload_id
-            );
+            const completePayload = await getCompletePayload([
+              actionData.payload_id,
+            ]);
 
             setResponseValue(
-              JSON.stringify(completePayload || actionData.request, null, 2)
+              JSON.stringify(
+                completePayload[0].req || actionData.request,
+                null,
+                2
+              )
             );
             if (actionData?.error?.message) {
               setMdData(actionData?.response?.error?.message);
@@ -104,12 +106,16 @@ const ApiTesting = () => {
           }
           if (npType === "BPP" && onActionData) {
             clearInterval(intervalRef.current);
-            const completePayload = await getCompletePayload(
-              actionData.payload_id
-            );
+            const completePayload = await getCompletePayload([
+              actionData.payload_id,
+            ]);
 
             setResponseValue(
-              JSON.stringify(completePayload || onActionData.request, null, 2)
+              JSON.stringify(
+                completePayload[0].req || onActionData.request,
+                null,
+                2
+              )
             );
             if (onActionData?.error?.message) {
               setMdData(onActionData?.response?.error?.message);
@@ -246,7 +252,7 @@ const ApiTesting = () => {
 
   return (
     <div
-      className={`w-[100%] mt-1 shadow-md flex flex-row transition-all duration-300 overflow-y-scroll`}
+      className={`w-[100%] mt-1 shadow-md flex flex-col transition-all duration-300 overflow-y-scroll`}
     >
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
         <h1 className="text-lg font-semibold text-gray-800">Instruction</h1>
@@ -254,165 +260,169 @@ const ApiTesting = () => {
           <p className="text-sm text-gray-600">{item}</p>
         ))}
       </Modal>
-      <div className="w-3/6 p-4 gap-4 flex flex-col">
-        <div className="flex flex-row items-center justify-between">
-          <div className="flex flex-row items-center gap-4">
-            <h1 className="text-lg font-semibold text-gray-800">
-              {npType === "BAP" ? "On Action" : "Action"}
-            </h1>
-            <div
-              className="flex flex-row items-center cursor-pointer group"
-              onClick={() => setIsModalOpen(true)}
-            >
-              <Heading className="text-sm transition-all duration-300 shadow-sm group-hover:text-blue-600">
-                help
-              </Heading>
-              <IoMdHelp className="text-sky-500 transition-all duration-300 shadow-sm group-hover:bg-blue-100 group-hover:text-blue-600" />
+      <FlowDetails
+        getSubUrl={(data: string) => {
+          setSubUrl(data);
+        }}
+        onNpChange={(data: string) => setNpType(data)}
+        onGetActions={() => {
+          const tempTransactionId = uuidv4();
+          getAvailableActions(tempTransactionId);
+          setCurrentTransactionId(tempTransactionId);
+        }}
+        onSetListning={(data: string) => {
+          setSubUrl(data);
+          setTimeout(() => {
+            toast.info("Waiting for request");
+          }, 500);
+          intervalRef.current = setInterval(() => {
+            fetchSessionData();
+          }, 3000);
+        }}
+      />
+      <div className="w-[100%] flex flex-row">
+        <div className="w-3/6 p-4 gap-4 flex flex-col">
+          <div className="flex flex-row items-center justify-between">
+            <div className="flex flex-row items-center gap-4">
+              <h1 className="text-lg font-semibold text-gray-800">
+                {npType === "BAP" ? "On Action" : "Action"}
+              </h1>
+              <div
+                className="flex flex-row items-center cursor-pointer group"
+                onClick={() => setIsModalOpen(true)}
+              >
+                <Heading className="text-sm transition-all duration-300 shadow-sm group-hover:text-blue-600">
+                  help
+                </Heading>
+                <IoMdHelp className="text-sky-500 transition-all duration-300 shadow-sm group-hover:bg-blue-100 group-hover:text-blue-600" />
+              </div>
             </div>
+            {npType === "BAP" && (
+              <ToggleButton
+                toggleOffText={"Manual Response"}
+                toggleOnText={"Auto Response"}
+                onToggle={(data: boolean) => setIsAutomatedResponse(data)}
+                initialValue={false}
+              />
+            )}
           </div>
-          {npType === "BAP" && (
-            <ToggleButton
-              toggleOffText={"Manual Response"}
-              toggleOnText={"Auto Response"}
-              onToggle={(data: boolean) => setIsAutomatedResponse(data)}
-              initialValue={false}
-            />
-          )}
-        </div>
-        <div className="flex flex-col">
-          <FlowDetails
-            getSubUrl={(data: string) => {
-              setSubUrl(data);
-            }}
-            onNpChange={(data: string) => setNpType(data)}
-            onGetActions={() => {
-              const tempTransactionId = uuidv4();
-              getAvailableActions(tempTransactionId);
-              setCurrentTransactionId(tempTransactionId);
-            }}
-            onSetListning={(data: string) => {
-              setSubUrl(data);
-              setTimeout(() => {
-                toast.info("Waiting for request");
-              }, 500);
-              intervalRef.current = setInterval(() => {
-                fetchSessionData();
-              }, 3000);
-            }}
-          />
-          <div className="bg-white p-4 rounded shadow-lg">
-            <FormSelect
-              label="Actions"
-              name="actions"
-              required={true}
-              options={actions}
-              disbaled={actions.length === 0}
-              nonSelectedValue
-              register={register}
-              errors={errors}
-              setSelectedValue={(data: any) => {
-                setSelectedActionId(data);
-                const filteredAction = filterActionsData(data);
-                getPayload(data, filteredAction);
-              }}
-            />
-          </div>
-          <div className={`relative mt-4 flex`}>
-            <div
-              className={`absolute right-5 top-2 z-10 ${
-                !isEdittable ? "bg-blue-200" : "bg-gray-200"
-              } p-2 rounded-md`}
-              onClick={() => setIsEdittable(!isEdittable)}
-            >
-              <MdEdit />
-            </div>
-            <div
-              className={`absolute right-5 top-12 z-10 bg-gray-200 p-2 rounded-md`}
-              onClick={() => {
-                // setIsModified(false);
-                setPayload(defaultPayload);
-              }}
-            >
-              <GrRefresh />
-            </div>
-
-            <div className="h-96 flex-1">
-              <Editor
-                theme="vs"
-                // height={"54vh"}
-                defaultLanguage="json"
-                onChange={(value: any) => {
-                  setPayload(value);
-                }}
-                value={payload}
-                options={{
-                  minimap: { enabled: false },
-                  readOnly: isEdittable,
+          <div className="flex flex-col">
+            <div className="bg-white p-4 rounded shadow-lg">
+              <FormSelect
+                label="APIs"
+                name="actions"
+                required={true}
+                options={actions}
+                disbaled={actions.length === 0}
+                nonSelectedValue
+                register={register}
+                errors={errors}
+                setSelectedValue={(data: any) => {
+                  setSelectedActionId(data);
+                  const filteredAction = filterActionsData(data);
+                  getPayload(data, filteredAction);
                 }}
               />
             </div>
+            <div className={`relative mt-4 flex`}>
+              <div
+                className={`absolute right-5 top-2 z-10 ${
+                  !isEdittable ? "bg-blue-200" : "bg-gray-200"
+                } p-2 rounded-md`}
+                onClick={() => setIsEdittable(!isEdittable)}
+              >
+                <MdEdit />
+              </div>
+              <div
+                className={`absolute right-5 top-12 z-10 bg-gray-200 p-2 rounded-md`}
+                onClick={() => {
+                  // setIsModified(false);
+                  setPayload(defaultPayload);
+                }}
+              >
+                <GrRefresh />
+              </div>
+
+              <div className="h-96 flex-1">
+                <Editor
+                  theme="vs"
+                  // height={"54vh"}
+                  defaultLanguage="json"
+                  onChange={(value: any) => {
+                    setPayload(value);
+                  }}
+                  value={payload}
+                  options={{
+                    minimap: { enabled: false },
+                    readOnly: isEdittable,
+                  }}
+                />
+              </div>
+            </div>
+            <div className="flex flex-row gap-4 mt-4">
+              <button
+                className={`${buttonClass} transition-colors disabled:opacity-50 disabled:cursor-not-allowed`}
+                onClick={sendPayload}
+                disabled={isLoading || isSent}
+              >
+                {isLoading ? "Sending..." : "Send"}
+              </button>
+            </div>
           </div>
-          <div className="flex flex-row gap-4 mt-4">
-            <button
-              className={`${buttonClass} transition-colors disabled:opacity-50 disabled:cursor-not-allowed`}
-              onClick={sendPayload}
-              disabled={isLoading || isSent}
-            >
-              {isLoading ? "Sending..." : "Send"}
-            </button>
+        </div>
+        <div className="w-3/6 flex flex-col gap-4 my-4 ">
+          <div className="flex flex-row justify-between">
+            <h1 className="text-lg font-semibold text-gray-800">
+              {npType === "BAP" ? "Action" : "On Action"}
+            </h1>
           </div>
-        </div>
-      </div>
-      <div className="w-3/6 flex flex-col gap-4 my-4 ">
-        <div className="flex flex-row justify-between">
-          <h1 className="text-lg font-semibold text-gray-800">
-            {npType === "BAP" ? "Action" : "On Action"}
-          </h1>
-        </div>
-        <div className="h-[47%]">
-          <Editor
-            theme="vs"
-            value={responseValue}
-            defaultLanguage="json"
-            options={{
-              readOnly: true, // Makes the editor non-editable
-              formatOnType: true, // Optional: Format as you type
-              formatOnPaste: true,
-              minimap: { enabled: false },
-            }}
-          />
-        </div>
-        <div className="h-[47%] p-3 border bg-white shadow-md overflow-y-scroll flex flex-wrap">
-          <div className="pr-4">
-            <Markdown
-              className="break-words"
-              components={{
-                a: ({ href, children }: any) => (
-                  <a
-                    href={href}
-                    className="text-blue-500 underline hover:text-blue-700"
-                  >
-                    {children}
-                  </a>
-                ),
-                ul: ({ children }: any) => (
-                  <ul className="list-disc pl-5">{children}</ul>
-                ),
-                li: ({ children }: any) => <li className="mb-2">{children}</li>,
-                code: ({ inline, children }: any) =>
-                  inline ? (
-                    <code className="bg-gray-100 text-red-600 rounded px-1">
-                      {children}
-                    </code>
-                  ) : (
-                    <pre className="bg-gray-900 text-gray-100 p-4 rounded overflow-x-auto w-[500px]">
-                      <code>{children}</code>
-                    </pre>
-                  ),
+          <div className="h-[47%]">
+            <Editor
+              theme="vs"
+              value={responseValue}
+              defaultLanguage="json"
+              options={{
+                readOnly: true, // Makes the editor non-editable
+                formatOnType: true, // Optional: Format as you type
+                formatOnPaste: true,
+                minimap: { enabled: false },
               }}
-            >
-              {mdData}
-            </Markdown>
+            />
+          </div>
+          <div className="h-[47%] p-3 border bg-white shadow-md overflow-y-scroll flex flex-wrap">
+            <div className="pr-4">
+              <Markdown
+                className="break-words"
+                components={{
+                  a: ({ href, children }: any) => (
+                    <a
+                      href={href}
+                      className="text-blue-500 underline hover:text-blue-700"
+                    >
+                      {children}
+                    </a>
+                  ),
+                  ul: ({ children }: any) => (
+                    <ul className="list-disc pl-5">{children}</ul>
+                  ),
+                  li: ({ children }: any) => (
+                    <li className="mb-2">{children}</li>
+                  ),
+                  code: ({ inline, children }: any) =>
+                    inline ? (
+                      <code className="bg-gray-100 text-red-600 rounded px-1">
+                        {children}
+                      </code>
+                    ) : (
+                      <pre className="bg-gray-900 text-gray-100 p-4 rounded overflow-x-auto w-[500px]">
+                        <code>{children}</code>
+                      </pre>
+                    ),
+                }}
+              >
+                {mdData}
+              </Markdown>
+            </div>
           </div>
         </div>
       </div>
