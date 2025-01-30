@@ -41,12 +41,12 @@ const MainContent = () => {
 					},
 					{
 						id: "unit",
-						label: "Unit Api Testing",
+						label: "Api Testing",
 						icon: <TbTestPipe2Filled className="text-xl" />,
 					},
 					{
 						id: "flows",
-						label: "Flow Challenges",
+						label: "Scenario Testing",
 						icon: <GoWorkflow className="text-xl" />,
 					},
 
