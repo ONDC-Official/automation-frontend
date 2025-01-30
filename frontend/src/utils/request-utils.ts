@@ -85,14 +85,12 @@ export const clearFlowData = async (subUrl: string, flowId: string) => {
 	}
 };
 
-export const getCompletePayload = async (payload_id: string) => {
+export const getCompletePayload = async (payload_ids: string[]) => {
     try {
-      const response = await axios.get(
+      const response = await axios.post(
         `${import.meta.env.VITE_BACKEND_URL}/db/payload`,
         {
-          params: {
-            payload_id: payload_id,
-          },
+          payload_ids: payload_ids
         }
       );
 

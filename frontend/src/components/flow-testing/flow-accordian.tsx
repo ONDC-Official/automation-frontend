@@ -7,7 +7,7 @@ import IconButton from "../ui/mini-components/icon-button";
 import { FaRegStopCircle } from "react-icons/fa";
 import { IoPlay } from "react-icons/io5";
 import { AiOutlineDelete } from "react-icons/ai";
-import { clearFlowData } from "../../utils/request-utils";
+import { clearFlowData, getCompletePayload } from "../../utils/request-utils";
 import { IoMdDownload } from "react-icons/io";
 
 interface AccordionProps {
@@ -60,9 +60,16 @@ export function Accordion({
 	let stepIndex = 0;
 	if (!cacheData) return <div>Loading...</div>;
 
-	const handleDownload = () => {
-		const jsonString = JSON.stringify(cacheData?.session_payloads[flow?.id] || "{}", null, 2);
-	
+	const handleDownload = async () => {
+		
+		const payload_ids = cacheData?.session_payloads[flow?.id]?.map((payload: any) => payload?.payload_id)
+
+		if(!payload_ids.length) {
+			return 
+		}
+		
+		const jsonData = await getCompletePayload(payload_ids)
+		const jsonString = JSON.stringify(jsonData, null, 2);
 		const blob = new Blob([jsonString], { type: "application/json" });
 	
 		const url = URL.createObjectURL(blob);
