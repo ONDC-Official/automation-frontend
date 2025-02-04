@@ -63,7 +63,6 @@ jobs:
           echo "REPORTING_SERVICE=${{ secrets.REPORTING_SERVICE }}" >> \$REPO_DIR/backend/.env
           echo "API_SERVICE=${{ secrets.API_SERVICE }}" >> \$REPO_DIR/backend/.env
           echo "DB_SERVICE=${{ secrets.DB_SERVICE }}" >> \$REPO_DIR/backend/.env
-          echo "PORT=${{ secrets.PORT }}" >> \$REPO_DIR/../.env
 
           EOF
 
