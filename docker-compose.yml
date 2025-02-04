@@ -7,7 +7,7 @@ services:
       dockerfile: Dockerfile
     container_name: staging-automation-ui-backend
     ports:
-      - "5100:5100"
+      - "5300:5300"
     env_file:
       - backend/.env
     restart: always
