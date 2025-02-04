@@ -7,7 +7,7 @@ services:
       dockerfile: Dockerfile
     container_name: staging-automation-ui-backend
     ports:
-      - "${PORT}:${PORT}"
+      - "5100:5100"
     env_file:
       - backend/.env
     restart: always
@@ -20,7 +20,7 @@ services:
       dockerfile: Dockerfile
     container_name: staging-automation-ui-frontend
     ports:
-      - 5101":5001"
+      - "5101:5001"
     env_file:
       - frontend/.env
     restart: always
