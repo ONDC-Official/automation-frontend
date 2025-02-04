@@ -5,9 +5,9 @@ services:
     build:
       context: backend
       dockerfile: Dockerfile
-    container_name: automation-ui-backend
+    container_name: staging-automation-ui-backend
     ports:
-      - "3034:5000"
+      - "${PORT}:${PORT}"
     env_file:
       - backend/.env
     restart: always
@@ -18,9 +18,9 @@ services:
     build:
       context: frontend
       dockerfile: Dockerfile
-    container_name: automation-ui-frontend
+    container_name: staging-automation-ui-frontend
     ports:
-      - "3035:5001"
+      - 5101":5001"
     env_file:
       - frontend/.env
     restart: always
