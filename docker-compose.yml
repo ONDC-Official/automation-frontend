@@ -19,7 +19,7 @@ services:
       context: frontend
       dockerfile: Dockerfile
     container_name: staging-automation-ui-frontend
-    ports:
+    ports: 
       - "5101:5001"
     env_file:
       - frontend/.env
