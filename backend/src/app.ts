@@ -1,17 +1,35 @@
 import express from 'express';
 import routes from './routes/index';
-import { redisService } from "ondc-automation-cache-lib";
+import { RedisService } from "ondc-automation-cache-lib";
 import cookieParser from 'cookie-parser';
 // import redisClient from './config/redisConfig'; // Import the Redis client
 import session from 'express-session';
 import redisClient from './config/redisConfig';
 import cors from "cors"
+import { initializeLogSubscriber } from './services/logSubscriberService';
+import logger from './utils/logger';
 const RedisStore = require("connect-redis").default;
 
 const app = express();
 
-// Select and use database 0
-redisService.useDb(0);
+// Initialize Redis connections
+const initializeRedis = async () => {
+    try {
+        // Initialize main DB connection (DB 0)
+        RedisService.useDb(0);
+        
+        // Initialize log subscriber (DB 3)
+        await initializeLogSubscriber();
+        
+        logger.info('Redis connections initialized successfully');
+    } catch (error) {
+        logger.error('Failed to initialize Redis connections:', error);
+        process.exit(1);
+    }
+};
+
+// Initialize Redis
+initializeRedis();
 
 // Log Redis connection status
 // redisClient.on('connect', () => {
@@ -24,7 +42,7 @@ redisService.useDb(0);
 
 
 let redisStore = new RedisStore({
-    client: redisService,
+    client: redisClient,
 });
 
   app.use(session({
