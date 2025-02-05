@@ -49,12 +49,12 @@ function RenderFlows({
 
 	useEffect(() => {
 		if (sideView?.payload_id) {
-			getCompletePayload(sideView.payload_id)
+			getCompletePayload([sideView.payload_id])
 				.then((data: any) => {
-					setRequestData(data);
+					setRequestData(data[0].req);
 				})
 				.catch((e: any) => {
-					console.log("Error while fetching payload: ", e);
+					console.log("Errro while fetching payload: ", e);
 					console.log(">>>", sideView);
 					setRequestData(sideView.request || {});
 				});
