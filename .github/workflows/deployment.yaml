@@ -4,7 +4,7 @@ on:
   push:
     branches: ["release-staging"]
 
-jobs:
+jobs: 
   ssh-ec2:
     runs-on: ubuntu-latest
     environment: 
