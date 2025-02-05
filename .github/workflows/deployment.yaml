@@ -2,7 +2,7 @@ name: ONDC Automation UI Service Deployment
 
 on:
   push:
-    branches: ["staging"]
+    branches: ["release-staging"]
 
 jobs:
   ssh-ec2:
@@ -27,8 +27,8 @@ jobs:
           REPO_DIR=~/ONDC-automation-framework-staging/automation-frontend
           echo "Removing existing repository directory if exists"
           rm -rf \$REPO_DIR
-          echo "Cloning repository from staging branch"
-          git clone --single-branch --branch staging https://github.com/ONDC-Official/automation-frontend.git \$REPO_DIR
+          echo "Cloning repository from release-staging branch"
+          git clone --single-branch --branch release-staging https://github.com/ONDC-Official/automation-frontend.git \$REPO_DIR
           EOF
 
       - name: Install Docker Compose (if not installed)
