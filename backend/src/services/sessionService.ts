@@ -1,4 +1,4 @@
-import { redisService } from "ondc-automation-cache-lib";
+import { RedisService } from "ondc-automation-cache-lib";
 import { ContextCache, SessionData } from "../interfaces/sessionData";
 import {
 	TransformedSessionData,
@@ -62,7 +62,7 @@ export const createSessionService = async (
 
 	try {
 		// Store session data in Redis
-		await redisService.setKey(
+		await RedisService.setKey(
 			subscriberUrl,
 			JSON.stringify(transformedData),
 			SESSION_EXPIRY
@@ -76,7 +76,7 @@ export const createSessionService = async (
 
 export const getSessionService = async (sessionKey: SessionKeyType) => {
 	try {
-		const sessionData = await redisService.getKey(sessionKey);
+			const sessionData = await RedisService.getKey(sessionKey);
 		if (!sessionData) {
 			throw new Error("Session not found");
 		}
@@ -108,7 +108,7 @@ export const updateSessionService = async (
 
 	try {
 		// Retrieve the session data from Redis
-		const sessionData = await redisService.getKey(subscriber_url);
+		const sessionData = await RedisService.getKey(subscriber_url);
 
 		if (!sessionData) {
 			throw new Error("Session not found");
@@ -135,7 +135,7 @@ export const updateSessionService = async (
 		// }
 
 		// Save the updated session data back to Redis
-		await redisService.setKey(
+		await RedisService.setKey(
 			subscriber_url,
 			JSON.stringify(session),
 			SESSION_EXPIRY
@@ -152,7 +152,7 @@ export const clearFlowService = async (
 	flowId: string
 ) => {
 	try {
-		const sessionData = await redisService.getKey(subscriber_url);
+		const sessionData = await RedisService.getKey(subscriber_url);
 		if (!sessionData) {
 			throw new Error("Session not found");
 		}
@@ -165,7 +165,7 @@ export const clearFlowService = async (
 			latest_action: "",
 			message_ids: [],
 		};
-		await redisService.setKey(
+		await RedisService.setKey(
 			subscriber_url,
 			JSON.stringify(session),
 			SESSION_EXPIRY
