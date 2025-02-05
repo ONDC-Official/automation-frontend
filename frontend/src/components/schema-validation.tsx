@@ -92,7 +92,7 @@ const SchemaValidation = ({ isSidebarOpen }: IProps) => {
       <div className="w-3/6 p-4 gap-4 flex flex-col">
         <div className="flex flex-row items-center justify-between">
           <div className="flex flex-row items-center gap-4">
-            <h1 className="text-lg font-semibold text-gray-800">Request</h1>
+            <h1 className="text-lg font-semibold text-gray-800">Beckn JSON</h1>
             <div
               className="flex flex-row items-center cursor-pointer group"
               onClick={() => setIsModalOpen(true)}
@@ -123,21 +123,18 @@ const SchemaValidation = ({ isSidebarOpen }: IProps) => {
           </div>
         </div>
         <div className="flex flex-row gap-4">
-          <button className={`${buttonClass}`} onClick={() => setPayload("")}>
-            Clear
-          </button>
           <button
             className={`${buttonClass}`}
             onClick={verifyRequest}
             disabled={payload === ""}
           >
-            {isLoading ? "Sending" : "Send"}
+            {isLoading ? "Validating..." : "Validate"}
           </button>
         </div>
       </div>
       <div className="w-3/6 flex flex-col gap-4 my-4 ">
         <div className="flex flex-row gap-2">
-          <h1 className="text-lg font-semibold text-gray-800">Response</h1>
+          <h1 className="text-lg font-semibold text-gray-800">Validations</h1>
           {mdData && (
             <Watermak status={isSuccessReponse ? "success" : "failed"} />
           )}

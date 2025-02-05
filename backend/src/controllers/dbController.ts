@@ -2,15 +2,15 @@ import { Request, Response } from "express";
 import { getPayloadForSessionId } from "../services/dbService";
 
 export const getPayload = async (req: Request, res: Response) => {
-  const payload_id = req.query.payload_id as string;
+  const body = req.body
 
-  if (!payload_id) {
-    res.status(400).send({ error: true, message: "Payload id is required" });
+  if (!body?.payload_ids?.length) {
+    res.status(400).send({ error: true, message: "Payload ids are required" });
     return;
   }
 
   try {
-    const response = await getPayloadForSessionId(payload_id);
+    const response = await getPayloadForSessionId(body.payload_ids);
 
     res.send(response);
   } catch (e: any) {

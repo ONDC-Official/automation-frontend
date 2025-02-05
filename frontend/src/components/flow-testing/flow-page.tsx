@@ -40,7 +40,15 @@ export default function FlowContent() {
 			);
 			setSubUrl(data.subscriberUrl);
 			console.log("response", response.data);
-			localStorage.setItem("sessionIdForSupport", response.data.sessionId);
+			const localData =
+				JSON.parse(localStorage.getItem("sessionIdForSupport") as string) || {};
+			localStorage.setItem(
+				"sessionIdForSupport",
+				JSON.stringify({
+					scenarioSession: response.data.sessionId,
+					...localData,
+				})
+			);
 			setSession(response.data.sessionId);
 			setStep((s) => s + 1);
 		} catch (e) {

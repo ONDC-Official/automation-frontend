@@ -10,6 +10,7 @@ import { AiOutlineDelete } from "react-icons/ai";
 import {
 	clearFlowData,
 	deleteExpectation,
+	getCompletePayload,
 	getTransactionData,
 	requestForFlowPermission,
 } from "../../utils/request-utils";
@@ -88,13 +89,17 @@ export function Accordion({
 	let stepIndex = 0;
 	if (!sessionCache) return <div>Loading...</div>;
 
-	const handleDownload = () => {
-		const jsonString = JSON.stringify(
-			{ logs: transactionCache?.apiList || [] },
-			null,
-			2
+	const handleDownload = async () => {
+		const payload_ids = transactionCache?.apiList.map(
+			(payload) => payload?.payloadId
 		);
 
+		if (!payload_ids) {
+			return;
+		}
+
+		const jsonData = await getCompletePayload(payload_ids);
+		const jsonString = JSON.stringify(jsonData, null, 2);
 		const blob = new Blob([jsonString], { type: "application/json" });
 
 		const url = URL.createObjectURL(blob);
