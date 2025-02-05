@@ -7,21 +7,19 @@ import { FetchFlowsResponse } from "../../types/flow-types";
 import RenderFlows from "./render-flows";
 import Stepper from "../ui/mini-components/stepper";
 import { MdOutlineDomainVerification } from "react-icons/md";
-// import { PiSwordBold } from "react-icons/pi";
 import { HiOutlineDocumentReport } from "react-icons/hi";
 import { TbFileInfo } from "react-icons/tb";
 import { toast } from "react-toastify";
 import Heading from "../ui/mini-components/ondc-gradient-text";
-// import DifficultyForm from "./difficulty-form";
 import { ReportPage } from "./report";
 import { FormGuide } from "./guides";
 
 export default function FlowContent() {
 	const [step, setStep] = useState(0);
-	const [session, setSession] = useState<string | null>(null);
+	const [session, setSession] = useState<string>("");
 	const [subUrl, setSubUrl] = useState<string>("");
 	const [flows, setFlows] = useState<FetchFlowsResponse | null>(null);
-	const [report, setReport] = useState("")
+	const [report, setReport] = useState("");
 
 	const onSubmit = async (data: any) => {
 		try {
@@ -29,20 +27,20 @@ export default function FlowContent() {
 			const response = await axios.post(
 				`${import.meta.env.VITE_BACKEND_URL}/sessions`,
 				{
-				...data,
-				difficulty_cache: {
-					stopAfterFirstNack: true,
-					timeValidations: true,
-					protocolValidations: true,
-					useGateway: true,
-					headerValidaton: true,
-					totalDifficulty: 100,
-				},
+					...data,
+					difficulty_cache: {
+						stopAfterFirstNack: true,
+						timeValidations: true,
+						protocolValidations: true,
+						useGateway: true,
+						headerValidaton: true,
+						totalDifficulty: 100,
+					},
 				}
 			);
 			setSubUrl(data.subscriberUrl);
 			console.log("response", response.data);
-			localStorage.setItem("sessionIdForSupport", response.data.sessionId)
+			localStorage.setItem("sessionIdForSupport", response.data.sessionId);
 			setSession(response.data.sessionId);
 			setStep((s) => s + 1);
 		} catch (e) {
@@ -57,6 +55,7 @@ export default function FlowContent() {
 				{}
 			);
 			setFlows(response.data);
+			console.log("flows", response.data);
 		} catch (e) {
 			console.log("error while fetching flows", e);
 		}
@@ -83,10 +82,10 @@ export default function FlowContent() {
 									labelInfo="your registered subscriber url"
 									validations={{
 										pattern: {
-											value: /^https:\/\/.*/, 
+											value: /^https:\/\/.*/,
 											message: "URL must start with https://",
 										},
-									  }}
+									}}
 								/>
 								<FormSelect
 									name="domain"
@@ -100,19 +99,19 @@ export default function FlowContent() {
 									required={true}
 									options={["2.0.1"]}
 								/>
-								<FormInput
+								{/* <FormInput
 									label="Enter City Code"
 									name="city"
 									required={true}
-								/>
+								/> */}
 								<FormSelect
-									name="participantType"
+									name="npType"
 									label="Select Type"
 									options={["BAP", "BPP"]}
 									required
 								/>
 								<FormSelect
-									name="Environment"
+									name="env"
 									label="Select Environment"
 									options={["STAGING"]} //"PRE-PRODUCTION"
 									required
@@ -140,10 +139,19 @@ export default function FlowContent() {
 			// 	);
 			case 1:
 				if (!flows) return <h1>Loading...</h1>;
-				return <RenderFlows flows={flows} subUrl={subUrl} setStep={setStep} setReport={setReport}/>;
+				console.log("flows", flows);
+				return (
+					<RenderFlows
+						flows={flows}
+						subUrl={subUrl}
+						sessionId={session}
+						setStep={setStep}
+						setReport={setReport}
+					/>
+				);
 			case 2:
 				if (!session) return <h1>Loading...</h1>;
-				return <ReportPage subUrl={subUrl} report={report} setStep={setStep}/>;
+				return <ReportPage subUrl={subUrl} report={report} setStep={setStep} />;
 			default:
 				return <h1>hello</h1>;
 		}
