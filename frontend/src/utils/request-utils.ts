@@ -60,7 +60,7 @@ export const triggerRequest = async (
 					subscriber_url: subscriberUrl,
 					version: sessionData.version,
 					session_id: session_id,
-					flowId: flowId,
+					flow_id: flowId,
 				},
 			}
 		);
