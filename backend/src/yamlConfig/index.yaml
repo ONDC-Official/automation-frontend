@@ -12,6 +12,7 @@ domain:
               in the city
             pair: on_search1
             owner: BAP
+            expect: true
           - key: on_search1
             type: on_search
             unsolicited: false
@@ -29,6 +30,7 @@ domain:
               from one station to another
             pair: on_search2
             owner: BAP
+            expect: true
             input:
               - name: vehicle_category
                 label: Select vehicle category
@@ -114,7 +116,7 @@ domain:
             description: Provider platform responds with the status of the order
             pair: null
             owner: BPP
-      - id: TECHINCAL_CANCELLATION_FLOW
+      - id: TECHNICAL_CANCELLATION_FLOW
         description: User cancels the metro booking
         sequence:
           - key: search2
@@ -125,6 +127,7 @@ domain:
               from one station to another
             pair: on_search2
             owner: BAP
+            expect: true
             input:
               - name: vehicle_category
                 label: Select vehicle category
@@ -235,6 +238,7 @@ domain:
               from one station to another
             pair: on_search2
             owner: BAP
+            expect: true
             input:
               - name: vehicle_category
                 label: Select vehicle category
