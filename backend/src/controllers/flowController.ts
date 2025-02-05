@@ -1,5 +1,5 @@
 // FILE: uiController.ts
-import { Request, Response } from "express";
+import { query, Request, Response } from "express";
 import { fetchConfigService } from "../services/flowService";
 import axios from "axios";
 import { TriggerInput } from "../interfaces/triggerData";
@@ -28,7 +28,7 @@ export const generateReport = async (
 	res: Response
 ): Promise<void> => {
 	const sessionId = req.query.sessionId as string;
-	const body = req.body
+	const body = req.body;
 	if (!sessionId) {
 		res.status(400).json({ error: "session_id is required" });
 		return;
@@ -79,9 +79,10 @@ export const handleTriggerRequest = async (
 			triggerInput,
 			{
 				params: {
-					subscriber_url: req.query.subscriber_url,
-					action_id: req.query.action_id,
-					transaction_id: req.query.transaction_id,
+					// subscriber_url: req.query.subscriber_url,
+					// action_id: req.query.action_id,
+					// transaction_id: req.query.transaction_id,
+					...req.query,
 				},
 			}
 		);

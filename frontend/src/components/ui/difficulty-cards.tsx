@@ -11,7 +11,7 @@ const keyMapping: any = {
 	protocolValidations: "Protocol Validation",
 	useGateway: "Use Gateway",
 	headerValidaton: "Header Validation",
-	totalDifficulty: "Total Difiiculty",
+	totalDifficulty: "Total Difficulty",
 };
 
 interface DifficultyCache {
@@ -20,15 +20,16 @@ interface DifficultyCache {
 	protocolValidations: boolean;
 	useGateway: boolean;
 	headerValidaton: boolean;
+	sensitiveTTL?: boolean;
 	totalDifficulty?: number;
 }
 
-interface IPoprs {
+interface IProps {
 	difficulty_cache: DifficultyCache;
 	sessionId: string;
 }
 
-const DifficultyCards = ({ difficulty_cache, sessionId }: IPoprs) => {
+const DifficultyCards = ({ difficulty_cache, sessionId }: IProps) => {
 	const [difficultyCache, setDifficultCache] = useState({});
 	const [isOpen, setIsOpen] = useState(false);
 
@@ -36,6 +37,7 @@ const DifficultyCards = ({ difficulty_cache, sessionId }: IPoprs) => {
 		if (difficulty_cache?.totalDifficulty) {
 			delete difficulty_cache.totalDifficulty;
 		}
+		if (difficulty_cache?.sensitiveTTL) delete difficulty_cache.sensitiveTTL;
 		setDifficultCache(difficulty_cache);
 	}, [difficulty_cache]);
 
@@ -59,9 +61,9 @@ const DifficultyCards = ({ difficulty_cache, sessionId }: IPoprs) => {
 			toast.error("Error while updating setting difficulty");
 		}
 	};
-
+	console.log("difficultyCache", difficultyCache);
 	return (
-		<div className="w-full bg-white/10 backdrop-blur-md rounded-md p-6 shadow-lg flex flex-col gap-4">
+		<div className="w-full bg-slate-100 backdrop-blur-md rounded-md p-2 shadow-lg flex flex-col gap-4">
 			{/* Header with Button */}
 			<div className="flex flex-row justify-between">
 				<Heading className="text-xl font-bold">Difficulty Level</Heading>

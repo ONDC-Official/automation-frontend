@@ -144,6 +144,7 @@ export function Accordion({
 						color="orange"
 						onClick={async (e) => {
 							e.stopPropagation();
+							setTransactionCache(undefined);
 							await clearFlowData(sessionId, flow.id);
 							onFlowClear();
 						}}
