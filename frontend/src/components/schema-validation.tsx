@@ -9,17 +9,13 @@ import { buttonClass } from "./ui/forms/loading-button";
 import Heading from "./ui/mini-components/ondc-gradient-text";
 import Watermak from "./ui/mini-components/watermark";
 
-interface IProps {
-  isSidebarOpen: boolean;
-}
-
 const INSTRUCTION = [
   `1. Request can be made using just the payload to validate schema of the payload`,
   `2. Ack status is returned in case of success`,
   `3. List of failed validations are returned in case of failure`,
 ];
 
-const SchemaValidation = ({ isSidebarOpen }: IProps) => {
+const SchemaValidation = () => {
   const [payload, setPayload] = useState("");
   const [_responseValue, setResponseValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -79,9 +75,7 @@ const SchemaValidation = ({ isSidebarOpen }: IProps) => {
 
   return (
     <div
-      className={`fixed top-16 mt-1 h-full shadow-md flex flex-row transition-all duration-300 ${
-        isSidebarOpen ? "w-4/5" : "w-11/12"
-      } `}
+      className={`h-full shadow-md flex flex-row transition-all duration-300  `}
     >
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
         <h1 className="text-lg font-semibold text-gray-800">Instruction</h1>
