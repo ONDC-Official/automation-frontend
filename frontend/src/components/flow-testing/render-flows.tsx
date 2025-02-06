@@ -60,7 +60,7 @@ function RenderFlows({
 				});
 			setResponseData(sideView?.response || {});
 		} else {
-			console.log("sideView", sideView);
+			// console.log("sideView", sideView);
 			setRequestData(sideView || {});
 			setResponseData(sideView || {});
 		}
