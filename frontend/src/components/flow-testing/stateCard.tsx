@@ -221,7 +221,7 @@ async function getTransactionId(data: State) {
 		const completePayload = await getCompletePayload(
 			data.transactionData.apiList.map((api) => api.payloadId)
 		);
-		txn = completePayload.context.transaction_id;
+		txn = completePayload[0].context.transaction_id;
 	}
 	return txn;
 }
