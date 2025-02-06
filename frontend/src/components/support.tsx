@@ -10,7 +10,7 @@ const Support = () => {
           For further technical assistance, dedicated technical support team is
           reachable at the email ID: &nbsp;
           <a
-            href={`mailto:tectsupport@ondc.org`}
+            href={`mailto:automation-framework@ondc.org`}
             target="_blank"
             rel="noopener noreferrer"
             className="text-blue-500 underline hover:text-blue-700"
