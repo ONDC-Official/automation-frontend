@@ -1,57 +1,35 @@
 import { redisService } from "ondc-automation-cache-lib";
-import { ContextCache, SessionData } from "../interfaces/sessionData";
-import {
-	TransformedSessionData,
-	SessionKeyType,
-} from "../interfaces/sessionData";
+import { SessionCache, SubscriberCache } from "../interfaces/newSessionData";
 import { fetchConfigService } from "./flowService";
+import logger from "../utils/logger";
 
 const SESSION_EXPIRY = 3600; // 1 hour
-
+const EXPECTATION_EXPIRY = 5 * 60 * 1000; // 5 minutes
 export const createSessionService = async (
 	sessionId: string,
-	data: SessionData
+	data: SessionCache
 ) => {
-	const {
-		city,
-		domain,
-		participantType,
-		subscriberId,
-		subscriberUrl,
-		version,
-		difficulty_cache,
-	} = data;
-
+	const { npType, domain, version, subscriberUrl, env } = data;
 	const flowConfig = fetchConfigService();
-
 	const domainFlow = flowConfig.domain.find((s) => s.name === domain);
 	const keys = domainFlow?.flows.map((f) => f.id);
 	if (!keys) {
 		throw new Error("Invalid domain");
 	}
-	let session_payloads: Record<string, any[]> = {};
-	let contextCache: Record<string, ContextCache> = {};
+	const map: Record<string, any> = {};
 	keys.forEach((key) => {
-		session_payloads[key] = [];
-		contextCache[key] = {
-			latest_timestamp: new Date().toISOString(),
-			latest_action: "",
-			message_ids: [],
-		};
+		map[key] = undefined;
 	});
-	const transformedData: TransformedSessionData = {
-		active_session_id: sessionId,
-		type: participantType,
+	let finalCache: SessionCache = {
+		transactionIds: [],
+		flowMap: map,
+		npType,
 		domain,
 		version,
-		city,
-		subscriber_id: subscriberId,
-		subscriber_url: subscriberUrl,
-		np_id: subscriberId,
-		session_payloads: session_payloads,
-		context_cache: contextCache,
-		difficulty_cache: {
-			// sensitiveTTL: true,
+		subscriberUrl,
+		env,
+		sessionDifficulty: {
+			sensitiveTTL: true,
 			useGateway: true,
 			stopAfterFirstNack: true,
 			protocolValidations: true,
@@ -61,82 +39,65 @@ export const createSessionService = async (
 	};
 
 	try {
-		// Store session data in Redis
 		await redisService.setKey(
-			subscriberUrl,
-			JSON.stringify(transformedData),
+			sessionId,
+			JSON.stringify(finalCache),
 			SESSION_EXPIRY
 		);
-		// await redisClient.set(sessionId, JSON.stringify(sessionData), 'EX', 3600);
 		return "Session created successfully";
-	} catch (error: any) {
-		throw new Error(`${error.message}`);
+	} catch (e) {
+		logger.error(e);
+		throw new Error("Error creating session");
 	}
 };
 
-export const getSessionService = async (sessionKey: SessionKeyType) => {
+export const getSessionService = async (sessionId: string) => {
 	try {
-		const sessionData = await redisService.getKey(sessionKey);
+		const sessionData = await redisService.getKey(sessionId);
 		if (!sessionData) {
 			throw new Error("Session not found");
 		}
-		// Return the session data if found
-		return JSON.parse(sessionData);
-	} catch (error: any) {
-		// Return a 500 error in case of any issues
-		throw new Error(`${error.message}`);
+		return JSON.parse(sessionData) as SessionCache;
+	} catch (e) {
+		logger.error(e);
+		throw new Error("Error fetching session");
 	}
 };
 
-// Update session data
 export const updateSessionService = async (
-	subscriber_url: string,
-	data: any
+	sessionId: string,
+	data: Partial<SessionCache>
 ) => {
 	const {
 		subscriberId,
-		participantType,
+		npType,
 		domain,
-		transactionId,
-		transactionMode,
-		state,
-		details,
-		flowId,
 		subscriberUrl,
-		difficulty,
+		env,
+		sessionDifficulty,
 	} = data;
 
 	try {
 		// Retrieve the session data from Redis
-		const sessionData = await redisService.getKey(subscriber_url);
+		const sessionData = await redisService.getKey(sessionId);
 
 		if (!sessionData) {
 			throw new Error("Session not found");
 		}
 
-		const session: TransformedSessionData = JSON.parse(sessionData);
+		const session: SessionCache = JSON.parse(sessionData);
 
 		// Update session data fields
-		if (subscriberId) session.subscriber_id = subscriberId;
-		if (subscriberUrl) session.subscriber_url = subscriberUrl;
-		if (participantType) session.type = participantType;
+		if (subscriberId) session.subscriberId = subscriberId;
+		if (subscriberUrl) session.subscriberUrl = subscriberUrl;
+		if (npType) session.npType = npType;
 		if (domain) session.domain = domain;
-		if (flowId) session.current_flow_id = flowId;
-		if (difficulty) session.difficulty_cache = difficulty;
-
-		// If transaction data is provided, update the transaction details
-		// if (transactionId && transactionMode && state) {
-		//     session.transactions[transactionId] = {
-		//         transactionMode,
-		//         state,
-		//         data: details || {},
-		//         createdAt: new Date().toISOString(),
-		//     };
-		// }
+		if (sessionDifficulty) session.sessionDifficulty = sessionDifficulty;
+		if (env) session.env = env;
 
 		// Save the updated session data back to Redis
 		await redisService.setKey(
-			subscriber_url,
+			sessionId,
 			JSON.stringify(session),
 			SESSION_EXPIRY
 		);
@@ -147,30 +108,177 @@ export const updateSessionService = async (
 	}
 };
 
-export const clearFlowService = async (
-	subscriber_url: string,
-	flowId: string
-) => {
+export const clearFlowService = async (sessionId: string, flowId: string) => {
 	try {
-		const sessionData = await redisService.getKey(subscriber_url);
+		const sessionData = await redisService.getKey(sessionId);
 		if (!sessionData) {
 			throw new Error("Session not found");
 		}
 
-		const session: TransformedSessionData = JSON.parse(sessionData);
-		delete session.current_flow_id
-		session.session_payloads[flowId] = [];
-		session.context_cache[flowId] = {
-			latest_timestamp: new Date().toISOString(),
-			latest_action: "",
-			message_ids: [],
-		};
+		const session: SessionCache = JSON.parse(sessionData);
+		logger.debug(JSON.stringify(session));
+		const transactionId = session.flowMap[flowId];
+		if (transactionId) {
+			const index = session.transactionIds.indexOf(transactionId);
+			if (index > -1) {
+				session.transactionIds.splice(index, 1);
+			}
+		}
+		session.flowMap[flowId] = undefined;
 		await redisService.setKey(
-			subscriber_url,
+			sessionId,
 			JSON.stringify(session),
 			SESSION_EXPIRY
 		);
+	} catch (e) {
+		logger.error(e);
+		throw new Error("Error clearing flow");
+	}
+};
+
+export const createExpectationService = async (
+	subscriberUrl: string,
+	flowId: string,
+	sessionId: string,
+	expectedAction: string
+): Promise<string> => {
+	try {
+		// Fetch existing session data from Redis
+		const sessionData = await redisService.getKey(subscriberUrl);
+
+		let parsed: SubscriberCache = { activeSessions: [] };
+
+		if (sessionData) {
+			parsed = JSON.parse(sessionData);
+		}
+
+		// Remove expired expectations and check for conflicts
+		parsed.activeSessions = parsed.activeSessions.filter((expectation) => {
+			const isExpired = new Date(expectation.expireAt) < new Date();
+
+			if (isExpired) return false; // Remove expired session
+
+			if (expectation.sessionId === sessionId) {
+				throw new Error(
+					`Expectation already exists for sessionId: ${sessionId} and flowId: ${flowId}`
+				);
+			}
+
+			if (expectation.expectedAction === expectedAction) {
+				throw new Error(
+					`Expectation already exists for the action: ${expectedAction}`
+				);
+			}
+
+			return true; // Keep valid expectations
+		});
+
+		// Add new expectation
+		const expireAt = new Date(Date.now() + EXPECTATION_EXPIRY).toISOString();
+
+		const expectation = {
+			sessionId,
+			flowId,
+			expectedAction,
+			expireAt,
+		};
+
+		parsed.activeSessions.push(expectation);
+
+		// Update Redis with the modified session data
+		await redisService.setKey(subscriberUrl, JSON.stringify(parsed));
+
+		return "Expectation created successfully";
 	} catch (error: any) {
-		throw new Error(`${error.message}`);
+		throw new Error(`Failed to create expectation: ${error.message}`);
+	}
+};
+
+export const deleteExpectationService = async (
+	sessionId: string,
+	subscriberUrl: string
+) => {
+	try {
+		const subscriberData = await redisService.getKey(subscriberUrl);
+		if (!subscriberData) {
+			throw new Error("Session not found");
+		}
+
+		const parsed: SubscriberCache = JSON.parse(subscriberData);
+		logger.debug("Parsed data" + JSON.stringify(parsed));
+		if (parsed.activeSessions === undefined) {
+			throw new Error("No active sessions found");
+		}
+		parsed.activeSessions = parsed.activeSessions.filter(
+			(expectation) => expectation.sessionId !== sessionId
+		);
+
+		await redisService.setKey(subscriberUrl, JSON.stringify(parsed));
+	} catch (e) {
+		logger.error(e);
+		throw new Error("Error deleting expectation");
+	}
+};
+
+export const getTransactionDataService = async (
+	transaction_id: string,
+	subscriber_url: string
+) => {
+	try {
+		const key = `${transaction_id}::${subscriber_url}`;
+		logger.info("Fetching transaction data for key: " + key);
+		const data = await redisService.getKey(key);
+		if (!data) {
+			throw new Error("Transaction data not found");
+		}
+		return JSON.parse(data);
+	} catch (e) {
+		logger.error(e);
+		throw new Error("Error fetching transaction data");
+	}
+};
+
+export const requestForFlowPermissionService = async (
+	subscriberUrl: string,
+	action: string
+) => {
+	try {
+		const subscriberData = await redisService.getKey(subscriberUrl);
+		logger.info("request for flow permission subscriber data:", subscriberData);
+		if (!subscriberData) {
+			return {
+				valid: true,
+				message: "Subscriber not found",
+			};
+		}
+		const parsed: SubscriberCache = JSON.parse(subscriberData);
+		if (parsed.activeSessions === undefined) {
+			return {
+				valid: true,
+				message: "No active sessions found",
+			};
+		}
+		parsed.activeSessions = parsed.activeSessions.filter((expectation) => {
+			const isExpired = new Date(expectation.expireAt) < new Date();
+			if (isExpired) return false; // Remove expired session
+			return true; // Keep valid expectations
+		});
+		const actionExists = parsed.activeSessions.some(
+			(expectation) => expectation.expectedAction === action
+		);
+		await redisService.setKey(subscriberUrl, JSON.stringify(parsed));
+		if (actionExists) {
+			return {
+				valid: false,
+				message: `Already expecting action: ${action} for subscriber: ${subscriberUrl}`,
+			};
+		}
+		return {
+			valid: true,
+			message: `Subscriber: ${subscriberUrl} is ready for action: ${action}`,
+		};
+	} catch (e) {
+		logger.error("Error requesting flow permission", e);
+		throw new Error("Error requesting flow permission");
 	}
 };
