@@ -2,19 +2,26 @@ import React, { useEffect, useRef, useState } from "react";
 import { toast } from "react-toastify"; // Assuming you're using react-toastify for notifications
 import SequenceCard from "./SequenceCard";
 import { Flow, SequenceStep } from "../../types/flow-types";
-import { CacheSessionData } from "../../types/session-types";
+import { SessionCache, TransactionCache } from "../../types/session-types";
 import IconButton from "../ui/mini-components/icon-button";
 import { FaRegStopCircle } from "react-icons/fa";
 import { IoPlay } from "react-icons/io5";
 import { AiOutlineDelete } from "react-icons/ai";
-import { clearFlowData, getCompletePayload } from "../../utils/request-utils";
+import {
+	clearFlowData,
+	deleteExpectation,
+	getCompletePayload,
+	getTransactionData,
+	requestForFlowPermission,
+} from "../../utils/request-utils";
 import { IoMdDownload } from "react-icons/io";
 
 interface AccordionProps {
 	flow: Flow;
 	activeFlow: string | null;
 	setActiveFlow: (flowId: string | null) => void;
-	cacheData?: CacheSessionData | null;
+	sessionCache?: SessionCache | null;
+	sessionId: string;
 	setSideView: React.Dispatch<any>;
 	subUrl: string;
 	onFlowStop: () => void;
@@ -25,31 +32,53 @@ export function Accordion({
 	flow,
 	activeFlow,
 	setActiveFlow,
-	cacheData,
+	sessionCache,
+	sessionId,
 	setSideView,
 	subUrl,
 	onFlowStop,
-	onFlowClear
+	onFlowClear,
 }: AccordionProps) {
 	const [isOpen, setIsOpen] = useState(false);
+	const [transactionCache, setTransactionCache] = useState<
+		TransactionCache | undefined
+	>(undefined);
 	const contentRef = useRef<HTMLDivElement>(null);
 	const [maxHeight, setMaxHeight] = useState("0px");
 
-	// Update maxHeight based on isOpen state
+	useEffect(() => {
+		const fetchTransactionData = async () => {
+			if (sessionCache && activeFlow === flow.id) {
+				const tx = sessionCache.flowMap[flow.id];
+				if (tx) {
+					try {
+						const txData = await getTransactionData(tx, subUrl);
+						setTransactionCache(txData);
+					} catch (error) {
+						console.error("Failed to fetch transaction data:", error);
+					}
+				}
+			}
+		};
+		fetchTransactionData();
+	}, [sessionCache, flow.id, subUrl]);
+
 	useEffect(() => {
 		if (contentRef.current) {
 			setMaxHeight(isOpen ? `${contentRef.current.scrollHeight}px` : "0px");
 		}
 	}, [isOpen]);
 
-	// Process the sequence to align steps with their pairs
 	const steps = getOrderedSteps(flow.sequence);
 
 	const startFlow = async () => {
-		setActiveFlow(flow.id);
-		if (!cacheData) return;
-		if (!cacheData.session_payloads[flow.id]) return;
 		try {
+			console.log(sessionCache);
+			if (!sessionCache) return;
+			const canStart = await canStartFlow(sessionCache, flow, transactionCache);
+			console.log(canStart);
+			if (!canStart) return;
+			setActiveFlow(flow.id);
 			setIsOpen(true);
 		} catch (e) {
 			toast.error("Error while starting flow");
@@ -58,31 +87,32 @@ export function Accordion({
 	};
 
 	let stepIndex = 0;
-	if (!cacheData) return <div>Loading...</div>;
+	if (!sessionCache) return <div>Loading...</div>;
 
 	const handleDownload = async () => {
-		
-		const payload_ids = cacheData?.session_payloads[flow?.id]?.map((payload: any) => payload?.payload_id)
+		const payload_ids = transactionCache?.apiList.map(
+			(payload) => payload?.payloadId
+		);
 
-		if(!payload_ids.length) {
-			return 
+		if (!payload_ids) {
+			return;
 		}
-		
-		const jsonData = await getCompletePayload(payload_ids)
+
+		const jsonData = await getCompletePayload(payload_ids);
 		const jsonString = JSON.stringify(jsonData, null, 2);
 		const blob = new Blob([jsonString], { type: "application/json" });
-	
+
 		const url = URL.createObjectURL(blob);
-	
+
 		const a = document.createElement("a");
 		a.href = url;
-		a.download = `${flow?.id}-${cacheData?.active_session_id}`; 
+		a.download = `${flow?.id}-${activeFlow}`;
 		document.body.appendChild(a);
-	
+
 		a.click();
 		URL.revokeObjectURL(url);
 		document.body.removeChild(a);
-	  };
+	};
 
 	function AccordionButtons() {
 		return (
@@ -107,6 +137,7 @@ export function Accordion({
 							e.stopPropagation(); // Prevent accordion toggle
 							setActiveFlow(null);
 							setIsOpen(false);
+							await deleteExpectation(sessionId, subUrl);
 							onFlowStop();
 						}}
 					/>
@@ -118,20 +149,23 @@ export function Accordion({
 						color="orange"
 						onClick={async (e) => {
 							e.stopPropagation();
-							await clearFlowData(subUrl, flow.id);
-							onFlowClear()
+							setTransactionCache(undefined);
+							await clearFlowData(sessionId, flow.id);
+							onFlowClear();
 						}}
 					/>
 				)}
-				{cacheData?.session_payloads && cacheData?.session_payloads[flow.id]?.length > 0 && <IconButton
-					icon={<IoMdDownload className=" text-md" />}
-					label="Download Logs"
-					color="green"
-					onClick={async (e) => {
-						e.stopPropagation();
-						handleDownload()
-					}}
-				/>}
+				{transactionCache?.apiList && transactionCache?.apiList?.length > 0 && (
+					<IconButton
+						icon={<IoMdDownload className=" text-md" />}
+						label="Download Logs"
+						color="green"
+						onClick={async (e) => {
+							e.stopPropagation();
+							handleDownload();
+						}}
+					/>
+				)}
 			</div>
 		);
 	}
@@ -168,10 +202,13 @@ export function Accordion({
 								? {
 										...stepPair.pair,
 										stepIndex: stepIndex,
-										cachedData: cacheData,
+										transactionData: transactionCache,
+										sessionData: sessionCache,
 										flowId: flow.id,
+										sessionId: sessionId,
 										setSideView: setSideView,
 										subscriberUrl: subUrl,
+										activeFlowId: activeFlow || "",
 								  }
 								: undefined;
 							return (
@@ -180,10 +217,13 @@ export function Accordion({
 										step={{
 											...stepPair.step,
 											stepIndex: stepIndex - 1,
-											cachedData: cacheData,
+											transactionData: transactionCache,
+											sessionData: sessionCache,
 											flowId: flow.id,
+											sessionId: sessionId,
 											setSideView: setSideView,
 											subscriberUrl: subUrl,
+											activeFlowId: activeFlow || "",
 										}}
 										pair={pairData}
 									/>
@@ -224,4 +264,18 @@ function getOrderedSteps(sequence: SequenceStep[]): {
 	}
 
 	return steps;
+}
+
+async function canStartFlow(
+	sessionData: SessionCache,
+	flow: Flow,
+	transactionCache?: TransactionCache
+) {
+	if (transactionCache) return true;
+	const action = flow.sequence[0].type;
+	if (flow.sequence[0].expect && sessionData.npType === "BAP") {
+		console.log("Requesting for flow permission");
+		return await requestForFlowPermission(action, sessionData.subscriberUrl);
+	}
+	return true;
 }

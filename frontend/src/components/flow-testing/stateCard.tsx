@@ -7,7 +7,11 @@ import CustomTooltip from "../ui/mini-components/tooltip";
 import { IoIosInformationCircleOutline } from "react-icons/io";
 import SequenceCard from "./SequenceCard";
 import { v4 as uuidv4 } from "uuid";
-import { triggerRequest } from "../../utils/request-utils";
+import {
+	addExpectation,
+	getCompletePayload,
+	triggerRequest,
+} from "../../utils/request-utils";
 import Popup from "../ui/pop-up/pop-up";
 import FormConfig from "../ui/forms/config-form/config-form";
 import { toast } from "react-toastify";
@@ -58,12 +62,21 @@ export const StateCard: React.FC<{
 	const index = data.stepIndex - 1;
 
 	useEffect(() => {
-		const state = GetCurrentState(
-			index,
-			data.cachedData.session_payloads[data.flowId],
-			data.flowId,
-			data.cachedData.current_flow_id
-		);
+		let state = "inactive";
+		if (data.transactionData === undefined) {
+			state = "inactive";
+			if (data.expect && data.activeFlowId === data.flowId) {
+				state = "pending";
+			}
+		} else {
+			state = GetCurrentState(
+				index,
+				data.transactionData.apiList,
+				data.transactionData?.flowId || "",
+				data.activeFlowId
+			);
+		}
+
 		setCardState(state);
 	}, [data]);
 
@@ -87,35 +100,65 @@ export const StateCard: React.FC<{
 
 	const handleClick = async () => {
 		data.setSideView(
-			getRequestResponse(
-				index,
-				data.cachedData.session_payloads[data.flowId],
-				data.type
-			)
+			getRequestResponse(index, data.type, data.transactionData?.apiList)
 		);
 	};
 
 	const triggerApiRequest = async () => {
-		const txn = getTransactionId(data);
+		const txn = await getTransactionId(data);
 		console.log("running trigger");
-		if (data.cachedData.type === "BAP") {
+		if (data.sessionData?.npType === "BAP") {
 			if (data.owner === "BPP") {
+				console.log("hello bro");
 				if (data.input === undefined) {
-					triggerRequest(data.type, data.key, txn, data.subscriberUrl);
+					console.log("triggering request");
+					triggerRequest(
+						data.type,
+						data.key,
+						txn,
+						data.sessionId,
+						data.flowId,
+						data.sessionData,
+						data.subscriberUrl
+					);
 				} else {
 					setShowPopup(true);
 				}
 			} else {
+				if (data.expect) {
+					await addExpectation(
+						data.type,
+						data.flowId,
+						data.subscriberUrl,
+						data.sessionId
+					);
+				}
 				toast.info("waiting for BAP request");
 			}
 		} else {
 			if (data.owner === "BAP") {
 				if (data.input === undefined) {
-					triggerRequest(data.type, data.key, txn, data.subscriberUrl);
+					triggerRequest(
+						data.type,
+						data.key,
+						txn,
+						data.sessionId,
+						data.flowId,
+						data.sessionData,
+						data.subscriberUrl
+					);
 				} else {
 					setShowPopup(true);
 				}
 			} else {
+				if (data.expect) {
+					await addExpectation(
+						data.type,
+						data.flowId,
+						data.subscriberUrl,
+						data.sessionId
+					);
+				}
 				toast.info("waiting for BPP request");
 			}
 		}
@@ -125,11 +168,14 @@ export const StateCard: React.FC<{
 		const jsonPathChanges = {
 			json_path_changes: formData,
 		};
-		const txn = getTransactionId(data);
+		const txn = await getTransactionId(data);
 		triggerRequest(
 			data.type,
 			data.key,
 			txn,
+			data.sessionId,
+			data.flowId,
+			data.sessionData,
 			data.subscriberUrl,
 			jsonPathChanges
 		);
@@ -167,14 +213,17 @@ export const StateCard: React.FC<{
 };
 
 export default SequenceCard;
-function getTransactionId(data: State) {
+async function getTransactionId(data: State) {
 	let txn = uuidv4();
 	if (
 		data.stepIndex > 0 &&
-		data.cachedData.session_payloads[data.flowId].length > 0
+		data.transactionData?.apiList &&
+		data.transactionData?.apiList.length > 0
 	) {
-		txn =
-			data.cachedData.session_payloads[data.flowId][0].request.transaction_id;
+		const completePayload = await getCompletePayload(
+			data.transactionData.apiList.map((api) => api.payloadId)
+		);
+		txn = completePayload[0].req.context.transaction_id;
 	}
 	return txn;
 }
