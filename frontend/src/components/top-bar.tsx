@@ -12,7 +12,7 @@ const navLinks: NavLink[] = [
   { label: "Schema Validation", href: "/schema", selected: false },
   { label: "Unit Testing", href: "/unit", selected: false },
   { label: "Scenario Testing", href: "/scenario", selected: false },
-  { label: "Custom flow Workbench", href: "/customFlow", selected: false },
+  // { label: "Custom flow Workbench", href: "/customFlow", selected: false },
   { label: "Support", href: "", selected: false },
 ];
 
@@ -48,12 +48,14 @@ const TopBar = ({ onSupportClick }: IPops) => {
   return (
     <header className="fixed top-0 left-0 right-0 bg-white shadow-md z-50">
       <nav className="container mx-auto flex items-center justify-between p-4">
-        <div className="flex items-center justify-start w-full md:w-auto">
+        <div
+          className="flex items-center justify-start w-full md:w-auto cursor-pointer"
+          onClick={() => navigate("/home")}
+        >
           <img
             src="https://ondc.org/assets/theme/images/ondc_registered_logo.svg?v=d864655110"
             alt="Logo"
             className="h-10 w-auto"
-            onClick={() =>  navigate("/home")}
           />
           <h2
             className="text-2xl text-transparent bg-gradient-to-r from-sky-600 to-sky-400 bg-clip-text ml-4"

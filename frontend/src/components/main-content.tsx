@@ -11,7 +11,7 @@ import ApiTesting from "./api-testing";
 import NotFoundPage from "./ui/not-found";
 import FlowContent from "./flow-testing/flow-page";
 import ComingSoonPage from "./ui/coming-soon";
-import SchemaValidation from "./schema-validation";
+import SchemaValidation from "../pages/schema-validation";
 import HomePage from "../pages/home";
 const MainContent = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true); // Sidebar starts expanded
