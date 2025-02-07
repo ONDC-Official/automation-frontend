@@ -19,8 +19,8 @@ export const logEventEmitter = new EventEmitter();
 
 export const initializeLogSubscriber = async () => {
     try {
-        // Subscribe to DB 3 (logs database)
-        await RedisService.subscribeToDb(3, async (message: LogMessage) => {
+        // Subscribe to DB 0 (logs database)
+        await RedisService.subscribeToDb(0, async (message: LogMessage) => {
             try {
                 logger.info(`Log event received: ${JSON.stringify(message)}`);
                 
@@ -45,7 +45,7 @@ export const initializeLogSubscriber = async () => {
             }
         });
 
-        logger.info('Successfully subscribed to logs database (DB 3)');
+        logger.info('Successfully subscribed to logs database (DB 0)');
     } catch (error) {
         logger.error('Failed to initialize log subscriber:', error);
         throw error;
