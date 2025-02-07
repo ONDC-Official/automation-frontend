@@ -14,6 +14,7 @@ import FormSelect from "./ui/forms/form-select";
 import { useForm } from "react-hook-form";
 import ToggleButton from "./ui/mini-components/toggle-button";
 import { v4 as uuidv4 } from "uuid";
+import { getTransactionData } from "../utils/request-utils";
 
 const INSTRUCTION = [
   `1. Request can be made using just the payload to recieve response in sync or async mode`,
@@ -35,6 +36,7 @@ const ApiTesting = () => {
   const [npType, setNpType] = useState("BAP");
   const [actions, setActions] = useState([]);
   const [subUrl, setSubUrl] = useState("");
+  const [sessionData, setSessionData] = useState<any>({});
   const [cuurentTranscationId, setCurrentTransactionId] = useState("");
   const [selectedActionId, setSelectedActionId] = useState("");
   const [isAutomatedResponse, setIsAutomatedResponse] = useState(false);
@@ -42,6 +44,7 @@ const ApiTesting = () => {
   const [action, setAction] = useState("");
   const [isSent, setIsSent] = useState(false);
   const intervalRef = useRef<any>(null);
+  const transactionIntervalRed = useRef<any>(null);
 
   const {
     register,
@@ -63,71 +66,100 @@ const ApiTesting = () => {
     }
   };
 
-  function fetchSessionData() {
-    if (!subUrl) {
-      console.log("not sub url");
+  function fetchSessionData(sessionId: string) {
+    if (!sessionId) {
+      console.error("session Id not present");
       return;
     }
 
     axios
       .get(`${import.meta.env.VITE_BACKEND_URL}/sessions`, {
         params: {
-          subscriber_url: subUrl,
+          session_id: sessionId,
         },
       })
       .then(async (response: any) => {
-        if (response.data?.session_payloads?.unit?.length > 0) {
-          const actionData = response.data?.session_payloads?.unit[0];
-          const onActionData = response.data?.session_payloads?.unit[1];
-          if (npType === "BAP" && actionData) {
-            clearInterval(intervalRef.current);
-            const completePayload = await getCompletePayload([
-              actionData.payload_id,
-            ]);
+        if (npType === "BAP") {
+          const transactionId = response.data?.flowMap?.unit;
 
-            setResponseValue(
-              JSON.stringify(
-                completePayload[0].req || actionData.request,
-                null,
-                2
-              )
+          console.log("trnasctionId::::::::::", transactionId);
+
+          if (transactionId) {
+            clearInterval(intervalRef.current);
+
+            const transactionData = await getTransactionData(
+              transactionId,
+              subUrl
             );
-            if (actionData?.error?.message) {
-              setMdData(actionData?.response?.error?.message);
-            } else {
-              setMdData(
-                "```\n" + JSON.stringify(actionData.response, null, 2) + "\n```"
-              );
+            console.log("trnsactiondata", transactionData);
+
+            if (!transactionData) {
+              return;
             }
 
-            toast.info("Request recieved.");
-            getAvailableActions(actionData.request.transaction_id);
-            setCurrentTransactionId(actionData.request.transaction_id);
-          }
-          if (npType === "BPP" && onActionData) {
-            clearInterval(intervalRef.current);
             const completePayload = await getCompletePayload([
-              actionData.payload_id,
+              transactionData.apiList[0]?.payloadId,
             ]);
 
             setResponseValue(
-              JSON.stringify(
-                completePayload[0].req || onActionData.request,
-                null,
-                2
-              )
+              JSON.stringify(completePayload[0].req || {}, null, 2)
             );
-            if (onActionData?.error?.message) {
-              setMdData(onActionData?.response?.error?.message);
+
+            if (transactionData.apiList[0]?.response?.error) {
+              setMdData(transactionData.apiList[0].response.error.message);
             } else {
               setMdData(
                 "```\n" +
-                  JSON.stringify(onActionData.response, null, 2) +
+                  JSON.stringify(
+                    transactionData.apiList[0].response.message,
+                    null,
+                    2
+                  ) +
                   "\n```"
               );
             }
+
             toast.info("Request recieved.");
+            getAvailableActions(transactionId);
+            setCurrentTransactionId(transactionId);
           }
+        }
+
+        if (npType === "BPP") {
+          const transactionId = response.data?.flowMap?.unit;
+
+          clearInterval(intervalRef.current);
+
+          transactionIntervalRed.current = setInterval(async () => {
+            const transactionData = await getTransactionData(
+              transactionId,
+              subUrl
+            );
+
+            transactionData?.apiList?.map(async (payload: any) => {
+              if (payload.action === `on_${action}`) {
+                clearInterval(transactionIntervalRed.current);
+
+                const completePayload = await getCompletePayload([
+                  payload.payloadId,
+                ]);
+
+                setResponseValue(
+                  JSON.stringify(completePayload[0].req || {}, null, 2)
+                );
+                if (payload?.response?.error) {
+                  setMdData(payload.response.error.message);
+                } else {
+                  setMdData(
+                    "```\n" +
+                      JSON.stringify(payload.response.message, null, 2) +
+                      "\n```"
+                  );
+                }
+                toast.info("Request recieved.");
+              }
+            });
+          }, 3000);
         }
       })
       .catch((e: any) => {
@@ -205,6 +237,8 @@ const ApiTesting = () => {
       toast.error("Error parsing json.");
     }
 
+    console.log("sessionData", sessionData);
+
     try {
       setIsLoading(true);
       const response = await axios.post(
@@ -215,6 +249,9 @@ const ApiTesting = () => {
             transaction_id: cuurentTranscationId,
             subscriber_url: subUrl,
             action_id: selectedActionId || action_id,
+            version: sessionData?.version,
+            session_id: sessionData?.sessionId,
+            flow_id: "unit",
           },
         }
       );
@@ -227,7 +264,7 @@ const ApiTesting = () => {
           toast.info("Waiting for request");
         }, 500);
         intervalRef.current = setInterval(() => {
-          fetchSessionData();
+          fetchSessionData(sessionData?.sessionId);
         }, 3000);
       }
       setIsSent(true);
@@ -263,20 +300,23 @@ const ApiTesting = () => {
       <FlowDetails
         getSubUrl={(data: string) => {
           setSubUrl(data);
+          // setSessionId(sessionId)
         }}
         onNpChange={(data: string) => setNpType(data)}
-        onGetActions={() => {
+        onGetActions={(sessionData: any) => {
           const tempTransactionId = uuidv4();
+          setSessionData(sessionData);
           getAvailableActions(tempTransactionId);
           setCurrentTransactionId(tempTransactionId);
         }}
-        onSetListning={(data: string) => {
+        onSetListning={(data: string, sessionData: any) => {
           setSubUrl(data);
+          // setSessionId(sessionId)
           setTimeout(() => {
             toast.info("Waiting for request");
           }, 500);
           intervalRef.current = setInterval(() => {
-            fetchSessionData();
+            fetchSessionData(sessionData.sessionId);
           }, 3000);
         }}
       />

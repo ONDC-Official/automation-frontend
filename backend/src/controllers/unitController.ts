@@ -55,7 +55,7 @@ export const triggerUnitAction = async (req: Request, res: Response) => {
 		if (!action) {
 			res.status(400).send({ message: "action is required param" });
 		}
-		const { action_id, transaction_id, subscriber_url } = req.query;
+		const { action_id, transaction_id, subscriber_url, session_id, version, flow_id } = req.query;
 		const payload = req.body.payload;
 		if (!payload) {
 			res.status(400).send({ message: "payload is required" });
@@ -69,6 +69,9 @@ export const triggerUnitAction = async (req: Request, res: Response) => {
 					subscriber_url: subscriber_url,
 					action_id: action_id,
 					transaction_id: transaction_id,
+					version: version,
+					session_id: session_id,
+					flow_id: flow_id,
 				},
 			}
 		);

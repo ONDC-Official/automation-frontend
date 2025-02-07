@@ -1,9 +1,8 @@
+import { ApiData } from "../types/session-types";
+
 export function GetCurrentState(
 	index: number,
-	flowData: {
-		request: any;
-		response: any;
-	}[],
+	flowData: ApiData[],
 	thisFlowId: string,
 	currentFlow: string | undefined
 ): "success" | "error" | "pending" | "inactive" {
@@ -26,15 +25,17 @@ export function GetCurrentState(
 
 export function getRequestResponse(
 	index: number,
-	flowData: {
-		request: any;
-		response: any;
-	}[],
-	action: string
+	action: string,
+	flowData?: ApiData[]
 ) {
-	if (flowData.length > index) {
+	if (!flowData) {
 		return {
 			action: action,
+			request: "request not yet made",
+		};
+	}
+	if (flowData.length > index) {
+		return {
 			...flowData[index],
 		};
 	}

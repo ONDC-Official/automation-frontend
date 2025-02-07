@@ -24,4 +24,5 @@ export interface SequenceStep {
 	pair: string | null;
 	owner: "BAP" | "BPP";
 	input?: FormConfigType;
+	expect?: boolean;
 }
