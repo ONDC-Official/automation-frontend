@@ -8,7 +8,7 @@ import { IoMdHelp } from "react-icons/io";
 import Modal from "../components/modal";
 import { buttonClass } from "../components/ui/forms/loading-button";
 import Heading from "../components/ui/mini-components/ondc-gradient-text";
-import Watermak from "../components/ui/mini-components/watermark";
+// import Watermak from "../components/ui/mini-components/watermark";
 import SecondayHeader from "../components/secondary-header";
 import SchemaGuide from "../components/schema-guide";
 
@@ -24,7 +24,7 @@ const SchemaValidation = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [mdData, setMdData] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isSuccessReponse, setIsSuccessResponse] = useState(true);
+  const [_isSuccessReponse, setIsSuccessResponse] = useState(true);
   const [isValidationOpen, setIsValidationOpen] = useState(false);
   const [isGuideOpen, setIsGuideOpen] = useState(true);
   // const [isModified, setIsModified] = useState(false);

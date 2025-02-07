@@ -2,7 +2,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { TbTestPipe2Filled } from "react-icons/tb";
 import { GoWorkflow } from "react-icons/go";
-import { PiNetwork } from "react-icons/pi";
+// import { PiNetwork } from "react-icons/pi";
 import { MdSchema } from "react-icons/md";
 
 interface Feature {

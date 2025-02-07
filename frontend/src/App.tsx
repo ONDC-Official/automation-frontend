@@ -9,7 +9,7 @@ import HomePage from "./pages/home";
 import NotFoundPage from "./components/ui/not-found";
 import SchemaValidation from "./pages/schema-validation";
 import ApiTesting from "./components/api-testing";
-import ComingSoonPage from "./components/ui/coming-soon";
+// import ComingSoonPage from "./components/ui/coming-soon";
 import FlowContent from "./components/flow-testing/flow-page";
 
 function App() {
