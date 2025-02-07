@@ -148,8 +148,12 @@ export const createExpectationService = async (
 
 		let parsed: SubscriberCache = { activeSessions: [] };
 
+
 		if (sessionData) {
-			parsed = JSON.parse(sessionData);
+			const paraseSession = JSON.parse(sessionData);
+			if (paraseSession.activeSessions) {
+				parsed = JSON.parse(sessionData);
+			}
 		}
 
 		// Remove expired expectations and check for conflicts
