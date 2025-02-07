@@ -1,4 +1,4 @@
-import { redisService } from "ondc-automation-cache-lib";
+import { RedisService } from "ondc-automation-cache-lib";
 import { SessionCache } from "../interfaces/newSessionData";
 
 const SESSION_EXPIRY = 15 * 60; // 15 minutes
@@ -47,7 +47,7 @@ export const createUnitSessionService = async (
 
 	try {
 		// Store session data in Redis
-		await redisService.setKey(
+		await RedisService.setKey(
 			sessionId,
 			JSON.stringify(transformedData),
 			SESSION_EXPIRY
