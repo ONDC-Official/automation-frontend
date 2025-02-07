@@ -109,7 +109,9 @@ export const StateCard: React.FC<{
 		console.log("running trigger");
 		if (data.sessionData?.npType === "BAP") {
 			if (data.owner === "BPP") {
+				console.log("hello bro");
 				if (data.input === undefined) {
+					console.log("triggering request");
 					triggerRequest(
 						data.type,
 						data.key,
@@ -221,7 +223,7 @@ async function getTransactionId(data: State) {
 		const completePayload = await getCompletePayload(
 			data.transactionData.apiList.map((api) => api.payloadId)
 		);
-		txn = completePayload[0].context.transaction_id;
+		txn = completePayload[0].req.context.transaction_id;
 	}
 	return txn;
 }
