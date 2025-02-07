@@ -6,7 +6,6 @@ import cookieParser from 'cookie-parser';
 import session from 'express-session';
 import redisClient from './config/redisConfig';
 import cors from "cors"
-import { initializeLogSubscriber } from './services/logSubscriberService';
 import logger from './utils/logger';
 const RedisStore = require("connect-redis").default;
 
@@ -17,9 +16,6 @@ const initializeRedis = async () => {
     try {
         // Initialize main DB connection (DB 0)
         RedisService.useDb(0);
-        
-        // Initialize log subscriber (DB 3)
-        await initializeLogSubscriber();
         
         logger.info('Redis connections initialized successfully');
     } catch (error) {
