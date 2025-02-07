@@ -17,7 +17,7 @@ const initializeRedis = async () => {
         // Initialize main DB connection (DB 0)
         RedisService.useDb(0);
         
-        logger.info('Redis connections initialized successfully');
+        logger.info('Redis connections initialized successfully.');
     } catch (error) {
         logger.error('Failed to initialize Redis connections:', error);
         process.exit(1);
