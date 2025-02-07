@@ -7,7 +7,7 @@ import Support from "./components/support";
 import { Route, Routes } from "react-router-dom";
 import HomePage from "./pages/home";
 import NotFoundPage from "./components/ui/not-found";
-import SchemaValidation from "./components/schema-validation";
+import SchemaValidation from "./pages/schema-validation";
 import ApiTesting from "./components/api-testing";
 import ComingSoonPage from "./components/ui/coming-soon";
 import FlowContent from "./components/flow-testing/flow-page";
@@ -26,13 +26,13 @@ function App() {
   return (
     <>
       <TopBar onSupportClick={() => setIsModalOpen(true)} />
-      <div className="pt-20 h-full">
+      <div className="pt-[72px] h-full">
         <Routes>
           <Route path="/home" element={<HomePage />} />
           <Route path="/schema" element={<SchemaValidation />} />
           <Route path="/unit" element={<ApiTesting />} />
           <Route path="/scenario" element={<FlowContent />} />
-          <Route path="/customFlow" element={<ComingSoonPage />} />
+          {/* <Route path="/customFlow" element={<ComingSoonPage />} /> */}
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </div>
