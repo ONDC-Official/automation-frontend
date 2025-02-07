@@ -31,12 +31,12 @@ const features: Feature[] = [
     path: "/scenario",
     icon: <GoWorkflow className="text-yellow-500 text-4xl" />,
   },
-  {
-    title: "Custom Flow Workbench",
-    description: "Custom flow workbench.",
-    path: "/customFlow",
-    icon: <PiNetwork className="text-purple-500 text-4xl" />,
-  },
+  // {
+  //   title: "Custom Flow Workbench",
+  //   description: "Custom flow workbench.",
+  //   path: "/customFlow",
+  //   icon: <PiNetwork className="text-purple-500 text-4xl" />,
+  // },
 ];
 
 const Features: React.FC = () => {
@@ -46,7 +46,7 @@ const Features: React.FC = () => {
       <h2 className="text-4xl font-extrabold text-center text-gray-800 mb-12">
         🚀 Our Features
       </h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
         {features.map((feature, index) => (
           <div
             key={index}
