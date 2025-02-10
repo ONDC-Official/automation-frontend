@@ -30,7 +30,7 @@ export const createUnitSessionService = async (
 	const transformedData: SessionCache = {
 		transactionIds: [],
 		flowMap: {},
-		npType:participantType,
+		npType: participantType,
 		domain,
 		version,
 		subscriberUrl: subscriberUrl,
