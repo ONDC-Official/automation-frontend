@@ -1,9 +1,4 @@
 import { RedisService } from "ondc-automation-cache-lib";
-import { ContextCache, SessionData } from "../interfaces/sessionData";
-import {
-	TransformedSessionData,
-	SessionKeyType,
-} from "../interfaces/sessionData";
 import { SessionCache, SubscriberCache } from "../interfaces/newSessionData";
 import { fetchConfigService } from "./flowService";
 import logger from "../utils/logger";
@@ -206,6 +201,7 @@ export const createExpectationService = async (
 
 		saveLog(sessionId, `Expectation created for action: ${expectedAction}`);
 		// Update Redis with the modified session data
+		await RedisService.setKey(subscriberUrl, JSON.stringify(parsed));
 		await RedisService.setKey(subscriberUrl, JSON.stringify(parsed));
 
 		return "Expectation created successfully";

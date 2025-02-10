@@ -1,6 +1,5 @@
 import logger from "./logger";
-import { redisService } from "ondc-automation-cache-lib";
-
+import { RedisService } from "ondc-automation-cache-lib";
 export async function saveLog(
 	sessionId: string,
 	message: string,
@@ -18,8 +17,8 @@ export async function saveLog(
 		let logs = [];
 		const key = `consoleLogs:${sessionId}`;
 
-		if (await redisService.keyExists(key)) {
-			const existingLogs = await redisService.getKey(key);
+		if (await RedisService.keyExists(key)) {
+			const existingLogs = await RedisService.getKey(key);
 			logs = JSON.parse(existingLogs ?? "[]");
 		}
 
@@ -27,7 +26,7 @@ export async function saveLog(
 		logs.push(logEntry);
 
 		// Store updated logs
-		await redisService.setKey(key, JSON.stringify(logs));
+		await RedisService.setKey(key, JSON.stringify(logs));
 	} catch (error) {
 		logger.error("Error saving log to Redis:", error);
 	}
