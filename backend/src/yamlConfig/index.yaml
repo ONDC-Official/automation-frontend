@@ -22,6 +22,21 @@ domain:
       - id: STATION_CODE_FLOW_ORDER
         description: User uses station code for searching metro
         sequence:
+          - key: search1
+            type: search
+            unsolicited: false
+            description:
+              User searches over the network to avail the metro mode of transport
+              in the city
+            pair: on_search1
+            owner: BAP
+            expect: true
+          - key: on_search1
+            type: on_search
+            unsolicited: false
+            description: Response with all station codes
+            pair: null
+            owner: BPP
           - key: search2
             type: search
             unsolicited: false
@@ -30,7 +45,7 @@ domain:
               from one station to another
             pair: on_search2
             owner: BAP
-            expect: true
+            expect: false
             input:
               - name: vehicle_category
                 label: Select vehicle category
@@ -119,6 +134,21 @@ domain:
       - id: TECHNICAL_CANCELLATION_FLOW
         description: User cancels the metro booking
         sequence:
+          - key: search1
+            type: search
+            unsolicited: false
+            description:
+              User searches over the network to avail the metro mode of transport
+              in the city
+            pair: on_search1
+            owner: BAP
+            expect: true
+          - key: on_search1
+            type: on_search
+            unsolicited: false
+            description: Response with all station codes
+            pair: null
+            owner: BPP
           - key: search2
             type: search
             unsolicited: false
@@ -230,6 +260,21 @@ domain:
       - id: DELAYED_CANCELLATION_FLOW_ACCEPTED
         description: User cancels the metro booking
         sequence:
+          - key: search1
+            type: search
+            unsolicited: false
+            description:
+              User searches over the network to avail the metro mode of transport
+              in the city
+            pair: on_search1
+            owner: BAP
+            expect: true
+          - key: on_search1
+            type: on_search
+            unsolicited: false
+            description: Response with all station codes
+            pair: null
+            owner: BPP
           - key: search2
             type: search
             unsolicited: false
