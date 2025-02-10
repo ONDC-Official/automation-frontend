@@ -7,6 +7,7 @@ import {
 import { SessionCache, SubscriberCache } from "../interfaces/newSessionData";
 import { fetchConfigService } from "./flowService";
 import logger from "../utils/logger";
+import { saveLog } from "../utils/console";
 
 const SESSION_EXPIRY = 3600; // 1 hour
 const EXPECTATION_EXPIRY = 5 * 60 * 1000; // 5 minutes
@@ -153,7 +154,6 @@ export const createExpectationService = async (
 
 		let parsed: SubscriberCache = { activeSessions: [] };
 
-
 		if (sessionData) {
 			const paraseSession = JSON.parse(sessionData);
 			if (paraseSession.activeSessions) {
@@ -168,12 +168,22 @@ export const createExpectationService = async (
 			if (isExpired) return false; // Remove expired session
 
 			if (expectation.sessionId === sessionId) {
+				saveLog(
+					sessionId,
+					`Expectation already exists for sessionId: ${sessionId}`,
+					"error"
+				);
 				throw new Error(
 					`Expectation already exists for sessionId: ${sessionId} and flowId: ${flowId}`
 				);
 			}
 
 			if (expectation.expectedAction === expectedAction) {
+				saveLog(
+					sessionId,
+					`Expectation already exists for action: ${expectedAction}`,
+					"error"
+				);
 				throw new Error(
 					`Expectation already exists for the action: ${expectedAction}`
 				);
@@ -194,6 +204,7 @@ export const createExpectationService = async (
 
 		parsed.activeSessions.push(expectation);
 
+		saveLog(sessionId, `Expectation created for action: ${expectedAction}`);
 		// Update Redis with the modified session data
 		await RedisService.setKey(subscriberUrl, JSON.stringify(parsed));
 
