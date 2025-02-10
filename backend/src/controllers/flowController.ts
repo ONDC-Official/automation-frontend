@@ -8,6 +8,7 @@ import getPredefinedFlowConfig, {
 	fetchExampleConfig,
 } from "../config/unittestConfig";
 import logger from "../utils/logger";
+import { saveLog } from "../utils/console";
 
 export const fetchConfig = (req: Request, res: Response) => {
 	try {
@@ -67,12 +68,15 @@ export const handleTriggerRequest = async (
 		if (
 			!req.query.action_id ||
 			!req.query.transaction_id ||
-			!req.query.subscriber_url
+			!req.query.subscriber_url ||
+			!req.query.session_id
 		) {
 			res.status(400).send("Bad Request");
 			return;
 		}
 		const triggerInput: TriggerInput = req.body;
+
+		saveLog(req.query.session_id as string, `Triggering action ${action}`);
 
 		const response = await axios.post(
 			`${process.env.MOCK_SERVICE as string}/trigger/api-service/${action}`,
