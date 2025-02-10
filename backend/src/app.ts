@@ -26,6 +26,7 @@ const initializeRedis = async () => {
     logger.error("Failed to initialize Redis connections:", error);
     process.exit(1);
   }
+
 };
 
 // Initialize Redis
