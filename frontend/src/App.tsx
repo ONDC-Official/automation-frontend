@@ -40,7 +40,7 @@ function App() {
         <Support />
       </Modal>
       <ToastContainer
-        position="bottom-right"
+        position="top-right"
         autoClose={2000}
         hideProgressBar={false}
         newestOnTop
