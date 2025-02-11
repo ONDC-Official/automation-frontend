@@ -9,6 +9,7 @@ interface IProps {
 
 const Console = ({ logs }: IProps) => {
   const [isOpen, setIsOpen] = useState(false);
+
   return (
     <div className="fixed bottom-4 right-4 z-50 bg-white p-2 shadow-md rounded-sm">
       {isOpen ? (
