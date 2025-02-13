@@ -199,7 +199,7 @@ export const createExpectationService = async (
 
 		parsed.activeSessions.push(expectation);
 
-		saveLog(sessionId, `Expectation created for action: ${expectedAction}`);
+		saveLog(sessionId, `waiting for action: ${expectedAction}`);
 		// Update Redis with the modified session data
 		await RedisService.setKey(subscriberUrl, JSON.stringify(parsed));
 		await RedisService.setKey(subscriberUrl, JSON.stringify(parsed));
