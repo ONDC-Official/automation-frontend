@@ -11,6 +11,7 @@ import {
 	requestForFlowPermissionService,
 	updateSessionService,
 } from "../services/sessionService";
+import { saveLog } from "../utils/console";
 
 const SESSION_EXPIRY = 3600; // 1 hour
 const COOKIE_OPTIONS = { maxAge: SESSION_EXPIRY, httpOnly: true };
@@ -88,6 +89,10 @@ export const clearFlow = async (req: Request, res: Response) => {
 		const sessionId = req.query.session_id as string;
 		const flowId = req.query.flow_id as string;
 		await clearFlowService(sessionId, flowId);
+		saveLog(
+			sessionId,
+			`Flow cleared for session ${sessionId} and flow ${flowId}`
+		);
 		res.status(200).send({ message: "Flow cleared" });
 	} catch (e) {
 		logger.error("error clearing flow", e);

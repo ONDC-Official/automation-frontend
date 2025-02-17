@@ -76,7 +76,7 @@ export const handleTriggerRequest = async (
 		}
 		const triggerInput: TriggerInput = req.body;
 
-		saveLog(req.query.session_id as string, `Triggering action ${action}`);
+		saveLog(req.query.session_id as string, `Sending action ${action}`);
 
 		const response = await axios.post(
 			`${process.env.MOCK_SERVICE as string}/trigger/api-service/${action}`,
