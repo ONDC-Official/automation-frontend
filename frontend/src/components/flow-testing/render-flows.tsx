@@ -6,7 +6,7 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import { ApiData, SessionCache } from "../../types/session-types";
 import {
-	putCacheData,
+	// putCacheData,
 	getCompletePayload,
 	getTransactionData,
 	getLogs,
@@ -154,14 +154,11 @@ function RenderFlows({
 			const transData = await getTransactionData(transactionId, subUrl);
 			if (!transData) continue;
 			apiList = transData.apiList;
-		}
 
-		Object.entries(apiList || {}).map((data) => {
-			const [key, value]: any = data;
-			if (value.length) {
-				body[key] = value.map((val: any) => val.payload_id);
-			}
-		});
+			body[flow]  = (apiList || []).map((data) => {
+				 return data.payloadId;
+			});
+		}
 
 		axios
 			.post(`${import.meta.env.VITE_BACKEND_URL}/flow/report`, body, {
