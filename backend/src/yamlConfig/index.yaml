@@ -235,9 +235,9 @@ domain:
             type: status
             unsolicited: false
             description: Consumer platform requests for the status of the order
-            pair: on_status_active
+            pair: on_status
             owner: BAP
-          - key: on_status_active
+          - key: on_status
             type: on_status
             unsolicited: false
             description: Provider platform responds with the status of the order
@@ -361,7 +361,7 @@ domain:
             type: status
             unsolicited: false
             description: Consumer platform requests for the status of the order
-            pair: on_status_active
+            pair: on_status
             owner: BAP
           - key: on_status
             type: on_status
