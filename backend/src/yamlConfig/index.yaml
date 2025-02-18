@@ -247,9 +247,9 @@ domain:
             type: cancel
             unsolicited: false
             description: User cancels the booking
-            pair: on_cancel
+            pair: on_cancel_hard
             owner: BAP
-          - key: on_cancel
+          - key: on_cancel_hard
             type: on_cancel
             unsolicited: false
             description:
