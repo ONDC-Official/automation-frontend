@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { FetchFlowsResponse } from "../../types/flow-types";
+import { Flow } from "../../types/flow-types";
 import InfoCard from "../ui/info-card";
 import DifficultyCards from "../ui/difficulty-cards";
 import axios from "axios";
@@ -25,7 +25,7 @@ function RenderFlows({
 	setStep,
 	setReport,
 }: {
-	flows: FetchFlowsResponse;
+	flows: Flow[];
 	subUrl: string;
 	sessionId: string;
 	setStep: React.Dispatch<React.SetStateAction<number>>;
@@ -218,9 +218,9 @@ function RenderFlows({
 			<div className="flex flex-1 w-full">
 				{/* Left Column - Main Content */}
 				<div className="w-full sm:w-[60%] overflow-y-auto p-4">
-					{flows.domain.map((domain) => (
-						<div key={domain.name} className="mb-8">
-							{domain.flows.map((flow) => (
+					{/* {flows.domain.map((domain) => ( */}
+						<div className="mb-8">
+							{flows.map((flow) => (
 								<Accordion
 									key={flow.id}
 									flow={flow}
@@ -235,7 +235,7 @@ function RenderFlows({
 								/>
 							))}
 						</div>
-					))}
+					{/* ))} */}
 				</div>
 
 				{/* Right Column - Sticky Request & Response */}
