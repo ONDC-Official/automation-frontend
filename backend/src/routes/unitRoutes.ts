@@ -11,7 +11,7 @@ const router = Router();
 
 router.get(
   "/safe-actions",
-  validateRequiredParams(["transaction_id", "mock_type"]),
+  validateRequiredParams(["transaction_id", "mock_type", "session_id"]),
   fetchSafeActions
 );
 
