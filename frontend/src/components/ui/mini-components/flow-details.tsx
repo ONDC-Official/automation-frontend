@@ -132,6 +132,7 @@ const FlowDetails = ({
       participantType: npType,
       subscriberUrl: subUrl,
       version: version,
+      usecaseId: usecase.toUpperCase()
     };
 
     try {
