@@ -19,6 +19,7 @@ export const fetchSafeActions = async (req: Request, res: Response) => {
 			params: {
 				transaction_id: query.transaction_id,
 				mock_type: query.mock_type,
+				session_id: query.session_id
 			},
 		});
 		res.status(200).send(response.data);
@@ -92,7 +93,7 @@ export const triggerUnitAction = async (req: Request, res: Response) => {
 export const getTriggerUnitAction = async (req: Request, res: Response) => {
 	try {
 		const action = req.params.action;
-		const { action_id, transaction_id, subscriber_url } = req.query;
+		const { action_id, transaction_id, subscriber_url, session_id } = req.query;
 		const response = await axios.get(
 			`${process.env.MOCK_SERVICE as string}/trigger/payload/${action}`,
 			{
@@ -100,6 +101,7 @@ export const getTriggerUnitAction = async (req: Request, res: Response) => {
 					subscriber_url: subscriber_url,
 					action_id: action_id,
 					transaction_id: transaction_id,
+					session_id: session_id
 				},
 			}
 		);

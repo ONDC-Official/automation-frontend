@@ -64,7 +64,7 @@ export default function FlowContent() {
 					params:  {
 						domain: data.domain,
 						version: data.version,
-						usecase: data.usecase
+						usecase: data.usecaseId
 					}
 				}
 			);
@@ -120,9 +120,9 @@ export default function FlowContent() {
 								/>
 								<FormSelect
 									label="Enter Usecase"
-									name="usecase"
+									name="usecaseId"
 									required={true}
-									options={["Metro"]}
+									options={["Metro", "Bus"]}
 								/>
 								{/* <FormInput
 									label="Enter City Code"

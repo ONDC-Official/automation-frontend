@@ -10,7 +10,7 @@ export const createSessionService = async (
 	sessionId: string,
 	data: SessionCache
 ) => {
-	const { npType, domain, version, subscriberUrl, env } = data;
+	const { npType, domain, version, subscriberUrl, env, usecaseId } = data;
 	const flowConfig = fetchConfigService();
 	const domainFlow = flowConfig.domain.find((s) => s.name === domain);
 	const keys = domainFlow?.flows.map((f) => f.id);
@@ -29,6 +29,7 @@ export const createSessionService = async (
 		version,
 		subscriberUrl,
 		env,
+		usecaseId: usecaseId.toUpperCase(),
 		sessionDifficulty: {
 			sensitiveTTL: true,
 			useGateway: true,

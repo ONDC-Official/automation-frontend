@@ -168,7 +168,10 @@ const ApiTesting = () => {
       });
   }
 
-  const getAvailableActions = async (transcation_id: string) => {
+  const getAvailableActions = async (
+    transcation_id: string,
+    sessionId?: string
+  ) => {
     try {
       toast.info("Getting available actions.");
       const response = await axios.get(
@@ -177,6 +180,7 @@ const ApiTesting = () => {
           params: {
             transaction_id: transcation_id,
             mock_type: npType === "BAP" ? "BPP" : "BAP",
+            session_id: sessionId || sessionData?.sessionId,
           },
         }
       );
@@ -195,7 +199,11 @@ const ApiTesting = () => {
     }
   };
 
-  const getPayload = async (action_id: string, filteredAction?: string) => {
+  const getPayload = async (
+    action_id: string,
+    session_id: string,
+    filteredAction?: string
+  ) => {
     try {
       const response = await axios.get(
         `${import.meta.env.VITE_BACKEND_URL}/unit/trigger/${
@@ -206,6 +214,7 @@ const ApiTesting = () => {
             transaction_id: cuurentTranscationId,
             subscriber_url: subUrl,
             action_id: action_id,
+            session_id: session_id,
           },
         }
       );
@@ -306,7 +315,7 @@ const ApiTesting = () => {
         onGetActions={(sessionData: any) => {
           const tempTransactionId = uuidv4();
           setSessionData(sessionData);
-          getAvailableActions(tempTransactionId);
+          getAvailableActions(tempTransactionId, sessionData.sessionId);
           setCurrentTransactionId(tempTransactionId);
         }}
         onSetListning={(data: string, sessionData: any) => {
@@ -360,7 +369,7 @@ const ApiTesting = () => {
                 setSelectedValue={(data: any) => {
                   setSelectedActionId(data);
                   const filteredAction = filterActionsData(data);
-                  getPayload(data, filteredAction);
+                  getPayload(data, sessionData?.sessionId, filteredAction);
                 }}
               />
             </div>
