@@ -14,6 +14,7 @@ export const createUnitSessionService = async (
 		// subscriberId,
 		subscriberUrl,
 		version,
+		usecaseId
 	} = data;
 
 	const session_payloads = {
@@ -35,6 +36,7 @@ export const createUnitSessionService = async (
 		version,
 		subscriberUrl: subscriberUrl,
 		env: "STAGING",
+		usecaseId,
 		sessionDifficulty: {
 			sensitiveTTL: false,
 			useGateway: false,
