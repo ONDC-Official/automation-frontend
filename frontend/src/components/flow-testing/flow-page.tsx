@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FormInput } from "../ui/forms/form-input";
 import FormSelect from "../ui/forms/form-select";
 import GenericForm from "../ui/forms/generic-form";
 import axios from "axios";
-import { Flow } from "../../types/flow-types";
+import { FetchFlowsResponse } from "../../types/flow-types";
 import RenderFlows from "./render-flows";
 import Stepper from "../ui/mini-components/stepper";
 import { MdOutlineDomainVerification } from "react-icons/md";
@@ -18,7 +18,7 @@ export default function FlowContent() {
 	const [step, setStep] = useState(0);
 	const [session, setSession] = useState<string>("");
 	const [subUrl, setSubUrl] = useState<string>("");
-	const [flows, setFlows] = useState<Flow[] | null>(null);
+	const [flows, setFlows] = useState<FetchFlowsResponse | null>(null);
 	const [report, setReport] = useState("");
 
 	const onSubmit = async (data: any) => {
@@ -56,33 +56,22 @@ export default function FlowContent() {
 			console.error("error while sending response", e);
 		}
 	};
-	const fetchFlows = async (data: any) => {
+	const fetchFlows = async () => {
 		try {
 			const response = await axios.get(
-				`${import.meta.env.VITE_BACKEND_URL}/config/flows`,
-				{
-					params:  {
-						domain: data.domain,
-						version: data.version,
-						usecase: data.usecase
-					}
-				}
+				`${import.meta.env.VITE_BACKEND_URL}/flow`,
+				{}
 			);
-			setFlows(response.data.data.flows);
+			setFlows(response.data);
 			console.log("flows", response.data);
 		} catch (e) {
 			console.log("error while fetching flows", e);
 		}
 	};
 
-	const onSubmitHandler = async (data: any) => {
-		await fetchFlows(data)
-		await onSubmit(data)
-	}
-
-	// useEffect(() => {
-	// 	fetchFlows();
-	// }, []);
+	useEffect(() => {
+		fetchFlows();
+	}, []);
 
 	const Body = () => {
 		switch (step) {
@@ -93,7 +82,7 @@ export default function FlowContent() {
 							<Heading size=" text-xl" className="mb-2">
 								Details
 							</Heading>
-							<GenericForm onSubmit={onSubmitHandler}>
+							<GenericForm onSubmit={onSubmit}>
 								<FormInput
 									label="Enter Subscriber Url"
 									name="subscriberUrl"
@@ -117,12 +106,6 @@ export default function FlowContent() {
 									name="version"
 									required={true}
 									options={["2.0.0"]}
-								/>
-								<FormSelect
-									label="Enter Usecase"
-									name="usecase"
-									required={true}
-									options={["Metro"]}
 								/>
 								{/* <FormInput
 									label="Enter City Code"
