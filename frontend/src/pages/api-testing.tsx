@@ -43,6 +43,7 @@ const ApiTesting = () => {
   const [allActions, setAllActions] = useState([]);
   const [action, setAction] = useState("");
   const [isSent, setIsSent] = useState(false);
+  const [sessionIdState, setSessionIdState] = useState("");
   const intervalRef = useRef<any>(null);
   const transactionIntervalRed = useRef<any>(null);
 
@@ -66,7 +67,7 @@ const ApiTesting = () => {
       .then(async (response: any) => {
         if (npType === "BAP") {
           const transactionId = response.data?.flowMap?.unit;
-
+          setSessionData(response.data);
           console.log("trnasctionId::::::::::", transactionId);
 
           if (transactionId) {
@@ -105,7 +106,7 @@ const ApiTesting = () => {
             }
 
             toast.info("Request recieved.");
-            getAvailableActions(transactionId);
+            getAvailableActions(transactionId, sessionId);
             setCurrentTransactionId(transactionId);
           }
         }
@@ -157,6 +158,7 @@ const ApiTesting = () => {
     transcation_id: string,
     sessionId?: string
   ) => {
+    console.log("session id:::::", sessionId, sessionData);
     try {
       toast.info("Getting available actions.");
       const response = await axios.get(
@@ -189,6 +191,7 @@ const ApiTesting = () => {
     session_id: string,
     filteredAction?: string
   ) => {
+    console.log("sessionData", session_id, sessionData);
     try {
       const response = await axios.get(
         `${import.meta.env.VITE_BACKEND_URL}/unit/trigger/${
@@ -199,7 +202,7 @@ const ApiTesting = () => {
             transaction_id: cuurentTranscationId,
             subscriber_url: subUrl,
             action_id: action_id,
-            session_id: session_id,
+            session_id: session_id || sessionIdState,
           },
         }
       );
@@ -244,7 +247,7 @@ const ApiTesting = () => {
             subscriber_url: subUrl,
             action_id: selectedActionId || action_id,
             version: sessionData?.version,
-            session_id: sessionData?.sessionId,
+            session_id: sessionData?.sessionId || sessionIdState,
             flow_id: "unit",
           },
         }
@@ -305,7 +308,7 @@ const ApiTesting = () => {
         }}
         onSetListning={(data: string, sessionData: any) => {
           setSubUrl(data);
-          // setSessionId(sessionId)
+          setSessionIdState(sessionData.sessionId);
           setTimeout(() => {
             toast.info("Waiting for request");
           }, 500);
