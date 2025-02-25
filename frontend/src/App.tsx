@@ -8,7 +8,7 @@ import { Route, Routes } from "react-router-dom";
 import HomePage from "./pages/home";
 import NotFoundPage from "./components/ui/not-found";
 import SchemaValidation from "./pages/schema-validation";
-import ApiTesting from "./components/api-testing";
+import ApiTesting from "./pages/api-testing";
 import FlowContent from "./components/flow-testing/flow-page";
 
 function App() {

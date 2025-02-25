@@ -4,17 +4,17 @@ import Markdown from "react-markdown";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { IoMdHelp } from "react-icons/io";
-import Modal from "./modal";
-import { buttonClass } from "./ui/forms/loading-button";
-import Heading from "./ui/mini-components/ondc-gradient-text";
+import Modal from "../components/modal";
+import { buttonClass } from "../components/ui/forms/loading-button";
+import Heading from "../components/ui/mini-components/ondc-gradient-text";
 import { MdEdit } from "react-icons/md";
-import FlowDetails from "./ui/mini-components/flow-details";
+import FlowDetails from "../components/ui/mini-components/flow-details";
 import { GrRefresh } from "react-icons/gr";
-import FormSelect from "./ui/forms/form-select";
+import FormSelect from "../components/ui/forms/form-select";
 import { useForm } from "react-hook-form";
-import ToggleButton from "./ui/mini-components/toggle-button";
+import ToggleButton from "../components/ui/mini-components/toggle-button";
 import { v4 as uuidv4 } from "uuid";
-import { getTransactionData } from "../utils/request-utils";
+import { getTransactionData, getCompletePayload } from "../utils/request-utils";
 
 const INSTRUCTION = [
   `1. Request can be made using just the payload to recieve response in sync or async mode`,
@@ -50,21 +50,6 @@ const ApiTesting = () => {
     register,
     formState: { errors },
   } = useForm();
-
-  const getCompletePayload = async (payload_ids: string[]) => {
-    try {
-      const response = await axios.post(
-        `${import.meta.env.VITE_BACKEND_URL}/db/payload`,
-        {
-          payload_ids: payload_ids,
-        }
-      );
-
-      return response.data;
-    } catch (e: any) {
-      console.log("error while fetching complete paylaod: ", e);
-    }
-  };
 
   function fetchSessionData(sessionId: string) {
     if (!sessionId) {

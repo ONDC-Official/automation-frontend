@@ -7,7 +7,7 @@ import { GoWorkflow } from "react-icons/go";
 import { PiNetwork } from "react-icons/pi";
 import { MdSchema } from "react-icons/md";
 
-import ApiTesting from "./api-testing";
+import ApiTesting from "../pages/api-testing";
 import NotFoundPage from "./ui/not-found";
 import FlowContent from "./flow-testing/flow-page";
 import ComingSoonPage from "./ui/coming-soon";
