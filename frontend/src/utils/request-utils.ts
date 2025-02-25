@@ -146,7 +146,7 @@ export const addExpectation = async (
         },
       }
     );
-    toast.info("Expectation added");
+    // toast.info("Expectation added");
   } catch (e: any) {
     console.log(e);
     toast.error(e?.message ?? "Error adding expectation");
