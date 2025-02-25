@@ -61,8 +61,8 @@ function RenderFlows({
 	}, [subUrl]);
 
 	useEffect(() => {
-		if (sideView?.payload_id) {
-			getCompletePayload([sideView.payload_id])
+		if (sideView?.payloadId) {
+			getCompletePayload([sideView.payloadId])
 				.then((data: any) => {
 					setRequestData(data[0].req);
 				})
