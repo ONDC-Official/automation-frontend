@@ -19,7 +19,7 @@ router.post("/unit-session", createUnitSession);
 
 router.get(
   "/trigger/:action",
-  validateRequiredParams(["transaction_id", "subscriber_url", "action_id"]),
+  validateRequiredParams(["transaction_id", "subscriber_url", "action_id", "session_id"]),
   getTriggerUnitAction
 );
 
