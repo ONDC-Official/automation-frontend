@@ -11,10 +11,16 @@ import { MdEdit } from "react-icons/md";
 import FlowDetails from "../components/ui/mini-components/flow-details";
 import { GrRefresh } from "react-icons/gr";
 import FormSelect from "../components/ui/forms/form-select";
+import Popup from "../components/ui/pop-up/pop-up";
 import { useForm } from "react-hook-form";
 import ToggleButton from "../components/ui/mini-components/toggle-button";
 import { v4 as uuidv4 } from "uuid";
-import { getTransactionData, getCompletePayload } from "../utils/request-utils";
+import {
+  getTransactionData,
+  getCompletePayload,
+  requestForFlowPermission,
+  addExpectation,
+} from "../utils/request-utils";
 
 const INSTRUCTION = [
   `1. Request can be made using just the payload to recieve response in sync or async mode`,
@@ -23,6 +29,16 @@ const INSTRUCTION = [
   `3. Request can be manual or custom`,
   `4. Manual: Paste any beckn payload in the request to reviceve the response.
       Custom: Select a particular domain, usecase and type to generate the request payload and recieve response`,
+];
+
+const expectedApis = [
+  "search",
+  "select",
+  "init",
+  "confirm",
+  "status",
+  "cancel",
+  "update",
 ];
 
 const ApiTesting = () => {
@@ -44,6 +60,8 @@ const ApiTesting = () => {
   const [action, setAction] = useState("");
   const [isSent, setIsSent] = useState(false);
   const [sessionIdState, setSessionIdState] = useState("");
+  const [isExpectedApiPopupOpen, setIsExpectedApiPopupOpen] = useState(false);
+  const [_api, setApi] = useState("");
   const intervalRef = useRef<any>(null);
   const transactionIntervalRed = useRef<any>(null);
 
@@ -273,6 +291,30 @@ const ApiTesting = () => {
     }
   };
 
+  const onContinueHandler = () => {
+    setActions([]);
+    setPayload("");
+    setIsSent(false);
+    // setResponseValue("")
+    // setMdData("")
+
+    if (npType === "BAP") {
+      setIsExpectedApiPopupOpen(true);
+    } else {
+      getAvailableActions(cuurentTranscationId, sessionData.sessionId);
+    }
+  };
+
+  const checkAndSetExpeectation = async (expectedApi: string) => {
+    const permission = await requestForFlowPermission(expectedApi, subUrl);
+
+    if (!permission) {
+      return;
+    }
+
+    await addExpectation(expectedApi, "unit", subUrl, sessionIdState);
+  };
+
   const filterActionsData = (data: string) => {
     let seletedAction = "";
     allActions.map((action: any) => {
@@ -317,6 +359,29 @@ const ApiTesting = () => {
           }, 3000);
         }}
       />
+      <Popup isOpen={isExpectedApiPopupOpen}>
+        <FormSelect
+          name="api"
+          label="Expected API"
+          options={expectedApis}
+          required
+          register={register}
+          errors={errors}
+          disabled={expectedApis.length === 0}
+          setSelectedValue={async (data: string) => {
+            setApi(data);
+            await checkAndSetExpeectation(data);
+            setIsExpectedApiPopupOpen(false);
+            setTimeout(() => {
+              toast.info("Waiting for request");
+            }, 500);
+            intervalRef.current = setInterval(() => {
+              fetchSessionData(sessionData.sessionId);
+            }, 3000);
+          }}
+          nonSelectedValue
+        />
+      </Popup>
       <div className="w-[100%] flex flex-row">
         <div className="w-3/6 p-4 gap-4 flex flex-col">
           <div className="flex flex-row items-center justify-between">
@@ -461,6 +526,12 @@ const ApiTesting = () => {
               </Markdown>
             </div>
           </div>
+          <button
+            className={`${buttonClass} transition-colors disabled:opacity-50 disabled:cursor-not-allowed`}
+            onClick={onContinueHandler}
+          >
+            Continue
+          </button>
         </div>
       </div>
     </div>

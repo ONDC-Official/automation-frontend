@@ -30,6 +30,7 @@ const FormSelect = ({
 	const onSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
 		console.log(e.target.value, "index");
 		setSelectedValue(e.target.value);
+		console.log("reaching till here>>>???")
 		setValue(e.target.value)
 	};
 	return (
