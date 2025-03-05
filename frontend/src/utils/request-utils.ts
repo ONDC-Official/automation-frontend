@@ -214,3 +214,16 @@ export const getLogs = async (sessionId: string) => {
     console.error("Something went wrong while fetching logs: ", e);
   }
 };
+
+export const fetchFormFieldData = async () => {
+  try {
+    const response = await axios.get(
+      `${import.meta.env.VITE_BACKEND_URL}/config/senarioFormData`
+    );
+
+    console.log("form field data", response.data);
+    return response.data;
+  } catch (e) {
+    console.log("error while fetching form field data", e);
+  }
+};
