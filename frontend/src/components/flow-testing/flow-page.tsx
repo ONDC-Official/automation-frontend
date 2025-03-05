@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FormInput } from "../ui/forms/form-input";
 import FormSelect from "../ui/forms/form-select";
 import GenericForm from "../ui/forms/generic-form";
@@ -20,6 +20,19 @@ export default function FlowContent() {
 	const [subUrl, setSubUrl] = useState<string>("");
 	const [flows, setFlows] = useState<Flow[] | null>(null);
 	const [report, setReport] = useState("");
+	const [dynamicList, setDynamicList] = useState({
+		domain: [],
+		version: [],
+		usecase: []
+	})
+	const [dynamicValue, setDyanmicValue] = useState({
+		domain: "",
+		version: "",
+		usecase: "",
+		subscriberUrl: "",
+		npType: "BAP",
+		env: "STAGING"
+	})
 
 	const onSubmit = async (data: any) => {
 		try {
@@ -76,13 +89,28 @@ export default function FlowContent() {
 	};
 
 	const onSubmitHandler = async (data: any) => {
+		console.log("is it working")
 		await fetchFlows(data)
 		await onSubmit(data)
 	}
 
-	// useEffect(() => {
-	// 	fetchFlows();
-	// }, []);
+	const fetchFormFieldData = async () => {
+		try {
+			const response = await axios.get(
+				`${import.meta.env.VITE_BACKEND_URL}/config/senarioFormData`
+			);
+			setDynamicList((prev) => {
+				return { ...prev, domain: response.data.domain };
+			});
+			console.log("form field data", response.data);
+		} catch (e) {
+			console.log("error while fetching form field data", e);
+		}
+	}
+
+	useEffect(() => {
+		fetchFormFieldData()
+	}, []);
 
 	const Body = () => {
 		switch (step) {
@@ -93,7 +121,7 @@ export default function FlowContent() {
 							<Heading size=" text-xl" className="mb-2">
 								Details
 							</Heading>
-							<GenericForm onSubmit={onSubmitHandler}>
+							<GenericForm defaultValues={dynamicValue} onSubmit={onSubmitHandler}>
 								<FormInput
 									label="Enter Subscriber Url"
 									name="subscriberUrl"
@@ -105,34 +133,84 @@ export default function FlowContent() {
 											message: "URL must start with https://",
 										},
 									}}
+									onValueChange={(data: string) => {
+										setDyanmicValue(prev => {
+											return {
+												...prev, subscriberUrl: data
+											}
+										})
+									}}
 								/>
 								<FormSelect
 									name="domain"
 									label="Select Domain"
-									options={["ONDC:TRV11"]}
+									options={dynamicList.domain.map((val: any) => val.key)}
+									setSelectedValue={(data: string) => {
+										setDyanmicValue(prev => {
+											return {
+												...prev, 
+												domain: data
+											}
+										})
+										setDynamicList(prev => {
+											let  filteredVersion: any = []
+											prev.domain.forEach((item: any) => {
+												if(item.key === data) {
+													filteredVersion = item.version
+												}
+											})
+											return {
+												...prev, version: filteredVersion
+											}
+										})
+									}}
+									nonSelectedValue
 									required
 								/>
-								<FormSelect
+								{dynamicList.version?.length ? <FormSelect
 									label="Enter Version"
 									name="version"
 									required={true}
-									options={["2.0.0"]}
-								/>
-								<FormSelect
+									options={dynamicList.version.map((val: any) => val.key)}
+									setSelectedValue={(data: string) => {
+										setDyanmicValue(prev => {
+											return {
+												...prev, 
+												version: data
+											}
+										})
+										setDynamicList(prev => {
+											let  filteredUsecase: any = []
+											prev.version.forEach((item: any) => {
+												if(item.key === data) {
+													filteredUsecase = item.usecase
+												}
+											})
+											return {
+												...prev, usecase: filteredUsecase
+											}
+										})
+									}}
+									nonSelectedValue
+								/> : <></>}
+								{dynamicList.usecase?.length ? <FormSelect
 									label="Enter Usecase"
 									name="usecaseId"
 									required={true}
-									options={["Metro", "Bus"]}
-								/>
-								{/* <FormInput
-									label="Enter City Code"
-									name="city"
-									required={true}
-								/> */}
+									options={dynamicList.usecase}
+									nonSelectedValue
+								/> : <></>}
 								<FormSelect
 									name="npType"
 									label="Select Type"
 									options={["BAP", "BPP"]}
+									setSelectedValue={(data: string) => {
+										setDyanmicValue(prev => {
+											return {
+												...prev, npType: data
+											}
+										})
+									}}
 									required
 								/>
 								<FormSelect
