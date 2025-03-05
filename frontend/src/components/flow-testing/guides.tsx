@@ -9,13 +9,13 @@ export function FormGuide() {
 			<ul className="list-disc pl-6 mt-2 text-gray-600 space-y-2">
 				<li>
 					<code className="bg-gray-100 text-gray-800 px-2 py-1 rounded">
-						https://dev-automation.ondc.org/seller/
+						https://dev-automation.ondc.org/seller
 					</code>{" "}
 					for Buyer testing.
 				</li>
 				<li>
 					<code className="bg-gray-100 text-gray-800 px-2 py-1 rounded">
-						https://dev-automation.ondc.org/buyer/
+						https://dev-automation.ondc.org/buyer
 					</code>{" "}
 					for Seller testing.
 				</li>

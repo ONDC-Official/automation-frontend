@@ -28,7 +28,7 @@ export default function FlowContent() {
 	const [dynamicValue, setDyanmicValue] = useState({
 		domain: "",
 		version: "",
-		usecase: "",
+		usecaseId: "",
 		subscriberUrl: "",
 		npType: "BAP",
 		env: "STAGING"
@@ -198,6 +198,14 @@ export default function FlowContent() {
 									name="usecaseId"
 									required={true}
 									options={dynamicList.usecase}
+									setSelectedValue={(data: string) => {
+										setDyanmicValue(prev => {
+											return {
+												...prev, 
+												usecaseId: data
+											}
+										})
+									}}
 									nonSelectedValue
 								/> : <></>}
 								<FormSelect
