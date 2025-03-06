@@ -11,16 +11,10 @@ import { MdEdit } from "react-icons/md";
 import FlowDetails from "../components/ui/mini-components/flow-details";
 import { GrRefresh } from "react-icons/gr";
 import FormSelect from "../components/ui/forms/form-select";
-import Popup from "../components/ui/pop-up/pop-up";
 import { useForm } from "react-hook-form";
 import ToggleButton from "../components/ui/mini-components/toggle-button";
 import { v4 as uuidv4 } from "uuid";
-import {
-  getTransactionData,
-  getCompletePayload,
-  requestForFlowPermission,
-  addExpectation,
-} from "../utils/request-utils";
+import { getTransactionData, getCompletePayload } from "../utils/request-utils";
 
 const INSTRUCTION = [
   `1. Request can be made using just the payload to recieve response in sync or async mode`,
@@ -29,16 +23,6 @@ const INSTRUCTION = [
   `3. Request can be manual or custom`,
   `4. Manual: Paste any beckn payload in the request to reviceve the response.
       Custom: Select a particular domain, usecase and type to generate the request payload and recieve response`,
-];
-
-const expectedApis = [
-  "search",
-  "select",
-  "init",
-  "confirm",
-  "status",
-  "cancel",
-  "update",
 ];
 
 const ApiTesting = () => {
@@ -60,9 +44,9 @@ const ApiTesting = () => {
   const [action, setAction] = useState("");
   const [isSent, setIsSent] = useState(false);
   const [sessionIdState, setSessionIdState] = useState("");
-  const [isExpectedApiPopupOpen, setIsExpectedApiPopupOpen] = useState(false);
-  const [_api, setApi] = useState("");
+  // const [currentTimestamp, setCurrentTimestamp] = useState("");
   const intervalRef = useRef<any>(null);
+  const currentTimestamp = useRef("");
   const transactionIntervalRed = useRef<any>(null);
 
   const {
@@ -89,36 +73,60 @@ const ApiTesting = () => {
           console.log("trnasctionId::::::::::", transactionId);
 
           if (transactionId) {
-            clearInterval(intervalRef.current);
-
             const transactionData = await getTransactionData(
               transactionId,
               subUrl
             );
             console.log("trnsactiondata", transactionData);
 
-            if (!transactionData) {
+            let currentPayloadID = "";
+            let currentApiData: any = {};
+
+            transactionData?.apiList?.forEach((apiData) => {
+              console.log(
+                "conditions: ",
+                !apiData.action.startsWith("on_"),
+                new Date(currentTimestamp.current) <
+                  new Date(apiData.timestamp),
+                apiData.action,
+                currentTimestamp.current,
+                apiData.timestamp
+              );
+              console.log("Cuurent", currentTimestamp.current);
+              console.log("apiTimestamp", apiData.timestamp);
+              if (
+                !apiData.action.startsWith("on_") &&
+                new Date(currentTimestamp.current) < new Date(apiData.timestamp)
+              ) {
+                currentPayloadID = apiData.payloadId;
+                currentApiData = apiData;
+              }
+            });
+
+            if (!currentPayloadID) {
               return;
             }
 
+            clearInterval(intervalRef.current);
+
+            setActions([]);
+            setPayload("");
+            setIsSent(false);
+
             const completePayload = await getCompletePayload([
-              transactionData.apiList[0]?.payloadId,
+              currentPayloadID,
             ]);
 
             setResponseValue(
               JSON.stringify(completePayload[0].req || {}, null, 2)
             );
 
-            if (transactionData.apiList[0]?.response?.error) {
-              setMdData(transactionData.apiList[0].response.error.message);
+            if (currentApiData?.response?.error) {
+              setMdData(currentApiData.response.error.message);
             } else {
               setMdData(
                 "```\n" +
-                  JSON.stringify(
-                    transactionData.apiList[0].response.message,
-                    null,
-                    2
-                  ) +
+                  JSON.stringify(currentApiData.response.message, null, 2) +
                   "\n```"
               );
             }
@@ -292,27 +300,22 @@ const ApiTesting = () => {
   };
 
   const onContinueHandler = () => {
-    setActions([]);
-    setPayload("");
-    setIsSent(false);
-    // setResponseValue("")
-    // setMdData("")
-
     if (npType === "BAP") {
-      setIsExpectedApiPopupOpen(true);
+      setResponseValue("");
+      setMdData("");
+      currentTimestamp.current = new Date().toISOString();
+      setTimeout(() => {
+        toast.info("Waiting for request");
+      }, 500);
+      intervalRef.current = setInterval(() => {
+        fetchSessionData(sessionIdState);
+      }, 3000);
     } else {
+      setActions([]);
+      setPayload("");
+      setIsSent(false);
       getAvailableActions(cuurentTranscationId, sessionData.sessionId);
     }
-  };
-
-  const checkAndSetExpeectation = async (expectedApi: string) => {
-    const permission = await requestForFlowPermission(expectedApi, subUrl);
-
-    if (!permission) {
-      return;
-    }
-
-    await addExpectation(expectedApi, "unit", subUrl, sessionIdState);
   };
 
   const filterActionsData = (data: string) => {
@@ -349,8 +352,10 @@ const ApiTesting = () => {
           setCurrentTransactionId(tempTransactionId);
         }}
         onSetListning={(data: string, sessionData: any) => {
+          // setCurrentTimestamp(new Date().toISOString());
           setSubUrl(data);
           setSessionIdState(sessionData.sessionId);
+          currentTimestamp.current = new Date().toISOString();
           setTimeout(() => {
             toast.info("Waiting for request");
           }, 500);
@@ -359,29 +364,6 @@ const ApiTesting = () => {
           }, 3000);
         }}
       />
-      <Popup isOpen={isExpectedApiPopupOpen}>
-        <FormSelect
-          name="api"
-          label="Expected API"
-          options={expectedApis}
-          required
-          register={register}
-          errors={errors}
-          disabled={expectedApis.length === 0}
-          setSelectedValue={async (data: string) => {
-            setApi(data);
-            await checkAndSetExpeectation(data);
-            setIsExpectedApiPopupOpen(false);
-            setTimeout(() => {
-              toast.info("Waiting for request");
-            }, 500);
-            intervalRef.current = setInterval(() => {
-              fetchSessionData(sessionData.sessionId);
-            }, 3000);
-          }}
-          nonSelectedValue
-        />
-      </Popup>
       <div className="w-[100%] flex flex-row">
         <div className="w-3/6 p-4 gap-4 flex flex-col">
           <div className="flex flex-row items-center justify-between">
