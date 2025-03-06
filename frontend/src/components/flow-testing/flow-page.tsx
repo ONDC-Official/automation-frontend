@@ -145,6 +145,7 @@ export default function FlowContent() {
 									name="domain"
 									label="Select Domain"
 									options={dynamicList.domain.map((val: any) => val.key)}
+									currentValue={dynamicValue.domain}
 									setSelectedValue={(data: string) => {
 										setDyanmicValue(prev => {
 											return {
@@ -172,6 +173,7 @@ export default function FlowContent() {
 									name="version"
 									required={true}
 									options={dynamicList.version.map((val: any) => val.key)}
+									currentValue={dynamicValue.version}
 									setSelectedValue={(data: string) => {
 										setDyanmicValue(prev => {
 											return {
@@ -198,6 +200,7 @@ export default function FlowContent() {
 									name="usecaseId"
 									required={true}
 									options={dynamicList.usecase}
+									currentValue={dynamicValue.usecaseId}
 									setSelectedValue={(data: string) => {
 										setDyanmicValue(prev => {
 											return {
@@ -262,7 +265,7 @@ export default function FlowContent() {
 				);
 			case 2:
 				if (!session) return <h1>Loading...</h1>;
-				return <ReportPage subUrl={subUrl} report={report} setStep={setStep} />;
+				return <ReportPage sessionId={session} report={report} setStep={setStep} />;
 			default:
 				return <h1>hello</h1>;
 		}
