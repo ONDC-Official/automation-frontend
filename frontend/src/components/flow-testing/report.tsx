@@ -7,11 +7,11 @@ import { useReactToPrint } from "react-to-print";
 import { IoMdArrowRoundBack } from "react-icons/io";
 
 export function ReportPage({
-  subUrl,
+  sessionId,
   report,
   setStep,
 }: {
-  subUrl: string;
+  sessionId: string;
   report: string;
   setStep: React.Dispatch<React.SetStateAction<number>>;
 }) {
@@ -27,7 +27,7 @@ export function ReportPage({
     try {
       const response = await axios.get(
         `${import.meta.env.VITE_BACKEND_URL}/sessions`,
-        { params: { subscriber_url: subUrl } }
+        { params: { session_id: sessionId } }
       );
 
       setSessionData(response.data);
@@ -54,18 +54,6 @@ export function ReportPage({
           <Heading>Report</Heading>
         </div>
 
-        {/* <div className="mt-4 ">
-          <PDFDownloadLink
-            document={<PdfDocument />}
-            fileName="download.pdf"
-            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700"
-          >
-            {({ loading }: any) =>
-              loading ? "Generating PDF..." : "Download PDF"
-            }
-          </PDFDownloadLink>
-        </div> */}
-
         <button
           onClick={() => handlePrint()}
           className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700"
@@ -78,12 +66,11 @@ export function ReportPage({
         <InfoCard
           title="Session Data"
           data={{
-            city: sessionData?.city || "-",
-            flow_id: sessionData?.current_flow_id || "-",
-            difficulty:
-              sessionData?.difficulty_cache?.totalDifficulty?.toString() || "-",
-            domain: sessionData?.domain || "-",
-            type: sessionData?.type,
+            Domain: sessionData?.domain || "-",
+            Usecase: sessionData?.usecaseId || "-",
+            Version: sessionData?.version || "-",
+            "NP Type": sessionData?.npType || "-",
+            Environment: sessionData?.env || "-",
           }}
         />
       </div>
