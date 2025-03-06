@@ -100,7 +100,7 @@ export default function FlowContent() {
 				`${import.meta.env.VITE_BACKEND_URL}/config/senarioFormData`
 			);
 			setDynamicList((prev) => {
-				return { ...prev, domain: response.data.domain };
+				return { ...prev, domain: response.data.domain || [] };
 			});
 			console.log("form field data", response.data);
 		} catch (e) {

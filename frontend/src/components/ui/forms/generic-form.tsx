@@ -38,8 +38,6 @@ const GenericForm = ({
 		}
 	};
 
-	console.log("refreshing why", defaultValues)
-
 	return (
 		<form
 			onSubmit={handleSubmit(handleSubmitForm)} // Use handleSubmit to manage form submission
