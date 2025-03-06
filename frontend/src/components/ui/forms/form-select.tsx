@@ -17,7 +17,8 @@ const FormSelect = ({
 	defaultValue,
 	labelInfo = "",
 	nonSelectedValue = false,
-	disabled = false
+	disabled = false,
+	required = false
 }: any) => {
 	const [value, setValue] = useState("")
 
@@ -38,7 +39,9 @@ const FormSelect = ({
 			<div className="mb-4 w-full">
 				<LabelWithToolTip labelInfo={labelInfo} label={label} />
 				<select
-					{...register(name)}
+					{...register(name, {
+						required: required && `This field is required` 
+					})}
 					className={inputClass}
 					onChange={onSelectChange}
 					defaultValue={defaultValue}
@@ -73,7 +76,7 @@ const FormSelect = ({
 					})}
 				</select>
 				{errors && errors[name] && (
-					<p className="text-red-500">{errors[name].message}</p>
+					<p className="text-red-500 text-xs italic dark:text-red-400">{errors[name].message}</p>
 				)}
 			</div>
 		</>
