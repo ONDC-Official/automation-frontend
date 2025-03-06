@@ -18,7 +18,8 @@ const FormSelect = ({
 	labelInfo = "",
 	nonSelectedValue = false,
 	disabled = false,
-	required = false
+	required = false,
+	currentValue = ""
 }: any) => {
 	const [value, setValue] = useState("")
 
@@ -46,7 +47,7 @@ const FormSelect = ({
 					onChange={onSelectChange}
 					defaultValue={defaultValue}
 					disabled={disabled}
-					value={value}
+					value={currentValue || value}
 				>
 					{
 						nonSelectedValue && <option value="" disabled selected>Select a value</option>
