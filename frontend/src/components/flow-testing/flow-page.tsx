@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { FormInput } from "../ui/forms/form-input";
 import FormSelect from "../ui/forms/form-select";
 import GenericForm from "../ui/forms/generic-form";
@@ -26,6 +26,14 @@ export default function FlowContent() {
 		usecase: []
 	})
 	const [dynamicValue, setDyanmicValue] = useState({
+		domain: "",
+		version: "",
+		usecaseId: "",
+		subscriberUrl: "",
+		npType: "BAP",
+		env: "STAGING"
+	})
+	const formData =  useRef({
 		domain: "",
 		version: "",
 		usecaseId: "",
@@ -121,7 +129,7 @@ export default function FlowContent() {
 							<Heading size=" text-xl" className="mb-2">
 								Details
 							</Heading>
-							<GenericForm defaultValues={dynamicValue} onSubmit={onSubmitHandler}>
+							<GenericForm defaultValues={formData.current} onSubmit={onSubmitHandler}>
 								<FormInput
 									label="Enter Subscriber Url"
 									name="subscriberUrl"
@@ -134,11 +142,12 @@ export default function FlowContent() {
 										},
 									}}
 									onValueChange={(data: string) => {
-										setDyanmicValue(prev => {
-											return {
-												...prev, subscriberUrl: data
-											}
-										})
+										// setDyanmicValue(prev => {
+										// 	return {
+										// 		...prev, subscriberUrl: data
+										// 	}
+										// })
+										formData.current = {...formData.current, subscriberUrl: data}
 									}}
 								/>
 								<FormSelect
@@ -147,12 +156,13 @@ export default function FlowContent() {
 									options={dynamicList.domain.map((val: any) => val.key)}
 									currentValue={dynamicValue.domain}
 									setSelectedValue={(data: string) => {
-										setDyanmicValue(prev => {
-											return {
-												...prev, 
-												domain: data
-											}
-										})
+										formData.current = {...formData.current, domain: data}
+										// setDyanmicValue(prev => {
+										// 	return {
+										// 		...prev, 
+										// 		domain: data
+										// 	}
+										// })
 										setDynamicList(prev => {
 											let  filteredVersion: any = []
 											prev.domain.forEach((item: any) => {
@@ -175,12 +185,13 @@ export default function FlowContent() {
 									options={dynamicList.version.map((val: any) => val.key)}
 									currentValue={dynamicValue.version}
 									setSelectedValue={(data: string) => {
-										setDyanmicValue(prev => {
-											return {
-												...prev, 
-												version: data
-											}
-										})
+										// setDyanmicValue(prev => {
+										// 	return {
+										// 		...prev, 
+										// 		version: data
+										// 	}
+										// })
+										formData.current = {...formData.current, version: data}
 										setDynamicList(prev => {
 											let  filteredUsecase: any = []
 											prev.version.forEach((item: any) => {
@@ -202,12 +213,13 @@ export default function FlowContent() {
 									options={dynamicList.usecase}
 									currentValue={dynamicValue.usecaseId}
 									setSelectedValue={(data: string) => {
-										setDyanmicValue(prev => {
-											return {
-												...prev, 
-												usecaseId: data
-											}
-										})
+										// setDyanmicValue(prev => {
+										// 	return {
+										// 		...prev, 
+										// 		usecaseId: data
+										// 	}
+										// })
+										formData.current = {...formData.current, usecaseId: data}
 									}}
 									nonSelectedValue
 								/> : <></>}
@@ -221,6 +233,7 @@ export default function FlowContent() {
 												...prev, npType: data
 											}
 										})
+										formData.current = {...formData.current, npType: data}
 									}}
 									required
 								/>
