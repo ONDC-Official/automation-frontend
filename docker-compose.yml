@@ -5,7 +5,7 @@ services:
     build:
       context: backend
       dockerfile: Dockerfile
-    container_name: staging-automation-ui-backend
+    container_name: automation-ui-backend
     ports:
       - "5300:5300"
     env_file:
@@ -18,7 +18,7 @@ services:
     build:
       context: frontend
       dockerfile: Dockerfile
-    container_name: staging-automation-ui-frontend
+    container_name: automation-ui-frontend
     ports: 
       - "5101:5001"
     env_file:
