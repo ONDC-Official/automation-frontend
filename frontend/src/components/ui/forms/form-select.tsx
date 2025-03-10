@@ -17,7 +17,9 @@ const FormSelect = ({
 	defaultValue,
 	labelInfo = "",
 	nonSelectedValue = false,
-	disabled = false
+	disabled = false,
+	required = false,
+	currentValue = ""
 }: any) => {
 	const [value, setValue] = useState("")
 
@@ -30,6 +32,7 @@ const FormSelect = ({
 	const onSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
 		console.log(e.target.value, "index");
 		setSelectedValue(e.target.value);
+		console.log("reaching till here>>>???")
 		setValue(e.target.value)
 	};
 	return (
@@ -37,12 +40,14 @@ const FormSelect = ({
 			<div className="mb-4 w-full">
 				<LabelWithToolTip labelInfo={labelInfo} label={label} />
 				<select
-					{...register(name)}
+					{...register(name, {
+						required: required && `This field is required` 
+					})}
 					className={inputClass}
 					onChange={onSelectChange}
 					defaultValue={defaultValue}
 					disabled={disabled}
-					value={value}
+					value={currentValue || value}
 				>
 					{
 						nonSelectedValue && <option value="" disabled selected>Select a value</option>
@@ -72,7 +77,7 @@ const FormSelect = ({
 					})}
 				</select>
 				{errors && errors[name] && (
-					<p className="text-red-500">{errors[name].message}</p>
+					<p className="text-red-500 text-xs italic dark:text-red-400">{errors[name].message}</p>
 				)}
 			</div>
 		</>

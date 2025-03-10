@@ -4,16 +4,17 @@ import Markdown from "react-markdown";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { IoMdHelp } from "react-icons/io";
-import Modal from "./modal";
-import { buttonClass } from "./ui/forms/loading-button";
-import Heading from "./ui/mini-components/ondc-gradient-text";
+import Modal from "../components/modal";
+import { buttonClass } from "../components/ui/forms/loading-button";
+import Heading from "../components/ui/mini-components/ondc-gradient-text";
 import { MdEdit } from "react-icons/md";
-import FlowDetails from "./ui/mini-components/flow-details";
+import FlowDetails from "../components/ui/mini-components/flow-details";
 import { GrRefresh } from "react-icons/gr";
-import FormSelect from "./ui/forms/form-select";
+import FormSelect from "../components/ui/forms/form-select";
 import { useForm } from "react-hook-form";
-import ToggleButton from "./ui/mini-components/toggle-button";
+import ToggleButton from "../components/ui/mini-components/toggle-button";
 import { v4 as uuidv4 } from "uuid";
+import { getTransactionData, getCompletePayload } from "../utils/request-utils";
 
 const INSTRUCTION = [
   `1. Request can be made using just the payload to recieve response in sync or async mode`,
@@ -35,99 +36,142 @@ const ApiTesting = () => {
   const [npType, setNpType] = useState("BAP");
   const [actions, setActions] = useState([]);
   const [subUrl, setSubUrl] = useState("");
+  const [sessionData, setSessionData] = useState<any>({});
   const [cuurentTranscationId, setCurrentTransactionId] = useState("");
   const [selectedActionId, setSelectedActionId] = useState("");
   const [isAutomatedResponse, setIsAutomatedResponse] = useState(false);
   const [allActions, setAllActions] = useState([]);
   const [action, setAction] = useState("");
   const [isSent, setIsSent] = useState(false);
+  const [sessionIdState, setSessionIdState] = useState("");
+  // const [currentTimestamp, setCurrentTimestamp] = useState("");
   const intervalRef = useRef<any>(null);
+  const currentTimestamp = useRef("");
+  const transactionIntervalRed = useRef<any>(null);
 
   const {
     register,
     formState: { errors },
   } = useForm();
 
-  const getCompletePayload = async (payload_ids: string[]) => {
-    try {
-      const response = await axios.post(
-        `${import.meta.env.VITE_BACKEND_URL}/db/payload`,
-        {
-          payload_ids: payload_ids,
-        }
-      );
-
-      return response.data;
-    } catch (e: any) {
-      console.log("error while fetching complete paylaod: ", e);
-    }
-  };
-
-  function fetchSessionData() {
-    if (!subUrl) {
-      console.log("not sub url");
+  function fetchSessionData(sessionId: string) {
+    if (!sessionId) {
+      console.error("session Id not present");
       return;
     }
 
     axios
       .get(`${import.meta.env.VITE_BACKEND_URL}/sessions`, {
         params: {
-          subscriber_url: subUrl,
+          session_id: sessionId,
         },
       })
       .then(async (response: any) => {
-        if (response.data?.session_payloads?.unit?.length > 0) {
-          const actionData = response.data?.session_payloads?.unit[0];
-          const onActionData = response.data?.session_payloads?.unit[1];
-          if (npType === "BAP" && actionData) {
-            clearInterval(intervalRef.current);
-            const completePayload = await getCompletePayload([
-              actionData.payload_id,
-            ]);
+        if (npType === "BAP") {
+          const transactionId = response.data?.flowMap?.unit;
+          setSessionData(response.data);
+          console.log("trnasctionId::::::::::", transactionId);
 
-            setResponseValue(
-              JSON.stringify(
-                completePayload[0].req || actionData.request,
-                null,
-                2
-              )
+          if (transactionId) {
+            const transactionData = await getTransactionData(
+              transactionId,
+              subUrl
             );
-            if (actionData?.error?.message) {
-              setMdData(actionData?.response?.error?.message);
-            } else {
-              setMdData(
-                "```\n" + JSON.stringify(actionData.response, null, 2) + "\n```"
+            console.log("trnsactiondata", transactionData);
+
+            let currentPayloadID = "";
+            let currentApiData: any = {};
+
+            transactionData?.apiList?.forEach((apiData) => {
+              console.log(
+                "conditions: ",
+                !apiData.action.startsWith("on_"),
+                new Date(currentTimestamp.current) <
+                  new Date(apiData.timestamp),
+                apiData.action,
+                currentTimestamp.current,
+                apiData.timestamp
               );
+              console.log("Cuurent", currentTimestamp.current);
+              console.log("apiTimestamp", apiData.timestamp);
+              if (
+                !apiData.action.startsWith("on_") &&
+                new Date(currentTimestamp.current) < new Date(apiData.timestamp)
+              ) {
+                currentPayloadID = apiData.payloadId;
+                currentApiData = apiData;
+              }
+            });
+
+            if (!currentPayloadID) {
+              return;
             }
 
-            toast.info("Request recieved.");
-            getAvailableActions(actionData.request.transaction_id);
-            setCurrentTransactionId(actionData.request.transaction_id);
-          }
-          if (npType === "BPP" && onActionData) {
             clearInterval(intervalRef.current);
+
+            setActions([]);
+            setPayload("");
+            setIsSent(false);
+
             const completePayload = await getCompletePayload([
-              actionData.payload_id,
+              currentPayloadID,
             ]);
 
             setResponseValue(
-              JSON.stringify(
-                completePayload[0].req || onActionData.request,
-                null,
-                2
-              )
+              JSON.stringify(completePayload[0].req || {}, null, 2)
             );
-            if (onActionData?.error?.message) {
-              setMdData(onActionData?.response?.error?.message);
+
+            if (currentApiData?.response?.error) {
+              setMdData(currentApiData.response.error.message);
             } else {
               setMdData(
                 "```\n" +
-                  JSON.stringify(onActionData.response, null, 2) +
+                  JSON.stringify(currentApiData.response.message, null, 2) +
                   "\n```"
               );
             }
+
             toast.info("Request recieved.");
+            getAvailableActions(transactionId, sessionId);
+            setCurrentTransactionId(transactionId);
           }
+        }
+
+        if (npType === "BPP") {
+          const transactionId = response.data?.flowMap?.unit;
+
+          clearInterval(intervalRef.current);
+
+          transactionIntervalRed.current = setInterval(async () => {
+            const transactionData = await getTransactionData(
+              transactionId,
+              subUrl
+            );
+
+            transactionData?.apiList?.map(async (payload: any) => {
+              if (payload.action === `on_${action}`) {
+                clearInterval(transactionIntervalRed.current);
+
+                const completePayload = await getCompletePayload([
+                  payload.payloadId,
+                ]);
+
+                setResponseValue(
+                  JSON.stringify(completePayload[0].req || {}, null, 2)
+                );
+                if (payload?.response?.error) {
+                  setMdData(payload.response.error.message);
+                } else {
+                  setMdData(
+                    "```\n" +
+                      JSON.stringify(payload.response.message, null, 2) +
+                      "\n```"
+                  );
+                }
+                toast.info("Request recieved.");
+              }
+            });
+          }, 3000);
         }
       })
       .catch((e: any) => {
@@ -136,7 +180,11 @@ const ApiTesting = () => {
       });
   }
 
-  const getAvailableActions = async (transcation_id: string) => {
+  const getAvailableActions = async (
+    transcation_id: string,
+    sessionId?: string
+  ) => {
+    console.log("session id:::::", sessionId, sessionData);
     try {
       toast.info("Getting available actions.");
       const response = await axios.get(
@@ -145,6 +193,7 @@ const ApiTesting = () => {
           params: {
             transaction_id: transcation_id,
             mock_type: npType === "BAP" ? "BPP" : "BAP",
+            session_id: sessionId || sessionData?.sessionId,
           },
         }
       );
@@ -163,7 +212,12 @@ const ApiTesting = () => {
     }
   };
 
-  const getPayload = async (action_id: string, filteredAction?: string) => {
+  const getPayload = async (
+    action_id: string,
+    session_id: string,
+    filteredAction?: string
+  ) => {
+    console.log("sessionData", session_id, sessionData);
     try {
       const response = await axios.get(
         `${import.meta.env.VITE_BACKEND_URL}/unit/trigger/${
@@ -174,6 +228,7 @@ const ApiTesting = () => {
             transaction_id: cuurentTranscationId,
             subscriber_url: subUrl,
             action_id: action_id,
+            session_id: session_id || sessionIdState,
           },
         }
       );
@@ -205,6 +260,8 @@ const ApiTesting = () => {
       toast.error("Error parsing json.");
     }
 
+    console.log("sessionData", sessionData);
+
     try {
       setIsLoading(true);
       const response = await axios.post(
@@ -215,6 +272,9 @@ const ApiTesting = () => {
             transaction_id: cuurentTranscationId,
             subscriber_url: subUrl,
             action_id: selectedActionId || action_id,
+            version: sessionData?.version,
+            session_id: sessionData?.sessionId || sessionIdState,
+            flow_id: "unit",
           },
         }
       );
@@ -227,7 +287,7 @@ const ApiTesting = () => {
           toast.info("Waiting for request");
         }, 500);
         intervalRef.current = setInterval(() => {
-          fetchSessionData();
+          fetchSessionData(sessionData?.sessionId);
         }, 3000);
       }
       setIsSent(true);
@@ -236,6 +296,25 @@ const ApiTesting = () => {
       toast.error("Something went wrong");
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const onContinueHandler = () => {
+    if (npType === "BAP") {
+      setResponseValue("");
+      setMdData("");
+      currentTimestamp.current = new Date().toISOString();
+      setTimeout(() => {
+        toast.info("Waiting for request");
+      }, 500);
+      intervalRef.current = setInterval(() => {
+        fetchSessionData(sessionIdState);
+      }, 3000);
+    } else {
+      setActions([]);
+      setPayload("");
+      setIsSent(false);
+      getAvailableActions(cuurentTranscationId, sessionData.sessionId);
     }
   };
 
@@ -263,20 +342,25 @@ const ApiTesting = () => {
       <FlowDetails
         getSubUrl={(data: string) => {
           setSubUrl(data);
+          // setSessionId(sessionId)
         }}
         onNpChange={(data: string) => setNpType(data)}
-        onGetActions={() => {
+        onGetActions={(sessionData: any) => {
           const tempTransactionId = uuidv4();
-          getAvailableActions(tempTransactionId);
+          setSessionData(sessionData);
+          getAvailableActions(tempTransactionId, sessionData.sessionId);
           setCurrentTransactionId(tempTransactionId);
         }}
-        onSetListning={(data: string) => {
+        onSetListning={(data: string, sessionData: any) => {
+          // setCurrentTimestamp(new Date().toISOString());
           setSubUrl(data);
+          setSessionIdState(sessionData.sessionId);
+          currentTimestamp.current = new Date().toISOString();
           setTimeout(() => {
             toast.info("Waiting for request");
           }, 500);
           intervalRef.current = setInterval(() => {
-            fetchSessionData();
+            fetchSessionData(sessionData.sessionId);
           }, 3000);
         }}
       />
@@ -320,7 +404,7 @@ const ApiTesting = () => {
                 setSelectedValue={(data: any) => {
                   setSelectedActionId(data);
                   const filteredAction = filterActionsData(data);
-                  getPayload(data, filteredAction);
+                  getPayload(data, sessionData?.sessionId, filteredAction);
                 }}
               />
             </div>
@@ -424,6 +508,12 @@ const ApiTesting = () => {
               </Markdown>
             </div>
           </div>
+          <button
+            className={`${buttonClass} transition-colors disabled:opacity-50 disabled:cursor-not-allowed`}
+            onClick={onContinueHandler}
+          >
+            Continue
+          </button>
         </div>
       </div>
     </div>

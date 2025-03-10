@@ -5,12 +5,16 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { buttonClass } from "./../../ui/forms/loading-button";
+import {
+  requestForFlowPermission,
+  addExpectation,
+} from "../../../utils/request-utils";
 
 interface IProps {
   onNpChange: (data: string) => void;
   getSubUrl: (data: string) => void;
-  onSetListning: (data: string) => void;
-  onGetActions: () => void;
+  onSetListning: (data: string, sessionData: any) => void;
+  onGetActions: (sessionData: any) => void;
 }
 
 const FlowDetails = ({
@@ -30,7 +34,8 @@ const FlowDetails = ({
   const [domain, setDomain] = useState("");
   const [usecases, setUsecases] = useState([]);
   const [usecase, setUsecase] = useState("");
-  const [_apis, setApis] = useState([]);
+  const [apis, setApis] = useState([]);
+  const [api, setApi] = useState("");
   const [versions, setVersions] = useState([]);
   const [version, setVersion] = useState("");
   const [npType, setNpType] = useState("BAP");
@@ -104,10 +109,10 @@ const FlowDetails = ({
             ver?.usecase?.map((val: any) => {
               if (val.summary === (selectedUsecase || usecase)) {
                 val.api?.map((apis: any) => {
-                  if (npType === "BAP" && apis?.name?.startsWith("on_")) {
+                  if (npType === "BAP" && !apis?.name?.startsWith("on_")) {
                     filteredApi.push(apis.name);
                   }
-                  if (npType === "BPP" && !apis?.name?.startsWith("on_")) {
+                  if (npType === "BPP" && apis?.name?.startsWith("on_")) {
                     filteredApi.push(apis.name);
                   }
                 });
@@ -127,6 +132,7 @@ const FlowDetails = ({
       participantType: npType,
       subscriberUrl: subUrl,
       version: version,
+      usecaseId: usecase.toUpperCase()
     };
 
     try {
@@ -146,11 +152,20 @@ const FlowDetails = ({
           ...localData,
         })
       );
-      setIsSessionCreated(true);
       if (npType === "BAP") {
-        onSetListning(subUrl);
+        const permission = await requestForFlowPermission(api, subUrl);
+
+        if (!permission) {
+          return;
+        }
+
+        await addExpectation(api, "unit", subUrl, response.data.sessionId);
+
+        setIsSessionCreated(true);
+        onSetListning(subUrl, response.data);
       } else {
-        onGetActions();
+        setIsSessionCreated(true);
+        onGetActions({ ...response.data, ...payload });
       }
     } catch (e) {
       console.log("Error while creating unit session", e);
@@ -257,6 +272,21 @@ const FlowDetails = ({
           }}
           nonSelectedValue
         />
+        {npType === "BAP" && (
+          <FormSelect
+            name="api"
+            label="Expected API"
+            options={apis}
+            required
+            register={register}
+            errors={errors}
+            disabled={apis.length === 0}
+            setSelectedValue={(data: any) => {
+              setApi(data);
+            }}
+            nonSelectedValue
+          />
+        )}
       </div>
       <div className="flex flex-row gap-4">
         <button
