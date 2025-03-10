@@ -1,5 +1,5 @@
 // FILE: uiController.ts
-import { Request, Response } from "express";
+import { query, Request, Response } from "express";
 import { fetchConfigService } from "../services/flowService";
 import axios from "axios";
 import { TriggerInput } from "../interfaces/triggerData";
@@ -8,6 +8,7 @@ import getPredefinedFlowConfig, {
 	fetchExampleConfig,
 } from "../config/unittestConfig";
 import logger from "../utils/logger";
+import { saveLog } from "../utils/console";
 
 export const fetchConfig = (req: Request, res: Response) => {
 	try {
@@ -28,7 +29,7 @@ export const generateReport = async (
 	res: Response
 ): Promise<void> => {
 	const sessionId = req.query.sessionId as string;
-	const body = req.body
+	const body = req.body;
 	if (!sessionId) {
 		res.status(400).json({ error: "session_id is required" });
 		return;
@@ -67,21 +68,25 @@ export const handleTriggerRequest = async (
 		if (
 			!req.query.action_id ||
 			!req.query.transaction_id ||
-			!req.query.subscriber_url
+			!req.query.subscriber_url ||
+			!req.query.session_id
 		) {
 			res.status(400).send("Bad Request");
 			return;
 		}
 		const triggerInput: TriggerInput = req.body;
 
+		saveLog(req.query.session_id as string, `Sending action ${action}`);
+
 		const response = await axios.post(
 			`${process.env.MOCK_SERVICE as string}/trigger/api-service/${action}`,
 			triggerInput,
 			{
 				params: {
-					subscriber_url: req.query.subscriber_url,
-					action_id: req.query.action_id,
-					transaction_id: req.query.transaction_id,
+					// subscriber_url: req.query.subscriber_url,
+					// action_id: req.query.action_id,
+					// transaction_id: req.query.transaction_id,
+					...req.query,
 				},
 			}
 		);

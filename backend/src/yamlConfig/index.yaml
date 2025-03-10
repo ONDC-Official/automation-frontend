@@ -12,6 +12,7 @@ domain:
               in the city
             pair: on_search1
             owner: BAP
+            expect: true
           - key: on_search1
             type: on_search
             unsolicited: false
@@ -21,6 +22,21 @@ domain:
       - id: STATION_CODE_FLOW_ORDER
         description: User uses station code for searching metro
         sequence:
+          - key: search1
+            type: search
+            unsolicited: false
+            description:
+              User searches over the network to avail the metro mode of transport
+              in the city
+            pair: on_search1
+            owner: BAP
+            expect: true
+          - key: on_search1
+            type: on_search
+            unsolicited: false
+            description: Response with all station codes
+            pair: null
+            owner: BPP
           - key: search2
             type: search
             unsolicited: false
@@ -29,6 +45,7 @@ domain:
               from one station to another
             pair: on_search2
             owner: BAP
+            expect: false
             input:
               - name: vehicle_category
                 label: Select vehicle category
@@ -114,9 +131,24 @@ domain:
             description: Provider platform responds with the status of the order
             pair: null
             owner: BPP
-      - id: TECHINCAL_CANCELLATION_FLOW
+      - id: TECHNICAL_CANCELLATION_FLOW
         description: User cancels the metro booking
         sequence:
+          - key: search1
+            type: search
+            unsolicited: false
+            description:
+              User searches over the network to avail the metro mode of transport
+              in the city
+            pair: on_search1
+            owner: BAP
+            expect: true
+          - key: on_search1
+            type: on_search
+            unsolicited: false
+            description: Response with all station codes
+            pair: null
+            owner: BPP
           - key: search2
             type: search
             unsolicited: false
@@ -125,6 +157,7 @@ domain:
               from one station to another
             pair: on_search2
             owner: BAP
+            expect: false
             input:
               - name: vehicle_category
                 label: Select vehicle category
@@ -202,9 +235,9 @@ domain:
             type: status
             unsolicited: false
             description: Consumer platform requests for the status of the order
-            pair: on_status_active
+            pair: on_status
             owner: BAP
-          - key: on_status_active
+          - key: on_status
             type: on_status
             unsolicited: false
             description: Provider platform responds with the status of the order
@@ -214,9 +247,9 @@ domain:
             type: cancel
             unsolicited: false
             description: User cancels the booking
-            pair: on_cancel
+            pair: on_cancel_hard
             owner: BAP
-          - key: on_cancel
+          - key: on_cancel_hard
             type: on_cancel
             unsolicited: false
             description:
@@ -227,6 +260,21 @@ domain:
       - id: DELAYED_CANCELLATION_FLOW_ACCEPTED
         description: User cancels the metro booking
         sequence:
+          - key: search1
+            type: search
+            unsolicited: false
+            description:
+              User searches over the network to avail the metro mode of transport
+              in the city
+            pair: on_search1
+            owner: BAP
+            expect: true
+          - key: on_search1
+            type: on_search
+            unsolicited: false
+            description: Response with all station codes
+            pair: null
+            owner: BPP
           - key: search2
             type: search
             unsolicited: false
@@ -235,6 +283,7 @@ domain:
               from one station to another
             pair: on_search2
             owner: BAP
+            expect: true
             input:
               - name: vehicle_category
                 label: Select vehicle category
@@ -312,9 +361,9 @@ domain:
             type: status
             unsolicited: false
             description: Consumer platform requests for the status of the order
-            pair: on_status_active
+            pair: on_status
             owner: BAP
-          - key: on_status_active
+          - key: on_status
             type: on_status
             unsolicited: false
             description: Provider platform responds with the status of the order

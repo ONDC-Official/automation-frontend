@@ -1,33 +1,40 @@
 import { Router } from "express";
 import {
-	createUnitSession,
-	fetchSafeActions,
-	triggerUnitAction,
-	getTriggerUnitAction,
+  createUnitSession,
+  fetchSafeActions,
+  triggerUnitAction,
+  getTriggerUnitAction,
 } from "../controllers/unitController";
 import validateRequiredParams from "../middlewares/generic";
 
 const router = Router();
 
 router.get(
-	"/safe-actions",
-	validateRequiredParams(["transaction_id", "mock_type"]),
-	fetchSafeActions
+  "/safe-actions",
+  validateRequiredParams(["transaction_id", "mock_type", "session_id"]),
+  fetchSafeActions
 );
 
 router.post("/unit-session", createUnitSession);
 
 router.get(
-	"/trigger/:action",
-	validateRequiredParams(["transaction_id", "subscriber_url", "action_id"]),
-	getTriggerUnitAction
+  "/trigger/:action",
+  validateRequiredParams(["transaction_id", "subscriber_url", "action_id", "session_id"]),
+  getTriggerUnitAction
 );
 
 // body.payload
 router.post(
-	"/trigger/:action",
-	validateRequiredParams(["transaction_id", "subscriber_url", "action_id"]),
-	triggerUnitAction
+  "/trigger/:action",
+  validateRequiredParams([
+    "transaction_id",
+    "subscriber_url",
+    "action_id",
+    "version",
+    "session_id",
+    "flow_id",
+  ]),
+  triggerUnitAction
 );
 
 export default router;
