@@ -14,20 +14,23 @@ interface Feature {
 
 const features: Feature[] = [
   {
-    title: "Schema Validation",
-    description: "Schema validation.",
+    title: "Schema Validation – Verify Individual Payloads Instantly",
+    description:
+      "Ensure your JSONs are ONDC-compliant by validating schemas against model implementations requirements instantly.",
     path: "/schema",
     icon: <MdSchema className="text-green-500 text-4xl" />,
   },
   {
-    title: "Unit Testing",
-    description: "Target the flow challenges.",
+    title: "Unit Testing – Test API Action Pairs",
+    description:
+      "Run API pair tests to validate request-response pairs, understanding and ensuring action pairs behave as expected.",
     path: "/unit",
     icon: <TbTestPipe2Filled className="text-blue-500 text-4xl" />,
   },
   {
-    title: "Scenario Testing",
-    description: "Report generation.",
+    title: "Scenario Testing - Simulate End-to-End Transaction Flows",
+    description:
+      "Run complete workflows across buyer app and seller app interactions ensuring accurate transaction flow implementation and protocol compliance.",
     path: "/scenario",
     icon: <GoWorkflow className="text-yellow-500 text-4xl" />,
   },
