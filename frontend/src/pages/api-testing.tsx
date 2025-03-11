@@ -17,12 +17,9 @@ import { v4 as uuidv4 } from "uuid";
 import { getTransactionData, getCompletePayload } from "../utils/request-utils";
 
 const INSTRUCTION = [
-  `1. Request can be made using just the payload to recieve response in sync or async mode`,
-  `2. Async Mode: Ack or nack is returned as the response.
-      Sync Mode: on_action payload is returned as response.`,
-  `3. Request can be manual or custom`,
-  `4. Manual: Paste any beckn payload in the request to reviceve the response.
-      Custom: Select a particular domain, usecase and type to generate the request payload and recieve response`,
+  `The unit testing tool helps NPs run isolated API pair tests to validate request-response pairs. Enter your details (NP Type, Subscriber Url, Domain, Version, Usecase) and get started. `,
+  `For buyer network participants, the tool shall act as a seller app. Here NP shall be sending an API call from their side once the tool starts listening. Once the payload is received, NP can select a sample response and edit the same as required. Once ready, NP can send this payload and the API call will be sent to the provided URL. `,
+  `For seller network participants, the tool shall act as a buyer app. Here NP can select an API to test and a sample payload is auto-loaded. The payload can be edited as required. Once ready, NP can send this payload and the API call will be sent to the provided URL. The NP can then respond with their API and the same will be rendered on the interface.`,
 ];
 
 const ApiTesting = () => {
@@ -205,7 +202,7 @@ const ApiTesting = () => {
       });
 
       setActions(filteredActions);
-      toast.info("Selct an action");
+      toast.info("Select an action");
     } catch (e) {
       console.log("Error while getting actions", e);
       toast.error("Something went wrong while getting actions");

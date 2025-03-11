@@ -132,7 +132,7 @@ const FlowDetails = ({
       participantType: npType,
       subscriberUrl: subUrl,
       version: version,
-      usecaseId: usecase.toUpperCase()
+      usecaseId: usecase.toUpperCase(),
     };
 
     try {
@@ -289,6 +289,12 @@ const FlowDetails = ({
         )}
       </div>
       <div className="flex flex-row gap-4">
+        <button
+          className={`${buttonClass} transition-colors disabled:opacity-50 disabled:cursor-not-allowed`}
+          onClick={() => window.location.reload()}
+        >
+          Create New Session
+        </button>
         <button
           className={`${buttonClass} transition-colors disabled:opacity-50 disabled:cursor-not-allowed`}
           onClick={createUnitSession}

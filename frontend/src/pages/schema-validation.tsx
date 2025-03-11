@@ -8,9 +8,11 @@ import SecondayHeader from "../components/secondary-header";
 import SchemaGuide from "../components/schema-guide";
 
 const INSTRUCTION = [
-  `1. Request can be made using just the payload to validate schema of the payload`,
-  `2. Ack status is returned in case of success`,
-  `3. List of failed validations are returned in case of failure`,
+  `1. Paste/ Upload Your API Payload`,
+  `2. Select the Model Implementation version`,
+  `3. Click “Validate” to check for errors in API schema, data types, required fields and enums`,
+  `4. Review errors on missing or incorrect fields and fix issues`,
+  "5. Copy corrected payload as required",
 ];
 
 const SchemaValidation = () => {
