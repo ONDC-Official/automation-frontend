@@ -1,0 +1,3 @@
+docker-compose.yml merge=ours
+.github/workflows/deployment-dev.yaml.yml merge=ours
+.github/workflows/deployment-staging.yaml.yml merge=ours
