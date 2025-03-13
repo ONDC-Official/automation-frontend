@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Editor from "@monaco-editor/react";
 import Markdown from "react-markdown";
 import axios from "axios";
@@ -6,11 +6,14 @@ import { toast } from "react-toastify";
 import { buttonClass } from "../components/ui/forms/loading-button";
 import SecondayHeader from "../components/secondary-header";
 import SchemaGuide from "../components/schema-guide";
+import { fetchFormFieldData } from "../utils/request-utils";
 
 const INSTRUCTION = [
-  `1. Request can be made using just the payload to validate schema of the payload`,
-  `2. Ack status is returned in case of success`,
-  `3. List of failed validations are returned in case of failure`,
+  `1. Paste/ Upload Your API Payload`,
+  `2. Based on the payload pasted, the tool takes the domain and the version for testing compliance`,
+  `3. Click “Validate” to check for errors in API schema, data types, required fields and enums`,
+  `4. Review errors on missing or incorrect fields and fix issues`,
+  "5. Copy corrected payload as required",
 ];
 
 const SchemaValidation = () => {
@@ -21,6 +24,7 @@ const SchemaValidation = () => {
   const [isSuccessReponse, setIsSuccessResponse] = useState(true);
   const [isValidationOpen, setIsValidationOpen] = useState(false);
   const [isGuideOpen, setIsGuideOpen] = useState(true);
+  const [activeDomain, setActiveDomain] = useState({});
   // const [isModified, setIsModified] = useState(false);
   console.log(isSuccessReponse);
   const verifyRequest = async () => {
@@ -29,7 +33,7 @@ const SchemaValidation = () => {
       return;
     }
 
-    let parsedPayload;
+    let parsedPayload: any;
 
     try {
       parsedPayload = JSON.parse(payload);
@@ -44,6 +48,29 @@ const SchemaValidation = () => {
     if (!action) {
       toast.warn("action missing from context");
       console.log("Action not available");
+      return;
+    }
+
+    let isDomainActive = false;
+
+    Object.entries(activeDomain).map((data: any) => {
+      const [_key, domains] = data;
+
+      domains.forEach((domain: any) => {
+        if (domain.key === parsedPayload?.context?.domain) {
+          domain.version.forEach((ver: any) => {
+            if (ver.key === parsedPayload?.context?.version) {
+              isDomainActive = true;
+            }
+          });
+        }
+      });
+    });
+
+    if (!isDomainActive) {
+      toast.warn(
+        "Domain or version not yet active. To check the list of active domain visit home page."
+      );
       return;
     }
 
@@ -63,7 +90,7 @@ const SchemaValidation = () => {
         setMdData(response.data?.error?.message);
         setIsSuccessResponse(false);
       } else {
-        setMdData("```\n" + JSON.stringify(response.data, null, 2) + "\n```");
+        setMdData("```\n" + "Schema validated successfully ✅" + "\n```");
         setIsSuccessResponse(true);
       }
     } catch (e) {
@@ -73,6 +100,15 @@ const SchemaValidation = () => {
       setIsLoading(false);
     }
   };
+
+  const getFormFields = async () => {
+    const data = await fetchFormFieldData();
+    setActiveDomain(data);
+  };
+
+  useEffect(() => {
+    getFormFields();
+  }, []);
 
   return (
     <div
@@ -101,7 +137,6 @@ const SchemaValidation = () => {
                 height={"70vh"}
                 defaultLanguage="json"
                 onChange={(value: any) => {
-                  // setIsModified(true);
                   setPayload(value);
                 }}
                 value={payload}

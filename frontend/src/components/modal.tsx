@@ -21,7 +21,7 @@ const Modal = ({ isOpen, onClose, children }: IProps) => {
         <button className="flex float-end" onClick={onClose}>
           <IoMdClose />
         </button>
-        <div>{children}</div>
+        <div className="flex flex-col gap-5">{children}</div>
       </div>
     </div>
   );
