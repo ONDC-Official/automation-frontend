@@ -16,13 +16,13 @@ export function FormGuide() {
       <ul className="list-disc pl-6 mt-2 text-gray-600 space-y-2">
         <li>
           <code className="bg-gray-100 text-gray-800 px-2 py-1 rounded">
-            https://dev-automation.ondc.org/seller
+            {import.meta.env.VITE_BAP_URL}
           </code>{" "}
           for Buyer testing.
         </li>
         <li>
           <code className="bg-gray-100 text-gray-800 px-2 py-1 rounded">
-            https://dev-automation.ondc.org/buyer
+            {import.meta.env.VITE_BPP_URL}
           </code>{" "}
           for Seller testing.
         </li>

@@ -7,6 +7,7 @@ import { fetchFormFieldData } from "../../utils/request-utils";
 
 interface Feature {
   title: string;
+  subtitle: string;
   description: string;
   path: string;
   icon: JSX.Element;
@@ -14,21 +15,24 @@ interface Feature {
 
 const features: Feature[] = [
   {
-    title: "Schema Validation – Verify Individual Payloads Instantly",
+    title: "Schema Validation",
+    subtitle: "Verify Individual Payloads Instantly",
     description:
       "Ensure your JSONs are ONDC-compliant by validating schemas against model implementations requirements instantly.",
     path: "/schema",
     icon: <MdSchema className="text-green-500 text-4xl" />,
   },
   {
-    title: "Unit Testing – Test API Action Pairs",
+    title: "Unit Testing",
+    subtitle: "Test API Action Pairs",
     description:
       "Run API pair tests to validate request-response pairs, understanding and ensuring action pairs behave as expected.",
     path: "/unit",
     icon: <TbTestPipe2Filled className="text-blue-500 text-4xl" />,
   },
   {
-    title: "Scenario Testing - Simulate End-to-End Transaction Flows",
+    title: "Scenario Testing",
+    subtitle: "Simulate End-to-End Transaction Flows",
     description:
       "Run complete workflows across buyer app and seller app interactions ensuring accurate transaction flow implementation and protocol compliance.",
     path: "/scenario",
@@ -99,6 +103,9 @@ const Features: React.FC = () => {
             <div className="mb-4">{feature.icon}</div>
             <h3 className="text-2xl font-semibold text-gray-700 mb-3">
               {feature.title}
+            </h3>
+            <h3 className="text-md font-semibold text-gray-700 mb-3">
+              {feature.subtitle}
             </h3>
             <p className="text-gray-600 leading-relaxed">
               {feature.description}
