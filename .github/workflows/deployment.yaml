@@ -79,7 +79,7 @@ jobs:
           ssh -i ./key.pem ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} <<EOF
           REPO_DIR=~/ONDC-automation-framework-staging/automation-frontend
           # Check if docker-compose.yml files exist
-          if [ ! -f \$REPO_DIR/docker-compose.yml ]; then
+          if [ ! -f \$REPO_DIR/docker-compose-staging.yml ]; then
             echo "docker-compose.yml file not found in \$REPO_DIR!"
             exit 1
           fi
@@ -165,7 +165,7 @@ jobs:
           ssh -i ./key.pem ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} <<EOF
           REPO_DIR=~/ONDC-automation-framework/automation-frontend
           # Check if docker-compose.yml files exist
-          if [ ! -f \$REPO_DIR/docker-compose.yml ]; then
+          if [ ! -f \$REPO_DIR/docker-compose-main.yml ]; then
             echo "docker-compose.yml file not found in \$REPO_DIR!"
             exit 1
           fi
