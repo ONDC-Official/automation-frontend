@@ -22,11 +22,14 @@ const Hero: React.FC = () => {
 
       {/* Content */}
       <h3 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 text-center leading-tight font-poppins">
-        Empowering Your ONDC Integration Testing
+        ONDC Integration, Simplified!
       </h3>
+      <p className="text-xl sm:text-2xl lg:text-3xl font-bold mb-4 text-center leading-tight font-poppins">
+        Validate, Debug, Deploy
+      </p>
       <p className="text-base sm:text-lg mb-6 text-center max-w-xl font-roboto">
-        Empowering digital trust with advanced verification solutions,
-        connecting buyers and sellers through seamless digital networks.
+        Your all-in-one toolkit for seamless ONDC integration. From schema
+        validations to testing full flows, get ONDC-ready quicker!
       </p>
       {/* <div className="flex gap-3">
         <button className="bg-orange-500 text-white py-2 px-6 rounded-full hover:bg-orange-600 transition duration-300 transform hover:scale-105">
