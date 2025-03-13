@@ -22,8 +22,11 @@ const Hero: React.FC = () => {
 
       {/* Content */}
       <h3 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 text-center leading-tight font-poppins">
-        ONDC Integration, Simplified - Validate, Debug, Deploy
+        ONDC Integration, Simplified!
       </h3>
+      <p className="text-xl sm:text-2xl lg:text-3xl font-bold mb-4 text-center leading-tight font-poppins">
+        Validate, Debug, Deploy
+      </p>
       <p className="text-base sm:text-lg mb-6 text-center max-w-xl font-roboto">
         Your all-in-one toolkit for seamless ONDC integration. From schema
         validations to testing full flows, get ONDC-ready quicker!
