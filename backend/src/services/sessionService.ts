@@ -14,14 +14,15 @@ export const createSessionService = async (
 	const flowConfig = fetchConfigService();
 	logger.info("flowConfig is " + JSON.stringify(flowConfig, null, 2));
 	const domainFlow = flowConfig.domain.find((s) => s.name === domain);
-	const keys = domainFlow?.flows.map((f) => f.id);
-	if (!keys) {
+	// const keys = domainFlow?.flows.map((f) => f.id);
+	if (!domainFlow) {
 		throw new Error("Invalid domain");
 	}
+
 	const map: Record<string, any> = {};
-	keys.forEach((key) => {
-		map[key] = undefined;
-	});
+	// keys.forEach((key) => {
+	// 	map[key] = undefined;
+	// });
 	let finalCache: SessionCache = {
 		transactionIds: [],
 		flowMap: map,
