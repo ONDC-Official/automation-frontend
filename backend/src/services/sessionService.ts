@@ -12,7 +12,7 @@ export const createSessionService = async (
 ) => {
 	const { npType, domain, version, subscriberUrl, env, usecaseId } = data;
 	const flowConfig = fetchConfigService();
-	logger.info("flowConfig is " + JSON.stringify(flowConfig, null, 2));
+	logger.info("flowConfig is " + flowConfig.domain.map((s) => s.name));
 	const domainFlow = flowConfig.domain.find((s) => s.name === domain);
 	// const keys = domainFlow?.flows.map((f) => f.id);
 	if (!domainFlow) {
