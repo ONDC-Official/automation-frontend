@@ -1,6 +1,6 @@
 import { RedisService } from "ondc-automation-cache-lib";
 import { SessionCache, SubscriberCache } from "../interfaces/newSessionData";
-import { fetchConfigService } from "./flowService";
+// import { fetchConfigService } from "./flowService";
 import logger from "../utils/logger";
 import { saveLog } from "../utils/console";
 
@@ -11,13 +11,13 @@ export const createSessionService = async (
 	data: SessionCache
 ) => {
 	const { npType, domain, version, subscriberUrl, env, usecaseId } = data;
-	const flowConfig = fetchConfigService();
-	logger.info("flowConfig is " + flowConfig.domain.map((s) => s.name));
-	const domainFlow = flowConfig.domain.find((s) => s.name === domain);
+	// const flowConfig = fetchConfigService();
+	// logger.info("flowConfig is " + flowConfig.domain.map((s) => s.name));
+	// const domainFlow = flowConfig.domain.find((s) => s.name === domain);
 	// const keys = domainFlow?.flows.map((f) => f.id);
-	if (!domainFlow) {
-		throw new Error("Invalid domain");
-	}
+	// if (!domainFlow) {
+	// 	throw new Error("Invalid domain");
+	// }
 
 	const map: Record<string, any> = {};
 	// keys.forEach((key) => {
