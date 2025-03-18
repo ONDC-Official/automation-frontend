@@ -290,10 +290,10 @@ const FlowDetails = ({
       </div>
       <div className="flex flex-row gap-4">
         <button
-          className={`${buttonClass} transition-colors disabled:opacity-50 disabled:cursor-not-allowed`}
+          className={`flex items-center justify-center px-4 py-2 text-sky-600 border border-sky-600 font-semibold w-full bg-white dark:bg-blue-400 dark:hover:bg-blue-500 focus:ring-blue-300 dark:focus:ring-blue-200 transition-all duration-300 rounded focus:outline-none focus:ring-2 focus:ring-opacity-50 disabled:opacity-50 disabled:cursor-not-allowed`}
           onClick={() => window.location.reload()}
         >
-          Create New Session
+          Reset Session
         </button>
         <button
           className={`${buttonClass} transition-colors disabled:opacity-50 disabled:cursor-not-allowed`}
