@@ -117,11 +117,25 @@ export const validatePayload = async (
 
 	if (!action) {
 		res.status(400).send({ message: "action is required param" });
+		return
+	}
+
+	const domain = payload?.context?.domain
+	const version = payload?.context?.version || payload?.context?.core_version
+
+	if(!domain) {
+		res.status(400).send({ message: "context should have domain" });
+		return
+	}
+
+	if(!version) {
+		res.status(400).send({ message: "context should have version" });
+		return
 	}
 
 	try {
 		const response = await axios.post(
-			`${process.env.API_SERVICE as string}/test/${action}`,
+			`${process.env.API_SERVICE as string}/${domain}/${version}/test/${action}`,
 			payload
 		);
 

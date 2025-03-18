@@ -59,7 +59,11 @@ const SchemaValidation = () => {
       domains.forEach((domain: any) => {
         if (domain.key === parsedPayload?.context?.domain) {
           domain.version.forEach((ver: any) => {
-            if (ver.key === parsedPayload?.context?.version) {
+            if (
+              ver.key ===
+              (parsedPayload?.context?.version ||
+                parsedPayload?.context?.core_version)
+            ) {
               isDomainActive = true;
             }
           });
