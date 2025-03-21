@@ -179,8 +179,8 @@ export function Accordion({
 				aria-controls={`accordion-content-${flow.id}`}
 			>
 				<h3 className="text-base font-bold text-sky-700">
-					<pre>Flow Id:</pre>{" "}
-					<h2 className="text-black font-medium">{flow.id}</h2>
+					<pre>{`Flow Id: ${flow.id}`}</pre>{" "}
+					<h2 className="text-black font-medium">{flow?.title}</h2>
 				</h3>
 				<AccordionButtons />
 			</div>
