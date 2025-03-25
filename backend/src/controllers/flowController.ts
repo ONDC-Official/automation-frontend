@@ -9,6 +9,7 @@ import getPredefinedFlowConfig, {
 } from "../config/unittestConfig";
 import logger from "../utils/logger";
 import { saveLog } from "../utils/console";
+import { buildMockBaseURL } from "../utils";
 
 export const fetchConfig = (req: Request, res: Response) => {
 	try {
@@ -36,7 +37,7 @@ export const generateReport = async (
 	}
 	try {
 		const response = await axios.post(
-			`${process.env.REPORTING_SERVICE}/generate-report`,
+			`${process.env.REPORTING_SERVICE}report/generate-report`,
 			body,
 			{
 				params: {
@@ -79,7 +80,7 @@ export const handleTriggerRequest = async (
 		saveLog(req.query.session_id as string, `Sending action ${action}`);
 
 		const response = await axios.post(
-			`${process.env.MOCK_SERVICE as string}/trigger/api-service/${action}`,
+			await buildMockBaseURL(`trigger/api-service/${action}`, req.query.session_id as string),
 			triggerInput,
 			{
 				params: {
