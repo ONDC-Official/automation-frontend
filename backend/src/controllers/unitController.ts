@@ -2,6 +2,7 @@ import axios from "axios";
 import { Request, Response } from "express";
 import { createUnitSessionService } from "../services/unitService";
 import { ACK } from "../constants/response";
+import { buildMockBaseURL } from "../utils";
 
 const SESSION_EXPIRY = 3600;
 const COOKIE_OPTIONS = { maxAge: SESSION_EXPIRY, httpOnly: true };
@@ -13,9 +14,9 @@ const setSessionCookie = (res: Response, sessionId: string) => {
 export const fetchSafeActions = async (req: Request, res: Response) => {
 	try {
 		const query = req.query;
-		const mockUrl = process.env.MOCK_SERVICE;
-		const opUrl = `${mockUrl}/trigger/safe-actions`;
-		const response = await axios.get(opUrl, {
+		const response = await axios.get( 
+			await buildMockBaseURL(`trigger/safe-actions`, query.session_id as string),
+			{
 			params: {
 				transaction_id: query.transaction_id,
 				mock_type: query.mock_type,
@@ -63,7 +64,7 @@ export const triggerUnitAction = async (req: Request, res: Response) => {
 		}
 
 		const response = await axios.post(
-			`${process.env.MOCK_SERVICE as string}/trigger/api-service/${action}`,
+			await buildMockBaseURL(`trigger/api-service/${action}`, session_id as string),
 			req.body,
 			{
 				params: {
@@ -95,7 +96,7 @@ export const getTriggerUnitAction = async (req: Request, res: Response) => {
 		const action = req.params.action;
 		const { action_id, transaction_id, subscriber_url, session_id } = req.query;
 		const response = await axios.get(
-			`${process.env.MOCK_SERVICE as string}/trigger/payload/${action}`,
+			await buildMockBaseURL(`trigger/payload/${action}`, session_id as string),
 			{
 				params: {
 					subscriber_url: subscriber_url,

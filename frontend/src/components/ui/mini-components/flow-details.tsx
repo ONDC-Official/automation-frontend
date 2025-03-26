@@ -1,7 +1,7 @@
 import FormSelect from "./../forms/form-select";
 import { FormInput } from "../forms/form-input";
 import { useForm } from "react-hook-form";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { buttonClass } from "./../../ui/forms/loading-button";
@@ -17,6 +17,16 @@ interface IProps {
   onGetActions: (sessionData: any) => void;
 }
 
+const EXPECTED_APIS = [
+  "search",
+  "select",
+  "init",
+  "confirm",
+  "status",
+  "update",
+  "track",
+];
+
 const FlowDetails = ({
   onNpChange,
   getSubUrl,
@@ -29,110 +39,31 @@ const FlowDetails = ({
   } = useForm({
     mode: "onBlur",
   });
-  const [config, setConfig] = useState<any>({});
-  const [domains, setDomains] = useState([]);
-  const [domain, setDomain] = useState("");
-  const [usecases, setUsecases] = useState([]);
-  const [usecase, setUsecase] = useState("");
-  const [apis, setApis] = useState([]);
   const [api, setApi] = useState("");
-  const [versions, setVersions] = useState([]);
-  const [version, setVersion] = useState("");
   const [npType, setNpType] = useState("BAP");
   const [subUrl, setSubUrl] = useState("");
   const [isDisabled, setIsDisabled] = useState(false);
   const [isSessionCreated, setIsSessionCreated] = useState(false);
-
-  const getPredefinedConfig = async () => {
-    try {
-      const response = await axios.get(
-        `${import.meta.env.VITE_BACKEND_URL}/flow/customFlow`
-      );
-
-      const filteredDomains = response.data?.domain?.map(
-        (item: any) => item.name
-      );
-
-      setDomains(filteredDomains);
-      setConfig(response.data);
-    } catch (e) {
-      console.log("Something went wrong: ", e);
-      toast.error("Something went wrong while fetching config");
-    }
-  };
-
-  const getVersions = (selectedDomain: string) => {
-    setDomain(selectedDomain);
-    const filteredVersions: any = [];
-
-    config?.domain?.map((item: any) => {
-      if (item.name === selectedDomain) {
-        item?.version?.map((val: any) => {
-          filteredVersions.push(val.id);
-        });
-      }
-    });
-
-    setVersions(filteredVersions);
-  };
-
-  const getUsecase = (selectedVersion: any) => {
-    setVersion(selectedVersion);
-    const filteredUsecase: any = [];
-
-    config?.domain?.map((item: any) => {
-      if (item.name === domain) {
-        item?.version?.map((val: any) => {
-          if (val.id === selectedVersion) {
-            val?.usecase?.map((usecases: any) => {
-              filteredUsecase.push(usecases.summary);
-            });
-          }
-        });
-      }
-    });
-
-    setUsecases(filteredUsecase);
-  };
-
-  const getApi = (selectedUsecase?: any) => {
-    if (selectedUsecase) {
-      setUsecase(selectedUsecase);
-    }
-    const filteredApi: any = [];
-
-    config?.domain?.map((item: any) => {
-      if (item.name === domain) {
-        item?.version?.map((ver: any) => {
-          if (ver.id === version) {
-            console.log("version", ver);
-            ver?.usecase?.map((val: any) => {
-              if (val.summary === (selectedUsecase || usecase)) {
-                val.api?.map((apis: any) => {
-                  if (npType === "BAP" && !apis?.name?.startsWith("on_")) {
-                    filteredApi.push(apis.name);
-                  }
-                  if (npType === "BPP" && apis?.name?.startsWith("on_")) {
-                    filteredApi.push(apis.name);
-                  }
-                });
-              }
-            });
-          }
-        });
-      }
-    });
-
-    setApis(filteredApi);
-  };
+  const [dynamicList, setDynamicList] = useState({
+    domain: [],
+    version: [],
+    usecase: [],
+  });
+  const formData = useRef({
+    domain: "",
+    version: "",
+    usecaseId: "",
+    subscriberUrl: "",
+    npType: "BAP",
+  });
 
   const createUnitSession = async () => {
     const payload: any = {
-      domain: domain,
-      participantType: npType,
-      subscriberUrl: subUrl,
-      version: version,
-      usecaseId: usecase.toUpperCase(),
+      domain: formData.current.domain,
+      participantType: formData.current.npType,
+      subscriberUrl: formData.current.subscriberUrl,
+      version: formData.current.version,
+      usecaseId: formData.current.usecaseId.toUpperCase(),
     };
 
     try {
@@ -173,17 +104,37 @@ const FlowDetails = ({
     }
   };
 
+  const fetchFormFieldData = async () => {
+    try {
+      const response = await axios.get(
+        `${import.meta.env.VITE_BACKEND_URL}/config/senarioFormData`
+      );
+      setDynamicList((prev) => {
+        return { ...prev, domain: response.data.domain || [] };
+      });
+      console.log("form field data", response.data);
+    } catch (e) {
+      console.log("error while fetching form field data", e);
+    }
+  };
+
   useEffect(() => {
-    getPredefinedConfig();
+    fetchFormFieldData();
   }, []);
 
   useEffect(() => {
-    if (!npType || !subUrl || !domain || !version || !usecase) {
+    if (
+      !formData.current.domain ||
+      !formData.current.npType ||
+      !formData.current.subscriberUrl ||
+      !formData.current.version ||
+      !formData.current.usecaseId
+    ) {
       setIsDisabled(true);
     } else {
       setIsDisabled(false);
     }
-  }, [npType, subUrl, domain, version, usecase]);
+  }, [formData.current]);
 
   const getButtonText = () => {
     if (npType === "BAP") {
@@ -207,9 +158,9 @@ const FlowDetails = ({
           register={register}
           errors={errors}
           setSelectedValue={(data: any) => {
+            formData.current = { ...formData.current, npType: data };
             setNpType(data);
             onNpChange(data);
-            getApi();
           }}
         />
         <FormInput
@@ -226,6 +177,7 @@ const FlowDetails = ({
             },
           }}
           onValueChange={(data: string) => {
+            formData.current = { ...formData.current, subscriberUrl: data };
             getSubUrl(data);
             setSubUrl(data);
           }}
@@ -233,42 +185,63 @@ const FlowDetails = ({
         <FormSelect
           name="domain"
           label="Domain"
-          options={domains}
+          options={dynamicList.domain}
           required
           register={register}
           errors={errors}
-          disabled={domains.length === 0}
+          disabled={dynamicList.domain.length === 0}
           setSelectedValue={(data: any) => {
-            getVersions(data);
-            // getUsecase(data);
+            formData.current = { ...formData.current, domain: data };
+            setDynamicList((prev) => {
+              let filteredVersion: any = [];
+              prev.domain.forEach((item: any) => {
+                if (item.key === data) {
+                  filteredVersion = item.version;
+                }
+              });
+              return {
+                ...prev,
+                version: filteredVersion,
+              };
+            });
           }}
           nonSelectedValue
         />
-        {/* </div>
-			<div className="flex flex-row gap-4"> */}
         <FormSelect
           name="version"
           label="Version"
-          options={versions}
+          options={dynamicList.version}
           required
           register={register}
           errors={errors}
-          disabled={versions.length === 0}
+          disabled={dynamicList.version.length === 0}
           setSelectedValue={(data: any) => {
-            getUsecase(data);
+            formData.current = { ...formData.current, version: data };
+            setDynamicList((prev) => {
+              let filteredUsecase: any = [];
+              prev.version.forEach((item: any) => {
+                if (item.key === data) {
+                  filteredUsecase = item.usecase;
+                }
+              });
+              return {
+                ...prev,
+                usecase: filteredUsecase,
+              };
+            });
           }}
           nonSelectedValue
         />
         <FormSelect
           name="usecase"
           label="Usecase"
-          options={usecases}
+          options={dynamicList.usecase}
           required
           register={register}
           errors={errors}
-          disabled={usecases.length === 0}
+          disabled={dynamicList.usecase.length === 0}
           setSelectedValue={(data: any) => {
-            getApi(data);
+            formData.current = { ...formData.current, usecaseId: data };
           }}
           nonSelectedValue
         />
@@ -276,11 +249,11 @@ const FlowDetails = ({
           <FormSelect
             name="api"
             label="Expected API"
-            options={apis}
+            options={EXPECTED_APIS}
             required
             register={register}
             errors={errors}
-            disabled={apis.length === 0}
+            disabled={EXPECTED_APIS.length === 0}
             setSelectedValue={(data: any) => {
               setApi(data);
             }}
@@ -290,10 +263,10 @@ const FlowDetails = ({
       </div>
       <div className="flex flex-row gap-4">
         <button
-          className={`${buttonClass} transition-colors disabled:opacity-50 disabled:cursor-not-allowed`}
+          className={`flex items-center justify-center px-4 py-2 text-sky-600 border border-sky-600 font-semibold w-full bg-white dark:bg-blue-400 dark:hover:bg-blue-500 focus:ring-blue-300 dark:focus:ring-blue-200 transition-all duration-300 rounded focus:outline-none focus:ring-2 focus:ring-opacity-50 disabled:opacity-50 disabled:cursor-not-allowed`}
           onClick={() => window.location.reload()}
         >
-          Create New Session
+          Reset Session
         </button>
         <button
           className={`${buttonClass} transition-colors disabled:opacity-50 disabled:cursor-not-allowed`}

@@ -12,6 +12,7 @@ export interface Domain {
 
 export interface Flow {
 	id: string;
+	title?: string;
 	description: string;
 	sequence: SequenceStep[];
 }
