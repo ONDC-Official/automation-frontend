@@ -185,12 +185,6 @@ export default function FlowContent() {
 									options={dynamicList.version.map((val: any) => val.key)}
 									currentValue={dynamicValue.version}
 									setSelectedValue={(data: string) => {
-										// setDyanmicValue(prev => {
-										// 	return {
-										// 		...prev, 
-										// 		version: data
-										// 	}
-										// })
 										formData.current = {...formData.current, version: data}
 										setDynamicList(prev => {
 											let  filteredUsecase: any = []
@@ -213,12 +207,6 @@ export default function FlowContent() {
 									options={dynamicList.usecase}
 									currentValue={dynamicValue.usecaseId}
 									setSelectedValue={(data: string) => {
-										// setDyanmicValue(prev => {
-										// 	return {
-										// 		...prev, 
-										// 		usecaseId: data
-										// 	}
-										// })
 										formData.current = {...formData.current, usecaseId: data}
 									}}
 									nonSelectedValue
