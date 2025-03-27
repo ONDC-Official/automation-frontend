@@ -41,7 +41,7 @@ const ApiTesting = () => {
   const [action, setAction] = useState("");
   const [isSent, setIsSent] = useState(false);
   const [sessionIdState, setSessionIdState] = useState("");
-  // const [currentTimestamp, setCurrentTimestamp] = useState("");
+  const [formData, setFormData] = useState<any | null>(null);
   const intervalRef = useRef<any>(null);
   const currentTimestamp = useRef("");
   const transactionIntervalRed = useRef<any>(null);
@@ -360,7 +360,19 @@ const ApiTesting = () => {
             fetchSessionData(sessionData.sessionId);
           }, 3000);
         }}
+        onFormSubmit={(data: any) => setFormData(data)}
       />
+      {console.log("formdata", formData)}
+      {formData?.domain && formData?.version && formData.participantType && (
+        <p className="ml-4">
+          <b>Workbench API endpoint:</b>
+          <code className="bg-gray-100 text-gray-800 px-2 py-1 rounded ml-2">
+            {`${import.meta.env.VITE_BASE_URL}/${formData.domain}/${
+              formData.version
+            }/${formData.participantType === "BAP" ? "seller" : "buyer"}`}
+          </code>
+        </p>
+      )}
       <div className="w-[100%] flex flex-row">
         <div className="w-3/6 p-4 gap-4 flex flex-col">
           <div className="flex flex-row items-center justify-between">
