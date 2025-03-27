@@ -59,6 +59,7 @@ jobs:
           echo "VITE_BACKEND_URL=${{ secrets.VITE_BACKEND_URL }}" >> \$REPO_DIR/frontend/.env
           echo "VITE_BPP_URL=${{ secrets.VITE_BPP_URL }}" >> \$REPO_DIR/frontend/.env
           echo "VITE_BAP_URL=${{ secrets.VITE_BAP_URL }}" >> \$REPO_DIR/frontend/.env
+          echo "VITE_BASE_URL=${{ vars.VITE_BASE_URL }}" >> \$REPO_DIR/frontend/.env
           
           echo "NODE_ENV=${{ secrets.NODE_ENV }}" >> \$REPO_DIR/backend/.env
           echo "SESSION_SECRET=${{ secrets.SESSION_SECRET }}" >> \$REPO_DIR/backend/.env
