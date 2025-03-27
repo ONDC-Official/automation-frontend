@@ -15,6 +15,7 @@ interface IProps {
   getSubUrl: (data: string) => void;
   onSetListning: (data: string, sessionData: any) => void;
   onGetActions: (sessionData: any) => void;
+  onFormSubmit: (data: any) => void;
 }
 
 const EXPECTED_APIS = [
@@ -32,6 +33,7 @@ const FlowDetails = ({
   getSubUrl,
   onSetListning,
   onGetActions,
+  onFormSubmit,
 }: IProps) => {
   const {
     register,
@@ -48,6 +50,7 @@ const FlowDetails = ({
     domain: [],
     version: [],
     usecase: [],
+    allData: false,
   });
   const formData = useRef({
     domain: "",
@@ -72,6 +75,7 @@ const FlowDetails = ({
         payload
       );
 
+      onFormSubmit(payload);
       console.log("Response", response.data);
       toast.info("Session created.");
       const localData =
@@ -123,6 +127,7 @@ const FlowDetails = ({
   }, []);
 
   useEffect(() => {
+    console.log("formdAta", formData.current);
     if (
       !formData.current.domain ||
       !formData.current.npType ||
@@ -242,6 +247,12 @@ const FlowDetails = ({
           disabled={dynamicList.usecase.length === 0}
           setSelectedValue={(data: any) => {
             formData.current = { ...formData.current, usecaseId: data };
+            setDynamicList((prev) => {
+              return {
+                ...prev,
+                allData: !prev.allData,
+              };
+            });
           }}
           nonSelectedValue
         />
@@ -263,17 +274,17 @@ const FlowDetails = ({
       </div>
       <div className="flex flex-row gap-4">
         <button
-          className={`flex items-center justify-center px-4 py-2 text-sky-600 border border-sky-600 font-semibold w-full bg-white dark:bg-blue-400 dark:hover:bg-blue-500 focus:ring-blue-300 dark:focus:ring-blue-200 transition-all duration-300 rounded focus:outline-none focus:ring-2 focus:ring-opacity-50 disabled:opacity-50 disabled:cursor-not-allowed`}
-          onClick={() => window.location.reload()}
-        >
-          Reset Session
-        </button>
-        <button
           className={`${buttonClass} transition-colors disabled:opacity-50 disabled:cursor-not-allowed`}
           onClick={createUnitSession}
           disabled={isDisabled || isSessionCreated}
         >
           {getButtonText()}
+        </button>
+        <button
+          className={`flex items-center justify-center px-4 py-2 text-sky-600 border border-sky-600 font-semibold w-full bg-white dark:bg-blue-400 dark:hover:bg-blue-500 focus:ring-blue-300 dark:focus:ring-blue-200 transition-all duration-300 rounded focus:outline-none focus:ring-2 focus:ring-opacity-50 disabled:opacity-50 disabled:cursor-not-allowed`}
+          onClick={() => window.location.reload()}
+        >
+          Reset Session
         </button>
       </div>
     </div>
