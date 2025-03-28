@@ -86,7 +86,7 @@ export function Accordion({
 		}
 	};
 
-	let stepIndex = 0;
+	let stepIndex = 1;
 	if (!sessionCache) return <div>Loading...</div>;
 
 	const handleDownload = async () => {
@@ -197,11 +197,11 @@ export function Accordion({
 
 					<div className="space-y-4 relative">
 						{steps.map((stepPair, index) => {
-							stepIndex += 2;
+							const currentStepIndex = stepIndex++; // Assign first, then increment
 							const pairData = stepPair.pair
 								? {
 										...stepPair.pair,
-										stepIndex: stepIndex,
+										stepIndex: stepIndex++, // Increment for pair if exists
 										transactionData: transactionCache,
 										sessionData: sessionCache,
 										flowId: flow.id,
@@ -209,14 +209,15 @@ export function Accordion({
 										setSideView: setSideView,
 										subscriberUrl: subUrl,
 										activeFlowId: activeFlow || "",
-								  }
+								}
 								: undefined;
+
 							return (
 								<div key={index}>
 									<SequenceCard
 										step={{
 											...stepPair.step,
-											stepIndex: stepIndex - 1,
+											stepIndex: currentStepIndex, // Assign previously set index
 											transactionData: transactionCache,
 											sessionData: sessionCache,
 											flowId: flow.id,
@@ -228,7 +229,7 @@ export function Accordion({
 										pair={pairData}
 									/>
 								</div>
-							);
+							)
 						})}
 					</div>
 				</div>
