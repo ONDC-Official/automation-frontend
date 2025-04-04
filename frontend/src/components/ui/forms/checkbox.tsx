@@ -10,7 +10,7 @@ interface CheckboxGroupProps {
   label: string;
   labelInfo?: string;
   name: string; // form field name
-  register: any;
+  register?: any;
   required?: boolean;
   disabled?: boolean;
   onChange?: (selectedCodes: string[]) => void;
