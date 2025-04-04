@@ -67,9 +67,6 @@ export default function FormConfig({
                 options={field.options}
                 label={field.label}
                 name={field.name}
-                onChange={(data) =>
-                  console.log("data::::::::: checkbixes", data)
-                }
               />
             );
           default:
