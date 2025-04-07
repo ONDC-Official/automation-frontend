@@ -13,6 +13,8 @@ export interface FormFieldConfigType {
   defaultValue?: string;
   input?: FormFieldConfigType[];
   options?: any;
+  default?: any;
+  display?: boolean;
 }
 
 export type FormConfigType = FormFieldConfigType[];
@@ -25,6 +27,7 @@ export default function FormConfig({
   submitEvent: (data: SubmitEventParams) => Promise<void>;
 }) {
   const onSubmit = async (data: Record<string, string>) => {
+    console.log("isNoFieldVisible inside on submit");
     const formatedData: Record<string, string> = {};
     const formData: Record<string, string> = data;
     for (const key in data) {
@@ -39,9 +42,34 @@ export default function FormConfig({
     console.log({ jsonPath: formatedData, formData: formData });
   };
 
+  const defaultValues: any = {};
+  let isNoFieldVisible = false;
+
+  formConfig.forEach((field) => {
+    const { display = true } = field;
+
+    if (field.default) {
+      defaultValues[field.name] = field.default;
+    }
+
+    if (display) {
+      isNoFieldVisible = true;
+    }
+  });
+
   return (
-    <GenericForm className="h-[500px] overflow-scroll" onSubmit={onSubmit}>
+    <GenericForm
+      defaultValues={defaultValues}
+      className="h-[500px] overflow-scroll"
+      onSubmit={onSubmit}
+      triggerSubmit={!isNoFieldVisible}
+    >
       {formConfig.map((field) => {
+        const { display = true } = field;
+        if (!display) {
+          return <></>;
+        }
+
         switch (field.type) {
           case "text":
             return (
@@ -67,6 +95,7 @@ export default function FormConfig({
                 options={field.options}
                 label={field.label}
                 name={field.name}
+                defaultValue={field.default}
               />
             );
           default:

@@ -14,6 +14,7 @@ interface CheckboxGroupProps {
   required?: boolean;
   disabled?: boolean;
   onChange?: (selectedCodes: string[]) => void;
+  defaultValue?: string[];
 }
 
 const CheckboxGroup = ({
@@ -25,6 +26,7 @@ const CheckboxGroup = ({
   required = false,
   disabled = false,
   onChange,
+  defaultValue = [],
 }: CheckboxGroupProps) => {
   return (
     <div className="space-y-3 p-4 rounded-lg border border-gray-200 shadow-md max-w-md bg-white">
@@ -42,6 +44,7 @@ const CheckboxGroup = ({
             disabled={disabled}
             {...register(name, {
               required: required && "This field is required",
+              default: defaultValue,
               onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
                 const form = e.target.form;
                 if (form && onChange) {

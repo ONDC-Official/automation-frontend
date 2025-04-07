@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import LoadingButton from "./loading-button";
 
@@ -7,17 +7,20 @@ const GenericForm = ({
 	children,
 	onSubmit,
 	className,
+	triggerSubmit = false
 }: {
 	defaultValues?: any;
 	children: React.ReactNode;
 	onSubmit: (data: any) => Promise<void>;
 	className?: string;
+	triggerSubmit?: boolean
 }) => {
 	const {
 		register,
 		handleSubmit,
 		formState: { errors },
 	} = useForm({ defaultValues });
+	const isRequestTriggered = useRef(false)
 
 	const [isLoading, setIsLoading] = useState(false);
 	const [isSuccess, setIsSuccess] = useState(false);
@@ -37,6 +40,13 @@ const GenericForm = ({
 			setIsLoading(false);
 		}
 	};
+
+	useEffect(()=> {
+		if(triggerSubmit && !isRequestTriggered.current) {
+			isRequestTriggered.current = true
+			handleSubmit(handleSubmitForm)()
+		}
+	} ,[])
 
 	return (
 		<form
