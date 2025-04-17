@@ -10,6 +10,7 @@ import {
 	getCompletePayload,
 	getTransactionData,
 	getLogs,
+	getReportingStatus
 } from "../../utils/request-utils";
 import { Accordion } from "./flow-accordian";
 import Loader from "../ui/mini-components/loader";
@@ -46,6 +47,7 @@ function RenderFlows({
 	const [requestData, setRequestData] = useState({});
 	const [responseData, setResponseData] = useState({});
 	const [logs, setLogs] = useState([]);
+	const [isReportingActive, setIsReportingActive] = useState(false)
 
 	useEffect(() => {
 		if (sessionId) {
@@ -85,6 +87,17 @@ function RenderFlows({
 	useEffect(() => {
 		activeFlowRef.current = activeFlow;
 	}, [activeFlow]);
+
+	useEffect(() => {
+		if(sessionData?.version && sessionData?.domain) {
+		 getReportingStatus(sessionData.domain, sessionData.version).then((data) => {
+			setIsReportingActive(data)
+		 })		.catch((e: any) => {
+			console.log("Errro while fetching reporting status: ", e);
+		
+		});
+		}
+	}, [sessionData])
 
 	useEffect(() => {
 		// Call fetchData initially
@@ -207,7 +220,7 @@ function RenderFlows({
 					<button
 						className="bg-sky-500 text-white px-4 py-2 mt-1 rounded hover:bg-sky-600 shadow-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
 						onClick={async () => await generateReport()}
-						disabled={!isFlowStopped}
+						disabled={!isReportingActive || !isFlowStopped}
 					>
 						Generate Report
 					</button>
