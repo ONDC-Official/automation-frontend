@@ -227,3 +227,21 @@ export const fetchFormFieldData = async () => {
     console.log("error while fetching form field data", e);
   }
 };
+
+export const getReportingStatus = async (domain: string, version: string) => {
+  try {
+    const response = await axios.get(
+      `${import.meta.env.VITE_BACKEND_URL}/config/reportingStatus`,
+      {
+        params: {
+          domain,
+          version,
+        },
+      }
+    );
+
+    return response.data.data;
+  } catch (e) {
+    console.log("error while fetching repoting", e);
+  }
+};
