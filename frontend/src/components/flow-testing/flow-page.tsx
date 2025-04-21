@@ -23,24 +23,24 @@ export default function FlowContent() {
 	const [dynamicList, setDynamicList] = useState({
 		domain: [],
 		version: [],
-		usecase: []
-	})
+		usecase: [],
+	});
 	const [dynamicValue, setDyanmicValue] = useState({
 		domain: "",
 		version: "",
 		usecaseId: "",
 		subscriberUrl: "",
 		npType: "BAP",
-		env: "STAGING"
-	})
-	const formData =  useRef({
+		env: "STAGING",
+	});
+	const formData = useRef({
 		domain: "",
 		version: "",
 		usecaseId: "",
 		subscriberUrl: "",
 		npType: "BAP",
-		env: "STAGING"
-	})
+		env: "STAGING",
+	});
 
 	const onSubmit = async (data: any) => {
 		try {
@@ -82,11 +82,11 @@ export default function FlowContent() {
 			const response = await axios.get(
 				`${import.meta.env.VITE_BACKEND_URL}/config/flows`,
 				{
-					params:  {
+					params: {
 						domain: data.domain,
 						version: data.version,
-						usecase: data.usecaseId
-					}
+						usecase: data.usecaseId,
+					},
 				}
 			);
 			setFlows(response.data.data.flows);
@@ -97,10 +97,10 @@ export default function FlowContent() {
 	};
 
 	const onSubmitHandler = async (data: any) => {
-		console.log("is it working")
-		await fetchFlows(data)
-		await onSubmit(data)
-	}
+		console.log("is it working");
+		await fetchFlows(data);
+		await onSubmit(data);
+	};
 
 	const fetchFormFieldData = async () => {
 		try {
@@ -114,10 +114,10 @@ export default function FlowContent() {
 		} catch (e) {
 			console.log("error while fetching form field data", e);
 		}
-	}
+	};
 
 	useEffect(() => {
-		fetchFormFieldData()
+		fetchFormFieldData();
 	}, []);
 
 	const Body = () => {
@@ -129,7 +129,10 @@ export default function FlowContent() {
 							<Heading size=" text-xl" className="mb-2">
 								Details
 							</Heading>
-							<GenericForm defaultValues={formData.current} onSubmit={onSubmitHandler}>
+							<GenericForm
+								defaultValues={formData.current}
+								onSubmit={onSubmitHandler}
+							>
 								<FormInput
 									label="Enter Subscriber Url"
 									name="subscriberUrl"
@@ -137,8 +140,8 @@ export default function FlowContent() {
 									labelInfo="your registered subscriber url"
 									validations={{
 										pattern: {
-											value: /^https:\/\/.*/,
-											message: "URL must start with https://",
+											value: /^https?:\/\/.*/i,
+											message: "URL must start with http:// or https://",
 										},
 									}}
 									onValueChange={(data: string) => {
@@ -147,7 +150,10 @@ export default function FlowContent() {
 										// 		...prev, subscriberUrl: data
 										// 	}
 										// })
-										formData.current = {...formData.current, subscriberUrl: data}
+										formData.current = {
+											...formData.current,
+											subscriberUrl: data,
+										};
 									}}
 								/>
 								<FormSelect
@@ -156,72 +162,86 @@ export default function FlowContent() {
 									options={dynamicList.domain.map((val: any) => val.key)}
 									currentValue={dynamicValue.domain}
 									setSelectedValue={(data: string) => {
-										formData.current = {...formData.current, domain: data}
+										formData.current = { ...formData.current, domain: data };
 										// setDyanmicValue(prev => {
 										// 	return {
-										// 		...prev, 
+										// 		...prev,
 										// 		domain: data
 										// 	}
 										// })
-										setDynamicList(prev => {
-											let  filteredVersion: any = []
+										setDynamicList((prev) => {
+											let filteredVersion: any = [];
 											prev.domain.forEach((item: any) => {
-												if(item.key === data) {
-													filteredVersion = item.version
+												if (item.key === data) {
+													filteredVersion = item.version;
 												}
-											})
+											});
 											return {
-												...prev, version: filteredVersion
-											}
-										})
+												...prev,
+												version: filteredVersion,
+											};
+										});
 									}}
 									nonSelectedValue
 									required
 								/>
-								{dynamicList.version?.length ? <FormSelect
-									label="Enter Version"
-									name="version"
-									required={true}
-									options={dynamicList.version.map((val: any) => val.key)}
-									currentValue={dynamicValue.version}
-									setSelectedValue={(data: string) => {
-										formData.current = {...formData.current, version: data}
-										setDynamicList(prev => {
-											let  filteredUsecase: any = []
-											prev.version.forEach((item: any) => {
-												if(item.key === data) {
-													filteredUsecase = item.usecase
-												}
-											})
-											return {
-												...prev, usecase: filteredUsecase
-											}
-										})
-									}}
-									nonSelectedValue
-								/> : <></>}
-								{dynamicList.usecase?.length ? <FormSelect
-									label="Enter Usecase"
-									name="usecaseId"
-									required={true}
-									options={dynamicList.usecase}
-									currentValue={dynamicValue.usecaseId}
-									setSelectedValue={(data: string) => {
-										formData.current = {...formData.current, usecaseId: data}
-									}}
-									nonSelectedValue
-								/> : <></>}
+								{dynamicList.version?.length ? (
+									<FormSelect
+										label="Enter Version"
+										name="version"
+										required={true}
+										options={dynamicList.version.map((val: any) => val.key)}
+										currentValue={dynamicValue.version}
+										setSelectedValue={(data: string) => {
+											formData.current = { ...formData.current, version: data };
+											setDynamicList((prev) => {
+												let filteredUsecase: any = [];
+												prev.version.forEach((item: any) => {
+													if (item.key === data) {
+														filteredUsecase = item.usecase;
+													}
+												});
+												return {
+													...prev,
+													usecase: filteredUsecase,
+												};
+											});
+										}}
+										nonSelectedValue
+									/>
+								) : (
+									<></>
+								)}
+								{dynamicList.usecase?.length ? (
+									<FormSelect
+										label="Enter Usecase"
+										name="usecaseId"
+										required={true}
+										options={dynamicList.usecase}
+										currentValue={dynamicValue.usecaseId}
+										setSelectedValue={(data: string) => {
+											formData.current = {
+												...formData.current,
+												usecaseId: data,
+											};
+										}}
+										nonSelectedValue
+									/>
+								) : (
+									<></>
+								)}
 								<FormSelect
 									name="npType"
 									label="Select Type"
 									options={["BAP", "BPP"]}
 									setSelectedValue={(data: string) => {
-										setDyanmicValue(prev => {
+										setDyanmicValue((prev) => {
 											return {
-												...prev, npType: data
-											}
-										})
-										formData.current = {...formData.current, npType: data}
+												...prev,
+												npType: data,
+											};
+										});
+										formData.current = { ...formData.current, npType: data };
 									}}
 									required
 								/>
@@ -266,7 +286,9 @@ export default function FlowContent() {
 				);
 			case 2:
 				if (!session) return <h1>Loading...</h1>;
-				return <ReportPage sessionId={session} report={report} setStep={setStep} />;
+				return (
+					<ReportPage sessionId={session} report={report} setStep={setStep} />
+				);
 			default:
 				return <h1>hello</h1>;
 		}

@@ -11,12 +11,17 @@ import {
 	getTransactionData,
 	getLogs,
 } from "../../utils/request-utils";
-import { Accordion } from "./flow-accordian";
+import { Accordion } from "./flow-state-viewer/complete-flow";
+
 import Loader from "../ui/mini-components/loader";
 import JsonView from "@uiw/react-json-view";
 import { githubDarkTheme } from "@uiw/react-json-view/githubDark";
 import Tabs from "../ui/mini-components/tabs";
 import Console from "../console";
+import { ILogs } from "../../interface";
+import { SessionContext } from "../../context/context";
+import CircularProgress from "../ui/circular-cooldown";
+// import { Accordion } from "./flow-accordian";
 
 function RenderFlows({
 	flows,
@@ -31,9 +36,6 @@ function RenderFlows({
 	setStep: React.Dispatch<React.SetStateAction<number>>;
 	setReport: React.Dispatch<React.SetStateAction<string>>;
 }) {
-	const [sessionData, setSessionData] = useState<Record<string, string> | null>(
-		null
-	);
 	const [activeFlow, setActiveFlow] = useState<string | null>(null);
 	const activeFlowRef = useRef<string | null>(activeFlow);
 	const [cacheSessionData, setCacheSessionData] = useState<SessionCache | null>(
@@ -42,19 +44,12 @@ function RenderFlows({
 	const [sideView, setSideView] = useState<any>({});
 	const [difficultyCache, setDifficultyCache] = useState<any>({});
 	const [isFlowStopped, setIsFlowStopped] = useState<boolean>(false);
-	const [selectedTab, setSelectedTab] = useState("Request");
+	const [selectedTab, setSelectedTab] = useState<"Request" | "Response">(
+		"Request"
+	);
 	const [requestData, setRequestData] = useState({});
 	const [responseData, setResponseData] = useState({});
-	const [logs, setLogs] = useState([]);
-
-	useEffect(() => {
-		if (sessionId) {
-			setInterval(async () => {
-				const logs = await getLogs(sessionId);
-				setLogs(logs);
-			}, 3000);
-		}
-	}, [sessionId]);
+	const [logs, setLogs] = useState<ILogs[]>([]);
 
 	useEffect(() => {
 		fetchSessionData();
@@ -86,17 +81,6 @@ function RenderFlows({
 		activeFlowRef.current = activeFlow;
 	}, [activeFlow]);
 
-	useEffect(() => {
-		// Call fetchData initially
-		fetchPayloads();
-
-		// Set interval to call fetchData every 3 seconds
-		const intervalId = setInterval(fetchPayloads, 3000);
-
-		// Cleanup interval on component unmount
-		return () => clearInterval(intervalId);
-	}, []); // Empty dependency array ensures this runs once
-
 	async function fetchPayloads() {
 		try {
 			if (activeFlowRef.current === null) return;
@@ -109,7 +93,6 @@ function RenderFlows({
 				subscriberUrl: subUrl,
 				...response.data,
 			};
-
 			setCacheSessionData(data);
 		} catch (e) {
 			toast.error("Error while fetching payloads");
@@ -132,9 +115,7 @@ function RenderFlows({
 						return acc;
 					}, {});
 				delete filteredData["active_session_id"];
-				// delete filteredData["current_flow_id"];
 				setDifficultyCache(response.data.sessionDifficulty);
-				setSessionData(filteredData);
 				setCacheSessionData(response.data);
 			});
 	}
@@ -155,8 +136,8 @@ function RenderFlows({
 			if (!transData) continue;
 			apiList = transData.apiList;
 
-			body[flow]  = (apiList || []).map((data) => {
-				 return data.payloadId;
+			body[flow] = (apiList || []).map((data) => {
+				return data.payloadId;
 			});
 		}
 
@@ -183,43 +164,69 @@ function RenderFlows({
 	};
 
 	return (
-		<div className="w-full min-h-screen flex flex-col">
-			<div className="space-y-2 pt-4 pr-4 pl-4">
-				{sessionData ? (
-					<div className="flex gap-2 flex-col">
-						<InfoCard
-							title="Flow Challenges"
-							data={{
-								...sessionData,
-								activeFlow: activeFlow || "N/A",
-								sessionId: sessionId,
-							}}
-						/>
-						<DifficultyCards
-							difficulty_cache={difficultyCache}
-							sessionId={sessionId}
-						/>
+		<SessionContext.Provider
+			value={{
+				sessionId,
+				activeFlowId: activeFlow,
+				sessionData: cacheSessionData,
+				selectedTab: selectedTab,
+				setRequestData: setRequestData,
+				setResponseData: setResponseData,
+			}}
+		>
+			<div className="w-full min-h-screen flex flex-col">
+				<div className="space-y-2 pt-4 pr-4 pl-4">
+					{cacheSessionData ? (
+						<div className="flex gap-2 flex-col">
+							<InfoCard
+								title="Session Info"
+								data={{
+									sessionId: sessionId,
+									subscriberUrl: subUrl,
+									activeFlow: activeFlow || "N/A",
+									subscriberType: cacheSessionData.npType,
+									domain: cacheSessionData.domain,
+									version: cacheSessionData.version,
+									env: cacheSessionData.env,
+									use_case: cacheSessionData.usecaseId,
+								}}
+								children={
+									<CircularProgress
+										duration={5}
+										loop={true}
+										onComplete={async () => {
+											fetchSessionData();
+										}}
+										sqSize={20}
+										strokeWidth={3}
+									/>
+								}
+							/>
+							<DifficultyCards
+								difficulty_cache={difficultyCache}
+								sessionId={sessionId}
+							/>
+						</div>
+					) : (
+						<div>Loading...</div>
+					)}
+					<div className="flex justify-end">
+						<button
+							className="bg-sky-500 text-white px-4 py-2 mt-1 rounded hover:bg-sky-600 shadow-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+							onClick={async () => await generateReport()}
+							disabled={!isFlowStopped}
+						>
+							Generate Report
+						</button>
 					</div>
-				) : (
-					<div>Loading...</div>
-				)}
-				<div className="flex justify-end">
-					<button
-						className="bg-sky-500 text-white px-4 py-2 mt-1 rounded hover:bg-sky-600 shadow-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-						onClick={async () => await generateReport()}
-						disabled={!isFlowStopped}
-					>
-						Generate Report
-					</button>
 				</div>
-			</div>
 
-			{/* Main Content Area */}
-			<div className="flex flex-1 w-full">
-				{/* Left Column - Main Content */}
-				<div className="w-full sm:w-[60%] overflow-y-auto p-4">
-					{/* {flows.domain.map((domain) => ( */}
-						<div className="mb-8">
+				{/* Main Content Area */}
+				<div className="flex flex-1 w-full">
+					{/* Left Column - Main Content */}
+					<div className="w-full sm:w-[60%] overflow-y-auto p-4">
+						{/* {flows.domain.map((domain) => ( */}
+						<div className="mb-8 bg-white p-4 rounded-md border">
 							{flows.map((flow) => (
 								<Accordion
 									key={flow.id}
@@ -235,46 +242,47 @@ function RenderFlows({
 								/>
 							))}
 						</div>
-					{/* ))} */}
-				</div>
+						{/* ))} */}
+					</div>
 
-				{/* Right Column - Sticky Request & Response */}
-				<div className="w-full sm:w-[40%] p-4">
-					{/* Sticky Container */}
-					<div className="bg-white rounded-md shadow-md border sticky top-20">
-						{/* <h2 className="m-1 text-lg font-semibold">Request & Response</h2> */}
-						<Tabs
-							className="mt-4 ml-2"
-							option1="Request"
-							option2="Response"
-							onSelectOption={(value: string) => {
-								setSelectedTab(value);
-							}}
-						/>
-						<div className="p-2">
-							{cacheSessionData ? (
-								<div
-									className="rounded-md overflow-auto"
-									style={{ maxHeight: "500px" }} // Adjust maxHeight as needed
-								>
-									<JsonView
-										value={
-											selectedTab === "Request" ? requestData : responseData
-										}
-										style={githubDarkTheme}
-										className="rounded-md"
-										displayDataTypes={false}
-									/>
-								</div>
-							) : (
-								<Loader />
-							)}
+					{/* Right Column - Sticky Request & Response */}
+					<div className="w-full sm:w-[40%] p-4">
+						{/* Sticky Container */}
+						<div className="bg-white rounded-md shadow-md border sticky top-20">
+							{/* <h2 className="m-1 text-lg font-semibold">Request & Response</h2> */}
+							<Tabs
+								className="mt-4 ml-2"
+								option1="Request"
+								option2="Response"
+								onSelectOption={(value: string) => {
+									setSelectedTab(value as "Request" | "Response");
+								}}
+							/>
+							<div className="p-2">
+								{cacheSessionData ? (
+									<div
+										className="rounded-md overflow-auto"
+										style={{ maxHeight: "500px" }} // Adjust maxHeight as needed
+									>
+										<JsonView
+											value={
+												selectedTab === "Request" ? requestData : responseData
+											}
+											style={githubDarkTheme}
+											className="rounded-md"
+											displayDataTypes={false}
+										/>
+									</div>
+								) : (
+									<Loader />
+								)}
+							</div>
 						</div>
 					</div>
 				</div>
+				<Console logs={logs} setLogs={setLogs} sessionId={sessionId} />
 			</div>
-			<Console logs={logs} />
-		</div>
+		</SessionContext.Provider>
 	);
 }
 
