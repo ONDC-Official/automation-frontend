@@ -1,0 +1,17 @@
+.flip-wrapper {
+	perspective: 1000px;
+}
+
+@keyframes spin360 {
+	0% {
+		transform: rotateX(0deg);
+	}
+	100% {
+		transform: rotateX(300deg);
+	}
+}
+
+.spin-once {
+	animation: spin360 0.2s ease-out;
+	transform-style: preserve-3d;
+}
