@@ -302,20 +302,36 @@ const CircularProgress: React.FC<Props> = ({
 					localStorage.removeItem(`${id}_elapsed`);
 				}
 
-				onComplete().then(() => {
-					if (!isMounted.current) return;
+				onComplete()
+					.then(() => {
+						if (!isMounted.current) return;
 
-					if (loop && isActive) {
-						setProgress(0);
-						if (id) {
-							localStorage.setItem(id, "0");
-							localStorage.setItem(`${id}_elapsed`, "0");
+						if (loop && isActive) {
+							// reset and restart
+							setProgress(0);
+							if (id) {
+								localStorage.setItem(id, "0");
+								localStorage.setItem(`${id}_elapsed`, "0");
+							}
+							startTimeRef.current = null;
+							isRunning.current = true;
+							animationRef.current = requestAnimationFrame(animate);
 						}
-						startTimeRef.current = null;
-						isRunning.current = true;
-						animationRef.current = requestAnimationFrame(animate);
-					}
-				});
+					})
+					.catch(() => {
+						if (!isMounted.current) return;
+
+						if (loop && isActive) {
+							setProgress(0);
+							if (id) {
+								localStorage.setItem(id, "0");
+								localStorage.setItem(`${id}_elapsed`, "0");
+							}
+							startTimeRef.current = null;
+							isRunning.current = true;
+							animationRef.current = requestAnimationFrame(animate);
+						}
+					});
 			}
 		};
 

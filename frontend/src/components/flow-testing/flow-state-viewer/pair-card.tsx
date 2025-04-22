@@ -2,18 +2,17 @@ import { PairedStep } from "./mapped-flow";
 import { MappedStep } from "../../../types/flow-state-type";
 import CustomTooltip from "../../ui/mini-components/tooltip";
 import { MdSyncAlt } from "react-icons/md";
-import { useContext } from "react";
+import { useContext, useEffect } from "react";
 import { SessionContext } from "../../../context/context";
 import FlippableWrapper from "../../ui/flippable-div";
-import { getCompletePayload } from "../../../utils/request-utils";
+import { getCompletePayload, proceedFlow } from "../../../utils/request-utils";
+import { toast } from "react-toastify";
 
 export default function PairedCard({
 	pairedStep,
-	setSideView,
 	flowId,
 }: {
 	pairedStep: PairedStep;
-	setSideView: React.Dispatch<any>;
 	flowId: string;
 }) {
 	const { first, second } = pairedStep;
@@ -44,7 +43,7 @@ export default function PairedCard({
 }
 
 function StepDisplay({ step, flowId }: { step: MappedStep; flowId: string }) {
-	const { activeFlowId, setRequestData, setResponseData } =
+	const { activeFlowId, setRequestData, setResponseData, sessionId } =
 		useContext(SessionContext);
 
 	const onClickFunc = async () => {
@@ -87,7 +86,8 @@ function StepDisplay({ step, flowId }: { step: MappedStep; flowId: string }) {
 						{/* Header */}
 						<div className="flex justify-between items-center">
 							<h1 className="text-md font-semibold text-gray-800">
-								{step.index + 1}: {step.actionType}
+								{step.missedStep ? "" : `${step.index + 1}: `}
+								{step.actionType}
 							</h1>
 							{step.unsolicited && (
 								<div className="bg-white text-gray-700 text-sm font-semibold border rounded-full px-3 py-1">

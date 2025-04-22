@@ -1,4 +1,3 @@
-import Heading from "./mini-components/ondc-gradient-text";
 import ToggleButton from "./mini-components/toggle-button";
 import { IoIosArrowDropdownCircle } from "react-icons/io";
 import { toast } from "react-toastify";
@@ -42,11 +41,11 @@ const DifficultyCards = ({ difficulty_cache, sessionId }: IProps) => {
 	}, [difficulty_cache]);
 
 	useEffect(() => {
-		const timeout = setTimeout(() => {
-			updateDifficulty();
-		}, 1000);
+		// const timeout = setTimeout(() => {
+		updateDifficulty();
+		// }, 1000);
 
-		return () => clearTimeout(timeout);
+		// return () => clearTimeout(timeout);
 	}, [difficultyCache]);
 
 	const updateDifficulty = async () => {

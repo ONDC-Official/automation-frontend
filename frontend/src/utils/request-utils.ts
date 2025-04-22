@@ -254,7 +254,6 @@ export const proceedFlow = async (
 	jsonPathChanges?: Record<string, any>
 ) => {
 	try {
-		toast.info("Proceeding flow...");
 		const response = await axios.post(
 			`${import.meta.env.VITE_BACKEND_URL}/flow/proceed`,
 			{

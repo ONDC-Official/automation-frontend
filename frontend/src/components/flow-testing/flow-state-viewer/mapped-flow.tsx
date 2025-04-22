@@ -320,6 +320,10 @@ export default function DisplayFlow({
 		const conf = mappedFlow?.sequence?.filter(
 			(s, index) => s.status === "INPUT-REQUIRED" && index !== 0
 		)?.[0]?.input;
+		if (conf?.length === 0) {
+			handleFormSubmit({ jsonPath: {}, formData: {} });
+			return;
+		}
 		setActiveFormConfig(conf);
 		if (conf) {
 			setInputPopUp(true);
@@ -335,6 +339,7 @@ export default function DisplayFlow({
 			}
 			await proceedFlow(sessionId, txId, formData.jsonPath);
 			setInputPopUp(false);
+			setActiveFormConfig(undefined);
 		} catch (error) {
 			toast.error("Error submitting form ");
 			console.error("Error submitting form data:", error);
@@ -345,12 +350,7 @@ export default function DisplayFlow({
 		<>
 			<div>
 				{steps.map((pairedStep, index) => (
-					<PairedCard
-						key={index}
-						pairedStep={pairedStep}
-						setSideView={setSideView}
-						flowId={flowId}
-					/>
+					<PairedCard key={index} pairedStep={pairedStep} flowId={flowId} />
 				))}
 			</div>
 			<div></div>
