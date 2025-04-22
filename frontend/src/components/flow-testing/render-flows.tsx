@@ -81,24 +81,24 @@ function RenderFlows({
 		activeFlowRef.current = activeFlow;
 	}, [activeFlow]);
 
-	async function fetchPayloads() {
-		try {
-			if (activeFlowRef.current === null) return;
+	// async function fetchPayloads() {
+	// 	try {
+	// 		if (activeFlowRef.current === null) return;
 
-			const response = await axios.get(
-				`${import.meta.env.VITE_BACKEND_URL}/sessions`,
-				{ params: { session_id: sessionId } }
-			);
-			const data: SessionCache = {
-				subscriberUrl: subUrl,
-				...response.data,
-			};
-			setCacheSessionData(data);
-		} catch (e) {
-			toast.error("Error while fetching payloads");
-			console.error("error while fetching payloads", e);
-		}
-	}
+	// 		const response = await axios.get(
+	// 			`${import.meta.env.VITE_BACKEND_URL}/sessions`,
+	// 			{ params: { session_id: sessionId } }
+	// 		);
+	// 		const data: SessionCache = {
+	// 			subscriberUrl: subUrl,
+	// 			...response.data,
+	// 		};
+	// 		setCacheSessionData(data);
+	// 	} catch (e) {
+	// 		toast.error("Error while fetching payloads");
+	// 		console.error("error while fetching payloads", e);
+	// 	}
+	// }
 
 	function fetchSessionData() {
 		axios

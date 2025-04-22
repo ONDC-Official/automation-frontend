@@ -101,7 +101,7 @@ export function Accordion({
 	const startFlow = async () => {
 		try {
 			if (!sessionCache) return;
-			const canStart = await canStartFlow(sessionCache, flow, mappedFlow);
+			const canStart = await canStartFlow(sessionCache, mappedFlow);
 			console.log(canStart);
 			if (!canStart) return;
 			setActiveFlow(flow.id);
@@ -112,14 +112,15 @@ export function Accordion({
 			} else {
 				const txId = uuidv4();
 				const data = await newFlow(sessionId, flow.id, txId);
+				console.log("Data", data);
 				if (data.inputs) {
 					toast.info("Inputs are required to start the flow");
 					setActiveFormConfig(data.inputs);
 					setInputPopUp(true);
 				}
-				if (data.expectationAdded) {
-					toast.info("Expectation added successfully");
-				}
+				// if (data.expectationAdded) {
+				// 	toast.info("Expectation added successfully");
+				// }
 			}
 			setIsOpen(true);
 		} catch (e) {
@@ -160,7 +161,7 @@ export function Accordion({
 			<div className="flex items-center">
 				<div className="flex items-center justify-center p-2 ml-2 rounded-md shadow-sm bg-sky-50 transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 text-sky-600 ease-in">
 					<div className="flex items-center gap-2 text-sm font-bold text-sky-700">
-						{getPercent(mappedFlow)}%
+						{getPercent(mappedFlow).toFixed(0)}%
 					</div>
 				</div>
 				{!activeFlow && (
@@ -293,14 +294,10 @@ export function Accordion({
 	);
 }
 
-async function canStartFlow(
-	sessionData: SessionCache,
-	flow: Flow,
-	MappedFlow?: FlowMap
-) {
-	if (MappedFlow) return true;
-	const action = flow.sequence[0].type;
-	if (flow.sequence[0].expect && sessionData.npType === "BAP") {
+async function canStartFlow(sessionData: SessionCache, mappedFlow: FlowMap) {
+	console.log(mappedFlow);
+	const action = mappedFlow.sequence[0].actionType;
+	if (mappedFlow.sequence[0].expect && sessionData.npType === "BAP") {
 		console.log("Requesting for flow permission");
 		return await requestForFlowPermission(action, sessionData.subscriberUrl);
 	}

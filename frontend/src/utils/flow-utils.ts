@@ -78,6 +78,7 @@ export function getSequenceFromFlow(
 			unsolicited: step.unsolicited,
 			pairActionId: step.pair,
 			description: step.description,
+			expect: step.expect,
 		};
 	});
 }
