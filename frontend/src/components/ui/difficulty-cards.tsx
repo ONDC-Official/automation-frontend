@@ -50,10 +50,7 @@ const DifficultyCards = ({ difficulty_cache, sessionId }: IProps) => {
 
 	const updateDifficulty = async () => {
 		try {
-			const response = await putCacheData(
-				{ sessionDifficulty: difficultyCache },
-				sessionId
-			);
+			await putCacheData({ sessionDifficulty: difficultyCache }, sessionId);
 		} catch (e) {
 			console.error("error while sending response", e);
 			toast.error("Error while updating setting difficulty");

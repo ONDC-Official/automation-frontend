@@ -4,7 +4,6 @@ import { getLogs } from "../utils/request-utils";
 import { FaTerminal } from "react-icons/fa6";
 import { GoDash } from "react-icons/go";
 import CircularProgress from "./ui/circular-cooldown";
-import { toast } from "react-toastify";
 
 interface IProps {
 	logs: ILogs[];

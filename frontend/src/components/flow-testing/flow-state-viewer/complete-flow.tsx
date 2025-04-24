@@ -50,6 +50,7 @@ export function Accordion({
 	onFlowStop,
 	onFlowClear,
 }: AccordionProps) {
+	console.log(setSideView);
 	const [inputPopUp, setInputPopUp] = useState(false);
 	const [isOpen, setIsOpen] = useState(false);
 	const [mappedFlow, setMappedFlow] = useState<FlowMap>({
@@ -272,13 +273,7 @@ export function Accordion({
 					<p className="text-gray-700 mb-6">{flow.description}</p>
 
 					<div className="space-y-4 relative">
-						{
-							<DisplayFlow
-								mappedFlow={mappedFlow}
-								setSideView={setSideView}
-								flowId={flow.id}
-							/>
-						}
+						{<DisplayFlow mappedFlow={mappedFlow} flowId={flow.id} />}
 					</div>
 				</div>
 			</div>
