@@ -9,7 +9,6 @@ import {
 	// putCacheData,
 	getCompletePayload,
 	getTransactionData,
-	getLogs,
 } from "../../utils/request-utils";
 import { Accordion } from "./flow-state-viewer/complete-flow";
 
