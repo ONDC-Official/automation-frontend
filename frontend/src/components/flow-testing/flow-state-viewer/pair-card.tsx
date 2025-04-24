@@ -167,11 +167,16 @@ function getStatusStyles(
 			};
 
 		case "RESPONDING":
-		case "INPUT-REQUIRED":
 			return {
 				card: "border-blue-300 bg-gradient-to-br from-blue-50 to-blue-200 shadow-md shadow-blue-200",
 				messageText: "SENDING",
 				messageBg: "bg-gradient-to-r from-blue-600 to-blue-400 text-white",
+			};
+		case "INPUT-REQUIRED":
+			return {
+				card: "border-indigo-300 bg-gradient-to-br from-indigo-50 to-indigo-200 shadow-md shadow-indigo-200",
+				messageText: "INPUT-REQUIRED",
+				messageBg: "bg-gradient-to-r from-indigo-600 to-indigo-400 text-white",
 			};
 
 		case "LISTENING":
