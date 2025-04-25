@@ -47,8 +47,10 @@ function StepDisplay({ step, flowId }: { step: MappedStep; flowId: string }) {
 
 	const onClickFunc = async () => {
 		if (step.status !== "COMPLETE") {
-			setRequestData(step);
-			setResponseData(step);
+			// setRequestData(step);
+			// setResponseData(step);
+			setRequestData({ info: "Step not complete" });
+			setResponseData({ info: "Step not complete" });
 			return;
 		}
 		const payloadIds = step.payloads?.payloads.map((p) => p.payloadId) ?? [];
@@ -175,7 +177,7 @@ function getStatusStyles(
 		case "INPUT-REQUIRED":
 			return {
 				card: "border-indigo-300 bg-gradient-to-br from-indigo-50 to-indigo-200 shadow-md shadow-indigo-200",
-				messageText: "INPUT-REQUIRED",
+				messageText: "SENDING",
 				messageBg: "bg-gradient-to-r from-indigo-600 to-indigo-400 text-white",
 			};
 
