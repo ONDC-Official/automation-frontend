@@ -251,7 +251,8 @@ export const getMappedFlow = async (
 export const proceedFlow = async (
 	sessionId: string,
 	transactionId: string,
-	jsonPathChanges?: Record<string, any>
+	jsonPathChanges?: Record<string, any>,
+	inputs?: any,
 ) => {
 	try {
 		const response = await axios.post(
@@ -260,6 +261,7 @@ export const proceedFlow = async (
 				session_id: sessionId,
 				transaction_id: transactionId,
 				json_path_changes: jsonPathChanges,
+				inputs: inputs
 			}
 		);
 		return response.data;
@@ -273,7 +275,8 @@ export const newFlow = async (
 	sessionId: string,
 	flowId: string,
 	transactionId: string,
-	json_path_changes?: Record<string, any>
+	json_path_changes?: Record<string, any>,
+	inputs?: any
 ) => {
 	try {
 		const response = await axios.post(
@@ -283,6 +286,7 @@ export const newFlow = async (
 				flow_id: flowId,
 				transaction_id: transactionId,
 				json_path_changes: json_path_changes,
+				inputs: inputs
 			}
 		);
 		return response.data;
