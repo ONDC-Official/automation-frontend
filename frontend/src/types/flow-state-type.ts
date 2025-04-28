@@ -35,4 +35,5 @@ export interface MappedStep {
 	pairActionId: string | null;
 	expect?: boolean;
 	missedStep?: boolean;
+	label?: string;
 }
