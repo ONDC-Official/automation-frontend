@@ -77,70 +77,82 @@ function StepDisplay({ step, flowId }: { step: MappedStep; flowId: string }) {
 	const apiCount =
 		step.status === "COMPLETE" ? step.payloads?.payloads.length ?? 0 : 0;
 	return (
-		<CustomTooltip content={step.description ?? ""}>
-			<FlippableWrapper flipTrigger={step.status}>
-				<button
-					className={`${statusStyles?.card} w-full h-full rounded-lg p-4 border shadow-md hover:shadow-lg transition-all duration-200`}
-					onClick={onClickFunc}
-				>
-					<div className="w-full flex flex-col space-y-1">
-						{/* Header */}
-						<div className="flex justify-between items-center">
-							<h1 className="text-md font-semibold text-gray-800">
-								{step.missedStep ? "" : `${step.index + 1}: `}
-								{step.actionType}
-							</h1>
+		// <CustomTooltip content={step.description ?? ""}>
+		<FlippableWrapper flipTrigger={step.status}>
+			<button
+				className={`${statusStyles?.card} w-full h-full rounded-lg p-4 border shadow-md hover:shadow-lg transition-all duration-200`}
+				onClick={onClickFunc}
+			>
+				<div className="w-full flex flex-col space-y-1">
+					{/* Header */}
+					<div className="flex justify-between items-center">
+						<h1 className="text-md font-semibold text-gray-800 flex">
+							{step.missedStep ? "" : `${step.index + 1}: `}
+							{step.actionType}
+							{/* {step.label && ( */}
+							{/* <span className="text-md font-normal text-gray-500 ml-2 "> */}
+							{/* {step.label} */}
+							{/* </span> */}
+							{/* )} */}
+						</h1>
+						<div className="flex items-center gap-2">
 							{step.unsolicited && (
 								<div className="bg-white text-gray-700 text-sm font-semibold border rounded-full px-3 py-1">
 									unsolicited
 								</div>
 							)}
-						</div>
-						{/* Status Indicator */}
-						<div className="flex items-center space-x-2">
-							{statusStyles?.messageText && (
-								<span
-									className={`${statusStyles.messageBg} text-white text-sm border font-sm rounded-full px-3 py-1 flex`}
-								>
-									{statusStyles?.messageText}
-									{["LISTENING", "RESPONDING", "INPUT-REQUIRED"].includes(
-										status
-									) &&
-										flowId === activeFlowId && (
-											<div className="w-4 h-4 border-2 border-t-2 border-t-yellow-800 border-white rounded-full animate-spin-slow ml-2"></div>
-										)}
-								</span>
-							)}
-							{step.missedStep && (
-								<span
-									className={`bg-gradient-to-r from-purple-600 to-purple-500 text-white text-sm border font-sm rounded-full px-3 py-1 flex`}
-								>
-									out-of-sequence
-								</span>
-							)}
-							{/* API Count */}
-							{apiCount > 0 && (
-								<div className="bg-white text-gray-700 text-sm font-semibold border rounded-full px-3 py-1">
-									count: {apiCount}
+							<CustomTooltip content={step.description ?? ""}>
+								<div className="bg-white text-gray-700 text-sm font-semibold border rounded-full px-3 py-1 hover:shadow-md">
+									info
 								</div>
-							)}
-
-							{/* Timestamp (if available) */}
-							{step.payloads?.timestamp && (
-								<div className="bg-white text-gray-700 text-sm font-semibold border rounded-full px-3 py-1">
-									{new Date(step.payloads.timestamp).toLocaleTimeString([], {
-										hour: "2-digit",
-										minute: "2-digit",
-										second: "2-digit",
-										hour12: true,
-									})}
-								</div>
-							)}
+							</CustomTooltip>
 						</div>
 					</div>
-				</button>
-			</FlippableWrapper>
-		</CustomTooltip>
+					{/* Status Indicator */}
+					<div className="flex items-center space-x-2">
+						{statusStyles?.messageText && (
+							<span
+								className={`${statusStyles.messageBg} text-white text-sm border font-sm rounded-full px-3 py-1 flex`}
+							>
+								{statusStyles?.messageText}
+								{["LISTENING", "RESPONDING", "INPUT-REQUIRED"].includes(
+									status
+								) &&
+									flowId === activeFlowId && (
+										<div className="w-4 h-4 border-2 border-t-2 border-t-yellow-800 border-white rounded-full animate-spin-slow ml-2"></div>
+									)}
+							</span>
+						)}
+						{step.missedStep && (
+							<span
+								className={`bg-gradient-to-r from-purple-600 to-purple-500 text-white text-sm border font-sm rounded-full px-3 py-1 flex`}
+							>
+								out-of-sequence
+							</span>
+						)}
+						{/* API Count */}
+						{apiCount > 0 && (
+							<div className="bg-white text-gray-700 text-sm font-semibold border rounded-full px-3 py-1">
+								count: {apiCount}
+							</div>
+						)}
+
+						{/* Timestamp (if available) */}
+						{step.payloads?.timestamp && (
+							<div className="bg-white text-gray-700 text-sm font-semibold border rounded-full px-3 py-1">
+								{new Date(step.payloads.timestamp).toLocaleTimeString([], {
+									hour: "2-digit",
+									minute: "2-digit",
+									second: "2-digit",
+									hour12: true,
+								})}
+							</div>
+						)}
+					</div>
+				</div>
+			</button>
+		</FlippableWrapper>
+		// </CustomTooltip>
 	);
 }
 
