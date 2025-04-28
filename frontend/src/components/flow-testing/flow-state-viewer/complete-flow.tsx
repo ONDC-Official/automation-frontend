@@ -89,7 +89,7 @@ export function Accordion({
 
 	async function handleFormForNewFlow(formData: SubmitEventParams) {
 		try {
-			await newFlow(sessionId, flow.id, uuidv4(), formData.jsonPath);
+			await newFlow(sessionId, flow.id, uuidv4(), formData.jsonPath,formData.formData);
 			setInputPopUp(false);
 			toast.success("Flow started successfully");
 		} catch (e) {

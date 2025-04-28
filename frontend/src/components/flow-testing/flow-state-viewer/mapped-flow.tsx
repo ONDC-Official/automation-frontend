@@ -47,7 +47,7 @@ export default function DisplayFlow({
 				console.error("Transaction ID not found");
 				return;
 			}
-			await proceedFlow(sessionId, txId, formData.jsonPath);
+			await proceedFlow(sessionId, txId, formData.jsonPath,formData.formData);
 			setInputPopUp(false);
 			setActiveFormConfig(undefined);
 		} catch (error) {
