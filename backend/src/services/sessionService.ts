@@ -31,10 +31,10 @@ export const createSessionService = async (
 		version,
 		subscriberUrl,
 		env,
-		usecaseId: usecaseId.toUpperCase(),
+		usecaseId: usecaseId,
 		sessionDifficulty: {
 			sensitiveTTL: true,
-			useGateway: true,
+			useGateway: false,
 			stopAfterFirstNack: true,
 			protocolValidations: true,
 			timeValidations: true,
