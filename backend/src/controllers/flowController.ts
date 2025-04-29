@@ -80,7 +80,10 @@ export const handleTriggerRequest = async (
 		saveLog(req.query.session_id as string, `Sending action ${action}`);
 
 		const response = await axios.post(
-			await buildMockBaseURL(`trigger/api-service/${action}`, req.query.session_id as string),
+			await buildMockBaseURL(
+				`trigger/api-service/${action}`,
+				req.query.session_id as string
+			),
 			triggerInput,
 			{
 				params: {
@@ -118,25 +121,27 @@ export const validatePayload = async (
 
 	if (!action) {
 		res.status(400).send({ message: "action is required param" });
-		return
+		return;
 	}
 
-	const domain = payload?.context?.domain
-	const version = payload?.context?.version || payload?.context?.core_version
+	const domain = payload?.context?.domain;
+	const version = payload?.context?.version || payload?.context?.core_version;
 
-	if(!domain) {
+	if (!domain) {
 		res.status(400).send({ message: "context should have domain" });
-		return
+		return;
 	}
 
-	if(!version) {
+	if (!version) {
 		res.status(400).send({ message: "context should have version" });
-		return
+		return;
 	}
 
 	try {
 		const response = await axios.post(
-			`${process.env.API_SERVICE as string}/${domain}/${version}/test/${action}`,
+			`${
+				process.env.API_SERVICE as string
+			}/${domain}/${version}/test/${action}`,
 			payload
 		);
 
@@ -176,4 +181,64 @@ export const getExample = async (
 	}
 
 	res.send(config);
+};
+
+export const getCurrentStateFlow = async (
+	req: Request,
+	res: Response
+): Promise<void> => {
+	try {
+		const { session_id, transaction_id } = req.query;
+		const url = await buildMockBaseURL(
+			"flows/current-status",
+			session_id as string
+		);
+		const response = await axios.get(url, {
+			params: {
+				session_id,
+				transaction_id,
+			},
+		});
+		logger.info("current state response fetched successfully");
+		res.status(response.status).send(response.data);
+	} catch (e) {
+		logger.error("error while fetching current state", e);
+		res.status(500).send(ERROR);
+	}
+};
+
+export const proceedFlow = async (req: Request, res: Response) => {
+	try {
+		const { session_id, transaction_id } = req.body;
+		if (!session_id || !transaction_id) {
+			res
+				.status(400)
+				.send({ message: "session_id and transaction_id are required" });
+			return;
+		}
+		const url = await buildMockBaseURL("flows/proceed", session_id as string);
+		const response = await axios.post(url, req.body);
+		res.status(response.status).send(response.data);
+	} catch (e) {
+		logger.error("error while proceeding flow", e);
+		res.status(500).send(ERROR);
+	}
+};
+
+export const newFlow = async (req: Request, res: Response) => {
+	try {
+		const { session_id, transaction_id, flow_id } = req.body;
+		if (!session_id || !transaction_id || !flow_id) {
+			res.status(400).send({
+				message: "session_id, transaction_id and flow_id are required",
+			});
+			return;
+		}
+		const url = await buildMockBaseURL("flows/new", session_id as string);
+		const response = await axios.post(url, req.body);
+		res.status(response.status).send(response.data);
+	} catch (e) {
+		logger.error("error while creating new flow", e);
+		res.status(500).send(ERROR);
+	}
 };

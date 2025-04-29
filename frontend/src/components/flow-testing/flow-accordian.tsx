@@ -86,7 +86,7 @@ export function Accordion({
 		}
 	};
 
-	let stepIndex = 0;
+	let stepIndex = 1;
 	if (!sessionCache) return <div>Loading...</div>;
 
 	const handleDownload = async () => {
@@ -170,16 +170,20 @@ export function Accordion({
 		);
 	}
 
+	const bg =
+		activeFlow === flow.id
+			? "bg-gradient-to-r from-sky-50 via-sky-100 to-sky-50 "
+			: "bg-white";
 	return (
-		<div className="rounded-md border border-zinc-300 mb-4 shadow-lg w-full ml-1">
+		<div className="rounded-md border border-zinc-50 mb-4 shadow-lg w-full ml-1">
 			<div
-				className="flex items-center justify-between px-5 py-3 bg-white border rounded-md shadow-sm hover:bg-gray-50 cursor-pointer transition-colors"
+				className={`${bg} flex items-center justify-between px-5 py-3 border rounded-md shadow-sm hover:bg-gray-50 cursor-pointer transition-colors`}
 				onClick={() => setIsOpen(!isOpen)}
 				aria-expanded={isOpen}
 				aria-controls={`accordion-content-${flow.id}`}
 			>
 				<h3 className="text-base font-bold text-sky-700">
-					<pre>{`Flow Id: ${flow.id}`}</pre>{" "}
+					<pre>{`${flow.id}`}</pre>{" "}
 					<h2 className="text-black font-medium">{flow?.title}</h2>
 				</h3>
 				<AccordionButtons />
@@ -197,11 +201,11 @@ export function Accordion({
 
 					<div className="space-y-4 relative">
 						{steps.map((stepPair, index) => {
-							stepIndex += 2;
+							const currentStepIndex = stepIndex++; // Assign first, then increment
 							const pairData = stepPair.pair
 								? {
 										...stepPair.pair,
-										stepIndex: stepIndex,
+										stepIndex: stepIndex++, // Increment for pair if exists
 										transactionData: transactionCache,
 										sessionData: sessionCache,
 										flowId: flow.id,
@@ -211,12 +215,13 @@ export function Accordion({
 										activeFlowId: activeFlow || "",
 								  }
 								: undefined;
+
 							return (
 								<div key={index}>
 									<SequenceCard
 										step={{
 											...stepPair.step,
-											stepIndex: stepIndex - 1,
+											stepIndex: currentStepIndex, // Assign previously set index
 											transactionData: transactionCache,
 											sessionData: sessionCache,
 											flowId: flow.id,
@@ -244,16 +249,17 @@ function getOrderedSteps(sequence: SequenceStep[]): {
 	const visited = new Set<string>();
 	const steps = [];
 
+	let index = 0;
 	for (const step of sequence) {
-		if (visited.has(step.key)) continue;
+		if (visited.has(`${step.key}_${index}`)) continue;
 
-		visited.add(step.key);
+		visited.add(`${step.key}_${index}`);
 
 		let pairStep: SequenceStep | undefined;
 		if (step.pair) {
 			pairStep = sequence.find((s) => s.key === step.pair);
 			if (pairStep && !visited.has(pairStep.key)) {
-				visited.add(pairStep.key);
+				visited.add(`${pairStep.key}_${index + 1}`);
 			}
 		}
 
@@ -261,6 +267,7 @@ function getOrderedSteps(sequence: SequenceStep[]): {
 			step,
 			pair: pairStep,
 		});
+		index++;
 	}
 
 	return steps;

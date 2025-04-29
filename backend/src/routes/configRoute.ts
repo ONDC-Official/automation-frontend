@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { getFlows, getSeanrioFormData } from "../controllers/configController";
+import { getFlows, getSeanrioFormData, getReportingStatus } from "../controllers/configController";
 import validateRequiredParams from "../middlewares/generic";
 
 const router = Router();
@@ -10,5 +10,10 @@ router.get(
   getFlows
 );
 router.get("/senarioFormData", getSeanrioFormData);
+router.get(
+  "/reportingStatus",
+  validateRequiredParams(["domain", "version"]),
+  getReportingStatus
+);
 
 export default router;

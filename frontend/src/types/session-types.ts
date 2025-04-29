@@ -36,6 +36,7 @@ export interface SessionCache {
 	version: string;
 	subscriberId?: string;
 	subscriberUrl: string;
+	usecaseId: string;
 	env: "STAGING" | "PRE-PRODUCTION";
 	sessionDifficulty: SessionDifficulty;
 }

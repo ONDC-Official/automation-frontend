@@ -1,4 +1,3 @@
-import Heading from "./mini-components/ondc-gradient-text";
 import ToggleButton from "./mini-components/toggle-button";
 import { IoIosArrowDropdownCircle } from "react-icons/io";
 import { toast } from "react-toastify";
@@ -42,41 +41,35 @@ const DifficultyCards = ({ difficulty_cache, sessionId }: IProps) => {
 	}, [difficulty_cache]);
 
 	useEffect(() => {
-		const timeout = setTimeout(() => {
-			updateDifficulty();
-		}, 1000);
+		// const timeout = setTimeout(() => {
+		updateDifficulty();
+		// }, 1000);
 
-		return () => clearTimeout(timeout);
+		// return () => clearTimeout(timeout);
 	}, [difficultyCache]);
 
 	const updateDifficulty = async () => {
 		try {
-			const response = await putCacheData(
-				{ sessionDifficulty: difficultyCache },
-				sessionId
-			);
-			console.log("diff response", response);
+			await putCacheData({ sessionDifficulty: difficultyCache }, sessionId);
 		} catch (e) {
 			console.error("error while sending response", e);
 			toast.error("Error while updating setting difficulty");
 		}
 	};
-	console.log("difficultyCache", difficultyCache);
 	return (
-		<div className="w-full bg-slate-100 backdrop-blur-md rounded-md p-2 shadow-lg flex flex-col gap-4">
+		<button className="w-full bg-slate-100 backdrop-blur-md rounded-md p-2 shadow-lg flex flex-col gap-4 hover:bg-sky-50">
 			{/* Header with Button */}
-			<div className="flex flex-row justify-between">
-				<Heading className="text-xl font-bold">Difficulty Level</Heading>
-				<button
-					onClick={() => setIsOpen(!isOpen)}
-					className="rounded-full hover:bg-blue-100 text-sky-500 transition-all duration-300 shadow-sm"
-				>
-					<IoIosArrowDropdownCircle
-						className={`text-3xl transition-transform duration-300 ${
-							isOpen ? "rotate-180" : "rotate-0"
-						}`}
-					/>
-				</button>
+			<div
+				className="flex flex-row justify-between items-center cursor-pointer"
+				onClick={() => setIsOpen(!isOpen)}
+			>
+				<div className="text-md font-bold text-sky-700 mt-2">Flow Settings</div>
+
+				<IoIosArrowDropdownCircle
+					className={`h-7 w-7 text-sky-700 transform transition-transform duration-300 ${
+						isOpen ? "rotate-180" : "rotate-0"
+					}`}
+				/>
 			</div>
 
 			<div
@@ -112,7 +105,7 @@ const DifficultyCards = ({ difficulty_cache, sessionId }: IProps) => {
 					</div>
 				)}
 			</div>
-		</div>
+		</button>
 	);
 };
 

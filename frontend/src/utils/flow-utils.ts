@@ -1,4 +1,6 @@
-import { ApiData } from "../types/session-types";
+import { MappedStep } from "../types/flow-state-type";
+import { Flow } from "../types/flow-types";
+import { ApiData, SessionCache } from "../types/session-types";
 
 export function GetCurrentState(
 	index: number,
@@ -43,4 +45,39 @@ export function getRequestResponse(
 		action: action,
 		request: "request not yet made",
 	};
+}
+
+export function getSequenceFromFlow(
+	flow: Flow,
+	sessionData: SessionCache | null | undefined,
+	activeFlow: string | null
+): MappedStep[] {
+	return flow.sequence.map((step, index) => {
+		let status: "WAITING" | "LISTENING" | "RESPONDING" | "INPUT-REQUIRED" =
+			"WAITING";
+		if (index === 0 && flow.id === activeFlow && sessionData) {
+			if (step.input && step.owner !== sessionData.npType) {
+				status = "INPUT-REQUIRED";
+			} else if (step.owner === "BAP") {
+				if (sessionData.npType === "BAP") status = "LISTENING";
+				else status = "RESPONDING";
+			} else if (step.owner === "BPP") {
+				if (sessionData.npType === "BPP") status = "LISTENING";
+				else status = "RESPONDING";
+			}
+		}
+
+		return {
+			status: status,
+			actionId: step.key,
+			owner: step.owner,
+			actionType: step.type,
+			input: step.input,
+			index: index,
+			unsolicited: step.unsolicited,
+			pairActionId: step.pair,
+			description: step.description,
+			expect: step.expect,
+		};
+	});
 }

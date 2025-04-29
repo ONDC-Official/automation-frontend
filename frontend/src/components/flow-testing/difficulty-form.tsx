@@ -124,14 +124,13 @@ const DifficultyForm = ({
 			totalDifficulty,
 		};
 		try {
-			const response = await putCacheData({ difficulty: dataToSend }, subUrl);
-			console.log("diff response", response);
+			await putCacheData({ difficulty: dataToSend }, subUrl);
 			await submitFunction();
 		} catch (e) {
 			console.error("error while sending response", e);
 			toast.error("Error while setting difficulty");
 		}
-		console.log(dataToSend);
+		// console.log(dataToSend);
 	};
 
 	return (
