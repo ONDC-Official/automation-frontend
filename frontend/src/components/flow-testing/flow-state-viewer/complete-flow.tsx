@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "react-toastify"; // Assuming you're using react-toastify for notifications
 import { Flow, SubmitEventParams } from "../../../types/flow-types";
 import { SessionCache } from "../../../types/session-types";
@@ -33,7 +33,7 @@ interface AccordionProps {
 	setActiveFlow: (flowId: string | null) => void;
 	sessionCache?: SessionCache | null;
 	sessionId: string;
-	setSideView: React.Dispatch<any>;
+	// setSideView: React.Dispatch<any>;
 	subUrl: string;
 	onFlowStop: () => void;
 	onFlowClear: () => void;
@@ -45,12 +45,10 @@ export function Accordion({
 	setActiveFlow,
 	sessionCache,
 	sessionId,
-	setSideView,
 	subUrl,
 	onFlowStop,
 	onFlowClear,
 }: AccordionProps) {
-	console.log(setSideView);
 	const [inputPopUp, setInputPopUp] = useState(false);
 	const [isOpen, setIsOpen] = useState(false);
 	const [mappedFlow, setMappedFlow] = useState<FlowMap>({
@@ -89,7 +87,13 @@ export function Accordion({
 
 	async function handleFormForNewFlow(formData: SubmitEventParams) {
 		try {
-			await newFlow(sessionId, flow.id, uuidv4(), formData.jsonPath,formData.formData);
+			await newFlow(
+				sessionId,
+				flow.id,
+				uuidv4(),
+				formData.jsonPath,
+				formData.formData
+			);
 			setInputPopUp(false);
 			toast.success("Flow started successfully");
 		} catch (e) {
@@ -113,7 +117,6 @@ export function Accordion({
 			} else {
 				const txId = uuidv4();
 				const data = await newFlow(sessionId, flow.id, txId);
-				console.log("Data", data);
 				if (data.inputs) {
 					toast.info("Inputs are required to start the flow");
 					setActiveFormConfig(data.inputs);
@@ -290,7 +293,6 @@ export function Accordion({
 }
 
 async function canStartFlow(sessionData: SessionCache, mappedFlow: FlowMap) {
-	console.log(mappedFlow);
 	const action = mappedFlow.sequence[0].actionType;
 	if (mappedFlow.sequence[0].expect && sessionData.npType === "BAP") {
 		console.log("Requesting for flow permission");
