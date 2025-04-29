@@ -27,3 +27,8 @@ export interface SequenceStep {
 	input?: FormConfigType;
 	expect?: boolean;
 }
+
+export interface SubmitEventParams {
+	jsonPath: Record<string, string>
+	formData: Record<string, string>
+}

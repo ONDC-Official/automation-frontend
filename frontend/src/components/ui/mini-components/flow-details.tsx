@@ -177,9 +177,9 @@ const FlowDetails = ({
           validateOnBlue={true}
           validations={{
             pattern: {
-              value: /^https:\/\/.*/,
-              message: "URL must start with https://",
-            },
+              value: /^https?:\/\/.*/i,
+              message: "URL must start with http:// or https://",
+            }
           }}
           onValueChange={(data: string) => {
             formData.current = { ...formData.current, subscriberUrl: data };

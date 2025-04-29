@@ -15,6 +15,7 @@ import {
 import Popup from "../ui/pop-up/pop-up";
 import FormConfig from "../ui/forms/config-form/config-form";
 import { toast } from "react-toastify";
+import {SubmitEventParams} from "../../types/flow-types"
 
 // Reusable StateCard component with CSS-based animation
 export const StateCard: React.FC<{
@@ -164,9 +165,11 @@ export const StateCard: React.FC<{
 		}
 	};
 
-	const handlePopupSubmit = async (formData: Record<string, string>) => {
-		const jsonPathChanges = {
-			json_path_changes: formData,
+	const handlePopupSubmit = async (formData: SubmitEventParams) => {
+		const body = {
+			json_path_changes: formData.jsonPath,
+			input: formData.formData,
+			action_id: data.key
 		};
 		const txn = await getTransactionId(data);
 		triggerRequest(
@@ -177,7 +180,7 @@ export const StateCard: React.FC<{
 			data.flowId,
 			data.sessionData,
 			data.subscriberUrl,
-			jsonPathChanges
+			body
 		);
 		setShowPopup(false);
 	};
