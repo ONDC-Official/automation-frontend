@@ -26,9 +26,10 @@ export interface SequenceStep {
 	owner: "BAP" | "BPP";
 	input?: FormConfigType;
 	expect?: boolean;
+	label?: string;
 }
 
 export interface SubmitEventParams {
-	jsonPath: Record<string, string>
-	formData: Record<string, string>
+	jsonPath: Record<string, string>;
+	formData: Record<string, string>;
 }

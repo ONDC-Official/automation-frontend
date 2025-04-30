@@ -41,6 +41,7 @@ function RenderFlows({
 		null
 	);
 	const [sideView, setSideView] = useState<any>({});
+	console.log(setSideView);
 	const [difficultyCache, setDifficultyCache] = useState<any>({});
 	const [isFlowStopped, setIsFlowStopped] = useState<boolean>(false);
 	const [selectedTab, setSelectedTab] = useState<"Request" | "Response">(
@@ -234,7 +235,7 @@ function RenderFlows({
 									sessionId={sessionId}
 									setActiveFlow={setActiveFlow}
 									sessionCache={cacheSessionData}
-									setSideView={setSideView}
+									// setSideView={setSideView}
 									subUrl={subUrl}
 									onFlowStop={() => setIsFlowStopped(true)}
 									onFlowClear={() => handleClearFlow()}
