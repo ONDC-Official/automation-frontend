@@ -89,11 +89,11 @@ function StepDisplay({ step, flowId }: { step: MappedStep; flowId: string }) {
 						<h1 className="text-md font-semibold text-gray-800 flex">
 							{step.missedStep ? "" : `${step.index + 1}: `}
 							{step.actionType}
-							{/* {step.label && ( */}
-							{/* <span className="text-md font-normal text-gray-500 ml-2 "> */}
-							{/* {step.label} */}
-							{/* </span> */}
-							{/* )} */}
+							{step.label && (
+								<span className="text-md font-normal text-gray-500 ml-2 ">
+									({step.label})
+								</span>
+							)}
 						</h1>
 						<div className="flex items-center gap-2">
 							{step.unsolicited && (
