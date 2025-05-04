@@ -34,17 +34,10 @@ export function otelTracing(
       }
     });
 
-    // finish span even if the request fails
-    res.on('finish', () => span.end());
-    res.on('close', () => span.end()); 
-    try {
-      next();
-    } catch (err: any) {
-      span.recordException(err);
-      span.setStatus({ code: 2, message: 'Unhandled error' }); 
       span.end();
-      throw err; 
-    }
+      
+      next();
+
   };
 }
 
