@@ -73,6 +73,8 @@ jobs:
           echo "API_SERVICE=${{ secrets.API_SERVICE }}" >> \$REPO_DIR/backend/.env
           echo "DB_SERVICE=${{ vars.DB_SERVICE }}" >> \$REPO_DIR/backend/.env
           echo "CONFIG_SERVICE=${{ secrets.CONFIG_SERVICE }}" >> \$REPO_DIR/backend/.env
+          echo "SERVICE_NAME=${{ vars.SERVICE_NAME }}" >> \$REPO_DIR/backend/.env
+          echo "TRACE_URL=${{ vars.TRACE_URL }}" >> \$REPO_DIR/backend/.env
           EOF
 
       - name: Verify docker-compose.yml files
@@ -162,6 +164,8 @@ jobs:
           echo "API_SERVICE=${{ secrets.API_SERVICE }}" >> \$REPO_DIR/backend/.env
           echo "DB_SERVICE=${{ vars.DB_SERVICE }}" >> \$REPO_DIR/backend/.env
           echo "CONFIG_SERVICE=${{ secrets.CONFIG_SERVICE }}" >> \$REPO_DIR/backend/.env
+          echo "SERVICE_NAME=${{ vars.SERVICE_NAME }}" >> \$REPO_DIR/backend/.env
+          echo "TRACE_URL=${{ vars.TRACE_URL }}" >> \$REPO_DIR/backend/.env
           EOF
       - name: Verify docker-compose.yml files
         run: |
