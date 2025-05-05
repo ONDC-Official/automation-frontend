@@ -1,3 +1,4 @@
+require("./config/otelConfig")
 import express from "express";
 import routes from "./routes/index";
 import { RedisService } from "ondc-automation-cache-lib";
