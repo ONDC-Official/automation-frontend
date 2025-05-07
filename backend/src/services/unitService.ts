@@ -14,7 +14,7 @@ export const createUnitSessionService = async (
 		// subscriberId,
 		subscriberUrl,
 		version,
-		usecaseId
+		usecaseId,
 	} = data;
 
 	const session_payloads = {
@@ -45,6 +45,7 @@ export const createUnitSessionService = async (
 			timeValidations: false,
 			headerValidaton: false,
 		},
+		flowConfigs: {},
 	};
 
 	try {

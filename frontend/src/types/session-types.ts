@@ -1,4 +1,5 @@
 import { FormConfigType } from "../components/ui/forms/config-form/config-form";
+import { Flow } from "./flow-types";
 
 export interface ApiData {
 	action: string;
@@ -39,6 +40,7 @@ export interface SessionCache {
 	usecaseId: string;
 	env: "STAGING" | "PRE-PRODUCTION";
 	sessionDifficulty: SessionDifficulty;
+	flowConfigs: Record<string, Flow>;
 }
 
 export interface State {
