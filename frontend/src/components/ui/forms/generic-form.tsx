@@ -7,20 +7,21 @@ const GenericForm = ({
 	children,
 	onSubmit,
 	className,
-	triggerSubmit = false
+	triggerSubmit = false,
 }: {
 	defaultValues?: any;
 	children: React.ReactNode;
 	onSubmit: (data: any) => Promise<void>;
 	className?: string;
-	triggerSubmit?: boolean
+	triggerSubmit?: boolean;
 }) => {
 	const {
 		register,
 		handleSubmit,
 		formState: { errors },
+		control,
 	} = useForm({ defaultValues });
-	const isRequestTriggered = useRef(false)
+	const isRequestTriggered = useRef(false);
 
 	const [isLoading, setIsLoading] = useState(false);
 	const [isSuccess, setIsSuccess] = useState(false);
@@ -41,12 +42,12 @@ const GenericForm = ({
 		}
 	};
 
-	useEffect(()=> {
-		if(triggerSubmit && !isRequestTriggered.current) {
-			isRequestTriggered.current = true
-			handleSubmit(handleSubmitForm)()
+	useEffect(() => {
+		if (triggerSubmit && !isRequestTriggered.current) {
+			isRequestTriggered.current = true;
+			handleSubmit(handleSubmitForm)();
 		}
-	} ,[])
+	}, []);
 
 	return (
 		<form

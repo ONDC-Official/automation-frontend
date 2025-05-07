@@ -3,6 +3,7 @@ import { SessionCache, SubscriberCache } from "../interfaces/newSessionData";
 // import { fetchConfigService } from "./flowService";
 import logger from "../utils/logger";
 import { saveLog } from "../utils/console";
+import axios from "axios";
 
 const SESSION_EXPIRY = 3600; // 1 hour
 const EXPECTATION_EXPIRY = 5 * 60 * 1000; // 5 minutes
@@ -11,21 +12,25 @@ export const createSessionService = async (
 	data: SessionCache
 ) => {
 	const { npType, domain, version, subscriberUrl, env, usecaseId } = data;
-	// const flowConfig = fetchConfigService();
-	// logger.info("flowConfig is " + flowConfig.domain.map((s) => s.name));
-	// const domainFlow = flowConfig.domain.find((s) => s.name === domain);
-	// const keys = domainFlow?.flows.map((f) => f.id);
-	// if (!domainFlow) {
-	// 	throw new Error("Invalid domain");
-	// }
 
+	const flowResponse = await axios.get(
+		`${process.env.CONFIG_SERVICE as string}/ui/flow`,
+		{
+			params: {
+				domain: domain,
+				version: version,
+				usecase: usecaseId,
+			},
+		}
+	);
+	const flows = flowResponse.data.data.flows;
 	const map: Record<string, any> = {};
-	// keys.forEach((key) => {
-	// 	map[key] = undefined;
-	// });
+	for (const flow of flows) {
+		map[flow.id] = flow;
+	}
 	let finalCache: SessionCache = {
 		transactionIds: [],
-		flowMap: map,
+		flowMap: {},
 		npType,
 		domain,
 		version,
@@ -40,6 +45,7 @@ export const createSessionService = async (
 			timeValidations: true,
 			headerValidaton: true,
 		},
+		flowConfigs: map,
 	};
 
 	try {

@@ -52,7 +52,11 @@ export function Accordion({
 	const [inputPopUp, setInputPopUp] = useState(false);
 	const [isOpen, setIsOpen] = useState(false);
 	const [mappedFlow, setMappedFlow] = useState<FlowMap>({
-		sequence: getSequenceFromFlow(flow, sessionCache, activeFlow),
+		sequence: getSequenceFromFlow(
+			sessionCache?.flowConfigs[flow.id] ?? flow,
+			sessionCache,
+			activeFlow
+		),
 		missedSteps: [],
 	});
 	const [activeFormConfig, setActiveFormConfig] =
@@ -201,7 +205,11 @@ export function Accordion({
 						onClick={async (e) => {
 							e.stopPropagation();
 							setMappedFlow({
-								sequence: getSequenceFromFlow(flow, sessionCache, activeFlow),
+								sequence: getSequenceFromFlow(
+									sessionCache?.flowConfigs[flow.id] ?? flow,
+									sessionCache,
+									activeFlow
+								),
 								missedSteps: [],
 							});
 							await clearFlowData(sessionId, flow.id);
