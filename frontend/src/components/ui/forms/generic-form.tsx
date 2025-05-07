@@ -19,7 +19,7 @@ const GenericForm = ({
 		register,
 		handleSubmit,
 		formState: { errors },
-		control,
+		// control,
 	} = useForm({ defaultValues });
 	const isRequestTriggered = useRef(false);
 
