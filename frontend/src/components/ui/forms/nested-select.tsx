@@ -1,8 +1,7 @@
-import React, { useEffect, useState } from "react";
+import  { useEffect, useState } from "react";
 import { FaPlus } from "react-icons/fa6";
 import { FaMinus } from "react-icons/fa6";
 import { FaRegPaste } from "react-icons/fa6";
-import Editor from "@monaco-editor/react";
 import { inputClass } from "./inputClass";
 import { LabelWithToolTip } from "./form-input";
 import { getItemsAndCustomistions } from "../../../utils/generic-utils";
@@ -25,8 +24,8 @@ const ITEMS: Item[] = [
   { id: "I2", name: "I2", customisations: ["C6", "C7"] },
 ];
 
-const ItemCustomisationSelector: React.FC = ({
-  register,
+const ItemCustomisationSelector = ({
+  // register,
   name,
   label,
   setValue,
@@ -37,8 +36,8 @@ const ItemCustomisationSelector: React.FC = ({
   const [catalogData, setCatalogData] = useState(null);
   const [cutomisationValue, setCustomisationValue] = useState("");
   const [errroWhilePaste, setErrroWhilePaste] = useState("");
-  const [itemsList, setItemsList] = useState({});
-  const [categoryList, setCategoryList] = useState({});
+  const [itemsList, setItemsList] = useState<any>({});
+  const [categoryList, setCategoryList] = useState<any>({});
   const [isPayloadEditorActive, setIsPayloadEditorActive] = useState(false);
 
   useEffect(() => {
@@ -55,7 +54,7 @@ const ItemCustomisationSelector: React.FC = ({
   const handleCustomisationChange = (
     index: number,
     value: string,
-    group: string
+    group?: string
   ) => {
     // const itemData = ITEMS.find((i) => i.id === items[index].id);
     // if (!itemData || !itemData.customisations.includes(value)) return;
@@ -106,7 +105,7 @@ const ItemCustomisationSelector: React.FC = ({
     <div className="p-4 max-w-xl mx-auto space-y-4">
       {isPayloadEditorActive && <PayloadEditor onAdd={handlePaste} />}
       <div className="flex flex-direction-row gap-4">
-        <LabelWithToolTip labelInfo="" label={"Items"} />
+        <LabelWithToolTip labelInfo="" label={label} />
         <>
           {errroWhilePaste && (
             <p className="text-red-500 text-sm italic mt-1 w-full">
@@ -131,16 +130,11 @@ const ItemCustomisationSelector: React.FC = ({
         </button>
       </div>
 
-      {items.map((item, index) => {
+      {items.map((item: any, index: number) => {
         let availableCustomisations =
           ITEMS.find((i) => i.id === item.id)?.customisations || [];
 
         if (item?.id) {
-          console.log(
-            ":::::",
-
-            categoryList[itemsList[`${item?.id}`]]?.items
-          );
           const cutomistions = Object.entries(
             categoryList[item?.lastCustomisation || itemsList[`${item?.id}`]]
               ?.items || {}
@@ -241,7 +235,7 @@ const ItemCustomisationSelector: React.FC = ({
                       onKeyDown={(e) => {
                         e.stopPropagation();
                       }}
-                      onKeyPress={(event) => {
+                      onKeyPress={(event: any) => {
                         event.stopPropagation();
                         if (event.key === "Enter") {
                           event.preventDefault();
@@ -254,7 +248,7 @@ const ItemCustomisationSelector: React.FC = ({
                 </div>
 
                 <div className="flex flex-wrap gap-2 mt-2">
-                  {item.customisations.map((c, i) => (
+                  {item.customisations.map((c: any, i: number) => (
                     <span
                       key={i}
                       className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-sm"
