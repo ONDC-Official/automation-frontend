@@ -19,7 +19,7 @@ const GenericForm = ({
 		register,
 		handleSubmit,
 		formState: { errors },
-		// control,
+		setValue
 	} = useForm({ defaultValues });
 	const isRequestTriggered = useRef(false);
 
@@ -55,7 +55,7 @@ const GenericForm = ({
 			className={className}
 		>
 			{React.Children.map(children, (child) =>
-				React.cloneElement(child as React.ReactElement, { register, errors })
+				React.cloneElement(child as React.ReactElement, { register, errors, setValue })
 			)}
 			<LoadingButton
 				type="submit"

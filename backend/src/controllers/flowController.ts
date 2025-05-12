@@ -94,7 +94,7 @@ export const handleTriggerRequest = async (
 				},
 			}
 		);
-		logger.info("response" + JSON.stringify(response));
+		logger.info("response" + JSON.stringify(response.data));
 		if (response.status === 200) {
 			res.status(200).send(ACK);
 		} else {
