@@ -35,21 +35,6 @@ interface Payload {
   message: Message;
 }
 
-interface CategoriesList {
-  [key: string]: {
-    child?: string[];
-    items?: {
-      [key: string]: {
-        child: string;
-      };
-    };
-  };
-}
-
-interface ItemList {
-  [key: string]: string;
-}
-
 export const getItemsAndCustomistions = (payload: any) => {
   if (payload.context.domain === "ONDC:RET11") {
     return parseRET11Items(payload);

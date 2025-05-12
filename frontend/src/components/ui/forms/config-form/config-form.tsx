@@ -111,7 +111,12 @@ export default function FormConfig({
 							/>
 						);
 						case "nestedSelect":
-							return <ItemCustomisationSelector name={field.name} />;
+							return (
+							  <ItemCustomisationSelector
+								label={field.label}
+								name={field.name}
+							  />
+							);
 					default:
 						console.log("Invalid field type");
 						return <></>;
