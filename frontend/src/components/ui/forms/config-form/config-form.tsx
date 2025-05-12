@@ -1,6 +1,7 @@
 import { FormInput } from "../form-input";
 import FormSelect from "../form-select";
 import CheckboxGroup from "../checkbox";
+import ItemCustomisationSelector from "../nested-select";
 import GenericForm from "../generic-form";
 import { SubmitEventParams } from "../../../../types/flow-types";
 import Ret10GrocerySelect from "../custom-forms/ret10-grocery-select";
@@ -14,7 +15,8 @@ export interface FormFieldConfigType {
 		| "textarea"
 		| "list"
 		| "checkbox"
-		| "ret10_grocery_select";
+		| "ret10_grocery_select"
+		| "nestedSelect"
 	payloadField: string;
 	values?: string[];
 	defaultValue?: string;
@@ -108,6 +110,8 @@ export default function FormConfig({
 								defaultValue={field.default}
 							/>
 						);
+						case "nestedSelect":
+							return <ItemCustomisationSelector name={field.name} />;
 					default:
 						console.log("Invalid field type");
 						return <></>;
