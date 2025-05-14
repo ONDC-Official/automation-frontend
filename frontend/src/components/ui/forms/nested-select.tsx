@@ -1,4 +1,4 @@
-import  { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { FaPlus } from "react-icons/fa6";
 import { FaMinus } from "react-icons/fa6";
 import { FaRegPaste } from "react-icons/fa6";
@@ -7,22 +7,11 @@ import { LabelWithToolTip } from "./form-input";
 import { getItemsAndCustomistions } from "../../../utils/generic-utils";
 import PayloadEditor from "../mini-components/payload-editor";
 
-interface Item {
-  id: string;
-  name: string;
-  customisations: string[];
-}
-
 interface SelectedItem {
   id: string;
   customisations: string[];
   lastCustomisation?: string;
 }
-
-const ITEMS: Item[] = [
-  { id: "I1", name: "I1", customisations: ["C1", "C2", "C3"] },
-  { id: "I2", name: "I2", customisations: ["C6", "C7"] },
-];
 
 const ItemCustomisationSelector = ({
   // register,
@@ -38,6 +27,7 @@ const ItemCustomisationSelector = ({
   const [errroWhilePaste, setErrroWhilePaste] = useState("");
   const [itemsList, setItemsList] = useState<any>({});
   const [categoryList, setCategoryList] = useState<any>({});
+  const [groupMapping, setGroupMapping] = useState<any>({});
   const [isPayloadEditorActive, setIsPayloadEditorActive] = useState(false);
 
   useEffect(() => {
@@ -56,9 +46,6 @@ const ItemCustomisationSelector = ({
     value: string,
     group?: string
   ) => {
-    // const itemData = ITEMS.find((i) => i.id === items[index].id);
-    // if (!itemData || !itemData.customisations.includes(value)) return;
-
     if (!items[index].customisations.includes(value)) {
       const updated = [...items];
       updated[index].customisations.push(value);
@@ -71,7 +58,6 @@ const ItemCustomisationSelector = ({
   };
 
   const addItem = () => {
-    console.log("Why working");
     setItems((prev) => [...prev, { id: "", customisations: [] }]);
   };
 
@@ -95,6 +81,7 @@ const ItemCustomisationSelector = ({
       const response = getItemsAndCustomistions(parsedText);
       setItemsList(response?.itemList || {});
       setCategoryList(response?.catagoriesList || {});
+      setGroupMapping(response?.cutomistionToGroupMapping || {});
     } catch (err: any) {
       setErrroWhilePaste(err.message || "Something went wrong");
       console.error("Error while handling paste: ", err);
@@ -131,14 +118,25 @@ const ItemCustomisationSelector = ({
       </div>
 
       {items.map((item: any, index: number) => {
-        let availableCustomisations =
-          ITEMS.find((i) => i.id === item.id)?.customisations || [];
+        let availableCustomisations: any = [];
 
         if (item?.id) {
-          const cutomistions = Object.entries(
-            categoryList[item?.lastCustomisation || itemsList[`${item?.id}`]]
-              ?.items || {}
-          ).map((item) => {
+          let customisationsObj: any = {};
+
+          if (item?.lastCustomisation) {
+            item.lastCustomisation.forEach((lastCustom: any) => {
+              customisationsObj = {
+                ...customisationsObj,
+                ...categoryList[lastCustom]?.items,
+              };
+              return categoryList[lastCustom]?.items || {};
+            });
+          } else {
+            customisationsObj =
+              categoryList[itemsList[`${item?.id}`]]?.items || {};
+          }
+
+          const cutomistions = Object.entries(customisationsObj).map((item) => {
             console.log("iten", item);
             const [key, _] = item;
             return key;
@@ -211,12 +209,13 @@ const ItemCustomisationSelector = ({
                         handleCustomisationChange(
                           index,
                           e.target.value,
-                          item?.lastCustomisation || itemsList[`${item?.id}`]
+                          groupMapping[e.target.value] ||
+                            itemsList[`${item?.id}`]
                         )
                       }
                     >
                       <option value="">Select Customisation</option>
-                      {availableCustomisations.map((c) => (
+                      {availableCustomisations.map((c: any) => (
                         <option key={c} value={c}>
                           {c}
                         </option>

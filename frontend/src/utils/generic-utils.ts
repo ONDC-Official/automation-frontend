@@ -43,12 +43,13 @@ export const getItemsAndCustomistions = (payload: any) => {
 
 const parseRET11Items = (
   payload: Payload
-): { itemList: any; catagoriesList: any } => {
+): { itemList: any; catagoriesList: any; cutomistionToGroupMapping: any } => {
   const catagories = payload.message.catalog["bpp/providers"][0].categories;
   const items = payload.message.catalog["bpp/providers"][0].items;
 
   const catagoriesList: any = {};
   const itemList: any = {};
+  const cutomistionToGroupMapping: any = {};
 
   catagories.forEach((item) => {
     item.tags.forEach((tag) => {
@@ -64,7 +65,7 @@ const parseRET11Items = (
 
   items.forEach((item) => {
     let parent = "";
-    let child = "";
+    let child: string[] = [];
     let isCusomistaion = false;
     let isItem = false;
     let customGroup = "";
@@ -100,9 +101,9 @@ const parseRET11Items = (
       }
 
       if (tag.code === "child") {
-        const idItem = tag.list.find((listItem) => listItem.code === "id");
+        const idItem = tag.list.filter((listItem) => listItem.code === "id");
         if (idItem) {
-          child = idItem.value;
+          child = idItem.map((listItem) => listItem.value);
         }
       }
     });
@@ -114,6 +115,8 @@ const parseRET11Items = (
           [`${item.id}`]: { child: child },
         },
       };
+
+      cutomistionToGroupMapping[item.id] = parent;
     }
 
     if (isItem) {
@@ -123,5 +126,6 @@ const parseRET11Items = (
 
   console.log("catagoriesList: ", JSON.stringify(catagoriesList, null, 2));
   console.log("itemList: ", itemList);
-  return { itemList, catagoriesList };
+  console.log("cutomistionToGroupMapping", cutomistionToGroupMapping);
+  return { itemList, catagoriesList, cutomistionToGroupMapping };
 };
