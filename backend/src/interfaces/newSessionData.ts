@@ -1,3 +1,5 @@
+import { Flow } from "./flowConfigData";
+
 export type TransactionId = string;
 export type FlowId = string;
 export type PayloadId = string;
@@ -52,4 +54,5 @@ export interface SessionCache {
 	usecaseId: string;
 	env: "STAGING" | "PRE-PRODUCTION";
 	sessionDifficulty: SessionDifficulty;
+	flowConfigs: Record<FlowId, Flow>;
 }

@@ -6,20 +6,26 @@ import {
   getTriggerUnitAction,
 } from "../controllers/unitController";
 import validateRequiredParams from "../middlewares/generic";
+import otelTracing from "../services/tracing-service";
 
 const router = Router();
 
 router.get(
   "/safe-actions",
   validateRequiredParams(["transaction_id", "mock_type", "session_id"]),
+  otelTracing('query.transaction_id', 'query.session_id'),
   fetchSafeActions
 );
 
-router.post("/unit-session", createUnitSession);
+router.post("/unit-session", 
+  otelTracing('body.transaction_id', 'body.session_id', 'body.bap_id', 'body.bpp_id'),
+  createUnitSession
+);
 
 router.get(
   "/trigger/:action",
   validateRequiredParams(["transaction_id", "subscriber_url", "action_id", "session_id"]),
+  otelTracing('query.transaction_id', 'query.session_id', 'query.subscriber_url'),
   getTriggerUnitAction
 );
 
@@ -34,6 +40,7 @@ router.post(
     "session_id",
     "flow_id",
   ]),
+  otelTracing('query.transaction_id', 'query.session_id', 'query.subscriber_url'),
   triggerUnitAction
 );
 
