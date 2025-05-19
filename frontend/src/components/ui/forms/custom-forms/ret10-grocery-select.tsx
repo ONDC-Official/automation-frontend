@@ -285,6 +285,62 @@ const onSearch = {
 							],
 							id: "I3",
 						},
+						{
+							descriptor: {
+								name: "Dasheri Mango",
+								code: "1:XXXXXXXXXXXXX",
+								symbol: "https://sellerNP.com/images/i1.png",
+								short_desc: "Alphanso",
+								long_desc: "Alphanso Mango freshly hand picked",
+								images: ["https://sellerNP.com/images/i1.png"],
+							},
+							price: {
+								currency: "INR",
+								value: "30.00",
+								maximum_value: "30.00",
+							},
+							quantity: {
+								unitized: {
+									measure: {
+										unit: "kilogram",
+										value: "1",
+									},
+								},
+								available: {
+									count: "0",
+								},
+								maximum: {
+									count: "99",
+								},
+							},
+							category_id: "Fruits and Vegetables",
+							fulfillment_id: "F1",
+							location_id: "L1",
+							"@ondc/org/returnable": false,
+							"@ondc/org/cancellable": false,
+							"@ondc/org/return_window": "P1D",
+							"@ondc/org/seller_pickup_return": false,
+							"@ondc/org/time_to_ship": "PT5M",
+							"@ondc/org/available_on_cod": false,
+							"@ondc/org/contact_details_consumer_care":
+								"Ramesh,ramesh@abc.com,18004254444",
+							time: {
+								label: "enable",
+								timestamp: "2024-12-23T06:55:45.035Z",
+							},
+							tags: [
+								{
+									code: "origin",
+									list: [
+										{
+											code: "country",
+											value: "THA",
+										},
+									],
+								},
+							],
+							id: "I4-OUT-OF-STOCK",
+						},
 					],
 					tags: [
 						{
@@ -400,6 +456,119 @@ const onSearch = {
 						},
 					],
 					id: "P1",
+					offers: [
+						{
+							id: "FLAT50",
+							descriptor: {
+								code: "discount",
+								images: ["https://sellerNP.com/images/offer2-banner.png"],
+							},
+							location_ids: ["L1"],
+							item_ids: ["I1"],
+							time: {
+								label: "valid",
+								range: {
+									start: "2024-12-23T06:55:45.035Z",
+									end: "2024-12-23T08:12:15.033Z",
+								},
+							},
+							tags: [
+								{
+									code: "qualifier",
+									list: [
+										{
+											code: "min_value",
+											value: "200.00",
+										},
+									],
+								},
+								{
+									code: "benefit",
+									list: [
+										{
+											code: "value_type",
+											value: "amount",
+										},
+										{
+											code: "value",
+											value: "-50.00",
+										},
+									],
+								},
+								{
+									code: "meta",
+									list: [
+										{
+											code: "additive",
+											value: "no",
+										},
+										{
+											code: "auto",
+											value: "yes",
+										},
+									],
+								},
+							],
+						},
+						{
+							id: "buy2get3",
+							descriptor: {
+								code: "buyXgetY",
+								images: ["https://snp.com/images/offer1-banner.webp"],
+							},
+							location_ids: ["L1"],
+							category_ids: [],
+							item_ids: ["I1", "I2"],
+							time: {
+								label: "valid",
+								range: {
+									start: "2025-01-01T16:00:00.000Z",
+									end: "2025-01-01T23:00:00.000Z",
+								},
+							},
+							tags: [
+								{
+									code: "qualifier",
+									list: [
+										{
+											code: "item_count",
+											value: "2",
+										},
+									],
+								},
+								{
+									code: "benefit",
+									list: [
+										{
+											code: "item_count",
+											value: "1",
+										},
+										{
+											code: "item_id",
+											value: "I2",
+										},
+										{
+											code: "item_value",
+											value: "0.00",
+										},
+									],
+								},
+								{
+									code: "meta",
+									list: [
+										{
+											code: "additive",
+											value: "no",
+										},
+										{
+											code: "auto",
+											value: "yes",
+										},
+									],
+								},
+							],
+						},
+					],
 				},
 			],
 		},
@@ -420,8 +589,11 @@ export default function Ret10GrocerySelect({
 			provider_location: [] as string[],
 			location_gps: "",
 			location_pin_code: "",
-			items: [{ itemId: "", quantity: 0, location: "" }],
-		},
+			items: [
+				{ itemId: "", quantity: 0, location: "" },
+				{ itemId: "", quantity: 0, location: "" },
+			],
+		} as any,
 	});
 
 	const { fields, append, remove } = useFieldArray({
@@ -433,12 +605,18 @@ export default function Ret10GrocerySelect({
 
 	const [itemOptions, setItemOptions] = useState<string[]>([]);
 	const [locationOptions, setLocationOptions] = useState<string[]>([]);
+	const [offerOptions, setOfferOptions] = useState<string[]>([]);
 	useEffect(() => {
 		const providerData = providers.find((p: any) => p.id === selectedProvider);
 		if (providerData) {
 			const items = providerData.items.map((item: any) => item.id);
 			setItemOptions(items);
 			setLocationOptions(providerData.locations.map((loc: any) => loc.id));
+			setOfferOptions(
+				onSearch.message.catalog["bpp/providers"].flatMap((p) =>
+					p.offers.map((offer) => offer.id)
+				)
+			);
 			// if (providerData.locations?.length) {
 			// 	setValue("provider_location", providerData.locations[0].id);
 			// }
@@ -534,6 +712,20 @@ export default function Ret10GrocerySelect({
 					className={inputStyle}
 				/>
 			</div>
+			<div className={fieldWrapperStyle}>
+				{offerOptions.length > 0 &&
+					offerOptions.map((offerId) => (
+						<label className={labelStyle}>
+							<input
+								type="checkbox"
+								value={offerId}
+								{...register(`offers_${offerId}`)} // This should be an array
+								className="accent-blue-600"
+							/>
+							{offerId}
+						</label>
+					))}
+			</div>
 
 			{fields.map((field, index) => (
 				<div key={field.id} className="border p-3 rounded space-y-2">
@@ -581,7 +773,7 @@ export default function Ret10GrocerySelect({
 				>
 					Add Item
 				</button>
-				{fields.length > 1 && (
+				{fields.length > 2 && (
 					<button
 						type="button"
 						className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
