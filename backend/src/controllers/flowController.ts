@@ -1,5 +1,5 @@
 // FILE: uiController.ts
-import { query, Request, Response } from "express";
+import { Request, Response } from "express";
 import { fetchConfigService } from "../services/flowService";
 import axios from "axios";
 import { TriggerInput } from "../interfaces/triggerData";
@@ -94,7 +94,7 @@ export const handleTriggerRequest = async (
 				},
 			}
 		);
-		logger.info("response" + JSON.stringify(response));
+		logger.info("response" + JSON.stringify(response.data));
 		if (response.status === 200) {
 			res.status(200).send(ACK);
 		} else {

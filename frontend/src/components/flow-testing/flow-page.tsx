@@ -258,20 +258,6 @@ export default function FlowContent() {
 						</div>
 					</div>
 				);
-			// case 1:
-			// 	return (
-			// 		<div className="w-full bg-white p-2 rounded-md shadow-md">
-			// 			<Heading size=" text-xl mt-2 p-2" className=" mb-2">
-			// 				Configure Difficulty
-			// 			</Heading>
-			// 			<DifficultyForm
-			// 				submitFunction={async () => {
-			// 					setStep((s) => s + 1);
-			// 				}}
-			// 				subUrl={subUrl}
-			// 			/>
-			// 		</div>
-			// 	);
 			case 1:
 				if (!flows) return <h1>Loading...</h1>;
 				console.log("flows", flows);
