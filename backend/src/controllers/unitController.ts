@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios from "../utils/axios";
 import { Request, Response } from "express";
 import { createUnitSessionService } from "../services/unitService";
 import { ACK } from "../constants/response";
