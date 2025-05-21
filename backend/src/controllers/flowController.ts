@@ -1,5 +1,5 @@
 // FILE: uiController.ts
-import { query, Request, Response } from "express";
+import { Request, Response } from "express";
 import { fetchConfigService } from "../services/flowService";
 import axios from "../utils/axios";
 import { TriggerInput } from "../interfaces/triggerData";
