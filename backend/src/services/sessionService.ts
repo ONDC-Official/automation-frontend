@@ -3,7 +3,7 @@ import { SessionCache, SubscriberCache } from "../interfaces/newSessionData";
 // import { fetchConfigService } from "./flowService";
 import logger from "../utils/logger";
 import { saveLog } from "../utils/console";
-import axios from "axios";
+import axios from "../utils/axios";
 
 const SESSION_EXPIRY = 3600; // 1 hour
 const EXPECTATION_EXPIRY = 5 * 60 * 1000; // 5 minutes
