@@ -248,7 +248,7 @@ export default function FlowContent() {
 								<FormSelect
 									name="env"
 									label="Select Environment"
-									options={["STAGING"]} //"PRE-PRODUCTION"
+									options={["STAGING", "PRE-PRODUCTION"]} //"PRE-PRODUCTION"
 									required
 								/>
 							</GenericForm>

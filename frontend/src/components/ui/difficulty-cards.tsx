@@ -10,6 +10,7 @@ const keyMapping: any = {
 	protocolValidations: "Protocol Validation",
 	useGateway: "Use Gateway",
 	headerValidaton: "Header Validation",
+	useGzip: "Use Gzip",
 	totalDifficulty: "Total Difficulty",
 };
 
@@ -20,6 +21,7 @@ interface DifficultyCache {
 	useGateway: boolean;
 	headerValidaton: boolean;
 	sensitiveTTL?: boolean;
+	useGzip: boolean;
 	totalDifficulty?: number;
 }
 
