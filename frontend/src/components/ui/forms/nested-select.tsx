@@ -10,6 +10,7 @@ import PayloadEditor from "../mini-components/payload-editor";
 interface SelectedItem {
   id: string;
   customisations: string[];
+  relation: Record<string, string>,
   lastCustomisation?: string;
 }
 
@@ -20,7 +21,7 @@ const ItemCustomisationSelector = ({
   setValue,
 }: any) => {
   const [items, setItems] = useState<SelectedItem[]>([
-    { id: "", customisations: [] },
+    { id: "", customisations: [], relation: {} },
   ]);
   const [catalogData, setCatalogData] = useState(null);
   const [cutomisationValue, setCustomisationValue] = useState("");
@@ -36,8 +37,7 @@ const ItemCustomisationSelector = ({
 
   const handleItemChange = (index: number, value: string) => {
     const updated = [...items];
-    console.log("udpated: ", updated);
-    updated[index] = { id: value, customisations: [] };
+    updated[index] = { id: value, customisations: [], relation: {} };
     setItems(updated);
   };
 
@@ -48,6 +48,7 @@ const ItemCustomisationSelector = ({
   ) => {
     if (!items[index].customisations.includes(value)) {
       const updated = [...items];
+      updated[index].relation[`${value}`] = groupMapping[value]
       updated[index].customisations.push(value);
       if (group) {
         updated[index].lastCustomisation =
@@ -58,7 +59,7 @@ const ItemCustomisationSelector = ({
   };
 
   const addItem = () => {
-    setItems((prev) => [...prev, { id: "", customisations: [] }]);
+    setItems((prev) => [...prev, { id: "", customisations: [], relation: {} }]);
   };
 
   const removeItem = (index: number) => {
