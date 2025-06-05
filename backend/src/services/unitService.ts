@@ -44,6 +44,7 @@ export const createUnitSessionService = async (
 			protocolValidations: true,
 			timeValidations: false,
 			headerValidaton: false,
+			useGzip: false,
 		},
 		flowConfigs: {},
 	};

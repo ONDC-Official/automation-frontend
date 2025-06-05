@@ -41,9 +41,10 @@ export const createSessionService = async (
 			sensitiveTTL: true,
 			useGateway: false,
 			stopAfterFirstNack: true,
-			protocolValidations: true,
+			protocolValidations: false,
 			timeValidations: true,
-			headerValidaton: true,
+			headerValidaton: false,
+			useGzip: false,
 		},
 		flowConfigs: map,
 	};
