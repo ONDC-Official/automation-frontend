@@ -69,6 +69,7 @@ export default function Ret10GrocerySelect({
 			setOfferOptions(offers);
 		} catch (err) {
 			setErrorWhilePaste("Invalid payload structure.");
+			toast.error("Invalid payload structure. Please check the pasted data.");
 			console.error(err);
 		}
 		setIsPayloadEditorActive(false);
