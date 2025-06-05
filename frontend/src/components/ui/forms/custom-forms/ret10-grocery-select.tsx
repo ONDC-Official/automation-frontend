@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useForm, useFieldArray, Controller } from "react-hook-form";
 import { FaRegPaste } from "react-icons/fa6";
 import PayloadEditor from "../../mini-components/payload-editor";
@@ -13,7 +13,7 @@ export default function Ret10GrocerySelect({
 	const [isPayloadEditorActive, setIsPayloadEditorActive] = useState(false);
 	const [errorWhilePaste, setErrorWhilePaste] = useState("");
 
-	const { control, handleSubmit, watch, register, setValue } = useForm({
+	const { control, handleSubmit, watch, register } = useForm({
 		defaultValues: {
 			provider: "" as string,
 			provider_location: [],
