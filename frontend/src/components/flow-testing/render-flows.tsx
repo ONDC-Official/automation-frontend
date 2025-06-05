@@ -6,7 +6,6 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import { ApiData, SessionCache } from "../../types/session-types";
 import {
-	// putCacheData,
 	getCompletePayload,
 	getTransactionData,
 } from "../../utils/request-utils";
@@ -20,7 +19,6 @@ import Console from "../console";
 import { ILogs } from "../../interface";
 import { SessionContext } from "../../context/context";
 import CircularProgress from "../ui/circular-cooldown";
-// import { Accordion } from "./flow-accordian";
 
 function RenderFlows({
 	flows,
