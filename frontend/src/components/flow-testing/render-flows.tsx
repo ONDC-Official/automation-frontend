@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Flow } from "../../types/flow-types";
 import InfoCard from "../ui/info-card";
 import DifficultyCards from "../ui/difficulty-cards";
@@ -20,7 +21,7 @@ import Console from "../console";
 import { ILogs } from "../../interface";
 import { SessionContext } from "../../context/context";
 import CircularProgress from "../ui/circular-cooldown";
-// import { Accordion } from "./flow-accordian";
+import Modal from "../modal";
 
 function RenderFlows({
 	flows,
@@ -50,6 +51,9 @@ function RenderFlows({
 	const [requestData, setRequestData] = useState({});
 	const [responseData, setResponseData] = useState({});
 	const [logs, setLogs] = useState<ILogs[]>([]);
+	const apiCallFailCount = useRef(0)
+	const [isErrorModalOpen, setIsErrorModalOpen] = useState(false)
+	const navigate = useNavigate();
 
 	useEffect(() => {
 		fetchSessionData();
@@ -117,6 +121,9 @@ function RenderFlows({
 				delete filteredData["active_session_id"];
 				setDifficultyCache(response.data.sessionDifficulty);
 				setCacheSessionData(response.data);
+			}).catch((e: any) => {
+				console.error("Error while fetching session: ", e)
+				apiCallFailCount.current = apiCallFailCount.current + 1
 			});
 	}
 
@@ -174,6 +181,14 @@ function RenderFlows({
 				setResponseData: setResponseData,
 			}}
 		>
+			<Modal isOpen={isErrorModalOpen} onClose={() => {
+					navigate("/home");
+					setIsErrorModalOpen(false)
+				}}>
+					<h1 className="text-lg font-semibold text-gray-800">Alert</h1>
+					 <p className="text-sm text-gray-600">Sesson has expired.</p>
+					 <p className="text-sm text-gray-600">Check support to raise a query.</p>
+			</Modal>
 			<div className="w-full min-h-screen flex flex-col">
 				<div className="space-y-2 pt-4 pr-4 pl-4">
 					{cacheSessionData ? (
@@ -195,7 +210,12 @@ function RenderFlows({
 										duration={5}
 										loop={true}
 										onComplete={async () => {
-											fetchSessionData();
+											if(apiCallFailCount.current < 5 ) {
+												fetchSessionData();
+											} else if(apiCallFailCount.current >= 5 && !isErrorModalOpen){
+												setIsErrorModalOpen(true)
+												console.log("not calling the api")
+											}
 										}}
 										sqSize={20}
 										strokeWidth={3}
