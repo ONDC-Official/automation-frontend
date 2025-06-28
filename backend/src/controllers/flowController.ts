@@ -1,7 +1,7 @@
 // FILE: uiController.ts
 import { Request, Response } from "express";
 import { fetchConfigService } from "../services/flowService";
-import axios from "axios";
+import axios from "../utils/axios";
 import { TriggerInput } from "../interfaces/triggerData";
 import { ACK, NACK, ERROR } from "../constants/response";
 import getPredefinedFlowConfig, {

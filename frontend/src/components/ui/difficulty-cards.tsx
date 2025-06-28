@@ -10,16 +10,18 @@ const keyMapping: any = {
 	protocolValidations: "Protocol Validation",
 	useGateway: "Use Gateway",
 	headerValidaton: "Header Validation",
+	useGzip: "Use Gzip",
 	totalDifficulty: "Total Difficulty",
 };
 
 interface DifficultyCache {
-	stopAfterFirstNack: boolean;
+	stopAfterFirstNack?: boolean;
 	timeValidations: boolean;
 	protocolValidations: boolean;
 	useGateway: boolean;
 	headerValidaton: boolean;
 	sensitiveTTL?: boolean;
+	useGzip: boolean;
 	totalDifficulty?: number;
 }
 
@@ -37,6 +39,9 @@ const DifficultyCards = ({ difficulty_cache, sessionId }: IProps) => {
 			delete difficulty_cache.totalDifficulty;
 		}
 		if (difficulty_cache?.sensitiveTTL) delete difficulty_cache.sensitiveTTL;
+		if (difficulty_cache?.stopAfterFirstNack) {
+			delete difficulty_cache.stopAfterFirstNack;
+		}
 		setDifficultCache(difficulty_cache);
 	}, [difficulty_cache]);
 
