@@ -11,6 +11,7 @@ export type SessionDifficulty = {
 	protocolValidations: boolean;
 	timeValidations: boolean;
 	headerValidaton: boolean;
+	useGzip: boolean;
 };
 
 export type Expectation = {
