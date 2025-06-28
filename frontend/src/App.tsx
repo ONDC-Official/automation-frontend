@@ -8,7 +8,7 @@ import { Route, Routes } from "react-router-dom";
 import HomePage from "./pages/home";
 import NotFoundPage from "./components/ui/not-found";
 import SchemaValidation from "./pages/schema-validation";
-import ApiTesting from "./pages/api-testing";
+// import ApiTesting from "./pages/api-testing";
 import FlowContent from "./components/flow-testing/flow-page";
 
 function App() {
@@ -29,7 +29,7 @@ function App() {
         <Routes>
           <Route path="/home" element={<HomePage />} />
           <Route path="/schema" element={<SchemaValidation />} />
-          <Route path="/unit" element={<ApiTesting />} />
+          {/* <Route path="/unit" element={<ApiTesting />} /> */}
           <Route path="/scenario" element={<FlowContent />} />
           {/* <Route path="/customFlow" element={<ComingSoonPage />} /> */}
           <Route path="*" element={<NotFoundPage />} />
