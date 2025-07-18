@@ -42,6 +42,7 @@ export default function FlowContent() {
 	const onSubmit = async (data: any) => {
 		try {
 			console.log("data", data);
+			data = {...data, subscriberUrl: data?.subscriberUrl?.replace(/\/+$/, '')}
 			const response = await axios.post(
 				`${import.meta.env.VITE_BACKEND_URL}/sessions`,
 				{
@@ -83,6 +84,7 @@ export default function FlowContent() {
 						domain: data.domain,
 						version: data.version,
 						usecase: data.usecaseId,
+						// options: ["WORKBENCH"]
 					},
 				}
 			);
