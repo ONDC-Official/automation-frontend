@@ -5,7 +5,7 @@ import unitRoutes from "./unitRoutes";
 import dbRoutes from "./dbRoutes";
 import logRoutes from "../routes/logRoutes"; // Add this import
 import configRoutes from "./configRoute";
-
+import authRoutes from "./gitLoginRoute"; // Import authentication routes
 const router = Router();
 
 // Mount session-related routes
@@ -16,5 +16,5 @@ router.use("/unit", unitRoutes);
 router.use("/db", dbRoutes);
 router.use("/logs", logRoutes); // Add this line
 router.use("/config", configRoutes);
-
+router.use("/auth", authRoutes); // Mount authentication routes
 export default router;

@@ -1,26 +1,23 @@
 import { useState, useEffect, useRef } from "react";
-import { FormInput } from "../ui/forms/form-input";
-import FormSelect from "../ui/forms/form-select";
-import GenericForm from "../ui/forms/generic-form";
 import axios from "axios";
 import { Flow } from "../../types/flow-types";
 import RenderFlows from "./render-flows";
-import Stepper from "../ui/mini-components/stepper";
-import { MdOutlineDomainVerification } from "react-icons/md";
-import { HiOutlineDocumentReport } from "react-icons/hi";
-import { TbFileInfo } from "react-icons/tb";
 import { toast } from "react-toastify";
 import Heading from "../ui/mini-components/ondc-gradient-text";
 import { ReportPage } from "./report";
 import { FormGuide } from "./guides";
-
+import InitialFlowForm from "./initial-form";
 export default function FlowContent() {
 	const [step, setStep] = useState(0);
 	const [session, setSession] = useState<string>("");
 	const [subUrl, setSubUrl] = useState<string>("");
 	const [flows, setFlows] = useState<Flow[] | null>(null);
 	const [report, setReport] = useState("");
-	const [dynamicList, setDynamicList] = useState({
+	const [dynamicList, setDynamicList] = useState<{
+		domain: any[];
+		version: any[];
+		usecase: any[];
+	}>({
 		domain: [],
 		version: [],
 		usecase: [],
@@ -131,130 +128,14 @@ export default function FlowContent() {
 							<Heading size=" text-xl" className="mb-2">
 								Details
 							</Heading>
-							<GenericForm
-								defaultValues={formData.current}
-								onSubmit={onSubmitHandler}
-							>
-								<FormInput
-									label="Enter Subscriber Url"
-									name="subscriberUrl"
-									required={true}
-									labelInfo="your registered subscriber url"
-									validations={{
-										pattern: {
-											value: /^https?:\/\/.*/i,
-											message: "URL must start with http:// or https://",
-										},
-									}}
-									onValueChange={(data: string) => {
-										// setDyanmicValue(prev => {
-										// 	return {
-										// 		...prev, subscriberUrl: data
-										// 	}
-										// })
-										formData.current = {
-											...formData.current,
-											subscriberUrl: data,
-										};
-									}}
-								/>
-								<FormSelect
-									name="domain"
-									label="Select Domain"
-									options={dynamicList.domain.map((val: any) => val.key)}
-									currentValue={dynamicValue.domain}
-									setSelectedValue={(data: string) => {
-										formData.current = { ...formData.current, domain: data, version: "", usecaseId: "" };
-										// setDyanmicValue(prev => {
-										// 	return {
-										// 		...prev,
-										// 		domain: data
-										// 	}
-										// })
-										setDynamicList((prev) => {
-											let filteredVersion: any = [];
-											prev.domain.forEach((item: any) => {
-												if (item.key === data) {
-													filteredVersion = item.version;
-												}
-											});
-											return {
-												...prev,
-												version: filteredVersion,
-												usecase: []
-											};
-										});
-									}}
-									nonSelectedValue
-									required
-								/>
-								{dynamicList.version?.length ? (
-									<FormSelect
-										label="Enter Version"
-										name="version"
-										required={true}
-										options={dynamicList.version.map((val: any) => val.key)}
-										currentValue={dynamicValue.version}
-										setSelectedValue={(data: string) => {
-											formData.current = { ...formData.current, version: data };
-											setDynamicList((prev) => {
-												let filteredUsecase: any = [];
-												prev.version.forEach((item: any) => {
-													if (item.key === data) {
-														filteredUsecase = item.usecase;
-													}
-												});
-												return {
-													...prev,
-													usecase: filteredUsecase,
-												};
-											});
-										}}
-										nonSelectedValue
-									/>
-								) : (
-									<></>
-								)}
-								{dynamicList.usecase?.length ? (
-									<FormSelect
-										label="Enter Usecase"
-										name="usecaseId"
-										required={true}
-										options={dynamicList.usecase}
-										currentValue={dynamicValue.usecaseId}
-										setSelectedValue={(data: string) => {
-											formData.current = {
-												...formData.current,
-												usecaseId: data,
-											};
-										}}
-										nonSelectedValue
-									/>
-								) : (
-									<></>
-								)}
-								<FormSelect
-									name="npType"
-									label="Select Type"
-									options={["BAP", "BPP"]}
-									setSelectedValue={(data: string) => {
-										setDyanmicValue((prev) => {
-											return {
-												...prev,
-												npType: data,
-											};
-										});
-										formData.current = { ...formData.current, npType: data };
-									}}
-									required
-								/>
-								<FormSelect
-									name="env"
-									label="Select Environment"
-									options={["STAGING", "PRE-PRODUCTION"]} //"PRE-PRODUCTION"
-									required
-								/>
-							</GenericForm>
+							<InitialFlowForm
+								formData={formData}
+								onSubmitHandler={onSubmitHandler}
+								dynamicList={dynamicList}
+								setDyanmicValue={setDyanmicValue}
+								dynamicValue={dynamicValue}
+								setDynamicList={setDynamicList}
+							/>
 						</div>
 						<div className="w-full sm:w-[40%] ml-1">
 							<FormGuide />
@@ -285,7 +166,7 @@ export default function FlowContent() {
 	return (
 		<>
 			<div className="w-full items-center">
-				<Stepper
+				{/* <Stepper
 					steps={[
 						{
 							icon: <TbFileInfo className=" text-2xl" />,
@@ -305,7 +186,7 @@ export default function FlowContent() {
 						},
 					]}
 					currentStep={step}
-				/>
+				/> */}
 				<div className="p-2 mt-2">
 					<Body />
 				</div>

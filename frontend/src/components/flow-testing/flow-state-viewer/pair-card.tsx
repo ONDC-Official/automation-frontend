@@ -188,9 +188,9 @@ function getStatusStyles(
 			};
 		case "INPUT-REQUIRED":
 			return {
-				card: "border-indigo-300 bg-gradient-to-br from-indigo-50 to-indigo-200 shadow-md shadow-indigo-200",
+				card: "border-sky-300 bg-gradient-to-br from-sky-50 to-sky-200 shadow-md shadow-sky-200",
 				messageText: "SENDING",
-				messageBg: "bg-gradient-to-r from-indigo-600 to-indigo-400 text-white",
+				messageBg: "bg-gradient-to-r from-sky-600 to-sky-400 text-white",
 			};
 
 		case "LISTENING":
