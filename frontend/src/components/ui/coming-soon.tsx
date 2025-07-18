@@ -2,7 +2,7 @@ import React from "react";
 
 const ComingSoonPage: React.FC = () => {
 	return (
-		<div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-sky-500 to-indigo-600 relative overflow-hidden">
+		<div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-sky-500 to-sky-600 relative overflow-hidden">
 			{/* Decorative Background Elements */}
 			<div className="absolute top-10 left-10 w-24 h-24 bg-white opacity-10 rounded-full animate-pulse"></div>
 			<div className="absolute bottom-10 right-10 w-40 h-40 bg-white opacity-10 rounded-full animate-pulse"></div>
