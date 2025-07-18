@@ -87,6 +87,7 @@ export default function FlowContent() {
 						domain: data.domain,
 						version: data.version,
 						usecase: data.usecaseId,
+						// options: ["WORKBENCH"]
 					},
 				}
 			);
@@ -163,7 +164,7 @@ export default function FlowContent() {
 									options={dynamicList.domain.map((val: any) => val.key)}
 									currentValue={dynamicValue.domain}
 									setSelectedValue={(data: string) => {
-										formData.current = { ...formData.current, domain: data };
+										formData.current = { ...formData.current, domain: data, version: "", usecaseId: "" };
 										// setDyanmicValue(prev => {
 										// 	return {
 										// 		...prev,
@@ -180,6 +181,7 @@ export default function FlowContent() {
 											return {
 												...prev,
 												version: filteredVersion,
+												usecase: []
 											};
 										});
 									}}
