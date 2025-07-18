@@ -1,4 +1,4 @@
-import "./config/otelConfig"
+import "./config/otelConfig";
 import express from "express";
 import routes from "./routes/index";
 import { RedisService } from "ondc-automation-cache-lib";
@@ -39,7 +39,12 @@ app.use(
 	})
 );
 
-app.use(cors());
+app.use(
+	cors({
+		origin: "http://localhost:5173", // Replace with your frontend URL in production
+		credentials: true,
+	})
+);
 app.use(express.json());
 // Middleware to parse cookies
 app.use(cookieParser());

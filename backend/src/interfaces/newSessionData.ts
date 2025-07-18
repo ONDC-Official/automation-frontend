@@ -53,7 +53,7 @@ export interface SessionCache {
 	subscriberId?: string;
 	subscriberUrl: string;
 	usecaseId: string;
-	env: "STAGING" | "PRE-PRODUCTION";
+	env: "STAGING" | "PRE-PRODUCTION" | "LOGGED-IN";
 	sessionDifficulty: SessionDifficulty;
 	flowConfigs: Record<FlowId, Flow>;
 }
