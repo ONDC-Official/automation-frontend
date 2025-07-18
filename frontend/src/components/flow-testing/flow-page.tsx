@@ -45,6 +45,7 @@ export default function FlowContent() {
 	const onSubmit = async (data: any) => {
 		try {
 			console.log("data", data);
+			data = {...data, subscriberUrl: data?.subscriberUrl?.replace(/\/+$/, '')}
 			const response = await axios.post(
 				`${import.meta.env.VITE_BACKEND_URL}/sessions`,
 				{
@@ -86,6 +87,7 @@ export default function FlowContent() {
 						domain: data.domain,
 						version: data.version,
 						usecase: data.usecaseId,
+						// options: ["WORKBENCH"]
 					},
 				}
 			);
@@ -162,7 +164,7 @@ export default function FlowContent() {
 									options={dynamicList.domain.map((val: any) => val.key)}
 									currentValue={dynamicValue.domain}
 									setSelectedValue={(data: string) => {
-										formData.current = { ...formData.current, domain: data };
+										formData.current = { ...formData.current, domain: data, version: "", usecaseId: "" };
 										// setDyanmicValue(prev => {
 										// 	return {
 										// 		...prev,
@@ -179,6 +181,7 @@ export default function FlowContent() {
 											return {
 												...prev,
 												version: filteredVersion,
+												usecase: []
 											};
 										});
 									}}
