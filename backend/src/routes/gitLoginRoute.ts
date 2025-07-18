@@ -7,11 +7,12 @@ const router = Router();
 
 const CLIENT_ID = process.env.GITHUB_CLIENT_ID;
 const CLIENT_SECRET = process.env.GITHUB_CLIENT_SECRET;
-const JWT_SECRET = process.env.JWT_SECRET;
+const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
+const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:4000";
 // / auth
 // Step 1: Redirect to GitHub
 router.get("/github", (req: Request, res: Response) => {
-	const redirect_uri = "http://localhost:4000/auth/github/callback";
+	const redirect_uri = `${BACKEND_URL}/auth/github/callback`;
 	res.redirect(
 		`https://github.com/login/oauth/authorize?client_id=${CLIENT_ID}&redirect_uri=${redirect_uri}`
 	);
@@ -43,7 +44,7 @@ router.get("/github/callback", async (req: Request, res: Response) => {
 		const user = userRes.data;
 		console.log(user);
 		const userId = user.login;
-		const registryBaseUrl = process.env.REGISTRY_SERVICE;
+		const registryBaseUrl = process.env.IN_HOUSE_REGISTRY;
 		const url = `${registryBaseUrl}/admin/v3.0/token/create`;
 
 		const requestToken = await axios.post(url, {
@@ -101,7 +102,7 @@ router.get("/github/callback", async (req: Request, res: Response) => {
 			maxAge: 3600000, // 1 hour
 		});
 
-		res.redirect(`http://localhost:5173/profile`);
+		res.redirect(`${FRONTEND_URL}/profile`);
 	} catch (err) {
 		console.error(err);
 		res.status(500).send("OAuth error");
@@ -146,7 +147,7 @@ router.post("/logout", (req: Request, res: Response) => {
 
 router.get("/api/generate-keys", async (req: Request, res: Response) => {
 	try {
-		const registryBaseUrl = process.env.REGISTRY_SERVICE;
+		const registryBaseUrl = process.env.IN_HOUSE_REGISTRY;
 		const url = `${registryBaseUrl}/admin/v2.0/generate-keys`;
 		const token = req.cookies.token;
 		const keys = await axios.get(url, {
@@ -164,7 +165,7 @@ router.get("/api/generate-keys", async (req: Request, res: Response) => {
 });
 
 router.post("/subscribe", async (req: Request, res: Response) => {
-	const registryBaseUrl = process.env.REGISTRY_SERVICE;
+	const registryBaseUrl = process.env.IN_HOUSE_REGISTRY;
 	const url = `${registryBaseUrl}/admin/v3.0/subscribe`;
 	const token = req.cookies.token;
 	if (!token) {
@@ -199,7 +200,7 @@ router.post("/subscribe", async (req: Request, res: Response) => {
 });
 
 router.patch("/subscribe", async (req: Request, res: Response) => {
-	const registryBaseUrl = process.env.REGISTRY_SERVICE;
+	const registryBaseUrl = process.env.IN_HOUSE_REGISTRY;
 	const url = `${registryBaseUrl}/admin/v3.0/subscribe`;
 	const token = req.cookies.token;
 	if (!token) {
@@ -241,7 +242,7 @@ router.patch("/subscribe", async (req: Request, res: Response) => {
 });
 
 router.delete("/subscribe", async (req: Request, res: Response) => {
-	const registryBaseUrl = process.env.REGISTRY_SERVICE;
+	const registryBaseUrl = process.env.IN_HOUSE_REGISTRY;
 	const url = `${registryBaseUrl}/admin/v3.0/subscribe`;
 	const token = req.cookies.token;
 	if (!token) {
@@ -275,7 +276,7 @@ router.delete("/subscribe", async (req: Request, res: Response) => {
 });
 
 router.post("/lookup", async (req: Request, res: Response) => {
-	const registryBaseUrl = process.env.REGISTRY_SERVICE;
+	const registryBaseUrl = process.env.IN_HOUSE_REGISTRY;
 	const url = `${registryBaseUrl}/admin/v3.0/lookup`;
 	const token = req.cookies.token;
 	const { participant_id } = req.body;
