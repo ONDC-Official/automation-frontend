@@ -2,7 +2,7 @@ import axios from "axios";
 
 export const verifyJWT = async (token: string) => {
 	try {
-		const registryBaseUrl = process.env.REGISTRY_SERVICE;
+		const registryBaseUrl = process.env.IN_HOUSE_REGISTRY;
 		const url = `${registryBaseUrl}/admin/v3.0/token/verify`;
 
 		const res = await axios.post(url, {

@@ -31,7 +31,7 @@ const GitHubIcon = () => (
 // The main login card component
 const GitHubLogin = () => {
 	const handleLogin = () => {
-		window.location.href = "http://localhost:4000/auth/github";
+		window.location.href = (`${import.meta.env.VITE_BACKEND_URL}` || "http://localhost:4000") + "/auth/github";
 	};
 	return (
 		<div className="font-sans flex items-center justify-center min-h-screen p-4">
