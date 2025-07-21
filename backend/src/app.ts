@@ -40,11 +40,16 @@ app.use(
 );
 
 app.use(
-	cors({
-		origin: "http://localhost:5173", // Replace with your frontend URL in production
-		credentials: true,
-	})
+  cors({
+    origin: [
+      "http://localhost:5173",
+      "https://saarthi.ondc.org.in",
+      "https://preview--ondc-developer-portal.lovable.app",
+    ],
+    credentials: true,
+  })
 );
+
 app.use(express.json());
 // Middleware to parse cookies
 app.use(cookieParser());
