@@ -8,281 +8,281 @@ import { FaRegStopCircle } from "react-icons/fa";
 import { IoPlay } from "react-icons/io5";
 import { AiOutlineDelete } from "react-icons/ai";
 import {
-	clearFlowData,
-	deleteExpectation,
-	getCompletePayload,
-	getTransactionData,
-	requestForFlowPermission,
+  clearFlowData,
+  deleteExpectation,
+  getCompletePayload,
+  getTransactionData,
+  requestForFlowPermission,
 } from "../../utils/request-utils";
 import { IoMdDownload } from "react-icons/io";
 
 interface AccordionProps {
-	flow: Flow;
-	activeFlow: string | null;
-	setActiveFlow: (flowId: string | null) => void;
-	sessionCache?: SessionCache | null;
-	sessionId: string;
-	setSideView: React.Dispatch<any>;
-	subUrl: string;
-	onFlowStop: () => void;
-	onFlowClear: () => void;
+  flow: Flow;
+  activeFlow: string | null;
+  setActiveFlow: (flowId: string | null) => void;
+  sessionCache?: SessionCache | null;
+  sessionId: string;
+  setSideView: React.Dispatch<any>;
+  subUrl: string;
+  onFlowStop: () => void;
+  onFlowClear: () => void;
 }
 
 export function Accordion({
-	flow,
-	activeFlow,
-	setActiveFlow,
-	sessionCache,
-	sessionId,
-	setSideView,
-	subUrl,
-	onFlowStop,
-	onFlowClear,
+  flow,
+  activeFlow,
+  setActiveFlow,
+  sessionCache,
+  sessionId,
+  setSideView,
+  subUrl,
+  onFlowStop,
+  onFlowClear,
 }: AccordionProps) {
-	const [isOpen, setIsOpen] = useState(false);
-	const [transactionCache, setTransactionCache] = useState<
-		TransactionCache | undefined
-	>(undefined);
-	const contentRef = useRef<HTMLDivElement>(null);
-	const [maxHeight, setMaxHeight] = useState("0px");
+  const [isOpen, setIsOpen] = useState(false);
+  const [transactionCache, setTransactionCache] = useState<
+    TransactionCache | undefined
+  >(undefined);
+  const contentRef = useRef<HTMLDivElement>(null);
+  const [maxHeight, setMaxHeight] = useState("0px");
 
-	useEffect(() => {
-		const fetchTransactionData = async () => {
-			if (sessionCache && activeFlow === flow.id) {
-				const tx = sessionCache.flowMap[flow.id];
-				if (tx) {
-					try {
-						const txData = await getTransactionData(tx, subUrl);
-						setTransactionCache(txData);
-					} catch (error) {
-						console.error("Failed to fetch transaction data:", error);
-					}
-				}
-			}
-		};
-		fetchTransactionData();
-	}, [sessionCache, flow.id, subUrl]);
+  useEffect(() => {
+    const fetchTransactionData = async () => {
+      if (sessionCache && activeFlow === flow.id) {
+        const tx = sessionCache.flowMap[flow.id];
+        if (tx) {
+          try {
+            const txData = await getTransactionData(tx, subUrl);
+            setTransactionCache(txData);
+          } catch (error) {
+            console.error("Failed to fetch transaction data:", error);
+          }
+        }
+      }
+    };
+    fetchTransactionData();
+  }, [sessionCache, flow.id, subUrl]);
 
-	useEffect(() => {
-		if (contentRef.current) {
-			setMaxHeight(isOpen ? `${contentRef.current.scrollHeight}px` : "0px");
-		}
-	}, [isOpen]);
+  useEffect(() => {
+    if (contentRef.current) {
+      setMaxHeight(isOpen ? `${contentRef.current.scrollHeight}px` : "0px");
+    }
+  }, [isOpen]);
 
-	const steps = getOrderedSteps(flow.sequence);
+  const steps = getOrderedSteps(flow.sequence);
 
-	const startFlow = async () => {
-		try {
-			console.log(sessionCache);
-			if (!sessionCache) return;
-			const canStart = await canStartFlow(sessionCache, flow, transactionCache);
-			console.log(canStart);
-			if (!canStart) return;
-			setActiveFlow(flow.id);
-			setIsOpen(true);
-		} catch (e) {
-			toast.error("Error while starting flow");
-			console.error(e);
-		}
-	};
+  const startFlow = async () => {
+    try {
+      console.log(sessionCache);
+      if (!sessionCache) return;
+      const canStart = await canStartFlow(sessionCache, flow, transactionCache);
+      console.log(canStart);
+      if (!canStart) return;
+      setActiveFlow(flow.id);
+      setIsOpen(true);
+    } catch (e) {
+      toast.error("Error while starting flow");
+      console.error(e);
+    }
+  };
 
-	let stepIndex = 1;
-	if (!sessionCache) return <div>Loading...</div>;
+  let stepIndex = 1;
+  if (!sessionCache) return <div>Loading...</div>;
 
-	const handleDownload = async () => {
-		const payload_ids = transactionCache?.apiList.map(
-			(payload) => payload?.payloadId
-		);
+  const handleDownload = async () => {
+    const payload_ids = transactionCache?.apiList.map(
+      (payload) => payload?.payloadId
+    );
 
-		if (!payload_ids) {
-			return;
-		}
+    if (!payload_ids) {
+      return;
+    }
 
-		const jsonData = await getCompletePayload(payload_ids);
-		const jsonString = JSON.stringify(jsonData, null, 2);
-		const blob = new Blob([jsonString], { type: "application/json" });
+    const jsonData = await getCompletePayload(payload_ids);
+    const jsonString = JSON.stringify(jsonData, null, 2);
+    const blob = new Blob([jsonString], { type: "application/json" });
 
-		const url = URL.createObjectURL(blob);
+    const url = URL.createObjectURL(blob);
 
-		const a = document.createElement("a");
-		a.href = url;
-		a.download = `${flow?.id}-${activeFlow}`;
-		document.body.appendChild(a);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${flow?.id}-${activeFlow}`;
+    document.body.appendChild(a);
 
-		a.click();
-		URL.revokeObjectURL(url);
-		document.body.removeChild(a);
-	};
+    a.click();
+    URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+  };
 
-	function AccordionButtons() {
-		return (
-			<div className="flex items-center">
-				{!activeFlow && (
-					<IconButton
-						icon={<IoPlay className=" text-md" />}
-						label="Start flow"
-						color="sky"
-						onClick={async (e) => {
-							e.stopPropagation();
-							await startFlow();
-						}}
-					/>
-				)}
-				{activeFlow === flow.id && (
-					<IconButton
-						icon={<FaRegStopCircle className=" text-xl" />}
-						label="Stop flow"
-						color="red"
-						onClick={async (e) => {
-							e.stopPropagation(); // Prevent accordion toggle
-							setActiveFlow(null);
-							setIsOpen(false);
-							await deleteExpectation(sessionId, subUrl);
-							onFlowStop();
-						}}
-					/>
-				)}
-				{!activeFlow && (
-					<IconButton
-						icon={<AiOutlineDelete className=" text-md" />}
-						label="Clear flow data"
-						color="orange"
-						onClick={async (e) => {
-							e.stopPropagation();
-							setTransactionCache(undefined);
-							await clearFlowData(sessionId, flow.id);
-							onFlowClear();
-						}}
-					/>
-				)}
-				{transactionCache?.apiList && transactionCache?.apiList?.length > 0 && (
-					<IconButton
-						icon={<IoMdDownload className=" text-md" />}
-						label="Download Logs"
-						color="green"
-						onClick={async (e) => {
-							e.stopPropagation();
-							handleDownload();
-						}}
-					/>
-				)}
-			</div>
-		);
-	}
+  function AccordionButtons() {
+    return (
+      <div className="flex items-center">
+        {!activeFlow && (
+          <IconButton
+            icon={<IoPlay className=" text-md" />}
+            label="Start flow"
+            color="sky"
+            onClick={async (e) => {
+              e.stopPropagation();
+              await startFlow();
+            }}
+          />
+        )}
+        {activeFlow === flow.id && (
+          <IconButton
+            icon={<FaRegStopCircle className=" text-xl" />}
+            label="Stop flow"
+            color="red"
+            onClick={async (e) => {
+              e.stopPropagation(); // Prevent accordion toggle
+              setActiveFlow(null);
+              setIsOpen(false);
+              await deleteExpectation(sessionId, subUrl);
+              onFlowStop();
+            }}
+          />
+        )}
+        {!activeFlow && (
+          <IconButton
+            icon={<AiOutlineDelete className=" text-md" />}
+            label="Clear flow data"
+            color="orange"
+            onClick={async (e) => {
+              e.stopPropagation();
+              setTransactionCache(undefined);
+              await clearFlowData(sessionId, flow.id);
+              onFlowClear();
+            }}
+          />
+        )}
+        {transactionCache?.apiList && transactionCache?.apiList?.length > 0 && (
+          <IconButton
+            icon={<IoMdDownload className=" text-md" />}
+            label="Download Logs"
+            color="green"
+            onClick={async (e) => {
+              e.stopPropagation();
+              handleDownload();
+            }}
+          />
+        )}
+      </div>
+    );
+  }
 
-	const bg =
-		activeFlow === flow.id
-			? "bg-gradient-to-r from-sky-50 via-sky-100 to-sky-50 "
-			: "bg-white";
-	return (
-		<div className="rounded-md border border-zinc-50 mb-4 shadow-lg w-full ml-1">
-			<div
-				className={`${bg} flex items-center justify-between px-5 py-3 border rounded-md shadow-sm hover:bg-gray-50 cursor-pointer transition-colors`}
-				onClick={() => setIsOpen(!isOpen)}
-				aria-expanded={isOpen}
-				aria-controls={`accordion-content-${flow.id}`}
-			>
-				<h3 className="text-base font-bold text-sky-700">
-					<pre>{`${flow.id}`}</pre>{" "}
-					<h2 className="text-black font-medium">{flow?.title}</h2>
-				</h3>
-				<AccordionButtons />
-			</div>
+  const bg =
+    activeFlow === flow.id
+      ? "bg-gradient-to-r from-sky-50 via-sky-100 to-sky-50 "
+      : "bg-white";
+  return (
+    <div className="rounded-md border border-zinc-50 mb-4 shadow-lg w-full ml-1">
+      <div
+        className={`${bg} flex items-center justify-between px-5 py-3 border rounded-md shadow-sm hover:bg-gray-50 cursor-pointer transition-colors`}
+        onClick={() => setIsOpen(!isOpen)}
+        aria-expanded={isOpen}
+        aria-controls={`accordion-content-${flow.id}`}
+      >
+        <h3 className="text-base font-bold text-sky-700">
+          <pre>{`${flow.id}`}</pre>{" "}
+          <h2 className="text-black font-medium">{flow?.title}</h2>
+        </h3>
+        <AccordionButtons />
+      </div>
 
-			{/* Accordion content with drop animation */}
-			<div
-				ref={contentRef}
-				id={`accordion-content-${flow.id}`}
-				className="overflow-hidden transition-all duration-300 ease-in-out"
-				style={{ maxHeight: `${maxHeight}` }}
-			>
-				<div className="px-4 py-5 bg-white">
-					<p className="text-gray-700 mb-6">{flow.description}</p>
+      {/* Accordion content with drop animation */}
+      <div
+        ref={contentRef}
+        id={`accordion-content-${flow.id}`}
+        className="overflow-hidden transition-all duration-300 ease-in-out"
+        style={{ maxHeight: `${maxHeight}` }}
+      >
+        <div className="px-4 py-5 bg-white">
+          <p className="text-gray-700 mb-6">{flow.description}</p>
 
-					<div className="space-y-4 relative">
-						{steps.map((stepPair, index) => {
-							const currentStepIndex = stepIndex++; // Assign first, then increment
-							const pairData = stepPair.pair
-								? {
-										...stepPair.pair,
-										stepIndex: stepIndex++, // Increment for pair if exists
-										transactionData: transactionCache,
-										sessionData: sessionCache,
-										flowId: flow.id,
-										sessionId: sessionId,
-										setSideView: setSideView,
-										subscriberUrl: subUrl,
-										activeFlowId: activeFlow || "",
-								  }
-								: undefined;
+          <div className="space-y-4 relative">
+            {steps.map((stepPair, index) => {
+              const currentStepIndex = stepIndex++; // Assign first, then increment
+              const pairData = stepPair.pair
+                ? {
+                    ...stepPair.pair,
+                    stepIndex: stepIndex++, // Increment for pair if exists
+                    transactionData: transactionCache,
+                    sessionData: sessionCache,
+                    flowId: flow.id,
+                    sessionId: sessionId,
+                    setSideView: setSideView,
+                    subscriberUrl: subUrl,
+                    activeFlowId: activeFlow || "",
+                  }
+                : undefined;
 
-							return (
-								<div key={index}>
-									<SequenceCard
-										step={{
-											...stepPair.step,
-											stepIndex: currentStepIndex, // Assign previously set index
-											transactionData: transactionCache,
-											sessionData: sessionCache,
-											flowId: flow.id,
-											sessionId: sessionId,
-											setSideView: setSideView,
-											subscriberUrl: subUrl,
-											activeFlowId: activeFlow || "",
-										}}
-										pair={pairData}
-									/>
-								</div>
-							);
-						})}
-					</div>
-				</div>
-			</div>
-		</div>
-	);
+              return (
+                <div key={index}>
+                  <SequenceCard
+                    step={{
+                      ...stepPair.step,
+                      stepIndex: currentStepIndex, // Assign previously set index
+                      transactionData: transactionCache,
+                      sessionData: sessionCache,
+                      flowId: flow.id,
+                      sessionId: sessionId,
+                      setSideView: setSideView,
+                      subscriberUrl: subUrl,
+                      activeFlowId: activeFlow || "",
+                    }}
+                    pair={pairData}
+                  />
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function getOrderedSteps(sequence: SequenceStep[]): {
-	step: SequenceStep;
-	pair?: SequenceStep;
+  step: SequenceStep;
+  pair?: SequenceStep;
 }[] {
-	const visited = new Set<string>();
-	const steps = [];
+  const visited = new Set<string>();
+  const steps = [];
 
-	let index = 0;
-	for (const step of sequence) {
-		if (visited.has(`${step.key}_${index}`)) continue;
+  let index = 0;
+  for (const step of sequence) {
+    if (visited.has(`${step.key}_${index}`)) continue;
 
-		visited.add(`${step.key}_${index}`);
+    visited.add(`${step.key}_${index}`);
 
-		let pairStep: SequenceStep | undefined;
-		if (step.pair) {
-			pairStep = sequence.find((s) => s.key === step.pair);
-			if (pairStep && !visited.has(pairStep.key)) {
-				visited.add(`${pairStep.key}_${index + 1}`);
-			}
-		}
+    let pairStep: SequenceStep | undefined;
+    if (step.pair) {
+      pairStep = sequence.find((s) => s.key === step.pair);
+      if (pairStep && !visited.has(pairStep.key)) {
+        visited.add(`${pairStep.key}_${index + 1}`);
+      }
+    }
 
-		steps.push({
-			step,
-			pair: pairStep,
-		});
-		index++;
-	}
+    steps.push({
+      step,
+      pair: pairStep,
+    });
+    index++;
+  }
 
-	return steps;
+  return steps;
 }
 
 async function canStartFlow(
-	sessionData: SessionCache,
-	flow: Flow,
-	transactionCache?: TransactionCache
+  sessionData: SessionCache,
+  flow: Flow,
+  transactionCache?: TransactionCache
 ) {
-	if (transactionCache) return true;
-	const action = flow.sequence[0].type;
-	if (flow.sequence[0].expect && sessionData.npType === "BAP") {
-		console.log("Requesting for flow permission");
-		return await requestForFlowPermission(action, sessionData.subscriberUrl);
-	}
-	return true;
+  if (transactionCache) return true;
+  const action = flow.sequence[0].type;
+  if (flow.sequence[0].expect && sessionData.npType === "BAP") {
+    console.log("Requesting for flow permission");
+    return await requestForFlowPermission(action, sessionData.subscriberUrl);
+  }
+  return true;
 }

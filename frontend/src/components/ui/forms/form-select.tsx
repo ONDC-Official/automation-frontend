@@ -1,87 +1,108 @@
-import React, {useEffect, useState} from "react";
+import { useEffect, useState } from "react";
+import { Select } from "antd";
 import { LabelWithToolTip } from "./form-input";
-import { inputClass } from "./inputClass";
 
 interface IOption {
-	key: string;
-	value: string;
+  label: string;
+
+  value: string;
 }
 
 const FormSelect = ({
-	register = (_: any) => {},
-	name,
-	label,
-	options,
-	errors,
-	setSelectedValue = (_: string) => {},
-	defaultValue,
-	labelInfo = "",
-	nonSelectedValue = false,
-	disabled = false,
-	required = false,
-	currentValue = ""
+  register = (_: any) => {},
+  name,
+  label,
+  options,
+  errors,
+  setSelectedValue = (_: string | string[]) => {},
+  labelInfo = "",
+  nonSelectedValue = false,
+  disabled = false,
+  required = false,
+  currentValue = "",
+  multiple = false,
 }: any) => {
-	const [value, setValue] = useState("")
+  const [value, setValue] = useState<string | string[]>(multiple ? [] : "");
 
-	useEffect(() => {
-		if(nonSelectedValue) {
-			setValue("")
-		}
-	}, [options])
+  useEffect(() => {
+    if (nonSelectedValue) {
+      setValue(multiple ? [] : "");
+    }
+  }, [options, multiple]);
 
-	const onSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-		console.log(e.target.value, "index");
-		setSelectedValue(e.target.value);
-		console.log("reaching till here>>>???")
-		setValue(e.target.value)
-	};
-	return (
-		<>
-			<div className="mb-4 w-full">
-				<LabelWithToolTip labelInfo={labelInfo} label={label} />
-				<select
-					{...register(name, {
-						required: required && `This field is required` 
-					})}
-					className={inputClass}
-					onChange={onSelectChange}
-					defaultValue={defaultValue}
-					disabled={disabled}
-					value={currentValue || value}
-				>
-					{
-						nonSelectedValue && <option value="" disabled selected>Select a value</option>
-					}
+  useEffect(() => {
+    if (currentValue !== undefined && currentValue !== null) {
+      setValue(currentValue);
+    }
+  }, [currentValue]);
 
-					{options.map((option: string | IOption, index: number) => {
-						let value
+  const onSelectChange = (value: string | string[]) => {
+    if (multiple) {
+      const selectedOptions = Array.isArray(value) ? value : [value];
+      console.log(selectedOptions, "selected options");
+      setSelectedValue(selectedOptions);
+      setValue(selectedOptions);
+    } else {
+      const selectedValue = Array.isArray(value) ? value[0] : value;
+      console.log(selectedValue, "selected value");
+      setSelectedValue(selectedValue);
+      setValue(selectedValue);
+    }
+  };
 
-						if(typeof option === "string") {
-							value = option
-						} else {
-							value = option.value
-							option = option.key
-						}
+  return (
+    <>
+      <div className="mb-4 w-full">
+        <LabelWithToolTip labelInfo={labelInfo} label={label} />
 
-						if (defaultValue === option)
-							return (
-								<option selected value={value} key={index}>
-									{option}
-								</option>
-							);
-						return (
-							<option value={value} key={index}>
-								{option}
-							</option>
-						);
-					})}
-				</select>
-				{errors && errors[name] && (
-					<p className="text-red-500 text-xs italic dark:text-red-400">{errors[name].message}</p>
-				)}
-			</div>
-		</>
-	);
+        <Select
+          {...register(name, {
+            required: required && `This field is required`,
+          })}
+          placeholder={nonSelectedValue ? "Select a value" : undefined}
+          value={currentValue || value}
+          onChange={onSelectChange}
+          disabled={disabled}
+          mode={multiple ? "multiple" : undefined}
+          style={{ width: "100%" }}
+          size="large"
+          allowClear={multiple}
+          showSearch={multiple}
+          filterOption={(input, option) =>
+            String(option?.label ?? "")
+              .toLowerCase()
+              .includes(input.toLowerCase())
+          }
+          maxTagCount={multiple ? "responsive" : undefined}
+          // className="antd-select"
+        >
+          {options.map((option: string | IOption, index: number) => {
+            let optionValue, optionLabel;
+
+            if (typeof option === "string") {
+              optionValue = option;
+              optionLabel = option;
+            } else {
+              optionValue = option.value;
+              optionLabel = option.label;
+            }
+
+            return (
+              <Select.Option value={optionValue} key={index}>
+                {optionLabel}
+              </Select.Option>
+            );
+          })}
+        </Select>
+
+        {errors && errors[name] && (
+          <p className="text-red-500 text-xs italic dark:text-red-400 mt-1">
+            {errors[name].message}
+          </p>
+        )}
+      </div>
+    </>
+  );
 };
 
 export default FormSelect;

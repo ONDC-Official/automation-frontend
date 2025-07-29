@@ -5,6 +5,7 @@ import unitRoutes from "./unitRoutes";
 import dbRoutes from "./dbRoutes";
 import logRoutes from "../routes/logRoutes"; // Add this import
 import configRoutes from "./configRoute";
+import sellerRoutes from "./sellerRoutes"; // Import seller routes
 
 const router = Router();
 
@@ -16,5 +17,6 @@ router.use("/unit", unitRoutes);
 router.use("/db", dbRoutes);
 router.use("/logs", logRoutes); // Add this line
 router.use("/config", configRoutes);
+router.use("/seller", sellerRoutes); // Add seller routes
 
 export default router;
