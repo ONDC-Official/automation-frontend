@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "@ondc/automation-logger": "^1.0.8",
     "@types/axios": "^0.14.4",
     "axios": "^1.10.0",
     "chalk": "^4.1.2",
