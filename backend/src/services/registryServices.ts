@@ -1,5 +1,5 @@
 import axios from "axios";
-
+import logger from "@ondc/automation-logger";
 export const verifyJWT = async (token: string) => {
 	try {
 		const registryBaseUrl = process.env.IN_HOUSE_REGISTRY;
@@ -16,7 +16,7 @@ export const verifyJWT = async (token: string) => {
 		}
 		return undefined;
 	} catch (error) {
-		console.error("JWT verification failed:", error);
+		logger.error("Error verifying JWT");
 		return undefined;
 	}
 };
