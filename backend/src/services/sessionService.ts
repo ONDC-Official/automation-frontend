@@ -1,15 +1,14 @@
 import { RedisService } from "ondc-automation-cache-lib";
 import { SessionCache, SubscriberCache } from "../interfaces/newSessionData";
-// import { fetchConfigService } from "./flowService";
-import logger from "../utils/logger";
 import { saveLog } from "../utils/console";
 import axios from "../utils/axios";
-
+import logger from "@ondc/automation-logger";
 const SESSION_EXPIRY = 3600; // 1 hour
 const EXPECTATION_EXPIRY = 5 * 60 * 1000; // 5 minutes
 export const createSessionService = async (
 	sessionId: string,
-	data: SessionCache
+	data: SessionCache,
+	loggerMeta: any
 ) => {
 	const { npType, domain, version, subscriberUrl, env, usecaseId } = data;
 
@@ -55,9 +54,10 @@ export const createSessionService = async (
 			JSON.stringify(finalCache),
 			SESSION_EXPIRY
 		);
+		logger.info("Session created successfully", loggerMeta, finalCache);
 		return "Session created successfully";
-	} catch (e) {
-		logger.error(e);
+	} catch (e: any) {
+		logger.error("Error creating session", loggerMeta, e);
 		throw new Error("Error creating session");
 	}
 };
@@ -69,15 +69,16 @@ export const getSessionService = async (sessionId: string) => {
 			throw new Error("Session not found");
 		}
 		return JSON.parse(sessionData) as SessionCache;
-	} catch (e) {
-		logger.error(e);
+	} catch (e: any) {
+		logger.error("Error fetching session", e);
 		throw new Error("Error fetching session");
 	}
 };
 
 export const updateSessionService = async (
 	sessionId: string,
-	data: Partial<SessionCache>
+	data: Partial<SessionCache>,
+	loggerMeta: any
 ) => {
 	const {
 		subscriberId,
@@ -112,14 +113,22 @@ export const updateSessionService = async (
 			JSON.stringify(session),
 			SESSION_EXPIRY
 		);
-
+		logger.info("Session updated successfully", {
+			...data,
+			...loggerMeta,
+		});
 		return "Session updated successfully";
 	} catch (error: any) {
-		throw new Error(`${error.message}`);
+		logger.error("Error updating session", loggerMeta, error);
+		throw new Error("Error updating session");
 	}
 };
 
-export const clearFlowService = async (sessionId: string, flowId: string) => {
+export const clearFlowService = async (
+	sessionId: string,
+	flowId: string,
+	loggerMeta: any
+) => {
 	try {
 		const sessionData = await RedisService.getKey(sessionId);
 		if (!sessionData) {
@@ -141,8 +150,8 @@ export const clearFlowService = async (sessionId: string, flowId: string) => {
 			JSON.stringify(session),
 			SESSION_EXPIRY
 		);
-	} catch (e) {
-		logger.error(e);
+	} catch (e: any) {
+		logger.error("Error clearing flow", loggerMeta, e);
 		throw new Error("Error clearing flow");
 	}
 };
@@ -216,6 +225,16 @@ export const createExpectationService = async (
 
 		return "Expectation created successfully";
 	} catch (error: any) {
+		logger.error(
+			"Error creating expectation",
+			{
+				subscriberUrl,
+				flowId,
+				sessionId,
+				expectedAction,
+			},
+			error
+		);
 		throw new Error(`Failed to create expectation: ${error.message}`);
 	}
 };
@@ -240,8 +259,8 @@ export const deleteExpectationService = async (
 		);
 
 		await RedisService.setKey(subscriberUrl, JSON.stringify(parsed));
-	} catch (e) {
-		logger.error(e);
+	} catch (e: any) {
+		logger.error("Error deleting expectation", { sessionId, subscriberUrl }, e);
 		throw new Error("Error deleting expectation");
 	}
 };
@@ -252,14 +271,17 @@ export const getTransactionDataService = async (
 ) => {
 	try {
 		const key = `${transaction_id}::${subscriber_url}`;
-		logger.info("Fetching transaction data for key: " + key);
 		const data = await RedisService.getKey(key);
 		if (!data) {
 			throw new Error("Transaction data not found");
 		}
 		return JSON.parse(data);
-	} catch (e) {
-		logger.error(e);
+	} catch (e: any) {
+		logger.error(
+			"Error fetching transaction data",
+			{ transaction_id, subscriber_url },
+			e
+		);
 		throw new Error("Error fetching transaction data");
 	}
 };
@@ -303,8 +325,12 @@ export const requestForFlowPermissionService = async (
 			valid: true,
 			message: `Subscriber: ${subscriberUrl} is ready for action: ${action}`,
 		};
-	} catch (e) {
-		logger.error("Error requesting flow permission", e);
+	} catch (e: any) {
+		logger.error(
+			"Error requesting flow permission",
+			{ subscriberUrl, action },
+			e
+		);
 		throw new Error("Error requesting flow permission");
 	}
 };

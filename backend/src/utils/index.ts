@@ -1,5 +1,5 @@
 import { getSessionService } from "../services/sessionService";
-import logger from "./logger";
+import logger from "@ondc/automation-logger";
 
 export const buildMockBaseURL = async (url: string, sessionId: string) => {
 	const sessionData = await getSessionService(sessionId);

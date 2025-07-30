@@ -2,7 +2,7 @@ import { Request, Router, Response } from "express";
 import axios from "axios";
 import jwt from "jsonwebtoken";
 import { verifyJWT } from "../services/registryServices";
-import logger from "../utils/logger";
+import logger from "@ondc/automation-logger";
 const router = Router();
 
 const CLIENT_ID = process.env.GITHUB_CLIENT_ID;

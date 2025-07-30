@@ -7,13 +7,12 @@ import { ACK, NACK, ERROR } from "../constants/response";
 import getPredefinedFlowConfig, {
 	fetchExampleConfig,
 } from "../config/unittestConfig";
-import logger from "../utils/logger";
+import logger from "@ondc/automation-logger";
 import { saveLog } from "../utils/console";
 import { buildMockBaseURL } from "../utils";
 
 export const fetchConfig = (req: Request, res: Response) => {
 	try {
-		logger.info("fetching config");
 		const config = fetchConfigService();
 		res.status(200).json(config);
 	} catch (error: any) {
@@ -43,6 +42,9 @@ export const generateReport = async (
 				params: {
 					sessionId: sessionId,
 				},
+				headers: {
+					"X-Request-ID": req.correlationId,
+				},
 			}
 		);
 		if (response.status === 200) {
@@ -52,7 +54,7 @@ export const generateReport = async (
 			});
 		}
 	} catch (error: any) {
-		logger.info(error);
+		logger.error("Error generating report", { sessionId, body }, error);
 		res
 			.status(500)
 			.json({ error: "Failed to generate report", details: error.message });
@@ -92,6 +94,9 @@ export const handleTriggerRequest = async (
 					// transaction_id: req.query.transaction_id,
 					...req.query,
 				},
+				headers: {
+					"X-Request-ID": req.correlationId,
+				},
 			}
 		);
 		logger.info("response" + JSON.stringify(response.data));
@@ -101,7 +106,16 @@ export const handleTriggerRequest = async (
 			res.status(response.status).send("unknown");
 		}
 	} catch (error: any) {
-		logger.error("error while triggering", error);
+		logger.error(
+			"Error handling trigger request",
+			{
+				action: req.params.action,
+				sessionId: req.query.session_id,
+				transactionId: req.query.transaction_id,
+				subscriberUrl: req.query.subscriber_url,
+			},
+			error
+		);
 		if (error.response && error.response.status === 400) {
 			res.status(400).send(NACK);
 		} else if (error.response && error.response.status === 500) {
@@ -198,11 +212,21 @@ export const getCurrentStateFlow = async (
 				session_id,
 				transaction_id,
 			},
+			headers: {
+				"X-Request-ID": req.correlationId,
+			},
 		});
 		logger.info("current state response fetched successfully");
 		res.status(response.status).send(response.data);
 	} catch (e) {
-		logger.error("error while fetching current state", e);
+		logger.error(
+			"error while fetching current state flow",
+			{
+				session_id: req.query.session_id,
+				transaction_id: req.query.transaction_id,
+			},
+			e
+		);
 		res.status(500).send(ERROR);
 	}
 };
@@ -217,10 +241,21 @@ export const proceedFlow = async (req: Request, res: Response) => {
 			return;
 		}
 		const url = await buildMockBaseURL("flows/proceed", session_id as string);
-		const response = await axios.post(url, req.body);
+		const response = await axios.post(url, req.body, {
+			headers: {
+				"X-Request-ID": req.correlationId,
+			},
+		});
 		res.status(response.status).send(response.data);
 	} catch (e) {
-		logger.error("error while proceeding flow", e);
+		logger.error(
+			"error while proceeding flow",
+			{
+				session_id: req.body.session_id,
+				transaction_id: req.body.transaction_id,
+			},
+			e
+		);
 		res.status(500).send(ERROR);
 	}
 };
@@ -235,10 +270,22 @@ export const newFlow = async (req: Request, res: Response) => {
 			return;
 		}
 		const url = await buildMockBaseURL("flows/new", session_id as string);
-		const response = await axios.post(url, req.body);
+		const response = await axios.post(url, req.body, {
+			headers: {
+				"X-Request-ID": req.correlationId,
+			},
+		});
 		res.status(response.status).send(response.data);
 	} catch (e) {
-		logger.error("error while creating new flow", e);
+		logger.error(
+			"error while creating new flow",
+			{
+				session_id: req.body.session_id,
+				transaction_id: req.body.transaction_id,
+				flow_id: req.body.flow_id,
+			},
+			e
+		);
 		res.status(500).send(ERROR);
 	}
 };

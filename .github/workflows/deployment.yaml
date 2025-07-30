@@ -76,6 +76,7 @@ jobs:
           echo "SERVICE_NAME=${{ vars.SERVICE_NAME }}" >> \$REPO_DIR/backend/.env
           echo "TRACE_URL=${{ vars.TRACE_URL }}" >> \$REPO_DIR/backend/.env
           echo "API_SERVICE_KEY=${{ secrets.API_SERVICE_KEY }}" >> \$REPO_DIR/backend/.env
+          echo "LOKI_HOST=${{ vars.LOKI_HOST }}" >> \$REPO_DIR/backend/.env
           EOF
 
       - name: Verify docker-compose.yml files
@@ -173,6 +174,7 @@ jobs:
           echo "IN_HOUSE_REGISTRY=${{ vars.IN_HOUSE_REGISTRY }}" >> \$REPO_DIR/backend/.env
           echo "FRONTEND_URL=${{ vars.FRONTEND_URL }}" >> \$REPO_DIR/backend/.env
           echo "BACKEND_URL=${{ vars.BACKEND_URL }}" >> \$REPO_DIR/backend/.env
+          echo "LOKI_HOST=${{ vars.LOKI_HOST }}" >> \$REPO_DIR/backend/.env
           EOF
       - name: Verify docker-compose.yml files
         run: |
