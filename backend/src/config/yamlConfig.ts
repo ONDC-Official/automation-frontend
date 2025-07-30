@@ -1,7 +1,7 @@
 import * as fs from "fs";
 import * as yaml from "js-yaml";
 import * as path from "path";
-
+import logger from "@ondc/automation-logger";
 const configPath = "../yamlConfig/index.yaml";
 
 interface Config {
@@ -30,7 +30,7 @@ const loadConfig = (filePath: string): Config => {
 		const config = yaml.load(fileContents) as Config;
 		return config;
 	} catch (e: any) {
-		console.error(`Failed to load config file: ${e.message}`);
+		logger.error(`Failed to load config file: ${e.message}`);
 		throw e;
 	}
 };

@@ -7,20 +7,10 @@ import cookieParser from "cookie-parser";
 import session from "express-session";
 import cors from "cors";
 const RedisStore = require("connect-redis").default;
-
+import logger from "@ondc/automation-logger";
 const app = express();
 
-// Select and use database 0
 RedisService.useDb(0);
-
-// Log Redis connection status
-// redisClient.on('connect', () => {
-//     console.log('Redis client connected');
-// });
-
-// redisClient.on('error', (err) => {
-//     console.error('Redis connection error:', err);
-// });
 
 let redisStore = new RedisStore({
 	client: RedisService,
@@ -39,15 +29,17 @@ app.use(
 	})
 );
 
+app.use(logger.getCorrelationIdMiddleware());
+
 app.use(
-  cors({
-    origin: [
-      "http://localhost:5173",
-      "https://saarthi.ondc.org.in",
-      "https://preview--ondc-developer-portal.lovable.app",
-    ],
-    credentials: true,
-  })
+	cors({
+		origin: [
+			"http://localhost:5173",
+			"https://saarthi.ondc.org.in",
+			"https://preview--ondc-developer-portal.lovable.app",
+		],
+		credentials: true,
+	})
 );
 
 app.use(express.json());
