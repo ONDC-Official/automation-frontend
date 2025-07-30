@@ -34,12 +34,7 @@ const navLinks: NavLink[] = [
     ]
   },
   { label: "Support", href: "", selected: false },
-	{ label: "Home", href: "/home", selected: true },
-	{ label: "Schema Validation", href: "/schema", selected: false },
-	// { label: "Unit Testing", href: "/unit", selected: false },
-	{ label: "Scenario Testing", href: "/scenario", selected: false },
-	// { label: "Custom flow Workbench", href: "/customFlow", selected: false },
-	{ label: "Support", href: "", selected: false },
+	
 ];
 
 interface IPops {
