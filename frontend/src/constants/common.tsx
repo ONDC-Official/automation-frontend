@@ -1,76 +1,76 @@
 export const weekDays = [
-  { label: "Monday", value: "1" },
-  { label: "Tuesday", value: "2" },
-  { label: "Wednesday", value: "3" },
-  { label: "Thursday", value: "4" },
-  { label: "Friday", value: "5" },
-  { label: "Saturday", value: "6" },
-  { label: "Sunday", value: "7" },
+  { key: "Monday", value: "1" },
+  { key: "Tuesday", value: "2" },
+  { key: "Wednesday", value: "3" },
+  { key: "Thursday", value: "4" },
+  { key: "Friday", value: "5" },
+  { key: "Saturday", value: "6" },
+  { key: "Sunday", value: "7" },
 ];
 
 export const domainOptions = [
-  { label: "Grocery", value: "ONDC:RET10" },
-  { label: "F&B", value: "ONDC:RET11" },
-  { label: "Fashion", value: "ONDC:RET12" },
-  { label: "BPC", value: "ONDC:RET13" },
-  { label: "Electronics", value: "ONDC:RET14" },
-  { label: "Appliances", value: "ONDC:RET15" },
-  { label: "Home & Kitchen", value: "ONDC:RET16" },
-  { label: "Health & Wellness", value: "ONDC:RET18" },
+  { key: "Grocery", value: "ONDC:RET10" },
+  { key: "F&B", value: "ONDC:RET11" },
+  { key: "Fashion", value: "ONDC:RET12" },
+  { key: "BPC", value: "ONDC:RET13" },
+  { key: "Electronics", value: "ONDC:RET14" },
+  { key: "Appliances", value: "ONDC:RET15" },
+  { key: "Home & Kitchen", value: "ONDC:RET16" },
+  { key: "Health & Wellness", value: "ONDC:RET18" },
 ];
 
 export const Types = [
-  { label: "Order", value: "Order" },
-  { label: "Delivery", value: "Delivery" },
-  { label: "Self-Pickup", value: "Self-Pickup" },
-  { label: "All ", value: "All" },
+  { key: "Order", value: "Order" },
+  { key: "Delivery", value: "Delivery" },
+  { key: "Self-Pickup", value: "Self-Pickup" },
+  { key: "All ", value: "All" },
 ];
 
 export const indianStates = [
-  { label: "Andhra Pradesh", value: "andhra_pradesh" },
-  { label: "Arunachal Pradesh", value: "arunachal_pradesh" },
-  { label: "Assam", value: "assam" },
-  { label: "Bihar", value: "bihar" },
-  { label: "Chhattisgarh", value: "chhattisgarh" },
-  { label: "Goa", value: "goa" },
-  { label: "Gujarat", value: "gujarat" },
-  { label: "Haryana", value: "haryana" },
-  { label: "Himachal Pradesh", value: "himachal_pradesh" },
-  { label: "Jharkhand", value: "jharkhand" },
-  { label: "Karnataka", value: "karnataka" },
-  { label: "Kerala", value: "kerala" },
-  { label: "Madhya Pradesh", value: "madhya_pradesh" },
-  { label: "Maharashtra", value: "maharashtra" },
-  { label: "Manipur", value: "manipur" },
-  { label: "Meghalaya", value: "meghalaya" },
-  { label: "Mizoram", value: "mizoram" },
-  { label: "Nagaland", value: "nagaland" },
-  { label: "Odisha", value: "odisha" },
-  { label: "Punjab", value: "punjab" },
-  { label: "Rajasthan", value: "rajasthan" },
-  { label: "Sikkim", value: "sikkim" },
-  { label: "Tamil Nadu", value: "tamil_nadu" },
-  { label: "Telangana", value: "telangana" },
-  { label: "Tripura", value: "tripura" },
-  { label: "Uttar Pradesh", value: "uttar_pradesh" },
-  { label: "Uttarakhand", value: "uttarakhand" },
-  { label: "West Bengal", value: "west_bengal" },
-  { label: "Delhi", value: "delhi" },
-  { label: "Jammu and Kashmir", value: "jammu_kashmir" },
-  { label: "Ladakh", value: "ladakh" },
-  { label: "Puducherry", value: "puducherry" },
+  { key: "Andhra Pradesh", value: "andhra_pradesh" },
+  { key: "Arunachal Pradesh", value: "arunachal_pradesh" },
+  { key: "Assam", value: "assam" },
+  { key: "Bihar", value: "bihar" },
+  { key: "Chhattisgarh", value: "chhattisgarh" },
+  { key: "Goa", value: "goa" },
+  { key: "Gujarat", value: "gujarat" },
+  { key: "Haryana", value: "haryana" },
+  { key: "Himachal Pradesh", value: "himachal_pradesh" },
+  { key: "Jharkhand", value: "jharkhand" },
+  { key: "Karnataka", value: "karnataka" },
+  { key: "Kerala", value: "kerala" },
+  { key: "Madhya Pradesh", value: "madhya_pradesh" },
+  { key: "Maharashtra", value: "maharashtra" },
+  { key: "Manipur", value: "manipur" },
+  { key: "Meghalaya", value: "meghalaya" },
+  { key: "Mizoram", value: "mizoram" },
+  { key: "Nagaland", value: "nagaland" },
+  { key: "Odisha", value: "odisha" },
+  { key: "Punjab", value: "punjab" },
+  { key: "Rajasthan", value: "rajasthan" },
+  { key: "Sikkim", value: "sikkim" },
+  { key: "Tamil Nadu", value: "tamil_nadu" },
+  { key: "Telangana", value: "telangana" },
+  { key: "Tripura", value: "tripura" },
+  { key: "Uttar Pradesh", value: "uttar_pradesh" },
+  { key: "Uttarakhand", value: "uttarakhand" },
+  { key: "West Bengal", value: "west_bengal" },
+  { key: "Delhi", value: "delhi" },
+  { key: "Jammu and Kashmir", value: "jammu_kashmir" },
+  { key: "Ladakh", value: "ladakh" },
+  { key: "Puducherry", value: "puducherry" },
 ];
 
 export const serviceabilityOptions = [
-  { label: "Hyperlocal (Radius-based)", value: "10" },
-  // { label: "Intercity (Pincode-based)", value: "11" },
-  { label: "PAN India", value: "12" },
-  { label: "Polygon", value: "13" },
+  { key: "Hyperlocal (Radius-based)", value: "10" },
+  // { key: "Intercity (Pincode-based)", value: "11" },
+  { key: "PAN India", value: "12" },
+  { key: "Polygon", value: "13" },
 ];
 
 export const unitOptions = [
-  { label: "Kilometers", value: "km" },
-  { label: "Miles", value: "mi" },
+  { key: "Kilometers", value: "km" },
+  { key: "Miles", value: "mi" },
 ];
 
 type CategoryProtocolMapping = {
@@ -83,7 +83,7 @@ const PACKAGED = "@ondc/org/statutory_reqs_packaged_commodities";
 const PREPACKAGED = "@ondc/org/statutory_reqs_prepackaged_food";
 const BOTH = [PREPACKAGED, PACKAGED];
 
-export const countries = [{ label: "India", value: "IND" }];
+export const countries = [{ key: "India", value: "IND" }];
 
 export const categoryProtocolMappings: CategoryProtocolMapping[] = [
   { category: "Fruits and Vegetables", protocolKeys: [] },

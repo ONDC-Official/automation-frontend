@@ -25,7 +25,7 @@ const BasicInformationForm = ({
     return selectedDomain
       .map((domain) => {
         const optionByLabel = domainOptions.find(
-          (option) => option.label === domain
+          (option) => option.key === domain
         );
         if (optionByLabel) return optionByLabel.value;
 
@@ -44,7 +44,7 @@ const BasicInformationForm = ({
       const selectedOption = domainOptions.find(
         (option) => option.value === value
       );
-      return selectedOption ? selectedOption.label : value;
+      return selectedOption ? selectedOption.key : value;
     });
 
     setSelectedDomain(domainLabels);

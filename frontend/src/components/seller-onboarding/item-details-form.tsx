@@ -1413,7 +1413,7 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({
                           placeholder="Select Country"
                           showSearch
                           filterOption={(input, option) =>
-                            (option?.label ?? "")
+                            (option?.key ?? "")
                               .toLowerCase()
                               .includes(input.toLowerCase())
                           }
