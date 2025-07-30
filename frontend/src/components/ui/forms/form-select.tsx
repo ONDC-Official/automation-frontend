@@ -1,10 +1,9 @@
-import { useEffect, useState } from "react";
-import { Select } from "antd";
+import React, { useEffect, useState } from "react";
 import { LabelWithToolTip } from "./form-input";
+import { inputClass } from "./inputClass";
 
 interface IOption {
-  label: string;
-
+  key: string;
   value: string;
 }
 
@@ -14,89 +13,73 @@ const FormSelect = ({
   label,
   options,
   errors,
-  setSelectedValue = (_: string | string[]) => {},
+  setSelectedValue = (_: string) => {},
+  defaultValue,
   labelInfo = "",
   nonSelectedValue = false,
   disabled = false,
   required = false,
   currentValue = "",
-  multiple = false,
 }: any) => {
-  const [value, setValue] = useState<string | string[]>(multiple ? [] : "");
+  const [value, setValue] = useState("");
 
   useEffect(() => {
     if (nonSelectedValue) {
-      setValue(multiple ? [] : "");
+      setValue("");
     }
-  }, [options, multiple]);
+  }, [options]);
 
-  useEffect(() => {
-    if (currentValue !== undefined && currentValue !== null) {
-      setValue(currentValue);
-    }
-  }, [currentValue]);
-
-  const onSelectChange = (value: string | string[]) => {
-    if (multiple) {
-      const selectedOptions = Array.isArray(value) ? value : [value];
-      console.log(selectedOptions, "selected options");
-      setSelectedValue(selectedOptions);
-      setValue(selectedOptions);
-    } else {
-      const selectedValue = Array.isArray(value) ? value[0] : value;
-      console.log(selectedValue, "selected value");
-      setSelectedValue(selectedValue);
-      setValue(selectedValue);
-    }
+  const onSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    console.log(e.target.value, "index");
+    setSelectedValue(e.target.value);
+    console.log("reaching till here>>>???");
+    setValue(e.target.value);
   };
-
   return (
     <>
       <div className="mb-4 w-full">
         <LabelWithToolTip labelInfo={labelInfo} label={label} />
-
-        <Select
+        <select
           {...register(name, {
             required: required && `This field is required`,
           })}
-          placeholder={nonSelectedValue ? "Select a value" : undefined}
-          value={currentValue || value}
+          className={inputClass}
           onChange={onSelectChange}
+          defaultValue={defaultValue}
           disabled={disabled}
-          mode={multiple ? "multiple" : undefined}
-          style={{ width: "100%" }}
-          size="large"
-          allowClear={multiple}
-          showSearch={multiple}
-          filterOption={(input, option) =>
-            String(option?.label ?? "")
-              .toLowerCase()
-              .includes(input.toLowerCase())
-          }
-          maxTagCount={multiple ? "responsive" : undefined}
-          // className="antd-select"
+          value={currentValue || value}
         >
+          {nonSelectedValue && (
+            <option value="" disabled selected>
+              Select a value
+            </option>
+          )}
+
           {options.map((option: string | IOption, index: number) => {
-            let optionValue, optionLabel;
+            let value;
 
             if (typeof option === "string") {
-              optionValue = option;
-              optionLabel = option;
+              value = option;
             } else {
-              optionValue = option.value;
-              optionLabel = option.label;
+              value = option.value;
+              option = option.key;
             }
 
+            if (defaultValue === option)
+              return (
+                <option selected value={value} key={index}>
+                  {option}
+                </option>
+              );
             return (
-              <Select.Option value={optionValue} key={index}>
-                {optionLabel}
-              </Select.Option>
+              <option value={value} key={index}>
+                {option}
+              </option>
             );
           })}
-        </Select>
-
+        </select>
         {errors && errors[name] && (
-          <p className="text-red-500 text-xs italic dark:text-red-400 mt-1">
+          <p className="text-red-500 text-xs italic dark:text-red-400">
             {errors[name].message}
           </p>
         )}

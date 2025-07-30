@@ -232,7 +232,7 @@ const CustomMenuForm = ({
                         >
                           {weekDays.map((day) => (
                             <Select.Option key={day.value} value={day.value}>
-                              {day.label}
+                              {day.key}
                             </Select.Option>
                           ))}
                         </Select>
@@ -266,7 +266,7 @@ const CustomMenuForm = ({
                         >
                           {weekDays.map((day) => (
                             <Select.Option key={day.value} value={day.value}>
-                              {day.label}
+                              {day.key}
                             </Select.Option>
                           ))}
                         </Select>

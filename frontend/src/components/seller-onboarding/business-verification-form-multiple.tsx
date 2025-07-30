@@ -483,7 +483,7 @@ BusinessVerificationFormProps) => {
                       >
                         {indianStates.map((state) => (
                           <Select.Option key={state.value} value={state.value}>
-                            {state.label}
+                            {state.key}
                           </Select.Option>
                         ))}
                       </Select>
@@ -610,7 +610,7 @@ BusinessVerificationFormProps) => {
                       >
                         {Types.map((bt) => (
                           <Select.Option key={bt.value} value={bt.value}>
-                            {bt.label}
+                            {bt.key}
                           </Select.Option>
                         ))}
                       </Select>
@@ -643,7 +643,7 @@ BusinessVerificationFormProps) => {
                       >
                         {weekDays.map((day) => (
                           <Select.Option key={day.value} value={day.value}>
-                            {day.label}
+                            {day.key}
                           </Select.Option>
                         ))}
                       </Select>
@@ -676,7 +676,7 @@ BusinessVerificationFormProps) => {
                       >
                         {weekDays.map((day) => (
                           <Select.Option key={day.value} value={day.value}>
-                            {day.label}
+                            {day.key}
                           </Select.Option>
                         ))}
                       </Select>
@@ -913,7 +913,7 @@ BusinessVerificationFormProps) => {
                       >
                         {Types.map((bt) => (
                           <Select.Option key={bt.value} value={bt.value}>
-                            {bt.label}
+                            {bt.key}
                           </Select.Option>
                         ))}
                       </Select>
@@ -1293,7 +1293,7 @@ const ServiceabilitySection = ({
                             key={option.value}
                             value={option.value}
                           >
-                            {option.label}
+                            {option.key}
                           </Select.Option>
                         ))}
                       </Select>
@@ -1429,7 +1429,7 @@ const ServiceabilitySection = ({
                                 key={unit.value}
                                 value={unit.value}
                               >
-                                {unit.label}
+                                {unit.key}
                               </Select.Option>
                             ))}
                           </Select>
