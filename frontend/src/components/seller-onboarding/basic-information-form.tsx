@@ -155,8 +155,9 @@ const BasicInformationForm = ({
               message: "Provider name cannot exceed 100 characters",
             },
             pattern: {
-              value: /^[a-zA-Z\s]+$/,
-              message: "Provider name should only contain letters and spaces",
+              value: /^[a-zA-Z0-9\s]+$/,
+              message:
+                "Provider name should only contain letters, numbers, and spaces",
             },
           }}
         />
@@ -263,8 +264,8 @@ const BasicInformationForm = ({
           required="Long Description is required"
           validations={{
             minLength: {
-              value: 50,
-              message: "Long description must be at least 150 characters",
+              value: 20,
+              message: "Long description must be at least 20 characters",
             },
             maxLength: {
               value: 1000,

@@ -37,6 +37,8 @@ const defaultStore: StoreDetails = {
   areaCode: "",
   state: undefined,
   holiday: [],
+  phone: "",
+  email: "",
   type: undefined,
   day_from: undefined,
   day_to: undefined,
@@ -55,7 +57,6 @@ const defaultStore: StoreDetails = {
       unit: undefined,
     },
   ],
- 
 };
 
 const BusinessVerificationForm = ({
@@ -66,8 +67,7 @@ const BusinessVerificationForm = ({
   isFinalStep = false,
   onSubmit,
   isFnBDomain,
-}: 
-BusinessVerificationFormProps) => {
+}: BusinessVerificationFormProps) => {
   const [categoryOptions, setCategoryOptions] = useState<string[]>([]);
   function getCategoriesByDomains(domainNames: string[]): string[] {
     const categories: string[] = [];
@@ -109,7 +109,6 @@ BusinessVerificationFormProps) => {
         initialData.stores && initialData.stores.length > 0
           ? initialData.stores
           : [{ ...defaultStore }],
-
     },
   });
   console.log("Form errors:", errors);
@@ -136,7 +135,7 @@ BusinessVerificationFormProps) => {
 
   const onSubmitForm = (data: any) => {
     console.log("Form errors:", errors);
-   
+
     if (!data.stores || data.stores.length === 0) {
       toast.error("Please add at least one store before proceeding");
       return;
@@ -149,7 +148,9 @@ BusinessVerificationFormProps) => {
         store.street &&
         store.city &&
         store.areaCode &&
-        store.state;
+        store.state &&
+        store.phone &&
+        store.email;
 
       if (isFnBDomain) {
         return baseFieldsValid && store.fssai_no;
@@ -174,6 +175,8 @@ BusinessVerificationFormProps) => {
         areaCode: store.areaCode || "",
         state: store.state || "",
         holiday: store.holiday || [],
+        phone: store.phone || "",
+        email: store.email || "",
 
         type: store.type || "",
         day_from: store.day_from || "",
@@ -190,7 +193,6 @@ BusinessVerificationFormProps) => {
         serviceabilities: store.serviceabilities || [],
         serviceability_type: store.serviceability_type || "",
         subcategory: store.subcategory || "",
-      
       };
     });
 
@@ -198,7 +200,6 @@ BusinessVerificationFormProps) => {
       stores: processedStores,
       ...initialData,
     };
-
 
     if (isFinalStep && onSubmit) {
       onSubmit(formData);
@@ -487,6 +488,103 @@ BusinessVerificationFormProps) => {
                           </Select.Option>
                         ))}
                       </Select>
+                      {error && (
+                        <p className="text-red-500 text-xs mt-1">
+                          {error.message}
+                        </p>
+                      )}
+                    </>
+                  )}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Contact Phone
+                </label>
+                <Controller
+                  name={`stores.${index}.phone`}
+                  control={control}
+                  rules={{
+                    required: "Contact phone is required",
+                    pattern: {
+                      value: /^[+]?[0-9]{10}$/,
+                      message: "Phone number must be 10 digits",
+                    },
+                    validate: {
+                      validPhone: (value: string | undefined) => {
+                        if (!value) return true;
+                        const cleaned = value.replace(/[^0-9+]/g, "");
+                        if (cleaned.startsWith("+")) {
+                          return (
+                            (cleaned.length >= 11 && cleaned.length <= 16) ||
+                            "International numbers must be 11-16 digits including country code"
+                          );
+                        }
+                        return (
+                          cleaned.length === 10 ||
+                          "Indian phone numbers must be exactly 10 digits"
+                        );
+                      },
+                    },
+                  }}
+                  render={({ field, fieldState: { error } }) => (
+                    <>
+                      <Input
+                        {...field}
+                        placeholder="Enter Contact Phone"
+                        size="large"
+                        status={error ? "error" : undefined}
+                      />
+                      {error && (
+                        <p className="text-red-500 text-xs mt-1">
+                          {error.message}
+                        </p>
+                      )}
+                    </>
+                  )}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Contact Email
+                </label>
+                <Controller
+                  name={`stores.${index}.email`}
+                  control={control}
+                  rules={{
+                    required: "Contact email is required",
+                    pattern: {
+                      value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+                      message: "Please enter a valid email address",
+                    },
+                    validate: {
+                      validEmail: (value: string | undefined) => {
+                        if (!value) return true;
+                        const trimmed = value.trim();
+                        if (trimmed !== value) {
+                          return "Email should not have leading or trailing spaces";
+                        }
+                        if (trimmed.includes("..")) {
+                          return "Email cannot contain consecutive dots";
+                        }
+                        if (trimmed.startsWith(".") || trimmed.endsWith(".")) {
+                          return "Email cannot start or end with a dot";
+                        }
+                        return true;
+                      },
+                    },
+                  }}
+                  render={({ field, fieldState: { error } }) => (
+                    <>
+                      <Input
+                        {...field}
+                        placeholder="Enter Contact Email"
+                        size="large"
+                        type="email"
+                        status={error ? "error" : undefined}
+                      />
                       {error && (
                         <p className="text-red-500 text-xs mt-1">
                           {error.message}
@@ -927,7 +1025,6 @@ BusinessVerificationFormProps) => {
                 />
               </div>
 
-
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Minimum Order Value
@@ -1120,7 +1217,7 @@ const ServiceabilitySection = ({
 
                         const duplicateExists = watchServiceabilities?.some(
                           (srv: any, idx: number) => {
-                            if (idx === serviceIndex) return false; 
+                            if (idx === serviceIndex) return false;
 
                             return (
                               srv.location === value &&
@@ -1176,7 +1273,7 @@ const ServiceabilitySection = ({
 
                         const duplicateExists = watchServiceabilities?.some(
                           (srv: any, idx: number) => {
-                            if (idx === serviceIndex) return false; 
+                            if (idx === serviceIndex) return false;
 
                             return (
                               srv.location === currentServiceability.location &&
@@ -1245,7 +1342,7 @@ const ServiceabilitySection = ({
 
                         const duplicateExists = watchServiceabilities?.some(
                           (srv: any, idx: number) => {
-                            if (idx === serviceIndex) return false; 
+                            if (idx === serviceIndex) return false;
 
                             return (
                               srv.location === currentServiceability.location &&
@@ -1335,7 +1432,7 @@ const ServiceabilitySection = ({
 
                             const duplicateExists = watchServiceabilities?.some(
                               (srv: any, idx: number) => {
-                                if (idx === serviceIndex) return false; 
+                                if (idx === serviceIndex) return false;
 
                                 return (
                                   srv.location ===
@@ -1394,7 +1491,7 @@ const ServiceabilitySection = ({
 
                             const duplicateExists = watchServiceabilities?.some(
                               (srv: any, idx: number) => {
-                                if (idx === serviceIndex) return false; 
+                                if (idx === serviceIndex) return false;
 
                                 return (
                                   srv.location ===
@@ -1476,7 +1573,7 @@ const ServiceabilitySection = ({
 
                           const duplicateExists = watchServiceabilities?.some(
                             (srv: any, idx: number) => {
-                              if (idx === serviceIndex) return false; 
+                              if (idx === serviceIndex) return false;
 
                               return (
                                 srv.location ===
@@ -1636,7 +1733,7 @@ const ServiceabilitySection = ({
             <strong>Hyperlocal:</strong> Delivery within a specific radius
             (e.g., 5 km)
           </li>
-        
+
           <li>
             <strong>Pan-India:</strong> Delivery across the entire country
           </li>
