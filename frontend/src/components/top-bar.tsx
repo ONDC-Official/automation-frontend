@@ -1,7 +1,14 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState, useRef } from "react";
 import { FaRegUser } from "react-icons/fa";
 import { FiLogIn } from "react-icons/fi";
 import { useNavigate, useLocation } from "react-router-dom";
+import { FaChevronDown } from "react-icons/fa";
+
+interface SubMenuItem {
+	label: string;
+	href: string;
+}
+
 import { UserContext } from "../context/userContext";
 import { GiVintageRobot } from "react-icons/gi";
 
@@ -9,15 +16,25 @@ interface NavLink {
 	label: string;
 	href: string;
 	selected: boolean;
+	subMenu?: SubMenuItem[];
 }
 
 const navLinks: NavLink[] = [
-	{ label: "Home", href: "/home", selected: true },
-	{ label: "Schema Validation", href: "/schema", selected: false },
-	// { label: "Unit Testing", href: "/unit", selected: false },
-	{ label: "Scenario Testing", href: "/scenario", selected: false },
-	// { label: "Custom flow Workbench", href: "/customFlow", selected: false },
-	{ label: "Support", href: "", selected: false },
+  { label: "Home", href: "/home", selected: true },
+  { label: "Schema Validation", href: "/schema", selected: false },
+  // { label: "Unit Testing", href: "/unit", selected: false },
+  { label: "Scenario Testing", href: "/scenario", selected: false },
+  // { label: "Custom flow Workbench", href: "/customFlow", selected: false },
+  { 
+    label: "Tools", 
+    href: "/tools", 
+    selected: false,
+    subMenu: [
+      { label: "Seller Onboarding", href: "/seller-onboarding" }
+    ]
+  },
+  { label: "Support", href: "", selected: false },
+	
 ];
 
 interface IPops {
@@ -33,6 +50,8 @@ export interface UserDetails {
 const TopBar = ({ onSupportClick }: IPops) => {
 	const [isOpen, setIsOpen] = useState(false);
 	const [links, setLinks] = useState<[] | NavLink[]>([]);
+	const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+	const dropdownRef = useRef<HTMLLIElement>(null);
 	const navigate = useNavigate();
 	const location = useLocation();
 	const pathName = location.pathname;
@@ -51,10 +70,13 @@ const TopBar = ({ onSupportClick }: IPops) => {
 			navigate("/home");
 		} else {
 			const modifiedLink: NavLink[] = navLinks.map((link) => {
+				// Check if main link is selected
 				if (link.href === pathName) {
 					link.selected = true;
 				} else {
-					link.selected = false;
+					// Check if any submenu item is selected
+					const isSubMenuSelected = link.subMenu?.some(sub => sub.href === pathName);
+					link.selected = isSubMenuSelected || false;
 				}
 				return link;
 			});
@@ -137,23 +159,77 @@ const TopBar = ({ onSupportClick }: IPops) => {
 					}`}
 				>
 					{links.map((link, index) => (
-						<li key={index}>
-							<a
-								className={`hover:text-blue-500 block py-1 cursor-pointer  ${
-									link.selected
-										? "text-blue-700 border-b-2 border-blue-500 text-blue-500"
-										: "text-gray-500"
-								}`}
-								onClick={() => {
-									if (link.label === "Support") {
-										onSupportClick();
-									} else {
-										navigate(link.href);
-									}
-								}}
-							>
-								{link.label}
-							</a>
+						<li 
+							key={index} 
+							className="relative group" 
+							ref={link.subMenu ? dropdownRef : undefined}
+							onMouseEnter={() => {
+								if (link.subMenu) {
+									setOpenDropdown(link.label);
+								}
+							}}
+							onMouseLeave={() => {
+								if (link.subMenu) {
+									setOpenDropdown(null);
+								}
+							}}
+						>
+							{link.subMenu ? (
+								<>
+									<a
+										className={`hover:text-blue-500 block py-1 cursor-pointer flex items-center gap-1 ${
+											link.selected
+												? "text-blue-700 border-b-2 border-blue-500 text-blue-500"
+												: "text-gray-500"
+										}`}
+										onClick={() => {
+											navigate(link.href);
+											setOpenDropdown(null);
+										}}
+									>
+										{link.label}
+										<FaChevronDown className={`text-xs transition-transform ${openDropdown === link.label ? 'rotate-180' : ''}`} />
+									</a>
+									{openDropdown === link.label && (
+										<ul 
+											className="absolute top-full left-0 mt-1 bg-white shadow-lg rounded-md py-2 min-w-[200px] z-50"
+											onMouseEnter={() => setOpenDropdown(link.label)}
+										>
+											{link.subMenu.map((subItem, subIndex) => (
+												<li key={subIndex}>
+													<a
+														className="block px-4 py-2 text-gray-700 hover:bg-gray-100 hover:text-blue-500 cursor-pointer"
+														onClick={() => {
+															navigate(subItem.href);
+															setOpenDropdown(null);
+															setIsOpen(false);
+														}}
+													>
+														{subItem.label}
+													</a>
+												</li>
+											))}
+										</ul>
+									)}
+								</>
+							) : (
+								<a
+									className={`hover:text-blue-500 block py-1 cursor-pointer  ${
+										link.selected
+											? "text-blue-700 border-b-2 border-blue-500 text-blue-500"
+											: "text-gray-500"
+									}`}
+									onClick={() => {
+										if (link.label === "Support") {
+											onSupportClick();
+										} else {
+											navigate(link.href);
+										}
+									}}
+								>
+									{link.label}
+								</a>
+							)}
 						</li>
 					))}
 					<li></li>
