@@ -246,7 +246,11 @@ export const deleteExpectationService = async (
 	try {
 		const subscriberData = await RedisService.getKey(subscriberUrl);
 		if (!subscriberData) {
-			throw new Error("Session not found");
+			logger.warning("No Expectation found for subscriber", {
+				subscriberUrl,
+				sessionId,
+			});
+			return;
 		}
 
 		const parsed: SubscriberCache = JSON.parse(subscriberData);
@@ -290,47 +294,38 @@ export const requestForFlowPermissionService = async (
 	subscriberUrl: string,
 	action: string
 ) => {
-	try {
-		const subscriberData = await RedisService.getKey(subscriberUrl);
-		logger.info("request for flow permission subscriber data:", subscriberData);
-		if (!subscriberData) {
-			return {
-				valid: true,
-				message: "Subscriber not found",
-			};
-		}
-		const parsed: SubscriberCache = JSON.parse(subscriberData);
-		if (parsed.activeSessions === undefined) {
-			return {
-				valid: true,
-				message: "No active sessions found",
-			};
-		}
-		parsed.activeSessions = parsed.activeSessions.filter((expectation) => {
-			const isExpired = new Date(expectation.expireAt) < new Date();
-			if (isExpired) return false; // Remove expired session
-			return true; // Keep valid expectations
-		});
-		const actionExists = parsed.activeSessions.some(
-			(expectation) => expectation.expectedAction === action
-		);
-		await RedisService.setKey(subscriberUrl, JSON.stringify(parsed));
-		if (actionExists) {
-			return {
-				valid: false,
-				message: `Already expecting action: ${action} for subscriber: ${subscriberUrl}`,
-			};
-		}
+	const subscriberData = await RedisService.getKey(subscriberUrl);
+	logger.info("request for flow permission subscriber data:", subscriberData);
+	if (!subscriberData) {
 		return {
 			valid: true,
-			message: `Subscriber: ${subscriberUrl} is ready for action: ${action}`,
+			message: "Subscriber not found",
 		};
-	} catch (e: any) {
-		logger.error(
-			"Error requesting flow permission",
-			{ subscriberUrl, action },
-			e
-		);
-		throw new Error("Error requesting flow permission");
 	}
+	const parsed: SubscriberCache = JSON.parse(subscriberData);
+	if (parsed.activeSessions === undefined) {
+		return {
+			valid: true,
+			message: "No active sessions found",
+		};
+	}
+	parsed.activeSessions = parsed.activeSessions.filter((expectation) => {
+		const isExpired = new Date(expectation.expireAt) < new Date();
+		if (isExpired) return false; // Remove expired session
+		return true; // Keep valid expectations
+	});
+	const actionExists = parsed.activeSessions.some(
+		(expectation) => expectation.expectedAction === action
+	);
+	await RedisService.setKey(subscriberUrl, JSON.stringify(parsed));
+	if (actionExists) {
+		return {
+			valid: false,
+			message: `Already expecting action: ${action} for subscriber: ${subscriberUrl}`,
+		};
+	}
+	return {
+		valid: true,
+		message: `Subscriber: ${subscriberUrl} is ready for action: ${action}`,
+	};
 };
