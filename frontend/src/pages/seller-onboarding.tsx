@@ -100,6 +100,9 @@ export interface StoreDetails {
   areaCode?: string;
   state?: string;
   holiday?: string[];
+  // Contact Details
+  phone?: string;
+  email?: string;
   // Store Timings
   type?: string;
   day_from?: string;
@@ -154,7 +157,6 @@ export interface SellerOnboardingData {
   supported_subcategories?: string[];
   supported_fulfillments?: string;
   minimum_order_value?: number;
- 
 
   // Step 4: Custom Menu (for F&B domain only)
   menuItems?: MenuItem[];

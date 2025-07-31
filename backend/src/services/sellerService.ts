@@ -246,8 +246,8 @@ export class SellerService {
                             id: `F${fulfillmentsMap.size + 1}`,
                             type: type,
                             contact: {
-                                phone: "9886098860",
-                                email: "abc@xyz.com"
+                                phone: store.phone || '9988776655',
+                                email:store.email || 'abc@gmail.com',
                             }
                         });
                     }
@@ -259,8 +259,8 @@ export class SellerService {
                         id: `F${fulfillmentsMap.size + 1}`,
                         type: supportedFulfillments,
                         contact: {
-                            phone: "9886098860",
-                            email: "abc@xyz.com"
+                            phone: store.phone || '9988776655',
+                                email:store.email || 'abc@gmail.com',
                         }
                     });
                 }
@@ -274,7 +274,7 @@ export class SellerService {
                 type: "Delivery",
                 contact: {
                     phone: "9886098860",
-                    email: "abc@xyz.com"
+                    email: "example@xyz.com"
                 }
             });
         }
@@ -301,7 +301,7 @@ export class SellerService {
                                     supportedFulfillments === "Self-Pickup" ? "F3" : "F2";
                 storeFulfillmentsMap.set(storeKey, [fulfillmentId]);
             } else {
-                storeFulfillmentsMap.set(storeKey, ["F2"]); // Default to Delivery
+                storeFulfillmentsMap.set(storeKey, ["F1"]); // Default to Delivery
             }
         });
         
@@ -387,8 +387,8 @@ export class SellerService {
                         code: "veg_nonveg",
                         list: [
                             {
-                                code: "veg",
-                                value: item.veg_non_veg === "veg" ? "yes" : (item.veg_non_veg === "non-veg" ? "no" : "egg")
+                                code: item.veg_non_veg === "veg" ? "veg" : "non-veg" ,
+                                value: "yes",
                             }
                         ]
                     }

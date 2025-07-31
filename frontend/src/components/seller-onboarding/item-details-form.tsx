@@ -83,7 +83,7 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({
         {
           name: "",
           domain: "",
-          code_type: "EAN",
+          code_type: "",
           code_value: "",
           symbol: "",
           short_desc: "",
@@ -103,22 +103,22 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({
           store: "",
           returnable: true,
           cancellable: true,
-          return_window: "PT1H",
-          return_window_unit: "hour",
-          return_window_value: "1",
-          replacement_window: "PT1H",
-          replacement_window_unit: "hour",
-          replacement_window_value: "1",
-          time_to_ship: "PT45M",
+          return_window: " ",
+          return_window_unit: "minute",
+          return_window_value: " ",
+          replacement_window: "",
+          replacement_window_unit: "minute",
+          replacement_window_value: "",
+          time_to_ship: "",
           time_to_ship_unit: "minute",
-          time_to_ship_value: "45",
+          time_to_ship_value: "",
           cod_availability: false,
           consumer_care_name: "",
           consumer_care_email: "",
           consumer_care_contact: "",
           // Miscellaneous Details
-          country_of_origin: "",
-          veg_non_veg: "",
+          country_of_origin: "IND",
+          veg_non_veg: "veg",
           back_image: "",
           refer_back_image: false,
           // Statutory Requirements - Packaged Commodities
@@ -563,7 +563,7 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({
                             <Select.Option value="99">99</Select.Option>
                             <Select.Option value="0">0</Select.Option>
                           </Select>
-                         
+
                           {error && (
                             <p className="text-red-500 text-xs mt-1">
                               {error.message}
@@ -827,7 +827,6 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({
                             placeholder="Select Time Unit"
                             onChange={(value) => {
                               field.onChange(value);
-                             
                             }}
                           >
                             <Select.Option value="minute">
@@ -878,7 +877,7 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({
                             {...field}
                             className="w-full"
                             size="large"
-                            placeholder="Select Time Unit"
+                            placeholder="Select Replacement Time Unit"
                             onChange={(value) => {
                               field.onChange(value);
                               const numValue =
@@ -941,7 +940,7 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({
                             {...field}
                             className="w-full"
                             size="large"
-                            placeholder="Select Time Unit"
+                            placeholder="Select Shipping Time Unit"
                             onChange={(value) => {
                               field.onChange(value);
                               const numValue =
@@ -1425,7 +1424,7 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Veg/NonVeg/Egg
+                      Veg/NonVeg
                     </label>
                     <Controller
                       name={`items.${index}.veg_non_veg`}
@@ -1440,7 +1439,6 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({
                         >
                           <Select.Option value="veg">Veg</Select.Option>
                           <Select.Option value="non-veg">Non-Veg</Select.Option>
-                          <Select.Option value="egg">Egg</Select.Option>
                         </Select>
                       )}
                     />
