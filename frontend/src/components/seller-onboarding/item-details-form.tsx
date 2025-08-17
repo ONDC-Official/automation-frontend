@@ -15,6 +15,7 @@ import { electronicsData } from "../../constants/electronics";
 import { health } from "../../constants/health";
 import { homeJSON } from "../../constants/home";
 import { applianceData } from "../../constants/appliances";
+import { getFnBAttributes } from "../../constants/fnb";
 import { domainCategories } from "../../constants/categories";
 
 interface ItemDetailsFormProps {
@@ -758,6 +759,15 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({
       applianceData[subcategory as keyof typeof applianceData]
     ) {
       return applianceData[subcategory as keyof typeof applianceData];
+    }
+
+    // For F&B domain
+    if (domain === "F&B") {
+      const fnbConfig = getFnBAttributes(subcategory);
+      return {
+        ...fnbConfig.mandatory,
+        ...fnbConfig.optional,
+      };
     }
 
     // Default configuration for other domains
@@ -2629,25 +2639,36 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({
               })()}
             </div>
 
-            {/* Variants Section */}
-            <div className="mt-6 pt-6 border-t border-gray-200">
-              <div className="flex justify-between items-center mb-4">
-                <h4 className="font-medium text-gray-700">Variants</h4>
-                <Button
-                  type="default"
-                  onClick={() => {
-                    setShowVariantModal((prev) => ({
-                      ...prev,
-                      [index]: true,
-                    }));
-                  }}
-                  disabled={!getAvailableAttributesForVariants(index).length}
-                >
-                  {itemVariants[index] && itemVariants[index].length > 0 
-                    ? "Add More Variants" 
-                    : "Create Variants"}
-                </Button>
+            {/* Variants Section - Not shown for F&B domain */}
+            {watchItems[index]?.domain === "F&B" ? (
+              <div className="mt-6 pt-6 border-t border-gray-200">
+                <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                  <h4 className="font-medium text-blue-900 mb-2">F&B Customizations</h4>
+                  <p className="text-sm text-blue-800">
+                    For F&B items, customizations and add-ons are configured in the Custom Menu step. 
+                    Variants are not applicable for food items.
+                  </p>
+                </div>
               </div>
+            ) : (
+              <div className="mt-6 pt-6 border-t border-gray-200">
+                <div className="flex justify-between items-center mb-4">
+                  <h4 className="font-medium text-gray-700">Variants</h4>
+                  <Button
+                    type="default"
+                    onClick={() => {
+                      setShowVariantModal((prev) => ({
+                        ...prev,
+                        [index]: true,
+                      }));
+                    }}
+                    disabled={!getAvailableAttributesForVariants(index).length}
+                  >
+                    {itemVariants[index] && itemVariants[index].length > 0 
+                      ? "Add More Variants" 
+                      : "Create Variants"}
+                  </Button>
+                </div>
 
               {/* Display existing variants */}
               {itemVariants[index] && itemVariants[index].length > 0 && (
@@ -2709,12 +2730,13 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({
                 </div>
               )}
 
-              {!getAvailableAttributesForVariants(index).length && (
-                <p className="text-sm text-gray-500">
-                  Add attributes to this item to create variants
-                </p>
-              )}
-            </div>
+                {!getAvailableAttributesForVariants(index).length && (
+                  <p className="text-sm text-gray-500">
+                    Add attributes to this item to create variants
+                  </p>
+                )}
+              </div>
+            )}
           </div>
         ))}
 

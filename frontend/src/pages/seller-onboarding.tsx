@@ -2,7 +2,7 @@ import { useState } from "react";
 import Stepper from "../components/ui/mini-components/stepper";
 import BasicInformationForm from "../components/seller-onboarding/basic-information-form";
 import BusinessVerificationForm from "../components/seller-onboarding/business-verification-form-multiple";
-import CustomMenuForm from "../components/seller-onboarding/custom-menu-form";
+import CustomMenuFormEnhanced from "../components/seller-onboarding/custom-menu-form-enhanced";
 import ItemDetailsForm from "../components/seller-onboarding/item-details-form";
 import OnboardingSuccessPayload from "../components/seller-onboarding/onboarding-success-payload";
 import { toast } from "react-toastify";
@@ -18,6 +18,25 @@ export interface MenuItem {
   dayTo: string;
   timeFrom: string;
   timeTo: string;
+  price: string;
+  category: string;
+  vegNonVeg: string;
+  customizationGroups?: Array<{
+    id: string;
+    name: string;
+    type: "single" | "multiple";
+    required: boolean;
+    minQuantity: number;
+    maxQuantity: number;
+    items: Array<{
+      id: string;
+      name: string;
+      price: string;
+      description?: string;
+      default?: boolean;
+      vegNonVeg?: string;
+    }>;
+  }>;
 }
 
 export interface ItemDetails {
@@ -327,10 +346,11 @@ const SellerOnboarding = () => {
           );
         case 2:
           return (
-            <CustomMenuForm
+            <CustomMenuFormEnhanced
               initialData={formData}
               onNext={handleStepComplete}
               onPrevious={handlePreviousStep}
+              isFinalStep={false}
             />
           );
         case 3:

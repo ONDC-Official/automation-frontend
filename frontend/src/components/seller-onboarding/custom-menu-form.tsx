@@ -12,12 +12,27 @@ interface CustomMenuFormProps {
   isFinalStep?: boolean;
 }
 
+
 const CustomMenuForm = ({
   initialData,
   onNext,
   onPrevious,
   isFinalStep = true,
 }: CustomMenuFormProps) => {
+  
+  // Create a modified errors object that works with nested paths
+  const createErrorsObject = (index: number) => {
+    const menuErrors = errors?.menu?.[index];
+    if (!menuErrors) return {};
+    
+    // Create a flat object with the full path as keys
+    const flatErrors: any = {};
+    Object.keys(menuErrors).forEach((key) => {
+      flatErrors[`menu.${index}.${key}`] = (menuErrors as any)[key];
+    });
+    
+    return flatErrors;
+  };
   const {
     register,
     handleSubmit,
@@ -35,12 +50,16 @@ const CustomMenuForm = ({
           dayTo: "",
           timeFrom: "",
           timeTo: "",
+          price: "",
+          category: "",
+          vegNonVeg: "veg",
         },
       ],
     },
   });
 
-  console.log("errors", errors);
+  // Uncomment for debugging form validation
+  // console.log("Form validation errors:", errors);
 
   const { fields, append, remove } = useFieldArray({
     control,
@@ -57,6 +76,9 @@ const CustomMenuForm = ({
       dayTo: "",
       timeFrom: "",
       timeTo: "",
+      price: "",
+      category: "",
+      vegNonVeg: "veg",
     });
   };
 
@@ -67,29 +89,39 @@ const CustomMenuForm = ({
   };
 
   const onSubmit = (data: any) => {
-    
-    const convertTimeFormat = (time: string) => {
-      if (!time) return "";
-      return time.replace(":", "");
-    };
-    
-    const formData = {
-      menuItems: data.menu.map((item: any, index: number) => {
-        console.log(`Menu item ${index + 1}:`, item);
-        return {
-          name: item.name,
-          shortDescription: item.shortDescription,
-          longDescription: item.longDescription,
-          images: item.images,
-          dayFrom: item.dayFrom,
-          dayTo: item.dayTo,
-          timeFrom: convertTimeFormat(item.timeFrom),
-          timeTo: convertTimeFormat(item.timeTo),
-        };
-      }),
-    };
-    
-    onNext(formData);
+    try {
+      console.log("Form submitted with data:", data);
+      
+      const convertTimeFormat = (time: string) => {
+        if (!time) return "";
+        return time.replace(":", "");
+      };
+      
+      const formData = {
+        menuItems: data.menu.map((item: any, index: number) => {
+          console.log(`Menu item ${index + 1}:`, item);
+          return {
+            name: item.name,
+            shortDescription: item.shortDescription,
+            longDescription: item.longDescription,
+            images: item.images,
+            dayFrom: item.dayFrom,
+            dayTo: item.dayTo,
+            timeFrom: convertTimeFormat(item.timeFrom),
+            timeTo: convertTimeFormat(item.timeTo),
+            price: item.price ? item.price.toString() : "",
+            category: item.category,
+            vegNonVeg: item.vegNonVeg,
+          };
+        }),
+      };
+      
+      console.log("Processed form data:", formData);
+      onNext(formData);
+    } catch (error) {
+      console.error("Error in form submission:", error);
+      alert(`Error submitting form: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
   };
 
   return (
@@ -135,7 +167,7 @@ const CustomMenuForm = ({
                   label="Menu  Name"
                   name={`menu.${index}.name`}
                   register={register}
-                  errors={errors}
+                  errors={createErrorsObject(index)}
                   required="Menu name is required"
                   validations={{
                     minLength: {
@@ -154,7 +186,7 @@ const CustomMenuForm = ({
                   name={`menu.${index}.images`}
                   type="url"
                   register={register}
-                  errors={errors}
+                  errors={createErrorsObject(index)}
                   required="Image URL is required"
                   validations={{
                     pattern: {
@@ -171,7 +203,7 @@ const CustomMenuForm = ({
                   label="Short Description"
                   name={`menu.${index}.shortDescription`}
                   register={register}
-                  errors={errors}
+                  errors={createErrorsObject(index)}
                   required="Short description is required"
                   validations={{
                     minLength: {
@@ -190,11 +222,11 @@ const CustomMenuForm = ({
                   label="Long Description"
                   name={`menu.${index}.longDescription`}
                   register={register}
-                  errors={errors}
+                  errors={createErrorsObject(index)}
                   required="Long description is required"
                   validations={{
                     minLength: {
-                      value: 50,
+                      value: 30,
                       message:
                         "Long description must be at least 30 characters",
                     },
@@ -204,6 +236,82 @@ const CustomMenuForm = ({
                     },
                   }}
                 />
+              </div>
+
+              <div className="grid md:grid-cols-3 gap-4">
+                <FormInput
+                  label="Price (₹)"
+                  name={`menu.${index}.price`}
+                  type="number"
+                  step="0.01"
+                  min="1"
+                  placeholder="e.g., 99.99"
+                  register={register}
+                  errors={createErrorsObject(index)}
+                  required="Price is required"
+                  validations={{
+                    min: {
+                      value: 1,
+                      message: "Price must be at least ₹1",
+                    },
+                    validate: {
+                      isNumber: (value: string) => {
+                        const num = parseFloat(value);
+                        if (isNaN(num)) {
+                          return "Price must be a valid number";
+                        }
+                        if (num <= 0) {
+                          return "Price must be greater than 0";
+                        }
+                        // Check for maximum 2 decimal places
+                        if (value.includes('.') && value.split('.')[1].length > 2) {
+                          return "Price can have maximum 2 decimal places";
+                        }
+                        return true;
+                      }
+                    }
+                  }}
+                />
+
+                <FormInput
+                  label="Category"
+                  name={`menu.${index}.category`}
+                  register={register}
+                  errors={createErrorsObject(index)}
+                  required="Category is required"
+                  placeholder="e.g., Appetizers, Main Course, Beverages"
+                />
+
+                <div className="mb-4 w-full">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Veg/Non-Veg <span className="text-red-500">*</span>
+                  </label>
+                  <Controller
+                    name={`menu.${index}.vegNonVeg`}
+                    control={control}
+                    defaultValue="veg"
+                    rules={{ required: "Veg/Non-veg selection is required" }}
+                    render={({ field, fieldState: { error } }) => (
+                      <>
+                        <Select
+                          {...field}
+                          className="w-full"
+                          size="large"
+                          status={error ? "error" : undefined}
+                        >
+                          <Select.Option value="veg">Vegetarian</Select.Option>
+                          <Select.Option value="non-veg">Non-Vegetarian</Select.Option>
+                          <Select.Option value="egg">Eggetarian</Select.Option>
+                        </Select>
+                        {error && (
+                          <p className="text-red-500 text-xs italic mt-1">
+                            {error.message}
+                          </p>
+                        )}
+                      </>
+                    )}
+                  />
+                </div>
               </div>
             </div>
 
@@ -287,7 +395,7 @@ const CustomMenuForm = ({
                   name={`menu.${index}.timeFrom`}
                   type="time"
                   register={register}
-                  errors={errors}
+                  errors={createErrorsObject(index)}
                   required="Start time is required"
                 />
 
@@ -296,7 +404,7 @@ const CustomMenuForm = ({
                   name={`menu.${index}.timeTo`}
                   type="time"
                   register={register}
-                  errors={errors}
+                  errors={createErrorsObject(index)}
                   required="End time is required"
                 />
               </div>

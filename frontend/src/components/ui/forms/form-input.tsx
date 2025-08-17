@@ -17,6 +17,9 @@ const FormInput = ({
   labelInfo = "",
   validations = {},
   onValueChange,
+  step,
+  min,
+  max,
 }: any) => {
   const handleChange = (e: any) => {
     let value = e.target.value;
@@ -50,6 +53,9 @@ const FormInput = ({
         onKeyDown={(e) => {
           e.stopPropagation();
         }}
+        step={step}
+        min={min}
+        max={max}
       />
       {errors[name] && (
         <p className="text-red-500 text-xs italic dark:text-red-400">
