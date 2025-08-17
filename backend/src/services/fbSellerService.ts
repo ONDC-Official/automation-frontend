@@ -3,17 +3,22 @@ import { MapCity, MapCode } from "../utils/mapCityCodes";
 import { SellerService } from "./sellerService";
 
 export interface FBMenuItem {
-    id: string;
+    id?: string;
     name: string;
+    shortDescription?: string;
+    longDescription?: string;
     description?: string;
-    price: number;
+    price: number | string;
+    category?: string;
     category_id?: string;
-    images?: string[];
-    veg_non_veg?: "veg" | "non-veg";
+    images?: string[] | string;
+    veg_non_veg?: "veg" | "non-veg" | "egg";
+    vegNonVeg?: "veg" | "non-veg" | "egg";
     tags?: Array<{
         code: string;
         value: string;
     }>;
+    customizationGroups?: FBCustomizationGroup[];
     customizations?: FBCustomizationGroup[];
 }
 
@@ -22,18 +27,22 @@ export interface FBCustomizationGroup {
     name: string;
     type: "single" | "multiple";
     required?: boolean;
+    minQuantity?: number;
+    maxQuantity?: number;
     min_quantity?: number;
     max_quantity?: number;
-    customizations: FBCustomization[];
+    items?: FBCustomization[];
+    customizations?: FBCustomization[];
 }
 
 export interface FBCustomization {
     id: string;
     name: string;
-    price: number;
+    price: number | string;
     description?: string;
     default?: boolean;
-    veg_non_veg?: "veg" | "non-veg";
+    veg_non_veg?: "veg" | "non-veg" | "egg";
+    vegNonVeg?: "veg" | "non-veg" | "egg";
 }
 
 export interface FBSellerData {
@@ -80,6 +89,26 @@ export interface FBSellerData {
 }
 
 export class FBSellerService extends SellerService {
+    
+    private convertTimeFormat(time: string): string {
+        if (!time) return "";
+        // Remove colons from time format (HH:MM to HHMM)
+        return time.replace(":", "");
+    }
+    
+    private convertDayToNumber(day: string): string {
+        const dayMap: { [key: string]: string } = {
+            "1": "1", "2": "2", "3": "3", "4": "4", "5": "5", "6": "6", "7": "7",
+            "monday": "1", "tuesday": "2", "wednesday": "3", "thursday": "4",
+            "friday": "5", "saturday": "6", "sunday": "7",
+            "mon": "1", "tue": "2", "wed": "3", "thu": "4", "fri": "5", "sat": "6", "sun": "7"
+        };
+        
+        if (dayMap[day.toLowerCase()]) {
+            return dayMap[day.toLowerCase()];
+        }
+        return day; // Return as-is if already a number or unknown format
+    }
     
     generateFBOnSearchPayload(sellerData: FBSellerData, domainCategories?: Set<string>) {
         const timestamp = new Date().toISOString();
@@ -168,60 +197,189 @@ export class FBSellerService extends SellerService {
         return onSearchPayload;
     }
 
-    private generateFBCategories(sellerData: FBSellerData) {
+    private generateFBCategories(sellerData: any) {
         const categories: any[] = [];
+        const categoryMap = new Map<string, { timing: any, rank: number, itemCount: number }>();
+        const customGroupsMap = new Map<string, any>();
         
-        // Generate categories from menu items if available
+        // Define category order/ranking (can be customized)
+        const categoryRankMap: { [key: string]: number } = {
+            "Appetizers": 1,
+            "Starters": 1,
+            "Soups": 2,
+            "Salads": 3,
+            "Main Course": 4,
+            "Mains": 4,
+            "Breads": 5,
+            "Rice": 6,
+            "Beverages": 7,
+            "Desserts": 8,
+            "Drinks": 7
+        };
+        
+        // Build a map of categories with their timing information from menu items
         if (sellerData.menuItems && sellerData.menuItems.length > 0) {
-            const categorySet = new Set<string>();
-            
-            sellerData.menuItems.forEach(item => {
-                if (item.category_id) {
-                    categorySet.add(item.category_id);
+            sellerData.menuItems.forEach((item: any, index: number) => {
+                // Collect regular categories
+                if (item.category) {
+                    if (!categoryMap.has(item.category)) {
+                        // Determine rank based on predefined map or order of appearance
+                        const rank = categoryRankMap[item.category] || (categoryMap.size + 1);
+                        categoryMap.set(item.category, {
+                            timing: {
+                                dayFrom: this.convertDayToNumber(item.dayFrom || "1"),
+                                dayTo: this.convertDayToNumber(item.dayTo || "7"),
+                                timeFrom: this.convertTimeFormat(item.timeFrom || "00:00"),
+                                timeTo: this.convertTimeFormat(item.timeTo || "23:59")
+                            },
+                            rank: rank,
+                            itemCount: 1
+                        });
+                    } else {
+                        // Update timing to include the widest range for the category
+                        const existing = categoryMap.get(item.category)!;
+                        existing.itemCount++;
+                        
+                        if (item.dayFrom && existing.timing.dayFrom) {
+                            existing.timing.dayFrom = Math.min(parseInt(existing.timing.dayFrom), parseInt(item.dayFrom)).toString();
+                        }
+                        if (item.dayTo && existing.timing.dayTo) {
+                            existing.timing.dayTo = Math.max(parseInt(existing.timing.dayTo), parseInt(item.dayTo)).toString();
+                        }
+                        if (item.timeFrom && existing.timing.timeFrom) {
+                            existing.timing.timeFrom = item.timeFrom < existing.timing.timeFrom ? item.timeFrom : existing.timing.timeFrom;
+                        }
+                        if (item.timeTo && existing.timing.timeTo) {
+                            existing.timing.timeTo = item.timeTo > existing.timing.timeTo ? item.timeTo : existing.timing.timeTo;
+                        }
+                    }
+                }
+                
+                // Collect custom groups from menu items
+                if (item.customizationGroups && item.customizationGroups.length > 0) {
+                    item.customizationGroups.forEach((group: any, groupIndex: number) => {
+                        if (!customGroupsMap.has(group.id)) {
+                            customGroupsMap.set(group.id, {
+                                id: group.id,
+                                name: group.name,
+                                type: group.type,
+                                minQuantity: group.minQuantity || 0,
+                                maxQuantity: group.maxQuantity || 1,
+                                seq: groupIndex + 1
+                            });
+                        }
+                    });
                 }
             });
-            
-            categorySet.forEach((categoryName, index) => {
-                categories.push({
-                    id: this.generateCategoryId(),
-                    descriptor: {
-                        name: categoryName
-                    },
-                    tags: [
+        }
+        
+        // Also check item details for categories (without timing)
+        if (sellerData.items && sellerData.items.length > 0) {
+            sellerData.items.forEach((item: any) => {
+                if (item.category && !categoryMap.has(item.category)) {
+                    const rank = categoryRankMap[item.category] || (categoryMap.size + 1);
+                    categoryMap.set(item.category, {
+                        timing: {},
+                        rank: rank,
+                        itemCount: 1
+                    });
+                }
+            });
+        }
+        
+        // Create category objects with timing tags
+        categoryMap.forEach((categoryData, categoryName) => {
+            const { timing, rank, itemCount } = categoryData;
+            const categoryTags: any[] = [
+                {
+                    code: "type",
+                    list: [
                         {
                             code: "type",
-                            list: [
-                                {
-                                    code: "type",
-                                    value: "custom_menu"
-                                }
-                            ]
+                            value: "custom_menu"
+                        }
+                    ]
+                }
+            ];
+            
+            // Add timing tags if timing information is available
+            if (timing.dayFrom && timing.dayTo && timing.timeFrom && timing.timeTo) {
+                categoryTags.push({
+                    code: "timing",
+                    list: [
+                        {
+                            code: "day_from",
+                            value: timing.dayFrom
+                        },
+                        {
+                            code: "day_to",
+                            value: timing.dayTo
+                        },
+                        {
+                            code: "time_from",
+                            value: timing.timeFrom
+                        },
+                        {
+                            code: "time_to",
+                            value: timing.timeTo
                         }
                     ]
                 });
+                
+            }
+            
+            // Always add display tag with rank
+            categoryTags.push({
+                code: "display",
+                list: [
+                    {
+                        code: "rank",
+                        value: rank.toString()
+                    }
+                ]
             });
-        }
+            
+            categories.push({
+                id: this.generateCategoryId(),
+                descriptor: {
+                    name: categoryName
+                },
+                tags: categoryTags
+            });
+        });
 
         // Generate categories from predefined categories if provided
         if (sellerData.categories && sellerData.categories.length > 0) {
-            sellerData.categories.forEach(categoryName => {
-                categories.push({
-                    id: this.generateCategoryId(),
-                    descriptor: {
-                        name: categoryName
-                    },
-                    tags: [
-                        {
-                            code: "type",
-                            list: [
-                                {
-                                    code: "type",
-                                    value: "custom_menu"
-                                }
-                            ]
-                        }
-                    ]
-                });
+            sellerData.categories.forEach((categoryName: string) => {
+                if (!categoryMap.has(categoryName)) {
+                    const rank = categoryRankMap[categoryName] || (categoryMap.size + categories.length + 1);
+                    categories.push({
+                        id: this.generateCategoryId(),
+                        descriptor: {
+                            name: categoryName
+                        },
+                        tags: [
+                            {
+                                code: "type",
+                                list: [
+                                    {
+                                        code: "type",
+                                        value: "custom_menu"
+                                    }
+                                ]
+                            },
+                            {
+                                code: "display",
+                                list: [
+                                    {
+                                        code: "rank",
+                                        value: rank.toString()
+                                    }
+                                ]
+                            }
+                        ]
+                    });
+                }
             });
         }
 
@@ -248,38 +406,97 @@ export class FBSellerService extends SellerService {
                 });
             });
         }
+        
+        // Add custom groups as separate category entries
+        customGroupsMap.forEach((groupData, groupId) => {
+            categories.push({
+                id: groupId,
+                descriptor: {
+                    name: groupData.name
+                },
+                tags: [
+                    {
+                        code: "type",
+                        list: [
+                            {
+                                code: "type",
+                                value: "custom_group"
+                            }
+                        ]
+                    },
+                    {
+                        code: "config",
+                        list: [
+                            {
+                                code: "min",
+                                value: groupData.minQuantity.toString()
+                            },
+                            {
+                                code: "max",
+                                value: groupData.maxQuantity.toString()
+                            },
+                            {
+                                code: "input",
+                                value: groupData.type === "single" ? "select" : "multiselect"
+                            },
+                            {
+                                code: "seq",
+                                value: groupData.seq.toString()
+                            }
+                        ]
+                    }
+                ]
+            });
+        });
 
         return categories;
     }
 
-    private generateFBMenuItems(sellerData: FBSellerData, locationIds: string[]) {
-        if (!sellerData.menuItems || sellerData.menuItems.length === 0) {
+    private generateFBMenuItems(sellerData: any, locationIds: string[]) {
+        // For F&B, we should use the menuItems from the Custom Menu form
+        // combined with item details from the Item Details form
+        const menuItems = sellerData.menuItems || [];
+        const itemDetails = sellerData.items || [];
+        
+        // If no menu items, try to generate from item details
+        if (menuItems.length === 0 && itemDetails.length === 0) {
             return this.generateDefaultFBItems(locationIds);
         }
 
         const storeFulfillmentsMap = this.generateStoreFulfillmentsMap(sellerData.stores || []);
         const items: any[] = [];
 
-        sellerData.menuItems.forEach((menuItem, index) => {
-            const locationId = locationIds[0] || "L_DEFAULT";
-            const fulfillmentId = "F2"; // Default to Delivery for F&B
+        // Process menuItems if available
+        if (menuItems.length > 0) {
+            menuItems.forEach((menuItem: any, index: number) => {
+                const locationId = locationIds[0] || "L_DEFAULT";
+                const fulfillmentId = "F2"; // Default to Delivery for F&B
+                
+                // Find corresponding item details if available
+                const itemDetail = itemDetails.find((item: any) => 
+                    item.name === menuItem.name || 
+                    item.name.toLowerCase().includes(menuItem.name.toLowerCase())
+                );
 
-            // Create main menu item
-            const item = {
-                id: `I${index + 1}`,
-                time: {
-                    label: "enable",
-                    timestamp: new Date().toISOString()
-                },
-                parent_item_id: menuItem.category_id || "MENU",
-                descriptor: {
-                    name: menuItem.name,
-                    code: `1:FB${String(index + 1).padStart(6, '0')}`,
-                    symbol: menuItem.images?.[0] || "https://snp.com/images/food.png",
-                    short_desc: menuItem.description || menuItem.name,
-                    long_desc: menuItem.description || menuItem.name,
-                    images: menuItem.images || ["https://snp.com/images/food.png"]
-                },
+                // Get customization groups from menu item
+                const customizationGroups = menuItem.customizationGroups || [];
+                
+                // Create main menu item
+                const item = {
+                    id: `I${index + 1}`,
+                    time: {
+                        label: "enable",
+                        timestamp: new Date().toISOString()
+                    },
+                    parent_item_id: menuItem.category || "Uncategorized",
+                    descriptor: {
+                        name: menuItem.name,
+                        code: itemDetail?.code || `1:FB${String(index + 1).padStart(6, '0')}`,
+                        symbol: typeof menuItem.images === 'string' ? menuItem.images : menuItem.images?.[0] || itemDetail?.symbol || "https://snp.com/images/food.png",
+                        short_desc: menuItem.shortDescription || menuItem.name,
+                        long_desc: menuItem.longDescription || menuItem.shortDescription || menuItem.name,
+                        images: [typeof menuItem.images === 'string' ? menuItem.images : menuItem.images?.[0] || itemDetail?.images || "https://snp.com/images/food.png"]
+                    },
                 quantity: {
                     unitized: {
                         measure: {
@@ -297,37 +514,110 @@ export class FBSellerService extends SellerService {
                         count: "1"
                     }
                 },
-                price: {
-                    currency: "INR",
-                    value: menuItem.price.toString(),
-                    maximum_value: menuItem.price.toString()
-                },
-                category_id: menuItem.category_id || "MENU",
-                fulfillment_id: fulfillmentId,
-                location_id: locationId,
-                "@ondc/org/returnable": false, // F&B items typically not returnable
-                "@ondc/org/cancellable": true,
-                "@ondc/org/return_window": "PT0M", // No return window for F&B
-                "@ondc/org/seller_pickup_return": false,
-                "@ondc/org/time_to_ship": "PT30M", // 30 minutes typical for F&B
-                "@ondc/org/available_on_cod": true,
-                "@ondc/org/contact_details_consumer_care": "Support,support@restaurant.com,18004254444",
-                tags: this.generateFBItemTags(menuItem)
-            };
+                    price: {
+                        currency: "INR",
+                        value: menuItem.price.toString() || itemDetail?.selling_price || "100",
+                        maximum_value: menuItem.price.toString() || itemDetail?.mrp || itemDetail?.selling_price || "100"
+                    },
+                    category_id: menuItem.category || itemDetail?.category || "MENU",
+                    fulfillment_id: itemDetail?.default_fulfillment_type === "Self-Pickup" ? "F3" : "F2",
+                    location_id: locationId,
+                    "@ondc/org/returnable": itemDetail?.returnable || false,
+                    "@ondc/org/cancellable": itemDetail?.cancellable !== false,
+                    "@ondc/org/return_window": itemDetail?.return_window || "PT0M",
+                    "@ondc/org/seller_pickup_return": false,
+                    "@ondc/org/time_to_ship": itemDetail?.time_to_ship || "PT30M",
+                    "@ondc/org/available_on_cod": itemDetail?.cod_availability !== false,
+                    "@ondc/org/contact_details_consumer_care": itemDetail ? 
+                        `${itemDetail.consumer_care_name || "Support"},${itemDetail.consumer_care_email || "support@restaurant.com"},${itemDetail.consumer_care_contact || "18004254444"}` :
+                        "Support,support@restaurant.com,18004254444",
+                    tags: this.generateFBItemTags({
+                        ...menuItem,
+                        veg_non_veg: menuItem.vegNonVeg || itemDetail?.veg_non_veg,
+                        customizationGroups: customizationGroups,
+                        attributes: itemDetail?.attributes
+                    })
+                };
 
-            items.push(item);
+                items.push(item);
+                
+                // Generate customization items if available
+                if (customizationGroups && customizationGroups.length > 0) {
+                    const customizationItems = this.generateCustomizationItems(
+                        {
+                            ...menuItem,
+                            customizations: customizationGroups
+                        },
+                        index,
+                        locationId,
+                        fulfillmentId
+                    );
+                    items.push(...customizationItems);
+                }
+            });
+        } else {
+            // If no menu items, generate from item details
+            itemDetails.forEach((itemDetail: any, index: number) => {
+                const locationId = locationIds[0] || "L_DEFAULT";
+                const fulfillmentId = itemDetail.default_fulfillment_type === "Self-Pickup" ? "F3" : "F2";
 
-            // Generate customization items if available
-            if (menuItem.customizations && menuItem.customizations.length > 0) {
-                const customizationItems = this.generateCustomizationItems(
-                    menuItem,
-                    index,
-                    locationId,
-                    fulfillmentId
-                );
-                items.push(...customizationItems);
-            }
-        });
+                const item = {
+                    id: `I${index + 1}`,
+                    time: {
+                        label: "enable",
+                        timestamp: new Date().toISOString()
+                    },
+                    parent_item_id: itemDetail.category || "Uncategorized",
+                    descriptor: {
+                        name: itemDetail.name,
+                        code: itemDetail.code || `1:FB${String(index + 1).padStart(6, '0')}`,
+                        symbol: itemDetail.symbol || "https://snp.com/images/food.png",
+                        short_desc: itemDetail.short_desc || itemDetail.name,
+                        long_desc: itemDetail.long_desc || itemDetail.short_desc || itemDetail.name,
+                        images: [itemDetail.images || "https://snp.com/images/food.png"]
+                    },
+                    quantity: {
+                        unitized: {
+                            measure: {
+                                unit: itemDetail.unit || "unit",
+                                value: itemDetail.value || "1"
+                            }
+                        },
+                        available: {
+                            count: itemDetail.available_count || "99"
+                        },
+                        maximum: {
+                            count: itemDetail.maximum_count || "99"
+                        },
+                        minimum: {
+                            count: itemDetail.minimum_count || "1"
+                        }
+                    },
+                    price: {
+                        currency: itemDetail.currency || "INR",
+                        value: itemDetail.selling_price || "100",
+                        maximum_value: itemDetail.mrp || itemDetail.selling_price || "100"
+                    },
+                    category_id: itemDetail.category || "MENU",
+                    fulfillment_id: fulfillmentId,
+                    location_id: locationId,
+                    "@ondc/org/returnable": itemDetail.returnable || false,
+                    "@ondc/org/cancellable": itemDetail.cancellable !== false,
+                    "@ondc/org/return_window": itemDetail.return_window || "PT0M",
+                    "@ondc/org/seller_pickup_return": false,
+                    "@ondc/org/time_to_ship": itemDetail.time_to_ship || "PT30M",
+                    "@ondc/org/available_on_cod": itemDetail.cod_availability !== false,
+                    "@ondc/org/contact_details_consumer_care": 
+                        `${itemDetail.consumer_care_name || "Support"},${itemDetail.consumer_care_email || "support@restaurant.com"},${itemDetail.consumer_care_contact || "18004254444"}`,
+                    tags: this.generateFBItemTags({
+                        veg_non_veg: itemDetail.veg_non_veg,
+                        attributes: itemDetail.attributes
+                    })
+                };
+
+                items.push(item);
+            });
+        }
 
         return items;
     }
@@ -342,7 +632,9 @@ export class FBSellerService extends SellerService {
         let customizationCounter = 0;
 
         parentItem.customizations?.forEach((group, groupIndex) => {
-            group.customizations.forEach((customization, custIndex) => {
+            // Handle both 'items' and 'customizations' array names
+            const groupItems = group.items || group.customizations || [];
+            groupItems.forEach((customization, custIndex) => {
                 customizationCounter++;
                 const customizationItem = {
                     id: `C${parentIndex + 1}_${customizationCounter}`,
@@ -369,16 +661,16 @@ export class FBSellerService extends SellerService {
                             count: "99"
                         },
                         maximum: {
-                            count: group.max_quantity?.toString() || "1"
+                            count: (group.maxQuantity || group.max_quantity || 1).toString()
                         },
                         minimum: {
-                            count: group.min_quantity?.toString() || "0"
+                            count: (group.minQuantity || group.min_quantity || 0).toString()
                         }
                     },
                     price: {
                         currency: "INR",
-                        value: customization.price.toString(),
-                        maximum_value: customization.price.toString()
+                        value: (typeof customization.price === 'string' ? customization.price : customization.price.toString()),
+                        maximum_value: (typeof customization.price === 'string' ? customization.price : customization.price.toString())
                     },
                     category_id: "CUSTOMIZATION",
                     fulfillment_id: fulfillmentId,
@@ -405,36 +697,29 @@ export class FBSellerService extends SellerService {
                             list: [
                                 {
                                     code: "id",
-                                    value: `I${parentIndex + 1}`
+                                    value: group.id
+                                },
+                                {
+                                    code: "default",
+                                    value: customization.default ? "yes" : "no"
                                 }
                             ]
                         },
-                        {
-                            code: "config",
+                        // Add child tag if there's a next custom group
+                        ...(parentItem.customizations && groupIndex < parentItem.customizations.length - 1 ? [{
+                            code: "child",
                             list: [
                                 {
-                                    code: "min",
-                                    value: group.min_quantity?.toString() || "0"
-                                },
-                                {
-                                    code: "max",
-                                    value: group.max_quantity?.toString() || "1"
-                                },
-                                {
-                                    code: "input",
-                                    value: group.type || "single"
-                                },
-                                {
-                                    code: "seq",
-                                    value: (groupIndex + 1).toString()
+                                    code: "id",
+                                    value: parentItem.customizations[groupIndex + 1].id
                                 }
                             ]
-                        },
-                        ...(customization.veg_non_veg ? [{
+                        }] : []),
+                        ...((customization.veg_non_veg || customization.vegNonVeg) ? [{
                             code: "veg_nonveg",
                             list: [
                                 {
-                                    code: customization.veg_non_veg === "veg" ? "veg" : "non-veg",
+                                    code: (customization.veg_non_veg || customization.vegNonVeg) === "veg" ? "veg" : "non-veg",
                                     value: "yes"
                                 }
                             ]
@@ -449,16 +734,16 @@ export class FBSellerService extends SellerService {
         return customizationItems;
     }
 
-    private generateFBItemTags(menuItem: FBMenuItem): any[] {
+    private generateFBItemTags(menuItem: any): any[] {
         const tags = [];
-
-        // Origin tag
+        
+        // Type tag
         tags.push({
-            code: "origin",
+            code: "type",
             list: [
                 {
-                    code: "country",
-                    value: "IND"
+                    code: "type",
+                    value: "item"
                 }
             ]
         });
@@ -476,51 +761,101 @@ export class FBSellerService extends SellerService {
             });
         }
 
-        // Customization group tags
-        if (menuItem.customizations && menuItem.customizations.length > 0) {
-            menuItem.customizations.forEach((group, index) => {
+        // Reference custom groups by ID
+        const customizationGroups = menuItem.customizationGroups || menuItem.customizations || [];
+        if (customizationGroups.length > 0) {
+            customizationGroups.forEach((group: FBCustomizationGroup) => {
+                // Add custom_group reference tag
                 tags.push({
                     code: "custom_group",
                     list: [
                         {
                             code: "id",
                             value: group.id
-                        },
+                        }
+                    ]
+                });
+                
+                // Add config tag for this custom group
+                tags.push({
+                    code: "config",
+                    list: [
                         {
-                            code: "name",
-                            value: group.name
-                        },
-                        {
-                            code: "type",
-                            value: group.type
+                            code: "id",
+                            value: group.id
                         },
                         {
                             code: "min",
-                            value: group.min_quantity?.toString() || "0"
+                            value: (group.minQuantity || group.min_quantity || 0).toString()
                         },
                         {
                             code: "max",
-                            value: group.max_quantity?.toString() || "1"
+                            value: (group.maxQuantity || group.max_quantity || 1).toString()
                         },
                         {
                             code: "seq",
-                            value: (index + 1).toString()
+                            value: group.id.replace(/[^0-9]/g, '') || "1"
                         }
                     ]
                 });
             });
         }
 
-        // Additional F&B specific tags
-        tags.push({
-            code: "type",
-            list: [
-                {
-                    code: "type",
-                    value: "item"
-                }
-            ]
-        });
+        
+        // Add F&B specific attributes if available
+        if (menuItem.attributes) {
+            // Cuisine tag
+            if (menuItem.attributes.cuisine) {
+                tags.push({
+                    code: "cuisine",
+                    list: [
+                        {
+                            code: "cuisine",
+                            value: menuItem.attributes.cuisine
+                        }
+                    ]
+                });
+            }
+            
+            // Course tag
+            if (menuItem.attributes.course) {
+                tags.push({
+                    code: "course",
+                    list: [
+                        {
+                            code: "course",
+                            value: menuItem.attributes.course
+                        }
+                    ]
+                });
+            }
+            
+            // Allergen info tag
+            if (menuItem.attributes.allergen_info) {
+                tags.push({
+                    code: "allergen_info",
+                    list: [
+                        {
+                            code: "allergen_info",
+                            value: menuItem.attributes.allergen_info
+                        }
+                    ]
+                });
+            }
+            
+            // Nutritional info tag
+            if (menuItem.attributes.nutritional_info) {
+                tags.push({
+                    code: "nutritional_info",
+                    list: [
+                        {
+                            code: "nutritional_info",
+                            value: menuItem.attributes.nutritional_info
+                        }
+                    ]
+                });
+            }
+        }
 
         return tags;
     }
@@ -534,7 +869,7 @@ export class FBSellerService extends SellerService {
                 label: "enable",
                 timestamp: new Date().toISOString()
             },
-            parent_item_id: "MENU",
+            parent_item_id: "Uncategorized",
             descriptor: {
                 name: "Sample Food Item",
                 code: "1:FB000001",
