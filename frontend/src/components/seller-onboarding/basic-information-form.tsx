@@ -2,9 +2,9 @@ import { useForm } from "react-hook-form";
 import { FormInput } from "../ui/forms/form-input";
 import LoadingButton from "../ui/forms/loading-button";
 import { SellerOnboardingData } from "../../pages/seller-onboarding";
-import FormSelect from "../ui/forms/form-select";
 import { useState } from "react";
 import { domainOptions } from "../../constants/common.tsx";
+import { Select } from "antd";
 
 interface BasicInformationFormProps {
   initialData: SellerOnboardingData;
@@ -60,7 +60,6 @@ const BasicInformationForm = ({
     formState: { errors },
   } = useForm({});
 
-
   // const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
   //   const file = event.target.files?.[0];
   //   if (file) {
@@ -108,7 +107,6 @@ const BasicInformationForm = ({
       return;
     }
 
-
     setDomainError("");
 
     onNext({
@@ -122,20 +120,41 @@ const BasicInformationForm = ({
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       <div className="grid md:grid-cols-2 gap-6">
-        <FormSelect
-          label="Domain"
-          name="domain"
-          register={() => {}} // Disable react-hook-form registration
-          errors={domainError ? { domain: { message: domainError } } : {}} // Handle errors manually
-          required={true}
-          currentValue={getSelectValues()}
-          setSelectedValue={(values: string | string[]) =>
-            handleDomainChange(Array.isArray(values) ? values : [values])
-          }
-          nonSelectedValue={true}
-          options={domainOptions}
-          // multiple={true}
-        />
+        <div className="mb-4 w-full">
+          <label className="block text-sm font-medium text-gray-700 mb-2 labelClass">
+            Domain
+            <span className="text-red-500 ml-1">*</span>
+          </label>
+          <Select
+            mode="multiple"
+            placeholder="Select one or more domains"
+            value={getSelectValues()}
+            onChange={handleDomainChange}
+            style={{ width: "100%" }}
+            size="large"
+            allowClear
+            showSearch
+            filterOption={(input, option) =>
+              (option?.label ?? "")
+                .toString()
+                .toLowerCase()
+                .includes(input.toLowerCase())
+            }
+          >
+            {domainOptions.map((option) => (
+              <Select.Option
+                key={option.value}
+                value={option.value}
+                label={option.key}
+              >
+                {option.key}
+              </Select.Option>
+            ))}
+          </Select>
+          {domainError && (
+            <p className="text-red-500 text-xs italic mt-1">{domainError}</p>
+          )}
+        </div>
 
         <FormInput
           label="Provider Name"

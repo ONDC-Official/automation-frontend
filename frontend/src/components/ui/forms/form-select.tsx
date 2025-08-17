@@ -13,27 +13,35 @@ const FormSelect = ({
   label,
   options,
   errors,
-  setSelectedValue = (_: string) => {},
+  setSelectedValue = (_: string | string[]) => {},
   defaultValue,
   labelInfo = "",
   nonSelectedValue = false,
   disabled = false,
   required = false,
   currentValue = "",
+  multiple = false,
 }: any) => {
-  const [value, setValue] = useState("");
+  const [value, setValue] = useState<string | string[]>(multiple ? [] : "");
 
   useEffect(() => {
-    if (nonSelectedValue) {
-      setValue("");
+    if (nonSelectedValue && !currentValue) {
+      setValue(multiple ? [] : "");
     }
-  }, [options]);
+  }, [options, multiple, nonSelectedValue, currentValue]);
 
   const onSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    console.log(e.target.value, "index");
-    setSelectedValue(e.target.value);
-    console.log("reaching till here>>>???");
-    setValue(e.target.value);
+    if (multiple) {
+      const selectedOptions = Array.from(e.target.selectedOptions, option => option.value);
+      console.log(selectedOptions, "selectedOptions");
+      setSelectedValue(selectedOptions);
+      setValue(selectedOptions);
+    } else {
+      console.log(e.target.value, "index");
+      setSelectedValue(e.target.value);
+      console.log("reaching till here>>>???");
+      setValue(e.target.value);
+    }
   };
   return (
     <>
@@ -43,37 +51,34 @@ const FormSelect = ({
           {...register(name, {
             required: required && `This field is required`,
           })}
-          className={inputClass}
+          className={`${inputClass} ${multiple ? 'h-32' : ''}`}
           onChange={onSelectChange}
           defaultValue={defaultValue}
           disabled={disabled}
           value={currentValue || value}
+          multiple={multiple}
         >
-          {nonSelectedValue && (
-            <option value="" disabled selected>
+          {nonSelectedValue && !multiple && (
+            <option value="" disabled>
               Select a value
             </option>
           )}
 
           {options.map((option: string | IOption, index: number) => {
-            let value;
+            let optionValue;
+            let optionDisplay;
 
             if (typeof option === "string") {
-              value = option;
+              optionValue = option;
+              optionDisplay = option;
             } else {
-              value = option.value;
-              option = option.key;
+              optionValue = option.value;
+              optionDisplay = option.key;
             }
 
-            if (defaultValue === option)
-              return (
-                <option selected value={value} key={index}>
-                  {option}
-                </option>
-              );
             return (
-              <option value={value} key={index}>
-                {option}
+              <option value={optionValue} key={index}>
+                {optionDisplay}
               </option>
             );
           })}
@@ -81,6 +86,11 @@ const FormSelect = ({
         {errors && errors[name] && (
           <p className="text-red-500 text-xs italic dark:text-red-400">
             {errors[name].message}
+          </p>
+        )}
+        {multiple && (
+          <p className="text-gray-500 text-xs mt-1">
+            Hold Ctrl (Windows) or Cmd (Mac) to select multiple options
           </p>
         )}
       </div>

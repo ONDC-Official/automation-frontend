@@ -89,6 +89,70 @@ export interface ItemDetails {
   importer_name?: string;
   importer_address?: string;
   importer_fssai_license_no?: string;
+
+  // All dynamic attributes (Fashion, BPC, Electronics, etc.) in a single object
+  attributes?: {
+    // Fashion Attributes
+    gender?: string;
+    colour?: string;
+    size?: string;
+    size_chart?: string;
+    fabric?: string;
+    colour_name?: string;
+    pattern?: string;
+    material?: string;
+    season?: string;
+    occasion?: string;
+    sleeve_length?: string;
+    collar?: string;
+    fit?: string;
+    neck?: string;
+    hemline?: string;
+    coverage?: string;
+    padding?: string;
+    closure_type?: string;
+    fasten_type?: string;
+    water_resistant?: string;
+    sport_type?: string;
+    material_finish?: string;
+    fabric_finish?: string;
+    // BPC attributes
+    concern?: string;
+    ingredient?: string;
+    conscious?: string;
+    preference?: string;
+    formulation?: string;
+    skin_type?: string;
+    // Electronics & other domain attributes
+    manufacturer?: string;
+    manufacturer_address?: string;
+    net_quantity?: string;
+    expiry_date?: string;
+    ingredients?: string;
+    model?: string;
+    warranty_period?: string;
+    screen_size?: string;
+    storage?: string;
+    ram?: string;
+    dimensions?: string;
+    weight?: string;
+    dosage_form?: string;
+    prescription_required?: string;
+    composition?: string;
+    side_effects?: string;
+    cuisine?: string;
+    course?: string;
+    allergen_info?: string;
+    serving_size?: string;
+    power_consumption?: string;
+    capacity?: string;
+    energy_rating?: string;
+    // Allow any additional dynamic attributes
+    [key: string]: any;
+  };
+  
+  // Legacy support for direct attribute access (to be deprecated)
+  [key: string]: any;
 }
 
 export interface StoreDetails {
@@ -171,6 +235,7 @@ const SellerOnboarding = () => {
   const [isCompleted, setIsCompleted] = useState(false);
   const [completedData, setCompletedData] = useState<SellerOnboardingData>({});
   const [onSearchPayload, setOnSearchPayload] = useState<any>(null);
+  const [payloadType, setPayloadType] = useState<'single-domain' | 'multi-domain'>('single-domain');
 
   const isFnBDomain = formData?.domain?.includes("F&B");
 
@@ -212,6 +277,7 @@ const SellerOnboarding = () => {
 
   const handleSubmit = async (finalStepData: Partial<SellerOnboardingData>) => {
     const completeData = { ...formData, ...finalStepData };
+    // const completeData = {};
 
     try {
       // Call the seller API to create on_search payload
@@ -225,7 +291,8 @@ const SellerOnboarding = () => {
 
       // Set completion state and store completed data
       setCompletedData(completeData);
-      setOnSearchPayload(response.data);
+      setOnSearchPayload(response.data.data || response.data);
+      setPayloadType(response.data.type || 'single-domain');
       setIsCompleted(true);
     } catch (error: any) {
       toast.error("Failed to complete onboarding. Please try again.");
@@ -316,6 +383,7 @@ const SellerOnboarding = () => {
         submittedData={completedData}
         onSearchPayload={onSearchPayload}
         onBack={handleRestart}
+        payloadType={payloadType}
       />
     );
   }

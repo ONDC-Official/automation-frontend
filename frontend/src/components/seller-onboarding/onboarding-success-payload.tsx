@@ -14,14 +14,19 @@ interface OnboardingSuccessPayloadProps {
   submittedData: any;
   onSearchPayload: any;
   onBack: () => void;
+  payloadType?: 'single-domain' | 'multi-domain';
 }
 
 const OnboardingSuccessPayload: React.FC<OnboardingSuccessPayloadProps> = ({
   submittedData,
   onSearchPayload,
   onBack,
+  payloadType = 'single-domain',
 }) => {
   const [copiedSection, setCopiedSection] = useState<string | null>(null);
+  
+  // Check if we have multi-domain payloads
+  const isMultiDomain = payloadType === 'multi-domain' && typeof onSearchPayload === 'object' && !Array.isArray(onSearchPayload);
 
   const handleCopy = async (text: string, section: string) => {
     try {
@@ -70,55 +75,111 @@ const OnboardingSuccessPayload: React.FC<OnboardingSuccessPayloadProps> = ({
 
         <Card className="shadow-lg">
           <Tabs defaultActiveKey="1" size="large">
-            <TabPane tab="On Search Payload" key="1">
-              <div className="space-y-4">
-                <div className="flex justify-between items-center mb-4">
-                  <Title level={4} className="mb-0">
-                    on_search Payload
-                  </Title>
-                  <div className="space-x-2">
-                    <Button
-                      icon={<CopyOutlined />}
-                      onClick={() =>
-                        handleCopy(
-                          formatJson(onSearchPayload),
-                          "On Search Payload"
-                        )
-                      }
-                    >
-                      {copiedSection === "On Search Payload"
-                        ? "Copied!"
-                        : "Copy"}
-                    </Button>
-                    <Button
-                      icon={<DownloadOutlined />}
-                      onClick={() =>
-                        handleDownload(
-                          onSearchPayload,
-                          "on_search_payload.json"
-                        )
-                      }
-                    >
-                      Download
-                    </Button>
+            {isMultiDomain ? (
+              // Multi-domain: Create a tab for each domain
+              Object.entries(onSearchPayload).map(([domain, payload], index) => (
+                <TabPane tab={`${domain} Payload`} key={`domain-${index}`}>
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center mb-4">
+                      <Title level={4} className="mb-0">
+                        {domain} on_search Payload
+                      </Title>
+                      <div className="space-x-2">
+                        <Button
+                          icon={<CopyOutlined />}
+                          onClick={() =>
+                            handleCopy(
+                              formatJson(payload),
+                              `${domain} Payload`
+                            )
+                          }
+                        >
+                          {copiedSection === `${domain} Payload`
+                            ? "Copied!"
+                            : "Copy"}
+                        </Button>
+                        <Button
+                          icon={<DownloadOutlined />}
+                          onClick={() =>
+                            handleDownload(
+                              payload,
+                              `on_search_${domain.toLowerCase()}_payload.json`
+                            )
+                          }
+                        >
+                          Download
+                        </Button>
+                      </div>
+                    </div>
+
+                    <div className="bg-gray-900 rounded-lg p-4 overflow-auto max-h-96">
+                      <pre className="text-green-400 text-sm font-mono whitespace-pre">
+                        {formatJson(payload)}
+                      </pre>
+                    </div>
+
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                      <p className="text-sm text-blue-800">
+                        <strong>Note:</strong> This {domain} payload is formatted according
+                        to ONDC specifications and can be used for integration with
+                        ONDC network.
+                      </p>
+                    </div>
+                  </div>
+                </TabPane>
+              ))
+            ) : (
+              // Single domain: Original behavior
+              <TabPane tab="On Search Payload" key="1">
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center mb-4">
+                    <Title level={4} className="mb-0">
+                      on_search Payload
+                    </Title>
+                    <div className="space-x-2">
+                      <Button
+                        icon={<CopyOutlined />}
+                        onClick={() =>
+                          handleCopy(
+                            formatJson(onSearchPayload),
+                            "On Search Payload"
+                          )
+                        }
+                      >
+                        {copiedSection === "On Search Payload"
+                          ? "Copied!"
+                          : "Copy"}
+                      </Button>
+                      <Button
+                        icon={<DownloadOutlined />}
+                        onClick={() =>
+                          handleDownload(
+                            onSearchPayload,
+                            "on_search_payload.json"
+                          )
+                        }
+                      >
+                        Download
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="bg-gray-900 rounded-lg p-4 overflow-auto max-h-96">
+                    <pre className="text-green-400 text-sm font-mono whitespace-pre">
+                      {formatJson(onSearchPayload)}
+                    </pre>
+                  </div>
+
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <p className="text-sm text-blue-800">
+                      <strong>Note:</strong> This payload is formatted according
+                      to ONDC specifications and can be used for integration with
+                      ONDC network.
+                    </p>
                   </div>
                 </div>
-
-                <div className="bg-gray-900 rounded-lg p-4 overflow-auto max-h-96">
-                  <pre className="text-green-400 text-sm font-mono whitespace-pre">
-                    {formatJson(onSearchPayload)}
-                  </pre>
-                </div>
-
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                  <p className="text-sm text-blue-800">
-                    <strong>Note:</strong> This payload is formatted according
-                    to ONDC specifications and can be used for integration with
-                    ONDC network.
-                  </p>
-                </div>
-              </div>
-            </TabPane>
+              </TabPane>
+            )}
 
             <TabPane tab="Submitted Data" key="2">
               <div className="space-y-4">
@@ -161,9 +222,17 @@ const OnboardingSuccessPayload: React.FC<OnboardingSuccessPayloadProps> = ({
           <Button size="large" onClick={onBack}>
             Back to Dashboard
           </Button>
-          <Button type="primary" size="large" onClick={() => window.print()}>
-            Print Details
-          </Button>
+          {isMultiDomain && (
+            <Button 
+              type="default" 
+              size="large" 
+              icon={<DownloadOutlined />}
+              onClick={() => handleDownload(onSearchPayload, "all_domain_payloads.json")}
+            >
+              Download All Payloads
+            </Button>
+          )}
+         
         </div>
       </div>
     </div>
