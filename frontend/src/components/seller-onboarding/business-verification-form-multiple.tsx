@@ -1199,7 +1199,7 @@ const ServiceabilitySection = ({
             </div>
 
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <div>
+              {/* <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Location ID
                 </label>
@@ -1253,7 +1253,7 @@ const ServiceabilitySection = ({
                     </>
                   )}
                 />
-              </div>
+              </div> */}
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -1374,6 +1374,7 @@ const ServiceabilitySection = ({
                         onChange={(value) => {
                           field.onChange(value);
                           if (value === "12") {
+                            // PAN India - set country
                             setValue(
                               `stores.${storeIndex}.serviceabilities.${serviceIndex}.val`,
                               "IND"
@@ -1381,6 +1382,17 @@ const ServiceabilitySection = ({
                             setValue(
                               `stores.${storeIndex}.serviceabilities.${serviceIndex}.unit`,
                               "country"
+                            );
+                          } else if (value === "13") {
+                            // Polygon - set geojson
+                            setValue(
+                              `stores.${storeIndex}.serviceabilities.${serviceIndex}.unit`,
+                              "geojson"
+                            );
+                            // Clear val as it will need geojson coordinates
+                            setValue(
+                              `stores.${storeIndex}.serviceabilities.${serviceIndex}.val`,
+                              ""
                             );
                           }
                         }}
