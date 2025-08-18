@@ -29,6 +29,7 @@ const Console = ({ logs, setLogs, sessionId }: IProps) => {
 					<div className="items-center flex justify-end p-1">
 						<CircularProgress
 							sqSize={24}
+							id="console-cool-down"
 							strokeWidth={3}
 							duration={3}
 							onComplete={getLogsData}
