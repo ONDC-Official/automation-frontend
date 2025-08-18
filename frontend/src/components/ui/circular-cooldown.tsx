@@ -1,15 +1,4 @@
-import React, { useEffect, useRef, useState, useCallback } from "react";
-
-// A helper to get a unique ID for the current browser tab.
-// It uses sessionStorage to ensure the ID is stable across reloads for this tab only.
-const getTabId = () => {
-	let tabId = sessionStorage.getItem("componentTabId");
-	if (!tabId) {
-		tabId = Math.random().toString(36).substring(2, 11);
-		sessionStorage.setItem("componentTabId", tabId);
-	}
-	return tabId;
-};
+import React, { useEffect, useRef, useState } from "react";
 
 interface Props {
 	strokeWidth?: number;
@@ -17,9 +6,8 @@ interface Props {
 	duration?: number; // in seconds
 	onComplete: () => Promise<void>;
 	loop: boolean;
-	id: string; // ID is still needed as the base for the unique key
+	id?: string;
 	isActive?: boolean;
-	invisible?: boolean; // Optional prop to control visibility
 }
 
 const CircularProgress: React.FC<Props> = ({
@@ -28,43 +16,53 @@ const CircularProgress: React.FC<Props> = ({
 	duration = 5,
 	onComplete,
 	loop,
-	id,
 	isActive = true,
-	invisible = false,
+	id,
 }) => {
-	// --- Create unique storage keys for this specific tab ---
-	const tabId = useRef(getTabId());
-	const storageKey = `${id}-${tabId.current}`;
-	const elapsedKey = `${storageKey}_elapsed`;
+	const radius = (sqSize - strokeWidth) / 2;
+	const circumference = 2 * Math.PI * radius;
 
 	const [progress, setProgress] = useState<number>(() => {
-		const storedProgress = Number(localStorage.getItem(storageKey));
-		return isNaN(storedProgress) ? 0 : storedProgress;
+		if (id) {
+			const storedProgress = Number(localStorage.getItem(id));
+			return isNaN(storedProgress) ? 0 : storedProgress;
+		}
+		return 0;
 	});
 
 	const animationRef = useRef<number | null>(null);
 	const startTimeRef = useRef<number | null>(null);
-	const onCompleteRef = useRef(onComplete);
-	onCompleteRef.current = onComplete; // Keep ref updated without triggering effects
+	const isMounted = useRef(true);
+	const isRunning = useRef(false);
+	const pauseRef = useRef(false);
 
-	const handleAnimationEnd = useCallback(() => {
-		// Clear storage for this tab's timer
-		localStorage.removeItem(storageKey);
-		localStorage.removeItem(elapsedKey);
+	useEffect(() => {
+		isMounted.current = true;
 
-		onCompleteRef.current().finally(() => {
-			if (loop && isActive) {
-				setProgress(0);
-				startTimeRef.current = null;
-				animationRef.current = requestAnimationFrame(animate);
+		return () => {
+			isMounted.current = false;
+			isRunning.current = false;
+			if (animationRef.current) {
+				cancelAnimationFrame(animationRef.current);
 			}
-		});
-	}, [storageKey, elapsedKey, loop, isActive]);
+		};
+	}, []);
 
-	const animate = useCallback(
-		(timestamp: number) => {
+	useEffect(() => {
+		if (!isActive) return;
+		if (pauseRef.current) return;
+		isRunning.current = true;
+
+		const savedElapsed = id
+			? Number(localStorage.getItem(`${id}_elapsed`)) || 0
+			: 0;
+
+		startTimeRef.current = null;
+
+		const animate = (timestamp: number) => {
+			if (!isRunning.current || !isMounted.current) return;
+
 			if (!startTimeRef.current) {
-				const savedElapsed = Number(localStorage.getItem(elapsedKey)) || 0;
 				startTimeRef.current = timestamp - savedElapsed * 1000;
 			}
 
@@ -73,41 +71,49 @@ const CircularProgress: React.FC<Props> = ({
 
 			setProgress(currentProgress);
 
-			// Save progress using the tab-specific key
-			localStorage.setItem(storageKey, String(currentProgress));
-			localStorage.setItem(elapsedKey, String(elapsed));
+			if (id) {
+				localStorage.setItem(id, String(currentProgress));
+				localStorage.setItem(`${id}_elapsed`, String(elapsed));
+			}
 
 			if (currentProgress < 1) {
 				animationRef.current = requestAnimationFrame(animate);
 			} else {
-				handleAnimationEnd();
-			}
-		},
-		[duration, storageKey, elapsedKey, handleAnimationEnd]
-	);
+				isRunning.current = false;
 
-	useEffect(() => {
-		if (isActive) {
-			animationRef.current = requestAnimationFrame(animate);
-		}
+				// Clear storage
+				if (id) {
+					localStorage.removeItem(id);
+					localStorage.removeItem(`${id}_elapsed`);
+				}
+				pauseRef.current = true;
+				onComplete().finally(() => {
+					if (!isMounted.current) return;
+
+					isRunning.current = false;
+					startTimeRef.current = null;
+					pauseRef.current = false;
+					if (id) {
+						localStorage.removeItem(`${id}_startTime`);
+						localStorage.removeItem(`${id}_cycleId`);
+					}
+				});
+			}
+		};
+
+		animationRef.current = requestAnimationFrame(animate);
 
 		return () => {
 			if (animationRef.current) {
 				cancelAnimationFrame(animationRef.current);
 			}
-			startTimeRef.current = null;
+			isRunning.current = false;
 		};
-	}, [isActive, animate]);
+	}, [duration, loop, onComplete, isActive, id]);
 
-	const radius = (sqSize - strokeWidth) / 2;
-	const circumference = 2 * Math.PI * radius;
 	const strokeDashoffset = circumference * (1 - progress);
 
 	if (!isActive) return null;
-
-	if (invisible) {
-		return <div className="invisible" />;
-	}
 
 	return (
 		<div className="flex items-center justify-center p-2 ml-2 rounded-md transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 text-sky-700 ease-in">
