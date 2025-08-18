@@ -139,9 +139,9 @@ const TopBar = ({ onSupportClick }: IPops) => {
 					{links.map((link, index) => (
 						<li key={index}>
 							<a
-								className={`hover:text-blue-500 block py-1 cursor-pointer  ${
+								className={`hover:text-sky-500 block py-1 cursor-pointer  ${
 									link.selected
-										? "text-blue-700 border-b-2 border-blue-500 text-blue-500"
+										? "text-sky-700 border-b-2 border-sky-500 text-sky-500"
 										: "text-gray-500"
 								}`}
 								onClick={() => {
@@ -182,7 +182,7 @@ const TopBar = ({ onSupportClick }: IPops) => {
 							navigate(userDetails ? "/profile" : "/login");
 						}}
 						className="mt-2 text-xl"
-						// className="text-blue-600 bg-sky-200 rounded-full p-2 hover:text-blue-800 text-xl md:text-2xl"
+						// className="text-sky-600 bg-sky-200 rounded-full p-2 hover:text-sky-800 text-xl md:text-2xl"
 						title={userDetails ? "Profile" : "Login"}
 					>
 						{userDetails ? (

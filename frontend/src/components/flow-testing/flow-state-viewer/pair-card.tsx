@@ -80,7 +80,7 @@ function StepDisplay({ step, flowId }: { step: MappedStep; flowId: string }) {
 		// <CustomTooltip content={step.description ?? ""}>
 		<FlippableWrapper flipTrigger={step.status}>
 			<button
-				className={`${statusStyles?.card} w-full h-full rounded-lg p-4 border shadow-md hover:shadow-lg transition-all duration-200`}
+				className={`${statusStyles?.card} w-full h-full rounded-lg p-3 border shadow-sm hover:shadow-lg transition-all duration-200`}
 				onClick={onClickFunc}
 			>
 				<div className="w-full flex flex-col space-y-1">
