@@ -74,6 +74,7 @@ export function Accordion({
 			try {
 				const txData = await getMappedFlow(tx, sessionId);
 				setMappedFlow(txData);
+				apiCallFailCount.current = 0; // Reset fail count on successful fetch
 			} catch (error) {
 				apiCallFailCount.current = apiCallFailCount.current + 1;
 				console.error("Failed to fetch transaction data:", error);
@@ -249,9 +250,9 @@ export function Accordion({
 		);
 	}
 
-	const bg = activeFlow === flow.id ? "bg-sky-50" : "bg-white";
+	const bg = activeFlow === flow.id ? "bg-blue-50" : "bg-white";
 	return (
-		<div className="rounded-md border border-zinc-50 mb-4 shadow-lg w-full ml-1">
+		<div className="rounded-md mb-4 w-full ml-1">
 			<div
 				className={`${bg} border rounded-md shadow-sm hover:bg-sky-100 cursor-pointer transition-colors px-5 py-3`}
 				onClick={() => setIsOpen(!isOpen)}

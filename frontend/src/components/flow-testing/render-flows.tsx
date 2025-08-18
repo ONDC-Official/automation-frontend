@@ -21,6 +21,7 @@ import { ILogs } from "../../interface";
 import { SessionContext } from "../../context/context";
 import CircularProgress from "../ui/circular-cooldown";
 import Modal from "../modal";
+import { HiOutlineDocumentReport } from "react-icons/hi";
 
 function RenderFlows({
 	flows,
@@ -40,8 +41,7 @@ function RenderFlows({
 	const [cacheSessionData, setCacheSessionData] = useState<SessionCache | null>(
 		null
 	);
-	const [sideView, setSideView] = useState<any>({});
-	console.log(setSideView);
+	const [sideView, _] = useState<any>({});
 	const [difficultyCache, setDifficultyCache] = useState<any>({});
 	const [isFlowStopped, setIsFlowStopped] = useState<boolean>(false);
 	const [selectedTab, setSelectedTab] = useState<"Request" | "Response">(
@@ -120,6 +120,7 @@ function RenderFlows({
 				delete filteredData["active_session_id"];
 				setDifficultyCache(response.data.sessionDifficulty);
 				setCacheSessionData(response.data);
+				apiCallFailCount.current = 0; // Reset fail count on successful fetch
 			})
 			.catch((e: any) => {
 				console.error("Error while fetching session: ", e);
@@ -225,16 +226,17 @@ function RenderFlows({
 													console.log("not calling the api");
 												}
 											}}
-											invisible={true}
+											// invisible={true}
 											sqSize={16}
 											strokeWidth={2}
 										/>
 										<div className="flex justify-end">
 											<button
-												className="bg-sky-600 text-white text-sm px-2 py-2 rounded hover:bg-sky-700 shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+												className="bg-sky-600 text-white text-sm flex px-2 py-2 rounded hover:bg-sky-700 shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
 												onClick={async () => await generateReport()}
 												disabled={!isFlowStopped}
 											>
+												<HiOutlineDocumentReport className="text-lg m2-1" />
 												Generate Report
 											</button>
 										</div>
@@ -256,7 +258,7 @@ function RenderFlows({
 					{/* Left Column - Main Content */}
 					<div className="w-full sm:w-[60%] overflow-y-auto p-4">
 						{/* {flows.domain.map((domain) => ( */}
-						<div className="mb-8 bg-white p-4 rounded-md border">
+						<div className="mb-8 bg-gray-100 p-4 rounded-md border">
 							{flows.map((flow) => (
 								<Accordion
 									key={flow.id}
@@ -278,7 +280,7 @@ function RenderFlows({
 					{/* Right Column - Sticky Request & Response */}
 					<div className="w-full sm:w-[40%] p-4">
 						{/* Sticky Container */}
-						<div className="bg-white rounded-md shadow-md border sticky top-20">
+						<div className=" bg-gray-100 rounded-md shadow-md border sticky top-20">
 							{/* <h2 className="m-1 text-lg font-semibold">Request & Response</h2> */}
 							<Tabs
 								className="mt-4 ml-2"
