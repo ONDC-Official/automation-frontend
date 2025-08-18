@@ -211,6 +211,7 @@ function RenderFlows({
 								children={
 									<CircularProgress
 										duration={5}
+										id="flow-cool-down"
 										loop={true}
 										onComplete={async () => {
 											if (apiCallFailCount.current < 5) {
