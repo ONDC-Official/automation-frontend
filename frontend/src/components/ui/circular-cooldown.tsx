@@ -19,6 +19,7 @@ interface Props {
 	loop: boolean;
 	id: string; // ID is still needed as the base for the unique key
 	isActive?: boolean;
+	invisible?: boolean; // Optional prop to control visibility
 }
 
 const CircularProgress: React.FC<Props> = ({
@@ -29,6 +30,7 @@ const CircularProgress: React.FC<Props> = ({
 	loop,
 	id,
 	isActive = true,
+	invisible = false,
 }) => {
 	// --- Create unique storage keys for this specific tab ---
 	const tabId = useRef(getTabId());
@@ -102,6 +104,10 @@ const CircularProgress: React.FC<Props> = ({
 	const strokeDashoffset = circumference * (1 - progress);
 
 	if (!isActive) return null;
+
+	if (invisible) {
+		return <div className="invisible" />;
+	}
 
 	return (
 		<div className="flex items-center justify-center p-2 ml-2 rounded-md transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 text-sky-700 ease-in">

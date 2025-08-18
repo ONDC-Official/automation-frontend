@@ -62,7 +62,7 @@ const DifficultyCards = ({ difficulty_cache, sessionId }: IProps) => {
 		}
 	};
 	return (
-		<button className="w-full bg-slate-100 backdrop-blur-md rounded-md p-2 shadow-lg flex flex-col gap-4 hover:bg-sky-50">
+		<button className="w-full bg-gray-100 border backdrop-blur-md rounded-md p-2 shadow-sm flex flex-col gap-4 hover:bg-sky-50">
 			{/* Header with Button */}
 			<div
 				className="flex flex-row justify-between items-center cursor-pointer"
