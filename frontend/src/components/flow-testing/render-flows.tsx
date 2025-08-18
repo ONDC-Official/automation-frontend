@@ -197,7 +197,7 @@ function RenderFlows({
 					{cacheSessionData ? (
 						<div className="flex gap-2 flex-col">
 							<InfoCard
-								title="Session Info"
+								title="Info"
 								data={{
 									sessionId: sessionId,
 									subscriberUrl: subUrl,
@@ -209,24 +209,36 @@ function RenderFlows({
 									use_case: cacheSessionData.usecaseId,
 								}}
 								children={
-									<CircularProgress
-										duration={5}
-										id="flow-cool-down"
-										loop={true}
-										onComplete={async () => {
-											if (apiCallFailCount.current < 5) {
-												fetchSessionData();
-											} else if (
-												apiCallFailCount.current >= 5 &&
-												!isErrorModalOpen
-											) {
-												setIsErrorModalOpen(true);
-												console.log("not calling the api");
-											}
-										}}
-										sqSize={20}
-										strokeWidth={3}
-									/>
+									<div className="w-full flex justify-between">
+										<CircularProgress
+											duration={5}
+											id="flow-cool-down"
+											loop={true}
+											onComplete={async () => {
+												if (apiCallFailCount.current < 5) {
+													fetchSessionData();
+												} else if (
+													apiCallFailCount.current >= 5 &&
+													!isErrorModalOpen
+												) {
+													setIsErrorModalOpen(true);
+													console.log("not calling the api");
+												}
+											}}
+											invisible={true}
+											sqSize={16}
+											strokeWidth={2}
+										/>
+										<div className="flex justify-end">
+											<button
+												className="bg-sky-600 text-white text-sm px-2 py-2 rounded hover:bg-sky-700 shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+												onClick={async () => await generateReport()}
+												disabled={!isFlowStopped}
+											>
+												Generate Report
+											</button>
+										</div>
+									</div>
 								}
 							/>
 							<DifficultyCards
@@ -237,15 +249,6 @@ function RenderFlows({
 					) : (
 						<div>Loading...</div>
 					)}
-					<div className="flex justify-end">
-						<button
-							className="bg-sky-500 text-white px-4 py-2 mt-1 rounded hover:bg-sky-600 shadow-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-							onClick={async () => await generateReport()}
-							disabled={!isFlowStopped}
-						>
-							Generate Report
-						</button>
-					</div>
 				</div>
 
 				{/* Main Content Area */}
