@@ -63,7 +63,7 @@ export function Accordion({
 		useState<FormConfigType | null>(null);
 	const contentRef = useRef<HTMLDivElement>(null);
 	const [maxHeight, setMaxHeight] = useState("0px");
-	const apiCallFailCount = useRef(0)
+	const apiCallFailCount = useRef(0);
 
 	const fetchTransactionData = async () => {
 		if (activeFlow !== flow.id || !sessionCache) {
@@ -75,7 +75,7 @@ export function Accordion({
 				const txData = await getMappedFlow(tx, sessionId);
 				setMappedFlow(txData);
 			} catch (error) {
-				apiCallFailCount.current = apiCallFailCount.current + 1
+				apiCallFailCount.current = apiCallFailCount.current + 1;
 				console.error("Failed to fetch transaction data:", error);
 			}
 		} else {
@@ -237,9 +237,9 @@ export function Accordion({
 					strokeWidth={3}
 					duration={3}
 					onComplete={async () => {
-						if(apiCallFailCount.current < 5 ) {
+						if (apiCallFailCount.current < 5) {
 							await fetchTransactionData();
-						} 
+						}
 					}}
 					loop={true}
 					isActive={activeFlow === flow.id}
