@@ -1,6 +1,4 @@
-import Tippy from "@tippyjs/react";
 import React from "react";
-import { GoInfo } from "react-icons/go";
 import "tippy.js/animations/perspective-subtle.css";
 import { inputClass, labelClass } from "./inputClass";
 
@@ -15,7 +13,7 @@ const FormInput = ({
 	disable = false,
 	labelInfo = "",
 	validations = {},
-	onValueChange 
+	onValueChange,
 }: any) => {
 	const handleChange = (e: any) => {
 		let value = e.target.value;
@@ -23,8 +21,8 @@ const FormInput = ({
 			value = value.replace(/\s+/g, "");
 		}
 		e.target.value = value;
-		if (typeof onValueChange === "function") { 
-			onValueChange(e.target.value)
+		if (typeof onValueChange === "function") {
+			onValueChange(e.target.value);
 		}
 	};
 	const handleFocus = (e: any) => {
@@ -32,14 +30,14 @@ const FormInput = ({
 	};
 
 	return (
-		<div className="mb-4 w-full">
+		<div className="mb-2 w-full bg-gray-50 border rounded-md p-2 flex">
 			<LabelWithToolTip labelInfo={labelInfo} label={label} />
 			<input
 				onFocus={handleFocus}
 				{...register(name, {
 					required,
-					...validations
-				  })}
+					...validations,
+				})}
 				disabled={disable}
 				id={name}
 				type={type}
@@ -87,7 +85,7 @@ const FormTextInput = ({
 	};
 
 	return (
-		<div className="mb-4">
+		<div className="mb-4 w-full bg-gray-50 border rounded-md p-2 flex">
 			<LabelWithToolTip labelInfo={labelInfo} label={label} />
 			<textarea
 				onFocus={handleFocus}
@@ -121,10 +119,11 @@ export function LabelWithToolTip({
 	label: string;
 	labelInfo: string;
 }) {
+	console.log(labelInfo);
 	return (
-		<div className="flex items-center justify-between w-full">
+		<div className="flex justify-between w-full">
 			<label className={labelClass}>{label}</label>
-			{labelInfo != "" && (
+			{/* {labelInfo != "" && (
 				<Tippy
 					content={<LabelToolTip label={labelInfo} />}
 					placement="right-start"
@@ -135,7 +134,7 @@ export function LabelWithToolTip({
 						<GoInfo size={22} />
 					</label>
 				</Tippy>
-			)}
+			)} */}
 		</div>
 	);
 }

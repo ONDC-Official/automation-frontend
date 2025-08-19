@@ -91,7 +91,7 @@ export default function InitialFlowForm({
 				/>
 				{dynamicList.version?.length ? (
 					<FormSelect
-						label="Enter Version"
+						label="Select Version"
 						name="version"
 						required={true}
 						options={dynamicList.version.map((val: any) => val.key)}
@@ -203,7 +203,7 @@ export default function InitialFlowForm({
 			/>
 			{dynamicList.version?.length ? (
 				<FormSelect
-					label="Enter Version"
+					label="Select Version"
 					name="version"
 					required={true}
 					options={dynamicList.version.map((val: any) => val.key)}
@@ -230,7 +230,7 @@ export default function InitialFlowForm({
 			)}
 			{dynamicList.usecase?.length ? (
 				<FormSelect
-					label="Enter Usecase"
+					label="Select Usecase"
 					name="usecaseId"
 					required={true}
 					options={dynamicList.usecase}
@@ -248,7 +248,7 @@ export default function InitialFlowForm({
 			)}
 			<FormSelect
 				name="npType"
-				label="Select Type"
+				label="Select App Type"
 				options={["BAP", "BPP"]}
 				setSelectedValue={(data: "BAP" | "BPP") => {
 					setDyanmicValue((prev) => {
