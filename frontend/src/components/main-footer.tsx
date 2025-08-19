@@ -4,25 +4,44 @@ import { Link } from "react-router-dom";
 const Footer = () => {
 	const footerLinks = {
 		company: [
-			{ name: "About ONDC", href: "#" },
-			{ name: "Contact Us", href: "#" },
+			{ name: "About ONDC", href: "https://ondc.org/" },
+			// { name: "Contact Us", href: "#" },
 		],
 		developers: [
-			{ name: "API Documentation", href: "#" },
-			{ name: "SDKs & Tools", href: "#" },
-			{ name: "Sandbox Environment", href: "#" },
+			{
+				name: "API Documentation",
+				href: "https://github.com/ONDC-Official/automation-framework",
+			},
+			{
+				name: "SDKs & Tools",
+				href: "https://github.com/ONDC-Official/automation-validation-compiler",
+			},
+			// { name: "Sandbox Environment", href: "#" },
 		],
 		support: [
-			{ name: "Help Center", href: "#" },
-			{ name: "Community Forum", href: "#" },
-			{ name: "Bug Reports", href: "#" },
+			// { name: "Help Center", href: "#" },
+			// { name: "Community Forum", href: "#" },
+			{
+				name: "Bug Reports",
+				href: "https://github.com/ONDC-Official/automation-framework/issues",
+			},
 		],
-		quickLinks: [{ name: "Join ONDC", href: "#" }],
+		quickLinks: [
+			{ name: "Join ONDC", href: "https://ondc.org/ondc-how-to-join/" },
+		],
 	};
 
 	const socialLinks = [
-		{ name: "LinkedIn", href: "#", icon: <BsLinkedin /> },
-		{ name: "GitHub", href: "#", icon: <BsGithub /> },
+		{
+			name: "LinkedIn",
+			href: "https://in.linkedin.com/company/open-network-for-digital-commerce",
+			icon: <BsLinkedin />,
+		},
+		{
+			name: "GitHub",
+			href: "https://github.com/ONDC-Official",
+			icon: <BsGithub />,
+		},
 	];
 
 	return (
