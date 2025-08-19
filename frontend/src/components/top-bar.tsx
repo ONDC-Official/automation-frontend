@@ -3,7 +3,6 @@ import { FaRegUser } from "react-icons/fa";
 import { FiLogIn } from "react-icons/fi";
 import { useNavigate, useLocation } from "react-router-dom";
 import { UserContext } from "../context/userContext";
-import { GiVintageRobot } from "react-icons/gi";
 
 interface NavLink {
 	label: string;
@@ -74,14 +73,14 @@ const TopBar = ({ onSupportClick }: IPops) => {
 					className="flex items-center justify-start w-full md:w-auto cursor-pointer"
 					onClick={() => navigate("/home")}
 				>
-					{/* <img
+					<img
 						src="https://ondc.org/assets/theme/images/ondc_registered_logo.svg?v=d864655110"
 						alt="Logo"
 						className="h-10 w-auto"
-					/> */}
+					/>
 					{/* <GoGear className="h-8 w-8 text-sky-600" /> */}
 					{/* <MdOutlineSettings className="h-8 w-8 text-sky-600" /> */}
-					<GiVintageRobot className="h-10 w-10 text-sky-600" />
+					{/* <GiVintageRobot className="h-10 w-10 text-sky-600" /> */}
 					<pre
 						className="text-2xl font-bold text-transparent bg-gradient-to-r from-sky-600 to-sky-400 bg-clip-text ml-1 mb-1"
 						style={{

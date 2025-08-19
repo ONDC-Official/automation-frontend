@@ -141,7 +141,42 @@ export function Accordion({
 		}
 	};
 
-	if (!sessionCache) return <div>Loading...</div>;
+	if (!sessionCache) {
+		return (
+			<div className="bg-white rounded-md shadow-sm border border-sky-100 p-5 mb-4">
+				<style>
+					{`
+						@keyframes shimmer {
+							0% { background-position: -200px 0; }
+							100% { background-position: calc(200px + 100%) 0; }
+						}
+						.skeleton {
+							background: linear-gradient(90deg, #e0f2fe 25%, #b3e5fc 50%, #e0f2fe 75%);
+							background-size: 200px 100%;
+							animation: shimmer 1.5s infinite;
+						}
+					`}
+				</style>
+				<div className="space-y-4">
+					{/* Header skeleton */}
+					<div className="flex items-center justify-between">
+						<div className="flex items-center space-x-3">
+							<div className="w-6 h-6 rounded skeleton"></div>
+							<div className="space-y-2">
+								<div className="h-4 w-32 rounded skeleton"></div>
+								<div className="h-3 w-24 rounded skeleton"></div>
+							</div>
+						</div>
+						<div className="flex items-center space-x-2">
+							<div className="w-8 h-8 rounded-md skeleton"></div>
+							<div className="w-8 h-8 rounded-md skeleton"></div>
+							<div className="w-8 h-8 rounded-md skeleton"></div>
+						</div>
+					</div>
+				</div>
+			</div>
+		);
+	}
 
 	const handleDownload = async () => {
 		const payload_ids = mappedFlow?.sequence.flatMap(
