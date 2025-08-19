@@ -157,7 +157,7 @@ function RenderFlows({
 			})
 			.then((response) => {
 				setReport(response.data.data);
-				setStep((s: number) => s + 1);
+				setStep(2);
 			})
 			.catch((e) => {
 				console.error(e);
@@ -249,7 +249,34 @@ function RenderFlows({
 							/>
 						</div>
 					) : (
-						<div>Loading...</div>
+						<div className="bg-white rounded-lg shadow-sm border border-sky-100 p-6">
+							<style>
+								{`
+									@keyframes shimmer {
+										0% { background-position: -200px 0; }
+										100% { background-position: calc(200px + 100%) 0; }
+									}
+									.skeleton {
+										background: linear-gradient(90deg, #e0f2fe 25%, #b3e5fc 50%, #e0f2fe 75%);
+										background-size: 200px 100%;
+										animation: shimmer 1.5s infinite;
+									}
+								`}
+							</style>
+							<div className="space-y-4">
+								{/* Content skeleton */}
+								<div className="grid grid-cols-2 gap-4">
+									<div className="space-y-2">
+										<div className="h-3 rounded skeleton"></div>
+										<div className="h-3 rounded w-4/5 skeleton"></div>
+									</div>
+									<div className="space-y-2">
+										<div className="h-3 rounded skeleton"></div>
+										<div className="h-3 rounded w-3/5 skeleton"></div>
+									</div>
+								</div>
+							</div>
+						</div>
 					)}
 				</div>
 
