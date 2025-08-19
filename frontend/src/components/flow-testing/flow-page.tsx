@@ -3,10 +3,10 @@ import axios from "axios";
 import { Flow } from "../../types/flow-types";
 import RenderFlows from "./render-flows";
 import { toast } from "react-toastify";
-import Heading from "../ui/mini-components/ondc-gradient-text";
 import { ReportPage } from "./report";
 import { FormGuide } from "./guides";
 import InitialFlowForm from "./initial-form";
+import NotFound from "../ui/not-found";
 export default function FlowContent() {
 	const [step, setStep] = useState(0);
 	const [session, setSession] = useState<string>("");
@@ -42,7 +42,10 @@ export default function FlowContent() {
 	const onSubmit = async (data: any) => {
 		try {
 			console.log("data", data);
-			data = {...data, subscriberUrl: data?.subscriberUrl?.replace(/\/+$/, '')}
+			data = {
+				...data,
+				subscriberUrl: data?.subscriberUrl?.replace(/\/+$/, ""),
+			};
 			const response = await axios.post(
 				`${import.meta.env.VITE_BACKEND_URL}/sessions`,
 				{
@@ -84,7 +87,7 @@ export default function FlowContent() {
 						domain: data.domain,
 						version: data.version,
 						usecase: data.usecaseId,
-						options: ["WORKBENCH"]
+						options: ["WORKBENCH"],
 					},
 				}
 			);
@@ -124,10 +127,13 @@ export default function FlowContent() {
 			case 0:
 				return (
 					<div className="flex flex-1 w-full">
-						<div className="sm:w-[60%] p-2 bg-white rounded-md shadow-md border">
-							<Heading size=" text-xl" className="mb-2">
-								Details
-							</Heading>
+						<div className="sm:w-[60%] p-2 bg-white rounded-sm border">
+							<div className="mb-4">
+								<h1 className="text-lg font-semibold mb-2">Scenario testing</h1>
+								<p className="text-gray-600 text-sm">
+									Please fill in the details below to begin flow testing.
+								</p>
+							</div>
 							<InitialFlowForm
 								formData={formData}
 								onSubmitHandler={onSubmitHandler}
@@ -144,7 +150,6 @@ export default function FlowContent() {
 				);
 			case 1:
 				if (!flows) return <h1>Loading...</h1>;
-				console.log("flows", flows);
 				return (
 					<RenderFlows
 						flows={flows}
@@ -160,7 +165,7 @@ export default function FlowContent() {
 					<ReportPage sessionId={session} report={report} setStep={setStep} />
 				);
 			default:
-				return <h1>hello</h1>;
+				return <NotFound />;
 		}
 	};
 	return (
