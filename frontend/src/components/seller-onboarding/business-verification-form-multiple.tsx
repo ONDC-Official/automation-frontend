@@ -1,6 +1,6 @@
 import { useForm, useFieldArray, Controller } from "react-hook-form";
 import { useEffect, useState } from "react";
-import { FaPlus, FaTrash, FaStore } from "react-icons/fa";
+import { FaPlus, FaTrash, FaStore, FaClock, FaMinus } from "react-icons/fa";
 import { Input, Select, DatePicker } from "antd";
 import { toast } from "react-toastify";
 import LoadingButton from "../ui/forms/loading-button";
@@ -28,6 +28,15 @@ interface BusinessVerificationFormProps {
   isFnBDomain?: boolean;
 }
 
+// Default timing structure
+const defaultTiming = {
+  type: undefined,
+  day_from: undefined,
+  day_to: undefined,
+  time_from: "",
+  time_to: "",
+};
+
 // Default store structure
 const defaultStore: StoreDetails = {
   gps: "",
@@ -39,11 +48,14 @@ const defaultStore: StoreDetails = {
   holiday: [],
   phone: "",
   email: "",
+  // Legacy single timing (kept for backward compatibility)
   type: undefined,
   day_from: undefined,
   day_to: undefined,
   time_from: "",
   time_to: "",
+  // New multiple timings
+  timings: [{ ...defaultTiming }],
   fssai_no: "",
   supported_subcategories: [],
   supported_fulfillments: undefined,
@@ -57,6 +69,239 @@ const defaultStore: StoreDetails = {
       unit: undefined,
     },
   ],
+};
+
+// Store Timings Section Component
+const StoreTimingsSection = ({ storeIndex, control, watch }: any) => {
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: `stores.${storeIndex}.timings`,
+  });
+
+  const watchTimings = watch(`stores.${storeIndex}.timings`);
+
+  const addTiming = () => {
+    append({ ...defaultTiming });
+  };
+
+  const removeTiming = (timingIndex: number) => {
+    if (fields.length > 1) {
+      remove(timingIndex);
+    } else {
+      toast.error("At least one timing configuration is required");
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      {fields.map((field, timingIndex) => (
+        <div
+          key={field.id}
+          className="border border-gray-200 rounded-lg p-4 bg-white"
+        >
+          <div className="flex justify-between items-start mb-4">
+            <h5 className="text-sm font-semibold text-gray-700">
+              Timing Configuration {timingIndex + 1}
+            </h5>
+            <div className="flex gap-2">
+              {fields.length > 1 && (
+                <button
+                  type="button"
+                  onClick={() => removeTiming(timingIndex)}
+                  className="text-red-500 hover:text-red-700 p-1"
+                  title="Remove timing"
+                >
+                  <FaMinus className="text-sm" />
+                </button>
+              )}
+            </div>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Fulfillment Type
+              </label>
+              <Controller
+                name={`stores.${storeIndex}.timings.${timingIndex}.type`}
+                control={control}
+                render={({ field, fieldState: { error } }) => (
+                  <>
+                    <Select
+                      {...field}
+                      className="w-full"
+                      size="large"
+                      placeholder="Select Fulfillment Type"
+                      allowClear
+                      status={error ? "error" : undefined}
+                    >
+                      {Types.map((bt) => (
+                        <Select.Option key={bt.value} value={bt.value}>
+                          {bt.key}
+                        </Select.Option>
+                      ))}
+                    </Select>
+                    {error && (
+                      <p className="text-red-500 text-xs mt-1">
+                        {error.message}
+                      </p>
+                    )}
+                  </>
+                )}
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Operating Days - From
+              </label>
+              <Controller
+                name={`stores.${storeIndex}.timings.${timingIndex}.day_from`}
+                control={control}
+                render={({ field, fieldState: { error } }) => (
+                  <>
+                    <Select
+                      {...field}
+                      className="w-full"
+                      size="large"
+                      placeholder="Select Start Day"
+                      allowClear
+                      status={error ? "error" : undefined}
+                    >
+                      {weekDays.map((day) => (
+                        <Select.Option key={day.value} value={day.value}>
+                          {day.key}
+                        </Select.Option>
+                      ))}
+                    </Select>
+                    {error && (
+                      <p className="text-red-500 text-xs mt-1">
+                        {error.message}
+                      </p>
+                    )}
+                  </>
+                )}
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Operating Days - To
+              </label>
+              <Controller
+                name={`stores.${storeIndex}.timings.${timingIndex}.day_to`}
+                control={control}
+                render={({ field, fieldState: { error } }) => (
+                  <>
+                    <Select
+                      {...field}
+                      className="w-full"
+                      size="large"
+                      placeholder="Select End Day"
+                      allowClear
+                      status={error ? "error" : undefined}
+                    >
+                      {weekDays.map((day) => (
+                        <Select.Option key={day.value} value={day.value}>
+                          {day.key}
+                        </Select.Option>
+                      ))}
+                    </Select>
+                    {error && (
+                      <p className="text-red-500 text-xs mt-1">
+                        {error.message}
+                      </p>
+                    )}
+                  </>
+                )}
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Opening Time
+              </label>
+              <Controller
+                name={`stores.${storeIndex}.timings.${timingIndex}.time_from`}
+                control={control}
+                render={({ field, fieldState: { error } }) => (
+                  <>
+                    <Input
+                      {...field}
+                      type="time"
+                      size="large"
+                      status={error ? "error" : undefined}
+                    />
+                    {error && (
+                      <p className="text-red-500 text-xs mt-1">
+                        {error.message}
+                      </p>
+                    )}
+                  </>
+                )}
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Closing Time
+              </label>
+              <Controller
+                name={`stores.${storeIndex}.timings.${timingIndex}.time_to`}
+                control={control}
+                render={({ field, fieldState: { error } }) => (
+                  <>
+                    <Input
+                      {...field}
+                      type="time"
+                      size="large"
+                      status={error ? "error" : undefined}
+                    />
+                    {error && (
+                      <p className="text-red-500 text-xs mt-1">
+                        {error.message}
+                      </p>
+                    )}
+                  </>
+                )}
+              />
+            </div>
+          </div>
+
+          {/* Show which days this timing covers */}
+          {watchTimings?.[timingIndex]?.day_from &&
+            watchTimings?.[timingIndex]?.day_to && (
+              <div className="mt-3 text-xs text-gray-600">
+                <span className="font-medium">Active:</span>{" "}
+                {watchTimings[timingIndex].day_from} to{" "}
+                {watchTimings[timingIndex].day_to}
+                {watchTimings?.[timingIndex]?.type &&
+                  ` • ${watchTimings[timingIndex].type}`}
+              </div>
+            )}
+        </div>
+      ))}
+
+      <button
+        type="button"
+        onClick={addTiming}
+        className="flex items-center gap-2 px-4 py-2 border border-sky-600 text-sky-600 rounded-md hover:bg-sky-50 transition-colors"
+      >
+        <FaPlus className="text-sm" /> Add Another Timing Configuration
+      </button>
+
+      <div className="bg-blue-50 p-3 rounded-lg">
+        <p className="text-xs text-blue-800">
+          <strong>Tips:</strong> You can add multiple timing configurations for:
+        </p>
+        <ul className="text-xs text-blue-700 mt-1 ml-4 list-disc">
+          <li>Different fulfillment types (Delivery, Pickup, etc.)</li>
+          <li>Different day ranges (Weekdays vs Weekends)</li>
+          <li>Special hours for specific days</li>
+        </ul>
+      </div>
+    </div>
+  );
 };
 
 const BusinessVerificationForm = ({
@@ -107,11 +352,25 @@ const BusinessVerificationForm = ({
     defaultValues: {
       stores:
         initialData.stores && initialData.stores.length > 0
-          ? initialData.stores
+          ? initialData.stores.map((store) => ({
+              ...store,
+              // Ensure timings array exists
+              timings:
+                store.timings && store.timings.length > 0
+                  ? store.timings
+                  : [
+                      {
+                        type: store.type || undefined,
+                        day_from: store.day_from || undefined,
+                        day_to: store.day_to || undefined,
+                        time_from: store.time_from || "",
+                        time_to: store.time_to || "",
+                      },
+                    ],
+            }))
           : [{ ...defaultStore }],
     },
   });
-  console.log("Form errors:", errors);
 
   const { fields, append, remove } = useFieldArray({
     control,
@@ -134,8 +393,6 @@ const BusinessVerificationForm = ({
   };
 
   const onSubmitForm = (data: any) => {
-    console.log("Form errors:", errors);
-
     if (!data.stores || data.stores.length === 0) {
       toast.error("Please add at least one store before proceeding");
       return;
@@ -167,6 +424,18 @@ const BusinessVerificationForm = ({
     }
 
     const processedStores = data.stores.map((store: any) => {
+      // Process timings
+      let processedTimings = [];
+      if (store.timings && store.timings.length > 0) {
+        processedTimings = store.timings.map((timing: any) => ({
+          type: timing.type || "",
+          day_from: timing.day_from || "",
+          day_to: timing.day_to || "",
+          time_from: convertTimeFormat(timing.time_from) || "",
+          time_to: convertTimeFormat(timing.time_to) || "",
+        }));
+      }
+
       return {
         gps: store.gps || "",
         locality: store.locality || "",
@@ -178,11 +447,15 @@ const BusinessVerificationForm = ({
         phone: store.phone || "",
         email: store.email || "",
 
+        // Legacy single timing (kept for backward compatibility)
         type: store.type || "",
         day_from: store.day_from || "",
         day_to: store.day_to || "",
         time_from: convertTimeFormat(store.time_from) || "",
         time_to: convertTimeFormat(store.time_to) || "",
+
+        // New multiple timings
+        timings: processedTimings,
 
         fssai_no: store.fssai_no || "",
         supported_subcategories: store?.supported_subcategories || [],
@@ -685,159 +958,20 @@ const BusinessVerificationForm = ({
             </div>
           </div>
           <div className="space-y-4 mb-6">
-            <h4 className="text-md font-semibold text-gray-600">
-              Store Timings
-            </h4>
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Fulfillment Type
-                </label>
-                <Controller
-                  name={`stores.${index}.type`}
-                  control={control}
-                  render={({ field, fieldState: { error } }) => (
-                    <>
-                      <Select
-                        {...field}
-                        className="w-full"
-                        size="large"
-                        placeholder="Select Fulfillment Type"
-                        allowClear
-                        status={error ? "error" : undefined}
-                      >
-                        {Types.map((bt) => (
-                          <Select.Option key={bt.value} value={bt.value}>
-                            {bt.key}
-                          </Select.Option>
-                        ))}
-                      </Select>
-                      {error && (
-                        <p className="text-red-500 text-xs mt-1">
-                          {error.message}
-                        </p>
-                      )}
-                    </>
-                  )}
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Operating Days - From
-                </label>
-                <Controller
-                  name={`stores.${index}.day_from`}
-                  control={control}
-                  render={({ field, fieldState: { error } }) => (
-                    <>
-                      <Select
-                        {...field}
-                        className="w-full"
-                        size="large"
-                        placeholder="Select Start Day"
-                        allowClear
-                        status={error ? "error" : undefined}
-                      >
-                        {weekDays.map((day) => (
-                          <Select.Option key={day.value} value={day.value}>
-                            {day.key}
-                          </Select.Option>
-                        ))}
-                      </Select>
-                      {error && (
-                        <p className="text-red-500 text-xs mt-1">
-                          {error.message}
-                        </p>
-                      )}
-                    </>
-                  )}
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Operating Days - To
-                </label>
-                <Controller
-                  name={`stores.${index}.day_to`}
-                  control={control}
-                  render={({ field, fieldState: { error } }) => (
-                    <>
-                      <Select
-                        {...field}
-                        className="w-full"
-                        size="large"
-                        placeholder="Select End Day"
-                        allowClear
-                        status={error ? "error" : undefined}
-                      >
-                        {weekDays.map((day) => (
-                          <Select.Option key={day.value} value={day.value}>
-                            {day.key}
-                          </Select.Option>
-                        ))}
-                      </Select>
-                      {error && (
-                        <p className="text-red-500 text-xs mt-1">
-                          {error.message}
-                        </p>
-                      )}
-                    </>
-                  )}
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Opening Time
-                </label>
-                <Controller
-                  name={`stores.${index}.time_from`}
-                  control={control}
-                  render={({ field, fieldState: { error } }) => (
-                    <>
-                      <Input
-                        {...field}
-                        type="time"
-                        size="large"
-                        status={error ? "error" : undefined}
-                      />
-                      {error && (
-                        <p className="text-red-500 text-xs mt-1">
-                          {error.message}
-                        </p>
-                      )}
-                    </>
-                  )}
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Closing Time
-                </label>
-                <Controller
-                  name={`stores.${index}.time_to`}
-                  control={control}
-                  render={({ field, fieldState: { error } }) => (
-                    <>
-                      <Input
-                        {...field}
-                        type="time"
-                        size="large"
-                        status={error ? "error" : undefined}
-                      />
-                      {error && (
-                        <p className="text-red-500 text-xs mt-1">
-                          {error.message}
-                        </p>
-                      )}
-                    </>
-                  )}
-                />
-              </div>
+            <div className="flex items-center justify-between">
+              <h4 className="text-md font-semibold text-gray-600 flex items-center gap-2">
+                <FaClock className="text-sky-600" />
+                Store Timings
+              </h4>
             </div>
+
+            {/* Multiple Timings Section */}
+            <StoreTimingsSection
+              storeIndex={index}
+              control={control}
+              watch={watch}
+              setValue={setValue}
+            />
           </div>
           <div className="space-y-4 mb-6">
             <h4 className="text-md font-semibold text-gray-600">
@@ -1102,17 +1236,7 @@ const BusinessVerificationForm = ({
           Previous
         </button>
 
-        {/* Debug button */}
-        {/* <button
-          type="button"
-          onClick={() => {
-            console.log("Debug - Current form values:", getValues());
-            console.log("Debug - Current stores:", watch("stores"));
-          }}
-          className="px-4 py-2 bg-yellow-500 text-white rounded-md hover:bg-yellow-600 transition-colors"
-        >
-          Debug Values
-        </button> */}
+       
 
         <LoadingButton
           buttonText={
@@ -1414,6 +1538,9 @@ const ServiceabilitySection = ({
                     </>
                   )}
                 />
+                <p className="text-xs text-gray-500 mt-1">
+                  Recommended option for more accurate locations — polygon
+                </p>
               </div>
 
               {serviceabilityType === "10" && (

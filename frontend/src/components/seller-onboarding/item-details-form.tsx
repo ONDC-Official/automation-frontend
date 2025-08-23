@@ -5,8 +5,8 @@ import {
   SellerOnboardingData,
 } from "../../pages/seller-onboarding";
 import { toast } from "react-toastify";
-import { FaPlus, FaMinus, FaBox } from "react-icons/fa";
-import { Select, Input, Checkbox, Modal, Button } from "antd";
+import { FaPlus, FaMinus, FaBox, FaEdit } from "react-icons/fa";
+import { Select, Input, Checkbox, Modal, Button, Form } from "antd";
 import LoadingButton from "../ui/forms/loading-button";
 import { categoryProtocolMappings, countries } from "../../constants/common";
 import { fashion } from "../../constants/fashion";
@@ -57,8 +57,18 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({
   const [variantValues, setVariantValues] = useState<{
     [itemIndex: number]: { [attribute: string]: string[] };
   }>({});
+  const [editVariantModal, setEditVariantModal] = useState<{
+    visible: boolean;
+    itemIndex: number | null;
+    variantIndex: number | null;
+  }>({
+    visible: false,
+    itemIndex: null,
+    variantIndex: null,
+  });
+  const [editingVariant, setEditingVariant] = useState<any>(null);
+  const [variantForm] = Form.useForm();
 
-  console.log("selectedSubCategory", selectedSubCategory);
   const parseDuration = (duration: string) => {
     if (!duration) return { unit: "hour", value: "1" };
 
@@ -198,6 +208,7 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({
           currency: "INR",
           brand: "",
           category: "",
+          menu_item: "",
           default_fulfillment_type: "Delivery",
           store: "",
           returnable: true,
@@ -338,10 +349,13 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({
   };
 
   const addItem = () => {
+    // Get the domain from the first item if available
+    const firstItemDomain = watchItems[0]?.domain || "";
+    
     append({
       name: "",
-      domain: "",
-      code_type: "EAN",
+      domain: firstItemDomain,
+      code_type: firstItemDomain === "F&B" ? "" : "EAN",
       code_value: "",
       symbol: "",
       short_desc: "",
@@ -496,30 +510,43 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({
 
     return availableAttrs;
   };
-  
-  const getAttributePredefinedValues = (domain: string, category: string, attributeName: string): string[] => {
+
+  const getAttributePredefinedValues = (
+    domain: string,
+    category: string,
+    attributeName: string
+  ): string[] => {
     try {
       const categoryConfig = getCategoryConfig(domain, category);
-      if (!categoryConfig || typeof categoryConfig !== 'object') {
+      if (!categoryConfig || typeof categoryConfig !== "object") {
         return [];
       }
-      
-      const attributeConfig = categoryConfig[attributeName as keyof typeof categoryConfig];
-      if (!attributeConfig || typeof attributeConfig !== 'object') {
+
+      const attributeConfig =
+        categoryConfig[attributeName as keyof typeof categoryConfig];
+      if (!attributeConfig || typeof attributeConfig !== "object") {
         return [];
       }
-      
+
       // Type guard to check if attributeConfig has a 'value' property
-      const config = attributeConfig as { value?: unknown; mandatory?: boolean };
-      
+      const config = attributeConfig as {
+        value?: unknown;
+        mandatory?: boolean;
+      };
+
       if (Array.isArray(config.value) && config.value.length > 0) {
         // Ensure all values are strings
-        return config.value.filter(val => typeof val === 'string') as string[];
+        return config.value.filter(
+          (val) => typeof val === "string"
+        ) as string[];
       }
-      
+
       return [];
     } catch (error) {
-      console.warn(`Error getting predefined values for ${domain}/${category}/${attributeName}:`, error);
+      console.warn(
+        `Error getting predefined values for ${domain}/${category}/${attributeName}:`,
+        error
+      );
       return [];
     }
   };
@@ -537,7 +564,9 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({
     // Check if all selected attributes have values
     for (const attr of selectedAttrs) {
       if (!values[attr] || values[attr].length === 0) {
-        toast.error(`Please provide at least one value for ${attr.replace(/_/g, " ")}`);
+        toast.error(
+          `Please provide at least one value for ${attr.replace(/_/g, " ")}`
+        );
         return;
       }
     }
@@ -549,7 +578,9 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({
 
     // Allow variants even with single values - the key is having variant attributes defined
     if (totalCombinations === 0) {
-      toast.error("No valid combinations found. Please check your attribute values.");
+      toast.error(
+        "No valid combinations found. Please check your attribute values."
+      );
       return;
     }
 
@@ -583,21 +614,27 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({
 
     // Check for duplicate combinations
     const existingVariants = itemVariants[itemIndex] || [];
-    const existingCombinations = existingVariants.map(v => JSON.stringify(v.variantCombination));
-    
-    const newCombinations = combinations.filter(combo => {
+    const existingCombinations = existingVariants.map((v) =>
+      JSON.stringify(v.variantCombination)
+    );
+
+    const newCombinations = combinations.filter((combo) => {
       const comboKey = JSON.stringify(combo);
       return !existingCombinations.includes(comboKey);
     });
 
     if (newCombinations.length === 0) {
-      toast.error("All these variant combinations already exist. Please select different attribute values.");
+      toast.error(
+        "All these variant combinations already exist. Please select different attribute values."
+      );
       return;
     }
 
     if (newCombinations.length < combinations.length) {
       const duplicateCount = combinations.length - newCombinations.length;
-      toast.warning(`${duplicateCount} duplicate variant(s) skipped. Creating ${newCombinations.length} new variant(s).`);
+      toast.warning(
+        `${duplicateCount} duplicate variant(s) skipped. Creating ${newCombinations.length} new variant(s).`
+      );
     }
 
     // Get existing variant count to ensure unique IDs
@@ -643,7 +680,9 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({
     const existingCount = itemVariants[itemIndex]?.length || 0;
     const totalVariants = existingCount + variants.length;
     const actionText = existingCount > 0 ? "Added" : "Created";
-    toast.success(`${actionText} ${variants.length} new ${variantText} for ${item.name}. Total: ${totalVariants} variants. Each will appear as a separate catalog item.`);
+    toast.success(
+      `${actionText} ${variants.length} new ${variantText} for ${item.name}. Total: ${totalVariants} variants. Each will appear as a separate catalog item.`
+    );
   };
 
   const removeVariant = (itemIndex: number, variantIndex: number) => {
@@ -651,6 +690,123 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({
       ...prev,
       [itemIndex]: prev[itemIndex].filter((_, idx) => idx !== variantIndex),
     }));
+  };
+
+  const openEditVariantModal = (itemIndex: number, variantIndex: number) => {
+    const variant = itemVariants[itemIndex][variantIndex];
+    setEditingVariant(variant);
+    setEditVariantModal({
+      visible: true,
+      itemIndex,
+      variantIndex,
+    });
+    
+    // Set form initial values
+    variantForm.setFieldsValue({
+      name: variant.name,
+      short_desc: variant.short_desc || variant.shortDescription,
+      long_desc: variant.long_desc || variant.longDescription,
+      selling_price: variant.selling_price,
+      mrp: variant.mrp,
+      code_value: variant.code_value,
+      code_type: variant.code_type,
+      images: variant.images,
+      symbol: variant.symbol,
+      unit: variant.unit,
+      value: variant.value,
+      available_count: variant.available_count,
+      maximum_count: variant.maximum_count,
+      minimum_count: variant.minimum_count,
+      ...variant.variantCombination,
+      ...variant.attributes,
+    });
+  };
+
+  const handleSaveVariant = () => {
+    variantForm.validateFields().then((values) => {
+      const { itemIndex, variantIndex } = editVariantModal;
+      if (itemIndex === null || variantIndex === null) return;
+
+      const currentVariant = itemVariants[itemIndex][variantIndex];
+      
+      // Define which fields are main fields (not attributes)
+      const mainFields = ['name', 'short_desc', 'long_desc', 'selling_price', 'mrp', 
+                         'code_value', 'code_type', 'images', 'symbol', 'unit', 'value',
+                         'available_count', 'maximum_count', 'minimum_count'];
+      
+      // Start with the current variant data
+      const updatedVariant = {
+        ...currentVariant,
+      };
+      
+      // Update main fields from form values
+      mainFields.forEach(field => {
+        if (values[field] !== undefined) {
+          updatedVariant[field] = values[field];
+        }
+      });
+      
+      // Preserve existing attributes and update with new attribute values
+      const attributeUpdates: any = {};
+      Object.keys(values).forEach(key => {
+        if (!mainFields.includes(key)) {
+          attributeUpdates[key] = values[key];
+        }
+      });
+      
+      // Merge attributes, preserving existing ones and updating with new values
+      if (Object.keys(attributeUpdates).length > 0) {
+        updatedVariant.attributes = {
+          ...currentVariant.attributes,
+          ...attributeUpdates,
+        };
+      }
+      
+      // Preserve variantCombination if it exists and update its values
+      if (currentVariant.variantCombination) {
+        const variantCombinationUpdates: any = {};
+        Object.keys(currentVariant.variantCombination).forEach(key => {
+          if (values[key] !== undefined) {
+            variantCombinationUpdates[key] = values[key];
+          } else {
+            variantCombinationUpdates[key] = currentVariant.variantCombination[key];
+          }
+        });
+        updatedVariant.variantCombination = variantCombinationUpdates;
+      }
+
+      // Update the variant in state
+      setItemVariants((prev) => ({
+        ...prev,
+        [itemIndex]: prev[itemIndex].map((v, idx) =>
+          idx === variantIndex ? updatedVariant : v
+        ),
+      }));
+
+      // Close modal and reset
+      setEditVariantModal({
+        visible: false,
+        itemIndex: null,
+        variantIndex: null,
+      });
+      setEditingVariant(null);
+      variantForm.resetFields();
+      
+      toast.success("Variant updated successfully");
+    }).catch((error) => {
+      console.error("Validation failed:", error);
+      toast.error("Please fill in all required fields");
+    });
+  };
+
+  const handleCancelEditVariant = () => {
+    setEditVariantModal({
+      visible: false,
+      itemIndex: null,
+      variantIndex: null,
+    });
+    setEditingVariant(null);
+    variantForm.resetFields();
   };
 
   // Consumer Care functions
@@ -705,7 +861,6 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({
     const mapping = categoryProtocolMappings.find(
       (item) => item.category.toLowerCase() === category.toLowerCase()
     );
-    console.log("mapping?.protocolKeys>>>", mapping?.protocolKeys);
 
     return mapping?.protocolKeys || [];
   }
@@ -1089,7 +1244,7 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({
   };
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="max-w-5xl mx-auto">
       <div className="mb-8">
         <h2 className="text-2xl font-bold text-gray-800 mb-2">Item Details</h2>
         <p className="text-gray-600">
@@ -1191,72 +1346,75 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({
                     />
                   </div>
 
-                  <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Item Code *
-                    </label>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div>
-                        <label className="block text-xs text-gray-600 mb-1">
-                          Code Type *
-                        </label>
-                        <Controller
-                          name={`items.${index}.code_type`}
-                          control={control}
-                          render={({ field }) => (
-                            <Select
-                              {...field}
-                              className="w-full"
-                              size="large"
-                              placeholder="Select Code Type"
-                              onChange={(value) => {
-                                field.onChange(value);
-                              }}
-                            >
-                              <Select.Option value="EAN">EAN</Select.Option>
-                              <Select.Option value="ISBN">ISBN</Select.Option>
-                              <Select.Option value="GTIN">GTIN</Select.Option>
-                              <Select.Option value="HSN">HSN</Select.Option>
-                              <Select.Option value="Others">
-                                Others
-                              </Select.Option>
-                            </Select>
-                          )}
-                        />
-                      </div>
-                      <div className="md:col-span-2">
-                        <label className="block text-xs text-gray-600 mb-1">
-                          Code Value *
-                        </label>
-                        <Controller
-                          name={`items.${index}.code_value`}
-                          control={control}
-                          rules={{ required: "Code value is required" }}
-                          render={({ field, fieldState: { error } }) => (
-                            <>
-                              <Input
+                  {/* Item Code - Hide for F&B domain */}
+                  {watchItems[index]?.domain !== "F&B" && (
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Item Code *
+                      </label>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                          <label className="block text-xs text-gray-600 mb-1">
+                            Code Type *
+                          </label>
+                          <Controller
+                            name={`items.${index}.code_type`}
+                            control={control}
+                            render={({ field }) => (
+                              <Select
                                 {...field}
-                                placeholder="Enter Code Value"
+                                className="w-full"
                                 size="large"
-                                status={error ? "error" : undefined}
-                                onChange={(e) => {
-                                  field.onChange(e);
-                                  const codeType =
-                                    watchItems[index]?.code_type || "EAN";
-                                  updateCode(index, codeType, e.target.value);
+                                placeholder="Select Code Type"
+                                onChange={(value) => {
+                                  field.onChange(value);
                                 }}
-                              />
-                              {error && (
-                                <p className="text-red-500 text-xs mt-1">
-                                  {error.message}
-                                </p>
-                              )}
-                            </>
-                          )}
-                        />
+                              >
+                                <Select.Option value="EAN">EAN</Select.Option>
+                                <Select.Option value="ISBN">ISBN</Select.Option>
+                                <Select.Option value="GTIN">GTIN</Select.Option>
+                                <Select.Option value="HSN">HSN</Select.Option>
+                                <Select.Option value="Others">
+                                  Others
+                                </Select.Option>
+                              </Select>
+                            )}
+                          />
+                        </div>
+                        <div className="md:col-span-2">
+                          <label className="block text-xs text-gray-600 mb-1">
+                            Code Value *
+                          </label>
+                          <Controller
+                            name={`items.${index}.code_value`}
+                            control={control}
+                            rules={{ required: watchItems[index]?.domain !== "F&B" ? "Code value is required" : false }}
+                            render={({ field, fieldState: { error } }) => (
+                              <>
+                                <Input
+                                  {...field}
+                                  placeholder="Enter Code Value"
+                                  size="large"
+                                  status={error ? "error" : undefined}
+                                  onChange={(e) => {
+                                    field.onChange(e);
+                                    const codeType =
+                                      watchItems[index]?.code_type || "EAN";
+                                    updateCode(index, codeType, e.target.value);
+                                  }}
+                                />
+                                {error && (
+                                  <p className="text-red-500 text-xs mt-1">
+                                    {error.message}
+                                  </p>
+                                )}
+                              </>
+                            )}
+                          />
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  )}
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -1383,22 +1541,24 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Available Count *
+                      Availability *
                     </label>
                     <Controller
                       name={`items.${index}.available_count`}
                       control={control}
-                      rules={{ required: "Available count is required" }}
+                      rules={{ required: "Availability is required" }}
                       render={({ field, fieldState: { error } }) => (
                         <>
                           <Select
                             {...field}
                             className="w-full"
                             size="large"
-                            placeholder="Select Available Count"
+                            placeholder="Select Availability"
                           >
-                            <Select.Option value="99">99</Select.Option>
-                            <Select.Option value="0">0</Select.Option>
+                            <Select.Option value="99">Available</Select.Option>
+                            <Select.Option value="0">
+                              Not Available
+                            </Select.Option>
                           </Select>
 
                           {error && (
@@ -1574,7 +1734,6 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({
                         const store = initialData?.stores?.find(
                           (s) => s.locality === selectedStore
                         );
-                        console.log("store", store);
 
                         // Get categories based on selected domain
                         const domainCategoriesList = selectedDomain
@@ -1606,7 +1765,6 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({
                           subcategories = storeSubcategories;
                         }
 
-                        console.log("subcategories", subcategories);
 
                         return (
                           <>
@@ -1664,6 +1822,61 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({
                       }}
                     />
                   </div>
+
+                  {/* Menu Selection for F&B Domain */}
+                  {watchItems[index]?.domain === "F&B" && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Link to Menu Item
+                      </label>
+                      <Controller
+                        name={`items.${index}.menu_item`}
+                        control={control}
+                        render={({ field, fieldState: { error } }) => {
+                          const availableMenus = initialData.menuItems || [];
+
+                          return (
+                            <>
+                              <Select
+                                {...field}
+                                className="w-full"
+                                size="large"
+                                placeholder={
+                                  availableMenus.length === 0
+                                    ? "No menus available - Create menus in Custom Menu step first"
+                                    : "Select a menu item to link (optional)"
+                                }
+                                allowClear
+                                disabled={availableMenus.length === 0}
+                                status={error ? "error" : undefined}
+                              >
+                                {availableMenus.map((menu, menuIndex) => (
+                                  <Select.Option
+                                    value={menu.name}
+                                    key={menuIndex}
+                                  >
+                                    {menu.name} - {menu.category} (
+                                    {menu.vegNonVeg})
+                                  </Select.Option>
+                                ))}
+                              </Select>
+                              {availableMenus.length === 0 && (
+                                <p className="text-amber-600 text-xs mt-1">
+                                  💡 Create menu items in the Custom Menu step
+                                  to link them with items here
+                                </p>
+                              )}
+                              {error && (
+                                <p className="text-red-500 text-xs mt-1">
+                                  {error.message}
+                                </p>
+                              )}
+                            </>
+                          );
+                        }}
+                      />
+                    </div>
+                  )}
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -2327,24 +2540,25 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({
                           )}
                         />
                       </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Back Image URL
-                        </label>
-                        <Controller
-                          name={`items.${index}.back_image`}
-                          control={control}
-                          render={({ field }) => (
-                            <Input
-                              {...field}
-                              type="url"
-                              placeholder="Enter back image URL"
-                              size="large"
-                            />
-                          )}
-                        />
-                      </div>
+                      {watchItems[index]?.domain === "Grocery" && (
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Back Image URL
+                          </label>
+                          <Controller
+                            name={`items.${index}.back_image`}
+                            control={control}
+                            render={({ field }) => (
+                              <Input
+                                {...field}
+                                type="url"
+                                placeholder="Enter back image URL"
+                                size="large"
+                              />
+                            )}
+                          />
+                        </div>
+                      )}
                     </>
                   )}
                 </div>
@@ -2643,10 +2857,13 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({
             {watchItems[index]?.domain === "F&B" ? (
               <div className="mt-6 pt-6 border-t border-gray-200">
                 <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                  <h4 className="font-medium text-blue-900 mb-2">F&B Customizations</h4>
+                  <h4 className="font-medium text-blue-900 mb-2">
+                    F&B Customizations
+                  </h4>
                   <p className="text-sm text-blue-800">
-                    For F&B items, customizations and add-ons are configured in the Custom Menu step. 
-                    Variants are not applicable for food items.
+                    For F&B items, customizations and add-ons are configured in
+                    the Custom Menu step. Variants are not applicable for food
+                    items.
                   </p>
                 </div>
               </div>
@@ -2664,71 +2881,91 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({
                     }}
                     disabled={!getAvailableAttributesForVariants(index).length}
                   >
-                    {itemVariants[index] && itemVariants[index].length > 0 
-                      ? "Add More Variants" 
+                    {itemVariants[index] && itemVariants[index].length > 0
+                      ? "Add More Variants"
                       : "Create Variants"}
                   </Button>
                 </div>
 
-              {/* Display existing variants */}
-              {itemVariants[index] && itemVariants[index].length > 0 && (
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2">
-                    <p className="text-sm font-medium text-gray-700">
-                      Created Variants ({itemVariants[index].length})
-                    </p>
-                    <div className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
-                      Each variant will appear as a separate item in your catalog
+                {/* Display existing variants */}
+                {itemVariants[index] && itemVariants[index].length > 0 && (
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-medium text-gray-700">
+                        Created Variants ({itemVariants[index].length})
+                      </p>
+                      <div className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
+                        Each variant will appear as a separate item in your
+                        catalog
+                      </div>
                     </div>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                    {itemVariants[index].map((variant, vIdx) => (
-                      <div
-                        key={vIdx}
-                        className="p-3 border border-gray-200 rounded-lg bg-white shadow-sm hover:shadow-md transition-shadow"
-                      >
-                        <div className="flex justify-between items-start">
-                          <div className="flex-1">
-                            <p className="text-sm font-medium text-gray-800 mb-2">
-                              {variant.name}
-                            </p>
-                            <p className="text-xs text-gray-500 mb-2">Variant Attributes:</p>
-                            <div className="space-y-1">
-                              {Object.entries(
-                                variant.variantCombination || {}
-                              ).map(([key, value]) => (
-                                <div key={key} className="flex justify-between text-xs">
-                                  <span className="text-gray-600 capitalize">
-                                    {key.replace(/_/g, " ")}:
-                                  </span>
-                                  <span className="font-medium text-gray-800">
-                                    {String(value)}
-                                  </span>
-                                </div>
-                              ))}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                      {itemVariants[index].map((variant, vIdx) => (
+                        <div
+                          key={vIdx}
+                          className="p-3 border border-gray-200 rounded-lg bg-white shadow-sm hover:shadow-md transition-shadow"
+                        >
+                          <div className="flex justify-between items-start">
+                            <div className="flex-1">
+                              <p className="text-sm font-medium text-gray-800 mb-2">
+                                {variant.name}
+                              </p>
+                              <p className="text-xs text-gray-500 mb-2">
+                                Variant Attributes:
+                              </p>
+                              <div className="space-y-1">
+                                {Object.entries(
+                                  variant.variantCombination || {}
+                                ).map(([key, value]) => (
+                                  <div
+                                    key={key}
+                                    className="flex justify-between text-xs"
+                                  >
+                                    <span className="text-gray-600 capitalize">
+                                      {key.replace(/_/g, " ")}:
+                                    </span>
+                                    <span className="font-medium text-gray-800">
+                                      {String(value)}
+                                    </span>
+                                  </div>
+                                ))}
+                              </div>
+                              <div className="mt-2 text-xs text-blue-600">
+                                Catalog Item ID: I{vIdx + 1}
+                              </div>
                             </div>
-                            <div className="mt-2 text-xs text-blue-600">
-                              Catalog Item ID: I{vIdx + 1}
+                            <div className="flex gap-1">
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  openEditVariantModal(index, vIdx)
+                                }
+                                className="text-blue-500 hover:text-blue-700 p-1 rounded hover:bg-blue-50"
+                                title="View/Edit variant"
+                              >
+                                <FaEdit className="text-sm" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => removeVariant(index, vIdx)}
+                                className="text-red-500 hover:text-red-700 p-1 rounded hover:bg-red-50"
+                                title="Remove variant"
+                              >
+                                <FaMinus className="text-sm" />
+                              </button>
                             </div>
                           </div>
-                          <button
-                            type="button"
-                            onClick={() => removeVariant(index, vIdx)}
-                            className="text-red-500 hover:text-red-700 p-1 rounded hover:bg-red-50"
-                            title="Remove variant"
-                          >
-                            <FaMinus className="text-sm" />
-                          </button>
                         </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
+                    <div className="text-xs text-gray-500 bg-blue-50 p-2 rounded border-l-4 border-blue-200">
+                      <strong>Note:</strong> Each variant above will be created
+                      as an individual item in your product catalog. Customers
+                      can discover and purchase each variant independently based
+                      on their specific attribute preferences.
+                    </div>
                   </div>
-                  <div className="text-xs text-gray-500 bg-blue-50 p-2 rounded border-l-4 border-blue-200">
-                    <strong>Note:</strong> Each variant above will be created as an individual item in your product catalog.
-                    Customers can discover and purchase each variant independently based on their specific attribute preferences.
-                  </div>
-                </div>
-              )}
+                )}
 
                 {!getAvailableAttributesForVariants(index).length && (
                   <p className="text-sm text-gray-500">
@@ -2772,8 +3009,8 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({
         <Modal
           key={`variant-modal-${index}`}
           title={`${
-            itemVariants[index] && itemVariants[index].length > 0 
-              ? "Add More Variants for" 
+            itemVariants[index] && itemVariants[index].length > 0
+              ? "Add More Variants for"
               : "Create Variants for"
           } ${watchItems[index]?.name || `Item ${index + 1}`}`}
           open={showVariantModal[index] || false}
@@ -2793,12 +3030,16 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({
           <div className="space-y-4">
             <div>
               <p className="text-sm text-gray-600 mb-4">
-                Select which attributes you want to vary for this item. Each variant
-                will inherit all properties from the parent item but differ in the selected attributes.
-                You can create variants with just one attribute and value, or use multiple attributes with various combinations.
+                Select which attributes you want to vary for this item. Each
+                variant will inherit all properties from the parent item but
+                differ in the selected attributes. You can create variants with
+                just one attribute and value, or use multiple attributes with
+                various combinations.
                 {itemVariants[index] && itemVariants[index].length > 0 && (
                   <span className="block mt-2 text-blue-600 font-medium">
-                    This item already has {itemVariants[index].length} variant(s). You can add more variants with different attributes.
+                    This item already has {itemVariants[index].length}{" "}
+                    variant(s). You can add more variants with different
+                    attributes.
                   </span>
                 )}
               </p>
@@ -2831,9 +3072,10 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({
                 ))}
               </Select>
               <p className="text-xs text-gray-500 mt-1">
-                Each selected attribute can have one or more values. Variants will be created
-                for all possible combinations. Examples: "color" alone with 3 values = 3 variants,
-                or "color" (2 values) + "size" (3 values) = 6 variants.
+                Each selected attribute can have one or more values. Variants
+                will be created for all possible combinations. Examples: "color"
+                alone with 3 values = 3 variants, or "color" (2 values) + "size"
+                (3 values) = 6 variants.
               </p>
             </div>
 
@@ -2846,11 +3088,18 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({
                     </h4>
                     {selectedVariantAttributes[index].map((attr) => {
                       const item = watchItems[index];
-                      const predefinedValues = item?.domain && item?.category 
-                        ? getAttributePredefinedValues(item.domain, item.category, attr)
-                        : [];
-                      const hasPredefinedValues = Array.isArray(predefinedValues) && predefinedValues.length > 0;
-                      
+                      const predefinedValues =
+                        item?.domain && item?.category
+                          ? getAttributePredefinedValues(
+                              item.domain,
+                              item.category,
+                              attr
+                            )
+                          : [];
+                      const hasPredefinedValues =
+                        Array.isArray(predefinedValues) &&
+                        predefinedValues.length > 0;
+
                       return (
                         <div key={attr}>
                           <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -2869,7 +3118,7 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({
                             className="w-full"
                             size="large"
                             placeholder={
-                              hasPredefinedValues 
+                              hasPredefinedValues
                                 ? `Select from list or type custom ${attr} values`
                                 : `Enter ${attr} values (press Enter after each)`
                             }
@@ -2885,17 +3134,17 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({
                             }}
                             allowClear
                           >
-                            {hasPredefinedValues && predefinedValues.map((value: string) => (
-                              <Select.Option key={value} value={value}>
-                                {value}
-                              </Select.Option>
-                            ))}
+                            {hasPredefinedValues &&
+                              predefinedValues.map((value: string) => (
+                                <Select.Option key={value} value={value}>
+                                  {value}
+                                </Select.Option>
+                              ))}
                           </Select>
                           <p className="text-xs text-gray-500 mt-1">
-                            {hasPredefinedValues 
+                            {hasPredefinedValues
                               ? "Select from predefined options or type custom values. Even a single value will create a variant."
-                              : "Add values for this attribute. Each value will create a separate variant, even with just one value."
-                            }
+                              : "Add values for this attribute. Each value will create a separate variant, even with just one value."}
                           </p>
                         </div>
                       );
@@ -2930,6 +3179,295 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({
           </div>
         </Modal>
       ))}
+
+      {/* Edit Variant Modal */}
+      <Modal
+        title="View/Edit Variant Details"
+        open={editVariantModal.visible}
+        onOk={handleSaveVariant}
+        onCancel={handleCancelEditVariant}
+        width={800}
+        okText="Save Changes"
+        cancelText="Cancel"
+      >
+        {editingVariant && (
+          <Form
+            form={variantForm}
+            layout="vertical"
+            className="max-h-[600px] overflow-y-auto"
+          >
+            {/* Basic Information Section */}
+            <div className="mb-6">
+              <h3 className="text-lg font-semibold mb-4 border-b pb-2">
+                Basic Information
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Form.Item
+                  label="Item Name"
+                  name="name"
+                  rules={[{ required: true, message: "Name is required" }]}
+                >
+                  <Input placeholder="Enter item name" />
+                </Form.Item>
+
+                {/* Hide Code Type and Code Value for F&B domain */}
+                {editVariantModal.itemIndex !== null && 
+                 watchItems[editVariantModal.itemIndex]?.domain !== "F&B" && (
+                  <>
+                    <Form.Item
+                      label="Code Type"
+                      name="code_type"
+                      rules={[{ required: true, message: "Code type is required" }]}
+                    >
+                      <Select placeholder="Select code type">
+                        <Select.Option value="EAN">EAN</Select.Option>
+                        <Select.Option value="ISBN">ISBN</Select.Option>
+                        <Select.Option value="GTIN">GTIN</Select.Option>
+                        <Select.Option value="HSN">HSN</Select.Option>
+                        <Select.Option value="Others">Others</Select.Option>
+                      </Select>
+                    </Form.Item>
+
+                    <Form.Item
+                      label="Code Value"
+                      name="code_value"
+                      rules={[
+                        { required: true, message: "Code value is required" },
+                      ]}
+                    >
+                      <Input placeholder="Enter code value" />
+                    </Form.Item>
+                  </>
+                )}
+
+                <Form.Item
+                  label="Images URL"
+                  name="images"
+                  rules={[
+                    { required: true, message: "Image URL is required" },
+                    { type: "url", message: "Please enter a valid URL" },
+                  ]}
+                >
+                  <Input type="url" placeholder="Enter image URL" />
+                </Form.Item>
+
+                <Form.Item label="Symbol/Icon URL" name="symbol">
+                  <Input type="url" placeholder="Enter symbol URL" />
+                </Form.Item>
+              </div>
+            </div>
+
+            {/* Descriptions Section */}
+            <div className="mb-6">
+              <h3 className="text-lg font-semibold mb-4 border-b pb-2">
+                Descriptions
+              </h3>
+              <div className="grid grid-cols-1 gap-4">
+                <Form.Item
+                  label="Short Description"
+                  name="short_desc"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Short description is required",
+                    },
+                  ]}
+                >
+                  <Input.TextArea
+                    rows={2}
+                    placeholder="Enter short description"
+                  />
+                </Form.Item>
+
+                <Form.Item
+                  label="Long Description"
+                  name="long_desc"
+                  rules={[
+                    { required: true, message: "Long description is required" },
+                  ]}
+                >
+                  <Input.TextArea
+                    rows={3}
+                    placeholder="Enter long description"
+                  />
+                </Form.Item>
+              </div>
+            </div>
+
+            {/* Pricing Section */}
+            <div className="mb-6">
+              <h3 className="text-lg font-semibold mb-4 border-b pb-2">
+                Pricing
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Form.Item
+                  label="Selling Price (₹)"
+                  name="selling_price"
+                  rules={[
+                    { required: true, message: "Selling price is required" },
+                  ]}
+                >
+                  <Input
+                    type="number"
+                    step="0.01"
+                    placeholder="Enter selling price"
+                  />
+                </Form.Item>
+
+                <Form.Item
+                  label="MRP (₹)"
+                  name="mrp"
+                  rules={[{ required: true, message: "MRP is required" }]}
+                >
+                  <Input type="number" step="0.01" placeholder="Enter MRP" />
+                </Form.Item>
+              </div>
+            </div>
+
+            {/* Quantity Section */}
+            <div className="mb-6">
+              <h3 className="text-lg font-semibold mb-4 border-b pb-2">
+                Quantity & Units
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Form.Item label="Unit" name="unit">
+                  <Select placeholder="Select unit">
+                    <Select.Option value="unit">Unit</Select.Option>
+                    <Select.Option value="kg">Kilogram</Select.Option>
+                    <Select.Option value="g">Gram</Select.Option>
+                    <Select.Option value="l">Liter</Select.Option>
+                    <Select.Option value="ml">Milliliter</Select.Option>
+                    <Select.Option value="dozen">Dozen</Select.Option>
+                    <Select.Option value="pack">Pack</Select.Option>
+                  </Select>
+                </Form.Item>
+
+                <Form.Item label="Value" name="value">
+                  <Input placeholder="Enter value (e.g., 1, 500)" />
+                </Form.Item>
+
+                <Form.Item label="Available Count" name="available_count">
+                  <Input type="number" placeholder="Enter available quantity" />
+                </Form.Item>
+
+                <Form.Item label="Maximum Count" name="maximum_count">
+                  <Input
+                    type="number"
+                    placeholder="Enter maximum order quantity"
+                  />
+                </Form.Item>
+
+                <Form.Item label="Minimum Count" name="minimum_count">
+                  <Input
+                    type="number"
+                    placeholder="Enter minimum order quantity"
+                  />
+                </Form.Item>
+              </div>
+            </div>
+
+            {/* Variant Attributes Section */}
+            {editingVariant?.variantCombination && (
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold mb-4 border-b pb-2">
+                  Variant Attributes
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {Object.entries(editingVariant.variantCombination).map(
+                    ([key]) => (
+                      <Form.Item
+                        key={key}
+                        label={
+                          key.replace(/_/g, " ").charAt(0).toUpperCase() +
+                          key.replace(/_/g, " ").slice(1)
+                        }
+                        name={key}
+                      >
+                        <Input placeholder={`Enter ${key}`} />
+                      </Form.Item>
+                    )
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Additional Attributes Section */}
+            {editingVariant?.attributes && (
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold mb-4 border-b pb-2">
+                  Additional Attributes
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {Object.entries(editingVariant.attributes)
+                    .filter(
+                      ([key]) => !editingVariant.variantCombination?.[key]
+                    )
+                    .filter(
+                      ([key]) =>
+                        ![
+                          "name",
+                          "short_desc",
+                          "long_desc",
+                          "selling_price",
+                          "mrp",
+                          "code_value",
+                          "code_type",
+                          "images",
+                          "symbol",
+                          "unit",
+                          "value",
+                          "available_count",
+                          "maximum_count",
+                          "minimum_count",
+                        ].includes(key)
+                    )
+                    .map(([key]) => (
+                      <Form.Item
+                        key={key}
+                        label={
+                          key.replace(/_/g, " ").charAt(0).toUpperCase() +
+                          key.replace(/_/g, " ").slice(1)
+                        }
+                        name={key}
+                      >
+                        <Input placeholder={`Enter ${key}`} />
+                      </Form.Item>
+                    ))}
+                </div>
+              </div>
+            )}
+
+            {/* Read-only Information */}
+            <div className="mb-6">
+              <h3 className="text-lg font-semibold mb-4 border-b pb-2">
+                System Information
+              </h3>
+              <div className="bg-gray-50 p-4 rounded">
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <span className="font-medium">Variant ID:</span>{" "}
+                    <span className="text-gray-600">
+                      {editingVariant?.variantId}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="font-medium">Parent Item Index:</span>{" "}
+                    <span className="text-gray-600">
+                      {editingVariant?.variantOf}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="font-medium">Is Variant:</span>{" "}
+                    <span className="text-gray-600">
+                      {editingVariant?.isVariant ? "Yes" : "No"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </Form>
+        )}
+      </Modal>
     </div>
   );
 };
