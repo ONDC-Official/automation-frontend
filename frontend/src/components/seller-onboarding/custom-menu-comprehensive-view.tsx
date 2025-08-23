@@ -28,6 +28,7 @@ interface CustomizationGroup {
   required: boolean;
   minQuantity: number;
   maxQuantity: number;
+  seq: number;
   items: CustomizationItem[];
 }
 
@@ -36,6 +37,7 @@ interface MenuItem {
   category: string;
   price: string;
   vegNonVeg: string;
+  rank?: number;
   customizationGroups?: CustomizationGroup[];
 }
 
@@ -48,7 +50,7 @@ const CustomMenuComprehensiveView: React.FC<CustomMenuComprehensiveViewProps> = 
   const [showPayloadModal, setShowPayloadModal] = useState(false);
   const [selectedPayload, setSelectedPayload] = useState<any>(null);
 
-  // Group items by category
+  // Group items by category and sort by rank
   const categorizedItems = menuItems.reduce((acc, item) => {
     const category = item.category || "Uncategorized";
     if (!acc[category]) {
@@ -57,6 +59,11 @@ const CustomMenuComprehensiveView: React.FC<CustomMenuComprehensiveViewProps> = 
     acc[category].push(item);
     return acc;
   }, {} as Record<string, MenuItem[]>);
+
+  // Sort items within each category by rank
+  Object.keys(categorizedItems).forEach(category => {
+    categorizedItems[category].sort((a, b) => (a.rank || 999) - (b.rank || 999));
+  });
 
   // Collect all custom groups
   const allCustomGroups: CustomizationGroup[] = [];
@@ -395,6 +402,13 @@ const CustomMenuComprehensiveView: React.FC<CustomMenuComprehensiveViewProps> = 
                             <Tag color={item.vegNonVeg === "veg" ? "green" : "red"} className="ml-2">
                               {item.vegNonVeg === "veg" ? "Veg" : "Non-Veg"}
                             </Tag>
+                            {item.rank && (
+                              <Tooltip title="Display sequence in menu">
+                                <Tag color="purple" className="ml-2">
+                                  Rank: {item.rank}
+                                </Tag>
+                              </Tooltip>
+                            )}
                           </h5>
                           <span className="text-lg font-semibold">₹{item.price}</span>
                         </div>
@@ -406,7 +420,9 @@ const CustomMenuComprehensiveView: React.FC<CustomMenuComprehensiveViewProps> = 
                             </div>
                             
                             <div className="flex items-center flex-wrap gap-2">
-                              {item.customizationGroups.map((group, gIdx) => (
+                              {item.customizationGroups
+                                .sort((a, b) => (a.seq || 999) - (b.seq || 999))
+                                .map((group, gIdx) => (
                                 <React.Fragment key={group.id}>
                                   <div className="bg-white p-3 rounded-lg border-2 border-purple-300">
                                     <div className="text-sm font-medium mb-1">
@@ -415,6 +431,11 @@ const CustomMenuComprehensiveView: React.FC<CustomMenuComprehensiveViewProps> = 
                                         count={group.id} 
                                         style={{ backgroundColor: '#8b5cf6', marginLeft: 8 }} 
                                       />
+                                      <Tooltip title="Display sequence">
+                                        <span className="ml-2 text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded">
+                                          Seq: {group.seq || gIdx + 1}
+                                        </span>
+                                      </Tooltip>
                                     </div>
                                     <div className="text-xs text-gray-600 mb-2">
                                       {group.type === "single" ? "Choose 1" : `Choose ${group.minQuantity}-${group.maxQuantity}`}
@@ -444,110 +465,110 @@ const CustomMenuComprehensiveView: React.FC<CustomMenuComprehensiveViewProps> = 
               </div>
             )
           },
-          {
-            key: "3",
-            label: (
-              <span>
-                <FaLink className="inline mr-1" />
-                Relationships
-              </span>
-            ),
-            children: (
-              <div className="space-y-6">
-                <Alert
-                  message="Understanding the Relationships"
-                  description="This view shows how different entities are connected in the ONDC F&B structure"
-                  type="warning"
-                  showIcon
-                />
+          // {
+          //   key: "3",
+          //   label: (
+          //     <span>
+          //       <FaLink className="inline mr-1" />
+          //       Relationships
+          //     </span>
+          //   ),
+          //   children: (
+          //     <div className="space-y-6">
+          //       <Alert
+          //         message="Understanding the Relationships"
+          //         description="This view shows how different entities are connected in the ONDC F&B structure"
+          //         type="warning"
+          //         showIcon
+          //       />
 
-                <div className="grid md:grid-cols-2 gap-6">
-                  {/* Custom Groups Card */}
-                  <Card 
-                    title={
-                      <span>
-                        <FaPuzzlePiece className="inline mr-2" />
-                        Custom Groups as Categories
-                      </span>
-                    }
-                    className="border-2 border-purple-200"
-                  >
-                    <div className="space-y-3">
-                      {allCustomGroups.map(group => (
-                        <div key={group.id} className="p-3 bg-purple-50 rounded-lg">
-                          <div className="font-medium">{group.id}: {group.name}</div>
-                          <div className="text-sm text-gray-600 mt-1">
-                            Type: {group.type} | Min: {group.minQuantity} | Max: {group.maxQuantity}
-                          </div>
-                          <div className="text-xs mt-2 bg-white p-2 rounded font-mono">
-                            categories[].tags.type.value = "custom_group"
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </Card>
+          //       <div className="grid md:grid-cols-2 gap-6">
+          //         {/* Custom Groups Card */}
+          //         <Card 
+          //           title={
+          //             <span>
+          //               <FaPuzzlePiece className="inline mr-2" />
+          //               Custom Groups as Categories
+          //             </span>
+          //           }
+          //           className="border-2 border-purple-200"
+          //         >
+          //           <div className="space-y-3">
+          //             {allCustomGroups.map(group => (
+          //               <div key={group.id} className="p-3 bg-purple-50 rounded-lg">
+          //                 <div className="font-medium">{group.id}: {group.name}</div>
+          //                 <div className="text-sm text-gray-600 mt-1">
+          //                   Type: {group.type} | Min: {group.minQuantity} | Max: {group.maxQuantity}
+          //                 </div>
+          //                 <div className="text-xs mt-2 bg-white p-2 rounded font-mono">
+          //                   categories[].tags.type.value = "custom_group"
+          //                 </div>
+          //               </div>
+          //             ))}
+          //           </div>
+          //         </Card>
 
-                  {/* Item References Card */}
-                  <Card 
-                    title={
-                      <span>
-                        <FaUtensils className="inline mr-2" />
-                        How Items Reference Groups
-                      </span>
-                    }
-                    className="border-2 border-orange-200"
-                  >
-                    <div className="space-y-3">
-                      {menuItems.slice(0, 3).map((item, idx) => (
-                        <div key={idx} className="p-3 bg-orange-50 rounded-lg">
-                          <div className="font-medium">{item.name}</div>
-                          {item.customizationGroups && (
-                            <div className="text-sm mt-2">
-                              <span className="text-gray-600">References:</span>
-                              <div className="space-y-1 mt-1">
-                                {item.customizationGroups.map(g => (
-                                  <div key={g.id} className="text-xs bg-white p-1 rounded font-mono">
-                                    tags.custom_group.id = "{g.id}"
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </Card>
-                </div>
+          //         {/* Item References Card */}
+          //         <Card 
+          //           title={
+          //             <span>
+          //               <FaUtensils className="inline mr-2" />
+          //               How Items Reference Groups
+          //             </span>
+          //           }
+          //           className="border-2 border-orange-200"
+          //         >
+          //           <div className="space-y-3">
+          //             {menuItems.slice(0, 3).map((item, idx) => (
+          //               <div key={idx} className="p-3 bg-orange-50 rounded-lg">
+          //                 <div className="font-medium">{item.name}</div>
+          //                 {item.customizationGroups && (
+          //                   <div className="text-sm mt-2">
+          //                     <span className="text-gray-600">References:</span>
+          //                     <div className="space-y-1 mt-1">
+          //                       {item.customizationGroups.map(g => (
+          //                         <div key={g.id} className="text-xs bg-white p-1 rounded font-mono">
+          //                           tags.custom_group.id = "{g.id}"
+          //                         </div>
+          //                       ))}
+          //                     </div>
+          //                   </div>
+          //                 )}
+          //               </div>
+          //             ))}
+          //           </div>
+          //         </Card>
+          //       </div>
 
-                {/* Summary */}
-                <Card className="bg-gradient-to-r from-blue-50 to-purple-50">
-                  <h4 className="font-semibold mb-3">Key Relationships Summary</h4>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex items-start">
-                      <span className="font-medium mr-2">1.</span>
-                      <span>Menu categories (Pizza, Beverages) → type: "custom_menu"</span>
-                    </div>
-                    <div className="flex items-start">
-                      <span className="font-medium mr-2">2.</span>
-                      <span>Custom groups (Size, Toppings) → type: "custom_group"</span>
-                    </div>
-                    <div className="flex items-start">
-                      <span className="font-medium mr-2">3.</span>
-                      <span>Items reference custom groups → tags.custom_group.id = "CG1"</span>
-                    </div>
-                    <div className="flex items-start">
-                      <span className="font-medium mr-2">4.</span>
-                      <span>Customization items → tags.parent.id = "CG1" (not item ID!)</span>
-                    </div>
-                    <div className="flex items-start">
-                      <span className="font-medium mr-2">5.</span>
-                      <span>Sequential groups → tags.child.id = "CG2" (next group)</span>
-                    </div>
-                  </div>
-                </Card>
-              </div>
-            )
-          }
+          //       {/* Summary */}
+          //       <Card className="bg-gradient-to-r from-blue-50 to-purple-50">
+          //         <h4 className="font-semibold mb-3">Key Relationships Summary</h4>
+          //         <div className="space-y-2 text-sm">
+          //           <div className="flex items-start">
+          //             <span className="font-medium mr-2">1.</span>
+          //             <span>Menu categories (Pizza, Beverages) → type: "custom_menu"</span>
+          //           </div>
+          //           <div className="flex items-start">
+          //             <span className="font-medium mr-2">2.</span>
+          //             <span>Custom groups (Size, Toppings) → type: "custom_group"</span>
+          //           </div>
+          //           <div className="flex items-start">
+          //             <span className="font-medium mr-2">3.</span>
+          //             <span>Items reference custom groups → tags.custom_group.id = "CG1"</span>
+          //           </div>
+          //           <div className="flex items-start">
+          //             <span className="font-medium mr-2">4.</span>
+          //             <span>Customization items → tags.parent.id = "CG1" (not item ID!)</span>
+          //           </div>
+          //           <div className="flex items-start">
+          //             <span className="font-medium mr-2">5.</span>
+          //             <span>Sequential groups → tags.child.id = "CG2" (next group)</span>
+          //           </div>
+          //         </div>
+          //       </Card>
+          //     </div>
+          //   )
+          // }
         ]}
       />
 

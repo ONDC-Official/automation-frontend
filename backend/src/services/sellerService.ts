@@ -374,7 +374,7 @@ export class SellerService {
             
             if (supportedFulfillments === "All") {
                 // If "All" is selected, add all fulfillment types
-                ["Order", "Delivery", "Self-Pickup"].forEach((type) => {
+                [ "Delivery", "Self-Pickup"].forEach((type) => {
                     if (!fulfillmentsMap.has(type)) {
                         fulfillmentsMap.set(type, {
                             id: `F${fulfillmentsMap.size + 1}`,
@@ -462,7 +462,7 @@ export class SellerService {
                 label: "enable",
                 timestamp: new Date().toISOString()
             },
-            rating: "4",
+            // rating: "4",
             descriptor: {
                 name: item.name || "Unknown Item",
                 code:  (() => {
@@ -537,12 +537,12 @@ export class SellerService {
             const supportedFulfillments = store.supported_fulfillments;
             
             if (supportedFulfillments === "All") {
-                storeFulfillmentsMap.set(storeKey, ["F1", "F2", "F3"]); // Assuming F1=Order, F2=Delivery, F3=Self-Pickup
+                storeFulfillmentsMap.set(storeKey, ["F1", "F2", ]);
             } else if (supportedFulfillments) {
                 // Map fulfillment type to ID
-                const fulfillmentId = supportedFulfillments === "Order" ? "F1" : 
-                                    supportedFulfillments === "Delivery" ? "F2" : 
-                                    supportedFulfillments === "Self-Pickup" ? "F3" : "F2";
+                const fulfillmentId = 
+                                    supportedFulfillments === "Delivery" ? "F1" : 
+                                    supportedFulfillments === "Self-Pickup" ? "F2" : "F1";
                 storeFulfillmentsMap.set(storeKey, [fulfillmentId]);
             } else {
                 storeFulfillmentsMap.set(storeKey, ["F1"]); // Default to Delivery
@@ -694,7 +694,7 @@ export class SellerService {
                 label: "enable",
                 timestamp: new Date().toISOString()
             },
-            rating: "4",
+            // rating: "4",
             parent_item_id: "V1",
             descriptor: {
                 name: "Sample Item",
@@ -742,8 +742,32 @@ export class SellerService {
         }];
     }
 
+    // Helper function to format time values
+    private formatTimeValue(time: string): string {
+        if (!time) return "1100"; // Default time
+        // Remove colons and ensure 4 digits
+        const cleanTime = time.replace(/:/g, '');
+        return cleanTime.padStart(4, '0');
+    }
+
+    // Helper function to format day values
+    private formatDayValue(day: string | number): string {
+        if (!day) return "1"; // Default to Monday
+        // Convert day names to numbers if needed
+        const dayMap: { [key: string]: string } = {
+            'monday': '1', 'mon': '1',
+            'tuesday': '2', 'tue': '2',
+            'wednesday': '3', 'wed': '3',
+            'thursday': '4', 'thu': '4',
+            'friday': '5', 'fri': '5',
+            'saturday': '6', 'sat': '6',
+            'sunday': '7', 'sun': '7'
+        };
+        const dayStr = String(day).toLowerCase();
+        return dayMap[dayStr] || String(day);
+    }
+
     protected generateProviderTags(sellerData: any, locationIds: string[], domainCategories?: Set<string>) {
-        console.log('generateProviderTags - Location IDs:', locationIds);
         const tags = [];
         const stores = sellerData.stores || [];
         
@@ -771,79 +795,56 @@ export class SellerService {
         };
         
         // Add timing tags for each store location
+        // Supports both:
+        // 1. New format: Multiple timings array - allows different hours for different fulfillment types and day ranges
+        // 2. Legacy format: Single timing fields - backward compatibility
         stores.forEach((store: any, index: number) => {
             const locationId = locationIds[index] || locationIds[0] || "L_DEFAULT";
             
-            // Order timing for this store
-            tags.push({
-                code: "timing",
-                list: [
-                    {
-                        code: "type",
-                        value: "Order"
-                    },
-                    {
-                        code: "location",
-                        value: locationId
-                    },
-                    {
-                        code: "day_from",
-                        value: store.day_from || "1"
-                    },
-                    {
-                        code: "day_to",
-                        value: store.day_to || "7"
-                    },
-                    {
-                        code: "time_from",
-                        value: store.time_from || "0000"
-                    },
-                    {
-                        code: "time_to",
-                        value: store.time_to || "2359"
+            // Check if store has multiple timings array (new format)
+            if (store.timings && Array.isArray(store.timings) && store.timings.length > 0) {
+                // Process multiple timings
+                store.timings.forEach((timing: any, timingIndex: number) => {
+                    if (timing.type) {
+                        tags.push({
+                            code: "timing",
+                            list: [
+                                {
+                                    code: "type",
+                                    value: timing.type
+                                },
+                                {
+                                    code: "location",
+                                    value: locationId
+                                },
+                                {
+                                    code: "day_from",
+                                    value: this.formatDayValue(timing.day_from || "1")
+                                },
+                                {
+                                    code: "day_to",
+                                    value: this.formatDayValue(timing.day_to || "7")
+                                },
+                                {
+                                    code: "time_from",
+                                    value: this.formatTimeValue(timing.time_from || "1100")
+                                },
+                                {
+                                    code: "time_to",
+                                    value: this.formatTimeValue(timing.time_to || "2200")
+                                }
+                            ]
+                        });
                     }
-                ]
-            });
-
-            // Delivery timing for this store
-            tags.push({
-                code: "timing",
-                list: [
-                    {
-                        code: "type",
-                        value: "Delivery"
-                    },
-                    {
-                        code: "location",
-                        value: locationId
-                    },
-                    {
-                        code: "day_from",
-                        value: store.day_from || "1"
-                    },
-                    {
-                        code: "day_to",
-                        value: store.day_to || "7"
-                    },
-                    {
-                        code: "time_from",
-                        value: store.time_from || "1100"
-                    },
-                    {
-                        code: "time_to",
-                        value: store.time_to || "2200"
-                    }
-                ]
-            });
-            
-            // Self-Pickup timing if supported
-            if (store.supported_fulfillments === "Self-Pickup" || store.supported_fulfillments === "All") {
+                });
+            } else {
+                // Delivery timing for this store
                 tags.push({
                     code: "timing",
                     list: [
                         {
                             code: "type",
-                            value: "Self-Pickup"
+                            value: store.type || "Delivery"
                         },
                         {
                             code: "location",
@@ -851,57 +852,62 @@ export class SellerService {
                         },
                         {
                             code: "day_from",
-                            value: store.day_from || "1"
+                            value: this.formatDayValue(store.day_from || "1")
                         },
                         {
                             code: "day_to",
-                            value: store.day_to || "7"
+                            value: this.formatDayValue(store.day_to || "7")
                         },
                         {
                             code: "time_from",
-                            value: store.time_from || "1100"
+                            value: this.formatTimeValue(store.time_from || "1100")
                         },
                         {
                             code: "time_to",
-                            value: store.time_to || "2200"
+                            value: this.formatTimeValue(store.time_to || "2200")
                         }
                     ]
                 });
+                
+                // Self-Pickup timing if supported (legacy behavior)
+                if (store.supported_fulfillments === "Self-Pickup" || store.supported_fulfillments === "All") {
+                    tags.push({
+                        code: "timing",
+                        list: [
+                            {
+                                code: "type",
+                                value: "Self-Pickup"
+                            },
+                            {
+                                code: "location",
+                                value: locationId
+                            },
+                            {
+                                code: "day_from",
+                                value: this.formatDayValue(store.day_from || "1")
+                            },
+                            {
+                                code: "day_to",
+                                value: this.formatDayValue(store.day_to || "7")
+                            },
+                            {
+                                code: "time_from",
+                                value: this.formatTimeValue(store.time_from || "1100")
+                            },
+                            {
+                                code: "time_to",
+                                value: this.formatTimeValue(store.time_to || "2200")
+                            }
+                        ]
+                    });
+                }
             }
         });
         
         // If no stores, add default timing
         if (stores.length === 0) {
             const defaultLocationId = locationIds[0] || "L_DEFAULT";
-            tags.push({
-                code: "timing",
-                list: [
-                    {
-                        code: "type",
-                        value: "Order"
-                    },
-                    {
-                        code: "location",
-                        value: defaultLocationId
-                    },
-                    {
-                        code: "day_from",
-                        value: "1"
-                    },
-                    {
-                        code: "day_to",
-                        value: "7"
-                    },
-                    {
-                        code: "time_from",
-                        value: "0000"
-                    },
-                    {
-                        code: "time_to",
-                        value: "2359"
-                    }
-                ]
-            });
+          
 
             tags.push({
                 code: "timing",
@@ -958,7 +964,6 @@ export class SellerService {
                     if (serviceability.category && serviceability.type) {
                         // Only include serviceability if category is relevant to current domain
                         const isRelevant = isCategoryRelevantToDomain(serviceability.category);
-                        console.log(`Category "${serviceability.category}" is relevant to domain: ${isRelevant}`);
                         
                         if (isRelevant) {
                             // Determine default values based on serviceability type
@@ -985,7 +990,7 @@ export class SellerService {
                                     },
                                     {
                                         code: "category",
-                                        value: serviceability.category
+                                        value: sellerData.domain === "F&B" ? "F&B" : serviceability.category
                                     },
                                     {
                                         code: "type",
@@ -1002,7 +1007,6 @@ export class SellerService {
                                 ]
                             };
                             
-                            console.log('Adding serviceability tag:', JSON.stringify(serviceabilityTag, null, 2));
                             tags.push(serviceabilityTag);
                         }
                     }
@@ -1023,7 +1027,7 @@ export class SellerService {
                                     },
                                     {
                                         code: "category",
-                                        value: category
+                                        value: sellerData.domain === "F&B" ? "F&B" : category
                                     },
                                     {
                                         code: "type",
@@ -1045,8 +1049,6 @@ export class SellerService {
             }
         });
         
-        console.log(`Total serviceability tags added: ${tags.filter(t => t.code === 'serviceability').length}`);
-        console.log('All tags:', JSON.stringify(tags.filter(t => t.code === 'serviceability'), null, 2));
         
         // If no stores at all, add default serviceability
         if (stores.length === 0) {
@@ -1065,7 +1067,7 @@ export class SellerService {
                             },
                             {
                                 code: "category",
-                                value: category
+                                value: sellerData.domain === "F&B" ? "F&B" : category
                             },
                             {
                                 code: "type",

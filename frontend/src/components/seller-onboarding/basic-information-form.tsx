@@ -1,5 +1,5 @@
 import { useForm } from "react-hook-form";
-import { FormInput } from "../ui/forms/form-input";
+import { FormInput, LabelWithToolTip } from "../ui/forms/form-input";
 import LoadingButton from "../ui/forms/loading-button";
 import { SellerOnboardingData } from "../../pages/seller-onboarding";
 import { useState } from "react";
@@ -114,17 +114,14 @@ const BasicInformationForm = ({
       domain: selectedDomain,
       // symbolImage,
     });
-    console.log("data with domain", { ...data, domain: selectedDomain });
   };
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       <div className="grid md:grid-cols-2 gap-6">
         <div className="mb-4 w-full">
-          <label className="block text-sm font-medium text-gray-700 mb-2 labelClass">
-            Domain
-            <span className="text-red-500 ml-1">*</span>
-          </label>
+          <LabelWithToolTip labelInfo={""} label={"Domain"} />
+
           <Select
             mode="multiple"
             placeholder="Select one or more domains"

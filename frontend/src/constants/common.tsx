@@ -20,7 +20,6 @@ export const domainOptions = [
 ];
 
 export const Types = [
-  { key: "Order", value: "Order" },
   { key: "Delivery", value: "Delivery" },
   { key: "Self-Pickup", value: "Self-Pickup" },
   { key: "All ", value: "All" },

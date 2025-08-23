@@ -21,6 +21,7 @@ export interface MenuItem {
   price: string;
   category: string;
   vegNonVeg: string;
+  rank?: number; // Display sequence/ranking for menu items
   customizationGroups?: Array<{
     id: string;
     name: string;
@@ -28,6 +29,7 @@ export interface MenuItem {
     required: boolean;
     minQuantity: number;
     maxQuantity: number;
+    seq: number;
     items: Array<{
       id: string;
       name: string;
@@ -64,6 +66,7 @@ export interface ItemDetails {
   // Additional Details
   brand?: string;
   category: string;
+  menu_item?: string; // For F&B domain - links to menu item name
   default_fulfillment_type: string;
   store: string;
   returnable: boolean;
@@ -169,7 +172,7 @@ export interface ItemDetails {
     // Allow any additional dynamic attributes
     [key: string]: any;
   };
-  
+
   // Legacy support for direct attribute access (to be deprecated)
   [key: string]: any;
 }
@@ -186,12 +189,20 @@ export interface StoreDetails {
   // Contact Details
   phone?: string;
   email?: string;
-  // Store Timings
+  // Store Timings (legacy - kept for backward compatibility)
   type?: string;
   day_from?: string;
   day_to?: string;
   time_from?: string;
   time_to?: string;
+  // Multiple Store Timings (new)
+  timings?: Array<{
+    type?: string; // Fulfillment type
+    day_from?: string;
+    day_to?: string;
+    time_from?: string;
+    time_to?: string;
+  }>;
   // Additional Details
   fssai_no?: string;
   // pan_no?: string;
@@ -254,7 +265,9 @@ const SellerOnboarding = () => {
   const [isCompleted, setIsCompleted] = useState(false);
   const [completedData, setCompletedData] = useState<SellerOnboardingData>({});
   const [onSearchPayload, setOnSearchPayload] = useState<any>(null);
-  const [payloadType, setPayloadType] = useState<'single-domain' | 'multi-domain'>('single-domain');
+  const [payloadType, setPayloadType] = useState<
+    "single-domain" | "multi-domain"
+  >("single-domain");
 
   const isFnBDomain = formData?.domain?.includes("F&B");
 
@@ -311,7 +324,7 @@ const SellerOnboarding = () => {
       // Set completion state and store completed data
       setCompletedData(completeData);
       setOnSearchPayload(response.data.data || response.data);
-      setPayloadType(response.data.type || 'single-domain');
+      setPayloadType(response.data.type || "single-domain");
       setIsCompleted(true);
     } catch (error: any) {
       toast.error("Failed to complete onboarding. Please try again.");
