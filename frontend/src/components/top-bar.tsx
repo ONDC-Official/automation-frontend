@@ -10,7 +10,6 @@ interface SubMenuItem {
 }
 
 import { UserContext } from "../context/userContext";
-import { GiVintageRobot } from "react-icons/gi";
 
 interface NavLink {
 	label: string;
@@ -96,14 +95,14 @@ const TopBar = ({ onSupportClick }: IPops) => {
 					className="flex items-center justify-start w-full md:w-auto cursor-pointer"
 					onClick={() => navigate("/home")}
 				>
-					{/* <img
+					<img
 						src="https://ondc.org/assets/theme/images/ondc_registered_logo.svg?v=d864655110"
 						alt="Logo"
 						className="h-10 w-auto"
-					/> */}
+					/>
 					{/* <GoGear className="h-8 w-8 text-sky-600" /> */}
 					{/* <MdOutlineSettings className="h-8 w-8 text-sky-600" /> */}
-					<GiVintageRobot className="h-10 w-10 text-sky-600" />
+					{/* <GiVintageRobot className="h-10 w-10 text-sky-600" /> */}
 					<pre
 						className="text-2xl font-bold text-transparent bg-gradient-to-r from-sky-600 to-sky-400 bg-clip-text ml-1 mb-1"
 						style={{
@@ -159,77 +158,23 @@ const TopBar = ({ onSupportClick }: IPops) => {
 					}`}
 				>
 					{links.map((link, index) => (
-						<li 
-							key={index} 
-							className="relative group" 
-							ref={link.subMenu ? dropdownRef : undefined}
-							onMouseEnter={() => {
-								if (link.subMenu) {
-									setOpenDropdown(link.label);
-								}
-							}}
-							onMouseLeave={() => {
-								if (link.subMenu) {
-									setOpenDropdown(null);
-								}
-							}}
-						>
-							{link.subMenu ? (
-								<>
-									<a
-										className={`hover:text-blue-500 block py-1 cursor-pointer flex items-center gap-1 ${
-											link.selected
-												? "text-blue-700 border-b-2 border-blue-500 text-blue-500"
-												: "text-gray-500"
-										}`}
-										onClick={() => {
-											navigate(link.href);
-											setOpenDropdown(null);
-										}}
-									>
-										{link.label}
-										<FaChevronDown className={`text-xs transition-transform ${openDropdown === link.label ? 'rotate-180' : ''}`} />
-									</a>
-									{openDropdown === link.label && (
-										<ul 
-											className="absolute top-full left-0 mt-1 bg-white shadow-lg rounded-md py-2 min-w-[200px] z-50"
-											onMouseEnter={() => setOpenDropdown(link.label)}
-										>
-											{link.subMenu.map((subItem, subIndex) => (
-												<li key={subIndex}>
-													<a
-														className="block px-4 py-2 text-gray-700 hover:bg-gray-100 hover:text-blue-500 cursor-pointer"
-														onClick={() => {
-															navigate(subItem.href);
-															setOpenDropdown(null);
-															setIsOpen(false);
-														}}
-													>
-														{subItem.label}
-													</a>
-												</li>
-											))}
-										</ul>
-									)}
-								</>
-							) : (
-								<a
-									className={`hover:text-blue-500 block py-1 cursor-pointer  ${
-										link.selected
-											? "text-blue-700 border-b-2 border-blue-500 text-blue-500"
-											: "text-gray-500"
-									}`}
-									onClick={() => {
-										if (link.label === "Support") {
-											onSupportClick();
-										} else {
-											navigate(link.href);
-										}
-									}}
-								>
-									{link.label}
-								</a>
-							)}
+						<li key={index}>
+							<a
+								className={`hover:text-sky-500 block py-1 cursor-pointer  ${
+									link.selected
+										? "text-sky-700 border-b-2 border-sky-500 text-sky-500"
+										: "text-gray-500"
+								}`}
+								onClick={() => {
+									if (link.label === "Support") {
+										onSupportClick();
+									} else {
+										navigate(link.href);
+									}
+								}}
+							>
+								{link.label}
+							</a>
 						</li>
 					))}
 					<li></li>
@@ -258,7 +203,7 @@ const TopBar = ({ onSupportClick }: IPops) => {
 							navigate(userDetails ? "/profile" : "/login");
 						}}
 						className="mt-2 text-xl"
-						// className="text-blue-600 bg-sky-200 rounded-full p-2 hover:text-blue-800 text-xl md:text-2xl"
+						// className="text-sky-600 bg-sky-200 rounded-full p-2 hover:text-sky-800 text-xl md:text-2xl"
 						title={userDetails ? "Profile" : "Login"}
 					>
 						{userDetails ? (

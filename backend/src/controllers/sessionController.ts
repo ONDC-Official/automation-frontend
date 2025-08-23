@@ -12,6 +12,7 @@ import {
 import { saveLog } from "../utils/console";
 import logger from "@ondc/automation-logger";
 import { getLoggerMeta } from "../utils/logger-meta-utilts";
+import { get } from "lodash";
 
 const SESSION_EXPIRY = 3600; // 1 hour
 const COOKIE_OPTIONS = { maxAge: SESSION_EXPIRY, httpOnly: true };
@@ -62,7 +63,7 @@ export const getSession = async (req: Request, res: Response) => {
 		const sessionData = await getSessionService(sessionId);
 		res.status(200).send(sessionData);
 	} catch (error: any) {
-		console.error(error);
+		logger.error("Error fetching session", getLoggerMeta(req), error);
 		res
 			.status(500)
 			.send({ message: "Error fetching session", error: error.message });
@@ -104,7 +105,7 @@ export const clearFlow = async (req: Request, res: Response) => {
 		);
 		res.status(200).send({ message: "Flow cleared" });
 	} catch (e) {
-		logger.error("error clearing flow", e);
+		logger.error("error clearing flow", getLoggerMeta(req), e);
 		res.status(500).send({ message: "Error clearing flow" });
 	}
 };
@@ -124,8 +125,8 @@ export const createExpectation = async (req: Request, res: Response) => {
 			{
 				subscriberUrl: req.query.subscriber_url,
 				flowId: req.query.flow_id,
-				sessionId: req.query.session_id,
 				expectedAction: req.query.expected_action,
+				...getLoggerMeta(req),
 			},
 			e
 		);

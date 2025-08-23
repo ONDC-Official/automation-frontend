@@ -52,10 +52,10 @@ const Sidebar: React.FC<SidebarProps> = ({
 									setActiveTab(tab.id);
 									navigate(`/${tab.id}`);
 								}}
-								className={`relative flex items-center p-3 w-full text-gray-700 hover:bg-blue-200 hover:text-blue-700 transition-all duration-300 ease-in-out rounded-md 
+								className={`relative flex items-center p-3 w-full text-gray-700 hover:bg-sky-200 hover:text-sky-700 transition-all duration-300 ease-in-out rounded-md 
                                 ${
 																	activeTab === tab.id
-																		? "bg-sky-100 text-blue-600 shadow-[0_0_10px_rgba(59,130,246,0.6)]"
+																		? "bg-sky-100 text-sky-600 shadow-[0_0_10px_rgba(59,130,246,0.6)]"
 																		: "hover:shadow-[0_0_8px_rgba(59,130,246,0.4)]"
 																}`}
 							>

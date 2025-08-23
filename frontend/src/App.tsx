@@ -18,6 +18,7 @@ import axios from "axios";
 import { getGithubAvatarUrl } from "./utils/regsitry-utils";
 import { SubscriberData } from "./components/registry-components/registry-types";
 import * as api from "./utils/registry-apis";
+import Footer from "./components/main-footer";
 function App() {
 	const [isModalOpen, setIsModalOpen] = useState(false);
 	const [user, setUser] = useState<UserDetails | undefined>(undefined);
@@ -112,7 +113,7 @@ function App() {
 					<Route path="*" element={<NotFoundPage />} />
 				</Routes>
 			</div>
-
+			<Footer />
 			<Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
 				<Support />
 			</Modal>
