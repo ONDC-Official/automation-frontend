@@ -8,94 +8,84 @@ interface IOption {
 }
 
 const FormSelect = ({
-  register = (_: any) => {},
-  name,
-  label,
-  options,
-  errors,
-  setSelectedValue = (_: string | string[]) => {},
-  defaultValue,
-  labelInfo = "",
-  nonSelectedValue = false,
-  disabled = false,
-  required = false,
-  currentValue = "",
-  multiple = false,
+	register = (_: any) => {},
+	name,
+	label,
+	options,
+	errors,
+	setSelectedValue = (_: string) => {},
+	defaultValue,
+	labelInfo = "",
+	nonSelectedValue = false,
+	disabled = false,
+	required = false,
+	currentValue = "",
 }: any) => {
-  const [value, setValue] = useState<string | string[]>(multiple ? [] : "");
+	const [value, setValue] = useState("");
 
-  useEffect(() => {
-    if (nonSelectedValue && !currentValue) {
-      setValue(multiple ? [] : "");
-    }
-  }, [options, multiple, nonSelectedValue, currentValue]);
+	useEffect(() => {
+		if (nonSelectedValue) {
+			setValue("");
+		}
+	}, [options]);
 
-  const onSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    if (multiple) {
-      const selectedOptions = Array.from(e.target.selectedOptions, option => option.value);
-      console.log(selectedOptions, "selectedOptions");
-      setSelectedValue(selectedOptions);
-      setValue(selectedOptions);
-    } else {
-      console.log(e.target.value, "index");
-      setSelectedValue(e.target.value);
-      console.log("reaching till here>>>???");
-      setValue(e.target.value);
-    }
-  };
-  return (
-    <>
-      <div className="mb-4 w-full">
-        <LabelWithToolTip labelInfo={labelInfo} label={label} />
-        <select
-          {...register(name, {
-            required: required && `This field is required`,
-          })}
-          className={`${inputClass} ${multiple ? 'h-32' : ''}`}
-          onChange={onSelectChange}
-          defaultValue={defaultValue}
-          disabled={disabled}
-          value={currentValue || value}
-          multiple={multiple}
-        >
-          {nonSelectedValue && !multiple && (
-            <option value="" disabled>
-              Select a value
-            </option>
-          )}
+	const onSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+		console.log(e.target.value, "index");
+		setSelectedValue(e.target.value);
+		console.log("reaching till here>>>???");
+		setValue(e.target.value);
+	};
+	return (
+		<>
+			<div className="mb-2 w-full bg-gray-50 border rounded-md p-2 flex">
+				<LabelWithToolTip labelInfo={labelInfo} label={label} />
+				<select
+					{...register(name, {
+						required: required && `This field is required`,
+					})}
+					className={inputClass}
+					onChange={onSelectChange}
+					defaultValue={defaultValue}
+					disabled={disabled}
+					value={currentValue || value}
+				>
+					{nonSelectedValue && (
+						<option value="" disabled selected>
+							Select a value
+						</option>
+					)}
 
-          {options.map((option: string | IOption, index: number) => {
-            let optionValue;
-            let optionDisplay;
+					{options.map((option: string | IOption, index: number) => {
+						let value;
 
-            if (typeof option === "string") {
-              optionValue = option;
-              optionDisplay = option;
-            } else {
-              optionValue = option.value;
-              optionDisplay = option.key;
-            }
+						if (typeof option === "string") {
+							value = option;
+						} else {
+							value = option.value;
+							option = option.key;
+						}
 
-            return (
-              <option value={optionValue} key={index}>
-                {optionDisplay}
-              </option>
-            );
-          })}
-        </select>
-        {errors && errors[name] && (
-          <p className="text-red-500 text-xs italic dark:text-red-400">
-            {errors[name].message}
-          </p>
-        )}
-        {multiple && (
-          <p className="text-gray-500 text-xs mt-1">
-            Hold Ctrl (Windows) or Cmd (Mac) to select multiple options
-          </p>
-        )}
-      </div>
-    </>
-  );
+						if (defaultValue === option)
+							return (
+								<option selected value={value} key={index}>
+									{option}
+								</option>
+							);
+						return (
+							<option value={value} key={index}>
+								{option}
+							</option>
+						);
+					})}
+				</select>
+				{errors && errors[name] && (
+					<p className="text-red-500 text-xs italic dark:text-red-400">
+						{errors[name].message}
+					</p>
+				)}
+			</div>
+		</>
+	);
 };
 
 export default FormSelect;

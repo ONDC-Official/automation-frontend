@@ -1,69 +1,60 @@
-import Tippy from "@tippyjs/react";
 import React from "react";
-import { GoInfo } from "react-icons/go";
 import "tippy.js/animations/perspective-subtle.css";
 import { inputClass, labelClass } from "./inputClass";
 
 const FormInput = ({
-  register,
-  name,
-  label,
-  required,
-  errors,
-  placeholder,
-  type = "text",
-  strip = false,
-  disable = false,
-  labelInfo = "",
-  validations = {},
-  onValueChange,
-  step,
-  min,
-  max,
+	register,
+	name,
+	label,
+	required,
+	errors,
+	type = "text",
+	strip = false,
+	disable = false,
+	labelInfo = "",
+	validations = {},
+	onValueChange,
 }: any) => {
-  const handleChange = (e: any) => {
-    let value = e.target.value;
-    if (strip) {
-      value = value.replace(/\s+/g, "");
-    }
-    e.target.value = value;
-    if (typeof onValueChange === "function") {
-      onValueChange(e.target.value);
-    }
-  };
-  const handleFocus = (e: any) => {
-    e.stopPropagation();
-  };
+	const handleChange = (e: any) => {
+		let value = e.target.value;
+		if (strip) {
+			value = value.replace(/\s+/g, "");
+		}
+		e.target.value = value;
+		if (typeof onValueChange === "function") {
+			onValueChange(e.target.value);
+		}
+	};
+	const handleFocus = (e: any) => {
+		e.stopPropagation();
+	};
 
-  return (
-    <div className="mb-4 w-full">
-      <LabelWithToolTip labelInfo={labelInfo} label={label} />
-      <input
-        onFocus={handleFocus}
-        {...register(name, {
-          required,
-          ...validations,
-        })}
-        disabled={disable}
-        id={name}
-        type={type}
-        className={inputClass}
-        placeholder={placeholder}
-        onChange={handleChange}
-        onKeyDown={(e) => {
-          e.stopPropagation();
-        }}
-        step={step}
-        min={min}
-        max={max}
-      />
-      {errors[name] && (
-        <p className="text-red-500 text-xs italic dark:text-red-400">
-          {errors[name]?.message || "This field is required"}
-        </p>
-      )}
-    </div>
-  );
+	return (
+		<div className="mb-2 w-full bg-gray-50 border rounded-md p-2 flex">
+			<LabelWithToolTip labelInfo={labelInfo} label={label} />
+			<input
+				onFocus={handleFocus}
+				{...register(name, {
+					required,
+					...validations,
+				})}
+				disabled={disable}
+				id={name}
+				type={type}
+				className={inputClass}
+				placeholder="Type here..."
+				onChange={handleChange}
+				onKeyDown={(e) => {
+					e.stopPropagation();
+				}}
+			/>
+			{errors[name] && (
+				<p className="text-red-500 text-xs italic dark:text-red-400">
+					{errors[name]?.message || "This field is required"}
+				</p>
+			)}
+		</div>
+	);
 };
 
 const FormTextInput = ({
@@ -93,30 +84,30 @@ const FormTextInput = ({
     e.stopPropagation();
   };
 
-  return (
-    <div className="mb-4">
-      <LabelWithToolTip labelInfo={labelInfo} label={label} />
-      <textarea
-        onFocus={handleFocus}
-        {...register(name, { required })}
-        disabled={disable}
-        id={name}
-        type={type}
-        rows={10}
-        cols={100}
-        className={inputClass}
-        onChange={handleChange} // Apply custom onChange to handle value transformation
-        onKeyDown={(e) => {
-          e.stopPropagation();
-        }}
-      />
-      {errors[name] && (
-        <p className="text-red-500 text-xs italic dark:text-red-400">
-          {errors[name]?.message || "This field is required"}
-        </p>
-      )}
-    </div>
-  );
+	return (
+		<div className="mb-4 w-full bg-gray-50 border rounded-md p-2 flex">
+			<LabelWithToolTip labelInfo={labelInfo} label={label} />
+			<textarea
+				onFocus={handleFocus}
+				{...register(name, { required })}
+				disabled={disable}
+				id={name}
+				type={type}
+				rows={10}
+				cols={100}
+				className={inputClass}
+				onChange={handleChange} // Apply custom onChange to handle value transformation
+				onKeyDown={(e) => {
+					e.stopPropagation();
+				}}
+			/>
+			{errors[name] && (
+				<p className="text-red-500 text-xs italic dark:text-red-400">
+					{errors[name]?.message || "This field is required"}
+				</p>
+			)}
+		</div>
+	);
 };
 
 export { FormInput, FormTextInput };
@@ -128,23 +119,24 @@ export function LabelWithToolTip({
   label: string;
   labelInfo: string;
 }) {
-  return (
-    <div className="flex items-center justify-between w-full">
-      <label className={labelClass}>{label}</label>
-      {labelInfo != "" && (
-        <Tippy
-          content={<LabelToolTip label={labelInfo} />}
-          placement="right-start"
-          animation="perspective-subtle"
-          interactive={true}
-        >
-          <label className="text-sm font-medium text-gray-700">
-            <GoInfo size={22} />
-          </label>
-        </Tippy>
-      )}
-    </div>
-  );
+	console.log(labelInfo);
+	return (
+		<div className="flex justify-between w-full">
+			<label className={labelClass}>{label}</label>
+			{/* {labelInfo != "" && (
+				<Tippy
+					content={<LabelToolTip label={labelInfo} />}
+					placement="right-start"
+					animation="perspective-subtle"
+					interactive={true}
+				>
+					<label className="text-sm font-medium text-gray-700">
+						<GoInfo size={22} />
+					</label>
+				</Tippy>
+			)} */}
+		</div>
+	);
 }
 
 export function LabelToolTip({ label }: { label: string }) {

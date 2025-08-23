@@ -29,8 +29,6 @@ app.use(
 	})
 );
 
-app.use(logger.getCorrelationIdMiddleware());
-
 app.use(
 	cors({
 		origin: process.env.NODE_ENV === "development" 
@@ -50,7 +48,7 @@ app.use(
 app.use(express.json());
 // Middleware to parse cookies
 app.use(cookieParser());
-
+app.use(logger.getCorrelationIdMiddleware());
 app.use(routes);
 
 export default app;
