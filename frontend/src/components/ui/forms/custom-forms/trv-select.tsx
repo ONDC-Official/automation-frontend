@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useForm, useFieldArray, Controller } from "react-hook-form";
+import { useForm, useFieldArray } from "react-hook-form";
 import { FaRegPaste } from "react-icons/fa6";
 import PayloadEditor from "../../mini-components/payload-editor";
 import { SubmitEventParams } from "../../../../types/flow-types";
@@ -253,54 +253,54 @@ export default function TRVSelect({
   );
 }
 
-type FormData = {
-  provider: string;
-  provider_location: string[];
-  location_gps: string;
-  location_pin_code: string;
-  items: {
-    itemId: string;
-    quantity: number;
-    location: string;
-  }[];
-  [key: string]: any; // to allow dynamic offer keys like offers_FLAT50
-};
+// type FormData = {
+//   provider: string;
+//   provider_location: string[];
+//   location_gps: string;
+//   location_pin_code: string;
+//   items: {
+//     itemId: string;
+//     quantity: number;
+//     location: string;
+//   }[];
+//   [key: string]: any; // to allow dynamic offer keys like offers_FLAT50
+// };
 
-function validateFormData(data: FormData): {
-  valid: boolean;
-  errors: string[];
-} {
-  const errors: string[] = [];
+// function validateFormData(data: FormData): {
+//   valid: boolean;
+//   errors: string[];
+// } {
+//   const errors: string[] = [];
 
-  for (const key in data) {
-    if (data[key] === undefined || data[key] === null || data[key] === "") {
-      errors.push(`Field ${key} cannot be empty.`);
-    }
-  }
+//   for (const key in data) {
+//     if (data[key] === undefined || data[key] === null || data[key] === "") {
+//       errors.push(`Field ${key} cannot be empty.`);
+//     }
+//   }
 
-  // Rule 1: At least 2 items
-  if (!data.items || data.items.length < 2) {
-    errors.push("At least 2 items must be selected.");
-  }
+//   // Rule 1: At least 2 items
+//   if (!data.items || data.items.length < 2) {
+//     errors.push("At least 2 items must be selected.");
+//   }
 
-  // Rule 2: All items must be unique
-  const itemIds = data.items.map((item) => item.itemId);
-  const uniqueItemIds = new Set(itemIds);
-  if (itemIds.length !== uniqueItemIds.size) {
-    errors.push("All selected items must be unique.");
-  }
+//   // Rule 2: All items must be unique
+//   const itemIds = data.items.map((item) => item.itemId);
+//   const uniqueItemIds = new Set(itemIds);
+//   if (itemIds.length !== uniqueItemIds.size) {
+//     errors.push("All selected items must be unique.");
+//   }
 
-  // Rule 3: Only one offer can be selected (non-falsy)
-  const offerKeys = Object.keys(data).filter((key) =>
-    key.startsWith("offers_")
-  );
-  const selectedOffers = offerKeys.filter((key) => Boolean(data[key]));
-  if (selectedOffers.length > 1) {
-    errors.push("Only one offer can be selected.");
-  }
+//   // Rule 3: Only one offer can be selected (non-falsy)
+//   const offerKeys = Object.keys(data).filter((key) =>
+//     key.startsWith("offers_")
+//   );
+//   const selectedOffers = offerKeys.filter((key) => Boolean(data[key]));
+//   if (selectedOffers.length > 1) {
+//     errors.push("Only one offer can be selected.");
+//   }
 
-  return {
-    valid: errors.length === 0,
-    errors,
-  };
-}
+//   return {
+//     valid: errors.length === 0,
+//     errors,
+//   };
+// }
