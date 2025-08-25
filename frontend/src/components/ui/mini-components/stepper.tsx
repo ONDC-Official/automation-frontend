@@ -49,18 +49,18 @@ const Stepper: React.FC<StepperProps> = ({ steps, currentStep }) => {
 								>
 									{isCompleted ? <FaCheck className="w-4 h-4" /> : step.icon}
 								</div>
-								{/* <span
-									className={`mt-6 text-sm text-center
+								<span
+									className={`mt-2 text-sm text-center whitespace-nowrap
                     ${
 											isCompleted
-												? "text-sky-700"
+												? "text-sky-700 font-medium"
 												: isCurrent
-												? "text-sky-500"
+												? "text-sky-600 font-medium"
 												: "text-gray-500"
 										}`}
 								>
 									{step.label}
-								</span> */}
+								</span>
 							</div>
 						</li>
 					);

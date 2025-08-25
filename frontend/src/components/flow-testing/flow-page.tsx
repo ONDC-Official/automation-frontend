@@ -98,29 +98,29 @@ export default function FlowContent() {
 		}
 	};
 
-	const onSubmitHandler = async (data: any) => {
-		console.log("is it working");
-		await fetchFlows(data);
-		await onSubmit(data);
-	};
+  const onSubmitHandler = async (data: any) => {
+    console.log("is it working");
+    await fetchFlows(data);
+    await onSubmit(data);
+  };
 
-	const fetchFormFieldData = async () => {
-		try {
-			const response = await axios.get(
-				`${import.meta.env.VITE_BACKEND_URL}/config/senarioFormData`
-			);
-			setDynamicList((prev) => {
-				return { ...prev, domain: response.data.domain || [] };
-			});
-			console.log("form field data", response.data);
-		} catch (e) {
-			console.log("error while fetching form field data", e);
-		}
-	};
+  const fetchFormFieldData = async () => {
+    try {
+      const response = await axios.get(
+        `${import.meta.env.VITE_BACKEND_URL}/config/senarioFormData`
+      );
+      setDynamicList((prev) => {
+        return { ...prev, domain: response.data.domain || [] };
+      });
+      console.log("form field data", response.data);
+    } catch (e) {
+      console.log("error while fetching form field data", e);
+    }
+  };
 
-	useEffect(() => {
-		fetchFormFieldData();
-	}, []);
+  useEffect(() => {
+    fetchFormFieldData();
+  }, []);
 
 	const Body = () => {
 		switch (step) {

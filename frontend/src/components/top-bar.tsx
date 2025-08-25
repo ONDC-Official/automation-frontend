@@ -1,22 +1,39 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState, useRef } from "react";
 import { FaRegUser } from "react-icons/fa";
 import { FiLogIn } from "react-icons/fi";
 import { useNavigate, useLocation } from "react-router-dom";
+import { FaChevronDown } from "react-icons/fa";
+
+interface SubMenuItem {
+	label: string;
+	href: string;
+}
+
 import { UserContext } from "../context/userContext";
 
 interface NavLink {
 	label: string;
 	href: string;
 	selected: boolean;
+	subMenu?: SubMenuItem[];
 }
 
 const navLinks: NavLink[] = [
-	{ label: "Home", href: "/home", selected: true },
-	{ label: "Schema Validation", href: "/schema", selected: false },
-	// { label: "Unit Testing", href: "/unit", selected: false },
-	{ label: "Scenario Testing", href: "/scenario", selected: false },
-	// { label: "Custom flow Workbench", href: "/customFlow", selected: false },
-	{ label: "Support", href: "", selected: false },
+  { label: "Home", href: "/home", selected: true },
+  { label: "Schema Validation", href: "/schema", selected: false },
+  // { label: "Unit Testing", href: "/unit", selected: false },
+  { label: "Scenario Testing", href: "/scenario", selected: false },
+  // { label: "Custom flow Workbench", href: "/customFlow", selected: false },
+  { 
+    label: "Tools", 
+    href: "/tools", 
+    selected: false,
+    subMenu: [
+      { label: "Seller Onboarding", href: "/seller-onboarding" }
+    ]
+  },
+  { label: "Support", href: "", selected: false },
+	
 ];
 
 interface IPops {
@@ -32,6 +49,8 @@ export interface UserDetails {
 const TopBar = ({ onSupportClick }: IPops) => {
 	const [isOpen, setIsOpen] = useState(false);
 	const [links, setLinks] = useState<[] | NavLink[]>([]);
+	const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+	const dropdownRef = useRef<HTMLLIElement>(null);
 	const navigate = useNavigate();
 	const location = useLocation();
 	const pathName = location.pathname;
@@ -50,10 +69,13 @@ const TopBar = ({ onSupportClick }: IPops) => {
 			navigate("/home");
 		} else {
 			const modifiedLink: NavLink[] = navLinks.map((link) => {
+				// Check if main link is selected
 				if (link.href === pathName) {
 					link.selected = true;
 				} else {
-					link.selected = false;
+					// Check if any submenu item is selected
+					const isSubMenuSelected = link.subMenu?.some(sub => sub.href === pathName);
+					link.selected = isSubMenuSelected || false;
 				}
 				return link;
 			});

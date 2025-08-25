@@ -58,31 +58,31 @@ const FormInput = ({
 };
 
 const FormTextInput = ({
-	register,
-	name,
-	label,
-	required,
-	errors,
-	type = "text",
-	strip = false,
-	disable = false,
-	onChange,
-	labelInfo = "",
+  register,
+  name,
+  label,
+  required,
+  errors,
+  type = "text",
+  strip = false,
+  disable = false,
+  onChange,
+  labelInfo = "",
 }: any) => {
-	const handleChange = (e: any) => {
-		let value = e.target.value;
-		if (strip) {
-			// Replace all spaces globally
-			value = value.replace(/\s+/g, "");
-		}
-		e.target.value = value;
-		if (onChange) {
-			onChange(e);
-		}
-	};
-	const handleFocus = (e: any) => {
-		e.stopPropagation();
-	};
+  const handleChange = (e: any) => {
+    let value = e.target.value;
+    if (strip) {
+      // Replace all spaces globally
+      value = value.replace(/\s+/g, "");
+    }
+    e.target.value = value;
+    if (onChange) {
+      onChange(e);
+    }
+  };
+  const handleFocus = (e: any) => {
+    e.stopPropagation();
+  };
 
 	return (
 		<div className="mb-4 w-full bg-gray-50 border rounded-md p-2 flex">
@@ -113,11 +113,11 @@ const FormTextInput = ({
 export { FormInput, FormTextInput };
 
 export function LabelWithToolTip({
-	label,
-	labelInfo,
+  label,
+  labelInfo,
 }: {
-	label: string;
-	labelInfo: string;
+  label: string;
+  labelInfo: string;
 }) {
 	console.log(labelInfo);
 	return (
@@ -140,20 +140,20 @@ export function LabelWithToolTip({
 }
 
 export function LabelToolTip({ label }: { label: string }) {
-	const formattedLabelInfo = label.split("\n").map((line, index) => (
-		<React.Fragment key={index}>
-			{line}
-			<br />
-		</React.Fragment>
-	));
-	return (
-		<>
-			<div className="relative p-2 pr-8 max-w-xs  shadow-lg bg-blue-50  backdrop-blur-lg text-white text-sm font-semibold text-center border border-white/20">
-				<div className="absolute top-2 left-2">
-					{/* <IoInformationCircle size={20} className="text-black" /> */}
-				</div>
-				<h1 className="text-black mb-1 ml-3">{formattedLabelInfo}</h1>
-			</div>
-		</>
-	);
+  const formattedLabelInfo = label.split("\n").map((line, index) => (
+    <React.Fragment key={index}>
+      {line}
+      <br />
+    </React.Fragment>
+  ));
+  return (
+    <>
+      <div className="relative p-2 pr-8 max-w-xs  shadow-lg bg-blue-50  backdrop-blur-lg text-white text-sm font-semibold text-center border border-white/20">
+        <div className="absolute top-2 left-2">
+          {/* <IoInformationCircle size={20} className="text-black" /> */}
+        </div>
+        <h1 className="text-black mb-1 ml-3">{formattedLabelInfo}</h1>
+      </div>
+    </>
+  );
 }
