@@ -344,7 +344,7 @@ const BusinessVerificationForm = ({
   const {
     handleSubmit,
     control,
-    formState: { errors },
+    // formState: { errors },
     watch,
     // getValues,
     setValue,

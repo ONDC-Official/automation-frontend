@@ -33,7 +33,7 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({
   onNext,
   onPrevious,
 }) => {
-  const [selectedSubCategory, setSelectedSubCategory] = useState("");
+  // const [selectedSubCategory, setSelectedSubCategory] = useState("");
   // State to track selected optional attributes for each item
   const [selectedOptionalAttributes, setSelectedOptionalAttributes] = useState<{
     [itemIndex: number]: string[];
@@ -1789,7 +1789,7 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({
                               status={error ? "error" : undefined}
                               onChange={(value) => {
                                 field.onChange(value);
-                                setSelectedSubCategory(value);
+                                // setSelectedSubCategory(value);
                                 // Clear selected optional attributes when category changes
                                 setSelectedOptionalAttributes((prev) => ({
                                   ...prev,
