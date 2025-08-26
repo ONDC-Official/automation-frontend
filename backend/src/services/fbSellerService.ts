@@ -215,19 +215,6 @@ export class FBSellerService extends SellerService {
         }>();
         const customGroupsMap = new Map<string, any>();
     
-        const categoryRankMap: { [key: string]: number } = {
-            "Appetizers": 1,
-            "Starters": 1,
-            "Soups": 2,
-            "Salads": 3,
-            "Main Course": 4,
-            "Mains": 4,
-            "Breads": 5,
-            "Rice": 6,
-            "Beverages": 7,
-            "Desserts": 8,
-            "Drinks": 7
-        };
         
       
         
@@ -279,7 +266,7 @@ export class FBSellerService extends SellerService {
                 if (item.category && !categoryMap.has(item.category)) {
                     // Check if there's a matching menu item with rank for this category
                     const menuItemWithCategory = sellerData.menuItems?.find((mi: any) => mi.category === item.category);
-                    const rank = menuItemWithCategory?.rank || categoryRankMap[item.category] || (categoryMap.size + 1);
+                    const rank = menuItemWithCategory?.rank || (categoryMap.size + 1);
                     categoryMap.set(item.category, {
                         timing: {},
                         rank: rank,
@@ -374,9 +361,11 @@ export class FBSellerService extends SellerService {
 
         // Generate categories from predefined categories if provided
         if (sellerData.categories && sellerData.categories.length > 0) {
-            sellerData.categories.forEach((categoryName: string) => {
+            sellerData.categories.forEach((categoryName: string, index: number) => {
                 if (!categoryMap.has(categoryName)) {
-                    const rank = categoryRankMap[categoryName] || (categoryMap.size + categories.length + 1);
+                    // Try to find rank from menu items, otherwise use sequential ranking
+                    const menuItemWithCategory = sellerData.menuItems?.find((mi: any) => mi.category === categoryName);
+                    const rank = menuItemWithCategory?.rank || (categoryMap.size + categories.length + index + 1);
                     categories.push({
                         id: this.generateCategoryId(),
                         descriptor: {
@@ -473,7 +462,17 @@ export class FBSellerService extends SellerService {
             });
         });
 
-        return categories;
+        // Sort categories by rank before returning
+        return categories.sort((a, b) => {
+            // Extract rank from tags
+            const getRank = (category: any) => {
+                const displayTag = category.tags?.find((tag: any) => tag.code === 'display');
+                const rankItem = displayTag?.list?.find((item: any) => item.code === 'rank');
+                return parseInt(rankItem?.value || '999');
+            };
+            
+            return getRank(a) - getRank(b);
+        });
     }
 
     private calculatePriceRange(sellingPrice: number, customizationGroups: any[]): { lower: string; upper: string } {

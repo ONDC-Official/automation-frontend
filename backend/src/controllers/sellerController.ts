@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { SellerService } from "../services/sellerService";
 import { FBSellerService } from "../services/fbSellerService";
+import { DOMAIN_CATEGORY_MAP, getDomainCategories, DomainType } from "../config/domainCategoryConfig";
 
 export class SellerController {
     private sellerService: SellerService;
@@ -32,21 +33,11 @@ export class SellerController {
                         }
                     });
                     
-                    // Add domain-specific default categories if available
-                    const domainCategoryMap: { [key: string]: string[] } = {
-                        "Grocery": ["Fruits and Vegetables", "Foodgrains", "Oil & Masala", "Beverages", "Snacks"],
-                        "Fashion": ["Clothing", "Footwear", "Accessories", "Jewelry", "Bags"],
-                        "BPC": ["Skincare", "Haircare", "Makeup", "Fragrances", "Personal Care"],
-                        "Electronics": ["Mobile", "Computer", "TV & Appliances", "Camera", "Audio"],
-                        "Appliances": ["Kitchen Appliances", "Home Appliances", "Personal Care Appliances"],
-                        "Home & Kitchen": ["Kitchen", "Home Decor", "Furniture", "Storage"],
-                        "Health & Wellness": ["Healthcare", "Fitness", "Nutrition", "Personal Care"],
-                        "F&B": ["Fast Food", "Beverages", "Desserts", "Indian", "Chinese"]
-                    };
                     
                     // If no item categories found, use domain defaults for store filtering
-                    if (domainCategories.size === 0 && domainCategoryMap[domain]) {
-                        domainCategoryMap[domain].forEach(cat => domainCategories.add(cat));
+                    const defaultCategories = getDomainCategories(domain);
+                    if (domainCategories.size === 0 && defaultCategories.length > 0) {
+                        defaultCategories.forEach(cat => domainCategories.add(cat));
                     }
                     
                     // Filter stores that support categories for this domain
@@ -80,7 +71,7 @@ export class SellerController {
                     // Only generate payload if there are items and stores for this domain
                     if (domainSpecificData.items.length > 0 && domainSpecificData.stores.length > 0) {
                         let onSearchPayload;
-                        if (domain === "F&B") {
+                        if (domain === DomainType.FNB) {
                             onSearchPayload = await this.fbSellerService.generateFBOnSearchPayload(domainSpecificData, domainCategories);
                         } else {
                             onSearchPayload = await this.sellerService.generateOnSearchPayload(domainSpecificData, domainCategories);
@@ -107,7 +98,7 @@ export class SellerController {
                 }
                 
                 let onSearchPayload;
-                if (sellerData.domain === "F&B") {
+                if (sellerData.domain === DomainType.FNB) {
                     onSearchPayload = await this.fbSellerService.generateFBOnSearchPayload(sellerData, singleDomainCategories);
                 } else {
                     onSearchPayload = await this.sellerService.generateOnSearchPayload(sellerData, singleDomainCategories);
