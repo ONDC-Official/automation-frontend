@@ -3,8 +3,8 @@ import { LabelWithToolTip } from "./form-input";
 import { inputClass } from "./inputClass";
 
 interface IOption {
-	key: string;
-	value: string;
+  key: string;
+  value: string;
 }
 
 const FormSelect = ({

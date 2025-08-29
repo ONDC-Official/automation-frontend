@@ -9,6 +9,8 @@ import HomePage from "./pages/home";
 import NotFoundPage from "./components/ui/not-found";
 import SchemaValidation from "./pages/schema-validation";
 import FlowContent from "./components/flow-testing/flow-page";
+import SellerOnboarding from "./pages/seller-onboarding";
+import ToolsPage from "./pages/tools";
 import GitHubLogin from "./pages/login";
 import { UserContext } from "./context/userContext";
 import UserProfile from "./pages/user-profile";
@@ -106,6 +108,8 @@ function App() {
 					{/* <Route path="/customFlow" element={<ComingSoonPage />} /> */}
 					<Route path="/login" element={<GitHubLogin />} />
 					<Route path="/profile" element={<UserProfile />} />
+          <Route path="/tools" element={<ToolsPage />} />
+          <Route path="/seller-onboarding" element={<SellerOnboarding />} />
 					<Route path="*" element={<NotFoundPage />} />
 				</Routes>
 			</div>

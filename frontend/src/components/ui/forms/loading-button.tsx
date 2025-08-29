@@ -13,28 +13,29 @@ const defaultButtonClass = `
 `.trim();
 
 const LoadingButton = ({
-	type = "submit",
-	buttonText,
-	disabled = false,
-	isLoading = false,
+  type = "submit",
+  buttonText,
+  disabled = false,
+  isLoading = false,
 }: {
-	type?: "submit" | "reset" | "button";
-	buttonText: string;
-	disabled?: boolean;
-	isLoading?: boolean; // Optional prop
-	isSuccess?: boolean; // Optional prop
-	isError?: boolean; // Optional prop
+  type?: "submit" | "reset" | "button";
+  buttonText: string;
+  disabled?: boolean;
+  isLoading?: boolean; // Optional prop
+  isSuccess?: boolean; // Optional prop
+  isError?: boolean; // Optional prop
 }) => {
-	return (
-		<button
-			type={type}
-			disabled={disabled || isLoading}
-			className={buttonClass}
-		>
-			{buttonText}
-			{isLoading && <FullPageLoader />}
-		</button>
-	);
+  return (
+    <button
+      type={type}
+      disabled={disabled || isLoading}
+      className={buttonClass}
+      style={{ width: "max-content" }}
+    >
+      {buttonText}
+      {isLoading && <FullPageLoader />}
+    </button>
+  );
 };
 export const buttonClass = `${baseButtonClass} ${defaultButtonClass}`;
 
