@@ -252,7 +252,7 @@ export const proceedFlow = async (
 	sessionId: string,
 	transactionId: string,
 	jsonPathChanges?: Record<string, any>,
-	inputs?: any,
+	inputs?: any
 ) => {
 	try {
 		const response = await axios.post(
@@ -261,7 +261,7 @@ export const proceedFlow = async (
 				session_id: sessionId,
 				transaction_id: transactionId,
 				json_path_changes: jsonPathChanges,
-				inputs: inputs
+				inputs: inputs,
 			}
 		);
 		return response.data;
@@ -286,7 +286,7 @@ export const newFlow = async (
 				flow_id: flowId,
 				transaction_id: transactionId,
 				json_path_changes: json_path_changes,
-				inputs: inputs
+				inputs: inputs,
 			}
 		);
 		return response.data;
@@ -297,19 +297,34 @@ export const newFlow = async (
 };
 
 export const getReportingStatus = async (domain: string, version: string) => {
-  try {
-    const response = await axios.get(
-      `${import.meta.env.VITE_BACKEND_URL}/config/reportingStatus`,
-      {
-        params: {
-          domain,
-          version,
-        },
-      }
-    );
+	try {
+		const response = await axios.get(
+			`${import.meta.env.VITE_BACKEND_URL}/config/reportingStatus`,
+			{
+				params: {
+					domain,
+					version,
+				},
+			}
+		);
 
-    return response.data.data;
-  } catch (e) {
-    console.log("error while fetching repoting", e);
-  }
+		return response.data.data;
+	} catch (e) {
+		console.log("error while fetching repoting", e);
+	}
 };
+
+export async function htmlFormSubmit(link: string, data: any) {
+	try {
+		const res = await axios.post(
+			`${import.meta.env.VITE_BACKEND_URL}/flow/external-form`,
+			{
+				link: link,
+				data: data,
+			}
+		);
+		return res;
+	} catch (error) {
+		throw new Error("ERROR");
+	}
+}

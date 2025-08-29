@@ -40,6 +40,16 @@ export default function DisplayFlow({
 		}
 	}, [mappedFlow]);
 
+	useEffect(() => {
+		const latestSending = mappedFlow?.sequence.find(
+			(f) => f.status === "RESPONDING"
+		);
+		const transactionId = sessionData?.flowMap[flowId];
+		if (latestSending && latestSending.force_proceed && transactionId) {
+			proceedFlow(sessionId, transactionId);
+		}
+	}, [mappedFlow]);
+
 	const handleFormSubmit = async (formData: SubmitEventParams) => {
 		try {
 			const txId = sessionData?.flowMap[flowId];
@@ -47,7 +57,7 @@ export default function DisplayFlow({
 				console.error("Transaction ID not found");
 				return;
 			}
-			await proceedFlow(sessionId, txId, formData.jsonPath,formData.formData);
+			await proceedFlow(sessionId, txId, formData.jsonPath, formData.formData);
 			setInputPopUp(false);
 			setActiveFormConfig(undefined);
 		} catch (error) {
@@ -65,10 +75,11 @@ export default function DisplayFlow({
 			</div>
 			<div></div>
 			{inputPopUp && activeFormConfig && (
-				<Popup isOpen={inputPopUp}>
+				<Popup isOpen={inputPopUp} onClose={() => setInputPopUp(false)}>
 					<FormConfig
 						formConfig={activeFormConfig}
 						submitEvent={handleFormSubmit}
+						referenceData={mappedFlow.reference_data}
 					/>
 				</Popup>
 			)}
