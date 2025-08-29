@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { SubmitEventParams } from "../../../../types/flow-types";
 import { FormFieldConfigType } from "../config-form/config-form";
 import jsonpath from "jsonpath";
-import axios, { Axios, AxiosResponse } from "axios";
+import { AxiosResponse } from "axios";
 import { htmlFormSubmit } from "../../../../utils/request-utils";
 // --- Types -------------------------------------------------------------------
 
@@ -722,7 +722,7 @@ export default function ProtocolHTMLForm({
 				);
 			}
 			case "checkbox-single": {
-				const cs = f as CheckboxSingleField;
+				// const cs = f as CheckboxSingleField;
 				const checked = Boolean(values[f.name]);
 				return (
 					<label className="flex items-center gap-2 text-sm font-medium text-gray-700">
