@@ -5,6 +5,7 @@ import ItemCustomisationSelector from "../nested-select";
 import GenericForm from "../generic-form";
 import { SubmitEventParams } from "../../../../types/flow-types";
 import Ret10GrocerySelect from "../custom-forms/ret10-grocery-select";
+import ProtocolHTMLForm from "../custom-forms/protocol-html-form";
 
 export interface FormFieldConfigType {
 	name: string;
@@ -17,6 +18,7 @@ export interface FormFieldConfigType {
 		| "checkbox"
 		| "ret10_grocery_select"
 		| "nestedSelect"
+		| "HTML_FORM";
 	payloadField: string;
 	values?: string[];
 	defaultValue?: string;
@@ -24,6 +26,7 @@ export interface FormFieldConfigType {
 	options?: any;
 	default?: any;
 	display?: boolean;
+	reference?: string;
 }
 
 export type FormConfigType = FormFieldConfigType[];
@@ -31,9 +34,11 @@ export type FormConfigType = FormFieldConfigType[];
 export default function FormConfig({
 	formConfig,
 	submitEvent,
+	referenceData,
 }: {
 	formConfig: FormConfigType;
 	submitEvent: (data: SubmitEventParams) => Promise<void>;
+	referenceData?: Record<string, any>;
 }) {
 	const onSubmit = async (data: Record<string, string>) => {
 		const formatedData: Record<string, string> = {};
@@ -67,6 +72,15 @@ export default function FormConfig({
 
 	if (formConfig.find((field) => field.type === "ret10_grocery_select")) {
 		return <Ret10GrocerySelect submitEvent={submitEvent} />;
+	}
+	if (formConfig.find((field) => field.type === "HTML_FORM")) {
+		return ProtocolHTMLForm({
+			submitEvent: submitEvent,
+			referenceData: referenceData,
+			HtmlFormConfigInFlow: formConfig.find(
+				(field) => field.type === "HTML_FORM"
+			) as FormFieldConfigType,
+		});
 	}
 
 	return (
@@ -110,13 +124,13 @@ export default function FormConfig({
 								defaultValue={field.default}
 							/>
 						);
-						case "nestedSelect":
-							return (
-							  <ItemCustomisationSelector
+					case "nestedSelect":
+						return (
+							<ItemCustomisationSelector
 								label={field.label}
 								name={field.name}
-							  />
-							);
+							/>
+						);
 					default:
 						console.log("Invalid field type");
 						return <></>;
