@@ -31,12 +31,17 @@ app.use(
 
 app.use(
 	cors({
-		origin: [
-			"http://localhost:5173",
-			"https://saarthi.ondc.org.in",
-			"https://preview--ondc-developer-portal.lovable.app",
-		],
+		origin: process.env.NODE_ENV === "development" 
+			? true  // Allow all origins in development
+			: [
+				"http://localhost:5173",
+				"http://localhost:4000",
+				"https://saarthi.ondc.org.in",
+				"https://preview--ondc-developer-portal.lovable.app",
+			],
 		credentials: true,
+		methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+		allowedHeaders: ["Content-Type", "Authorization", "Cookie"],
 	})
 );
 

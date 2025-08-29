@@ -6,6 +6,7 @@ import GenericForm from "../generic-form";
 import { SubmitEventParams } from "../../../../types/flow-types";
 import Ret10GrocerySelect from "../custom-forms/ret10-grocery-select";
 import ProtocolHTMLForm from "../custom-forms/protocol-html-form";
+import TRVSelect from "../custom-forms/trv-select";
 
 export interface FormFieldConfigType {
 	name: string;
@@ -18,6 +19,7 @@ export interface FormFieldConfigType {
 		| "checkbox"
 		| "ret10_grocery_select"
 		| "nestedSelect"
+		| "trv_select"
 		| "HTML_FORM";
 	payloadField: string;
 	values?: string[];
@@ -81,6 +83,10 @@ export default function FormConfig({
 				(field) => field.type === "HTML_FORM"
 			) as FormFieldConfigType,
 		});
+	}
+
+	if (formConfig.find((field) => field.type === "trv_select")) {
+		return <TRVSelect submitEvent={submitEvent} />;
 	}
 
 	return (
