@@ -802,7 +802,7 @@ export default function ProtocolHTMLForm({
 	return (
 		<div className="space-y-6">
 			{/* Debug: where the original form HTML came from */}
-			<div ref={containerRef} className="overflow-auto" />
+			{/* <div ref={containerRef} className="overflow-auto" /> */}
 			{/* Recreated React form */}
 			<div className="rounded-lg border border-gray-200 p-4">
 				<div className="grid grid-cols-1 gap-4">
