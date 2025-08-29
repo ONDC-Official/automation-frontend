@@ -53,6 +53,11 @@ function StepDisplay({ step, flowId }: { step: MappedStep; flowId: string }) {
 			setResponseData({ info: "Step not complete" });
 			return;
 		}
+		if (step.payloads?.entryType === "FORM") {
+			setRequestData({ info: step.payloads });
+			setResponseData({ info: step.payloads });
+			return;
+		}
 		const payloadIds = step.payloads?.payloads.map((p) => p.payloadId) ?? [];
 		const payloads = await getCompletePayload(payloadIds);
 		setRequestData(payloads.map((p: any) => p.req));
@@ -74,8 +79,7 @@ function StepDisplay({ step, flowId }: { step: MappedStep; flowId: string }) {
 	) {
 		statusStyles.messageText = "INACTIVE";
 	}
-	const apiCount =
-		step.status === "COMPLETE" ? step.payloads?.payloads.length ?? 0 : 0;
+	const apiCount = getCount(step);
 	return (
 		// <CustomTooltip content={step.description ?? ""}>
 		<FlippableWrapper flipTrigger={step.status}>
@@ -164,6 +168,8 @@ function getStatusStyles(
 		| "RESPONDING"
 		| "INPUT-REQUIRED"
 		| "WAITING"
+		| "PROCESSING"
+		| "WAITING-SUBMISSION"
 ) {
 	switch (status) {
 		case "SUCCESS":
@@ -205,5 +211,24 @@ function getStatusStyles(
 				card: "border-gray-200 bg-gradient-to-br from-slate-50 to-slate-100 shadow-md shadow-slate-200",
 				messageBg: "bg-slate-400 text-white",
 			};
+		case "PROCESSING":
+			return {
+				card: "border-purple-300 bg-gradient-to-br from-purple-50 to-purple-200 shadow-md shadow-purple-200",
+				messageText: "PROCESSING",
+				messageBg: "bg-gradient-to-r from-purple-600 to-purple-500 text-white",
+			};
+		case "WAITING-SUBMISSION":
+			return {
+				card: "border-indigo-300 bg-gradient-to-br from-indigo-50 to-indigo-200 shadow-md shadow-indigo-200",
+				messageText: "WAITING-SUBMISSION",
+				messageBg: "bg-gradient-to-r from-indigo-600 to-indigo-500 text-white",
+			};
 	}
+}
+
+function getCount(step: MappedStep) {
+	if (step.payloads?.entryType === "FORM") {
+		return 0;
+	}
+	return step.status === "COMPLETE" ? step.payloads?.payloads.length ?? 0 : 0;
 }
