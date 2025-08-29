@@ -179,9 +179,12 @@ export function Accordion({
 	}
 
 	const handleDownload = async () => {
-		const payload_ids = mappedFlow?.sequence.flatMap(
-			(s) => s.payloads?.payloads.map((p) => p.payloadId) ?? []
-		);
+		const payload_ids = mappedFlow?.sequence.flatMap((s) => {
+			if (s.payloads?.entryType === "FORM") {
+				return [];
+			}
+			return s.payloads?.payloads.map((p) => p.payloadId) ?? [];
+		});
 
 		if (!payload_ids) {
 			return;
@@ -330,10 +333,11 @@ export function Accordion({
 				</div>
 			</div>
 			{inputPopUp && activeFormConfig && (
-				<Popup isOpen={inputPopUp}>
+				<Popup isOpen={inputPopUp} onClose={() => setInputPopUp(false)}>
 					<FormConfig
 						formConfig={activeFormConfig}
 						submitEvent={handleFormForNewFlow}
+						referenceData={mappedFlow.reference_data}
 					/>
 				</Popup>
 			)}
