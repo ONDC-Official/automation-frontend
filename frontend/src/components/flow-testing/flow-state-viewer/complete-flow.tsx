@@ -72,7 +72,15 @@ export function Accordion({
 		const tx = sessionCache.flowMap?.[flow.id];
 		if (tx) {
 			try {
-				const txData = await getMappedFlow(tx, sessionId);
+				const txData = (await getMappedFlow(tx, sessionId)) as FlowMap; // Assuming the response is of type FlowMap
+				for (let i = 0; i < txData.sequence.length; i++) {
+					const payloads = txData.sequence[i].payloads;
+					if (payloads) {
+						if (!payloads.entryType) {
+							txData.sequence[i].payloads!.entryType = "API";
+						}
+					}
+				}
 				setMappedFlow(txData);
 				apiCallFailCount.current = 0; // Reset fail count on successful fetch
 			} catch (error) {
