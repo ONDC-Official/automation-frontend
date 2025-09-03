@@ -1,6 +1,4 @@
-import Tippy from "@tippyjs/react";
 import React from "react";
-import { GoInfo } from "react-icons/go";
 import "tippy.js/animations/perspective-subtle.css";
 import { inputClass, labelClass } from "./inputClass";
 
@@ -15,7 +13,7 @@ const FormInput = ({
 	disable = false,
 	labelInfo = "",
 	validations = {},
-	onValueChange 
+	onValueChange,
 }: any) => {
 	const handleChange = (e: any) => {
 		let value = e.target.value;
@@ -23,8 +21,8 @@ const FormInput = ({
 			value = value.replace(/\s+/g, "");
 		}
 		e.target.value = value;
-		if (typeof onValueChange === "function") { 
-			onValueChange(e.target.value)
+		if (typeof onValueChange === "function") {
+			onValueChange(e.target.value);
 		}
 	};
 	const handleFocus = (e: any) => {
@@ -32,14 +30,14 @@ const FormInput = ({
 	};
 
 	return (
-		<div className="mb-4 w-full">
+		<div className="mb-2 w-full bg-gray-50 border rounded-md p-2 flex">
 			<LabelWithToolTip labelInfo={labelInfo} label={label} />
 			<input
 				onFocus={handleFocus}
 				{...register(name, {
 					required,
-					...validations
-				  })}
+					...validations,
+				})}
 				disabled={disable}
 				id={name}
 				type={type}
@@ -60,34 +58,34 @@ const FormInput = ({
 };
 
 const FormTextInput = ({
-	register,
-	name,
-	label,
-	required,
-	errors,
-	type = "text",
-	strip = false,
-	disable = false,
-	onChange,
-	labelInfo = "",
+  register,
+  name,
+  label,
+  required,
+  errors,
+  type = "text",
+  strip = false,
+  disable = false,
+  onChange,
+  labelInfo = "",
 }: any) => {
-	const handleChange = (e: any) => {
-		let value = e.target.value;
-		if (strip) {
-			// Replace all spaces globally
-			value = value.replace(/\s+/g, "");
-		}
-		e.target.value = value;
-		if (onChange) {
-			onChange(e);
-		}
-	};
-	const handleFocus = (e: any) => {
-		e.stopPropagation();
-	};
+  const handleChange = (e: any) => {
+    let value = e.target.value;
+    if (strip) {
+      // Replace all spaces globally
+      value = value.replace(/\s+/g, "");
+    }
+    e.target.value = value;
+    if (onChange) {
+      onChange(e);
+    }
+  };
+  const handleFocus = (e: any) => {
+    e.stopPropagation();
+  };
 
 	return (
-		<div className="mb-4">
+		<div className="mb-4 w-full bg-gray-50 border rounded-md p-2 flex">
 			<LabelWithToolTip labelInfo={labelInfo} label={label} />
 			<textarea
 				onFocus={handleFocus}
@@ -115,16 +113,17 @@ const FormTextInput = ({
 export { FormInput, FormTextInput };
 
 export function LabelWithToolTip({
-	label,
-	labelInfo,
+  label,
+  labelInfo,
 }: {
-	label: string;
-	labelInfo: string;
+  label: string;
+  labelInfo: string;
 }) {
+	console.log(labelInfo);
 	return (
-		<div className="flex items-center justify-between w-full">
+		<div className="flex justify-between w-full">
 			<label className={labelClass}>{label}</label>
-			{labelInfo != "" && (
+			{/* {labelInfo != "" && (
 				<Tippy
 					content={<LabelToolTip label={labelInfo} />}
 					placement="right-start"
@@ -135,26 +134,26 @@ export function LabelWithToolTip({
 						<GoInfo size={22} />
 					</label>
 				</Tippy>
-			)}
+			)} */}
 		</div>
 	);
 }
 
 export function LabelToolTip({ label }: { label: string }) {
-	const formattedLabelInfo = label.split("\n").map((line, index) => (
-		<React.Fragment key={index}>
-			{line}
-			<br />
-		</React.Fragment>
-	));
-	return (
-		<>
-			<div className="relative p-2 pr-8 max-w-xs  shadow-lg bg-blue-50  backdrop-blur-lg text-white text-sm font-semibold text-center border border-white/20">
-				<div className="absolute top-2 left-2">
-					{/* <IoInformationCircle size={20} className="text-black" /> */}
-				</div>
-				<h1 className="text-black mb-1 ml-3">{formattedLabelInfo}</h1>
-			</div>
-		</>
-	);
+  const formattedLabelInfo = label.split("\n").map((line, index) => (
+    <React.Fragment key={index}>
+      {line}
+      <br />
+    </React.Fragment>
+  ));
+  return (
+    <>
+      <div className="relative p-2 pr-8 max-w-xs  shadow-lg bg-blue-50  backdrop-blur-lg text-white text-sm font-semibold text-center border border-white/20">
+        <div className="absolute top-2 left-2">
+          {/* <IoInformationCircle size={20} className="text-black" /> */}
+        </div>
+        <h1 className="text-black mb-1 ml-3">{formattedLabelInfo}</h1>
+      </div>
+    </>
+  );
 }

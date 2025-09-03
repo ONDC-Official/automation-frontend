@@ -1,6 +1,7 @@
 import { FormConfigType } from "../components/ui/forms/config-form/config-form";
 
-export interface ReducedApiData {
+export type ReducedApiData = {
+	entryType: "API";
 	action: string;
 	messageId: string;
 	timestamp: string;
@@ -9,13 +10,25 @@ export interface ReducedApiData {
 		payloadId: string;
 		response: any;
 	}[];
-}
+};
+
+export type ReduceFormData = {
+	entryType: "FORM";
+	formType: "HTML_FORM" | "RES_FROM";
+	formId: string;
+	submissionId?: string;
+	timestamp: string;
+	subStatus?: "SUCCESS" | "ERROR";
+};
+
+export type ApiHistory = ReducedApiData | ReduceFormData;
 
 export type ReducedApiList = ReducedApiData[];
 
 export interface FlowMap {
 	sequence: MappedStep[];
 	missedSteps: MappedStep[];
+	reference_data?: Record<string, any>;
 }
 export interface MappedStep {
 	status:
@@ -23,12 +36,14 @@ export interface MappedStep {
 		| "LISTENING"
 		| "RESPONDING"
 		| "WAITING"
-		| "INPUT-REQUIRED";
+		| "INPUT-REQUIRED"
+		| "PROCESSING"
+		| "WAITING-SUBMISSION";
 	actionId: string;
 	owner: "BAP" | "BPP";
 	actionType: string;
 	input?: FormConfigType;
-	payloads?: ReducedApiData;
+	payloads?: ApiHistory;
 	index: number;
 	description?: string;
 	unsolicited: boolean;
@@ -36,4 +51,5 @@ export interface MappedStep {
 	expect?: boolean;
 	missedStep?: boolean;
 	label?: string;
+	force_proceed?: boolean;
 }

@@ -1,6 +1,4 @@
 import { Request, Response } from "express";
-
-import logger from "../utils/logger";
 import {
 	clearFlowService,
 	createExpectationService,
@@ -12,6 +10,9 @@ import {
 	updateSessionService,
 } from "../services/sessionService";
 import { saveLog } from "../utils/console";
+import logger from "@ondc/automation-logger";
+import { getLoggerMeta } from "../utils/logger-meta-utilts";
+import { get } from "lodash";
 
 const SESSION_EXPIRY = 3600; // 1 hour
 const COOKIE_OPTIONS = { maxAge: SESSION_EXPIRY, httpOnly: true };
@@ -23,14 +24,19 @@ const setSessionCookie = (res: Response, sessionId: string) => {
 
 export const createSession = async (req: Request, res: Response) => {
 	const sessionId = req.sessionID;
-
+	logger.info(`Creating session with ID: ${sessionId}`, getLoggerMeta(req));
 	if (!sessionId) {
+		logger.error("Session ID is missing in the request.", getLoggerMeta(req));
 		res.status(400).send({ message: "Session ID is required." });
 		return;
 	}
 
 	try {
-		const response = await createSessionService(sessionId, req.body);
+		const response = await createSessionService(
+			sessionId,
+			req.body,
+			getLoggerMeta(req)
+		);
 		setSessionCookie(res, sessionId);
 		res.status(201).send({
 			sessionId: sessionId,
@@ -57,7 +63,7 @@ export const getSession = async (req: Request, res: Response) => {
 		const sessionData = await getSessionService(sessionId);
 		res.status(200).send(sessionData);
 	} catch (error: any) {
-		console.error(error);
+		logger.error("Error fetching session", getLoggerMeta(req), error);
 		res
 			.status(500)
 			.send({ message: "Error fetching session", error: error.message });
@@ -74,11 +80,15 @@ export const updateSession = async (req: Request, res: Response) => {
 
 	const sessionData = req.body;
 	try {
-		const response = await updateSessionService(sessionId, sessionData);
+		const response = await updateSessionService(
+			sessionId,
+			sessionData,
+			getLoggerMeta(req)
+		);
 		setSessionCookie(res, sessionId);
 		res.status(200).send({ message: response });
 	} catch (error: any) {
-		logger.error("error updating session", error);
+		logger.error("error updating session", getLoggerMeta(req), error);
 		res.status(500).send({ message: "Error updating session" });
 	}
 };
@@ -88,14 +98,14 @@ export const clearFlow = async (req: Request, res: Response) => {
 		logger.info("clearing flow");
 		const sessionId = req.query.session_id as string;
 		const flowId = req.query.flow_id as string;
-		await clearFlowService(sessionId, flowId);
+		await clearFlowService(sessionId, flowId, getLoggerMeta(req));
 		saveLog(
 			sessionId,
 			`Flow cleared for session ${sessionId} and flow ${flowId}`
 		);
 		res.status(200).send({ message: "Flow cleared" });
 	} catch (e) {
-		logger.error("error clearing flow", e);
+		logger.error("error clearing flow", getLoggerMeta(req), e);
 		res.status(500).send({ message: "Error clearing flow" });
 	}
 };
@@ -109,8 +119,17 @@ export const createExpectation = async (req: Request, res: Response) => {
 
 		await createExpectationService(subUrl, flowId, sessionId, expectedAction);
 		res.status(201).send({ message: "Expectation created" });
-	} catch (e) {
-		logger.error("error creating expectation", e);
+	} catch (e: any) {
+		logger.error(
+			"error creating expectation",
+			{
+				subscriberUrl: req.query.subscriber_url,
+				flowId: req.query.flow_id,
+				expectedAction: req.query.expected_action,
+				...getLoggerMeta(req),
+			},
+			e
+		);
 		res.status(500).send({ message: "Error creating expectation" });
 	}
 };
@@ -121,8 +140,15 @@ export const deleteExpectation = async (req: Request, res: Response) => {
 		const subscriberUrl = req.query.subscriber_url as string;
 		await deleteExpectationService(sessionId, subscriberUrl);
 		res.status(200).send({ message: "Expectation deleted" });
-	} catch (e) {
-		logger.error("error deleting expectation", e);
+	} catch (e: any) {
+		logger.error(
+			"error deleting expectation",
+			{
+				sessionId: req.query.session_id,
+				subscriberUrl: req.query.subscriber_url,
+			},
+			e
+		);
 		res.status(500).send({ message: "Error deleting expectation" });
 	}
 };
@@ -134,8 +160,15 @@ export const getTransactionData = async (req: Request, res: Response) => {
 
 		const data = await getTransactionDataService(transactionId, subscriberUrl);
 		res.status(200).send(data);
-	} catch (e) {
-		logger.error("error fetching transaction data", e);
+	} catch (e: any) {
+		logger.error(
+			"error fetching transaction data",
+			{
+				transaction_id: req.query.transaction_id,
+				subscriber_url: req.query.subscriber_url,
+			},
+			e
+		);
 		res.status(500).send({ message: "Error fetching transaction data" });
 	}
 };
@@ -148,7 +181,11 @@ export const requestForFlowPermission = async (req: Request, res: Response) => {
 		logger.info("request for flow permission data:" + JSON.stringify(data));
 		res.status(200).send(data);
 	} catch (e) {
-		logger.error("error requesting flow permission", e);
+		logger.error(
+			"error requesting flow permission",
+			{ subscriberUrl: req.query.subscriber_url, action: req.query.action },
+			e
+		);
 		res.status(500).send({ message: "Error requesting flow permission" });
 	}
 };

@@ -1,4 +1,4 @@
-import logger from "./logger";
+import logger from "@ondc/automation-logger";
 import { RedisService } from "ondc-automation-cache-lib";
 export async function saveLog(
 	sessionId: string,
@@ -28,6 +28,10 @@ export async function saveLog(
 		// Store updated logs
 		await RedisService.setKey(key, JSON.stringify(logs));
 	} catch (error) {
-		logger.error("Error saving log to Redis:", error);
+		logger.error(
+			"Error saving log to Redis:",
+			{ sessionId, message, level },
+			error
+		);
 	}
 }

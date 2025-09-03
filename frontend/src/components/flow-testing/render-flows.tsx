@@ -21,6 +21,7 @@ import { ILogs } from "../../interface";
 import { SessionContext } from "../../context/context";
 import CircularProgress from "../ui/circular-cooldown";
 import Modal from "../modal";
+import { HiOutlineDocumentReport } from "react-icons/hi";
 
 function RenderFlows({
 	flows,
@@ -40,8 +41,7 @@ function RenderFlows({
 	const [cacheSessionData, setCacheSessionData] = useState<SessionCache | null>(
 		null
 	);
-	const [sideView, setSideView] = useState<any>({});
-	console.log(setSideView);
+	const [sideView, _] = useState<any>({});
 	const [difficultyCache, setDifficultyCache] = useState<any>({});
 	const [isFlowStopped, setIsFlowStopped] = useState<boolean>(false);
 	const [selectedTab, setSelectedTab] = useState<"Request" | "Response">(
@@ -120,6 +120,7 @@ function RenderFlows({
 				delete filteredData["active_session_id"];
 				setDifficultyCache(response.data.sessionDifficulty);
 				setCacheSessionData(response.data);
+				apiCallFailCount.current = 0; // Reset fail count on successful fetch
 			})
 			.catch((e: any) => {
 				console.error("Error while fetching session: ", e);
@@ -156,7 +157,7 @@ function RenderFlows({
 			})
 			.then((response) => {
 				setReport(response.data.data);
-				setStep((s: number) => s + 1);
+				setStep(2);
 			})
 			.catch((e) => {
 				console.error(e);
@@ -197,7 +198,7 @@ function RenderFlows({
 					{cacheSessionData ? (
 						<div className="flex gap-2 flex-col">
 							<InfoCard
-								title="Session Info"
+								title="Info"
 								data={{
 									sessionId: sessionId,
 									subscriberUrl: subUrl,
@@ -209,23 +210,37 @@ function RenderFlows({
 									use_case: cacheSessionData.usecaseId,
 								}}
 								children={
-									<CircularProgress
-										duration={5}
-										loop={true}
-										onComplete={async () => {
-											if (apiCallFailCount.current < 5) {
-												fetchSessionData();
-											} else if (
-												apiCallFailCount.current >= 5 &&
-												!isErrorModalOpen
-											) {
-												setIsErrorModalOpen(true);
-												console.log("not calling the api");
-											}
-										}}
-										sqSize={20}
-										strokeWidth={3}
-									/>
+									<div className="w-full flex justify-between">
+										<CircularProgress
+											duration={5}
+											id="flow-cool-down"
+											loop={true}
+											onComplete={async () => {
+												if (apiCallFailCount.current < 5) {
+													fetchSessionData();
+												} else if (
+													apiCallFailCount.current >= 5 &&
+													!isErrorModalOpen
+												) {
+													setIsErrorModalOpen(true);
+													console.log("not calling the api");
+												}
+											}}
+											// invisible={true}
+											sqSize={16}
+											strokeWidth={2}
+										/>
+										<div className="flex justify-end">
+											<button
+												className="bg-sky-600 text-white text-sm flex px-2 py-2 rounded hover:bg-sky-700 shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+												onClick={async () => await generateReport()}
+												disabled={!isFlowStopped}
+											>
+												<HiOutlineDocumentReport className="text-lg m2-1" />
+												Generate Report
+											</button>
+										</div>
+									</div>
 								}
 							/>
 							<DifficultyCards
@@ -234,17 +249,35 @@ function RenderFlows({
 							/>
 						</div>
 					) : (
-						<div>Loading...</div>
+						<div className="bg-white rounded-lg shadow-sm border border-sky-100 p-6">
+							<style>
+								{`
+									@keyframes shimmer {
+										0% { background-position: -200px 0; }
+										100% { background-position: calc(200px + 100%) 0; }
+									}
+									.skeleton {
+										background: linear-gradient(90deg, #e0f2fe 25%, #b3e5fc 50%, #e0f2fe 75%);
+										background-size: 200px 100%;
+										animation: shimmer 1.5s infinite;
+									}
+								`}
+							</style>
+							<div className="space-y-4">
+								{/* Content skeleton */}
+								<div className="grid grid-cols-2 gap-4">
+									<div className="space-y-2">
+										<div className="h-3 rounded skeleton"></div>
+										<div className="h-3 rounded w-4/5 skeleton"></div>
+									</div>
+									<div className="space-y-2">
+										<div className="h-3 rounded skeleton"></div>
+										<div className="h-3 rounded w-3/5 skeleton"></div>
+									</div>
+								</div>
+							</div>
+						</div>
 					)}
-					<div className="flex justify-end">
-						<button
-							className="bg-sky-500 text-white px-4 py-2 mt-1 rounded hover:bg-sky-600 shadow-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-							onClick={async () => await generateReport()}
-							disabled={!isFlowStopped}
-						>
-							Generate Report
-						</button>
-					</div>
 				</div>
 
 				{/* Main Content Area */}
@@ -252,7 +285,7 @@ function RenderFlows({
 					{/* Left Column - Main Content */}
 					<div className="w-full sm:w-[60%] overflow-y-auto p-4">
 						{/* {flows.domain.map((domain) => ( */}
-						<div className="mb-8 bg-white p-4 rounded-md border">
+						<div className="mb-8 bg-gray-100 p-4 rounded-md border">
 							{flows.map((flow) => (
 								<Accordion
 									key={flow.id}
@@ -274,7 +307,7 @@ function RenderFlows({
 					{/* Right Column - Sticky Request & Response */}
 					<div className="w-full sm:w-[40%] p-4">
 						{/* Sticky Container */}
-						<div className="bg-white rounded-md shadow-md border sticky top-20">
+						<div className=" bg-gray-100 rounded-md shadow-md border sticky top-20">
 							{/* <h2 className="m-1 text-lg font-semibold">Request & Response</h2> */}
 							<Tabs
 								className="mt-4 ml-2"
