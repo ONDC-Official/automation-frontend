@@ -53,6 +53,11 @@ function StepDisplay({ step, flowId }: { step: MappedStep; flowId: string }) {
 			setResponseData({ info: "Step not complete" });
 			return;
 		}
+		if (step.payloads?.entryType === "FORM") {
+			setRequestData({ info: step.payloads });
+			setResponseData({ info: step.payloads });
+			return;
+		}
 		const payloadIds = step.payloads?.payloads.map((p) => p.payloadId) ?? [];
 		const payloads = await getCompletePayload(payloadIds);
 		setRequestData(payloads.map((p: any) => p.req));
@@ -74,13 +79,12 @@ function StepDisplay({ step, flowId }: { step: MappedStep; flowId: string }) {
 	) {
 		statusStyles.messageText = "INACTIVE";
 	}
-	const apiCount =
-		step.status === "COMPLETE" ? step.payloads?.payloads.length ?? 0 : 0;
+	const apiCount = getCount(step);
 	return (
 		// <CustomTooltip content={step.description ?? ""}>
 		<FlippableWrapper flipTrigger={step.status}>
 			<button
-				className={`${statusStyles?.card} w-full h-full rounded-lg p-4 border shadow-md hover:shadow-lg transition-all duration-200`}
+				className={`${statusStyles?.card} w-full h-full rounded-lg p-3 border shadow-sm hover:shadow-lg transition-all duration-200`}
 				onClick={onClickFunc}
 			>
 				<div className="w-full flex flex-col space-y-1">
@@ -164,6 +168,8 @@ function getStatusStyles(
 		| "RESPONDING"
 		| "INPUT-REQUIRED"
 		| "WAITING"
+		| "PROCESSING"
+		| "WAITING-SUBMISSION"
 ) {
 	switch (status) {
 		case "SUCCESS":
@@ -188,9 +194,9 @@ function getStatusStyles(
 			};
 		case "INPUT-REQUIRED":
 			return {
-				card: "border-indigo-300 bg-gradient-to-br from-indigo-50 to-indigo-200 shadow-md shadow-indigo-200",
+				card: "border-sky-300 bg-gradient-to-br from-sky-50 to-sky-200 shadow-md shadow-sky-200",
 				messageText: "SENDING",
-				messageBg: "bg-gradient-to-r from-indigo-600 to-indigo-400 text-white",
+				messageBg: "bg-gradient-to-r from-sky-600 to-sky-400 text-white",
 			};
 
 		case "LISTENING":
@@ -205,5 +211,24 @@ function getStatusStyles(
 				card: "border-gray-200 bg-gradient-to-br from-slate-50 to-slate-100 shadow-md shadow-slate-200",
 				messageBg: "bg-slate-400 text-white",
 			};
+		case "PROCESSING":
+			return {
+				card: "border-purple-300 bg-gradient-to-br from-purple-50 to-purple-200 shadow-md shadow-purple-200",
+				messageText: "PROCESSING",
+				messageBg: "bg-gradient-to-r from-purple-600 to-purple-500 text-white",
+			};
+		case "WAITING-SUBMISSION":
+			return {
+				card: "border-indigo-300 bg-gradient-to-br from-indigo-50 to-indigo-200 shadow-md shadow-indigo-200",
+				messageText: "WAITING-SUBMISSION",
+				messageBg: "bg-gradient-to-r from-indigo-600 to-indigo-500 text-white",
+			};
 	}
+}
+
+function getCount(step: MappedStep) {
+	if (step.payloads?.entryType === "FORM") {
+		return 0;
+	}
+	return step.status === "COMPLETE" ? step.payloads?.payloads.length ?? 0 : 0;
 }

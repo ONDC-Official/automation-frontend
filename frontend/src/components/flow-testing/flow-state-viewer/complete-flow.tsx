@@ -63,7 +63,7 @@ export function Accordion({
 		useState<FormConfigType | null>(null);
 	const contentRef = useRef<HTMLDivElement>(null);
 	const [maxHeight, setMaxHeight] = useState("0px");
-	const apiCallFailCount = useRef(0)
+	const apiCallFailCount = useRef(0);
 
 	const fetchTransactionData = async () => {
 		if (activeFlow !== flow.id || !sessionCache) {
@@ -72,10 +72,19 @@ export function Accordion({
 		const tx = sessionCache.flowMap?.[flow.id];
 		if (tx) {
 			try {
-				const txData = await getMappedFlow(tx, sessionId);
+				const txData = (await getMappedFlow(tx, sessionId)) as FlowMap; // Assuming the response is of type FlowMap
+				for (let i = 0; i < txData.sequence.length; i++) {
+					const payloads = txData.sequence[i].payloads;
+					if (payloads) {
+						if (!payloads.entryType) {
+							txData.sequence[i].payloads!.entryType = "API";
+						}
+					}
+				}
 				setMappedFlow(txData);
+				apiCallFailCount.current = 0; // Reset fail count on successful fetch
 			} catch (error) {
-				apiCallFailCount.current = apiCallFailCount.current + 1
+				apiCallFailCount.current = apiCallFailCount.current + 1;
 				console.error("Failed to fetch transaction data:", error);
 			}
 		} else {
@@ -140,12 +149,50 @@ export function Accordion({
 		}
 	};
 
-	if (!sessionCache) return <div>Loading...</div>;
+	if (!sessionCache) {
+		return (
+			<div className="bg-white rounded-md shadow-sm border border-sky-100 p-5 mb-4">
+				<style>
+					{`
+						@keyframes shimmer {
+							0% { background-position: -200px 0; }
+							100% { background-position: calc(200px + 100%) 0; }
+						}
+						.skeleton {
+							background: linear-gradient(90deg, #e0f2fe 25%, #b3e5fc 50%, #e0f2fe 75%);
+							background-size: 200px 100%;
+							animation: shimmer 1.5s infinite;
+						}
+					`}
+				</style>
+				<div className="space-y-4">
+					{/* Header skeleton */}
+					<div className="flex items-center justify-between">
+						<div className="flex items-center space-x-3">
+							<div className="w-6 h-6 rounded skeleton"></div>
+							<div className="space-y-2">
+								<div className="h-4 w-32 rounded skeleton"></div>
+								<div className="h-3 w-24 rounded skeleton"></div>
+							</div>
+						</div>
+						<div className="flex items-center space-x-2">
+							<div className="w-8 h-8 rounded-md skeleton"></div>
+							<div className="w-8 h-8 rounded-md skeleton"></div>
+							<div className="w-8 h-8 rounded-md skeleton"></div>
+						</div>
+					</div>
+				</div>
+			</div>
+		);
+	}
 
 	const handleDownload = async () => {
-		const payload_ids = mappedFlow?.sequence.flatMap(
-			(s) => s.payloads?.payloads.map((p) => p.payloadId) ?? []
-		);
+		const payload_ids = mappedFlow?.sequence.flatMap((s) => {
+			if (s.payloads?.entryType === "FORM") {
+				return [];
+			}
+			return s.payloads?.payloads.map((p) => p.payloadId) ?? [];
+		});
 
 		if (!payload_ids) {
 			return;
@@ -237,9 +284,9 @@ export function Accordion({
 					strokeWidth={3}
 					duration={3}
 					onComplete={async () => {
-						if(apiCallFailCount.current < 5 ) {
+						if (apiCallFailCount.current < 5) {
 							await fetchTransactionData();
-						} 
+						}
 					}}
 					loop={true}
 					isActive={activeFlow === flow.id}
@@ -249,9 +296,9 @@ export function Accordion({
 		);
 	}
 
-	const bg = activeFlow === flow.id ? "bg-sky-50" : "bg-white";
+	const bg = activeFlow === flow.id ? "bg-blue-50" : "bg-white";
 	return (
-		<div className="rounded-md border border-zinc-50 mb-4 shadow-lg w-full ml-1">
+		<div className="rounded-md mb-4 w-full ml-1">
 			<div
 				className={`${bg} border rounded-md shadow-sm hover:bg-sky-100 cursor-pointer transition-colors px-5 py-3`}
 				onClick={() => setIsOpen(!isOpen)}
@@ -294,10 +341,11 @@ export function Accordion({
 				</div>
 			</div>
 			{inputPopUp && activeFormConfig && (
-				<Popup isOpen={inputPopUp}>
+				<Popup isOpen={inputPopUp} onClose={() => setInputPopUp(false)}>
 					<FormConfig
 						formConfig={activeFormConfig}
 						submitEvent={handleFormForNewFlow}
+						referenceData={mappedFlow.reference_data}
 					/>
 				</Popup>
 			)}
