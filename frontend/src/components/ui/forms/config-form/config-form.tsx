@@ -89,6 +89,10 @@ export default function FormConfig({
 		return <TRVSelect submitEvent={submitEvent} />;
 	}
 
+	if(formConfig.find((field) => field.type === "trv_select")) {
+		return <TRVSelect submitEvent={submitEvent} />
+	}
+
 	return (
 		<GenericForm
 			defaultValues={defaultValues}
