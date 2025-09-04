@@ -38,6 +38,7 @@ app.use(
 				"http://localhost:4000",
 				"https://saarthi.ondc.org.in",
 				"https://preview--ondc-developer-portal.lovable.app",
+				"https://workbench.ondc.tech"
 			],
 		credentials: true,
 		methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
