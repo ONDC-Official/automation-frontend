@@ -13,7 +13,7 @@ export interface MenuItem {
   name: string;
   shortDescription: string;
   longDescription: string;
-  images: string;
+  images: string[];
   dayFrom: string;
   dayTo: string;
   timeFrom: string;
@@ -49,7 +49,7 @@ export interface ItemDetails {
   symbol: string;
   short_desc: string;
   long_desc: string;
-  images: string;
+  images: string[];
 
   // Quantity
   unit: string;
@@ -225,8 +225,8 @@ export interface SellerOnboardingData {
   provider_name?: string;
   long_desc?: string;
   short_desc?: string;
-  images?: string;
-  symbolImage?: File;
+  images?: string[];
+  symbolImage?: string;
 
   // Step 2: Business Details Form - Multiple Stores
   stores?: StoreDetails[];
@@ -342,6 +342,7 @@ const SellerOnboarding = () => {
         case 0:
           return (
             <BasicInformationForm
+              key={`basic-info-fnb-${currentStep}`}
               initialData={formData}
               onNext={handleStepComplete}
             />
@@ -349,6 +350,7 @@ const SellerOnboarding = () => {
         case 1:
           return (
             <BusinessVerificationForm
+              key={`business-verification-fnb-${currentStep}`}
               initialData={formData}
               onNext={handleStepComplete}
               onPrevious={handlePreviousStep}
@@ -360,6 +362,7 @@ const SellerOnboarding = () => {
         case 2:
           return (
             <CustomMenuFormEnhanced
+              key={`custom-menu-${currentStep}`}
               initialData={formData}
               onNext={handleStepComplete}
               onPrevious={handlePreviousStep}
@@ -369,6 +372,7 @@ const SellerOnboarding = () => {
         case 3:
           return (
             <ItemDetailsForm
+              key={`item-details-fnb-${currentStep}`}
               initialData={formData}
               onNext={handleSubmit}
               onPrevious={handlePreviousStep}
@@ -382,6 +386,7 @@ const SellerOnboarding = () => {
         case 0:
           return (
             <BasicInformationForm
+              key={`basic-info-${currentStep}`}
               initialData={formData}
               onNext={handleStepComplete}
             />
@@ -399,6 +404,7 @@ const SellerOnboarding = () => {
         case 2:
           return (
             <ItemDetailsForm
+              key={`item-details-${currentStep}`}
               initialData={formData}
               onNext={handleSubmit}
               onPrevious={handlePreviousStep}
