@@ -72,7 +72,15 @@ export function Accordion({
 		const tx = sessionCache.flowMap?.[flow.id];
 		if (tx) {
 			try {
-				const txData = await getMappedFlow(tx, sessionId);
+				const txData = (await getMappedFlow(tx, sessionId)) as FlowMap; // Assuming the response is of type FlowMap
+				for (let i = 0; i < txData.sequence.length; i++) {
+					const payloads = txData.sequence[i].payloads;
+					if (payloads) {
+						if (!payloads.entryType) {
+							txData.sequence[i].payloads!.entryType = "API";
+						}
+					}
+				}
 				setMappedFlow(txData);
 				apiCallFailCount.current = 0; // Reset fail count on successful fetch
 			} catch (error) {
@@ -179,9 +187,12 @@ export function Accordion({
 	}
 
 	const handleDownload = async () => {
-		const payload_ids = mappedFlow?.sequence.flatMap(
-			(s) => s.payloads?.payloads.map((p) => p.payloadId) ?? []
-		);
+		const payload_ids = mappedFlow?.sequence.flatMap((s) => {
+			if (s.payloads?.entryType === "FORM") {
+				return [];
+			}
+			return s.payloads?.payloads.map((p) => p.payloadId) ?? [];
+		});
 
 		if (!payload_ids) {
 			return;
@@ -330,10 +341,11 @@ export function Accordion({
 				</div>
 			</div>
 			{inputPopUp && activeFormConfig && (
-				<Popup isOpen={inputPopUp}>
+				<Popup isOpen={inputPopUp} onClose={() => setInputPopUp(false)}>
 					<FormConfig
 						formConfig={activeFormConfig}
 						submitEvent={handleFormForNewFlow}
+						referenceData={mappedFlow.reference_data}
 					/>
 				</Popup>
 			)}
