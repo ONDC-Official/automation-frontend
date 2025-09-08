@@ -104,8 +104,8 @@ function App() {
 					<Route path="/home" element={<HomePage />} />
 					<Route path="/schema" element={<SchemaValidation />} />
 					{/* <Route path="/unit" element={<ApiTesting />} /> */}
-					<Route path="/scenario" element={<FlowContent />} />
-					{/* <Route path="/customFlow" element={<ComingSoonPage />} /> */}
+					<Route path="/scenario" element={<FlowContent type={"SCENARIO"} />} />
+					<Route path="/customFlow" element={<FlowContent type={"CUSTOM"} />} />
 					<Route path="/login" element={<GitHubLogin />} />
 					<Route path="/profile" element={<UserProfile />} />
 					<Route path="/tools" element={<ToolsPage />} />
