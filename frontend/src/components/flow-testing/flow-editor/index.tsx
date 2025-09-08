@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Flow, SequenceStep } from "../../../types/flow-types";
+import { useState } from "react";
+import { SequenceStep } from "../../../types/flow-types";
 import { updateCustomFlow } from "../../../utils/request-utils";
 import Editor from "./editor";
 import { toast } from "react-toastify";
@@ -8,8 +8,8 @@ import { SessionCache } from "../../../types/session-types";
 interface StepperProps {
   sessionId: string;
   template: SequenceStep[];
-  sessionData: SessionCache;
-  onNext: (flow: Flow) => void;
+  sessionData: SessionCache | null;
+  onNext: (flow: any) => void;
 }
 
 const FlowEditor = ({
