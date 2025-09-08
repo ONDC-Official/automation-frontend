@@ -1,5 +1,4 @@
-import { PairedStep } from "./mapped-flow";
-import { MappedStep } from "../../../types/flow-state-type";
+import { PairedStep } from "../flow-state-viewer/mapped-flow";
 import CustomTooltip from "../../ui/mini-components/tooltip";
 import { MdSyncAlt } from "react-icons/md";
 import { useContext } from "react";
@@ -13,11 +12,12 @@ export default function PairedCard({
   pairedStep,
   onAddClick,
   onEditClick,
+  onDeleteClick,
 }: {
   pairedStep: PairedStep;
-  flowId: string;
   onAddClick: (index: number) => void;
   onEditClick: (index: number) => void;
+  onDeleteClick: (index: number) => void;
 }) {
   const { first, second } = pairedStep;
   return (
@@ -28,6 +28,7 @@ export default function PairedCard({
           step={first}
           onAddClick={onAddClick}
           onEditClick={onEditClick}
+          onDeleteClick={onDeleteClick}
         />
       </div>
 
@@ -43,7 +44,12 @@ export default function PairedCard({
       {/* Second Step */}
       {second && (
         <div className="flex-1">
-          <StepDisplay step={second} onAddClick={onAddClick} />
+          <StepDisplay
+            step={second}
+            onAddClick={onAddClick}
+            onEditClick={onEditClick}
+            onDeleteClick={onDeleteClick}
+          />
         </div>
       )}
     </div>
@@ -54,14 +60,14 @@ function StepDisplay({
   step,
   onAddClick,
   onEditClick,
+  onDeleteClick,
 }: {
-  step: MappedStep;
-  flowId: string;
+  step: any;
   onAddClick: (index: number) => void;
   onEditClick: (index: number) => void;
+  onDeleteClick: (index: number) => void;
 }) {
-  const { activeFlowId, setRequestData, setResponseData } =
-    useContext(SessionContext);
+  const { setRequestData, setResponseData } = useContext(SessionContext);
 
   const onClickFunc = async () => {
     if (step.status !== "COMPLETE") {
@@ -71,17 +77,17 @@ function StepDisplay({
       setResponseData({ info: "Step not complete" });
       return;
     }
-    const payloadIds = step.payloads?.payloads.map((p) => p.payloadId) ?? [];
+    const payloadIds =
+      step.payloads?.payloads?.map((p: any) => p.payloadId) ?? [];
     const payloads = await getCompletePayload(payloadIds);
     setRequestData(payloads.map((p: any) => p.req));
     setResponseData({ res: payloads.map((p: any) => p.res) });
   };
 
-  const status =
-    step.status === "COMPLETE"
-      ? step.payloads?.subStatus ?? "ERROR"
-      : step.status;
-  const statusStyles = getStatusStyles(status);
+  const statusStyles = {
+    card: "border-gray-200 bg-gradient-to-br from-slate-50 to-slate-100 shadow-md shadow-slate-200",
+    messageBg: "bg-slate-400 text-white",
+  };
   if (step.missedStep) {
     statusStyles.card =
       "border-purple-200  bg-gradient-to-br from-purple-50 to-purple-100 shadow-md shadow-purple-200";
@@ -147,10 +153,10 @@ function StepDisplay({
                     icon={<FiTrash2 className="text-md" />}
                     label="Delete"
                     color="red"
-                    // onClick={(e) => {
-                    //   e.stopPropagation();
-                    //   onDeleteClick(step.index);
-                    // }}
+                    onClick={(e: any) => {
+                      e.stopPropagation();
+                      onDeleteClick(step.index);
+                    }}
                   />
                 )}
               </div>
@@ -163,54 +169,54 @@ function StepDisplay({
   );
 }
 
-function getStatusStyles(
-  status:
-    | "ERROR"
-    | "SUCCESS"
-    | "LISTENING"
-    | "RESPONDING"
-    | "INPUT-REQUIRED"
-    | "WAITING"
-) {
-  switch (status) {
-    case "SUCCESS":
-      return {
-        card: "border-green-300 bg-green-100 shadow-md shadow-green-200",
-        messageText: "ACK",
-        messageBg: "bg-gradient-to-r from-green-600 to-green-500 text-white",
-      };
+// function getStatusStyles(
+//   status:
+//     | "ERROR"
+//     | "SUCCESS"
+//     | "LISTENING"
+//     | "RESPONDING"
+//     | "INPUT-REQUIRED"
+//     | "WAITING"
+// ) {
+//   switch (status) {
+//     case "SUCCESS":
+//       return {
+//         card: "border-green-300 bg-green-100 shadow-md shadow-green-200",
+//         messageText: "ACK",
+//         messageBg: "bg-gradient-to-r from-green-600 to-green-500 text-white",
+//       };
 
-    case "ERROR":
-      return {
-        card: "border-red-300 bg-red-100 shadow-md shadow-red-200",
-        messageText: "NACK",
-        messageBg: "bg-gradient-to-r from-red-600 to-red-500 text-white",
-      };
+//     case "ERROR":
+//       return {
+//         card: "border-red-300 bg-red-100 shadow-md shadow-red-200",
+//         messageText: "NACK",
+//         messageBg: "bg-gradient-to-r from-red-600 to-red-500 text-white",
+//       };
 
-    case "RESPONDING":
-      return {
-        card: "border-blue-300 bg-gradient-to-br from-blue-50 to-blue-200 shadow-md shadow-blue-200",
-        messageText: "SENDING",
-        messageBg: "bg-gradient-to-r from-blue-600 to-blue-400 text-white",
-      };
-    case "INPUT-REQUIRED":
-      return {
-        card: "border-sky-300 bg-gradient-to-br from-sky-50 to-sky-200 shadow-md shadow-sky-200",
-        messageText: "SENDING",
-        messageBg: "bg-gradient-to-r from-sky-600 to-sky-400 text-white",
-      };
+//     case "RESPONDING":
+//       return {
+//         card: "border-blue-300 bg-gradient-to-br from-blue-50 to-blue-200 shadow-md shadow-blue-200",
+//         messageText: "SENDING",
+//         messageBg: "bg-gradient-to-r from-blue-600 to-blue-400 text-white",
+//       };
+//     case "INPUT-REQUIRED":
+//       return {
+//         card: "border-sky-300 bg-gradient-to-br from-sky-50 to-sky-200 shadow-md shadow-sky-200",
+//         messageText: "SENDING",
+//         messageBg: "bg-gradient-to-r from-sky-600 to-sky-400 text-white",
+//       };
 
-    case "LISTENING":
-      return {
-        card: "border-yellow-300 bg-gradient-to-br from-yellow-50 to-yellow-200 shadow-md shadow-yellow-200",
-        messageText: "WAITING",
-        messageBg: "bg-gradient-to-r from-yellow-600 to-yellow-500 text-white",
-      };
+//     case "LISTENING":
+//       return {
+//         card: "border-yellow-300 bg-gradient-to-br from-yellow-50 to-yellow-200 shadow-md shadow-yellow-200",
+//         messageText: "WAITING",
+//         messageBg: "bg-gradient-to-r from-yellow-600 to-yellow-500 text-white",
+//       };
 
-    case "WAITING":
-      return {
-        card: "border-gray-200 bg-gradient-to-br from-slate-50 to-slate-100 shadow-md shadow-slate-200",
-        messageBg: "bg-slate-400 text-white",
-      };
-  }
-}
+//     case "WAITING":
+//       return {
+//         card: "border-gray-200 bg-gradient-to-br from-slate-50 to-slate-100 shadow-md shadow-slate-200",
+//         messageBg: "bg-slate-400 text-white",
+//       };
+//   }
+// }

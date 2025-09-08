@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { FlowMap, MappedStep } from "../../../types/flow-state-type";
+import { MappedStep } from "../../../types/flow-state-type";
 // import { toast } from "react-toastify";
 import PairedCard from "./pair-cards";
 import { Action } from "./editor";
@@ -23,7 +23,7 @@ interface AddCallModalProps {
   actions: Pick<Action, "key" | "type" | "input">[];
   isOpen: boolean;
   selectedIndex: number;
-  type: "ADD" | "EDIT";
+  type: "ADD" | "EDIT" | undefined;
   step: MappedStep;
   onClose: () => void;
   onSave: (newAction: NewAction) => void;
@@ -32,13 +32,11 @@ interface AddCallModalProps {
 
 export default function DisplayFlow({
   mappedFlow,
-  flowId,
   actions,
   handleAdd,
   handleEdit,
 }: {
-  mappedFlow: FlowMap;
-  flowId: string;
+  mappedFlow: {sequence: MappedStep[]};
   actions: Pick<Action, "key" | "type" | "input">[];
   handleAdd: (data: NewAction) => void;
   handleEdit: (data: NewAction) => void;
@@ -68,6 +66,9 @@ export default function DisplayFlow({
               setIsFormActive(true);
               setSelectedIndex(index);
               setFormType("EDIT");
+            }}
+            onDeleteClick={(index: number) => {
+              console.log("dlelte index : ", index);
             }}
           />
         ))}
@@ -265,7 +266,7 @@ function AddCallModal({
   );
 }
 
-function getOrderedSteps(mappedFlow: FlowMap): PairedStep[] {
+function getOrderedSteps(mappedFlow: {sequence: MappedStep[]}): PairedStep[] {
   const sequence = mappedFlow.sequence;
   const visited = new Set<string>();
   const steps: PairedStep[] = [];
