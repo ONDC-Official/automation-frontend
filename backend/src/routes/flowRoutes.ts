@@ -9,6 +9,8 @@ import {
 	getCurrentStateFlow,
 	proceedFlow,
 	newFlow,
+	updateFlow,
+	getActions
 } from "../controllers/flowController";
 import validateRequiredParams from "../middlewares/generic";
 import otelTracing from "../services/tracing-service";
@@ -66,5 +68,7 @@ router.post("/external-form", async (req, res) => {
 		res.status(500).send("GATEWAY ERROR");
 	}
 });
+router.post("/custom-flow", otelTracing( 'body.session_id'), updateFlow)
+router.post("/actions", otelTracing("body.domain", "body.version"), getActions)
 
 export default router;
