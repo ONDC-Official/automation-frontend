@@ -5,7 +5,7 @@ import "tippy.js/animations/perspective-subtle.css";
 interface IconButtonProps {
 	icon: React.ReactNode; // The icon to display
 	label: string; // Tooltip label
-	onClick?: (e: any) => Promise<void>; // Optional click handler
+	onClick?: (e: any) => Promise<void> | void; // Optional click handler
 	color?: "blue" | "red" | "green" | "orange" | "gray" | "sky" | "yellow"; // Predefined color options
 }
 

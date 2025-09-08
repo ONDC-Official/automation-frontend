@@ -1,12 +1,11 @@
-import React, { useEffect, useState } from "react";
-import { useContext } from "react";
+import { useEffect, useState } from "react";
 import { MappedStep } from "../../../types/flow-state-type";
 import { FcWorkflow } from "react-icons/fc";
 import { FiEdit2 } from "react-icons/fi";
 import DisplayFlow, { NewAction } from "./dispaly-flow";
 import { getActions } from "./../../../utils/request-utils";
 import { SequenceStep } from "../../../types/flow-types";
-import { SessionContext } from "../../../context/context";
+
 import { SessionCache } from "../../../types/session-types";
 
 interface InputField {
@@ -35,11 +34,8 @@ interface Flow {
 }
 
 interface FlowEditorProps {
-  initialFlow: Flow;
-  actions: Pick<Action, "key" | "type" | "input">[];
   template: SequenceStep[];
-  sessionData: SessionCache;
-  onChange: (flow: Flow) => void;
+  sessionData: SessionCache | null;
   setCustomFlow: (flow: any) => void;
 }
 
@@ -149,9 +145,9 @@ export default function Editor({
     });
   };
 
-  const init = async () => {
+  const init = async (domain: string, version: string) => {
     console.log("session Data:", sessionData);
-    let response = await getActions(sessionData.domain, sessionData.version);
+    let response = await getActions(domain, version);
 
     // do soemthing
     const transformedActions = response.map((item: any) => {
@@ -224,7 +220,7 @@ export default function Editor({
 
   useEffect(() => {
     if (sessionData?.domain && sessionData?.version) {
-      init();
+      init(sessionData.domain, sessionData.version);
     }
   }, [sessionData]);
 

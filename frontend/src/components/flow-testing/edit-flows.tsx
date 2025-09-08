@@ -1,6 +1,6 @@
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Flow } from "../../types/flow-types";
+import { Flow, SequenceStep } from "../../types/flow-types";
 import InfoCard from "../ui/info-card";
 // import DifficultyCards from "../ui/difficulty-cards";
 import axios from "axios";
@@ -17,11 +17,10 @@ function EditFlows({
   flows,
   onNext,
 }: {
-  flows: Flow[];
+  flows: any;
   subUrl: string;
   sessionId: string;
   onNext: (flow: Flow) => void;
-  setReport: React.Dispatch<React.SetStateAction<string>>;
 }) {
   const [cacheSessionData, setCacheSessionData] = useState<SessionCache | null>(
     null
@@ -30,7 +29,7 @@ function EditFlows({
   const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
   const [initialFlows, setInitialFlows] = useState<Flow[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [template, setTemplate] = useState([]);
+  const [template, setTemplate] = useState<SequenceStep[]>([]);
   const navigate = useNavigate();
 
   const handleSelectTemplate = (template: Flow) => {
@@ -78,6 +77,10 @@ function EditFlows({
       value={{
         sessionId,
         sessionData: cacheSessionData,
+        activeFlowId: "",
+        selectedTab: "Request",
+        setRequestData: () => {},
+        setResponseData: () => {},
       }}
     >
       <TemplatePickerModal
