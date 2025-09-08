@@ -23,7 +23,7 @@ const navLinks: NavLink[] = [
   { label: "Schema Validation", href: "/schema", selected: false },
   // { label: "Unit Testing", href: "/unit", selected: false },
   { label: "Scenario Testing", href: "/scenario", selected: false },
-  // { label: "Custom flow Workbench", href: "/customFlow", selected: false },
+	{ label: "Custom flow", href: "/customFlow", selected: false },
   {
     label: "Tools",
     href: "/tools",

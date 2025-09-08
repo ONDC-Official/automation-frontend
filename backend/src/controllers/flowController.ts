@@ -1,6 +1,7 @@
 // FILE: uiController.ts
 import { Request, Response } from "express";
 import { fetchConfigService } from "../services/flowService";
+import { updateFlowService } from "../services/sessionService";
 import axios from "../utils/axios";
 import { TriggerInput } from "../interfaces/triggerData";
 import { ACK, NACK, ERROR } from "../constants/response";
@@ -10,6 +11,7 @@ import getPredefinedFlowConfig, {
 import logger from "@ondc/automation-logger";
 import { saveLog } from "../utils/console";
 import { buildMockBaseURL } from "../utils";
+import { getLoggerMeta } from "../utils/logger-meta-utilts";
 
 export const fetchConfig = (req: Request, res: Response) => {
 	try {
@@ -288,4 +290,37 @@ export const newFlow = async (req: Request, res: Response) => {
 		);
 		res.status(500).send(ERROR);
 	}
+};
+
+export const updateFlow = async (req: Request, res: Response) => {
+	const {session_id, flows} = req.body
+	try {
+		await updateFlowService(session_id, flows, getLoggerMeta(req))
+		res.send({message: "flow updated."})
+	} catch(e) {
+		logger.error(
+			"error while creating new flow",
+			{
+				session_id: req.body.session_id,
+			},
+			e
+		);
+		res.status(500).send(ERROR);
+	}
+}
+
+export const getActions = async (req: Request, res: Response) => {
+  try {
+    const { domain, version } = req.body;
+
+    const response = await axios.get(
+      `${
+        process.env.MOCK_SERVICE as string
+      }/${domain}/${version}/config/mock-actions`
+    );
+
+    res.send(response.data);
+  } catch (e) {
+    console.error("Something went wrong while fetching actions: ", e);
+  }
 };
