@@ -35,11 +35,13 @@ export default function DisplayFlow({
   actions,
   handleAdd,
   handleEdit,
+  handleDelete
 }: {
   mappedFlow: {sequence: MappedStep[]};
   actions: Pick<Action, "key" | "type" | "input">[];
   handleAdd: (data: NewAction) => void;
   handleEdit: (data: NewAction) => void;
+  handleDelete: (index: Number) => void;
 }) {
   // mappedFlow = dummy;
   const steps = getOrderedSteps(mappedFlow);
@@ -68,7 +70,7 @@ export default function DisplayFlow({
               setFormType("EDIT");
             }}
             onDeleteClick={(index: number) => {
-              console.log("dlelte index : ", index);
+              handleDelete(index)
             }}
           />
         ))}
