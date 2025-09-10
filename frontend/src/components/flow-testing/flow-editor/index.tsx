@@ -10,6 +10,7 @@ interface StepperProps {
   template: SequenceStep[];
   sessionData: SessionCache | null;
   onNext: (flow: any) => void;
+  templateSelectionTrigger: boolean
 }
 
 const FlowEditor = ({
@@ -17,6 +18,7 @@ const FlowEditor = ({
   template,
   sessionData,
   onNext,
+  templateSelectionTrigger,
 }: StepperProps) => {
   const [customFlow, setCustomFlow] = useState([]);
   const [isFlowSaved, setIsFlowSaved] = useState(false);
@@ -38,6 +40,7 @@ const FlowEditor = ({
         <Editor
           setCustomFlow={setCustomFlow}
           template={template}
+          templateSelectionTrigger={templateSelectionTrigger}
           sessionData={sessionData}
         />
 
