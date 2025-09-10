@@ -6,7 +6,7 @@ import InfoCard from "../ui/info-card";
 import axios from "axios";
 import { SessionCache } from "../../types/session-types";
 import { SessionContext } from "../../context/context";
-import CircularProgress from "../ui/circular-cooldown";
+// import CircularProgress from "../ui/circular-cooldown";
 import Modal from "../modal";
 import FlowEditor from "./flow-editor/index";
 import { FiX, FiSearch, FiPlus } from "react-icons/fi";
@@ -30,12 +30,13 @@ function EditFlows({
   const [initialFlows, setInitialFlows] = useState<Flow[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [template, setTemplate] = useState<SequenceStep[]>([]);
+  const [templateSelectionTrigger, setTemplateSelectionTrigger] = useState<boolean>(false)
   const navigate = useNavigate();
 
-  const handleSelectTemplate = (template: Flow) => {
-    console.log("Selected Template:", template);
-    setTemplate(template.sequence);
-    // Here you could set this template into your state
+  const handleSelectTemplate = (currTemplate: Flow) => {
+    console.log("Selected Template:", currTemplate);
+    setTemplate(currTemplate.sequence);
+    setTemplateSelectionTrigger(!templateSelectionTrigger)
   };
 
   useEffect(() => {
@@ -116,29 +117,29 @@ function EditFlows({
                   env: cacheSessionData.env,
                   use_case: cacheSessionData.usecaseId,
                 }}
-                children={
-                  <div className="w-full flex justify-between">
-                    <CircularProgress
-                      duration={5}
-                      id="flow-cool-down"
-                      loop={true}
-                      onComplete={async () => {
-                        if (apiCallFailCount.current < 5) {
-                          fetchSessionData();
-                        } else if (
-                          apiCallFailCount.current >= 5 &&
-                          !isErrorModalOpen
-                        ) {
-                          setIsErrorModalOpen(true);
-                          console.log("not calling the api");
-                        }
-                      }}
-                      // invisible={true}
-                      sqSize={16}
-                      strokeWidth={2}
-                    />
-                  </div>
-                }
+                // children={
+                //   <div className="w-full flex justify-between">
+                //     <CircularProgress
+                //       duration={5}
+                //       id="flow-cool-down"
+                //       loop={true}
+                //       onComplete={async () => {
+                //         if (apiCallFailCount.current < 5) {
+                //           fetchSessionData();
+                //         } else if (
+                //           apiCallFailCount.current >= 5 &&
+                //           !isErrorModalOpen
+                //         ) {
+                //           setIsErrorModalOpen(true);
+                //           console.log("not calling the api");
+                //         }
+                //       }}
+                //       // invisible={true}
+                //       sqSize={16}
+                //       strokeWidth={2}
+                //     />
+                //   </div>
+                // }
               />
               {/* <DifficultyCards
                 difficulty_cache={difficultyCache}
@@ -193,6 +194,7 @@ function EditFlows({
           onNext={onNext}
           template={template}
           sessionData={cacheSessionData}
+          templateSelectionTrigger={templateSelectionTrigger}
         />
       </div>
     </SessionContext.Provider>
