@@ -37,6 +37,7 @@ interface FlowEditorProps {
   template: SequenceStep[];
   sessionData: SessionCache | null;
   setCustomFlow: (flow: any) => void;
+  templateSelectionTrigger: boolean;
 }
 
 // const actions: Action[] = [
@@ -77,6 +78,7 @@ export default function Editor({
   template,
   sessionData,
   setCustomFlow,
+  templateSelectionTrigger,
 }: FlowEditorProps) {
   const [flowName, setFlowName] = useState("CUSTOM_FLOW");
   const [flowTitle, setFlowTitle] = useState("Custom flow");
@@ -142,6 +144,17 @@ export default function Editor({
         }
         return seq;
       });
+    });
+  };
+
+  const handleDelete = (index: Number) => {
+    setSequenceFlow((prev) => {
+      const updated = prev.filter((step) => step.index !== index);
+
+      return updated.map((step, i) => ({
+        ...step,
+        index: i,
+      }));
     });
   };
 
@@ -241,9 +254,7 @@ export default function Editor({
         }))
       );
     }
-  }, [template]);
-
-  console.log("editor seqenceFlow", sequenceFlow);
+  }, [template, templateSelectionTrigger]);
 
   return (
     <div className="rounded-md mb-4 w-full">
@@ -317,6 +328,7 @@ export default function Editor({
                 actions={actions}
                 handleAdd={handleAdd}
                 handleEdit={handleEdit}
+                handleDelete={handleDelete}
               />
             ) : (
               <div>Loading...</div>
