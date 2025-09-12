@@ -4,8 +4,11 @@ import LoadingButton from "../ui/forms/loading-button";
 import { SellerOnboardingData } from "../../pages/seller-onboarding";
 import { weekDays } from "../../constants/common";
 import { Select, Button, Card, Modal, Checkbox, Tabs } from "antd";
-import { FaPlus, FaMinus, FaEdit, FaSitemap, FaClock } from "react-icons/fa";
-import { useState } from "react";
+import TimeInput from "../ui/forms/time-input";
+import MultiImageUpload from "../ui/forms/multi-image-upload";
+import { useFormImageState } from "../../hooks/useImageUpload";
+import { FaPlus, FaTrash, FaEdit, FaSitemap, FaClock } from "react-icons/fa";
+import { useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import CustomMenuComprehensiveView from "./custom-menu-comprehensive-view";
 
@@ -44,13 +47,7 @@ interface CustomMenuFormEnhancedProps {
 }
 
 // Component for managing multiple availability timings
-const AvailabilityTimingsSection = ({
-  menuIndex,
-  control,
-  watch,
-  register,
-  errors,
-}: any) => {
+const AvailabilityTimingsSection = ({ menuIndex, control, watch }: any) => {
   const {
     fields: timingFields,
     append: appendTiming,
@@ -61,6 +58,11 @@ const AvailabilityTimingsSection = ({
   });
 
   const watchTimings = watch(`menu.${menuIndex}.availabilityTimings`);
+  const [timeFormat, setTimeFormat] = useState<"24h" | "12h">("12h");
+
+  const handleFormatSync = (format: "24h" | "12h") => {
+    setTimeFormat(format);
+  };
 
   const addTiming = () => {
     appendTiming({
@@ -111,7 +113,7 @@ const AvailabilityTimingsSection = ({
                 className="text-red-500 hover:text-red-700 p-1"
                 title="Remove timing"
               >
-                <FaMinus className="text-sm" />
+                <FaTrash className="text-sm" />
               </button>
             )}
           </div>
@@ -189,50 +191,66 @@ const AvailabilityTimingsSection = ({
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Available From (Time) <span className="text-red-500">*</span>
               </label>
-              <input
-                type="time"
-                {...register(
-                  `menu.${menuIndex}.availabilityTimings.${timingIndex}.timeFrom`,
-                  {
-                    required: "Start time is required",
-                  }
+              <Controller
+                name={`menu.${menuIndex}.availabilityTimings.${timingIndex}.timeFrom`}
+                control={control}
+                rules={{
+                  required: "Start time is required",
+                }}
+                render={({ field, fieldState: { error } }) => (
+                  <>
+                    <TimeInput
+                      value={field.value}
+                      onChange={field.onChange}
+                      size="large"
+                      status={error ? "error" : undefined}
+                      format={timeFormat}
+                      allowFormatToggle={true}
+                      onFormatChange={handleFormatSync}
+                      syncId={`menu-${menuIndex}-timing-${timingIndex}`}
+                      placeholder="Select start time (12hr or 24hr format)"
+                    />
+                    {error && (
+                      <p className="text-red-500 text-xs mt-1">
+                        {error.message}
+                      </p>
+                    )}
+                  </>
                 )}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-sky-500 focus:border-sky-500"
               />
-              {errors?.menu?.[menuIndex]?.availabilityTimings?.[timingIndex]
-                ?.timeFrom && (
-                <p className="text-red-500 text-xs italic mt-1">
-                  {
-                    errors.menu?.[menuIndex]?.availabilityTimings?.[timingIndex]
-                      ?.timeFrom?.message
-                  }
-                </p>
-              )}
             </div>
 
             <div className="mb-4 w-full">
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Available To (Time) <span className="text-red-500">*</span>
               </label>
-              <input
-                type="time"
-                {...register(
-                  `menu.${menuIndex}.availabilityTimings.${timingIndex}.timeTo`,
-                  {
-                    required: "End time is required",
-                  }
+              <Controller
+                name={`menu.${menuIndex}.availabilityTimings.${timingIndex}.timeTo`}
+                control={control}
+                rules={{
+                  required: "End time is required",
+                }}
+                render={({ field, fieldState: { error } }) => (
+                  <>
+                    <TimeInput
+                      value={field.value}
+                      onChange={field.onChange}
+                      size="large"
+                      status={error ? "error" : undefined}
+                      format={timeFormat}
+                      allowFormatToggle={true}
+                      onFormatChange={handleFormatSync}
+                      syncId={`menu-${menuIndex}-timing-${timingIndex}`}
+                      placeholder="Select end time (12hr or 24hr format)"
+                    />
+                    {error && (
+                      <p className="text-red-500 text-xs mt-1">
+                        {error.message}
+                      </p>
+                    )}
+                  </>
                 )}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-sky-500 focus:border-sky-500"
               />
-              {errors?.menu?.[menuIndex]?.availabilityTimings?.[timingIndex]
-                ?.timeTo && (
-                <p className="text-red-500 text-xs italic mt-1">
-                  {
-                    errors.menu?.[menuIndex]?.availabilityTimings?.[timingIndex]
-                      ?.timeTo?.message
-                  }
-                </p>
-              )}
             </div>
           </div>
 
@@ -274,6 +292,9 @@ const CustomMenuFormEnhanced = ({
     null
   );
 
+  // Use optimized hook for managing menu images
+  const menuImages = useFormImageState<{ [menuIndex: number]: string[] }>({});
+
   const {
     register,
     handleSubmit,
@@ -281,6 +302,7 @@ const CustomMenuFormEnhanced = ({
     formState: { errors },
     watch,
     setValue,
+    reset,
   } = useForm({
     defaultValues: {
       menu:
@@ -336,6 +358,55 @@ const CustomMenuFormEnhanced = ({
   });
 
   const watchMenu = watch("menu");
+
+  // Reset form when initialData changes (when navigating back)
+  useEffect(() => {
+    const menuData =
+      initialData.menuItems && initialData.menuItems.length > 0
+        ? initialData.menuItems.map((item: any) => ({
+            ...item,
+            // Ensure availabilityTimings array exists
+            availabilityTimings:
+              item.availabilityTimings && item.availabilityTimings.length > 0
+                ? item.availabilityTimings
+                : [
+                    {
+                      dayFrom: item.dayFrom || "",
+                      dayTo: item.dayTo || "",
+                      timeFrom: item.timeFrom || "",
+                      timeTo: item.timeTo || "",
+                    },
+                  ],
+            customizationGroups: item.customizationGroups || [],
+          }))
+        : [
+            {
+              name: "",
+              shortDescription: "",
+              longDescription: "",
+              images: "",
+              dayFrom: "",
+              dayTo: "",
+              timeFrom: "",
+              timeTo: "",
+              price: "",
+              category: "",
+              vegNonVeg: "",
+              rank: 1,
+              availabilityTimings: [
+                {
+                  dayFrom: "",
+                  dayTo: "",
+                  timeFrom: "",
+                  timeTo: "",
+                },
+              ],
+              customizationGroups: [],
+            },
+          ];
+
+    reset({ menu: menuData });
+  }, [initialData, reset]);
 
   // Helper function to get nested errors for field arrays
   const createErrorsObject = (index: number) => {
@@ -495,7 +566,6 @@ const CustomMenuFormEnhanced = ({
               timeTo: convertTimeFormat(timing.timeTo) || "",
             }));
           }
-        
 
           return {
             name: item.name,
@@ -622,7 +692,7 @@ const CustomMenuFormEnhanced = ({
                       <h5 className="text-sm font-medium text-gray-700">
                         Basic Information
                       </h5>
-                      <div className="grid md:grid-cols-2 gap-4">
+                      <div className="grid md:grid-cols-1 gap-4">
                         <FormInput
                           label="Menu Name"
                           placeholder="Enter Menu Name"
@@ -636,16 +706,6 @@ const CustomMenuFormEnhanced = ({
                               message: "Name must be at least 3 characters",
                             },
                           }}
-                        />
-
-                        <FormInput
-                          label="Images (URL)"
-                          placeholder="Enter Images URL"
-                          name={`menu.${index}.images`}
-                          type="url"
-                          register={register}
-                          errors={createErrorsObject(index)}
-                          required="Image URL is required"
                         />
                       </div>
 
@@ -680,6 +740,22 @@ const CustomMenuFormEnhanced = ({
                                 "Long description must be at least 30 characters",
                             },
                           }}
+                        />
+                      </div>
+
+                      <div className="grid md:grid-cols-1 gap-4">
+                        <MultiImageUpload
+                          label="Menu Item Images"
+                          labelInfo="Upload multiple images for this menu item"
+                          required={true}
+                          folder="workbench-seller-onboarding"
+                          value={menuImages.imageState[index] || []}
+                          onChange={(urls) => {
+                            menuImages.updateImageField(index, urls);
+                            setValue(`menu.${index}.images`, urls.join(","));
+                          }}
+                          maxFiles={5}
+                          previewSize="small"
                         />
                       </div>
 
@@ -885,7 +961,7 @@ const CustomMenuFormEnhanced = ({
                                   type="link"
                                   danger
                                   size="small"
-                                  icon={<FaMinus />}
+                                  icon={<FaTrash />}
                                   onClick={() =>
                                     handleRemoveCustomizationGroup(
                                       index,
@@ -925,7 +1001,7 @@ const CustomMenuFormEnhanced = ({
                 <button
                   type="button"
                   onClick={handleSkip}
-                  className="px-6 py-2 border border-yellow-500 text-yellow-700 rounded-md hover:bg-yellow-50 transition-colors"
+                  className="px-6 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors border border-gray-300"
                 >
                   Skip This Step
                 </button>
@@ -962,7 +1038,7 @@ const CustomMenuFormEnhanced = ({
               <button
                 type="button"
                 onClick={handleSkip}
-                className="px-6 py-2 border border-yellow-500 text-yellow-700 rounded-md hover:bg-yellow-50 transition-colors"
+                className="px-6 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors border border-gray-300"
               >
                 Skip This Step
               </button>
@@ -1000,7 +1076,7 @@ const CustomMenuFormEnhanced = ({
               <button
                 type="button"
                 onClick={handleSkip}
-                className="px-6 py-2 border border-yellow-500 text-yellow-700 rounded-md hover:bg-yellow-50 transition-colors"
+                className="px-6 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors border border-gray-300"
               >
                 Skip This Step
               </button>
@@ -1268,7 +1344,7 @@ const CustomizationGroupForm = ({
                 <Button
                   type="text"
                   danger
-                  icon={<FaMinus />}
+                  icon={<FaTrash />}
                   onClick={() => removeCustomizationItem(index)}
                 />
               )}

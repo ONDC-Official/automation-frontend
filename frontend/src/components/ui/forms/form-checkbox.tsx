@@ -34,17 +34,17 @@ const FormCheckbox: React.FC<FormCheckboxProps> = ({
 					disabled={disable}
 					id={name}
 					type="checkbox"
-					className="w-4 h-4 text-sky-600 bg-gray-100 border-gray-300 rounded focus:ring-2 focus:ring-sky-500 dark:focus:ring-sky-300 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600"
+					className="w-4 h-4 text-sky-600 bg-gray-100 border-gray-300 rounded focus:ring-2 focus:ring-sky-500"
 				/>
 				<label
 					htmlFor={name}
-					className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300"
+					className="ml-2 text-sm font-medium text-gray-900"
 				>
 					{label}
 				</label>
 			</div>
 			{errors[name] && (
-				<p className="text-red-500 text-xs italic dark:text-red-400">
+				<p className="text-red-500 text-xs italic">
 					{errors[name]?.message || "This field is required"}
 				</p>
 			)}
