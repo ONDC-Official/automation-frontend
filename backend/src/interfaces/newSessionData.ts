@@ -56,4 +56,6 @@ export interface SessionCache {
 	env: "STAGING" | "PRE-PRODUCTION" | "LOGGED-IN";
 	sessionDifficulty: SessionDifficulty;
 	flowConfigs: Record<FlowId, Flow>;
+	activeFlow: null | string;
+	activeStep: number;
 }
