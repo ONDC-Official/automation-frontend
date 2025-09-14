@@ -47,6 +47,8 @@ export const createUnitSessionService = async (
 			useGzip: false,
 		},
 		flowConfigs: {},
+		activeFlow: null,
+		activeStep: 0,
 	};
 
 	try {

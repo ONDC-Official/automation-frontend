@@ -1,8 +1,7 @@
 import { PairedStep } from "../flow-state-viewer/mapped-flow";
 import CustomTooltip from "../../ui/mini-components/tooltip";
 import { MdSyncAlt } from "react-icons/md";
-import { useContext } from "react";
-import { SessionContext } from "../../../context/context";
+import { useSession } from "../../../context/context";
 import FlippableWrapper from "../../ui/flippable-div";
 import { getCompletePayload } from "../../../utils/request-utils";
 import { FiEdit2, FiPlusCircle, FiTrash2 } from "react-icons/fi";
@@ -67,7 +66,7 @@ function StepDisplay({
   onEditClick: (index: number) => void;
   onDeleteClick: (index: number) => void;
 }) {
-  const { setRequestData, setResponseData } = useContext(SessionContext);
+  const { setRequestData, setResponseData } = useSession();
 
   const onClickFunc = async () => {
     if (step.status !== "COMPLETE") {

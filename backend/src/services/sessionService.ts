@@ -47,6 +47,8 @@ export const createSessionService = async (
 			useGzip: false,
 		},
 		flowConfigs: map,
+		activeFlow: null,
+		activeStep: 0
 	};
 
 	try {
@@ -88,6 +90,8 @@ export const updateSessionService = async (
 		subscriberUrl,
 		env,
 		sessionDifficulty,
+		activeFlow,
+		activeStep
 	} = data;
 
 	try {
@@ -107,6 +111,8 @@ export const updateSessionService = async (
 		if (domain) session.domain = domain;
 		if (sessionDifficulty) session.sessionDifficulty = sessionDifficulty;
 		if (env) session.env = env;
+		if (activeFlow) session.activeFlow = activeFlow === "NONE" ? null : activeFlow
+		if (activeStep) session.activeStep = activeStep
 
 		// Save the updated session data back to Redis
 		await RedisService.setKey(
