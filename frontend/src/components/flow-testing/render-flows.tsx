@@ -11,17 +11,17 @@ import {
 	getTransactionData,
 } from "../../utils/request-utils";
 import { Accordion } from "./flow-state-viewer/complete-flow";
-
+import { useSession } from "../../context/context";
 import Loader from "../ui/mini-components/loader";
 import JsonView from "@uiw/react-json-view";
 import { githubDarkTheme } from "@uiw/react-json-view/githubDark";
 import Tabs from "../ui/mini-components/tabs";
 import Console from "../console";
 import { ILogs } from "../../interface";
-import { SessionContext } from "../../context/context";
+// import { SessionContext } from "../../context/context";
 import CircularProgress from "../ui/circular-cooldown";
 import Modal from "../modal";
-import { HiOutlineDocumentReport } from "react-icons/hi";
+import { HiOutlineDocumentReport, HiOutlinePlusCircle } from "react-icons/hi";
 
 function RenderFlows({
 	flows,
@@ -29,12 +29,16 @@ function RenderFlows({
 	sessionId,
 	setStep,
 	setReport,
+	type,
+	newSession
 }: {
 	flows: Flow[];
 	subUrl: string;
 	sessionId: string;
 	setStep: React.Dispatch<React.SetStateAction<number>>;
 	setReport: React.Dispatch<React.SetStateAction<string>>;
+	type: "SCENARIO" | "CUSTOM";
+	newSession: () => void;
 }) {
 	const [activeFlow, setActiveFlow] = useState<string | null>(null);
 	const activeFlowRef = useRef<string | null>(activeFlow);
@@ -53,6 +57,7 @@ function RenderFlows({
 	const apiCallFailCount = useRef(0);
 	const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
 	const navigate = useNavigate();
+	const {setSessionId, setcfSessionId} = useSession()
 
 	useEffect(() => {
 		fetchSessionData();
@@ -172,16 +177,7 @@ function RenderFlows({
 	};
 
 	return (
-		<SessionContext.Provider
-			value={{
-				sessionId,
-				activeFlowId: activeFlow,
-				sessionData: cacheSessionData,
-				selectedTab: selectedTab,
-				setRequestData: setRequestData,
-				setResponseData: setResponseData,
-			}}
-		>
+		<>
 			<Modal
 				isOpen={isErrorModalOpen}
 				onClose={() => {
@@ -230,15 +226,33 @@ function RenderFlows({
 											sqSize={16}
 											strokeWidth={2}
 										/>
-										<div className="flex justify-end">
-											<button
-												className="bg-sky-600 text-white text-sm flex px-2 py-2 rounded hover:bg-sky-700 shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-												onClick={async () => await generateReport()}
-												disabled={!isFlowStopped}
-											>
-												<HiOutlineDocumentReport className="text-lg m2-1" />
-												Generate Report
-											</button>
+										<div className="flex justify-end gap-2">
+											<div className="flex justify-end">
+												<button
+													className="bg-sky-600 text-white text-sm flex px-2 py-2 rounded hover:bg-sky-700 shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+													onClick={async () => {
+														if(type === "SCENARIO") {
+															setSessionId("")
+														} else {
+															setcfSessionId("")
+														}
+														newSession()
+													}}
+												>
+													<HiOutlinePlusCircle className="text-lg m2-1" />
+													New Session
+												</button>
+											</div>
+											<div className="flex justify-end">
+												<button
+													className="bg-sky-600 text-white text-sm flex px-2 py-2 rounded hover:bg-sky-700 shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+													onClick={async () => await generateReport()}
+													disabled={!isFlowStopped}
+												>
+													<HiOutlineDocumentReport className="text-lg m2-1" />
+													Generate Report
+												</button>
+											</div>
 										</div>
 									</div>
 								}
@@ -341,7 +355,7 @@ function RenderFlows({
 				</div>
 				<Console logs={logs} setLogs={setLogs} sessionId={sessionId} />
 			</div>
-		</SessionContext.Provider>
+		</>
 	);
 }
 

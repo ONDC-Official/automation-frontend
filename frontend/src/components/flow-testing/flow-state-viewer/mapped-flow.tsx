@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { FlowMap, MappedStep } from "../../../types/flow-state-type";
 import FormConfig, {
 	FormConfigType,
@@ -6,7 +6,7 @@ import FormConfig, {
 import Popup from "../../ui/pop-up/pop-up";
 import { SubmitEventParams } from "../../../types/flow-types";
 import { proceedFlow } from "../../../utils/request-utils";
-import { SessionContext } from "../../../context/context";
+import { useSession } from "../../../context/context";
 import { toast } from "react-toastify";
 import PairedCard from "./pair-card";
 
@@ -24,7 +24,7 @@ export default function DisplayFlow({
 		FormConfigType | undefined
 	>(undefined);
 
-	const { sessionId, sessionData } = useContext(SessionContext);
+	const { sessionId, sessionData } = useSession()
 
 	useEffect(() => {
 		const conf = mappedFlow?.sequence?.filter(

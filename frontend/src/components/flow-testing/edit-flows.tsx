@@ -5,22 +5,25 @@ import InfoCard from "../ui/info-card";
 // import DifficultyCards from "../ui/difficulty-cards";
 import axios from "axios";
 import { SessionCache } from "../../types/session-types";
-import { SessionContext } from "../../context/context";
 // import CircularProgress from "../ui/circular-cooldown";
 import Modal from "../modal";
 import FlowEditor from "./flow-editor/index";
 import { FiX, FiSearch, FiPlus } from "react-icons/fi";
+import { HiOutlinePlusCircle } from "react-icons/hi";
+import { useSession } from "../../context/context";
 
 function EditFlows({
   subUrl,
   sessionId,
   flows,
   onNext,
+  newSession,
 }: {
   flows: any;
   subUrl: string;
   sessionId: string;
   onNext: (flow: Flow) => void;
+  newSession: () => void;
 }) {
   const [cacheSessionData, setCacheSessionData] = useState<SessionCache | null>(
     null
@@ -30,13 +33,16 @@ function EditFlows({
   const [initialFlows, setInitialFlows] = useState<Flow[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [template, setTemplate] = useState<SequenceStep[]>([]);
-  const [templateSelectionTrigger, setTemplateSelectionTrigger] = useState<boolean>(false)
+  const [templateSelectionTrigger, setTemplateSelectionTrigger] =
+    useState<boolean>(false);
+  const [actionError, setActionError] = useState(false);
+  const { setcfSessionId } = useSession();
   const navigate = useNavigate();
 
   const handleSelectTemplate = (currTemplate: Flow) => {
     console.log("Selected Template:", currTemplate);
     setTemplate(currTemplate.sequence);
-    setTemplateSelectionTrigger(!templateSelectionTrigger)
+    setTemplateSelectionTrigger(!templateSelectionTrigger);
   };
 
   useEffect(() => {
@@ -74,16 +80,7 @@ function EditFlows({
   console.log("initial Flows: ", initialFlows);
 
   return (
-    <SessionContext.Provider
-      value={{
-        sessionId,
-        sessionData: cacheSessionData,
-        activeFlowId: "",
-        selectedTab: "Request",
-        setRequestData: () => {},
-        setResponseData: () => {},
-      }}
-    >
+    <>
       <TemplatePickerModal
         templates={initialFlows}
         isOpen={isModalOpen}
@@ -117,29 +114,22 @@ function EditFlows({
                   env: cacheSessionData.env,
                   use_case: cacheSessionData.usecaseId,
                 }}
-                // children={
-                //   <div className="w-full flex justify-between">
-                //     <CircularProgress
-                //       duration={5}
-                //       id="flow-cool-down"
-                //       loop={true}
-                //       onComplete={async () => {
-                //         if (apiCallFailCount.current < 5) {
-                //           fetchSessionData();
-                //         } else if (
-                //           apiCallFailCount.current >= 5 &&
-                //           !isErrorModalOpen
-                //         ) {
-                //           setIsErrorModalOpen(true);
-                //           console.log("not calling the api");
-                //         }
-                //       }}
-                //       // invisible={true}
-                //       sqSize={16}
-                //       strokeWidth={2}
-                //     />
-                //   </div>
-                // }
+                children={
+                  <div className="w-full flex justify-end">
+                    <div className="flex justify-end">
+                      <button
+                        className="bg-sky-600 text-white text-sm flex px-2 py-2 rounded hover:bg-sky-700 shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        onClick={async () => {
+                          setcfSessionId("");
+                          newSession();
+                        }}
+                      >
+                        <HiOutlinePlusCircle className="text-lg m2-1" />
+                        New Session
+                      </button>
+                    </div>
+                  </div>
+                }
               />
               {/* <DifficultyCards
                 difficulty_cache={difficultyCache}
@@ -178,26 +168,48 @@ function EditFlows({
           )}
         </div>
 
-        <button
-          type="button"
-          onClick={() => setIsModalOpen(true)}
-          className=" mt-2 ml-4 inline-flex max-w-fit items-center gap-2 px-4 py-2 rounded-lg bg-sky-600 text-white hover:bg-sky-700 transition-colors"
-          aria-label="Add a template"
-        >
-          <FiPlus className="text-lg" />
-          <span>Add a template</span>
-        </button>
+        {actionError ? (
+          <div className="flex flex-col items-center justify-center h-full w-full text-center p-6">
+            <div className="bg-gradient-to-r from-blue-100 to-blue-200 border border-blue-300 rounded-2xl shadow-lg p-8 w-full">
+              <h2 className="text-3xl font-extrabold text-blue-700 mb-2">
+                Cooming soon 🚀
+              </h2>
+              <p className="text-blue-800 mb-4 text-lg">
+                We are wokring on it.
+              </p>
+              <p className="text-sm text-blue-600 italic">
+                Custom flow active domin{" "}
+                <span className="font-semibold text-blue-900 bg-blue-200 px-2 py-0.5 rounded-md">
+                  TRV14
+                </span>
+              </p>
+            </div>
+          </div>
+        ) : (
+          <>
+            <button
+              type="button"
+              onClick={() => setIsModalOpen(true)}
+              className=" mt-2 ml-4 inline-flex max-w-fit items-center gap-2 px-4 py-2 rounded-lg bg-sky-600 text-white hover:bg-sky-700 transition-colors"
+              aria-label="Add a template"
+            >
+              <FiPlus className="text-lg" />
+              <span>Add a template</span>
+            </button>
 
-        {/* Main Content Area */}
-        <FlowEditor
-          sessionId={sessionId}
-          onNext={onNext}
-          template={template}
-          sessionData={cacheSessionData}
-          templateSelectionTrigger={templateSelectionTrigger}
-        />
+            {/* Main Content Area */}
+            <FlowEditor
+              sessionId={sessionId}
+              onNext={onNext}
+              template={template}
+              sessionData={cacheSessionData}
+              templateSelectionTrigger={templateSelectionTrigger}
+              setActionError={setActionError}
+            />
+          </>
+        )}
       </div>
-    </SessionContext.Provider>
+    </>
   );
 }
 
