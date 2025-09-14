@@ -11,6 +11,7 @@ interface StepperProps {
   sessionData: SessionCache | null;
   onNext: (flow: any) => void;
   templateSelectionTrigger: boolean
+  setActionError: (data: boolean) => void
 }
 
 const FlowEditor = ({
@@ -19,6 +20,7 @@ const FlowEditor = ({
   sessionData,
   onNext,
   templateSelectionTrigger,
+  setActionError
 }: StepperProps) => {
   const [customFlow, setCustomFlow] = useState([]);
   const [isFlowSaved, setIsFlowSaved] = useState(false);
@@ -42,6 +44,7 @@ const FlowEditor = ({
           template={template}
           templateSelectionTrigger={templateSelectionTrigger}
           sessionData={sessionData}
+          setActionError={setActionError}
         />
 
         <div className="flex justify-end mt-6 space-x-2">

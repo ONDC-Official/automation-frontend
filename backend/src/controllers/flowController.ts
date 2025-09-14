@@ -322,5 +322,6 @@ export const getActions = async (req: Request, res: Response) => {
     res.send(response.data);
   } catch (e) {
     console.error("Something went wrong while fetching actions: ", e);
+	res.status(500).send("Something went wrong");
   }
 };

@@ -38,47 +38,15 @@ interface FlowEditorProps {
   sessionData: SessionCache | null;
   setCustomFlow: (flow: any) => void;
   templateSelectionTrigger: boolean;
+  setActionError: (data: boolean) => void;
 }
-
-// const actions: Action[] = [
-//   {
-//     key: "search",
-//     type: "search",
-//     description: "sadasd",
-//     input: [
-//       {
-//         label: "Options",
-//         name: "options",
-//         type: "checkbox",
-//         options: [
-//           { code: "promo", name: "Promotions" },
-//           { code: "demandSignal", name: "Demand Signal" },
-//           { code: "001", name: "Item availability" },
-//           { code: "008", name: "Minimum order value" },
-//         ],
-//       },
-//     ],
-//   },
-//   {
-//     key: "on_search",
-//     type: "on_search",
-//     description: "sadasd",
-//     input: [
-//       {
-//         name: "offers",
-//         label: "Select offers",
-//         type: "checkbox",
-//         options: [{ code: "discount", name: "Discount" }],
-//       },
-//     ],
-//   },
-// ];
 
 export default function Editor({
   template,
   sessionData,
   setCustomFlow,
   templateSelectionTrigger,
+  setActionError
 }: FlowEditorProps) {
   const [flowName, setFlowName] = useState("CUSTOM_FLOW");
   const [flowTitle, setFlowTitle] = useState("Custom flow");
@@ -159,44 +127,47 @@ export default function Editor({
   };
 
   const init = async (domain: string, version: string) => {
-    console.log("session Data:", sessionData);
-    let response = await getActions(domain, version);
+    try {
+      let response = await getActions(domain, version);
 
-    // do soemthing
-    const transformedActions = response.map((item: any) => {
-      return {
-        key: item.action_id, // use action_id as unique key
-        type: item.action,
-        description: item.config?.description ?? "",
-        input: item.config?.inputs
-          ? Object.entries(item.config.inputs).map(([name, field]: any) => ({
-              name,
-              ...field,
-            }))
-          : [],
-        // extra fields preserved
-        action_id: item.action_id,
-        actionCode: item.actionCode,
-        config: item.config,
-      };
-    });
+      // do soemthing
+      const transformedActions = response.map((item: any) => {
+        return {
+          key: item.action_id, // use action_id as unique key
+          type: item.action,
+          description: item.config?.description ?? "",
+          input: item.config?.inputs
+            ? Object.entries(item.config.inputs).map(([name, field]: any) => ({
+                name,
+                ...field,
+              }))
+            : [],
+          // extra fields preserved
+          action_id: item.action_id,
+          actionCode: item.actionCode,
+          config: item.config,
+        };
+      });
 
-    console.log("editor transcformedActios: ", transformedActions);
-    setActions(transformedActions);
-    setSequenceFlow([
-      {
-        status: "WAITING",
-        actionId: transformedActions[0].key,
-        owner: "BAP",
-        actionType: transformedActions[0].type,
-        index: 0,
-        description: "something",
-        unsolicited: false,
-        pairActionId: null,
-        expect: true,
-        input: transformedActions[0].input || ([] as any),
-      },
-    ]);
+      console.log("editor transcformedActios: ", transformedActions);
+      setActions(transformedActions);
+      setSequenceFlow([
+        {
+          status: "WAITING",
+          actionId: transformedActions[0].key,
+          owner: "BAP",
+          actionType: transformedActions[0].type,
+          index: 0,
+          description: "something",
+          unsolicited: false,
+          pairActionId: null,
+          expect: true,
+          input: transformedActions[0].input || ([] as any),
+        },
+      ]);
+    } catch (e) {
+      setActionError(true);
+    }
   };
 
   useEffect(() => {
