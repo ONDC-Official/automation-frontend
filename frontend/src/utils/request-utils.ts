@@ -316,7 +316,6 @@ export const getReportingStatus = async (domain: string, version: string) => {
 
 export async function htmlFormSubmit(link: string, data: any) {
   try {
-    console.log("htmlFormSubmit------->", link, data);
     const res = await axios.post(
       `${import.meta.env.VITE_BACKEND_URL}/flow/external-form`,
       {
