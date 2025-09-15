@@ -18,7 +18,7 @@ import { githubDarkTheme } from "@uiw/react-json-view/githubDark";
 import Tabs from "../ui/mini-components/tabs";
 import Console from "../console";
 import { ILogs } from "../../interface";
-// import { SessionContext } from "../../context/context";
+import { SessionContext } from "../../context/context";
 import CircularProgress from "../ui/circular-cooldown";
 import Modal from "../modal";
 import { HiOutlineDocumentReport, HiOutlinePlusCircle } from "react-icons/hi";
@@ -177,7 +177,17 @@ function RenderFlows({
 	};
 
 	return (
-		<>
+		<SessionContext.Provider
+		// @ts-ignore
+			value={{
+				sessionId,
+				activeFlowId: activeFlow,
+				sessionData: cacheSessionData,
+				selectedTab: selectedTab,
+				setRequestData: setRequestData,
+				setResponseData: setResponseData,
+			}}
+		>
 			<Modal
 				isOpen={isErrorModalOpen}
 				onClose={() => {
@@ -355,7 +365,7 @@ function RenderFlows({
 				</div>
 				<Console logs={logs} setLogs={setLogs} sessionId={sessionId} />
 			</div>
-		</>
+		</SessionContext.Provider>
 	);
 }
 
