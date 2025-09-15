@@ -60,7 +60,6 @@ router.post(
 router.post("/external-form", async (req, res) => {
 	try {
 		const { link, data } = req.body;
-		console.log("external-form------->", link, data);
 		const exRes = await axios.post(link, data);
 		logger.info("Submission response", exRes);
 		res.status(exRes.status).send(exRes.data);
