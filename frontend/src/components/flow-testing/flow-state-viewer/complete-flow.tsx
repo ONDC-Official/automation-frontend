@@ -67,7 +67,7 @@ export function Accordion({
 	const apiCallFailCount = useRef(0);
 
 	useEffect(() => {
-		const executedFlowId = Object.keys(sessionCache?.flowMap as {} || {})
+		const executedFlowId = Object.keys(sessionCache?.flowMap as any) || {}
 
 		if(executedFlowId.includes(flow.id) && sessionCache) {
 			console.log("get current staet fot this")
