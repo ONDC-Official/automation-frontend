@@ -30,7 +30,7 @@ function RenderFlows({
 	setStep,
 	setReport,
 	type,
-	newSession
+	newSession,
 }: {
 	flows: Flow[];
 	subUrl: string;
@@ -57,7 +57,7 @@ function RenderFlows({
 	const apiCallFailCount = useRef(0);
 	const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
 	const navigate = useNavigate();
-	const {setSessionId, setcfSessionId} = useSession()
+	const { setSessionId, setcfSessionId } = useSession();
 
 	useEffect(() => {
 		fetchSessionData();
@@ -178,7 +178,7 @@ function RenderFlows({
 
 	return (
 		<SessionContext.Provider
-		// @ts-ignore
+			// @ts-ignore
 			value={{
 				sessionId,
 				activeFlowId: activeFlow,
@@ -241,12 +241,12 @@ function RenderFlows({
 												<button
 													className="bg-sky-600 text-white text-sm flex px-2 py-2 rounded hover:bg-sky-700 shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
 													onClick={async () => {
-														if(type === "SCENARIO") {
-															setSessionId("")
+														if (type === "SCENARIO") {
+															setSessionId("");
 														} else {
-															setcfSessionId("")
+															setcfSessionId("");
 														}
-														newSession()
+														newSession();
 													}}
 												>
 													<HiOutlinePlusCircle className="text-lg m2-1" />
