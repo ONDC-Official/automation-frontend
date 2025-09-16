@@ -820,11 +820,6 @@ export default function ProtocolHTMLForm({
 						{isSubmitting ? "Submitting..." : "Submit"}
 					</button>
 
-					{parsed.action && (
-						<span className="text-xs text-gray-500">
-							POST to <code>{parsed.action}</code>
-						</span>
-					)}
 				</div>
 
 				<div className="mt-3 text-sm text-gray-700">
