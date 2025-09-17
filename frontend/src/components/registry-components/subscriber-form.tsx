@@ -1,5 +1,5 @@
 // src/App.tsx
-import React, { useState, useEffect, useContext } from "react";
+import { useState, useEffect, useContext } from "react";
 import type { Key, Mapping } from "./registry-types";
 import * as api from "../../utils/registry-apis";
 
@@ -13,7 +13,12 @@ import { UserContext } from "../../context/userContext";
 import { v4 as uuidv4 } from "uuid"; // For generating unique IDs
 // You would also import LocationsSection here
 
-const SubscriberForm: React.FC = () => {
+interface SubscriberFormProps {
+	setGuideStep: (step: number) => void;
+	guideStep: number
+}
+
+const SubscriberForm = ({setGuideStep, guideStep}: SubscriberFormProps) => {
 	const [isLoading, setIsLoading] = useState(true);
 	const user = useContext(UserContext);
 	const [formData, setFormData] = [user.subscriberData, user.setSubscriberData];
@@ -224,6 +229,8 @@ const SubscriberForm: React.FC = () => {
 						keys={formData.keys}
 						onAddKey={addKey}
 						onDeleteKey={deleteKey}
+						guideStep={guideStep}
+						setGuideStep={setGuideStep}
 					/>
 					{/* <URIsSection
 						uris={formData.uris}
@@ -246,6 +253,8 @@ const SubscriberForm: React.FC = () => {
 						onAddMapping={addMapping}
 						onUpdateMapping={updateMapping}
 						onDeleteMapping={deleteMapping}
+						guideStep={guideStep}
+						setGuideStep={setGuideStep}
 					/>
 					{/* Save button at bottom right */}
 					{/* <div className="absolute bottom-6 right-6">

@@ -16,6 +16,8 @@ interface MappingsSectionProps {
 	onAddMapping: (mapping: Mapping) => Promise<void>;
 	onUpdateMapping: (id: string, mapping: Partial<Mapping>) => Promise<void>;
 	onDeleteMapping: (id: string) => Promise<void>;
+	setGuideStep: (step: number) => void;
+	guideStep: number;
 }
 
 export const MappingsSection: React.FC<MappingsSectionProps> = ({
@@ -25,6 +27,8 @@ export const MappingsSection: React.FC<MappingsSectionProps> = ({
 	onAddMapping,
 	onUpdateMapping,
 	onDeleteMapping,
+	setGuideStep, 
+	guideStep
 }) => {
 	const [editingMapping, setEditingMapping] = useState<Mapping | null>(null);
 	const [expandedMappingId, setExpandedMappingId] = useState<string | null>(
@@ -47,6 +51,7 @@ export const MappingsSection: React.FC<MappingsSectionProps> = ({
 	};
 
 	const handleAddNew = () => {
+		setGuideStep(0)
 		setEditingMapping({
 			id: uuidv4().slice(0, 8),
 			domain: DOMAIN_OPTIONS[0],
@@ -192,12 +197,28 @@ export const MappingsSection: React.FC<MappingsSectionProps> = ({
 				{editingMapping ? (
 					renderEditForm(editingMapping)
 				) : (
-					<button
-						onClick={handleAddNew}
-						className="w-full sm:w-auto flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-sky-600 hover:bg-sky-700"
-					>
-						+ Add Mapping
-					</button>
+					<div className="relative">
+						<button
+							onClick={handleAddNew}
+							className="w-full sm:w-auto flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-sky-600 hover:bg-sky-700"
+						>
+							+ Add Mapping
+						</button>
+
+						{guideStep === 3 && (
+							<div className="absolute top-10 left-0 bg-white shadow-lg border rounded-lg p-3 w-64 z-50">
+							<p className="text-gray-700 font-medium">Step 3: Add domain mappings</p>
+							<div className="flex justify-end mt-2 space-x-2">
+								<button
+								className="text-sm px-3 py-1 rounded bg-gray-200 hover:bg-gray-300"
+								onClick={() => setGuideStep(0)}
+								>
+								Skip
+								</button>
+							</div>
+							</div>
+						)}
+					</div>
 				)}
 			</div>
 
