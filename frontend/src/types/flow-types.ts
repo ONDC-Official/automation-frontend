@@ -15,6 +15,16 @@ export interface Flow {
 	title?: string;
 	description: string;
 	sequence: SequenceStep[];
+	metadata?: MetadataField[];
+}
+
+export interface MetadataField {
+	path: string;
+	description: {
+		code: string;
+		name: string;
+		short_desc: string;
+	};
 }
 
 export interface SequenceStep {
@@ -28,6 +38,9 @@ export interface SequenceStep {
 	expect?: boolean;
 	label?: string;
 	force_proceed?: boolean;
+	metadata?: MetadataField[];
+	'meta-data'?: MetadataField[];
+
 }
 
 export interface SubmitEventParams {
