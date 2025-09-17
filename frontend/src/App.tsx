@@ -23,8 +23,12 @@ import {SessionProvider} from "./context/context"
 
 function App() {
 	const [isModalOpen, setIsModalOpen] = useState(false);
-	const [user, setUser] = useState<UserDetails | undefined>(undefined);
+	const [user, setUser] = useState<UserDetails | undefined>({
+		githubId: "sarthak.kavidayal",
+		participantId: "213213"
+	  });
 	const [isLoggedIn, setIsLoggedIn] = useState(false);
+	const [guideStep, setGuideStep] = useState(0)
 	const [subscriberData, setSubscriberData] = useState<SubscriberData>({
 		keys: [],
 		mappings: [],
@@ -90,6 +94,12 @@ function App() {
 		}
 	}
 
+	useEffect(() => {
+		if(isLoggedIn && (!subscriberData.keys.length || !subscriberData.mappings.length)) {
+			setGuideStep(1)
+		}
+	}, [isLoggedIn])
+
 	return (
 		<UserContext.Provider
 			value={{
@@ -101,7 +111,11 @@ function App() {
 			}}
 		>
 			<SessionProvider>
-				<TopBar onSupportClick={() => setIsModalOpen(true)} />
+			<TopBar
+				onSupportClick={() => setIsModalOpen(true)}
+				setGuideStep={setGuideStep}
+				guideStep={guideStep}
+			/>
 				<div className="pt-[72px] h-full">
 					<Routes>
 						<Route path="/home" element={<HomePage />} />
@@ -110,7 +124,7 @@ function App() {
 						<Route path="/scenario" element={<FlowContent type={"SCENARIO"} />} />
 						<Route path="/customFlow" element={<FlowContent type={"CUSTOM"} />} />
 						<Route path="/login" element={<GitHubLogin />} />
-						<Route path="/profile" element={<UserProfile />} />
+						<Route path="/profile" element={<UserProfile setGuideStep={setGuideStep} guideStep={guideStep}/>} />
 						<Route path="/tools" element={<ToolsPage />} />
 						<Route path="/seller-onboarding" element={<SellerOnboarding />} />
 						<Route path="*" element={<NotFoundPage />} />
