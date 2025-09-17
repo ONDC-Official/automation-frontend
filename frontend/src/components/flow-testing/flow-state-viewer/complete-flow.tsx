@@ -14,7 +14,7 @@ import {
 	newFlow,
 	proceedFlow,
 	requestForFlowPermission,
-	putCacheData
+	putCacheData,
 } from "../../../utils/request-utils";
 import { IoMdDownload } from "react-icons/io";
 import { FlowMap } from "../../../types/flow-state-type";
@@ -67,20 +67,19 @@ export function Accordion({
 	const apiCallFailCount = useRef(0);
 
 	useEffect(() => {
-		const executedFlowId = Object.keys(sessionCache?.flowMap as any) || {}
+		const executedFlowId = Object.keys((sessionCache?.flowMap as any) || {});
 
-		if(executedFlowId.includes(flow.id) && sessionCache) {
-			console.log("get current staet fot this")
-			getCurrentState(sessionCache)
+		if (executedFlowId.includes(flow.id) && sessionCache) {
+			console.log("get current staet fot this");
+			getCurrentState(sessionCache);
 		}
 
-		if(sessionCache?.activeFlow) {
-			setActiveFlow(sessionCache.activeFlow)
+		if (sessionCache?.activeFlow) {
+			setActiveFlow(sessionCache.activeFlow);
 		} else {
-			setActiveFlow(null)
+			setActiveFlow(null);
 		}
-
-	}, [flow, sessionCache])
+	}, [flow, sessionCache]);
 
 	const getCurrentState = async (sessionCache: SessionCache) => {
 		const tx = sessionCache.flowMap?.[flow.id];
@@ -107,13 +106,13 @@ export function Accordion({
 				missedSteps: [],
 			});
 		}
-	}
+	};
 
 	const fetchTransactionData = async () => {
 		if (activeFlow !== flow.id || !sessionCache) {
 			return;
 		}
-		getCurrentState(sessionCache)
+		getCurrentState(sessionCache);
 	};
 
 	useEffect(() => {
@@ -163,7 +162,7 @@ export function Accordion({
 				// 	toast.info("Expectation added successfully");
 				// }
 			}
-			putCacheData({activeFlow: flow.id}, sessionId)
+			putCacheData({ activeFlow: flow.id }, sessionId);
 			setIsOpen(true);
 		} catch (e) {
 			toast.error("Error while starting flow");
@@ -265,7 +264,7 @@ export function Accordion({
 							setActiveFlow(null);
 							setIsOpen(false);
 							await deleteExpectation(sessionId, subUrl);
-							putCacheData({activeFlow: "NONE"}, sessionId)
+							putCacheData({ activeFlow: "NONE" }, sessionId);
 							onFlowStop();
 						}}
 					/>
