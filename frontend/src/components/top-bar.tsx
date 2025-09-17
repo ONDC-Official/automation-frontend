@@ -35,6 +35,8 @@ const navLinks: NavLink[] = [
 
 interface IPops {
   onSupportClick: () => void;
+  setGuideStep: (step: number) => void;
+  guideStep: number
 }
 
 export interface UserDetails {
@@ -43,7 +45,7 @@ export interface UserDetails {
   avatarUrl?: string;
 }
 
-const TopBar = ({ onSupportClick }: IPops) => {
+const TopBar = ({ onSupportClick, setGuideStep, guideStep }: IPops) => {
   const [isOpen, setIsOpen] = useState(false);
   const [links, setLinks] = useState<[] | NavLink[]>([]);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
@@ -51,7 +53,6 @@ const TopBar = ({ onSupportClick }: IPops) => {
   const navigate = useNavigate();
   const location = useLocation();
   const pathName = location.pathname;
-
   const [userDetails, setUserDetails] = useState<UserDetails | undefined>(
     undefined
   );
@@ -266,6 +267,9 @@ const TopBar = ({ onSupportClick }: IPops) => {
             onClick={() => {
               setIsOpen(false);
               navigate(userDetails ? "/profile" : "/login");
+              if(userDetails && guideStep !== 0) {
+                setGuideStep(2)
+              }
             }}
             className="mt-2 text-xl"
             // className="text-sky-600 bg-sky-200 rounded-full p-2 hover:text-sky-800 text-xl md:text-2xl"
@@ -279,6 +283,29 @@ const TopBar = ({ onSupportClick }: IPops) => {
               </div>
             )}
           </button>
+
+          {guideStep === 1 && (
+            <div className="absolute top-14 right-0 bg-white shadow-lg border rounded-lg p-3 w-56 z-50">
+              <p className="text-gray-700 font-medium">Step 1: Go to your Profile</p>
+              <div className="flex justify-end mt-2 space-x-2">
+                <button
+                  className="text-sm px-3 py-1 rounded bg-gray-200 hover:bg-gray-300"
+                  onClick={() => setGuideStep(0)}
+                >
+                  Skip
+                </button>
+                {/* <button
+                  className="text-sm px-3 py-1 rounded bg-sky-500 text-white hover:bg-sky-600"
+                  onClick={() => {
+                    // setGuideStep(0);
+                    navigate("/profile");
+                  }}
+                >
+                  Next
+                </button> */}
+              </div>
+            </div>
+          )}
         </div>
       </nav>
     </header>

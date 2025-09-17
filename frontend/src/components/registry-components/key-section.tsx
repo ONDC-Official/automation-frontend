@@ -7,6 +7,8 @@ interface KeysSectionProps {
 	keys: Key[];
 	onAddKey: (key: Key) => Promise<void>;
 	onDeleteKey: (uk_id: string) => Promise<void>;
+	setGuideStep: (step: number) => void;
+	guideStep: number;
 }
 
 export const TrashIcon = () => (
@@ -30,6 +32,8 @@ export const KeysSection: React.FC<KeysSectionProps> = ({
 	keys,
 	onAddKey,
 	onDeleteKey,
+	setGuideStep, 
+	guideStep
 }) => {
 	const [newKey, setNewKey] = useState<Key>({
 		uk_id: "",
@@ -140,13 +144,32 @@ export const KeysSection: React.FC<KeysSectionProps> = ({
 						</div>
 					</div>
 				) : (
-					<div className="flex gap-2">
+					<div className="relative flex gap-2">
 						<button
-							onClick={() => setIsAdding(true)}
+							onClick={() => {
+								setIsAdding(true)
+								if(guideStep !== 0) {
+									setGuideStep(3)
+								}
+							}}
 							className="w-full sm:w-auto flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-sky-600 hover:bg-sky-700"
 						>
 							+ Add Key
 						</button>
+
+						{guideStep === 2 && (
+							<div className="absolute top-10 left-0 bg-white shadow-lg border rounded-lg p-3 w-64 z-50">
+							<p className="text-gray-700 font-medium">Step 2: Add signing keys</p>
+							<div className="flex justify-end mt-2 space-x-2">
+								<button
+								className="text-sm px-3 py-1 rounded bg-gray-200 hover:bg-gray-300"
+								onClick={() => setGuideStep(0)}
+								>
+								Skip
+								</button>
+							</div>
+							</div>
+						)}
 					</div>
 				)}
 			</div>
