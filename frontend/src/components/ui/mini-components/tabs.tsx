@@ -1,47 +1,73 @@
-import { useState } from "react";
+import { ReactNode, useState } from "react";
 
-interface IProps {
-	option1: string;
-	option2: string;
-	onSelectOption: (option: string) => void;
-	className?: string;
+interface TabOption {
+  key: string;
+  label: string | ReactNode;
 }
 
-const Tabs = ({ option1, option2, onSelectOption, className = "" }: IProps) => {
-	const [activeTab, setActiveTab] = useState(option1);
+interface IProps {
+  options: TabOption[];
+  onSelectOption: (option: string) => void;
+  className?: string;
+  defaultTab?: string;
+  // Legacy props for backward compatibility
+  option1?: string;
+  option2?: string;
+}
 
-	return (
-		<div className={`w-52 ${className}`}>
-			<div className="flex border-b border-gray-300">
-				<button
-					className={`flex-1 text-center font-semibold ${
-						activeTab === option1
-							? "border-b-2 border-sky-500 text-sky-500"
-							: "text-gray-500 hover:text-sky-500"
-					}`}
-					onClick={() => {
-						setActiveTab(option1);
-						onSelectOption(option1);
-					}}
-				>
-					{option1}
-				</button>
-				<button
-					className={`flex-1 text-center font-semibold ${
-						activeTab === option2
-							? "border-b-2 border-sky-500 text-sky-500"
-							: "text-gray-500 hover:text-sky-500"
-					}`}
-					onClick={() => {
-						setActiveTab(option2);
-						onSelectOption(option2);
-					}}
-				>
-					{option2}
-				</button>
-			</div>
-		</div>
-	);
+const Tabs = ({
+  options = [],
+  onSelectOption,
+  className = "",
+  defaultTab,
+  // Legacy props
+  option1,
+  option2,
+}: IProps) => {
+  // Handle legacy props
+  const finalOptions =
+    options.length > 0
+      ? options
+      : option1 && option2
+      ? [
+          { key: option1, label: option1 },
+          { key: option2, label: option2 },
+        ]
+      : [];
+
+  const [activeTab, setActiveTab] = useState(
+    defaultTab || finalOptions[0]?.key || ""
+  );
+
+  if (finalOptions.length === 0) {
+    return null;
+  }
+
+  return (
+    <div
+      className={`${className}`}
+      style={{ width: `${finalOptions.length * 8}rem` }}
+    >
+      <div className="flex border-b border-gray-300">
+        {finalOptions.map((option) => (
+          <button
+            key={option.key}
+            className={`flex-1 text-center font-semibold text-xs px-2 py-1 ${
+              activeTab === option.key
+                ? "border-b-2 border-sky-500 text-sky-500"
+                : "text-gray-500 hover:text-sky-500"
+            }`}
+            onClick={() => {
+              setActiveTab(option.key);
+              onSelectOption(option.key);
+            }}
+          >
+            {option.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
 };
 
 export default Tabs;
