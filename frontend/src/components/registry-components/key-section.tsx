@@ -1,5 +1,5 @@
 // src/components/KeysSection.tsx
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import type { Key } from "./registry-types";
 import DownloadKeysButton from "./download-keys-button";
 
@@ -41,6 +41,37 @@ export const KeysSection: React.FC<KeysSectionProps> = ({
 		encryption_pub: "",
 	});
 	const [isAdding, setIsAdding] = useState(false);
+	const containerRef = useRef<HTMLDivElement>(null); 
+	const ukidRef = useRef<HTMLDivElement>(null); 
+	const generateKeyRef = useRef<HTMLDivElement>(null); 
+	const addKeyRef = useRef<HTMLDivElement>(null); 
+
+	useEffect(() => {
+        if (guideStep === 2 && containerRef.current) {
+            containerRef.current.scrollIntoView({
+                behavior: 'smooth',
+                block: 'center'
+            });
+        }
+		if (guideStep === 3 && ukidRef.current) {
+            ukidRef.current.scrollIntoView({
+                behavior: 'smooth',
+                block: 'center'
+            });
+        }
+		if (guideStep === 4 && generateKeyRef.current) {
+            generateKeyRef.current.scrollIntoView({
+                behavior: 'smooth',
+                block: 'center'
+            });
+        }
+		if (guideStep === 5 && addKeyRef.current) {
+            addKeyRef.current.scrollIntoView({
+                behavior: 'smooth',
+                block: 'center'
+            });
+        }
+    }, [guideStep]);
 
 	const handleAdd = async () => {
 		if (!newKey.uk_id || !newKey.signing_pub) return;
@@ -67,7 +98,7 @@ export const KeysSection: React.FC<KeysSectionProps> = ({
 				{isAdding ? (
 					<div className="p-4 border rounded-lg bg-gray-50 space-y-4">
 						<h3 className="font-medium">Add New Key</h3>
-						<div>
+						<div ref={ukidRef} className={`relative ${guideStep === 3 ? "z-50" : ""}`}>
 							<label className={labelClasses}>UK ID</label>
 							<input
 								type="text"
@@ -78,6 +109,25 @@ export const KeysSection: React.FC<KeysSectionProps> = ({
 									setNewKey({ ...newKey, uk_id: e.target.value })
 								}
 							/>
+							{guideStep === 3 && (
+							<div className="absolute top-16 left-0 bg-white shadow-lg border rounded-lg p-3 w-64 z-50">
+								<p className="text-gray-700 font-medium">
+								Step 2(a): Add ukid
+								</p>
+								<div className="flex justify-end mt-2 space-x-2">
+								<button
+									className="text-sm px-3 py-1 rounded bg-sky-500 text-white hover:bg-sky-600"
+									onClick={() => {
+									if (guideStep !== 0) {
+										setGuideStep(4);
+									}
+									}}
+								>
+									Go
+								</button>
+								</div>
+							</div>
+							)}
 						</div>
 						<div>
 							<label className={labelClasses}>Signing Public Key</label>
@@ -130,21 +180,63 @@ export const KeysSection: React.FC<KeysSectionProps> = ({
 							>
 								Cancel
 							</button>
-							<button
-								onClick={handleAdd}
-								className="px-4 py-1.5 text-sm font-medium rounded-md text-white bg-sky-600 hover:bg-sky-700"
-							>
-								Add Key
-							</button>
-							<DownloadKeysButton
-								onDownload={async (p, e) => {
-									setNewKey({ ...newKey, signing_pub: p, encryption_pub: e });
-								}}
-							/>
+							<div ref={generateKeyRef} className={`relative ${guideStep === 5 ? "z-50" : ""}`}>
+								<button
+									onClick={handleAdd}
+									className="px-4 py-1.5 text-sm font-medium rounded-md text-white bg-sky-600 hover:bg-sky-700"
+								>
+									Add Key
+								</button>
+								{guideStep === 5 && (
+								<div className="absolute top-12 left-0 bg-white shadow-lg border rounded-lg p-3 w-64 z-50">
+									<p className="text-gray-700 font-medium">
+									Step 2(c): Save Keys
+									</p>
+									<div className="flex justify-end mt-2 space-x-2">
+									<button
+										className="text-sm px-3 py-1 rounded bg-sky-500 text-white hover:bg-sky-600"
+										onClick={() => {
+										if (guideStep !== 0) {
+											setGuideStep(6);
+										}
+										}}
+									>
+										Go
+									</button>
+									</div>
+								</div>
+								)}
+							</div>
+							<div ref={generateKeyRef} className={`relative ${guideStep === 4 ? "z-50" : ""}`}>
+								<DownloadKeysButton
+									onDownload={async (p, e) => {
+										setNewKey({ ...newKey, signing_pub: p, encryption_pub: e });
+									}}
+								/>
+								{guideStep === 4 && (
+								<div className="absolute top-12 left-0 bg-white shadow-lg border rounded-lg p-3 w-64 z-50">
+									<p className="text-gray-700 font-medium">
+									Step 2(b): Generate Keys
+									</p>
+									<div className="flex justify-end mt-2 space-x-2">
+									<button
+										className="text-sm px-3 py-1 rounded bg-sky-500 text-white hover:bg-sky-600"
+										onClick={() => {
+										if (guideStep !== 0) {
+											setGuideStep(5);
+										}
+										}}
+									>
+										Go
+									</button>
+									</div>
+								</div>
+								)}
+							</div>
 						</div>
 					</div>
 				) : (
-					<div className="relative flex gap-2">
+					<div  ref={containerRef} className={`relative flex gap-2 ${guideStep === 2 ? "z-50" : ""}`}>
 						<button
 							onClick={() => {
 								setIsAdding(true)
@@ -158,17 +250,30 @@ export const KeysSection: React.FC<KeysSectionProps> = ({
 						</button>
 
 						{guideStep === 2 && (
-							<div className="absolute top-10 left-0 bg-white shadow-lg border rounded-lg p-3 w-64 z-50">
-							<p className="text-gray-700 font-medium">Step 2: Add signing keys</p>
-							<div className="flex justify-end mt-2 space-x-2">
-								<button
-								className="text-sm px-3 py-1 rounded bg-gray-200 hover:bg-gray-300"
-								onClick={() => setGuideStep(0)}
-								>
-								Skip
+							 <div className="absolute top-10 left-0 bg-white shadow-lg border rounded-lg p-3 w-64 z-50">
+							 <p className="text-gray-700 font-medium">
+							   Step 2: Add signing keys
+							 </p>
+							 <div className="flex justify-end mt-2 space-x-2">
+							   <button
+								 className="text-sm px-3 py-1 rounded bg-gray-200 hover:bg-gray-300"
+								 onClick={() => setGuideStep(6)}
+							   >
+								 Next
+							   </button>
+							    <button
+									className="text-sm px-3 py-1 rounded bg-sky-500 text-white hover:bg-sky-600"
+									onClick={() => {
+										setIsAdding(true)
+										if(guideStep !== 0) {
+											setGuideStep(3)
+										}
+									}}
+									>
+									Go
 								</button>
-							</div>
-							</div>
+							 </div>
+						   </div>
 						)}
 					</div>
 				)}
