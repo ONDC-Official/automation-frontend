@@ -1,5 +1,5 @@
 // src/components/MappingsSection.tsx
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import type { Mapping } from "./registry-types";
 import { v4 as uuidv4 } from "uuid";
 import { TrashIcon } from "./key-section";
@@ -39,6 +39,16 @@ export const MappingsSection: React.FC<MappingsSectionProps> = ({
 		version: [],
 		usecase: [],
 	});
+	const containerRef = useRef<HTMLDivElement>(null); 
+
+	useEffect(() => {
+        if (guideStep === 6 && containerRef.current) {
+            containerRef.current.scrollIntoView({
+                behavior: 'smooth',
+                block: 'center'
+            });
+        }
+    }, [guideStep]);
 
 	const handleSave = async () => {
 		if (!editingMapping) return;
@@ -197,7 +207,7 @@ export const MappingsSection: React.FC<MappingsSectionProps> = ({
 				{editingMapping ? (
 					renderEditForm(editingMapping)
 				) : (
-					<div className="relative">
+					<div ref={containerRef} className={`relative ${guideStep === 6 ? "z-50" : ""}`}>
 						<button
 							onClick={handleAddNew}
 							className="w-full sm:w-auto flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-sky-600 hover:bg-sky-700"
@@ -205,7 +215,7 @@ export const MappingsSection: React.FC<MappingsSectionProps> = ({
 							+ Add Mapping
 						</button>
 
-						{guideStep === 3 && (
+						{guideStep === 6 && (
 							<div className="absolute top-10 left-0 bg-white shadow-lg border rounded-lg p-3 w-64 z-50">
 							<p className="text-gray-700 font-medium">Step 3: Add domain mappings</p>
 							<div className="flex justify-end mt-2 space-x-2">
