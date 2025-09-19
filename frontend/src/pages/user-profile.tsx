@@ -4,14 +4,9 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import JsonDataForm from "../components/registry-components/subscriber-form";
 import { LuLogOut } from "react-icons/lu";
-
-interface IProps {
-	setGuideStep: (step: number) => void;
-	guideStep: number
-  }
   
 
-export default function UserProfile({setGuideStep, guideStep}: IProps) {
+export default function UserProfile() {
 	const user = useContext(UserContext);
 	const navigate = useNavigate();
 
@@ -72,7 +67,7 @@ export default function UserProfile({setGuideStep, guideStep}: IProps) {
 						</div>
 					</div>
 
-					<JsonDataForm setGuideStep={setGuideStep} guideStep={guideStep}/>
+					<JsonDataForm />
 				</div>
 			</div>
 		</>
