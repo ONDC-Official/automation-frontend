@@ -8,16 +8,16 @@ import {
 } from "react";
 
 interface GuideContextProps {
-  guideStep: string;
-  setGuideStep: Dispatch<SetStateAction<string>>;
+  guideStep: number;
+  setGuideStep: Dispatch<SetStateAction<number>>;
 }
 
 export const GuideContext = createContext<GuideContextProps | undefined>(
   undefined
 );
 
-export const SessionProvider = ({ children }: { children: ReactNode }) => {
-  const [guideStep, setGuideStep] = useState<number>(0);
+export const GuideProvider = ({ children }: { children: ReactNode }) => {
+  const [guideStep, setGuideStep] = useState<number>(1);
 
   return (
     <GuideContext.Provider
@@ -33,6 +33,6 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
 
 export const useGuide = () => {
   const ctx = useContext(GuideContext);
-  if (!ctx) throw new Error("useGuide must be used inside SessionProvider");
+  if (!ctx) throw new Error("useGuide must be used inside GuideProvider");
   return ctx;
 };

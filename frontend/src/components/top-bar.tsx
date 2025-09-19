@@ -3,6 +3,8 @@ import { FaRegUser } from "react-icons/fa";
 import { FiLogIn } from "react-icons/fi";
 import { useNavigate, useLocation } from "react-router-dom";
 import { FaChevronDown } from "react-icons/fa";
+import { useGuide } from "../context/guideContext";
+import GuideOverlay from "./ui/GuideOverlay";
 
 interface SubMenuItem {
   label: string;
@@ -35,8 +37,6 @@ const navLinks: NavLink[] = [
 
 interface IPops {
   onSupportClick: () => void;
-  setGuideStep: (step: number) => void;
-  guideStep: number;
 }
 
 export interface UserDetails {
@@ -45,7 +45,7 @@ export interface UserDetails {
   avatarUrl?: string;
 }
 
-const TopBar = ({ onSupportClick, setGuideStep, guideStep }: IPops) => {
+const TopBar = ({ onSupportClick }: IPops) => {
   const [isOpen, setIsOpen] = useState(false);
   const [links, setLinks] = useState<[] | NavLink[]>([]);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
@@ -58,6 +58,7 @@ const TopBar = ({ onSupportClick, setGuideStep, guideStep }: IPops) => {
   );
 
   const userContext = useContext(UserContext);
+  const { guideStep, setGuideStep } = useGuide();
 
   const user = userContext.userDetails;
   console.log("user", user);
@@ -271,7 +272,13 @@ const TopBar = ({ onSupportClick, setGuideStep, guideStep }: IPops) => {
           )}
 
           {/* Button on the right */}
-          <div className={`${guideStep === 1 ? "z-50" : ""}`}>
+          <GuideOverlay
+            currentStep={1}
+            right={0}
+            top={55}
+            instruction="Step 1: Go to your Profile"
+            handleGoClick={handleLoginClick}
+          >
             <button
               onClick={handleLoginClick}
               className="mt-2 text-xl"
@@ -286,13 +293,9 @@ const TopBar = ({ onSupportClick, setGuideStep, guideStep }: IPops) => {
                 </div>
               )}
             </button>
-          </div>
+          </GuideOverlay>
 
-          {guideStep !== 0 && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 z-40 backdrop-blur-sm"></div>
-          )}
-
-          {guideStep === 1 && (
+          {/* {guideStep === 1 && (
             <div className="absolute top-14 right-0 bg-white shadow-lg border rounded-lg p-3 w-56 z-50">
               <p className="text-gray-700 font-medium">
                 Step 1: Go to your Profile
@@ -312,7 +315,7 @@ const TopBar = ({ onSupportClick, setGuideStep, guideStep }: IPops) => {
                 </button>
               </div>
             </div>
-          )}
+          )} */}
         </div>
       </nav>
     </header>
