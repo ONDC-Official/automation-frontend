@@ -13,12 +13,7 @@ import { UserContext } from "../../context/userContext";
 import { v4 as uuidv4 } from "uuid"; // For generating unique IDs
 // You would also import LocationsSection here
 
-interface SubscriberFormProps {
-	setGuideStep: (step: number) => void;
-	guideStep: number
-}
-
-const SubscriberForm = ({setGuideStep, guideStep}: SubscriberFormProps) => {
+const SubscriberForm = () => {
 	const [isLoading, setIsLoading] = useState(true);
 	const user = useContext(UserContext);
 	const [formData, setFormData] = [user.subscriberData, user.setSubscriberData];
@@ -229,8 +224,6 @@ const SubscriberForm = ({setGuideStep, guideStep}: SubscriberFormProps) => {
 						keys={formData.keys}
 						onAddKey={addKey}
 						onDeleteKey={deleteKey}
-						guideStep={guideStep}
-						setGuideStep={setGuideStep}
 					/>
 					{/* <URIsSection
 						uris={formData.uris}
@@ -253,8 +246,6 @@ const SubscriberForm = ({setGuideStep, guideStep}: SubscriberFormProps) => {
 						onAddMapping={addMapping}
 						onUpdateMapping={updateMapping}
 						onDeleteMapping={deleteMapping}
-						guideStep={guideStep}
-						setGuideStep={setGuideStep}
 					/>
 					{/* Save button at bottom right */}
 					{/* <div className="absolute bottom-6 right-6">
