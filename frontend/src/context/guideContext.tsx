@@ -17,7 +17,7 @@ export const GuideContext = createContext<GuideContextProps | undefined>(
 );
 
 export const GuideProvider = ({ children }: { children: ReactNode }) => {
-  const [guideStep, setGuideStep] = useState<number>(1);
+  const [guideStep, setGuideStep] = useState<number>(0);
 
   return (
     <GuideContext.Provider
