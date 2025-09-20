@@ -5,6 +5,7 @@ import axios from "../utils/axios";
 import logger from "@ondc/automation-logger";
 const SESSION_EXPIRY = 3600; // 1 hour
 const EXPECTATION_EXPIRY = 5 * 60 * 1000; // 5 minutes
+
 export const createSessionService = async (
 	sessionId: string,
 	data: SessionCache,
@@ -46,6 +47,8 @@ export const createSessionService = async (
 			useGzip: false,
 		},
 		flowConfigs: map,
+		activeFlow: null,
+		activeStep: 0
 	};
 
 	try {
@@ -87,6 +90,8 @@ export const updateSessionService = async (
 		subscriberUrl,
 		env,
 		sessionDifficulty,
+		activeFlow,
+		activeStep
 	} = data;
 
 	try {
@@ -106,6 +111,8 @@ export const updateSessionService = async (
 		if (domain) session.domain = domain;
 		if (sessionDifficulty) session.sessionDifficulty = sessionDifficulty;
 		if (env) session.env = env;
+		if (activeFlow) session.activeFlow = activeFlow === "NONE" ? null : activeFlow
+		if (activeStep) session.activeStep = activeStep
 
 		// Save the updated session data back to Redis
 		await RedisService.setKey(
@@ -329,3 +336,46 @@ export const requestForFlowPermissionService = async (
 		message: `Subscriber: ${subscriberUrl} is ready for action: ${action}`,
 	};
 };
+
+export const updateFlowService = async (
+	sessionId: string,
+	flows: any[],
+	loggerMeta: any
+) => {
+	try {
+		// Retrieve the session data from Redis
+		const sessionData = await RedisService.getKey(sessionId);
+
+		if (!sessionData) {
+			throw new Error("Session not found");
+		}
+
+		const session: SessionCache = JSON.parse(sessionData);
+		const map: Record<string, any> = {};
+
+		if(flows) {
+			for (const flow of flows) {
+				map[flow.id] = flow;
+			}
+
+			session.flowConfigs = map
+		}
+	
+
+		// Save the updated session data back to Redis
+		await RedisService.setKey(
+			sessionId,
+			JSON.stringify(session),
+			SESSION_EXPIRY
+		);
+		logger.info("Flow updated successfully", {
+			...flows,
+			...loggerMeta,
+		});
+		return "Flow updated successfully";
+	} catch (error: any) {
+		logger.error("Error updating flow", loggerMeta, error);
+		throw new Error("Error updating flow");
+	}
+};
+

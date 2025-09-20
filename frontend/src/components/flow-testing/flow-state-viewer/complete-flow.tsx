@@ -14,6 +14,7 @@ import {
 	newFlow,
 	proceedFlow,
 	requestForFlowPermission,
+	putCacheData,
 } from "../../../utils/request-utils";
 import { IoMdDownload } from "react-icons/io";
 import { FlowMap } from "../../../types/flow-state-type";
@@ -65,10 +66,22 @@ export function Accordion({
 	const [maxHeight, setMaxHeight] = useState("0px");
 	const apiCallFailCount = useRef(0);
 
-	const fetchTransactionData = async () => {
-		if (activeFlow !== flow.id || !sessionCache) {
-			return;
+	useEffect(() => {
+		const executedFlowId = Object.keys((sessionCache?.flowMap as any) || {});
+
+		if (executedFlowId.includes(flow.id) && sessionCache) {
+			console.log("get current staet fot this");
+			getCurrentState(sessionCache);
 		}
+
+		if (sessionCache?.activeFlow) {
+			setActiveFlow(sessionCache.activeFlow);
+		} else {
+			setActiveFlow(null);
+		}
+	}, [flow, sessionCache]);
+
+	const getCurrentState = async (sessionCache: SessionCache) => {
 		const tx = sessionCache.flowMap?.[flow.id];
 		if (tx) {
 			try {
@@ -93,6 +106,13 @@ export function Accordion({
 				missedSteps: [],
 			});
 		}
+	};
+
+	const fetchTransactionData = async () => {
+		if (activeFlow !== flow.id || !sessionCache) {
+			return;
+		}
+		getCurrentState(sessionCache);
 	};
 
 	useEffect(() => {
@@ -142,6 +162,7 @@ export function Accordion({
 				// 	toast.info("Expectation added successfully");
 				// }
 			}
+			putCacheData({ activeFlow: flow.id }, sessionId);
 			setIsOpen(true);
 		} catch (e) {
 			toast.error("Error while starting flow");
@@ -243,6 +264,7 @@ export function Accordion({
 							setActiveFlow(null);
 							setIsOpen(false);
 							await deleteExpectation(sessionId, subUrl);
+							putCacheData({ activeFlow: "NONE" }, sessionId);
 							onFlowStop();
 						}}
 					/>
