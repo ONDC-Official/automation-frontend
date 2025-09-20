@@ -3,6 +3,8 @@ import { FaRegUser } from "react-icons/fa";
 import { FiLogIn } from "react-icons/fi";
 import { useNavigate, useLocation } from "react-router-dom";
 import { FaChevronDown } from "react-icons/fa";
+import { useGuide } from "../context/guideContext";
+import GuideOverlay from "./ui/GuideOverlay";
 
 interface SubMenuItem {
   label: string;
@@ -23,7 +25,7 @@ const navLinks: NavLink[] = [
   { label: "Schema Validation", href: "/schema", selected: false },
   // { label: "Unit Testing", href: "/unit", selected: false },
   { label: "Scenario Testing", href: "/scenario", selected: false },
-  // { label: "Custom flow Workbench", href: "/customFlow", selected: false },
+  { label: "Custom flow", href: "/customFlow", selected: false },
   {
     label: "Tools",
     href: "/tools",
@@ -51,12 +53,12 @@ const TopBar = ({ onSupportClick }: IPops) => {
   const navigate = useNavigate();
   const location = useLocation();
   const pathName = location.pathname;
-
   const [userDetails, setUserDetails] = useState<UserDetails | undefined>(
     undefined
   );
 
   const userContext = useContext(UserContext);
+  const { guideStep, setGuideStep } = useGuide();
 
   const user = userContext.userDetails;
   console.log("user", user);
@@ -103,6 +105,14 @@ const TopBar = ({ onSupportClick }: IPops) => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+
+  const handleLoginClick = () => {
+    setIsOpen(false);
+    navigate(userDetails ? "/profile" : "/login");
+    if (userDetails && guideStep !== 0) {
+      setGuideStep(2);
+    }
+  };
 
   return (
     <header className="fixed top-0 left-0 right-0 bg-white shadow-md z-50">
@@ -262,23 +272,50 @@ const TopBar = ({ onSupportClick }: IPops) => {
           )}
 
           {/* Button on the right */}
-          <button
-            onClick={() => {
-              setIsOpen(false);
-              navigate(userDetails ? "/profile" : "/login");
-            }}
-            className="mt-2 text-xl"
-            // className="text-sky-600 bg-sky-200 rounded-full p-2 hover:text-sky-800 text-xl md:text-2xl"
-            title={userDetails ? "Profile" : "Login"}
+          <GuideOverlay
+            currentStep={1}
+            right={0}
+            top={55}
+            instruction="Step 1: Go to your Profile"
+            handleGoClick={handleLoginClick}
           >
-            {userDetails ? (
-              <UserIcon user={userDetails} />
-            ) : (
-              <div className="w-10 h-10 rounded-full shadow-sm bg-sky-100 mx-auto mb-4 text-gray-700 flex items-center justify-center">
-                <FiLogIn />
+            <button
+              onClick={handleLoginClick}
+              className="mt-2 text-xl"
+              // className="text-sky-600 bg-sky-200 rounded-full p-2 hover:text-sky-800 text-xl md:text-2xl"
+              title={userDetails ? "Profile" : "Login"}
+            >
+              {userDetails ? (
+                <UserIcon user={userDetails} />
+              ) : (
+                <div className="w-10 h-10 rounded-full shadow-sm bg-sky-100 mx-auto mb-4 text-gray-700 flex items-center justify-center">
+                  <FiLogIn />
+                </div>
+              )}
+            </button>
+          </GuideOverlay>
+
+          {/* {guideStep === 1 && (
+            <div className="absolute top-14 right-0 bg-white shadow-lg border rounded-lg p-3 w-56 z-50">
+              <p className="text-gray-700 font-medium">
+                Step 1: Go to your Profile
+              </p>
+              <div className="flex justify-end mt-2 space-x-2">
+                <button
+                  className="text-sm px-3 py-1 rounded bg-gray-200 hover:bg-gray-300"
+                  onClick={() => setGuideStep(0)}
+                >
+                  Skip all
+                </button>
+                <button
+                  className="text-sm px-3 py-1 rounded bg-sky-500 text-white hover:bg-sky-600"
+                  onClick={handleLoginClick}
+                >
+                  Go
+                </button>
               </div>
-            )}
-          </button>
+            </div>
+          )} */}
         </div>
       </nav>
     </header>
@@ -289,7 +326,7 @@ function UserIcon({ user }: { user: UserDetails }) {
   if (!user.avatarUrl) {
     return (
       <div className="w-10 h-10 rounded-full bg-sky-100  mx-auto mb-4 border flex items-center justify-center">
-        <FaRegUser />;
+        <FaRegUser />
       </div>
     );
   }
