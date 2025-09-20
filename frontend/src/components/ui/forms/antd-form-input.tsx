@@ -95,7 +95,7 @@ const AntdFormInput: React.FC<AntdFormInputProps> = ({
       <LabelWithToolTip labelInfo={labelInfo} label={label} />
       {renderInput()}
       {errors && errors[name] && (
-        <p className="text-red-500 text-xs italic dark:text-red-400 mt-1">
+        <p className="text-red-500 text-xs italic mt-1">
           {errors[name].message}
         </p>
       )}

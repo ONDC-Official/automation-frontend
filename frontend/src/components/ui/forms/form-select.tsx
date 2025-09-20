@@ -79,7 +79,7 @@ const FormSelect = ({
 					})}
 				</select>
 				{errors && errors[name] && (
-					<p className="text-red-500 text-xs italic dark:text-red-400">
+					<p className="text-red-500 text-xs italic">
 						{errors[name].message}
 					</p>
 				)}

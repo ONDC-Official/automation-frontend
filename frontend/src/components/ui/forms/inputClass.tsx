@@ -10,5 +10,4 @@ export const labelClass = `
   text-sky-700
   ml-1
   mb-1
-  dark:text-gray-300
 `.trim();
