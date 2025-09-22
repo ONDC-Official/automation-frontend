@@ -7,13 +7,14 @@ import { FaRegStopCircle } from "react-icons/fa";
 import { IoPlay } from "react-icons/io5";
 import { AiOutlineDelete } from "react-icons/ai";
 import {
-  clearFlowData,
-  deleteExpectation,
-  getCompletePayload,
-  getMappedFlow,
-  newFlow,
-  proceedFlow,
-  requestForFlowPermission,
+	clearFlowData,
+	deleteExpectation,
+	getCompletePayload,
+	getMappedFlow,
+	newFlow,
+	proceedFlow,
+	requestForFlowPermission,
+	putCacheData,
 } from "../../../utils/request-utils";
 import { IoMdDownload } from "react-icons/io";
 import { FlowMap } from "../../../types/flow-state-type";
@@ -66,41 +67,60 @@ export function Accordion({
   const [maxHeight, setMaxHeight] = useState("0px");
   const apiCallFailCount = useRef(0);
 
-  const fetchTransactionData = async () => {
-    if (activeFlow !== flow.id || !sessionCache) {
-      return;
-    }
-    const tx = sessionCache.flowMap?.[flow.id];
-    if (tx) {
-      try {
-        const txData = (await getMappedFlow(tx, sessionId)) as FlowMap; // Assuming the response is of type FlowMap
-        for (let i = 0; i < txData.sequence.length; i++) {
-          const payloads = txData.sequence[i].payloads;
-          if (payloads) {
-            if (!payloads.entryType) {
-              txData.sequence[i].payloads!.entryType = "API";
-            }
-          }
-        }
-        setMappedFlow(txData);
-        apiCallFailCount.current = 0; // Reset fail count on successful fetch
-      } catch (error) {
-        apiCallFailCount.current = apiCallFailCount.current + 1;
-        console.error("Failed to fetch transaction data:", error);
-      }
-    } else {
-      setMappedFlow({
-        sequence: getSequenceFromFlow(flow, sessionCache, activeFlow),
-        missedSteps: [],
-      });
-    }
-  };
+	useEffect(() => {
+		const executedFlowId = Object.keys((sessionCache?.flowMap as any) || {});
 
-  useEffect(() => {
-    if (contentRef.current) {
-      setMaxHeight(isOpen ? `${contentRef.current.scrollHeight}px` : "0px");
-    }
-  }, [isOpen, mappedFlow]);
+		if (executedFlowId.includes(flow.id) && sessionCache) {
+			console.log("get current staet fot this");
+			getCurrentState(sessionCache);
+		}
+
+		if (sessionCache?.activeFlow) {
+			setActiveFlow(sessionCache.activeFlow);
+		} else {
+			setActiveFlow(null);
+		}
+	}, [flow, sessionCache]);
+
+	const getCurrentState = async (sessionCache: SessionCache) => {
+		const tx = sessionCache.flowMap?.[flow.id];
+		if (tx) {
+			try {
+				const txData = (await getMappedFlow(tx, sessionId)) as FlowMap; // Assuming the response is of type FlowMap
+				for (let i = 0; i < txData.sequence.length; i++) {
+					const payloads = txData.sequence[i].payloads;
+					if (payloads) {
+						if (!payloads.entryType) {
+							txData.sequence[i].payloads!.entryType = "API";
+						}
+					}
+				}
+				setMappedFlow(txData);
+				apiCallFailCount.current = 0; // Reset fail count on successful fetch
+			} catch (error) {
+				apiCallFailCount.current = apiCallFailCount.current + 1;
+				console.error("Failed to fetch transaction data:", error);
+			}
+		} else {
+			setMappedFlow({
+				sequence: getSequenceFromFlow(flow, sessionCache, activeFlow),
+				missedSteps: [],
+			});
+		}
+	};
+
+	const fetchTransactionData = async () => {
+		if (activeFlow !== flow.id || !sessionCache) {
+			return;
+		}
+		getCurrentState(sessionCache);
+	};
+
+	useEffect(() => {
+		if (contentRef.current) {
+			setMaxHeight(isOpen ? `${contentRef.current.scrollHeight}px` : "0px");
+		}
+	}, [isOpen, mappedFlow]);
 
   async function handleFormForNewFlow(formData: SubmitEventParams) {
     try {
@@ -120,35 +140,36 @@ export function Accordion({
     }
   }
 
-  const startFlow = async () => {
-    try {
-      if (!sessionCache) return;
-      const canStart = await canStartFlow(sessionCache, mappedFlow);
-      console.log(canStart);
-      if (!canStart) return;
-      setActiveFlow(flow.id);
-      const given = sessionCache.flowMap[flow.id];
-      if (given) {
-        toast.info("Resuming the flow!");
-        await proceedFlow(sessionId, given);
-      } else {
-        const txId = uuidv4();
-        const data = await newFlow(sessionId, flow.id, txId);
-        if (data.inputs) {
-          toast.info("Inputs are required to start the flow");
-          setActiveFormConfig(data.inputs);
-          setInputPopUp(true);
-        }
-        // if (data.expectationAdded) {
-        // 	toast.info("Expectation added successfully");
-        // }
-      }
-      setIsOpen(true);
-    } catch (e) {
-      toast.error("Error while starting flow");
-      console.error(e);
-    }
-  };
+	const startFlow = async () => {
+		try {
+			if (!sessionCache) return;
+			const canStart = await canStartFlow(sessionCache, mappedFlow);
+			console.log(canStart);
+			if (!canStart) return;
+			setActiveFlow(flow.id);
+			const given = sessionCache.flowMap[flow.id];
+			if (given) {
+				toast.info("Resuming the flow!");
+				await proceedFlow(sessionId, given);
+			} else {
+				const txId = uuidv4();
+				const data = await newFlow(sessionId, flow.id, txId);
+				if (data.inputs) {
+					toast.info("Inputs are required to start the flow");
+					setActiveFormConfig(data.inputs);
+					setInputPopUp(true);
+				}
+				// if (data.expectationAdded) {
+				// 	toast.info("Expectation added successfully");
+				// }
+			}
+			putCacheData({ activeFlow: flow.id }, sessionId);
+			setIsOpen(true);
+		} catch (e) {
+			toast.error("Error while starting flow");
+			console.error(e);
+		}
+	};
 
   if (!sessionCache) {
     return (
@@ -215,87 +236,88 @@ export function Accordion({
     document.body.removeChild(a);
   };
 
-  function AccordionButtons() {
-    return (
-      <div className="flex items-center">
-        <div className="flex items-center justify-center p-2 ml-2 rounded-md shadow-sm bg-sky-50 transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 text-sky-600 ease-in">
-          <div className="flex items-center gap-2 text-sm font-bold text-sky-700">
-            {getPercent(mappedFlow).toFixed(0)}%
-          </div>
-        </div>
-        {!activeFlow && (
-          <IconButton
-            icon={<IoPlay className=" text-md" />}
-            label="Start flow"
-            color="sky"
-            onClick={async (e) => {
-              e.stopPropagation();
-              await startFlow();
-            }}
-          />
-        )}
-        {activeFlow === flow.id && (
-          <IconButton
-            icon={<FaRegStopCircle className=" text-xl" />}
-            label="Stop flow"
-            color="red"
-            onClick={async (e) => {
-              e.stopPropagation(); // Prevent accordion toggle
-              setActiveFlow(null);
-              setIsOpen(false);
-              await deleteExpectation(sessionId, subUrl);
-              onFlowStop();
-            }}
-          />
-        )}
-        {!activeFlow && (
-          <IconButton
-            icon={<AiOutlineDelete className=" text-md" />}
-            label="Clear flow data"
-            color="orange"
-            onClick={async (e) => {
-              e.stopPropagation();
-              setMappedFlow({
-                sequence: getSequenceFromFlow(
-                  sessionCache?.flowConfigs[flow.id] ?? flow,
-                  sessionCache,
-                  activeFlow
-                ),
-                missedSteps: [],
-              });
-              await clearFlowData(sessionId, flow.id);
-              onFlowClear();
-            }}
-          />
-        )}
-        {mappedFlow?.sequence && mappedFlow?.sequence?.length > 0 && (
-          <IconButton
-            icon={<IoMdDownload className=" text-md" />}
-            label="Download Logs"
-            color="green"
-            onClick={async (e) => {
-              e.stopPropagation();
-              handleDownload();
-            }}
-          />
-        )}
-        <CircularProgress
-          key={flow.id}
-          sqSize={24}
-          strokeWidth={3}
-          duration={3}
-          onComplete={async () => {
-            if (apiCallFailCount.current < 5) {
-              await fetchTransactionData();
-            }
-          }}
-          loop={true}
-          isActive={activeFlow === flow.id}
-          id="fetch-transaction-data"
-        />
-      </div>
-    );
-  }
+	function AccordionButtons() {
+		return (
+			<div className="flex items-center">
+				<div className="flex items-center justify-center p-2 ml-2 rounded-md shadow-sm bg-sky-50 transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 text-sky-600 ease-in">
+					<div className="flex items-center gap-2 text-sm font-bold text-sky-700">
+						{getPercent(mappedFlow).toFixed(0)}%
+					</div>
+				</div>
+				{!activeFlow && (
+					<IconButton
+						icon={<IoPlay className=" text-md" />}
+						label="Start flow"
+						color="sky"
+						onClick={async (e) => {
+							e.stopPropagation();
+							await startFlow();
+						}}
+					/>
+				)}
+				{activeFlow === flow.id && (
+					<IconButton
+						icon={<FaRegStopCircle className=" text-xl" />}
+						label="Stop flow"
+						color="red"
+						onClick={async (e) => {
+							e.stopPropagation(); // Prevent accordion toggle
+							setActiveFlow(null);
+							setIsOpen(false);
+							await deleteExpectation(sessionId, subUrl);
+							putCacheData({ activeFlow: "NONE" }, sessionId);
+							onFlowStop();
+						}}
+					/>
+				)}
+				{!activeFlow && (
+					<IconButton
+						icon={<AiOutlineDelete className=" text-md" />}
+						label="Clear flow data"
+						color="orange"
+						onClick={async (e) => {
+							e.stopPropagation();
+							setMappedFlow({
+								sequence: getSequenceFromFlow(
+									sessionCache?.flowConfigs[flow.id] ?? flow,
+									sessionCache,
+									activeFlow
+								),
+								missedSteps: [],
+							});
+							await clearFlowData(sessionId, flow.id);
+							onFlowClear();
+						}}
+					/>
+				)}
+				{mappedFlow?.sequence && mappedFlow?.sequence?.length > 0 && (
+					<IconButton
+						icon={<IoMdDownload className=" text-md" />}
+						label="Download Logs"
+						color="green"
+						onClick={async (e) => {
+							e.stopPropagation();
+							handleDownload();
+						}}
+					/>
+				)}
+				<CircularProgress
+					key={flow.id}
+					sqSize={24}
+					strokeWidth={3}
+					duration={3}
+					onComplete={async () => {
+						if (apiCallFailCount.current < 5) {
+							await fetchTransactionData();
+						}
+					}}
+					loop={true}
+					isActive={activeFlow === flow.id}
+					id="fetch-transaction-data"
+				/>
+			</div>
+		);
+	}
 
   const bg = activeFlow === flow.id ? "bg-blue-50" : "bg-white";
   return (

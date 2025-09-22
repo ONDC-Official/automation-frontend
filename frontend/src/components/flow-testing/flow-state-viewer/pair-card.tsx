@@ -2,8 +2,7 @@ import { PairedStep } from "./mapped-flow";
 import { MappedStep } from "../../../types/flow-state-type";
 import CustomTooltip from "../../ui/mini-components/tooltip";
 import { MdSyncAlt } from "react-icons/md";
-import { useContext } from "react";
-import { SessionContext } from "../../../context/context";
+import { useSession } from "../../../context/context";
 import FlippableWrapper from "../../ui/flippable-div";
 import { getCompletePayload } from "../../../utils/request-utils";
 
@@ -42,8 +41,8 @@ export default function PairedCard({
 }
 
 function StepDisplay({ step, flowId }: { step: MappedStep; flowId: string }) {
-  const { activeFlowId, setRequestData, setResponseData } =
-    useContext(SessionContext);
+	const { activeFlowId, setRequestData, setResponseData } =
+		useSession()
 
   const onClickFunc = async () => {
     if (step.status !== "COMPLETE") {

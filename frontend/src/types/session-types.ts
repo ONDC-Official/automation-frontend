@@ -41,6 +41,7 @@ export interface SessionCache {
 	env: "STAGING" | "PRE-PRODUCTION";
 	sessionDifficulty: SessionDifficulty;
 	flowConfigs: Record<string, Flow>;
+	activeFlow: null | string
 }
 
 export interface State {
