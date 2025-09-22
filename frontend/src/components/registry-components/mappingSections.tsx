@@ -4,6 +4,8 @@ import type { Mapping } from "./registry-types";
 import { v4 as uuidv4 } from "uuid";
 import { TrashIcon } from "./key-section";
 import axios from "axios";
+import GuideOverlay from "../ui/GuideOverlay";
+import { useGuide } from "../../context/guideContext";
 
 // Predefined dropdown options
 const DOMAIN_OPTIONS = ["ONDC:TRV10", "ONDC:RET10", "ONDC:LOG10"];
@@ -35,6 +37,7 @@ export const MappingsSection: React.FC<MappingsSectionProps> = ({
 		version: [],
 		usecase: [],
 	});
+	const { setGuideStep} = useGuide()
 
 	const handleSave = async () => {
 		if (!editingMapping) return;
@@ -47,6 +50,7 @@ export const MappingsSection: React.FC<MappingsSectionProps> = ({
 	};
 
 	const handleAddNew = () => {
+		setGuideStep(0)
 		setEditingMapping({
 			id: uuidv4().slice(0, 8),
 			domain: DOMAIN_OPTIONS[0],
@@ -192,12 +196,19 @@ export const MappingsSection: React.FC<MappingsSectionProps> = ({
 				{editingMapping ? (
 					renderEditForm(editingMapping)
 				) : (
-					<button
-						onClick={handleAddNew}
-						className="w-full sm:w-auto flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-sky-600 hover:bg-sky-700"
-					>
-						+ Add Mapping
-					</button>
+					<GuideOverlay 
+					currentStep={6} 
+					instruction={"Step 6: Add domain mappings"} 
+					handleGoClick={handleAddNew} 
+					left={0} 
+					top={45}>
+						<button
+							onClick={handleAddNew}
+							className="w-full sm:w-auto flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-sky-600 hover:bg-sky-700"
+						>
+							+ Add Mapping
+						</button>
+					</GuideOverlay>
 				)}
 			</div>
 

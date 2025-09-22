@@ -89,12 +89,12 @@ export default function InitialFlowForm({
 					nonSelectedValue
 					required
 				/>
-				{dynamicList.version?.length ? (
+				{/* {dynamicList.version?.length ? ( */}
 					<FormSelect
 						label="Select Version"
 						name="version"
 						required={true}
-						options={dynamicList.version.map((val: any) => val.key)}
+						options={dynamicList?.version?.map((val: any) => val.key) || []}
 						currentValue={dynamicValue.version}
 						setSelectedValue={(data: string) => {
 							formData.current = { ...formData.current, version: data };
@@ -113,15 +113,15 @@ export default function InitialFlowForm({
 						}}
 						nonSelectedValue
 					/>
-				) : (
+				{/* ) : (
 					<></>
-				)}
-				{dynamicList.usecase?.length ? (
+				)} */}
+				{/* {dynamicList.usecase?.length ? ( */}
 					<FormSelect
 						label="Enter Usecase"
 						name="usecaseId"
 						required={true}
-						options={dynamicList.usecase}
+						options={dynamicList?.usecase || []}
 						currentValue={dynamicValue.usecaseId}
 						setSelectedValue={(data: string) => {
 							formData.current = {
@@ -131,9 +131,9 @@ export default function InitialFlowForm({
 						}}
 						nonSelectedValue
 					/>
-				) : (
+				{/* ) : (
 					<></>
-				)}
+				)} */}
 				{/* <FormSelect
 					name="npType"
 					label="Select Type"
@@ -201,12 +201,12 @@ export default function InitialFlowForm({
 				nonSelectedValue
 				required
 			/>
-			{dynamicList.version?.length ? (
+			{/* {dynamicList.version?.length ? ( */}
 				<FormSelect
 					label="Select Version"
 					name="version"
 					required={true}
-					options={dynamicList.version.map((val: any) => val.key)}
+					options={dynamicList?.version?.map((val: any) => val.key) || []}
 					currentValue={dynamicValue.version}
 					setSelectedValue={(data: string) => {
 						formData.current = { ...formData.current, version: data };
@@ -225,15 +225,15 @@ export default function InitialFlowForm({
 					}}
 					nonSelectedValue
 				/>
-			) : (
+			{/* ) : (
 				<></>
-			)}
-			{dynamicList.usecase?.length ? (
+			)} */}
+			{/* {dynamicList.usecase?.length ? ( */}
 				<FormSelect
 					label="Select Usecase"
 					name="usecaseId"
 					required={true}
-					options={dynamicList.usecase}
+					options={dynamicList?.usecase || []}
 					currentValue={dynamicValue.usecaseId}
 					setSelectedValue={(data: string) => {
 						formData.current = {
@@ -243,9 +243,9 @@ export default function InitialFlowForm({
 					}}
 					nonSelectedValue
 				/>
-			) : (
+			{/* ) : (
 				<></>
-			)}
+			)} */}
 			<FormSelect
 				name="npType"
 				label="Select App Type"

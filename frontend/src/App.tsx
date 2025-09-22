@@ -19,6 +19,9 @@ import { getGithubAvatarUrl } from "./utils/regsitry-utils";
 import { SubscriberData } from "./components/registry-components/registry-types";
 import * as api from "./utils/registry-apis";
 import Footer from "./components/main-footer";
+import {SessionProvider} from "./context/context"
+import {useGuide} from "./context/guideContext"
+
 function App() {
 	const [isModalOpen, setIsModalOpen] = useState(false);
 	const [user, setUser] = useState<UserDetails | undefined>(undefined);
@@ -28,6 +31,7 @@ function App() {
 		mappings: [],
 	});
 	// const [isLoading, setIsLoading] = useState(true);
+	const {setGuideStep} = useGuide()
 
 	useEffect(() => {
 		try {
@@ -88,6 +92,12 @@ function App() {
 		}
 	}
 
+	useEffect(() => {
+		if(isLoggedIn && (!subscriberData.keys.length || !subscriberData.mappings.length)) {
+			setGuideStep(1)
+		}
+	}, [isLoggedIn])
+
 	return (
 		<UserContext.Provider
 			value={{
@@ -98,37 +108,41 @@ function App() {
 				setSubscriberData: setSubscriberData,
 			}}
 		>
-			<TopBar onSupportClick={() => setIsModalOpen(true)} />
-			<div className="pt-[72px] h-full">
-				<Routes>
-					<Route path="/home" element={<HomePage />} />
-					<Route path="/schema" element={<SchemaValidation />} />
-					{/* <Route path="/unit" element={<ApiTesting />} /> */}
-					<Route path="/scenario" element={<FlowContent />} />
-					{/* <Route path="/customFlow" element={<ComingSoonPage />} /> */}
-					<Route path="/login" element={<GitHubLogin />} />
-					<Route path="/profile" element={<UserProfile />} />
-					<Route path="/tools" element={<ToolsPage />} />
-					<Route path="/seller-onboarding" element={<SellerOnboarding />} />
-					<Route path="*" element={<NotFoundPage />} />
-				</Routes>
-			</div>
-			<Footer />
-			<Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
-				<Support />
-			</Modal>
-			<ToastContainer
-				position="top-right"
-				autoClose={3000}
-				hideProgressBar={false}
-				newestOnTop
-				closeOnClick
-				rtl={false}
-				pauseOnFocusLoss={false}
-				draggable
-				pauseOnHover={false}
-				theme="colored"
-			/>
+			<SessionProvider>
+					<TopBar
+						onSupportClick={() => setIsModalOpen(true)}
+					/>
+					<div className="pt-[72px] h-full">
+						<Routes>
+							<Route path="/home" element={<HomePage />} />
+							<Route path="/schema" element={<SchemaValidation />} />
+							{/* <Route path="/unit" element={<ApiTesting />} /> */}
+							<Route path="/scenario" element={<FlowContent type={"SCENARIO"} />} />
+							<Route path="/customFlow" element={<FlowContent type={"CUSTOM"} />} />
+							<Route path="/login" element={<GitHubLogin />} />
+							<Route path="/profile" element={<UserProfile />} />
+							<Route path="/tools" element={<ToolsPage />} />
+							<Route path="/seller-onboarding" element={<SellerOnboarding />} />
+							<Route path="*" element={<NotFoundPage />} />
+						</Routes>
+					</div>
+					<Footer />
+					<Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
+						<Support />
+					</Modal>
+					<ToastContainer
+						position="top-right"
+						autoClose={3000}
+						hideProgressBar={false}
+						newestOnTop
+						closeOnClick
+						rtl={false}
+						pauseOnFocusLoss={false}
+						draggable
+						pauseOnHover={false}
+						theme="colored"
+					/>
+			</SessionProvider>
 		</UserContext.Provider>
 	);
 }

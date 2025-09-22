@@ -11,7 +11,7 @@ import {
   getTransactionData,
 } from "../../utils/request-utils";
 import { Accordion } from "./flow-state-viewer/complete-flow";
-
+import { useSession } from "../../context/context";
 import Loader from "../ui/mini-components/loader";
 import JsonView from "@uiw/react-json-view";
 import { githubDarkTheme } from "@uiw/react-json-view/githubDark";
@@ -21,7 +21,7 @@ import { ILogs } from "../../interface";
 import { SessionContext } from "../../context/context";
 import CircularProgress from "../ui/circular-cooldown";
 import Modal from "../modal";
-import { HiOutlineDocumentReport } from "react-icons/hi";
+import { HiOutlineDocumentReport, HiOutlinePlusCircle } from "react-icons/hi";
 import jp from "jsonpath";
 
 function extractMetadataFromFlows(
@@ -350,6 +350,7 @@ function RenderFlows({
 
   return (
     <SessionContext.Provider
+      // @ts-ignore
       value={{
         sessionId,
         activeFlowId: activeFlow,
@@ -561,7 +562,6 @@ function RenderFlows({
                             <p className="text-gray-400 mb-3">
                               No metadata available
                             </p>
-                          
                           </div>
                         )}
                       </div>
