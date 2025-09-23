@@ -31,7 +31,7 @@ function App() {
 		mappings: [],
 	});
 	// const [isLoading, setIsLoading] = useState(true);
-	const {setGuideStep} = useGuide()
+	const {setGuideStep, guideStep} = useGuide()
 
 	useEffect(() => {
 		try {
@@ -93,14 +93,14 @@ function App() {
 	}
 
 	useEffect(() => {
-		if(isLoggedIn && user) {
+		if(isLoggedIn && guideStep === GuideStepsEnums.Skip) {
 			if((!subscriberData.keys.length || !subscriberData.mappings.length)) {
 				setGuideStep(GuideStepsEnums.Reg1)
 			} else {
 				setGuideStep(GuideStepsEnums.Test1)
 			}
 		}
-	}, [isLoggedIn, subscriberData])
+	}, [isLoggedIn, subscriberData, guideStep])
 
 	return (
 		<UserContext.Provider
