@@ -1,5 +1,5 @@
 import { toast } from "react-toastify";
-import { useGuide } from "../../context/guideContext";
+import { GuideStepsEnums } from "../../context/guideContext";
 import { generateKeys } from "../../utils/regsitry-utils";
 import GuideOverlay from "../ui/GuideOverlay";
 
@@ -11,7 +11,6 @@ export default function DownloadKeysButton({
     encryptionPublicKey: string
   ) => Promise<void>;
 }) {
-  const { guideStep, setGuideStep } = useGuide();
 
   const handleDownload = async () => {
     try {
@@ -43,16 +42,11 @@ export default function DownloadKeysButton({
 
   return (
     <GuideOverlay
-      currentStep={4}
+      currentStep={GuideStepsEnums.Reg4}
       left={0}
       top={45}
       instruction=" Step 2(b): Generate Keys"
-      handleGoClick={() => {
-        if (guideStep !== 0) {
-          setGuideStep(5);
-        }
-		handleDownload()
-      }}
+      handleGoClick={handleDownload}
     >
       <button
         type="button"

@@ -1,8 +1,14 @@
-import { ReactNode, useEffect, useRef } from "react";
-import { useGuide } from "./../../context/guideContext";
-
+import {
+  ReactNode,
+  useEffect,
+  useRef,
+  cloneElement,
+  isValidElement,
+  ReactElement
+} from "react";
+import { GuideStepsEnums, useGuide } from "./../../context/guideContext";
 interface GuideOverlayProps {
-  currentStep: number;
+  currentStep: GuideStepsEnums;
   children: ReactNode;
   instruction: string;
   handleGoClick: () => void;
@@ -10,6 +16,27 @@ interface GuideOverlayProps {
   left?: number;
   right?: number;
 }
+
+interface InteractiveElementProps {
+  onClick?: (...args: any[]) => void;
+  // You might want to add other common props like 'disabled', 'id', etc.
+}
+
+const journey = [
+  GuideStepsEnums.Reg1,
+  GuideStepsEnums.Reg2,
+  GuideStepsEnums.Reg3,
+  GuideStepsEnums.Reg4,
+  GuideStepsEnums.Reg5,
+  GuideStepsEnums.Reg6,
+  GuideStepsEnums.Reg7,
+  GuideStepsEnums.Reg8,
+  GuideStepsEnums.Reg9,
+  GuideStepsEnums.Reg10,
+  GuideStepsEnums.Reg11,
+  GuideStepsEnums.Reg12,
+  GuideStepsEnums.Test1
+];
 
 export default function GuideOverlay({
   currentStep,
@@ -25,7 +52,7 @@ export default function GuideOverlay({
   const { guideStep, setGuideStep } = useGuide();
 
   useEffect(() => {
-    if (guideStep !== 0 && containerRef.current) {
+    if (guideStep !== GuideStepsEnums.Skip && containerRef.current) {
       containerRef.current.scrollIntoView({
         behavior: "smooth",
         block: "center",
@@ -33,15 +60,36 @@ export default function GuideOverlay({
     }
   }, [guideStep]);
 
-  if (currentStep !== guideStep || guideStep === 0) {
+  const handleNextStep = () => {
+    const currentIndex = journey.indexOf(currentStep);
+
+    if (currentIndex !== -1 && currentIndex < journey.length - 1) {
+      setGuideStep(journey[currentIndex + 1]);
+    } else {
+      setGuideStep(GuideStepsEnums.Skip);
+    }
+  };
+
+  const childWithClickHandler = isValidElement(children)
+    ? cloneElement(children as ReactElement<InteractiveElementProps>, {
+        onClick: (...args: any[]) => {
+          if (children.props.onClick) {
+            children.props.onClick?.(...args);
+          }
+
+          handleNextStep();
+        },
+      })
+    : children;
+
+  if (currentStep !== guideStep || guideStep === GuideStepsEnums.Skip) {
     return <div>{children}</div>;
   }
 
   return (
     <div>
       <div ref={containerRef} className={`relative z-[52]`}>
-        {children}
-
+        {childWithClickHandler}
         <div
           style={{
             top: top !== undefined ? `${top}px` : "auto",
@@ -54,13 +102,16 @@ export default function GuideOverlay({
           <div className="flex justify-end mt-2 space-x-2">
             <button
               className="text-sm px-3 py-1 rounded bg-gray-200 hover:bg-gray-300"
-              onClick={() => setGuideStep(0)}
+              onClick={() => setGuideStep(GuideStepsEnums.Skip)}
             >
               Skip
             </button>
             <button
               className="text-sm px-3 py-1 rounded bg-sky-500 text-white hover:bg-sky-600"
-              onClick={handleGoClick}
+              onClick={() => {
+                handleNextStep();
+                handleGoClick();
+              }}
             >
               Go
             </button>
