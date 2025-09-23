@@ -125,11 +125,16 @@ function RenderFlows({
   subUrl,
   sessionId,
   setStep,
+  type,
   setReport,
+  newSession
+  
 }: {
   flows: Flow[];
   subUrl: string;
   sessionId: string;
+  type: "SCENARIO" | "CUSTOM";
+  newSession: () => void;
   setStep: React.Dispatch<React.SetStateAction<number>>;
   setReport: React.Dispatch<React.SetStateAction<string>>;
 }) {
@@ -152,6 +157,7 @@ function RenderFlows({
   const apiCallFailCount = useRef(0);
   const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
   const navigate = useNavigate();
+  const { setSessionId, setcfSessionId } = useSession();
 
   useEffect(() => {
     fetchSessionData();
@@ -410,15 +416,33 @@ function RenderFlows({
                       sqSize={16}
                       strokeWidth={2}
                     />
-                    <div className="flex justify-end">
-                      <button
-                        className="bg-sky-600 text-white text-sm flex px-2 py-2 rounded hover:bg-sky-700 shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                        onClick={async () => await generateReport()}
-                        disabled={!isFlowStopped}
-                      >
-                        <HiOutlineDocumentReport className="text-lg m2-1" />
-                        Generate Report
-                      </button>
+                    <div className="flex justify-end gap-2">
+                      <div className="flex justify-end">
+                        <button
+                          className="bg-sky-600 text-white text-sm flex px-2 py-2 rounded hover:bg-sky-700 shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                          onClick={async () => {
+                            if (type === "SCENARIO") {
+                              setSessionId("");
+                            } else {
+                              setcfSessionId("");
+                            }
+                            newSession();
+                          }}
+                        >
+                          <HiOutlinePlusCircle className="text-lg m2-1" />
+                          New Session
+                        </button>
+                      </div>
+                      <div className="flex justify-end">
+                        <button
+                          className="bg-sky-600 text-white text-sm flex px-2 py-2 rounded hover:bg-sky-700 shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                          onClick={async () => await generateReport()}
+                          disabled={!isFlowStopped}
+                        >
+                          <HiOutlineDocumentReport className="text-lg m2-1" />
+                          Generate Report
+                        </button>
+                      </div>
                     </div>
                   </div>
                 }
