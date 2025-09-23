@@ -100,7 +100,7 @@ function App() {
 				setGuideStep(GuideStepsEnums.Test1)
 			}
 		}
-	}, [isLoggedIn, subscriberData, guideStep])
+	}, [isLoggedIn, subscriberData])
 
 	return (
 		<UserContext.Provider
