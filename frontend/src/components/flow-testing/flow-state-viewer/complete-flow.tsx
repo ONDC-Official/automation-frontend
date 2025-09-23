@@ -46,7 +46,6 @@ export function Accordion({
   setActiveFlow,
   sessionCache,
   sessionId,
-  setSideView,
   subUrl,
   onFlowStop,
   onFlowClear,
