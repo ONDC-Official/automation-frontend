@@ -20,7 +20,7 @@ import { SubscriberData } from "./components/registry-components/registry-types"
 import * as api from "./utils/registry-apis";
 import Footer from "./components/main-footer";
 import {SessionProvider} from "./context/context"
-import {useGuide} from "./context/guideContext"
+import {GuideStepsEnums, useGuide} from "./context/guideContext"
 
 function App() {
 	const [isModalOpen, setIsModalOpen] = useState(false);
@@ -93,10 +93,14 @@ function App() {
 	}
 
 	useEffect(() => {
-		if(isLoggedIn && (!subscriberData.keys.length || !subscriberData.mappings.length)) {
-			setGuideStep(1)
+		if(isLoggedIn && user) {
+			if((!subscriberData.keys.length || !subscriberData.mappings.length)) {
+				setGuideStep(GuideStepsEnums.Reg1)
+			} else {
+				setGuideStep(GuideStepsEnums.Test1)
+			}
 		}
-	}, [isLoggedIn])
+	}, [isLoggedIn, location.pathname, user])
 
 	return (
 		<UserContext.Provider

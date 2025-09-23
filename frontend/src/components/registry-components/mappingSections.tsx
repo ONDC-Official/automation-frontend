@@ -5,7 +5,7 @@ import { v4 as uuidv4 } from "uuid";
 import { TrashIcon } from "./key-section";
 import axios from "axios";
 import GuideOverlay from "../ui/GuideOverlay";
-import { useGuide } from "../../context/guideContext";
+import { GuideStepsEnums } from "../../context/guideContext";
 
 // Predefined dropdown options
 const DOMAIN_OPTIONS = ["ONDC:TRV10", "ONDC:RET10", "ONDC:LOG10"];
@@ -37,7 +37,6 @@ export const MappingsSection: React.FC<MappingsSectionProps> = ({
 		version: [],
 		usecase: [],
 	});
-	const { setGuideStep} = useGuide()
 
 	const handleSave = async () => {
 		if (!editingMapping) return;
@@ -50,7 +49,6 @@ export const MappingsSection: React.FC<MappingsSectionProps> = ({
 	};
 
 	const handleAddNew = () => {
-		setGuideStep(0)
 		setEditingMapping({
 			id: uuidv4().slice(0, 8),
 			domain: DOMAIN_OPTIONS[0],
@@ -88,7 +86,12 @@ export const MappingsSection: React.FC<MappingsSectionProps> = ({
 	const renderEditForm = (mapping: Mapping) => (
 		<div className="p-4 border rounded-lg bg-gray-50 space-y-4">
 			<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-				<div>
+		  		<GuideOverlay 
+				currentStep={GuideStepsEnums.Reg7} 
+				instruction={"Step 7: Add domain"} 
+				handleGoClick={() => {}} 
+				left={0} 
+				top={65}>
 					<label className="block text-sm font-medium text-gray-700">
 						Domain
 					</label>
@@ -103,8 +106,13 @@ export const MappingsSection: React.FC<MappingsSectionProps> = ({
 							<option key={o.key}>{o.key}</option>
 						))}
 					</select>
-				</div>
-				<div>
+				</GuideOverlay>
+				<GuideOverlay 
+				currentStep={GuideStepsEnums.Reg8} 
+				instruction={"Step 8: Select Type"} 
+				handleGoClick={() => {}} 
+				left={0} 
+				top={65}>
 					<label className="block text-sm font-medium text-gray-700">
 						Type
 					</label>
@@ -119,8 +127,13 @@ export const MappingsSection: React.FC<MappingsSectionProps> = ({
 							<option key={o}>{o}</option>
 						))}
 					</select>
-				</div>
-				<div>
+				</GuideOverlay>
+				<GuideOverlay 
+				currentStep={GuideStepsEnums.Reg9} 
+				instruction={"Step 9: Select Uri"} 
+				handleGoClick={() => {}} 
+				left={0} 
+				top={65}>
 					<label className="block text-sm font-medium text-gray-700">URI</label>
 					<input
 						type="text"
@@ -131,8 +144,13 @@ export const MappingsSection: React.FC<MappingsSectionProps> = ({
 							setEditingMapping({ ...mapping, uri: e.target.value })
 						}
 					/>
-				</div>
-				<div>
+				</GuideOverlay>
+				<GuideOverlay 
+				currentStep={GuideStepsEnums.Reg10} 
+				instruction={"Step 10: Select Country"} 
+				handleGoClick={() => {}} 
+				left={0} 
+				top={65}>
 					<label className="block text-sm font-medium text-gray-700">
 						Country
 					</label>
@@ -148,8 +166,13 @@ export const MappingsSection: React.FC<MappingsSectionProps> = ({
 							})
 						}
 					/>
-				</div>
-				<div>
+				</GuideOverlay>
+				<GuideOverlay 
+				currentStep={GuideStepsEnums.Reg11} 
+				instruction={"Step 11: Select City"} 
+				handleGoClick={() => {}} 
+				left={0} 
+				top={65}>
 					<label className="block text-sm font-medium text-gray-700">
 						City (Comma Separated) eg: std:011, std:080 or *
 					</label>
@@ -166,7 +189,7 @@ export const MappingsSection: React.FC<MappingsSectionProps> = ({
 							});
 						}}
 					/>
-				</div>
+				</GuideOverlay>
 			</div>
 			<div className="flex justify-end space-x-3">
 				<button
@@ -175,12 +198,19 @@ export const MappingsSection: React.FC<MappingsSectionProps> = ({
 				>
 					Cancel
 				</button>
-				<button
-					onClick={handleSave}
-					className="px-4 py-1.5 text-sm font-medium rounded-md text-white bg-sky-600 hover:bg-sky-700"
-				>
-					Save Mapping
-				</button>
+				<GuideOverlay 
+				currentStep={GuideStepsEnums.Reg12} 
+				instruction={"Step 10: Save Domain"} 
+				handleGoClick={handleSave} 
+				left={0} 
+				top={65}>
+					<button
+						onClick={handleSave}
+						className="px-4 py-1.5 text-sm font-medium rounded-md text-white bg-sky-600 hover:bg-sky-700"
+					>
+						Save Mapping
+					</button>
+				</GuideOverlay>
 			</div>
 		</div>
 	);
@@ -197,7 +227,7 @@ export const MappingsSection: React.FC<MappingsSectionProps> = ({
 					renderEditForm(editingMapping)
 				) : (
 					<GuideOverlay 
-					currentStep={6} 
+					currentStep={GuideStepsEnums.Reg6} 
 					instruction={"Step 6: Add domain mappings"} 
 					handleGoClick={handleAddNew} 
 					left={0} 
