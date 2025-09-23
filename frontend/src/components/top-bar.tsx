@@ -3,7 +3,7 @@ import { FaRegUser } from "react-icons/fa";
 import { FiLogIn } from "react-icons/fi";
 import { useNavigate, useLocation } from "react-router-dom";
 import { FaChevronDown } from "react-icons/fa";
-import { useGuide } from "../context/guideContext";
+import { GuideStepsEnums } from "../context/guideContext";
 import GuideOverlay from "./ui/GuideOverlay";
 
 interface SubMenuItem {
@@ -58,7 +58,6 @@ const TopBar = ({ onSupportClick }: IPops) => {
   );
 
   const userContext = useContext(UserContext);
-  const { guideStep, setGuideStep } = useGuide();
 
   const user = userContext.userDetails;
   console.log("user", user);
@@ -109,9 +108,6 @@ const TopBar = ({ onSupportClick }: IPops) => {
   const handleLoginClick = () => {
     setIsOpen(false);
     navigate(userDetails ? "/profile" : "/login");
-    if (userDetails && guideStep !== 0) {
-      setGuideStep(2);
-    }
   };
 
   return (
@@ -184,73 +180,80 @@ const TopBar = ({ onSupportClick }: IPops) => {
           }`}
         >
           {links.map((link, index) => (
-            <li
-              key={index}
-              className="relative"
-              ref={link.subMenu ? dropdownRef : null}
-              onMouseEnter={() =>
-                !isOpen && link.subMenu && setOpenDropdown(link.label)
-              }
-              onMouseLeave={() =>
-                !isOpen && link.subMenu && setOpenDropdown(null)
-              }
-            >
-              <a
-                className={`hover:text-sky-500 block py-1 cursor-pointer flex items-center ${
-                  link.selected
-                    ? "text-sky-700 border-b-2 border-sky-500 text-sky-500"
-                    : "text-gray-500"
-                }`}
-                onClick={() => {
-                  if (link.label === "Support") {
-                    onSupportClick();
-                  } else if (link.subMenu) {
-                    // For items with subMenu, navigate to main page and toggle dropdown
-                    navigate(link.href);
-                    if (isOpen) {
-                      // On mobile, toggle dropdown after navigation
-                      setOpenDropdown(
-                        openDropdown === link.label ? null : link.label
-                      );
-                    }
-                  } else {
-                    navigate(link.href);
-                  }
-                }}
+            <GuideOverlay 
+            currentStep={link.href === "/scenario" ? GuideStepsEnums.Test1 : GuideStepsEnums.Skip} 
+            instruction={"Step 4: Start  Testing"} 
+            handleGoClick={() =>  navigate(link.href)} 
+            left={0} 
+            top={45}>
+              <li
+                key={index}
+                className="relative"
+                ref={link.subMenu ? dropdownRef : null}
+                onMouseEnter={() =>
+                  !isOpen && link.subMenu && setOpenDropdown(link.label)
+                }
+                onMouseLeave={() =>
+                  !isOpen && link.subMenu && setOpenDropdown(null)
+                }
               >
-                {link.label}
-                {link.subMenu && (
-                  <FaChevronDown
-                    className={`ml-1 text-xs transition-transform duration-200 ${
-                      openDropdown === link.label ? "rotate-180" : ""
-                    }`}
-                  />
-                )}
-              </a>
-              {link.subMenu && openDropdown === link.label && (
-                <div
-                  className={`${
-                    isOpen
-                      ? "static mt-2 ml-4"
-                      : "absolute top-full left-0 mt-1"
-                  } bg-white border border-gray-200 rounded-md shadow-lg min-w-48 z-50`}
+                <a
+                  className={`hover:text-sky-500 block py-1 cursor-pointer flex items-center ${
+                    link.selected
+                      ? "text-sky-700 border-b-2 border-sky-500 text-sky-500"
+                      : "text-gray-500"
+                  }`}
+                  onClick={() => {
+                    if (link.label === "Support") {
+                      onSupportClick();
+                    } else if (link.subMenu) {
+                      // For items with subMenu, navigate to main page and toggle dropdown
+                      navigate(link.href);
+                      if (isOpen) {
+                        // On mobile, toggle dropdown after navigation
+                        setOpenDropdown(
+                          openDropdown === link.label ? null : link.label
+                        );
+                      }
+                    } else {
+                      navigate(link.href);
+                    }
+                  }}
                 >
-                  {link.subMenu.map((subItem, subIndex) => (
-                    <a
-                      key={subIndex}
-                      className="block px-4 py-2 text-gray-700 hover:bg-sky-50 hover:text-sky-600 first:rounded-t-md last:rounded-b-md cursor-pointer"
-                      onClick={() => {
-                        navigate(subItem.href);
-                        setOpenDropdown(null);
-                        setIsOpen(false); // Close mobile menu
-                      }}
-                    >
-                      {subItem.label}
-                    </a>
-                  ))}
-                </div>
-              )}
-            </li>
+                  {link.label}
+                  {link.subMenu && (
+                    <FaChevronDown
+                      className={`ml-1 text-xs transition-transform duration-200 ${
+                        openDropdown === link.label ? "rotate-180" : ""
+                      }`}
+                    />
+                  )}
+                </a>
+                {link.subMenu && openDropdown === link.label && (
+                  <div
+                    className={`${
+                      isOpen
+                        ? "static mt-2 ml-4"
+                        : "absolute top-full left-0 mt-1"
+                    } bg-white border border-gray-200 rounded-md shadow-lg min-w-48 z-50`}
+                  >
+                    {link.subMenu.map((subItem, subIndex) => (
+                      <a
+                        key={subIndex}
+                        className="block px-4 py-2 text-gray-700 hover:bg-sky-50 hover:text-sky-600 first:rounded-t-md last:rounded-b-md cursor-pointer"
+                        onClick={() => {
+                          navigate(subItem.href);
+                          setOpenDropdown(null);
+                          setIsOpen(false); // Close mobile menu
+                        }}
+                      >
+                        {subItem.label}
+                      </a>
+                    ))}
+                  </div>
+                )}
+              </li>
+            </GuideOverlay>
           ))}
           <li></li>
         </ul>
@@ -273,7 +276,7 @@ const TopBar = ({ onSupportClick }: IPops) => {
 
           {/* Button on the right */}
           <GuideOverlay
-            currentStep={1}
+            currentStep={GuideStepsEnums.Reg1}
             right={0}
             top={55}
             instruction="Step 1: Go to your Profile"
@@ -294,28 +297,6 @@ const TopBar = ({ onSupportClick }: IPops) => {
               )}
             </button>
           </GuideOverlay>
-
-          {/* {guideStep === 1 && (
-            <div className="absolute top-14 right-0 bg-white shadow-lg border rounded-lg p-3 w-56 z-50">
-              <p className="text-gray-700 font-medium">
-                Step 1: Go to your Profile
-              </p>
-              <div className="flex justify-end mt-2 space-x-2">
-                <button
-                  className="text-sm px-3 py-1 rounded bg-gray-200 hover:bg-gray-300"
-                  onClick={() => setGuideStep(0)}
-                >
-                  Skip all
-                </button>
-                <button
-                  className="text-sm px-3 py-1 rounded bg-sky-500 text-white hover:bg-sky-600"
-                  onClick={handleLoginClick}
-                >
-                  Go
-                </button>
-              </div>
-            </div>
-          )} */}
         </div>
       </nav>
     </header>
