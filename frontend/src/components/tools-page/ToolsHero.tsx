@@ -2,12 +2,12 @@ import React from "react";
 
 const ToolsHero: React.FC = () => {
   return (
-    <section className="relative h-60 rounded-md flex flex-col justify-center items-center py-6 px-4 bg-gradient-to-r from-blue-900 via-blue-600 to-blue-500 text-white animate-gradient-bg overflow-hidden">
+    <section className="relative h-60 rounded-md flex flex-col justify-center items-center py-6 px-4 bg-gradient-to-r from-sky-900 via-sky-700 to-sky-600 text-white animate-gradient-bg overflow-hidden">
       <div className="absolute inset-0 pointer-events-none grid grid-cols-6 gap-2">
         {[...Array(30)].map((_, index) => (
           <div
             key={index}
-            className={`absolute  bg-blue-300 opacity-20 rounded-full h-${
+            className={`absolute  bg-gray-300 opacity-20 rounded-full h-${
               4 + (index % 3) * 2
             } w-${4 + (index % 3) * 2} animate-bounce-fast`}
             style={{
