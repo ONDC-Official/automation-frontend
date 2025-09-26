@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import type { Key } from "./registry-types";
 import DownloadKeysButton from "./download-keys-button";
-import { useGuide } from "../../context/guideContext";
+import { GuideStepsEnums } from "../../context/guideContext";
 import GuideOverlay from "../ui/GuideOverlay";
 
 interface KeysSectionProps {
@@ -40,8 +40,6 @@ export const KeysSection: React.FC<KeysSectionProps> = ({
   });
   const [isAdding, setIsAdding] = useState(false);
 
-  const { guideStep, setGuideStep } = useGuide();
-
   const handleAdd = async () => {
     if (!newKey.uk_id || !newKey.signing_pub) return;
     await onAddKey(newKey);
@@ -68,13 +66,11 @@ export const KeysSection: React.FC<KeysSectionProps> = ({
           <div className="p-4 border rounded-lg bg-gray-50 space-y-4">
             <h3 className="font-medium">Add New Key</h3>
             <GuideOverlay
-              currentStep={3}
+              currentStep={GuideStepsEnums.Reg3}
               left={0}
               top={66}
               instruction="Step 2(a): Add ukid"
-              handleGoClick={() => {
-                setGuideStep(4);
-              }}
+              handleGoClick={() => {}}
             >
               <label className={labelClasses}>UK ID</label>
               <input
@@ -139,16 +135,11 @@ export const KeysSection: React.FC<KeysSectionProps> = ({
                 Cancel
               </button>
               <GuideOverlay
-                currentStep={5}
+                currentStep={GuideStepsEnums.Reg5}
                 left={0}
                 top={40}
                 instruction="Step 2(c): Save Keys"
-                handleGoClick={() => {
-                  if (guideStep !== 0) {
-                    setGuideStep(6);
-                  }
-                  handleAdd()
-                }}
+                handleGoClick={handleAdd}
               >
                 <button
                   onClick={handleAdd}
@@ -166,23 +157,13 @@ export const KeysSection: React.FC<KeysSectionProps> = ({
           </div>
         ) : (
           <GuideOverlay
-            currentStep={2}
+            currentStep={GuideStepsEnums.Reg2}
             top={45}
             instruction="Step 2: Add signing keys"
-            handleGoClick={() => {
-              setIsAdding(true);
-              if (guideStep !== 0) {
-                setGuideStep(3);
-              }
-            }}
+            handleGoClick={() => setIsAdding(true)}
           >
             <button
-              onClick={() => {
-                setIsAdding(true);
-                if (guideStep !== 0) {
-                  setGuideStep(3);
-                }
-              }}
+              onClick={() => setIsAdding(true)}
               className="w-full sm:w-auto flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-sky-600 hover:bg-sky-700"
             >
               + Add Key
