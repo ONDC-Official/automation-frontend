@@ -14,6 +14,7 @@ export const S3_CONFIG = {
   BUCKET_NAME: process.env.S3_BUCKET_NAME || "",
   REGION: process.env.AWS_REGION || "ap-south-1",
   MAX_FILE_SIZE: 5 * 1024 * 1024, // 5MB
+  FOLDER:process.env.S3_FOLDER || "",
   ALLOWED_MIME_TYPES: [
     "image/jpeg",
     "image/jpg", 

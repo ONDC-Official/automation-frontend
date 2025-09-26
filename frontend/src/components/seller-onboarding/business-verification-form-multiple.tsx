@@ -132,7 +132,7 @@ const StoreTimingsSection = ({ storeIndex, control, watch }: any) => {
                 name={`stores.${storeIndex}.timings.${timingIndex}.type`}
                 control={control}
                 rules={{
-                  required: "Fulfillment type is required"
+                  required: "Fulfillment type is required",
                 }}
                 render={({ field, fieldState: { error } }) => (
                   <>
@@ -162,13 +162,14 @@ const StoreTimingsSection = ({ storeIndex, control, watch }: any) => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Operating Days - From<span className="text-red-500 ml-1">*</span>
+                Operating Days - From
+                <span className="text-red-500 ml-1">*</span>
               </label>
               <Controller
                 name={`stores.${storeIndex}.timings.${timingIndex}.day_from`}
                 control={control}
                 rules={{
-                  required: "Operating day from is required"
+                  required: "Operating day from is required",
                 }}
                 render={({ field, fieldState: { error } }) => (
                   <>
@@ -204,7 +205,7 @@ const StoreTimingsSection = ({ storeIndex, control, watch }: any) => {
                 name={`stores.${storeIndex}.timings.${timingIndex}.day_to`}
                 control={control}
                 rules={{
-                  required: "Operating day to is required"
+                  required: "Operating day to is required",
                 }}
                 render={({ field, fieldState: { error } }) => (
                   <>
@@ -240,7 +241,7 @@ const StoreTimingsSection = ({ storeIndex, control, watch }: any) => {
                 name={`stores.${storeIndex}.timings.${timingIndex}.time_from`}
                 control={control}
                 rules={{
-                  required: "Opening time is required"
+                  required: "Opening time is required",
                 }}
                 render={({ field, fieldState: { error } }) => (
                   <>
@@ -273,7 +274,7 @@ const StoreTimingsSection = ({ storeIndex, control, watch }: any) => {
                 name={`stores.${storeIndex}.timings.${timingIndex}.time_to`}
                 control={control}
                 rules={{
-                  required: "Closing time is required"
+                  required: "Closing time is required",
                 }}
                 render={({ field, fieldState: { error } }) => (
                   <>
@@ -412,25 +413,26 @@ const BusinessVerificationForm = ({
 
   // Reset form when initialData changes (when navigating back)
   useEffect(() => {
-    const storeData = initialData.stores && initialData.stores.length > 0
-      ? initialData.stores.map((store) => ({
-          ...store,
-          // Ensure timings array exists
-          timings:
-            store.timings && store.timings.length > 0
-              ? store.timings
-              : [
-                  {
-                    type: store.type || undefined,
-                    day_from: store.day_from || undefined,
-                    day_to: store.day_to || undefined,
-                    time_from: store.time_from || "",
-                    time_to: store.time_to || "",
-                  },
-                ],
-        }))
-      : [{ ...defaultStore }];
-    
+    const storeData =
+      initialData.stores && initialData.stores.length > 0
+        ? initialData.stores.map((store) => ({
+            ...store,
+            // Ensure timings array exists
+            timings:
+              store.timings && store.timings.length > 0
+                ? store.timings
+                : [
+                    {
+                      type: store.type || undefined,
+                      day_from: store.day_from || undefined,
+                      day_to: store.day_to || undefined,
+                      time_from: store.time_from || "",
+                      time_to: store.time_to || "",
+                    },
+                  ],
+          }))
+        : [{ ...defaultStore }];
+
     reset({ stores: storeData });
   }, [initialData, reset]);
 
@@ -478,23 +480,34 @@ const BusinessVerificationForm = ({
         store.email;
 
       // Check timings validation
-      const hasValidTimings = store.timings && store.timings.length > 0 && 
-        store.timings.some((timing: any) => 
-          timing.type && 
-          timing.day_from && 
-          timing.day_to && 
-          timing.time_from && 
-          timing.time_to
+      const hasValidTimings =
+        store.timings &&
+        store.timings.length > 0 &&
+        store.timings.some(
+          (timing: any) =>
+            timing.type &&
+            timing.day_from &&
+            timing.day_to &&
+            timing.time_from &&
+            timing.time_to
         );
 
       // Check additional required fields
-      const additionalFieldsValid = 
-        store.supported_subcategories && store.supported_subcategories.length > 0 &&
+      const additionalFieldsValid =
+        store.supported_subcategories &&
+        store.supported_subcategories.length > 0 &&
         store.supported_fulfillments &&
-        store.minimum_order_value !== undefined && store.minimum_order_value !== null && store.minimum_order_value !== "";
+        store.minimum_order_value !== undefined &&
+        store.minimum_order_value !== null &&
+        store.minimum_order_value !== "";
 
       if (isFnBDomain) {
-        return baseFieldsValid && store.fssai_no && hasValidTimings && additionalFieldsValid;
+        return (
+          baseFieldsValid &&
+          store.fssai_no &&
+          hasValidTimings &&
+          additionalFieldsValid
+        );
       }
 
       return baseFieldsValid && hasValidTimings && additionalFieldsValid;
@@ -621,9 +634,7 @@ const BusinessVerificationForm = ({
                     status={error ? "error" : undefined}
                   />
                   {error && (
-                    <p className="text-red-500 text-xs mt-1">
-                      {error.message}
-                    </p>
+                    <p className="text-red-500 text-xs mt-1">{error.message}</p>
                   )}
                 </>
               )}
@@ -661,9 +672,7 @@ const BusinessVerificationForm = ({
                     status={error ? "error" : undefined}
                   />
                   {error && (
-                    <p className="text-red-500 text-xs mt-1">
-                      {error.message}
-                    </p>
+                    <p className="text-red-500 text-xs mt-1">{error.message}</p>
                   )}
                 </>
               )}
@@ -696,9 +705,7 @@ const BusinessVerificationForm = ({
                     status={error ? "error" : undefined}
                   />
                   {error && (
-                    <p className="text-red-500 text-xs mt-1">
-                      {error.message}
-                    </p>
+                    <p className="text-red-500 text-xs mt-1">{error.message}</p>
                   )}
                 </>
               )}
@@ -736,9 +743,7 @@ const BusinessVerificationForm = ({
                     status={error ? "error" : undefined}
                   />
                   {error && (
-                    <p className="text-red-500 text-xs mt-1">
-                      {error.message}
-                    </p>
+                    <p className="text-red-500 text-xs mt-1">{error.message}</p>
                   )}
                 </>
               )}
@@ -755,8 +760,7 @@ const BusinessVerificationForm = ({
               rules={{
                 pattern: {
                   value: /^[1-9][0-9]{5}$/,
-                  message:
-                    "PIN Code must be 6 digits and cannot start with 0",
+                  message: "PIN Code must be 6 digits and cannot start with 0",
                 },
                 validate: {
                   validPincode: (value: string | undefined) => {
@@ -778,9 +782,7 @@ const BusinessVerificationForm = ({
                     status={error ? "error" : undefined}
                   />
                   {error && (
-                    <p className="text-red-500 text-xs mt-1">
-                      {error.message}
-                    </p>
+                    <p className="text-red-500 text-xs mt-1">{error.message}</p>
                   )}
                 </>
               )}
@@ -811,9 +813,7 @@ const BusinessVerificationForm = ({
                     ))}
                   </Select>
                   {error && (
-                    <p className="text-red-500 text-xs mt-1">
-                      {error.message}
-                    </p>
+                    <p className="text-red-500 text-xs mt-1">{error.message}</p>
                   )}
                 </>
               )}
@@ -859,9 +859,7 @@ const BusinessVerificationForm = ({
                     status={error ? "error" : undefined}
                   />
                   {error && (
-                    <p className="text-red-500 text-xs mt-1">
-                      {error.message}
-                    </p>
+                    <p className="text-red-500 text-xs mt-1">{error.message}</p>
                   )}
                 </>
               )}
@@ -908,9 +906,7 @@ const BusinessVerificationForm = ({
                     status={error ? "error" : undefined}
                   />
                   {error && (
-                    <p className="text-red-500 text-xs mt-1">
-                      {error.message}
-                    </p>
+                    <p className="text-red-500 text-xs mt-1">{error.message}</p>
                   )}
                 </>
               )}
@@ -953,9 +949,7 @@ const BusinessVerificationForm = ({
                         format="YYYY-MM-DD"
                         value={null}
                         disabledDate={(current) => {
-                          return (
-                            current && current.isBefore(new Date(), "day")
-                          );
+                          return current && current.isBefore(new Date(), "day");
                         }}
                         onChange={(date: any) => {
                           if (date) {
@@ -996,8 +990,8 @@ const BusinessVerificationForm = ({
                       </p>
                     )}
                     <p className="text-xs text-gray-500 mt-1">
-                      Select multiple dates when your store will be closed
-                      for holidays
+                      Select multiple dates when your store will be closed for
+                      holidays
                     </p>
                   </>
                 );
@@ -1006,7 +1000,7 @@ const BusinessVerificationForm = ({
           </div>
         </div>
       </div>
-      
+
       <div className="space-y-4 mb-6">
         <div className="flex items-center justify-between">
           <h4 className="text-md font-semibold text-gray-600 flex items-center gap-2">
@@ -1022,7 +1016,7 @@ const BusinessVerificationForm = ({
           setValue={setValue}
         />
       </div>
-      
+
       <div className="space-y-4 mb-6">
         <h4 className="text-md font-semibold text-gray-600">
           Additional Details
@@ -1040,8 +1034,7 @@ const BusinessVerificationForm = ({
                   required: "FSSAI License number is required",
                   pattern: {
                     value: /^[0-9]{14}$/,
-                    message:
-                      "FSSAI License number must be exactly 14 digits",
+                    message: "FSSAI License number must be exactly 14 digits",
                   },
                   validate: {
                     validFssai: (value: string | undefined) => {
@@ -1075,7 +1068,8 @@ const BusinessVerificationForm = ({
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Supported Subcategories<span className="text-red-500 ml-1">*</span>
+              Supported Subcategories
+              <span className="text-red-500 ml-1">*</span>
             </label>
             <Controller
               name={`stores.${index}.supported_subcategories`}
@@ -1083,9 +1077,11 @@ const BusinessVerificationForm = ({
               rules={{
                 required: "Please select at least one subcategory",
                 validate: {
-                  notEmpty: (value) => 
-                    value && value.length > 0 ? true : "Please select at least one subcategory"
-                }
+                  notEmpty: (value) =>
+                    value && value.length > 0
+                      ? true
+                      : "Please select at least one subcategory",
+                },
               }}
               render={({ field, fieldState: { error } }) => (
                 <>
@@ -1109,9 +1105,7 @@ const BusinessVerificationForm = ({
                     ))}
                   </Select>
                   {error && (
-                    <p className="text-red-500 text-xs mt-1">
-                      {error.message}
-                    </p>
+                    <p className="text-red-500 text-xs mt-1">{error.message}</p>
                   )}
                 </>
               )}
@@ -1120,13 +1114,14 @@ const BusinessVerificationForm = ({
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Types of fulfillments supported<span className="text-red-500 ml-1">*</span>
+              Types of fulfillments supported
+              <span className="text-red-500 ml-1">*</span>
             </label>
             <Controller
               name={`stores.${index}.supported_fulfillments`}
               control={control}
               rules={{
-                required: "Please select a fulfillment type"
+                required: "Please select a fulfillment type",
               }}
               render={({ field, fieldState: { error } }) => (
                 <>
@@ -1145,9 +1140,7 @@ const BusinessVerificationForm = ({
                     ))}
                   </Select>
                   {error && (
-                    <p className="text-red-500 text-xs mt-1">
-                      {error.message}
-                    </p>
+                    <p className="text-red-500 text-xs mt-1">{error.message}</p>
                   )}
                 </>
               )}
@@ -1165,8 +1158,7 @@ const BusinessVerificationForm = ({
                 required: "Minimum order value is required",
                 pattern: {
                   value: /^[0-9]+(\.[0-9]{1,2})?$/,
-                  message:
-                    "Please enter a valid amount (e.g., 100 or 100.50)",
+                  message: "Please enter a valid amount (e.g., 100 or 100.50)",
                 },
                 min: {
                   value: 0,
@@ -1184,9 +1176,7 @@ const BusinessVerificationForm = ({
                     status={error ? "error" : undefined}
                   />
                   {error && (
-                    <p className="text-red-500 text-xs mt-1">
-                      {error.message}
-                    </p>
+                    <p className="text-red-500 text-xs mt-1">{error.message}</p>
                   )}
                 </>
               )}
@@ -1194,7 +1184,7 @@ const BusinessVerificationForm = ({
           </div>
         </div>
       </div>
-      
+
       <ServiceabilitySection
         storeIndex={index}
         control={control}
@@ -1228,7 +1218,6 @@ const BusinessVerificationForm = ({
     ),
     children: renderStoreContent(index),
   }));
-
 
   return (
     <form
@@ -1285,8 +1274,6 @@ const BusinessVerificationForm = ({
         >
           Previous
         </button>
-
-       
 
         <LoadingButton
           buttonText={
@@ -1500,7 +1487,8 @@ const ServiceabilitySection = ({
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Serviceability Type<span className="text-red-500 ml-1">*</span>
+                  Serviceability Type
+                  <span className="text-red-500 ml-1">*</span>
                 </label>
                 <Controller
                   name={`stores.${storeIndex}.serviceabilities.${serviceIndex}.type`}
@@ -1547,7 +1535,7 @@ const ServiceabilitySection = ({
                         status={error ? "error" : undefined}
                         onChange={(value) => {
                           field.onChange(value);
-                          
+
                           // Always clear all related fields first when type changes
                           setValue(
                             `stores.${storeIndex}.serviceabilities.${serviceIndex}.val`,
@@ -1561,7 +1549,7 @@ const ServiceabilitySection = ({
                             `stores.${storeIndex}.serviceabilities.${serviceIndex}.location`,
                             `L${storeIndex + 1}`
                           );
-                          
+
                           // If no value selected (cleared), keep fields empty
                           if (!value) {
                             setValue(
@@ -1570,10 +1558,12 @@ const ServiceabilitySection = ({
                             );
                             return;
                           }
-                          
+
                           // Show user that fields were cleared due to type change
-                          toast.info("Serviceability fields updated based on selected type");
-                          
+                          toast.info(
+                            "Serviceability fields updated based on selected type"
+                          );
+
                           // Set appropriate values based on serviceability type
                           if (value === "10") {
                             // Hyperlocal - clear for user input (radius and unit)
@@ -1783,7 +1773,8 @@ const ServiceabilitySection = ({
               {serviceabilityType === "11" && (
                 <div className="lg:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Pincodes (comma-separated)<span className="text-red-500 ml-1">*</span>
+                    Pincodes (comma-separated)
+                    <span className="text-red-500 ml-1">*</span>
                   </label>
                   <Controller
                     name={`stores.${storeIndex}.serviceabilities.${serviceIndex}.val`}
@@ -1853,7 +1844,8 @@ const ServiceabilitySection = ({
               {serviceabilityType === "13" && (
                 <div className="lg:col-span-3">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Polygon (GeoJSON format)<span className="text-red-500 ml-1">*</span>
+                    Polygon (GeoJSON format)
+                    <span className="text-red-500 ml-1">*</span>
                   </label>
                   <Controller
                     name={`stores.${storeIndex}.serviceabilities.${serviceIndex}.val`}

@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { S3Service } from "../services/s3Service";
 import multer from "multer";
+import { S3_CONFIG } from "../config/s3Config";
 
 export class ImageController {
   private s3Service: S3Service;
@@ -24,7 +25,7 @@ export class ImageController {
         return;
       }
 
-      const folder = "workbench-seller-onboarding";
+      const folder = S3_CONFIG.FOLDER;
       const result = await this.s3Service.uploadFile(file, folder);
 
       res.status(200).json({
@@ -61,7 +62,7 @@ export class ImageController {
         return;
       }
 
-      const folder = "workbench-seller-onboarding";
+      const folder = S3_CONFIG.FOLDER;
       const results = await this.s3Service.uploadMultipleFiles(files, folder);
 
       res.status(200).json({
