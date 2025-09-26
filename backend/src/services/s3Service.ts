@@ -15,7 +15,7 @@ export class S3Service {
    */
   async uploadFile(
     file: Express.Multer.File, 
-    folder: string = "workbench-seller-onboarding"
+    folder: string = S3_CONFIG.FOLDER
   ): Promise<{ key: string; url: string; etag?: string }> {
     try {
       // Generate unique filename
@@ -122,7 +122,7 @@ export class S3Service {
    */
   async uploadMultipleFiles(
     files: Express.Multer.File[], 
-    folder: string = "workbench-seller-onboarding"
+    folder: string = S3_CONFIG.FOLDER
   ): Promise<Array<{ key: string; url: string; originalName: string; etag?: string }>> {
     try {
       const uploadPromises = files.map(async (file) => {

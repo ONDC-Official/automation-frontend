@@ -14,8 +14,11 @@ interface SingleImageUploadProps {
   maxSizePerFile?: number;
   className?: string;
   previewSize?: "small" | "medium" | "large";
+  defaultImageUrl?: string;
+  allowUrlInput?: boolean;
 }
 
+const baseUrl = new URL(import.meta.env.VITE_BASE_URL).origin;
 const SingleImageUpload: React.FC<SingleImageUploadProps> = ({
   label,
   labelInfo = "",
@@ -26,11 +29,15 @@ const SingleImageUpload: React.FC<SingleImageUploadProps> = ({
   maxSizePerFile = 5 * 1024 * 1024, // 5MB
   className = "",
   previewSize = "medium",
+  defaultImageUrl = `${baseUrl}/images/ondc-logo.png`,
+  allowUrlInput = true,
 }) => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploadedUrl, setUploadedUrl] = useState<string>(value);
   const [filePreview, setFilePreview] = useState<string | null>(null);
   const [uploadLoading, setUploadLoading] = useState<boolean>(false);
+  const [urlInputValue, setUrlInputValue] = useState<string>("");
+  const [inputMode, setInputMode] = useState<"upload" | "url">("upload");
 
   // Sync with external value changes
   useEffect(() => {
@@ -74,14 +81,14 @@ const SingleImageUpload: React.FC<SingleImageUploadProps> = ({
 
       const baseURL =
         import.meta.env.VITE_BACKEND_URL || "http://localhost:4000";
-      const response = await axios.post(`${baseURL}/images/upload`, formData, {
+        const response = await axios.post(`${baseURL}/images/upload`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
       });
 
       if (response.data.success) {
-        const uploadedUrl = response.data.data.imageUrl;
+        const uploadedUrl = response.data.data.imageUrl || defaultImageUrl;
         setUploadedUrl(uploadedUrl);
         setSelectedFile(null);
         setFilePreview(null);
@@ -96,13 +103,34 @@ const SingleImageUpload: React.FC<SingleImageUploadProps> = ({
       }
     } catch (error: any) {
       console.error("Error uploading image:", error);
-      message.error(
-        "Failed to upload image: " +
-          (error.response?.data?.message || error.message)
-      );
-      return null;
+      message.error("Failed to upload image. Using default image URL.");
+      // Use default URL on upload failure
+      const fallbackUrl = defaultImageUrl;
+      setUploadedUrl(fallbackUrl);
+      setSelectedFile(null);
+      setFilePreview(null);
+      onChange?.(fallbackUrl);
+      return fallbackUrl;
     } finally {
       setUploadLoading(false);
+    }
+  };
+
+  const handleUrlSubmit = () => {
+    if (!urlInputValue.trim()) {
+      message.warning("Please enter an image URL");
+      return;
+    }
+
+    // Basic URL validation
+    try {
+      new URL(urlInputValue);
+      setUploadedUrl(urlInputValue);
+      onChange?.(urlInputValue);
+      setUrlInputValue("");
+      message.success("Image URL set successfully!");
+    } catch (error) {
+      message.error("Please enter a valid URL");
     }
   };
 
@@ -110,6 +138,7 @@ const SingleImageUpload: React.FC<SingleImageUploadProps> = ({
     setSelectedFile(null);
     setFilePreview(null);
     setUploadedUrl("");
+    setUrlInputValue("");
     onChange?.("");
 
     // Clear the file input
@@ -141,15 +170,55 @@ const SingleImageUpload: React.FC<SingleImageUploadProps> = ({
       />
 
       <div className="space-y-4">
-        <div className="relative">
-          <input
-            type="file"
-            accept="image/*"
-            name={`${folder}-single-image`}
-            onChange={handleFileChange}
-            className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-sky-50 file:text-sky-700 hover:file:bg-sky-100 cursor-pointer border border-gray-300 rounded-md focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-colors"
-          />
-        </div>
+        {allowUrlInput && (
+          <div className="flex gap-2 mb-2">
+            <Button
+              type={inputMode === "upload" ? "primary" : "default"}
+              size="small"
+              onClick={() => setInputMode("upload")}
+            >
+              Upload File
+            </Button>
+            <Button
+              type={inputMode === "url" ? "primary" : "default"}
+              size="small"
+              onClick={() => setInputMode("url")}
+            >
+              Enter URL
+            </Button>
+          </div>
+        )}
+
+        {inputMode === "upload" ? (
+          <div className="relative">
+            <input
+              type="file"
+              accept="image/*"
+              name={`${folder}-single-image`}
+              onChange={handleFileChange}
+              className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-sky-50 file:text-sky-700 hover:file:bg-sky-100 cursor-pointer border border-gray-300 rounded-md focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-colors"
+            />
+          </div>
+        ) : (
+          <div className="flex gap-2">
+            <input
+              type="text"
+              placeholder="Enter image URL (e.g., https://example.com/image.jpg)"
+              value={urlInputValue}
+              onChange={(e) => setUrlInputValue(e.target.value)}
+              className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-sky-500 focus:border-sky-500 text-sm"
+              onKeyPress={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  handleUrlSubmit();
+                }
+              }}
+            />
+            <Button type="primary" onClick={handleUrlSubmit}>
+              Set URL
+            </Button>
+          </div>
+        )}
 
         {selectedFile && !uploadedUrl && (
           <div className="flex items-center space-x-2 p-2 bg-green-50 rounded-md border border-green-200">

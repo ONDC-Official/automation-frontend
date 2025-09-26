@@ -15,8 +15,10 @@ interface MultiImageUploadProps {
   maxSizePerFile?: number;
   className?: string;
   previewSize?: "small" | "medium" | "large";
+  defaultImageUrl?: string;
+  allowUrlInput?: boolean;
 }
-
+const baseUrl = new URL(import.meta.env.VITE_BASE_URL).origin;
 const MultiImageUpload: React.FC<MultiImageUploadProps> = ({
   label,
   labelInfo = "",
@@ -28,11 +30,15 @@ const MultiImageUpload: React.FC<MultiImageUploadProps> = ({
   maxSizePerFile = 5 * 1024 * 1024, // 5MB
   className = "",
   previewSize = "medium",
+  defaultImageUrl = `${baseUrl}/images/ondc-logo.png`,
+  allowUrlInput = true,
 }) => {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [uploadedUrls, setUploadedUrls] = useState<string[]>(value);
   const [filePreviews, setFilePreviews] = useState<string[]>([]);
   const [uploadLoading, setUploadLoading] = useState<boolean>(false);
+  const [urlInputValue, setUrlInputValue] = useState<string>("");
+  const [inputMode, setInputMode] = useState<"upload" | "url">("upload");
 
   // Sync with external value changes
   useEffect(() => {
@@ -110,7 +116,7 @@ const MultiImageUpload: React.FC<MultiImageUploadProps> = ({
 
       if (response.data.success) {
         const newUploadedUrls = response.data.data.images.map(
-          (img: any) => img.imageUrl
+          (img: any) => img.imageUrl || defaultImageUrl
         );
         const allUrls = [...uploadedUrls, ...newUploadedUrls];
         setUploadedUrls(allUrls);
@@ -129,14 +135,53 @@ const MultiImageUpload: React.FC<MultiImageUploadProps> = ({
       }
     } catch (error: any) {
       console.error("Error uploading images:", error);
-      message.error(
-        "Failed to upload images: " +
-          (error.response?.data?.message || error.message)
-      );
-      return [];
+      message.error("Failed to upload images. Using default image URLs.");
+      // Use default URLs for the number of files that failed
+      const fallbackUrls = selectedFiles.map(() => defaultImageUrl);
+      const allUrls = [...uploadedUrls, ...fallbackUrls];
+      setUploadedUrls(allUrls);
+      setSelectedFiles([]);
+      setFilePreviews([]);
+      onChange?.(allUrls);
+      return fallbackUrls;
     } finally {
       setUploadLoading(false);
     }
+  };
+
+  const handleUrlsSubmit = () => {
+    const urls = urlInputValue
+      .split(/[,\n]/)
+      .map((url) => url.trim())
+      .filter((url) => url !== "");
+
+    if (urls.length === 0) {
+      message.warning("Please enter at least one image URL");
+      return;
+    }
+
+    if (uploadedUrls.length + urls.length > maxFiles) {
+      message.error(`Total images cannot exceed ${maxFiles}`);
+      return;
+    }
+
+    // Validate URLs
+    const validUrls: string[] = [];
+    for (const url of urls) {
+      try {
+        new URL(url);
+        validUrls.push(url);
+      } catch (error) {
+        message.error(`Invalid URL: ${url}`);
+        return;
+      }
+    }
+
+    const allUrls = [...uploadedUrls, ...validUrls];
+    setUploadedUrls(allUrls);
+    onChange?.(allUrls);
+    setUrlInputValue("");
+    message.success(`${validUrls.length} URL(s) added successfully!`);
   };
 
   const removeImage = (index: number) => {
@@ -157,6 +202,7 @@ const MultiImageUpload: React.FC<MultiImageUploadProps> = ({
     setSelectedFiles([]);
     setFilePreviews([]);
     setUploadedUrls([]);
+    setUrlInputValue("");
     onChange?.([]);
 
     // Clear the file input
@@ -199,16 +245,50 @@ const MultiImageUpload: React.FC<MultiImageUploadProps> = ({
       />
 
       <div className="space-y-4">
-        <div className="relative">
-          <input
-            type="file"
-            accept="image/*"
-            multiple
-            name={`${folder}-images`}
-            onChange={handleFileChange}
-            className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-sky-50 file:text-sky-700 hover:file:bg-sky-100 cursor-pointer border border-gray-300 rounded-md focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-colors"
-          />
-        </div>
+        {allowUrlInput && (
+          <div className="flex gap-2 mb-2">
+            <Button
+              type={inputMode === "upload" ? "primary" : "default"}
+              size="small"
+              onClick={() => setInputMode("upload")}
+            >
+              Upload Files
+            </Button>
+            <Button
+              type={inputMode === "url" ? "primary" : "default"}
+              size="small"
+              onClick={() => setInputMode("url")}
+            >
+              Enter URLs
+            </Button>
+          </div>
+        )}
+
+        {inputMode === "upload" ? (
+          <div className="relative">
+            <input
+              type="file"
+              accept="image/*"
+              multiple
+              name={`${folder}-images`}
+              onChange={handleFileChange}
+              className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-sky-50 file:text-sky-700 hover:file:bg-sky-100 cursor-pointer border border-gray-300 rounded-md focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-colors"
+            />
+          </div>
+        ) : (
+          <div className="space-y-2">
+            <textarea
+              placeholder="Enter image URLs (one per line or comma-separated)&#10;e.g., https://example.com/image1.jpg&#10;https://example.com/image2.jpg"
+              value={urlInputValue}
+              onChange={(e) => setUrlInputValue(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-sky-500 focus:border-sky-500 text-sm min-h-[100px]"
+              rows={4}
+            />
+            <Button type="primary" onClick={handleUrlsSubmit}>
+              Add URLs
+            </Button>
+          </div>
+        )}
 
         {selectedFiles.length > 0 && (
           <div className="flex items-center space-x-2 p-2 bg-green-50 rounded-md border border-green-200">
@@ -244,7 +324,10 @@ const MultiImageUpload: React.FC<MultiImageUploadProps> = ({
                 <p>{uploadedUrls.length} image(s) uploaded successfully</p>
                 <div className="mt-1 space-y-1">
                   {uploadedUrls.map((url, index) => (
-                    <div key={index} className="text-xs text-blue-600 break-all">
+                    <div
+                      key={index}
+                      className="text-xs text-blue-600 break-all"
+                    >
                       {index + 1}. {url}
                     </div>
                   ))}
