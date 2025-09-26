@@ -25,46 +25,46 @@ import CircularProgress from "../../ui/circular-cooldown";
 import { v4 as uuidv4 } from "uuid";
 import Popup from "../../ui/pop-up/pop-up";
 import FormConfig, {
-	FormConfigType,
+  FormConfigType,
 } from "../../ui/forms/config-form/config-form";
 
 interface AccordionProps {
-	flow: Flow;
-	activeFlow: string | null;
-	setActiveFlow: (flowId: string | null) => void;
-	sessionCache?: SessionCache | null;
-	sessionId: string;
-	// setSideView: React.Dispatch<any>;
-	subUrl: string;
-	onFlowStop: () => void;
-	onFlowClear: () => void;
+  flow: Flow;
+  activeFlow: string | null;
+  setActiveFlow: (flowId: string | null) => void;
+  sessionCache?: SessionCache | null;
+  sessionId: string;
+  setSideView: React.Dispatch<any>;
+  subUrl: string;
+  onFlowStop: () => void;
+  onFlowClear: () => void;
 }
 
 export function Accordion({
-	flow,
-	activeFlow,
-	setActiveFlow,
-	sessionCache,
-	sessionId,
-	subUrl,
-	onFlowStop,
-	onFlowClear,
+  flow,
+  activeFlow,
+  setActiveFlow,
+  sessionCache,
+  sessionId,
+  subUrl,
+  onFlowStop,
+  onFlowClear,
 }: AccordionProps) {
-	const [inputPopUp, setInputPopUp] = useState(false);
-	const [isOpen, setIsOpen] = useState(false);
-	const [mappedFlow, setMappedFlow] = useState<FlowMap>({
-		sequence: getSequenceFromFlow(
-			sessionCache?.flowConfigs[flow.id] ?? flow,
-			sessionCache,
-			activeFlow
-		),
-		missedSteps: [],
-	});
-	const [activeFormConfig, setActiveFormConfig] =
-		useState<FormConfigType | null>(null);
-	const contentRef = useRef<HTMLDivElement>(null);
-	const [maxHeight, setMaxHeight] = useState("0px");
-	const apiCallFailCount = useRef(0);
+  const [inputPopUp, setInputPopUp] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+  const [mappedFlow, setMappedFlow] = useState<FlowMap>({
+    sequence: getSequenceFromFlow(
+      sessionCache?.flowConfigs[flow.id] ?? flow,
+      sessionCache,
+      activeFlow
+    ),
+    missedSteps: [],
+  });
+  const [activeFormConfig, setActiveFormConfig] =
+    useState<FormConfigType | null>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
+  const [maxHeight, setMaxHeight] = useState("0px");
+  const apiCallFailCount = useRef(0);
 
 	useEffect(() => {
 		const executedFlowId = Object.keys((sessionCache?.flowMap as any) || {});
@@ -121,23 +121,23 @@ export function Accordion({
 		}
 	}, [isOpen, mappedFlow]);
 
-	async function handleFormForNewFlow(formData: SubmitEventParams) {
-		try {
-			await newFlow(
-				sessionId,
-				flow.id,
-				uuidv4(),
-				formData.jsonPath,
-				formData.formData
-			);
-			setInputPopUp(false);
-			toast.success("Flow started successfully");
-		} catch (e) {
-			toast.error("Error while submitting form");
-			setInputPopUp(false);
-			console.error(e);
-		}
-	}
+  async function handleFormForNewFlow(formData: SubmitEventParams) {
+    try {
+      await newFlow(
+        sessionId,
+        flow.id,
+        uuidv4(),
+        formData.jsonPath,
+        formData.formData
+      );
+      setInputPopUp(false);
+      toast.success("Flow started successfully");
+    } catch (e) {
+      toast.error("Error while submitting form");
+      setInputPopUp(false);
+      console.error(e);
+    }
+  }
 
 	const startFlow = async () => {
 		try {
@@ -170,11 +170,11 @@ export function Accordion({
 		}
 	};
 
-	if (!sessionCache) {
-		return (
-			<div className="bg-white rounded-md shadow-sm border border-sky-100 p-5 mb-4">
-				<style>
-					{`
+  if (!sessionCache) {
+    return (
+      <div className="bg-white rounded-md shadow-sm border border-sky-100 p-5 mb-4">
+        <style>
+          {`
 						@keyframes shimmer {
 							0% { background-position: -200px 0; }
 							100% { background-position: calc(200px + 100%) 0; }
@@ -185,55 +185,55 @@ export function Accordion({
 							animation: shimmer 1.5s infinite;
 						}
 					`}
-				</style>
-				<div className="space-y-4">
-					{/* Header skeleton */}
-					<div className="flex items-center justify-between">
-						<div className="flex items-center space-x-3">
-							<div className="w-6 h-6 rounded skeleton"></div>
-							<div className="space-y-2">
-								<div className="h-4 w-32 rounded skeleton"></div>
-								<div className="h-3 w-24 rounded skeleton"></div>
-							</div>
-						</div>
-						<div className="flex items-center space-x-2">
-							<div className="w-8 h-8 rounded-md skeleton"></div>
-							<div className="w-8 h-8 rounded-md skeleton"></div>
-							<div className="w-8 h-8 rounded-md skeleton"></div>
-						</div>
-					</div>
-				</div>
-			</div>
-		);
-	}
+        </style>
+        <div className="space-y-4">
+          {/* Header skeleton */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="w-6 h-6 rounded skeleton"></div>
+              <div className="space-y-2">
+                <div className="h-4 w-32 rounded skeleton"></div>
+                <div className="h-3 w-24 rounded skeleton"></div>
+              </div>
+            </div>
+            <div className="flex items-center space-x-2">
+              <div className="w-8 h-8 rounded-md skeleton"></div>
+              <div className="w-8 h-8 rounded-md skeleton"></div>
+              <div className="w-8 h-8 rounded-md skeleton"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
-	const handleDownload = async () => {
-		const payload_ids = mappedFlow?.sequence.flatMap((s) => {
-			if (s.payloads?.entryType === "FORM") {
-				return [];
-			}
-			return s.payloads?.payloads.map((p) => p.payloadId) ?? [];
-		});
+  const handleDownload = async () => {
+    const payload_ids = mappedFlow?.sequence.flatMap((s) => {
+      if (s.payloads?.entryType === "FORM") {
+        return [];
+      }
+      return s.payloads?.payloads.map((p) => p.payloadId) ?? [];
+    });
 
-		if (!payload_ids) {
-			return;
-		}
+    if (!payload_ids) {
+      return;
+    }
 
-		const jsonData = await getCompletePayload(payload_ids);
-		const jsonString = JSON.stringify(jsonData, null, 2);
-		const blob = new Blob([jsonString], { type: "application/json" });
+    const jsonData = await getCompletePayload(payload_ids);
+    const jsonString = JSON.stringify(jsonData, null, 2);
+    const blob = new Blob([jsonString], { type: "application/json" });
 
-		const url = URL.createObjectURL(blob);
+    const url = URL.createObjectURL(blob);
 
-		const a = document.createElement("a");
-		a.href = url;
-		a.download = `${flow?.id}-${activeFlow}`;
-		document.body.appendChild(a);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${flow?.id}-${activeFlow}`;
+    document.body.appendChild(a);
 
-		a.click();
-		URL.revokeObjectURL(url);
-		document.body.removeChild(a);
-	};
+    a.click();
+    URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+  };
 
 	function AccordionButtons() {
 		return (
@@ -318,91 +318,91 @@ export function Accordion({
 		);
 	}
 
-	const bg = activeFlow === flow.id ? "bg-blue-50" : "bg-white";
-	return (
-		<div className="rounded-md mb-4 w-full ml-1">
-			<div
-				className={`${bg} border rounded-md shadow-sm hover:bg-sky-100 cursor-pointer transition-colors px-5 py-3`}
-				onClick={() => setIsOpen(!isOpen)}
-				aria-expanded={isOpen}
-				aria-controls={`accordion-content-${flow.id}`}
-			>
-				{/* Top Row: Title + Button */}
-				<div className="flex items-center justify-between">
-					{/* Text Block */}
-					<div>
-						<div className="flex items-center gap-2 text-base font-bold text-sky-700">
-							<FcWorkflow className="text-lg" />
-							{flow.id.split("_").join(" ")}
-						</div>
-						<h2 className="text-black font-medium">{flow?.title}</h2>
-					</div>
-					{/* Accordion Button */}
-					<AccordionButtons />
-				</div>
+  const bg = activeFlow === flow.id ? "bg-blue-50" : "bg-white";
+  return (
+    <div className="rounded-md mb-4 w-full ml-1">
+      <div
+        className={`${bg} border rounded-md shadow-sm hover:bg-sky-100 cursor-pointer transition-colors px-5 py-3`}
+        onClick={() => setIsOpen(!isOpen)}
+        aria-expanded={isOpen}
+        aria-controls={`accordion-content-${flow.id}`}
+      >
+        {/* Top Row: Title + Button */}
+        <div className="flex items-center justify-between">
+          {/* Text Block */}
+          <div>
+            <div className="flex items-center gap-2 text-base font-bold text-sky-700">
+              <FcWorkflow className="text-lg" />
+              {flow.id.split("_").join(" ")}
+            </div>
+            <h2 className="text-black font-medium">{flow?.title}</h2>
+          </div>
+          {/* Accordion Button */}
+          <AccordionButtons />
+        </div>
 
-				{/* Progress Bar below */}
-				<div className="mt-2">
-					<ProgressBar percent={getPercent(mappedFlow)} />
-				</div>
-			</div>
+        {/* Progress Bar below */}
+        <div className="mt-2">
+          <ProgressBar percent={getPercent(mappedFlow)} />
+        </div>
+      </div>
 
-			{/* Accordion content with drop animation */}
-			<div
-				ref={contentRef}
-				id={`accordion-content-${flow.id}`}
-				className="overflow-hidden transition-all duration-300 ease-in-out"
-				style={{ maxHeight: `${maxHeight}` }}
-			>
-				<div className="px-4 py-5 bg-white">
-					<p className="text-gray-700 mb-6">{flow.description}</p>
+      {/* Accordion content with drop animation */}
+      <div
+        ref={contentRef}
+        id={`accordion-content-${flow.id}`}
+        className="overflow-hidden transition-all duration-300 ease-in-out"
+        style={{ maxHeight: `${maxHeight}` }}
+      >
+        <div className="px-4 py-5 bg-white">
+          <p className="text-gray-700 mb-6">{flow.description}</p>
 
-					<div className="space-y-4 relative">
-						{<DisplayFlow mappedFlow={mappedFlow} flowId={flow.id} />}
-					</div>
-				</div>
-			</div>
-			{inputPopUp && activeFormConfig && (
-				<Popup isOpen={inputPopUp} onClose={() => setInputPopUp(false)}>
-					<FormConfig
-						formConfig={activeFormConfig}
-						submitEvent={handleFormForNewFlow}
-						referenceData={mappedFlow.reference_data}
-					/>
-				</Popup>
-			)}
-		</div>
-	);
+          <div className="space-y-4 relative">
+            {<DisplayFlow mappedFlow={mappedFlow} flowId={flow.id} />}
+          </div>
+        </div>
+      </div>
+      {inputPopUp && activeFormConfig && (
+        <Popup isOpen={inputPopUp} onClose={() => setInputPopUp(false)}>
+          <FormConfig
+            formConfig={activeFormConfig}
+            submitEvent={handleFormForNewFlow}
+            referenceData={mappedFlow.reference_data}
+          />
+        </Popup>
+      )}
+    </div>
+  );
 }
 
 async function canStartFlow(sessionData: SessionCache, mappedFlow: FlowMap) {
-	const action = mappedFlow.sequence[0].actionType;
-	if (mappedFlow.sequence[0].expect && sessionData.npType === "BAP") {
-		console.log("Requesting for flow permission");
-		return await requestForFlowPermission(action, sessionData.subscriberUrl);
-	}
-	return true;
+  const action = mappedFlow.sequence[0].actionType;
+  if (mappedFlow.sequence[0].expect && sessionData.npType === "BAP") {
+    console.log("Requesting for flow permission");
+    return await requestForFlowPermission(action, sessionData.subscriberUrl);
+  }
+  return true;
 }
 
 function ProgressBar({ percent }: { percent: number }) {
-	return (
-		<div className="w-full bg-gray-200 rounded-full h-2">
-			<div
-				className="h-2 rounded-full transition-width duration-300"
-				style={{
-					width: `${percent}%`,
-					backgroundImage: "linear-gradient(to right, #38bdf8, #0369a1)", // Gradient from sky-500 to sky-700
-				}}
-			></div>
-		</div>
-	);
+  return (
+    <div className="w-full bg-gray-200 rounded-full h-2">
+      <div
+        className="h-2 rounded-full transition-width duration-300"
+        style={{
+          width: `${percent}%`,
+          backgroundImage: "linear-gradient(to right, #38bdf8, #0369a1)", // Gradient from sky-500 to sky-700
+        }}
+      ></div>
+    </div>
+  );
 }
 
 function getPercent(mappedFlow: FlowMap) {
-	const totalSteps = mappedFlow.sequence.length;
-	if (totalSteps === 0) return 0;
-	const completedSteps = mappedFlow.sequence.filter(
-		(step) => step.status === "COMPLETE"
-	).length;
-	return (completedSteps / totalSteps) * 100;
+  const totalSteps = mappedFlow.sequence.length;
+  if (totalSteps === 0) return 0;
+  const completedSteps = mappedFlow.sequence.filter(
+    (step) => step.status === "COMPLETE"
+  ).length;
+  return (completedSteps / totalSteps) * 100;
 }
