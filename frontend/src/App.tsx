@@ -21,6 +21,7 @@ import * as api from "./utils/registry-apis";
 import Footer from "./components/main-footer";
 import {SessionProvider} from "./context/context"
 import {GuideStepsEnums, useGuide} from "./context/guideContext"
+import Walkthrough from "./pages/walkthrough";
 
 function App() {
 	const [isModalOpen, setIsModalOpen] = useState(false);
@@ -143,6 +144,7 @@ function App() {
 							<Route path="/profile" element={<UserProfile />} />
 							<Route path="/tools" element={<ToolsPage />} />
 							<Route path="/seller-onboarding" element={<SellerOnboarding />} />
+							<Route path="/walkthrough" element={<Walkthrough />} />
 							<Route path="*" element={<NotFoundPage />} />
 						</Routes>
 					</div>
