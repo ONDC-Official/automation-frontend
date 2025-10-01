@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { FaUserPlus } from "react-icons/fa";
+import { FaUserPlus, FaBookOpen } from "react-icons/fa";
 
 interface ToolFeature {
   title: string;
@@ -19,6 +19,15 @@ const toolFeatures: ToolFeature[] = [
       "Streamline the seller onboarding process with our comprehensive registration flow. Manage store details, serviceability areas, and product catalogs effortlessly.",
     path: "/seller-onboarding",
     icon: <FaUserPlus className="text-green-500 text-4xl" />,
+    isAvailable: true,
+  },
+  {
+    title: "Quick Start Guide",
+    subtitle: "Step-by-Step Setup",
+    description:
+      "Get started quickly with essential setup steps. Follow this guide to configure your account, explore key APIs, and test your first integration with ease.",
+    path: "/walkthrough",
+    icon: <FaBookOpen className="text-blue-500 text-4xl" />, 
     isAvailable: true,
   },
 ];
