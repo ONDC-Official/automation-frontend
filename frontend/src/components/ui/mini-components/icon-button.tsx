@@ -7,6 +7,7 @@ interface IconButtonProps {
 	label: string; // Tooltip label
 	onClick?: (e: any) => Promise<void> | void; // Optional click handler
 	color?: "blue" | "red" | "green" | "orange" | "gray" | "sky" | "yellow"; // Predefined color options
+	overwriteClassName?: string; // Optional className to overwrite default styles
 }
 
 const IconButton: React.FC<IconButtonProps> = ({
@@ -14,6 +15,7 @@ const IconButton: React.FC<IconButtonProps> = ({
 	label,
 	onClick,
 	color = "blue",
+	overwriteClassName = undefined,
 }) => {
 	const baseClasses =
 		"flex items-center justify-center p-2 ml-2 rounded-md shadow-sm transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2";
@@ -30,7 +32,9 @@ const IconButton: React.FC<IconButtonProps> = ({
 		yellow:
 			"text-yellow-600 bg-yellow-100 hover:bg-yellow-200 focus:ring-yellow-400",
 	};
-
+	const className = overwriteClassName
+		? overwriteClassName
+		: `${baseClasses} ${colors[color]}`;
 	return (
 		<Tippy
 			content={
@@ -42,11 +46,7 @@ const IconButton: React.FC<IconButtonProps> = ({
 			arrow={true}
 			animation="perspective-subtle"
 		>
-			<button
-				onClick={onClick}
-				className={`${baseClasses} ${colors[color]}`}
-				aria-label={label}
-			>
+			<button onClick={onClick} className={className} aria-label={label}>
 				{icon}
 			</button>
 		</Tippy>
