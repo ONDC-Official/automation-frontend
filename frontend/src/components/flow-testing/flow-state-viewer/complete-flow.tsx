@@ -34,7 +34,7 @@ interface AccordionProps {
 	setActiveFlow: (flowId: string | null) => void;
 	sessionCache?: SessionCache | null;
 	sessionId: string;
-	// setSideView: React.Dispatch<any>;
+	setSideView: React.Dispatch<any>;
 	subUrl: string;
 	onFlowStop: () => void;
 	onFlowClear: () => void;

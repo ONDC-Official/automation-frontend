@@ -216,9 +216,9 @@ export default function FlowContent({ type }: FlowContentProps) {
                     <span
                       className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800 border border-yellow-200"
                       role="status"
-                      aria-label="Beta releasae"
+                      aria-label="Beta release"
                     >
-                      Beta releasae
+                      Beta release
                     </span>
                   )}
                 </div>

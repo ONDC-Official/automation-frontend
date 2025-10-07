@@ -3,6 +3,8 @@ import { FaRegUser } from "react-icons/fa";
 import { FiLogIn } from "react-icons/fi";
 import { useNavigate, useLocation } from "react-router-dom";
 import { FaChevronDown } from "react-icons/fa";
+import { GuideStepsEnums } from "../context/guideContext";
+import GuideOverlay from "./ui/GuideOverlay";
 
 interface SubMenuItem {
   label: string;
@@ -23,7 +25,7 @@ const navLinks: NavLink[] = [
   { label: "Schema Validation", href: "/schema", selected: false },
   // { label: "Unit Testing", href: "/unit", selected: false },
   { label: "Scenario Testing", href: "/scenario", selected: false },
-	{ label: "Custom flow", href: "/customFlow", selected: false },
+  { label: "Custom flow", href: "/customFlow", selected: false },
   {
     label: "Tools",
     href: "/tools",
@@ -51,7 +53,6 @@ const TopBar = ({ onSupportClick }: IPops) => {
   const navigate = useNavigate();
   const location = useLocation();
   const pathName = location.pathname;
-
   const [userDetails, setUserDetails] = useState<UserDetails | undefined>(
     undefined
   );
@@ -103,6 +104,11 @@ const TopBar = ({ onSupportClick }: IPops) => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+
+  const handleLoginClick = () => {
+    setIsOpen(false);
+    navigate(userDetails ? "/profile" : "/login");
+  };
 
   return (
     <header className="fixed top-0 left-0 right-0 bg-white shadow-md z-50">
@@ -174,73 +180,80 @@ const TopBar = ({ onSupportClick }: IPops) => {
           }`}
         >
           {links.map((link, index) => (
-            <li
-              key={index}
-              className="relative"
-              ref={link.subMenu ? dropdownRef : null}
-              onMouseEnter={() =>
-                !isOpen && link.subMenu && setOpenDropdown(link.label)
-              }
-              onMouseLeave={() =>
-                !isOpen && link.subMenu && setOpenDropdown(null)
-              }
-            >
-              <a
-                className={`hover:text-sky-500 block py-1 cursor-pointer flex items-center ${
-                  link.selected
-                    ? "text-sky-700 border-b-2 border-sky-500 text-sky-500"
-                    : "text-gray-500"
-                }`}
-                onClick={() => {
-                  if (link.label === "Support") {
-                    onSupportClick();
-                  } else if (link.subMenu) {
-                    // For items with subMenu, navigate to main page and toggle dropdown
-                    navigate(link.href);
-                    if (isOpen) {
-                      // On mobile, toggle dropdown after navigation
-                      setOpenDropdown(
-                        openDropdown === link.label ? null : link.label
-                      );
-                    }
-                  } else {
-                    navigate(link.href);
-                  }
-                }}
+            <GuideOverlay 
+            currentStep={link.href === "/scenario" ? GuideStepsEnums.Test1 : GuideStepsEnums.Skip} 
+            instruction={"Step 4: Start  Testing"} 
+            handleGoClick={() =>  navigate(link.href)} 
+            left={0} 
+            top={45}>
+              <li
+                key={index}
+                className="relative"
+                ref={link.subMenu ? dropdownRef : null}
+                onMouseEnter={() =>
+                  !isOpen && link.subMenu && setOpenDropdown(link.label)
+                }
+                onMouseLeave={() =>
+                  !isOpen && link.subMenu && setOpenDropdown(null)
+                }
               >
-                {link.label}
-                {link.subMenu && (
-                  <FaChevronDown
-                    className={`ml-1 text-xs transition-transform duration-200 ${
-                      openDropdown === link.label ? "rotate-180" : ""
-                    }`}
-                  />
-                )}
-              </a>
-              {link.subMenu && openDropdown === link.label && (
-                <div
-                  className={`${
-                    isOpen
-                      ? "static mt-2 ml-4"
-                      : "absolute top-full left-0 mt-1"
-                  } bg-white border border-gray-200 rounded-md shadow-lg min-w-48 z-50`}
+                <a
+                  className={`hover:text-sky-500 block py-1 cursor-pointer flex items-center ${
+                    link.selected
+                      ? "text-sky-700 border-b-2 border-sky-500 text-sky-500"
+                      : "text-gray-500"
+                  }`}
+                  onClick={() => {
+                    if (link.label === "Support") {
+                      onSupportClick();
+                    } else if (link.subMenu) {
+                      // For items with subMenu, navigate to main page and toggle dropdown
+                      navigate(link.href);
+                      if (isOpen) {
+                        // On mobile, toggle dropdown after navigation
+                        setOpenDropdown(
+                          openDropdown === link.label ? null : link.label
+                        );
+                      }
+                    } else {
+                      navigate(link.href);
+                    }
+                  }}
                 >
-                  {link.subMenu.map((subItem, subIndex) => (
-                    <a
-                      key={subIndex}
-                      className="block px-4 py-2 text-gray-700 hover:bg-sky-50 hover:text-sky-600 first:rounded-t-md last:rounded-b-md cursor-pointer"
-                      onClick={() => {
-                        navigate(subItem.href);
-                        setOpenDropdown(null);
-                        setIsOpen(false); // Close mobile menu
-                      }}
-                    >
-                      {subItem.label}
-                    </a>
-                  ))}
-                </div>
-              )}
-            </li>
+                  {link.label}
+                  {link.subMenu && (
+                    <FaChevronDown
+                      className={`ml-1 text-xs transition-transform duration-200 ${
+                        openDropdown === link.label ? "rotate-180" : ""
+                      }`}
+                    />
+                  )}
+                </a>
+                {link.subMenu && openDropdown === link.label && (
+                  <div
+                    className={`${
+                      isOpen
+                        ? "static mt-2 ml-4"
+                        : "absolute top-full left-0 mt-1"
+                    } bg-white border border-gray-200 rounded-md shadow-lg min-w-48 z-50`}
+                  >
+                    {link.subMenu.map((subItem, subIndex) => (
+                      <a
+                        key={subIndex}
+                        className="block px-4 py-2 text-gray-700 hover:bg-sky-50 hover:text-sky-600 first:rounded-t-md last:rounded-b-md cursor-pointer"
+                        onClick={() => {
+                          navigate(subItem.href);
+                          setOpenDropdown(null);
+                          setIsOpen(false); // Close mobile menu
+                        }}
+                      >
+                        {subItem.label}
+                      </a>
+                    ))}
+                  </div>
+                )}
+              </li>
+            </GuideOverlay>
           ))}
           <li></li>
         </ul>
@@ -262,23 +275,28 @@ const TopBar = ({ onSupportClick }: IPops) => {
           )}
 
           {/* Button on the right */}
-          <button
-            onClick={() => {
-              setIsOpen(false);
-              navigate(userDetails ? "/profile" : "/login");
-            }}
-            className="mt-2 text-xl"
-            // className="text-sky-600 bg-sky-200 rounded-full p-2 hover:text-sky-800 text-xl md:text-2xl"
-            title={userDetails ? "Profile" : "Login"}
+          <GuideOverlay
+            currentStep={GuideStepsEnums.Reg1}
+            right={0}
+            top={55}
+            instruction="Step 1: Go to your Profile"
+            handleGoClick={handleLoginClick}
           >
-            {userDetails ? (
-              <UserIcon user={userDetails} />
-            ) : (
-              <div className="w-10 h-10 rounded-full shadow-sm bg-sky-100 mx-auto mb-4 text-gray-700 flex items-center justify-center">
-                <FiLogIn />
-              </div>
-            )}
-          </button>
+            <button
+              onClick={handleLoginClick}
+              className="mt-2 text-xl"
+              // className="text-sky-600 bg-sky-200 rounded-full p-2 hover:text-sky-800 text-xl md:text-2xl"
+              title={userDetails ? "Profile" : "Login"}
+            >
+              {userDetails ? (
+                <UserIcon user={userDetails} />
+              ) : (
+                <div className="w-10 h-10 rounded-full shadow-sm bg-sky-100 mx-auto mb-4 text-gray-700 flex items-center justify-center">
+                  <FiLogIn />
+                </div>
+              )}
+            </button>
+          </GuideOverlay>
         </div>
       </nav>
     </header>
@@ -289,7 +307,7 @@ function UserIcon({ user }: { user: UserDetails }) {
   if (!user.avatarUrl) {
     return (
       <div className="w-10 h-10 rounded-full bg-sky-100  mx-auto mb-4 border flex items-center justify-center">
-        <FaRegUser />;
+        <FaRegUser />
       </div>
     );
   }

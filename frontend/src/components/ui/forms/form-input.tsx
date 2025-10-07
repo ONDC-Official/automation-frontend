@@ -31,7 +31,7 @@ const FormInput = ({
 
 	return (
 		<div className="mb-2 w-full bg-gray-50 border rounded-md p-2 flex">
-			<LabelWithToolTip labelInfo={labelInfo} label={label} />
+			<LabelWithToolTip labelInfo={labelInfo} label={label} required={required} />
 			<input
 				onFocus={handleFocus}
 				{...register(name, {
@@ -49,7 +49,7 @@ const FormInput = ({
 				}}
 			/>
 			{errors[name] && (
-				<p className="text-red-500 text-xs italic dark:text-red-400">
+				<p className="text-red-500 text-xs italic">
 					{errors[name]?.message || "This field is required"}
 				</p>
 			)}
@@ -86,7 +86,7 @@ const FormTextInput = ({
 
 	return (
 		<div className="mb-4 w-full bg-gray-50 border rounded-md p-2 flex">
-			<LabelWithToolTip labelInfo={labelInfo} label={label} />
+			<LabelWithToolTip labelInfo={labelInfo} label={label} required={required} />
 			<textarea
 				onFocus={handleFocus}
 				{...register(name, { required })}
@@ -102,7 +102,7 @@ const FormTextInput = ({
 				}}
 			/>
 			{errors[name] && (
-				<p className="text-red-500 text-xs italic dark:text-red-400">
+				<p className="text-red-500 text-xs italic">
 					{errors[name]?.message || "This field is required"}
 				</p>
 			)}
@@ -115,14 +115,19 @@ export { FormInput, FormTextInput };
 export function LabelWithToolTip({
   label,
   labelInfo,
+  required,
 }: {
   label: string;
   labelInfo: string;
+  required?: string | boolean;
 }) {
 	console.log(labelInfo);
 	return (
 		<div className="flex justify-between w-full">
-			<label className={labelClass}>{label}</label>
+			<label className={labelClass}>
+				{label}
+				{required && <span className="text-red-500 ml-1">*</span>}
+			</label>
 			{/* {labelInfo != "" && (
 				<Tippy
 					content={<LabelToolTip label={labelInfo} />}
