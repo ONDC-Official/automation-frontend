@@ -8,8 +8,7 @@ const baseButtonClass = `
 
 const defaultButtonClass = `
   w-full bg-sky-600 hover:bg-sky-700
-  dark:bg-blue-400 dark:hover:bg-blue-500
-  focus:ring-blue-300 dark:focus:ring-blue-200
+  focus:ring-blue-300
 `.trim();
 
 const LoadingButton = ({
