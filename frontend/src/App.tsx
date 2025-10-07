@@ -19,7 +19,9 @@ import { getGithubAvatarUrl } from "./utils/regsitry-utils";
 import { SubscriberData } from "./components/registry-components/registry-types";
 import * as api from "./utils/registry-apis";
 import Footer from "./components/main-footer";
-import {SessionProvider} from "./context/context"
+import { SessionProvider } from "./context/context";
+import ProtocolPlayGround from "./components/protocol-playground/main";
+import ProtocolPlayGroundSample from "./components/protocol-playground/ui/sample";
 
 function App() {
 	const [isModalOpen, setIsModalOpen] = useState(false);
@@ -107,13 +109,24 @@ function App() {
 						<Route path="/home" element={<HomePage />} />
 						<Route path="/schema" element={<SchemaValidation />} />
 						{/* <Route path="/unit" element={<ApiTesting />} /> */}
-						<Route path="/scenario" element={<FlowContent type={"SCENARIO"} />} />
-						<Route path="/customFlow" element={<FlowContent type={"CUSTOM"} />} />
+						<Route
+							path="/scenario"
+							element={<FlowContent type={"SCENARIO"} />}
+						/>
+						<Route
+							path="/customFlow"
+							element={<FlowContent type={"CUSTOM"} />}
+						/>
 						<Route path="/login" element={<GitHubLogin />} />
 						<Route path="/profile" element={<UserProfile />} />
 						<Route path="/tools" element={<ToolsPage />} />
 						<Route path="/seller-onboarding" element={<SellerOnboarding />} />
 						<Route path="*" element={<NotFoundPage />} />
+						<Route path="/playground" element={<ProtocolPlayGround />} />
+						<Route
+							path="/playground-sample"
+							element={<ProtocolPlayGroundSample />}
+						/>
 					</Routes>
 				</div>
 				<Footer />
