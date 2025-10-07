@@ -7,12 +7,11 @@ import { toast } from "react-toastify";
 
 interface ExtractedItem {
   itemid: string;
-  parentItemId: string;
   providerid: string;
   addOns: string[];
 }
 
-export default function TRVSelect({
+export default function AirlineSelect({
   submitEvent,
 }: {
   submitEvent: (data: SubmitEventParams) => Promise<void>;
@@ -38,11 +37,6 @@ export default function TRVSelect({
 
   const onSubmit = async (data: any) => {
     console.log("Form Data", data);
-    // const { valid, errors } = validateFormData(data);
-    // if (!valid) {
-    //   toast.error(`Form validation failed: ${errors[0]}`);
-    //   return;
-    // }
     await submitEvent({ jsonPath: {}, formData: data });
   };
 
@@ -51,32 +45,28 @@ export default function TRVSelect({
       if (!payload?.message?.catalog?.providers) return [];
 
       const providers = payload.message.catalog.providers;
-
       const results: ExtractedItem[] = [];
 
       providers.forEach((provider: any) => {
         const providerId = provider.id;
-        const fulfillmentId = provider.fulfillments[0].id;
+        const fulfillmentId = provider.fulfillments?.[0]?.id;
         if (!fulfillmentId) return;
 
         if (!provider.items) return;
 
-        setValue("fulfillment", provider.fulfillments[0].id);
+        setValue("fulfillment", fulfillmentId);
 
         provider.items.forEach((item: any) => {
-          if (item.parent_item_id) {
-            results.push({
-              itemid: item.id,
-              parentItemId: item.parent_item_id,
-              providerid: providerId,
-              addOns: (item.add_ons || []).map((addon: any) => addon.id),
-            });
-          }
+          results.push({
+            itemid: item.id,
+            providerid: providerId,
+            addOns: (item.add_ons || []).map((addon: any) => addon.id),
+          });
         });
       });
 
       setItemOptions(results);
-      console.log("result: ", results);
+      console.log("result (no parent): ", results);
     } catch (err) {
       setErrorWhilePaste("Invalid payload structure.");
       toast.error("Invalid payload structure. Please check the pasted data.");
@@ -111,16 +101,9 @@ export default function TRVSelect({
         {...register(name)}
         onChange={(e) => {
           const selectedId = e.target.value;
-          const selectedOption = options.find(
-            (opt) => opt.itemid === selectedId
-          );
+          const selectedOption = options.find((opt) => opt.itemid === selectedId);
 
           if (selectedOption) {
-            // update the other fields in the same row
-            setValue(
-              `items.${index}.parentItemId`,
-              selectedOption.parentItemId
-            );
             setValue("provider", selectedOption.providerid);
             setValue(`items.${index}.addOns`, []);
           }
@@ -196,17 +179,14 @@ export default function TRVSelect({
                 </select>
 
                 <div className="flex flex-wrap gap-2 mt-2">
-                  {selectedItems[index]?.addOns?.map((c: any, i: number) => {
-                    console.log("c::::::::", c);
-                    return (
-                      <span
-                        key={i}
-                        className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-sm"
-                      >
-                        {c}
-                      </span>
-                    );
-                  })}
+                  {selectedItems[index]?.addOns?.map((c: any, i: number) => (
+                    <span
+                      key={i}
+                      className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-sm"
+                    >
+                      {c}
+                    </span>
+                  ))}
                 </div>
               </div>
             )}
@@ -238,69 +218,7 @@ export default function TRVSelect({
         >
           Submit
         </button>
-        {/* <button
-          type="button"
-          onClick={() => {
-            const values = getValues();
-            console.log("Current form values:", values);
-          }}
-          className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
-        >
-          Preview Data
-        </button> */}
       </form>
     </div>
   );
 }
-
-// type FormData = {
-//   provider: string;
-//   provider_location: string[];
-//   location_gps: string;
-//   location_pin_code: string;
-//   items: {
-//     itemId: string;
-//     quantity: number;
-//     location: string;
-//   }[];
-//   [key: string]: any; // to allow dynamic offer keys like offers_FLAT50
-// };
-
-// function validateFormData(data: FormData): {
-//   valid: boolean;
-//   errors: string[];
-// } {
-//   const errors: string[] = [];
-
-//   for (const key in data) {
-//     if (data[key] === undefined || data[key] === null || data[key] === "") {
-//       errors.push(`Field ${key} cannot be empty.`);
-//     }
-//   }
-
-//   // Rule 1: At least 2 items
-//   if (!data.items || data.items.length < 2) {
-//     errors.push("At least 2 items must be selected.");
-//   }
-
-//   // Rule 2: All items must be unique
-//   const itemIds = data.items.map((item) => item.itemId);
-//   const uniqueItemIds = new Set(itemIds);
-//   if (itemIds.length !== uniqueItemIds.size) {
-//     errors.push("All selected items must be unique.");
-//   }
-
-//   // Rule 3: Only one offer can be selected (non-falsy)
-//   const offerKeys = Object.keys(data).filter((key) =>
-//     key.startsWith("offers_")
-//   );
-//   const selectedOffers = offerKeys.filter((key) => Boolean(data[key]));
-//   if (selectedOffers.length > 1) {
-//     errors.push("Only one offer can be selected.");
-//   }
-
-//   return {
-//     valid: errors.length === 0,
-//     errors,
-//   };
-// }
