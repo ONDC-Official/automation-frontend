@@ -20,8 +20,6 @@ import { SubscriberData } from "./components/registry-components/registry-types"
 import * as api from "./utils/registry-apis";
 import Footer from "./components/main-footer";
 import { SessionProvider } from "./context/context";
-import ProtocolPlayGround from "./components/protocol-playground/main";
-import ProtocolPlayGroundSample from "./components/protocol-playground/ui/sample";
 
 function App() {
 	const [isModalOpen, setIsModalOpen] = useState(false);
@@ -32,6 +30,7 @@ function App() {
 		mappings: [],
 	});
 	// const [isLoading, setIsLoading] = useState(true);
+	const { setGuideStep } = useGuide();
 
 	useEffect(() => {
 		try {
@@ -44,20 +43,41 @@ function App() {
 
 	// Example in React (frontend)
 	useEffect(() => {
-		refreshUser();
+		init();
 	}, []);
 
 	useEffect(() => {
 		fetchUserLookUp();
 	}, [location.pathname, user]);
 
-	function fetchUserLookUp() {
-		api
-			.getSubscriberDetails(user)
+	const init = async () => {
+		const tempUser = await refreshUser();
+
+		if (!tempUser) return;
+
+		const tempSubscriberData: any = await fetchUserLookUp(tempUser);
+
+		if (
+			!tempSubscriberData?.keys?.length ||
+			!tempSubscriberData?.mappings?.length
+		) {
+			setGuideStep(GuideStepsEnums.Reg1);
+		} else {
+			setGuideStep(GuideStepsEnums.Test1);
+		}
+	};
+
+	function fetchUserLookUp(tempUser?: any) {
+		const userToLookup = tempUser ?? user;
+
+		return api
+			.getSubscriberDetails(userToLookup)
 			.then((data) => {
 				if (data) {
 					setSubscriberData(data);
+					return data;
 				} else {
+					return null;
 					// toast.error("Failed to load subscriber details");
 				}
 				// setIsLoading(false);
@@ -66,6 +86,7 @@ function App() {
 				console.error("Error fetching subscriber details:", error);
 				// toast.error("Failed to load subscriber details");
 				// setIsLoading(false);
+				return null;
 			});
 	}
 
@@ -81,14 +102,20 @@ function App() {
 					avatarUrl: avatarUrl,
 				});
 				setIsLoggedIn(true);
+				return {
+					...res.data.user,
+					avatarUrl: avatarUrl,
+				};
 			} else {
 				console.log("Not logged in");
 				setUser(undefined);
 				setIsLoggedIn(false);
+				return null;
 			}
 		} catch (error) {
 			console.error("Error fetching user:", error);
 			setUser(undefined);
+			return null;
 		}
 	}
 
@@ -122,11 +149,6 @@ function App() {
 						<Route path="/tools" element={<ToolsPage />} />
 						<Route path="/seller-onboarding" element={<SellerOnboarding />} />
 						<Route path="*" element={<NotFoundPage />} />
-						<Route path="/playground" element={<ProtocolPlayGround />} />
-						<Route
-							path="/playground-sample"
-							element={<ProtocolPlayGroundSample />}
-						/>
 					</Routes>
 				</div>
 				<Footer />

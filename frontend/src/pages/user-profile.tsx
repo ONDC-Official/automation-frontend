@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import JsonDataForm from "../components/registry-components/subscriber-form";
 import { LuLogOut } from "react-icons/lu";
+  
 
 export default function UserProfile() {
 	const user = useContext(UserContext);

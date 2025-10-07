@@ -1,7 +1,8 @@
 import { useForm, useFieldArray, Controller } from "react-hook-form";
 import { useEffect, useState } from "react";
-import { FaPlus, FaTrash, FaStore, FaClock, FaMinus } from "react-icons/fa";
-import { Input, Select, DatePicker } from "antd";
+import { FaPlus, FaTrash, FaStore, FaClock } from "react-icons/fa";
+import { Input, Select, DatePicker, Tabs } from "antd";
+import TimeInput from "../ui/forms/time-input";
 import { toast } from "react-toastify";
 import LoadingButton from "../ui/forms/loading-button";
 import {
@@ -79,6 +80,11 @@ const StoreTimingsSection = ({ storeIndex, control, watch }: any) => {
   });
 
   const watchTimings = watch(`stores.${storeIndex}.timings`);
+  const [timeFormat, setTimeFormat] = useState<"24h" | "12h">("24h");
+
+  const handleFormatSync = (format: "24h" | "12h") => {
+    setTimeFormat(format);
+  };
 
   const addTiming = () => {
     append({ ...defaultTiming });
@@ -111,7 +117,7 @@ const StoreTimingsSection = ({ storeIndex, control, watch }: any) => {
                   className="text-red-500 hover:text-red-700 p-1"
                   title="Remove timing"
                 >
-                  <FaMinus className="text-sm" />
+                  <FaTrash className="text-sm" />
                 </button>
               )}
             </div>
@@ -120,11 +126,14 @@ const StoreTimingsSection = ({ storeIndex, control, watch }: any) => {
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Fulfillment Type
+                Fulfillment Type<span className="text-red-500 ml-1">*</span>
               </label>
               <Controller
                 name={`stores.${storeIndex}.timings.${timingIndex}.type`}
                 control={control}
+                rules={{
+                  required: "Fulfillment type is required",
+                }}
                 render={({ field, fieldState: { error } }) => (
                   <>
                     <Select
@@ -154,10 +163,14 @@ const StoreTimingsSection = ({ storeIndex, control, watch }: any) => {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Operating Days - From
+                <span className="text-red-500 ml-1">*</span>
               </label>
               <Controller
                 name={`stores.${storeIndex}.timings.${timingIndex}.day_from`}
                 control={control}
+                rules={{
+                  required: "Operating day from is required",
+                }}
                 render={({ field, fieldState: { error } }) => (
                   <>
                     <Select
@@ -186,11 +199,14 @@ const StoreTimingsSection = ({ storeIndex, control, watch }: any) => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Operating Days - To
+                Operating Days - To<span className="text-red-500 ml-1">*</span>
               </label>
               <Controller
                 name={`stores.${storeIndex}.timings.${timingIndex}.day_to`}
                 control={control}
+                rules={{
+                  required: "Operating day to is required",
+                }}
                 render={({ field, fieldState: { error } }) => (
                   <>
                     <Select
@@ -219,18 +235,26 @@ const StoreTimingsSection = ({ storeIndex, control, watch }: any) => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Opening Time
+                Opening Time<span className="text-red-500 ml-1">*</span>
               </label>
               <Controller
                 name={`stores.${storeIndex}.timings.${timingIndex}.time_from`}
                 control={control}
+                rules={{
+                  required: "Opening time is required",
+                }}
                 render={({ field, fieldState: { error } }) => (
                   <>
-                    <Input
-                      {...field}
-                      type="time"
+                    <TimeInput
+                      value={field.value}
+                      onChange={field.onChange}
                       size="large"
                       status={error ? "error" : undefined}
+                      format={timeFormat}
+                      allowFormatToggle={true}
+                      onFormatChange={handleFormatSync}
+                      syncId={`store-${storeIndex}-timing-${timingIndex}`}
+                      placeholder="Select opening time (24hr or 12hr format)"
                     />
                     {error && (
                       <p className="text-red-500 text-xs mt-1">
@@ -244,18 +268,26 @@ const StoreTimingsSection = ({ storeIndex, control, watch }: any) => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Closing Time
+                Closing Time<span className="text-red-500 ml-1">*</span>
               </label>
               <Controller
                 name={`stores.${storeIndex}.timings.${timingIndex}.time_to`}
                 control={control}
+                rules={{
+                  required: "Closing time is required",
+                }}
                 render={({ field, fieldState: { error } }) => (
                   <>
-                    <Input
-                      {...field}
-                      type="time"
+                    <TimeInput
+                      value={field.value}
+                      onChange={field.onChange}
                       size="large"
                       status={error ? "error" : undefined}
+                      format={timeFormat}
+                      allowFormatToggle={true}
+                      onFormatChange={handleFormatSync}
+                      syncId={`store-${storeIndex}-timing-${timingIndex}`}
+                      placeholder="Select closing time (24hr or 12hr format)"
                     />
                     {error && (
                       <p className="text-red-500 text-xs mt-1">
@@ -314,6 +346,7 @@ const BusinessVerificationForm = ({
   isFnBDomain,
 }: BusinessVerificationFormProps) => {
   const [categoryOptions, setCategoryOptions] = useState<string[]>([]);
+  const [activeTabKey, setActiveTabKey] = useState<string>("0");
   function getCategoriesByDomains(domainNames: string[]): string[] {
     const categories: string[] = [];
 
@@ -348,6 +381,7 @@ const BusinessVerificationForm = ({
     watch,
     // getValues,
     setValue,
+    reset,
   } = useForm({
     defaultValues: {
       stores:
@@ -377,13 +411,49 @@ const BusinessVerificationForm = ({
     name: "stores",
   });
 
+  // Reset form when initialData changes (when navigating back)
+  useEffect(() => {
+    const storeData =
+      initialData.stores && initialData.stores.length > 0
+        ? initialData.stores.map((store) => ({
+            ...store,
+            // Ensure timings array exists
+            timings:
+              store.timings && store.timings.length > 0
+                ? store.timings
+                : [
+                    {
+                      type: store.type || undefined,
+                      day_from: store.day_from || undefined,
+                      day_to: store.day_to || undefined,
+                      time_from: store.time_from || "",
+                      time_to: store.time_to || "",
+                    },
+                  ],
+          }))
+        : [{ ...defaultStore }];
+
+    reset({ stores: storeData });
+  }, [initialData, reset]);
+
   const addStore = () => {
     append({ ...defaultStore });
+    // Switch to the new store tab
+    const newTabKey = fields.length.toString();
+    setActiveTabKey(newTabKey);
   };
 
   const removeStore = (index: number) => {
     if (fields.length > 1) {
       remove(index);
+      // Switch to the first tab if current tab is being removed
+      const currentActiveIndex = parseInt(activeTabKey);
+      if (currentActiveIndex === index) {
+        setActiveTabKey("0");
+      } else if (currentActiveIndex > index) {
+        // Adjust tab key if removing a tab before the current one
+        setActiveTabKey((currentActiveIndex - 1).toString());
+      }
     }
   };
 
@@ -409,11 +479,38 @@ const BusinessVerificationForm = ({
         store.phone &&
         store.email;
 
+      // Check timings validation
+      const hasValidTimings =
+        store.timings &&
+        store.timings.length > 0 &&
+        store.timings.some(
+          (timing: any) =>
+            timing.type &&
+            timing.day_from &&
+            timing.day_to &&
+            timing.time_from &&
+            timing.time_to
+        );
+
+      // Check additional required fields
+      const additionalFieldsValid =
+        store.supported_subcategories &&
+        store.supported_subcategories.length > 0 &&
+        store.supported_fulfillments &&
+        store.minimum_order_value !== undefined &&
+        store.minimum_order_value !== null &&
+        store.minimum_order_value !== "";
+
       if (isFnBDomain) {
-        return baseFieldsValid && store.fssai_no;
+        return (
+          baseFieldsValid &&
+          store.fssai_no &&
+          hasValidTimings &&
+          additionalFieldsValid
+        );
       }
 
-      return baseFieldsValid;
+      return baseFieldsValid && hasValidTimings && additionalFieldsValid;
     });
 
     if (!hasValidStore) {
@@ -487,6 +584,641 @@ const BusinessVerificationForm = ({
     console.log("Form validation errors:", errors);
   };
 
+  // Render individual store content (defined before tabItems to avoid hoisting issues)
+  const renderStoreContent = (index: number) => (
+    <div className="space-y-6 p-6 bg-gray-50 rounded-lg">
+      <div className="space-y-4 mb-6">
+        <h4 className="text-md font-semibold text-gray-600">
+          Location Details
+        </h4>
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              GPS Coordinates<span className="text-red-500 ml-1">*</span>
+            </label>
+            <Controller
+              name={`stores.${index}.gps`}
+              control={control}
+              rules={{
+                required: "GPS coordinates are required",
+                pattern: {
+                  value:
+                    /^-?([0-8]?[0-9]|90)(\.[0-9]{1,8})?,\s*-?((1[0-7][0-9]|[0-9]?[0-9])(\.[0-9]{1,8})?|180(\.0{1,8})?)$/,
+                  message:
+                    "Please enter valid GPS coordinates (e.g., 12.9716,77.5946)",
+                },
+                validate: {
+                  validCoordinates: (value: string | undefined) => {
+                    if (!value) return true;
+                    const parts = value.split(",").map((p) => p.trim());
+                    if (parts.length !== 2)
+                      return "GPS coordinates must be in format: latitude,longitude";
+                    const lat = parseFloat(parts[0]);
+                    const lng = parseFloat(parts[1]);
+                    if (isNaN(lat) || isNaN(lng))
+                      return "Invalid GPS coordinates";
+                    if (lat < -90 || lat > 90)
+                      return "Latitude must be between -90 and 90";
+                    if (lng < -180 || lng > 180)
+                      return "Longitude must be between -180 and 180";
+                    return true;
+                  },
+                },
+              }}
+              render={({ field, fieldState: { error } }) => (
+                <>
+                  <Input
+                    {...field}
+                    placeholder="Enter GPS Coordinates"
+                    size="large"
+                    status={error ? "error" : undefined}
+                  />
+                  {error && (
+                    <p className="text-red-500 text-xs mt-1">{error.message}</p>
+                  )}
+                </>
+              )}
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Locality<span className="text-red-500 ml-1">*</span>
+            </label>
+            <Controller
+              name={`stores.${index}.locality`}
+              control={control}
+              rules={{
+                minLength: {
+                  value: 3,
+                  message: "Locality must be at least 3 characters",
+                },
+                maxLength: {
+                  value: 100,
+                  message: "Locality cannot exceed 100 characters",
+                },
+                pattern: {
+                  value: /^[a-zA-Z\s\-.0-9]+$/,
+                  message:
+                    "Locality can only contain letters, numbers, spaces, hyphens, dots, and commas",
+                },
+              }}
+              render={({ field, fieldState: { error } }) => (
+                <>
+                  <Input
+                    {...field}
+                    placeholder="Enter Locality"
+                    size="large"
+                    status={error ? "error" : undefined}
+                  />
+                  {error && (
+                    <p className="text-red-500 text-xs mt-1">{error.message}</p>
+                  )}
+                </>
+              )}
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Street<span className="text-red-500 ml-1">*</span>
+            </label>
+            <Controller
+              name={`stores.${index}.street`}
+              control={control}
+              rules={{
+                minLength: {
+                  value: 5,
+                  message: "Street address must be at least 5 characters",
+                },
+                maxLength: {
+                  value: 200,
+                  message: "Street address cannot exceed 200 characters",
+                },
+              }}
+              render={({ field, fieldState: { error } }) => (
+                <>
+                  <Input
+                    {...field}
+                    placeholder="Enter Street Address"
+                    size="large"
+                    status={error ? "error" : undefined}
+                  />
+                  {error && (
+                    <p className="text-red-500 text-xs mt-1">{error.message}</p>
+                  )}
+                </>
+              )}
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              City<span className="text-red-500 ml-1">*</span>
+            </label>
+            <Controller
+              name={`stores.${index}.city`}
+              control={control}
+              rules={{
+                minLength: {
+                  value: 2,
+                  message: "City name must be at least 2 characters",
+                },
+                maxLength: {
+                  value: 50,
+                  message: "City name cannot exceed 50 characters",
+                },
+                pattern: {
+                  value: /^[a-zA-Z\s\-.]+$/,
+                  message:
+                    "City name should only contain letters, spaces, hyphens, and dots",
+                },
+              }}
+              render={({ field, fieldState: { error } }) => (
+                <>
+                  <Input
+                    {...field}
+                    placeholder="Enter City"
+                    size="large"
+                    status={error ? "error" : undefined}
+                  />
+                  {error && (
+                    <p className="text-red-500 text-xs mt-1">{error.message}</p>
+                  )}
+                </>
+              )}
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              PIN Code<span className="text-red-500 ml-1">*</span>
+            </label>
+            <Controller
+              name={`stores.${index}.areaCode`}
+              control={control}
+              rules={{
+                pattern: {
+                  value: /^[1-9][0-9]{5}$/,
+                  message: "PIN Code must be 6 digits and cannot start with 0",
+                },
+                validate: {
+                  validPincode: (value: string | undefined) => {
+                    if (!value) return true; // Allow empty values
+                    const pincode = parseInt(value);
+                    return (
+                      (pincode >= 100000 && pincode <= 999999) ||
+                      "Please enter a valid Indian PIN code"
+                    );
+                  },
+                },
+              }}
+              render={({ field, fieldState: { error } }) => (
+                <>
+                  <Input
+                    {...field}
+                    placeholder="Enter PIN Code"
+                    size="large"
+                    status={error ? "error" : undefined}
+                  />
+                  {error && (
+                    <p className="text-red-500 text-xs mt-1">{error.message}</p>
+                  )}
+                </>
+              )}
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              State<span className="text-red-500 ml-1">*</span>
+            </label>
+            <Controller
+              name={`stores.${index}.state`}
+              control={control}
+              render={({ field, fieldState: { error } }) => (
+                <>
+                  <Select
+                    {...field}
+                    className="w-full"
+                    size="large"
+                    placeholder="Select State"
+                    allowClear
+                    status={error ? "error" : undefined}
+                  >
+                    {indianStates.map((state) => (
+                      <Select.Option key={state.value} value={state.value}>
+                        {state.key}
+                      </Select.Option>
+                    ))}
+                  </Select>
+                  {error && (
+                    <p className="text-red-500 text-xs mt-1">{error.message}</p>
+                  )}
+                </>
+              )}
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Contact Phone<span className="text-red-500 ml-1">*</span>
+            </label>
+            <Controller
+              name={`stores.${index}.phone`}
+              control={control}
+              rules={{
+                required: "Contact phone is required",
+                pattern: {
+                  value: /^[+]?[0-9]{10}$/,
+                  message: "Phone number must be 10 digits",
+                },
+                validate: {
+                  validPhone: (value: string | undefined) => {
+                    if (!value) return true;
+                    const cleaned = value.replace(/[^0-9+]/g, "");
+                    if (cleaned.startsWith("+")) {
+                      return (
+                        (cleaned.length >= 11 && cleaned.length <= 16) ||
+                        "International numbers must be 11-16 digits including country code"
+                      );
+                    }
+                    return (
+                      cleaned.length === 10 ||
+                      "Indian phone numbers must be exactly 10 digits"
+                    );
+                  },
+                },
+              }}
+              render={({ field, fieldState: { error } }) => (
+                <>
+                  <Input
+                    {...field}
+                    placeholder="Enter Contact Phone"
+                    size="large"
+                    status={error ? "error" : undefined}
+                  />
+                  {error && (
+                    <p className="text-red-500 text-xs mt-1">{error.message}</p>
+                  )}
+                </>
+              )}
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Contact Email<span className="text-red-500 ml-1">*</span>
+            </label>
+            <Controller
+              name={`stores.${index}.email`}
+              control={control}
+              rules={{
+                required: "Contact email is required",
+                pattern: {
+                  value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+                  message: "Please enter a valid email address",
+                },
+                validate: {
+                  validEmail: (value: string | undefined) => {
+                    if (!value) return true;
+                    const trimmed = value.trim();
+                    if (trimmed !== value) {
+                      return "Email should not have leading or trailing spaces";
+                    }
+                    if (trimmed.includes("..")) {
+                      return "Email cannot contain consecutive dots";
+                    }
+                    if (trimmed.startsWith(".") || trimmed.endsWith(".")) {
+                      return "Email cannot start or end with a dot";
+                    }
+                    return true;
+                  },
+                },
+              }}
+              render={({ field, fieldState: { error } }) => (
+                <>
+                  <Input
+                    {...field}
+                    placeholder="Enter Contact Email"
+                    size="large"
+                    type="email"
+                    status={error ? "error" : undefined}
+                  />
+                  {error && (
+                    <p className="text-red-500 text-xs mt-1">{error.message}</p>
+                  )}
+                </>
+              )}
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Holiday Dates
+            </label>
+            <Controller
+              name={`stores.${index}.holiday`}
+              control={control}
+              render={({ field, fieldState: { error } }) => {
+                const selectedDates = field.value || [];
+
+                const handleDateAdd = (dateStr: string) => {
+                  if (dateStr && !selectedDates.includes(dateStr)) {
+                    const newDates = [...selectedDates, dateStr];
+                    field.onChange(newDates);
+                  }
+                };
+
+                const handleDateRemove = (dateToRemove: string) => {
+                  const newDates = selectedDates.filter(
+                    (date) => date !== dateToRemove
+                  );
+                  field.onChange(newDates);
+                };
+
+                return (
+                  <>
+                    <div className="space-y-2">
+                      <DatePicker
+                        className="w-full"
+                        size="large"
+                        placeholder="Select a holiday date"
+                        allowClear
+                        status={error ? "error" : undefined}
+                        format="YYYY-MM-DD"
+                        value={null}
+                        disabledDate={(current) => {
+                          return current && current.isBefore(new Date(), "day");
+                        }}
+                        onChange={(date: any) => {
+                          if (date) {
+                            const dateStr = date.format("YYYY-MM-DD");
+                            handleDateAdd(dateStr);
+                          }
+                        }}
+                      />
+
+                      {selectedDates.length > 0 && (
+                        <div className="border border-gray-200 rounded-md p-2 bg-gray-50">
+                          <div className="text-xs text-gray-600 mb-2">
+                            Selected Holiday Dates:
+                          </div>
+                          <div className="flex flex-wrap gap-1">
+                            {selectedDates.map((date, idx) => (
+                              <span
+                                key={idx}
+                                className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full"
+                              >
+                                {date}
+                                <button
+                                  type="button"
+                                  onClick={() => handleDateRemove(date)}
+                                  className="text-blue-600 hover:text-blue-800 ml-1"
+                                >
+                                  ×
+                                </button>
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                    {error && (
+                      <p className="text-red-500 text-xs mt-1">
+                        {error.message}
+                      </p>
+                    )}
+                    <p className="text-xs text-gray-500 mt-1">
+                      Select multiple dates when your store will be closed for
+                      holidays
+                    </p>
+                  </>
+                );
+              }}
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="space-y-4 mb-6">
+        <div className="flex items-center justify-between">
+          <h4 className="text-md font-semibold text-gray-600 flex items-center gap-2">
+            <FaClock className="text-sky-600" />
+            Store Timings
+          </h4>
+        </div>
+
+        <StoreTimingsSection
+          storeIndex={index}
+          control={control}
+          watch={watch}
+          setValue={setValue}
+        />
+      </div>
+
+      <div className="space-y-4 mb-6">
+        <h4 className="text-md font-semibold text-gray-600">
+          Additional Details
+        </h4>
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {isFnBDomain && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                FSSAI License No.<span className="text-red-500 ml-1">*</span>
+              </label>
+              <Controller
+                name={`stores.${index}.fssai_no`}
+                control={control}
+                rules={{
+                  required: "FSSAI License number is required",
+                  pattern: {
+                    value: /^[0-9]{14}$/,
+                    message: "FSSAI License number must be exactly 14 digits",
+                  },
+                  validate: {
+                    validFssai: (value: string | undefined) => {
+                      if (!value) return true;
+                      if (!/^[1-9][0-9]{13}$/.test(value)) {
+                        return "FSSAI License number must start with 1-9 and be 14 digits total";
+                      }
+                      return true;
+                    },
+                  },
+                }}
+                render={({ field, fieldState: { error } }) => (
+                  <>
+                    <Input
+                      {...field}
+                      placeholder="Enter FSSAI License Number"
+                      size="large"
+                      maxLength={14}
+                      status={error ? "error" : undefined}
+                    />
+                    {error && (
+                      <p className="text-red-500 text-xs mt-1">
+                        {error.message}
+                      </p>
+                    )}
+                  </>
+                )}
+              />
+            </div>
+          )}
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Supported Subcategories
+              <span className="text-red-500 ml-1">*</span>
+            </label>
+            <Controller
+              name={`stores.${index}.supported_subcategories`}
+              control={control}
+              rules={{
+                required: "Please select at least one subcategory",
+                validate: {
+                  notEmpty: (value) =>
+                    value && value.length > 0
+                      ? true
+                      : "Please select at least one subcategory",
+                },
+              }}
+              render={({ field, fieldState: { error } }) => (
+                <>
+                  <Select
+                    {...field}
+                    mode="multiple"
+                    className="w-full"
+                    size="large"
+                    placeholder="Select Subcategories"
+                    allowClear
+                    status={error ? "error" : undefined}
+                    maxTagCount="responsive"
+                    maxTagPlaceholder={(omittedValues) =>
+                      `+${omittedValues.length} more`
+                    }
+                  >
+                    {categoryOptions.map((category) => (
+                      <Select.Option key={category} value={category}>
+                        {category}
+                      </Select.Option>
+                    ))}
+                  </Select>
+                  {error && (
+                    <p className="text-red-500 text-xs mt-1">{error.message}</p>
+                  )}
+                </>
+              )}
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Types of fulfillments supported
+              <span className="text-red-500 ml-1">*</span>
+            </label>
+            <Controller
+              name={`stores.${index}.supported_fulfillments`}
+              control={control}
+              rules={{
+                required: "Please select a fulfillment type",
+              }}
+              render={({ field, fieldState: { error } }) => (
+                <>
+                  <Select
+                    {...field}
+                    className="w-full"
+                    size="large"
+                    placeholder="Select Fulfillment Types"
+                    allowClear
+                    status={error ? "error" : undefined}
+                  >
+                    {Types.map((bt) => (
+                      <Select.Option key={bt.value} value={bt.value}>
+                        {bt.key}
+                      </Select.Option>
+                    ))}
+                  </Select>
+                  {error && (
+                    <p className="text-red-500 text-xs mt-1">{error.message}</p>
+                  )}
+                </>
+              )}
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Minimum Order Value<span className="text-red-500 ml-1">*</span>
+            </label>
+            <Controller
+              name={`stores.${index}.minimum_order_value`}
+              control={control}
+              rules={{
+                required: "Minimum order value is required",
+                pattern: {
+                  value: /^[0-9]+(\.[0-9]{1,2})?$/,
+                  message: "Please enter a valid amount (e.g., 100 or 100.50)",
+                },
+                min: {
+                  value: 0,
+                  message: "Minimum order value cannot be negative",
+                },
+              }}
+              render={({ field, fieldState: { error } }) => (
+                <>
+                  <Input
+                    {...field}
+                    type="number"
+                    placeholder="Enter Minimum Order Value"
+                    size="large"
+                    min={0}
+                    status={error ? "error" : undefined}
+                  />
+                  {error && (
+                    <p className="text-red-500 text-xs mt-1">{error.message}</p>
+                  )}
+                </>
+              )}
+            />
+          </div>
+        </div>
+      </div>
+
+      <ServiceabilitySection
+        storeIndex={index}
+        control={control}
+        watch={watch}
+        setValue={setValue}
+      />
+    </div>
+  );
+
+  // Create tab items for stores
+  const tabItems = fields.map((_, index) => ({
+    key: index.toString(),
+    label: (
+      <div className="flex items-center gap-2">
+        <FaStore className="text-sky-600" />
+        <span>Store {index + 1}</span>
+        {fields.length > 1 && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              removeStore(index);
+            }}
+            className="ml-2 text-red-500 hover:text-red-700 p-1 rounded hover:bg-red-50"
+            title="Remove Store"
+          >
+            <FaTrash className="text-xs" />
+          </button>
+        )}
+      </div>
+    ),
+    children: renderStoreContent(index),
+  }));
+
   return (
     <form
       onSubmit={handleSubmit(onSubmitForm, onFormError)}
@@ -506,706 +1238,13 @@ const BusinessVerificationForm = ({
         </button>
       </div>
 
-      {fields.map((field, index) => (
-        <div
-          key={field.id}
-          className="relative border border-gray-200 rounded-lg p-6 bg-gray-50"
-        >
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-semibold text-gray-700">
-              Store {index + 1}
-            </h3>
-            {fields.length > 1 && (
-              <button
-                type="button"
-                onClick={() => removeStore(index)}
-                className="flex items-center gap-2 px-3 py-1 text-red-600 hover:bg-red-50 rounded-md transition-colors"
-              >
-                <FaTrash /> Remove Store
-              </button>
-            )}
-          </div>
-          <div className="space-y-4 mb-6">
-            <h4 className="text-md font-semibold text-gray-600">
-              Location Details
-            </h4>
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  GPS Coordinates
-                </label>
-                <Controller
-                  name={`stores.${index}.gps`}
-                  control={control}
-                  rules={{
-                    required: "GPS coordinates are required",
-                    pattern: {
-                      value:
-                        /^-?([0-8]?[0-9]|90)(\.[0-9]{1,8})?,\s*-?((1[0-7][0-9]|[0-9]?[0-9])(\.[0-9]{1,8})?|180(\.0{1,8})?)$/,
-                      message:
-                        "Please enter valid GPS coordinates (e.g., 12.9716,77.5946)",
-                    },
-                    validate: {
-                      validCoordinates: (value: string | undefined) => {
-                        if (!value) return true;
-                        const parts = value.split(",").map((p) => p.trim());
-                        if (parts.length !== 2)
-                          return "GPS coordinates must be in format: latitude,longitude";
-                        const lat = parseFloat(parts[0]);
-                        const lng = parseFloat(parts[1]);
-                        if (isNaN(lat) || isNaN(lng))
-                          return "Invalid GPS coordinates";
-                        if (lat < -90 || lat > 90)
-                          return "Latitude must be between -90 and 90";
-                        if (lng < -180 || lng > 180)
-                          return "Longitude must be between -180 and 180";
-                        return true;
-                      },
-                    },
-                  }}
-                  render={({ field, fieldState: { error } }) => (
-                    <>
-                      <Input
-                        {...field}
-                        placeholder="Enter GPS Coordinates"
-                        size="large"
-                        status={error ? "error" : undefined}
-                      />
-                      {error && (
-                        <p className="text-red-500 text-xs mt-1">
-                          {error.message}
-                        </p>
-                      )}
-                    </>
-                  )}
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Locality
-                </label>
-                <Controller
-                  name={`stores.${index}.locality`}
-                  control={control}
-                  rules={{
-                    minLength: {
-                      value: 3,
-                      message: "Locality must be at least 3 characters",
-                    },
-                    maxLength: {
-                      value: 100,
-                      message: "Locality cannot exceed 100 characters",
-                    },
-                    pattern: {
-                      value: /^[a-zA-Z\s\-.0-9]+$/,
-                      message:
-                        "Locality can only contain letters, numbers, spaces, hyphens, dots, and commas",
-                    },
-                  }}
-                  render={({ field, fieldState: { error } }) => (
-                    <>
-                      <Input
-                        {...field}
-                        placeholder="Enter Locality"
-                        size="large"
-                        status={error ? "error" : undefined}
-                      />
-                      {error && (
-                        <p className="text-red-500 text-xs mt-1">
-                          {error.message}
-                        </p>
-                      )}
-                    </>
-                  )}
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Street
-                </label>
-                <Controller
-                  name={`stores.${index}.street`}
-                  control={control}
-                  rules={{
-                    minLength: {
-                      value: 5,
-                      message: "Street address must be at least 5 characters",
-                    },
-                    maxLength: {
-                      value: 200,
-                      message: "Street address cannot exceed 200 characters",
-                    },
-                  }}
-                  render={({ field, fieldState: { error } }) => (
-                    <>
-                      <Input
-                        {...field}
-                        placeholder="Enter Street Address"
-                        size="large"
-                        status={error ? "error" : undefined}
-                      />
-                      {error && (
-                        <p className="text-red-500 text-xs mt-1">
-                          {error.message}
-                        </p>
-                      )}
-                    </>
-                  )}
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  City
-                </label>
-                <Controller
-                  name={`stores.${index}.city`}
-                  control={control}
-                  rules={{
-                    minLength: {
-                      value: 2,
-                      message: "City name must be at least 2 characters",
-                    },
-                    maxLength: {
-                      value: 50,
-                      message: "City name cannot exceed 50 characters",
-                    },
-                    pattern: {
-                      value: /^[a-zA-Z\s\-.]+$/,
-                      message:
-                        "City name should only contain letters, spaces, hyphens, and dots",
-                    },
-                  }}
-                  render={({ field, fieldState: { error } }) => (
-                    <>
-                      <Input
-                        {...field}
-                        placeholder="Enter City"
-                        size="large"
-                        status={error ? "error" : undefined}
-                      />
-                      {error && (
-                        <p className="text-red-500 text-xs mt-1">
-                          {error.message}
-                        </p>
-                      )}
-                    </>
-                  )}
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  PIN Code
-                </label>
-                <Controller
-                  name={`stores.${index}.areaCode`}
-                  control={control}
-                  rules={{
-                    pattern: {
-                      value: /^[1-9][0-9]{5}$/,
-                      message:
-                        "PIN Code must be 6 digits and cannot start with 0",
-                    },
-                    validate: {
-                      validPincode: (value: string | undefined) => {
-                        if (!value) return true; // Allow empty values
-                        const pincode = parseInt(value);
-                        return (
-                          (pincode >= 100000 && pincode <= 999999) ||
-                          "Please enter a valid Indian PIN code"
-                        );
-                      },
-                    },
-                  }}
-                  render={({ field, fieldState: { error } }) => (
-                    <>
-                      <Input
-                        {...field}
-                        placeholder="Enter PIN Code"
-                        size="large"
-                        status={error ? "error" : undefined}
-                      />
-                      {error && (
-                        <p className="text-red-500 text-xs mt-1">
-                          {error.message}
-                        </p>
-                      )}
-                    </>
-                  )}
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  State
-                </label>
-                <Controller
-                  name={`stores.${index}.state`}
-                  control={control}
-                  render={({ field, fieldState: { error } }) => (
-                    <>
-                      <Select
-                        {...field}
-                        className="w-full"
-                        size="large"
-                        placeholder="Select State"
-                        allowClear
-                        status={error ? "error" : undefined}
-                      >
-                        {indianStates.map((state) => (
-                          <Select.Option key={state.value} value={state.value}>
-                            {state.key}
-                          </Select.Option>
-                        ))}
-                      </Select>
-                      {error && (
-                        <p className="text-red-500 text-xs mt-1">
-                          {error.message}
-                        </p>
-                      )}
-                    </>
-                  )}
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Contact Phone
-                </label>
-                <Controller
-                  name={`stores.${index}.phone`}
-                  control={control}
-                  rules={{
-                    required: "Contact phone is required",
-                    pattern: {
-                      value: /^[+]?[0-9]{10}$/,
-                      message: "Phone number must be 10 digits",
-                    },
-                    validate: {
-                      validPhone: (value: string | undefined) => {
-                        if (!value) return true;
-                        const cleaned = value.replace(/[^0-9+]/g, "");
-                        if (cleaned.startsWith("+")) {
-                          return (
-                            (cleaned.length >= 11 && cleaned.length <= 16) ||
-                            "International numbers must be 11-16 digits including country code"
-                          );
-                        }
-                        return (
-                          cleaned.length === 10 ||
-                          "Indian phone numbers must be exactly 10 digits"
-                        );
-                      },
-                    },
-                  }}
-                  render={({ field, fieldState: { error } }) => (
-                    <>
-                      <Input
-                        {...field}
-                        placeholder="Enter Contact Phone"
-                        size="large"
-                        status={error ? "error" : undefined}
-                      />
-                      {error && (
-                        <p className="text-red-500 text-xs mt-1">
-                          {error.message}
-                        </p>
-                      )}
-                    </>
-                  )}
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Contact Email
-                </label>
-                <Controller
-                  name={`stores.${index}.email`}
-                  control={control}
-                  rules={{
-                    required: "Contact email is required",
-                    pattern: {
-                      value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
-                      message: "Please enter a valid email address",
-                    },
-                    validate: {
-                      validEmail: (value: string | undefined) => {
-                        if (!value) return true;
-                        const trimmed = value.trim();
-                        if (trimmed !== value) {
-                          return "Email should not have leading or trailing spaces";
-                        }
-                        if (trimmed.includes("..")) {
-                          return "Email cannot contain consecutive dots";
-                        }
-                        if (trimmed.startsWith(".") || trimmed.endsWith(".")) {
-                          return "Email cannot start or end with a dot";
-                        }
-                        return true;
-                      },
-                    },
-                  }}
-                  render={({ field, fieldState: { error } }) => (
-                    <>
-                      <Input
-                        {...field}
-                        placeholder="Enter Contact Email"
-                        size="large"
-                        type="email"
-                        status={error ? "error" : undefined}
-                      />
-                      {error && (
-                        <p className="text-red-500 text-xs mt-1">
-                          {error.message}
-                        </p>
-                      )}
-                    </>
-                  )}
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Holiday Dates
-                </label>
-                <Controller
-                  name={`stores.${index}.holiday`}
-                  control={control}
-                  render={({ field, fieldState: { error } }) => {
-                    const selectedDates = field.value || [];
-
-                    const handleDateAdd = (dateStr: string) => {
-                      if (dateStr && !selectedDates.includes(dateStr)) {
-                        const newDates = [...selectedDates, dateStr];
-                        field.onChange(newDates);
-                      }
-                    };
-
-                    const handleDateRemove = (dateToRemove: string) => {
-                      const newDates = selectedDates.filter(
-                        (date) => date !== dateToRemove
-                      );
-                      field.onChange(newDates);
-                    };
-
-                    return (
-                      <>
-                        <div className="space-y-2">
-                          <DatePicker
-                            className="w-full"
-                            size="large"
-                            placeholder="Select a holiday date"
-                            allowClear
-                            status={error ? "error" : undefined}
-                            format="YYYY-MM-DD"
-                            value={null}
-                            disabledDate={(current) => {
-                              return (
-                                current && current.isBefore(new Date(), "day")
-                              );
-                            }}
-                            onChange={(date: any) => {
-                              if (date) {
-                                const dateStr = date.format("YYYY-MM-DD");
-                                handleDateAdd(dateStr);
-                              }
-                            }}
-                          />
-
-                          {selectedDates.length > 0 && (
-                            <div className="border border-gray-200 rounded-md p-2 bg-gray-50">
-                              <div className="text-xs text-gray-600 mb-2">
-                                Selected Holiday Dates:
-                              </div>
-                              <div className="flex flex-wrap gap-1">
-                                {selectedDates.map((date, idx) => (
-                                  <span
-                                    key={idx}
-                                    className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full"
-                                  >
-                                    {date}
-                                    <button
-                                      type="button"
-                                      onClick={() => handleDateRemove(date)}
-                                      className="text-blue-600 hover:text-blue-800 ml-1"
-                                    >
-                                      ×
-                                    </button>
-                                  </span>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                        {error && (
-                          <p className="text-red-500 text-xs mt-1">
-                            {error.message}
-                          </p>
-                        )}
-                        <p className="text-xs text-gray-500 mt-1">
-                          Select multiple dates when your store will be closed
-                          for holidays
-                        </p>
-                      </>
-                    );
-                  }}
-                />
-              </div>
-            </div>
-          </div>
-          <div className="space-y-4 mb-6">
-            <div className="flex items-center justify-between">
-              <h4 className="text-md font-semibold text-gray-600 flex items-center gap-2">
-                <FaClock className="text-sky-600" />
-                Store Timings
-              </h4>
-            </div>
-
-            {/* Multiple Timings Section */}
-            <StoreTimingsSection
-              storeIndex={index}
-              control={control}
-              watch={watch}
-              setValue={setValue}
-            />
-          </div>
-          <div className="space-y-4 mb-6">
-            <h4 className="text-md font-semibold text-gray-600">
-              Additional Details
-            </h4>
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {isFnBDomain && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    FSSAI License No.
-                  </label>
-                  <Controller
-                    name={`stores.${index}.fssai_no`}
-                    control={control}
-                    rules={{
-                      required: "FSSAI License number is required",
-                      pattern: {
-                        value: /^[0-9]{14}$/,
-                        message:
-                          "FSSAI License number must be exactly 14 digits",
-                      },
-                      validate: {
-                        validFssai: (value: string | undefined) => {
-                          if (!value) return true;
-                          if (!/^[1-9][0-9]{13}$/.test(value)) {
-                            return "FSSAI License number must start with 1-9 and be 14 digits total";
-                          }
-                          return true;
-                        },
-                      },
-                    }}
-                    render={({ field, fieldState: { error } }) => (
-                      <>
-                        <Input
-                          {...field}
-                          placeholder="Enter FSSAI License Number"
-                          size="large"
-                          maxLength={14}
-                          status={error ? "error" : undefined}
-                        />
-                        {error && (
-                          <p className="text-red-500 text-xs mt-1">
-                            {error.message}
-                          </p>
-                        )}
-                      </>
-                    )}
-                  />
-                </div>
-              )}
-
-              {/* <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  PAN No.
-                </label>
-                <Controller
-                  name={`stores.${index}.pan_no`}
-                  control={control}
-                  rules={{
-                    required: "PAN number is required",
-                    pattern: {
-                      value: /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/,
-                      message:
-                        "PAN format: ABCDE1234F (5 letters, 4 digits, 1 letter)",
-                    },
-                    validate: {
-                      validPan: (value: string | undefined) => {
-                        if (!value) return true;
-                        // Additional PAN validation
-                        const pan = value.toUpperCase();
-                        // 4th character should be P for person, C for company, etc.
-                        const fourthChar = pan[3];
-                        const validFourthChars = [
-                          "P",
-                          "C",
-                          "H",
-                          "F",
-                          "A",
-                          "T",
-                          "B",
-                          "L",
-                          "J",
-                          "G",
-                        ];
-                        if (!validFourthChars.includes(fourthChar)) {
-                          return `4th character must be one of: ${validFourthChars.join(
-                            ", "
-                          )}`;
-                        }
-                        return true;
-                      },
-                    },
-                  }}
-                  render={({ field, fieldState: { error } }) => (
-                    <>
-                      <Input
-                        {...field}
-                        placeholder="Enter PAN Number"
-                        size="large"
-                        maxLength={10}
-                        // style={{ textTransform: "uppercase" }}
-                        onChange={(e) =>
-                          field.onChange(e.target.value.toUpperCase())
-                        }
-                        status={error ? "error" : undefined}
-                      />
-                      {error && (
-                        <p className="text-red-500 text-xs mt-1">
-                          {error.message}
-                        </p>
-                      )}
-                    </>
-                  )}
-                />
-              </div> */}
-              {/* {category && ( */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Supported Subcategories
-                </label>
-                <Controller
-                  name={`stores.${index}.supported_subcategories`}
-                  control={control}
-                  render={({ field, fieldState: { error } }) => (
-                    <>
-                      <Select
-                        {...field}
-                        mode="multiple"
-                        className="w-full"
-                        size="large"
-                        placeholder="Select Subcategories"
-                        allowClear
-                        status={error ? "error" : undefined}
-                        maxTagCount="responsive"
-                        maxTagPlaceholder={(omittedValues) =>
-                          `+${omittedValues.length} more`
-                        }
-                      >
-                        {categoryOptions.map((category) => (
-                          <Select.Option key={category} value={category}>
-                            {category}
-                          </Select.Option>
-                        ))}
-                      </Select>
-                      {error && (
-                        <p className="text-red-500 text-xs mt-1">
-                          {error.message}
-                        </p>
-                      )}
-                    </>
-                  )}
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Types of fulfillments supported
-                </label>
-                <Controller
-                  name={`stores.${index}.supported_fulfillments`}
-                  control={control}
-                  render={({ field, fieldState: { error } }) => (
-                    <>
-                      <Select
-                        {...field}
-                        className="w-full"
-                        size="large"
-                        placeholder="Select Fulfillment Types"
-                        allowClear
-                        status={error ? "error" : undefined}
-                      >
-                        {Types.map((bt) => (
-                          <Select.Option key={bt.value} value={bt.value}>
-                            {bt.key}
-                          </Select.Option>
-                        ))}
-                      </Select>
-                      {error && (
-                        <p className="text-red-500 text-xs mt-1">
-                          {error.message}
-                        </p>
-                      )}
-                    </>
-                  )}
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Minimum Order Value
-                </label>
-                <Controller
-                  name={`stores.${index}.minimum_order_value`}
-                  control={control}
-                  rules={{
-                    pattern: {
-                      value: /^[0-9]+(\.[0-9]{1,2})?$/,
-                      message:
-                        "Please enter a valid amount (e.g., 100 or 100.50)",
-                    },
-                    min: {
-                      value: 0,
-                      message: "Minimum order value cannot be negative",
-                    },
-                  }}
-                  render={({ field, fieldState: { error } }) => (
-                    <>
-                      <Input
-                        {...field}
-                        type="number"
-                        placeholder="Enter Minimum Order Value"
-                        size="large"
-                        min={0}
-                        status={error ? "error" : undefined}
-                      />
-                      {error && (
-                        <p className="text-red-500 text-xs mt-1">
-                          {error.message}
-                        </p>
-                      )}
-                    </>
-                  )}
-                />
-              </div>
-            </div>
-          </div>
-          <ServiceabilitySection
-            storeIndex={index}
-            control={control}
-            watch={watch}
-            setValue={setValue}
-          />
-        </div>
-      ))}
+      <Tabs
+        activeKey={activeTabKey}
+        onChange={setActiveTabKey}
+        type="card"
+        className="mb-6"
+        items={tabItems}
+      />
 
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
         <p className="text-sm text-blue-800">
@@ -1235,8 +1274,6 @@ const BusinessVerificationForm = ({
         >
           Previous
         </button>
-
-       
 
         <LoadingButton
           buttonText={
@@ -1381,7 +1418,7 @@ const ServiceabilitySection = ({
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Category
+                  Category<span className="text-red-500 ml-1">*</span>
                 </label>
                 <Controller
                   name={`stores.${storeIndex}.serviceabilities.${serviceIndex}.category`}
@@ -1451,6 +1488,7 @@ const ServiceabilitySection = ({
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Serviceability Type
+                  <span className="text-red-500 ml-1">*</span>
                 </label>
                 <Controller
                   name={`stores.${storeIndex}.serviceabilities.${serviceIndex}.type`}
@@ -1497,8 +1535,56 @@ const ServiceabilitySection = ({
                         status={error ? "error" : undefined}
                         onChange={(value) => {
                           field.onChange(value);
-                          if (value === "12") {
-                            // PAN India - set country
+
+                          // Always clear all related fields first when type changes
+                          setValue(
+                            `stores.${storeIndex}.serviceabilities.${serviceIndex}.val`,
+                            ""
+                          );
+                          setValue(
+                            `stores.${storeIndex}.serviceabilities.${serviceIndex}.unit`,
+                            undefined
+                          );
+                          setValue(
+                            `stores.${storeIndex}.serviceabilities.${serviceIndex}.location`,
+                            `L${storeIndex + 1}`
+                          );
+
+                          // If no value selected (cleared), keep fields empty
+                          if (!value) {
+                            setValue(
+                              `stores.${storeIndex}.serviceabilities.${serviceIndex}.location`,
+                              `L${storeIndex + 1}`
+                            );
+                            return;
+                          }
+
+                          // Show user that fields were cleared due to type change
+                          toast.info(
+                            "Serviceability fields updated based on selected type"
+                          );
+
+                          // Set appropriate values based on serviceability type
+                          if (value === "10") {
+                            // Hyperlocal - clear for user input (radius and unit)
+                            // val and unit will be filled by user
+                            // Set default location
+                            setValue(
+                              `stores.${storeIndex}.serviceabilities.${serviceIndex}.location`,
+                              `L${storeIndex + 1}`
+                            );
+                          } else if (value === "11") {
+                            // Pincode - clear val for user input, set unit automatically
+                            setValue(
+                              `stores.${storeIndex}.serviceabilities.${serviceIndex}.unit`,
+                              "pincode"
+                            );
+                            setValue(
+                              `stores.${storeIndex}.serviceabilities.${serviceIndex}.location`,
+                              `L${storeIndex + 1}`
+                            );
+                          } else if (value === "12") {
+                            // PAN India - set both country code and unit automatically
                             setValue(
                               `stores.${storeIndex}.serviceabilities.${serviceIndex}.val`,
                               "IND"
@@ -1507,16 +1593,19 @@ const ServiceabilitySection = ({
                               `stores.${storeIndex}.serviceabilities.${serviceIndex}.unit`,
                               "country"
                             );
+                            setValue(
+                              `stores.${storeIndex}.serviceabilities.${serviceIndex}.location`,
+                              `L${storeIndex + 1}`
+                            );
                           } else if (value === "13") {
-                            // Polygon - set geojson
+                            // Polygon - set geojson unit, clear val for user input
                             setValue(
                               `stores.${storeIndex}.serviceabilities.${serviceIndex}.unit`,
                               "geojson"
                             );
-                            // Clear val as it will need geojson coordinates
                             setValue(
-                              `stores.${storeIndex}.serviceabilities.${serviceIndex}.val`,
-                              ""
+                              `stores.${storeIndex}.serviceabilities.${serviceIndex}.location`,
+                              `L${storeIndex + 1}`
                             );
                           }
                         }}
@@ -1547,7 +1636,7 @@ const ServiceabilitySection = ({
                 <>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Radius Value
+                      Radius Value<span className="text-red-500 ml-1">*</span>
                     </label>
                     <Controller
                       name={`stores.${storeIndex}.serviceabilities.${serviceIndex}.val`}
@@ -1614,7 +1703,7 @@ const ServiceabilitySection = ({
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Unit
+                      Unit<span className="text-red-500 ml-1">*</span>
                     </label>
                     <Controller
                       name={`stores.${storeIndex}.serviceabilities.${serviceIndex}.unit`}
@@ -1685,6 +1774,7 @@ const ServiceabilitySection = ({
                 <div className="lg:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Pincodes (comma-separated)
+                    <span className="text-red-500 ml-1">*</span>
                   </label>
                   <Controller
                     name={`stores.${storeIndex}.serviceabilities.${serviceIndex}.val`}
@@ -1755,6 +1845,7 @@ const ServiceabilitySection = ({
                 <div className="lg:col-span-3">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Polygon (GeoJSON format)
+                    <span className="text-red-500 ml-1">*</span>
                   </label>
                   <Controller
                     name={`stores.${storeIndex}.serviceabilities.${serviceIndex}.val`}
