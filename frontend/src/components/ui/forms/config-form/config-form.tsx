@@ -7,6 +7,8 @@ import { SubmitEventParams } from "../../../../types/flow-types";
 import Ret10GrocerySelect from "../custom-forms/ret10-grocery-select";
 import ProtocolHTMLForm from "../custom-forms/protocol-html-form";
 import TRVSelect from "../custom-forms/trv-select";
+import AirlineSelect from "../custom-forms/airline-select";
+
 
 export interface FormFieldConfigType {
 	name: string;
@@ -20,7 +22,9 @@ export interface FormFieldConfigType {
 		| "ret10_grocery_select"
 		| "nestedSelect"
 		| "trv_select"
-		| "HTML_FORM";
+		| "HTML_FORM"
+		| "airline_select";
+
 	payloadField: string;
 	values?: string[];
 	defaultValue?: string;
@@ -92,6 +96,13 @@ export default function FormConfig({
 	if(formConfig.find((field) => field.type === "trv_select")) {
 		return <TRVSelect submitEvent={submitEvent} />
 	}
+
+	 if (formConfig.find((field) => field.type === "airline_select")) {
+                return <AirlineSelect submitEvent={submitEvent} />;
+        }
+        if(formConfig.find((field) => field.type === "airline_select")) {
+                return <AirlineSelect submitEvent={submitEvent} />
+        }
 
 	return (
 		<GenericForm
