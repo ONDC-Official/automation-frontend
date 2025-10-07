@@ -1,13 +1,16 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useForm, useFieldArray, Controller } from "react-hook-form";
 import {
   ItemDetails,
   SellerOnboardingData,
 } from "../../pages/seller-onboarding";
 import { toast } from "react-toastify";
-import { FaPlus, FaMinus, FaBox, FaEdit } from "react-icons/fa";
+import { FaPlus, FaTrash, FaBox, FaEdit } from "react-icons/fa";
 import { Select, Input, Checkbox, Modal, Button, Form } from "antd";
 import LoadingButton from "../ui/forms/loading-button";
+import MultiImageUpload from "../ui/forms/multi-image-upload";
+import SingleImageUpload from "../ui/forms/single-image-upload";
+import { useFormImageState } from "../../hooks/useImageUpload";
 import { categoryProtocolMappings, countries } from "../../constants/common";
 import { fashion } from "../../constants/fashion";
 import { BPCJSON } from "../../constants/bcp";
@@ -17,6 +20,7 @@ import { homeJSON } from "../../constants/home";
 import { applianceData } from "../../constants/appliances";
 import { getFnBAttributes } from "../../constants/fnb";
 import { domainCategories } from "../../constants/categories";
+import { LabelWithToolTip } from "../ui/forms/form-input";
 
 interface ItemDetailsFormProps {
   initialData: SellerOnboardingData;
@@ -68,6 +72,13 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({
   });
   const [editingVariant, setEditingVariant] = useState<any>(null);
   const [variantForm] = Form.useForm();
+  
+  // Use optimized hooks for image state management
+  const itemImages = useFormImageState<{[itemIndex: number]: string[]}>({});
+  const symbolImages = useFormImageState<{[itemIndex: number]: string}>({});
+  const backImages = useFormImageState<{[itemIndex: number]: string}>({});
+  const variantImages = useFormImageState<{[key: string]: string[]}>({});
+  const variantSymbolImages = useFormImageState<{[key: string]: string}>({});
 
   const parseDuration = (duration: string) => {
     if (!duration) return { unit: "hour", value: "1" };
@@ -187,6 +198,15 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({
           processedItem.time_to_ship_value = parsed.value;
         }
 
+        // Handle images field - convert from string to array if needed
+        if (typeof item.images === 'string') {
+          processedItem.images = item.images ? [item.images] : [];
+        } else if (Array.isArray(item.images)) {
+          processedItem.images = item.images;
+        } else {
+          processedItem.images = [];
+        }
+
         return processedItem;
       }) || [
         {
@@ -197,7 +217,7 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({
           symbol: "",
           short_desc: "",
           long_desc: "",
-          images: "",
+          images: [],
           unit: "",
           value: "",
           available_count: "",
@@ -318,11 +338,62 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({
     watch,
     setValue,
     formState: { isSubmitting },
+    reset,
   } = useForm<FormData>({
     defaultValues: {
       items: processInitialItems(),
     },
   });
+
+  // Reset form when initialData changes (when navigating back)
+  useEffect(() => {
+    reset({
+      items: processInitialItems(),
+    });
+    
+    // Reset state variables based on initialData
+    if (initialData.items) {
+      // Reset selected optional attributes for each item
+      const newOptionalAttributes: { [itemIndex: number]: string[] } = {};
+      const newConsumerCareState: { [itemIndex: number]: boolean } = {};
+      const newVariantState: { [itemIndex: number]: boolean } = {};
+      const newVariantAttributes: { [itemIndex: number]: string[] } = {};
+      const newItemVariants: { [itemIndex: number]: any[] } = {};
+      const newVariantValues: { [itemIndex: number]: { [attribute: string]: string[] } } = {};
+      const newItemImageUrls: { [itemIndex: number]: string[] } = {};
+      const newSymbolImageUrls: { [itemIndex: number]: string } = {};
+      
+      initialData.items.forEach((item, index) => {
+        // You can customize this logic based on how you want to restore state
+        newOptionalAttributes[index] = []; // Reset to empty, or load from item data if stored
+        newConsumerCareState[index] = false;
+        newVariantState[index] = false;
+        newVariantAttributes[index] = [];
+        newItemVariants[index] = [];
+        newVariantValues[index] = {};
+        
+        // Initialize image state from item data
+        if (Array.isArray(item.images)) {
+          newItemImageUrls[index] = item.images;
+        } else if (typeof item.images === 'string' && item.images) {
+          newItemImageUrls[index] = [item.images];
+        } else {
+          newItemImageUrls[index] = [];
+        }
+        
+        newSymbolImageUrls[index] = item.symbol || '';
+      });
+      
+      setSelectedOptionalAttributes(newOptionalAttributes);
+      setUseExistingConsumerCare(newConsumerCareState);
+      setShowVariantModal(newVariantState);
+      setSelectedVariantAttributes(newVariantAttributes);
+      setItemVariants(newItemVariants);
+      setVariantValues(newVariantValues);
+      itemImages.resetImageState(newItemImageUrls);
+      symbolImages.resetImageState(newSymbolImageUrls);
+    }
+  }, [initialData, reset]);
 
   const { fields, append, remove } = useFieldArray({
     control,
@@ -351,7 +422,7 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({
   const addItem = () => {
     // Get the domain from the first item if available
     const firstItemDomain = watchItems[0]?.domain || "";
-    
+
     append({
       name: "",
       domain: firstItemDomain,
@@ -360,7 +431,7 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({
       symbol: "",
       short_desc: "",
       long_desc: "",
-      images: "",
+      images: [],
       unit: "",
       value: "",
       available_count: "",
@@ -700,7 +771,17 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({
       itemIndex,
       variantIndex,
     });
+
+    // Initialize variant image URLs using hooks
+    const variantKey = `${itemIndex}-${variantIndex}`;
+    const currentVariantImages = Array.isArray(variant.images) ? variant.images : 
+                                variant.images ? [variant.images] : [];
+    variantImages.updateImageField(variantKey, currentVariantImages);
     
+    if (variant.symbol) {
+      variantSymbolImages.updateImageField(variantKey, variant.symbol);
+    }
+
     // Set form initial values
     variantForm.setFieldsValue({
       name: variant.name,
@@ -723,80 +804,108 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({
   };
 
   const handleSaveVariant = () => {
-    variantForm.validateFields().then((values) => {
-      const { itemIndex, variantIndex } = editVariantModal;
-      if (itemIndex === null || variantIndex === null) return;
+    variantForm
+      .validateFields()
+      .then((values) => {
+        const { itemIndex, variantIndex } = editVariantModal;
+        if (itemIndex === null || variantIndex === null) return;
 
-      const currentVariant = itemVariants[itemIndex][variantIndex];
-      
-      // Define which fields are main fields (not attributes)
-      const mainFields = ['name', 'short_desc', 'long_desc', 'selling_price', 'mrp', 
-                         'code_value', 'code_type', 'images', 'symbol', 'unit', 'value',
-                         'available_count', 'maximum_count', 'minimum_count'];
-      
-      // Start with the current variant data
-      const updatedVariant = {
-        ...currentVariant,
-      };
-      
-      // Update main fields from form values
-      mainFields.forEach(field => {
-        if (values[field] !== undefined) {
-          updatedVariant[field] = values[field];
-        }
-      });
-      
-      // Preserve existing attributes and update with new attribute values
-      const attributeUpdates: any = {};
-      Object.keys(values).forEach(key => {
-        if (!mainFields.includes(key)) {
-          attributeUpdates[key] = values[key];
-        }
-      });
-      
-      // Merge attributes, preserving existing ones and updating with new values
-      if (Object.keys(attributeUpdates).length > 0) {
-        updatedVariant.attributes = {
-          ...currentVariant.attributes,
-          ...attributeUpdates,
+        const currentVariant = itemVariants[itemIndex][variantIndex];
+
+        // Define which fields are main fields (not attributes)
+        const mainFields = [
+          "name",
+          "short_desc",
+          "long_desc",
+          "selling_price",
+          "mrp",
+          "code_value",
+          "code_type",
+          "images",
+          "symbol",
+          "unit",
+          "value",
+          "available_count",
+          "maximum_count",
+          "minimum_count",
+        ];
+
+        // Start with the current variant data
+        const updatedVariant = {
+          ...currentVariant,
         };
-      }
-      
-      // Preserve variantCombination if it exists and update its values
-      if (currentVariant.variantCombination) {
-        const variantCombinationUpdates: any = {};
-        Object.keys(currentVariant.variantCombination).forEach(key => {
-          if (values[key] !== undefined) {
-            variantCombinationUpdates[key] = values[key];
-          } else {
-            variantCombinationUpdates[key] = currentVariant.variantCombination[key];
+
+        // Update main fields from form values
+        mainFields.forEach((field) => {
+          if (values[field] !== undefined) {
+            updatedVariant[field] = values[field];
           }
         });
-        updatedVariant.variantCombination = variantCombinationUpdates;
-      }
 
-      // Update the variant in state
-      setItemVariants((prev) => ({
-        ...prev,
-        [itemIndex]: prev[itemIndex].map((v, idx) =>
-          idx === variantIndex ? updatedVariant : v
-        ),
-      }));
+        // Handle images from MultiImageUpload using hooks
+        const variantKey = `${itemIndex}-${variantIndex}`;
+        if (variantImages.imageState[variantKey]) {
+          updatedVariant.images = variantImages.imageState[variantKey];
+        }
+        
+        // Handle symbol from SingleImageUpload using hooks
+        if (variantSymbolImages.imageState[variantKey]) {
+          updatedVariant.symbol = variantSymbolImages.imageState[variantKey];
+        }
 
-      // Close modal and reset
-      setEditVariantModal({
-        visible: false,
-        itemIndex: null,
-        variantIndex: null,
+        // Preserve existing attributes and update with new attribute values
+        const attributeUpdates: any = {};
+        Object.keys(values).forEach((key) => {
+          if (!mainFields.includes(key)) {
+            attributeUpdates[key] = values[key];
+          }
+        });
+
+        // Merge attributes, preserving existing ones and updating with new values
+        if (Object.keys(attributeUpdates).length > 0) {
+          updatedVariant.attributes = {
+            ...currentVariant.attributes,
+            ...attributeUpdates,
+          };
+        }
+
+        // Preserve variantCombination if it exists and update its values
+        if (currentVariant.variantCombination) {
+          const variantCombinationUpdates: any = {};
+          Object.keys(currentVariant.variantCombination).forEach((key) => {
+            if (values[key] !== undefined) {
+              variantCombinationUpdates[key] = values[key];
+            } else {
+              variantCombinationUpdates[key] =
+                currentVariant.variantCombination[key];
+            }
+          });
+          updatedVariant.variantCombination = variantCombinationUpdates;
+        }
+
+        // Update the variant in state
+        setItemVariants((prev) => ({
+          ...prev,
+          [itemIndex]: prev[itemIndex].map((v, idx) =>
+            idx === variantIndex ? updatedVariant : v
+          ),
+        }));
+
+        // Close modal and reset
+        setEditVariantModal({
+          visible: false,
+          itemIndex: null,
+          variantIndex: null,
+        });
+        setEditingVariant(null);
+        variantForm.resetFields();
+
+        toast.success("Variant updated successfully");
+      })
+      .catch((error) => {
+        console.error("Validation failed:", error);
+        toast.error("Please fill in all required fields");
       });
-      setEditingVariant(null);
-      variantForm.resetFields();
-      
-      toast.success("Variant updated successfully");
-    }).catch((error) => {
-      console.error("Validation failed:", error);
-      toast.error("Please fill in all required fields");
-    });
   };
 
   const handleCancelEditVariant = () => {
@@ -1269,7 +1378,7 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({
                 className="text-red-500 hover:text-red-700 p-1"
                 disabled={fields.length === 1}
               >
-                <FaMinus />
+                <FaTrash />
               </button>
             </div>
 
@@ -1278,9 +1387,12 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({
                 <h4 className="font-medium text-gray-700 mb-3">Description</h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Name *
-                    </label>
+                    <LabelWithToolTip
+                      labelInfo={""}
+                      label={"Name"}
+                      required={true}
+                    />
+                 
                     <Controller
                       name={`items.${index}.name`}
                       control={control}
@@ -1303,9 +1415,12 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Domain *
-                    </label>
+                    <LabelWithToolTip
+                      labelInfo={""}
+                      label={"Domain"}
+                      required={true}
+                    />
+                  
                     <Controller
                       name={`items.${index}.domain`}
                       control={control}
@@ -1349,14 +1464,18 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({
                   {/* Item Code - Hide for F&B domain */}
                   {watchItems[index]?.domain !== "F&B" && (
                     <div className="md:col-span-2">
+                    
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Item Code *
+                        Item Code
                       </label>
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
-                          <label className="block text-xs text-gray-600 mb-1">
-                            Code Type *
-                          </label>
+                          <LabelWithToolTip
+                            labelInfo={""}
+                            label={"Code Type"}
+                            required={true}
+                          />
+                        
                           <Controller
                             name={`items.${index}.code_type`}
                             control={control}
@@ -1382,13 +1501,21 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({
                           />
                         </div>
                         <div className="md:col-span-2">
-                          <label className="block text-xs text-gray-600 mb-1">
-                            Code Value *
-                          </label>
+                          <LabelWithToolTip
+                            labelInfo={""}
+                            label={"Code Value"}
+                            required={true}
+                          />
+                       
                           <Controller
                             name={`items.${index}.code_value`}
                             control={control}
-                            rules={{ required: watchItems[index]?.domain !== "F&B" ? "Code value is required" : false }}
+                            rules={{
+                              required:
+                                watchItems[index]?.domain !== "F&B"
+                                  ? "Code value is required"
+                                  : false,
+                            }}
                             render={({ field, fieldState: { error } }) => (
                               <>
                                 <Input
@@ -1416,46 +1543,44 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({
                     </div>
                   )}
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Symbol URL *
-                    </label>
-                    <Controller
-                      name={`items.${index}.symbol`}
-                      control={control}
-                      render={({ field }) => (
-                        <Input
-                          {...field}
-                          type="url"
-                          placeholder="Enter Symbol Image URL"
-                          size="large"
-                        />
-                      )}
+                  <div className="md:col-span-2">
+                    <SingleImageUpload
+                      label="Symbol/Icon"
+                      labelInfo="Upload a symbol or icon for this item"
+                      required={true}
+                      folder="workbench-seller-onboarding"
+                      value={symbolImages.imageState[index] || ""}
+                      onChange={(url) => {
+                        symbolImages.updateImageField(index, url);
+                        setValue(`items.${index}.symbol`, url);
+                      }}
+                      previewSize="small"
+                    />
+                  </div>
+
+                  <div className="md:col-span-2">
+                    <MultiImageUpload
+                      label="Item Images"
+                      labelInfo="Upload multiple images for this item"
+                      required={true}
+                      folder="workbench-seller-onboarding"
+                      value={itemImages.imageState[index] || []}
+                      onChange={(urls) => {
+                        itemImages.updateImageField(index, urls);
+                        setValue(`items.${index}.images`, urls);
+                      }}
+                      maxFiles={8}
+                      previewSize="small"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Images URL *
-                    </label>
-                    <Controller
-                      name={`items.${index}.images`}
-                      control={control}
-                      render={({ field }) => (
-                        <Input
-                          {...field}
-                          type="url"
-                          placeholder="Enter Item Images URL"
-                          size="large"
-                        />
-                      )}
+                    <LabelWithToolTip
+                      labelInfo={""}
+                      label={"Short Description"}
+                      required={true}
                     />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Short Description *
-                    </label>
+                  
                     <Controller
                       name={`items.${index}.short_desc`}
                       control={control}
@@ -1470,9 +1595,12 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Long Description *
-                    </label>
+                    <LabelWithToolTip
+                      labelInfo={""}
+                      label={"Long Description"}
+                      required={true}
+                    />
+                
                     <Controller
                       name={`items.${index}.long_desc`}
                       control={control}
@@ -1493,9 +1621,12 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({
                 <h4 className="font-medium text-gray-700 mb-3">Quantity</h4>
                 <div className="space-y-3">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Unit *
-                    </label>
+                    <LabelWithToolTip
+                      labelInfo={""}
+                      label={"Unit"}
+                      required={true}
+                    />
+                   
                     <Controller
                       name={`items.${index}.unit`}
                       control={control}
@@ -1523,9 +1654,12 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Value *
-                    </label>
+                    <LabelWithToolTip
+                      labelInfo={""}
+                      label={"Value"}
+                      required={true}
+                    />
+                   
                     <Controller
                       name={`items.${index}.value`}
                       control={control}
@@ -1540,9 +1674,12 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Availability *
-                    </label>
+                    <LabelWithToolTip
+                      labelInfo={""}
+                      label={"Availability"}
+                      required={true}
+                    />
+                
                     <Controller
                       name={`items.${index}.available_count`}
                       control={control}
@@ -1572,9 +1709,12 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Maximum Count *
-                    </label>
+                    <LabelWithToolTip
+                      labelInfo={""}
+                      label={"Maximum Count"}
+                      required={true}
+                    />
+                   
                     <Controller
                       name={`items.${index}.maximum_count`}
                       control={control}
@@ -1591,9 +1731,12 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Minimum Count *
-                    </label>
+                    <LabelWithToolTip
+                      labelInfo={""}
+                      label={"Minimum Count"}
+                      required={true}
+                    />
+                  
                     <Controller
                       name={`items.${index}.minimum_count`}
                       control={control}
@@ -1615,9 +1758,12 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({
                 <h4 className="font-medium text-gray-700 mb-3">Price</h4>
                 <div className="space-y-3">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Selling Price *
-                    </label>
+                    <LabelWithToolTip
+                      labelInfo={""}
+                      label={"Selling Price"}
+                      required={true}
+                    />
+                 
                     <Controller
                       name={`items.${index}.selling_price`}
                       control={control}
@@ -1643,9 +1789,12 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      MRP *
-                    </label>
+                    <LabelWithToolTip
+                      labelInfo={""}
+                      label={"MRP"}
+                      required={true}
+                    />
+                   
                     <Controller
                       name={`items.${index}.mrp`}
                       control={control}
@@ -1662,9 +1811,12 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Currency *
-                    </label>
+                    <LabelWithToolTip
+                      labelInfo={""}
+                      label={"Currency"}
+                      required={true}
+                    />
+                  
                     <Controller
                       name={`items.${index}.currency`}
                       control={control}
@@ -1689,9 +1841,12 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({
                 </h4>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Store *
-                    </label>
+                    <LabelWithToolTip
+                      labelInfo={""}
+                      label={"Store"}
+                      required={true}
+                    />
+                  
                     <Controller
                       name={`items.${index}.store`}
                       control={control}
@@ -1721,9 +1876,12 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Category *
-                    </label>
+                    <LabelWithToolTip
+                      labelInfo={""}
+                      label={"Category"}
+                      required={true}
+                    />
+                 
                     <Controller
                       name={`items.${index}.category`}
                       control={control}
@@ -1764,7 +1922,6 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({
                           // If no domain selected, use store categories
                           subcategories = storeSubcategories;
                         }
-
 
                         return (
                           <>
@@ -1879,9 +2036,12 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({
                   )}
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Default Fulfillment Type *
-                    </label>
+                    <LabelWithToolTip
+                      labelInfo={""}
+                      label={"Default Fulfillment Type"}
+                      required={true}
+                    />
+                  
                     <Controller
                       name={`items.${index}.default_fulfillment_type`}
                       control={control}
@@ -1904,9 +2064,12 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Return Window *
-                    </label>
+                    <LabelWithToolTip
+                      labelInfo={""}
+                      label={"Return Window"}
+                      required={true}
+                    />
+                 
                     <div className="grid grid-cols-2 gap-2">
                       <Controller
                         name={`items.${index}.return_window_unit`}
@@ -1957,9 +2120,12 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Replacement Window *
-                    </label>
+                    <LabelWithToolTip
+                      labelInfo={""}
+                      label={"Replacement Window"}
+                      required={true}
+                    />
+                  
                     <div className="grid grid-cols-2 gap-2">
                       <Controller
                         name={`items.${index}.replacement_window_unit`}
@@ -2020,9 +2186,12 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Time to Ship *
-                    </label>
+                    <LabelWithToolTip
+                      labelInfo={""}
+                      label={"Time to Ship"}
+                      required={true}
+                    />
+                   
                     <div className="grid grid-cols-2 gap-2">
                       <Controller
                         name={`items.${index}.time_to_ship_unit`}
@@ -2084,9 +2253,12 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Returnable *
-                    </label>
+                    <LabelWithToolTip
+                      labelInfo={""}
+                      label={"Returnable"}
+                      required={true}
+                    />
+                 
                     <Controller
                       name={`items.${index}.returnable`}
                       control={control}
@@ -2107,9 +2279,12 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Cancellable *
-                    </label>
+                    <LabelWithToolTip
+                      labelInfo={""}
+                      label={"Cancellable"}
+                      required={true}
+                    />
+                
                     <Controller
                       name={`items.${index}.cancellable`}
                       control={control}
@@ -2130,9 +2305,12 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      CoD Availability *
-                    </label>
+                    <LabelWithToolTip
+                      labelInfo={""}
+                      label={"CoD Availability"}
+                      required={true}
+                    />
+                   
                     <Controller
                       name={`items.${index}.cod_availability`}
                       control={control}
@@ -2178,9 +2356,12 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({
                     </h4>
 
                     <div className="mb-4">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Refer Back Image
-                      </label>
+                      <LabelWithToolTip
+                        labelInfo={""}
+                        label={"Refer Back Image"}
+                        required={true}
+                      />
+                    
                       <Controller
                         name={`items.${index}.refer_back_image`}
                         control={control}
@@ -2213,9 +2394,12 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({
                         {hasPackaged && (
                           <>
                             <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Manufacturer or Packer Name
-                              </label>
+                              <LabelWithToolTip
+                                labelInfo={""}
+                                label={"Manufacturer or Packer Name"}
+                                required={true}
+                              />
+                             
                               <Controller
                                 name={`items.${index}.manufacturer_or_packer_name`}
                                 control={control}
@@ -2230,9 +2414,12 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({
                             </div>
 
                             <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Manufacturer or Packer Address
-                              </label>
+                              <LabelWithToolTip
+                                labelInfo={""}
+                                label={"Manufacturer or Packer Address"}
+                                required={true}
+                              />
+                            
                               <Controller
                                 name={`items.${index}.manufacturer_or_packer_address`}
                                 control={control}
@@ -2248,9 +2435,12 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({
                             </div>
 
                             <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Common or Generic Name of Commodity
-                              </label>
+                              <LabelWithToolTip
+                                labelInfo={""}
+                                label={"Common or Generic Name of Commodity"}
+                                required={true}
+                              />
+                            
                               <Controller
                                 name={`items.${index}.common_or_generic_name_of_commodity`}
                                 control={control}
@@ -2265,9 +2455,12 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({
                             </div>
 
                             <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Net Quantity or Measure
-                              </label>
+                              <LabelWithToolTip
+                                labelInfo={""}
+                                label={"Net Quantity or Measure"}
+                                required={true}
+                              />
+                              
                               <Controller
                                 name={`items.${index}.net_quantity_or_measure_of_commodity_in_pkg`}
                                 control={control}
@@ -2282,9 +2475,12 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({
                             </div>
 
                             <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Month and Year of Manufacture
-                              </label>
+                              <LabelWithToolTip
+                                labelInfo={""}
+                                label={"Month and Year of Manufacture"}
+                                required={true}
+                              />
+                            
                               <Controller
                                 name={`items.${index}.month_year_of_manufacture_packing_import`}
                                 control={control}
@@ -2304,9 +2500,12 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({
                         {hasPrepackaged && (
                           <>
                             <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Imported Product Country of Origin
-                              </label>
+                              <LabelWithToolTip
+                                labelInfo={""}
+                                label={"Imported Product Country of Origin"}
+                                required={true}
+                              />
+                            
                               <Controller
                                 name={`items.${index}.imported_product_country_of_origin`}
                                 control={control}
@@ -2321,9 +2520,12 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({
                             </div>
 
                             <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Nutritional Info
-                              </label>
+                              <LabelWithToolTip
+                                labelInfo={""}
+                                label={"Nutritional Info"}
+                                required={true}
+                              />
+                             
                               <Controller
                                 name={`items.${index}.nutritional_info`}
                                 control={control}
@@ -2339,9 +2541,12 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({
                             </div>
 
                             <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Additives Info
-                              </label>
+                              <LabelWithToolTip
+                                labelInfo={""}
+                                label={"Additives Info"}
+                                required={true}
+                              />
+                             
                               <Controller
                                 name={`items.${index}.additives_info`}
                                 control={control}
@@ -2357,9 +2562,12 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({
                             </div>
 
                             <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Brand Owner Name
-                              </label>
+                              <LabelWithToolTip
+                                labelInfo={""}
+                                label={"Brand Owner Name"}
+                                required={true}
+                              />
+                            
                               <Controller
                                 name={`items.${index}.brand_owner_name`}
                                 control={control}
@@ -2374,9 +2582,12 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({
                             </div>
 
                             <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Brand Owner Address
-                              </label>
+                              <LabelWithToolTip
+                                labelInfo={""}
+                                label={"Brand Owner Address"}
+                                required={true}
+                              />
+                            
                               <Controller
                                 name={`items.${index}.brand_owner_address`}
                                 control={control}
@@ -2392,9 +2603,12 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({
                             </div>
 
                             <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Brand Owner FSSAI License No
-                              </label>
+                              <LabelWithToolTip
+                                labelInfo={""}
+                                label={"Brand Owner FSSAI License No"}
+                                required={true}
+                              />
+                           
                               <Controller
                                 name={`items.${index}.brand_owner_fssai_license_no`}
                                 control={control}
@@ -2409,9 +2623,12 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({
                             </div>
 
                             <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Other FSSAI License No
-                              </label>
+                              <LabelWithToolTip
+                                labelInfo={""}
+                                label={"Other FSSAI License No"}
+                                required={true}
+                              />
+                          
                               <Controller
                                 name={`items.${index}.other_fssai_license_no`}
                                 control={control}
@@ -2426,9 +2643,12 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({
                             </div>
 
                             <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Importer Name
-                              </label>
+                              <LabelWithToolTip
+                                labelInfo={""}
+                                label={"Importer Name"}
+                                required={true}
+                              />
+                           
                               <Controller
                                 name={`items.${index}.importer_name`}
                                 control={control}
@@ -2443,9 +2663,12 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({
                             </div>
 
                             <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Importer Address
-                              </label>
+                              <LabelWithToolTip
+                                labelInfo={""}
+                                label={"Importer Address"}
+                                required={true}
+                              />
+                            
                               <Controller
                                 name={`items.${index}.importer_address`}
                                 control={control}
@@ -2461,9 +2684,12 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({
                             </div>
 
                             <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Importer FSSAI License No
-                              </label>
+                              <LabelWithToolTip
+                                labelInfo={""}
+                                label={"Importer FSSAI License No"}
+                                required={true}
+                              />
+                            
                               <Controller
                                 name={`items.${index}.importer_fssai_license_no`}
                                 control={control}
@@ -2490,9 +2716,12 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({
                 </h4>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Country of Origin
-                    </label>
+                    <LabelWithToolTip
+                      labelInfo={""}
+                      label={"Country of Origin"}
+                      required={true}
+                    />
+                 
                     <Controller
                       name={`items.${index}.country_of_origin`}
                       control={control}
@@ -2518,9 +2747,12 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({
                     watchItems[index]?.domain === "F&B") && (
                     <>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Veg/NonVeg
-                        </label>
+                        <LabelWithToolTip
+                          labelInfo={""}
+                          label={"Veg/NonVeg"}
+                          required={true}
+                        />
+                    
                         <Controller
                           name={`items.${index}.veg_non_veg`}
                           control={control}
@@ -2542,20 +2774,17 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({
                       </div>
                       {watchItems[index]?.domain === "Grocery" && (
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Back Image URL
-                          </label>
-                          <Controller
-                            name={`items.${index}.back_image`}
-                            control={control}
-                            render={({ field }) => (
-                              <Input
-                                {...field}
-                                type="url"
-                                placeholder="Enter back image URL"
-                                size="large"
-                              />
-                            )}
+                          <SingleImageUpload
+                            label="Back Image"
+                            labelInfo="Upload back side image for this item (required for Grocery domain)"
+                            required={true}
+                            folder="workbench-seller-onboarding"
+                            value={backImages.imageState[index] || ""}
+                            onChange={(url) => {
+                              backImages.updateImageField(index, url);
+                              setValue(`items.${index}.back_image`, url);
+                            }}
+                            previewSize="small"
                           />
                         </div>
                       )}
@@ -2581,9 +2810,12 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Name
-                    </label>
+                    <LabelWithToolTip
+                      labelInfo={""}
+                      label={"Name"}
+                      required={true}
+                    />
+                   
                     <Controller
                       name={`items.${index}.consumer_care_name`}
                       control={control}
@@ -2599,9 +2831,12 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Email
-                    </label>
+                    <LabelWithToolTip
+                      labelInfo={""}
+                      label={"Email"}
+                      required={true}
+                    />
+                  
                     <Controller
                       name={`items.${index}.consumer_care_email`}
                       control={control}
@@ -2656,9 +2891,12 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Contact No.
-                    </label>
+                    <LabelWithToolTip
+                      labelInfo={""}
+                      label={"Contact No."}
+                      required={true}
+                    />
+                   
                     <Controller
                       name={`items.${index}.consumer_care_contact`}
                       control={control}
@@ -2744,9 +2982,11 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({
                       </h4>
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Brand
-                          </label>
+                          <LabelWithToolTip
+                            labelInfo={""}
+                            label={"Brand"}
+                            required={true}
+                          />
                           <Controller
                             name={`items.${index}.brand`}
                             control={control}
@@ -2951,7 +3191,7 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({
                                 className="text-red-500 hover:text-red-700 p-1 rounded hover:bg-red-50"
                                 title="Remove variant"
                               >
-                                <FaMinus className="text-sm" />
+                                <FaTrash className="text-sm" />
                               </button>
                             </div>
                           </div>
@@ -3046,9 +3286,12 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Select Variant Attributes *
-              </label>
+              <LabelWithToolTip
+                labelInfo={""}
+                label={"Select Variant Attributes"}
+                required={true}
+              />
+            
               <Select
                 mode="multiple"
                 className="w-full"
@@ -3102,6 +3345,7 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({
 
                       return (
                         <div key={attr}>
+                         
                           <label className="block text-sm font-medium text-gray-700 mb-1">
                             {attr
                               .replace(/_/g, " ")
@@ -3211,48 +3455,74 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({
                 </Form.Item>
 
                 {/* Hide Code Type and Code Value for F&B domain */}
-                {editVariantModal.itemIndex !== null && 
-                 watchItems[editVariantModal.itemIndex]?.domain !== "F&B" && (
-                  <>
-                    <Form.Item
-                      label="Code Type"
-                      name="code_type"
-                      rules={[{ required: true, message: "Code type is required" }]}
-                    >
-                      <Select placeholder="Select code type">
-                        <Select.Option value="EAN">EAN</Select.Option>
-                        <Select.Option value="ISBN">ISBN</Select.Option>
-                        <Select.Option value="GTIN">GTIN</Select.Option>
-                        <Select.Option value="HSN">HSN</Select.Option>
-                        <Select.Option value="Others">Others</Select.Option>
-                      </Select>
-                    </Form.Item>
+                {editVariantModal.itemIndex !== null &&
+                  watchItems[editVariantModal.itemIndex]?.domain !== "F&B" && (
+                    <>
+                      <Form.Item
+                        label="Code Type"
+                        name="code_type"
+                        rules={[
+                          { required: true, message: "Code type is required" },
+                        ]}
+                      >
+                        <Select placeholder="Select code type">
+                          <Select.Option value="EAN">EAN</Select.Option>
+                          <Select.Option value="ISBN">ISBN</Select.Option>
+                          <Select.Option value="GTIN">GTIN</Select.Option>
+                          <Select.Option value="HSN">HSN</Select.Option>
+                          <Select.Option value="Others">Others</Select.Option>
+                        </Select>
+                      </Form.Item>
 
-                    <Form.Item
-                      label="Code Value"
-                      name="code_value"
-                      rules={[
-                        { required: true, message: "Code value is required" },
-                      ]}
-                    >
-                      <Input placeholder="Enter code value" />
-                    </Form.Item>
-                  </>
-                )}
+                      <Form.Item
+                        label="Code Value"
+                        name="code_value"
+                        rules={[
+                          { required: true, message: "Code value is required" },
+                        ]}
+                      >
+                        <Input placeholder="Enter code value" />
+                      </Form.Item>
+                    </>
+                  )}
 
-                <Form.Item
-                  label="Images URL"
-                  name="images"
-                  rules={[
-                    { required: true, message: "Image URL is required" },
-                    { type: "url", message: "Please enter a valid URL" },
-                  ]}
-                >
-                  <Input type="url" placeholder="Enter image URL" />
-                </Form.Item>
+                <div className="md:col-span-2">
+                  <MultiImageUpload
+                    label="Variant Images"
+                    labelInfo="Upload multiple images for this variant"
+                    required={true}
+                    folder="workbench-seller-onboarding"
+                    value={editVariantModal.itemIndex !== null && editVariantModal.variantIndex !== null ? 
+                           variantImages.imageState[`${editVariantModal.itemIndex}-${editVariantModal.variantIndex}`] || [] : []}
+                    onChange={(urls) => {
+                      if (editVariantModal.itemIndex !== null && editVariantModal.variantIndex !== null) {
+                        const variantKey = `${editVariantModal.itemIndex}-${editVariantModal.variantIndex}`;
+                        variantImages.updateImageField(variantKey, urls);
+                        variantForm.setFieldsValue({ images: urls });
+                      }
+                    }}
+                    maxFiles={5}
+                    previewSize="small"
+                  />
+                </div>
 
-                <Form.Item label="Symbol/Icon URL" name="symbol">
-                  <Input type="url" placeholder="Enter symbol URL" />
+                <Form.Item label="Symbol/Icon" name="symbol">
+                  <SingleImageUpload
+                    label=""
+                    labelInfo="Upload a symbol/icon for this variant"
+                    required={false}
+                    folder="workbench-seller-onboarding"
+                    value={editVariantModal.itemIndex !== null && editVariantModal.variantIndex !== null ? 
+                           variantSymbolImages.imageState[`${editVariantModal.itemIndex}-${editVariantModal.variantIndex}`] || '' : ''}
+                    onChange={(url) => {
+                      if (editVariantModal.itemIndex !== null && editVariantModal.variantIndex !== null) {
+                        const variantKey = `${editVariantModal.itemIndex}-${editVariantModal.variantIndex}`;
+                        variantSymbolImages.updateImageField(variantKey, url);
+                        variantForm.setFieldsValue({ symbol: url });
+                      }
+                    }}
+                    previewSize="small"
+                  />
                 </Form.Item>
               </div>
             </div>
