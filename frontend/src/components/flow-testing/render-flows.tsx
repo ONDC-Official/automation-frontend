@@ -611,7 +611,7 @@ function RenderFlows({
             </div>
           </div>
         </div>
-        <Console logs={logs} setLogs={setLogs} sessionId={sessionId} />
+        {/* <Console logs={logs} setLogs={setLogs} sessionId={sessionId} /> */}
       </div>
     </SessionContext.Provider>
   );
