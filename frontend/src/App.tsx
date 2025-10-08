@@ -20,6 +20,9 @@ import { SubscriberData } from "./components/registry-components/registry-types"
 import * as api from "./utils/registry-apis";
 import Footer from "./components/main-footer";
 import { SessionProvider } from "./context/context";
+import { GuideStepsEnums, useGuide } from "./context/guideContext";
+import ProtocolPlayGround from "./components/protocol-playground/main";
+import ProtocolPlayGroundSample from "./components/protocol-playground/ui/sample";
 
 function App() {
 	const [isModalOpen, setIsModalOpen] = useState(false);
@@ -148,6 +151,11 @@ function App() {
 						<Route path="/profile" element={<UserProfile />} />
 						<Route path="/tools" element={<ToolsPage />} />
 						<Route path="/seller-onboarding" element={<SellerOnboarding />} />
+						<Route path="/playground" element={<ProtocolPlayGround />} />
+						<Route
+							path="/sample-playground"
+							element={<ProtocolPlayGroundSample />}
+						/>
 						<Route path="*" element={<NotFoundPage />} />
 					</Routes>
 				</div>
