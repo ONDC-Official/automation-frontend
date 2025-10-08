@@ -4,6 +4,7 @@ import { useContext } from "react";
 import { PlaygroundContext } from "../context/playground-context";
 import { getSessionDataUpToStep } from "../mock-engine";
 import { DarkSkyBlueTheme } from "./editor-themes";
+import SessionDataTab from "./session-data-tab";
 
 export function RightSideView(props: {
 	width: string;
@@ -86,6 +87,8 @@ function GetRightSideContent({
 					}}
 				/>
 			);
+		case "transaction":
+			return <SessionDataTab />;
 	}
 	return <></>;
 }

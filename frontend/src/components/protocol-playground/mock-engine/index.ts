@@ -153,7 +153,7 @@ export function generatePayload(
 	const context = contextFunc(txMeta);
 	defaultPayload["context"] = context;
 	const sessionData = getSessionDataUpToStep(index, config);
-
+	const generateFunction = extractFunctionBody(step.mock.generate);
 	const generateFunc = new Function(
 		"defaultPayload",
 		"sessionData",
@@ -332,4 +332,24 @@ export function getDefaultStep(
 			),
 		},
 	};
+}
+
+export function calcCurrentIndex(config: MockPlaygroundConfigType) {
+	const history = config.transaction_history;
+	const steps = config.steps;
+	for (const step of steps) {
+		const found = history.find((h) => h.action_id === step.action_id);
+		if (!found) {
+			return steps.indexOf(step);
+		}
+	}
+	return steps.length;
+}
+
+function extractFunctionBody(funcStr: string) {
+	const funcBodyMatch = funcStr.match(/function[^{]*{([\s\S]*)}$/);
+	if (funcBodyMatch && funcBodyMatch[1]) {
+		return funcBodyMatch[1].trim();
+	}
+	return funcStr;
 }

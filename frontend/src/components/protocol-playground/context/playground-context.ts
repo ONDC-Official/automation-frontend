@@ -6,6 +6,8 @@ interface PlaygroundContextProps {
 	currentState: "editing" | "running";
 	setCurrentState: React.Dispatch<React.SetStateAction<"editing" | "running">>;
 	updateStepMock: (stepId: string, property: string, value: string) => void;
+	activeApi: string | undefined;
+	setActiveApi: React.Dispatch<React.SetStateAction<string | undefined>>;
 }
 export const PlaygroundContext: Context<PlaygroundContextProps> =
 	createContext<PlaygroundContextProps>({} as PlaygroundContextProps);

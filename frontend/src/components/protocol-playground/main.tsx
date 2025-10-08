@@ -10,6 +10,7 @@ export default function ProtocolPlayGround() {
 	const [currentState, setCurrentState] = useState<"editing" | "running">(
 		"editing"
 	);
+	const [activeApi, setActiveApi] = useState<string | undefined>(undefined);
 
 	function setCurrentConfig(config: MockPlaygroundConfigType | undefined) {
 		if (!config) {
@@ -64,6 +65,8 @@ export default function ProtocolPlayGround() {
 				currentState,
 				setCurrentState,
 				updateStepMock,
+				activeApi,
+				setActiveApi,
 			}}
 		>
 			<div className="mt-2 w-full h-screen flex flex-col">
