@@ -191,9 +191,12 @@ export default function FlowContent({ type }: FlowContentProps) {
   }, [contextSessionId, contextcfSessionId, type, isFormSubmitted]);
 
   useEffect(() => {
-    setStep(0);
-    setIsFormSubmitted(false)
-  }, [type]);
+    // Only reset to step 0 if there's no existing session
+    if (!contextSessionId && !contextcfSessionId) {
+      setStep(0);
+      setIsFormSubmitted(false);
+    }
+  }, [type, contextSessionId, contextcfSessionId]);
 
   useEffect(() => {
     if (session) {

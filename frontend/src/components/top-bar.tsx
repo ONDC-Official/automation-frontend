@@ -5,6 +5,8 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { FaChevronDown } from "react-icons/fa";
 import { GuideStepsEnums } from "../context/guideContext";
 import GuideOverlay from "./ui/GuideOverlay";
+import { useSession } from "../context/context";
+import Modal from "./modal";
 
 interface SubMenuItem {
   label: string;
@@ -49,6 +51,8 @@ const TopBar = ({ onSupportClick }: IPops) => {
   const [isOpen, setIsOpen] = useState(false);
   const [links, setLinks] = useState<[] | NavLink[]>([]);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const [showNavigationWarning, setShowNavigationWarning] = useState(false);
+  const [pendingNavigation, setPendingNavigation] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLLIElement>(null);
   const navigate = useNavigate();
   const location = useLocation();
@@ -58,6 +62,7 @@ const TopBar = ({ onSupportClick }: IPops) => {
   );
 
   const userContext = useContext(UserContext);
+  const { sessionId, cfSessionId } = useSession();
 
   const user = userContext.userDetails;
   console.log("user", user);
@@ -105,9 +110,40 @@ const TopBar = ({ onSupportClick }: IPops) => {
     };
   }, []);
 
+  const hasActiveSession = () => {
+    return (sessionId || cfSessionId) && (pathName === "/scenario" || pathName === "/customFlow");
+  };
+
+  const handleNavigation = (href: string) => {
+    // Check if user is leaving a flow page with an active session
+    const isLeavingFlowPage = (pathName === "/scenario" || pathName === "/customFlow") && 
+                             (href !== "/scenario" && href !== "/customFlow");
+    
+    if (isLeavingFlowPage && hasActiveSession()) {
+      setPendingNavigation(href);
+      setShowNavigationWarning(true);
+    } else {
+      navigate(href);
+    }
+  };
+
+  const confirmNavigation = () => {
+    if (pendingNavigation) {
+      navigate(pendingNavigation);
+      setPendingNavigation(null);
+    }
+    setShowNavigationWarning(false);
+  };
+
+  const cancelNavigation = () => {
+    setPendingNavigation(null);
+    setShowNavigationWarning(false);
+  };
+
   const handleLoginClick = () => {
     setIsOpen(false);
-    navigate(userDetails ? "/profile" : "/login");
+    const targetPath = userDetails ? "/profile" : "/login";
+    handleNavigation(targetPath);
   };
 
   return (
@@ -115,7 +151,7 @@ const TopBar = ({ onSupportClick }: IPops) => {
       <nav className="container mx-auto flex items-center justify-between p-2">
         <div
           className="flex items-center justify-start w-full md:w-auto cursor-pointer"
-          onClick={() => navigate("/home")}
+          onClick={() => handleNavigation("/home")}
         >
           <img
             src="https://ondc.org/assets/theme/images/ondc_registered_logo.svg?v=d864655110"
@@ -183,7 +219,7 @@ const TopBar = ({ onSupportClick }: IPops) => {
             <GuideOverlay 
             currentStep={link.href === "/scenario" ? GuideStepsEnums.Test1 : GuideStepsEnums.Skip} 
             instruction={"Step 4: Start  Testing"} 
-            handleGoClick={() =>  navigate(link.href)} 
+            handleGoClick={() => handleNavigation(link.href)} 
             left={0} 
             top={45}>
               <li
@@ -208,7 +244,7 @@ const TopBar = ({ onSupportClick }: IPops) => {
                       onSupportClick();
                     } else if (link.subMenu) {
                       // For items with subMenu, navigate to main page and toggle dropdown
-                      navigate(link.href);
+                      handleNavigation(link.href);
                       if (isOpen) {
                         // On mobile, toggle dropdown after navigation
                         setOpenDropdown(
@@ -216,7 +252,7 @@ const TopBar = ({ onSupportClick }: IPops) => {
                         );
                       }
                     } else {
-                      navigate(link.href);
+                      handleNavigation(link.href);
                     }
                   }}
                 >
@@ -242,7 +278,7 @@ const TopBar = ({ onSupportClick }: IPops) => {
                         key={subIndex}
                         className="block px-4 py-2 text-gray-700 hover:bg-sky-50 hover:text-sky-600 first:rounded-t-md last:rounded-b-md cursor-pointer"
                         onClick={() => {
-                          navigate(subItem.href);
+                          handleNavigation(subItem.href);
                           setOpenDropdown(null);
                           setIsOpen(false); // Close mobile menu
                         }}
@@ -299,6 +335,35 @@ const TopBar = ({ onSupportClick }: IPops) => {
           </GuideOverlay>
         </div>
       </nav>
+
+      {/* Navigation Warning Modal */}
+      <Modal isOpen={showNavigationWarning} onClose={cancelNavigation}>
+        <div className="p-6">
+          <h2 className="text-xl font-semibold text-gray-800 mb-4">
+            Warning: Active Flow in Progress
+          </h2>
+          <p className="text-gray-600 mb-6">
+            You have an active flow session in progress. If you navigate away, your current progress will be saved and you can resume later.
+          </p>
+          <p className="text-gray-600 mb-6">
+            Do you want to continue navigating?
+          </p>
+          <div className="flex gap-3 justify-end">
+            <button
+              onClick={cancelNavigation}
+              className="px-4 py-2 text-gray-600 border border-gray-300 rounded hover:bg-gray-50"
+            >
+              Stay Here
+            </button>
+            <button
+              onClick={confirmNavigation}
+              className="px-4 py-2 bg-sky-600 text-white rounded hover:bg-sky-700"
+            >
+              Continue Navigation
+            </button>
+          </div>
+        </div>
+      </Modal>
     </header>
   );
 };
