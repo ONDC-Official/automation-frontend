@@ -3,6 +3,7 @@ type Owner = "BAP" | "BPP";
 interface Meta {
 	domain: string;
 	version: string;
+	flowId: string;
 }
 
 interface TransactionData {

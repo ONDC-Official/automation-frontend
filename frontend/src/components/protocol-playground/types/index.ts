@@ -25,7 +25,11 @@ export type PlaygroundLeftTabType =
 	| "default"
 	| "inputs"
 	| "requirements";
-export type PlaygroundRightTabType = "session" | "transaction" | "terminal";
+export type PlaygroundRightTabType =
+	| "session"
+	| "transaction"
+	| "terminal"
+	| "output_payload";
 
 export type MockPropertyTab = {
 	id: string;
@@ -79,7 +83,11 @@ export const PLAYGROUND_RIGHT_TABS: PlaygroundRightTab[] = [
 	},
 	{
 		id: "transaction",
-		label: "Transaction History",
+		label: "Session Manager",
+	},
+	{
+		id: "output_payload",
+		label: "Output Payload",
 	},
 	{
 		id: "terminal",

@@ -2,10 +2,15 @@ import { useContext } from "react";
 import { PlaygroundContext } from "../context/playground-context";
 import { toast } from "react-toastify";
 import { calcCurrentIndex, generatePayload } from "../mock-engine";
+import { useCodeRunner } from "./use-code-runner";
+import JsonSchemaForm from "../ui/extras/rsjf-form";
 
 // hooks/useConfigOperations.ts
 export const useConfigOperations = () => {
 	const playgroundContext = useContext(PlaygroundContext);
+	const generateRunner = useCodeRunner("generate");
+	const generateResult = generateRunner.result;
+	const modal = playgroundContext.useModal;
 
 	const exportConfig = () => {
 		if (!playgroundContext.config) {
@@ -52,7 +57,46 @@ export const useConfigOperations = () => {
 		toast.success("All configurations deleted");
 	};
 
-	const runConfig = () => {
+	const showFormModal = (data: any, onSubmit: (formData: any) => void) => {
+		modal.openModal(
+			<div className="p-1">
+				<h2 className="text-l font-semibold mb-1">Enter Input Data</h2>
+				<JsonSchemaForm
+					schema={data.requiredInputs.jsonSchema}
+					formData={data.sessionData}
+					onSubmit={onSubmit}
+				/>
+			</div>
+		);
+		toast.success("Please fill in the form to continue");
+	};
+
+	const executePayload = async (data: {
+		defaultPayload: any;
+		sessionData: any;
+		functionCode: string;
+		requiredInputs: any;
+		actionId: string;
+	}) => {
+		const result = await generateRunner.executeCode(data.functionCode, [
+			data.defaultPayload,
+			data.sessionData,
+		]);
+		console.log("Generate Result:", result);
+		if (!result) {
+			toast.error("No result from code execution");
+			return false;
+		}
+		playgroundContext.setActiveTerminalData((s) => [...s, result]);
+		if (result.success) {
+			playgroundContext.updateTransactionHistory(data.actionId, result.result);
+		}
+		modal.closeModal();
+		toast.success("Payload generated. Check console for details.");
+		return true;
+	};
+
+	const runConfig = async () => {
 		if (
 			!playgroundContext.config?.steps ||
 			playgroundContext.config.steps.length === 0
@@ -61,17 +105,31 @@ export const useConfigOperations = () => {
 			return;
 		}
 		const currentIndex = calcCurrentIndex(playgroundContext.config);
+
 		try {
-			// open input first
-			const payload = generatePayload(currentIndex, playgroundContext.config);
-			console.log("Generated Payload:", payload);
+			const data = generatePayload(currentIndex, playgroundContext.config);
+			if (
+				data.requiredInputs === null ||
+				Object.keys(data.requiredInputs).length === 0
+			) {
+				await executePayload(data);
+				return;
+			}
+
+			const handleFormSubmit = async (formData: any) => {
+				console.log("Form submitted with data:", formData);
+				modal.closeModal();
+				data.sessionData.user_inputs = formData;
+				await executePayload(data);
+			};
+
+			showFormModal(data, handleFormSubmit);
 		} catch (e) {
 			console.error("Error generating payload:", e);
 			toast.error("Error generating payload. Check console for details.");
 			return;
 		}
-		toast.success("Payload generated. Check console for details.");
 	};
 
-	return { exportConfig, importConfig, clearConfig, runConfig };
+	return { exportConfig, importConfig, clearConfig, runConfig, generateResult };
 };

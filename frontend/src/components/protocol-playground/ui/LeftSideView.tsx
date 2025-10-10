@@ -1,9 +1,11 @@
-import { useContext, useState } from "react";
-
+import { useContext, useState, useMemo } from "react";
 import { PlaygroundContext } from "../context/playground-context";
 import { Editor } from "@monaco-editor/react";
 import { PLAYGROUND_LEFT_TABS } from "../types";
 import { DarkSkyBlueTheme } from "./editor-themes";
+import { CodeStatistics } from "./extras/statistics";
+import { CodeValidator } from "../mock-engine/code-runners/code-validator";
+import { getFunctionSchema } from "../mock-engine/code-runners/function-registry";
 
 export function LeftSideView(props: { width: string; activeApi?: string }) {
 	const { width, activeApi } = props;
@@ -12,8 +14,6 @@ export function LeftSideView(props: { width: string; activeApi?: string }) {
 	const stepData = playgroundContext.config?.steps.find(
 		(f) => f.action_id === activeApi
 	);
-	console.log("stepData:", stepData, activeApi);
-	// Define tabs for different mock properties
 
 	const [activeLeftTab, setActiveLeftTab] = useState<string>(
 		PLAYGROUND_LEFT_TABS[0].id
@@ -21,6 +21,7 @@ export function LeftSideView(props: { width: string; activeApi?: string }) {
 	const activeTabConfig = PLAYGROUND_LEFT_TABS.find(
 		(tab) => tab.id === activeLeftTab
 	)!;
+
 	// Get the current editor content
 	const getEditorContent = () => {
 		if (!stepData) return "";
@@ -28,12 +29,42 @@ export function LeftSideView(props: { width: string; activeApi?: string }) {
 		return typeof value === "string" ? value : JSON.stringify(value, null, 2);
 	};
 
+	// Calculate statistics and validation for JavaScript code
+	const codeAnalysis = useMemo(() => {
+		// Only calculate stats for JavaScript/code tabs, not JSON
+		if (activeTabConfig.language !== "javascript") {
+			return null;
+		}
+
+		const content = getEditorContent();
+		if (!content || content.trim() === "") {
+			return null;
+		}
+
+		try {
+			// Get statistics
+			const statistics = CodeValidator.getCodeStatistics(content);
+
+			// Get validation warnings (if we have a schema for this property)
+			let validation = null;
+			const schema = getFunctionSchema(activeTabConfig.property);
+			if (schema) {
+				validation = CodeValidator.validate(content, schema);
+			}
+
+			return {
+				statistics,
+				validation,
+			};
+		} catch (error) {
+			console.error("Error analyzing code:", error);
+			return null;
+		}
+	}, [activeLeftTab, stepData, activeApi]);
+
 	// Handle editor changes
 	const handleEditorChange = (value: string | undefined) => {
 		if (!value || !stepData || !playgroundContext.updateStepMock) return;
-
-		console.log("value changed:", value);
-		// Update the config in context
 		playgroundContext.updateStepMock(
 			stepData.action_id,
 			activeTabConfig.property,
@@ -49,12 +80,8 @@ export function LeftSideView(props: { width: string; activeApi?: string }) {
 		<div
 			className={`border rounded-md ${width} flex flex-col overflow-hidden transition-all duration-500 ease-in-out`}
 		>
+			{/* Header with Tabs */}
 			<div className="flex border-b bg-gray-50 items-center h-8">
-				{/* Title on left side */}
-				{/* <div className="px-4 py-3">
-					<span className="text-lg font-semibold text-gray-700">Editor</span>
-				</div> */}
-				{/* Tabs on right side */}
 				<div className="ml-auto flex overflow-auto">
 					{PLAYGROUND_LEFT_TABS.map((tab) => (
 						<button
@@ -71,9 +98,19 @@ export function LeftSideView(props: { width: string; activeApi?: string }) {
 					))}
 				</div>
 			</div>
-			<div className="flex-1 p-4">
+			{/* Statistics & Warnings Footer - Only show for JavaScript code */}
+			{codeAnalysis && (
+				<div className="px-4 py-2">
+					<CodeStatistics
+						statistics={codeAnalysis.statistics}
+						validation={codeAnalysis.validation}
+					/>
+				</div>
+			)}
+			{/* Editor - takes remaining space */}
+			<div className="flex-1 p-2 overflow-hidden">
 				<Editor
-					key={`${activeApi}-${activeLeftTab}`} // Key ensures re-render when switching
+					key={`${activeApi}-${activeLeftTab}`}
 					theme="dark-skyblue"
 					beforeMount={handleEditorWillMount}
 					height="100%"
@@ -86,7 +123,6 @@ export function LeftSideView(props: { width: string; activeApi?: string }) {
 						lineNumbers: "on",
 						scrollBeyondLastLine: true,
 						automaticLayout: true,
-						// wordWrap: "on",
 						formatOnPaste: true,
 						formatOnType: true,
 					}}

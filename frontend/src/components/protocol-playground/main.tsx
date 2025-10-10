@@ -2,6 +2,9 @@ import { useEffect, useState } from "react";
 import { PlaygroundContext } from "./context/playground-context";
 import { MockPlaygroundConfigType } from "./mock-engine/types";
 import GetPlaygroundComponent from "./starter-page";
+import { usePlaygroundModals } from "./hooks/use-playground-modal";
+import { ExecutionResult } from "./mock-engine/code-runners/runner";
+import { toast } from "react-toastify";
 
 export default function ProtocolPlayGround() {
 	const [playgroundState, setPlaygroundState] = useState<
@@ -11,6 +14,9 @@ export default function ProtocolPlayGround() {
 		"editing"
 	);
 	const [activeApi, setActiveApi] = useState<string | undefined>(undefined);
+	const [activeTerminalData, setActiveTerminalData] = useState<
+		ExecutionResult[]
+	>([]);
 
 	function setCurrentConfig(config: MockPlaygroundConfigType | undefined) {
 		if (!config) {
@@ -44,6 +50,41 @@ export default function ProtocolPlayGround() {
 		setCurrentConfig(newConfig);
 	};
 
+	const updateTransactionHistory = (
+		actionId: string,
+		newPayload: any,
+		savedInfo?: any
+	) => {
+		const current = playgroundState;
+		if (!current) return;
+		const historyEntry = {
+			action_id: actionId,
+			payload: newPayload,
+			saved_info: savedInfo || {},
+		};
+		current.transaction_history.push(historyEntry);
+		setCurrentConfig({ ...current });
+	};
+
+	// Reset transaction history (optionally from a specific action ID)
+	const resetTransactionHistory = (actionId?: string) => {
+		const current = playgroundState;
+		if (!current) return;
+		if (actionId === undefined) {
+			current.transaction_history = [];
+		} else {
+			const index = current.transaction_history.findIndex(
+				(entry) => entry.action_id === actionId
+			);
+			if (index === -1) {
+				toast.error("Action ID not found in transaction history");
+				return;
+			}
+			current.transaction_history = current.transaction_history.slice(0, index);
+		}
+		setCurrentConfig({ ...current });
+	};
+
 	// try to load from local storage
 	useEffect(() => {
 		const savedConfig = localStorage.getItem("playgroundConfig");
@@ -67,6 +108,11 @@ export default function ProtocolPlayGround() {
 				updateStepMock,
 				activeApi,
 				setActiveApi,
+				activeTerminalData,
+				setActiveTerminalData,
+				useModal: usePlaygroundModals(),
+				updateTransactionHistory,
+				resetTransactionHistory,
 			}}
 		>
 			<div className="mt-2 w-full h-screen flex flex-col">

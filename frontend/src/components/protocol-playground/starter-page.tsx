@@ -7,14 +7,14 @@ export default function GetPlaygroundComponent() {
 	const { config, setCurrentConfig } = useContext(PlaygroundContext);
 	const [domain, setDomain] = useState("");
 	const [version, setVersion] = useState("");
-
+	const [flowId, setFlowId] = useState("");
 	if (config) {
 		return <PlaygroundPage />;
 	}
 
-	function SetConfig(domain: string, version: string) {
-		if (domain && version) {
-			setCurrentConfig(createInitialMockConfig(domain, version));
+	function SetConfig(domain: string, version: string, flowId: string) {
+		if (domain && version && flowId) {
+			setCurrentConfig(createInitialMockConfig(domain, version, flowId));
 		}
 	}
 
@@ -75,9 +75,23 @@ export default function GetPlaygroundComponent() {
 							/>
 						</div>
 
+						{/* Flow ID input */}
+						<div>
+							<label className="block text-xs font-semibold text-sky-700 mb-1.5 uppercase tracking-wider">
+								Flow ID
+							</label>
+							<input
+								type="text"
+								value={flowId}
+								onChange={(e) => setFlowId(e.target.value)}
+								placeholder="Unique identifier for your flow"
+								className="w-full px-4 py-2.5 bg-gradient-to-r from-sky-50 to-blue-50 border-2 border-sky-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-300 focus:border-sky-400 transition-all duration-300 text-sky-900 placeholder-sky-400 text-sm"
+							/>
+						</div>
+
 						{/* Launch button */}
 						<button
-							onClick={() => SetConfig(domain, version)}
+							onClick={() => SetConfig(domain, version, flowId)}
 							className="w-full mt-4 relative group overflow-hidden"
 						>
 							<div className="absolute inset-0 bg-gradient-to-r from-sky-400 via-blue-500 to-cyan-500 rounded-xl"></div>
