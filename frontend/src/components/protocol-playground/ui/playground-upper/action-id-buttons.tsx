@@ -24,55 +24,58 @@ export const ActionIdsButtons = ({
 
 	const getActionButtonClass = (action: (typeof actionData)[0]) => {
 		const baseClass =
-			"px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 relative";
+			"px-3 py-1 rounded text-xs font-semibold transition-all duration-200 relative";
 		const statusClass = action.completed
-			? "bg-sky-100 text-sky-700 border-2 border-sky-300 hover:bg-sky-200 shadow-sm"
-			: "bg-white text-gray-700 border-2 border-gray-200 hover:border-sky-300 hover:bg-sky-50";
+			? "bg-green-100 text-green-700 border border-green-300 hover:bg-green-200"
+			: "bg-white text-gray-700 border border-gray-200 hover:border-sky-300 hover:bg-sky-50";
 		const activeClass =
 			activeApi === action.id
-				? "ring-2 ring-sky-500 ring-offset-2 scale-105 shadow-md"
+				? "ring-1 ring-sky-500 ring-offset-1 shadow-sm"
 				: "";
 
 		return `${baseClass} ${statusClass} ${activeClass}`;
 	};
 
 	return (
-		<div className="h-14 flex items-center px-6 bg-white border-b border-sky-100 overflow-x-auto">
-			<div className="flex items-center gap-3">
+		<div className="h-9 flex items-center px-4 bg-white border-b border-sky-100 overflow-x-auto">
+			<div className="flex items-center gap-2">
 				{actionData.map((action, index) => (
-					<div key={action.id} className="flex items-center gap-3">
+					<div key={action.id} className="flex items-center gap-2">
 						<button
 							onClick={() => onApiSelect(action.id)}
 							className={getActionButtonClass(action)}
 						>
 							{action.completed && (
-								<span className="absolute -top-1 -right-1 w-3 h-3 bg-sky-500 rounded-full border-2 border-white"></span>
+								<span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-green-500 rounded-full border border-white"></span>
 							)}
 							{action.id}
 						</button>
 						{index !== actionData.length - 1 && (
-							<svg
-								className="w-4 h-4 text-sky-400"
-								fill="none"
-								viewBox="0 0 24 24"
-								stroke="currentColor"
-							>
-								<path
-									strokeLinecap="round"
-									strokeLinejoin="round"
-									strokeWidth={2}
-									d="M9 5l7 7-7 7"
-								/>
-							</svg>
+							<span className="inline-block w-3 h-3 text-sky-400">
+								<svg
+									viewBox="0 0 12 12"
+									fill="none"
+									xmlns="http://www.w3.org/2000/svg"
+									className="w-full h-full"
+								>
+									<path
+										d="M3 2L8 6L3 10"
+										stroke="currentColor"
+										strokeWidth="2"
+										strokeLinecap="round"
+										strokeLinejoin="round"
+									/>
+								</svg>
+							</span>
 						)}
 					</div>
 				))}
 				{actionData.length === 0 && (
 					<button
 						onClick={onAddAction}
-						className="px-4 py-2 flex items-center gap-2 bg-sky-500 text-white rounded-lg hover:bg-sky-600 transition-all duration-200 font-medium shadow-sm"
+						className="px-3 py-1 flex items-center gap-1.5 bg-sky-500 text-white rounded hover:bg-sky-600 transition-all duration-200 font-medium text-xs"
 					>
-						<IoMdAdd size={18} /> Add Action
+						<IoMdAdd size={14} /> Add Action
 					</button>
 				)}
 			</div>

@@ -133,33 +133,35 @@ function App() {
 			}}
 		>
 			<SessionProvider>
-				<TopBar onSupportClick={() => setIsModalOpen(true)} />
-				<div className="pt-[72px] h-full">
-					<Routes>
-						<Route path="/home" element={<HomePage />} />
-						<Route path="/schema" element={<SchemaValidation />} />
-						{/* <Route path="/unit" element={<ApiTesting />} /> */}
-						<Route
-							path="/scenario"
-							element={<FlowContent type={"SCENARIO"} />}
-						/>
-						<Route
-							path="/customFlow"
-							element={<FlowContent type={"CUSTOM"} />}
-						/>
-						<Route path="/login" element={<GitHubLogin />} />
-						<Route path="/profile" element={<UserProfile />} />
-						<Route path="/tools" element={<ToolsPage />} />
-						<Route path="/seller-onboarding" element={<SellerOnboarding />} />
-						<Route path="/playground" element={<ProtocolPlayGround />} />
-						<Route
-							path="/sample-playground"
-							element={<ProtocolPlayGroundSample />}
-						/>
-						<Route path="*" element={<NotFoundPage />} />
-					</Routes>
+				<div className="flex flex-col min-h-screen">
+					<TopBar onSupportClick={() => setIsModalOpen(true)} />
+					<div className="pt-[72px] flex-1">
+						<Routes>
+							<Route path="/home" element={<HomePage />} />
+							<Route path="/schema" element={<SchemaValidation />} />
+							{/* <Route path="/unit" element={<ApiTesting />} /> */}
+							<Route
+								path="/scenario"
+								element={<FlowContent type={"SCENARIO"} />}
+							/>
+							<Route
+								path="/customFlow"
+								element={<FlowContent type={"CUSTOM"} />}
+							/>
+							<Route path="/login" element={<GitHubLogin />} />
+							<Route path="/profile" element={<UserProfile />} />
+							<Route path="/tools" element={<ToolsPage />} />
+							<Route path="/seller-onboarding" element={<SellerOnboarding />} />
+							<Route path="/playground" element={<ProtocolPlayGround />} />
+							<Route
+								path="/sample-playground"
+								element={<ProtocolPlayGroundSample />}
+							/>
+							<Route path="*" element={<NotFoundPage />} />
+						</Routes>
+					</div>
+					<Footer />
 				</div>
-				<Footer />
 				<Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
 					<Support />
 				</Modal>

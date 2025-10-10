@@ -10,7 +10,6 @@ import { PlaygroundHeader } from "./ui/playground-upper/playground-header";
 import { ActionIdsButtons } from "./ui/playground-upper/action-id-buttons";
 import { useModalHandlers } from "./hooks/use-modal";
 import { usePlaygroundActions } from "./hooks/use-playground-actions";
-import { usePlaygroundModals } from "./hooks/use-playground-modal";
 
 // ===== MAIN COMPONENT =====
 export default function PlaygroundPage() {
@@ -18,11 +17,11 @@ export default function PlaygroundPage() {
 
 	const { activeApi, setActiveApi } = playgroundContext;
 
-	const { exportConfig, importConfig, clearConfig, runConfig } =
+	const { exportConfig, importConfig, clearConfig, runConfig, generateResult } =
 		useConfigOperations();
 	const { addAction, deleteAction, updateAction } = usePlaygroundActions();
 	const { popupOpen, openModal, closeModal, popupContent } =
-		usePlaygroundModals();
+		playgroundContext.useModal;
 	const modalHandlers = useModalHandlers({
 		activeApi,
 		setActiveApi,
@@ -43,11 +42,12 @@ export default function PlaygroundPage() {
 	const rightPanelWidth = isTransactionViewerActive ? "w-[70%]" : "w-1/2";
 
 	return (
-		<div className="w-full h-screen flex flex-col">
+		<div className="w-full h-full flex flex-col">
 			<div>
 				<PlaygroundHeader
 					domain={playgroundContext.config?.meta.domain || "N/A"}
 					version={playgroundContext.config?.meta.version || "N/A"}
+					flowId={playgroundContext.config?.meta.flowId || "N/A"}
 					onExport={exportConfig}
 					onImport={importConfig}
 					onClear={modalHandlers.showDeleteConfirmation}
@@ -70,7 +70,7 @@ export default function PlaygroundPage() {
 					onDeleteClick={modalHandlers.deleteAction}
 				/>
 			</div>
-			<div className="flex gap-4 h-full mt-1">
+			<div className="flex gap-4 h-full mt-1 max-h-[82vh]">
 				<LeftSideView width={leftPanelWidth} activeApi={activeApi} />
 				<RightSideView
 					width={rightPanelWidth}

@@ -6,6 +6,7 @@ const sampleMockConfig: MockPlaygroundConfigType = {
 	meta: {
 		domain: "ONDC:TRV14",
 		version: "2.0.1",
+		flowId: "catalog-discovery-flow",
 	},
 	transaction_data: {
 		transaction_id: "123e4567-e89b-12d3-a456-426614174000",
@@ -153,16 +154,15 @@ export function generatePayload(
 	const context = contextFunc(txMeta);
 	defaultPayload["context"] = context;
 	const sessionData = getSessionDataUpToStep(index, config);
-	const generateFunction = extractFunctionBody(step.mock.generate);
-	const generateFunc = new Function(
-		"defaultPayload",
-		"sessionData",
-		step.mock.generate
-	) as (defaultPayload: any, sessionData: any) => any;
-	sessionData.user_inputs = inputs;
-	const generatedPayload = generateFunc(defaultPayload, sessionData);
-	console.log("Generated payload:", generatedPayload);
-	return generatedPayload;
+	const functionCode = step.mock.generate;
+	const requiredInputs = JSON.parse(step.mock.inputs);
+	return {
+		defaultPayload,
+		sessionData,
+		functionCode,
+		requiredInputs,
+		actionId: step.action_id,
+	};
 }
 
 export function getSessionDataUpToStep(
@@ -192,12 +192,14 @@ export function getSessionDataUpToStep(
 
 export function createInitialMockConfig(
 	domain: string,
-	version: string
+	version: string,
+	flowId: string
 ): MockPlaygroundConfigType {
 	return {
 		meta: {
 			domain,
 			version,
+			flowId,
 		},
 		transaction_data: {
 			transaction_id: uuidv4(),
@@ -264,7 +266,7 @@ export function getDefaultStep(
 	responseFor: string | null = null,
 	unsolicited = false,
 	config: MockPlaygroundConfigType
-) {
+): MockPlaygroundConfigType["steps"][0] {
 	return {
 		api: action,
 		action_id: action_id,
@@ -273,9 +275,9 @@ export function getDefaultStep(
 		unsolicited: unsolicited,
 		description: "",
 		mock: {
-			generate: getFormattedContent("generate", "return defaultPayload;"),
-			validate: getFormattedContent("validate", ""),
-			requirements: getFormattedContent("requirements", ""),
+			generate: getFormattedContent("generate"),
+			validate: getFormattedContent("validate"),
+			requirements: getFormattedContent("requirements"),
 			defaultPayload: JSON.stringify(
 				{
 					context: getnerateContext(config, action, responseFor),

@@ -4,6 +4,7 @@ import { MdEdit } from "react-icons/md";
 import { TbColumnInsertLeft, TbColumnInsertRight } from "react-icons/tb";
 import IconButton from "../../ui/mini-components/icon-button";
 import { IoMdTrash } from "react-icons/io";
+import { RxReset } from "react-icons/rx";
 
 interface ActionIdConfigurationPanelProps {
 	actionId: string | undefined;
@@ -104,6 +105,12 @@ export function ActionIdConfigurationPanel({
 				</div>
 
 				<div className="flex items-center gap-1 flex-shrink-0">
+					<IconButton
+						icon={<RxReset size={16} />}
+						onClick={() => playgroundContext.resetTransactionHistory(actionId)}
+						color="gray"
+						label="Reset"
+					/>
 					<IconButton
 						icon={<TbColumnInsertLeft size={16} />}
 						onClick={onAddBeforeClick}

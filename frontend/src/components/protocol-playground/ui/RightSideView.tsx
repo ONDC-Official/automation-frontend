@@ -5,6 +5,9 @@ import { PlaygroundContext } from "../context/playground-context";
 import { getSessionDataUpToStep } from "../mock-engine";
 import { DarkSkyBlueTheme } from "./editor-themes";
 import SessionDataTab from "./session-data-tab";
+import JsonSchemaForm from "./extras/rsjf-form";
+import { ExecutionResults } from "./extras/terminal";
+import OutputPayloadViewer from "./extras/output-payload-viewer";
 
 export function RightSideView(props: {
 	width: string;
@@ -13,15 +16,12 @@ export function RightSideView(props: {
 	activeApi: string | undefined;
 }) {
 	const { width, activeRightTab, setActiveRightTab } = props;
-	console.log(width, activeRightTab, setActiveRightTab);
 
 	return (
 		<div
 			className={`border rounded-md ${width} flex flex-col overflow-hidden transition-all duration-500 ease-in-out`}
 		>
 			<div className="flex border-b bg-gray-50 items-center h-8">
-				{/* Tabs on right side */}
-				{/* <div className="lex bg-gray"> */}
 				{PLAYGROUND_RIGHT_TABS.map((tab) => (
 					<button
 						key={tab.id}
@@ -35,9 +35,8 @@ export function RightSideView(props: {
 						{tab.label}
 					</button>
 				))}
-				{/* </div> */}
 			</div>
-			<div className="flex-1 p-4">
+			<div className="flex-1 p-4 overflow-auto max-h-[82vh]">
 				<GetRightSideContent
 					tabId={activeRightTab}
 					actionId={props.activeApi}
@@ -62,6 +61,10 @@ function GetRightSideContent({
 		playgroundContext.config?.steps.findIndex(
 			(step) => step.action_id === actionId
 		) ?? 0;
+	const activePayload =
+		playgroundContext.config?.transaction_history.find(
+			(f) => f.action_id === actionId
+		)?.payload || undefined;
 	switch (tabId) {
 		case "session":
 			return (
@@ -72,7 +75,9 @@ function GetRightSideContent({
 					height="100%"
 					language="json"
 					value={JSON.stringify(
-						getSessionDataUpToStep(index, playgroundContext.config)
+						getSessionDataUpToStep(index, playgroundContext.config),
+						null,
+						2
 					)}
 					options={{
 						padding: { top: 16, bottom: 16 },
@@ -89,6 +94,12 @@ function GetRightSideContent({
 			);
 		case "transaction":
 			return <SessionDataTab />;
+		case "terminal":
+			return (
+				<ExecutionResults results={playgroundContext.activeTerminalData} />
+			);
+		case "output_payload":
+			return <OutputPayloadViewer payload={activePayload} />;
 	}
 	return <></>;
 }

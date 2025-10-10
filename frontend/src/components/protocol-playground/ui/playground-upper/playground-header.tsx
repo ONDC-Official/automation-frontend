@@ -6,6 +6,7 @@ import { IoMdTrash } from "react-icons/io";
 interface PlaygroundHeaderProps {
 	domain?: string;
 	version?: string;
+	flowId?: string;
 	onExport: () => void;
 	onImport: () => void;
 	onClear: () => void;
@@ -15,6 +16,7 @@ interface PlaygroundHeaderProps {
 export const PlaygroundHeader = ({
 	domain,
 	version,
+	flowId,
 	onExport,
 	onImport,
 	onClear,
@@ -36,6 +38,10 @@ export const PlaygroundHeader = ({
 				<div className="flex items-center gap-2 px-3 py-1.5 bg-white rounded-lg border border-sky-100">
 					<span className="text-gray-500">Version:</span>
 					<span className="font-semibold text-gray-800">{version}</span>
+				</div>
+				<div className="flex items-center gap-2 px-3 py-1.5 bg-white rounded-lg border border-sky-100">
+					<span className="text-gray-500">Flow ID:</span>
+					<span className="font-semibold text-gray-800">{flowId}</span>
 				</div>
 			</div>
 		</div>
