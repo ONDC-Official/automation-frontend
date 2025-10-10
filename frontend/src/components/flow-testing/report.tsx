@@ -1,10 +1,11 @@
 import { toast } from "react-toastify";
 import Heading from "../ui/mini-components/ondc-gradient-text";
 import axios from "axios";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import InfoCard from "../ui/info-card";
 import { useReactToPrint } from "react-to-print";
 import { IoMdArrowRoundBack } from "react-icons/io";
+import { putCacheData } from "../../utils/request-utils";
 
 export function ReportPage({
   sessionId,
@@ -23,7 +24,7 @@ export function ReportPage({
     documentTitle: "report",
   });
 
-  async function fetchPayloads() {
+  const fetchPayloads = useCallback(async () => {
     try {
       const response = await axios.get(
         `${import.meta.env.VITE_BACKEND_URL}/sessions`,
@@ -35,18 +36,26 @@ export function ReportPage({
       toast.error("Error while fetching session data");
       console.error("error while fetching session data", e);
     }
-  }
+  }, [sessionId]);
 
   useEffect(() => {
     fetchPayloads();
-  }, []);
+  }, [fetchPayloads]);
 
   return (
     <>
       <div className="flex flex-row justify-between">
         <div className="flex flex-row gap-2 justify-center items-center">
           <button
-            onClick={() => setStep((s: number) => s - 1)}
+            onClick={async () => {
+              const newStep = 1;
+              setStep(newStep);
+              try {
+                await putCacheData({ activeStep: newStep }, sessionId);
+              } catch (e) {
+                console.error("Error updating step in backend:", e);
+              }
+            }}
             className="p-2 rounded-full border border-sky-500 hover:bg-blue-100 text-sky-500 hover:text-blue-600 transition-all duration-300 shadow-sm"
           >
             <IoMdArrowRoundBack size={12} />
