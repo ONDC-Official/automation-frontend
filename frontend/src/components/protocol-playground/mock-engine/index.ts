@@ -220,7 +220,7 @@ export function createInitialMockConfig(
 				code: meta.city
 			}
 		  },
-		  version: "2.0.1",
+		  version: meta.version,
 		  timestamp: new Date().toISOString(),
 		  transaction_id: meta.transaction_id,
 		  message_id: meta.message_id,
@@ -241,8 +241,10 @@ export function getnerateContext(
 ) {
 	const txMeta: any = config.transaction_data;
 	txMeta.action = action;
-	txMeta.city = "std:001";
+	txMeta.city = "*";
 	txMeta.message_id = responseFor ? "" : uuidv4();
+	txMeta.domain = config.meta.domain;
+	txMeta.version = config.meta.version;
 	if (responseFor) {
 		const refStep = config.steps.find((s) => s.action_id === responseFor);
 		if (refStep) {
