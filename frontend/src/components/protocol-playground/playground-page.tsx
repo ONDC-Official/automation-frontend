@@ -17,8 +17,13 @@ export default function PlaygroundPage() {
 
 	const { activeApi, setActiveApi } = playgroundContext;
 
-	const { exportConfig, importConfig, clearConfig, runConfig } =
-		useConfigOperations();
+	const {
+		exportConfig,
+		importConfig,
+		clearConfig,
+		runConfig,
+		createFlowSession,
+	} = useConfigOperations();
 	const { addAction, deleteAction, updateAction } = usePlaygroundActions();
 	const { popupOpen, openModal, closeModal, popupContent } =
 		playgroundContext.useModal;
@@ -52,6 +57,7 @@ export default function PlaygroundPage() {
 					onImport={importConfig}
 					onClear={modalHandlers.showDeleteConfirmation}
 					onRun={runConfig}
+					onCreateFlowSession={createFlowSession}
 				/>
 				<ActionIdsButtons
 					steps={playgroundContext.config?.steps || []}
