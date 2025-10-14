@@ -103,6 +103,13 @@ export const useConfigOperations = () => {
 			toast.error("No steps to run");
 			return;
 		}
+		if (
+			playgroundContext.config.steps.length ===
+			playgroundContext.config.transaction_history.length
+		) {
+			toast.info("All steps have already been executed");
+			return;
+		}
 		const currentIndex = calcCurrentIndex(playgroundContext.config);
 		if (currentIndex === -1) {
 			toast.info("All steps have been executed");
@@ -146,5 +153,43 @@ export const useConfigOperations = () => {
 		}
 	};
 
-	return { exportConfig, importConfig, clearConfig, runConfig };
+	const createFlowSession = () => {
+		function handleFormSubmit(formData: any) {
+			console.log("Creating flow session with data:", formData);
+		}
+
+		modal.openModal(
+			<div>
+				<h2 className="text-l font-semibold mb-1">Create Live Flow Session</h2>
+				<p className="mb-2">Enter details to create a live session.</p>
+				<JsonSchemaForm
+					schema={{
+						type: "object",
+						properties: {
+							subscriber_url: {
+								type: "string",
+								format: "uri",
+								title: "Your Subscriber URL",
+							},
+							role: {
+								type: "string",
+								enum: ["BAP", "BPP"],
+								default: "BAP",
+								title: "Your Role",
+							},
+						},
+					}}
+					onSubmit={handleFormSubmit}
+				/>
+			</div>
+		);
+	};
+
+	return {
+		exportConfig,
+		importConfig,
+		clearConfig,
+		runConfig,
+		createFlowSession,
+	};
 };

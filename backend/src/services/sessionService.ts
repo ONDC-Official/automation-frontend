@@ -3,7 +3,7 @@ import { SessionCache, SubscriberCache } from "../interfaces/newSessionData";
 import { saveLog } from "../utils/console";
 import axios from "../utils/axios";
 import logger from "@ondc/automation-logger";
-const SESSION_EXPIRY = 3600; // 1 hour
+const SESSION_EXPIRY = 3600 * 24; // 24 hour
 const EXPECTATION_EXPIRY = 5 * 60 * 1000; // 5 minutes
 
 export const createSessionService = async (
@@ -48,7 +48,7 @@ export const createSessionService = async (
 		},
 		flowConfigs: map,
 		activeFlow: null,
-		activeStep: 0
+		activeStep: 0,
 	};
 
 	try {
@@ -63,6 +63,32 @@ export const createSessionService = async (
 		logger.error("Error creating session", loggerMeta, e);
 		throw new Error("Error creating session");
 	}
+};
+
+export const createSessionWithCompleteData = async (
+	sessionId: string,
+	sessionData: SessionCache,
+	loggerMeta: any
+) => {
+	await RedisService.setKey(
+		sessionId,
+		JSON.stringify(sessionData),
+		SESSION_EXPIRY
+	);
+	logger.info("Playground Session created successfully", loggerMeta);
+	return "Playground Session created successfully";
+};
+
+export const setMockSession = async (
+	sessionId: string,
+	playgroundConfig: any
+) => {
+	await RedisService.setKey(
+		"PLAYGROUND_" + sessionId,
+		JSON.stringify(playgroundConfig),
+		SESSION_EXPIRY
+	);
+	return "Playground config set successfully";
 };
 
 export const getSessionService = async (sessionId: string) => {
@@ -91,7 +117,7 @@ export const updateSessionService = async (
 		env,
 		sessionDifficulty,
 		activeFlow,
-		activeStep
+		activeStep,
 	} = data;
 
 	try {
@@ -111,8 +137,9 @@ export const updateSessionService = async (
 		if (domain) session.domain = domain;
 		if (sessionDifficulty) session.sessionDifficulty = sessionDifficulty;
 		if (env) session.env = env;
-		if (activeFlow) session.activeFlow = activeFlow === "NONE" ? null : activeFlow
-		if (activeStep) session.activeStep = activeStep
+		if (activeFlow)
+			session.activeFlow = activeFlow === "NONE" ? null : activeFlow;
+		if (activeStep) session.activeStep = activeStep;
 
 		// Save the updated session data back to Redis
 		await RedisService.setKey(
@@ -353,14 +380,13 @@ export const updateFlowService = async (
 		const session: SessionCache = JSON.parse(sessionData);
 		const map: Record<string, any> = {};
 
-		if(flows) {
+		if (flows) {
 			for (const flow of flows) {
 				map[flow.id] = flow;
 			}
 
-			session.flowConfigs = map
+			session.flowConfigs = map;
 		}
-	
 
 		// Save the updated session data back to Redis
 		await RedisService.setKey(
@@ -378,4 +404,3 @@ export const updateFlowService = async (
 		throw new Error("Error updating flow");
 	}
 };
-

@@ -1,6 +1,7 @@
 import IconButton from "../../../ui/mini-components/icon-button";
-import { FaDownload, FaUpload, FaPlay } from "react-icons/fa";
-import { IoMdTrash } from "react-icons/io";
+import { FaDownload, FaUpload } from "react-icons/fa";
+import { GrFlows } from "react-icons/gr";
+import { IoMdSkipForward, IoMdTrash } from "react-icons/io";
 
 // components/playground/PlaygroundHeader.tsx
 interface PlaygroundHeaderProps {
@@ -11,6 +12,7 @@ interface PlaygroundHeaderProps {
 	onImport: () => void;
 	onClear: () => void;
 	onRun: () => void;
+	onCreateFlowSession: () => void;
 }
 
 export const PlaygroundHeader = ({
@@ -21,6 +23,7 @@ export const PlaygroundHeader = ({
 	onImport,
 	onClear,
 	onRun,
+	onCreateFlowSession,
 }: PlaygroundHeaderProps) => (
 	<div className="h-16 flex items-center justify-between px-6 bg-gradient-to-r from-white to-sky-50 border-b border-sky-100 shadow-sm">
 		<div className="flex items-center gap-6">
@@ -47,6 +50,13 @@ export const PlaygroundHeader = ({
 		</div>
 
 		<div className="flex items-center gap-2">
+			<button
+				onClick={onCreateFlowSession}
+				className="flex items-center gap-2 px-3 py-1.5 bg-sky-50 rounded-lg text-sky-600 border border-sky-100 hover:bg-sky-100 hover:scale-105 transition-transform shadow-sm"
+			>
+				<GrFlows size={16} />
+				<span className="font-semibold text-sm">create live session</span>
+			</button>
 			<IconButton
 				icon={<FaDownload size={16} />}
 				label="Export"
@@ -66,7 +76,7 @@ export const PlaygroundHeader = ({
 				color="red"
 			/>
 			<IconButton
-				icon={<FaPlay size={16} />}
+				icon={<IoMdSkipForward size={18} />}
 				label="Run"
 				onClick={onRun}
 				color="orange"
