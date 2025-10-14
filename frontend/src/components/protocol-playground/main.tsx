@@ -1,10 +1,14 @@
 import { useEffect, useState } from "react";
 import { PlaygroundContext } from "./context/playground-context";
-import { MockPlaygroundConfigType } from "./mock-engine/types";
+
 import GetPlaygroundComponent from "./starter-page";
 import { usePlaygroundModals } from "./hooks/use-playground-modal";
-import { ExecutionResult } from "./mock-engine/code-runners/runner";
+
 import { toast } from "react-toastify";
+import MockRunner, {
+	ExecutionResult,
+	MockPlaygroundConfigType,
+} from "@ondc/automation-mock-runner";
 
 export default function ProtocolPlayGround() {
 	const [playgroundState, setPlaygroundState] = useState<
@@ -31,6 +35,20 @@ export default function ProtocolPlayGround() {
 	const updateStepMock = (stepId: string, property: string, value: string) => {
 		const current = playgroundState;
 		if (!current) return;
+		if (
+			property === "generate" ||
+			property === "validate" ||
+			property === "requirements"
+		) {
+			value = MockRunner.encodeBase64(value);
+		} else {
+			try {
+				value = JSON.parse(value);
+			} catch (e) {
+				console.error("Invalid JSON value:", e);
+				return;
+			}
+		}
 		const newSteps = current.steps.map((step) => {
 			if (step.action_id === stepId) {
 				return {

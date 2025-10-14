@@ -1,8 +1,8 @@
 import { useContext } from "react";
 import { PlaygroundContext } from "../context/playground-context";
 import { toast } from "react-toastify";
-import { getStepProperties } from "../utils/form-helper";
-import { getDefaultStep } from "../mock-engine";
+import MockRunner from "@ondc/automation-mock-runner";
+// import { getDefaultStep } from "../mock-engine";
 
 // hooks/usePlaygroundActions.ts
 export const usePlaygroundActions = () => {
@@ -15,15 +15,7 @@ export const usePlaygroundActions = () => {
 			return;
 		}
 
-		const { owner, unsolicited } = getStepProperties(api);
-		const newStep = getDefaultStep(
-			api,
-			actionId,
-			owner,
-			null,
-			unsolicited,
-			playgroundContext.config as any
-		);
+		const newStep = new MockRunner(currentConfig).getDefaultStep(api, actionId);
 
 		if (!currentConfig.steps) {
 			currentConfig.steps = [];

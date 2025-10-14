@@ -2,12 +2,12 @@ import { Editor } from "@monaco-editor/react";
 import { PLAYGROUND_RIGHT_TABS, PlaygroundRightTabType } from "../types";
 import { useContext } from "react";
 import { PlaygroundContext } from "../context/playground-context";
-import { getSessionDataUpToStep } from "../mock-engine";
+
 import { DarkSkyBlueTheme } from "./editor-themes";
 import SessionDataTab from "./session-data-tab";
-import JsonSchemaForm from "./extras/rsjf-form";
 import { ExecutionResults } from "./extras/terminal";
 import OutputPayloadViewer from "./extras/output-payload-viewer";
+import MockRunner from "@ondc/automation-mock-runner";
 
 export function RightSideView(props: {
 	width: string;
@@ -65,6 +65,49 @@ function GetRightSideContent({
 		playgroundContext.config?.transaction_history.find(
 			(f) => f.action_id === actionId
 		)?.payload || undefined;
+
+	const getSessionData = () => {
+		try {
+			if (!playgroundContext.config) {
+				return JSON.stringify(
+					{
+						error: "No configuration available",
+						timestamp: new Date().toISOString(),
+					},
+					null,
+					2
+				);
+			}
+
+			const mockRunner = new MockRunner(playgroundContext.config as any);
+			const sessionData = mockRunner.getSessionDataUpToStep(index);
+			return JSON.stringify(sessionData, null, 2);
+		} catch (error: any) {
+			const errorInfo = {
+				error: "Failed to generate session data",
+				message: error?.message || "Unknown error occurred",
+				type: error?.name || "Error",
+				step: index,
+				actionId: actionId,
+				timestamp: new Date().toISOString(),
+			};
+
+			try {
+				return JSON.stringify(errorInfo, null, 2);
+			} catch (stringifyError) {
+				// Fallback if even error serialization fails
+				return JSON.stringify(
+					{
+						error: "Critical error - unable to serialize data",
+						originalError: String(error),
+						timestamp: new Date().toISOString(),
+					},
+					null,
+					2
+				);
+			}
+		}
+	};
 	switch (tabId) {
 		case "session":
 			return (
@@ -74,11 +117,7 @@ function GetRightSideContent({
 					beforeMount={handleEditorWillMount}
 					height="100%"
 					language="json"
-					value={JSON.stringify(
-						getSessionDataUpToStep(index, playgroundContext.config),
-						null,
-						2
-					)}
+					value={getSessionData()}
 					options={{
 						padding: { top: 16, bottom: 16 },
 						fontSize: 16,
@@ -99,7 +138,9 @@ function GetRightSideContent({
 				<ExecutionResults results={playgroundContext.activeTerminalData} />
 			);
 		case "output_payload":
-			return <OutputPayloadViewer payload={activePayload} />;
+			return (
+				<OutputPayloadViewer payload={activePayload} actionId={actionId} />
+			);
 	}
 	return <></>;
 }

@@ -1,7 +1,7 @@
 // components/extras/statistics.tsx
 
+import { ValidationResult } from "@ondc/automation-mock-runner";
 import { FiAlertCircle, FiAlertTriangle, FiCheckCircle } from "react-icons/fi";
-import { ValidationResult } from "../../mock-engine/code-runners/code-validator";
 
 interface CodeStatisticsProps {
 	statistics?: {

@@ -1,7 +1,8 @@
 import { useContext, useState } from "react";
 import { PlaygroundContext } from "./context/playground-context";
-import { createInitialMockConfig } from "./mock-engine";
+
 import PlaygroundPage from "./playground-page";
+import { createInitialMockConfig } from "@ondc/automation-mock-runner";
 
 export default function GetPlaygroundComponent() {
 	const { config, setCurrentConfig } = useContext(PlaygroundContext);

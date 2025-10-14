@@ -1,4 +1,5 @@
 // components/ExecutionResults.tsx
+import { ExecutionResult } from "@ondc/automation-mock-runner";
 import { useState } from "react";
 import {
 	IoCheckmarkCircle,
@@ -12,7 +13,6 @@ import {
 	IoCodeSlash,
 	IoAlertCircle,
 } from "react-icons/io5";
-import { ExecutionResult } from "../../mock-engine/code-runners/runner";
 
 interface ExecutionResultsProps {
 	results: ExecutionResult[];
