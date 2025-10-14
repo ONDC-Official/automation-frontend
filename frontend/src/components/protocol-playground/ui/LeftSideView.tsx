@@ -3,10 +3,13 @@ import { PlaygroundContext } from "../context/playground-context";
 import { Editor } from "@monaco-editor/react";
 import { PLAYGROUND_LEFT_TABS } from "../types";
 import { DarkSkyBlueTheme } from "./editor-themes";
+import MockRunner, {
+	CodeValidator,
+	getFunctionSchema,
+} from "@ondc/automation-mock-runner";
 import { CodeStatistics } from "./extras/statistics";
-import { CodeValidator } from "../mock-engine/code-runners/code-validator";
-import { getFunctionSchema } from "../mock-engine/code-runners/function-registry";
 
+// import { CodeStatistics } from "@ondc/automation-mock-runner"
 export function LeftSideView(props: { width: string; activeApi?: string }) {
 	const { width, activeApi } = props;
 	const playgroundContext = useContext(PlaygroundContext);
@@ -26,6 +29,9 @@ export function LeftSideView(props: { width: string; activeApi?: string }) {
 	const getEditorContent = () => {
 		if (!stepData) return "";
 		const value = stepData.mock[activeTabConfig.property];
+		if (typeof value === "string") {
+			return MockRunner.decodeBase64(value);
+		}
 		return typeof value === "string" ? value : JSON.stringify(value, null, 2);
 	};
 
@@ -47,9 +53,18 @@ export function LeftSideView(props: { width: string; activeApi?: string }) {
 
 			// Get validation warnings (if we have a schema for this property)
 			let validation = null;
-			const schema = getFunctionSchema(activeTabConfig.property);
-			if (schema) {
-				validation = CodeValidator.validate(content, schema);
+			const baseProperty = activeTabConfig.property;
+			if (
+				baseProperty === "generate" ||
+				baseProperty === "validate" ||
+				baseProperty === "requirements"
+			) {
+				const property =
+					baseProperty === "requirements" ? "meetsRequirements" : baseProperty;
+				const schema = getFunctionSchema(property);
+				if (schema) {
+					validation = CodeValidator.validate(content, schema);
+				}
 			}
 
 			return {

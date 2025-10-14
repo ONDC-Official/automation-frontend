@@ -1,5 +1,7 @@
-import { ExecutionResult } from "../mock-engine/code-runners/runner";
-import { MockPlaygroundConfigType } from "../mock-engine/types";
+import {
+	ExecutionResult,
+	MockPlaygroundConfigType,
+} from "@ondc/automation-mock-runner";
 import { Context, createContext } from "react";
 interface PlaygroundContextProps {
 	config: MockPlaygroundConfigType | undefined;

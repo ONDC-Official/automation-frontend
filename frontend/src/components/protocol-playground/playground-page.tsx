@@ -17,7 +17,7 @@ export default function PlaygroundPage() {
 
 	const { activeApi, setActiveApi } = playgroundContext;
 
-	const { exportConfig, importConfig, clearConfig, runConfig, generateResult } =
+	const { exportConfig, importConfig, clearConfig, runConfig } =
 		useConfigOperations();
 	const { addAction, deleteAction, updateAction } = usePlaygroundActions();
 	const { popupOpen, openModal, closeModal, popupContent } =

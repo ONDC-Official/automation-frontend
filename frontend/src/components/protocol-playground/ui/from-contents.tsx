@@ -1,8 +1,9 @@
 // ===== FORM COMPONENTS =====
 // Extracted form components for better code organization and reusability
 
+import { PlaygroundActionStep } from "@ondc/automation-mock-runner";
 import { inputClass } from "../../ui/forms/inputClass";
-import { PlaygroundActionStep } from "../mock-engine/types";
+
 import { ONDC_ACTION_LIST } from "../types";
 
 export const AddActionForm = ({

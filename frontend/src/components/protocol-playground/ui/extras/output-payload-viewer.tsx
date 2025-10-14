@@ -2,7 +2,7 @@
 import JsonView from "@uiw/react-json-view";
 import { toast } from "react-toastify";
 import { fetchFormFieldData } from "../../../../utils/request-utils";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import Markdown from "react-markdown";
 import axios from "axios";
 import {
@@ -17,8 +17,16 @@ import {
 	IoTerminal,
 	IoDocumentText,
 } from "react-icons/io5";
+import MockRunner from "@ondc/automation-mock-runner";
+import { PlaygroundContext } from "../../context/playground-context";
 
-export default function OutputPayloadViewer({ payload }: { payload: any }) {
+export default function OutputPayloadViewer({
+	payload,
+	actionId,
+}: {
+	payload: any;
+	actionId: string | undefined;
+}) {
 	const [activeDomain, setActiveDomain] = useState<any>({});
 	const [mdData, setMdData] = useState("");
 	const [loading, setIsLoading] = useState(false);
@@ -29,6 +37,17 @@ export default function OutputPayloadViewer({ payload }: { payload: any }) {
 	// Section toggles
 	const [showPayload, setShowPayload] = useState(true);
 	const [showValidation, setShowValidation] = useState(true);
+	const [showL2Results, setShowL2Results] = useState(true);
+
+	const playgroundContext = useContext(PlaygroundContext);
+	const [l2Result, setL2Result] = useState<
+		| {
+				valid: boolean;
+				code: number;
+				description: string;
+		  }
+		| undefined
+	>(undefined);
 
 	useEffect(() => {
 		const getFormFields = async () => {
@@ -116,7 +135,28 @@ export default function OutputPayloadViewer({ payload }: { payload: any }) {
 		}
 	};
 
-	if (!payload) {
+	const verifyRequestL2 = async () => {
+		setIsLoading(true);
+		try {
+			const config = playgroundContext.config;
+			if (!config) {
+				toast.error("No configuration found");
+				setIsLoading(false);
+				return;
+			}
+			const l2Result = await new MockRunner(config).runValidatePayload(
+				actionId || "",
+				payload
+			);
+			playgroundContext.setActiveTerminalData((s) => [...s, l2Result]);
+			setL2Result(l2Result.result);
+		} catch (e) {
+			console.log("error in l2", e);
+		}
+		setIsLoading(false);
+	};
+
+	if (!payload || !actionId) {
 		return (
 			<div className="h-full flex items-center justify-center bg-gray-50 rounded-lg border border-gray-200">
 				<div className="text-center p-8">
@@ -161,11 +201,20 @@ export default function OutputPayloadViewer({ payload }: { payload: any }) {
 						)}
 					</button>
 					<button
-						disabled
-						className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-200 text-gray-500 text-xs font-semibold rounded-md cursor-not-allowed"
+						className="flex items-center gap-1.5 px-3 py-1.5 bg-sky-500 text-white text-xs font-semibold rounded-md hover:bg-sky-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition shadow-sm"
+						onClick={verifyRequestL2}
 					>
-						<IoShieldCheckmark className="text-base" />
-						<span>L2 Validation</span>
+						{loading ? (
+							<>
+								<div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
+								<span>Running...</span>
+							</>
+						) : (
+							<>
+								<IoShieldCheckmark className="text-base" />
+								<span>L2 Validation</span>
+							</>
+						)}
 					</button>
 				</div>
 			</div>
@@ -199,7 +248,7 @@ export default function OutputPayloadViewer({ payload }: { payload: any }) {
 					)}
 				</div>
 
-				{/* Validation Results Section */}
+				{/* L1 Validation Results Section */}
 				{mdData && (
 					<div className="border-b border-gray-200">
 						<button
@@ -229,7 +278,7 @@ export default function OutputPayloadViewer({ payload }: { payload: any }) {
 												: "text-yellow-700"
 									}`}
 								>
-									Validation Results
+									L1 Validation Results
 								</span>
 								{validationSuccess !== null && (
 									<span
@@ -368,6 +417,85 @@ export default function OutputPayloadViewer({ payload }: { payload: any }) {
 								>
 									{mdData}
 								</Markdown>
+							</div>
+						)}
+					</div>
+				)}
+
+				{/* L2 Validation Results Section */}
+				{l2Result && (
+					<div className="border-b border-gray-200">
+						<button
+							onClick={() => setShowL2Results(!showL2Results)}
+							className={`w-full flex items-center justify-between p-3 transition text-left ${
+								!l2Result.valid
+									? "bg-red-50 hover:bg-red-100"
+									: "bg-green-50 hover:bg-green-100"
+							}`}
+						>
+							<div className="flex items-center gap-2">
+								{!l2Result.valid ? (
+									<IoCloseCircle className="text-red-500 text-base" />
+								) : (
+									<IoCheckmarkCircle className="text-green-500 text-base" />
+								)}
+								<span
+									className={`text-sm font-semibold ${
+										!l2Result.valid ? "text-red-700" : "text-green-700"
+									}`}
+								>
+									L2 Validation Results
+								</span>
+								<span
+									className={`px-2 py-0.5 rounded text-xs font-medium ${
+										l2Result.valid
+											? "bg-green-100 text-green-700"
+											: "bg-red-100 text-red-700"
+									}`}
+								>
+									{l2Result.valid ? "Passed" : "Failed"}
+								</span>
+							</div>
+							{showL2Results ? (
+								<IoChevronUp
+									className={
+										!l2Result.valid ? "text-red-400" : "text-green-400"
+									}
+								/>
+							) : (
+								<IoChevronDown
+									className={
+										!l2Result.valid ? "text-red-400" : "text-green-400"
+									}
+								/>
+							)}
+						</button>
+						{showL2Results && (
+							<div className="p-4 bg-white">
+								<div className="space-y-3">
+									<div className="flex items-center gap-2">
+										<span className="text-sm font-medium text-gray-600">
+											Status Code:
+										</span>
+										<span
+											className={`px-2 py-1 rounded text-xs font-mono ${
+												l2Result.code === 200
+													? "bg-green-100 text-green-800 border border-green-200"
+													: "bg-red-100 text-red-800 border border-red-200"
+											}`}
+										>
+											{l2Result.code}
+										</span>
+									</div>
+									<div>
+										<span className="text-sm font-medium text-gray-600 block mb-1">
+											Description:
+										</span>
+										<p className="text-sm text-gray-700 bg-gray-50 p-3 rounded border">
+											{l2Result.description}
+										</p>
+									</div>
+								</div>
 							</div>
 						)}
 					</div>

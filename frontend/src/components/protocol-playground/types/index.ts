@@ -1,4 +1,4 @@
-import { PlaygroundActionStep } from "../mock-engine/types";
+import { PlaygroundActionStep } from "@ondc/automation-mock-runner";
 
 export const ONDC_ACTION_LIST = [
 	"search",

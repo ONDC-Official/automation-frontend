@@ -1,15 +1,15 @@
 import { useContext } from "react";
 import { PlaygroundContext } from "../context/playground-context";
 import { toast } from "react-toastify";
-import { calcCurrentIndex, generatePayload } from "../mock-engine";
-import { useCodeRunner } from "./use-code-runner";
 import JsonSchemaForm from "../ui/extras/rsjf-form";
+import { calcCurrentIndex } from "../mock-engine";
+import MockRunner from "@ondc/automation-mock-runner";
 
 // hooks/useConfigOperations.ts
 export const useConfigOperations = () => {
 	const playgroundContext = useContext(PlaygroundContext);
-	const generateRunner = useCodeRunner("generate");
-	const generateResult = generateRunner.result;
+	// const generateRunner = useCodeRunner("generate");
+	// const generateResult = generateRunner.result;
 	const modal = playgroundContext.useModal;
 
 	const exportConfig = () => {
@@ -57,13 +57,13 @@ export const useConfigOperations = () => {
 		toast.success("All configurations deleted");
 	};
 
-	const showFormModal = (data: any, onSubmit: (formData: any) => void) => {
+	const showFormModal = (schema: any, onSubmit: (formData: any) => void) => {
 		modal.openModal(
 			<div className="p-1">
 				<h2 className="text-l font-semibold mb-1">Enter Input Data</h2>
 				<JsonSchemaForm
-					schema={data.requiredInputs.jsonSchema}
-					formData={data.sessionData}
+					schema={schema}
+					// formData={data.sessionData}
 					onSubmit={onSubmit}
 				/>
 			</div>
@@ -71,17 +71,16 @@ export const useConfigOperations = () => {
 		toast.success("Please fill in the form to continue");
 	};
 
-	const executePayload = async (data: {
-		defaultPayload: any;
-		sessionData: any;
-		functionCode: string;
-		requiredInputs: any;
-		actionId: string;
-	}) => {
-		const result = await generateRunner.executeCode(data.functionCode, [
-			data.defaultPayload,
-			data.sessionData,
-		]);
+	const executePayload = async (data: { actionId: string; inputs: any }) => {
+		const config = playgroundContext.config;
+		if (!config) {
+			toast.error("No configuration found");
+			return false;
+		}
+		const result = await new MockRunner(config).runGeneratePayload(
+			data.actionId,
+			data.inputs
+		);
 		console.log("Generate Result:", result);
 		if (!result) {
 			toast.error("No result from code execution");
@@ -105,25 +104,41 @@ export const useConfigOperations = () => {
 			return;
 		}
 		const currentIndex = calcCurrentIndex(playgroundContext.config);
-
+		if (currentIndex === -1) {
+			toast.info("All steps have been executed");
+			return;
+		}
+		const currentStep = playgroundContext.config.steps[currentIndex];
 		try {
-			const data = generatePayload(currentIndex, playgroundContext.config);
-			if (
-				data.requiredInputs === null ||
-				Object.keys(data.requiredInputs).length === 0
-			) {
-				await executePayload(data);
+			const inputs = currentStep.mock.inputs || {};
+			console.log(
+				"Current Step Inputs:",
+				inputs,
+				inputs === null,
+				Object.keys(inputs)
+			);
+			if (inputs === null || Object.keys(inputs).length === 0) {
+				await executePayload({
+					actionId: currentStep.action_id,
+					inputs: {},
+				});
 				return;
 			}
 
 			const handleFormSubmit = async (formData: any) => {
 				console.log("Form submitted with data:", formData);
 				modal.closeModal();
-				data.sessionData.user_inputs = formData;
-				await executePayload(data);
+				// data.sessionData.user_inputs = formData;
+				await executePayload({
+					actionId: currentStep.action_id,
+					inputs: formData,
+				});
 			};
-
-			showFormModal(data, handleFormSubmit);
+			if (!currentStep.mock.inputs.jsonSchema) {
+				toast.error("No input schema defined for this action");
+				return;
+			}
+			showFormModal(currentStep.mock.inputs.jsonSchema, handleFormSubmit);
 		} catch (e) {
 			console.error("Error generating payload:", e);
 			toast.error("Error generating payload. Check console for details.");
@@ -131,5 +146,5 @@ export const useConfigOperations = () => {
 		}
 	};
 
-	return { exportConfig, importConfig, clearConfig, runConfig, generateResult };
+	return { exportConfig, importConfig, clearConfig, runConfig };
 };
