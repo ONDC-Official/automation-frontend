@@ -234,33 +234,6 @@ export function createInitialMockConfig(
 	};
 }
 
-export function getnerateContext(
-	config: MockPlaygroundConfigType,
-	action: string,
-	responseFor: string | null = null
-) {
-	const txMeta: any = config.transaction_data;
-	txMeta.action = action;
-	txMeta.city = "*";
-	txMeta.message_id = responseFor ? "" : uuidv4();
-	txMeta.domain = config.meta.domain;
-	txMeta.version = config.meta.version;
-	if (responseFor) {
-		const refStep = config.steps.find((s) => s.action_id === responseFor);
-		if (refStep) {
-			const payload = config.transaction_history.find(
-				(th) => th.action_id === refStep.action_id
-			)?.payload;
-			const messageId = payload?.context?.message_id;
-			if (messageId) {
-				txMeta.message_id = messageId;
-			}
-		}
-	}
-	const contextFunc = new Function("meta", config.contextFunc);
-	return contextFunc(txMeta);
-}
-
 export function getDefaultStep(
 	action: string,
 	action_id: string,
@@ -338,6 +311,33 @@ export function getDefaultStep(
 	};
 }
 
+export function getnerateContext(
+	config: MockPlaygroundConfigType,
+	action: string,
+	responseFor: string | null = null
+) {
+	const txMeta: any = config.transaction_data;
+	txMeta.action = action;
+	txMeta.city = "*";
+	txMeta.message_id = responseFor ? "" : uuidv4();
+	txMeta.domain = config.meta.domain;
+	txMeta.version = config.meta.version;
+	if (responseFor) {
+		const refStep = config.steps.find((s) => s.action_id === responseFor);
+		if (refStep) {
+			const payload = config.transaction_history.find(
+				(th) => th.action_id === refStep.action_id
+			)?.payload;
+			const messageId = payload?.context?.message_id;
+			if (messageId) {
+				txMeta.message_id = messageId;
+			}
+		}
+	}
+	const contextFunc = new Function("meta", config.contextFunc);
+	return contextFunc(txMeta);
+}
+
 export function calcCurrentIndex(config: MockPlaygroundConfigType) {
 	const history = config.transaction_history;
 	const steps = config.steps;
@@ -348,12 +348,4 @@ export function calcCurrentIndex(config: MockPlaygroundConfigType) {
 		}
 	}
 	return steps.length;
-}
-
-function extractFunctionBody(funcStr: string) {
-	const funcBodyMatch = funcStr.match(/function[^{]*{([\s\S]*)}$/);
-	if (funcBodyMatch && funcBodyMatch[1]) {
-		return funcBodyMatch[1].trim();
-	}
-	return funcStr;
 }
