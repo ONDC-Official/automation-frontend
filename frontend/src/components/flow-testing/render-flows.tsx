@@ -17,7 +17,7 @@ import JsonView from "@uiw/react-json-view";
 import { githubDarkTheme } from "@uiw/react-json-view/githubDark";
 import Tabs from "../ui/mini-components/tabs";
 // import Console from "../console";
-import { ILogs } from "../../interface";
+// import { ILogs } from "../../interface";
 import { SessionContext } from "../../context/context";
 import CircularProgress from "../ui/circular-cooldown";
 import Modal from "../modal";
