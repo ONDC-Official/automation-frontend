@@ -16,7 +16,7 @@ import Loader from "../ui/mini-components/loader";
 import JsonView from "@uiw/react-json-view";
 import { githubDarkTheme } from "@uiw/react-json-view/githubDark";
 import Tabs from "../ui/mini-components/tabs";
-import Console from "../console";
+// import Console from "../console";
 import { ILogs } from "../../interface";
 import { SessionContext } from "../../context/context";
 import CircularProgress from "../ui/circular-cooldown";
@@ -153,7 +153,7 @@ function RenderFlows({
   const [responseData, setResponseData] = useState({});
   const [metadata, setMetadata] = useState({});
   console.log("metadata", metadata);
-  const [logs, setLogs] = useState<ILogs[]>([]);
+  // const [logs, setLogs] = useState<ILogs[]>([]);
   const apiCallFailCount = useRef(0);
   const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
   const navigate = useNavigate();
