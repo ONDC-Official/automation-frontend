@@ -6,6 +6,8 @@ import { Context, createContext } from "react";
 interface PlaygroundContextProps {
 	config: MockPlaygroundConfigType | undefined;
 	setCurrentConfig: (config: MockPlaygroundConfigType | undefined) => void;
+	dirtyConfig: boolean;
+	setDirtyConfig: React.Dispatch<React.SetStateAction<boolean>>;
 	currentState: "editing" | "running";
 	setCurrentState: React.Dispatch<React.SetStateAction<"editing" | "running">>;
 	updateStepMock: (stepId: string, property: string, value: string) => void;

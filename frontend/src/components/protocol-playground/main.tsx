@@ -21,7 +21,7 @@ export default function ProtocolPlayGround() {
 	const [activeTerminalData, setActiveTerminalData] = useState<
 		ExecutionResult[]
 	>([]);
-
+	const [dirtyConfig, setDirtyConfig] = useState(true);
 	function setCurrentConfig(config: MockPlaygroundConfigType | undefined) {
 		if (!config) {
 			localStorage.removeItem("playgroundConfig");
@@ -123,6 +123,8 @@ export default function ProtocolPlayGround() {
 				setCurrentConfig: setCurrentConfig,
 				currentState,
 				setCurrentState,
+				dirtyConfig,
+				setDirtyConfig,
 				updateStepMock,
 				activeApi,
 				setActiveApi,
