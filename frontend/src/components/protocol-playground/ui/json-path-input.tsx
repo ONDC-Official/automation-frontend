@@ -10,11 +10,8 @@ export interface handleAddParam {
 }
 
 const JsonPathInput = ({
-  children,
-  onEdit,
   onView,
   onDelete,
-  setShowAlert,
   alias,
   path,
   selectedCall,
@@ -22,16 +19,13 @@ const JsonPathInput = ({
   setError,
   handleAdd,
 }: {
-  onEdit?: () => void;
   onView?: (path: string) => void;
   onDelete?: (aliasToDelete: string) => void;
-  setShowAlert: React.Dispatch<React.SetStateAction<boolean>>;
-  children: React.ReactNode;
   alias: string;
-  path: string;
+  path: any;
   selectedCall: string;
-  error: boolean;
-  setError: React.Dispatch<React.SetStateAction<boolean>>;
+  error: string;
+  setError: React.Dispatch<React.SetStateAction<string>>;
   handleAdd: (data: handleAddParam) => void;
 }) => {
   const [isEdit, setIsEdit] = useState(false);

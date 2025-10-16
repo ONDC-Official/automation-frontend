@@ -24,11 +24,11 @@ export default function SessionDataTab() {
   } = useContext(PlaygroundContext);
   const [showAlert, setShowAlert] = useState(false);
   const [showInput, setShowInput] = useState(false);
-  const [alias, setAlias] = useState("");
-  const [path, setPath] = useState("");
-  const [error, setError] = useState("");
+  const [alias, setAlias] = useState<string>("");
+  const [path, setPath] = useState<string>("");
+  const [error, setError] = useState<string>("");
   const [isViewActive, setIsViewActive] = useState(false);
-  const [viewPath, setViewPath] = useState("");
+  const [viewPath, setViewPath] = useState<string>("");
 
   useEffect(() => {
     const currentLength = playgroundConfig?.steps?.length || 0;
@@ -45,36 +45,35 @@ export default function SessionDataTab() {
   }, []);
 
   const handleContinue = () => {
-    setPlayGroundConfig((prev) => {
-      // Find the step matching the selected action_id
-      const stepIndex = prev.steps.findIndex(
-        (s) => s.action_id === selectedCall
-      );
-      if (stepIndex === -1) return prev;
+    if (!selectedCall || !alias) return;
 
-      const updatedSteps = [...prev.steps];
-      const currentStep = updatedSteps[stepIndex];
+    // Clone the current config
+    const updatedConfig = { ...playgroundConfig };
 
-      // Clone saveData safely
-      const updatedSaveData = { ...currentStep.mock.saveData };
+    // Find the step by selected action_id
+    const stepIndex = updatedConfig.steps.findIndex(
+      (s: any) => s.action_id === selectedCall
+    );
+    if (stepIndex === -1) return;
 
-      // Remove the alias if it exists
-      delete updatedSaveData[alias];
+    // Clone the target step and its saveData
+    const step = { ...updatedConfig.steps[stepIndex] };
+    const updatedSaveData = { ...step.mock.saveData };
 
-      // Update step and return new config
-      updatedSteps[stepIndex] = {
-        ...currentStep,
-        mock: {
-          ...currentStep.mock,
-          saveData: updatedSaveData,
-        },
-      };
+    // Remove the alias if present
+    delete updatedSaveData[alias];
 
-      return { ...prev, steps: updatedSteps };
-    });
+    // Write back the updated step
+    step.mock.saveData = updatedSaveData;
+    updatedConfig.steps[stepIndex] = step;
+
+    // Commit changes
+    setPlayGroundConfig(updatedConfig);
+
+    // Reset UI and state
+    resetTransactionHistory();
     setShowAlert(false);
     setAlias("");
-    // Add your logic to remove saveData here
   };
 
   const handleCancel = () => {
@@ -83,77 +82,72 @@ export default function SessionDataTab() {
 
   const handleKeyClick = (path: string, key: string, e: React.MouseEvent) => {
     e.stopPropagation();
+    if (!selectedCall) return;
+
     const baseAlias = `payload_${key}`;
 
-    const step = playgroundConfig?.steps?.find(
-      (s) => s.action_id === selectedCall
-    );
+    // Clone current config
+    const updatedConfig = { ...playgroundConfig };
 
-    // ✅ Check if path is already in saveData
-    const saveData = step?.mock.saveData || {};
-    const existingAlias = Object.keys(saveData).find(
+    // Find the step for selectedCall
+    const step = updatedConfig.steps.find((s) => s.action_id === selectedCall);
+    if (!step) return;
+
+    const saveData = { ...step.mock.saveData };
+
+    // Check if path already exists in saveData
+    const existingInSaveData = Object.keys(saveData).find(
       (alias) => saveData[alias] === path
     );
 
-    if (existingAlias) {
+    if (existingInSaveData) {
       console.log(
-        `⚠️ This item (alias: ${existingAlias}) is already saved in saveData and cannot be modified.`
+        `⚠️ This item (alias: ${existingInSaveData}) is already saved in saveData and cannot be modified.`
       );
-      setAlias(existingAlias);
+      setAlias(existingInSaveData);
       setShowAlert(true);
       return;
     }
 
-    setPlayGroundConfig((prev) => {
-      const index = prev.transaction_history.findIndex(
-        (h) => h.action_id === selectedCall
-      );
-      if (index === -1) return prev;
+    // Find corresponding transaction_history entry
+    const historyIndex = updatedConfig.transaction_history.findIndex(
+      (h) => h.action_id === selectedCall
+    );
+    if (historyIndex === -1) return;
 
-      const updatedHistory = [...prev.transaction_history];
-      const current = updatedHistory[index];
+    const historyEntry = { ...updatedConfig.transaction_history[historyIndex] };
+    const savedInfo = { ...(historyEntry.saved_info || {}) };
 
-      // ✅ Ensure saved_info is an object
-      const savedInfo =
-        current.saved_info && typeof current.saved_info === "object"
-          ? { ...current.saved_info }
-          : {};
+    // Check if path exists in saved_info — remove if found
+    const existingInSavedInfo = Object.keys(savedInfo).find(
+      (alias) => savedInfo[alias] === path
+    );
 
-      // ✅ Find the corresponding step to access saveData
-      const step = prev.steps.find((s) => s.action_id === selectedCall);
-      const saveData = step?.mock.saveData || {};
-
-      // ✅ Check if path already exists — remove if it does
-      const existingAlias = Object.keys(savedInfo).find(
-        (alias) => savedInfo[alias] === path
-      );
-
-      if (existingAlias) {
-        // Remove if the same path already exists
-        delete savedInfo[existingAlias];
-      } else {
-        // ✅ Generate a unique alias not present in saved_info or saveData
-        let alias = baseAlias;
-        let counter = 1;
-        while (
-          savedInfo.hasOwnProperty(alias) ||
-          saveData.hasOwnProperty(alias)
-        ) {
-          alias = `${baseAlias}_${counter}`;
-          counter++;
-        }
-
-        // Add the new alias → path mapping
-        savedInfo[alias] = path;
+    if (existingInSavedInfo) {
+      delete savedInfo[existingInSavedInfo];
+    } else {
+      // Generate unique alias not present in saved_info or saveData
+      let alias = baseAlias;
+      let counter = 1;
+      while (
+        savedInfo.hasOwnProperty(alias) ||
+        saveData.hasOwnProperty(alias)
+      ) {
+        alias = `${baseAlias}_${counter}`;
+        counter++;
       }
 
-      updatedHistory[index] = {
-        ...current,
-        saved_info: savedInfo,
-      };
+      savedInfo[alias] = path;
+    }
 
-      return { ...prev, transaction_history: updatedHistory };
-    });
+    // Update transaction_history
+    updatedConfig.transaction_history[historyIndex] = {
+      ...historyEntry,
+      saved_info: savedInfo,
+    };
+
+    // Commit updated config
+    setPlayGroundConfig(updatedConfig);
   };
 
   const payloadFromTranscationHistory = (action_id: string) => {
@@ -186,72 +180,85 @@ export default function SessionDataTab() {
   };
 
   const removePath = (aliasToRemove: string) => {
-    setPlayGroundConfig((prev) => {
-      const index = prev.transaction_history.findIndex(
-        (h) => h.action_id === selectedCall
-      );
-      if (index === -1) return prev;
+    if (!selectedCall) return;
 
-      const updatedHistory = [...prev.transaction_history];
-      const current = updatedHistory[index];
+    // Clone the config
+    const updatedConfig = { ...playgroundConfig };
 
-      const newSavedInfo = { ...current.saved_info };
-      delete newSavedInfo[aliasToRemove];
+    // Find the transaction_history entry for the selected call
+    const historyIndex = updatedConfig.transaction_history.findIndex(
+      (h) => h.action_id === selectedCall
+    );
+    if (historyIndex === -1) return;
 
-      updatedHistory[index] = { ...current, saved_info: newSavedInfo };
+    const historyEntry = { ...updatedConfig.transaction_history[historyIndex] };
+    const savedInfo = { ...(historyEntry.saved_info || {}) };
 
-      return { ...prev, transaction_history: updatedHistory };
-    });
+    // Remove the alias
+    delete savedInfo[aliasToRemove];
+
+    // Update the transaction_history entry
+    updatedConfig.transaction_history[historyIndex] = {
+      ...historyEntry,
+      saved_info: savedInfo,
+    };
+
+    // Commit the updated config
+    setPlayGroundConfig(updatedConfig);
   };
 
   const handleSave = () => {
-    setPlayGroundConfig((prev) => {
-      // Clone transaction_history and steps for immutability
-      const updatedHistory = [...prev.transaction_history];
-      const updatedSteps = prev.steps.map((step) => ({ ...step }));
+    if (!selectedCall) return;
 
-      // Find the history entry for selectedCall
-      const historyIndex = updatedHistory.findIndex(
-        (h) => h.action_id === selectedCall
-      );
+    // Clone the playgroundConfig
+    const updatedConfig = { ...playgroundConfig };
 
-      if (historyIndex === -1) return prev;
+    // Clone transaction_history and steps
+    const updatedHistory = [...updatedConfig.transaction_history];
+    const updatedSteps = updatedConfig.steps.map((step) => ({ ...step }));
 
-      const history = updatedHistory[historyIndex];
+    // Find the history entry for selectedCall
+    const historyIndex = updatedHistory.findIndex(
+      (h) => h.action_id === selectedCall
+    );
+    if (historyIndex === -1) return;
 
-      if (!history.saved_info || Object.keys(history.saved_info).length === 0) {
-        return prev; // Nothing to save
-      }
+    const historyEntry = { ...updatedHistory[historyIndex] };
 
-      // Find the corresponding step
-      const stepIndex = updatedSteps.findIndex(
-        (s) => s.action_id === selectedCall
-      );
-      if (stepIndex === -1) return prev;
+    // Nothing to save
+    if (
+      !historyEntry.saved_info ||
+      Object.keys(historyEntry.saved_info).length === 0
+    ) {
+      return;
+    }
 
-      // Update the step's mock.saveData
-      updatedSteps[stepIndex] = {
-        ...updatedSteps[stepIndex],
-        mock: {
-          ...updatedSteps[stepIndex].mock,
-          saveData: {
-            ...updatedSteps[stepIndex].mock.saveData,
-            ...history.saved_info,
-          },
-        },
-      };
+    // Find the corresponding step
+    const stepIndex = updatedSteps.findIndex(
+      (s) => s.action_id === selectedCall
+    );
+    if (stepIndex === -1) return;
 
-      // Clear saved_info in transaction_history
-      updatedHistory[historyIndex] = {
-        ...history,
-        saved_info: {},
-      };
+    const step = { ...updatedSteps[stepIndex] };
 
-      return {
-        ...prev,
-        transaction_history: updatedHistory,
-        steps: updatedSteps,
-      };
+    // Merge saved_info into step.mock.saveData
+    step.mock = {
+      ...step.mock,
+      saveData: {
+        ...step.mock.saveData,
+        ...historyEntry.saved_info,
+      },
+    };
+
+    // Update step and clear saved_info in history
+    updatedSteps[stepIndex] = step;
+    updatedHistory[historyIndex] = { ...historyEntry, saved_info: {} };
+
+    // Commit the updated config
+    setPlayGroundConfig({
+      ...updatedConfig,
+      transaction_history: updatedHistory,
+      steps: updatedSteps,
     });
   };
 
@@ -260,69 +267,52 @@ export default function SessionDataTab() {
     newAlias: string,
     newPath: string
   ) => {
-    setPlayGroundConfig((prev) => {
-      // 🔹 Find the history entry for the selected call
-      const index = prev.transaction_history.findIndex(
-        (h) => h.action_id === selectedCall
+    if (!selectedCall) return;
+
+    // Clone the playgroundConfig
+    const updatedConfig = { ...playgroundConfig };
+
+    // Clone transaction_history
+    const updatedHistory = [...updatedConfig.transaction_history];
+
+    // Find the history entry for selectedCall
+    const historyIndex = updatedHistory.findIndex(
+      (h) => h.action_id === selectedCall
+    );
+    if (historyIndex === -1) return;
+
+    const historyEntry = { ...updatedHistory[historyIndex] };
+    const savedInfo = { ...(historyEntry.saved_info || {}) };
+
+    // 🔹 If the old alias doesn’t exist, do nothing
+    if (!savedInfo.hasOwnProperty(oldAlias)) {
+      console.warn(`Alias "${oldAlias}" not found in saved_info`);
+      return;
+    }
+
+    // 🔹 Check if the new alias already exists (and is not the same as oldAlias)
+    if (newAlias !== oldAlias && savedInfo.hasOwnProperty(newAlias)) {
+      console.warn(
+        `Alias "${newAlias}" already exists. Choose a different alias.`
       );
-      if (index === -1) return prev;
+      return;
+    }
 
-      const updatedHistory = [...prev.transaction_history];
-      const current = updatedHistory[index];
+    // 🔹 Delete the old alias if it's being renamed
+    if (oldAlias !== newAlias) {
+      delete savedInfo[oldAlias];
+    }
 
-      // Ensure saved_info exists
-      const savedInfo = { ...(current.saved_info || {}) };
+    // 🔹 Update (or create) the new alias → path mapping
+    savedInfo[newAlias] = newPath;
 
-      // 🔹 If the alias doesn’t exist, do nothing
-      if (!savedInfo.hasOwnProperty(oldAlias)) {
-        console.warn(`Alias "${oldAlias}" not found in saved_info`);
-        return prev;
-      }
+    // 🔹 Update the history entry
+    updatedHistory[historyIndex] = { ...historyEntry, saved_info: savedInfo };
 
-      // 🔹 Check if the new alias already exists (and is not the same as oldAlias)
-      if (newAlias !== oldAlias && savedInfo.hasOwnProperty(newAlias)) {
-        console.warn(
-          `Alias "${newAlias}" already exists. Choose a different alias.`
-        );
-        return prev;
-      }
-
-      // 🔹 Delete the old alias if it's being renamed
-      if (oldAlias !== newAlias) {
-        delete savedInfo[oldAlias];
-      }
-
-      // 🔹 Update (or create) the new alias → path mapping
-      savedInfo[newAlias] = newPath;
-
-      // 🔹 Update transaction history immutably
-      updatedHistory[index] = {
-        ...current,
-        saved_info: savedInfo,
-      };
-
-      return { ...prev, transaction_history: updatedHistory };
-    });
-  };
-
-  const handleRemoveSavedData = (aliasToRemove: string) => {
-    setPlayGroundConfig((prev) => {
-      const updatedSteps = prev.steps.map((step) => {
-        if (step.action_id === selectedCall) {
-          const newSaveData = { ...step.mock.saveData };
-          delete newSaveData[aliasToRemove];
-          return {
-            ...step,
-            mock: {
-              ...step.mock,
-              saveData: newSaveData,
-            },
-          };
-        }
-        return step;
-      });
-
-      return { ...prev, steps: updatedSteps };
+    // Commit the updated config
+    setPlayGroundConfig({
+      ...updatedConfig,
+      transaction_history: updatedHistory,
     });
   };
 
@@ -356,62 +346,60 @@ export default function SessionDataTab() {
   };
 
   const onAdd = (alias: string, path: string, oldAlias?: string) => {
-    setPlayGroundConfig((prev) => {
-      const stepIndex = prev.steps.findIndex(
-        (s) => s.action_id === selectedCall
+    if (!selectedCall || !playgroundConfig) return;
+
+    // Clone playgroundConfig
+    const updatedConfig = { ...playgroundConfig };
+
+    // Find the step for selectedCall
+    const stepIndex = updatedConfig.steps.findIndex(
+      (s) => s.action_id === selectedCall
+    );
+    if (stepIndex === -1) return;
+
+    const currentStep = { ...updatedConfig.steps[stepIndex] };
+    const saveData = { ...currentStep.mock.saveData }; // clone saveData
+
+    // Determine if we are editing or adding
+    const isEditing = oldAlias && oldAlias in saveData;
+
+    // Prevent duplicate paths under different aliases
+    const duplicateEntry = Object.entries(saveData).find(
+      ([existingAlias, existingPath]) =>
+        existingPath === path && existingAlias !== (oldAlias || alias)
+    );
+
+    if (duplicateEntry) {
+      console.warn(
+        `⚠️ This path is already assigned to alias "${duplicateEntry[0]}".`
       );
-      if (stepIndex === -1) return prev;
+      return;
+    }
 
-      const updatedSteps = [...prev.steps];
-      const currentStep = updatedSteps[stepIndex];
-      const saveData = { ...currentStep.mock.saveData }; // clone
-
-      // 🧠 Determine if we're editing or adding
-      const isEditing = oldAlias && oldAlias in saveData;
-
-      // 🧩 Prevent duplicate paths under different aliases
-      const duplicatePathEntry = Object.entries(saveData).find(
-        ([existingAlias, existingPath]) =>
-          existingPath === path && existingAlias !== (oldAlias || alias)
+    if (isEditing) {
+      // If alias changed, delete the old one
+      if (oldAlias !== alias) delete saveData[oldAlias];
+      saveData[alias] = path;
+      console.log(
+        `✏️ Updated entry: ${oldAlias !== alias ? `renamed to "${alias}"` : `"${alias}"`} with path "${path}".`
       );
+    } else {
+      // Adding new entry
+      saveData[alias] = path;
+      console.log(`✅ Added new alias "${alias}" → "${path}".`);
+    }
 
-      if (duplicatePathEntry) {
-        console.warn(
-          `⚠️ This path is already assigned to alias "${duplicatePathEntry[0]}".`
-        );
-        return prev;
-      }
+    // Update the step with new saveData
+    updatedConfig.steps[stepIndex] = {
+      ...currentStep,
+      mock: {
+        ...currentStep.mock,
+        saveData,
+      },
+    };
 
-      if (isEditing) {
-        // 📝 Editing existing entry
-        if (oldAlias !== alias) {
-          // Alias changed → delete old key
-          delete saveData[oldAlias];
-        }
-
-        // Update alias → path
-        saveData[alias] = path;
-
-        console.log(
-          `✏️ Updated entry: ${oldAlias !== alias ? `renamed to "${alias}"` : `"${alias}"`} with path "${path}".`
-        );
-      } else {
-        // ➕ Adding new entry
-        saveData[alias] = path;
-        console.log(`✅ Added new alias "${alias}" → "${path}".`);
-      }
-
-      // 💾 Update step
-      updatedSteps[stepIndex] = {
-        ...currentStep,
-        mock: {
-          ...currentStep.mock,
-          saveData,
-        },
-      };
-
-      return { ...prev, steps: updatedSteps };
-    });
+    // Commit the updated config
+    setPlayGroundConfig(updatedConfig);
   };
 
   const selectedHistory = playgroundConfig?.transaction_history.find(
