@@ -9,6 +9,8 @@ import MockRunner, {
 	ExecutionResult,
 	MockPlaygroundConfigType,
 } from "@ondc/automation-mock-runner";
+import { useWorkbenchFlows } from "../../hooks/useWorkbenchFlow";
+import RenderFlows from "../flow-testing/render-flows";
 
 export default function ProtocolPlayGround() {
 	const [playgroundState, setPlaygroundState] = useState<
@@ -17,6 +19,7 @@ export default function ProtocolPlayGround() {
 	const [currentState, setCurrentState] = useState<"editing" | "running">(
 		"editing"
 	);
+	const [loading, setLoading] = useState(false);
 	const [activeApi, setActiveApi] = useState<string | undefined>(undefined);
 	const [activeTerminalData, setActiveTerminalData] = useState<
 		ExecutionResult[]
@@ -116,6 +119,26 @@ export default function ProtocolPlayGround() {
 		}
 	}, []);
 
+	const workbenchFlow = useWorkbenchFlows();
+
+	// const Body = () => {
+	// 	switch (workbenchFlow.flowStepNum) {
+	// 		case 0:
+	// 			return <GetPlaygroundComponent />;
+	// 		case 1:
+	// 			return (
+	// 				<RenderFlows
+	// 					flows={workbenchFlow.flows}
+	// 					subUrl={workbenchFlow.subscriberUrl}
+	// 					sessionId={workbenchFlow.session}
+	// 					type={"SCENARIO"}
+	// 					setStep={workbenchFlow.setFlowStepNum}
+	// 					setReport={workbenchFlow.setReport}
+	// 				/>
+	// 			);
+	// 	}
+	// };
+
 	return (
 		<PlaygroundContext.Provider
 			value={{
@@ -133,11 +156,39 @@ export default function ProtocolPlayGround() {
 				useModal: usePlaygroundModals(),
 				updateTransactionHistory,
 				resetTransactionHistory,
+				loading,
+				setLoading,
+				workbenchFlow,
 			}}
 		>
 			<div className="mt-2 w-full h-screen flex flex-col">
-				<GetPlaygroundComponent />
+				<Body workbenchFlow={workbenchFlow} />
+				{/* <GetPlaygroundComponent /> */}
 			</div>
 		</PlaygroundContext.Provider>
 	);
 }
+
+const Body = ({
+	workbenchFlow,
+}: {
+	workbenchFlow: ReturnType<typeof useWorkbenchFlows>;
+}) => {
+	switch (workbenchFlow.flowStepNum) {
+		case 0:
+			return <GetPlaygroundComponent />;
+		case 1:
+			return (
+				<RenderFlows
+					flows={workbenchFlow.flows}
+					subUrl={workbenchFlow.subscriberUrl}
+					sessionId={workbenchFlow.session}
+					type={"SCENARIO"}
+					setStep={workbenchFlow.setFlowStepNum}
+					setReport={workbenchFlow.setReport}
+				/>
+			);
+		default:
+			return null;
+	}
+};

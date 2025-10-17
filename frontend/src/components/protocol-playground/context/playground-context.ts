@@ -3,6 +3,7 @@ import {
 	MockPlaygroundConfigType,
 } from "@ondc/automation-mock-runner";
 import { Context, createContext } from "react";
+import { WorkbenchFlowType } from "../../../hooks/useWorkbenchFlow";
 interface PlaygroundContextProps {
 	config: MockPlaygroundConfigType | undefined;
 	setCurrentConfig: (config: MockPlaygroundConfigType | undefined) => void;
@@ -31,6 +32,9 @@ interface PlaygroundContextProps {
 		openModal: (content: JSX.Element) => void;
 		closeModal: () => void;
 	};
+	loading: boolean;
+	setLoading: React.Dispatch<React.SetStateAction<boolean>>;
+	workbenchFlow: WorkbenchFlowType;
 }
 export const PlaygroundContext: Context<PlaygroundContextProps> =
 	createContext<PlaygroundContextProps>({} as PlaygroundContextProps);

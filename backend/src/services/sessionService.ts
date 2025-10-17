@@ -81,8 +81,13 @@ export const createSessionWithCompleteData = async (
 
 export const setMockSession = async (
 	sessionId: string,
-	playgroundConfig: any
+	playgroundConfig: any,
+	loggerMeta: any
 ) => {
+	logger.info(
+		`Setting playground config for session ${sessionId} as PLAYGROUND_${sessionId}`,
+		loggerMeta
+	);
 	await RedisService.setKey(
 		"PLAYGROUND_" + sessionId,
 		JSON.stringify(playgroundConfig),

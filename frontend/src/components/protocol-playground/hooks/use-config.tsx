@@ -3,7 +3,8 @@ import { PlaygroundContext } from "../context/playground-context";
 import { toast } from "react-toastify";
 import JsonSchemaForm from "../ui/extras/rsjf-form";
 import { calcCurrentIndex } from "../mock-engine";
-import MockRunner from "@ondc/automation-mock-runner";
+import MockRunner, { convertToFlowConfig } from "@ondc/automation-mock-runner";
+import { createFlowSessionWithPlayground } from "../utils/request-utils";
 
 // hooks/useConfigOperations.ts
 export const useConfigOperations = () => {
@@ -154,8 +155,30 @@ export const useConfigOperations = () => {
 	};
 
 	const createFlowSession = () => {
-		function handleFormSubmit(formData: any) {
-			console.log("Creating flow session with data:", formData);
+		async function handleFormSubmit(formData: any) {
+			if (!playgroundContext.config) {
+				toast.error("No configuration found");
+				return;
+			}
+			console.log("Form submitted with data:", formData);
+			playgroundContext.setLoading(true);
+			const result = await createFlowSessionWithPlayground(
+				playgroundContext.config,
+				formData.subscriber_url,
+				formData.role
+			);
+			if (!result) {
+				toast.error("Error creating flow session");
+				playgroundContext.setLoading(false);
+				return;
+			}
+			playgroundContext.workbenchFlow.setFlowStepNum(1);
+			playgroundContext.workbenchFlow.setSession(result);
+			playgroundContext.workbenchFlow.setFlows([
+				convertToFlowConfig(playgroundContext.config),
+			]);
+			playgroundContext.workbenchFlow.setSubscriberUrl(formData.subscriber_url);
+			playgroundContext.setLoading(false);
 		}
 
 		modal.openModal(
@@ -168,7 +191,7 @@ export const useConfigOperations = () => {
 						properties: {
 							subscriber_url: {
 								type: "string",
-								format: "uri",
+								// format: "uri",
 								title: "Your Subscriber URL",
 							},
 							role: {
@@ -178,6 +201,8 @@ export const useConfigOperations = () => {
 								title: "Your Role",
 							},
 						},
+						required: ["subscriber_url", "role"],
+						additionalProperties: false,
 					}}
 					onSubmit={handleFormSubmit}
 				/>

@@ -550,7 +550,7 @@ export default function SessionDataTab() {
 							{error && <p className="text-red-400 text-sm">{error}</p>}
 							<div className="flex gap-2 mt-2">
 								<button
-									onClick={handleAdd}
+									onClick={() => handleAdd({})}
 									className="px-4 py-2 bg-sky-600 text-white rounded hover:bg-sky-700 transition-colors"
 								>
 									Save

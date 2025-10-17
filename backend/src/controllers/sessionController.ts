@@ -68,18 +68,26 @@ export const createPlaygroundSession = async (req: Request, res: Response) => {
 		const data = req.body;
 		const sessionData = data.sessionData;
 		const playgroundConfig = data.playgroundConfig;
+
 		if (!sessionData || !playgroundConfig) {
 			res
 				.status(400)
 				.send({ message: "sessionData and playgroundConfig are required." });
 			return;
 		}
+
 		const sessionRes = await createSessionWithCompleteData(
 			sessionId,
 			sessionData,
 			getLoggerMeta(req)
 		);
-		const mockRes = await setMockSession(sessionId, playgroundConfig);
+		// reset transaction history
+		playgroundConfig.transaction_history = [];
+		const mockRes = await setMockSession(
+			sessionId,
+			playgroundConfig,
+			getLoggerMeta(req)
+		);
 
 		res.status(201).send({
 			sessionId: sessionId,
