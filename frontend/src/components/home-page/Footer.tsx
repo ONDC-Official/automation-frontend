@@ -7,7 +7,7 @@ const resourceList = [
   {
     title: "Contact Us",
     icon: <MdOutlineEmail />,
-    link: "mailto:PW-support@ondc.org",
+    link: "mailto:techsupport@ondc.org",
   },
   {
     title: "Github",
