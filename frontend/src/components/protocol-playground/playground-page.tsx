@@ -10,6 +10,7 @@ import { PlaygroundHeader } from "./ui/playground-upper/playground-header";
 import { ActionIdsButtons } from "./ui/playground-upper/action-id-buttons";
 import { useModalHandlers } from "./hooks/use-modal";
 import { usePlaygroundActions } from "./hooks/use-playground-actions";
+import FullPageLoader from "../ui/mini-components/fullpage-loader";
 
 // ===== MAIN COMPONENT =====
 export default function PlaygroundPage() {
@@ -88,6 +89,7 @@ export default function PlaygroundPage() {
 			<Popup isOpen={popupOpen} onClose={closeModal}>
 				{popupContent}
 			</Popup>
+			{playgroundContext.loading && <FullPageLoader />}
 		</div>
 	);
 }

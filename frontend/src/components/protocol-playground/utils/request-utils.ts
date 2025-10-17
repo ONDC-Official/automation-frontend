@@ -10,7 +10,7 @@ export async function createFlowSessionWithPlayground(
 	config: MockPlaygroundConfigType,
 	subscriberUrl: string,
 	type: "BAP" | "BPP"
-) {
+): Promise<string | undefined> {
 	try {
 		const flowConfig = convertToFlowConfig(config);
 		const newSession: SessionCache = {
@@ -47,6 +47,6 @@ export async function createFlowSessionWithPlayground(
 	} catch (err) {
 		toast.error("Error creating playground session");
 		console.error("Error creating playground session:", err);
-		throw err;
+		return undefined;
 	}
 }

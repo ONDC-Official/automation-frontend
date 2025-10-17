@@ -25,6 +25,13 @@ interface DifficultyCache {
 	totalDifficulty?: number;
 }
 
+const skipItems = [
+	"stopAfterFirstNack",
+	"sensitiveTTL",
+	"useGateway",
+	"timeValidations",
+];
+
 interface IProps {
 	difficulty_cache: DifficultyCache;
 	sessionId: string;
@@ -84,8 +91,9 @@ const DifficultyCards = ({ difficulty_cache, sessionId }: IProps) => {
 			>
 				{Object.entries(difficultyCache).length !== 0 && (
 					<div className="flex flex-wrap gap-4 mt-4">
-						{Object.entries(difficultyCache).map(
-							([key, value]: any, index: any) => (
+						{Object.entries(difficultyCache)
+							.filter(([key]) => !skipItems.includes(key))
+							.map(([key, value]: any, index: any) => (
 								<div
 									key={index}
 									className="flex items-center justify-between bg-white rounded-md shadow p-2 w-full sm:w-auto sm:flex-1"
@@ -105,8 +113,7 @@ const DifficultyCards = ({ difficulty_cache, sessionId }: IProps) => {
 										/>
 									</span>
 								</div>
-							)
-						)}
+							))}
 					</div>
 				)}
 			</div>
