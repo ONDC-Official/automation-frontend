@@ -19,7 +19,7 @@ export async function createFlowSessionWithPlayground(
 			subscriberUrl: subscriberUrl,
 			npType: type,
 			domain: config.meta.domain,
-			version: flowConfig.version,
+			version: config.meta.version,
 			usecaseId: "PLAYGROUND-FLOW",
 			env: "LOGGED-IN",
 			sessionDifficulty: {

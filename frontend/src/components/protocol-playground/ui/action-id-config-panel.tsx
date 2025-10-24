@@ -5,6 +5,9 @@ import { TbColumnInsertLeft, TbColumnInsertRight } from "react-icons/tb";
 import IconButton from "../../ui/mini-components/icon-button";
 import { IoMdTrash } from "react-icons/io";
 import { RxReset } from "react-icons/rx";
+import { HiOutlineInformationCircle } from "react-icons/hi2";
+import Tippy from "@tippyjs/react";
+import "tippy.js/dist/tippy.css";
 
 interface ActionIdConfigurationPanelProps {
 	actionId: string | undefined;
@@ -25,12 +28,10 @@ export function ActionIdConfigurationPanel({
 
 	if (!actionId) {
 		return (
-			<div className="px-6 py-4 bg-gradient-to-r from-sky-50 to-white border-b border-sky-100">
-				<div className="text-center py-6 text-gray-400">
-					<p className="text-sm font-medium">
-						Select an Action ID to configure
-					</p>
-				</div>
+			<div className="h-11 px-6 flex items-center bg-white border-b border-gray-200">
+				<p className="text-sm text-gray-400">
+					Select an action to view details
+				</p>
 			</div>
 		);
 	}
@@ -41,101 +42,194 @@ export function ActionIdConfigurationPanel({
 
 	if (!actionConfig) {
 		return (
-			<div className="px-6 py-4 bg-red-50 border-b border-red-200">
-				<div className="text-center text-red-600 text-sm font-medium">
-					! Action ID not found in configuration
-				</div>
+			<div className="h-11 px-6 flex items-center bg-white border-b border-red-200">
+				<span className="text-sm text-red-600 font-medium">
+					⚠️ Action not found
+				</span>
 			</div>
 		);
 	}
 
-	const Tag = ({
-		children,
-		variant = "default",
-	}: {
-		children: React.ReactNode;
-		variant?: string;
-	}) => {
-		const variants: Record<string, string> = {
-			default: "bg-sky-50 text-sky-700 border-sky-200",
-			owner:
-				actionConfig.owner === "BPP"
-					? "bg-purple-50 text-purple-700 border-purple-200"
-					: "bg-sky-50 text-sky-700 border-sky-200",
-			api: "bg-gradient-to-r from-sky-100 to-sky-50 text-sky-800 border-sky-300 font-mono",
-		};
-
-		return (
-			<span
-				className={`px-3 py-1.5 rounded-lg text-xs font-semibold border ${variants[variant]}`}
-			>
-				{children}
-			</span>
-		);
+	// Method styling
+	const method = "POST"; // Extract from config if available
+	const methodStyles: Record<string, string> = {
+		POST: "bg-emerald-500 text-white",
+		GET: "bg-blue-500 text-white",
+		PUT: "bg-amber-500 text-white",
+		DELETE: "bg-red-500 text-white",
 	};
 
-	return (
-		<div className="px-6 py-2 bg-gradient-to-r from-white to-sky-50 border-b border-sky-100">
-			<div className="flex items-center justify-between gap-4">
-				<div className="flex items-center gap-2 flex-wrap flex-1">
-					<Tag variant="api">POST /{actionConfig.api}</Tag>
-					<Tag>Id: {actionConfig.action_id}</Tag>
-					<Tag variant="owner">Owner: {actionConfig.owner}</Tag>
-					<Tag>
-						Unsolicited:{" "}
-						<span
-							className={
-								actionConfig.unsolicited ? "text-green-600" : "text-gray-600"
-							}
-						>
-							{actionConfig.unsolicited ? "Yes" : "No"}
+	// Hover card content
+	const ActionDetailsCard = () => (
+		<div className="w-80 p-4 bg-white border border-gray-200 rounded-lg shadow-xl">
+			{/* Header */}
+			<div className="pb-3 mb-3 border-b border-gray-100">
+				<div className="flex items-center gap-2 mb-1">
+					<span
+						className={`px-2 py-0.5 rounded text-xs font-bold ${methodStyles[method]}`}
+					>
+						{method}
+					</span>
+					<span className="text-sm text-gray-500 font-mono">
+						/{actionConfig.api}
+					</span>
+				</div>
+				<h4 className="text-base font-semibold text-gray-900 font-mono">
+					{actionConfig.action_id}
+				</h4>
+			</div>
+
+			{/* Properties Grid */}
+			<div className="space-y-2.5 mb-3">
+				<div className="flex items-start">
+					<span className="text-xs font-medium text-gray-500 w-24 flex-shrink-0 pt-0.5">
+						Owner
+					</span>
+					<span
+						className={`text-sm font-medium ${
+							actionConfig.owner === "BPP" ? "text-purple-700" : "text-sky-700"
+						}`}
+					>
+						{actionConfig.owner}
+					</span>
+				</div>
+
+				<div className="flex items-start">
+					<span className="text-xs font-medium text-gray-500 w-24 flex-shrink-0 pt-0.5">
+						Unsolicited
+					</span>
+					<span
+						className={`text-sm font-medium ${
+							actionConfig.unsolicited ? "text-green-600" : "text-gray-600"
+						}`}
+					>
+						{actionConfig.unsolicited ? "Yes" : "No"}
+					</span>
+				</div>
+
+				{actionConfig.responseFor && actionConfig.responseFor !== "NONE" && (
+					<div className="flex items-start">
+						<span className="text-xs font-medium text-gray-500 w-24 flex-shrink-0 pt-0.5">
+							Response For
 						</span>
-					</Tag>
+						<span className="text-sm font-medium text-indigo-700 font-mono">
+							{actionConfig.responseFor}
+						</span>
+					</div>
+				)}
+			</div>
 
-					<Tag>Response For: {actionConfig.responseFor ?? "NONE"}</Tag>
+			{/* Description */}
+			{actionConfig.description && (
+				<div className="pt-3 border-t border-gray-100">
+					<span className="text-xs font-medium text-gray-500 block mb-1.5">
+						Description
+					</span>
+					<p className="text-sm text-gray-700 leading-relaxed">
+						{actionConfig.description}
+					</p>
+				</div>
+			)}
+		</div>
+	);
 
-					{actionConfig.description && (
-						<div
-							className="px-3 py-1.5 bg-white rounded-lg border border-sky-100 text-xs text-gray-600 max-w-xs truncate"
-							title={actionConfig.description}
-						>
-							Description: {actionConfig.description}
-						</div>
-					)}
+	return (
+		<div className="h-11 px-6 flex items-center justify-between gap-4 bg-white border-b border-gray-200">
+			{/* Left side - Minimal Info */}
+			<div className="flex items-center gap-3 flex-1 min-w-0">
+				{/* Method + API */}
+				<div className="inline-flex items-center gap-2 px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-md">
+					<span
+						className={`px-1.5 py-0.5 rounded text-[10px] font-bold tracking-wide ${methodStyles[method]}`}
+					>
+						{method}
+					</span>
+					<span className="text-sm font-medium text-gray-700 font-mono max-w-[200px] truncate">
+						/{actionConfig.api}
+					</span>
 				</div>
 
-				<div className="flex items-center gap-1 flex-shrink-0">
-					<IconButton
-						icon={<RxReset size={16} />}
-						onClick={() => playgroundContext.resetTransactionHistory(actionId)}
-						color="gray"
-						label="Reset"
-					/>
-					<IconButton
-						icon={<TbColumnInsertLeft size={16} />}
-						onClick={onAddBeforeClick}
-						color="gray"
-						label="Before"
-					/>
-					<IconButton
-						icon={<TbColumnInsertRight size={16} />}
-						onClick={onAddAfterClick}
-						color="gray"
-						label="After"
-					/>
-					<IconButton
-						icon={<MdEdit size={16} />}
-						onClick={onEditActionClick}
-						color="sky"
-						label="Edit"
-					/>
-					<IconButton
-						icon={<IoMdTrash size={16} />}
-						onClick={onDeleteClick}
-						color="red"
-						label={`Delete ${actionId}`}
-					/>
-				</div>
+				{/* Action ID */}
+				<span className="text-sm font-semibold text-gray-900 font-mono">
+					{actionConfig.action_id}
+				</span>
+
+				{/* Info Icon with Hover Card */}
+				<Tippy
+					content={<ActionDetailsCard />}
+					interactive={true}
+					placement="bottom-start"
+					delay={[400, 0]}
+					arrow={false}
+					offset={[0, 8]}
+					maxWidth="none"
+				>
+					<button className="inline-flex items-center justify-center w-7 h-7 rounded-md text-gray-400 hover:text-sky-600 hover:bg-sky-50 transition-colors">
+						<HiOutlineInformationCircle size={18} />
+					</button>
+				</Tippy>
+			</div>
+
+			{/* Right side - Action Buttons */}
+			<div className="flex items-center gap-1 flex-shrink-0">
+				<Tippy content={<span className="text-xs">Reset</span>} delay={500}>
+					<div>
+						<IconButton
+							icon={<RxReset size={15} />}
+							onClick={() =>
+								playgroundContext.resetTransactionHistory(actionId)
+							}
+							color="gray"
+							label=""
+						/>
+					</div>
+				</Tippy>
+				<Tippy
+					content={<span className="text-xs">Insert Before</span>}
+					delay={500}
+				>
+					<div>
+						<IconButton
+							icon={<TbColumnInsertLeft size={15} />}
+							onClick={onAddBeforeClick}
+							color="gray"
+							label=""
+						/>
+					</div>
+				</Tippy>
+				<Tippy
+					content={<span className="text-xs">Insert After</span>}
+					delay={500}
+				>
+					<div>
+						<IconButton
+							icon={<TbColumnInsertRight size={15} />}
+							onClick={onAddAfterClick}
+							color="gray"
+							label=""
+						/>
+					</div>
+				</Tippy>
+				<Tippy content={<span className="text-xs">Edit</span>} delay={500}>
+					<div>
+						<IconButton
+							icon={<MdEdit size={15} />}
+							onClick={onEditActionClick}
+							color="sky"
+							label=""
+						/>
+					</div>
+				</Tippy>
+				<Tippy content={<span className="text-xs">Delete</span>} delay={500}>
+					<div>
+						<IconButton
+							icon={<IoMdTrash size={15} />}
+							onClick={onDeleteClick}
+							color="red"
+							label=""
+						/>
+					</div>
+				</Tippy>
 			</div>
 		</div>
 	);
