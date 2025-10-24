@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef, useEffect } from "react";
+import React, { useState, useMemo } from "react";
 import Tippy from "@tippyjs/react";
 // import "tippy.js/dist/tippy.css";
 import "tippy.js/animations/perspective-subtle.css";
