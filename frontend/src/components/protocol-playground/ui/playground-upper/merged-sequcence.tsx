@@ -1,15 +1,11 @@
 import { useContext } from "react";
 
-import { IoMdAdd, IoMdTrash } from "react-icons/io";
+import { IoMdAdd } from "react-icons/io";
 import { FiCheck } from "react-icons/fi";
-import { MdEdit } from "react-icons/md";
-import { TbColumnInsertLeft, TbColumnInsertRight } from "react-icons/tb";
-import { RxReset } from "react-icons/rx";
 import Tippy from "@tippyjs/react";
 import { PlaygroundContext } from "../../context/playground-context";
 import "tippy.js/animations/shift-away-subtle.css";
 import { MockPlaygroundConfigType } from "@ondc/automation-mock-runner";
-import { SiUnacademy } from "react-icons/si";
 import { FaExchangeAlt, FaLongArrowAltRight } from "react-icons/fa";
 import ActionDetailsCard from "./action-details-card";
 

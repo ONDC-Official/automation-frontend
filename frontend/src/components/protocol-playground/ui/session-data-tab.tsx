@@ -22,7 +22,6 @@ export default function SessionDataTab() {
 		config: playgroundConfig,
 		setCurrentConfig: setPlayGroundConfig,
 		resetTransactionHistory,
-		activeApi,
 	} = useContext(PlaygroundContext);
 	const [showAlert, setShowAlert] = useState(false);
 	const [showInput, setShowInput] = useState(false);
