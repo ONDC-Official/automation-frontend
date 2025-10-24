@@ -22,10 +22,10 @@ const ActionDetailsCard = ({
 	const method = "POST";
 
 	const methodStyles: Record<string, string> = {
-		POST: "bg-gradient-to-r from-sky-500 to-sky-400",
-		GET: "bg-gradient-to-r from-blue-500 to-blue-400",
-		PUT: "bg-gradient-to-r from-amber-500 to-amber-400",
-		DELETE: "bg-gradient-to-r from-red-500 to-red-400",
+		POST: "bg-sky-500 text-white",
+		GET: "bg-blue-500 text-white",
+		PUT: "bg-amber-500 text-white",
+		DELETE: "bg-red-500 text-white",
 	};
 
 	const ActionButton = ({
@@ -40,11 +40,12 @@ const ActionDetailsCard = ({
 		variant?: "default" | "primary" | "danger";
 	}) => {
 		const variants = {
-			default: "bg-white text-gray-700 border-white/30 shadow-inner",
+			default:
+				"bg-white hover:bg-gray-50 text-gray-700 border-gray-200 hover:border-gray-300",
 			primary:
-				"bg-sky-500/90 hover:bg-sky-600 text-white border-sky-400/40 shadow-md",
+				"bg-sky-500 hover:bg-sky-600 text-white border-sky-500 hover:border-sky-600 shadow-sm",
 			danger:
-				"bg-red-500/90 hover:bg-red-600 text-white border-red-400/40 shadow-md",
+				"bg-red-500 hover:bg-red-600 text-white border-red-500 hover:border-red-600 shadow-sm",
 		};
 
 		return (
@@ -54,11 +55,11 @@ const ActionDetailsCard = ({
 					onClick();
 				}}
 				className={`
-					group flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl
-					backdrop-blur-lg border transition-all duration-200
-					text-xs font-semibold tracking-wide
+					flex items-center justify-center gap-1.5 px-3 py-2
+					rounded-lg border-2 transition-all duration-200
+					text-xs font-semibold
 					${variants[variant]}
-					hover:-translate-y-[1px] hover:shadow-lg active:scale-[0.98]
+					hover:scale-[1.02] active:scale-[0.98]
 				`}
 			>
 				{icon}
@@ -68,81 +69,72 @@ const ActionDetailsCard = ({
 	};
 
 	return (
-		<div
-			className="
-				w-[340px] rounded-3xl overflow-hidden
-				bg-gradient-to-br from-white/70 to-white/40 
-				backdrop-blur-2xl border border-white/40
-				shadow-[0_8px_20px_rgba(0,0,0,0.1)] 
-				transition-all duration-300 hover:shadow-[0_10px_30px_rgba(0,0,0,0.15)]
-			"
-		>
-			{/* Header */}
-			<div className="px-4 py-3 bg-gradient-to-br from-white/70 to-white/40 border-b border-white/30">
-				<div className="flex items-center justify-between mb-1.5">
-					<div className="flex items-center gap-2">
-						<span
-							className={`
-								px-2 py-0.5 rounded-md text-[10px] font-bold text-white uppercase shadow-sm
-								${methodStyles[method]}
-							`}
-						>
-							{method}
-						</span>
-						<span className="text-xs text-gray-700 font-mono truncate max-w-[150px]">
-							/{action.config.api}
-						</span>
+		<div className="w-[340px] bg-white rounded-2xl border-2 border-gray-100 shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
+			{/* Header with colored accent */}
+			<div className="relative">
+				<div className="h-1 bg-gradient-to-r from-sky-400 via-sky-500 to-sky-600" />
+
+				<div className="px-2 py-2 bg-gradient-to-b from-sky-50 to-white">
+					<div className="flex items-center justify-between mb-2">
+						<div className="flex items-center gap-2">
+							<span
+								className={`
+									px-2.5 py-1 rounded-md text-xs font-bold uppercase tracking-wide
+									${methodStyles[method]}
+								`}
+							>
+								{method}
+							</span>
+							<span className="text-xs text-gray-500 font-mono">
+								/{action.config.api}
+							</span>
+						</div>
+
+						{action.completed && (
+							<span className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-700 text-xs font-semibold">
+								<FiCheck size={12} strokeWidth={3} /> Done
+							</span>
+						)}
 					</div>
-
-					{action.completed && (
-						<span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-400/30 border border-emerald-300/40 text-emerald-700 text-[10px] font-semibold">
-							<FiCheck size={10} strokeWidth={3} /> Done
-						</span>
-					)}
 				</div>
-
-				<h4 className="text-sm font-bold text-gray-900 font-mono truncate">
-					{action.id}
-				</h4>
 			</div>
 
-			{/* Properties */}
-			<div className="px-4 py-3 space-y-2 bg-gradient-to-br from-white/60 to-white/30">
+			{/* Properties Section */}
+			<div className="px-2 py-2 space-y-1 bg-white">
 				{[
 					{
 						label: "Owner",
 						value: action.config.owner,
 						valueClass:
 							action.config.owner === "BPP"
-								? "bg-purple-500/30 text-purple-800"
-								: "bg-sky-500/30 text-sky-800",
+								? "bg-purple-100 text-purple-700 border-purple-200"
+								: "bg-sky-100 text-sky-700 border-sky-200",
 					},
 					action.config.responseFor &&
 						action.config.responseFor !== "NONE" && {
 							label: "Response For",
 							value: action.config.responseFor,
-							valueClass: "text-indigo-800 font-mono",
+							valueClass: "bg-indigo-100 text-indigo-700 border-indigo-200",
 						},
 					action.config.unsolicited !== undefined && {
 						label: "Unsolicited",
 						value: action.config.unsolicited ? "Yes" : "No",
 						valueClass: action.config.unsolicited
-							? "bg-green-500/30 text-green-800"
-							: "bg-red-500/30 text-red-800",
+							? "bg-green-100 text-green-700 border-green-200"
+							: "bg-red-100 text-red-700 border-red-200",
 					},
 				]
 					.filter(Boolean)
 					.map((field, i) => (
 						<div
 							key={i}
-							className="flex items-center justify-between py-1.5 px-3 rounded-lg 
-								bg-white/50 backdrop-blur-xl border border-white/30 shadow-sm"
+							className="flex items-center justify-between py-2 px-3 rounded-lg bg-gray-50 border border-gray-100"
 						>
-							<span className="text-[10px] font-semibold text-gray-700 uppercase tracking-wider">
+							<span className="text-xs font-semibold text-gray-600 uppercase tracking-wide">
 								{field!.label}
 							</span>
 							<span
-								className={`text-xs font-bold px-2 py-0.5 rounded ${field!.valueClass}`}
+								className={`text-xs font-bold px-2 py-1 rounded-md border ${field!.valueClass}`}
 							>
 								{field!.value}
 							</span>
@@ -150,17 +142,17 @@ const ActionDetailsCard = ({
 					))}
 
 				{action.config.description && (
-					<div className="py-2 px-3 rounded-lg bg-white/40 border border-blue-400/30 shadow-inner">
-						<p className="text-xs text-gray-700 leading-snug font-bold">
+					<div className="py-3 px-3.5 rounded-lg bg-sky-50 border-l-2 border-sky-400">
+						<p className="text-xs text-gray-700 leading-relaxed font-bold">
 							{action.config.description}
 						</p>
 					</div>
 				)}
 			</div>
 
-			{/* Actions */}
-			<div className="px-4 py-3 bg-gradient-to-br from-white/60 to-white/40 border-t border-white/30">
-				<div className="grid grid-cols-3 gap-1.5 mb-1.5">
+			{/* Actions Footer */}
+			<div className="px-5 py-4 bg-gray-50 border-t border-gray-100">
+				<div className="grid grid-cols-3 gap-2 mb-2">
 					<ActionButton
 						icon={<TbColumnInsertLeft size={14} />}
 						label="Before"
@@ -179,7 +171,7 @@ const ActionDetailsCard = ({
 						}
 					/>
 				</div>
-				<div className="grid grid-cols-2 gap-1.5">
+				<div className="grid grid-cols-2 gap-2">
 					<ActionButton
 						icon={<MdEdit size={14} />}
 						label="Edit"
