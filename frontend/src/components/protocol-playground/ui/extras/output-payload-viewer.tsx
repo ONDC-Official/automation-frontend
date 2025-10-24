@@ -144,10 +144,9 @@ export default function OutputPayloadViewer({
 				setIsLoading(false);
 				return;
 			}
-			const l2Result = await new MockRunner(config).runValidatePayload(
-				actionId || "",
-				payload
-			);
+			const runner = new MockRunner(config);
+			runner.logger.setLogLevel(3);
+			const l2Result = await runner.runValidatePayload(actionId || "", payload);
 			playgroundContext.setActiveTerminalData((s) => [...s, l2Result]);
 			setL2Result(l2Result.result);
 		} catch (e) {
