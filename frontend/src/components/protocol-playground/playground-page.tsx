@@ -1,16 +1,15 @@
 import { useContext, useState } from "react";
 import { PlaygroundContext } from "./context/playground-context";
 import Popup from "../ui/pop-up/pop-up";
-import { ActionIdConfigurationPanel } from "./ui/action-id-config-panel";
 import { PlaygroundRightTabType } from "./types";
 import { LeftSideView } from "./ui/LeftSideView";
 import { RightSideView } from "./ui/RightSideView";
 import { useConfigOperations } from "./hooks/use-config";
 import { PlaygroundHeader } from "./ui/playground-upper/playground-header";
-import { ActionIdsButtons } from "./ui/playground-upper/action-id-buttons";
 import { useModalHandlers } from "./hooks/use-modal";
 import { usePlaygroundActions } from "./hooks/use-playground-actions";
 import FullPageLoader from "../ui/mini-components/fullpage-loader";
+import { ActionTimeline } from "./ui/playground-upper/merged-sequcence";
 
 // ===== MAIN COMPONENT =====
 export default function PlaygroundPage() {
@@ -60,21 +59,18 @@ export default function PlaygroundPage() {
 					onRun={runConfig}
 					onCreateFlowSession={createFlowSession}
 				/>
-				<ActionIdsButtons
+				<ActionTimeline
 					steps={playgroundContext.config?.steps || []}
-					activeApi={activeApi}
-					onApiSelect={setActiveApi}
-					onAddAction={modalHandlers.showAddAction}
 					transactionHistory={
 						playgroundContext.config?.transaction_history || []
 					}
-				/>
-				<ActionIdConfigurationPanel
-					actionId={activeApi}
-					onEditActionClick={modalHandlers.showEditAction}
-					onAddBeforeClick={modalHandlers.addActionBefore}
-					onAddAfterClick={modalHandlers.addActionAfter}
-					onDeleteClick={modalHandlers.deleteAction}
+					activeApi={activeApi}
+					onApiSelect={setActiveApi}
+					onAddAction={modalHandlers.showAddAction}
+					onEditAction={modalHandlers.showEditAction}
+					onDeleteAction={modalHandlers.deleteAction}
+					onAddBefore={modalHandlers.addActionBefore}
+					onAddAfter={modalHandlers.addActionAfter}
 				/>
 			</div>
 			<div className="flex gap-4 h-full mt-1 max-h-[82vh]">

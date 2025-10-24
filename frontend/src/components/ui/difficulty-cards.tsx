@@ -75,7 +75,9 @@ const DifficultyCards = ({ difficulty_cache, sessionId }: IProps) => {
 				className="flex flex-row justify-between items-center cursor-pointer"
 				onClick={() => setIsOpen(!isOpen)}
 			>
-				<div className="text-md font-bold text-sky-700 mt-2">Flow Settings</div>
+				<div className="text-md font-bold text-sky-700 mt-2 flex">
+					Flow Settings
+				</div>
 
 				<IoIosArrowDropdownCircle
 					className={`h-7 w-7 text-sky-700 transform transition-transform duration-300 ${

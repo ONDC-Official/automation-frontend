@@ -44,6 +44,7 @@ export const useModalHandlers = ({
 			}
 
 			addAction(api, actionId, insertIndex);
+			setActiveApi(actionId);
 			closeModal();
 			toast.success("Action added successfully");
 		};

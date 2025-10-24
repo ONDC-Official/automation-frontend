@@ -22,6 +22,7 @@ export default function SessionDataTab() {
 		config: playgroundConfig,
 		setCurrentConfig: setPlayGroundConfig,
 		resetTransactionHistory,
+		activeApi,
 	} = useContext(PlaygroundContext);
 	const [showAlert, setShowAlert] = useState(false);
 	const [showInput, setShowInput] = useState(false);
@@ -425,6 +426,8 @@ export default function SessionDataTab() {
 			.saveData || {};
 	const saveDataLength = Object.keys(saveData).length;
 
+	// const activeApi =
+
 	if (!playgroundConfig) {
 		return <div className="p-4 text-red-400">No configuration found.</div>;
 	}
@@ -484,7 +487,7 @@ export default function SessionDataTab() {
 				>
 					{playgroundConfig?.steps?.length > 1 &&
 						playgroundConfig?.steps
-							.slice(0, playgroundConfig.steps.length - 1) // skip last element
+							.slice(0, playgroundConfig.steps.length) // skip last element
 							.map((step) => (
 								<option key={step.action_id} value={step.action_id}>
 									{step.action_id}
@@ -495,18 +498,18 @@ export default function SessionDataTab() {
 
 			<div className="flex flex-1 bg-gray-900 text-gray-100 min-h-0 p-4">
 				{/* Left side - JSON Viewer */}
-				<div className="w-1/2 p-6 overflow-auto border-r border-gray-700">
+				<div className="w-1/2 p-2 overflow-auto">
 					<div className="text-sm text-gray-400 mb-3">
 						💡 Click on object keys (like "context") or primitive values
 					</div>
-					<div className="bg-gray-800 p-4 rounded-lg font-mono text-sm">
-						<div className="text-gray-400">{"{"}</div>
+					<div className="bg-gray-900 p-2 rounded-md font-mono text-sm">
+						{/* <div className="text-gray-400">{"{"}</div> */}
 						<JsonViewer
 							data={payloadFromTranscationHistory(selectedCall)}
 							isSelected={isSelected}
 							handleKeyClick={handleKeyClick}
 						/>
-						<div className="text-gray-400">{"}"}</div>
+						{/* <div className="text-gray-400">{"}"}</div> */}
 					</div>
 				</div>
 
@@ -643,12 +646,6 @@ export default function SessionDataTab() {
 
 					{savedInfoLength > 0 && (
 						<div className="mt-6 flex flex row gap-4">
-							<button
-								onClick={() => {}}
-								className="w-full px-4 py-2 bg-red-500/20 text-red-400 rounded hover:bg-red-500/30 transition-colors"
-							>
-								Clear All
-							</button>
 							<button
 								onClick={handleSave}
 								className="w-full px-4 py-2 bg-emerald-500/20 text-emerald-400 rounded hover:bg-emerald-500/30 transition-colors"

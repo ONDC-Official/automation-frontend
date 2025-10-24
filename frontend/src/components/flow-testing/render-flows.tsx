@@ -21,6 +21,9 @@ import CircularProgress from "../ui/circular-cooldown";
 import Modal from "../modal";
 import { HiOutlineDocumentReport, HiOutlinePlusCircle } from "react-icons/hi";
 import jp from "jsonpath";
+import FlowHelperTab from "./helper-tab";
+import { GetRequestEndpoint } from "./guides";
+import { BiSend, BiServer } from "react-icons/bi";
 
 function extractMetadataFromFlows(
 	flows: Flow[]
@@ -144,7 +147,7 @@ function RenderFlows({
 	const [difficultyCache, setDifficultyCache] = useState<any>({});
 	const [isFlowStopped, setIsFlowStopped] = useState<boolean>(false);
 	const [selectedTab, setSelectedTab] = useState<
-		"Request" | "Response" | "Metadata"
+		"Request" | "Response" | "Metadata" | "Guide"
 	>("Request");
 	const [requestData, setRequestData] = useState({});
 	const [responseData, setResponseData] = useState({});
@@ -430,6 +433,49 @@ function RenderFlows({
 								difficulty_cache={difficultyCache}
 								sessionId={sessionId}
 							/>
+							<div className="bg-gray-50 rounded-lg border border-sky-200 p-4">
+								<h2 className="text-base font-semibold text-sky-700 mb-3 flex items-center gap-2">
+									<div className="w-1 h-5 bg-sky-700 rounded-full"></div>
+									Endpoints
+								</h2>
+
+								<div className="space-y-3">
+									{/* Send endpoint */}
+									<div className="flex items-start gap-3">
+										<div className="mt-0.5">
+											<BiSend className="w-4 h-4 text-sky-600" />
+										</div>
+										<div className="flex-1 min-w-0">
+											<p className="text-xs font-medium text-gray-600 mb-1">
+												Send your calls to:
+											</p>
+											<code className="block px-3 py-2 bg-white border border-sky-200 rounded text-xs text-sky-700 font-mono break-all">
+												{GetRequestEndpoint(
+													cacheSessionData.domain,
+													cacheSessionData.version,
+													cacheSessionData.npType
+												)}
+											</code>
+										</div>
+									</div>
+
+									{/* Receive endpoint */}
+									<div className="flex items-start gap-3">
+										<div className="mt-0.5">
+											<BiServer className="w-4 h-4 text-sky-600" />
+										</div>
+										<div className="flex-1 min-w-0">
+											<p className="text-xs font-medium text-gray-600 mb-1">
+												You will receive calls at:
+											</p>
+											<code className="block px-3 py-2 bg-white border border-sky-200 rounded text-xs text-sky-700 font-mono break-all">
+												{subUrl}/
+												<span className="text-amber-600">&lt;action&gt;</span>
+											</code>
+										</div>
+									</div>
+								</div>
+							</div>
 						</div>
 					) : (
 						<div className="bg-white rounded-lg shadow-sm border border-sky-100 p-6">
@@ -512,6 +558,10 @@ function RenderFlows({
 											</div>
 										),
 									},
+									{
+										key: "Guide",
+										label: "Guide",
+									},
 								]}
 								onSelectOption={(value: string) => {
 									setSelectedTab(value as "Request" | "Response" | "Metadata");
@@ -586,7 +636,15 @@ function RenderFlows({
 								) : (
 									<Loader />
 								)}
+								{selectedTab === "Guide" && (
+									<FlowHelperTab
+										domain={cacheSessionData?.domain}
+										version={cacheSessionData?.version}
+										npType={cacheSessionData?.npType}
+									/>
+								)}
 							</div>
+							{/* helper guide section */}
 						</div>
 					</div>
 				</div>
