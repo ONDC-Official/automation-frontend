@@ -1,0 +1,234 @@
+/* RJSFForm.css */
+
+.rjsf-custom-form {
+	max-width: 640px;
+	/* min-width: 640px; */
+	margin: 0 auto;
+	font-family: system-ui, sans-serif;
+	background-color: #ffffff;
+	padding: 0.75rem;
+}
+
+/* Form groups - reduced spacing */
+.rjsf-custom-form .form-group {
+	margin-bottom: 0.75rem;
+}
+
+/* Labels - more compact */
+.rjsf-custom-form label {
+	display: block;
+	font-size: 0.8125rem;
+	font-weight: 500;
+	color: #374151;
+	margin-bottom: 0.25rem;
+}
+
+/* Inputs - reduced padding */
+.rjsf-custom-form
+	:is(
+		input[type="text"],
+		input[type="number"],
+		input[type="email"],
+		select,
+		textarea
+	),
+.rjsf-custom-form .form-control {
+	width: 100%;
+	padding: 0.5rem 0.625rem;
+	font-size: 0.8125rem;
+	background-color: #ffffff;
+	border: 1px solid #d1d5db;
+	border-radius: 0.375rem;
+	outline: none;
+	transition:
+		border-color 0.15s ease,
+		box-shadow 0.15s ease;
+	color: #111827;
+}
+
+/* Focus states */
+.rjsf-custom-form
+	:is(
+		input[type="text"],
+		input[type="number"],
+		input[type="email"],
+		select,
+		textarea
+	):focus,
+.rjsf-custom-form .form-control:focus {
+	border-color: #0ea5e9;
+	box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.15);
+	background-color: #ffffff;
+}
+
+/* Submit button - more compact */
+.rjsf-custom-form button[type="submit"] {
+	width: 100%;
+	padding: 0.5rem 0.875rem;
+	background-color: #0ea5e9;
+	color: #ffffff;
+	font-size: 0.8125rem;
+	font-weight: 600;
+	border: none;
+	border-radius: 0.375rem;
+	cursor: pointer;
+	transition: background-color 0.15s ease;
+	margin-top: 0.5rem;
+}
+
+.rjsf-custom-form button[type="submit"]:hover {
+	background-color: #0284c7;
+}
+
+/* Error messages */
+.rjsf-custom-form .error-detail,
+.rjsf-custom-form .field-error {
+	font-size: 0.6875rem;
+	color: #ef4444;
+	margin-top: 0.125rem;
+}
+
+/* Required field asterisk */
+.rjsf-custom-form .required::after {
+	content: "*";
+	color: #ef4444;
+	margin-left: 0.25rem;
+}
+
+/* Grid layout for fields */
+.rjsf-custom-form .field-grid {
+	display: grid;
+	grid-template-columns: repeat(2, 1fr);
+	gap: 0.75rem;
+}
+
+.rjsf-custom-form .field-grid-3 {
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	gap: 0.75rem;
+}
+
+.rjsf-custom-form .field-grid-4 {
+	display: grid;
+	grid-template-columns: repeat(4, 1fr);
+	gap: 0.75rem;
+}
+
+/* Grid layout for object properties */
+.rjsf-custom-form .field-object .object-properties {
+	display: grid;
+	grid-template-columns: repeat(2, 1fr);
+	gap: 0.75rem;
+}
+
+/* Override for single field objects */
+.rjsf-custom-form .field-object.single-field .object-properties {
+	display: block;
+}
+
+/* Property wrapper should not add extra styling */
+.rjsf-custom-form .property-wrapper {
+	min-width: 0; /* Prevent overflow in grid */
+}
+
+/* Single column on mobile */
+@media (max-width: 640px) {
+	.rjsf-custom-form .field-grid,
+	.rjsf-custom-form .field-grid-3,
+	.rjsf-custom-form .field-grid-4,
+	.rjsf-custom-form .field-object .object-properties {
+		grid-template-columns: 1fr;
+	}
+}
+
+/* For nested objects, maintain grid */
+.rjsf-custom-form .field-object .field-object .object-properties {
+	display: grid;
+	grid-template-columns: repeat(2, 1fr);
+	gap: 0.5rem;
+}
+
+.rjsf-custom-form .field-object .field-object {
+	padding: 0.5rem;
+	border: 1px solid #e5e7eb;
+	border-radius: 0.375rem;
+	margin-top: 0.5rem;
+}
+
+/* Fieldset styling */
+.rjsf-custom-form fieldset {
+	border: 1px solid #e5e7eb;
+	border-radius: 0.5rem;
+	padding: 0.75rem;
+	margin-bottom: 0.75rem;
+}
+
+.rjsf-custom-form legend {
+	font-size: 0.875rem;
+	font-weight: 600;
+	color: #111827;
+	padding: 0 0.375rem;
+}
+
+/* Description text */
+.rjsf-custom-form .field-description {
+	font-size: 0.6875rem;
+	color: #6b7280;
+	margin-top: 0.125rem;
+}
+
+/* Reduce textarea height */
+.rjsf-custom-form textarea {
+	min-height: 4rem;
+	resize: vertical;
+}
+
+/* Field spanning utilities */
+.rjsf-custom-form .field-span-2 {
+	grid-column: span 2;
+}
+
+.rjsf-custom-form .field-span-3 {
+	grid-column: span 3;
+}
+
+.rjsf-custom-form .field-span-4 {
+	grid-column: span 4;
+}
+
+.rjsf-custom-form .field-full-width {
+	grid-column: 1 / -1;
+}
+
+/* Specific field type layouts - these automatically participate in grid */
+.rjsf-custom-form .field-string,
+.rjsf-custom-form .field-number,
+.rjsf-custom-form .field-integer {
+	min-width: 0; /* Prevent overflow in grid */
+}
+
+/* These field types typically need full width */
+.rjsf-custom-form .field-string textarea {
+	grid-column: 1 / -1;
+}
+
+/* Force full width for certain field types */
+.rjsf-custom-form .property-wrapper:has(.field-array),
+.rjsf-custom-form .property-wrapper:has(textarea) {
+	grid-column: 1 / -1;
+}
+
+/* Better spacing for checkbox and radio groups */
+.rjsf-custom-form .property-wrapper:has(.field-boolean),
+.rjsf-custom-form .property-wrapper:has(.checkboxes),
+.rjsf-custom-form .property-wrapper:has(.radio) {
+	grid-column: 1 / -1;
+	margin: 0.5rem 0;
+}
+
+/* Fallback for browsers without :has() support */
+.rjsf-custom-form .field-array,
+.rjsf-custom-form .field-boolean,
+.rjsf-custom-form textarea {
+	width: 100%;
+}
