@@ -4,7 +4,6 @@ import { SubscriberData } from "../components/registry-components/registry-types
 
 interface UserContextProps {
 	isLoggedIn: boolean;
-	// setLoggedIn: React.Dispatch<React.SetStateAction<boolean>>;
 	userDetails?: UserDetails;
 	refreshUser: () => Promise<void>;
 	subscriberData: SubscriberData;
