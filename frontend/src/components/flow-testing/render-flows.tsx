@@ -23,6 +23,7 @@ import CircularProgress from "../ui/circular-cooldown";
 import Modal from "../modal";
 import { HiOutlineDocumentReport, HiOutlinePlusCircle } from "react-icons/hi";
 import jp from "jsonpath";
+import { trackEvent } from "../../utils/analytics";
 
 function extractMetadataFromFlows(
   flows: Flow[]
@@ -436,7 +437,13 @@ function RenderFlows({
                       <div className="flex justify-end">
                         <button
                           className="bg-sky-600 text-white text-sm flex px-2 py-2 rounded hover:bg-sky-700 shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                          onClick={async () => await generateReport()}
+                          onClick={async () => {
+                            trackEvent({
+                              category: "SCHEMA_VALIDATION-FLOWS",
+                              action: `Generate report`,
+                            })
+                            await generateReport()
+                          }}
                           disabled={!isFlowStopped}
                         >
                           <HiOutlineDocumentReport className="text-lg m2-1" />

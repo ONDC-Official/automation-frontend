@@ -4,6 +4,7 @@ import { GoWorkflow } from "react-icons/go";
 import { MdSchema } from "react-icons/md";
 import { fetchFormFieldData } from "../../utils/request-utils";
 import { FaChevronDown } from "react-icons/fa6";
+import { GAEvent, trackEvent } from "../../utils/analytics";
 
 interface Feature {
 	title: string;
@@ -11,6 +12,7 @@ interface Feature {
 	description: string;
 	path: string;
 	icon: JSX.Element;
+	anaytics?: GAEvent
 }
 
 const features: Feature[] = [
@@ -21,6 +23,11 @@ const features: Feature[] = [
 			"Ensure your JSONs are ONDC-compliant by validating schemas against model implementations requirements instantly.",
 		path: "/schema",
 		icon: <MdSchema className="text-sky-600 text-4xl" />,
+		analytics: {
+			category: "HOME",
+			action: "Clicked in schema validation",
+			label: "SCHEMA_VALIDATION",
+		  },
 	},
 	{
 		title: "Scenario Testing",
@@ -29,6 +36,11 @@ const features: Feature[] = [
 			"Run complete workflows across buyer app and seller app interactions ensuring accurate transaction flow implementation and protocol compliance.",
 		path: "/scenario",
 		icon: <GoWorkflow className="text-sky-600 text-4xl" />,
+		analytics: {
+			category: "HOME",
+			action: "Clicked in scenario testing",
+			label: "SCENARIO_TESTING",
+		  },
 	},
 ];
 
@@ -54,7 +66,12 @@ const Features: React.FC = () => {
 						<div
 							key={index}
 							className="group bg-white border border-sky-100 rounded-2xl hover:border-sky-300 hover:shadow-xl hover:shadow-sky-100/50 transition-all duration-300 cursor-pointer p-8 relative overflow-hidden"
-							onClick={() => navigate(feature.path)}
+							onClick={() => {
+								if(feature?.anaytics) {
+									trackEvent(feature.anaytics)
+								}
+								navigate(feature.path)
+							}}
 						>
 							<div className="absolute inset-0 bg-gradient-to-r from-sky-50/0 to-sky-50/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 							<div className="relative flex items-start space-x-5">
