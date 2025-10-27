@@ -7,8 +7,9 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import { ApiData, SessionCache } from "../../types/session-types";
 import {
-	getCompletePayload,
-	getTransactionData,
+  getCompletePayload,
+  getReport,
+  getTransactionData,
 } from "../../utils/request-utils";
 import { Accordion } from "./flow-state-viewer/complete-flow";
 import { useSession } from "../../context/context";
@@ -19,7 +20,7 @@ import Tabs from "../ui/mini-components/tabs";
 import { SessionContext } from "../../context/context";
 import CircularProgress from "../ui/circular-cooldown";
 import Modal from "../modal";
-import { HiOutlineDocumentReport, HiOutlinePlusCircle } from "react-icons/hi";
+import { HiOutlineDocumentReport, HiOutlinePlusCircle, HiEye } from "react-icons/hi";
 import jp from "jsonpath";
 import FlowHelperTab from "./helper-tab";
 import { GetRequestEndpoint } from "./guides";
@@ -158,6 +159,53 @@ function RenderFlows({
 	const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
 	const navigate = useNavigate();
 	const { setSessionId, setcfSessionId } = useSession();
+	const pollingRef = useRef<NodeJS.Timeout | null>(null);
+	const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+	const [isPolling, setIsPolling] = useState(false);
+	const [gotReport, setGotReport] = useState(false)
+
+	const startPolling = () => {
+		if (isPolling) return; // Prevent multiple starts
+		setIsPolling(true);
+
+		const POLL_INTERVAL = 5000; // 5 seconds
+		const TIMEOUT = 90000; // 90 seconds
+		let stopped = false;
+
+		const stopPolling = (message?: string) => {
+		stopped = true;
+		if (pollingRef.current) clearTimeout(pollingRef.current);
+		if (timeoutRef.current) clearTimeout(timeoutRef.current);
+		setIsPolling(false);
+		if (message) console.log("message: ", message)
+		};
+
+		const poll = async () => {
+		if (stopped) return;
+
+		try {
+			const result = await getReport(sessionId);
+			if (result?.data) {
+			stopPolling("✅ Report ready!");
+			setGotReport(true)
+			return;
+			}
+			console.log("⏳ Still processing...");
+		} catch (err) {
+			console.error("Polling error:", err);
+		}
+
+		pollingRef.current = setTimeout(poll, POLL_INTERVAL);
+		};
+
+		// Start first poll
+		poll();
+
+		// Set timeout to stop polling after 90s
+		timeoutRef.current = setTimeout(() => {
+		stopPolling("⏱️ Timed out after 90 seconds");
+		}, TIMEOUT);
+    };
 
 	useEffect(() => {
 		fetchSessionData();
@@ -424,12 +472,44 @@ function RenderFlows({
 															category: "SCENARIO_TESTING-FLOWS",
 															action: "Generate report"
 														})
+														startPolling()
 														await generateReport()
 													}}
 													disabled={!isFlowStopped}
 												>
 													<HiOutlineDocumentReport className="text-lg m2-1" />
 													Generate Report
+												</button>
+											</div>
+											<div className="flex justify-end">
+												<button
+													className="bg-sky-600 text-white text-sm flex px-2 py-2 rounded hover:bg-sky-700 shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+													onClick={async () => {
+														const response = await getReport(sessionId)
+														console.log("response", response)
+														const base64html = response.data
+														const cleanedData = base64html.split("base64,")[1];
+														try {
+															// Decode Base64 → HTML string
+															const decodedHtml = decodeURIComponent(escape(atob(cleanedData)));
+													  
+															// Create a new Blob and URL
+															const blob = new Blob([decodedHtml], { type: "text/html" });
+															const url = URL.createObjectURL(blob);
+													  
+															// Open in a new tab
+															window.open(url, "_blank");
+													  
+															// Optional: cleanup after a short delay
+															setTimeout(() => URL.revokeObjectURL(url), 5000);
+														  } catch (error) {
+															console.error("Failed to decode or open Base64 HTML:", error);
+														  }
+													}}
+													disabled={!gotReport}
+												>
+													<HiEye className="text-lg m2-1" />
+													View Report
 												</button>
 											</div>
 										</div>
