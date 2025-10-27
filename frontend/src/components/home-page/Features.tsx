@@ -4,6 +4,7 @@ import { GoCodespaces, GoWorkflow } from "react-icons/go";
 import { MdSchema } from "react-icons/md";
 import { fetchFormFieldData } from "../../utils/request-utils";
 import { FaChevronDown, FaUserPlus } from "react-icons/fa6";
+import { GAEvent, trackEvent } from "../../utils/analytics";
 
 interface Feature {
 	title: string;
@@ -11,6 +12,7 @@ interface Feature {
 	description: string;
 	path: string;
 	icon: JSX.Element;
+	anaytics?: GAEvent
 }
 
 const features: Feature[] = [
@@ -21,6 +23,11 @@ const features: Feature[] = [
 			"Ensure your JSONs are ONDC-compliant by validating schemas against model implementations requirements instantly.",
 		path: "/schema",
 		icon: <MdSchema className="text-sky-600 text-4xl" />,
+		analytics: {
+			category: "HOME",
+			action: "Clicked in schema validation",
+			label: "SCHEMA_VALIDATION",
+		  },
 	},
 	{
 		title: "Scenario Testing",
@@ -29,6 +36,11 @@ const features: Feature[] = [
 			"Run complete workflows across buyer app and seller app interactions ensuring accurate transaction flow implementation and protocol compliance.",
 		path: "/scenario",
 		icon: <GoWorkflow className="text-sky-600 text-4xl" />,
+		analytics: {
+			category: "HOME",
+			action: "Clicked in scenario testing",
+			label: "SCENARIO_TESTING",
+		  },
 	},
 	{
 		title: "Protocol Playground",
@@ -77,8 +89,13 @@ const Features: React.FC = () => {
 					{features.map((feature, index) => (
 						<div
 							key={index}
-							className="group bg-gradient-to-br from-white via-white to-sky-50/30 border border-sky-100/60 rounded-2xl hover:border-sky-300/70 hover:shadow-2xl hover:shadow-sky-200/25 transition-all duration-500 cursor-pointer p-8 relative overflow-hidden backdrop-blur-sm"
-							onClick={() => navigate(feature.path)}
+							className="group bg-white border border-sky-100 rounded-2xl hover:border-sky-300 hover:shadow-xl hover:shadow-sky-100/50 transition-all duration-300 cursor-pointer p-8 relative overflow-hidden"
+							onClick={() => {
+								if(feature?.anaytics) {
+									trackEvent(feature.anaytics)
+								}
+								navigate(feature.path)
+							}}
 						>
 							{/* Enhanced hover gradient overlay */}
 							<div className="absolute inset-0 bg-gradient-to-br from-sky-50/0 via-sky-100/20 to-indigo-100/30 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
