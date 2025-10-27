@@ -10,6 +10,7 @@ import NotFound from "../ui/not-found";
 import EditFlows from "./edit-flows";
 import { useSession } from "../../context/context";
 import { putCacheData } from "../../utils/request-utils";
+import { trackEvent } from "../../utils/analytics";
 import { useWorkbenchFlows } from "../../hooks/useWorkbenchFlow";
 
 interface FlowContentProps {
@@ -131,11 +132,15 @@ export default function FlowContent({ type }: FlowContentProps) {
 		}
 	};
 
-	const onSubmitHandler = async (data: any) => {
-		setIsFormSubmitted(true);
-		await fetchFlows(data);
-		await onSubmit(data);
-	};
+  const onSubmitHandler = async (data: any) => {
+    trackEvent({
+      category: "SCHEMA_VALIDATION-FORM",
+      action: "Form submitted",
+    })
+    setIsFormSubmitted(true);
+    await fetchFlows(data);
+    await onSubmit(data);
+  };
 
 	const fetchFormFieldData = async () => {
 		try {

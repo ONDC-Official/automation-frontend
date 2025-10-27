@@ -3,6 +3,7 @@ import { IoIosArrowDropdownCircle } from "react-icons/io";
 import { toast } from "react-toastify";
 import { putCacheData } from "../../utils/request-utils";
 import { useEffect, useState } from "react";
+import { trackEvent } from "../../utils/analytics";
 
 const keyMapping: any = {
 	stopAfterFirstNack: "Stop At Nack",
@@ -107,6 +108,10 @@ const DifficultyCards = ({ difficulty_cache, sessionId }: IProps) => {
 										<ToggleButton
 											initialValue={value}
 											onToggle={(value: boolean) => {
+												trackEvent({
+													category: "SCHEMA_VALIDATION-FLOW_SETTINGS",
+													action: `toggled value: ${key} to: ${value}`,
+												})
 												setDifficultCache((prevalue: any) => {
 													prevalue[key] = value;
 													return JSON.parse(JSON.stringify(prevalue));
