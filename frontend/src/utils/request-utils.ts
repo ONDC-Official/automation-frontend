@@ -360,3 +360,21 @@ export const getActions = async (domain: string, version: string) => {
     throw new Error("ERROR while getting action");
   }
 };
+
+export const getReport = async (sessionId: string) => {
+  try {
+    const res = await axios.get(
+      `${import.meta.env.VITE_BACKEND_URL}/db/report`,
+      {
+        params: {
+          session_id: sessionId,
+        },
+      }
+    );
+    
+    return res.data;
+  } catch (error) {
+    console.error("errror while getting action: ", error)
+    throw new Error("ERROR while getting action");
+  }
+}
