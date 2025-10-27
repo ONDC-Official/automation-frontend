@@ -91,8 +91,8 @@ const Features: React.FC = () => {
 							key={index}
 							className="group bg-white border border-sky-100 rounded-2xl hover:border-sky-300 hover:shadow-xl hover:shadow-sky-100/50 transition-all duration-300 cursor-pointer p-8 relative overflow-hidden"
 							onClick={() => {
-								if(feature?.anaytics) {
-									trackEvent(feature.anaytics)
+								if(feature?.analytics) {
+									trackEvent(feature.analytics)
 								}
 								navigate(feature.path)
 							}}
