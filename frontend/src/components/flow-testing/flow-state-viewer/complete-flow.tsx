@@ -251,7 +251,7 @@ export function Accordion({
 						color="sky"
 						onClick={async (e) => {
 							trackEvent({
-								category: "SCHEMA_VALIDATION-FLOWS",
+								category: "SCENARIO_TESTING-FLOWS",
 								action: `Started a flow: ${flow.id}`,
 							})
 							e.stopPropagation();
@@ -266,7 +266,7 @@ export function Accordion({
 						color="red"
 						onClick={async (e) => {
 							trackEvent({
-								category: "SCHEMA_VALIDATION-FLOWS",
+								category: "SCENARIO_TESTING-FLOWS",
 								action: `Stopped a flow: ${flow.id}`,
 							})
 							e.stopPropagation(); // Prevent accordion toggle
@@ -285,7 +285,7 @@ export function Accordion({
 						color="orange"
 						onClick={async (e) => {
 							trackEvent({
-								category: "SCHEMA_VALIDATION-FLOWS",
+								category: "SCENARIO_TESTING-FLOWS",
 								action: `Cleared a flow: ${flow.id}`,
 							})
 							e.stopPropagation();
@@ -309,7 +309,7 @@ export function Accordion({
 						color="green"
 						onClick={async (e) => {
 							trackEvent({
-								category: "SCHEMA_VALIDATION-FLOWS",
+								category: "SCENARIO_TESTING-FLOWS",
 								action: `Download logs for flow: ${flow.id}`,
 							})
 							e.stopPropagation();
