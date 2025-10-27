@@ -22,7 +22,8 @@ import Footer from "./components/main-footer";
 import {SessionProvider} from "./context/context"
 import {GuideStepsEnums, useGuide} from "./context/guideContext"
 import Walkthrough from "./pages/walkthrough";
-import { initGA, trackPageView } from "./utils/analytics"
+import { trackPageView } from "./utils/analytics"
+import ProtocolPlayGround from "./components/protocol-playground/main";
 
 function App() {
 	const [isModalOpen, setIsModalOpen] = useState(false);
@@ -33,7 +34,7 @@ function App() {
 		mappings: [],
 	});
 	// const [isLoading, setIsLoading] = useState(true);
-	const {setGuideStep} = useGuide()
+	const { setGuideStep } = useGuide();
 
 	useEffect(() => {
 		try {
@@ -46,8 +47,7 @@ function App() {
 
 	// Example in React (frontend)
 	useEffect(() => {
-		init()
-		// initGA()
+		init();
 	}, []);
 
 	useEffect(() => {
@@ -61,29 +61,31 @@ function App() {
 	const init = async () => {
 		const tempUser = await refreshUser();
 
-		if(!tempUser) return
+		if (!tempUser) return;
 
-		const tempSubscriberData: any = await fetchUserLookUp(tempUser)
+		const tempSubscriberData: any = await fetchUserLookUp(tempUser);
 
-		if((!tempSubscriberData?.keys?.length || !tempSubscriberData?.mappings?.length)) {
-			setGuideStep(GuideStepsEnums.Reg1)
+		if (
+			!tempSubscriberData?.keys?.length ||
+			!tempSubscriberData?.mappings?.length
+		) {
+			setGuideStep(GuideStepsEnums.Reg1);
 		} else {
-			setGuideStep(GuideStepsEnums.Test1)
+			setGuideStep(GuideStepsEnums.Test1);
 		}
-
-	}
+	};
 
 	function fetchUserLookUp(tempUser?: any) {
-		const userToLookup = tempUser ?? user; 
+		const userToLookup = tempUser ?? user;
 
 		return api
 			.getSubscriberDetails(userToLookup)
 			.then((data) => {
 				if (data) {
 					setSubscriberData(data);
-					return data
+					return data;
 				} else {
-					return null
+					return null;
 					// toast.error("Failed to load subscriber details");
 				}
 				// setIsLoading(false);
@@ -92,7 +94,7 @@ function App() {
 				console.error("Error fetching subscriber details:", error);
 				// toast.error("Failed to load subscriber details");
 				// setIsLoading(false);
-				return null
+				return null;
 			});
 	}
 
@@ -111,17 +113,17 @@ function App() {
 				return {
 					...res.data.user,
 					avatarUrl: avatarUrl,
-				}
+				};
 			} else {
 				console.log("Not logged in");
 				setUser(undefined);
 				setIsLoggedIn(false);
-				return null
+				return null;
 			}
 		} catch (error) {
 			console.error("Error fetching user:", error);
 			setUser(undefined);
-			return null
+			return null;
 		}
 	}
 
@@ -136,40 +138,47 @@ function App() {
 			}}
 		>
 			<SessionProvider>
-					<TopBar
-						onSupportClick={() => setIsModalOpen(true)}
-					/>
-					<div className="pt-[72px] h-full">
+				<div className="flex flex-col min-h-screen">
+					<TopBar onSupportClick={() => setIsModalOpen(true)} />
+					<div className="pt-[72px] flex-1">
 						<Routes>
 							<Route path="/home" element={<HomePage />} />
 							<Route path="/schema" element={<SchemaValidation />} />
 							{/* <Route path="/unit" element={<ApiTesting />} /> */}
-							<Route path="/scenario" element={<FlowContent type={"SCENARIO"} />} />
-							<Route path="/customFlow" element={<FlowContent type={"CUSTOM"} />} />
+							<Route
+								path="/scenario"
+								element={<FlowContent type={"SCENARIO"} />}
+							/>
+							<Route
+								path="/customFlow"
+								element={<FlowContent type={"CUSTOM"} />}
+							/>
 							<Route path="/login" element={<GitHubLogin />} />
 							<Route path="/profile" element={<UserProfile />} />
 							<Route path="/tools" element={<ToolsPage />} />
 							<Route path="/seller-onboarding" element={<SellerOnboarding />} />
+							<Route path="/playground" element={<ProtocolPlayGround />} />
 							<Route path="/walkthrough" element={<Walkthrough />} />
 							<Route path="*" element={<NotFoundPage />} />
 						</Routes>
 					</div>
 					<Footer />
-					<Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
-						<Support />
-					</Modal>
-					<ToastContainer
-						position="top-right"
-						autoClose={3000}
-						hideProgressBar={false}
-						newestOnTop
-						closeOnClick
-						rtl={false}
-						pauseOnFocusLoss={false}
-						draggable
-						pauseOnHover={false}
-						theme="colored"
-					/>
+				</div>
+				<Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
+					<Support />
+				</Modal>
+				<ToastContainer
+					position="bottom-right"
+					autoClose={3000}
+					hideProgressBar={false}
+					newestOnTop
+					closeOnClick
+					rtl={false}
+					pauseOnFocusLoss={false}
+					draggable
+					pauseOnHover={false}
+					theme="colored"
+				/>
 			</SessionProvider>
 		</UserContext.Provider>
 	);
