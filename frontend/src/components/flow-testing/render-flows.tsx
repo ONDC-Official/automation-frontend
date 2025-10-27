@@ -159,8 +159,8 @@ function RenderFlows({
 	const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
 	const navigate = useNavigate();
 	const { setSessionId, setcfSessionId } = useSession();
-	const pollingRef = useRef<NodeJS.Timeout | null>(null);
-	const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+	const pollingRef = useRef<any>(null);
+	const timeoutRef = useRef<any>(null);
 	const [isPolling, setIsPolling] = useState(false);
 	const [gotReport, setGotReport] = useState(false)
 
