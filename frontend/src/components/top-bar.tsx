@@ -12,27 +12,79 @@ interface SubMenuItem {
 }
 
 import { UserContext } from "../context/userContext";
+import { trackEvent, GAEvent } from "../utils/analytics";
 
 interface NavLink {
   label: string;
   href: string;
   selected: boolean;
   subMenu?: SubMenuItem[];
+  analytics?: GAEvent;
 }
 
 const navLinks: NavLink[] = [
-  { label: "Home", href: "/home", selected: true },
-  { label: "Schema Validation", href: "/schema", selected: false },
+  {
+    label: "Home",
+    href: "/home",
+    selected: true,
+    analytics: {
+      category: "NAV",
+      action: "Clicked on home",
+      label: "HOME",
+    },
+  },
+  {
+    label: "Schema Validation",
+    href: "/schema",
+    selected: false,
+    analytics: {
+      category: "NAV",
+      action: "Clicked in schema validation",
+      label: "SCHEMA_VALIDATION",
+    },
+  },
   // { label: "Unit Testing", href: "/unit", selected: false },
-  { label: "Scenario Testing", href: "/scenario", selected: false },
-  { label: "Custom flow", href: "/customFlow", selected: false },
+  {
+    label: "Scenario Testing",
+    href: "/scenario",
+    selected: false,
+    analytics: {
+      category: "NAV",
+      action: "Clicked in scenario testing",
+      label: "SCENARIO_TESTING",
+    },
+  },
+  {
+    label: "Custom flow",
+    href: "/customFlow",
+    selected: false,
+    analytics: {
+      category: "NAV",
+      action: "Clicked in custom flow",
+      label: "CUSTOM_FLOW",
+    },
+  },
   {
     label: "Tools",
     href: "/tools",
     selected: false,
     subMenu: [{ label: "Seller Onboarding", href: "/seller-onboarding" }],
+    analytics: {
+      category: "NAV",
+      action: "Clicked in tools",
+      label: "TOOLS",
+    },
   },
-  { label: "Support", href: "", selected: false },
+  {
+    label: "Support",
+    href: "",
+    selected: false,
+    analytics: {
+      category: "NAV",
+      action: "Clicked in support",
+      label: "SUPPORT",
+    },
+  },
 ];
 
 interface IPops {
@@ -106,6 +158,19 @@ const TopBar = ({ onSupportClick }: IPops) => {
   }, []);
 
   const handleLoginClick = () => {
+    if (userDetails) {
+      trackEvent({
+        category: "NAV",
+        action: "Clicked on profile",
+        label: "PROFILE",
+      });
+    } else {
+      trackEvent({
+        category: "NAV",
+        action: "Clicked on Login",
+        label: "LOGIN",
+      });
+    }
     setIsOpen(false);
     navigate(userDetails ? "/profile" : "/login");
   };
@@ -180,12 +245,17 @@ const TopBar = ({ onSupportClick }: IPops) => {
           }`}
         >
           {links.map((link, index) => (
-            <GuideOverlay 
-            currentStep={link.href === "/scenario" ? GuideStepsEnums.Test1 : GuideStepsEnums.Skip} 
-            instruction={"Step 4: Start  Testing"} 
-            handleGoClick={() =>  navigate(link.href)} 
-            left={0} 
-            top={45}>
+            <GuideOverlay
+              currentStep={
+                link.href === "/scenario"
+                  ? GuideStepsEnums.Test1
+                  : GuideStepsEnums.Skip
+              }
+              instruction={"Step 4: Start  Testing"}
+              handleGoClick={() => navigate(link.href)}
+              left={0}
+              top={45}
+            >
               <li
                 key={index}
                 className="relative"
@@ -204,6 +274,10 @@ const TopBar = ({ onSupportClick }: IPops) => {
                       : "text-gray-500"
                   }`}
                   onClick={() => {
+                    if (link?.analytics) {
+                      trackEvent(link.analytics);
+                    }
+
                     if (link.label === "Support") {
                       onSupportClick();
                     } else if (link.subMenu) {

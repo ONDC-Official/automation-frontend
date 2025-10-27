@@ -27,6 +27,7 @@ import Popup from "../../ui/pop-up/pop-up";
 import FormConfig, {
   FormConfigType,
 } from "../../ui/forms/config-form/config-form";
+import { trackEvent } from "../../../utils/analytics";
 
 interface AccordionProps {
   flow: Flow;
@@ -249,6 +250,10 @@ export function Accordion({
 						label="Start flow"
 						color="sky"
 						onClick={async (e) => {
+							trackEvent({
+								category: "SCHEMA_VALIDATION-FLOWS",
+								action: `Started a flow: ${flow.id}`,
+							})
 							e.stopPropagation();
 							await startFlow();
 						}}
@@ -260,6 +265,10 @@ export function Accordion({
 						label="Stop flow"
 						color="red"
 						onClick={async (e) => {
+							trackEvent({
+								category: "SCHEMA_VALIDATION-FLOWS",
+								action: `Stopped a flow: ${flow.id}`,
+							})
 							e.stopPropagation(); // Prevent accordion toggle
 							setActiveFlow(null);
 							setIsOpen(false);
@@ -275,6 +284,10 @@ export function Accordion({
 						label="Clear flow data"
 						color="orange"
 						onClick={async (e) => {
+							trackEvent({
+								category: "SCHEMA_VALIDATION-FLOWS",
+								action: `Cleared a flow: ${flow.id}`,
+							})
 							e.stopPropagation();
 							setMappedFlow({
 								sequence: getSequenceFromFlow(
@@ -295,6 +308,10 @@ export function Accordion({
 						label="Download Logs"
 						color="green"
 						onClick={async (e) => {
+							trackEvent({
+								category: "SCHEMA_VALIDATION-FLOWS",
+								action: `Download logs for flow: ${flow.id}`,
+							})
 							e.stopPropagation();
 							handleDownload();
 						}}

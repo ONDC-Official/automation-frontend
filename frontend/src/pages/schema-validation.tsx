@@ -4,6 +4,7 @@ import Markdown from "react-markdown";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { fetchFormFieldData } from "../utils/request-utils";
+import { trackEvent } from "../utils/analytics";
 
 const INSTRUCTION = [
 	`1. Paste/ Upload Your API Payload`,
@@ -40,6 +41,11 @@ const SchemaValidation = () => {
 		localStorage.setItem("schema-validation-payload", newPayload);
 	};
 	const verifyRequest = async () => {
+		trackEvent({
+			category: "SCHEMA_VALITION",
+			action: "Clicked validate"
+		})
+
 		if (payload === "") {
 			toast.warn("Add payload for the request");
 			return;
@@ -126,6 +132,20 @@ const SchemaValidation = () => {
 		getFormFields();
 	}, []);
 
+	const handleEditorMount = (editor: any) => {
+		const editorDomNode = editor.getDomNode();
+	
+		if (editorDomNode) {
+		  editorDomNode.addEventListener("paste", () => {
+			
+			trackEvent({
+			  category: "SCHEMA_VALIDATION",
+			  action: "Pasted content",
+			});
+		  });
+		}
+	  };
+
 	return (
 		<div className="h-screen bg-gradient-to-b from-gray-50 to-white flex flex-col">
 			<div className="flex-1 flex overflow-hidden">
@@ -169,6 +189,7 @@ const SchemaValidation = () => {
 								defaultLanguage="json"
 								value={payload}
 								onChange={handlePayloadChange}
+								onMount={handleEditorMount}
 								options={{
 									minimap: { enabled: false },
 									padding: { top: 16, bottom: 16 },

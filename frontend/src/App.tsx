@@ -22,6 +22,7 @@ import Footer from "./components/main-footer";
 import {SessionProvider} from "./context/context"
 import {GuideStepsEnums, useGuide} from "./context/guideContext"
 import Walkthrough from "./pages/walkthrough";
+import { initGA, trackPageView } from "./utils/analytics"
 
 function App() {
 	const [isModalOpen, setIsModalOpen] = useState(false);
@@ -46,7 +47,12 @@ function App() {
 	// Example in React (frontend)
 	useEffect(() => {
 		init()
+		// initGA()
 	}, []);
+
+	useEffect(() => {
+		trackPageView(location.pathname + location.search);
+	  }, [location]);
 
 	useEffect(() => {
 		fetchUserLookUp();
