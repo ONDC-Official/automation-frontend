@@ -12,7 +12,7 @@ interface Feature {
 	description: string;
 	path: string;
 	icon: JSX.Element;
-	anaytics?: GAEvent
+	analytics?: GAEvent
 }
 
 const features: Feature[] = [
