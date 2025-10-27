@@ -70,9 +70,9 @@ export function GetRequestEndpoint(
 	npType: string
 ) {
 	if (npType === "BAP") {
-		return `${import.meta.env.VITE_BASE_URL}/api-service/${domain}/${version}/seller`;
+		return `${import.meta.env.VITE_BASE_URL}/${domain}/${version}/seller`;
 	} else if (npType === "BPP") {
-		return `${import.meta.env.VITE_BASE_URL}/api-service/${domain}/${version}/buyer`;
+		return `${import.meta.env.VITE_BASE_URL}/${domain}/${version}/buyer`;
 	}
 	return "<BUYER or SELLER>";
 }

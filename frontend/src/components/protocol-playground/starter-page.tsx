@@ -117,7 +117,7 @@ export default function GetPlaygroundComponent() {
 					</div>
 
 					{/* Quick suggestions */}
-					<div className="mt-5 pt-4 border-t border-sky-200">
+					{/* <div className="mt-5 pt-4 border-t border-sky-200">
 						<p className="text-xs text-sky-600 text-center mb-2 font-medium">
 							Quick Start Templates
 						</p>
@@ -139,7 +139,7 @@ export default function GetPlaygroundComponent() {
 								</button>
 							))}
 						</div>
-					</div>
+					</div> */}
 				</div>
 			</div>
 
