@@ -4,17 +4,17 @@ import logger from "@ondc/automation-logger";
 export const buildMockBaseURL = async (url: string, sessionId: string) => {
 	const sessionData = await getSessionService(sessionId);
 
-	const mockUrl = process.env.MOCK_SERVICE as string;
+	let mockUrl = process.env.MOCK_SERVICE as string;
+	const usecase = sessionData.usecaseId;
+	if (usecase === "PLAYGROUND-FLOW") {
+		return `${mockUrl}/playground/${url}`;
+	}
 	if (mockUrl.includes("localhost")) {
 		logger.info("Mock service is running in localhost");
-		const newUrl = `${process.env.MOCK_SERVICE as string}/${
-			sessionData.domain
-		}/${url}`;
+		const newUrl = `${mockUrl}/${sessionData.domain}/${url}`;
 		return newUrl;
 	}
-	const generatedURL = `${process.env.MOCK_SERVICE as string}/${
-		sessionData.domain
-	}/${sessionData.version}/${url}`;
+	const generatedURL = `${mockUrl}/${sessionData.version}/${url}`;
 
 	logger.info("generated mock url: " + generatedURL);
 	return generatedURL;

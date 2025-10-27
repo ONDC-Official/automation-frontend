@@ -55,6 +55,10 @@ const SchemaValidation = () => {
 
 		try {
 			parsedPayload = JSON.parse(payload);
+			if (Array.isArray(parsedPayload)) {
+				toast.warn("Array of payloads not supported");
+				return;
+			}
 		} catch (e) {
 			console.log("error while parsing ", e);
 			toast.error("Invalid payload");
