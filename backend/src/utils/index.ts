@@ -11,10 +11,10 @@ export const buildMockBaseURL = async (url: string, sessionId: string) => {
 	}
 	if (mockUrl.includes("localhost")) {
 		logger.info("Mock service is running in localhost");
-		const newUrl = `${mockUrl}/${sessionData.domain}/${url}`;
+		const newUrl = `${mockUrl}/${sessionData.domain}/${sessionData.version}/${url}`;
 		return newUrl;
 	}
-	const generatedURL = `${mockUrl}/${sessionData.version}/${url}`;
+	const generatedURL = `${mockUrl}/${sessionData.domain}/${url}`;
 
 	logger.info("generated mock url: " + generatedURL);
 	return generatedURL;
