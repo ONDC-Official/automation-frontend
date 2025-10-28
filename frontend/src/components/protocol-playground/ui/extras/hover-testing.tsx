@@ -1,8 +1,7 @@
-import React from "react";
 import Editor, { OnMount } from "@monaco-editor/react";
 
 function TestEditorHover() {
-	const handleOnMount: OnMount = (editor, monaco) => {
+	const handleOnMount: OnMount = (_, monaco) => {
 		console.log("✅ Editor mounted successfully");
 
 		monaco.languages.registerHoverProvider("json", {

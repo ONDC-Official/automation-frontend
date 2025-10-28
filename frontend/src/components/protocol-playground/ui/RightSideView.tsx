@@ -1,6 +1,6 @@
 import { Editor, OnMount } from "@monaco-editor/react";
 import { PLAYGROUND_RIGHT_TABS, PlaygroundRightTabType } from "../types";
-import { useContext, useEffect, useState, useRef } from "react";
+import { useContext, useEffect, useRef } from "react";
 import { PlaygroundContext } from "../context/playground-context";
 import SessionDataTab from "./session-data-tab";
 import { ExecutionResults } from "./extras/terminal";
@@ -55,7 +55,7 @@ function GetRightSideContent({
 }) {
 	const playgroundContext = useContext(PlaygroundContext);
 
-	const [savedMeta, setSaveMeta] = useState<any>({});
+	// const [savedMeta, setSaveMeta] = useState<any>({});
 	const savedMetaRef = useRef<any>({}); // Add this ref
 
 	useEffect(() => {
@@ -63,7 +63,7 @@ function GetRightSideContent({
 			playgroundContext.activeApi,
 			playgroundContext.config
 		);
-		setSaveMeta(meta);
+		// setSaveMeta(meta);
 		savedMetaRef.current = meta; // Update ref whenever savedMeta changes
 		console.log("updated savedMeta", meta);
 	}, [playgroundContext.config, playgroundContext.activeApi]);
