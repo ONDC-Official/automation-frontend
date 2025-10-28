@@ -203,6 +203,7 @@ function RenderFlows({
 
 		// Set timeout to stop polling after 90s
 		timeoutRef.current = setTimeout(() => {
+		toast.error("Something went wrong while fetching the report.")
 		stopPolling("⏱️ Timed out after 90 seconds");
 		}, TIMEOUT);
     };
@@ -472,6 +473,7 @@ function RenderFlows({
 															category: "SCENARIO_TESTING-FLOWS",
 															action: "Generate report"
 														})
+														toast.info("Generating report. It can take upto 90 sec.")
 														startPolling()
 														await generateReport()
 													}}
