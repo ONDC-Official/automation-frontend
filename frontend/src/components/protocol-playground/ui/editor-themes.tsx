@@ -14,14 +14,14 @@ export const DarkSkyBlueTheme = {
 		{ token: "identifier", foreground: "E0F7FA" },
 
 		// JSON-specific tokens
-		{ token: "string.key.json", foreground: "87CEEB", fontStyle: "bold" }, // Property keys
-		{ token: "string.value.json", foreground: "7DD3C0" }, // String values
-		{ token: "number.json", foreground: "4FC3F7" }, // Numbers
-		{ token: "keyword.json", foreground: "26C6DA" }, // true, false, null
-		{ token: "delimiter.bracket.json", foreground: "87CEEB" }, // [ ]
-		{ token: "delimiter.array.json", foreground: "E0F7FA" }, // commas
-		{ token: "delimiter.colon.json", foreground: "87CEEB" }, // :
-		{ token: "delimiter.comma.json", foreground: "E0F7FA" }, // ,
+		{ token: "string.key.json", foreground: "87CEEB", fontStyle: "bold" },
+		{ token: "string.value.json", foreground: "7DD3C0" },
+		{ token: "number.json", foreground: "4FC3F7" },
+		{ token: "keyword.json", foreground: "26C6DA" },
+		{ token: "delimiter.bracket.json", foreground: "87CEEB" },
+		{ token: "delimiter.array.json", foreground: "E0F7FA" },
+		{ token: "delimiter.colon.json", foreground: "87CEEB" },
+		{ token: "delimiter.comma.json", foreground: "E0F7FA" },
 	],
 	colors: {
 		"editor.background": "#0A1929",
@@ -34,9 +34,26 @@ export const DarkSkyBlueTheme = {
 		"editor.selectionHighlightBackground": "#2C536450",
 		"editorIndentGuide.background": "#1A2B3D",
 		"editorIndentGuide.activeBackground": "#2C5364",
-		"editorHoverWidget.background": "#1A2B3D",
-		"editorHoverWidget.border": "#2C5364",
-		"editorSuggestWidget.background": "#1A2B3D",
-		"editorSuggestWidget.border": "#2C5364",
+
+		// Enhanced Hover Widget Styling
+		"editorHoverWidget.background": "#0D1F2D",
+		"editorHoverWidget.foreground": "#E0F7FA",
+		"editorHoverWidget.border": "#4FC3F7",
+		"editorHoverWidget.statusBarBackground": "#1A2B3D",
+
+		// Hover highlight (when hovering over variables/references)
+		"editor.hoverHighlightBackground": "#2C536430",
+
+		// Suggest/Autocomplete Widget (similar styling for consistency)
+		"editorSuggestWidget.background": "#0D1F2D",
+		"editorSuggestWidget.border": "#4FC3F7",
+		"editorSuggestWidget.foreground": "#E0F7FA",
+		"editorSuggestWidget.highlightForeground": "#87CEEB",
+		"editorSuggestWidget.selectedBackground": "#2C5364",
+		"editorSuggestWidget.selectedForeground": "#FFFFFF",
+		"editorSuggestWidget.focusHighlightForeground": "#87CEEB",
+
+		// Widget shadow for depth
+		"widget.shadow": "#00000050",
 	},
 };

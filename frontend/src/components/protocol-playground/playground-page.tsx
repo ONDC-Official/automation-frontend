@@ -22,6 +22,7 @@ export default function PlaygroundPage() {
 		importConfig,
 		clearConfig,
 		runConfig,
+		runCurrentConfig,
 		createFlowSession,
 	} = useConfigOperations();
 	const { addAction, deleteAction, updateAction } = usePlaygroundActions();
@@ -56,8 +57,17 @@ export default function PlaygroundPage() {
 					onExport={exportConfig}
 					onImport={importConfig}
 					onClear={modalHandlers.showDeleteConfirmation}
-					onRun={runConfig}
+					onRun={async () => {
+						playgroundContext.setLoading(true);
+						await runConfig();
+						playgroundContext.setLoading(false);
+					}}
 					onCreateFlowSession={createFlowSession}
+					onRunCurrent={async () => {
+						playgroundContext.setLoading(true);
+						await runCurrentConfig();
+						playgroundContext.setLoading(false);
+					}}
 				/>
 				<ActionTimeline
 					steps={playgroundContext.config?.steps || []}
