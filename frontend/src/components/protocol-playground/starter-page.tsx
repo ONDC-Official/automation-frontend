@@ -1,14 +1,47 @@
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { PlaygroundContext } from "./context/playground-context";
 
 import PlaygroundPage from "./playground-page";
 import { createInitialMockConfig } from "@ondc/automation-mock-runner";
+import axios from "axios";
 
 export default function GetPlaygroundComponent() {
 	const { config, setCurrentConfig } = useContext(PlaygroundContext);
 	const [domain, setDomain] = useState("");
 	const [version, setVersion] = useState("");
 	const [flowId, setFlowId] = useState("");
+	const [dynamicList, setDynamicList] = useState<{
+		domain: any[];
+		version: any[];
+		usecase: any[];
+	}>({
+		domain: [],
+		version: [],
+		usecase: [],
+	});
+
+	const fetchFormData = async () => {
+		try {
+			const response = await axios.get(
+				`${import.meta.env.VITE_BACKEND_URL}/config/senarioFormData`
+			);
+			setDynamicList((prev) => {
+				return {
+					...prev,
+					domain: response.data.domain || [],
+					version: response.data.version || [],
+				};
+			});
+			console.log("form field data", response.data);
+		} catch (e) {
+			console.log("error while fetching form field data", e);
+		}
+	};
+
+	useEffect(() => {
+		fetchFormData();
+	}, []);
+
 	if (config) {
 		return <PlaygroundPage />;
 	}
@@ -20,7 +53,7 @@ export default function GetPlaygroundComponent() {
 	}
 
 	return (
-		<div className="min-h-screen bg-gradient-to-br from-sky-100 via-white to-blue-50 flex items-center justify-center p-4 relative overflow-hidden">
+		<div className="min-h-screen bg-gradient-to-br from-sky-100 via-white to-blue-50 flex justify-center p-4 relative overflow-hidden">
 			{/* Animated background circles */}
 			<div className="absolute top-20 left-10 w-48 h-48 bg-sky-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse"></div>
 			<div className="absolute top-32 right-20 w-56 h-56 bg-blue-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse delay-700"></div>
@@ -53,13 +86,40 @@ export default function GetPlaygroundComponent() {
 							<label className="block text-xs font-semibold text-sky-700 mb-1.5 uppercase tracking-wider">
 								Domain
 							</label>
-							<input
-								type="text"
-								value={domain}
-								onChange={(e) => setDomain(e.target.value)}
-								placeholder="mobility, logistics, retail..."
-								className="w-full px-4 py-2.5 bg-gradient-to-r from-sky-50 to-blue-50 border-2 border-sky-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-300 focus:border-sky-400 transition-all duration-300 text-sky-900 placeholder-sky-400 text-sm"
-							/>
+							{dynamicList.domain?.length > 0 ? (
+								<select
+									value={domain}
+									onChange={(e) => {
+										setDomain(e.target.value);
+										// Update version list based on selected domain
+										const selectedDomainData = dynamicList.domain.find(
+											(item: any) => item.key === e.target.value
+										);
+										if (selectedDomainData) {
+											setDynamicList((prev) => ({
+												...prev,
+												version: selectedDomainData.version || [],
+											}));
+										}
+									}}
+									className="w-full px-4 py-2.5 bg-gradient-to-r from-sky-50 to-blue-50 border-2 border-sky-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-300 focus:border-sky-400 transition-all duration-300 text-sky-900 text-sm"
+								>
+									<option value="">Select a domain...</option>
+									{dynamicList.domain.map((item: any) => (
+										<option key={item.key} value={item.key}>
+											{item.key}
+										</option>
+									))}
+								</select>
+							) : (
+								<input
+									type="text"
+									value={domain}
+									onChange={(e) => setDomain(e.target.value)}
+									placeholder="mobility, logistics, retail..."
+									className="w-full px-4 py-2.5 bg-gradient-to-r from-sky-50 to-blue-50 border-2 border-sky-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-300 focus:border-sky-400 transition-all duration-300 text-sky-900 placeholder-sky-400 text-sm"
+								/>
+							)}
 						</div>
 
 						{/* Version input */}
@@ -67,13 +127,40 @@ export default function GetPlaygroundComponent() {
 							<label className="block text-xs font-semibold text-sky-700 mb-1.5 uppercase tracking-wider">
 								Version
 							</label>
-							<input
-								type="text"
-								value={version}
-								onChange={(e) => setVersion(e.target.value)}
-								placeholder="2.0.1, 1.5.3, 3.0.0..."
-								className="w-full px-4 py-2.5 bg-gradient-to-r from-sky-50 to-blue-50 border-2 border-sky-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-300 focus:border-sky-400 transition-all duration-300 text-sky-900 placeholder-sky-400 text-sm"
-							/>
+							{dynamicList.version?.length > 0 ? (
+								<select
+									value={version}
+									onChange={(e) => {
+										setVersion(e.target.value);
+										// Update usecase list based on selected version
+										const selectedVersionData = dynamicList.version.find(
+											(item: any) => item.key === e.target.value
+										);
+										if (selectedVersionData) {
+											setDynamicList((prev) => ({
+												...prev,
+												usecase: selectedVersionData.usecase || [],
+											}));
+										}
+									}}
+									className="w-full px-4 py-2.5 bg-gradient-to-r from-sky-50 to-blue-50 border-2 border-sky-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-300 focus:border-sky-400 transition-all duration-300 text-sky-900 text-sm"
+								>
+									<option value="">Select a version...</option>
+									{dynamicList.version.map((item: any) => (
+										<option key={item.key} value={item.key}>
+											{item.key}
+										</option>
+									))}
+								</select>
+							) : (
+								<input
+									type="text"
+									value={version}
+									onChange={(e) => setVersion(e.target.value)}
+									placeholder="2.0.1, 1.5.3, 3.0.0..."
+									className="w-full px-4 py-2.5 bg-gradient-to-r from-sky-50 to-blue-50 border-2 border-sky-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-300 focus:border-sky-400 transition-all duration-300 text-sky-900 placeholder-sky-400 text-sm"
+								/>
+							)}
 						</div>
 
 						{/* Flow ID input */}

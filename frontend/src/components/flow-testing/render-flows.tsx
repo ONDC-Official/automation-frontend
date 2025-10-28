@@ -455,6 +455,7 @@ function RenderFlows({
 													cacheSessionData.version,
 													cacheSessionData.npType
 												)}
+												/<span className="text-amber-600">&lt;action&gt;</span>
 											</code>
 										</div>
 									</div>

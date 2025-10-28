@@ -22,6 +22,7 @@ import Footer from "./components/main-footer";
 import { SessionProvider } from "./context/context";
 import { GuideStepsEnums, useGuide } from "./context/guideContext";
 import ProtocolPlayGround from "./components/protocol-playground/main";
+import TestEditorHover from "./components/protocol-playground/ui/extras/hover-testing";
 
 function App() {
 	const [isModalOpen, setIsModalOpen] = useState(false);

@@ -1,7 +1,5 @@
-import { useEffect } from "react";
-import { useContext, useState } from "react";
+import { useEffect, useState } from "react";
 import { FiEdit, FiEye, FiTrash } from "react-icons/fi";
-import { PlaygroundContext } from "../context/playground-context";
 
 export interface handleAddParam {
 	currPath: string;
@@ -14,7 +12,6 @@ const JsonPathInput = ({
 	onDelete,
 	alias,
 	path,
-	selectedCall,
 	error,
 	setError,
 	handleAdd,
@@ -23,7 +20,6 @@ const JsonPathInput = ({
 	onDelete: (aliasToDelete: string) => void;
 	alias: string;
 	path: any;
-	selectedCall: string;
 	error: string;
 	setError: React.Dispatch<React.SetStateAction<string>>;
 	handleAdd: (data: handleAddParam) => void;
@@ -34,31 +30,7 @@ const JsonPathInput = ({
 
 	useEffect(() => {
 		setError("");
-	}, []);
-
-	const { config: playgroundConfig } = useContext(PlaygroundContext);
-
-	const isAliasTaken = (alias: string): boolean => {
-		if (!selectedCall) return false;
-
-		// Find the history entry
-		const history = playgroundConfig?.transaction_history.find(
-			(h) => h.action_id === selectedCall
-		);
-
-		// Find the step
-		const step = playgroundConfig?.steps.find(
-			(s) => s.action_id === selectedCall
-		);
-
-		const savedInfo = history?.saved_info || {};
-		const saveData = step?.mock.saveData || {};
-
-		return (
-			Object.prototype.hasOwnProperty.call(savedInfo, alias) ||
-			Object.prototype.hasOwnProperty.call(saveData, alias)
-		);
-	};
+	}, [setError]);
 
 	if (isEdit) {
 		return (
@@ -85,13 +57,6 @@ const JsonPathInput = ({
 				<div className="flex gap-2 mt-2">
 					<button
 						onClick={() => {
-							const status = isAliasTaken(newAlias);
-							if (status) {
-								setError(
-									`Alias "${newAlias}" already exists. Choose a different alias.`
-								);
-								return;
-							}
 							handleAdd({
 								currAlias: newAlias,
 								currPath: newPath,
@@ -119,11 +84,13 @@ const JsonPathInput = ({
 	}
 
 	return (
-		<div className="relative group flex items-center justify-between w-full">
-			<div className="font-mono text-sm flex-1">
-				<span className="text-sky-300 font-semibold">{alias}</span>
-				<span className="text-gray-400 mx-2">:</span>
-				<span className="text-gray-300">{path}</span>
+		<div className="relative group flex items-start justify-between w-full">
+			<div className="font-mono text-sm flex-1 min-w-0 pr-2">
+				<div>
+					<span className="text-sky-300 font-semibold">{alias}</span>
+					<span className="text-gray-400">:</span>
+				</div>
+				<div className="text-gray-300 break-all ml-2 mt-1">{path}</div>
 			</div>
 
 			{/* Hover-visible button group */}
