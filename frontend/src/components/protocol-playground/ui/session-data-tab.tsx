@@ -593,7 +593,7 @@ export default function SessionDataTab() {
 										}}
 										alias={alias}
 										path={path}
-										selectedCall={selectedCall}
+										// selectedCall={selectedCall}
 										error={error}
 										setError={setError}
 										handleAdd={handleAdd}
@@ -623,7 +623,7 @@ export default function SessionDataTab() {
 										}}
 										alias={alias}
 										path={path}
-										selectedCall={selectedCall}
+										// selectedCall={selectedCall}
 										error={error}
 										setError={setError}
 										handleAdd={({

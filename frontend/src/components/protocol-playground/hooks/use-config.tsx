@@ -72,6 +72,7 @@ export const useConfigOperations = () => {
 		toast.success("Please fill in the form to continue");
 	};
 
+	// return true if payload execution was successful
 	const executePayload = async (data: { actionId: string; inputs: any }) => {
 		const config = playgroundContext.config;
 		if (!config) {
@@ -93,7 +94,7 @@ export const useConfigOperations = () => {
 		}
 		modal.closeModal();
 		toast.success("Payload generated. Check console for details.");
-		return true;
+		return result.success;
 	};
 
 	const runConfig = async () => {
@@ -119,6 +120,7 @@ export const useConfigOperations = () => {
 		const currentStep = playgroundContext.config.steps[currentIndex];
 		try {
 			const inputs = currentStep.mock.inputs || {};
+			let res = true;
 			console.log(
 				"Current Step Inputs:",
 				inputs,
@@ -126,18 +128,20 @@ export const useConfigOperations = () => {
 				Object.keys(inputs)
 			);
 			if (inputs === null || Object.keys(inputs).length === 0) {
-				await executePayload({
+				res = await executePayload({
 					actionId: currentStep.action_id,
 					inputs: {},
 				});
-				return;
+				return {
+					success: res,
+				};
 			}
 
 			const handleFormSubmit = async (formData: any) => {
 				console.log("Form submitted with data:", formData);
 				modal.closeModal();
 				// data.sessionData.user_inputs = formData;
-				await executePayload({
+				res = await executePayload({
 					actionId: currentStep.action_id,
 					inputs: formData,
 				});
@@ -147,10 +151,15 @@ export const useConfigOperations = () => {
 				return;
 			}
 			showFormModal(currentStep.mock.inputs.jsonSchema, handleFormSubmit);
+			return {
+				success: res,
+			};
 		} catch (e) {
 			console.error("Error generating payload:", e);
 			toast.error("Error generating payload. Check console for details.");
-			return;
+			return {
+				success: false,
+			};
 		}
 	};
 
@@ -210,11 +219,39 @@ export const useConfigOperations = () => {
 		);
 	};
 
+	const runCurrentConfig = async () => {
+		if (!playgroundContext.config) {
+			toast.error("No configuration found");
+			return;
+		}
+		const activeApi = playgroundContext.activeApi;
+		if (!activeApi) {
+			toast.error("No active API selected");
+			return;
+		}
+		try {
+			playgroundContext.resetTransactionHistory();
+			for (const step of playgroundContext.config.steps) {
+				const res = await runConfig();
+				if (!res?.success) {
+					toast.error(`Execution stopped at action ${step.action_id}`);
+					break;
+				}
+				if (step.action_id === activeApi) {
+					break;
+				}
+			}
+		} catch (e) {
+			console.error("Error running current config:", e);
+		}
+	};
+
 	return {
 		exportConfig,
 		importConfig,
 		clearConfig,
 		runConfig,
 		createFlowSession,
+		runCurrentConfig,
 	};
 };

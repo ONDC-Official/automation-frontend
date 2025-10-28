@@ -1,6 +1,6 @@
 import IconButton from "../../../ui/mini-components/icon-button";
 import { FaDownload, FaUpload } from "react-icons/fa";
-import { GrFlows } from "react-icons/gr";
+import { GrFlows, GrRedo } from "react-icons/gr";
 import { IoMdSkipForward, IoMdTrash } from "react-icons/io";
 
 // components/playground/PlaygroundHeader.tsx
@@ -12,6 +12,7 @@ interface PlaygroundHeaderProps {
 	onImport: () => void;
 	onClear: () => void;
 	onRun: () => void;
+	onRunCurrent: () => void;
 	onCreateFlowSession: () => void;
 }
 
@@ -23,6 +24,7 @@ export const PlaygroundHeader = ({
 	onImport,
 	onClear,
 	onRun,
+	onRunCurrent,
 	onCreateFlowSession,
 }: PlaygroundHeaderProps) => (
 	<div className="h-16 flex items-center justify-between px-6 bg-gradient-to-r from-white to-sky-50 border-b border-sky-100 shadow-sm">
@@ -76,8 +78,14 @@ export const PlaygroundHeader = ({
 				color="red"
 			/>
 			<IconButton
+				icon={<GrRedo size={18} />}
+				label="Run current"
+				onClick={onRunCurrent}
+				color="green"
+			/>
+			<IconButton
 				icon={<IoMdSkipForward size={18} />}
-				label="Run"
+				label="Run in sequence"
 				onClick={onRun}
 				color="orange"
 			/>

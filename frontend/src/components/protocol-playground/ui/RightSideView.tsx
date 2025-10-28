@@ -1,13 +1,13 @@
-import { Editor } from "@monaco-editor/react";
+import { Editor, OnMount } from "@monaco-editor/react";
 import { PLAYGROUND_RIGHT_TABS, PlaygroundRightTabType } from "../types";
-import { useContext } from "react";
+import { useContext, useEffect, useRef } from "react";
 import { PlaygroundContext } from "../context/playground-context";
-
-import { DarkSkyBlueTheme } from "./editor-themes";
 import SessionDataTab from "./session-data-tab";
 import { ExecutionResults } from "./extras/terminal";
 import OutputPayloadViewer from "./extras/output-payload-viewer";
 import MockRunner from "@ondc/automation-mock-runner";
+import { editorUtils } from "../utils/editor-utils";
+import { mockRunnerExtensions } from "../utils/mock-runner-extentions";
 
 export function RightSideView(props: {
 	width: string;
@@ -53,10 +53,21 @@ function GetRightSideContent({
 	tabId: string;
 	actionId: string | undefined;
 }) {
-	const handleEditorWillMount = (monaco: any) => {
-		monaco.editor.defineTheme("dark-skyblue", DarkSkyBlueTheme);
-	};
 	const playgroundContext = useContext(PlaygroundContext);
+
+	// const [savedMeta, setSaveMeta] = useState<any>({});
+	const savedMetaRef = useRef<any>({}); // Add this ref
+
+	useEffect(() => {
+		const meta = mockRunnerExtensions.getSaveDataMeta(
+			playgroundContext.activeApi,
+			playgroundContext.config
+		);
+		// setSaveMeta(meta);
+		savedMetaRef.current = meta; // Update ref whenever savedMeta changes
+		console.log("updated savedMeta", meta);
+	}, [playgroundContext.config, playgroundContext.activeApi]);
+
 	const index =
 		playgroundContext.config?.steps.findIndex(
 			(step) => step.action_id === actionId
@@ -108,13 +119,76 @@ function GetRightSideContent({
 			}
 		}
 	};
+
+	const handleOnMount: OnMount = (editor, monaco) => {
+		console.log("✅ Editor mounted successfully");
+		const modelUri = editor.getModel()?.uri.toString();
+		// check if hover provider is already registered
+		if ((window as any).__jsonHoverProviderDisposable) {
+			console.log("♻️ Disposing existing JSON hover provider");
+			(window as any).__jsonHoverProviderDisposable.dispose();
+		}
+
+		const disposable = monaco.languages.registerHoverProvider("json", {
+			provideHover: (model, position) => {
+				if (modelUri !== model.uri.toString()) {
+					return null;
+				}
+
+				try {
+					console.log("config", playgroundContext);
+
+					const word = model.getWordAtPosition(position);
+					if (!word) return null;
+					const jsonText = model.getValue();
+					const jsonPath = editorUtils.getJsonPath(
+						jsonText,
+						position.lineNumber,
+						position.column
+					);
+					const firstKey = jsonPath.split(".")[1].split("[")[0];
+					// Use ref instead of state
+					const currentSavedMeta = savedMetaRef.current;
+					if (
+						!currentSavedMeta ||
+						!firstKey ||
+						!(firstKey in currentSavedMeta)
+					) {
+						console.log("❌ No metadata for:", firstKey, currentSavedMeta);
+						return null;
+					}
+					const metaInfo = currentSavedMeta[firstKey];
+					return {
+						range: new monaco.Range(
+							position.lineNumber,
+							word.startColumn,
+							position.lineNumber,
+							word.endColumn
+						),
+						contents: [
+							{ value: `last modified at: **${metaInfo.actionId}**` },
+							{ value: `**from:** \`${metaInfo.path}\`` },
+							{ value: `ref: sessionData[${firstKey}]` },
+						],
+					};
+				} catch (e) {
+					console.error("Error in hover provider:", e);
+					return null;
+				}
+			},
+		});
+
+		// Save the disposable globally (or in React ref)
+		(window as any).__jsonHoverProviderDisposable = disposable;
+	};
+
 	switch (tabId) {
 		case "session":
 			return (
 				<Editor
-					key={`${actionId}-${tabId}`} // Key ensures re-render when switching
+					key={`${actionId}-${tabId}`}
 					theme="dark-skyblue"
-					beforeMount={handleEditorWillMount}
+					onMount={handleOnMount}
 					height="100%"
 					language="json"
 					value={getSessionData()}
@@ -124,7 +198,6 @@ function GetRightSideContent({
 						lineNumbers: "on",
 						scrollBeyondLastLine: true,
 						automaticLayout: true,
-						// wordWrap: "on",
 						formatOnPaste: true,
 						formatOnType: true,
 						readOnly: true,
