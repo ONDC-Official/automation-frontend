@@ -126,7 +126,7 @@ export default function Ret10GrocerySelect({
 				className="space-y-4 h-[500px] overflow-y-scroll p-4"
 			>
 				<div className={fieldWrapperStyle}>
-					<label className={labelStyle}>Select Provider</label>
+					<label className={labelStyle}>Select Provider Id</label>
 					{renderSelectOrInput("provider", providerOptions)}
 				</div>
 
@@ -150,7 +150,7 @@ export default function Ret10GrocerySelect({
 						if (locations.length === 0) {
 							return (
 								<>
-									<label className={labelStyle}>Provider Location</label>
+									<label className={labelStyle}>Provider Location Id:</label>
 									<input
 										type="text"
 										{...register("provider_location")}
@@ -212,7 +212,7 @@ export default function Ret10GrocerySelect({
 				{fields.map((field, index) => (
 					<div key={field.id} className="border p-3 rounded space-y-2">
 						<div className={fieldWrapperStyle}>
-							<label className={labelStyle}>Select Item {index + 1}</label>
+							<label className={labelStyle}>Select Item ID: {index + 1}</label>
 							{renderSelectOrInput(`items.${index}.itemId`, itemOptions)}
 						</div>
 
@@ -228,7 +228,7 @@ export default function Ret10GrocerySelect({
 						</div>
 
 						<div className={fieldWrapperStyle}>
-							<label className={labelStyle}>Item Location</label>
+							<label className={labelStyle}>Item Location Id:</label>
 							{renderSelectOrInput(`items.${index}.location`, locationOptions)}
 						</div>
 					</div>
