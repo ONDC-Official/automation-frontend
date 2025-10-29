@@ -283,10 +283,17 @@ function validateFormData(data: FormData): {
 } {
 	const errors: string[] = [];
 
-	for (const key in data) {
+	// Validate top-level fields (excluding items and offer checkboxes)
+	const fieldsToValidate = ['provider', 'location_gps', 'location_pin_code'];
+	for (const key of fieldsToValidate) {
 		if (data[key] === undefined || data[key] === null || data[key] === "") {
 			errors.push(`Field ${key} cannot be empty.`);
 		}
+	}
+
+	// Validate provider_location (must have at least one selection)
+	if (!data.provider_location || data.provider_location.length === 0) {
+		errors.push("At least one provider location must be selected.");
 	}
 
 	// Rule 1: At least 2 items
@@ -294,14 +301,29 @@ function validateFormData(data: FormData): {
 		errors.push("At least 2 items must be selected.");
 	}
 
-	// Rule 2: All items must be unique
-	const itemIds = data.items.map((item) => item.itemId);
+	// Rule 2: Validate each item's fields
+	if (data.items) {
+		data.items.forEach((item, index) => {
+			if (!item.itemId || item.itemId === "") {
+				errors.push(`Item ${index + 1}: Item ID cannot be empty.`);
+			}
+			if (!item.location || item.location === "") {
+				errors.push(`Item ${index + 1}: Location cannot be empty.`);
+			}
+			if (!item.quantity || item.quantity <= 0) {
+				errors.push(`Item ${index + 1}: Quantity must be greater than 0.`);
+			}
+		});
+	}
+
+	// Rule 3: All items must be unique
+	const itemIds = data.items.map((item) => item.itemId).filter(id => id !== "");
 	const uniqueItemIds = new Set(itemIds);
-	if (itemIds.length !== uniqueItemIds.size) {
+	if (itemIds.length > 0 && itemIds.length !== uniqueItemIds.size) {
 		errors.push("All selected items must be unique.");
 	}
 
-	// Rule 3: Only one offer can be selected (non-falsy)
+	// Rule 4: Only one offer can be selected (non-falsy)
 	const offerKeys = Object.keys(data).filter((key) =>
 		key.startsWith("offers_")
 	);
