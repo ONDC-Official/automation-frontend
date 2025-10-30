@@ -9,6 +9,7 @@ import ProtocolHTMLForm from "../custom-forms/protocol-html-form";
 import TRVSelect from "../custom-forms/trv-select";
 import AirlineSelect from "../custom-forms/airline-select";
 import JsonSchemaForm from "../../../protocol-playground/ui/extras/rsjf-form";
+import TRV12busSeatSelection from "../custom-forms/trv-seat-count";
 
 export interface FormFieldConfigType {
 	name: string;
@@ -19,6 +20,7 @@ export interface FormFieldConfigType {
 		| "textarea"
 		| "list"
 		| "checkbox"
+		| "trv12_bus_seat_selection" 
 		| "ret10_grocery_select"
 		| "nestedSelect"
 		| "trv_select"
@@ -86,6 +88,9 @@ export default function FormConfig({
 
 	if (formConfig.find((field) => field.type === "ret10_grocery_select")) {
 		return <Ret10GrocerySelect submitEvent={submitEvent} />;
+	}
+	if (formConfig.find((field) => field.type === "trv12_bus_seat_selection")) {
+		return <TRV12busSeatSelection submitEvent={submitEvent} />;
 	}
 	if (formConfig.find((field) => field.type === "HTML_FORM")) {
 		return ProtocolHTMLForm({
