@@ -18,7 +18,7 @@ export const AddActionForm = ({
 	<div>
 		<h2>{title}</h2>
 		<div className="flex flex-col gap-2 mt-2">
-			<select id="apiNameInput" className={inputClass}>
+			<select id="apiAddNameInput" className={inputClass}>
 				{ONDC_ACTION_LIST.map((action) => (
 					<option key={action} value={action}>
 						{action}
@@ -28,7 +28,7 @@ export const AddActionForm = ({
 			<input
 				type="text"
 				placeholder="Action ID"
-				id="actionIdInput"
+				id="actionAddIdInput"
 				className={inputClass}
 			/>
 			<div className="flex gap-2 mt-2">

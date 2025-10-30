@@ -58,15 +58,11 @@ export default function PlaygroundPage() {
 					onImport={importConfig}
 					onClear={modalHandlers.showDeleteConfirmation}
 					onRun={async () => {
-						playgroundContext.setLoading(true);
 						await runConfig();
-						playgroundContext.setLoading(false);
 					}}
 					onCreateFlowSession={createFlowSession}
 					onRunCurrent={async () => {
-						playgroundContext.setLoading(true);
 						await runCurrentConfig();
-						playgroundContext.setLoading(false);
 					}}
 				/>
 				<ActionTimeline

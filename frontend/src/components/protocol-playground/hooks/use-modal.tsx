@@ -34,8 +34,8 @@ export const useModalHandlers = ({
 	const showAddAction = (insertIndex?: number, title = "Add Action") => {
 		const handleSubmit = () => {
 			const { api, actionId } = getFormValues({
-				api: "apiNameInput",
-				actionId: "actionIdInput",
+				api: "apiAddNameInput",
+				actionId: "actionAddIdInput",
 			});
 
 			if (!api || !actionId) {
