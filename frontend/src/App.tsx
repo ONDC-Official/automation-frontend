@@ -24,6 +24,7 @@ import {GuideStepsEnums, useGuide} from "./context/guideContext"
 import Walkthrough from "./pages/walkthrough";
 import { trackPageView } from "./utils/analytics"
 import ProtocolPlayGround from "./components/protocol-playground/main";
+import PastSessions from "./pages/past-sessions";
 
 function App() {
 	const [isModalOpen, setIsModalOpen] = useState(false);
@@ -159,6 +160,7 @@ function App() {
 							<Route path="/seller-onboarding" element={<SellerOnboarding />} />
 							<Route path="/playground" element={<ProtocolPlayGround />} />
 							<Route path="/walkthrough" element={<Walkthrough />} />
+							<Route path="/history" element={<PastSessions loggedIn={false}/>} />
 							<Route path="*" element={<NotFoundPage />} />
 						</Routes>
 					</div>
