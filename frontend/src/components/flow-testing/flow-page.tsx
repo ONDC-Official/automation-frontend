@@ -12,6 +12,8 @@ import { useSession } from "../../context/context";
 import { putCacheData } from "../../utils/request-utils";
 import { trackEvent } from "../../utils/analytics";
 import { useWorkbenchFlows } from "../../hooks/useWorkbenchFlow";
+import { LuHistory } from "react-icons/lu";
+import { useNavigate } from "react-router-dom";
 
 interface FlowContentProps {
 	type: "SCENARIO" | "CUSTOM";
@@ -62,6 +64,7 @@ export default function FlowContent({ type }: FlowContentProps) {
 		cfSessionId: contextcfSessionId,
 		setcfSessionId,
 	} = useSession();
+	const navigate = useNavigate();
 
 	const onSubmit = async (data: any) => {
 		try {
@@ -221,19 +224,34 @@ export default function FlowContent({ type }: FlowContentProps) {
 					<div className="flex flex-1 w-full">
 						<div className="sm:w-[60%] p-2 bg-white rounded-sm border">
 							<div className="mb-4">
-								<div className="flex gap-2 items-center">
+							<div className="flex items-center justify-between">
+								{/* Left side: heading + optional beta tag */}
+								<div className="flex items-center gap-2">
 									<h1 className="text-lg font-semibold mb-2">
-										{type === "SCENARIO" ? "Scenario testing" : "Custom Flow"}
+									{type === "SCENARIO" ? "Scenario testing" : "Custom Flow"}
 									</h1>
+
 									{type === "CUSTOM" && (
-										<span
-											className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800 border border-yellow-200"
-											role="status"
-											aria-label="Beta release"
-										>
-											Beta release
-										</span>
+									<span
+										className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800 border border-yellow-200"
+										role="status"
+										aria-label="Beta release"
+									>
+										Beta release
+									</span>
 									)}
+								</div>
+
+								{/* Right side: scenario button */}
+								{type === "SCENARIO" && (
+									<button
+									onClick={() => navigate("/history")}
+									className="flex items-center gap-2 px-4 py-2 bg-sky-500 text-white rounded-xl hover:bg-sky-600 transition shadow-sm"
+									>
+									<LuHistory className="w-6 h-6 text-white" />
+									<span className="font-medium text-lg">Past Sessions</span>
+									</button>
+								)}
 								</div>
 								<p className="text-gray-600 text-sm">
 									Please fill in the details below to begin flow testing.
