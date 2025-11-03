@@ -378,3 +378,22 @@ export const getReport = async (sessionId: string) => {
     throw new Error("ERROR while getting action");
   }
 }
+
+export const getSessions = async (subId: string, npType: string) => {
+  try {
+    const res = await axios.get(
+      `${import.meta.env.VITE_BACKEND_URL}/db/sessions`,
+      {
+        params: {
+          sub_id: subId,
+          np_type: npType
+        },
+      }
+    );
+    
+    return res.data;
+  } catch (error) {
+    console.error("errror while getting sessions from db: ", error)
+    throw new Error("ERROR while getting sessions from db");
+  }
+}
