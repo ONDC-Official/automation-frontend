@@ -19,6 +19,7 @@ const PastSessions: React.FC<PastSessionsProps> = ({ loggedIn }) => {
   const [npType, setNpType] = useState("BAP");
   const [sessions, setSessions] = useState<Session[]>([]);
   const [loading, setLoading] = useState(false);
+  const [isFetched, setIsFetched] = useState(false);
 
   const handleFetchSessions = async () => {
     if (!subscriberId.trim()) return;
@@ -28,14 +29,58 @@ const PastSessions: React.FC<PastSessionsProps> = ({ loggedIn }) => {
     // Simulated API call
     try {
       const response = await getSessions(subscriberId, npType);
-      setSessions(response.sessions);
+      setSessions(
+        response.sessions
+          .slice() // clone to avoid mutating original array
+          .sort(
+            (a: Session, b: Session) =>
+              new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          )
+      );
     } catch (e) {
       console.log("error while fetching session", e);
       toast.error("Something went wrong.");
     } finally {
       setLoading(false);
+      setIsFetched(true);
     }
   };
+
+  // const viewReport = async (sessionId: string) => {
+  //   let report: any = {};
+  //   try {
+  //     const response = await getReport(sessionId);
+  //     report = response;
+  //   } catch (e) {
+  //     console.log("error while fetching report: ", e);
+  //     toast.error("Report not available");
+  //     return;
+  //   }
+
+  //   if (!report?.data) {
+  //     toast.error("Something went wrong while fetching report");
+  //     return;
+  //   }
+
+  //   const base64html = report.data;
+  //   const cleanedData = base64html.split("base64,")[1];
+  //   try {
+  //     // Decode Base64 → HTML string
+  //     const decodedHtml = decodeURIComponent(escape(atob(cleanedData)));
+
+  //     // Create a new Blob and URL
+  //     const blob = new Blob([decodedHtml], { type: "text/html" });
+  //     const url = URL.createObjectURL(blob);
+
+  //     // Open in a new tab
+  //     window.open(url, "_blank");
+
+  //     // Optional: cleanup after a short delay
+  //     setTimeout(() => URL.revokeObjectURL(url), 5000);
+  //   } catch (error) {
+  //     console.error("Failed to decode or open Base64 HTML:", error);
+  //   }
+  // };
 
   const viewReport = async (sessionId: string) => {
     let report: any = {};
@@ -47,31 +92,127 @@ const PastSessions: React.FC<PastSessionsProps> = ({ loggedIn }) => {
       toast.error("Report not available");
       return;
     }
-
+  
     if (!report?.data) {
       toast.error("Something went wrong while fetching report");
       return;
     }
-
+  
     const base64html = report.data;
     const cleanedData = base64html.split("base64,")[1];
+  
     try {
-      // Decode Base64 → HTML string
       const decodedHtml = decodeURIComponent(escape(atob(cleanedData)));
-
-      // Create a new Blob and URL
-      const blob = new Blob([decodedHtml], { type: "text/html" });
-      const url = URL.createObjectURL(blob);
-
-      // Open in a new tab
-      window.open(url, "_blank");
-
-      // Optional: cleanup after a short delay
-      setTimeout(() => URL.revokeObjectURL(url), 5000);
+  
+      // Step 1: Open new tab
+      const newTab = window.open("", "_blank");
+      if (!newTab) {
+        toast.error("Popup blocked! Please allow popups for this site.");
+        return;
+      }
+  
+      // Step 2: Write a clean shell with header and iframe
+      newTab.document.open();
+      newTab.document.write(`
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+          <meta charset="UTF-8" />
+          <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+          <title>Report - ${sessionId}</title>
+          <style>
+            body {
+              margin: 0;
+              font-family: system-ui, sans-serif;
+              background: #f8fafc;
+            }
+            header {
+              position: fixed;
+              top: 0;
+              left: 0;
+              right: 0;
+              background: white;
+              box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+              z-index: 10;
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+              padding: 8px 16px;
+            }
+            iframe {
+              border: none;
+              width: 100%;
+              height: calc(100vh - 60px);
+              margin-top: 60px;
+            }
+            button {
+              background-color: #0ea5e9;
+              color: white;
+              border: none;
+              padding: 8px 14px;
+              border-radius: 8px;
+              font-size: 0.9rem;
+              font-weight: 500;
+              cursor: pointer;
+              transition: background 0.3s;
+            }
+            button:hover {
+              background-color: #0284c7;
+            }
+          </style>
+        </head>
+        <body>
+          <header>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <img
+                src="https://ondc.org/assets/theme/images/ondc_registered_logo.svg?v=d864655110"
+                alt="Logo"
+                style="height: 36px; width: auto;"
+              />
+              <span style="
+                font-size: 1.4rem;
+                font-weight: 800;
+                background: linear-gradient(to right, #0ea5e9, #38bdf8);
+                -webkit-background-clip: text;
+                color: transparent;
+              ">
+                WORKBENCH
+              </span>
+            </div>
+            <button id="downloadPdfBtn">Download as PDF</button>
+          </header>
+          <iframe id="reportFrame"></iframe>
+        </body>
+        </html>
+      `);
+      newTab.document.close();
+  
+      // Step 3: Write decoded HTML into iframe
+      newTab.onload = () => {
+        const iframe = newTab.document.getElementById("reportFrame") as HTMLIFrameElement;
+        if (!iframe) return;
+  
+        const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+        if (!iframeDoc) return;
+  
+        iframeDoc.open();
+        iframeDoc.write(decodedHtml);
+        iframeDoc.close();
+  
+        // Step 4: Handle PDF download
+        const downloadBtn = newTab.document.getElementById("downloadPdfBtn");
+        downloadBtn?.addEventListener("click", () => {
+          iframe.contentWindow?.print();
+        });
+      };
     } catch (error) {
       console.error("Failed to decode or open Base64 HTML:", error);
+      toast.error("Failed to load report");
     }
   };
+  
+  
+  
 
   const formatDateTime = (isoString: string) => {
     const date = new Date(isoString);
@@ -99,8 +240,7 @@ const PastSessions: React.FC<PastSessionsProps> = ({ loggedIn }) => {
 
       {/* Logged-in or Subscriber Mode */}
       {loggedIn ? (
-        <>
-        </>
+        <></>
       ) : (
         <div className="space-y-4">
           <label className="block text-sky-700 font-medium">
@@ -134,12 +274,16 @@ const PastSessions: React.FC<PastSessionsProps> = ({ loggedIn }) => {
             </button>
           </div>
 
-          {sessions?.length > 0 && (
-            <div className="pt-4 border-t border-sky-100">
-              <h3 className="text-lg text-sky-700 font-semibold mb-2">
-                Past Sessions
-              </h3>
-              {sessions.map((session) => (
+          {/* Session Results Area */}
+          <div className="pt-4 border-t border-sky-100">
+            {sessions.length === 0 && !loading ? (
+              <p className="text-sky-600 text-center py-6">
+                {!isFetched
+                  ? "Enter Subscriber ID and NP Type to search for sessions."
+                  : "No past sessions found for this subscriber."}
+              </p>
+            ) : (
+              sessions.map((session) => (
                 <div
                   key={session.sessionId}
                   className="flex justify-between items-center bg-white border border-sky-100 rounded-xl p-4 shadow-sm hover:shadow-md transition mb-2"
@@ -152,7 +296,7 @@ const PastSessions: React.FC<PastSessionsProps> = ({ loggedIn }) => {
                       <button
                         onClick={() => {
                           navigator.clipboard.writeText(session.sessionId);
-                          toast.info("Session Id Copied!")
+                          toast.info("Session ID Copied!");
                         }}
                         className="text-sky-500 hover:text-sky-600 transition"
                         title="Copy Session ID"
@@ -172,17 +316,11 @@ const PastSessions: React.FC<PastSessionsProps> = ({ loggedIn }) => {
                     >
                       View Report
                     </button>
-                    {/* <button
-                      onClick={() => handleResumeSession(session.id)}
-                      className="px-3 py-1.5 text-sm border border-sky-400 text-sky-600 rounded-lg hover:bg-sky-100 transition"
-                    >
-                      Resume
-                    </button> */}
                   </div>
                 </div>
-              ))}
-            </div>
-          )}
+              ))
+            )}
+          </div>
         </div>
       )}
     </div>
