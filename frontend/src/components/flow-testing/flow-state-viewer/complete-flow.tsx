@@ -385,6 +385,7 @@ export function Accordion({
 						formConfig={activeFormConfig}
 						submitEvent={handleFormForNewFlow}
 						referenceData={mappedFlow.reference_data}
+						flowId={flow.id}
 					/>
 				</Popup>
 			)}
