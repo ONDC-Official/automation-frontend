@@ -1,3 +1,4 @@
+import { useContext } from "react";
 import { FormInput } from "../form-input";
 import FormSelect from "../form-select";
 import CheckboxGroup from "../checkbox";
@@ -7,9 +8,9 @@ import { SubmitEventParams } from "../../../../types/flow-types";
 import Ret10GrocerySelect from "../custom-forms/ret10-grocery-select";
 import ProtocolHTMLForm from "../custom-forms/protocol-html-form";
 import TRVSelect from "../custom-forms/trv-select";
-import AirlineSelect from "../custom-forms/airline-select";
 import JsonSchemaForm from "../../../protocol-playground/ui/extras/rsjf-form";
-import TRV12busSeatSelection from "../custom-forms/trv-seat-count";
+import FinvuRedirectForm from "../custom-forms/finvu-redirect-form";
+import { SessionContext } from "../../../../context/context";
 
 export interface FormFieldConfigType {
 	name: string;
@@ -20,12 +21,12 @@ export interface FormFieldConfigType {
 		| "textarea"
 		| "list"
 		| "checkbox"
-		| "trv12_bus_seat_selection" 
+		| "boolean"
 		| "ret10_grocery_select"
 		| "nestedSelect"
 		| "trv_select"
 		| "HTML_FORM"
-		| "airline_select";
+		| "FINVU_REDIRECT";
 	payloadField: string;
 	values?: string[];
 	defaultValue?: string;
@@ -43,11 +44,17 @@ export default function FormConfig({
 	formConfig,
 	submitEvent,
 	referenceData,
+	flowId,
 }: {
 	formConfig: FormConfigType;
 	submitEvent: (data: SubmitEventParams) => Promise<void>;
 	referenceData?: Record<string, any>;
+	flowId?: string;
 }) {
+	const sessionContext = useContext(SessionContext);
+	const sessionId = sessionContext?.sessionId || '';
+	const sessionData = sessionContext?.sessionData;
+
 	const onSubmit = async (data: Record<string, string>) => {
 		const formatedData: Record<string, string> = {};
 		const formData: Record<string, string> = data;
@@ -78,6 +85,7 @@ export default function FormConfig({
 		}
 	});
 
+	// Check for schema form
 	if (formConfig.find((f) => f.schema)) {
 		const schemaField = formConfig.find((f) => f.schema);
 		return JsonSchemaForm({
@@ -86,12 +94,28 @@ export default function FormConfig({
 		});
 	}
 
+	// Check for FINVU_REDIRECT type
+	if (formConfig.find((field) => field.type === "FINVU_REDIRECT")) {
+		// Get transaction ID from session context using flowId
+		let transactionId: string | undefined = undefined;
+		if (flowId && sessionData && sessionData.flowMap) {
+			transactionId = sessionData.flowMap[flowId] || undefined;
+		}
+
+		return (
+			<FinvuRedirectForm
+				submitEvent={submitEvent}
+				referenceData={referenceData}
+				sessionId={sessionId}
+				transactionId={transactionId || ''}
+			/>
+		);
+	}
+
 	if (formConfig.find((field) => field.type === "ret10_grocery_select")) {
 		return <Ret10GrocerySelect submitEvent={submitEvent} />;
 	}
-	if (formConfig.find((field) => field.type === "trv12_bus_seat_selection")) {
-		return <TRV12busSeatSelection submitEvent={submitEvent} />;
-	}
+
 	if (formConfig.find((field) => field.type === "HTML_FORM")) {
 		return ProtocolHTMLForm({
 			submitEvent: submitEvent,
@@ -106,18 +130,7 @@ export default function FormConfig({
 		return <TRVSelect submitEvent={submitEvent} />;
 	}
 
-	if (formConfig.find((field) => field.type === "trv_select")) {
-		return <TRVSelect submitEvent={submitEvent} />;
-	}
-
-	if (formConfig.find((field) => field.type === "airline_select")) {
-		return <AirlineSelect submitEvent={submitEvent} />;
-	}
-
-	if (formConfig.find((field) => field.type === "airline_select")) {
-		return <AirlineSelect submitEvent={submitEvent} />;
-	}
-
+	// Default: GenericForm
 	return (
 		<GenericForm
 			defaultValues={defaultValues}
@@ -138,7 +151,7 @@ export default function FormConfig({
 								name={field.name}
 								label={field.label}
 								required={true}
-								// key={field.payloadField}
+								key={field.name}
 							/>
 						);
 					case "select":
@@ -147,7 +160,7 @@ export default function FormConfig({
 								name={field.name}
 								label={field.label}
 								options={field.values}
-								// key={field.payloadField}
+								key={field.name}
 							/>
 						);
 					case "checkbox":
@@ -157,6 +170,7 @@ export default function FormConfig({
 								label={field.label}
 								name={field.name}
 								defaultValue={field.default}
+								key={field.name}
 							/>
 						);
 					case "nestedSelect":
@@ -164,6 +178,7 @@ export default function FormConfig({
 							<ItemCustomisationSelector
 								label={field.label}
 								name={field.name}
+								key={field.name}
 							/>
 						);
 					default:

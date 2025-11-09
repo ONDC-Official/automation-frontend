@@ -408,6 +408,7 @@ export default function ProtocolHTMLForm({
 	const [submissionId, setSubmissionId] = useState<string | null>(null);
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [error, setError] = useState<string | null>(null);
+	const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
 	// Optional: show the raw mounted HTML (debug/inspection) — you can remove this block
 	useEffect(() => {
@@ -429,11 +430,83 @@ export default function ProtocolHTMLForm({
 	}, [formHtml]);
 
 	// Change handlers
-	const setField = (name: string, val: any) =>
+	const setField = (name: string, val: any) => {
 		setValues((prev) => ({ ...prev, [name]: val }));
+		// Clear field error when user starts typing
+		if (fieldErrors[name]) {
+			setFieldErrors((prev) => {
+				const newErrors = { ...prev };
+				delete newErrors[name];
+				return newErrors;
+			});
+		}
+	};
+
+	// Validation function
+	const validateForm = (): boolean => {
+		const errors: Record<string, string> = {};
+		
+		console.log("Validating form with values:", values);
+		console.log("Parsed fields:", parsed.fields);
+		
+		for (const field of parsed.fields) {
+			if (field.required) {
+				const value = values[field.name];
+				console.log(`Checking field ${field.name} (${field.kind}):`, value, "required:", field.required);
+				
+				// Check if field is empty or invalid
+				if (field.kind === "textlike" || field.kind === "textarea") {
+					if (!value || (typeof value === "string" && value.trim() === "")) {
+						errors[field.name] = `${field.label || field.name} is required`;
+						console.log(`Error for ${field.name}: text field is empty`);
+					}
+				} else if (field.kind === "select") {
+					if (!value || (typeof value === "string" && value === "")) {
+						errors[field.name] = `${field.label || field.name} is required`;
+						console.log(`Error for ${field.name}: select field is empty`);
+					}
+				} else if (field.kind === "radio-group") {
+					if (!value || (typeof value === "string" && value === "")) {
+						errors[field.name] = `${field.label || field.name} is required`;
+						console.log(`Error for ${field.name}: radio group is empty`);
+					}
+				} else if (field.kind === "checkbox-group") {
+					if (!value || !Array.isArray(value) || value.length === 0) {
+						errors[field.name] = `${field.label || field.name} is required`;
+						console.log(`Error for ${field.name}: checkbox group is empty`);
+					}
+				} else if (field.kind === "file") {
+					if (!value || (Array.isArray(value) && value.length === 0)) {
+						errors[field.name] = `${field.label || field.name} is required`;
+						console.log(`Error for ${field.name}: file field is empty`);
+					}
+				}
+			}
+		}
+		
+		console.log("Validation errors:", errors);
+		setFieldErrors(errors);
+		const isValid = Object.keys(errors).length === 0;
+		console.log("Form is valid:", isValid);
+		return isValid;
+	};
 
 	// Submit the rebuilt form
 	const handleSubmit = async () => {
+		console.log("Submit button clicked");
+		
+		// Validate form before submission
+		const isValid = validateForm();
+		console.log("Validation result:", isValid);
+		
+		if (!isValid) {
+			console.log("Form validation failed, setting error message");
+			setError("Please fill in all required fields");
+			return;
+		}
+		
+		console.log("Form is valid, proceeding with submission");
+		
 		try {
 			console.log("submitting", values);
 			setIsSubmitting(true);
@@ -614,17 +687,23 @@ export default function ProtocolHTMLForm({
 		}
 
 		const labelEl = (children: JSX.Element) => (
-			<label className="block text-sm font-medium text-gray-700">
-				{f.label ?? f.name}
-				<span className="text-red-600">{f.required ? " *" : ""}</span>
+			<div className="block">
+				<label className="block text-sm font-medium text-gray-700">
+					{f.label ?? f.name}
+					<span className="text-red-600">{f.required ? " *" : ""}</span>
+				</label>
 				<div className="mt-1">{children}</div>
-			</label>
+				{fieldErrors[f.name] && (
+					<p className="mt-1 text-sm text-red-600">{fieldErrors[f.name]}</p>
+				)}
+			</div>
 		);
 
 		switch (f.kind) {
 			case "textlike": {
 				const v = (values[f.name] as string) ?? "";
 				const tf = f as TextLikeField;
+				const hasError = !!fieldErrors[f.name];
 				return labelEl(
 					<input
 						type={tf.inputType}
@@ -638,13 +717,18 @@ export default function ProtocolHTMLForm({
 						max={tf.max as any}
 						step={tf.step as any}
 						pattern={tf.pattern}
-						className="w-full rounded-md border bg-gray-50 border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+						className={`w-full rounded-md border bg-gray-50 px-3 py-2 focus:outline-none focus:ring-2 ${
+							hasError 
+								? "border-red-500 focus:ring-red-500" 
+								: "border-gray-300 focus:ring-blue-500"
+						}`}
 					/>
 				);
 			}
 			case "textarea": {
 				const v = (values[f.name] as string) ?? "";
 				const ta = f as TextareaField;
+				const hasError = !!fieldErrors[f.name];
 				return labelEl(
 					<textarea
 						name={f.name}
@@ -654,13 +738,18 @@ export default function ProtocolHTMLForm({
 						rows={ta.rows ?? 4}
 						required={f.required}
 						disabled={f.disabled}
-						className="w-full rounded-md bg-gray-50 border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+						className={`w-full rounded-md bg-gray-50 border px-3 py-2 focus:outline-none focus:ring-2 ${
+							hasError 
+								? "border-red-500 focus:ring-red-500" 
+								: "border-gray-300 focus:ring-blue-500"
+						}`}
 					/>
 				);
 			}
 			case "select": {
 				const sel = f as SelectField;
 				const v = values[f.name];
+				const hasError = !!fieldErrors[f.name];
 				return labelEl(
 					<select
 						name={f.name}
@@ -682,7 +771,11 @@ export default function ProtocolHTMLForm({
 						multiple={!!sel.multiple}
 						required={f.required}
 						disabled={f.disabled}
-						className="w-full rounded-md border bg-gray-50 border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+						className={`w-full rounded-md border bg-gray-50 px-3 py-2 focus:outline-none focus:ring-2 ${
+							hasError 
+								? "border-red-500 focus:ring-red-500" 
+								: "border-gray-300 focus:ring-blue-500"
+						}`}
 					>
 						{!sel.multiple && <option value="">-- Select --</option>}
 						{sel.options.map((o, i) => (
@@ -697,28 +790,33 @@ export default function ProtocolHTMLForm({
 				const rg = f as RadioGroupField;
 				const v = (values[f.name] as string) ?? "";
 				return (
-					<fieldset className="space-y-2">
-						<legend className="block text-sm font-medium text-gray-700">
-							{f.label ?? f.name}
-							<span className="text-red-600">{f.required ? " *" : ""}</span>
-						</legend>
-						{rg.options.map((opt, i) => (
-							<label
-								key={i}
-								className="flex items-center gap-2 text-sm text-gray-800"
-							>
-								<input
-									type="radio"
-									name={f.name}
-									value={opt.value}
-									checked={v === opt.value}
-									onChange={() => setField(f.name, opt.value)}
-									className="h-4 w-4"
-								/>
-								<span>{opt.label ?? opt.value}</span>
-							</label>
-						))}
-					</fieldset>
+					<div className="block">
+						<fieldset className="space-y-2">
+							<legend className="block text-sm font-medium text-gray-700">
+								{f.label ?? f.name}
+								<span className="text-red-600">{f.required ? " *" : ""}</span>
+							</legend>
+							{rg.options.map((opt, i) => (
+								<label
+									key={i}
+									className="flex items-center gap-2 text-sm text-gray-800"
+								>
+									<input
+										type="radio"
+										name={f.name}
+										value={opt.value}
+										checked={v === opt.value}
+										onChange={() => setField(f.name, opt.value)}
+										className="h-4 w-4"
+									/>
+									<span>{opt.label ?? opt.value}</span>
+								</label>
+							))}
+						</fieldset>
+						{fieldErrors[f.name] && (
+							<p className="mt-1 text-sm text-red-600">{fieldErrors[f.name]}</p>
+						)}
+					</div>
 				);
 			}
 			case "checkbox-single": {
@@ -752,34 +850,40 @@ export default function ProtocolHTMLForm({
 						);
 				};
 				return (
-					<fieldset className="space-y-2">
-						<legend className="block text-sm font-medium text-gray-700">
-							{f.label ?? f.name}
-							<span className="text-red-600">{f.required ? " *" : ""}</span>
-						</legend>
-						{cg.options.map((opt, i) => {
-							const on = arr.includes(opt.value);
-							return (
-								<label
-									key={i}
-									className="flex items-center gap-2 text-sm text-gray-800"
-								>
-									<input
-										type="checkbox"
-										name={f.name}
-										checked={on}
-										onChange={(e) => toggle(opt.value, e.target.checked)}
-										className="h-4 w-4"
-									/>
-									<span>{opt.label ?? opt.value}</span>
-								</label>
-							);
-						})}
-					</fieldset>
+					<div className="block">
+						<fieldset className="space-y-2">
+							<legend className="block text-sm font-medium text-gray-700">
+								{f.label ?? f.name}
+								<span className="text-red-600">{f.required ? " *" : ""}</span>
+							</legend>
+							{cg.options.map((opt, i) => {
+								const on = arr.includes(opt.value);
+								return (
+									<label
+										key={i}
+										className="flex items-center gap-2 text-sm text-gray-800"
+									>
+										<input
+											type="checkbox"
+											name={f.name}
+											checked={on}
+											onChange={(e) => toggle(opt.value, e.target.checked)}
+											className="h-4 w-4"
+										/>
+										<span>{opt.label ?? opt.value}</span>
+									</label>
+								);
+							})}
+						</fieldset>
+						{fieldErrors[f.name] && (
+							<p className="mt-1 text-sm text-red-600">{fieldErrors[f.name]}</p>
+						)}
+					</div>
 				);
 			}
 			case "file": {
 				const fileField = f as FileField;
+				const hasError = !!fieldErrors[f.name];
 				return labelEl(
 					<input
 						type="file"
@@ -792,7 +896,9 @@ export default function ProtocolHTMLForm({
 							if (fileField.multiple) setField(f.name, Array.from(files));
 							else setField(f.name, files[0] ?? null);
 						}}
-						className="block w-full text-sm text-gray-900 file:mr-4 file:rounded-md file:border-0 file:bg-gray-100 file:px-3 file:py-2 file:text-sm file:font-medium hover:file:bg-gray-200"
+						className={`block w-full text-sm text-gray-900 file:mr-4 file:rounded-md file:border-0 file:bg-gray-100 file:px-3 file:py-2 file:text-sm file:font-medium hover:file:bg-gray-200 ${
+							hasError ? "border-red-500" : ""
+						}`}
 					/>
 				);
 			}
@@ -800,35 +906,67 @@ export default function ProtocolHTMLForm({
 	};
 
 	return (
-		<div className="space-y-6">
+		<div className="space-y-6 max-h-full overflow-y-auto overflow-x-hidden">
 			{/* Debug: where the original form HTML came from */}
 			{/* <div ref={containerRef} className="overflow-auto" /> */}
 			{/* Recreated React form */}
-			<div className="rounded-lg border border-gray-200 p-4">
+			<div className="rounded-lg border border-gray-200 p-4 min-w-0">
 				<div className="grid grid-cols-1 gap-4">
 					{parsed.fields.map((f, idx) => (
 						<div key={`${f.name}-${idx}`}>{renderField(f)}</div>
 					))}
 				</div>
-				<div className="mt-6 flex items-center gap-3">
+				{/* Validation Summary */}
+				{Object.keys(fieldErrors).length > 0 && (
+					<div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-md">
+						<p className="text-sm text-red-700 font-medium">
+							Please fill in {Object.keys(fieldErrors).length} required field{Object.keys(fieldErrors).length > 1 ? 's' : ''}:
+						</p>
+						<ul className="mt-1 text-sm text-red-600 list-disc list-inside">
+							{Object.values(fieldErrors).map((error, index) => (
+								<li key={index}>{error}</li>
+							))}
+						</ul>
+					</div>
+				)}
+
+				<div className="mt-6 flex flex-wrap items-center gap-3">
 					<button
 						type="button"
 						onClick={handleSubmit}
 						disabled={isSubmitting}
-						className="px-4 py-2 rounded bg-blue-600 text-white disabled:opacity-60"
+						className={`px-4 py-2 rounded text-white disabled:opacity-60 flex-shrink-0 ${
+							Object.keys(fieldErrors).length > 0 
+								? "bg-red-600 hover:bg-red-700" 
+								: "bg-blue-600 hover:bg-blue-700"
+						}`}
 					>
-						{isSubmitting ? "Submitting..." : "Submit"}
+						{isSubmitting 
+							? "Submitting..." 
+							: Object.keys(fieldErrors).length > 0 
+								? `Fix ${Object.keys(fieldErrors).length} Error${Object.keys(fieldErrors).length > 1 ? 's' : ''}`
+								: "Submit"
+						}
 					</button>
 
-				</div>
-
-				<div className="mt-3 text-sm text-gray-700">
-					{submissionId && (
-						<span className="text-green-700">
-							Received submission_id: <code>{submissionId}</code>
+					{parsed.action && (
+						<span className="text-xs text-gray-500 break-words">
+							POST to <code className="break-all">{parsed.action}</code>
 						</span>
 					)}
-					{error && <span className="ml-2 text-red-600">Error: {error}</span>}
+				</div>
+
+				<div className="mt-3 text-sm text-gray-700 break-words">
+					{submissionId && (
+						<span className="text-green-700">
+							Received submission_id: <code className="break-all">{submissionId}</code>
+						</span>
+					)}
+					{error && (
+						<div className="p-3 bg-red-50 border border-red-200 rounded-md">
+							<span className="text-red-600 break-words font-medium">Error: {error}</span>
+						</div>
+					)}
 				</div>
 			</div>
 		</div>

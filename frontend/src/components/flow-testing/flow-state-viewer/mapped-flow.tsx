@@ -74,15 +74,16 @@ export default function DisplayFlow({
 				))}
 			</div>
 			<div></div>
-			{inputPopUp && activeFormConfig && (
-				<Popup isOpen={inputPopUp} onClose={() => setInputPopUp(false)}>
-					<FormConfig
-						formConfig={activeFormConfig}
-						submitEvent={handleFormSubmit}
-						referenceData={mappedFlow.reference_data}
-					/>
-				</Popup>
-			)}
+		{inputPopUp && activeFormConfig && (
+			<Popup isOpen={inputPopUp} onClose={() => setInputPopUp(false)}>
+				<FormConfig
+					formConfig={activeFormConfig}
+					submitEvent={handleFormSubmit}
+					referenceData={mappedFlow.reference_data}
+					flowId={flowId}
+				/>
+			</Popup>
+		)}
 		</>
 	);
 }
