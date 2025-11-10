@@ -2,17 +2,18 @@ import { Request, Response } from "express";
 import {
 	clearFlowService,
 	createExpectationService,
+	createSessionWithCompleteData,
 	createSessionService,
 	deleteExpectationService,
 	getSessionService,
 	getTransactionDataService,
 	requestForFlowPermissionService,
 	updateSessionService,
+	setMockSession,
 } from "../services/sessionService";
 import { saveLog } from "../utils/console";
 import logger from "@ondc/automation-logger";
 import { getLoggerMeta } from "../utils/logger-meta-utilts";
-import { get } from "lodash";
 
 const SESSION_EXPIRY = 3600; // 1 hour
 const COOKIE_OPTIONS = { maxAge: SESSION_EXPIRY, httpOnly: true };
@@ -44,7 +45,61 @@ export const createSession = async (req: Request, res: Response) => {
 			message: response,
 		});
 	} catch (error: any) {
-		console.error(error);
+		logger.error("Error creating session", getLoggerMeta(req), error);
+		res
+			.status(500)
+			.send({ message: "Error creating session", error: error.message });
+	}
+};
+
+export const createPlaygroundSession = async (req: Request, res: Response) => {
+	const sessionId = req.sessionID;
+	logger.info(
+		`Creating playground session with ID: ${sessionId}`,
+		getLoggerMeta(req)
+	);
+	if (!sessionId) {
+		logger.error("Session ID is missing in the request.", getLoggerMeta(req));
+		res.status(400).send({ message: "Session ID is required." });
+		return;
+	}
+
+	try {
+		const data = req.body;
+		const sessionData = data.sessionData;
+		const playgroundConfig = data.playgroundConfig;
+
+		if (!sessionData || !playgroundConfig) {
+			res
+				.status(400)
+				.send({ message: "sessionData and playgroundConfig are required." });
+			return;
+		}
+
+		const sessionRes = await createSessionWithCompleteData(
+			sessionId,
+			sessionData,
+			getLoggerMeta(req)
+		);
+		// reset transaction history
+		playgroundConfig.transaction_history = [];
+		const mockRes = await setMockSession(
+			sessionId,
+			playgroundConfig,
+			getLoggerMeta(req)
+		);
+
+		res.status(201).send({
+			sessionId: sessionId,
+			subscriberUrl: sessionData.subscriberUrl,
+			message: sessionRes + " & " + mockRes,
+		});
+	} catch (error: any) {
+		logger.error(
+			"Error creating playground session",
+			getLoggerMeta(req),
+			error
+		);
 		res
 			.status(500)
 			.send({ message: "Error creating session", error: error.message });

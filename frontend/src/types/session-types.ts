@@ -27,6 +27,7 @@ export type SessionDifficulty = {
 	protocolValidations: boolean;
 	timeValidations: boolean;
 	headerValidaton: boolean;
+	useGzip: boolean;
 };
 export interface SessionCache {
 	// against session_id
@@ -38,9 +39,10 @@ export interface SessionCache {
 	subscriberId?: string;
 	subscriberUrl: string;
 	usecaseId: string;
-	env: "STAGING" | "PRE-PRODUCTION";
+	env: "STAGING" | "PRE-PRODUCTION" | "LOGGED-IN";
 	sessionDifficulty: SessionDifficulty;
 	flowConfigs: Record<string, Flow>;
+	activeFlow: null | string;
 }
 
 export interface State {

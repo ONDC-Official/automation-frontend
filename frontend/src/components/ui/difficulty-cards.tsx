@@ -3,6 +3,7 @@ import { IoIosArrowDropdownCircle } from "react-icons/io";
 import { toast } from "react-toastify";
 import { putCacheData } from "../../utils/request-utils";
 import { useEffect, useState } from "react";
+import { trackEvent } from "../../utils/analytics";
 
 const keyMapping: any = {
 	stopAfterFirstNack: "Stop At Nack",
@@ -24,6 +25,13 @@ interface DifficultyCache {
 	useGzip: boolean;
 	totalDifficulty?: number;
 }
+
+const skipItems = [
+	"stopAfterFirstNack",
+	"sensitiveTTL",
+	"useGateway",
+	"timeValidations",
+];
 
 interface IProps {
 	difficulty_cache: DifficultyCache;
@@ -68,7 +76,9 @@ const DifficultyCards = ({ difficulty_cache, sessionId }: IProps) => {
 				className="flex flex-row justify-between items-center cursor-pointer"
 				onClick={() => setIsOpen(!isOpen)}
 			>
-				<div className="text-md font-bold text-sky-700 mt-2">Flow Settings</div>
+				<div className="text-md font-bold text-sky-700 mt-2 flex">
+					Flow Settings
+				</div>
 
 				<IoIosArrowDropdownCircle
 					className={`h-7 w-7 text-sky-700 transform transition-transform duration-300 ${
@@ -84,8 +94,9 @@ const DifficultyCards = ({ difficulty_cache, sessionId }: IProps) => {
 			>
 				{Object.entries(difficultyCache).length !== 0 && (
 					<div className="flex flex-wrap gap-4 mt-4">
-						{Object.entries(difficultyCache).map(
-							([key, value]: any, index: any) => (
+						{Object.entries(difficultyCache)
+							.filter(([key]) => !skipItems.includes(key))
+							.map(([key, value]: any, index: any) => (
 								<div
 									key={index}
 									className="flex items-center justify-between bg-white rounded-md shadow p-2 w-full sm:w-auto sm:flex-1"
@@ -97,6 +108,10 @@ const DifficultyCards = ({ difficulty_cache, sessionId }: IProps) => {
 										<ToggleButton
 											initialValue={value}
 											onToggle={(value: boolean) => {
+												trackEvent({
+													category: "SCHEMA_VALIDATION-FLOW_SETTINGS",
+													action: `toggled value: ${key} to: ${value}`,
+												})
 												setDifficultCache((prevalue: any) => {
 													prevalue[key] = value;
 													return JSON.parse(JSON.stringify(prevalue));
@@ -105,8 +120,7 @@ const DifficultyCards = ({ difficulty_cache, sessionId }: IProps) => {
 										/>
 									</span>
 								</div>
-							)
-						)}
+							))}
 					</div>
 				)}
 			</div>

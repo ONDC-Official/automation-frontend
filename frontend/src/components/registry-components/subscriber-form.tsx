@@ -1,5 +1,5 @@
 // src/App.tsx
-import React, { useState, useEffect, useContext } from "react";
+import { useState, useEffect, useContext } from "react";
 import type { Key, Mapping } from "./registry-types";
 import * as api from "../../utils/registry-apis";
 
@@ -13,7 +13,7 @@ import { UserContext } from "../../context/userContext";
 import { v4 as uuidv4 } from "uuid"; // For generating unique IDs
 // You would also import LocationsSection here
 
-const SubscriberForm: React.FC = () => {
+const SubscriberForm = () => {
 	const [isLoading, setIsLoading] = useState(true);
 	const user = useContext(UserContext);
 	const [formData, setFormData] = [user.subscriberData, user.setSubscriberData];

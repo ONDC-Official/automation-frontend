@@ -76,12 +76,18 @@ jobs:
           echo "SERVICE_NAME=${{ vars.SERVICE_NAME }}" >> \$REPO_DIR/backend/.env
           echo "TRACE_URL=${{ vars.TRACE_URL }}" >> \$REPO_DIR/backend/.env
           echo "API_SERVICE_KEY=${{ secrets.API_SERVICE_KEY }}" >> \$REPO_DIR/backend/.env
+          echo "DB_SERVICE_API_KEY=${{ secrets.DB_SERVICE_API_KEY }}" >> \$REPO_DIR/backend/.env
           echo "GITHUB_CLIENT_ID=${{ secrets.CLIENT_ID_GITHUB_STAGING }}" >> \$REPO_DIR/backend/.env
           echo "GITHUB_CLIENT_SECRET=${{ secrets.CLIENT_SECRET_GITHUB_STAGING }}" >> \$REPO_DIR/backend/.env
           echo "IN_HOUSE_REGISTRY=${{ vars.IN_HOUSE_REGISTRY_STAGING }}" >> \$REPO_DIR/backend/.env
           echo "FRONTEND_URL=${{ vars.FRONTEND_URL_STAGING }}" >> \$REPO_DIR/backend/.env
           echo "BACKEND_URL=${{ vars.BACKEND_URL_STAGING }}" >> \$REPO_DIR/backend/.env
           echo "LOKI_HOST=${{ vars.LOKI_HOST }}" >> \$REPO_DIR/backend/.env
+          echo "AWS_ACCESS_KEY_ID =${{ secrets.AWS_ACCESS_KEY_ID }}" >> \$REPO_DIR/backend/.env
+          echo "AWS_SECRET_ACCESS_KEY =${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> \$REPO_DIR/backend/.env
+          echo "AWS_REGION =${{ secrets.AWS_REGION }}" >> \$REPO_DIR/backend/.env
+          echo "S3_BUCKET_NAME =${{ secrets.S3_BUCKET_NAME }}" >> \$REPO_DIR/backend/.env
+          echo "S3_FOLDER =${{ secrets.S3_FOLDER }}" >> \$REPO_DIR/backend/.env
           EOF
 
       - name: Verify docker-compose.yml files
@@ -174,12 +180,21 @@ jobs:
           echo "SERVICE_NAME=${{ vars.SERVICE_NAME }}" >> \$REPO_DIR/backend/.env
           echo "TRACE_URL=${{ vars.TRACE_URL }}" >> \$REPO_DIR/backend/.env
           echo "API_SERVICE_KEY=${{ secrets.API_SERVICE_KEY }}" >> \$REPO_DIR/backend/.env
+          echo "DB_SERVICE_API_KEY=${{ secrets.DB_SERVICE_API_KEY }}" >> \$REPO_DIR/backend/.env
           echo "GITHUB_CLIENT_ID=${{ secrets.CLIENT_ID_GITHUB }}" >> \$REPO_DIR/backend/.env
           echo "GITHUB_CLIENT_SECRET=${{ secrets.CLIENT_SECRET_GITHUB }}" >> \$REPO_DIR/backend/.env
           echo "IN_HOUSE_REGISTRY=${{ vars.IN_HOUSE_REGISTRY }}" >> \$REPO_DIR/backend/.env
           echo "FRONTEND_URL=${{ vars.FRONTEND_URL }}" >> \$REPO_DIR/backend/.env
           echo "BACKEND_URL=${{ vars.BACKEND_URL }}" >> \$REPO_DIR/backend/.env
           echo "LOKI_HOST=${{ vars.LOKI_HOST }}" >> \$REPO_DIR/backend/.env
+          echo "AWS_ACCESS_KEY_ID =${{ secrets.AWS_ACCESS_KEY_ID }}" >> \$REPO_DIR/backend/.env
+          echo "AWS_SECRET_ACCESS_KEY =${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> \$REPO_DIR/backend/.env
+          echo "AWS_REGION =${{ secrets.AWS_REGION }}" >> \$REPO_DIR/backend/.env
+          echo "S3_BUCKET_NAME =${{ secrets.S3_BUCKET_NAME }}" >> \$REPO_DIR/backend/.env
+          echo "S3_FOLDER =${{ secrets.S3_FOLDER }}" >> \$REPO_DIR/backend/.env
+          
+          
+          
           EOF
       - name: Verify docker-compose.yml files
         run: |

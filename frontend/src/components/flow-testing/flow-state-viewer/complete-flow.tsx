@@ -14,6 +14,7 @@ import {
 	newFlow,
 	proceedFlow,
 	requestForFlowPermission,
+	putCacheData,
 } from "../../../utils/request-utils";
 import { IoMdDownload } from "react-icons/io";
 import { FlowMap } from "../../../types/flow-state-type";
@@ -26,6 +27,7 @@ import Popup from "../../ui/pop-up/pop-up";
 import FormConfig, {
 	FormConfigType,
 } from "../../ui/forms/config-form/config-form";
+import { trackEvent } from "../../../utils/analytics";
 
 interface AccordionProps {
 	flow: Flow;
@@ -33,7 +35,7 @@ interface AccordionProps {
 	setActiveFlow: (flowId: string | null) => void;
 	sessionCache?: SessionCache | null;
 	sessionId: string;
-	// setSideView: React.Dispatch<any>;
+	setSideView: React.Dispatch<any>;
 	subUrl: string;
 	onFlowStop: () => void;
 	onFlowClear: () => void;
@@ -65,10 +67,22 @@ export function Accordion({
 	const [maxHeight, setMaxHeight] = useState("0px");
 	const apiCallFailCount = useRef(0);
 
-	const fetchTransactionData = async () => {
-		if (activeFlow !== flow.id || !sessionCache) {
-			return;
+	useEffect(() => {
+		const executedFlowId = Object.keys((sessionCache?.flowMap as any) || {});
+
+		if (executedFlowId.includes(flow.id) && sessionCache) {
+			console.log("get current staet fot this");
+			getCurrentState(sessionCache);
 		}
+
+		if (sessionCache?.activeFlow) {
+			setActiveFlow(sessionCache.activeFlow);
+		} else {
+			setActiveFlow(null);
+		}
+	}, [flow, sessionCache]);
+
+	const getCurrentState = async (sessionCache: SessionCache) => {
 		const tx = sessionCache.flowMap?.[flow.id];
 		if (tx) {
 			try {
@@ -93,6 +107,13 @@ export function Accordion({
 				missedSteps: [],
 			});
 		}
+	};
+
+	const fetchTransactionData = async () => {
+		if (activeFlow !== flow.id || !sessionCache) {
+			return;
+		}
+		getCurrentState(sessionCache);
 	};
 
 	useEffect(() => {
@@ -142,6 +163,7 @@ export function Accordion({
 				// 	toast.info("Expectation added successfully");
 				// }
 			}
+			putCacheData({ activeFlow: flow.id }, sessionId);
 			setIsOpen(true);
 		} catch (e) {
 			toast.error("Error while starting flow");
@@ -228,6 +250,10 @@ export function Accordion({
 						label="Start flow"
 						color="sky"
 						onClick={async (e) => {
+							trackEvent({
+								category: "SCENARIO_TESTING-FLOWS",
+								action: `Started a flow: ${flow.id}`,
+							})
 							e.stopPropagation();
 							await startFlow();
 						}}
@@ -239,10 +265,15 @@ export function Accordion({
 						label="Stop flow"
 						color="red"
 						onClick={async (e) => {
+							trackEvent({
+								category: "SCENARIO_TESTING-FLOWS",
+								action: `Stopped a flow: ${flow.id}`,
+							})
 							e.stopPropagation(); // Prevent accordion toggle
 							setActiveFlow(null);
 							setIsOpen(false);
 							await deleteExpectation(sessionId, subUrl);
+							putCacheData({ activeFlow: "NONE" }, sessionId);
 							onFlowStop();
 						}}
 					/>
@@ -253,6 +284,10 @@ export function Accordion({
 						label="Clear flow data"
 						color="orange"
 						onClick={async (e) => {
+							trackEvent({
+								category: "SCENARIO_TESTING-FLOWS",
+								action: `Cleared a flow: ${flow.id}`,
+							})
 							e.stopPropagation();
 							setMappedFlow({
 								sequence: getSequenceFromFlow(
@@ -273,6 +308,10 @@ export function Accordion({
 						label="Download Logs"
 						color="green"
 						onClick={async (e) => {
+							trackEvent({
+								category: "SCENARIO_TESTING-FLOWS",
+								action: `Download logs for flow: ${flow.id}`,
+							})
 							e.stopPropagation();
 							handleDownload();
 						}}

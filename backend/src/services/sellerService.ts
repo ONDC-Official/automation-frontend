@@ -117,7 +117,7 @@ export class SellerService {
                         symbol: sellerData?.symbolImage || "https://snp.com/images/np.png",
                         short_desc:  sellerData?.short_desc || "Seller Marketplace",
                         long_desc: sellerData?.long_desc || "Seller Marketplace",
-                        images: sellerData?.images ? [sellerData.images] : [ "https://snp.com/images/np.png"], 
+                        images: sellerData?.images ? sellerData.images :  "https://snp.com/images/np.png", 
                         tags: [
                             {
                                 code: "bpp_terms",
@@ -156,9 +156,9 @@ export class SellerService {
                                     symbol: sellerData.symbolImage || "https://snp.com/images/store1.png",
                                     short_desc: sellerData.short_desc || sellerData.provider_name || "Store 1",
                                     long_desc: sellerData.long_desc || sellerData.short_desc || sellerData.provider_name || "Store 1",
-                                    images: [
+                                    images: 
                                         sellerData.images || "https://snp.com/images/store1.png"
-                                    ]
+                                    
                                 },
                                 ttl: "P1D",
                                 locations: this.generateLocations(stores, locationIds, timestamp),
@@ -479,9 +479,9 @@ export class SellerService {
                 symbol: item.symbol || item.images || "https://snp.com/images/i1.png",
                 short_desc: item.short_desc || item.name || "Unknown Item",
                 long_desc: item.long_desc || item.short_desc || item.name || "Unknown Item",
-                images: [
+                images: 
                     item.images || item.symbol || "https://snp.com/images/i1.png"
-                ]
+                
             },
             quantity: {
                 unitized: {
@@ -702,9 +702,9 @@ export class SellerService {
                 symbol: "https://snp.com/images/i1.png",
                 short_desc: "Sample Item",
                 long_desc: "Sample Item",
-                images: [
+                images: 
                     "https://snp.com/images/i1.png"
-                ]
+                
             },
             quantity: {
                 unitized: {
@@ -1091,9 +1091,10 @@ export class SellerService {
     }
 
     private getItemTags(item: any, domain: string | string[]): any[] {
+        console.log('item>>>', item)
         const tags = [];
         const domainCode = this.getDomainCode(domain);
-        
+
         // Check if attributes are in nested object or at root level (for backward compatibility)
         const attrs = item.attributes || item;
         // Add variant group tag if item is a variant
@@ -1105,13 +1106,32 @@ export class SellerService {
                     value: String(value)
                 });
             });
-            
+
             if (variantList.length > 0) {
                 tags.push({
                     code: "variant_group",
                     list: variantList
                 });
             }
+        }
+            console.log('item.backImage', item.backImage)
+
+
+        // Add back image tag if backImage is present
+        if (item.back_image) {
+            tags.push({
+                code: "image",
+                list: [
+                    {
+                        code: "type",
+                        value: "back_image"
+                    },
+                    {
+                        code: "url",
+                        value: item.back_image
+                    }
+                ]
+            });
         }
 
         // Common tags for all domains
