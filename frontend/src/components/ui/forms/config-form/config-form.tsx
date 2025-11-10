@@ -9,6 +9,8 @@ import Ret10GrocerySelect from "../custom-forms/ret10-grocery-select";
 import ProtocolHTMLForm from "../custom-forms/protocol-html-form";
 import TRVSelect from "../custom-forms/trv-select";
 import JsonSchemaForm from "../../../protocol-playground/ui/extras/rsjf-form";
+import AirlineSelect from "../custom-forms/airline-select";
+import TRV12busSeatSelection from "../custom-forms/trv-seat-count";
 import FinvuRedirectForm from "../custom-forms/finvu-redirect-form";
 import { SessionContext } from "../../../../context/context";
 
@@ -22,6 +24,8 @@ export interface FormFieldConfigType {
 		| "list"
 		| "checkbox"
 		| "boolean"
+		| "trv12_bus_seat_selection"
+		| "airline_select"
 		| "ret10_grocery_select"
 		| "nestedSelect"
 		| "trv_select"
@@ -116,6 +120,10 @@ export default function FormConfig({
 		return <Ret10GrocerySelect submitEvent={submitEvent} />;
 	}
 
+	if (formConfig.find((field) => field.type === "trv12_bus_seat_selection")) {
+		return <TRV12busSeatSelection submitEvent={submitEvent} />;
+	}
+
 	if (formConfig.find((field) => field.type === "HTML_FORM")) {
 		return ProtocolHTMLForm({
 			submitEvent: submitEvent,
@@ -170,7 +178,7 @@ export default function FormConfig({
 								name={field.name}
 								label={field.label}
 								required={true}
-								key={field.name}
+								// key={field.payloadField}
 							/>
 						);
 					case "select":
@@ -179,7 +187,7 @@ export default function FormConfig({
 								name={field.name}
 								label={field.label}
 								options={field.values}
-								key={field.name}
+								// key={field.payloadField}
 							/>
 						);
 					case "checkbox":
@@ -189,7 +197,6 @@ export default function FormConfig({
 								label={field.label}
 								name={field.name}
 								defaultValue={field.default}
-								key={field.name}
 							/>
 						);
 					case "nestedSelect":
@@ -197,7 +204,6 @@ export default function FormConfig({
 							<ItemCustomisationSelector
 								label={field.label}
 								name={field.name}
-								key={field.name}
 							/>
 						);
 					default:
