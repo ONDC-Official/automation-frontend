@@ -8,7 +8,8 @@ import Ret10GrocerySelect from "../custom-forms/ret10-grocery-select";
 import ProtocolHTMLForm from "../custom-forms/protocol-html-form";
 import TRVSelect from "../custom-forms/trv-select";
 import AirlineSelect from "../custom-forms/airline-select";
-
+import JsonSchemaForm from "../../../protocol-playground/ui/extras/rsjf-form";
+import TRV12busSeatSelection from "../custom-forms/trv-seat-count";
 
 export interface FormFieldConfigType {
 	name: string;
@@ -19,12 +20,12 @@ export interface FormFieldConfigType {
 		| "textarea"
 		| "list"
 		| "checkbox"
+		| "trv12_bus_seat_selection" 
 		| "ret10_grocery_select"
 		| "nestedSelect"
 		| "trv_select"
 		| "HTML_FORM"
 		| "airline_select";
-
 	payloadField: string;
 	values?: string[];
 	defaultValue?: string;
@@ -33,6 +34,7 @@ export interface FormFieldConfigType {
 	default?: any;
 	display?: boolean;
 	reference?: string;
+	schema?: any;
 }
 
 export type FormConfigType = FormFieldConfigType[];
@@ -76,8 +78,19 @@ export default function FormConfig({
 		}
 	});
 
+	if (formConfig.find((f) => f.schema)) {
+		const schemaField = formConfig.find((f) => f.schema);
+		return JsonSchemaForm({
+			schema: schemaField!.schema,
+			onSubmit: onSubmit,
+		});
+	}
+
 	if (formConfig.find((field) => field.type === "ret10_grocery_select")) {
 		return <Ret10GrocerySelect submitEvent={submitEvent} />;
+	}
+	if (formConfig.find((field) => field.type === "trv12_bus_seat_selection")) {
+		return <TRV12busSeatSelection submitEvent={submitEvent} />;
 	}
 	if (formConfig.find((field) => field.type === "HTML_FORM")) {
 		return ProtocolHTMLForm({
@@ -93,8 +106,16 @@ export default function FormConfig({
 		return <TRVSelect submitEvent={submitEvent} />;
 	}
 
-	if(formConfig.find((field) => field.type === "trv_select")) {
-		return <TRVSelect submitEvent={submitEvent} />
+	if (formConfig.find((field) => field.type === "trv_select")) {
+		return <TRVSelect submitEvent={submitEvent} />;
+	}
+
+	if (formConfig.find((field) => field.type === "airline_select")) {
+		return <AirlineSelect submitEvent={submitEvent} />;
+	}
+
+	if (formConfig.find((field) => field.type === "airline_select")) {
+		return <AirlineSelect submitEvent={submitEvent} />;
 	}
 
 	 if (formConfig.find((field) => field.type === "airline_select")) {

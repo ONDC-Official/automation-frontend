@@ -3,6 +3,7 @@ import { FormInput } from "../ui/forms/form-input";
 import FormSelect from "../ui/forms/form-select";
 import react from "react";
 import { UserContext } from "../../context/userContext";
+import { trackEvent } from "../../utils/analytics";
 
 type FlowTestingFormData = {
 	config?: string;
@@ -89,12 +90,12 @@ export default function InitialFlowForm({
 					nonSelectedValue
 					required
 				/>
-				{dynamicList.version?.length ? (
+				{/* {dynamicList.version?.length ? ( */}
 					<FormSelect
 						label="Select Version"
 						name="version"
 						required={true}
-						options={dynamicList.version.map((val: any) => val.key)}
+						options={dynamicList?.version?.map((val: any) => val.key) || []}
 						currentValue={dynamicValue.version}
 						setSelectedValue={(data: string) => {
 							formData.current = { ...formData.current, version: data };
@@ -113,15 +114,15 @@ export default function InitialFlowForm({
 						}}
 						nonSelectedValue
 					/>
-				) : (
+				{/* ) : (
 					<></>
-				)}
-				{dynamicList.usecase?.length ? (
+				)} */}
+				{/* {dynamicList.usecase?.length ? ( */}
 					<FormSelect
 						label="Enter Usecase"
 						name="usecaseId"
 						required={true}
-						options={dynamicList.usecase}
+						options={dynamicList?.usecase || []}
 						currentValue={dynamicValue.usecaseId}
 						setSelectedValue={(data: string) => {
 							formData.current = {
@@ -131,9 +132,9 @@ export default function InitialFlowForm({
 						}}
 						nonSelectedValue
 					/>
-				) : (
+				{/* ) : (
 					<></>
-				)}
+				)} */}
 				{/* <FormSelect
 					name="npType"
 					label="Select Type"
@@ -167,11 +168,11 @@ export default function InitialFlowForm({
 					},
 				}}
 				onValueChange={(data: string) => {
-					// setDyanmicValue(prev => {
-					// 	return {
-					// 		...prev, subscriberUrl: data
-					// 	}
-					// })
+					trackEvent({
+						category: "SCHEMA_VALIDATION-FORM",
+						action: "Added subscriber url",
+						label: data,
+					})
 					formData.current = {
 						...formData.current,
 						subscriberUrl: data,
@@ -184,6 +185,11 @@ export default function InitialFlowForm({
 				options={dynamicList.domain.map((val: any) => val.key)}
 				currentValue={dynamicValue.domain}
 				setSelectedValue={(data: string) => {
+					trackEvent({
+						category: "SCHEMA_VALIDATION-FORM",
+						action: "Added domain",
+						label: data,
+					})
 					formData.current = { ...formData.current, domain: data };
 					setDynamicList((prev) => {
 						let filteredVersion: any = [];
@@ -201,14 +207,19 @@ export default function InitialFlowForm({
 				nonSelectedValue
 				required
 			/>
-			{dynamicList.version?.length ? (
+			{/* {dynamicList.version?.length ? ( */}
 				<FormSelect
 					label="Select Version"
 					name="version"
 					required={true}
-					options={dynamicList.version.map((val: any) => val.key)}
+					options={dynamicList?.version?.map((val: any) => val.key) || []}
 					currentValue={dynamicValue.version}
 					setSelectedValue={(data: string) => {
+						trackEvent({
+							category: "SCHEMA_VALIDATION-FORM",
+							action: "Added version",
+							label: data,
+						})
 						formData.current = { ...formData.current, version: data };
 						setDynamicList((prev) => {
 							let filteredUsecase: any = [];
@@ -225,17 +236,22 @@ export default function InitialFlowForm({
 					}}
 					nonSelectedValue
 				/>
-			) : (
+			{/* ) : (
 				<></>
-			)}
-			{dynamicList.usecase?.length ? (
+			)} */}
+			{/* {dynamicList.usecase?.length ? ( */}
 				<FormSelect
 					label="Select Usecase"
 					name="usecaseId"
 					required={true}
-					options={dynamicList.usecase}
+					options={dynamicList?.usecase || []}
 					currentValue={dynamicValue.usecaseId}
 					setSelectedValue={(data: string) => {
+						trackEvent({
+							category: "SCHEMA_VALIDATION-FORM",
+							action: "Added usecase",
+							label: data,
+						})
 						formData.current = {
 							...formData.current,
 							usecaseId: data,
@@ -243,14 +259,19 @@ export default function InitialFlowForm({
 					}}
 					nonSelectedValue
 				/>
-			) : (
+			{/* ) : (
 				<></>
-			)}
+			)} */}
 			<FormSelect
 				name="npType"
 				label="Select App Type"
 				options={["BAP", "BPP"]}
 				setSelectedValue={(data: "BAP" | "BPP") => {
+					trackEvent({
+						category: "SCHEMA_VALIDATION-FORM",
+						action: "Added np type",
+						label: data,
+					})
 					setDyanmicValue((prev) => {
 						return {
 							...prev,

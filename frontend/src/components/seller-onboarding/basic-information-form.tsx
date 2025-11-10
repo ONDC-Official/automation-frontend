@@ -2,9 +2,15 @@ import { useForm } from "react-hook-form";
 import { FormInput, LabelWithToolTip } from "../ui/forms/form-input";
 import LoadingButton from "../ui/forms/loading-button";
 import { SellerOnboardingData } from "../../pages/seller-onboarding";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { domainOptions } from "../../constants/common.tsx";
-import { Select } from "antd";
+import { Select, message } from "antd";
+import MultiImageUpload from "../ui/forms/multi-image-upload";
+import SingleImageUpload from "../ui/forms/single-image-upload";
+import {
+  useSingleImageUpload,
+  useMultiImageUpload,
+} from "../../hooks/useImageUpload";
 
 interface BasicInformationFormProps {
   initialData: SellerOnboardingData;
@@ -19,6 +25,16 @@ const BasicInformationForm = ({
     initialData?.domain || []
   );
   const [domainError, setDomainError] = useState<string>("");
+
+  // Use optimized hooks for image state management
+  const symbolImage = useSingleImageUpload(initialData?.symbolImage || "");
+  const productImages = useMultiImageUpload(
+    initialData?.images
+      ? Array.isArray(initialData.images)
+        ? initialData.images
+        : [initialData.images]
+      : []
+  );
 
   const getSelectValues = () => {
     if (!selectedDomain || selectedDomain.length === 0) return [];
@@ -58,52 +74,59 @@ const BasicInformationForm = ({
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm({});
+    reset,
+  } = useForm({
+    defaultValues: {
+      provider_name: initialData?.provider_name || "",
+      long_desc: initialData?.long_desc || "",
+      short_desc: initialData?.short_desc || "",
+    },
+  });
 
-  // const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-  //   const file = event.target.files?.[0];
-  //   if (file) {
-  //     if (file.size > 2 * 1024 * 1024) {
-  //       alert("File size must be less than 2MB");
-  //       event.target.value = "";
-  //       return;
-  //     }
+  // Reset form when initialData changes (when navigating back)
+  useEffect(() => {
+    reset({
+      provider_name: initialData?.provider_name || "",
+      long_desc: initialData?.long_desc || "",
+      short_desc: initialData?.short_desc || "",
+    });
 
-  //     if (!file.type.startsWith("image/")) {
-  //       alert("Please select a valid image file");
-  //       event.target.value = "";
-  //       return;
-  //     }
+    // Update domain selection state
+    if (initialData?.domain) {
+      setSelectedDomain(initialData.domain);
+      setDomainError("");
+    }
 
-  //     setSymbolImage(file);
-  //     const reader = new FileReader();
-  //     reader.onloadend = () => {
-  //       setImagePreview(reader.result as string);
-  //     };
-  //     reader.readAsDataURL(file);
-  //   }
-  // };
+    // Update symbol image using hook
+    symbolImage.resetImage(
+      initialData?.symbolImage && typeof initialData.symbolImage === "string"
+        ? initialData.symbolImage
+        : ""
+    );
 
-  // const removeImage = () => {
-  //   setSymbolImage(null);
-  //   setImagePreview(null);
-  //   // Clear the file input
-  //   const fileInput = document.querySelector(
-  //     'input[type="file"]'
-  //   ) as HTMLInputElement;
-  //   if (fileInput) {
-  //     fileInput.value = "";
-  //   }
-  // };
+    // Update product images using hook
+    if (initialData?.images && Array.isArray(initialData.images)) {
+      productImages.resetImages(initialData.images);
+    } else if (initialData?.images && typeof initialData.images === "string") {
+      productImages.resetImages([initialData.images]);
+    } else {
+      productImages.resetImages([]);
+    }
+  }, [initialData, reset]);
 
-  const onSubmit = (data: any) => {
-    // if (!symbolImage) {
-    //   alert("Please upload a symbol image");
-    //   return;
-    // }
-
+  const onSubmit = async (data: any) => {
     if (!selectedDomain || selectedDomain.length === 0) {
       setDomainError("Please select at least one domain");
+      return;
+    }
+
+    if (!symbolImage.imageUrl) {
+      message.error("Please upload a symbol image");
+      return;
+    }
+
+    if (productImages.imageUrls.length === 0) {
+      message.error("Please upload at least one image");
       return;
     }
 
@@ -112,47 +135,62 @@ const BasicInformationForm = ({
     onNext({
       ...data,
       domain: selectedDomain,
-      // symbolImage,
+      symbolImage: symbolImage.imageUrl,
+      images: productImages.imageUrls,
     });
   };
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      {/* Domain Selection - Full Width */}
+      <div className="mb-6">
+        <LabelWithToolTip labelInfo={""} label={"Domain"} required={true} />
+        <Select
+          mode="multiple"
+          placeholder="Select one or more domains"
+          value={getSelectValues()}
+          onChange={handleDomainChange}
+          style={{ width: "100%" }}
+          size="large"
+          allowClear
+          showSearch
+          filterOption={(input, option) =>
+            (option?.label ?? "")
+              .toString()
+              .toLowerCase()
+              .includes(input.toLowerCase())
+          }
+        >
+          {domainOptions.map((option) => (
+            <Select.Option
+              key={option.value}
+              value={option.value}
+              label={option.key}
+            >
+              {option.key}
+            </Select.Option>
+          ))}
+        </Select>
+        {domainError && (
+          <p className="text-red-500 text-xs italic mt-1">{domainError}</p>
+        )}
+      </div>
+
+      {/* Symbol Image Upload Section */}
+      <div className="mb-6">
+        <SingleImageUpload
+          label="Symbol Image/Logo"
+          labelInfo="Upload your brand logo or symbol image"
+          required={true}
+          folder="workbench-seller-onboarding"
+          value={symbolImage.imageUrl}
+          onChange={symbolImage.setImageUrl}
+          previewSize="medium"
+        />
+      </div>
+
+      {/* Form Fields Grid */}
       <div className="grid md:grid-cols-2 gap-6">
-        <div className="mb-4 w-full">
-          <LabelWithToolTip labelInfo={""} label={"Domain"} />
-
-          <Select
-            mode="multiple"
-            placeholder="Select one or more domains"
-            value={getSelectValues()}
-            onChange={handleDomainChange}
-            style={{ width: "100%" }}
-            size="large"
-            allowClear
-            showSearch
-            filterOption={(input, option) =>
-              (option?.label ?? "")
-                .toString()
-                .toLowerCase()
-                .includes(input.toLowerCase())
-            }
-          >
-            {domainOptions.map((option) => (
-              <Select.Option
-                key={option.value}
-                value={option.value}
-                label={option.key}
-              >
-                {option.key}
-              </Select.Option>
-            ))}
-          </Select>
-          {domainError && (
-            <p className="text-red-500 text-xs italic mt-1">{domainError}</p>
-          )}
-        </div>
-
         <FormInput
           label="Provider Name"
           name="provider_name"
@@ -170,105 +208,11 @@ const BasicInformationForm = ({
               value: 100,
               message: "Provider name cannot exceed 100 characters",
             },
-            pattern: {
-              value: /^[a-zA-Z0-9\s]+$/,
-              message:
-                "Provider name should only contain letters, numbers, and spaces",
-            },
-          }}
-        />
-
-        {/* <div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Symbol Image/Logo
-              <span className="text-red-500 ml-1">*</span>
-            </label>
-            <div className="space-y-4">
-              <div className="relative">
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageChange}
-                  className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-sky-50 file:text-sky-700 hover:file:bg-sky-100 cursor-pointer border border-gray-300 rounded-md focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-colors"
-                  required
-                />
-              </div>
-
-              {symbolImage && (
-                <div className="flex items-center space-x-2 p-2 bg-green-50 rounded-md border border-green-200">
-                  <div className="w-2 h-2 bg-green-500 rounded-full flex-shrink-0"></div>
-                  <p className="text-sm text-green-700 font-medium truncate">
-                    {symbolImage.name} uploaded successfully
-                  </p>
-                </div>
-              )}
-
-              {imagePreview && (
-                <div className="p-4 bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg border-2 border-gray-200 shadow-sm">
-                  <div className="flex items-start space-x-4">
-                    <div className="flex-shrink-0 relative group">
-                      <div className="w-24 h-24 bg-white rounded-lg border-2 border-gray-300 p-2 shadow-sm">
-                        <img
-                          src={imagePreview}
-                          alt="Symbol preview"
-                          className="w-full h-full object-contain rounded"
-                        />
-                      </div>
-                      <button
-                        type="button"
-                        onClick={removeImage}
-                        title="Remove image"
-                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-7 h-7 flex items-center justify-center text-sm hover:bg-red-600 focus:bg-red-600 transition-all duration-200 shadow-lg focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-2 group-hover:scale-110"
-                      >
-                        ×
-                      </button>
-                    </div>
-
-                    <div className="flex-1 min-w-0 space-y-2">
-                      <div>
-                        <h4 className="text-sm font-semibold text-gray-900 truncate">
-                          {symbolImage?.name}
-                        </h4>
-                        <div className="flex items-center space-x-4 mt-1">
-                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                            {symbolImage?.type?.split("/")[1]?.toUpperCase() ||
-                              "Image"}
-                          </span>
-                          <span className="text-xs text-gray-500">
-                            {symbolImage
-                              ? (symbolImage.size / 1024).toFixed(1)
-                              : 0}{" "}
-                            KB
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-            <p className="text-xs text-gray-500 mt-1">
-              Accepted formats: JPG, PNG, GIF (Max 2MB). Recommended size:
-              100×100px or larger
-            </p>
-          </div>
-        </div> */}
-
-        <FormInput
-          label="Symbol Image/Logo"
-          placeholder="Enter Symbol Image URL"
-          name="symbolImage"
-          type="url"
-          register={register}
-          errors={errors}
-          required="Symbol Image URL is required"
-          validations={{
-            pattern: {
-              value:
-                /^https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)$/,
-              message: "Please enter a valid URL",
-            },
+            // pattern: {
+            //   value: /^[a-zA-Z0-9\s]+$/,
+            //   message:
+            //     "Provider name should only contain letters, numbers, and spaces",
+            // },
           }}
         />
         <FormInput
@@ -309,22 +253,18 @@ const BasicInformationForm = ({
           }}
         />
 
-        <FormInput
-          label="Images (URL)"
-          placeholder="Enter Images URL"
-          name="images"
-          type="url"
-          register={register}
-          errors={errors}
-          required="Image URL is required"
-          validations={{
-            pattern: {
-              value:
-                /^https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)$/,
-              message: "Please enter a valid URL",
-            },
-          }}
-        />
+        <div className="md:col-span-2">
+          <MultiImageUpload
+            label="Product Images"
+            labelInfo="Upload multiple product images"
+            required={true}
+            folder="workbench-seller-onboarding"
+            value={productImages.imageUrls}
+            onChange={productImages.setImageUrls}
+            maxFiles={10}
+            previewSize="small"
+          />
+        </div>
       </div>
 
       <div className="flex justify-end mt-8">

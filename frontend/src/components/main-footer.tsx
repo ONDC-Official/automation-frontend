@@ -1,20 +1,23 @@
 import { BsGithub, BsLinkedin } from "react-icons/bs";
 import { Link } from "react-router-dom";
+import { trackEvent } from "../utils/analytics";
 
 const Footer = () => {
 	const footerLinks = {
 		company: [
-			{ name: "About ONDC", href: "https://ondc.org/" },
+			{ name: "About ONDC", href: "https://ondc.org/", analytics: {category: "FOOTER", action: "Clicked on 'About ONDC'"} },
 			// { name: "Contact Us", href: "#" },
 		],
 		developers: [
 			{
 				name: "API Documentation",
 				href: "https://github.com/ONDC-Official/automation-framework",
+				analytics: {category: "FOOTER", action: "Clicked on 'API Documentation'"}
 			},
 			{
 				name: "SDKs & Tools",
 				href: "https://github.com/ONDC-Official/automation-validation-compiler",
+				analytics: {category: "FOOTER", action: "Clicked on 'SDKs & Tools'"}
 			},
 			// { name: "Sandbox Environment", href: "#" },
 		],
@@ -24,10 +27,11 @@ const Footer = () => {
 			{
 				name: "Bug Reports",
 				href: "https://github.com/ONDC-Official/automation-framework/issues",
+				analytics: {category: "FOOTER", action: "Clicked on 'Bug Reports'"}
 			},
 		],
 		quickLinks: [
-			{ name: "Join ONDC", href: "https://ondc.org/ondc-how-to-join/" },
+			{ name: "Join ONDC", href: "https://ondc.org/ondc-how-to-join/", analytics: {category: "FOOTER", action: "Clicked on 'Join ONDC'"} },
 		],
 	};
 
@@ -36,11 +40,13 @@ const Footer = () => {
 			name: "LinkedIn",
 			href: "https://in.linkedin.com/company/open-network-for-digital-commerce",
 			icon: <BsLinkedin />,
+			analytics: {category: "FOOTER", action: "Clicked on 'LinkedIn'"}
 		},
 		{
 			name: "GitHub",
 			href: "https://github.com/ONDC-Official",
 			icon: <BsGithub />,
+			analytics: {category: "FOOTER", action: "GitHub'"}
 		},
 	];
 
@@ -79,7 +85,7 @@ const Footer = () => {
 						<h3 className="text-white font-semibold mb-4">Company</h3>
 						<ul className="space-y-3">
 							{footerLinks.company.map((link) => (
-								<li key={link.name}>
+								<li key={link.name} onClick={() => trackEvent(link.analytics)}>
 									<a
 										href={link.href}
 										className="text-gray-400 hover:text-white transition-colors text-sm"
@@ -96,7 +102,7 @@ const Footer = () => {
 						<h3 className="text-white font-semibold mb-4">Developers</h3>
 						<ul className="space-y-3">
 							{footerLinks.developers.map((link) => (
-								<li key={link.name}>
+								<li key={link.name} onClick={() => trackEvent(link.analytics)}>
 									<a
 										href={link.href}
 										className="text-gray-400 hover:text-white transition-colors text-sm"
@@ -113,7 +119,7 @@ const Footer = () => {
 						<h3 className="text-white font-semibold mb-4">Support</h3>
 						<ul className="space-y-3">
 							{footerLinks.support.map((link) => (
-								<li key={link.name}>
+								<li key={link.name} onClick={() => trackEvent(link.analytics)}>
 									{link.href.startsWith("/") ? (
 										<Link
 											to={link.href}
@@ -139,7 +145,7 @@ const Footer = () => {
 						<h3 className="text-white font-semibold mb-4">Quick Links</h3>
 						<ul className="space-y-3">
 							{footerLinks.quickLinks.map((link) => (
-								<li key={link.name}>
+								<li key={link.name} onClick={() => trackEvent(link.analytics)}>
 									<a
 										href={link.href}
 										className="text-gray-400 hover:text-white transition-colors text-sm"

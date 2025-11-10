@@ -2,8 +2,7 @@ import { PairedStep } from "./mapped-flow";
 import { MappedStep } from "../../../types/flow-state-type";
 import CustomTooltip from "../../ui/mini-components/tooltip";
 import { MdSyncAlt } from "react-icons/md";
-import { useContext } from "react";
-import { SessionContext } from "../../../context/context";
+import { useSession } from "../../../context/context";
 import FlippableWrapper from "../../ui/flippable-div";
 import { getCompletePayload } from "../../../utils/request-utils";
 
@@ -42,8 +41,7 @@ export default function PairedCard({
 }
 
 function StepDisplay({ step, flowId }: { step: MappedStep; flowId: string }) {
-	const { activeFlowId, setRequestData, setResponseData } =
-		useContext(SessionContext);
+	const { activeFlowId, setRequestData, setResponseData } = useSession();
 
 	const onClickFunc = async () => {
 		if (step.status !== "COMPLETE") {
@@ -61,12 +59,12 @@ function StepDisplay({ step, flowId }: { step: MappedStep; flowId: string }) {
 		const payloadIds = step.payloads?.payloads.map((p) => p.payloadId) ?? [];
 		const payloads = await getCompletePayload(payloadIds);
 		setRequestData(payloads.map((p: any) => p.req));
-		setResponseData({ res: payloads.map((p: any) => p.res) });
+		setResponseData(payloads.map((p: any) => p.res.response));
 	};
 
 	const status =
 		step.status === "COMPLETE"
-			? step.payloads?.subStatus ?? "ERROR"
+			? (step.payloads?.subStatus ?? "ERROR")
 			: step.status;
 	const statusStyles = getStatusStyles(status);
 	if (step.missedStep) {
@@ -136,8 +134,11 @@ function StepDisplay({ step, flowId }: { step: MappedStep; flowId: string }) {
 						)}
 						{/* API Count */}
 						{apiCount > 0 && (
-							<div className="bg-white text-gray-700 text-sm font-semibold border rounded-full px-3 py-1">
-								count: {apiCount}
+							<div
+								className={`${getCountStyles(apiCount)} text-sm font-semibold rounded-full px-3 py-1`}
+							>
+								<span className="text-black">count: </span>
+								{apiCount}
 							</div>
 						)}
 
@@ -230,5 +231,19 @@ function getCount(step: MappedStep) {
 	if (step.payloads?.entryType === "FORM") {
 		return 0;
 	}
-	return step.status === "COMPLETE" ? step.payloads?.payloads.length ?? 0 : 0;
+	return step.status === "COMPLETE" ? (step.payloads?.payloads.length ?? 0) : 0;
+}
+
+function getCountStyles(count: number) {
+	if (count === 1) {
+		return "bg-white text-black border border-gray-200";
+	} else if (count <= 3) {
+		return "bg-white text-blue-600 border border-gray-200";
+	} else if (count <= 6) {
+		return "bg-white text-blue-700 border border-gray-200";
+	} else if (count <= 10) {
+		return "bg-white text-indigo-800 border border-gray-200";
+	} else {
+		return "bg-white text-violet-900 border border-gray-200 animate-pulse";
+	}
 }

@@ -1,19 +1,32 @@
 import { useState, useEffect, useRef } from "react";
 import axios from "axios";
-import { Flow } from "../../types/flow-types";
 import RenderFlows from "./render-flows";
 import { toast } from "react-toastify";
 import { ReportPage } from "./report";
 import { FormGuide } from "./guides";
 import InitialFlowForm from "./initial-form";
 import NotFound from "../ui/not-found";
+import { useSession } from "../../context/context";
+import { putCacheData } from "../../utils/request-utils";
+import { trackEvent } from "../../utils/analytics";
+import { useWorkbenchFlows } from "../../hooks/useWorkbenchFlow";
+import { LuHistory } from "react-icons/lu";
+import { useNavigate } from "react-router-dom";
 
 export default function FlowContent() {
-	const [step, setStep] = useState(0);
-	const [session, setSession] = useState<string>("");
-	const [subUrl, setSubUrl] = useState<string>("");
-	const [flows, setFlows] = useState<Flow[] | null>(null);
-	const [report, setReport] = useState("");
+	const {
+		flowStepNum,
+		setFlowStepNum,
+		session,
+		setSession,
+		subscriberUrl,
+		setSubscriberUrl,
+		flows,
+		setFlows,
+		report,
+		setReport,
+	} = useWorkbenchFlows();
+	const [isFormSubmitted, setIsFormSubmitted] = useState(false);
 	const [dynamicList, setDynamicList] = useState<{
 		domain: any[];
 		version: any[];
@@ -39,6 +52,11 @@ export default function FlowContent() {
 		npType: "BAP",
 		env: "STAGING",
 	});
+	const {
+		sessionId: contextSessionId,
+		setSessionId,
+	} = useSession();
+	const navigate = useNavigate();
 
 	const onSubmit = async (data: any) => {
 		try {
@@ -61,7 +79,7 @@ export default function FlowContent() {
 					},
 				}
 			);
-			setSubUrl(data.subscriberUrl);
+			setSubscriberUrl(data.subscriberUrl);
 			console.log("response", response.data);
 			const localData =
 				JSON.parse(localStorage.getItem("sessionIdForSupport") as string) || {};
@@ -73,7 +91,8 @@ export default function FlowContent() {
 				})
 			);
 			setSession(response.data.sessionId);
-			setStep((s) => s + 1);
+			setSessionId(response.data.sessionId);
+			setFlowStepNum(1);
 		} catch (e) {
 			toast.error("Error while creating session");
 			console.error("error while sending response", e);
@@ -100,37 +119,109 @@ export default function FlowContent() {
 	};
 
   const onSubmitHandler = async (data: any) => {
-    console.log("is it working");
+    trackEvent({
+      category: "SCHEMA_VALIDATION-FORM",
+      action: "Form submitted",
+    })
+    setIsFormSubmitted(true);
     await fetchFlows(data);
     await onSubmit(data);
   };
 
-  const fetchFormFieldData = async () => {
-    try {
-      const response = await axios.get(
-        `${import.meta.env.VITE_BACKEND_URL}/config/senarioFormData`
-      );
-      setDynamicList((prev) => {
-        return { ...prev, domain: response.data.domain || [] };
-      });
-      console.log("form field data", response.data);
-    } catch (e) {
-      console.log("error while fetching form field data", e);
-    }
-  };
+	const fetchFormFieldData = async () => {
+		try {
+			const response = await axios.get(
+				`${import.meta.env.VITE_BACKEND_URL}/config/senarioFormData`
+			);
+			setDynamicList((prev) => {
+				return { ...prev, domain: response.data.domain || [] };
+			});
+			console.log("form field data", response.data);
+		} catch (e) {
+			console.log("error while fetching form field data", e);
+		}
+	};
 
-  useEffect(() => {
-    fetchFormFieldData();
-  }, []);
+	useEffect(() => {
+		fetchFormFieldData();
+	}, []);
+
+	function fetchSessionData(sessId: string) {
+		console.log("get got working");
+		axios
+			.get(`${import.meta.env.VITE_BACKEND_URL}/sessions`, {
+				params: {
+					session_id: sessId,
+				},
+			})
+			.then((response: any) => {
+				console.log("get got working???");
+				if (response.data.flowConfigs) {
+					setFlows(Object.values(response.data.flowConfigs));
+				}
+				setSubscriberUrl(response.data.subscriberUrl);
+				setSession(sessId);
+				console.log("Setting strep get got", response.data.activeStep);
+				setFlowStepNum(response.data.activeStep);
+			})
+			.catch((e: any) => {
+				console.error("Error while fetching session: ", e);
+			});
+	}
+
+	const newSession = () => {
+		formData.current = {
+			domain: "",
+			version: "",
+			usecaseId: "",
+			subscriberUrl: "",
+			npType: "BAP",
+			env: "STAGING",
+		};
+		setFlowStepNum(0);
+	};
+
+	useEffect(() => {
+		if (contextSessionId && !isFormSubmitted) {
+			fetchSessionData(contextSessionId);
+		}
+	}, [contextSessionId, isFormSubmitted]);
+
+	// useEffect(() => {
+	// 	setFlowStepNum(0);
+	// 	setIsFormSubmitted(false);
+	// }, [type]);
+
+	useEffect(() => {
+		if (session) {
+			putCacheData({ activeStep: flowStepNum }, session);
+		}
+	}, [flowStepNum, session]);
 
 	const Body = () => {
-		switch (step) {
+		switch (flowStepNum) {
 			case 0:
 				return (
 					<div className="flex flex-1 w-full">
 						<div className="sm:w-[60%] p-2 bg-white rounded-sm border">
 							<div className="mb-4">
-								<h1 className="text-lg font-semibold mb-2">Scenario testing</h1>
+							<div className="flex items-center justify-between">
+								{/* Left side: heading + optional beta tag */}
+								<div className="flex items-center gap-2">
+									<h1 className="text-lg font-semibold mb-2">
+									{"Scenario testing"}
+									</h1>
+								</div>
+
+								<button
+								onClick={() => navigate("/history")}
+								className="flex items-center gap-2 px-4 py-2 bg-sky-500 text-white rounded-xl hover:bg-sky-600 transition shadow-sm"
+								>
+									<LuHistory className="w-6 h-6 text-white" />
+									<span className="font-medium text-lg">Past Sessions</span>
+								</button>
+
+								</div>
 								<p className="text-gray-600 text-sm">
 									Please fill in the details below to begin flow testing.
 								</p>
@@ -154,16 +245,21 @@ export default function FlowContent() {
 				return (
 					<RenderFlows
 						flows={flows}
-						subUrl={subUrl}
+						subUrl={subscriberUrl}
 						sessionId={session}
-						setStep={setStep}
+						setStep={setFlowStepNum}
 						setReport={setReport}
+						newSession={newSession}
 					/>
 				);
 			case 2:
 				if (!session) return <h1>Loading...</h1>;
 				return (
-					<ReportPage sessionId={session} report={report} setStep={setStep} />
+					<ReportPage
+						sessionId={session}
+						report={report}
+						setStep={setFlowStepNum}
+					/>
 				);
 			default:
 				return <NotFound />;
@@ -172,27 +268,6 @@ export default function FlowContent() {
 	return (
 		<>
 			<div className="w-full items-center">
-				{/* <Stepper
-					steps={[
-						{
-							icon: <TbFileInfo className=" text-2xl" />,
-							label: "FILL DETAILS",
-						},
-						// {
-						// 	icon: <PiSwordBold className=" text-2xl" />,
-						// 	label: "SELECT DIFICULTY",
-						// },
-						{
-							icon: <MdOutlineDomainVerification className=" text-2xl" />,
-							label: "TEST FLOWS",
-						},
-						{
-							icon: <HiOutlineDocumentReport className=" text-2xl" />,
-							label: "VIEW REPORT",
-						},
-					]}
-					currentStep={step}
-				/> */}
 				<div className="p-2 mt-2">
 					<Body />
 				</div>
