@@ -183,7 +183,6 @@ const Body = ({
 					flows={workbenchFlow.flows}
 					subUrl={workbenchFlow.subscriberUrl}
 					sessionId={workbenchFlow.session}
-					type={"SCENARIO"}
 					setStep={workbenchFlow.setFlowStepNum}
 					setReport={workbenchFlow.setReport}
 				/>
