@@ -20,7 +20,7 @@ import { SubscriberData } from "./components/registry-components/registry-types"
 import * as api from "./utils/registry-apis";
 import Footer from "./components/main-footer";
 import {SessionProvider} from "./context/context"
-import {GuideStepsEnums, useGuide} from "./context/guideContext"
+// import {GuideStepsEnums, useGuide} from "./context/guideContext"
 import Walkthrough from "./pages/walkthrough";
 import { trackPageView } from "./utils/analytics"
 import ProtocolPlayGround from "./components/protocol-playground/main";
@@ -35,7 +35,7 @@ function App() {
 		mappings: [],
 	});
 	// const [isLoading, setIsLoading] = useState(true);
-	const { setGuideStep } = useGuide();
+	// const { setGuideStep } = useGuide();
 
 	useEffect(() => {
 		try {
@@ -47,9 +47,10 @@ function App() {
 	}, []);
 
 	// Example in React (frontend)
-	useEffect(() => {
-		init();
-	}, []);
+	// init point for guide
+	// useEffect(() => {
+	// 	init();
+	// }, []);
 
 	useEffect(() => {
 		trackPageView(location.pathname + location.search);
@@ -59,22 +60,22 @@ function App() {
 		fetchUserLookUp();
 	}, [location.pathname, user]);
 
-	const init = async () => {
-		const tempUser = await refreshUser();
+	// const init = async () => {
+	// 	const tempUser = await refreshUser();
 
-		if (!tempUser) return;
+	// 	if (!tempUser) return;
 
-		const tempSubscriberData: any = await fetchUserLookUp(tempUser);
+	// 	const tempSubscriberData: any = await fetchUserLookUp(tempUser);
 
-		if (
-			!tempSubscriberData?.keys?.length ||
-			!tempSubscriberData?.mappings?.length
-		) {
-			setGuideStep(GuideStepsEnums.Reg1);
-		} else {
-			setGuideStep(GuideStepsEnums.Test1);
-		}
-	};
+	// 	if (
+	// 		!tempSubscriberData?.keys?.length ||
+	// 		!tempSubscriberData?.mappings?.length
+	// 	) {
+	// 		setGuideStep(GuideStepsEnums.Reg1);
+	// 	} else {
+	// 		setGuideStep(GuideStepsEnums.Test1);
+	// 	}
+	// };
 
 	function fetchUserLookUp(tempUser?: any) {
 		const userToLookup = tempUser ?? user;
@@ -146,14 +147,7 @@ function App() {
 							<Route path="/home" element={<HomePage />} />
 							<Route path="/schema" element={<SchemaValidation />} />
 							{/* <Route path="/unit" element={<ApiTesting />} /> */}
-							<Route
-								path="/scenario"
-								element={<FlowContent type={"SCENARIO"} />}
-							/>
-							<Route
-								path="/customFlow"
-								element={<FlowContent type={"CUSTOM"} />}
-							/>
+							<Route path="/scenario" element={<FlowContent />} />
 							<Route path="/login" element={<GitHubLogin />} />
 							<Route path="/profile" element={<UserProfile />} />
 							<Route path="/tools" element={<ToolsPage />} />
