@@ -78,7 +78,7 @@ function GetMainContent({
     case "home":
       return <HomePage />;
     case "flows":
-      return <FlowContent type={"SCENARIO"}/>;
+      return <FlowContent />;
     case "unit":
       return <ApiTesting />;
     case "schema":
