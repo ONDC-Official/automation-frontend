@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { GoCodespaces, GoWorkflow } from "react-icons/go";
+import { GoWorkflow } from "react-icons/go";
 import { MdSchema } from "react-icons/md";
 import { fetchFormFieldData } from "../../utils/request-utils";
 import { FaChevronDown, FaUserPlus } from "react-icons/fa6";
@@ -42,14 +42,14 @@ const features: Feature[] = [
 			label: "SCENARIO_TESTING",
 		  },
 	},
-	{
-		title: "Protocol Playground",
-		subtitle: "Customize and Experiment with Transaction Flows",
-		description:
-			"Interactively design and test your mock transaction flows using javascript.",
-		path: "/playground",
-		icon: <GoCodespaces className="text-sky-600 text-4xl" />,
-	},
+	// {
+	// 	title: "Protocol Playground",
+	// 	subtitle: "Customize and Experiment with Transaction Flows",
+	// 	description:
+	// 		"Interactively design and test your mock transaction flows using javascript.",
+	// 	path: "/playground",
+	// 	icon: <GoCodespaces className="text-sky-600 text-4xl" />,
+	// },
 	{
 		title: "Seller Onboarding",
 		subtitle: "Quick & Easy Seller Registration",

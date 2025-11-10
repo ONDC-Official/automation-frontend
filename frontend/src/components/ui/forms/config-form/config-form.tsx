@@ -131,6 +131,25 @@ export default function FormConfig({
 	}
 
 	// Default: GenericForm
+	if (formConfig.find((field) => field.type === "trv_select")) {
+		return <TRVSelect submitEvent={submitEvent} />;
+	}
+
+	if (formConfig.find((field) => field.type === "airline_select")) {
+		return <AirlineSelect submitEvent={submitEvent} />;
+	}
+
+	if (formConfig.find((field) => field.type === "airline_select")) {
+		return <AirlineSelect submitEvent={submitEvent} />;
+	}
+
+	 if (formConfig.find((field) => field.type === "airline_select")) {
+                return <AirlineSelect submitEvent={submitEvent} />;
+        }
+        if(formConfig.find((field) => field.type === "airline_select")) {
+                return <AirlineSelect submitEvent={submitEvent} />
+        }
+
 	return (
 		<GenericForm
 			defaultValues={defaultValues}
