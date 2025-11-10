@@ -1,13 +1,11 @@
 import { useState, useEffect, useRef } from "react";
 import axios from "axios";
-import { Flow } from "../../types/flow-types";
 import RenderFlows from "./render-flows";
 import { toast } from "react-toastify";
 import { ReportPage } from "./report";
 import { FormGuide } from "./guides";
 import InitialFlowForm from "./initial-form";
 import NotFound from "../ui/not-found";
-import EditFlows from "./edit-flows";
 import { useSession } from "../../context/context";
 import { putCacheData } from "../../utils/request-utils";
 import { trackEvent } from "../../utils/analytics";
@@ -15,11 +13,7 @@ import { useWorkbenchFlows } from "../../hooks/useWorkbenchFlow";
 import { LuHistory } from "react-icons/lu";
 import { useNavigate } from "react-router-dom";
 
-interface FlowContentProps {
-	type: "SCENARIO" | "CUSTOM";
-}
-
-export default function FlowContent({ type }: FlowContentProps) {
+export default function FlowContent() {
 	const {
 		flowStepNum,
 		setFlowStepNum,
@@ -61,8 +55,6 @@ export default function FlowContent({ type }: FlowContentProps) {
 	const {
 		sessionId: contextSessionId,
 		setSessionId,
-		cfSessionId: contextcfSessionId,
-		setcfSessionId,
 	} = useSession();
 	const navigate = useNavigate();
 
@@ -99,17 +91,8 @@ export default function FlowContent({ type }: FlowContentProps) {
 				})
 			);
 			setSession(response.data.sessionId);
-			if (type === "SCENARIO") {
-				setSessionId(response.data.sessionId);
-			} else {
-				setcfSessionId(response.data.sessionId);
-			}
-			if (type === "SCENARIO") {
-				console.log("wokring get settng to 1");
-				setFlowStepNum(1);
-			} else {
-				setFlowStepNum(3);
-			}
+			setSessionId(response.data.sessionId);
+			setFlowStepNum(1);
 		} catch (e) {
 			toast.error("Error while creating session");
 			console.error("error while sending response", e);
@@ -199,17 +182,15 @@ export default function FlowContent({ type }: FlowContentProps) {
 	};
 
 	useEffect(() => {
-		if ((contextSessionId || contextcfSessionId) && !isFormSubmitted) {
-			fetchSessionData(
-				type === "SCENARIO" ? contextSessionId : contextcfSessionId
-			);
+		if (contextSessionId && !isFormSubmitted) {
+			fetchSessionData(contextSessionId);
 		}
-	}, [contextSessionId, contextcfSessionId, type, isFormSubmitted]);
+	}, [contextSessionId, isFormSubmitted]);
 
-	useEffect(() => {
-		setFlowStepNum(0);
-		setIsFormSubmitted(false);
-	}, [type]);
+	// useEffect(() => {
+	// 	setFlowStepNum(0);
+	// 	setIsFormSubmitted(false);
+	// }, [type]);
 
 	useEffect(() => {
 		if (session) {
@@ -228,30 +209,18 @@ export default function FlowContent({ type }: FlowContentProps) {
 								{/* Left side: heading + optional beta tag */}
 								<div className="flex items-center gap-2">
 									<h1 className="text-lg font-semibold mb-2">
-									{type === "SCENARIO" ? "Scenario testing" : "Custom Flow"}
+									{"Scenario testing"}
 									</h1>
-
-									{type === "CUSTOM" && (
-									<span
-										className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800 border border-yellow-200"
-										role="status"
-										aria-label="Beta release"
-									>
-										Beta release
-									</span>
-									)}
 								</div>
 
-								{/* Right side: scenario button */}
-								{type === "SCENARIO" && (
-									<button
-									onClick={() => navigate("/history")}
-									className="flex items-center gap-2 px-4 py-2 bg-sky-500 text-white rounded-xl hover:bg-sky-600 transition shadow-sm"
-									>
+								<button
+								onClick={() => navigate("/history")}
+								className="flex items-center gap-2 px-4 py-2 bg-sky-500 text-white rounded-xl hover:bg-sky-600 transition shadow-sm"
+								>
 									<LuHistory className="w-6 h-6 text-white" />
 									<span className="font-medium text-lg">Past Sessions</span>
-									</button>
-								)}
+								</button>
+
 								</div>
 								<p className="text-gray-600 text-sm">
 									Please fill in the details below to begin flow testing.
@@ -278,7 +247,6 @@ export default function FlowContent({ type }: FlowContentProps) {
 						flows={flows}
 						subUrl={subscriberUrl}
 						sessionId={session}
-						type={type}
 						setStep={setFlowStepNum}
 						setReport={setReport}
 						newSession={newSession}
@@ -291,20 +259,6 @@ export default function FlowContent({ type }: FlowContentProps) {
 						sessionId={session}
 						report={report}
 						setStep={setFlowStepNum}
-					/>
-				);
-			case 3:
-				// if (!flows) return <h1>Loading...</h1>;
-				return (
-					<EditFlows
-						subUrl={subscriberUrl}
-						sessionId={session}
-						flows={flows}
-						newSession={newSession}
-						onNext={(flow: Flow) => {
-							setFlows([flow]);
-							setFlowStepNum(1);
-						}}
 					/>
 				);
 			default:

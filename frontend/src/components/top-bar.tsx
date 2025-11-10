@@ -55,16 +55,6 @@ const navLinks: NavLink[] = [
     },
   },
   {
-    label: "Custom flow",
-    href: "/customFlow",
-    selected: false,
-    analytics: {
-      category: "NAV",
-      action: "Clicked in custom flow",
-      label: "CUSTOM_FLOW",
-    },
-  },
-  {
     label: "Tools",
     href: "/tools",
     selected: false,
