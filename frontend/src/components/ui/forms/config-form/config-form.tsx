@@ -118,6 +118,13 @@ export default function FormConfig({
 		return <AirlineSelect submitEvent={submitEvent} />;
 	}
 
+	 if (formConfig.find((field) => field.type === "airline_select")) {
+                return <AirlineSelect submitEvent={submitEvent} />;
+        }
+        if(formConfig.find((field) => field.type === "airline_select")) {
+                return <AirlineSelect submitEvent={submitEvent} />
+        }
+
 	return (
 		<GenericForm
 			defaultValues={defaultValues}
