@@ -42,14 +42,14 @@ const features: Feature[] = [
 			label: "SCENARIO_TESTING",
 		  },
 	},
-	{
-		title: "Protocol Playground",
-		subtitle: "Customize and Experiment with Transaction Flows",
-		description:
-			"Interactively design and test your mock transaction flows using javascript.",
-		path: "/playground",
-		icon: <GoCodespaces className="text-sky-600 text-4xl" />,
-	},
+	// {
+	// 	title: "Protocol Playground",
+	// 	subtitle: "Customize and Experiment with Transaction Flows",
+	// 	description:
+	// 		"Interactively design and test your mock transaction flows using javascript.",
+	// 	path: "/playground",
+	// 	icon: <GoCodespaces className="text-sky-600 text-4xl" />,
+	// },
 	{
 		title: "Seller Onboarding",
 		subtitle: "Quick & Easy Seller Registration",
