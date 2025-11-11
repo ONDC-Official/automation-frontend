@@ -342,6 +342,7 @@ export default function SessionDataTab() {
 		if (!finalAlias) return setError("Alias is required");
 
 		try {
+			if (finalPath.startsWith("EVAL#")) return;
 			jsonpath.query(payloadFromTranscationHistory(selectedCall), finalPath);
 		} catch (err) {
 			setError("Invalid JSONPath format");
