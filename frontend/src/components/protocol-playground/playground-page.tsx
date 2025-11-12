@@ -25,6 +25,10 @@ export default function PlaygroundPage() {
 		runCurrentConfig,
 		createFlowSession,
 	} = useConfigOperations();
+
+	const handleBack = () => {
+		playgroundContext.setCurrentConfig(undefined);
+	};
 	const { addAction, deleteAction, updateAction } = usePlaygroundActions();
 	const { popupOpen, openModal, closeModal, popupContent } =
 		playgroundContext.useModal;
@@ -64,6 +68,7 @@ export default function PlaygroundPage() {
 					onRunCurrent={async () => {
 						await runCurrentConfig();
 					}}
+					onBack={handleBack}
 				/>
 				<ActionTimeline
 					steps={playgroundContext.config?.steps || []}
