@@ -1,8 +1,20 @@
 import axios from "../utils/axios";
 import axios2, { AxiosRequestConfig } from "axios";
 import logger from "@ondc/automation-logger";
+
 const DB_SERVICE = process.env.DB_SERVICE;
 const DB_SERVICE_API_KEY = process.env.DB_SERVICE_API_KEY;
+
+interface CreateUserPayload {
+  githubId: string;
+  participantId: string;
+}
+
+interface Flow {
+  id: string;
+  status: "PENDING" | "COMPLETED";
+  payloads?: string[];
+}
 
 export const getPayloadForSessionId = async (payload_ids: string[]) => {
   try {
@@ -52,7 +64,7 @@ export const getReportForSessionId = async (sessionId: string) => {
 
 export const getSessionsForSubId = async (subId: string, npType: string) => {
   let config: AxiosRequestConfig = {
-    method: "get",  
+    method: "get",
     url: `${DB_SERVICE}/api/sessions/filter`,
     params: {
       np_type: npType,
@@ -70,5 +82,100 @@ export const getSessionsForSubId = async (subId: string, npType: string) => {
   } catch (e: any) {
     logger.error("Error while fetching report from db", { subId, npType }, e);
     throw new Error("Error while fetching report from db");
+  }
+};
+
+export const getUser = async (userData: CreateUserPayload) => {
+  const config: AxiosRequestConfig = {
+    method: "get",
+    url: `${DB_SERVICE}/user/${userData.githubId}`,
+    headers: {
+      "Content-Type": "application/json",
+      "x-api-key": DB_SERVICE_API_KEY,
+    },
+  };
+
+  try {
+    const response = await axios.request(config);
+    return response.data;
+  } catch (e: any) {
+    logger.error("Error fetching user in DB service", {
+      userData,
+      error: e.message,
+    });
+    throw new Error("Error fetching user in DB service");
+  }
+};
+
+export const createUser = async (userData: CreateUserPayload) => {
+  const config: AxiosRequestConfig = {
+    method: "post",
+    url: `${DB_SERVICE}/user`,
+    headers: {
+      "Content-Type": "application/json",
+      "x-api-key": DB_SERVICE_API_KEY,
+    },
+    data: userData,
+  };
+
+  try {
+    const response = await axios.request(config);
+    return response.data;
+  } catch (e: any) {
+    logger.error("Error creating user in DB service", {
+      userData,
+      error: e.message,
+    });
+    throw new Error("Error creating user in DB service");
+  }
+};
+
+export const addFlowToSession = async (sessionId: string, flowData: Flow) => {
+  const config: AxiosRequestConfig = {
+    method: "post",
+    url: `${DB_SERVICE}/api/sessions/flows/${sessionId}`,
+    headers: {
+      "Content-Type": "application/json",
+      "x-api-key": DB_SERVICE_API_KEY,
+    },
+    data: flowData,
+  };
+
+  try {
+    const response = await axios.request(config);
+    return response.data;
+  } catch (e: any) {
+    logger.error("Error while adding flow to session in DB", {
+      sessionId,
+      flowData,
+      error: e.message,
+    });
+    throw new Error("Error while adding flow to session in DB");
+  }
+};
+
+export const updateFlowInSession = async (sessionId: string, flow: Flow) => {
+  const config: AxiosRequestConfig = {
+    method: "put",
+    url: `${DB_SERVICE}/api/sessions/flows/${sessionId}`,
+    headers: {
+      "Content-Type": "application/json",
+      "x-api-key": DB_SERVICE_API_KEY,
+    },
+    data: {
+      flow, // matches your backend controller shape
+    },
+  };
+
+  try {
+    const response = await axios.request(config);
+    return response.data;
+  } catch (e: any) {
+    logger.error("Error while updating flow in session", {
+      sessionId,
+      flow,
+      error: e.message,
+    });
+    throw new Error("Error while updating flow in session");
   }
 };
