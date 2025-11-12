@@ -19,9 +19,10 @@ export const useConfigOperations = () => {
 			return;
 		}
 		const dataStr = JSON.stringify(playgroundContext.config, null, 2);
+		const flowName = `${playgroundContext.config.meta.flowId}_playground_flow`;
 		const dataUri =
 			"data:application/json;charset=utf-8," + encodeURIComponent(dataStr);
-		const exportFileDefaultName = "playground-config.json";
+		const exportFileDefaultName = flowName + ".json";
 		const linkElement = document.createElement("a");
 		linkElement.setAttribute("href", dataUri);
 		linkElement.setAttribute("download", exportFileDefaultName);
