@@ -25,7 +25,7 @@ import Walkthrough from "./pages/walkthrough";
 import { trackPageView } from "./utils/analytics";
 import ProtocolPlayGround from "./components/protocol-playground/main";
 import PastSessions from "./pages/past-sessions";
-import DevGuidePage from "./components/developer guide/dev-page";
+// import DevGuidePage from "./components/developer guide/dev-page";
 
 function App() {
 	const [isModalOpen, setIsModalOpen] = useState(false);
