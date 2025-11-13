@@ -1,12 +1,12 @@
 import { Router } from "express";
 import {
-  getPayload,
-  getReport,
-  getSessions,
-  createUserController,
-  addFlowToSessionController,
-  updateFlowInSessionController,
-  tryAuthenticateAdmin,
+	getPayload,
+	getReport,
+	getSessions,
+	createUserController,
+	addFlowToSessionController,
+	updateFlowInSessionController,
+	tryAuthenticateAdmin,
 	getPayloadFromDomainVersion,
 } from "../controllers/dbController";
 import otelTracing from "../services/tracing-service";
@@ -19,37 +19,30 @@ router.post(
 	getPayload
 );
 router.get("/report", otelTracing("", "query.session_id"), getReport);
-router.get(
-	"/sessions",
-	otelTracing("", "query.sub_id", "query.np_type"),
-	getSessions
-);
+
 router.get(
 	"/payloads/:domain/:version/:action/:page?",
 	getPayloadFromDomainVersion
 );
 
 router.get("/admin/auth", tryAuthenticateAdmin);
-  "/payload",
-  otelTracing("body.transaction_id", "body.session_id"),
-  getPayload
-);
-router.get("/report", otelTracing("", "query.session_id"), getReport);
+
 router.get(
-  "/sessions",
-  otelTracing("", "query.sub_id", "query.np_type"),
-  getSessions
+	"/sessions",
+	otelTracing("", "query.sub_id", "query.np_type"),
+	getSessions
 );
 router.post("/user", otelTracing("", ""), createUserController);
+
 router.post(
-  "/flows/:sessionId",
-  otelTracing("", "query.session_id"),
-  addFlowToSessionController
+	"/flows/:sessionId",
+	otelTracing("", "query.session_id"),
+	addFlowToSessionController
 );
 router.put(
-  "/flows/:sessionId",
-  otelTracing("", "query.session_id"),
-  updateFlowInSessionController
+	"/flows/:sessionId",
+	otelTracing("", "query.session_id"),
+	updateFlowInSessionController
 );
 
 export default router;
