@@ -25,6 +25,7 @@ import Walkthrough from "./pages/walkthrough";
 import { trackPageView } from "./utils/analytics";
 import ProtocolPlayGround from "./components/protocol-playground/main";
 import PastSessions from "./pages/past-sessions";
+import DBBackOffice from "./components/db-back-office/db-back-office";
 // import DevGuidePage from "./components/developer guide/dev-page";
 
 function App() {
@@ -160,6 +161,7 @@ function App() {
 								element={<PastSessions loggedIn={false} />}
 							/>
 							<Route path="*" element={<NotFoundPage />} />
+							<Route path="/db-back-office" element={<DBBackOffice />} />
 							{/* <Route path="/docs" element={<DevGuidePage />} /> */}
 						</Routes>
 					</div>
