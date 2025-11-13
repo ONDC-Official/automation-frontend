@@ -89,6 +89,7 @@ jobs:
           echo "S3_FOLDER =${{ secrets.S3_FOLDER }}" >> \$REPO_DIR/backend/.env
           echo "ADMIN_USERNAME=${{ secrets.ADMIN_USERNAME_STAGING }}" >> \$REPO_DIR/backend/.env
           echo "ADMIN_PASSWORD=${{ secrets.ADMIN_PASSWORD_STAGING }}" >> \$REPO_DIR/backend
+          echo "FINVU_SERVICE_URL =${{ vars.FINVU_SERVICE_URL }}" >> \$REPO_DIR/backend/.env
           EOF
 
       - name: Verify docker-compose.yml files
@@ -192,13 +193,10 @@ jobs:
           echo "AWS_SECRET_ACCESS_KEY =${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> \$REPO_DIR/backend/.env
           echo "AWS_REGION =${{ secrets.AWS_REGION }}" >> \$REPO_DIR/backend/.env
           echo "S3_BUCKET_NAME =${{ secrets.S3_BUCKET_NAME }}" >> \$REPO_DIR/backend/.env
-          echo "S3_FOLDER =${{ secrets.S3_FOLDER }}" >> \$REPO_DIR/backend/.env
-          echo "FINVU_AA_SERVICE_URL =${{ vars.FINVU_AA_SERVICE_URL }}" >> \$REPO_DIR/backend/.env
+          echo "S3_FOLDER =${{ secrets.S3_FOLDER }}" >> \$REPO_DIR/backend/.env       
           echo "ADMIN_USERNAME=${{ secrets.ADMIN_USERNAME_MAIN }}" >> \$REPO_DIR/backend/.env
           echo "ADMIN_PASSWORD=${{ secrets.ADMIN_PASSWORD_MAIN }}" >> \$REPO_DIR/backend/.env
-
-
-
+          echo "FINVU_SERVICE_URL =${{ vars.FINVU_SERVICE_URL }}" >> \$REPO_DIR/backend/.env
 
           EOF
       - name: Verify docker-compose.yml files
