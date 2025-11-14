@@ -26,6 +26,7 @@ import { trackPageView } from "./utils/analytics";
 import ProtocolPlayGround from "./components/protocol-playground/main";
 import PastSessions from "./pages/past-sessions";
 import DBBackOffice from "./components/db-back-office/db-back-office";
+import FlowTestingWrapper from "./components/flow-testing/flow-testing-wrapper";
 // import DevGuidePage from "./components/developer guide/dev-page";
 
 function App() {
@@ -150,6 +151,7 @@ function App() {
 							<Route path="/schema" element={<SchemaValidation />} />
 							{/* <Route path="/unit" element={<ApiTesting />} /> */}
 							<Route path="/scenario" element={<FlowContent />} />
+							<Route path="/flow-testing" element={<FlowTestingWrapper />} />
 							<Route path="/login" element={<GitHubLogin />} />
 							<Route path="/profile" element={<UserProfile />} />
 							<Route path="/tools" element={<ToolsPage />} />

@@ -7,9 +7,9 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import { ApiData, SessionCache } from "../../types/session-types";
 import {
-  getCompletePayload,
-  getReport,
-  getTransactionData,
+	getCompletePayload,
+	getReport,
+	getTransactionData,
 } from "../../utils/request-utils";
 import { Accordion } from "./flow-state-viewer/complete-flow";
 import { useSession } from "../../context/context";
@@ -20,7 +20,11 @@ import Tabs from "../ui/mini-components/tabs";
 import { SessionContext } from "../../context/context";
 import CircularProgress from "../ui/circular-cooldown";
 import Modal from "../modal";
-import { HiOutlineDocumentReport, HiOutlinePlusCircle, HiEye } from "react-icons/hi";
+import {
+	HiOutlineDocumentReport,
+	HiOutlinePlusCircle,
+	HiEye,
+} from "react-icons/hi";
 import jp from "jsonpath";
 import FlowHelperTab from "./helper-tab";
 import { GetRequestEndpoint } from "./guides";
@@ -160,7 +164,7 @@ function RenderFlows({
 	const pollingRef = useRef<any>(null);
 	const timeoutRef = useRef<any>(null);
 	const [isPolling, setIsPolling] = useState(false);
-	const [gotReport, setGotReport] = useState(false)
+	const [gotReport, setGotReport] = useState(false);
 
 	const startPolling = () => {
 		if (isPolling) return; // Prevent multiple starts
@@ -171,29 +175,29 @@ function RenderFlows({
 		let stopped = false;
 
 		const stopPolling = (message?: string) => {
-		stopped = true;
-		if (pollingRef.current) clearTimeout(pollingRef.current);
-		if (timeoutRef.current) clearTimeout(timeoutRef.current);
-		setIsPolling(false);
-		if (message) console.log("message: ", message)
+			stopped = true;
+			if (pollingRef.current) clearTimeout(pollingRef.current);
+			if (timeoutRef.current) clearTimeout(timeoutRef.current);
+			setIsPolling(false);
+			if (message) console.log("message: ", message);
 		};
 
 		const poll = async () => {
-		if (stopped) return;
+			if (stopped) return;
 
-		try {
-			const result = await getReport(sessionId);
-			if (result?.data) {
-			stopPolling("✅ Report ready!");
-			setGotReport(true)
-			return;
+			try {
+				const result = await getReport(sessionId);
+				if (result?.data) {
+					stopPolling("✅ Report ready!");
+					setGotReport(true);
+					return;
+				}
+				console.log("⏳ Still processing...");
+			} catch (err) {
+				console.error("Polling error:", err);
 			}
-			console.log("⏳ Still processing...");
-		} catch (err) {
-			console.error("Polling error:", err);
-		}
 
-		pollingRef.current = setTimeout(poll, POLL_INTERVAL);
+			pollingRef.current = setTimeout(poll, POLL_INTERVAL);
 		};
 
 		// Start first poll
@@ -201,10 +205,10 @@ function RenderFlows({
 
 		// Set timeout to stop polling after 90s
 		timeoutRef.current = setTimeout(() => {
-		toast.error("Something went wrong while fetching the report.")
-		stopPolling("⏱️ Timed out after 90 seconds");
+			toast.error("Something went wrong while fetching the report.");
+			stopPolling("⏱️ Timed out after 90 seconds");
 		}, TIMEOUT);
-    };
+	};
 
 	useEffect(() => {
 		fetchSessionData();
@@ -407,7 +411,7 @@ function RenderFlows({
 				<p className="text-sm text-gray-600">Sesson has expired.</p>
 				<p className="text-sm text-gray-600">Check support to raise a query.</p>
 			</Modal>
-			<div className="w-full min-h-screen flex flex-col">
+			<div className="w-full min-h-screen flex flex-col flex-1">
 				<div className="space-y-2 pt-4 pr-4 pl-4">
 					{cacheSessionData ? (
 						<div className="flex gap-2 flex-col">
@@ -465,11 +469,13 @@ function RenderFlows({
 													onClick={async () => {
 														trackEvent({
 															category: "SCENARIO_TESTING-FLOWS",
-															action: "Generate report"
-														})
-														toast.info("Generating report. It can take upto 90 sec.")
-														startPolling()
-														await generateReport()
+															action: "Generate report",
+														});
+														toast.info(
+															"Generating report. It can take upto 90 sec."
+														);
+														startPolling();
+														await generateReport();
 													}}
 													disabled={!isFlowStopped}
 												>
@@ -481,26 +487,33 @@ function RenderFlows({
 												<button
 													className="bg-sky-600 text-white text-sm flex px-2 py-2 rounded hover:bg-sky-700 shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
 													onClick={async () => {
-														const response = await getReport(sessionId)
-														console.log("response", response)
-														const base64html = response.data
+														const response = await getReport(sessionId);
+														console.log("response", response);
+														const base64html = response.data;
 														const cleanedData = base64html.split("base64,")[1];
 														try {
 															// Decode Base64 → HTML string
-															const decodedHtml = decodeURIComponent(escape(atob(cleanedData)));
-													  
+															const decodedHtml = decodeURIComponent(
+																escape(atob(cleanedData))
+															);
+
 															// Create a new Blob and URL
-															const blob = new Blob([decodedHtml], { type: "text/html" });
+															const blob = new Blob([decodedHtml], {
+																type: "text/html",
+															});
 															const url = URL.createObjectURL(blob);
-													  
+
 															// Open in a new tab
 															window.open(url, "_blank");
-													  
+
 															// Optional: cleanup after a short delay
 															setTimeout(() => URL.revokeObjectURL(url), 5000);
-														  } catch (error) {
-															console.error("Failed to decode or open Base64 HTML:", error);
-														  }
+														} catch (error) {
+															console.error(
+																"Failed to decode or open Base64 HTML:",
+																error
+															);
+														}
 													}}
 													disabled={!gotReport}
 												>
@@ -598,7 +611,7 @@ function RenderFlows({
 					{/* Left Column - Main Content */}
 					<div className="w-full sm:w-[60%] overflow-y-auto p-4">
 						{/* {flows.domain.map((domain) => ( */}
-						<div className="mb-8 bg-gray-100 p-4 rounded-md border">
+						<div className="mb-8 bg-gray-100 p-4 rounded-md border flex-1">
 							{flows.map((flow) => (
 								<Accordion
 									key={flow.id}
