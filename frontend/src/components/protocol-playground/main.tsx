@@ -303,8 +303,8 @@ const Body = ({
 					flows={workbenchFlow.flows}
 					subUrl={workbenchFlow.subscriberUrl}
 					sessionId={workbenchFlow.session}
-					setStep={workbenchFlow.setFlowStepNum}
-					setReport={workbenchFlow.setReport}
+					// setStep={workbenchFlow.setFlowStepNum}
+					// setReport={workbenchFlow.setReport}
 				/>
 			);
 		default:
