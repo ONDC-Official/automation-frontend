@@ -9,8 +9,8 @@ export default function FlowTestingWrapper() {
 	const [searchParams] = useSearchParams();
 	const [flows, setFlows] = useState<Flow[]>([]);
 	const [loading, setLoading] = useState(true);
-	const [_, setReport] = useState("");
-	const [__, setFlowStepNum] = useState(1);
+	// const [_, setReport] = useState("");
+	// const [__, setFlowStepNum] = useState(1);
 
 	const sessionId = searchParams.get("sessionId");
 	const subscriberUrl = searchParams.get("subscriberUrl");
@@ -136,8 +136,8 @@ export default function FlowTestingWrapper() {
 					flows={flows}
 					subUrl={decodeURIComponent(subscriberUrl)}
 					sessionId={sessionId}
-					setStep={setFlowStepNum}
-					setReport={setReport}
+					// setStep={setFlowStepNum}
+					// setReport={setReport}
 				/>
 			</div>
 		</div>

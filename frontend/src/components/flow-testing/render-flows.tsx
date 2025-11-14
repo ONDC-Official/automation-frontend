@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Flow, MetadataField } from "../../types/flow-types";
 import InfoCard from "../ui/info-card";
@@ -131,16 +131,16 @@ function RenderFlows({
 	flows,
 	subUrl,
 	sessionId,
-	setStep,
-	setReport,
+	// setStep,
+	// setReport,
 	newSession,
 }: {
 	flows: Flow[];
 	subUrl: string;
 	sessionId: string;
 	newSession?: () => void;
-	setStep: React.Dispatch<React.SetStateAction<number>>;
-	setReport: React.Dispatch<React.SetStateAction<string>>;
+	// setStep: React.Dispatch<React.SetStateAction<number>>;
+	// setReport: React.Dispatch<React.SetStateAction<string>>;
 }) {
 	const [activeFlow, setActiveFlow] = useState<string | null>(null);
 	const activeFlowRef = useRef<string | null>(activeFlow);
@@ -369,9 +369,10 @@ function RenderFlows({
 					sessionId: sessionId,
 				},
 			})
-			.then((response) => {
-				setReport(response.data.data);
-				setStep(2);
+			.then(() => {
+				console.log("generating report")
+				// setReport(response.data.data);
+				// setStep(2);
 			})
 			.catch((e) => {
 				console.error(e);
