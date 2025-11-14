@@ -55,7 +55,7 @@ export default function GetPlaygroundComponent() {
 	}
 
 	return (
-		<div className="min-h-[calc(100vh-200px)] bg-gradient-to-b from-white via-sky-50/30 to-white flex items-center justify-center px-8 py-16">
+		<div className="min-h-screen h-full bg-gradient-to-b from-white via-sky-50/30 to-white flex items-center justify-center px-8 py-16">
 			{/* Subtle background decoration */}
 			<div className="absolute inset-0 overflow-hidden pointer-events-none">
 				<div className="absolute top-0 right-0 w-[500px] h-[500px] bg-sky-100/40 rounded-full blur-3xl transform translate-x-1/3 -translate-y-1/3"></div>
@@ -65,7 +65,7 @@ export default function GetPlaygroundComponent() {
 			{/* Main container */}
 			<div className="relative z-10 w-full max-w-lg">
 				{/* Header */}
-				<div className="text-center mb-8">
+				<div className="text-center">
 					<div className="inline-flex items-center justify-center w-14 h-14 bg-sky-500 rounded-2xl mb-4 shadow-lg shadow-sky-500/20">
 						<svg
 							className="w-7 h-7 text-white"

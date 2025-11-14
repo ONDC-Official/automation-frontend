@@ -282,7 +282,7 @@ export default function ProtocolPlayGround() {
 				loadConfigFromGist,
 			}}
 		>
-			<div className="mt-2 w-full h-screen flex flex-1 flex-col mb-2">
+			<div className="mt-2 w-full min-h-screen flex flex-1 flex-col">
 				<Body workbenchFlow={workbenchFlow} />
 			</div>
 		</PlaygroundContext.Provider>
