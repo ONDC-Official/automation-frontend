@@ -221,7 +221,7 @@ export const useConfigOperations = () => {
 
 	const createFlowSession = () => {
 		async function handleFormSubmit(formData: any) {
-			if (formData.subscriber_url === "ayush") {
+			if (formData.subscriber_url === "testing") {
 				const subUrlBap = GetRequestEndpoint(
 					playgroundContext.config?.meta.domain || "",
 					playgroundContext.config?.meta.version || "",
@@ -234,6 +234,12 @@ export const useConfigOperations = () => {
 				);
 				await createAndOpenFlowSession(subUrlBap, "BAP");
 				await createAndOpenFlowSession(subUrlBpp, "BPP");
+				return;
+			}
+			// subcriber url is a valid url
+			const regex = /^(http|https):\/\/[^ "]+$/;
+			if (!regex.test(formData.subscriber_url)) {
+				toast.error("Please enter a valid URL");
 				return;
 			}
 			console.log("Form submitted with data:", formData);
