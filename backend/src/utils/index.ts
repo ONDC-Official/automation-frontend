@@ -17,5 +17,6 @@ export const buildMockBaseURL = async (url: string, sessionId: string) => {
 	const generatedURL = `${mockUrl}/${sessionData.domain}/${sessionData.version}/${url}`;
 
 	logger.info("generated mock url: " + generatedURL);
+	console.log("generated mock url: " + generatedURL);
 	return generatedURL;
 };
