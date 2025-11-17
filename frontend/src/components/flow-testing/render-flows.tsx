@@ -374,10 +374,10 @@ function RenderFlows({
 				console.log("generating report")
 				// setReport(response.data.data);
 				// setStep(2);
-				if(response.data.data) {
+				if(response?.data?.data?.html) {
 					toast.info("Report Generated");
 
-					const decodedHtml = response.data.data
+					const decodedHtml = response.data.data.html
 					const blob = new Blob([decodedHtml], {
 						type: "text/html",
 					});
