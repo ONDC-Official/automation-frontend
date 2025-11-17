@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { FlowMap, MappedStep } from "../../../types/flow-state-type";
 import FormConfig, {
 	FormConfigType,
@@ -13,9 +13,11 @@ import PairedCard from "./pair-card";
 export default function DisplayFlow({
 	mappedFlow,
 	flowId,
+	onFlowProceeded,
 }: {
 	mappedFlow: FlowMap;
 	flowId: string;
+	onFlowProceeded?: () => void;
 }) {
 	// mappedFlow = dummy;
 	const steps = getOrderedSteps(mappedFlow);
@@ -23,6 +25,8 @@ export default function DisplayFlow({
 	const [activeFormConfig, setActiveFormConfig] = useState<
 		FormConfigType | undefined
 	>(undefined);
+	const hasAutoProceededRef = useRef<boolean>(false);
+	const hasForceProceededRef = useRef<boolean>(false);
 
 	const { sessionId, sessionData } = useSession()
 
@@ -34,35 +38,107 @@ export default function DisplayFlow({
 			handleFormSubmit({ jsonPath: {}, formData: {} });
 			return;
 		}
-		setActiveFormConfig(conf);
-		if (conf) {
-			setInputPopUp(true);
+		
+		// Check if this is a DYNAMIC_FORM that has already been submitted
+		const isDynamicForm = conf?.some(field => field.type === "DYNAMIC_FORM");
+		const transactionId = sessionData?.flowMap[flowId];
+		const formSubmissionData = transactionId ? sessionData?.formSubmissions?.[transactionId] : undefined;
+		const isAlreadySubmitted = isDynamicForm && transactionId && formSubmissionData;
+		
+		console.log('🔍 [mapped-flow] Modal check:', {
+			flowId,
+			hasInputRequired: !!conf,
+			isDynamicForm,
+			transactionId,
+			formSubmissionData,
+			isAlreadySubmitted,
+			allFormSubmissions: sessionData?.formSubmissions
+		});
+		
+		// Only show popup if form hasn't been submitted yet
+		if (!isAlreadySubmitted) {
+			setActiveFormConfig(conf);
+			if (conf) {
+				console.log('✅ [mapped-flow] Opening form modal');
+				setInputPopUp(true);
+			}
+		} else {
+			console.log('⏭️ [mapped-flow] Skipping form popup - already submitted');
+			// Ensure modal is closed
+			setInputPopUp(false);
+			setActiveFormConfig(undefined);
+			
+			// Form was already submitted - auto-proceed to next step (only once)
+			if (!hasAutoProceededRef.current && formSubmissionData && transactionId) {
+				hasAutoProceededRef.current = true;
+				console.log('🚀 [mapped-flow] Form already submitted, auto-proceeding...');
+				handleFormSubmit({
+					jsonPath: { submission_id: formSubmissionData.submission_id },
+					formData: { submission_id: formSubmissionData.submission_id }
+				});
+			}
 		}
-	}, [mappedFlow]);
+	}, [mappedFlow, sessionData, flowId]);
 
 	useEffect(() => {
 		const latestSending = mappedFlow?.sequence.find(
-			(f) => f.status === "RESPONDING"
+			(f) => f.status === "RESPONDING" || f.status === "LISTENING"
 		);
 		const transactionId = sessionData?.flowMap[flowId];
-		if (latestSending && latestSending.force_proceed && transactionId) {
+		
+		// Only force-proceed once to avoid "already in progress" errors
+		if (latestSending && latestSending.force_proceed && transactionId && !hasForceProceededRef.current) {
+			console.log('🚀 [mapped-flow] Force proceeding due to force_proceed flag', {
+				status: latestSending.status,
+				actionId: latestSending.actionId,
+				owner: latestSending.owner
+			});
+			hasForceProceededRef.current = true;
 			proceedFlow(sessionId, transactionId);
 		}
-	}, [mappedFlow]);
+		
+		// Reset the flag when no longer in actionable state
+		if (!latestSending || (latestSending.status !== "RESPONDING" && latestSending.status !== "LISTENING")) {
+			hasForceProceededRef.current = false;
+		}
+	}, [mappedFlow, sessionData, flowId, sessionId]);
 
 	const handleFormSubmit = async (formData: SubmitEventParams) => {
 		try {
+			console.log('📨 [mapped-flow] handleFormSubmit called with:', formData);
 			const txId = sessionData?.flowMap[flowId];
+			console.log('📨 [mapped-flow] Transaction ID:', txId, 'Flow ID:', flowId);
+			
 			if (!txId) {
-				console.error("Transaction ID not found");
+				console.error("❌ [mapped-flow] Transaction ID not found");
 				return;
 			}
-			await proceedFlow(sessionId, txId, formData.jsonPath, formData.formData);
+			
+			console.log('📤 [mapped-flow] Calling proceedFlow with:', {
+				sessionId,
+				txId,
+				jsonPath: formData.jsonPath,
+				formData: formData.formData
+			});
+			
+			const result = await proceedFlow(sessionId, txId, formData.jsonPath, formData.formData);
+			console.log('✅ [mapped-flow] proceedFlow result:', result);
+			
 			setInputPopUp(false);
 			setActiveFormConfig(undefined);
+			console.log('✅ [mapped-flow] Modal closed');
+			
+			// Refresh the flow state to show the next step
+			if (onFlowProceeded) {
+				console.log('🔄 [mapped-flow] Calling onFlowProceeded to refresh flow state');
+				onFlowProceeded();
+			}
+			
+			// Reset auto-proceed flag after successful proceed
+			hasAutoProceededRef.current = false;
 		} catch (error) {
 			toast.error("Error submitting form ");
-			console.error("Error submitting form data:", error);
+			console.error("❌ [mapped-flow] Error submitting form data:", error);
 			setInputPopUp(false);
 		}
 	};
