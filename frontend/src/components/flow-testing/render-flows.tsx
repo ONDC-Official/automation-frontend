@@ -189,6 +189,7 @@ function RenderFlows({
 				const result = await getReport(sessionId);
 				if (result?.data) {
 					stopPolling("✅ Report ready!");
+					toast.info("Report Generated");
 					setGotReport(true);
 					return;
 				}
@@ -369,10 +370,30 @@ function RenderFlows({
 					sessionId: sessionId,
 				},
 			})
-			.then(() => {
+			.then((response: any) => {
 				console.log("generating report")
 				// setReport(response.data.data);
 				// setStep(2);
+				if(response.data.data) {
+					toast.info("Report Generated");
+
+					const decodedHtml = response.data.data
+					const blob = new Blob([decodedHtml], {
+						type: "text/html",
+					});
+					const url = URL.createObjectURL(blob);
+
+					// Open in a new tab
+					window.open(url, "_blank");
+
+					// Optional: cleanup after a short delay
+					setTimeout(() => URL.revokeObjectURL(url), 5000);
+				} else {
+					toast.info(
+						"Generating report. It can take upto 90 sec."
+					);
+					startPolling();
+				}
 			})
 			.catch((e) => {
 				console.error(e);
@@ -472,10 +493,6 @@ function RenderFlows({
 															category: "SCENARIO_TESTING-FLOWS",
 															action: "Generate report",
 														});
-														toast.info(
-															"Generating report. It can take upto 90 sec."
-														);
-														startPolling();
 														await generateReport();
 													}}
 													disabled={!isFlowStopped}
