@@ -232,8 +232,8 @@ export const useConfigOperations = () => {
 					playgroundContext.config?.meta.version || "",
 					"BPP"
 				);
-				await createAndOpenFlowSession(subUrlBap, "BAP");
-				await createAndOpenFlowSession(subUrlBpp, "BPP");
+				await createAndOpenFlowSession(subUrlBap, "BPP");
+				await createAndOpenFlowSession(subUrlBpp, "BAP");
 				return;
 			}
 			// subcriber url is a valid url
