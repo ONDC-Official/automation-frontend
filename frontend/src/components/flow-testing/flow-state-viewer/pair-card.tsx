@@ -44,6 +44,7 @@ function StepDisplay({ step, flowId }: { step: MappedStep; flowId: string }) {
 	const { activeFlowId, setRequestData, setResponseData, setActiveCallClickedToggle, activeCallClickedToggle } = useSession();
 
 	const onClickFunc = async () => {
+		console.log("clicked here:::::::::", step.status, step)
 		if(step.status === "INPUT-REQUIRED") {
 			setActiveCallClickedToggle(!activeCallClickedToggle)
 		}
