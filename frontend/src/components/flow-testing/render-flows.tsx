@@ -650,7 +650,7 @@ function RenderFlows({
 					<div className="w-full sm:w-[60%] overflow-y-auto p-4">
 						<FilterFlowsMenu flowTags={flowTags} setSelectedTags={setSelectedTags} selectedTags={selectedTags}/>
 						<div className="mb-8 bg-gray-100 p-4 rounded-md border flex-1">
-							{filteredFlows.map((flow) => (
+							{filteredFlows.map((flow: any) => (
 								<Accordion
 									key={flow.id}
 									flow={flow}
