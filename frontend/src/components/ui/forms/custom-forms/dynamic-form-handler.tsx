@@ -40,23 +40,43 @@ export default function DynamicFormHandler({
       console.warn('⚠️ No reference field found in form config');
       return '';
     }
-    
+
     try {
       const url = jsonpath.query(
         { reference_data: referenceData },
         formConfig.reference
       )[0] || '';
-      
+
       console.log('✅ Extracted form URL from reference:', url);
       console.log('   Reference path:', formConfig.reference);
       console.log('   Reference data:', referenceData);
-      
+
       return url as string;
     } catch (error) {
       console.error('❌ Error extracting form URL from reference:', error);
       return '';
     }
   }, [formConfig, referenceData]);
+
+  // Extract session_id from the form URL (this is the CORRECT session_id for polling)
+  const actualSessionId = useMemo<string>(() => {
+    if (!formServiceUrl) return sessionId; // Fallback to prop if URL not available
+
+    try {
+      const urlObj = new URL(formServiceUrl);
+      const extractedSessionId = urlObj.searchParams.get('session_id');
+
+      if (extractedSessionId) {
+        console.log('✅ [DynamicForm] Extracted session_id from form URL:', extractedSessionId);
+        console.log('   (Was using prop session_id:', sessionId, ')');
+        return extractedSessionId;
+      }
+    } catch (error) {
+      console.error('❌ Error extracting session_id from URL:', error);
+    }
+
+    return sessionId; // Fallback to prop
+  }, [formServiceUrl, sessionId]);
 
   // Cleanup function - prevents memory leaks and ensures no refresh
   const cleanup = useCallback(() => {
@@ -77,18 +97,20 @@ export default function DynamicFormHandler({
 
   // Check completion function - polls backend to check if form was submitted
   const checkCompletion = useCallback(async () => {
-    console.log('🔍 [FORM] Checking completion: sessionId:', sessionId, 'transactionId:', transactionId);
+    console.log('🔍 [FORM] Checking completion: actualSessionId:', actualSessionId, 'transactionId:', transactionId);
+    console.log('   (Prop sessionId was:', sessionId, ')');
     if (hasCompletedRef.current) return;
 
     try {
       setPollCount(prev => prev + 1);
 
       // Check if form was submitted by querying the session data
+      // Use actualSessionId extracted from form URL, NOT the sessionId prop!
       const response = await axios.get(
         `${import.meta.env.VITE_BACKEND_URL}/sessions`,
         {
           params: {
-            session_id: sessionId
+            session_id: actualSessionId
           },
           timeout: 5000
         }
@@ -154,7 +176,7 @@ export default function DynamicFormHandler({
     } catch (error: any) {
       console.error('Error checking completion:', error.message);
     }
-  }, [sessionId, transactionId, submitEvent, cleanup, pollCount, setSessionData]);
+  }, [actualSessionId, sessionId, transactionId, submitEvent, cleanup, pollCount, setSessionData]);
 
   // Start polling function
   const startPolling = useCallback(() => {
