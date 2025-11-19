@@ -76,7 +76,7 @@ export default function DisplayFlow({
 			</div>
 			<div></div>
 		{inputPopUp && activeFormConfig && (
-			<Popup isOpen={inputPopUp} onClose={() => setInputPopUp(false)}>
+			<Popup isOpen={inputPopUp} disableClose>
 				<FormConfig
 					formConfig={activeFormConfig}
 					submitEvent={handleFormSubmit}
