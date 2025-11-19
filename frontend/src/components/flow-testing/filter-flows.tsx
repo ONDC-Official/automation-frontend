@@ -1,7 +1,17 @@
 import React, { useRef, useEffect, useState } from "react";
 import { IoIosArrowDropdownCircle } from "react-icons/io";
 
-export default function FilterFlowsMenu({flowTags, setSelectedTags, selectedTags}) {
+interface FilterFlowMenuProps {
+  flowTags: string[];
+  setSelectedTags: React.Dispatch<React.SetStateAction<string[]>>;
+  selectedTags: string[];
+}
+
+export default function FilterFlowsMenu({
+  flowTags,
+  setSelectedTags,
+  selectedTags,
+}: FilterFlowMenuProps) {
   const [open, setOpen] = useState(false);
   const contentRef = useRef<HTMLDivElement | null>(null);
   const [maxHeight, setMaxHeight] = useState<string>("0px");
@@ -13,8 +23,8 @@ export default function FilterFlowsMenu({flowTags, setSelectedTags, selectedTags
   }, [open]);
 
   const toggleSelect = (item: string) => {
-    setSelectedTags((prev: [string]) =>
-      prev.includes(item) ? prev.filter((v) => v !== item) : [...prev, item]
+    setSelectedTags((prev: any) =>
+      prev.includes(item) ? prev.filter((v: any) => v !== item) : [...prev, item]
     );
   };
 
@@ -53,7 +63,7 @@ export default function FilterFlowsMenu({flowTags, setSelectedTags, selectedTags
               onClick={() => toggleSelect(item)}
               className={`cursor-pointer px-3 py-2 rounded-lg border transition-all duration-200 select-none
                 ${
-                selectedTags.includes(item)
+                  selectedTags.includes(item)
                     ? "bg-sky-600 border-sky-600 text-white"
                     : "bg-white border-gray-300 text-gray-700 hover:bg-gray-100"
                 }`}
