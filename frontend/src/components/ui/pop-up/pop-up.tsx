@@ -12,7 +12,7 @@ export default function Popup({
 	children: React.ReactNode;
 	isOpen: boolean;
 	onClose?: () => void;
-	disableClose: boolean;
+	disableClose?: boolean;
 }) {
 	const [isVisible, setIsVisible] = useState(false);
 	const [isMinimized, setIsMinimized] = useState(false);
@@ -68,7 +68,7 @@ export default function Popup({
 			className={`fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 transition-opacity duration-300 p-4 ${
 				isOpen ? "opacity-100" : "opacity-0"
 			}`}
-			onClick={() => { if(!disableClose) onClose()}}
+			onClick={() => { if(!disableClose) onClose && onClose()}}
 		>
 			<div
 				className={`bg-white rounded-lg shadow-lg p-4 w-full max-w-md sm:max-w-lg md:max-w-xl lg:max-w-2xl max-h-[90vh] relative transition-transform duration-300 transform overflow-y-auto overflow-x-hidden ${
