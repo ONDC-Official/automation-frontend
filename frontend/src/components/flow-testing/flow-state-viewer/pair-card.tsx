@@ -41,10 +41,9 @@ export default function PairedCard({
 }
 
 function StepDisplay({ step, flowId }: { step: MappedStep; flowId: string }) {
-	const { activeFlowId, setRequestData, setResponseData, setActiveCallClickedToggle, activeCallClickedToggle } = useSession();
+	const { activeFlowId, setRequestData, setResponseData, activeCallClickedToggle, setActiveCallClickedToggle } = useSession();
 
 	const onClickFunc = async () => {
-		console.log("clicked here:::::::::", step.status, step)
 		if(step.status === "INPUT-REQUIRED") {
 			setActiveCallClickedToggle(!activeCallClickedToggle)
 		}

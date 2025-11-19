@@ -168,6 +168,7 @@ function RenderFlows({
 	const [gotReport, setGotReport] = useState(false);
 	const [flowTags, setFlowTags] = useState<string[]>([])
 	const [selectedTags, setSelectedTags] = useState<string[]>([])
+	const [activeCallClickedToggle, setActiveCallClickedToggle] = useState<boolean>(false)
 
 	const startPolling = () => {
 		if (isPolling) return; // Prevent multiple starts
@@ -440,6 +441,8 @@ function RenderFlows({
 				setResponseData: setResponseData,
 				setSideView: setSideView,
 				setMetadata: setMetadata,
+				setActiveCallClickedToggle: setActiveCallClickedToggle,
+				activeCallClickedToggle: activeCallClickedToggle
 			}}
 		>
 			<Modal
