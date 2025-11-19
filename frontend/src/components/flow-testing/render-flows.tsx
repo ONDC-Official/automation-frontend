@@ -30,6 +30,7 @@ import FlowHelperTab from "./helper-tab";
 import { GetRequestEndpoint } from "./guides";
 import { BiSend, BiServer } from "react-icons/bi";
 import { trackEvent } from "../../utils/analytics";
+import FilterFlowsMenu from "./filter-flows";
 
 function extractMetadataFromFlows(
 	flows: Flow[]
@@ -165,6 +166,8 @@ function RenderFlows({
 	const timeoutRef = useRef<any>(null);
 	const [isPolling, setIsPolling] = useState(false);
 	const [gotReport, setGotReport] = useState(false);
+	const [flowTags, setFlowTags] = useState<string[]>([])
+	const [selectedTags, setSelectedTags] = useState<string[]>([])
 
 	const startPolling = () => {
 		if (isPolling) return; // Prevent multiple starts
@@ -214,6 +217,15 @@ function RenderFlows({
 	useEffect(() => {
 		fetchSessionData();
 	}, [subUrl]);
+
+	useEffect(() => {
+	const allTags = new Set(
+		Object.values(flows)
+		  .flatMap(cfg => cfg.tags ?? [])
+	  );
+	  const tagsArray = [...allTags];
+	  setFlowTags(tagsArray)
+	}, [flows])
 
 	useEffect(() => {
 		if (sideView?.payloadId) {
@@ -301,8 +313,6 @@ function RenderFlows({
 			setMetadata({});
 		}
 	};
-
-	console.log("Side view'", sideView, requestData, responseData);
 
 	// Update the ref whenever activeFlow changes
 	useEffect(() => {
@@ -400,6 +410,16 @@ function RenderFlows({
 				toast.error("Error while generating report");
 			});
 	}
+
+	let filteredFlows: any = [];
+
+	if (selectedTags.length) {
+    filteredFlows = Object.entries(flows)
+      .filter(([_key, cfg]) => cfg.tags?.some((t) => selectedTags.includes(t)))
+      .map(([_, cfg]) => cfg);
+  } else {
+    filteredFlows = flows;
+  }
 
 	const handleClearFlow = () => {
 		setRequestData({});
@@ -628,9 +648,9 @@ function RenderFlows({
 				<div className="flex flex-1 w-full">
 					{/* Left Column - Main Content */}
 					<div className="w-full sm:w-[60%] overflow-y-auto p-4">
-						{/* {flows.domain.map((domain) => ( */}
+						<FilterFlowsMenu flowTags={flowTags} setSelectedTags={setSelectedTags} selectedTags={selectedTags}/>
 						<div className="mb-8 bg-gray-100 p-4 rounded-md border flex-1">
-							{flows.map((flow) => (
+							{filteredFlows.map((flow) => (
 								<Accordion
 									key={flow.id}
 									flow={flow}
@@ -645,7 +665,6 @@ function RenderFlows({
 								/>
 							))}
 						</div>
-						{/* ))} */}
 					</div>
 
 					{/* Right Column - Sticky Request & Response */}
