@@ -255,6 +255,14 @@ export const proceedFlow = async (
   inputs?: any
 ) => {
   try {
+    console.log('🚀 [proceedFlow] Sending request:', {
+      url: `${import.meta.env.VITE_BACKEND_URL}/flow/proceed`,
+      sessionId,
+      transactionId,
+      jsonPathChanges,
+      inputs
+    });
+    
     const response = await axios.post(
       `${import.meta.env.VITE_BACKEND_URL}/flow/proceed`,
       {
@@ -264,9 +272,15 @@ export const proceedFlow = async (
         inputs: inputs,
       }
     );
+    
+    console.log('✅ [proceedFlow] Response received:', response.data);
     return response.data;
-  } catch (e) {
-    console.error("Error while proceeding flow", e);
+  } catch (e: any) {
+    console.error("❌ [proceedFlow] Error:", {
+      message: e.message,
+      response: e.response?.data,
+      status: e.response?.status
+    });
     throw new Error("Error while proceeding flow");
   }
 };

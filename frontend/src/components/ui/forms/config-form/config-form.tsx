@@ -12,6 +12,7 @@ import JsonSchemaForm from "../../../protocol-playground/ui/extras/rsjf-form";
 import AirlineSelect from "../custom-forms/airline-select";
 import TRV12busSeatSelection from "../custom-forms/trv-seat-count";
 import FinvuRedirectForm from "../custom-forms/finvu-redirect-form";
+import DynamicFormHandler from "../custom-forms/dynamic-form-handler";
 import { SessionContext } from "../../../../context/context";
 
 export interface FormFieldConfigType {
@@ -30,7 +31,8 @@ export interface FormFieldConfigType {
 		| "nestedSelect"
 		| "trv_select"
 		| "HTML_FORM"
-		| "FINVU_REDIRECT";
+		| "FINVU_REDIRECT"
+		| "DYNAMIC_FORM";
 	payloadField: string;
 	values?: string[];
 	defaultValue?: string;
@@ -96,6 +98,27 @@ export default function FormConfig({
 			schema: schemaField!.schema,
 			onSubmit: onSubmit,
 		});
+	}
+
+	// Check for DYNAMIC_FORM type
+	if (formConfig.find((field) => field.type === "DYNAMIC_FORM")) {
+		// Get transaction ID from session context using flowId
+		let transactionId: string | undefined = undefined;
+		if (flowId && sessionData && sessionData.flowMap) {
+			transactionId = sessionData.flowMap[flowId] || undefined;
+		}
+
+		const dynamicFormField = formConfig.find((field) => field.type === "DYNAMIC_FORM");
+
+		return (
+			<DynamicFormHandler
+				submitEvent={submitEvent}
+				referenceData={referenceData}
+				sessionId={sessionId}
+				transactionId={transactionId || ''}
+				formConfig={dynamicFormField}
+			/>
+		);
 	}
 
 	// Check for FINVU_REDIRECT type
