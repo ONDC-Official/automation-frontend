@@ -377,7 +377,16 @@ export function Accordion({
 					<p className="text-gray-700 mb-6">{flow.description}</p>
 
 					<div className="space-y-4 relative">
-						{<DisplayFlow mappedFlow={mappedFlow} flowId={flow.id} />}
+						{<DisplayFlow 
+							mappedFlow={mappedFlow} 
+							flowId={flow.id}
+							onFlowProceeded={() => {
+								console.log('🔄 [complete-flow] Flow proceeded, refreshing state...');
+								if (sessionCache) {
+									getCurrentState(sessionCache);
+								}
+							}}
+						/>}
 					</div>
 				</div>
 			</div>
