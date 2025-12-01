@@ -236,18 +236,22 @@ export const getCurrentStateFlow = async (
 export const proceedFlow = async (req: Request, res: Response) => {
 	try {
 		const { session_id, transaction_id } = req.body;
+		console.log("proceedFlow req.body", req.body);
 		if (!session_id || !transaction_id) {
 			res
 				.status(400)
 				.send({ message: "session_id and transaction_id are required" });
 			return;
 		}
+		console.log("before calling mock service ++++++++++++++");
 		const url = await buildMockBaseURL("flows/proceed", session_id as string);
+		console.log("after calling mock service", url);
 		const response = await axios.post(url, req.body, {
 			headers: {
 				"X-Request-ID": req.correlationId,
 			},
 		});
+		console.log("after calling mock service response", response.data);
 		res.status(response.status).send(response.data);
 	} catch (e) {
 		logger.error(
