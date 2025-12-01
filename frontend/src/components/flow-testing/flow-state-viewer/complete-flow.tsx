@@ -251,11 +251,14 @@ export function Accordion({
 						label="Start flow"
 						color="sky"
 						onClick={async (e) => {
-							addFlowToSessionInDB(sessionId, {id: flow.id, status: "PENDING"})
+							addFlowToSessionInDB(sessionId, {
+								id: flow.id,
+								status: "PENDING",
+							});
 							trackEvent({
 								category: "SCENARIO_TESTING-FLOWS",
 								action: `Started a flow: ${flow.id}`,
-							})
+							});
 							e.stopPropagation();
 							await startFlow();
 						}}
@@ -270,7 +273,7 @@ export function Accordion({
 							trackEvent({
 								category: "SCENARIO_TESTING-FLOWS",
 								action: `Stopped a flow: ${flow.id}`,
-							})
+							});
 							e.stopPropagation(); // Prevent accordion toggle
 							setActiveFlow(null);
 							setIsOpen(false);
@@ -289,7 +292,7 @@ export function Accordion({
 							trackEvent({
 								category: "SCENARIO_TESTING-FLOWS",
 								action: `Cleared a flow: ${flow.id}`,
-							})
+							});
 							e.stopPropagation();
 							setMappedFlow({
 								sequence: getSequenceFromFlow(
@@ -313,7 +316,7 @@ export function Accordion({
 							trackEvent({
 								category: "SCENARIO_TESTING-FLOWS",
 								action: `Download logs for flow: ${flow.id}`,
-							})
+							});
 							e.stopPropagation();
 							handleDownload();
 						}}
@@ -377,12 +380,23 @@ export function Accordion({
 					<p className="text-gray-700 mb-6">{flow.description}</p>
 
 					<div className="space-y-4 relative">
-						{<DisplayFlow mappedFlow={mappedFlow} flowId={flow.id} />}
+						{
+							<DisplayFlow
+								mappedFlow={mappedFlow}
+								flowId={flow.id}
+								// onFlowProceeded={() => {
+								// 	console.log('🔄 [complete-flow] Flow proceeded, refreshing state...');
+								// 	if (sessionCache) {
+								// 		getCurrentState(sessionCache);
+								// 	}
+								// }}
+							/>
+						}
 					</div>
 				</div>
 			</div>
 			{inputPopUp && activeFormConfig && (
-				<Popup isOpen={inputPopUp} onClose={() => setInputPopUp(false)}>
+				<Popup isOpen={inputPopUp} disableClose>
 					<FormConfig
 						formConfig={activeFormConfig}
 						submitEvent={handleFormForNewFlow}
