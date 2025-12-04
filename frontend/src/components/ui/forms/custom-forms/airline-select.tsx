@@ -163,7 +163,7 @@ export default function AirlineSelect({
               <label className={labelStyle}>Add-On Quantity</label>
               <input
                 type="number"
-                min="1"
+                // min="1"
                 {...register(`items.${index}.addOnCount`, {
                   valueAsNumber: true,
                 })}
