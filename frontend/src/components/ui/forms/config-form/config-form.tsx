@@ -8,6 +8,7 @@ import { SubmitEventParams } from "../../../../types/flow-types";
 import Ret10GrocerySelect from "../custom-forms/ret10-grocery-select";
 import ProtocolHTMLForm from "../custom-forms/protocol-html-form";
 import TRVSelect from "../custom-forms/trv-select";
+import TRV11Select from "../custom-forms/trv11-select";
 import JsonSchemaForm from "../../../protocol-playground/ui/extras/rsjf-form";
 import AirlineSelect from "../custom-forms/airline-select";
 import TRV12busSeatSelection from "../custom-forms/trv-seat-count";
@@ -30,6 +31,7 @@ export interface FormFieldConfigType {
 		| "ret10_grocery_select"
 		| "nestedSelect"
 		| "trv_select"
+		| "trv11_select"
 		| "HTML_FORM"
 		| "FINVU_REDIRECT"
 		| "DYNAMIC_FORM";
@@ -157,8 +159,8 @@ export default function FormConfig({
 		});
 	}
 
-	if (formConfig.find((field) => field.type === "trv_select")) {
-		return <TRVSelect submitEvent={submitEvent} />;
+	if (formConfig.find((field) => field.type === "trv11_select")) {
+		return <TRV11Select submitEvent={submitEvent} />;
 	}
 
 	// Default: GenericForm
