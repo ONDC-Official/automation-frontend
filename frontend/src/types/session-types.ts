@@ -43,6 +43,11 @@ export interface SessionCache {
 	sessionDifficulty: SessionDifficulty;
 	flowConfigs: Record<string, Flow>;
 	activeFlow: null | string;
+	formSubmissions?: Record<string, {
+		submitted: boolean;
+		submission_id: string;
+		timestamp: string;
+	}>;
 }
 
 export interface State {
@@ -67,3 +72,9 @@ export interface SequenceCardProps {
 	step: State;
 	pair?: State;
 }
+
+export interface FlowInDB {
+	id: string;
+	status: "PENDING" | "COMPLETED";
+	payloads?: string[];
+  }
