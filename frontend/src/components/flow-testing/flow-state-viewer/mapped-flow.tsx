@@ -24,13 +24,14 @@ export default function DisplayFlow({
 		FormConfigType | undefined
 	>(undefined);
 
-	const { sessionId, sessionData } = useSession()
+	const { sessionId, sessionData } = useSession();
 
 	useEffect(() => {
 		const conf = mappedFlow?.sequence?.filter(
 			(s, index) => s.status === "INPUT-REQUIRED" && index !== 0
 		)?.[0]?.input;
 		if (conf?.length === 0) {
+			if (sessionData?.activeFlow !== flowId) return;
 			handleFormSubmit({ jsonPath: {}, formData: {} });
 			return;
 		}
@@ -74,15 +75,16 @@ export default function DisplayFlow({
 				))}
 			</div>
 			<div></div>
-			{inputPopUp && activeFormConfig && (
-				<Popup isOpen={inputPopUp} onClose={() => setInputPopUp(false)}>
-					<FormConfig
-						formConfig={activeFormConfig}
-						submitEvent={handleFormSubmit}
-						referenceData={mappedFlow.reference_data}
-					/>
-				</Popup>
-			)}
+		{inputPopUp && activeFormConfig && (
+			<Popup isOpen={inputPopUp} disableClose>
+				<FormConfig
+					formConfig={activeFormConfig}
+					submitEvent={handleFormSubmit}
+					referenceData={mappedFlow.reference_data}
+					flowId={flowId}
+				/>
+			</Popup>
+		)}
 		</>
 	);
 }
