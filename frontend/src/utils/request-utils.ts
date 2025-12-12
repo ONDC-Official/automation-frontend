@@ -383,12 +383,13 @@ export const getReport = async (sessionId: string) => {
         params: {
           session_id: sessionId,
         },
+        timeout: 120000, // 2 minutes
       }
     );
     
     return res.data;
   } catch (error) {
-    console.error("errror while getting action: ", error)
+    console.error("error while getting action: ", error);
     throw new Error("ERROR while getting action");
   }
 }
