@@ -14,6 +14,7 @@ import TRV12busSeatSelection from "../custom-forms/trv-seat-count";
 import FinvuRedirectForm from "../custom-forms/finvu-redirect-form";
 import DynamicFormHandler from "../custom-forms/dynamic-form-handler";
 import { SessionContext } from "../../../../context/context";
+import TRV11Select from "../custom-forms/trv11-select";
 
 export interface FormFieldConfigType {
 	name: string;
@@ -30,6 +31,7 @@ export interface FormFieldConfigType {
 		| "ret10_grocery_select"
 		| "nestedSelect"
 		| "trv_select"
+		| "trv11_select"
 		| "HTML_FORM"
 		| "FINVU_REDIRECT"
 		| "DYNAMIC_FORM";
@@ -161,9 +163,8 @@ export default function FormConfig({
 		return <TRVSelect submitEvent={submitEvent} />;
 	}
 
-	// Default: GenericForm
-	if (formConfig.find((field) => field.type === "trv_select")) {
-		return <TRVSelect submitEvent={submitEvent} />;
+	if (formConfig.find((field) => field.type === "trv11_select")) {
+		return <TRV11Select submitEvent={submitEvent} />;
 	}
 
 	if (formConfig.find((field) => field.type === "airline_select")) {
@@ -175,11 +176,12 @@ export default function FormConfig({
 	}
 
 	 if (formConfig.find((field) => field.type === "airline_select")) {
-                return <AirlineSelect submitEvent={submitEvent} />;
-        }
-        if(formConfig.find((field) => field.type === "airline_select")) {
-                return <AirlineSelect submitEvent={submitEvent} />
-        }
+        return <AirlineSelect submitEvent={submitEvent} />;
+    }
+        
+	if(formConfig.find((field) => field.type === "airline_select")) {
+        return <AirlineSelect submitEvent={submitEvent} />
+    }
 
 	return (
 		<GenericForm
