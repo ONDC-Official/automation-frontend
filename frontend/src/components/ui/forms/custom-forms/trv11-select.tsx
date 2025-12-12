@@ -26,7 +26,7 @@ export default function TRV11Select({
   const [isPayloadEditorActive, setIsPayloadEditorActive] = useState(false);
   const [errorWhilePaste, setErrorWhilePaste] = useState("");
 
-  const { control, handleSubmit, watch, register, setValue, getValues } =
+  const { control, handleSubmit, register, setValue } =
     useForm({
       defaultValues: {
         provider: "" as string,
@@ -39,7 +39,7 @@ export default function TRV11Select({
     name: "items",
   });
 
-  const selectedItems = watch("items");
+
   const [itemOptions, setItemOptions] = useState<ExtractedItem[]>([]);
 
   const onSubmit = async (data: any) => {
@@ -97,7 +97,7 @@ export default function TRV11Select({
   const renderSelectOrInput = (
     name: string,
     options: ExtractedItem[],
-    index: number,
+    _index: number,
     placeholder = ""
   ) => {
     if (options.length === 0) {
@@ -120,10 +120,6 @@ export default function TRV11Select({
           );
 
           if (selectedOption) {
-            setValue(
-              `items.${index}.parentItemId`,
-              selectedOption.parentItemId
-            );
             setValue("provider", selectedOption.providerid);
           }
         }}
