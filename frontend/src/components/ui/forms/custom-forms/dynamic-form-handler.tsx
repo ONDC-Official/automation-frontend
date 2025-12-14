@@ -6,258 +6,306 @@ import { FormFieldConfigType } from "../config-form/config-form";
 import { useSession } from "../../../../context/context";
 
 interface DynamicFormHandlerProps {
-	submitEvent: (data: SubmitEventParams) => Promise<void>;
-	referenceData?: Record<string, any>;
-	sessionId: string;
-	transactionId: string;
-	formConfig?: FormFieldConfigType;
+  submitEvent: (data: SubmitEventParams) => Promise<void>;
+  referenceData?: Record<string, any>;
+  sessionId: string;
+  transactionId: string;
+  formConfig?: FormFieldConfigType;
 }
 
 export default function DynamicFormHandler({
-	submitEvent,
-	referenceData,
-	sessionId,
-	transactionId,
-	formConfig,
+  submitEvent,
+  referenceData,
+  sessionId,
+  transactionId,
+  formConfig,
 }: DynamicFormHandlerProps) {
-	const [status, setStatus] = useState<
-		"idle" | "waiting" | "completed" | "error"
-	>("idle");
-	const [formUrl, setFormUrl] = useState<string>("");
-	const [errorMessage, setErrorMessage] = useState<string>("");
-	const [pollCount, setPollCount] = useState<number>(0);
+  const [status, setStatus] = useState<
+    "idle" | "waiting" | "completed" | "error"
+  >("idle");
+  const [formUrl, setFormUrl] = useState<string>("");
+  const [errorMessage, setErrorMessage] = useState<string>("");
+  const [pollCount, setPollCount] = useState<number>(0);
 
-	// Get session context to update session data
-	const { setSessionData } = useSession();
+  // Get session context to update session data
+  const { setSessionData } = useSession();
 
-	const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
-	// Use refs to prevent page refresh
+  const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  // Use refs to prevent page refresh
 
-	const formWindowRef = useRef<Window | null>(null);
-	const isPollingRef = useRef<boolean>(false);
-	const hasCompletedRef = useRef<boolean>(false);
+  const formWindowRef = useRef<Window | null>(null);
+  const isPollingRef = useRef<boolean>(false);
+  const hasCompletedRef = useRef<boolean>(false);
 
-	// Extract form URL from reference data (same way as HTML_FORM)
-	const formServiceUrl = useMemo<string>(() => {
-		if (!formConfig || !formConfig.reference) {
-			console.warn("⚠️ No reference field found in form config");
-			return "";
-		}
+  // Extract form URL from reference data (same way as HTML_FORM)
+  const formServiceUrl = useMemo<string>(() => {
+    if (!formConfig || !formConfig.reference) {
+      console.warn("⚠️ No reference field found in form config");
+      return "";
+    }
 
-		try {
-			const url =
-				jsonpath.query(
-					{ reference_data: referenceData },
-					formConfig.reference
-				)[0] || "";
+    try {
+      const url =
+        jsonpath.query(
+          { reference_data: referenceData },
+          formConfig.reference
+        )[0] || "";
 
-			console.log("✅ Extracted form URL from reference:", url);
-			console.log("   Reference path:", formConfig.reference);
-			console.log("   Reference data:", referenceData);
+      console.log("✅ Extracted form URL from reference:", url);
+      console.log("   Reference path:", formConfig.reference);
+      console.log("   Reference data:", referenceData);
 
-			return url as string;
-		} catch (error) {
-			console.error("❌ Error extracting form URL from reference:", error);
-			return "";
-		}
-	}, [formConfig, referenceData]);
+      return url as string;
+    } catch (error) {
+      console.error("❌ Error extracting form URL from reference:", error);
+      return "";
+    }
+  }, [formConfig, referenceData]);
 
-	// Extract session_id from the form URL (this is the CORRECT session_id for polling)
-	const actualSessionId = useMemo<string>(() => {
-		if (!formServiceUrl) return sessionId; // Fallback to prop if URL not available
+  // Extract session_id from the form URL (this is the CORRECT session_id for polling)
+  const actualSessionId = useMemo<string>(() => {
+    if (!formServiceUrl) return sessionId; // Fallback to prop if URL not available
 
-		try {
-			const urlObj = new URL(formServiceUrl);
-			const extractedSessionId = urlObj.searchParams.get("session_id");
+    try {
+      const urlObj = new URL(formServiceUrl);
+      const extractedSessionId = urlObj.searchParams.get("session_id");
 
-			if (extractedSessionId) {
-				console.log(
-					"✅ [DynamicForm] Extracted session_id from form URL:",
-					extractedSessionId
-				);
-				console.log("   (Was using prop session_id:", sessionId, ")");
-				return extractedSessionId;
-			}
-		} catch (error) {
-			console.error("❌ Error extracting session_id from URL:", error);
-		}
+      if (extractedSessionId) {
+        console.log(
+          "✅ [DynamicForm] Extracted session_id from form URL:",
+          extractedSessionId
+        );
+        console.log("   (Was using prop session_id:", sessionId, ")");
+        return extractedSessionId;
+      }
+    } catch (error) {
+      console.error("❌ Error extracting session_id from URL:", error);
+    }
 
-		return sessionId; // Fallback to prop
-	}, [formServiceUrl, sessionId]);
+    return sessionId; // Fallback to prop
+  }, [formServiceUrl, sessionId]);
 
-	// Cleanup function - prevents memory leaks and ensures no refresh
-	const cleanup = useCallback(() => {
-		if (pollingIntervalRef.current) {
-			clearInterval(pollingIntervalRef.current);
-			pollingIntervalRef.current = null;
-		}
-		isPollingRef.current = false;
-		localStorage.removeItem("dynamic_form_flow_active");
-	}, []);
+  // Extract form name from the form URL to create unique key for formSubmissions
+  // URL format: http://form-service/forms/{domain}/{formName}?session_id=...
+  const formName = useMemo<string>(() => {
+    if (!formServiceUrl) return "";
 
-	// Cleanup on unmount
-	useEffect(() => {
-		return () => {
-			cleanup();
-		};
-	}, [cleanup]);
+    try {
+      const urlObj = new URL(formServiceUrl);
+      const pathParts = urlObj.pathname.split("/").filter(Boolean);
+      // Path is like: /forms/FIS13/Ekyc_details_form
+      // So formName is the last part
+      if (pathParts.length >= 3) {
+        const extractedFormName = pathParts[pathParts.length - 1];
+        console.log("✅ [DynamicForm] Extracted form name:", extractedFormName);
+        return extractedFormName;
+      }
+    } catch (error) {
+      console.error("❌ Error extracting form name from URL:", error);
+    }
 
-	// Check completion function - polls backend to check if form was submitted
-	const checkCompletion = useCallback(async () => {
-		console.log(
-			"🔍 [FORM] Checking completion: actualSessionId:",
-			actualSessionId,
-			"transactionId:",
-			transactionId
-		);
-		console.log("   (Prop sessionId was:", sessionId, ")");
-		if (hasCompletedRef.current) return;
+    return "";
+  }, [formServiceUrl]);
 
-		try {
-			setPollCount((prev) => prev + 1);
+  // Create unique form key for checking formSubmissions (matches backend key format)
+  const formSubmissionKey = useMemo<string>(() => {
+    if (formName && transactionId) {
+      const key = `${transactionId}_${formName}`;
+      console.log("✅ [DynamicForm] Form submission key:", key);
+      return key;
+    }
+    return transactionId; // Fallback to just transactionId for backward compatibility
+  }, [transactionId, formName]);
 
-			// Check if form was submitted by querying the session data
-			// Use actualSessionId extracted from form URL, NOT the sessionId prop!
-			const response = await axios.get(
-				`${import.meta.env.VITE_BACKEND_URL}/sessions`,
-				{
-					params: {
-						session_id: actualSessionId,
-					},
-					timeout: 5000,
-				}
-			);
+  // Cleanup function - prevents memory leaks and ensures no refresh
+  const cleanup = useCallback(() => {
+    if (pollingIntervalRef.current) {
+      clearInterval(pollingIntervalRef.current);
+      pollingIntervalRef.current = null;
+    }
+    isPollingRef.current = false;
+    localStorage.removeItem("dynamic_form_flow_active");
+  }, []);
 
-			console.log("Poll result:", response.data, "Count:", pollCount + 1);
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      cleanup();
+    };
+  }, [cleanup]);
 
-			// Update session context with latest data so mapped-flow can see formSubmissions
-			if (setSessionData && response.data) {
-				setSessionData(response.data);
-			}
+  // Check completion function - polls backend to check if form was submitted
+  const checkCompletion = useCallback(async () => {
+    console.log(
+      "🔍 [FORM] Checking completion: actualSessionId:",
+      actualSessionId,
+      "transactionId:",
+      transactionId,
+      "formSubmissionKey:",
+      formSubmissionKey
+    );
+    console.log("   (Prop sessionId was:", sessionId, ")");
+    if (hasCompletedRef.current) return;
 
-			// Check if the form submission was completed for this transaction
-			const formSubmitted = response.data?.formSubmissions?.[transactionId];
+    try {
+      setPollCount((prev) => prev + 1);
 
-			console.log("🔍 [DynamicForm] Checking for submission:", {
-				transactionId,
-				formSubmitted,
-				hasCompletedRef: hasCompletedRef.current,
-				allSubmissions: response.data?.formSubmissions,
-			});
+      // Check if form was submitted by querying the session data
+      // Use actualSessionId extracted from form URL, NOT the sessionId prop!
+      const response = await axios.get(
+        `${import.meta.env.VITE_BACKEND_URL}/sessions`,
+        {
+          params: {
+            session_id: actualSessionId,
+          },
+          timeout: 5000,
+        }
+      );
 
-			if (formSubmitted && !hasCompletedRef.current) {
-				hasCompletedRef.current = true;
+      console.log("Poll result:", response.data, "Count:", pollCount + 1);
 
-				console.log(
-					"✅ [DynamicForm] Form submission detected:",
-					formSubmitted
-				);
-				console.log("🛑 [DynamicForm] Stopping polling");
+      // Update session context with latest data so mapped-flow can see formSubmissions
+      if (setSessionData && response.data) {
+        setSessionData(response.data);
+      }
 
-				// Stop polling immediately
-				cleanup();
+      // Check if the form submission was completed for this specific form
+      // Use formSubmissionKey (transactionId_formName) to distinguish between multiple forms
+      const formSubmitted = response.data?.formSubmissions?.[formSubmissionKey];
 
-				// Close form tab if still open
-				if (formWindowRef.current && !formWindowRef.current.closed) {
-					try {
-						formWindowRef.current.close();
-						console.log("🪟 [DynamicForm] Closed form window");
-					} catch (e) {
-						console.log("Could not close form window:", e);
-					}
-				}
+      console.log("🔍 [DynamicForm] Checking for submission:", {
+        formSubmissionKey,
+        transactionId,
+        formName,
+        formSubmitted,
+        allSubmissions: response.data?.formSubmissions,
+      });
 
-				// Immediately submit to proceed with flow
-				// Pass the submission_id just like HTML_FORM does
-				// Do NOT show completed state - let parent handle closing the modal
-				try {
-					const submission_id = formSubmitted.submission_id || "";
-					console.log(
-						"📤 [DynamicForm] Calling submitEvent with submission_id:",
-						submission_id
-					);
-					console.log(
-						"📤 [DynamicForm] submitEvent function:",
-						typeof submitEvent
-					);
+      console.log("formSubmitted>>>>", formSubmitted);
+      console.log("hasCompletedRef>>>>>", hasCompletedRef);
 
-					await submitEvent({
-						jsonPath: { submission_id: submission_id },
-						formData: { submission_id: submission_id },
-					});
+      if (formSubmitted) {
+        console.log(
+          "formSubmitted.submission_id>>>>>",
+          formSubmitted.submission_id
+        );
+      }
 
-					// Parent component will close the popup modal after submitEvent completes
-					console.log("✅ [DynamicForm] submitEvent completed successfully");
-				} catch (error) {
-					console.error("❌ [DynamicForm] Error submitting event:", error);
-					setErrorMessage(
-						"Form complete but failed to proceed. Please try again."
-					);
-					setStatus("error");
-				}
-			}
-		} catch (error: any) {
-			console.error("Error checking completion:", error.message);
-		}
-	}, [
-		actualSessionId,
-		sessionId,
-		transactionId,
-		submitEvent,
-		cleanup,
-		pollCount,
-		setSessionData,
-	]);
+      if (formSubmitted && !hasCompletedRef.current) {
+        hasCompletedRef.current = true;
 
-	// Start polling function
-	const startPolling = useCallback(() => {
-		if (isPollingRef.current) {
-			console.log("Already polling, skipping");
-			return;
-		}
+        console.log(
+          "✅ [DynamicForm] Form submission detected:",
+          formSubmitted
+        );
+        console.log("🛑 [DynamicForm] Stopping polling");
 
-		isPollingRef.current = true;
-		setPollCount(0);
+        // Stop polling immediately
+        cleanup();
 
-		console.log("Starting polling for transaction:", transactionId);
+        // Close form tab if still open
+        if (formWindowRef.current && !formWindowRef.current.closed) {
+          try {
+            formWindowRef.current.close();
+            console.log("🪟 [DynamicForm] Closed form window");
+          } catch (e) {
+            console.log("Could not close form window:", e);
+          }
+        }
 
-		// Poll immediately first time
-		checkCompletion();
+        // Immediately submit to proceed with flow
+        // Pass the submission_id just like HTML_FORM does
+        // Do NOT show completed state - let parent handle closing the modal
+        try {
+          const submission_id = formSubmitted.submission_id || "";
+          console.log(
+            "📤 [DynamicForm] Calling submitEvent with submission_id:",
+            submission_id
+          );
+          console.log(
+            "📤 [DynamicForm] submitEvent function:",
+            typeof submitEvent
+          );
 
-		// Then poll every 3 seconds
-		pollingIntervalRef.current = setInterval(() => {
-			checkCompletion();
-		}, 3000);
-	}, [transactionId, checkCompletion]);
+          await submitEvent({
+            jsonPath: { submission_id: submission_id },
+            formData: { submission_id: submission_id },
+          });
 
-	// Handle start form - NO navigation/refresh
-	const handleOpenForm = useCallback(
-		async (e: React.MouseEvent) => {
-			e.preventDefault();
-			e.stopPropagation();
+          // Parent component will close the popup modal after submitEvent completes
+          console.log("✅ [DynamicForm] submitEvent completed successfully");
+        } catch (error) {
+          console.error("❌ [DynamicForm] Error submitting event:", error);
+          setErrorMessage(
+            "Form complete but failed to proceed. Please try again."
+          );
+          setStatus("error");
+        }
+      }
+    } catch (error: any) {
+      console.error("Error checking completion:", error.message);
+    }
+  }, [
+    actualSessionId,
+    sessionId,
+    transactionId,
+    formSubmissionKey,
+    formName,
+    submitEvent,
+    cleanup,
+    pollCount,
+    setSessionData,
+  ]);
 
-			// CRITICAL: Open window IMMEDIATELY to preserve user gesture (before async calls)
-			// Otherwise popup blockers will prevent window.open after await
-			const formWindow = window.open(
-				"about:blank",
-				"_blank",
-				"width=1200,height=800"
-			);
+  // Start polling function
+  const startPolling = useCallback(() => {
+    if (isPollingRef.current) {
+      console.log("Already polling, skipping");
+      return;
+    }
 
-			if (!formWindow) {
-				setStatus("error");
-				setErrorMessage(
-					"Could not open form window. Please allow popups for this site."
-				);
-				return;
-			}
+    isPollingRef.current = true;
+    setPollCount(0);
 
-			formWindowRef.current = formWindow;
+    console.log("Starting polling for transaction:", transactionId);
 
-			// Show loading message in the popup while we fetch the URL
-			try {
-				formWindow.document.open();
-				formWindow.document.write(`
+    // Poll immediately first time
+    checkCompletion();
+
+    // Then poll every 3 seconds
+    pollingIntervalRef.current = setInterval(() => {
+      checkCompletion();
+    }, 3000);
+  }, [transactionId, checkCompletion]);
+
+  // Handle start form - NO navigation/refresh
+  const handleOpenForm = useCallback(
+    async (e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      // CRITICAL: Open window IMMEDIATELY to preserve user gesture (before async calls)
+      // Otherwise popup blockers will prevent window.open after await
+      const formWindow = window.open(
+        "about:blank",
+        "_blank",
+        "width=1200,height=800"
+      );
+
+      if (!formWindow) {
+        setStatus("error");
+        setErrorMessage(
+          "Could not open form window. Please allow popups for this site."
+        );
+        return;
+      }
+
+      formWindowRef.current = formWindow;
+
+      // Show loading message in the popup while we fetch the URL
+      try {
+        formWindow.document.open();
+        formWindow.document.write(`
         <!DOCTYPE html>
         <html>
           <head>
@@ -300,217 +348,218 @@ export default function DynamicFormHandler({
           </body>
         </html>
       `);
-				formWindow.document.close();
-			} catch (writeError) {
-				console.warn("Could not write loading content to popup:", writeError);
-				// Continue anyway - the navigation will still work
-			}
+        formWindow.document.close();
+      } catch (writeError) {
+        console.warn("Could not write loading content to popup:", writeError);
+        // Continue anyway - the navigation will still work
+      }
 
-			try {
-				setStatus("waiting");
-				setErrorMessage("");
-				setPollCount(0);
+      try {
+        setStatus("waiting");
+        setErrorMessage("");
+        setPollCount(0);
 
-				// Mark flow as active in localStorage (prevents accidental navigation)
-				localStorage.setItem("dynamic_form_flow_active", "true");
+        // Mark flow as active in localStorage (prevents accidental navigation)
+        localStorage.setItem("dynamic_form_flow_active", "true");
 
-				console.log("🔍 [FORM] sessionId:", sessionId);
-				console.log("🔍 [FORM] transactionId:", transactionId);
-				console.log(
-					"🔍 [FORM] formServiceUrl (from reference):",
-					formServiceUrl
-				);
-				console.log("🔍 [FORM] referenceData:", referenceData);
+        console.log("🔍 [FORM] sessionId:", sessionId);
+        console.log("🔍 [FORM] transactionId:", transactionId);
+        console.log(
+          "🔍 [FORM] formServiceUrl (from reference):",
+          formServiceUrl
+        );
+        console.log("🔍 [FORM] referenceData:", referenceData);
 
-				if (!transactionId) {
-					throw new Error("Transaction ID is missing! Cannot create form URL.");
-				}
+        if (!transactionId) {
+          throw new Error("Transaction ID is missing! Cannot create form URL.");
+        }
 
-				if (!formServiceUrl) {
-					throw new Error(
-						"Form service URL is missing in reference_data! Make sure the form URL is generated in the mock service."
-					);
-				}
+        if (!formServiceUrl) {
+          throw new Error(
+            "Form service URL is missing in reference_data! Make sure the form URL is generated in the mock service."
+          );
+        }
 
-				console.log("📡 Calling form service at:", formServiceUrl);
+        console.log("📡 Calling form service at:", formServiceUrl);
 
-				// The formServiceUrl already contains all query parameters (session_id, flow_id, transaction_id)
-				// since it's generated dynamically by the mock service generator
-				// Just call it directly to get the JSON response with formUrl
-				// For dynamic forms, this will return: { success: true, type: "dynamic", formUrl: "...", message: "..." }
-				const response = await axios.get(formServiceUrl, {
-					timeout: 10000,
-				});
+        // The formServiceUrl already contains all query parameters (session_id, flow_id, transaction_id)
+        // since it's generated dynamically by the mock service generator
+        // Just call it directly to get the JSON response with formUrl
+        // For dynamic forms, this will return: { success: true, type: "dynamic", formUrl: "...", message: "..." }
+        const response = await axios.get(formServiceUrl, {
+          timeout: 10000,
+        });
 
-				console.log("✅ Form service response:", response.data);
-				console.log("✅ Response type:", typeof response.data);
+        console.log("✅ Form service response:", response.data);
+        console.log("✅ Response type:", typeof response.data);
 
-				// Check if response is JSON with formUrl (dynamic form)
-				if (
-					response.data &&
-					typeof response.data === "object" &&
-					response.data.formUrl
-				) {
-					const dynamicFormUrl = response.data.formUrl;
-					console.log("✅ Got dynamic form URL:", dynamicFormUrl);
+        // Check if response is JSON with formUrl (dynamic form)
+        if (
+          response.data &&
+          typeof response.data === "object" &&
+          response.data.formUrl
+        ) {
+          const dynamicFormUrl = response.data.formUrl;
+          console.log("dynamicFormUrl", dynamicFormUrl);
+          console.log("✅ Got dynamic form URL:", dynamicFormUrl);
 
-					if (!dynamicFormUrl) {
-						throw new Error("Form URL is empty in response!");
-					}
+          if (!dynamicFormUrl) {
+            throw new Error("Form URL is empty in response!");
+          }
 
-					// Store the URL to open in new tab
-					setFormUrl(dynamicFormUrl);
+          // Store the URL to open in new tab
+          setFormUrl(dynamicFormUrl);
 
-					// Navigate the already-opened window to the form URL
-					if (formWindow && !formWindow.closed) {
-						formWindow.location.href = dynamicFormUrl;
-					} else {
-						throw new Error("Form window was closed before navigation");
-					}
+          // Navigate the already-opened window to the form URL
+          if (formWindow && !formWindow.closed) {
+            formWindow.location.href = dynamicFormUrl;
+          } else {
+            throw new Error("Form window was closed before navigation");
+          }
 
-					// Start polling for completion
-					startPolling();
-					return;
-				}
+          // Start polling for completion
+          startPolling();
+          return;
+        }
 
-				// If we get here, response might be HTML or unexpected format
-				throw new Error(
-					"Expected JSON response with formUrl, but got: " +
-						typeof response.data
-				);
-			} catch (error: any) {
-				console.error("Error opening form:", error);
-				setStatus("error");
-				setErrorMessage(
-					error.response?.data?.message ||
-						error.message ||
-						"Failed to open form"
-				);
+        // If we get here, response might be HTML or unexpected format
+        throw new Error(
+          "Expected JSON response with formUrl, but got: " +
+            typeof response.data
+        );
+      } catch (error: any) {
+        console.error("Error opening form:", error);
+        setStatus("error");
+        setErrorMessage(
+          error.response?.data?.message ||
+            error.message ||
+            "Failed to open form"
+        );
 
-				// Close the popup if we failed to get the URL
-				if (formWindow && !formWindow.closed) {
-					try {
-						formWindow.close();
-					} catch (e) {
-						console.log("Could not close form window:", e);
-					}
-				}
+        // Close the popup if we failed to get the URL
+        if (formWindow && !formWindow.closed) {
+          try {
+            formWindow.close();
+          } catch (e) {
+            console.log("Could not close form window:", e);
+          }
+        }
 
-				cleanup();
-			}
-		},
-		[
-			sessionId,
-			transactionId,
-			referenceData,
-			formServiceUrl,
-			startPolling,
-			cleanup,
-		]
-	);
+        cleanup();
+      }
+    },
+    [
+      sessionId,
+      transactionId,
+      referenceData,
+      formServiceUrl,
+      startPolling,
+      cleanup,
+    ]
+  );
 
-	// Handle reopen - NO navigation
-	const handleReopenForm = useCallback(
-		(e: React.MouseEvent) => {
-			e.preventDefault();
-			e.stopPropagation();
+  // Handle reopen - NO navigation
+  const handleReopenForm = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
 
-			if (formUrl) {
-				const formWindow = window.open(
-					formUrl,
-					"_blank",
-					"noopener,noreferrer,width=1200,height=800"
-				);
-				formWindowRef.current = formWindow;
-			}
-		},
-		[formUrl]
-	);
+      if (formUrl) {
+        const formWindow = window.open(
+          formUrl,
+          "_blank",
+          "noopener,noreferrer,width=1200,height=800"
+        );
+        formWindowRef.current = formWindow;
+      }
+    },
+    [formUrl]
+  );
 
-	// Handle retry - NO navigation
-	const handleRetry = useCallback(
-		(e: React.MouseEvent) => {
-			e.preventDefault();
-			e.stopPropagation();
+  // Handle retry - NO navigation
+  const handleRetry = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
 
-			cleanup();
-			setStatus("idle");
-			setErrorMessage("");
-			setPollCount(0);
-			hasCompletedRef.current = false;
-		},
-		[cleanup]
-	);
+      cleanup();
+      setStatus("idle");
+      setErrorMessage("");
+      setPollCount(0);
+      hasCompletedRef.current = false;
+    },
+    [cleanup]
+  );
 
-	return (
-		<div className="p-6 bg-white rounded-lg shadow-md">
-			<h2 className="text-xl font-semibold mb-4">Complete Form</h2>
+  return (
+    <div className="p-6 bg-white rounded-lg shadow-md">
+      <h2 className="text-xl font-semibold mb-4">Complete Form</h2>
 
-			{status === "idle" && (
-				<div>
-					<p className="text-gray-600 mb-4">
-						Click the button below to open and complete the required form. A new
-						tab will open where you can fill out the form.
-					</p>
-					<button
-						type="button"
-						onClick={handleOpenForm}
-						className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
-					>
-						Open Form
-					</button>
-				</div>
-			)}
+      {status === "idle" && (
+        <div>
+          <p className="text-gray-600 mb-4">
+            Click the button below to open and complete the required form. A new
+            tab will open where you can fill out the form.
+          </p>
+          <button
+            type="button"
+            onClick={handleOpenForm}
+            className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            Open Form
+          </button>
+        </div>
+      )}
 
-			{status === "waiting" && (
-				<div className="text-center">
-					<div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
-					<h3 className="text-lg font-medium mb-2">
-						Waiting for Form Submission
-					</h3>
-					<p className="text-gray-600 mb-4">
-						Please complete and submit the form in the tab that was opened.
-					</p>
-					<p className="text-sm text-gray-500 mb-2">
-						Checking automatically... (Poll #{pollCount})
-					</p>
-					<p className="text-xs text-gray-400 mb-4">
-						This page will NOT refresh. Stay here while completing the form.
-					</p>
-					<button
-						type="button"
-						onClick={handleReopenForm}
-						className="text-blue-600 hover:text-blue-800 underline focus:outline-none"
-					>
-						Reopen Form Tab
-					</button>
-				</div>
-			)}
+      {status === "waiting" && (
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
+          <h3 className="text-lg font-medium mb-2">
+            Waiting for Form Submission
+          </h3>
+          <p className="text-gray-600 mb-4">
+            Please complete and submit the form in the tab that was opened.
+          </p>
+          <p className="text-sm text-gray-500 mb-2">
+            Checking automatically... (Poll #{pollCount})
+          </p>
+          <p className="text-xs text-gray-400 mb-4">
+            This page will NOT refresh. Stay here while completing the form.
+          </p>
+          <button
+            type="button"
+            onClick={handleReopenForm}
+            className="text-blue-600 hover:text-blue-800 underline focus:outline-none"
+          >
+            Reopen Form Tab
+          </button>
+        </div>
+      )}
 
-			{status === "completed" && (
-				<div className="text-center text-green-600">
-					<div className="text-5xl mb-4">✓</div>
-					<h3 className="text-lg font-medium mb-2">
-						Form Submitted Successfully!
-					</h3>
-					<p className="text-gray-600">Proceeding to next step...</p>
-				</div>
-			)}
+      {status === "completed" && (
+        <div className="text-center text-green-600">
+          <div className="text-5xl mb-4">✓</div>
+          <h3 className="text-lg font-medium mb-2">
+            Form Submitted Successfully!
+          </h3>
+          <p className="text-gray-600">Proceeding to next step...</p>
+        </div>
+      )}
 
-			{status === "error" && (
-				<div className="text-center">
-					<div className="text-red-600 text-5xl mb-4">✕</div>
-					<h3 className="text-lg font-medium text-red-600 mb-2">Error</h3>
-					<p className="text-gray-600 mb-4">{errorMessage}</p>
-					<button
-						type="button"
-						onClick={handleRetry}
-						className="bg-blue-600 text-white py-2 px-6 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-					>
-						Try Again
-					</button>
-				</div>
-			)}
-		</div>
-	);
+      {status === "error" && (
+        <div className="text-center">
+          <div className="text-red-600 text-5xl mb-4">✕</div>
+          <h3 className="text-lg font-medium text-red-600 mb-2">Error</h3>
+          <p className="text-gray-600 mb-4">{errorMessage}</p>
+          <button
+            type="button"
+            onClick={handleRetry}
+            className="bg-blue-600 text-white py-2 px-6 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            Try Again
+          </button>
+        </div>
+      )}
+    </div>
+  );
 }
