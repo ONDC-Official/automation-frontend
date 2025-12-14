@@ -46,8 +46,8 @@ app.use(
 	})
 );
 
-app.use(express.json({ limit: '20mb' }));
-app.use(express.urlencoded({ limit: '20mb', extended: true }));
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 // app.use(express.json());
 // Middleware to parse cookies
 app.use(cookieParser());
