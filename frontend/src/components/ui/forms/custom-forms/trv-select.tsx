@@ -14,8 +14,8 @@ interface ExtractedItem {
 
 // Flow IDs where "Add Item" button should be visible
 const FLOWS_WITH_ADD_ITEM_BUTTON: string[] = [
-  "purchase_journey_with_form (Multiple Tickets)", 
-  "purchase_journey_without_form (Multiple Tickets)",
+  "purchase_journey_with_form_Multiple_Tickets", 
+  "purchase_journey_without_form_Multiple_Tickets",
 ];
 
 export default function TRVSelect({
