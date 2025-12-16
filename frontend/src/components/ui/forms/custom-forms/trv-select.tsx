@@ -12,10 +12,18 @@ interface ExtractedItem {
   addOns: string[];
 }
 
+// Flow IDs where "Add Item" button should be visible
+const FLOWS_WITH_ADD_ITEM_BUTTON: string[] = [
+  "purchase_journey_with_form (Multiple Tickets)", 
+  "purchase_journey_without_form (Multiple Tickets)",
+];
+
 export default function TRVSelect({
   submitEvent,
+  flowId,
 }: {
   submitEvent: (data: SubmitEventParams) => Promise<void>;
+  flowId?: string;
 }) {
   const [isPayloadEditorActive, setIsPayloadEditorActive] = useState(false);
   const [errorWhilePaste, setErrorWhilePaste] = useState("");
@@ -214,13 +222,15 @@ export default function TRVSelect({
         ))}
 
         <div className="flex gap-2">
-          <button
-            type="button"
-            onClick={() => append({ itemId: "", quantity: 1, location: "" })}
-            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-          >
-            Add Item
-          </button>
+          {flowId && FLOWS_WITH_ADD_ITEM_BUTTON.includes(flowId) && (
+            <button
+              type="button"
+              onClick={() => append({ itemId: "", count: 1, addOns: [] })}
+              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+            >
+              Add Item
+            </button>
+          )}
           {fields.length > 1 && (
             <button
               type="button"
