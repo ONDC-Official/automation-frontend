@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Base64 } from 'js-base64';
 import { getReport, getSessions } from "./../utils/request-utils";
 import { LuHistory } from "react-icons/lu";
 import { toast } from "react-toastify";
@@ -46,42 +47,6 @@ const PastSessions: React.FC<PastSessionsProps> = ({ loggedIn }) => {
     }
   };
 
-  // const viewReport = async (sessionId: string) => {
-  //   let report: any = {};
-  //   try {
-  //     const response = await getReport(sessionId);
-  //     report = response;
-  //   } catch (e) {
-  //     console.log("error while fetching report: ", e);
-  //     toast.error("Report not available");
-  //     return;
-  //   }
-
-  //   if (!report?.data) {
-  //     toast.error("Something went wrong while fetching report");
-  //     return;
-  //   }
-
-  //   const base64html = report.data;
-  //   const cleanedData = base64html.split("base64,")[1];
-  //   try {
-  //     // Decode Base64 → HTML string
-  //     const decodedHtml = decodeURIComponent(escape(atob(cleanedData)));
-
-  //     // Create a new Blob and URL
-  //     const blob = new Blob([decodedHtml], { type: "text/html" });
-  //     const url = URL.createObjectURL(blob);
-
-  //     // Open in a new tab
-  //     window.open(url, "_blank");
-
-  //     // Optional: cleanup after a short delay
-  //     setTimeout(() => URL.revokeObjectURL(url), 5000);
-  //   } catch (error) {
-  //     console.error("Failed to decode or open Base64 HTML:", error);
-  //   }
-  // };
-
   const viewReport = async (sessionId: string) => {
     let report: any = {};
     try {
@@ -99,10 +64,10 @@ const PastSessions: React.FC<PastSessionsProps> = ({ loggedIn }) => {
     }
   
     const base64html = report.data;
-    const cleanedData = base64html.split("base64,")[1];
+    const cleanedData = base64html.split("base64")[1];
   
     try {
-      const decodedHtml = decodeURIComponent(escape(atob(cleanedData)));
+      const decodedHtml = Base64.decode(cleanedData);
   
       // Step 1: Open new tab
       const newTab = window.open("", "_blank");

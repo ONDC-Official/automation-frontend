@@ -21,6 +21,7 @@
 		"acorn-walk": "^8.3.4",
 		"antd": "^5.26.5",
 		"axios": "^1.7.9",
+		"js-base64": "^3.7.8",
 		"jsonpath": "^1.1.1",
 		"jsonpath-plus": "^10.3.0",
 		"lockr": "^0.9.0-beta.2",

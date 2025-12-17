@@ -340,635 +340,644 @@ export default function ProtocolHTMLForm({
 	referenceData,
 	HtmlFormConfigInFlow,
 }: Props) {
-	const containerRef = useRef<HTMLDivElement | null>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
 
-	// Replace with server value
-	const formHtml = useMemo<string>(() => {
-		return (
-			jsonpath.query(
-				{ reference_data: referenceData },
-				HtmlFormConfigInFlow.reference || ""
-			)[0] || ""
-		);
-	}, []);
+  // Replace with server value
+  const formHtml = useMemo<string>(() => {
+    return (
+      jsonpath.query(
+        { reference_data: referenceData },
+        HtmlFormConfigInFlow.reference || ""
+      )[0] || ""
+    );
+  }, [referenceData, HtmlFormConfigInFlow.reference]);
 
-	// Parse once per formHtml
-	const parsed = useMemo<ParsedForm>(() => parseFormHtml(formHtml), [formHtml]);
+ 
+  // Parse once per formHtml
+  const parsed = useMemo<ParsedForm>(() => parseFormHtml(formHtml), [formHtml]);
 
-	// Build initial state from defaults/selected
-	const [values, setValues] = useState<ValueState>(() => {
-		const v: ValueState = {};
-		for (const f of parsed.fields) {
-			switch (f.kind) {
-				case "hidden":
-					v[f.name] = f.value;
-					break;
-				case "textlike":
-					v[f.name] = f.defaultValue ?? "";
-					break;
-				case "textarea":
-					v[f.name] = f.defaultValue ?? "";
-					break;
-				case "select": {
-					const sel = f as SelectField;
-					const selected = sel.options
-						.filter((o) => o.selected)
-						.map((o) => o.value);
-					v[f.name] = sel.multiple ? selected : selected[0] ?? "";
-					break;
-				}
-				case "radio-group": {
-					const rg = f as RadioGroupField;
-					const selected = rg.options.find((o) => o.checked)?.value ?? "";
-					v[f.name] = selected;
-					break;
-				}
-				case "checkbox-single": {
-					const cs = f as CheckboxSingleField;
-					v[f.name] = !!cs.checked;
-					break;
-				}
-				case "checkbox-group": {
-					const cg = f as CheckboxGroupField;
-					const selected = cg.options
-						.filter((o) => o.checked)
-						.map((o) => o.value);
-					v[f.name] = selected;
-					break;
-				}
-				case "file": {
-					v[f.name] = null; // File or File[]
-					break;
-				}
-			}
-		}
-		return v;
-	});
+  // Build initial state from defaults/selected
+  const [values, setValues] = useState<ValueState>(() => {
+    const v: ValueState = {};
+    for (const f of parsed.fields) {
+      switch (f.kind) {
+        case "hidden":
+          v[f.name] = f.value;
+          break;
+        case "textlike":
+          v[f.name] = f.defaultValue ?? "";
+          break;
+        case "textarea":
+          v[f.name] = f.defaultValue ?? "";
+          break;
+        case "select": {
+          const sel = f as SelectField;
+          const selected = sel.options
+            .filter((o) => o.selected)
+            .map((o) => o.value);
+          v[f.name] = sel.multiple ? selected : (selected[0] ?? "");
+          break;
+        }
+        case "radio-group": {
+          const rg = f as RadioGroupField;
+          const selected = rg.options.find((o) => o.checked)?.value ?? "";
+          v[f.name] = selected;
+          break;
+        }
+        case "checkbox-single": {
+          const cs = f as CheckboxSingleField;
+          v[f.name] = !!cs.checked;
+          break;
+        }
+        case "checkbox-group": {
+          const cg = f as CheckboxGroupField;
+          const selected = cg.options
+            .filter((o) => o.checked)
+            .map((o) => o.value);
+          v[f.name] = selected;
+          break;
+        }
+        case "file": {
+          v[f.name] = null; // File or File[]
+          break;
+        }
+      }
+    }
+    return v;
+  });
 
-	const [submissionId, setSubmissionId] = useState<string | null>(null);
-	const [isSubmitting, setIsSubmitting] = useState(false);
-	const [error, setError] = useState<string | null>(null);
-	const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [submissionId, setSubmissionId] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
-	// Optional: show the raw mounted HTML (debug/inspection) — you can remove this block
-	useEffect(() => {
-		const host = containerRef.current;
-		if (!host) return;
-		host.innerHTML = "";
-		// Just show where the original 3P form is coming from (collapsed)
-		const details = document.createElement("details");
-		details.className = "text-xs text-gray-500";
-		const summary = document.createElement("summary");
-		summary.textContent = "Original embedded form (debug)";
-		details.appendChild(summary);
-		const pre = document.createElement("pre");
-		pre.textContent = formHtml;
-		pre.style.whiteSpace = "pre-wrap";
-		pre.style.wordBreak = "break-word";
-		details.appendChild(pre);
-		host.appendChild(details);
-	}, [formHtml]);
+  // Optional: show the raw mounted HTML (debug/inspection) — you can remove this block
+  useEffect(() => {
+    const host = containerRef.current;
+    if (!host) return;
+    host.innerHTML = "";
+    // Just show where the original 3P form is coming from (collapsed)
+    const details = document.createElement("details");
+    details.className = "text-xs text-gray-500";
+    const summary = document.createElement("summary");
+    summary.textContent = "Original embedded form (debug)";
+    details.appendChild(summary);
+    const pre = document.createElement("pre");
+    pre.textContent = formHtml;
+    pre.style.whiteSpace = "pre-wrap";
+    pre.style.wordBreak = "break-word";
+    details.appendChild(pre);
+    host.appendChild(details);
+  }, [formHtml]);
 
-	// Change handlers
-	const setField = (name: string, val: any) => {
-		setValues((prev) => ({ ...prev, [name]: val }));
-		// Clear field error when user starts typing
-		if (fieldErrors[name]) {
-			setFieldErrors((prev) => {
-				const newErrors = { ...prev };
-				delete newErrors[name];
-				return newErrors;
-			});
-		}
-	};
+  // Change handlers
+  const setField = (name: string, val: any) => {
+    setValues((prev) => ({ ...prev, [name]: val }));
+    // Clear field error when user starts typing
+    if (fieldErrors[name]) {
+      setFieldErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors[name];
+        return newErrors;
+      });
+    }
+  };
 
-	// Validation function
-	const validateForm = (): boolean => {
-		const errors: Record<string, string> = {};
-		
-		console.log("Validating form with values:", values);
-		console.log("Parsed fields:", parsed.fields);
-		
-		for (const field of parsed.fields) {
-			if (field.required) {
-				const value = values[field.name];
-				console.log(`Checking field ${field.name} (${field.kind}):`, value, "required:", field.required);
-				
-				// Check if field is empty or invalid
-				if (field.kind === "textlike" || field.kind === "textarea") {
-					if (!value || (typeof value === "string" && value.trim() === "")) {
-						errors[field.name] = `${field.label || field.name} is required`;
-						console.log(`Error for ${field.name}: text field is empty`);
-					}
-				} else if (field.kind === "select") {
-					if (!value || (typeof value === "string" && value === "")) {
-						errors[field.name] = `${field.label || field.name} is required`;
-						console.log(`Error for ${field.name}: select field is empty`);
-					}
-				} else if (field.kind === "radio-group") {
-					if (!value || (typeof value === "string" && value === "")) {
-						errors[field.name] = `${field.label || field.name} is required`;
-						console.log(`Error for ${field.name}: radio group is empty`);
-					}
-				} else if (field.kind === "checkbox-group") {
-					if (!value || !Array.isArray(value) || value.length === 0) {
-						errors[field.name] = `${field.label || field.name} is required`;
-						console.log(`Error for ${field.name}: checkbox group is empty`);
-					}
-				} else if (field.kind === "file") {
-					if (!value || (Array.isArray(value) && value.length === 0)) {
-						errors[field.name] = `${field.label || field.name} is required`;
-						console.log(`Error for ${field.name}: file field is empty`);
-					}
-				}
-			}
-		}
-		
-		console.log("Validation errors:", errors);
-		setFieldErrors(errors);
-		const isValid = Object.keys(errors).length === 0;
-		console.log("Form is valid:", isValid);
-		return isValid;
-	};
+  // Validation function
+  const validateForm = (): boolean => {
+    const errors: Record<string, string> = {};
 
-	// Submit the rebuilt form
-	const handleSubmit = async () => {
-		console.log("Submit button clicked");
-		
-		// Validate form before submission
-		const isValid = validateForm();
-		console.log("Validation result:", isValid);
-		
-		if (!isValid) {
-			console.log("Form validation failed, setting error message");
-			setError("Please fill in all required fields");
-			return;
-		}
-		
-		console.log("Form is valid, proceeding with submission");
-		
-		try {
-			console.log("submitting", values);
-			setIsSubmitting(true);
-			setError(null);
+    console.log("Validating form with values:", values);
+    console.log("Parsed fields:", parsed.fields);
 
-			// Decide encoding: default url-encoded; fallback to multipart if file fields exist
-			const hasFile =
-				parsed.fields.some((f) => f.kind === "file") ||
-				(parsed.enctype || "").toLowerCase().includes("multipart");
+    for (const field of parsed.fields) {
+      if (field.required) {
+        const value = values[field.name];
+        console.log(
+          `Checking field ${field.name} (${field.kind}):`,
+          value,
+          "required:",
+          field.required
+        );
 
-			let res: AxiosResponse<any, any>;
-			if (hasFile) {
-				const fd = new FormData();
-				for (const f of parsed.fields) {
-					const val = values[f.name];
-					if (f.kind === "checkbox-single") {
-						if (val === true) {
-							const v = (f as CheckboxSingleField).valueAttr ?? "on";
-							fd.append(f.name, v);
-						}
-					} else if (f.kind === "checkbox-group") {
-						const arr = (val as string[]) || [];
-						for (const item of arr) fd.append(f.name, item);
-					} else if (f.kind === "radio-group") {
-						if (typeof val === "string" && val !== "") fd.append(f.name, val);
-					} else if (f.kind === "select") {
-						if ((f as SelectField).multiple) {
-							const arr = (val as string[]) || [];
-							for (const item of arr) fd.append(f.name, item);
-						} else if (typeof val === "string") {
-							fd.append(f.name, val);
-						}
-					} else if (f.kind === "file") {
-						const v = values[f.name];
-						if (Array.isArray(v)) {
-							for (const file of v) fd.append(f.name, file as File);
-						} else if (v instanceof File) {
-							fd.append(f.name, v);
-						}
-					} else if (
-						f.kind === "hidden" ||
-						f.kind === "textlike" ||
-						f.kind === "textarea"
-					) {
-						if (val != null) fd.append(f.name, String(val));
-					}
-				}
-				console.log("submitting as formdata", fd);
-				// res = await fetch(parsed.action || window.location.href, {
-				// 	method: parsed.method,
-				// 	body: fd,
-				// });
-				res = await htmlFormSubmit(parsed.action || window.location.href, fd);
-			} else {
-				const params = new URLSearchParams();
-				for (const f of parsed.fields) {
-					const val = values[f.name];
-					if (f.kind === "checkbox-single") {
-						if (val === true) {
-							const v = (f as CheckboxSingleField).valueAttr ?? "on";
-							params.append(f.name, v);
-						}
-					} else if (f.kind === "checkbox-group") {
-						const arr = (val as string[]) || [];
-						for (const item of arr) params.append(f.name, item);
-					} else if (f.kind === "radio-group") {
-						if (typeof val === "string" && val !== "")
-							params.append(f.name, val);
-					} else if (f.kind === "select") {
-						if ((f as SelectField).multiple) {
-							const arr = (val as string[]) || [];
-							for (const item of arr) params.append(f.name, item);
-						} else if (typeof val === "string") {
-							params.append(f.name, val);
-						}
-					} else if (f.kind === "file") {
-						// no files -> skip in urlencoded mode
-					} else if (
-						f.kind === "hidden" ||
-						f.kind === "textlike" ||
-						f.kind === "textarea"
-					) {
-						if (val != null) params.append(f.name, String(val));
-					}
-				}
-				console.log(
-					"calling with urlencoded with data",
-					params.toString(),
-					parsed.action
-				);
-				res = await htmlFormSubmit(
-					parsed.action || window.location.href,
-					params.toString()
-				);
-			}
-			console.log("response is ", res);
-			// Parse response
-			const ct =
-				typeof res.headers === "object"
-					? res.headers["content-type"] || res.headers["Content-Type"] || ""
-					: "";
-			let data: any;
-			if (ct.includes("application/json")) {
-				data = res.data;
-			} else {
-				const text = typeof res.data === "string" ? res.data : String(res.data);
-				const match = text.match(/"submission_id"\s*:\s*"([^"]+)"/i);
-				data = match ? { submission_id: match[1] } : { raw: text };
-			}
-			console.log("parsed response data", data);
-			const finalSubmissionId =
-				data?.submission_id ??
-				data?.data?.submission_id ??
-				data?.result?.submission_id ??
-				"";
+        // Check if field is empty or invalid
+        if (field.kind === "textlike" || field.kind === "textarea") {
+          if (!value || (typeof value === "string" && value.trim() === "")) {
+            errors[field.name] = `${field.label || field.name} is required`;
+            console.log(`Error for ${field.name}: text field is empty`);
+          }
+        } else if (field.kind === "select") {
+          if (!value || (typeof value === "string" && value === "")) {
+            errors[field.name] = `${field.label || field.name} is required`;
+            console.log(`Error for ${field.name}: select field is empty`);
+          }
+        } else if (field.kind === "radio-group") {
+          if (!value || (typeof value === "string" && value === "")) {
+            errors[field.name] = `${field.label || field.name} is required`;
+            console.log(`Error for ${field.name}: radio group is empty`);
+          }
+        } else if (field.kind === "checkbox-group") {
+          if (!value || !Array.isArray(value) || value.length === 0) {
+            errors[field.name] = `${field.label || field.name} is required`;
+            console.log(`Error for ${field.name}: checkbox group is empty`);
+          }
+        } else if (field.kind === "file") {
+          if (!value || (Array.isArray(value) && value.length === 0)) {
+            errors[field.name] = `${field.label || field.name} is required`;
+            console.log(`Error for ${field.name}: file field is empty`);
+          }
+        }
+      }
+    }
 
-			console.log("extracted submission id", finalSubmissionId);
-			if (!finalSubmissionId) {
-				throw new Error("No submission_id returned by the form endpoint.");
-			}
+    console.log("Validation errors:", errors);
+    setFieldErrors(errors);
+    const isValid = Object.keys(errors).length === 0;
+    console.log("Form is valid:", isValid);
+    return isValid;
+  };
 
-			setSubmissionId(finalSubmissionId);
+  // Submit the rebuilt form
+  const handleSubmit = async () => {
+    console.log("Submit button clicked");
 
-			// Build a simple key/value payload for your pipeline
-			const plainPayload: Record<string, string> = {};
-			for (const f of parsed.fields) {
-				const val = values[f.name];
-				if (
-					f.kind === "checkbox-group" ||
-					(f.kind === "select" && f.multiple)
-				) {
-					(val as string[] | undefined)?.forEach((v, i) => {
-						plainPayload[`${f.name}[${i}]`] = v;
-					});
-				} else if (f.kind === "file") {
-					// send filenames only to your submitEvent; upstream already got binary
-					if (Array.isArray(val)) {
-						val.forEach(
-							(file, i) =>
-								(plainPayload[`${f.name}[${i}]`] = (file as File)?.name ?? "")
-						);
-					} else if (val instanceof File) {
-						plainPayload[f.name] = val.name;
-					}
-				} else if (typeof val === "boolean") {
-					if (val) {
-						// emulate HTML checkbox submit value
-						const v = (f as CheckboxSingleField).valueAttr ?? "on";
-						plainPayload[f.name] = v;
-					}
-				} else if (val != null) {
-					plainPayload[f.name] = String(val);
-				}
-			}
-			const Subdata = {
-				jsonpath: { submission_id: finalSubmissionId },
-				formData: { submission_id: finalSubmissionId },
-			};
-			console.log("final data to be sent", Subdata);
-			await submitEvent({
-				jsonPath: { submission_id: finalSubmissionId },
-				formData: { submission_id: finalSubmissionId },
-			});
-		} catch (e: any) {
-			console.error(e);
-			setError(e?.message || "Submission failed");
-		} finally {
-			setIsSubmitting(false);
-		}
-	};
+    // Validate form before submission
+    const isValid = validateForm();
+    console.log("Validation result:", isValid);
 
-	// --- Render helpers --------------------------------------------------------
+    if (!isValid) {
+      console.log("Form validation failed, setting error message");
+      setError("Please fill in all required fields");
+      return;
+    }
 
-	const renderField = (f: AnyField) => {
-		if (f.kind === "hidden") {
-			// Hidden: not rendered visually; included in payload
-			return null;
-		}
+    console.log("Form is valid, proceeding with submission");
 
-		const labelEl = (children: JSX.Element) => (
-			<div className="block">
-				<label className="block text-sm font-medium text-gray-700">
-					{f.label ?? f.name}
-					<span className="text-red-600">{f.required ? " *" : ""}</span>
-				</label>
-				<div className="mt-1">{children}</div>
-				{fieldErrors[f.name] && (
-					<p className="mt-1 text-sm text-red-600">{fieldErrors[f.name]}</p>
-				)}
-			</div>
-		);
+    try {
+      console.log("submitting", values);
+      setIsSubmitting(true);
+      setError(null);
 
-		switch (f.kind) {
-			case "textlike": {
-				const v = (values[f.name] as string) ?? "";
-				const tf = f as TextLikeField;
-				const hasError = !!fieldErrors[f.name];
-				return labelEl(
-					<input
-						type={tf.inputType}
-						name={f.name}
-						value={v}
-						onChange={(e) => setField(f.name, e.target.value)}
-						placeholder={tf.placeholder}
-						required={f.required}
-						disabled={f.disabled}
-						min={tf.min as any}
-						max={tf.max as any}
-						step={tf.step as any}
-						pattern={tf.pattern}
-						className={`w-full rounded-md border bg-gray-50 px-3 py-2 focus:outline-none focus:ring-2 ${
-							hasError 
-								? "border-red-500 focus:ring-red-500" 
-								: "border-gray-300 focus:ring-blue-500"
-						}`}
-					/>
-				);
-			}
-			case "textarea": {
-				const v = (values[f.name] as string) ?? "";
-				const ta = f as TextareaField;
-				const hasError = !!fieldErrors[f.name];
-				return labelEl(
-					<textarea
-						name={f.name}
-						value={v}
-						onChange={(e) => setField(f.name, e.target.value)}
-						placeholder={ta.placeholder}
-						rows={ta.rows ?? 4}
-						required={f.required}
-						disabled={f.disabled}
-						className={`w-full rounded-md bg-gray-50 border px-3 py-2 focus:outline-none focus:ring-2 ${
-							hasError 
-								? "border-red-500 focus:ring-red-500" 
-								: "border-gray-300 focus:ring-blue-500"
-						}`}
-					/>
-				);
-			}
-			case "select": {
-				const sel = f as SelectField;
-				const v = values[f.name];
-				const hasError = !!fieldErrors[f.name];
-				return labelEl(
-					<select
-						name={f.name}
-						value={
-							(sel.multiple
-								? (v as string[]) ?? []
-								: (v as string) ?? "") as any
-						}
-						onChange={(e) => {
-							if (sel.multiple) {
-								const opts = Array.from(e.currentTarget.selectedOptions).map(
-									(o) => o.value
-								);
-								setField(f.name, opts);
-							} else {
-								setField(f.name, e.currentTarget.value);
-							}
-						}}
-						multiple={!!sel.multiple}
-						required={f.required}
-						disabled={f.disabled}
-						className={`w-full rounded-md border bg-gray-50 px-3 py-2 focus:outline-none focus:ring-2 ${
-							hasError 
-								? "border-red-500 focus:ring-red-500" 
-								: "border-gray-300 focus:ring-blue-500"
-						}`}
-					>
-						{!sel.multiple && <option value="">-- Select --</option>}
-						{sel.options.map((o, i) => (
-							<option key={i} value={o.value}>
-								{o.label}
-							</option>
-						))}
-					</select>
-				);
-			}
-			case "radio-group": {
-				const rg = f as RadioGroupField;
-				const v = (values[f.name] as string) ?? "";
-				return (
-					<div className="block">
-						<fieldset className="space-y-2">
-							<legend className="block text-sm font-medium text-gray-700">
-								{f.label ?? f.name}
-								<span className="text-red-600">{f.required ? " *" : ""}</span>
-							</legend>
-							{rg.options.map((opt, i) => (
-								<label
-									key={i}
-									className="flex items-center gap-2 text-sm text-gray-800"
-								>
-									<input
-										type="radio"
-										name={f.name}
-										value={opt.value}
-										checked={v === opt.value}
-										onChange={() => setField(f.name, opt.value)}
-										className="h-4 w-4"
-									/>
-									<span>{opt.label ?? opt.value}</span>
-								</label>
-							))}
-						</fieldset>
-						{fieldErrors[f.name] && (
-							<p className="mt-1 text-sm text-red-600">{fieldErrors[f.name]}</p>
-						)}
-					</div>
-				);
-			}
-			case "checkbox-single": {
-				// const cs = f as CheckboxSingleField;
-				const checked = Boolean(values[f.name]);
-				return (
-					<label className="flex items-center gap-2 text-sm font-medium text-gray-700">
-						<input
-							type="checkbox"
-							name={f.name}
-							checked={checked}
-							onChange={(e) => setField(f.name, e.target.checked)}
-							className="h-4 w-4"
-						/>
-						<span>
-							{f.label ?? f.name}
-							<span className="text-red-600">{f.required ? " *" : ""}</span>
-						</span>
-					</label>
-				);
-			}
-			case "checkbox-group": {
-				const cg = f as CheckboxGroupField;
-				const arr = (values[f.name] as string[]) ?? [];
-				const toggle = (val: string, on: boolean) => {
-					if (on) setField(f.name, Array.from(new Set([...arr, val])));
-					else
-						setField(
-							f.name,
-							arr.filter((x) => x !== val)
-						);
-				};
-				return (
-					<div className="block">
-						<fieldset className="space-y-2">
-							<legend className="block text-sm font-medium text-gray-700">
-								{f.label ?? f.name}
-								<span className="text-red-600">{f.required ? " *" : ""}</span>
-							</legend>
-							{cg.options.map((opt, i) => {
-								const on = arr.includes(opt.value);
-								return (
-									<label
-										key={i}
-										className="flex items-center gap-2 text-sm text-gray-800"
-									>
-										<input
-											type="checkbox"
-											name={f.name}
-											checked={on}
-											onChange={(e) => toggle(opt.value, e.target.checked)}
-											className="h-4 w-4"
-										/>
-										<span>{opt.label ?? opt.value}</span>
-									</label>
-								);
-							})}
-						</fieldset>
-						{fieldErrors[f.name] && (
-							<p className="mt-1 text-sm text-red-600">{fieldErrors[f.name]}</p>
-						)}
-					</div>
-				);
-			}
-			case "file": {
-				const fileField = f as FileField;
-				const hasError = !!fieldErrors[f.name];
-				return labelEl(
-					<input
-						type="file"
-						name={f.name}
-						multiple={!!fileField.multiple}
-						accept={fileField.accept ?? undefined}
-						onChange={(e) => {
-							const files = e.currentTarget.files;
-							if (!files) return;
-							if (fileField.multiple) setField(f.name, Array.from(files));
-							else setField(f.name, files[0] ?? null);
-						}}
-						className={`block w-full text-sm text-gray-900 file:mr-4 file:rounded-md file:border-0 file:bg-gray-100 file:px-3 file:py-2 file:text-sm file:font-medium hover:file:bg-gray-200 ${
-							hasError ? "border-red-500" : ""
-						}`}
-					/>
-				);
-			}
-		}
-	};
+      // Decide encoding: default url-encoded; fallback to multipart if file fields exist
+      const hasFile =
+        parsed.fields.some((f) => f.kind === "file") ||
+        (parsed.enctype || "").toLowerCase().includes("multipart");
 
-	return (
-		<div className="space-y-6 max-h-full overflow-y-auto overflow-x-hidden">
-			{/* Debug: where the original form HTML came from */}
-			{/* <div ref={containerRef} className="overflow-auto" /> */}
-			{/* Recreated React form */}
-			<div className="rounded-lg border border-gray-200 p-4 min-w-0">
-				<div className="grid grid-cols-1 gap-4">
-					{parsed.fields.map((f, idx) => (
-						<div key={`${f.name}-${idx}`}>{renderField(f)}</div>
-					))}
-				</div>
-				{/* Validation Summary */}
-				{Object.keys(fieldErrors).length > 0 && (
-					<div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-md">
-						<p className="text-sm text-red-700 font-medium">
-							Please fill in {Object.keys(fieldErrors).length} required field{Object.keys(fieldErrors).length > 1 ? 's' : ''}:
-						</p>
-						<ul className="mt-1 text-sm text-red-600 list-disc list-inside">
-							{Object.values(fieldErrors).map((error, index) => (
-								<li key={index}>{error}</li>
-							))}
-						</ul>
-					</div>
-				)}
+      let res: AxiosResponse<any, any>;
+      if (hasFile) {
+        const fd = new FormData();
+        for (const f of parsed.fields) {
+          const val = values[f.name];
+          if (f.kind === "checkbox-single") {
+            if (val === true) {
+              const v = (f as CheckboxSingleField).valueAttr ?? "on";
+              fd.append(f.name, v);
+            }
+          } else if (f.kind === "checkbox-group") {
+            const arr = (val as string[]) || [];
+            for (const item of arr) fd.append(f.name, item);
+          } else if (f.kind === "radio-group") {
+            if (typeof val === "string" && val !== "") fd.append(f.name, val);
+          } else if (f.kind === "select") {
+            if ((f as SelectField).multiple) {
+              const arr = (val as string[]) || [];
+              for (const item of arr) fd.append(f.name, item);
+            } else if (typeof val === "string") {
+              fd.append(f.name, val);
+            }
+          } else if (f.kind === "file") {
+            const v = values[f.name];
+            if (Array.isArray(v)) {
+              for (const file of v) fd.append(f.name, file as File);
+            } else if (v instanceof File) {
+              fd.append(f.name, v);
+            }
+          } else if (
+            f.kind === "hidden" ||
+            f.kind === "textlike" ||
+            f.kind === "textarea"
+          ) {
+            if (val != null) fd.append(f.name, String(val));
+          }
+        }
+        console.log("submitting as formdata", fd);
+        // res = await fetch(parsed.action || window.location.href, {
+        // 	method: parsed.method,
+        // 	body: fd,
+        // });
+        res = await htmlFormSubmit(parsed.action || window.location.href, fd);
+      } else {
+        const params = new URLSearchParams();
+        for (const f of parsed.fields) {
+          const val = values[f.name];
+          if (f.kind === "checkbox-single") {
+            if (val === true) {
+              const v = (f as CheckboxSingleField).valueAttr ?? "on";
+              params.append(f.name, v);
+            }
+          } else if (f.kind === "checkbox-group") {
+            const arr = (val as string[]) || [];
+            for (const item of arr) params.append(f.name, item);
+          } else if (f.kind === "radio-group") {
+            if (typeof val === "string" && val !== "")
+              params.append(f.name, val);
+          } else if (f.kind === "select") {
+            if ((f as SelectField).multiple) {
+              const arr = (val as string[]) || [];
+              for (const item of arr) params.append(f.name, item);
+            } else if (typeof val === "string") {
+              params.append(f.name, val);
+            }
+          } else if (f.kind === "file") {
+            // no files -> skip in urlencoded mode
+          } else if (
+            f.kind === "hidden" ||
+            f.kind === "textlike" ||
+            f.kind === "textarea"
+          ) {
+            if (val != null) params.append(f.name, String(val));
+          }
+        }
+        console.log(
+          "calling with urlencoded with data",
+          params.toString(),
+          parsed.action
+        );
+        res = await htmlFormSubmit(
+          parsed.action || window.location.href,
+          params.toString()
+        );
+      }
+      console.log("response is ", res);
+      // Parse response
+      const ct =
+        typeof res.headers === "object"
+          ? res.headers["content-type"] || res.headers["Content-Type"] || ""
+          : "";
+      let data: any;
+      if (ct.includes("application/json")) {
+        data = res.data;
+      } else {
+        const text = typeof res.data === "string" ? res.data : String(res.data);
+        const match = text.match(/"submission_id"\s*:\s*"([^"]+)"/i);
+        data = match ? { submission_id: match[1] } : { raw: text };
+      }
+      console.log("parsed response data", data);
+      const finalSubmissionId =
+        data?.submission_id ??
+        data?.data?.submission_id ??
+        data?.result?.submission_id ??
+        "";
 
-				<div className="mt-6 flex flex-wrap items-center gap-3">
-					<button
-						type="button"
-						onClick={handleSubmit}
-						disabled={isSubmitting}
-						className={`px-4 py-2 rounded text-white disabled:opacity-60 flex-shrink-0 ${
-							Object.keys(fieldErrors).length > 0 
-								? "bg-red-600 hover:bg-red-700" 
-								: "bg-blue-600 hover:bg-blue-700"
-						}`}
-					>
-						{isSubmitting 
-							? "Submitting..." 
-							: Object.keys(fieldErrors).length > 0 
-								? `Fix ${Object.keys(fieldErrors).length} Error${Object.keys(fieldErrors).length > 1 ? 's' : ''}`
-								: "Submit"
-						}
-					</button>
+      console.log("extracted submission id", finalSubmissionId);
+      if (!finalSubmissionId) {
+        throw new Error("No submission_id returned by the form endpoint.");
+      }
 
-					{parsed.action && (
-						<span className="text-xs text-gray-500 break-words">
-							POST to <code className="break-all">{parsed.action}</code>
-						</span>
-					)}
-				</div>
+      setSubmissionId(finalSubmissionId);
 
-				<div className="mt-3 text-sm text-gray-700 break-words">
-					{submissionId && (
-						<span className="text-green-700">
-							Received submission_id: <code className="break-all">{submissionId}</code>
-						</span>
-					)}
-					{error && (
-						<div className="p-3 bg-red-50 border border-red-200 rounded-md">
-							<span className="text-red-600 break-words font-medium">Error: {error}</span>
-						</div>
-					)}
-				</div>
-			</div>
-		</div>
-	);
+      // Build a simple key/value payload for your pipeline
+      const plainPayload: Record<string, string> = {};
+      for (const f of parsed.fields) {
+        const val = values[f.name];
+        if (
+          f.kind === "checkbox-group" ||
+          (f.kind === "select" && f.multiple)
+        ) {
+          (val as string[] | undefined)?.forEach((v, i) => {
+            plainPayload[`${f.name}[${i}]`] = v;
+          });
+        } else if (f.kind === "file") {
+          // send filenames only to your submitEvent; upstream already got binary
+          if (Array.isArray(val)) {
+            val.forEach(
+              (file, i) =>
+                (plainPayload[`${f.name}[${i}]`] = (file as File)?.name ?? "")
+            );
+          } else if (val instanceof File) {
+            plainPayload[f.name] = val.name;
+          }
+        } else if (typeof val === "boolean") {
+          if (val) {
+            // emulate HTML checkbox submit value
+            const v = (f as CheckboxSingleField).valueAttr ?? "on";
+            plainPayload[f.name] = v;
+          }
+        } else if (val != null) {
+          plainPayload[f.name] = String(val);
+        }
+      }
+      const Subdata = {
+        jsonpath: { submission_id: finalSubmissionId },
+        formData: { submission_id: finalSubmissionId },
+      };
+      console.log("final data to be sent", Subdata);
+      await submitEvent({
+        jsonPath: { submission_id: finalSubmissionId },
+        formData: { submission_id: finalSubmissionId },
+      });
+    } catch (e: any) {
+      console.error(e);
+      setError(e?.message || "Submission failed");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // --- Render helpers --------------------------------------------------------
+
+  const renderField = (f: AnyField) => {
+    if (f.kind === "hidden") {
+      // Hidden: not rendered visually; included in payload
+      return null;
+    }
+
+    const labelEl = (children: JSX.Element) => (
+      <div className="block">
+        <label className="block text-sm font-medium text-gray-700">
+          {f.label ?? f.name}
+          <span className="text-red-600">{f.required ? " *" : ""}</span>
+        </label>
+        <div className="mt-1">{children}</div>
+        {fieldErrors[f.name] && (
+          <p className="mt-1 text-sm text-red-600">{fieldErrors[f.name]}</p>
+        )}
+      </div>
+    );
+
+    switch (f.kind) {
+      case "textlike": {
+        const v = (values[f.name] as string) ?? "";
+        const tf = f as TextLikeField;
+        const hasError = !!fieldErrors[f.name];
+        return labelEl(
+          <input
+            type={tf.inputType}
+            name={f.name}
+            value={v}
+            onChange={(e) => setField(f.name, e.target.value)}
+            placeholder={tf.placeholder}
+            required={f.required}
+            disabled={f.disabled}
+            min={tf.min as any}
+            max={tf.max as any}
+            step={tf.step as any}
+            pattern={tf.pattern}
+            className={`w-full rounded-md border bg-gray-50 px-3 py-2 focus:outline-none focus:ring-2 ${
+              hasError
+                ? "border-red-500 focus:ring-red-500"
+                : "border-gray-300 focus:ring-blue-500"
+            }`}
+          />
+        );
+      }
+      case "textarea": {
+        const v = (values[f.name] as string) ?? "";
+        const ta = f as TextareaField;
+        const hasError = !!fieldErrors[f.name];
+        return labelEl(
+          <textarea
+            name={f.name}
+            value={v}
+            onChange={(e) => setField(f.name, e.target.value)}
+            placeholder={ta.placeholder}
+            rows={ta.rows ?? 4}
+            required={f.required}
+            disabled={f.disabled}
+            className={`w-full rounded-md bg-gray-50 border px-3 py-2 focus:outline-none focus:ring-2 ${
+              hasError
+                ? "border-red-500 focus:ring-red-500"
+                : "border-gray-300 focus:ring-blue-500"
+            }`}
+          />
+        );
+      }
+      case "select": {
+        const sel = f as SelectField;
+        const v = values[f.name];
+        const hasError = !!fieldErrors[f.name];
+        return labelEl(
+          <select
+            name={f.name}
+            value={
+              (sel.multiple
+                ? ((v as string[]) ?? [])
+                : ((v as string) ?? "")) as any
+            }
+            onChange={(e) => {
+              if (sel.multiple) {
+                const opts = Array.from(e.currentTarget.selectedOptions).map(
+                  (o) => o.value
+                );
+                setField(f.name, opts);
+              } else {
+                setField(f.name, e.currentTarget.value);
+              }
+            }}
+            multiple={!!sel.multiple}
+            required={f.required}
+            disabled={f.disabled}
+            className={`w-full rounded-md border bg-gray-50 px-3 py-2 focus:outline-none focus:ring-2 ${
+              hasError
+                ? "border-red-500 focus:ring-red-500"
+                : "border-gray-300 focus:ring-blue-500"
+            }`}
+          >
+            {!sel.multiple && <option value="">-- Select --</option>}
+            {sel.options.map((o, i) => (
+              <option key={i} value={o.value}>
+                {o.label}
+              </option>
+            ))}
+          </select>
+        );
+      }
+      case "radio-group": {
+        const rg = f as RadioGroupField;
+        const v = (values[f.name] as string) ?? "";
+        return (
+          <div className="block">
+            <fieldset className="space-y-2">
+              <legend className="block text-sm font-medium text-gray-700">
+                {f.label ?? f.name}
+                <span className="text-red-600">{f.required ? " *" : ""}</span>
+              </legend>
+              {rg.options.map((opt, i) => (
+                <label
+                  key={i}
+                  className="flex items-center gap-2 text-sm text-gray-800"
+                >
+                  <input
+                    type="radio"
+                    name={f.name}
+                    value={opt.value}
+                    checked={v === opt.value}
+                    onChange={() => setField(f.name, opt.value)}
+                    className="h-4 w-4"
+                  />
+                  <span>{opt.label ?? opt.value}</span>
+                </label>
+              ))}
+            </fieldset>
+            {fieldErrors[f.name] && (
+              <p className="mt-1 text-sm text-red-600">{fieldErrors[f.name]}</p>
+            )}
+          </div>
+        );
+      }
+      case "checkbox-single": {
+        // const cs = f as CheckboxSingleField;
+        const checked = Boolean(values[f.name]);
+        return (
+          <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+            <input
+              type="checkbox"
+              name={f.name}
+              checked={checked}
+              onChange={(e) => setField(f.name, e.target.checked)}
+              className="h-4 w-4"
+            />
+            <span>
+              {f.label ?? f.name}
+              <span className="text-red-600">{f.required ? " *" : ""}</span>
+            </span>
+          </label>
+        );
+      }
+      case "checkbox-group": {
+        const cg = f as CheckboxGroupField;
+        const arr = (values[f.name] as string[]) ?? [];
+        const toggle = (val: string, on: boolean) => {
+          if (on) setField(f.name, Array.from(new Set([...arr, val])));
+          else
+            setField(
+              f.name,
+              arr.filter((x) => x !== val)
+            );
+        };
+        return (
+          <div className="block">
+            <fieldset className="space-y-2">
+              <legend className="block text-sm font-medium text-gray-700">
+                {f.label ?? f.name}
+                <span className="text-red-600">{f.required ? " *" : ""}</span>
+              </legend>
+              {cg.options.map((opt, i) => {
+                const on = arr.includes(opt.value);
+                return (
+                  <label
+                    key={i}
+                    className="flex items-center gap-2 text-sm text-gray-800"
+                  >
+                    <input
+                      type="checkbox"
+                      name={f.name}
+                      checked={on}
+                      onChange={(e) => toggle(opt.value, e.target.checked)}
+                      className="h-4 w-4"
+                    />
+                    <span>{opt.label ?? opt.value}</span>
+                  </label>
+                );
+              })}
+            </fieldset>
+            {fieldErrors[f.name] && (
+              <p className="mt-1 text-sm text-red-600">{fieldErrors[f.name]}</p>
+            )}
+          </div>
+        );
+      }
+      case "file": {
+        const fileField = f as FileField;
+        const hasError = !!fieldErrors[f.name];
+        return labelEl(
+          <input
+            type="file"
+            name={f.name}
+            multiple={!!fileField.multiple}
+            accept={fileField.accept ?? undefined}
+            onChange={(e) => {
+              const files = e.currentTarget.files;
+              if (!files) return;
+              if (fileField.multiple) setField(f.name, Array.from(files));
+              else setField(f.name, files[0] ?? null);
+            }}
+            className={`block w-full text-sm text-gray-900 file:mr-4 file:rounded-md file:border-0 file:bg-gray-100 file:px-3 file:py-2 file:text-sm file:font-medium hover:file:bg-gray-200 ${
+              hasError ? "border-red-500" : ""
+            }`}
+          />
+        );
+      }
+    }
+  };
+
+  return (
+    <div className="space-y-6 max-h-full overflow-y-auto overflow-x-hidden">
+      {/* Debug: where the original form HTML came from */}
+      {/* <div ref={containerRef} className="overflow-auto" /> */}
+      {/* Recreated React form */}
+      <div className="rounded-lg border border-gray-200 p-4 min-w-0">
+        <div className="grid grid-cols-1 gap-4">
+          {parsed.fields.map((f, idx) => (
+            <div key={`${f.name}-${idx}`}>{renderField(f)}</div>
+          ))}
+        </div>
+        {/* Validation Summary */}
+        {Object.keys(fieldErrors).length > 0 && (
+          <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-md">
+            <p className="text-sm text-red-700 font-medium">
+              Please fill in {Object.keys(fieldErrors).length} required field
+              {Object.keys(fieldErrors).length > 1 ? "s" : ""}:
+            </p>
+            <ul className="mt-1 text-sm text-red-600 list-disc list-inside">
+              {Object.values(fieldErrors).map((error, index) => (
+                <li key={index}>{error}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        <div className="mt-6 flex flex-wrap items-center gap-3">
+          <button
+            type="button"
+            onClick={handleSubmit}
+            disabled={isSubmitting}
+            className={`px-4 py-2 rounded text-white disabled:opacity-60 flex-shrink-0 ${
+              Object.keys(fieldErrors).length > 0
+                ? "bg-red-600 hover:bg-red-700"
+                : "bg-blue-600 hover:bg-blue-700"
+            }`}
+          >
+            {isSubmitting
+              ? "Submitting..."
+              : Object.keys(fieldErrors).length > 0
+                ? `Fix ${Object.keys(fieldErrors).length} Error${Object.keys(fieldErrors).length > 1 ? "s" : ""}`
+                : "Submit"}
+          </button>
+
+          {parsed.action && (
+            <span className="text-xs text-gray-500 break-words">
+              POST to <code className="break-all">{parsed.action}</code>
+            </span>
+          )}
+        </div>
+
+        <div className="mt-3 text-sm text-gray-700 break-words">
+          {submissionId && (
+            <span className="text-green-700">
+              Received submission_id:{" "}
+              <code className="break-all">{submissionId}</code>
+            </span>
+          )}
+          {error && (
+            <div className="p-3 bg-red-50 border border-red-200 rounded-md">
+              <span className="text-red-600 break-words font-medium">
+                Error: {error}
+              </span>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
 }
