@@ -7,28 +7,26 @@ import { toast } from "react-toastify";
 
 interface ExtractedItem {
   itemid: string;
-  parentItemId: string;
   providerid: string;
-  addOns: string[];
 }
 
-// Flow IDs where "Add Item" button should be visible
-const FLOWS_WITH_ADD_ITEM_BUTTON: string[] = [
-  "purchase_journey_with_form_Multiple_Tickets", 
-  "purchase_journey_without_form_Multiple_Tickets",
-];
+// [
+//   {
+//       "itemId": "I1",
+//       "count": 1,
+//       "addOns": []
+//   }
+// ]
 
-export default function TRVSelect({
+export default function TRV11Select({
   submitEvent,
-  flowId,
 }: {
   submitEvent: (data: SubmitEventParams) => Promise<void>;
-  flowId?: string;
 }) {
   const [isPayloadEditorActive, setIsPayloadEditorActive] = useState(false);
   const [errorWhilePaste, setErrorWhilePaste] = useState("");
 
-  const { control, handleSubmit, watch, register, setValue, getValues } =
+  const { control, handleSubmit, register, setValue } =
     useForm({
       defaultValues: {
         provider: "" as string,
@@ -41,12 +39,12 @@ export default function TRVSelect({
     name: "items",
   });
 
-  const selectedItems = watch("items");
+
   const [itemOptions, setItemOptions] = useState<ExtractedItem[]>([]);
 
   const onSubmit = async (data: any) => {
     console.log("Form Data", data);
-    // const { valid, errors } = validateFormData(data);
+    // const { valid, errors } = (data);
     // if (!valid) {
     //   toast.error(`Form validation failed: ${errors[0]}`);
     //   return;
@@ -72,14 +70,12 @@ export default function TRVSelect({
         setValue("fulfillment", provider.fulfillments[0].id);
 
         provider.items.forEach((item: any) => {
-          if (item.parent_item_id) {
+
             results.push({
               itemid: item.id,
-              parentItemId: item.parent_item_id,
               providerid: providerId,
-              addOns: (item.add_ons || []).map((addon: any) => addon.id),
             });
-          }
+
         });
       });
 
@@ -101,7 +97,7 @@ export default function TRVSelect({
   const renderSelectOrInput = (
     name: string,
     options: ExtractedItem[],
-    index: number,
+    _index: number,
     placeholder = ""
   ) => {
     if (options.length === 0) {
@@ -124,13 +120,7 @@ export default function TRVSelect({
           );
 
           if (selectedOption) {
-            // update the other fields in the same row
-            setValue(
-              `items.${index}.parentItemId`,
-              selectedOption.parentItemId
-            );
             setValue("provider", selectedOption.providerid);
-            setValue(`items.${index}.addOns`, []);
           }
         }}
         className={inputStyle}
@@ -180,57 +170,17 @@ export default function TRVSelect({
                 className={inputStyle}
               />
             </div>
-
-            {itemOptions && itemOptions[index]?.addOns?.length > 0 && (
-              <div className={fieldWrapperStyle}>
-                <label className={labelStyle}>Add Ons</label>
-                <select
-                  className={inputStyle}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    if (!val) return;
-                    const prev = getValues(`items.${index}.addOns`) || [];
-                    if (!prev.includes(val)) {
-                      setValue(`items.${index}.addOns`, [...prev, val]);
-                    }
-                  }}
-                >
-                  <option value="">Select Add Ons</option>
-                  {itemOptions[index].addOns.map((c: any) => (
-                    <option key={c} value={c}>
-                      {c}
-                    </option>
-                  ))}
-                </select>
-
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {selectedItems[index]?.addOns?.map((c: any, i: number) => {
-                    console.log("c::::::::", c);
-                    return (
-                      <span
-                        key={i}
-                        className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-sm"
-                      >
-                        {c}
-                      </span>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
           </div>
         ))}
 
         <div className="flex gap-2">
-          {flowId && FLOWS_WITH_ADD_ITEM_BUTTON.includes(flowId) && (
-            <button
-              type="button"
-              onClick={() => append({ itemId: "", count: 1, addOns: [] })}
-              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-            >
-              Add Item
-            </button>
-          )}
+          <button
+            type="button"
+            onClick={() => append({ itemId: "", count: 1, location: "" })}
+            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          >
+            Add Item
+          </button>
           {fields.length > 1 && (
             <button
               type="button"
@@ -276,7 +226,7 @@ export default function TRVSelect({
 //   [key: string]: any; // to allow dynamic offer keys like offers_FLAT50
 // };
 
-// function validateFormData(data: FormData): {
+// function (data: FormData): {
 //   valid: boolean;
 //   errors: string[];
 // } {
