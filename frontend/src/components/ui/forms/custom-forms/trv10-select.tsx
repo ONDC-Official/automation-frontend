@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useForm, useFieldArray } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import PayloadEditor from "../../mini-components/payload-editor";
 import { SubmitEventParams } from "../../../../types/flow-types";
 import { toast } from "react-toastify";
@@ -17,7 +17,7 @@ export default function TRV10AddOnSelect({
   const [isPayloadEditorActive, setIsPayloadEditorActive] = useState(false);
   const [itemOptions, setItemOptions] = useState<AddOnItem[]>([]);
 
-  const { register, handleSubmit, watch, setValue } = useForm({
+  const { register, handleSubmit } = useForm({
     defaultValues: {
       items: [{ itemId: "", addOns: [], count: 1 }],
     },
