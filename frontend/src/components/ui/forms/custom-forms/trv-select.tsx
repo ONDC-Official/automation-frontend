@@ -14,7 +14,7 @@ interface ExtractedItem {
 
 // Flow IDs where "Add Item" button should be visible
 const FLOWS_WITH_ADD_ITEM_BUTTON: string[] = [
-  "purchase_journey_with_form_Multiple_Tickets", 
+  "purchase_journey_with_form_Multiple_Tickets",
   "purchase_journey_without_form_Multiple_Tickets",
 ];
 
@@ -151,14 +151,20 @@ export default function TRVSelect({
       {errorWhilePaste && (
         <p className="text-red-500 text-sm italic mt-1">{errorWhilePaste}</p>
       )}
-      <button
-        type="button"
-        onClick={() => setIsPayloadEditorActive(true)}
-        className="p-2 border rounded-full hover:bg-gray-100"
-      >
-        <FaRegPaste size={14} />
-      </button>
-
+      <div>
+        <button
+          type="button"
+          onClick={() => setIsPayloadEditorActive(true)}
+          className="p-2 border rounded-full hover:bg-gray-100"
+        >
+          <FaRegPaste size={14} />
+        </button>
+        <span className="ml-1.5 text-red-600">
+          Please first paste the on_search payload here that contains the item
+          details. Once the item information is available, the item ID will
+          appear in the form, and you can proceed with selecting the item ID.
+        </span>
+      </div>
       <form
         onSubmit={handleSubmit(onSubmit)}
         className="space-y-4 h-[500px] overflow-y-scroll p-4"
