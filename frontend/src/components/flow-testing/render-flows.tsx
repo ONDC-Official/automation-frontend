@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Base64 } from 'js-base64';
 import { Flow, MetadataField } from "../../types/flow-types";
 import InfoCard from "../ui/info-card";
 import DifficultyCards from "../ui/difficulty-cards";
@@ -530,12 +529,9 @@ function RenderFlows({
 													className="bg-sky-600 text-white text-sm flex px-2 py-2 rounded hover:bg-sky-700 shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
 													onClick={async () => {
 														const response = await getReport(sessionId);
-														console.log("response", response);
-														const base64html = response.data;
-														const cleanedData = base64html.split("base64")[1];
 														try {
 															// Decode Base64 → HTML string
-															const decodedHtml = Base64.decode(cleanedData);
+															const decodedHtml = response.data
 
 															// Create a new Blob and URL
 															const blob = new Blob([decodedHtml], {
