@@ -160,9 +160,8 @@ export default function TRVSelect({
           <FaRegPaste size={14} />
         </button>
         <span className="ml-1.5 text-red-600">
-          Please first paste the on_search payload here that contains the item
-          details. Once the item information is available, the item ID will
-          appear in the form, and you can proceed with selecting the item ID.
+          Please paste the on_search payload containing item details. Once
+          available, the item ID field will appear in the form for selection.
         </span>
       </div>
       <form
