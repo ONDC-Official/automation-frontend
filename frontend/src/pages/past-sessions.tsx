@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { Base64 } from 'js-base64';
 import { getReport, getSessions } from "./../utils/request-utils";
 import { LuHistory } from "react-icons/lu";
 import { toast } from "react-toastify";
@@ -63,11 +62,8 @@ const PastSessions: React.FC<PastSessionsProps> = ({ loggedIn }) => {
       return;
     }
   
-    const base64html = report.data;
-    const cleanedData = base64html.split("base64")[1];
-  
     try {
-      const decodedHtml = Base64.decode(cleanedData);
+      const decodedHtml = report.data
   
       // Step 1: Open new tab
       const newTab = window.open("", "_blank");
