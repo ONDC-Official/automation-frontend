@@ -52,7 +52,7 @@ export default function TRV10AddOnSelect({
         onClick={() => setIsPayloadEditorActive(true)}
         className="p-2 border rounded-full hover:bg-gray-100 mb-4"
       >
-        Paste Payload
+        Paste On_Select's Payload
       </button>
 
       <form
