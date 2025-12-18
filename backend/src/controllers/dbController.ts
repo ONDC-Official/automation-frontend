@@ -43,6 +43,12 @@ export const getReport = async (req: Request, res: Response) => {
 	try {
 		const response = await getReportForSessionId(sessionId);
 
+		let base64 = response.data
+		base64 = base64.split("base64")[1];
+    	const html = Buffer.from(base64, "base64").toString("utf-8");
+
+		response.data = html
+
 		res.send(response);
 	} catch (e: any) {
 		logger.error(
