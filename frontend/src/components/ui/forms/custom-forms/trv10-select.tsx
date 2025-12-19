@@ -25,7 +25,7 @@ export default function TRV10AddOnSelect({
 
   const handlePaste = (payload: any) => {
     try {
-      const items = payload?.message?.order?.items || [];
+      const items = payload?.message?.catalog?.providers[0]?.items || [];
       const results: AddOnItem[] = items.map((item: any) => ({
         itemId: item.id,
         addOns: (item.add_ons || []).map((a: any) => a.id),
