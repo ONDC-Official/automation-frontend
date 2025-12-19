@@ -55,6 +55,7 @@ export default function TRVSelect({
   };
 
   const handlePaste = (payload: any) => {
+    setErrorWhilePaste("");
     try {
       if (!payload?.message?.catalog?.providers) return [];
 
@@ -159,11 +160,15 @@ export default function TRVSelect({
         >
           <FaRegPaste size={14} />
         </button>
-        <span className="ml-1.5 text-red-600">
-          Please paste the on_search payload containing item details. Once
-          available, the item ID field will appear in the form for selection.
-        </span>
+
+        {itemOptions.length === 0 && (
+          <span className="ml-1.5 text-red-600">
+            Please paste the on_search payload containing item details. Once
+            available, the item ID field will appear in the form for selection.
+          </span>
+        )}
       </div>
+
       <form
         onSubmit={handleSubmit(onSubmit)}
         className="space-y-4 h-[500px] overflow-y-scroll p-4"
