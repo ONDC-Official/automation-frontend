@@ -31,6 +31,7 @@ import { GetRequestEndpoint } from "./guides";
 import { BiSend, BiServer } from "react-icons/bi";
 import { trackEvent } from "../../utils/analytics";
 import FilterFlowsMenu from "./filter-flows";
+import { openReportInNewTab } from "../../utils/generic-utils";
 
 function extractMetadataFromFlows(
 	flows: Flow[]
@@ -533,17 +534,7 @@ function RenderFlows({
 															// Decode Base64 → HTML string
 															const decodedHtml = response.data
 
-															// Create a new Blob and URL
-															const blob = new Blob([decodedHtml], {
-																type: "text/html",
-															});
-															const url = URL.createObjectURL(blob);
-
-															// Open in a new tab
-															window.open(url, "_blank");
-
-															// Optional: cleanup after a short delay
-															setTimeout(() => URL.revokeObjectURL(url), 5000);
+															openReportInNewTab(decodedHtml, sessionId)
 														} catch (error) {
 															console.error(
 																"Failed to decode or open Base64 HTML:",
