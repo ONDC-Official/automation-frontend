@@ -224,10 +224,11 @@ function RenderFlows({
 	const allTags = new Set(
 		Object.values(flows)
 		  .flatMap(cfg => cfg.tags ?? [])
-	  );
-	  const tagsArray = [...allTags];
-	  setFlowTags(tagsArray)
-	}, [flows])
+	);
+
+	const tagsArray = [...allTags].filter(tag => tag !== "WORKBENCH");
+	setFlowTags(tagsArray);
+	}, [flows]);
 
 	useEffect(() => {
 		if (sideView?.payloadId) {
