@@ -56,14 +56,6 @@ export default function TRV10ScheduleForm({
     <div>
       {isPayloadEditorActive && <PayloadEditor onAdd={handlePaste} />}
 
-      <button
-        type="button"
-        onClick={() => setIsPayloadEditorActive(true)}
-        className="p-2 border rounded-full hover:bg-gray-100 mb-4"
-      >
-        Paste Payload
-      </button>
-
       <form
         onSubmit={handleSubmit(onSubmit)}
         className="space-y-4 h-[500px] overflow-y-scroll p-4"
