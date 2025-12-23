@@ -107,7 +107,7 @@ export default function FlowContent() {
 						domain: data.domain,
 						version: data.version,
 						usecase: data.usecaseId,
-						options: ["WORKBENCH"],
+						// options: ["WORKBENCH"],
 					},
 				}
 			);
