@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { GoCodespaces, GoWorkflow } from "react-icons/go";
 import { MdSchema } from "react-icons/md";
 import { fetchFormFieldData } from "../../utils/request-utils";
-import { FaChevronDown, FaUserPlus } from "react-icons/fa6";
+import { FaChevronDown, FaUserPlus, FaKey } from "react-icons/fa6";
 import { GAEvent, trackEvent } from "../../utils/analytics";
 
 interface Feature {
@@ -57,6 +57,14 @@ const features: Feature[] = [
 			"Streamline the seller onboarding process with our comprehensive registration flow. Manage store details, serviceability areas, and product catalogs effortlessly.",
 		path: "/seller-onboarding",
 		icon: <FaUserPlus className="text-sky-600 text-4xl" />,
+	},
+	{
+		title: "Auth Header Tool",
+		subtitle: "Generate & Verify ONDC Headers",
+		description:
+			"Utility to understand, generate, and verify ONDC authorization headers using BLAKE-512 and Ed25519 signatures.",
+		path: "/auth-header",
+		icon: <FaKey className="text-sky-600 text-4xl" />,
 	},
 ];
 
