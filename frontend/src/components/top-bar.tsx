@@ -58,7 +58,10 @@ const navLinks: NavLink[] = [
     label: "Tools",
     href: "/tools",
     selected: false,
-    subMenu: [{ label: "Seller Onboarding", href: "/seller-onboarding" }],
+    subMenu: [
+      { label: "Seller Onboarding", href: "/seller-onboarding" },
+      { label: "Auth Header Tool", href: "/auth-header" },
+    ],
     analytics: {
       category: "NAV",
       action: "Clicked in tools",
