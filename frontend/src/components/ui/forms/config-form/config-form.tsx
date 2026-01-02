@@ -70,14 +70,18 @@ export default function FormConfig({
   const sessionData = sessionContext?.sessionData;
 
   const onSubmit = async (data: Record<string, string>) => {
-    const formatedData: Record<string, string> = {};
+    const formatedData: Record<string, string | number> = {};
     const formData: Record<string, string> = data;
     for (const key in data) {
-      const payloadField = formConfig.find(
-        (field) => field.name === key
-      )?.payloadField;
+      const field = formConfig.find((field) => field.name === key);
+      const payloadField = field?.payloadField;
       if (payloadField) {
-        formatedData[payloadField] = data[key];
+        // Convert to integer if the payloadField contains 'count' or 'quantity'
+        if (payloadField.includes('count') || payloadField.includes('quantity')) {
+          formatedData[payloadField] = parseInt(data[key], 10) || 0;
+        } else {
+          formatedData[payloadField] = data[key];
+        }
       }
     }
     await submitEvent({ jsonPath: formatedData, formData: formData });

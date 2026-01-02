@@ -45,6 +45,6 @@ export interface SequenceStep {
 }
 
 export interface SubmitEventParams {
-	jsonPath: Record<string, string>;
+	jsonPath: Record<string, string | number>;
 	formData: Record<string, string>;
 }
