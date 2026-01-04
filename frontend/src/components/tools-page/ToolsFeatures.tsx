@@ -1,8 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { FaUserPlus } from "react-icons/fa";
+import { FaUserPlus, FaKey } from "react-icons/fa";
 import { ROUTES } from "@/constants/routes";
-
 interface ToolFeature {
   title: string;
   subtitle: string;
@@ -22,15 +21,15 @@ const toolFeatures: ToolFeature[] = [
     icon: <FaUserPlus className="text-sky-600 text-4xl" />,
     isAvailable: true,
   },
-  // {
-  //   title: "Quick Start Guide",
-  //   subtitle: "Step-by-Step Setup",
-  //   description:
-  //     "Get started quickly with essential setup steps. Follow this guide to configure your account, explore key APIs, and test your first integration with ease.",
-  //   path: "/walkthrough",
-  //   icon: <FaBookOpen className="text-blue-500 text-4xl" />,
-  //   isAvailable: true,
-  // },
+  {
+    title: "Auth Header Tool",
+    subtitle: "Generate & Verify ONDC Headers",
+    description:
+      "Generate and verify authorization headers using BLAKE-512 hashing and Ed25519 signatures. View implementation code in Python, Go, Java, Node.js, and PHP.",
+    path: ROUTES.AUTH_HEADER,
+    icon: <FaKey className="text-sky-600 text-4xl" />,
+    isAvailable: true,
+  },
 ];
 
 const ToolsFeatures: React.FC = () => {

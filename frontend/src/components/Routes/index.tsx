@@ -12,6 +12,7 @@ import FlowTestingWrapper from "@components/flow-testing/flow-testing-wrapper";
 import NotFoundPage from "@components/ui/not-found";
 import FlowContent from "@components/flow-testing/flow-page";
 import HomePage from "@/pages/home";
+import AuthHeader from "@pages/auth-header";
 import { ROUTES } from "@/constants/routes";
 
 const Routes = () => (
@@ -29,6 +30,7 @@ const Routes = () => (
     <Route path={ROUTES.HISTORY} element={<PastSessions loggedIn={false} />} />
     <Route path="*" element={<NotFoundPage />} />
     <Route path={ROUTES.DB_BACK_OFFICE} element={<DBBackOffice />} />
+    <Route path={ROUTES.AUTH_HEADER} element={<AuthHeader />} />
   </RouterRoutes>
 );
 
