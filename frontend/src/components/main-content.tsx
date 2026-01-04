@@ -58,22 +58,14 @@ const MainContent = () => {
         ]}
       />
 
-      <div
-        className={`flex-1 p-2 mt-2 transition-all duration-300 ${
-          isSidebarOpen ? " ml-64" : "ml-20"
-        }`}
-      >
+      <div className={`flex-1 p-2 mt-2 transition-all duration-300 ${isSidebarOpen ? " ml-64" : "ml-20"}`}>
         <GetMainContent activeTab={activeTab} />
       </div>
     </div>
   );
 };
 
-function GetMainContent({
-  activeTab,
-}: {
-  activeTab: string;
-}) {
+function GetMainContent({ activeTab }: { activeTab: string }) {
   switch (activeTab) {
     case "home":
       return <HomePage />;

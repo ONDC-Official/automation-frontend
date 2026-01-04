@@ -1,32 +1,56 @@
-import axios from "axios";
+import { apiClient } from "../services/apiClient";
+import { API_ROUTES } from "../services/apiRoutes";
 import { SessionCache, TransactionCache, FlowInDB } from "../types/session-types";
+import { FlowMap } from "../types/flow-state-type";
+import { FormConfigType } from "../components/ui/forms/config-form/config-form";
 import { toast } from "react-toastify";
 
-export const triggerSearch = async (
-  session: TransactionCache,
-  subUrl: string
-) => {
+// Type definitions for API responses
+interface SessionsResponse {
+  sessions: Array<{
+    sessionId: string;
+    reportExists: boolean;
+    createdAt: string;
+  }>;
+}
+
+interface ReportResponse {
+  data: string;
+}
+
+interface ActionsResponse {
+  actions: string[];
+}
+
+interface PayloadResponse {
+  req: any;
+  res: {
+    response: any;
+  };
+}
+
+interface FlowResponse {
+  inputs?: FormConfigType;
+  [key: string]: any;
+}
+
+export const triggerSearch = async (session: TransactionCache, subUrl: string) => {
   if (session.subscriberType === "BAP") {
     return;
   }
-  console.log("session", session);
+
   const data = {
     subscriberUrl: subUrl,
     initiateSearch: true,
   };
 
-  const response = await axios.post(
-    `${import.meta.env.VITE_BACKEND_URL}/flow/trigger`,
-    data
-  );
+  await apiClient.post(API_ROUTES.FLOW.TRIGGER, data);
   toast.info("search triggered");
-
-  console.log("trigger response", response);
 };
 
 export const putCacheData = async (data: any, sessionId: string) => {
-  return await axios.put(
-    `${import.meta.env.VITE_BACKEND_URL}/sessions`,
+  return await apiClient.put(
+    API_ROUTES.SESSIONS.BASE,
     {
       ...data,
     },
@@ -34,7 +58,7 @@ export const putCacheData = async (data: any, sessionId: string) => {
       params: {
         session_id: sessionId,
       },
-    }
+    },
   );
 };
 
@@ -46,80 +70,64 @@ export const triggerRequest = async (
   flowId: string,
   sessionData: SessionCache,
   subscriberUrl?: string,
-  body?: any
+  body?: any,
 ) => {
   try {
-    console.log("triggering request", action, actionId, transaction_id);
-    const response = await axios.post(
-      `${import.meta.env.VITE_BACKEND_URL}/flow/trigger/${action}`,
-      body,
-      {
-        params: {
-          action_id: actionId,
-          transaction_id: transaction_id,
-          subscriber_url: subscriberUrl,
-          version: sessionData.version,
-          session_id: session_id,
-          flow_id: flowId,
-        },
-      }
-    );
+    const response = await apiClient.post(API_ROUTES.FLOW.TRIGGER_ACTION(action), body, {
+      params: {
+        action_id: actionId,
+        transaction_id: transaction_id,
+        subscriber_url: subscriberUrl,
+        version: sessionData.version,
+        session_id: session_id,
+        flow_id: flowId,
+      },
+    });
     toast.info(`${action} triggered`);
     return response;
   } catch (e) {
     // toast.error(`Error triggering ${action}`);
-    console.log(e);
+    console.error(e);
   }
 };
 
 export const clearFlowData = async (sessionId: string, flowId: string) => {
   try {
-    console.log("clearing flow", sessionId, flowId);
-    await axios.delete(
-      `${import.meta.env.VITE_BACKEND_URL}/sessions/clearFlow`,
-      {
-        params: {
-          session_id: sessionId,
-          flow_id: flowId,
-        },
-      }
-    );
+    await apiClient.delete(API_ROUTES.SESSIONS.CLEAR_FLOW, {
+      params: {
+        session_id: sessionId,
+        flow_id: flowId,
+      },
+    });
     toast.info("Flow cleared");
   } catch (e) {
     toast.error("Error clearing flow");
-    console.log(e);
+    console.error(e);
   }
 };
 
-export const getCompletePayload = async (payload_ids: string[]) => {
+export const getCompletePayload = async (payload_ids: string[]): Promise<PayloadResponse[]> => {
   try {
-    const response = await axios.post(
-      `${import.meta.env.VITE_BACKEND_URL}/db/payload`,
-      {
-        payload_ids: payload_ids,
-      }
-    );
+    const response = await apiClient.post<PayloadResponse[]>(API_ROUTES.DB.PAYLOAD, {
+      payload_ids: payload_ids,
+    });
 
     return response.data;
   } catch (e: any) {
-    console.log("error while fetching complete paylaod: ", e);
+    console.error("error while fetching complete paylaod: ", e);
     throw new Error(e);
   }
 };
 
-export const getTransactionData = async (
-  transaction_id: string,
-  subscriber_url: string
-) => {
-  const url = `${import.meta.env.VITE_BACKEND_URL}/sessions/transaction`;
+export const getTransactionData = async (transaction_id: string, subscriber_url: string) => {
   try {
-    const response = await axios.get(url, {
+    const response = await apiClient.get(API_ROUTES.SESSIONS.TRANSACTION, {
       params: {
         transaction_id,
         subscriber_url,
       },
     });
-    console.log("transaction data", response.data);
+
     return response.data as TransactionCache;
   } catch (e) {
     toast.error("Error while fetching transaction data");
@@ -127,15 +135,10 @@ export const getTransactionData = async (
   }
 };
 
-export const addExpectation = async (
-  action: string,
-  flowId: string,
-  subscriberUrl: string,
-  sessionId: string
-) => {
+export const addExpectation = async (action: string, flowId: string, subscriberUrl: string, sessionId: string) => {
   try {
-    await axios.post(
-      `${import.meta.env.VITE_BACKEND_URL}/sessions/expectation`,
+    await apiClient.post(
+      API_ROUTES.SESSIONS.EXPECTATION,
       {},
       {
         params: {
@@ -144,51 +147,37 @@ export const addExpectation = async (
           subscriber_url: subscriberUrl,
           session_id: sessionId,
         },
-      }
+      },
     );
     // toast.info("Expectation added");
   } catch (e: any) {
-    console.log(e);
+    console.error(e);
     toast.error(e?.message ?? "Error adding expectation");
   }
 };
 
-export const deleteExpectation = async (
-  session_id: string,
-  subscriber_url: string
-) => {
+export const deleteExpectation = async (session_id: string, subscriber_url: string) => {
   try {
-    await axios.delete(
-      `${import.meta.env.VITE_BACKEND_URL}/sessions/expectation`,
-      {
-        params: {
-          session_id,
-          subscriber_url,
-        },
-      }
-    );
+    await apiClient.delete(API_ROUTES.SESSIONS.EXPECTATION, {
+      params: {
+        session_id,
+        subscriber_url,
+      },
+    });
   } catch (e: any) {
-    console.log(e);
+    console.error(e);
   }
 };
 
-export const requestForFlowPermission = async (
-  action: string,
-  subscriberUrl: string
-) => {
+export const requestForFlowPermission = async (action: string, subscriberUrl: string) => {
   try {
-    const data: {
-      data: { valid: boolean; message: string };
-    } = await axios.get(
-      `${import.meta.env.VITE_BACKEND_URL}/sessions/flowPermission`,
-      {
-        params: {
-          action,
-          subscriber_url: subscriberUrl,
-        },
-      }
-    );
-    console.log("flow permission data", data);
+    const data = await apiClient.get<{ valid: boolean; message: string }>(API_ROUTES.SESSIONS.FLOW_PERMISSION, {
+      params: {
+        action,
+        subscriber_url: subscriberUrl,
+      },
+    });
+
     if (!data.data.valid) {
       toast.error(data.data.message);
     }
@@ -200,14 +189,11 @@ export const requestForFlowPermission = async (
 
 export const getLogs = async (sessionId: string) => {
   try {
-    const response = await axios.get(
-      `${import.meta.env.VITE_BACKEND_URL}/logs`,
-      {
-        params: {
-          sessionId: sessionId,
-        },
-      }
-    );
+    const response = await apiClient.get(API_ROUTES.LOGS.BASE, {
+      params: {
+        sessionId: sessionId,
+      },
+    });
 
     return response.data;
   } catch (e) {
@@ -217,30 +203,23 @@ export const getLogs = async (sessionId: string) => {
 
 export const fetchFormFieldData = async () => {
   try {
-    const response = await axios.get(
-      `${import.meta.env.VITE_BACKEND_URL}/config/senarioFormData`
-    );
+    const response = await apiClient.get(API_ROUTES.CONFIG.SCENARIO_FORM_DATA);
 
-    console.log("form field data", response.data);
     return response.data;
   } catch (e) {
-    console.log("error while fetching form field data", e);
+    console.error("error while fetching form field data", e);
   }
 };
 
-export const getMappedFlow = async (
-  transactionId: string,
-  sessionId: string
-) => {
-  const url = `${import.meta.env.VITE_BACKEND_URL}/flow/current-state`;
+export const getMappedFlow = async (transactionId: string, sessionId: string): Promise<FlowMap> => {
   try {
-    const response = await axios.get(url, {
+    const response = await apiClient.get<FlowMap>(API_ROUTES.FLOW.CURRENT_STATE, {
       params: {
         transaction_id: transactionId,
         session_id: sessionId,
       },
     });
-    console.log("mapped flow data", response.data);
+
     return response.data;
   } catch (e) {
     toast.error("Error while fetching mapped flow data");
@@ -252,34 +231,22 @@ export const proceedFlow = async (
   sessionId: string,
   transactionId: string,
   jsonPathChanges?: Record<string, any>,
-  inputs?: any
-) => {
+  inputs?: any,
+): Promise<FlowResponse> => {
   try {
-    console.log('🚀 [proceedFlow] Sending request:', {
-      url: `${import.meta.env.VITE_BACKEND_URL}/flow/proceed`,
-      sessionId,
-      transactionId,
-      jsonPathChanges,
-      inputs
+    const response = await apiClient.post<FlowResponse>(API_ROUTES.FLOW.PROCEED, {
+      session_id: sessionId,
+      transaction_id: transactionId,
+      json_path_changes: jsonPathChanges,
+      inputs: inputs,
     });
-    
-    const response = await axios.post(
-      `${import.meta.env.VITE_BACKEND_URL}/flow/proceed`,
-      {
-        session_id: sessionId,
-        transaction_id: transactionId,
-        json_path_changes: jsonPathChanges,
-        inputs: inputs,
-      }
-    );
-    
-    console.log('✅ [proceedFlow] Response received:', response.data);
+
     return response.data;
   } catch (e: any) {
     console.error("❌ [proceedFlow] Error:", {
       message: e.message,
       response: e.response?.data,
-      status: e.response?.status
+      status: e.response?.status,
     });
     throw new Error("Error while proceeding flow");
   }
@@ -290,53 +257,45 @@ export const newFlow = async (
   flowId: string,
   transactionId: string,
   json_path_changes?: Record<string, any>,
-  inputs?: any
-) => {
+  inputs?: any,
+): Promise<FlowResponse | undefined> => {
   try {
-    const response = await axios.post(
-      `${import.meta.env.VITE_BACKEND_URL}/flow/new`,
-      {
-        session_id: sessionId,
-        flow_id: flowId,
-        transaction_id: transactionId,
-        json_path_changes: json_path_changes,
-        inputs: inputs,
-      }
-    );
+    const response = await apiClient.post<FlowResponse>(API_ROUTES.FLOW.NEW, {
+      session_id: sessionId,
+      flow_id: flowId,
+      transaction_id: transactionId,
+      json_path_changes: json_path_changes,
+      inputs: inputs,
+    });
     return response.data;
   } catch (e) {
     toast.error("Error while starting new flow");
     console.error("Error while creating new flow", e);
+    return undefined;
   }
 };
 
 export const getReportingStatus = async (domain: string, version: string) => {
   try {
-    const response = await axios.get(
-      `${import.meta.env.VITE_BACKEND_URL}/config/reportingStatus`,
-      {
-        params: {
-          domain,
-          version,
-        },
-      }
-    );
+    const response = await apiClient.get<{ data: unknown }>(API_ROUTES.CONFIG.REPORTING_STATUS, {
+      params: {
+        domain,
+        version,
+      },
+    });
 
     return response.data.data;
   } catch (e) {
-    console.log("error while fetching repoting", e);
+    console.error("error while fetching repoting", e);
   }
 };
 
 export async function htmlFormSubmit(link: string, data: any) {
   try {
-    const res = await axios.post(
-      `${import.meta.env.VITE_BACKEND_URL}/flow/external-form`,
-      {
-        link: link,
-        data: data,
-      }
-    );
+    const res = await apiClient.post(API_ROUTES.FLOW.EXTERNAL_FORM, {
+      link: link,
+      data: data,
+    });
     return res;
   } catch (error) {
     throw new Error("ERROR");
@@ -349,82 +308,66 @@ export const updateCustomFlow = async (sessionId: string, flow: any) => {
       flows: [flow],
     };
 
-    await axios.post(
-      `${import.meta.env.VITE_BACKEND_URL}/flow/custom-flow`,
-      data
-    );
+    await apiClient.post(API_ROUTES.FLOW.CUSTOM_FLOW, data);
   } catch (e) {
-    console.log("error setting custom flow", e);
+    console.error("error setting custom flow", e);
   }
 };
 
-export const getActions = async (domain: string, version: string) => {
+export const getActions = async (domain: string, version: string): Promise<ActionsResponse> => {
   try {
-    const res = await axios.post(
-      `${import.meta.env.VITE_BACKEND_URL}/flow/actions`,
-      {
-        domain: domain,
-        version: version,
-      }
-    );
-    
+    const res = await apiClient.post<ActionsResponse>(API_ROUTES.FLOW.ACTIONS, {
+      domain: domain,
+      version: version,
+    });
+
     return res.data;
   } catch (error) {
-    console.error("errror while getting action: ", error)
+    console.error("errror while getting action: ", error);
     throw new Error("ERROR while getting action");
   }
 };
 
-export const getReport = async (sessionId: string) => {
+export const getReport = async (sessionId: string): Promise<ReportResponse> => {
   try {
-    const res = await axios.get(
-      `${import.meta.env.VITE_BACKEND_URL}/db/report`,
-      {
-        params: {
-          session_id: sessionId,
-        },
-        timeout: 120000, // 2 minutes
-      }
-    );
-    
+    const res = await apiClient.get<ReportResponse>(API_ROUTES.DB.REPORT, {
+      params: {
+        session_id: sessionId,
+      },
+      timeout: 120000, // 2 minutes
+    });
+
     return res.data;
   } catch (error) {
     console.error("error while getting action: ", error);
     throw new Error("ERROR while getting action");
   }
-}
+};
 
-export const getSessions = async (subId: string, npType: string) => {
+export const getSessions = async (subId: string, npType: string): Promise<SessionsResponse> => {
   try {
-    const res = await axios.get(
-      `${import.meta.env.VITE_BACKEND_URL}/db/sessions`,
-      {
-        params: {
-          sub_id: subId,
-          np_type: npType
-        },
-      }
-    );
-    
+    const res = await apiClient.get<SessionsResponse>(API_ROUTES.DB.SESSIONS, {
+      params: {
+        sub_id: subId,
+        np_type: npType,
+      },
+    });
+
     return res.data;
   } catch (error) {
-    console.error("errror while getting sessions from db: ", error)
+    console.error("errror while getting sessions from db: ", error);
     throw new Error("ERROR while getting sessions from db");
   }
-}
+};
 
 export const addFlowToSessionInDB = async (sessionId: string, flow: FlowInDB) => {
   try {
-    const res = await axios.post(
-      `${import.meta.env.VITE_BACKEND_URL}/api/sessions/flows/${sessionId}`,
-      flow,
-      {
-        headers: {
-          "Content-Type": "application/json",
-          "x-api-key": import.meta.env.VITE_DB_SERVICE_API_KEY,
-        },
-      }
-    );
+    const res = await apiClient.post(API_ROUTES.API.SESSIONS_FLOWS(sessionId), flow, {
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": import.meta.env.VITE_DB_SERVICE_API_KEY,
+      },
+    });
 
     return res.data;
   } catch (error) {
@@ -435,15 +378,15 @@ export const addFlowToSessionInDB = async (sessionId: string, flow: FlowInDB) =>
 
 export const updateFlowInSession = async (sessionId: string, flow: FlowInDB) => {
   try {
-    const res = await axios.put(
-      `${import.meta.env.VITE_BACKEND_URL}/api/sessions/flows/${sessionId}`,
+    const res = await apiClient.put(
+      API_ROUTES.API.SESSIONS_FLOWS(sessionId),
       { flow },
       {
         headers: {
           "Content-Type": "application/json",
           "x-api-key": import.meta.env.VITE_DB_SERVICE_API_KEY,
         },
-      }
+      },
     );
 
     return res.data;

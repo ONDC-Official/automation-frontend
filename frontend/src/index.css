@@ -3,119 +3,119 @@
 @tailwind utilities;
 
 :root {
-	/* font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;  */
-	--font-family-default: "Inter", sans-serif;
-	--font-family-code: "Fira Code", monospace;
-	line-height: 1.45;
-	font-weight: 400;
+  /* font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;  */
+  --font-family-default: "Inter", sans-serif;
+  --font-family-code: "Fira Code", monospace;
+  line-height: 1.45;
+  font-weight: 400;
 
-	color-scheme: light dark;
-	color: rgba(7, 7, 7, 0.87);
-	background-color: #f2f2f2;
+  color-scheme: light dark;
+  color: rgba(7, 7, 7, 0.87);
+  background-color: #f2f2f2;
 
-	font-synthesis: none;
-	text-rendering: optimizeLegibility;
-	-webkit-font-smoothing: antialiased;
-	-moz-osx-font-smoothing: grayscale;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 body {
-	font-family: var(--font-family-default);
-	min-height: 100vh;
-	min-width: 100vw;
-	background-color: #f2f2f2;
-	/* background-image: radial-gradient(
+  font-family: var(--font-family-default);
+  min-height: 100vh;
+  min-width: 100vw;
+  background-color: #f2f2f2;
+  /* background-image: radial-gradient(
 		circle,
 		rgba(0, 0, 0, 0.083) 1px,
 		transparent 1px
 	); */
-	background-size: 20px 20px; /* Adjust the dot spacing */
-	background-position: center;
+  background-size: 20px 20px; /* Adjust the dot spacing */
+  background-position: center;
 }
 
 code,
 pre {
-	font-family: var(--font-family-code);
+  font-family: var(--font-family-code);
 }
 
 /* Ant Design Select custom styling */
 .antd-select .ant-select-selector {
-	border-color: #d1d5db !important;
-	border-radius: 0.375rem !important;
-	padding: 0.375rem 0.75rem !important;
-	min-height: 2.5rem !important;
-	background-color: transparent !important;
+  border-color: #d1d5db !important;
+  border-radius: 0.375rem !important;
+  padding: 0.375rem 0.75rem !important;
+  min-height: 2.5rem !important;
+  background-color: transparent !important;
 }
 
 .antd-select .ant-select-selector:hover {
-	border-color: #9ca3af !important;
-	background-color: transparent !important;
+  border-color: #9ca3af !important;
+  background-color: transparent !important;
 }
 
 .antd-select.ant-select-focused .ant-select-selector {
-	border-color: #3b82f6 !important;
-	box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5) !important;
-	background-color: transparent !important;
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5) !important;
+  background-color: transparent !important;
 }
 
 .antd-select.ant-select-disabled .ant-select-selector {
-	background-color: transparent !important;
+  background-color: transparent !important;
 }
 
 .antd-select .ant-select-selection-item {
-	background-color: #dbeafe !important;
-	border-color: #3b82f6 !important;
-	color: #1e40af !important;
+  background-color: #dbeafe !important;
+  border-color: #3b82f6 !important;
+  color: #1e40af !important;
 }
 
 .antd-select .ant-select-selection-item-remove {
-	color: #1e40af !important;
+  color: #1e40af !important;
 }
 
 .antd-select .ant-select-selection-item-remove:hover {
-	color: #1e3a8a !important;
+  color: #1e3a8a !important;
 }
 
 /* Ant Design Input custom styling */
 .antd-input {
-	background-color: transparent !important;
-	border-color: #d1d5db !important;
-	border-radius: 0.375rem !important;
-	padding: 0.375rem 0.75rem !important;
-	min-height: 2.5rem !important;
+  background-color: transparent !important;
+  border-color: #d1d5db !important;
+  border-radius: 0.375rem !important;
+  padding: 0.375rem 0.75rem !important;
+  min-height: 2.5rem !important;
 }
 
 .antd-input:hover {
-	border-color: #9ca3af !important;
-	background-color: transparent !important;
+  border-color: #9ca3af !important;
+  background-color: transparent !important;
 }
 
 .antd-input:focus,
 .antd-input.ant-input-focused {
-	border-color: #3b82f6 !important;
-	box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5) !important;
-	background-color: transparent !important;
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5) !important;
+  background-color: transparent !important;
 }
 
 .antd-input.ant-input-disabled {
-	background-color: transparent !important;
-	color: #6b7280 !important;
+  background-color: transparent !important;
+  color: #6b7280 !important;
 }
 
 /* Ant Design TextArea custom styling */
 .antd-input.ant-input {
-	background-color: transparent !important;
+  background-color: transparent !important;
 }
 
 .antd-input textarea.ant-input {
-	background-color: transparent !important;
+  background-color: transparent !important;
 }
 
 /* Ant Design Password Input custom styling */
 .antd-input.ant-input-password {
-	background-color: transparent !important;
+  background-color: transparent !important;
 }
 
 .antd-input.ant-input-password .ant-input {
-	background-color: transparent !important;
+  background-color: transparent !important;
 }

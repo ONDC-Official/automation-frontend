@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { LabelWithToolTip } from "./form-input";
 import { inputClass } from "./inputClass";
 
@@ -7,85 +7,99 @@ interface IOption {
   value: string;
 }
 
+interface FormSelectProps {
+  register?: (name: string, rules?: any) => any;
+  name: string;
+  label: string;
+  options: (string | IOption)[];
+  errors?: any;
+  setSelectedValue?: (value: string) => void;
+  defaultValue?: string;
+  labelInfo?: string;
+  nonSelectedValue?: boolean;
+  disabled?: boolean;
+  required?: boolean | string;
+  currentValue?: string;
+  setValue?: (name: string, value: any, options?: any) => void;
+}
+
 const FormSelect = ({
-	register = (_: any) => {},
-	name,
-	label,
-	options,
-	errors,
-	setSelectedValue = (_: string) => {},
-	defaultValue,
-	labelInfo = "",
-	nonSelectedValue = false,
-	disabled = false,
-	required = false,
-	currentValue = "",
-}: any) => {
-	const [value, setValue] = useState("");
+  register = (_: any) => {},
+  name,
+  label,
+  options,
+  errors,
+  setSelectedValue = (_: string) => {},
+  defaultValue,
+  labelInfo = "",
+  nonSelectedValue = false,
+  disabled = false,
+  required = false,
+  currentValue,
+  setValue,
+}: FormSelectProps) => {
+  // Register field with react-hook-form for validation
+  const registerProps = register(name, {
+    required: required ? (typeof required === "string" ? required : "This field is required") : false,
+  });
 
-	useEffect(() => {
-		if (nonSelectedValue) {
-			setValue("");
-		}
-	}, [options]);
+  // If currentValue is explicitly provided (including empty string), use controlled mode
+  const isControlled = currentValue !== undefined;
 
-	const onSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-		console.log(e.target.value, "index");
-		setSelectedValue(e.target.value);
-		console.log("reaching till here>>>???");
-		setValue(e.target.value);
-	};
-	return (
-		<>
-			<div className="mb-2 w-full bg-gray-50 border rounded-md p-2 flex">
-				<LabelWithToolTip labelInfo={labelInfo} label={label} />
-				<select
-					{...register(name, {
-						required: required && `This field is required`,
-					})}
-					className={inputClass}
-					onChange={onSelectChange}
-					defaultValue={defaultValue}
-					disabled={disabled}
-					value={currentValue || value}
-				>
-					{nonSelectedValue && (
-						<option value="" disabled selected>
-							Select a value
-						</option>
-					)}
+  const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newValue = e.target.value;
 
-					{options.map((option: string | IOption, index: number) => {
-						let value;
+    if (isControlled) {
+      // Controlled mode: manually sync with react-hook-form
+      if (setValue) {
+        setValue(name, newValue);
+      }
+    } else {
+      // Uncontrolled mode: use react-hook-form's onChange
+      registerProps.onChange?.(e);
+    }
 
-						if (typeof option === "string") {
-							value = option;
-						} else {
-							value = option.value;
-							option = option.key;
-						}
+    // Call external callback for state management
+    setSelectedValue(newValue);
+  };
 
-						if (defaultValue === option)
-							return (
-								<option selected value={value} key={index}>
-									{option}
-								</option>
-							);
-						return (
-							<option value={value} key={index}>
-								{option}
-							</option>
-						);
-					})}
-				</select>
-				{errors && errors[name] && (
-					<p className="text-red-500 text-xs italic">
-						{errors[name].message}
-					</p>
-				)}
-			</div>
-		</>
-	);
+  const selectProps = isControlled
+    ? {
+        value: currentValue,
+        onChange: handleChange,
+        name,
+        ref: registerProps.ref, // Keep ref for react-hook-form validation
+      }
+    : {
+        ...registerProps,
+        onChange: handleChange,
+        defaultValue,
+      };
+
+  return (
+    <div className="mb-2 w-full bg-gray-50 border rounded-md p-2 flex">
+      <LabelWithToolTip labelInfo={labelInfo} label={label} required={required} />
+      <select {...selectProps} className={inputClass} disabled={disabled}>
+        {nonSelectedValue && (
+          <option value="" disabled>
+            Select a value
+          </option>
+        )}
+
+        {options.map((option: string | IOption, index: number) => {
+          const optionValue = typeof option === "string" ? option : option.value;
+          const optionLabel = typeof option === "string" ? option : option.key;
+
+          return (
+            <option value={optionValue} key={index}>
+              {optionLabel}
+            </option>
+          );
+        })}
+      </select>
+      {errors?.[name] && <p className="text-red-500 text-xs italic">{errors[name].message}</p>}
+    </div>
+  );
 };
 
 export default FormSelect;

@@ -18,11 +18,7 @@ interface FormData {
   items: FormItem[];
 }
 
-export default function AirlineSelect({
-  submitEvent,
-}: {
-  submitEvent: (data: SubmitEventParams) => Promise<void>;
-}) {
+export default function AirlineSelect({ submitEvent }: { submitEvent: (data: SubmitEventParams) => Promise<void> }) {
   const [isPayloadEditorActive, setIsPayloadEditorActive] = useState(false);
   const [errorWhilePaste, setErrorWhilePaste] = useState("");
 
@@ -68,7 +64,7 @@ export default function AirlineSelect({
 
   /* ------------------- FINAL SUBMIT ------------------- */
   const onSubmit = async (data: FormData) => {
-    const finalItems = data.items.map((item) => ({
+    const finalItems = data.items.map(item => ({
       itemId: item.itemId,
       count: item.count,
       addOns: item.addOnId
@@ -87,42 +83,33 @@ export default function AirlineSelect({
       items: finalItems,
     };
 
-    console.log("FINAL STRUCTURE:", finalPayload);
-
-    await submitEvent({ jsonPath: {}, formData: {
-    data: JSON.stringify(finalPayload),
-  } });
+    await submitEvent({
+      jsonPath: {},
+      formData: {
+        data: JSON.stringify(finalPayload),
+      },
+    });
   };
 
-  const inputStyle =
-    "border rounded p-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white";
+  const inputStyle = "border rounded p-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white";
   const labelStyle = "mb-1 font-semibold text-sm";
   const fieldWrapperStyle = "flex flex-col mb-2";
 
   return (
     <div>
       {isPayloadEditorActive && <PayloadEditor onAdd={handlePaste} />}
-      {errorWhilePaste && (
-        <p className="text-red-500 text-sm italic mt-1">
-          {errorWhilePaste}
-        </p>
-      )}
+      {errorWhilePaste && <p className="text-red-500 text-sm italic mt-1">{errorWhilePaste}</p>}
 
       <button
         type="button"
         onClick={() => setIsPayloadEditorActive(true)}
-        className="p-2 border rounded-full hover:bg-gray-100 mb-3"
-      >
+        className="p-2 border rounded-full hover:bg-gray-100 mb-3">
         <FaRegPaste size={14} />
       </button>
 
-      <form
-        onSubmit={handleSubmit(onSubmit)}
-        className="space-y-4 h-[500px] overflow-y-scroll p-4"
-      >
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 h-[500px] overflow-y-scroll p-4">
         {fields.map((field, index) => (
           <div key={field.id} className="border p-4 rounded-lg space-y-2">
-
             {/* ITEM ID */}
             <div className={fieldWrapperStyle}>
               <label className={labelStyle}>Item ID</label>
@@ -175,8 +162,7 @@ export default function AirlineSelect({
               <button
                 type="button"
                 onClick={() => remove(index)}
-                className="mt-2 px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
-              >
+                className="mt-2 px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600">
                 Remove Item
               </button>
             )}
@@ -193,15 +179,11 @@ export default function AirlineSelect({
               addOnCount: 1,
             })
           }
-          className="w-full px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-        >
+          className="w-full px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
           + Add Another Item
         </button>
 
-        <button
-          type="submit"
-          className="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700"
-        >
+        <button type="submit" className="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700">
           Submit
         </button>
       </form>

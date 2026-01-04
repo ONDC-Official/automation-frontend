@@ -1,7 +1,7 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback } from "react";
 
 // Hook for managing single image upload state
-export const useSingleImageUpload = (initialValue: string = '') => {
+export const useSingleImageUpload = (initialValue: string = "") => {
   const [imageUrl, setImageUrl] = useState<string>(initialValue);
 
   const handleImageChange = useCallback((url: string) => {
@@ -9,10 +9,10 @@ export const useSingleImageUpload = (initialValue: string = '') => {
   }, []);
 
   const clearImage = useCallback(() => {
-    setImageUrl('');
+    setImageUrl("");
   }, []);
 
-  const resetImage = useCallback((newValue: string = '') => {
+  const resetImage = useCallback((newValue: string = "") => {
     setImageUrl(newValue);
   }, []);
 
@@ -76,9 +76,9 @@ export const useFormImageState = <T extends Record<string, any>>(initialState: T
   const clearAllImages = useCallback(() => {
     const clearedState = {} as T;
     Object.keys(imageState).forEach(key => {
-      clearedState[key as keyof T] = Array.isArray(imageState[key as keyof T]) 
-        ? [] as T[keyof T]
-        : '' as T[keyof T];
+      clearedState[key as keyof T] = Array.isArray(imageState[key as keyof T])
+        ? ([] as T[keyof T])
+        : ("" as T[keyof T]);
     });
     setImageState(clearedState);
   }, [imageState]);
