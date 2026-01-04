@@ -43,9 +43,7 @@ export const getItemsAndCustomistions = (payload: any) => {
   }
 };
 
-const parseRET11Items = (
-  payload: Payload
-): { itemList: any; catagoriesList: any; cutomistionToGroupMapping: any } => {
+const parseRET11Items = (payload: Payload): { itemList: any; catagoriesList: any; cutomistionToGroupMapping: any } => {
   const catagories = payload.message.catalog["bpp/providers"][0].categories;
   const items = payload.message.catalog["bpp/providers"][0].items;
 
@@ -53,10 +51,10 @@ const parseRET11Items = (
   const itemList: any = {};
   const cutomistionToGroupMapping: any = {};
 
-  catagories.forEach((item) => {
-    item.tags.forEach((tag) => {
+  catagories.forEach(item => {
+    item.tags.forEach(tag => {
       if (tag.code === "type") {
-        tag.list.forEach((val) => {
+        tag.list.forEach(val => {
           if (val.code === "type" && val.value === "custom_group") {
             catagoriesList[item.id] = { child: [] };
           }
@@ -65,15 +63,15 @@ const parseRET11Items = (
     });
   });
 
-  items.forEach((item) => {
+  items.forEach(item => {
     let parent = "";
     let child: string[] = [];
     let isCusomistaion = false;
     let isItem = false;
     let customGroup = "";
-    item.tags.forEach((tag) => {
+    item.tags.forEach(tag => {
       if (tag.code === "type") {
-        tag.list.forEach((val) => {
+        tag.list.forEach(val => {
           if (val.code === "type" && val.value === "customization") {
             isCusomistaion = true;
           }
@@ -81,7 +79,7 @@ const parseRET11Items = (
       }
 
       if (tag.code === "type") {
-        tag.list.forEach((val) => {
+        tag.list.forEach(val => {
           if (val.code === "type" && val.value === "item") {
             isItem = true;
           }
@@ -89,23 +87,23 @@ const parseRET11Items = (
       }
 
       if (tag.code === "custom_group") {
-        const idItem = tag.list.find((listItem) => listItem.code === "id");
+        const idItem = tag.list.find(listItem => listItem.code === "id");
         if (idItem) {
           customGroup = idItem.value;
         }
       }
 
       if (tag.code === "parent") {
-        const idItem = tag.list.find((listItem) => listItem.code === "id");
+        const idItem = tag.list.find(listItem => listItem.code === "id");
         if (idItem) {
           parent = idItem.value;
         }
       }
 
       if (tag.code === "child") {
-        const idItem = tag.list.filter((listItem) => listItem.code === "id");
+        const idItem = tag.list.filter(listItem => listItem.code === "id");
         if (idItem) {
-          child = idItem.map((listItem) => listItem.value);
+          child = idItem.map(listItem => listItem.value);
         }
       }
     });
@@ -126,23 +124,20 @@ const parseRET11Items = (
     }
   });
 
-  console.log("catagoriesList: ", JSON.stringify(catagoriesList, null, 2));
-  console.log("itemList: ", itemList);
-  console.log("cutomistionToGroupMapping", cutomistionToGroupMapping);
   return { itemList, catagoriesList, cutomistionToGroupMapping };
 };
 
 export const openReportInNewTab = (decodedHtml: any, sessionId: any) => {
-    // Step 1: Open new tab
-    const newTab = window.open("", "_blank");
-    if (!newTab) {
-      toast.error("Popup blocked! Please allow popups for this site.");
-      return;
-    }
+  // Step 1: Open new tab
+  const newTab = window.open("", "_blank");
+  if (!newTab) {
+    toast.error("Popup blocked! Please allow popups for this site.");
+    return;
+  }
 
-    // Step 2: Write a clean shell with header and iframe
-    newTab.document.open();
-    newTab.document.write(`
+  // Step 2: Write a clean shell with header and iframe
+  newTab.document.open();
+  newTab.document.write(`
       <!DOCTYPE html>
       <html lang="en">
       <head>
@@ -214,24 +209,24 @@ export const openReportInNewTab = (decodedHtml: any, sessionId: any) => {
       </body>
       </html>
     `);
-    newTab.document.close();
+  newTab.document.close();
 
-    // Step 3: Write decoded HTML into iframe
-    newTab.onload = () => {
-      const iframe = newTab.document.getElementById("reportFrame") as HTMLIFrameElement;
-      if (!iframe) return;
+  // Step 3: Write decoded HTML into iframe
+  newTab.onload = () => {
+    const iframe = newTab.document.getElementById("reportFrame") as HTMLIFrameElement;
+    if (!iframe) return;
 
-      const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
-      if (!iframeDoc) return;
+    const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+    if (!iframeDoc) return;
 
-      iframeDoc.open();
-      iframeDoc.write(decodedHtml);
-      iframeDoc.close();
+    iframeDoc.open();
+    iframeDoc.write(decodedHtml);
+    iframeDoc.close();
 
-      // Step 4: Handle PDF download
-      const downloadBtn = newTab.document.getElementById("downloadPdfBtn");
-      downloadBtn?.addEventListener("click", () => {
-        iframe.contentWindow?.print();
-      });
-    };
-}
+    // Step 4: Handle PDF download
+    const downloadBtn = newTab.document.getElementById("downloadPdfBtn");
+    downloadBtn?.addEventListener("click", () => {
+      iframe.contentWindow?.print();
+    });
+  };
+};

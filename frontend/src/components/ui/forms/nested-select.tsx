@@ -20,9 +20,7 @@ const ItemCustomisationSelector = ({
   label,
   setValue,
 }: any) => {
-  const [items, setItems] = useState<SelectedItem[]>([
-    { id: "", customisations: [], relation: {} },
-  ]);
+  const [items, setItems] = useState<SelectedItem[]>([{ id: "", customisations: [], relation: {} }]);
   const [catalogData, setCatalogData] = useState(null);
   const [errroWhilePaste, setErrroWhilePaste] = useState("");
   const [itemsList, setItemsList] = useState<any>({});
@@ -40,29 +38,24 @@ const ItemCustomisationSelector = ({
     setItems(updated);
   };
 
-  const handleCustomisationChange = (
-    index: number,
-    value: string,
-    group?: string
-  ) => {
+  const handleCustomisationChange = (index: number, value: string, group?: string) => {
     if (!items[index].customisations.includes(value)) {
       const updated = [...items];
       updated[index].relation[`${value}`] = groupMapping[value];
       updated[index].customisations.push(value);
       if (group) {
-        updated[index].lastCustomisation =
-          categoryList[group].items[value].child;
+        updated[index].lastCustomisation = categoryList[group].items[value].child;
       }
       setItems(updated);
     }
   };
 
   const addItem = () => {
-    setItems((prev) => [...prev, { id: "", customisations: [], relation: {} }]);
+    setItems(prev => [...prev, { id: "", customisations: [], relation: {} }]);
   };
 
   const removeItem = (index: number) => {
-    setItems((prev) => prev.filter((_, i) => i !== index));
+    setItems(prev => prev.filter((_, i) => i !== index));
   };
 
   const handlePaste = async (parsedText: any) => {
@@ -94,26 +87,17 @@ const ItemCustomisationSelector = ({
       <div className="flex flex-direction-row gap-4">
         <LabelWithToolTip labelInfo="" label={label} />
         <>
-          {errroWhilePaste && (
-            <p className="text-red-500 text-sm italic mt-1 w-full">
-              {errroWhilePaste}
-            </p>
-          )}
+          {errroWhilePaste && <p className="text-red-500 text-sm italic mt-1 w-full">{errroWhilePaste}</p>}
           <button
             type="button"
             onClick={() => setIsPayloadEditorActive(true)}
-            className="p-2 border rounded-full hover:bg-gray-100"
-          >
+            className="p-2 border rounded-full hover:bg-gray-100">
             <FaRegPaste size={14} />
           </button>
         </>
 
         {catalogData && (
-          <button
-            type="button"
-            onClick={addItem}
-            className="p-2 border rounded-full hover:bg-gray-100"
-          >
+          <button type="button" onClick={addItem} className="p-2 border rounded-full hover:bg-gray-100">
             <FaPlus size={14} />
           </button>
         )}
@@ -136,33 +120,22 @@ const ItemCustomisationSelector = ({
                   return categoryList[lastCustom]?.items || {};
                 });
               } else {
-                customisationsObj =
-                  categoryList[itemsList[`${item?.id}`]]?.items || {};
+                customisationsObj = categoryList[itemsList[`${item?.id}`]]?.items || {};
               }
 
-              const cutomistions = Object.entries(customisationsObj).map(
-                (item) => {
-                  console.log("iten", item);
-                  const [key, _] = item;
-                  return key;
-                }
-              );
+              const cutomistions = Object.entries(customisationsObj).map(item => {
+                const [key, _] = item;
+                return key;
+              });
 
               availableCustomisations = cutomistions;
-              console.log(">>>>>", cutomistions);
             }
 
             return (
-              <div
-                key={index}
-                className="relative border p-4 rounded bg-white shadow space-y-4"
-              >
+              <div key={index} className="relative border p-4 rounded bg-white shadow space-y-4">
                 {index !== 0 && (
                   <div className="absolute top-[-10px] right-[-10px] bg-white">
-                    <button
-                      onClick={() => removeItem(index)}
-                      className=" p-2 border rounded-full hover:bg-gray-100"
-                    >
+                    <button onClick={() => removeItem(index)} className=" p-2 border rounded-full hover:bg-gray-100">
                       <FaMinus size={14} />
                     </button>
                   </div>
@@ -170,11 +143,7 @@ const ItemCustomisationSelector = ({
 
                 <LabelWithToolTip labelInfo="" label={"Item"} />
 
-                <select
-                  className={inputClass}
-                  value={item.id}
-                  onChange={(e) => handleItemChange(index, e.target.value)}
-                >
+                <select className={inputClass} value={item.id} onChange={e => handleItemChange(index, e.target.value)}>
                   <option value="">Select Item</option>
                   {Object.entries(itemsList).map((key, index) => {
                     const [item, _] = key;
@@ -194,15 +163,13 @@ const ItemCustomisationSelector = ({
                       <select
                         className={inputClass}
                         value=""
-                        onChange={(e) =>
+                        onChange={e =>
                           handleCustomisationChange(
                             index,
                             e.target.value,
-                            groupMapping[e.target.value] ||
-                              itemsList[`${item?.id}`]
+                            groupMapping[e.target.value] || itemsList[`${item?.id}`],
                           )
-                        }
-                      >
+                        }>
                         <option value="">Select Customisation</option>
                         {availableCustomisations.map((c: any) => (
                           <option key={c} value={c}>
@@ -214,10 +181,7 @@ const ItemCustomisationSelector = ({
 
                     <div className="flex flex-wrap gap-2 mt-2">
                       {item.customisations.map((c: any, i: number) => (
-                        <span
-                          key={i}
-                          className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-sm"
-                        >
+                        <span key={i} className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-sm">
                           {c}
                         </span>
                       ))}

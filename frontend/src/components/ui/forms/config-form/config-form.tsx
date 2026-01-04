@@ -73,21 +73,18 @@ export default function FormConfig({
     const formatedData: Record<string, string> = {};
     const formData: Record<string, string> = data;
     for (const key in data) {
-      const payloadField = formConfig.find(
-        (field) => field.name === key
-      )?.payloadField;
+      const payloadField = formConfig.find(field => field.name === key)?.payloadField;
       if (payloadField) {
         formatedData[payloadField] = data[key];
       }
     }
     await submitEvent({ jsonPath: formatedData, formData: formData });
-    console.log({ jsonPath: formatedData, formData: formData });
   };
 
   const defaultValues: any = {};
   let isNoFieldVisible = false;
 
-  formConfig.forEach((field) => {
+  formConfig.forEach(field => {
     const { display = true } = field;
 
     if (field.default) {
@@ -100,8 +97,8 @@ export default function FormConfig({
   });
 
   // Check for schema form
-  if (formConfig.find((f) => f.schema)) {
-    const schemaField = formConfig.find((f) => f.schema);
+  if (formConfig.find(f => f.schema)) {
+    const schemaField = formConfig.find(f => f.schema);
     return JsonSchemaForm({
       schema: schemaField!.schema,
       onSubmit: onSubmit,
@@ -109,16 +106,14 @@ export default function FormConfig({
   }
 
   // Check for DYNAMIC_FORM type
-  if (formConfig.find((field) => field.type === "DYNAMIC_FORM")) {
+  if (formConfig.find(field => field.type === "DYNAMIC_FORM")) {
     // Get transaction ID from session context using flowId
     let transactionId: string | undefined = undefined;
     if (flowId && sessionData && sessionData.flowMap) {
       transactionId = sessionData.flowMap[flowId] || undefined;
     }
 
-    const dynamicFormField = formConfig.find(
-      (field) => field.type === "DYNAMIC_FORM"
-    );
+    const dynamicFormField = formConfig.find(field => field.type === "DYNAMIC_FORM");
 
     return (
       <DynamicFormHandler
@@ -132,7 +127,7 @@ export default function FormConfig({
   }
 
   // Check for FINVU_REDIRECT type
-  if (formConfig.find((field) => field.type === "FINVU_REDIRECT")) {
+  if (formConfig.find(field => field.type === "FINVU_REDIRECT")) {
     // Get transaction ID from session context using flowId
     let transactionId: string | undefined = undefined;
     if (flowId && sessionData && sessionData.flowMap) {
@@ -149,46 +144,44 @@ export default function FormConfig({
     );
   }
 
-  if (formConfig.find((field) => field.type === "ret10_grocery_select")) {
+  if (formConfig.find(field => field.type === "ret10_grocery_select")) {
     return <Ret10GrocerySelect submitEvent={submitEvent} />;
   }
 
-  if (formConfig.find((field) => field.type === "trv12_bus_seat_selection")) {
+  if (formConfig.find(field => field.type === "trv12_bus_seat_selection")) {
     return <TRV12busSeatSelection submitEvent={submitEvent} />;
   }
 
-  if (formConfig.find((field) => field.type === "HTML_FORM")) {
+  if (formConfig.find(field => field.type === "HTML_FORM")) {
     return ProtocolHTMLForm({
       submitEvent: submitEvent,
       referenceData: referenceData,
-      HtmlFormConfigInFlow: formConfig.find(
-        (field) => field.type === "HTML_FORM"
-      ) as FormFieldConfigType,
+      HtmlFormConfigInFlow: formConfig.find(field => field.type === "HTML_FORM") as FormFieldConfigType,
     });
   }
 
   // Default: GenericForm
-  if (formConfig.find((field) => field.type === "trv10_select")) {
+  if (formConfig.find(field => field.type === "trv10_select")) {
     return <TRV10Select submitEvent={submitEvent} />;
   }
 
-  if (formConfig.find((field) => field.type === "trv10_schedule")) {
+  if (formConfig.find(field => field.type === "trv10_schedule")) {
     return <TRV10ScheduleForm submitEvent={submitEvent} />;
   }
 
-  if (formConfig.find((field) => field.type === "trv10_schedule_rental")) {
+  if (formConfig.find(field => field.type === "trv10_schedule_rental")) {
     return <TRV10ScheduleRentalForm submitEvent={submitEvent} />;
   }
 
-  if (formConfig.find((field) => field.type === "trv_select")) {
+  if (formConfig.find(field => field.type === "trv_select")) {
     return <TRVSelect submitEvent={submitEvent} />;
   }
 
-  if (formConfig.find((field) => field.type === "trv11_select")) {
+  if (formConfig.find(field => field.type === "trv11_select")) {
     return <TRV11Select submitEvent={submitEvent} />;
   }
 
-  if (formConfig.find((field) => field.type === "airline_select")) {
+  if (formConfig.find(field => field.type === "airline_select")) {
     return <AirlineSelect submitEvent={submitEvent} />;
   }
 
@@ -197,9 +190,8 @@ export default function FormConfig({
       defaultValues={defaultValues}
       className="h-[500px] overflow-scroll"
       onSubmit={onSubmit}
-      triggerSubmit={!isNoFieldVisible}
-    >
-      {formConfig.map((field) => {
+      triggerSubmit={!isNoFieldVisible}>
+      {formConfig.map(field => {
         const { display = true } = field;
         if (!display) {
           return <></>;
@@ -234,14 +226,8 @@ export default function FormConfig({
               />
             );
           case "nestedSelect":
-            return (
-              <ItemCustomisationSelector
-                label={field.label}
-                name={field.name}
-              />
-            );
+            return <ItemCustomisationSelector label={field.label} name={field.name} />;
           default:
-            console.log("Invalid field type");
             return <></>;
         }
       })}

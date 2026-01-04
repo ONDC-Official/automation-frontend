@@ -9,11 +9,7 @@ interface AddOnItem {
   addOns: string[];
 }
 
-export default function TRV10AddOnSelect({
-  submitEvent,
-}: {
-  submitEvent: (data: SubmitEventParams) => Promise<void>;
-}) {
+export default function TRV10AddOnSelect({ submitEvent }: { submitEvent: (data: SubmitEventParams) => Promise<void> }) {
   const [isPayloadEditorActive, setIsPayloadEditorActive] = useState(false);
   const [itemOptions, setItemOptions] = useState<AddOnItem[]>([]);
 
@@ -39,7 +35,6 @@ export default function TRV10AddOnSelect({
   };
 
   const onSubmit = async (data: any) => {
-    console.log("Selected Data:", data);
     await submitEvent({ jsonPath: {}, formData: data });
   };
 
@@ -50,15 +45,11 @@ export default function TRV10AddOnSelect({
       <button
         type="button"
         onClick={() => setIsPayloadEditorActive(true)}
-        className="p-2 border rounded-full hover:bg-gray-100 mb-4"
-      >
+        className="p-2 border rounded-full hover:bg-gray-100 mb-4">
         Paste On_Select's Payload
       </button>
 
-      <form
-        onSubmit={handleSubmit(onSubmit)}
-        className="space-y-4 h-[500px] overflow-y-scroll p-4"
-      >
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 h-[500px] overflow-y-scroll p-4">
         {itemOptions.map((item, index) => (
           <div key={item.itemId} className="border p-3 rounded space-y-2">
             {/* Add Ons dropdown */}
@@ -66,10 +57,9 @@ export default function TRV10AddOnSelect({
               <label className="mb-1 font-semibold">Select Add Ons</label>
               <select
                 className="border rounded p-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-                {...register(`items.${index}.addOns`)}
-              >
+                {...register(`items.${index}.addOns`)}>
                 <option value="">Select Add On</option>
-                {item.addOns.map((addon) => (
+                {item.addOns.map(addon => (
                   <option key={addon} value={addon}>
                     {addon}
                   </option>
@@ -90,10 +80,7 @@ export default function TRV10AddOnSelect({
           </div>
         ))}
 
-        <button
-          type="submit"
-          className="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700"
-        >
+        <button type="submit" className="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700">
           Submit
         </button>
       </form>
