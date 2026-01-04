@@ -36,7 +36,10 @@ export const navLinks: NavLink[] = [
     label: "Tools",
     href: ROUTES.TOOLS,
     selected: false,
-    subMenu: [{ label: "Seller Onboarding", href: ROUTES.SELLER_ONBOARDING }],
+    subMenu: [
+      { label: "Seller Onboarding", href: ROUTES.SELLER_ONBOARDING },
+      { label: "Auth Header Tool", href: ROUTES.AUTH_HEADER },
+    ],
     analytics: {
       category: "NAV",
       action: "Clicked in tools",

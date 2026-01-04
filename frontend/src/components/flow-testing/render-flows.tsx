@@ -183,7 +183,7 @@ function RenderFlows({
 
   useEffect(() => {
     const allTags = new Set(Object.values(flows).flatMap(cfg => cfg.tags ?? []));
-    const tagsArray = [...allTags];
+    const tagsArray = [...allTags].filter(tag => tag !== "WORKBENCH");
     setFlowTags(tagsArray);
   }, [flows]);
 
