@@ -179,7 +179,7 @@ export default function FormConfig({
   }
 
   if (formConfig.find(field => field.type === "trv_select")) {
-    return <TRVSelect submitEvent={submitEvent} flowId={flowId} />;
+    return <TRVSelect submitEvent={submitEvent} />;
   }
 
   if (formConfig.find(field => field.type === "trv11_select")) {
