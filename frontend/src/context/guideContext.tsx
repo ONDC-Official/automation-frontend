@@ -1,11 +1,4 @@
-import {
-  createContext,
-  ReactNode,
-  useContext,
-  useState,
-  Dispatch,
-  SetStateAction,
-} from "react";
+import { createContext, ReactNode, useContext, useState, Dispatch, SetStateAction } from "react";
 
 export enum GuideStepsEnums {
   Skip = "Skip",
@@ -23,8 +16,7 @@ export enum GuideStepsEnums {
   Reg11 = "Reg-11",
   Reg12 = "Reg-12",
   // Scenario Testing flow
-  Test1 = "Test-1"
-
+  Test1 = "Test-1",
 }
 
 interface GuideContextProps {
@@ -32,22 +24,17 @@ interface GuideContextProps {
   setGuideStep: Dispatch<SetStateAction<GuideStepsEnums>>;
 }
 
-export const GuideContext = createContext<GuideContextProps | undefined>(
-  undefined
-);
+export const GuideContext = createContext<GuideContextProps | undefined>(undefined);
 
 export const GuideProvider = ({ children }: { children: ReactNode }) => {
-  const [guideStep, setGuideStep] = useState<GuideStepsEnums>(
-    GuideStepsEnums.Skip
-  );
+  const [guideStep, setGuideStep] = useState<GuideStepsEnums>(GuideStepsEnums.Skip);
 
   return (
     <GuideContext.Provider
       value={{
         guideStep,
         setGuideStep,
-      }}
-    >
+      }}>
       {children}
     </GuideContext.Provider>
   );

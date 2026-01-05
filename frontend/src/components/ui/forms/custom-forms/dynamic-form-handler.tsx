@@ -20,9 +20,7 @@ export default function DynamicFormHandler({
   transactionId,
   formConfig,
 }: DynamicFormHandlerProps) {
-  const [status, setStatus] = useState<
-    "idle" | "waiting" | "completed" | "error"
-  >("idle");
+  const [status, setStatus] = useState<"idle" | "waiting" | "completed" | "error">("idle");
   const [formUrl, setFormUrl] = useState<string>("");
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [pollCount, setPollCount] = useState<number>(0);
@@ -45,15 +43,7 @@ export default function DynamicFormHandler({
     }
 
     try {
-      const url =
-        jsonpath.query(
-          { reference_data: referenceData },
-          formConfig.reference
-        )[0] || "";
-
-      console.log("✅ Extracted form URL from reference:", url);
-      console.log("   Reference path:", formConfig.reference);
-      console.log("   Reference data:", referenceData);
+      const url = jsonpath.query({ reference_data: referenceData }, formConfig.reference)[0] || "";
 
       return url as string;
     } catch (error) {
@@ -71,11 +61,6 @@ export default function DynamicFormHandler({
       const extractedSessionId = urlObj.searchParams.get("session_id");
 
       if (extractedSessionId) {
-        console.log(
-          "✅ [DynamicForm] Extracted session_id from form URL:",
-          extractedSessionId
-        );
-        console.log("   (Was using prop session_id:", sessionId, ")");
         return extractedSessionId;
       }
     } catch (error) {
@@ -97,7 +82,7 @@ export default function DynamicFormHandler({
       // So formName is the last part
       if (pathParts.length >= 3) {
         const extractedFormName = pathParts[pathParts.length - 1];
-        console.log("✅ [DynamicForm] Extracted form name:", extractedFormName);
+
         return extractedFormName;
       }
     } catch (error) {
@@ -111,7 +96,7 @@ export default function DynamicFormHandler({
   const formSubmissionKey = useMemo<string>(() => {
     if (formName && transactionId) {
       const key = `${transactionId}_${formName}`;
-      console.log("✅ [DynamicForm] Form submission key:", key);
+
       return key;
     }
     return transactionId; // Fallback to just transactionId for backward compatibility
@@ -136,33 +121,19 @@ export default function DynamicFormHandler({
 
   // Check completion function - polls backend to check if form was submitted
   const checkCompletion = useCallback(async () => {
-    console.log(
-      "🔍 [FORM] Checking completion: actualSessionId:",
-      actualSessionId,
-      "transactionId:",
-      transactionId,
-      "formSubmissionKey:",
-      formSubmissionKey
-    );
-    console.log("   (Prop sessionId was:", sessionId, ")");
     if (hasCompletedRef.current) return;
 
     try {
-      setPollCount((prev) => prev + 1);
+      setPollCount(prev => prev + 1);
 
       // Check if form was submitted by querying the session data
       // Use actualSessionId extracted from form URL, NOT the sessionId prop!
-      const response = await axios.get(
-        `${import.meta.env.VITE_BACKEND_URL}/sessions`,
-        {
-          params: {
-            session_id: actualSessionId,
-          },
-          timeout: 5000,
-        }
-      );
-
-      console.log("Poll result:", response.data, "Count:", pollCount + 1);
+      const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/sessions`, {
+        params: {
+          session_id: actualSessionId,
+        },
+        timeout: 5000,
+      });
 
       // Update session context with latest data so mapped-flow can see formSubmissions
       if (setSessionData && response.data) {
@@ -173,32 +144,8 @@ export default function DynamicFormHandler({
       // Use formSubmissionKey (transactionId_formName) to distinguish between multiple forms
       const formSubmitted = response.data?.formSubmissions?.[formSubmissionKey];
 
-      console.log("🔍 [DynamicForm] Checking for submission:", {
-        formSubmissionKey,
-        transactionId,
-        formName,
-        formSubmitted,
-        allSubmissions: response.data?.formSubmissions,
-      });
-
-      console.log("formSubmitted>>>>", formSubmitted);
-      console.log("hasCompletedRef>>>>>", hasCompletedRef);
-
-      if (formSubmitted) {
-        console.log(
-          "formSubmitted.submission_id>>>>>",
-          formSubmitted.submission_id
-        );
-      }
-
       if (formSubmitted && !hasCompletedRef.current) {
         hasCompletedRef.current = true;
-
-        console.log(
-          "✅ [DynamicForm] Form submission detected:",
-          formSubmitted
-        );
-        console.log("🛑 [DynamicForm] Stopping polling");
 
         // Stop polling immediately
         cleanup();
@@ -207,9 +154,8 @@ export default function DynamicFormHandler({
         if (formWindowRef.current && !formWindowRef.current.closed) {
           try {
             formWindowRef.current.close();
-            console.log("🪟 [DynamicForm] Closed form window");
           } catch (e) {
-            console.log("Could not close form window:", e);
+            console.error("Could not close form window:", e);
           }
         }
 
@@ -218,14 +164,6 @@ export default function DynamicFormHandler({
         // Do NOT show completed state - let parent handle closing the modal
         try {
           const submission_id = formSubmitted.submission_id || "";
-          console.log(
-            "📤 [DynamicForm] Calling submitEvent with submission_id:",
-            submission_id
-          );
-          console.log(
-            "📤 [DynamicForm] submitEvent function:",
-            typeof submitEvent
-          );
 
           await submitEvent({
             jsonPath: { submission_id: submission_id },
@@ -233,12 +171,9 @@ export default function DynamicFormHandler({
           });
 
           // Parent component will close the popup modal after submitEvent completes
-          console.log("✅ [DynamicForm] submitEvent completed successfully");
         } catch (error) {
           console.error("❌ [DynamicForm] Error submitting event:", error);
-          setErrorMessage(
-            "Form complete but failed to proceed. Please try again."
-          );
+          setErrorMessage("Form complete but failed to proceed. Please try again.");
           setStatus("error");
         }
       }
@@ -260,14 +195,11 @@ export default function DynamicFormHandler({
   // Start polling function
   const startPolling = useCallback(() => {
     if (isPollingRef.current) {
-      console.log("Already polling, skipping");
       return;
     }
 
     isPollingRef.current = true;
     setPollCount(0);
-
-    console.log("Starting polling for transaction:", transactionId);
 
     // Poll immediately first time
     checkCompletion();
@@ -286,17 +218,11 @@ export default function DynamicFormHandler({
 
       // CRITICAL: Open window IMMEDIATELY to preserve user gesture (before async calls)
       // Otherwise popup blockers will prevent window.open after await
-      const formWindow = window.open(
-        "about:blank",
-        "_blank",
-        "width=1200,height=800"
-      );
+      const formWindow = window.open("about:blank", "_blank", "width=1200,height=800");
 
       if (!formWindow) {
         setStatus("error");
-        setErrorMessage(
-          "Could not open form window. Please allow popups for this site."
-        );
+        setErrorMessage("Could not open form window. Please allow popups for this site.");
         return;
       }
 
@@ -362,25 +288,15 @@ export default function DynamicFormHandler({
         // Mark flow as active in localStorage (prevents accidental navigation)
         localStorage.setItem("dynamic_form_flow_active", "true");
 
-        console.log("🔍 [FORM] sessionId:", sessionId);
-        console.log("🔍 [FORM] transactionId:", transactionId);
-        console.log(
-          "🔍 [FORM] formServiceUrl (from reference):",
-          formServiceUrl
-        );
-        console.log("🔍 [FORM] referenceData:", referenceData);
-
         if (!transactionId) {
           throw new Error("Transaction ID is missing! Cannot create form URL.");
         }
 
         if (!formServiceUrl) {
           throw new Error(
-            "Form service URL is missing in reference_data! Make sure the form URL is generated in the mock service."
+            "Form service URL is missing in reference_data! Make sure the form URL is generated in the mock service.",
           );
         }
-
-        console.log("📡 Calling form service at:", formServiceUrl);
 
         // The formServiceUrl already contains all query parameters (session_id, flow_id, transaction_id)
         // since it's generated dynamically by the mock service generator
@@ -390,18 +306,9 @@ export default function DynamicFormHandler({
           timeout: 10000,
         });
 
-        console.log("✅ Form service response:", response.data);
-        console.log("✅ Response type:", typeof response.data);
-
         // Check if response is JSON with formUrl (dynamic form)
-        if (
-          response.data &&
-          typeof response.data === "object" &&
-          response.data.formUrl
-        ) {
+        if (response.data && typeof response.data === "object" && response.data.formUrl) {
           const dynamicFormUrl = response.data.formUrl;
-          console.log("dynamicFormUrl", dynamicFormUrl);
-          console.log("✅ Got dynamic form URL:", dynamicFormUrl);
 
           if (!dynamicFormUrl) {
             throw new Error("Form URL is empty in response!");
@@ -423,39 +330,25 @@ export default function DynamicFormHandler({
         }
 
         // If we get here, response might be HTML or unexpected format
-        throw new Error(
-          "Expected JSON response with formUrl, but got: " +
-            typeof response.data
-        );
+        throw new Error("Expected JSON response with formUrl, but got: " + typeof response.data);
       } catch (error: any) {
         console.error("Error opening form:", error);
         setStatus("error");
-        setErrorMessage(
-          error.response?.data?.message ||
-            error.message ||
-            "Failed to open form"
-        );
+        setErrorMessage(error.response?.data?.message || error.message || "Failed to open form");
 
         // Close the popup if we failed to get the URL
         if (formWindow && !formWindow.closed) {
           try {
             formWindow.close();
           } catch (e) {
-            console.log("Could not close form window:", e);
+            console.error("Could not close form window:", e);
           }
         }
 
         cleanup();
       }
     },
-    [
-      sessionId,
-      transactionId,
-      referenceData,
-      formServiceUrl,
-      startPolling,
-      cleanup,
-    ]
+    [sessionId, transactionId, referenceData, formServiceUrl, startPolling, cleanup],
   );
 
   // Handle reopen - NO navigation
@@ -465,15 +358,11 @@ export default function DynamicFormHandler({
       e.stopPropagation();
 
       if (formUrl) {
-        const formWindow = window.open(
-          formUrl,
-          "_blank",
-          "noopener,noreferrer,width=1200,height=800"
-        );
+        const formWindow = window.open(formUrl, "_blank", "noopener,noreferrer,width=1200,height=800");
         formWindowRef.current = formWindow;
       }
     },
-    [formUrl]
+    [formUrl],
   );
 
   // Handle retry - NO navigation
@@ -488,7 +377,7 @@ export default function DynamicFormHandler({
       setPollCount(0);
       hasCompletedRef.current = false;
     },
-    [cleanup]
+    [cleanup],
   );
 
   return (
@@ -498,14 +387,13 @@ export default function DynamicFormHandler({
       {status === "idle" && (
         <div>
           <p className="text-gray-600 mb-4">
-            Click the button below to open and complete the required form. A new
-            tab will open where you can fill out the form.
+            Click the button below to open and complete the required form. A new tab will open where you can fill out
+            the form.
           </p>
           <button
             type="button"
             onClick={handleOpenForm}
-            className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
+            className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500">
             Open Form
           </button>
         </div>
@@ -514,23 +402,14 @@ export default function DynamicFormHandler({
       {status === "waiting" && (
         <div className="text-center">
           <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
-          <h3 className="text-lg font-medium mb-2">
-            Waiting for Form Submission
-          </h3>
-          <p className="text-gray-600 mb-4">
-            Please complete and submit the form in the tab that was opened.
-          </p>
-          <p className="text-sm text-gray-500 mb-2">
-            Checking automatically... (Poll #{pollCount})
-          </p>
-          <p className="text-xs text-gray-400 mb-4">
-            This page will NOT refresh. Stay here while completing the form.
-          </p>
+          <h3 className="text-lg font-medium mb-2">Waiting for Form Submission</h3>
+          <p className="text-gray-600 mb-4">Please complete and submit the form in the tab that was opened.</p>
+          <p className="text-sm text-gray-500 mb-2">Checking automatically... (Poll #{pollCount})</p>
+          <p className="text-xs text-gray-400 mb-4">This page will NOT refresh. Stay here while completing the form.</p>
           <button
             type="button"
             onClick={handleReopenForm}
-            className="text-blue-600 hover:text-blue-800 underline focus:outline-none"
-          >
+            className="text-blue-600 hover:text-blue-800 underline focus:outline-none">
             Reopen Form Tab
           </button>
         </div>
@@ -539,9 +418,7 @@ export default function DynamicFormHandler({
       {status === "completed" && (
         <div className="text-center text-green-600">
           <div className="text-5xl mb-4">✓</div>
-          <h3 className="text-lg font-medium mb-2">
-            Form Submitted Successfully!
-          </h3>
+          <h3 className="text-lg font-medium mb-2">Form Submitted Successfully!</h3>
           <p className="text-gray-600">Proceeding to next step...</p>
         </div>
       )}
@@ -554,8 +431,7 @@ export default function DynamicFormHandler({
           <button
             type="button"
             onClick={handleRetry}
-            className="bg-blue-600 text-white py-2 px-6 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
+            className="bg-blue-600 text-white py-2 px-6 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
             Try Again
           </button>
         </div>
