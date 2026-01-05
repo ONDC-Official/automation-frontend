@@ -110,7 +110,7 @@ export { FormInput, FormTextInput };
 
 export function LabelWithToolTip({
   label,
-  labelInfo,
+  // labelInfo,
   required,
 }: {
   label: string;
