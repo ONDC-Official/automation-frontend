@@ -28,13 +28,12 @@ export default function TRVSelect({
   const [isPayloadEditorActive, setIsPayloadEditorActive] = useState(false);
   const [errorWhilePaste, setErrorWhilePaste] = useState("");
 
-  const { control, handleSubmit, watch, register, setValue, getValues } =
-    useForm({
-      defaultValues: {
-        provider: "" as string,
-        items: [{ itemId: "", count: 1, addOns: [] }],
-      } as any,
-    });
+  const { control, handleSubmit, watch, register, setValue, getValues } = useForm({
+    defaultValues: {
+      provider: "" as string,
+      items: [{ itemId: "", count: 1, addOns: [] }],
+    } as any,
+  });
 
   const { fields, append, remove } = useFieldArray({
     control,
@@ -45,12 +44,6 @@ export default function TRVSelect({
   const [itemOptions, setItemOptions] = useState<ExtractedItem[]>([]);
 
   const onSubmit = async (data: any) => {
-    console.log("Form Data", data);
-    // const { valid, errors } = validateFormData(data);
-    // if (!valid) {
-    //   toast.error(`Form validation failed: ${errors[0]}`);
-    //   return;
-    // }
     await submitEvent({ jsonPath: {}, formData: data });
   };
 
@@ -85,7 +78,6 @@ export default function TRVSelect({
       });
 
       setItemOptions(results);
-      console.log("result: ", results);
     } catch (err) {
       setErrorWhilePaste("Invalid payload structure.");
       toast.error("Invalid payload structure. Please check the pasted data.");
@@ -94,50 +86,31 @@ export default function TRVSelect({
     setIsPayloadEditorActive(false);
   };
 
-  const inputStyle =
-    "border rounded p-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white";
+  const inputStyle = "border rounded p-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white";
   const labelStyle = "mb-1 font-semibold";
   const fieldWrapperStyle = "flex flex-col mb-2";
 
-  const renderSelectOrInput = (
-    name: string,
-    options: ExtractedItem[],
-    index: number,
-    placeholder = ""
-  ) => {
+  const renderSelectOrInput = (name: string, options: ExtractedItem[], index: number, placeholder = "") => {
     if (options.length === 0) {
-      return (
-        <input
-          type="text"
-          {...register(name)}
-          placeholder={placeholder}
-          className={inputStyle}
-        />
-      );
+      return <input type="text" {...register(name)} placeholder={placeholder} className={inputStyle} />;
     }
     return (
       <select
         {...register(name)}
-        onChange={(e) => {
+        onChange={e => {
           const selectedId = e.target.value;
-          const selectedOption = options.find(
-            (opt) => opt.itemid === selectedId
-          );
+          const selectedOption = options.find(opt => opt.itemid === selectedId);
 
           if (selectedOption) {
             // update the other fields in the same row
-            setValue(
-              `items.${index}.parentItemId`,
-              selectedOption.parentItemId
-            );
+            setValue(`items.${index}.parentItemId`, selectedOption.parentItemId);
             setValue("provider", selectedOption.providerid);
             setValue(`items.${index}.addOns`, []);
           }
         }}
-        className={inputStyle}
-      >
+        className={inputStyle}>
         <option value="">Select...</option>
-        {options.map((option) => (
+        {options.map(option => (
           <option key={option.itemid} value={option.itemid}>
             {option.itemid}
           </option>
@@ -149,30 +122,24 @@ export default function TRVSelect({
   return (
     <div>
       {isPayloadEditorActive && <PayloadEditor onAdd={handlePaste} />}
-      {errorWhilePaste && (
-        <p className="text-red-500 text-sm italic mt-1">{errorWhilePaste}</p>
-      )}
+      {errorWhilePaste && <p className="text-red-500 text-sm italic mt-1">{errorWhilePaste}</p>}
       <div>
         <button
           type="button"
           onClick={() => setIsPayloadEditorActive(true)}
-          className="p-2 border rounded-full hover:bg-gray-100"
-        >
+          className="p-2 border rounded-full hover:bg-gray-100">
           <FaRegPaste size={14} />
         </button>
 
         {itemOptions.length === 0 && (
           <span className="ml-1.5 text-red-600">
-            Please paste the on_search payload containing item details. Once
-            available, the item ID field will appear in the form for selection.
+            Please paste the on_search payload containing item details. Once available, the item ID field will appear in
+            the form for selection.
           </span>
         )}
       </div>
 
-      <form
-        onSubmit={handleSubmit(onSubmit)}
-        className="space-y-4 h-[500px] overflow-y-scroll p-4"
-      >
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 h-[500px] overflow-y-scroll p-4">
         {fields.map((field, index) => (
           <div key={field.id} className="border p-3 rounded space-y-2">
             <div className={fieldWrapperStyle}>
@@ -196,15 +163,14 @@ export default function TRVSelect({
                 <label className={labelStyle}>Add Ons</label>
                 <select
                   className={inputStyle}
-                  onChange={(e) => {
+                  onChange={e => {
                     const val = e.target.value;
                     if (!val) return;
                     const prev = getValues(`items.${index}.addOns`) || [];
                     if (!prev.includes(val)) {
                       setValue(`items.${index}.addOns`, [...prev, val]);
                     }
-                  }}
-                >
+                  }}>
                   <option value="">Select Add Ons</option>
                   {itemOptions[index].addOns.map((c: any) => (
                     <option key={c} value={c}>
@@ -214,17 +180,11 @@ export default function TRVSelect({
                 </select>
 
                 <div className="flex flex-wrap gap-2 mt-2">
-                  {selectedItems[index]?.addOns?.map((c: any, i: number) => {
-                    console.log("c::::::::", c);
-                    return (
-                      <span
-                        key={i}
-                        className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-sm"
-                      >
-                        {c}
-                      </span>
-                    );
-                  })}
+                  {selectedItems[index]?.addOns?.map((c: any, i: number) => (
+                    <span key={i} className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-sm">
+                      {c}
+                    </span>
+                  ))}
                 </div>
               </div>
             )}
@@ -236,8 +196,7 @@ export default function TRVSelect({
             <button
               type="button"
               onClick={() => append({ itemId: "", count: 1, addOns: [] })}
-              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-            >
+              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
               Add Item
             </button>
           )}
@@ -245,29 +204,15 @@ export default function TRVSelect({
             <button
               type="button"
               onClick={() => remove(fields.length - 1)}
-              className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
-            >
+              className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">
               Remove Item
             </button>
           )}
         </div>
 
-        <button
-          type="submit"
-          className="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700"
-        >
+        <button type="submit" className="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700">
           Submit
         </button>
-        {/* <button
-          type="button"
-          onClick={() => {
-            const values = getValues();
-            console.log("Current form values:", values);
-          }}
-          className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
-        >
-          Preview Data
-        </button> */}
       </form>
     </div>
   );

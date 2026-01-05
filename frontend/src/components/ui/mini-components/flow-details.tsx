@@ -5,10 +5,8 @@ import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { buttonClass } from "./../../ui/forms/loading-button";
-import {
-  requestForFlowPermission,
-  addExpectation,
-} from "../../../utils/request-utils";
+import { requestForFlowPermission, addExpectation } from "../../../utils/request-utils";
+import { sessionIdSupport } from "../../../utils/localStorageManager";
 
 interface IProps {
   onNpChange: (data: string) => void;
@@ -18,23 +16,9 @@ interface IProps {
   onFormSubmit: (data: any) => void;
 }
 
-const EXPECTED_APIS = [
-  "search",
-  "select",
-  "init",
-  "confirm",
-  "status",
-  "update",
-  "track",
-];
+const EXPECTED_APIS = ["search", "select", "init", "confirm", "status", "update", "track"];
 
-const FlowDetails = ({
-  onNpChange,
-  getSubUrl,
-  onSetListning,
-  onGetActions,
-  onFormSubmit,
-}: IProps) => {
+const FlowDetails = ({ onNpChange, getSubUrl, onSetListning, onGetActions, onFormSubmit }: IProps) => {
   const {
     register,
     formState: { errors },
@@ -70,23 +54,12 @@ const FlowDetails = ({
     };
 
     try {
-      const response = await axios.post(
-        `${import.meta.env.VITE_BACKEND_URL}/unit/unit-session`,
-        payload
-      );
+      const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/unit/unit-session`, payload);
 
       onFormSubmit(payload);
-      console.log("Response", response.data);
+
       toast.info("Session created.");
-      const localData =
-        JSON.parse(localStorage.getItem("sessionIdForSupport") as string) || {};
-      localStorage.setItem(
-        "sessionIdForSupport",
-        JSON.stringify({
-          unitSession: response.data.sessionId,
-          ...localData,
-        })
-      );
+      sessionIdSupport.setUnitSession(response.data.sessionId);
       if (npType === "BAP") {
         const permission = await requestForFlowPermission(api, subUrl);
 
@@ -103,22 +76,19 @@ const FlowDetails = ({
         onGetActions({ ...response.data, ...payload });
       }
     } catch (e) {
-      console.log("Error while creating unit session", e);
+      console.error("Error while creating unit session", e);
       toast.error("Something went wrong");
     }
   };
 
   const fetchFormFieldData = async () => {
     try {
-      const response = await axios.get(
-        `${import.meta.env.VITE_BACKEND_URL}/config/senarioFormData`
-      );
-      setDynamicList((prev) => {
+      const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/config/senarioFormData`);
+      setDynamicList(prev => {
         return { ...prev, domain: response.data.domain || [] };
       });
-      console.log("form field data", response.data);
     } catch (e) {
-      console.log("error while fetching form field data", e);
+      console.error("error while fetching form field data", e);
     }
   };
 
@@ -127,7 +97,6 @@ const FlowDetails = ({
   }, []);
 
   useEffect(() => {
-    console.log("formdAta", formData.current);
     if (
       !formData.current.domain ||
       !formData.current.npType ||
@@ -150,9 +119,7 @@ const FlowDetails = ({
   };
 
   return (
-    <div
-      className={`bg-white p-4 rounded shadow-lg mb-4 flex flex-col gap-1 grow`}
-    >
+    <div className={`bg-white p-4 rounded shadow-lg mb-4 flex flex-col gap-1 grow`}>
       <div className="flex flex-row gap-4">
         <FormSelect
           name="npType"
@@ -179,7 +146,7 @@ const FlowDetails = ({
             pattern: {
               value: /^https?:\/\/.*/i,
               message: "URL must start with http:// or https://",
-            }
+            },
           }}
           onValueChange={(data: string) => {
             formData.current = { ...formData.current, subscriberUrl: data };
@@ -197,7 +164,7 @@ const FlowDetails = ({
           disabled={dynamicList.domain.length === 0}
           setSelectedValue={(data: any) => {
             formData.current = { ...formData.current, domain: data };
-            setDynamicList((prev) => {
+            setDynamicList(prev => {
               let filteredVersion: any = [];
               prev.domain.forEach((item: any) => {
                 if (item.key === data) {
@@ -222,7 +189,7 @@ const FlowDetails = ({
           disabled={dynamicList.version.length === 0}
           setSelectedValue={(data: any) => {
             formData.current = { ...formData.current, version: data };
-            setDynamicList((prev) => {
+            setDynamicList(prev => {
               let filteredUsecase: any = [];
               prev.version.forEach((item: any) => {
                 if (item.key === data) {
@@ -247,7 +214,7 @@ const FlowDetails = ({
           disabled={dynamicList.usecase.length === 0}
           setSelectedValue={(data: any) => {
             formData.current = { ...formData.current, usecaseId: data };
-            setDynamicList((prev) => {
+            setDynamicList(prev => {
               return {
                 ...prev,
                 allData: !prev.allData,
@@ -276,14 +243,12 @@ const FlowDetails = ({
         <button
           className={`${buttonClass} transition-colors disabled:opacity-50 disabled:cursor-not-allowed`}
           onClick={createUnitSession}
-          disabled={isDisabled || isSessionCreated}
-        >
+          disabled={isDisabled || isSessionCreated}>
           {getButtonText()}
         </button>
         <button
           className={`flex items-center justify-center px-4 py-2 text-sky-600 border border-sky-600 font-semibold w-full bg-white dark:bg-blue-400 dark:hover:bg-blue-500 focus:ring-blue-300 dark:focus:ring-blue-200 transition-all duration-300 rounded focus:outline-none focus:ring-2 focus:ring-opacity-50 disabled:opacity-50 disabled:cursor-not-allowed`}
-          onClick={() => window.location.reload()}
-        >
+          onClick={() => window.location.reload()}>
           Reset Session
         </button>
       </div>

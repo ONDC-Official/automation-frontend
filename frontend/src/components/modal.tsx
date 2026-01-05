@@ -16,7 +16,7 @@ const Modal = ({ isOpen, onClose, children }: IProps) => {
     >
       <div
         className="bg-white rounded-lg shadow-lg p-6 max-w-md w-full"
-        onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside content
+        onClick={e => e.stopPropagation()} // Prevent closing when clicking inside content
       >
         <button className="flex float-end" onClick={onClose}>
           <IoMdClose />
