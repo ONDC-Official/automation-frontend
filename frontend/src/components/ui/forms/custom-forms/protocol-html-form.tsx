@@ -505,7 +505,7 @@ export default function ProtocolHTMLForm({ submitEvent, referenceData, HtmlFormC
         // 	method: parsed.method,
         // 	body: fd,
         // });
-        res = await htmlFormSubmit(parsed.action || window.location.href, fd);
+        res = (await htmlFormSubmit(parsed.action || window.location.href, fd)) as AxiosResponse<any, any>;
       } else {
         const params = new URLSearchParams();
         for (const f of parsed.fields) {
@@ -534,7 +534,10 @@ export default function ProtocolHTMLForm({ submitEvent, referenceData, HtmlFormC
           }
         }
 
-        res = await htmlFormSubmit(parsed.action || window.location.href, params.toString());
+        res = (await htmlFormSubmit(parsed.action || window.location.href, params.toString())) as AxiosResponse<
+          any,
+          any
+        >;
       }
 
       // Parse response

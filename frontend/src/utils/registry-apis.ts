@@ -8,7 +8,7 @@ import { UserDetails } from "@components/Header";
 export const post = async (participantId: string, subscriberData: SubscriberData) => {
   try {
     const url = `${import.meta.env.VITE_BACKEND_URL}/auth/subscribe`;
-    const res = await axios.post(
+    await axios.post(
       url,
       {
         participant_id: participantId,
@@ -36,7 +36,7 @@ export const patch = async (data: any, user?: UserDetails) => {
       return;
     }
     const url = `${import.meta.env.VITE_BACKEND_URL}/auth/subscribe`;
-    const res = await axios.patch(
+    await axios.patch(
       url,
       {
         participant_id: participantId,
@@ -63,7 +63,7 @@ export const delSubscriberDetails = async (deleteData: any, user?: UserDetails) 
       toast.error("Participant ID is required for deletion");
     }
     const url = `${import.meta.env.VITE_BACKEND_URL}/auth/subscribe`;
-    const res = await axios.delete(url, {
+    await axios.delete(url, {
       data: {
         participant_id: participantId,
         ...deleteData,

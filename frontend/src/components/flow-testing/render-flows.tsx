@@ -142,7 +142,7 @@ function RenderFlows({
     const TIMEOUT = 90000; // 90 seconds
     let stopped = false;
 
-    const stopPolling = (message?: string) => {
+    const stopPolling = () => {
       stopped = true;
       if (pollingRef.current) clearTimeout(pollingRef.current);
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
@@ -155,7 +155,7 @@ function RenderFlows({
       try {
         const result = await getReport(sessionId);
         if (result?.data) {
-          stopPolling("✅ Report ready!");
+          stopPolling();
           toast.info("Report Generated");
           setGotReport(true);
           return;
@@ -173,7 +173,7 @@ function RenderFlows({
     // Set timeout to stop polling after 90s
     timeoutRef.current = setTimeout(() => {
       toast.error("Something went wrong while fetching the report.");
-      stopPolling("⏱️ Timed out after 90 seconds");
+      stopPolling();
     }, TIMEOUT);
   };
 
