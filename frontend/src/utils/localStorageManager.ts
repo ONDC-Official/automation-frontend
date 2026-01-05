@@ -74,6 +74,7 @@ class LocalStorageManager {
       JSON.parse(item);
       return true;
     } catch (error) {
+      console.error(`Error checking if item exists in localStorage "${key}":`, error);
       return false;
     }
   }
@@ -92,6 +93,7 @@ class LocalStorageManager {
       JSON.parse(item);
       return true;
     } catch (error) {
+      console.error(`Error validating and cleaning up item "${key}":`, error);
       this.removeItem(key);
       return false;
     }

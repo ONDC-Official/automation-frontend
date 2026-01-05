@@ -339,7 +339,7 @@ const ApiTesting = () => {
                 name="actions"
                 required={true}
                 options={actions}
-                disbaled={actions.length === 0}
+                disabled={actions.length === 0}
                 nonSelectedValue
                 register={register}
                 errors={errors}
