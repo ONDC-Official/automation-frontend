@@ -18,11 +18,18 @@ interface FormData {
   items: FormItem[];
 }
 
+interface CatalogItem {
+  id: string;
+  name: string;
+  addOns: { id: string; name: string }[];
+}
+
 export default function AirlineSelect({ submitEvent }: { submitEvent: (data: SubmitEventParams) => Promise<void> }) {
   const [isPayloadEditorActive, setIsPayloadEditorActive] = useState(false);
   const [errorWhilePaste, setErrorWhilePaste] = useState("");
+  const [availableItems, setAvailableItems] = useState<CatalogItem[]>([]);
 
-  const { control, register, handleSubmit, setValue } = useForm<FormData>({
+  const { control, register, handleSubmit, setValue, reset, watch } = useForm<FormData>({
     defaultValues: {
       provider: "",
       fulfillment: "",
@@ -42,6 +49,15 @@ export default function AirlineSelect({ submitEvent }: { submitEvent: (data: Sub
     name: "items",
   });
 
+  // Watch form items to get selected itemId for each row
+  const watchedItems = watch("items");
+
+  // Helper to get addons for a selected item
+  const getAddonsForItem = (itemId: string) => {
+    const item = availableItems.find(i => i.id === itemId);
+    return item?.addOns || [];
+  };
+
   /* ------------------- HANDLE PASTE ------------------- */
   const handlePaste = (payload: any) => {
     try {
@@ -50,9 +66,38 @@ export default function AirlineSelect({ submitEvent }: { submitEvent: (data: Sub
       }
 
       const provider = payload.message.catalog.providers[0];
+      
+      // Extract items from catalog
+      const catalogItems: CatalogItem[] = (provider.items || []).map((item: any) => ({
+        id: item.id,
+        name: item.descriptor?.name || item.id,
+        addOns: (item.add_ons || []).map((addon: any) => ({
+          id: addon.id,
+          name: addon.descriptor?.name || addon.id,
+        })),
+      }));
 
+      setAvailableItems(catalogItems);
+      setErrorWhilePaste("");
+
+      // Set provider and fulfillment
       setValue("provider", provider.id);
       setValue("fulfillment", provider.fulfillments?.[0]?.id || "");
+
+      // Pre-populate first item if available
+      if (catalogItems.length > 0) {
+        reset({
+          provider: provider.id,
+          fulfillment: provider.fulfillments?.[0]?.id || "",
+          items: [{
+            itemId: catalogItems[0].id,
+            count: 1,
+            addOnId: catalogItems[0].addOns?.[0]?.id || "",
+            addOnCount: 1,
+          }],
+        });
+        toast.success(`Found ${catalogItems.length} items in catalog`);
+      }
     } catch (err) {
       setErrorWhilePaste("Invalid payload structure.");
       toast.error("Invalid payload structure");
@@ -113,12 +158,26 @@ export default function AirlineSelect({ submitEvent }: { submitEvent: (data: Sub
             {/* ITEM ID */}
             <div className={fieldWrapperStyle}>
               <label className={labelStyle}>Item ID</label>
-              <input
-                type="text"
-                placeholder="Enter Item ID"
-                {...register(`items.${index}.itemId`)}
-                className={inputStyle}
-              />
+              {availableItems.length > 0 ? (
+                <select
+                  {...register(`items.${index}.itemId`)}
+                  className={inputStyle}
+                >
+                  <option value="">Select an item</option>
+                  {availableItems.map((item) => (
+                    <option key={item.id} value={item.id}>
+                      {item.name} ({item.id})
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <input
+                  type="text"
+                  placeholder="Paste on_search payload to populate items"
+                  {...register(`items.${index}.itemId`)}
+                  className={inputStyle}
+                />
+              )}
             </div>
 
             {/* ITEM QUANTITY */}
@@ -137,12 +196,30 @@ export default function AirlineSelect({ submitEvent }: { submitEvent: (data: Sub
             {/* ADD-ON ID */}
             <div className={fieldWrapperStyle}>
               <label className={labelStyle}>Add-On ID</label>
-              <input
-                type="text"
-                placeholder="Enter Add-On ID"
-                {...register(`items.${index}.addOnId`)}
-                className={inputStyle}
-              />
+              {(() => {
+                const selectedItemId = watchedItems?.[index]?.itemId || "";
+                const itemAddons = getAddonsForItem(selectedItemId);
+                return itemAddons.length > 0 ? (
+                  <select
+                    {...register(`items.${index}.addOnId`)}
+                    className={inputStyle}
+                  >
+                    <option value="">Select an add-on (optional)</option>
+                    {itemAddons.map((addon) => (
+                      <option key={addon.id} value={addon.id}>
+                        {addon.name} ({addon.id})
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <input
+                    type="text"
+                    placeholder="No add-ons available or select an item first"
+                    {...register(`items.${index}.addOnId`)}
+                    className={inputStyle}
+                  />
+                );
+              })()}
             </div>
 
             {/* ADD-ON QUANTITY */}
