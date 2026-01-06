@@ -130,3 +130,28 @@ export const categoryProtocolMappings: CategoryProtocolMapping[] = [
   { category: "Frozen Snacks", brand: "O", protocolKeys: BOTH },
   { category: "Gift Voucher", brand: "O", protocolKeys: [] },
 ];
+
+export const availableDomains = [
+  { code: "ONDC:RET10", version: "1.2.5" },
+  { code: "ONDC:RET11", version: "1.2.5" },
+  { code: "ONDC:RET12", version: "1.2.5" },
+  { code: "ONDC:RET13", version: "1.2.5" },
+  { code: "ONDC:RET14", version: "1.2.5" },
+  { code: "ONDC:RET15", version: "1.2.5" },
+  { code: "ONDC:RET16", version: "1.2.5" },
+  { code: "ONDC:RET18", version: "1.2.5" },
+
+  { code: "ONDC:LOG10", version: "1.2.5" },
+  { code: "ONDC:LOG11", version: "1.2.5" },
+
+  { code: "ONDC:TRV10", version: "2.1.0" },
+  { code: "ONDC:TRV11", version: "2.0.0 and 2.0.1" },
+  { code: "ONDC:TRV12", version: "2.0.0" },
+  { code: "ONDC:TRV13", version: "2.0.0 and 2.0.1" },
+  { code: "ONDC:TRV14", version: "2.0.0" },
+
+  { code: "ONDC:FIS10", version: "2.1.0" },
+  { code: "ONDC:FIS11", version: "2.0.0" },
+  { code: "ONDC:FIS12", version: "2.0.2" },
+  { code: "ONDC:FIS13", version: "2.0.0" },
+];
