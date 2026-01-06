@@ -95,13 +95,13 @@ export function FormGuide() {
 							from URL
 						</p>
 						<code className="block bg-white text-gray-800 px-3 py-2 rounded text-sm border border-blue-300">
-							https://workbench.ondc.tech/api-service/&lt;domain&gt;/&lt;version&gt;/seller
+							{`${import.meta.env.VITE_BASE_URL}`}/&lt;domain&gt;/&lt;version&gt;/seller
 						</code>
 						<p className="text-gray-700 text-sm pl-4">
 							For Example: For RET11 Version 1.2.5 it would be
 						</p>
 						<code className="block bg-white text-gray-700 px-3 py-2 rounded text-sm border border-blue-300">
-							https://workbench.ondc.tech/api-service/ONDC:RET11/1.2.5/seller
+							{`${import.meta.env.VITE_BASE_URL}`}/ONDC:RET11/1.2.5/seller
 						</code>
 					</div>
 
@@ -113,13 +113,13 @@ export function FormGuide() {
 							requests from URL
 						</p>
 						<code className="block bg-white text-gray-800 px-3 py-2 rounded text-sm border border-blue-300">
-							https://workbench.ondc.tech/api-service/&lt;domain&gt;/&lt;version&gt;/buyer
+							{`${import.meta.env.VITE_BASE_URL}`}/&lt;domain&gt;/&lt;version&gt;/buyer
 						</code>
 						<p className="text-gray-700 text-sm pl-4">
 							For Example: For RET11 Version 1.2.5 it would be
 						</p>
 						<code className="block bg-white text-gray-700 px-3 py-2 rounded text-sm border border-blue-300">
-							https://workbench.ondc.tech/api-service/ONDC:RET11/1.2.5/buyer
+							{`${import.meta.env.VITE_BASE_URL}`}/ONDC:RET11/1.2.5/buyer
 						</code>
 					</div>
 				</div>
