@@ -4,7 +4,7 @@
  */
 export const ROUTES = {
   HOME: "/home",
-  SCHEMA: "/schema",
+  SCHEMA: "/schema-validation",
   SCENARIO: "/scenario",
   FLOW_TESTING: "/flow-testing",
   LOGIN: "/login",
@@ -12,7 +12,6 @@ export const ROUTES = {
   TOOLS: "/tools",
   SELLER_ONBOARDING: "/seller-onboarding",
   PLAYGROUND: "/playground",
-  WALKTHROUGH: "/walkthrough",
   HISTORY: "/history",
   DB_BACK_OFFICE: "/db-back-office",
   ROOT: "/",

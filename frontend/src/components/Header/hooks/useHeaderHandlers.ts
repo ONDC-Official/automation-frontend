@@ -1,7 +1,7 @@
 import { useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { trackEvent } from "@utils/analytics";
-import { ROUTES } from "@/constants/routes";
+import { ROUTES } from "@constants/routes";
 import { NavLink, UserDetails } from "../types";
 
 interface UseHeaderHandlersProps {

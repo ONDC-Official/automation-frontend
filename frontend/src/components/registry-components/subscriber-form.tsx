@@ -1,45 +1,32 @@
-// src/App.tsx
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect, useContext, useCallback } from "react";
 import type { Key, Mapping } from "./registry-types";
 import * as api from "../../utils/registry-apis";
-
-// Components
 import { KeysSection } from "./key-section";
-// import { URIsSection } from "./uri-section";
 import { MappingsSection } from "./mappingSections";
-// import { LocationsSection } from "./location-section";
 import { UserContext } from "../../context/userContext";
-
-import { v4 as uuidv4 } from "uuid"; // For generating unique IDs
-// You would also import LocationsSection here
+import { v4 as uuidv4 } from "uuid";
 
 const SubscriberForm = () => {
   const [isLoading, setIsLoading] = useState(true);
   const user = useContext(UserContext);
   const [formData, setFormData] = [user.subscriberData, user.setSubscriberData];
 
-  useEffect(() => {
-    FetchUserLookUp();
-  }, [user.userDetails]);
+  const fetchUserLookup = useCallback(async () => {
+    try {
+      const data = await api.getSubscriberDetails(user.userDetails);
+      if (data) {
+        setFormData(data);
+      }
+      setIsLoading(false);
+    } catch (error) {
+      console.error("Error fetching subscriber details:", error);
+      setIsLoading(false);
+    }
+  }, [user.userDetails, setFormData]);
 
-  function FetchUserLookUp() {
-    api
-      .getSubscriberDetails(user.userDetails)
-      .then(data => {
-        if (data) {
-          setFormData(data);
-        } else {
-          // toast.error("Failed to load subscriber details");
-        }
-        setIsLoading(false);
-      })
-      .catch(error => {
-        console.error("Error fetching subscriber details:", error);
-        // toast.error("Failed to load subscriber details");
-        setIsLoading(false);
-      });
-  }
-  // --- Local state handlers (no API calls) ---
+  useEffect(() => {
+    fetchUserLookup();
+  }, [fetchUserLookup]);
 
   const addKey = async (key: Key): Promise<void> => {
     try {
@@ -56,7 +43,7 @@ const SubscriberForm = () => {
   const deleteKey = async (uk_id: string): Promise<void> => {
     try {
       const data = {
-        keys: formData.keys.filter(k => k.uk_id === uk_id),
+        keys: formData.keys.filter(k => k.uk_id !== uk_id),
       };
       await api.delSubscriberDetails(data, user.userDetails);
       setFormData(prev => ({
@@ -67,32 +54,6 @@ const SubscriberForm = () => {
       console.error("Error deleting key:", error);
     }
   };
-
-  // const addUri = async (uri: Uri): Promise<void> => {
-  // 	setFormData((prev) => ({ ...prev, uris: [...prev.uris, uri] }));
-  // };
-
-  // const editUri = async (id: string, uri: string): Promise<void> => {
-  // 	setFormData((prev) => ({
-  // 		...prev,
-  // 		uris: prev.uris.map((u) => (u.id === id ? { id, uri } : u)),
-  // 	}));
-  // };
-
-  // const deleteUri = async (id: string): Promise<void> => {
-  // 	try {
-  // 		const data = {
-  // 			uris: formData.uris.filter((u) => u.id !== id),
-  // 		};
-  // 		await api.delSubscriberDetails(data, user.userDetails);
-  // 		setFormData((prev) => ({
-  // 			...prev,
-  // 			uris: prev.uris.filter((u) => u.id !== id),
-  // 		}));
-  // 	} catch (error) {
-  // 		console.error("Error deleting URI:", error);
-  // 	}
-  // };
 
   const addMapping = async (mapping: Mapping): Promise<void> => {
     try {
@@ -122,7 +83,7 @@ const SubscriberForm = () => {
           },
         ],
       };
-      api.patch(convertedMapping, user.userDetails);
+      await api.patch(convertedMapping, user.userDetails);
       setFormData(prev => ({
         ...prev,
         mappings: [...prev.mappings, mapping],
@@ -155,55 +116,6 @@ const SubscriberForm = () => {
     }
   };
 
-  // const addLocation = async (location: Location): Promise<void> => {
-  // 	setFormData((prev) => ({
-  // 		...prev,
-  // 		locations: [...prev.locations, location],
-  // 	}));
-  // };
-
-  // const editLocation = async (
-  // 	id: string,
-  // 	newLocation: Location
-  // ): Promise<void> => {
-  // 	setFormData((prev) => ({
-  // 		...prev,
-  // 		locations: prev.locations.map((l) =>
-  // 			l.id === id ? { ...newLocation, id } : l
-  // 		),
-  // 	}));
-  // };
-
-  // const deleteLocation = async (id: string): Promise<void> => {
-  // 	try {
-  // 		const data = {
-  // 			locations: formData.locations.filter((l) => l.id !== id),
-  // 		};
-  // 		await api.delSubscriberDetails(data, user.userDetails);
-  // 		setFormData((prev) => ({
-  // 			...prev,
-  // 			locations: prev.locations.filter((l) => l.id !== id),
-  // 		}));
-  // 	} catch (error) {
-  // 		console.error("Error deleting location:", error);
-  // 	}
-  // };
-
-  // --- Save configuration handler ---
-  // const saveConfig = async () => {
-  // 	if (!user.userDetails?.participantId) {
-  // 		toast.error("Unable to save: missing participant ID");
-  // 		return;
-  // 	}
-  // 	try {
-  // 		await api.post(user.userDetails.participantId, formData);
-  // 		toast.success("Configuration saved successfully");
-  // 	} catch (error) {
-  // 		console.error("Error saving configuration:", error);
-  // 		toast.error("Failed to save configuration");
-  // 	}
-  // };
-
   if (isLoading) {
     return <div className="text-center p-10">Loading configuration...</div>;
   }
@@ -215,37 +127,12 @@ const SubscriberForm = () => {
           <h1 className="text-3xl font-bold text-gray-900">Registry Configuration</h1>
 
           <KeysSection keys={formData.keys} onAddKey={addKey} onDeleteKey={deleteKey} />
-          {/* <URIsSection
-						uris={formData.uris}
-						onAddUri={addUri}
-						onEditUri={editUri}
-						onDeleteUri={deleteUri}
-					/>
-
-					<LocationsSection
-						locations={formData.locations}
-						onAddLocation={addLocation}
-						onEditLocation={editLocation}
-						onDeleteLocation={deleteLocation}
-					/> */}
-          {/* You would add the LocationsSection here, similar to URIsSection */}
           <MappingsSection
             mappings={formData.mappings}
-            // uris={formData.uris}
-            // locations={formData.locations}
             onAddMapping={addMapping}
             onUpdateMapping={updateMapping}
             onDeleteMapping={deleteMapping}
           />
-          {/* Save button at bottom right */}
-          {/* <div className="absolute bottom-6 right-6">
-						<button
-							onClick={saveConfig}
-							className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
-						>
-							Save Config
-						</button>
-					</div> */}
         </div>
       </div>
     </div>
