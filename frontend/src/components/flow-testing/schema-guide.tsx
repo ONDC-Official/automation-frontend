@@ -1,3 +1,5 @@
+import { availableDomains } from "@/constants/common";
+
 export function SchemaGuide() {
   return (
     <div className="w-full h-full flex flex-col bg-white border border-sky-100 shadow-sm">
@@ -19,25 +21,13 @@ export function SchemaGuide() {
               </p>
               <div className="bg-gray-50 p-4 border border-gray-200 rounded space-y-1 text-sm">
                 <p className="text-gray-700">
-                  <span className="font-semibold">ONDC:RET10</span> (Version: 1.2.5) / 
-                  <span className="font-semibold"> ONDC:RET11</span> (Version: 1.2.5) / 
-                  <span className="font-semibold"> ONDC:RET12</span> (Version: 1.2.5) / 
-                  <span className="font-semibold"> ONDC:RET13</span> (Version: 1.2.5) / 
-                  <span className="font-semibold"> ONDC:RET14</span> (Version: 1.2.5) / 
-                  <span className="font-semibold"> ONDC:RET15</span> (Version: 1.2.5) / 
-                  <span className="font-semibold"> ONDC:RET16</span> (Version: 1.2.5) / 
-                  <span className="font-semibold"> ONDC:RET18</span> (Version: 1.2.5) / 
-                  <span className="font-semibold"> ONDC:LOG10</span> (Version: 1.2.5) / 
-                  <span className="font-semibold"> ONDC:LOG11</span> (Version: 1.2.5) / 
-                  <span className="font-semibold"> ONDC:TRV10</span> (Version: 2.1.0) / 
-                  <span className="font-semibold"> ONDC:TRV11</span> (Version: 2.0.0 and 2.0.1) / 
-                  <span className="font-semibold"> ONDC:TRV12</span> (Version: 2.0.0) / 
-                  <span className="font-semibold"> ONDC:TRV13</span> (Version: 2.0.0 and 2.0.1) / 
-                  <span className="font-semibold"> ONDC:TRV14</span> (Version: 2.0.0) / 
-                  <span className="font-semibold"> ONDC:FIS10</span> (Version: 2.1.0) / 
-                  <span className="font-semibold"> ONDC:FIS11</span> (Version: 2.0.0) / 
-                  <span className="font-semibold"> ONDC:FIS12</span> (Version: 2.0.2) / 
-                  <span className="font-semibold"> ONDC:FIS13</span> (Version: 2.0.0)
+                  {availableDomains.map((domain, index) => (
+                    <span key={domain.code}>
+                      <span className="font-semibold">{domain.code}</span>
+                      {" "} (Version: {domain.version})
+                      {index < availableDomains.length - 1 && " / "}
+                    </span>
+                  ))}
                 </p>
               </div>
             </div>
