@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { ROUTES } from "@/constants/routes";
+import { ROUTES } from "@constants/routes";
 import { NavLink } from "../types";
 import { navLinks } from "../constants";
 

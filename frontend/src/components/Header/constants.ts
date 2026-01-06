@@ -1,4 +1,4 @@
-import { ROUTES } from "@/constants/routes";
+import { ROUTES } from "@constants/routes";
 import { NavLink } from "./types";
 
 export const navLinks: NavLink[] = [
