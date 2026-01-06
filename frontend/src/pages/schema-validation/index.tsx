@@ -5,14 +5,8 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import { fetchFormFieldData } from "@utils/request-utils";
 import { trackEvent } from "@utils/analytics";
+import { SchemaGuide } from "@components/flow-testing/schema-guide";
 
-const INSTRUCTION = [
-  `1. Paste/ Upload Your API Payload`,
-  `2. Based on the payload pasted, the tool takes the domain and the version for testing compliance`,
-  `3. Click “Validate” to check for errors in API schema, data types, required fields and enums`,
-  `4. Review errors on missing or incorrect fields and fix issues`,
-  "5. Copy corrected payload as required",
-];
 
 const SchemaValidation = () => {
   const [payload, setPayload] = useState("");
@@ -207,27 +201,11 @@ const SchemaValidation = () => {
         </div>
 
         {/* Right Panel - Instructions & Results */}
-        <div className="w-2/5 flex flex-col p-6 space-y-4 overflow-hidden">
+        <div className="w-2/5 flex flex-col p-6 space-y-4 overflow-hidden min-w-0">
           {/* Instructions */}
           {isGuideOpen && !isValidationOpen && (
-            <div className="bg-white border border-sky-100 shadow-sm flex flex-col overflow-hidden animate-fadeIn">
-              <div className="bg-gradient-to-r from-sky-50 to-sky-100/50 px-6 py-4 border-b border-sky-100 flex-shrink-0">
-                <h3 className="text-lg font-bold text-gray-900">How to Use</h3>
-              </div>
-              <div className="flex-1 p-6 overflow-y-auto custom-scrollbar">
-                <div className="space-y-4">
-                  {INSTRUCTION?.map((item: string, index: number) => (
-                    <div
-                      key={index}
-                      className="flex items-start space-x-3 transform transition-all duration-300 hover:translate-x-1">
-                      <div className="w-7 h-7 bg-gradient-to-br from-sky-100 to-sky-200 flex items-center justify-center flex-shrink-0 mt-0.5 transition-all duration-300 hover:scale-110">
-                        <span className="text-sky-700 text-sm font-bold">{index + 1}</span>
-                      </div>
-                      <p className="text-gray-600 text-sm leading-relaxed">{item.replace(/^\d+\.\s*/, "")}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
+            <div className="bg-white border border-sky-100 shadow-sm flex flex-col overflow-hidden animate-fadeIn min-w-0">
+              <SchemaGuide />
             </div>
           )}
 
