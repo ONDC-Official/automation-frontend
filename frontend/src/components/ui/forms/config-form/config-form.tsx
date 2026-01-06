@@ -14,6 +14,7 @@ import TRV10ScheduleRentalForm from "../custom-forms/trv10-scheduleRental";
 import TRV11Select from "../custom-forms/trv11-select";
 import JsonSchemaForm from "../../../../pages/protocol-playground/ui/extras/rsjf-form";
 import AirlineSelect from "../custom-forms/airline-select";
+import AirlineSeatSelect from "../custom-forms/airline-seat-select";
 import TRV12busSeatSelection from "../custom-forms/trv-seat-count";
 import FinvuRedirectForm from "../custom-forms/finvu-redirect-form";
 import DynamicFormHandler from "../custom-forms/dynamic-form-handler";
@@ -31,6 +32,7 @@ export interface FormFieldConfigType {
     | "boolean"
     | "trv12_bus_seat_selection"
     | "airline_select"
+    | "airline_seat_select"
     | "ret10_grocery_select"
     | "nestedSelect"
     | "trv_select"
@@ -78,6 +80,16 @@ export default function FormConfig({
         // Convert to integer if the payloadField contains 'count' or 'quantity'
         if (payloadField.includes("count") || payloadField.includes("quantity")) {
           formatedData[payloadField] = parseInt(data[key], 10) || 0;
+        } 
+        // Convert date to ISO 8601 format if payloadField contains 'timestamp' or 'time'
+        else if (payloadField.includes("timestamp") || payloadField.includes("time.")) {
+          const dateValue = data[key];
+          // Check if it's already in ISO format or just a date
+          if (dateValue && !dateValue.includes("T")) {
+            formatedData[payloadField] = `${dateValue}T00:00:00Z`;
+          } else {
+            formatedData[payloadField] = dateValue;
+          }
         } else {
           formatedData[payloadField] = data[key];
         }
@@ -155,6 +167,10 @@ export default function FormConfig({
 
   if (formConfig.find(field => field.type === "trv12_bus_seat_selection")) {
     return <TRV12busSeatSelection submitEvent={submitEvent} />;
+  }
+
+  if (formConfig.find(field => field.type === "airline_seat_select")) {
+    return <AirlineSeatSelect submitEvent={submitEvent} />;
   }
 
   if (formConfig.find(field => field.type === "HTML_FORM")) {
