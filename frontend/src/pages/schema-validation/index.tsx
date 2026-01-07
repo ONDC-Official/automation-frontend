@@ -33,7 +33,7 @@ const SchemaValidation: FC = () => {
         />
 
         {/* Right Panel - Instructions & Results */}
-        <div className="w-2/5 flex flex-col p-6 space-y-4 overflow-hidden">
+        <div className="w-2/5 flex flex-col p-6 space-y-4 overflow-hidden min-w-0">
           <InstructionsPanel isVisible={isGuideOpen && !isValidationOpen} />
           <ValidationResults isVisible={isValidationOpen} isSuccess={isSuccessResponse} markdownData={mdData} />
           {!isGuideOpen && !isValidationOpen && (
