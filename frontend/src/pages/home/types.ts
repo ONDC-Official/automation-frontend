@@ -14,3 +14,5 @@ export type DomainItem = {
   key: string; // display label, may repeat!
   version: { key: string; usecase: string[] }[];
 };
+
+export type DomainResponse = { domain: DomainItem[] };

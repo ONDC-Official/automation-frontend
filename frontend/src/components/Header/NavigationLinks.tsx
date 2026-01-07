@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { GuideStepsEnums } from "@context/guideContext";
 import GuideOverlay from "@components/ui/GuideOverlay";
-import { ROUTES } from "@/constants/routes";
+import { ROUTES } from "@constants/routes";
 import { NavLink } from "./types";
 import { NavLinkItem } from "./NavLinkItem";
 

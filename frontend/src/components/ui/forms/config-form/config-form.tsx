@@ -12,7 +12,7 @@ import TRV10Select from "../custom-forms/trv10-select";
 import TRV10ScheduleForm from "../custom-forms/trv10-schedule";
 import TRV10ScheduleRentalForm from "../custom-forms/trv10-scheduleRental";
 import TRV11Select from "../custom-forms/trv11-select";
-import JsonSchemaForm from "../../../protocol-playground/ui/extras/rsjf-form";
+import JsonSchemaForm from "../../../../pages/protocol-playground/ui/extras/rsjf-form";
 import AirlineSelect from "../custom-forms/airline-select";
 import TRV12busSeatSelection from "../custom-forms/trv-seat-count";
 import FinvuRedirectForm from "../custom-forms/finvu-redirect-form";
