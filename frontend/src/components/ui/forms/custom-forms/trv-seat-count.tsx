@@ -1,5 +1,5 @@
 // import { useForm, useFieldArray } from "react-hook-form";
-// import { FaTrash } from "react-icons/fa"; 
+// import { FaTrash } from "react-icons/fa";
 // import { SubmitEventParams } from "../../../../types/flow-types";
 
 // export default function TRV12busSeatSelection({
@@ -78,7 +78,6 @@
 //     </div>
 //   );
 // }
-
 
 import { useForm, useFieldArray, useWatch } from "react-hook-form";
 import { FaTrash } from "react-icons/fa";
@@ -194,7 +193,7 @@ export default function TRV12busSeatSelection({
         >
           <FaRegPaste size={14} />
         </button>
-        <span className="text-xs font-medium text-red-600 bg-red-50 px-2 py-1 rounded">
+        <span className="text-xs font-bold text-red-700 bg-red-100 px-2 py-1 rounded">
           Please enter the on_select payload to select the seat here
         </span>
       </div>
