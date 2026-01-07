@@ -1,20 +1,18 @@
 import { useForm, useFieldArray } from "react-hook-form";
-import { SubmitEventParams } from "../../../../types/flow-types";
 import { toast } from "react-toastify";
-
-interface SeatFormData {
-  seats: { seatNumber: string }[];
-}
+import { 
+  ISeatFormData, 
+  IAirlineSeatSelectProps,
+  FORM_STYLES,
+  DEFAULT_SEAT_FORM_DATA
+} from "./airline.types";
 
 export default function AirlineSeatSelect({ 
-  submitEvent 
-}: { 
-  submitEvent: (data: SubmitEventParams) => Promise<void> 
-}) {
-  const { control, register, handleSubmit } = useForm<SeatFormData>({
-    defaultValues: {
-      seats: [{ seatNumber: "" }],
-    },
+  submitEvent,
+  defaultValues = DEFAULT_SEAT_FORM_DATA
+}: IAirlineSeatSelectProps) {
+  const { control, register, handleSubmit } = useForm<ISeatFormData>({
+    defaultValues,
   });
 
   const { fields, append, remove } = useFieldArray({
@@ -22,7 +20,7 @@ export default function AirlineSeatSelect({
     name: "seats",
   });
 
-  const onSubmit = async (data: SeatFormData) => {
+  const onSubmit = async (data: ISeatFormData) => {
     const seatNumbers = data.seats
       .map(s => s.seatNumber.trim())
       .filter(s => s !== "");
@@ -45,9 +43,7 @@ export default function AirlineSeatSelect({
     });
   };
 
-  const inputStyle = "border rounded p-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white";
-  const labelStyle = "mb-1 font-semibold text-sm";
-  const fieldWrapperStyle = "flex flex-col mb-2";
+  const { inputStyle, labelStyle, fieldWrapperStyle } = FORM_STYLES;
 
   return (
     <div className="p-4">
