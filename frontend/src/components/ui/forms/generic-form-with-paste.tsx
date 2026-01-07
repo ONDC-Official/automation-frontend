@@ -1,24 +1,13 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { FaRegPaste } from "react-icons/fa6";
 import { toast } from "react-toastify";
 import PayloadEditor from "@/components/ui/mini-components/payload-editor";
 import LoadingButton from "./loading-button";
-
-interface CatalogItem {
-  id: string;
-  name: string;
-  addOns: { id: string; name: string }[];
-}
-
-interface GenericFormWithPasteProps {
-  defaultValues?: any;
-  children: React.ReactNode;
-  onSubmit: (data: any) => Promise<void>;
-  className?: string;
-  triggerSubmit?: boolean;
-  enablePaste?: boolean;
-}
+import {
+  ICatalogItem,
+  IGenericFormWithPasteProps,
+} from "./generic-form.types";
 
 const GenericFormWithPaste = ({
   defaultValues,
@@ -27,7 +16,7 @@ const GenericFormWithPaste = ({
   className,
   triggerSubmit = false,
   enablePaste = false,
-}: GenericFormWithPasteProps) => {
+}: IGenericFormWithPasteProps) => {
   const {
     register,
     handleSubmit,
@@ -42,35 +31,47 @@ const GenericFormWithPaste = ({
   const [isError, setIsError] = useState(false);
   const [isPayloadEditorActive, setIsPayloadEditorActive] = useState(false);
   const [errorWhilePaste, setErrorWhilePaste] = useState("");
-  const [availableItems, setAvailableItems] = useState<CatalogItem[]>([]);
+  const [availableItems, setAvailableItems] = useState<ICatalogItem[]>([]);
 
   // Watch selected item to get its addons
-  const selectedItemId = watch("item_id");
+  const selectedItemId = watch("item_id") as string;
   const selectedItem = availableItems.find((item) => item.id === selectedItemId);
   const availableAddons = selectedItem?.addOns || [];
 
-  const handlePaste = (payload: any) => {
+  const handlePaste = (payload: Record<string, unknown>) => {
     try {
-      if (!payload?.message?.catalog?.providers) {
+      const message = payload?.message as Record<string, unknown> | undefined;
+      const catalog = message?.catalog as Record<string, unknown> | undefined;
+      const providers = catalog?.providers as Record<string, unknown>[] | undefined;
+
+      if (!providers) {
         throw new Error("Invalid Schema - Expected on_search payload with catalog.providers");
       }
 
-      const provider = payload.message.catalog.providers[0];
-      const items = provider.items || [];
+      const provider = providers[0] as Record<string, unknown>;
+      const items = (provider.items || []) as Record<string, unknown>[];
 
       if (!items.length) {
         throw new Error("No items found in catalog");
       }
 
       // Extract items with their addons
-      const catalogItems: CatalogItem[] = items.map((item: any) => ({
-        id: item.id,
-        name: item.descriptor?.name || item.id,
-        addOns: (item.add_ons || []).map((addon: any) => ({
-          id: addon.id,
-          name: addon.descriptor?.name || addon.descriptor?.short_desc || addon.id,
-        })),
-      }));
+      const catalogItems: ICatalogItem[] = items.map((item) => {
+        const descriptor = item.descriptor as Record<string, unknown> | undefined;
+        const addOns = (item.add_ons || []) as Record<string, unknown>[];
+
+        return {
+          id: (item.id as string) || "",
+          name: (descriptor?.name as string) || (item.id as string) || "",
+          addOns: addOns.map((addon) => {
+            const addonDescriptor = addon.descriptor as Record<string, unknown> | undefined;
+            return {
+              id: (addon.id as string) || "",
+              name: (addonDescriptor?.name as string) || (addonDescriptor?.short_desc as string) || (addon.id as string) || "",
+            };
+          }),
+        };
+      });
 
       setAvailableItems(catalogItems);
 
@@ -85,44 +86,45 @@ const GenericFormWithPaste = ({
 
       setErrorWhilePaste("");
       toast.success(`Found ${catalogItems.length} items in catalog`);
-    } catch (err: any) {
-      setErrorWhilePaste(err.message || "Invalid payload structure");
-      toast.error(err.message || "Invalid payload structure");
+    } catch (err) {
+      const error = err as Error;
+      setErrorWhilePaste(error.message || "Invalid payload structure");
+      toast.error(error.message || "Invalid payload structure");
       console.error(err);
     }
 
     setIsPayloadEditorActive(false);
   };
 
-  const handleSubmitForm = async (data: any) => {
+  const handleSubmitForm = useCallback(async (data: Record<string, unknown>) => {
     setIsLoading(true);
     setIsSuccess(false);
     setIsError(false);
     try {
       await onSubmit(data);
       setIsSuccess(true);
-    } catch (error: any) {
+    } catch (error) {
       setIsError(true);
-      console.error(error?.message);
+      console.error((error as Error)?.message);
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [onSubmit]);
 
   useEffect(() => {
     if (triggerSubmit && !isRequestTriggered.current) {
       isRequestTriggered.current = true;
       handleSubmit(handleSubmitForm)();
     }
-  }, []);
+  }, [triggerSubmit, handleSubmit, handleSubmitForm]);
 
   // Custom render function that adds dropdowns for item_id and add_on_id when data is available
   const renderChildren = () => {
     return React.Children.map(children, (child) => {
       if (!React.isValidElement(child)) return child;
 
-      const childProps = child.props as any;
-      const fieldName = childProps.name;
+      const childProps = child.props as Record<string, unknown>;
+      const fieldName = childProps.name as string;
 
       // Replace item_id text input with dropdown when items are available
       if (fieldName === "item_id" && availableItems.length > 0) {
@@ -130,7 +132,7 @@ const GenericFormWithPaste = ({
           <div className="mb-2 w-full bg-gray-50 border rounded-md p-2 flex">
             <div className="flex justify-between w-full">
               <label className="text-sm font-medium text-gray-600 mb-2">
-                {childProps.label || "Item ID"} <span className="text-red-500 ml-1">*</span>
+                {(childProps.label as string) || "Item ID"} <span className="text-red-500 ml-1">*</span>
               </label>
             </div>
             <select
@@ -157,7 +159,7 @@ const GenericFormWithPaste = ({
           <div className="mb-2 w-full bg-gray-50 border rounded-md p-2 flex">
             <div className="flex justify-between w-full">
               <label className="text-sm font-medium text-gray-600 mb-2">
-                {childProps.label || "Add-on ID"}
+                {(childProps.label as string) || "Add-on ID"}
               </label>
             </div>
             <select

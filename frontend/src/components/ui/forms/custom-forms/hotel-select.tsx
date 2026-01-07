@@ -3,45 +3,13 @@ import { useForm } from "react-hook-form";
 import { FaRegPaste } from "react-icons/fa6";
 import { toast } from "react-toastify";
 import PayloadEditor from "@/components/ui/mini-components/payload-editor";
-import { SubmitEventParams } from "@/types/flow-types";
-
-interface IHotelCatalogItem {
-  id: string;
-  name: string;
-  locationIds: string[];
-  addOns: { id: string; name: string }[];
-}
-
-interface IHotelFormData {
-  itemId: string;
-  quantity: number;
-  addOnId: string;
-  adultsCount: number;
-  childrenCount: number;
-  providerId: string;
-  locationId: string;
-}
-
-interface IHotelSelectProps {
-  submitEvent: (params: SubmitEventParams) => Promise<void>;
-}
-
-const FORM_STYLES = {
-  inputStyle: "w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500",
-  labelStyle: "block text-sm font-medium text-gray-700 mb-1",
-  fieldWrapperStyle: "mb-4",
-  sectionStyle: "border p-4 rounded-lg bg-gray-50 mb-4",
-};
-
-const DEFAULT_FORM_DATA: IHotelFormData = {
-  itemId: "",
-  quantity: 1,
-  addOnId: "",
-  adultsCount: 1,
-  childrenCount: 0,
-  providerId: "",
-  locationId: "",
-};
+import {
+  IHotelCatalogItem,
+  IHotelFormData,
+  IHotelSelectProps,
+  DEFAULT_HOTEL_FORM_DATA,
+  HOTEL_FORM_STYLES,
+} from "./hotel.types";
 
 export default function HotelSelect({ submitEvent }: IHotelSelectProps) {
   const [isPayloadEditorActive, setIsPayloadEditorActive] = useState(false);
@@ -49,7 +17,7 @@ export default function HotelSelect({ submitEvent }: IHotelSelectProps) {
   const [availableItems, setAvailableItems] = useState<IHotelCatalogItem[]>([]);
 
   const { register, handleSubmit, watch, reset } = useForm<IHotelFormData>({
-    defaultValues: DEFAULT_FORM_DATA,
+    defaultValues: DEFAULT_HOTEL_FORM_DATA,
   });
 
   // Watch selected item to get its addons
@@ -58,44 +26,63 @@ export default function HotelSelect({ submitEvent }: IHotelSelectProps) {
   const availableAddons = selectedItem?.addOns || [];
 
   /* ------------------- HANDLE PASTE ------------------- */
-  const handlePaste = (payload: any) => {
+  const handlePaste = (payload: Record<string, unknown>) => {
     try {
-      if (!payload?.message?.catalog?.providers) {
+      const message = payload?.message as Record<string, unknown> | undefined;
+      const catalog = message?.catalog as Record<string, unknown> | undefined;
+      const providers = catalog?.providers as Record<string, unknown>[] | undefined;
+
+      if (!providers) {
         throw new Error("Invalid Schema - Expected on_search payload with catalog.providers");
       }
 
-      const provider = payload.message.catalog.providers[0];
+      const provider = providers[0] as Record<string, unknown>;
+      const items = (provider.items || []) as Record<string, unknown>[];
 
-      // Extract items from catalog
-      const catalogItems: IHotelCatalogItem[] = (provider.items || []).map((item: any) => ({
-        id: item.id,
-        name: item.descriptor?.name || item.id,
-        locationIds: item.location_ids || [],
-        addOns: (item.add_ons || []).map((addon: any) => ({
-          id: addon.id,
-          name: addon.descriptor?.name || addon.descriptor?.short_desc || addon.id,
-        })),
-      }));
+      // Extract items with their addons
+      const catalogItems: IHotelCatalogItem[] = items.map((item) => {
+        const descriptor = item.descriptor as Record<string, unknown> | undefined;
+        const addOns = (item.add_ons || []) as Record<string, unknown>[];
+
+        return {
+          id: (item.id as string) || "",
+          name: (descriptor?.name as string) || (item.id as string) || "",
+          locationIds: (item.location_ids as string[]) || [],
+          addOns: addOns.map((addon) => {
+            const addonDescriptor = addon.descriptor as Record<string, unknown> | undefined;
+            return {
+              id: (addon.id as string) || "",
+              name: (addonDescriptor?.name as string) || (addonDescriptor?.short_desc as string) || (addon.id as string) || "",
+            };
+          }),
+        };
+      });
 
       setAvailableItems(catalogItems);
-      setErrorWhilePaste("");
+
+      const firstItem = catalogItems[0];
+
+      if (!firstItem) {
+        throw new Error("No items found in catalog");
+      }
 
       // Pre-populate form with first item
-      if (catalogItems.length > 0) {
-        reset({
-          providerId: provider.id,
-          locationId: catalogItems[0].locationIds[0] || "",
-          itemId: catalogItems[0].id,
-          quantity: 1,
-          addOnId: catalogItems[0].addOns?.[0]?.id || "",
-          adultsCount: 1,
-          childrenCount: 0,
-        });
-        toast.success(`Found ${catalogItems.length} items in catalog`);
-      }
+      reset({
+        providerId: (provider.id as string) || "",
+        locationId: firstItem.locationIds[0] || "",
+        itemId: firstItem.id,
+        quantity: 1,
+        addOnId: firstItem.addOns?.[0]?.id || "",
+        adultsCount: 1,
+        childrenCount: 0,
+      });
+
+      setErrorWhilePaste("");
+      toast.success(`Found ${catalogItems.length} items in catalog`);
     } catch (err) {
-      setErrorWhilePaste("Invalid payload structure. Expected on_search response.");
-      toast.error("Invalid payload structure");
+      const error = err as Error;
+      setErrorWhilePaste(error.message || "Invalid payload structure");
+      toast.error(error.message || "Invalid payload structure");
       console.error(err);
     }
 
@@ -145,7 +132,7 @@ export default function HotelSelect({ submitEvent }: IHotelSelectProps) {
     });
   };
 
-  const { inputStyle, labelStyle, fieldWrapperStyle, sectionStyle } = FORM_STYLES;
+  const { inputStyle, labelStyle, fieldWrapperStyle, sectionStyle } = HOTEL_FORM_STYLES;
 
   return (
     <div>
