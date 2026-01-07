@@ -20,7 +20,8 @@ export interface ICatalogItem {
 export interface IGenericFormWithPasteProps {
   defaultValues?: Record<string, unknown>;
   children: React.ReactNode;
-  onSubmit: (data: Record<string, unknown>) => Promise<void>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  onSubmit: (data: any) => Promise<void>;
   className?: string;
   triggerSubmit?: boolean;
   enablePaste?: boolean;
