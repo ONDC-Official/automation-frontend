@@ -4,6 +4,7 @@ import FormSelect from "../form-select";
 import CheckboxGroup from "../checkbox";
 import ItemCustomisationSelector from "../nested-select";
 import GenericForm from "../generic-form";
+import GenericFormWithPaste from "../generic-form-with-paste";
 import { SubmitEventParams } from "../../../../types/flow-types";
 import Ret10GrocerySelect from "../custom-forms/ret10-grocery-select";
 import ProtocolHTMLForm from "../custom-forms/protocol-html-form";
@@ -15,6 +16,7 @@ import TRV11Select from "../custom-forms/trv11-select";
 import JsonSchemaForm from "../../../../pages/protocol-playground/ui/extras/rsjf-form";
 import AirlineSelect from "@/components/ui/forms/custom-forms/airline-select";
 import AirlineSeatSelect from "@/components/ui/forms/custom-forms/airline-seat-select";
+import HotelSelect from "@/components/ui/forms/custom-forms/hotel-select";
 import TRV12busSeatSelection from "../custom-forms/trv-seat-count";
 import FinvuRedirectForm from "../custom-forms/finvu-redirect-form";
 import DynamicFormHandler from "../custom-forms/dynamic-form-handler";
@@ -42,6 +44,7 @@ export interface FormFieldConfigType {
     | "trv10_schedule"
     | "trv10_schedule_rental"
     | "trv11_select"
+    | "hotel_select"
     | "HTML_FORM"
     | "FINVU_REDIRECT"
     | "DYNAMIC_FORM";
@@ -54,6 +57,7 @@ export interface FormFieldConfigType {
   display?: boolean;
   reference?: string;
   schema?: any;
+  required?: boolean;
 }
 
 export type FormConfigType = FormFieldConfigType[];
@@ -212,12 +216,21 @@ export default function FormConfig({
     return <IntercitySelect submitEvent={submitEvent} />;
   }
 
+  if (formConfig.find(field => field.type === "hotel_select")) {
+    return <HotelSelect submitEvent={submitEvent} />;
+  }
+
+  // Check if form has fields that can be populated from on_search (like item_id for TRV13)
+  const enablePaste = formConfig.some(field => field.name === "item_id");
+  const FormComponent = enablePaste ? GenericFormWithPaste : GenericForm;
+
   return (
-    <GenericForm
+    <FormComponent
       defaultValues={defaultValues}
       className="h-[500px] overflow-scroll"
       onSubmit={onSubmit}
-      triggerSubmit={!isNoFieldVisible}>
+      triggerSubmit={!isNoFieldVisible}
+      enablePaste={enablePaste}>
       {formConfig.map(field => {
         const { display = true } = field;
         if (!display) {
@@ -230,7 +243,7 @@ export default function FormConfig({
               <FormInput
                 name={field.name}
                 label={field.label}
-                required={true}
+                required={field.required !== false}
                 // key={field.payloadField}
               />
             );
@@ -258,6 +271,6 @@ export default function FormConfig({
             return <></>;
         }
       })}
-    </GenericForm>
+    </FormComponent>
   );
 }
