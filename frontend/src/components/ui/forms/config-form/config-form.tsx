@@ -19,6 +19,7 @@ import TRV12busSeatSelection from "../custom-forms/trv-seat-count";
 import FinvuRedirectForm from "../custom-forms/finvu-redirect-form";
 import DynamicFormHandler from "../custom-forms/dynamic-form-handler";
 import { SessionContext } from "../../../../context/context";
+import IntercitySelect from "../custom-forms/intercity-select";
 
 export interface FormFieldConfigType {
   name: string;
@@ -32,6 +33,7 @@ export interface FormFieldConfigType {
     | "boolean"
     | "trv12_bus_seat_selection"
     | "airline_select"
+    | "intercity_select"
     | "airline_seat_select"
     | "ret10_grocery_select"
     | "nestedSelect"
@@ -204,6 +206,10 @@ export default function FormConfig({
 
   if (formConfig.find(field => field.type === "airline_select")) {
     return <AirlineSelect submitEvent={submitEvent} />;
+  }
+
+  if (formConfig.find(field => field.type === "intercity_select")) {
+    return <IntercitySelect submitEvent={submitEvent} />;
   }
 
   return (
