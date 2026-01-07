@@ -1,17 +1,18 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState, FC } from "react";
 import { useNavigate } from "react-router-dom";
 import { fetchFormFieldData } from "@utils/request-utils";
 import { trackEvent } from "@utils/analytics";
 import { features } from "@pages/home/constants";
-import Domains from "@/pages/home/Domains";
+import Domains from "@pages/home/Domains";
+import { DomainResponse } from "@pages/home/types";
 
-const Features: React.FC = () => {
+const Features: FC = () => {
   const navigate = useNavigate();
-  const [activeDomain, setActiveDomain] = useState<any>({});
+  const [activeDomain, setActiveDomain] = useState<DomainResponse>({ domain: [] });
 
   const getFormFields = async () => {
     const data = await fetchFormFieldData();
-    setActiveDomain(data);
+    setActiveDomain(data as DomainResponse);
   };
 
   useEffect(() => {
