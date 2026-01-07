@@ -1,0 +1,12 @@
+#!/bin/sh
+
+echo "Running pre-commit checks for frontend..."
+
+cd frontend || exit 1
+
+if ! npx lint-staged; then
+  echo "Pre-commit checks failed. Please fix errors and try again."
+  exit 1
+fi
+
+echo "Pre-commit checks passed!"
