@@ -1,7 +1,7 @@
 import { GoCodespaces, GoWorkflow } from "react-icons/go";
 import { MdSchema } from "react-icons/md";
 import { FaUserPlus, FaKey } from "react-icons/fa6";
-import { ROUTES } from "@/constants/routes";
+import { ROUTES } from "@constants/routes";
 import { Feature } from "./types";
 
 export const features: Feature[] = [

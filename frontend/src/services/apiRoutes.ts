@@ -32,6 +32,9 @@ export const API_ROUTES = {
     PAYLOAD: "/db/payload",
     REPORT: "/db/report",
     SESSIONS: "/db/sessions",
+    ADMIN_AUTH: "/db/admin/auth",
+    PAYLOADS: (domain: string, version: string, action: string, page?: string) =>
+      `/db/payloads/${domain}/${version}/${action}/${page || "1"}`,
   },
 
   // Config routes
@@ -48,5 +51,10 @@ export const API_ROUTES = {
   // API routes (external services)
   API: {
     SESSIONS_FLOWS: (sessionId: string) => `/api/sessions/flows/${sessionId}`,
+  },
+
+  AUTH: {
+    LOGOUT: "/auth/logout",
+    ME: "/auth/api/me",
   },
 } as const;

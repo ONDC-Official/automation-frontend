@@ -1,4 +1,3 @@
-// src/components/MappingsSection.tsx
 import React, { useState, useEffect } from "react";
 import type { Mapping } from "./registry-types";
 import { v4 as uuidv4 } from "uuid";
@@ -7,14 +6,17 @@ import axios from "axios";
 import GuideOverlay from "../ui/GuideOverlay";
 import { GuideStepsEnums } from "../../context/guideContext";
 
-// Predefined dropdown options
 const DOMAIN_OPTIONS = ["ONDC:TRV10", "ONDC:RET10", "ONDC:LOG10"];
+
 const TYPE_OPTIONS = ["BAP", "BPP"];
+
+type DynamicDomainOption = {
+  key: string;
+  value?: string;
+};
 
 interface MappingsSectionProps {
   mappings: Mapping[];
-  // uris: Uri[];
-  // locations: Location[];
   onAddMapping: (mapping: Mapping) => Promise<void>;
   onUpdateMapping: (id: string, mapping: Partial<Mapping>) => Promise<void>;
   onDeleteMapping: (id: string) => Promise<void>;
@@ -22,19 +24,13 @@ interface MappingsSectionProps {
 
 export const MappingsSection: React.FC<MappingsSectionProps> = ({
   mappings,
-  // uris,
-  // locations,
   onAddMapping,
   onUpdateMapping,
   onDeleteMapping,
 }) => {
   const [editingMapping, setEditingMapping] = useState<Mapping | null>(null);
   const [expandedMappingId, setExpandedMappingId] = useState<string | null>(null);
-  const [dynamicList, setDynamicList] = useState({
-    domain: [],
-    version: [],
-    usecase: [],
-  });
+  const [dynamicList, setDynamicList] = useState<{ domain: DynamicDomainOption[] }>({ domain: [] });
 
   const handleSave = async () => {
     if (!editingMapping) return;
@@ -71,9 +67,12 @@ export const MappingsSection: React.FC<MappingsSectionProps> = ({
   useEffect(() => {
     fetchFormFieldData();
   }, []);
+
   const toggleExpand = (id: string) => {
     setExpandedMappingId(prev => (prev === id ? null : id));
   };
+
+  const domainOptions = dynamicList.domain.length > 0 ? dynamicList.domain.map(option => option.key) : DOMAIN_OPTIONS;
 
   const selectClasses =
     "mt-1 block w-full pl-3 pr-10 py-2 bg-white border text-base border-gray-300 focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm rounded-md";
@@ -92,8 +91,8 @@ export const MappingsSection: React.FC<MappingsSectionProps> = ({
             className={selectClasses}
             value={mapping.domain}
             onChange={e => setEditingMapping({ ...mapping, domain: e.target.value })}>
-            {dynamicList.domain.map((o: any) => (
-              <option key={o.key}>{o.key}</option>
+            {domainOptions.map(optionKey => (
+              <option key={optionKey}>{optionKey}</option>
             ))}
           </select>
         </GuideOverlay>
@@ -178,7 +177,7 @@ export const MappingsSection: React.FC<MappingsSectionProps> = ({
         </button>
         <GuideOverlay
           currentStep={GuideStepsEnums.Reg12}
-          instruction={"Step 10: Save Domain"}
+          instruction={"Step 12: Save Domain"}
           handleGoClick={handleSave}
           left={0}
           top={65}>
@@ -228,14 +227,7 @@ export const MappingsSection: React.FC<MappingsSectionProps> = ({
                   {m.domain} ({m.type})
                 </span>
                 <div>
-                  <button
-                    // onClick={() => toggleExpand(m.id)}
-                    className="text-gray-400 hover:text-sky-600 mr-2 text-xl">
-                    {/* <FaCaretDown
-											className={`transition-transform duration-200 ${
-												isExpanded ? "rotate-180" : ""
-											}`}
-										/> */}
+                  <button className="text-gray-400 hover:text-sky-600 mr-2 text-xl">
                     <svg
                       className={`w-4 h-4 ml-2 text-gray-400 group-open:rotate-180 transition-transform duration-200 ${
                         isExpanded ? "rotate-180" : ""
@@ -246,7 +238,12 @@ export const MappingsSection: React.FC<MappingsSectionProps> = ({
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                     </svg>
                   </button>
-                  <button onClick={() => onDeleteMapping(m.id)} className="text-gray-400 hover:text-red-600">
+                  <button
+                    onClick={event => {
+                      event.stopPropagation();
+                      onDeleteMapping(m.id);
+                    }}
+                    className="text-gray-400 hover:text-red-600">
                     <TrashIcon />
                   </button>
                 </div>
