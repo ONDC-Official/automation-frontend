@@ -1,47 +1,26 @@
 import { useState } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { FaRegPaste } from "react-icons/fa6";
-import PayloadEditor from "../../mini-components/payload-editor";
-import { SubmitEventParams } from "../../../../types/flow-types";
 import { toast } from "react-toastify";
+import PayloadEditor from "@/components/ui/mini-components/payload-editor";
+import { 
+  IFormData, 
+  ICatalogItem, 
+  IAirlineSelectProps,
+  FORM_STYLES,
+  DEFAULT_FORM_DATA
+} from "./airline.types";
 
-interface FormItem {
-  itemId: string;
-  count: number;
-  addOnId: string;
-  addOnCount: number;
-}
-
-interface FormData {
-  provider: string;
-  fulfillment: string;
-  items: FormItem[];
-}
-
-interface CatalogItem {
-  id: string;
-  name: string;
-  addOns: { id: string; name: string }[];
-}
-
-export default function AirlineSelect({ submitEvent }: { submitEvent: (data: SubmitEventParams) => Promise<void> }) {
+export default function AirlineSelect({ 
+  submitEvent,
+  defaultValues = DEFAULT_FORM_DATA
+}: IAirlineSelectProps) {
   const [isPayloadEditorActive, setIsPayloadEditorActive] = useState(false);
   const [errorWhilePaste, setErrorWhilePaste] = useState("");
-  const [availableItems, setAvailableItems] = useState<CatalogItem[]>([]);
+  const [availableItems, setAvailableItems] = useState<ICatalogItem[]>([]);
 
-  const { control, register, handleSubmit, setValue, reset, watch } = useForm<FormData>({
-    defaultValues: {
-      provider: "",
-      fulfillment: "",
-      items: [
-        {
-          itemId: "",
-          count: 1,
-          addOnId: "",
-          addOnCount: 1,
-        },
-      ],
-    },
+  const { control, register, handleSubmit, setValue, reset, watch } = useForm<IFormData>({
+    defaultValues,
   });
 
   const { fields, append, remove } = useFieldArray({
@@ -68,7 +47,7 @@ export default function AirlineSelect({ submitEvent }: { submitEvent: (data: Sub
       const provider = payload.message.catalog.providers[0];
       
       // Extract items from catalog
-      const catalogItems: CatalogItem[] = (provider.items || []).map((item: any) => ({
+      const catalogItems: ICatalogItem[] = (provider.items || []).map((item: any) => ({
         id: item.id,
         name: item.descriptor?.name || item.id,
         addOns: (item.add_ons || []).map((addon: any) => ({
@@ -108,7 +87,7 @@ export default function AirlineSelect({ submitEvent }: { submitEvent: (data: Sub
   };
 
   /* ------------------- FINAL SUBMIT ------------------- */
-  const onSubmit = async (data: FormData) => {
+  const onSubmit = async (data: IFormData) => {
     const finalItems = data.items.map(item => ({
       itemId: item.itemId,
       count: item.count,
@@ -136,9 +115,7 @@ export default function AirlineSelect({ submitEvent }: { submitEvent: (data: Sub
     });
   };
 
-  const inputStyle = "border rounded p-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white";
-  const labelStyle = "mb-1 font-semibold text-sm";
-  const fieldWrapperStyle = "flex flex-col mb-2";
+  const { inputStyle, labelStyle, fieldWrapperStyle } = FORM_STYLES;
 
   return (
     <div>
