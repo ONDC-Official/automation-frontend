@@ -27,7 +27,6 @@
       "@config/*": ["./src/config/*"],
       "@constants/*": ["./src/constants/*"],
       "@types/*": ["./src/types/*"],
-      "@assets/*": ["./src/assets/*"],
       "@styles/*": ["./src/styles/*"],
       "@interface/*": ["./src/interface/*"],
       "@services/*": ["./src/services/*"]
