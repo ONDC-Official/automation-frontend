@@ -17,7 +17,8 @@ import Tabs from "@components/ui/mini-components/tabs";
 import { SessionContext } from "@context/context";
 import CircularProgress from "@components/ui/circular-cooldown";
 import Modal from "@components/modal";
-import { HiOutlineDocumentReport, HiOutlinePlusCircle, HiEye } from "react-icons/hi";
+import GuideModal from "@components/FlowShared/flow-guide";
+import { HiOutlineDocumentReport, HiOutlinePlusCircle, HiEye, HiOutlineQuestionMarkCircle } from "react-icons/hi";
 import jp from "jsonpath";
 import FlowHelperTab from "@components/FlowShared/helper-tab";
 import { GetRequestEndpoint } from "@components/FlowShared/guides";
@@ -124,6 +125,7 @@ function RenderFlows({
   const [metadata, setMetadata] = useState({});
   const apiCallFailCount = useRef(0);
   const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
+  const [isGuideOpen, setIsGuideOpen] = useState(false);
   const navigate = useNavigate();
   const { setSessionId } = useSession();
   const pollingRef = useRef<any>(null);
@@ -414,6 +416,11 @@ function RenderFlows({
         <p className="text-sm text-gray-600">Sesson has expired.</p>
         <p className="text-sm text-gray-600">Check support to raise a query.</p>
       </Modal>
+      <GuideModal
+        isOpen={isGuideOpen}
+        onClose={() => setIsGuideOpen(false)}
+        domain={cacheSessionData?.domain}
+      />
       <div className="w-full min-h-screen flex flex-col flex-1">
         <div className="space-y-2 pt-4 pr-4 pl-4">
           {cacheSessionData ? (
@@ -494,6 +501,17 @@ function RenderFlows({
                           <HiEye className="text-lg m2-1" />
                           View Report
                         </button>
+                      </div>
+                      <div className="flex justify-end">
+                        {newSession && (
+                          <button
+                            className="bg-sky-600 text-white text-sm flex px-2 py-2 rounded hover:bg-sky-700 shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            onClick={() => { setIsGuideOpen(true);
+                            }}>
+                            <HiOutlineQuestionMarkCircle className="text-lg m2-1" />
+                            Guide
+                          </button>
+                        )}
                       </div>
                     </div>
                   </div>
