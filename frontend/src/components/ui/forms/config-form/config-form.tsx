@@ -22,6 +22,7 @@ import FinvuRedirectForm from "../custom-forms/finvu-redirect-form";
 import DynamicFormHandler from "../custom-forms/dynamic-form-handler";
 import { SessionContext } from "../../../../context/context";
 import IntercitySelect from "../custom-forms/intercity-select";
+import HotelSelectProvider from "../custom-forms/hotel-slect-provider";
 
 export interface FormFieldConfigType {
   name: string;
@@ -47,7 +48,8 @@ export interface FormFieldConfigType {
     | "hotel_select"
     | "HTML_FORM"
     | "FINVU_REDIRECT"
-    | "DYNAMIC_FORM";
+    | "DYNAMIC_FORM"
+    | "trv13_select_provider";
   payloadField: string;
   values?: string[];
   defaultValue?: string;
@@ -220,6 +222,10 @@ export default function FormConfig({
 
   if (formConfig.find((field) => field.type === "hotel_select")) {
     return <HotelSelect submitEvent={submitEvent} />;
+  }
+
+  if (formConfig.find(field => field.type === "trv13_select_provider")) {
+    return <HotelSelectProvider submitEvent={submitEvent} />;
   }
 
   // Check if form has fields that can be populated from on_search (like item_id for TRV13)
