@@ -23,9 +23,8 @@ export function SchemaGuide() {
                 <p className="text-gray-700">
                   {availableDomains.map((domain, index) => (
                     <span key={domain.code}>
-                      <span className="font-semibold">{domain.code}</span>
-                      {" "} (Version: {domain.version})
-                      {index < availableDomains.length - 1 && " / "}
+                      <span className="font-semibold">{domain.code}</span> (Version:{" "}
+                      {domain.version}){index < availableDomains.length - 1 && " / "}
                     </span>
                   ))}
                 </p>
@@ -42,7 +41,8 @@ export function SchemaGuide() {
             </div>
             <div className="flex-1">
               <p className="text-gray-700 mb-3">
-                Paste/Upload Your API Payload. For Example: For search payload validation, paste the JSON:
+                Paste/Upload Your API Payload. For Example: For search payload validation, paste the
+                JSON:
               </p>
               <pre className="bg-gray-900 text-gray-100 p-4 rounded overflow-x-auto text-xs">
                 <code className="block min-w-max">{`{
@@ -120,8 +120,8 @@ export function SchemaGuide() {
             </div>
             <div className="flex-1">
               <p className="text-gray-700">
-                The tool takes the domain and the version for testing compliance. Please ensure domain and version are as per{" "}
-                <span className="font-semibold text-sky-700">#1</span>
+                The tool takes the domain and the version for testing compliance. Please ensure
+                domain and version are as per <span className="font-semibold text-sky-700">#1</span>
               </p>
             </div>
           </div>
@@ -135,7 +135,8 @@ export function SchemaGuide() {
             </div>
             <div className="flex-1">
               <p className="text-gray-700">
-                Click <span className="font-semibold">"Validate"</span> to check for errors in API schema, data types, required fields and enums
+                Click <span className="font-semibold">"Validate"</span> to check for errors in API
+                schema, data types, required fields and enums
               </p>
             </div>
           </div>
@@ -155,7 +156,9 @@ export function SchemaGuide() {
                 <div className="mb-3">
                   <div className="flex items-center space-x-2 mb-2">
                     <div className="w-3 h-3 bg-red-500"></div>
-                    <span className="text-sm text-red-700 font-medium">Validation errors found</span>
+                    <span className="text-sm text-red-700 font-medium">
+                      Validation errors found
+                    </span>
                   </div>
                 </div>
                 <div className="space-y-4 text-sm">
@@ -195,7 +198,8 @@ export function SchemaGuide() {
             </div>
             <div className="flex-1">
               <p className="text-gray-700">
-                Resolve the errors given in step <span className="font-semibold text-sky-700">#5</span> and redo from step{" "}
+                Resolve the errors given in step{" "}
+                <span className="font-semibold text-sky-700">#5</span> and redo from step{" "}
                 <span className="font-semibold text-sky-700">#2</span>
               </p>
             </div>
@@ -209,7 +213,9 @@ export function SchemaGuide() {
               <span className="text-sky-700 text-sm font-bold">7</span>
             </div>
             <div className="flex-1">
-              <p className="text-gray-700 mb-3">If there are no errors, it would display like this:</p>
+              <p className="text-gray-700 mb-3">
+                If there are no errors, it would display like this:
+              </p>
               <div className="bg-gray-50 border border-gray-200 rounded p-4">
                 <div className="flex items-center space-x-2 mb-3">
                   <div className="w-3 h-3 bg-green-500"></div>

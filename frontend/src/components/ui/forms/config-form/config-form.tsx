@@ -81,12 +81,12 @@ export default function FormConfig({
     const formatedData: Record<string, string | number> = {};
     const formData: Record<string, string> = data;
     for (const key in data) {
-      const payloadField = formConfig.find(field => field.name === key)?.payloadField;
+      const payloadField = formConfig.find((field) => field.name === key)?.payloadField;
       if (payloadField) {
         // Convert to integer if the payloadField contains 'count' or 'quantity'
         if (payloadField.includes("count") || payloadField.includes("quantity")) {
           formatedData[payloadField] = parseInt(data[key], 10) || 0;
-        } 
+        }
         // Convert date to ISO 8601 format if payloadField contains 'timestamp' or 'time'
         else if (payloadField.includes("timestamp") || payloadField.includes("time.")) {
           const dateValue = data[key];
@@ -107,7 +107,7 @@ export default function FormConfig({
   const defaultValues: any = {};
   let isNoFieldVisible = false;
 
-  formConfig.forEach(field => {
+  formConfig.forEach((field) => {
     const { display = true } = field;
 
     if (field.default) {
@@ -120,8 +120,8 @@ export default function FormConfig({
   });
 
   // Check for schema form
-  if (formConfig.find(f => f.schema)) {
-    const schemaField = formConfig.find(f => f.schema);
+  if (formConfig.find((f) => f.schema)) {
+    const schemaField = formConfig.find((f) => f.schema);
     return JsonSchemaForm({
       schema: schemaField!.schema,
       onSubmit: onSubmit,
@@ -129,14 +129,14 @@ export default function FormConfig({
   }
 
   // Check for DYNAMIC_FORM type
-  if (formConfig.find(field => field.type === "DYNAMIC_FORM")) {
+  if (formConfig.find((field) => field.type === "DYNAMIC_FORM")) {
     // Get transaction ID from session context using flowId
     let transactionId: string | undefined = undefined;
     if (flowId && sessionData && sessionData.flowMap) {
       transactionId = sessionData.flowMap[flowId] || undefined;
     }
 
-    const dynamicFormField = formConfig.find(field => field.type === "DYNAMIC_FORM");
+    const dynamicFormField = formConfig.find((field) => field.type === "DYNAMIC_FORM");
 
     return (
       <DynamicFormHandler
@@ -150,7 +150,7 @@ export default function FormConfig({
   }
 
   // Check for FINVU_REDIRECT type
-  if (formConfig.find(field => field.type === "FINVU_REDIRECT")) {
+  if (formConfig.find((field) => field.type === "FINVU_REDIRECT")) {
     // Get transaction ID from session context using flowId
     let transactionId: string | undefined = undefined;
     if (flowId && sessionData && sessionData.flowMap) {
@@ -167,61 +167,63 @@ export default function FormConfig({
     );
   }
 
-  if (formConfig.find(field => field.type === "ret10_grocery_select")) {
+  if (formConfig.find((field) => field.type === "ret10_grocery_select")) {
     return <Ret10GrocerySelect submitEvent={submitEvent} />;
   }
 
-  if (formConfig.find(field => field.type === "trv12_bus_seat_selection")) {
+  if (formConfig.find((field) => field.type === "trv12_bus_seat_selection")) {
     return <TRV12busSeatSelection submitEvent={submitEvent} />;
   }
 
-  if (formConfig.find(field => field.type === "airline_seat_select")) {
+  if (formConfig.find((field) => field.type === "airline_seat_select")) {
     return <AirlineSeatSelect submitEvent={submitEvent} />;
   }
 
-  if (formConfig.find(field => field.type === "HTML_FORM")) {
+  if (formConfig.find((field) => field.type === "HTML_FORM")) {
     return ProtocolHTMLForm({
       submitEvent: submitEvent,
       referenceData: referenceData,
-      HtmlFormConfigInFlow: formConfig.find(field => field.type === "HTML_FORM") as FormFieldConfigType,
+      HtmlFormConfigInFlow: formConfig.find(
+        (field) => field.type === "HTML_FORM"
+      ) as FormFieldConfigType,
     });
   }
 
   // Default: GenericForm
-  if (formConfig.find(field => field.type === "trv10_select")) {
+  if (formConfig.find((field) => field.type === "trv10_select")) {
     return <TRV10Select submitEvent={submitEvent} />;
   }
 
-  if (formConfig.find(field => field.type === "trv10_schedule")) {
+  if (formConfig.find((field) => field.type === "trv10_schedule")) {
     return <TRV10ScheduleForm submitEvent={submitEvent} />;
   }
 
-  if (formConfig.find(field => field.type === "trv10_schedule_rental")) {
+  if (formConfig.find((field) => field.type === "trv10_schedule_rental")) {
     return <TRV10ScheduleRentalForm submitEvent={submitEvent} />;
   }
 
-  if (formConfig.find(field => field.type === "trv_select")) {
+  if (formConfig.find((field) => field.type === "trv_select")) {
     return <TRVSelect submitEvent={submitEvent} flowId={flowId} />;
   }
 
-  if (formConfig.find(field => field.type === "trv11_select")) {
+  if (formConfig.find((field) => field.type === "trv11_select")) {
     return <TRV11Select submitEvent={submitEvent} />;
   }
 
-  if (formConfig.find(field => field.type === "airline_select")) {
+  if (formConfig.find((field) => field.type === "airline_select")) {
     return <AirlineSelect submitEvent={submitEvent} />;
   }
 
-  if (formConfig.find(field => field.type === "intercity_select")) {
+  if (formConfig.find((field) => field.type === "intercity_select")) {
     return <IntercitySelect submitEvent={submitEvent} />;
   }
 
-  if (formConfig.find(field => field.type === "hotel_select")) {
+  if (formConfig.find((field) => field.type === "hotel_select")) {
     return <HotelSelect submitEvent={submitEvent} />;
   }
 
   // Check if form has fields that can be populated from on_search (like item_id for TRV13)
-  const enablePaste = formConfig.some(field => field.name === "item_id");
+  const enablePaste = formConfig.some((field) => field.name === "item_id");
   const FormComponent = enablePaste ? GenericFormWithPaste : GenericForm;
 
   return (
@@ -230,8 +232,9 @@ export default function FormConfig({
       className="h-[500px] overflow-scroll"
       onSubmit={onSubmit}
       triggerSubmit={!isNoFieldVisible}
-      enablePaste={enablePaste}>
-      {formConfig.map(field => {
+      enablePaste={enablePaste}
+    >
+      {formConfig.map((field) => {
         const { display = true } = field;
         if (!display) {
           return <></>;
