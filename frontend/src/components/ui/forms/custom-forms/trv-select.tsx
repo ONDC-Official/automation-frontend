@@ -16,6 +16,7 @@ interface ExtractedItem {
 const FLOWS_WITH_ADD_ITEM_BUTTON: string[] = [
   "purchase_journey_with_form_Multiple_Tickets",
   "purchase_journey_without_form_Multiple_Tickets",
+  "user_cancellation_partial",
 ];
 
 export default function TRVSelect({
@@ -28,13 +29,12 @@ export default function TRVSelect({
   const [isPayloadEditorActive, setIsPayloadEditorActive] = useState(false);
   const [errorWhilePaste, setErrorWhilePaste] = useState("");
 
-  const { control, handleSubmit, watch, register, setValue, getValues } =
-    useForm({
-      defaultValues: {
-        provider: "" as string,
-        items: [{ itemId: "", count: 1, addOns: [] }],
-      } as any,
-    });
+  const { control, handleSubmit, watch, register, setValue, getValues } = useForm({
+    defaultValues: {
+      provider: "" as string,
+      items: [{ itemId: "", count: 1, addOns: [], addOnsQuantity: 1 }],
+    } as any,
+  });
 
   const { fields, append, remove } = useFieldArray({
     control,
@@ -45,12 +45,6 @@ export default function TRVSelect({
   const [itemOptions, setItemOptions] = useState<ExtractedItem[]>([]);
 
   const onSubmit = async (data: any) => {
-    console.log("Form Data", data);
-    // const { valid, errors } = validateFormData(data);
-    // if (!valid) {
-    //   toast.error(`Form validation failed: ${errors[0]}`);
-    //   return;
-    // }
     await submitEvent({ jsonPath: {}, formData: data });
   };
 
@@ -85,7 +79,6 @@ export default function TRVSelect({
       });
 
       setItemOptions(results);
-      console.log("result: ", results);
     } catch (err) {
       setErrorWhilePaste("Invalid payload structure.");
       toast.error("Invalid payload structure. Please check the pasted data.");
@@ -107,12 +100,7 @@ export default function TRVSelect({
   ) => {
     if (options.length === 0) {
       return (
-        <input
-          type="text"
-          {...register(name)}
-          placeholder={placeholder}
-          className={inputStyle}
-        />
+        <input type="text" {...register(name)} placeholder={placeholder} className={inputStyle} />
       );
     }
     return (
@@ -120,16 +108,11 @@ export default function TRVSelect({
         {...register(name)}
         onChange={(e) => {
           const selectedId = e.target.value;
-          const selectedOption = options.find(
-            (opt) => opt.itemid === selectedId
-          );
+          const selectedOption = options.find((opt) => opt.itemid === selectedId);
 
           if (selectedOption) {
             // update the other fields in the same row
-            setValue(
-              `items.${index}.parentItemId`,
-              selectedOption.parentItemId
-            );
+            setValue(`items.${index}.parentItemId`, selectedOption.parentItemId);
             setValue("provider", selectedOption.providerid);
             setValue(`items.${index}.addOns`, []);
           }
@@ -149,9 +132,7 @@ export default function TRVSelect({
   return (
     <div>
       {isPayloadEditorActive && <PayloadEditor onAdd={handlePaste} />}
-      {errorWhilePaste && (
-        <p className="text-red-500 text-sm italic mt-1">{errorWhilePaste}</p>
-      )}
+      {errorWhilePaste && <p className="text-red-500 text-sm italic mt-1">{errorWhilePaste}</p>}
       <div>
         <button
           type="button"
@@ -162,16 +143,13 @@ export default function TRVSelect({
         </button>
         {itemOptions.length === 0 && (
           <span className="ml-1.5 text-red-600">
-            Please paste the on_search payload containing item details. Once
-            available, the item ID field will appear in the form for selection.
+            Please paste the on_search payload containing item details. Once available, the item ID
+            field will appear in the form for selection.
           </span>
         )}
       </div>
 
-      <form
-        onSubmit={handleSubmit(onSubmit)}
-        className="space-y-4 h-[500px] overflow-y-scroll p-4"
-      >
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 h-[500px] overflow-y-scroll p-4">
         {fields.map((field, index) => (
           <div key={field.id} className="border p-3 rounded space-y-2">
             <div className={fieldWrapperStyle}>
@@ -213,18 +191,25 @@ export default function TRVSelect({
                 </select>
 
                 <div className="flex flex-wrap gap-2 mt-2">
-                  {selectedItems[index]?.addOns?.map((c: any, i: number) => {
-                    console.log("c::::::::", c);
-                    return (
-                      <span
-                        key={i}
-                        className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-sm"
-                      >
-                        {c}
-                      </span>
-                    );
-                  })}
+                  {selectedItems[index]?.addOns?.map((c: any, i: number) => (
+                    <span key={i} className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-sm">
+                      {c}
+                    </span>
+                  ))}
                 </div>
+
+                {selectedItems[index]?.addOns?.length > 0 && (
+                  <div className={`mt-2 ${fieldWrapperStyle}`}>
+                    <label className={labelStyle}>Add Ons Quantity</label>
+                    <input
+                      type="number"
+                      {...register(`items.${index}.addOnsQuantity`, {
+                        valueAsNumber: true,
+                      })}
+                      className={inputStyle}
+                    />
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -234,7 +219,7 @@ export default function TRVSelect({
           {flowId && FLOWS_WITH_ADD_ITEM_BUTTON.includes(flowId) && (
             <button
               type="button"
-              onClick={() => append({ itemId: "", count: 1, addOns: [] })}
+              onClick={() => append({ itemId: "", count: 1, addOns: [], addOnsQuantity: 1 })}
               className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
             >
               Add Item
@@ -257,16 +242,6 @@ export default function TRVSelect({
         >
           Submit
         </button>
-        {/* <button
-          type="button"
-          onClick={() => {
-            const values = getValues();
-            console.log("Current form values:", values);
-          }}
-          className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
-        >
-          Preview Data
-        </button> */}
       </form>
     </div>
   );

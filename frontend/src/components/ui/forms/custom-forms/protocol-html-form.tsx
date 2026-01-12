@@ -7,338 +7,338 @@ import { htmlFormSubmit } from "../../../../utils/request-utils";
 // --- Types -------------------------------------------------------------------
 
 type BaseField = {
-	kind:
-		| "textlike"
-		| "textarea"
-		| "select"
-		| "radio-group"
-		| "checkbox-single"
-		| "checkbox-group"
-		| "file"
-		| "hidden";
-	name: string;
-	label?: string;
-	required?: boolean;
-	disabled?: boolean;
-	id?: string | null;
-	// constraints
-	min?: string | number;
-	max?: string | number;
-	step?: string | number;
-	pattern?: string;
+  kind:
+    | "textlike"
+    | "textarea"
+    | "select"
+    | "radio-group"
+    | "checkbox-single"
+    | "checkbox-group"
+    | "file"
+    | "hidden";
+  name: string;
+  label?: string;
+  required?: boolean;
+  disabled?: boolean;
+  id?: string | null;
+  // constraints
+  min?: string | number;
+  max?: string | number;
+  step?: string | number;
+  pattern?: string;
 };
 
 type TextLikeField = BaseField & {
-	kind: "textlike";
-	inputType:
-		| "text"
-		| "password"
-		| "email"
-		| "number"
-		| "date"
-		| "datetime-local"
-		| "month"
-		| "time"
-		| "url"
-		| "tel"
-		| "search";
-	defaultValue?: string;
-	placeholder?: string;
+  kind: "textlike";
+  inputType:
+    | "text"
+    | "password"
+    | "email"
+    | "number"
+    | "date"
+    | "datetime-local"
+    | "month"
+    | "time"
+    | "url"
+    | "tel"
+    | "search";
+  defaultValue?: string;
+  placeholder?: string;
 };
 
 type TextareaField = BaseField & {
-	kind: "textarea";
-	defaultValue?: string;
-	placeholder?: string;
-	rows?: number;
+  kind: "textarea";
+  defaultValue?: string;
+  placeholder?: string;
+  rows?: number;
 };
 
 type SelectOption = { value: string; label: string; selected?: boolean };
 type SelectField = BaseField & {
-	kind: "select";
-	multiple?: boolean;
-	options: SelectOption[];
+  kind: "select";
+  multiple?: boolean;
+  options: SelectOption[];
 };
 
 type RadioGroupField = BaseField & {
-	kind: "radio-group";
-	options: { value: string; label?: string; checked?: boolean }[];
+  kind: "radio-group";
+  options: { value: string; label?: string; checked?: boolean }[];
 };
 
 type CheckboxSingleField = BaseField & {
-	kind: "checkbox-single";
-	valueAttr?: string; // default "on" if not present in HTML
-	checked?: boolean;
+  kind: "checkbox-single";
+  valueAttr?: string; // default "on" if not present in HTML
+  checked?: boolean;
 };
 
 type CheckboxGroupField = BaseField & {
-	kind: "checkbox-group";
-	options: { value: string; label?: string; checked?: boolean }[];
+  kind: "checkbox-group";
+  options: { value: string; label?: string; checked?: boolean }[];
 };
 
 type FileField = BaseField & {
-	kind: "file";
-	multiple?: boolean;
-	accept?: string | null;
+  kind: "file";
+  multiple?: boolean;
+  accept?: string | null;
 };
 
 type HiddenField = BaseField & {
-	kind: "hidden";
-	value: string;
+  kind: "hidden";
+  value: string;
 };
 
 type AnyField =
-	| TextLikeField
-	| TextareaField
-	| SelectField
-	| RadioGroupField
-	| CheckboxSingleField
-	| CheckboxGroupField
-	| FileField
-	| HiddenField;
+  | TextLikeField
+  | TextareaField
+  | SelectField
+  | RadioGroupField
+  | CheckboxSingleField
+  | CheckboxGroupField
+  | FileField
+  | HiddenField;
 
 type ParsedForm = {
-	method: string;
-	action: string;
-	enctype?: string | null;
-	fields: AnyField[];
+  method: string;
+  action: string;
+  enctype?: string | null;
+  fields: AnyField[];
 };
 
 // Value state type for the rebuilt React form
 type ValueState = Record<
-	string,
-	string | string[] | boolean | File | File[] | null | undefined
+  string,
+  string | string[] | boolean | File | File[] | null | undefined
 >;
 
 // --- Helper: label resolution -------------------------------------------------
 
 function getLabelForInput(
-	input: Element,
-	formEl: HTMLFormElement
+  input: Element,
+  formEl: HTMLFormElement
 ): string | undefined {
-	const id = (input as HTMLInputElement).id;
-	if (id) {
-		const byFor = formEl.querySelector(`label[for="${CSS.escape(id)}"]`);
-		if (byFor && byFor.textContent) return byFor.textContent.trim();
-	}
-	// If input is wrapped by a <label> ancestor
-	let parent: Element | null = input.parentElement;
-	while (parent) {
-		if (parent.tagName.toLowerCase() === "label" && parent.textContent) {
-			return parent.textContent.trim();
-		}
-		parent = parent.parentElement;
-	}
-	return undefined;
+  const id = (input as HTMLInputElement).id;
+  if (id) {
+    const byFor = formEl.querySelector(`label[for="${CSS.escape(id)}"]`);
+    if (byFor && byFor.textContent) return byFor.textContent.trim();
+  }
+  // If input is wrapped by a <label> ancestor
+  let parent: Element | null = input.parentElement;
+  while (parent) {
+    if (parent.tagName.toLowerCase() === "label" && parent.textContent) {
+      return parent.textContent.trim();
+    }
+    parent = parent.parentElement;
+  }
+  return undefined;
 }
 
 // --- Parser: from HTML to field metadata -------------------------------------
 
 function parseFormHtml(formHtml: string): ParsedForm {
-	const doc = new DOMParser().parseFromString(formHtml, "text/html");
-	const formEl = doc.querySelector("form") as HTMLFormElement | null;
-	if (!formEl) {
-		return {
-			method: "GET",
-			action: "",
-			fields: [],
-		};
-	}
+  const doc = new DOMParser().parseFromString(formHtml, "text/html");
+  const formEl = doc.querySelector("form") as HTMLFormElement | null;
+  if (!formEl) {
+    return {
+      method: "GET",
+      action: "",
+      fields: [],
+    };
+  }
 
-	const method = (formEl.getAttribute("method") || "GET").toUpperCase();
-	const action = formEl.getAttribute("action") || "";
-	const enctype = formEl.getAttribute("enctype");
+  const method = (formEl.getAttribute("method") || "GET").toUpperCase();
+  const action = formEl.getAttribute("action") || "";
+  const enctype = formEl.getAttribute("enctype");
 
-	// Collect candidates
-	const inputs = Array.from(formEl.querySelectorAll("input"));
-	const textareas = Array.from(formEl.querySelectorAll("textarea"));
-	const selects = Array.from(formEl.querySelectorAll("select"));
+  // Collect candidates
+  const inputs = Array.from(formEl.querySelectorAll("input"));
+  const textareas = Array.from(formEl.querySelectorAll("textarea"));
+  const selects = Array.from(formEl.querySelectorAll("select"));
 
-	// Group radios/checkboxes by name
-	const radioMap = new Map<string, HTMLInputElement[]>();
-	const checkboxMap = new Map<string, HTMLInputElement[]>();
+  // Group radios/checkboxes by name
+  const radioMap = new Map<string, HTMLInputElement[]>();
+  const checkboxMap = new Map<string, HTMLInputElement[]>();
 
-	const fields: AnyField[] = [];
+  const fields: AnyField[] = [];
 
-	// First pass: handle inputs except radio/checkbox (they’re grouped later)
-	for (const input of inputs) {
-		const type = (input.getAttribute("type") || "text").toLowerCase();
-		const name = input.getAttribute("name") || "";
-		if (!name) continue;
+  // First pass: handle inputs except radio/checkbox (they’re grouped later)
+  for (const input of inputs) {
+    const type = (input.getAttribute("type") || "text").toLowerCase();
+    const name = input.getAttribute("name") || "";
+    if (!name) continue;
 
-		const common: Partial<BaseField> = {
-			name,
-			label: getLabelForInput(input, formEl),
-			required: input.hasAttribute("required"),
-			disabled: input.hasAttribute("disabled"),
-			id: input.id || null,
-		};
+    const common: Partial<BaseField> = {
+      name,
+      label: getLabelForInput(input, formEl),
+      required: input.hasAttribute("required"),
+      disabled: input.hasAttribute("disabled"),
+      id: input.id || null,
+    };
 
-		if (type === "radio") {
-			const arr = radioMap.get(name) || [];
-			arr.push(input);
-			radioMap.set(name, arr);
-			continue;
-		}
+    if (type === "radio") {
+      const arr = radioMap.get(name) || [];
+      arr.push(input);
+      radioMap.set(name, arr);
+      continue;
+    }
 
-		if (type === "checkbox") {
-			const arr = checkboxMap.get(name) || [];
-			arr.push(input);
-			checkboxMap.set(name, arr);
-			continue;
-		}
+    if (type === "checkbox") {
+      const arr = checkboxMap.get(name) || [];
+      arr.push(input);
+      checkboxMap.set(name, arr);
+      continue;
+    }
 
-		if (type === "hidden") {
-			fields.push({
-				kind: "hidden",
-				...common,
-				value: input.getAttribute("value") ?? "",
-			} as HiddenField);
-			continue;
-		}
+    if (type === "hidden") {
+      fields.push({
+        kind: "hidden",
+        ...common,
+        value: input.getAttribute("value") ?? "",
+      } as HiddenField);
+      continue;
+    }
 
-		if (type === "file") {
-			fields.push({
-				kind: "file",
-				...common,
-				multiple: input.hasAttribute("multiple"),
-				accept: input.getAttribute("accept"),
-			} as FileField);
-			continue;
-		}
+    if (type === "file") {
+      fields.push({
+        kind: "file",
+        ...common,
+        multiple: input.hasAttribute("multiple"),
+        accept: input.getAttribute("accept"),
+      } as FileField);
+      continue;
+    }
 
-		// Text-like inputs
-		const supportedTypes = new Set([
-			"text",
-			"password",
-			"email",
-			"number",
-			"date",
-			"datetime-local",
-			"month",
-			"time",
-			"url",
-			"tel",
-			"search",
-		]);
-		const inputType = supportedTypes.has(type)
-			? (type as TextLikeField["inputType"])
-			: "text";
+    // Text-like inputs
+    const supportedTypes = new Set([
+      "text",
+      "password",
+      "email",
+      "number",
+      "date",
+      "datetime-local",
+      "month",
+      "time",
+      "url",
+      "tel",
+      "search",
+    ]);
+    const inputType = supportedTypes.has(type)
+      ? (type as TextLikeField["inputType"])
+      : "text";
 
-		fields.push({
-			kind: "textlike",
-			...common,
-			inputType,
-			defaultValue: input.getAttribute("value") ?? "",
-			placeholder: input.getAttribute("placeholder") ?? undefined,
-			min: input.getAttribute("min") ?? undefined,
-			max: input.getAttribute("max") ?? undefined,
-			step: input.getAttribute("step") ?? undefined,
-			pattern: input.getAttribute("pattern") ?? undefined,
-		} as TextLikeField);
-	}
+    fields.push({
+      kind: "textlike",
+      ...common,
+      inputType,
+      defaultValue: input.getAttribute("value") ?? "",
+      placeholder: input.getAttribute("placeholder") ?? undefined,
+      min: input.getAttribute("min") ?? undefined,
+      max: input.getAttribute("max") ?? undefined,
+      step: input.getAttribute("step") ?? undefined,
+      pattern: input.getAttribute("pattern") ?? undefined,
+    } as TextLikeField);
+  }
 
-	// Textareas
-	for (const ta of textareas) {
-		const name = ta.getAttribute("name") || "";
-		if (!name) continue;
-		fields.push({
-			kind: "textarea",
-			name,
-			label: getLabelForInput(ta, formEl),
-			required: ta.hasAttribute("required"),
-			disabled: ta.hasAttribute("disabled"),
-			id: ta.id || null,
-			defaultValue: ta.value ?? ta.textContent ?? "",
-			placeholder: ta.getAttribute("placeholder") ?? undefined,
-			rows: ta.hasAttribute("rows")
-				? Number(ta.getAttribute("rows"))
-				: undefined,
-		} as TextareaField);
-	}
+  // Textareas
+  for (const ta of textareas) {
+    const name = ta.getAttribute("name") || "";
+    if (!name) continue;
+    fields.push({
+      kind: "textarea",
+      name,
+      label: getLabelForInput(ta, formEl),
+      required: ta.hasAttribute("required"),
+      disabled: ta.hasAttribute("disabled"),
+      id: ta.id || null,
+      defaultValue: ta.value ?? ta.textContent ?? "",
+      placeholder: ta.getAttribute("placeholder") ?? undefined,
+      rows: ta.hasAttribute("rows")
+        ? Number(ta.getAttribute("rows"))
+        : undefined,
+    } as TextareaField);
+  }
 
-	// Selects
-	for (const sel of selects) {
-		const name = sel.getAttribute("name") || "";
-		if (!name) continue;
-		const options = Array.from(sel.querySelectorAll("option")).map((opt) => ({
-			value: opt.getAttribute("value") ?? opt.textContent ?? "",
-			label: opt.textContent ?? "",
-			selected: opt.hasAttribute("selected"),
-		}));
-		fields.push({
-			kind: "select",
-			name,
-			label: getLabelForInput(sel, formEl),
-			required: sel.hasAttribute("required"),
-			disabled: sel.hasAttribute("disabled"),
-			id: sel.id || null,
-			multiple: sel.hasAttribute("multiple"),
-			options,
-		} as SelectField);
-	}
+  // Selects
+  for (const sel of selects) {
+    const name = sel.getAttribute("name") || "";
+    if (!name) continue;
+    const options = Array.from(sel.querySelectorAll("option")).map((opt) => ({
+      value: opt.getAttribute("value") ?? opt.textContent ?? "",
+      label: opt.textContent ?? "",
+      selected: opt.hasAttribute("selected"),
+    }));
+    fields.push({
+      kind: "select",
+      name,
+      label: getLabelForInput(sel, formEl),
+      required: sel.hasAttribute("required"),
+      disabled: sel.hasAttribute("disabled"),
+      id: sel.id || null,
+      multiple: sel.hasAttribute("multiple"),
+      options,
+    } as SelectField);
+  }
 
-	// Radios as groups
-	for (const [name, radios] of radioMap.entries()) {
-		const label = radios.map((r) => getLabelForInput(r, formEl)).find(Boolean);
-		fields.push({
-			kind: "radio-group",
-			name,
-			label,
-			required: radios.some((r) => r.hasAttribute("required")),
-			id: null,
-			options: radios.map((r) => ({
-				value: r.getAttribute("value") ?? "",
-				label: getLabelForInput(r, formEl),
-				checked: r.hasAttribute("checked"),
-			})),
-		} as RadioGroupField);
-	}
+  // Radios as groups
+  for (const [name, radios] of radioMap.entries()) {
+    const label = radios.map((r) => getLabelForInput(r, formEl)).find(Boolean);
+    fields.push({
+      kind: "radio-group",
+      name,
+      label,
+      required: radios.some((r) => r.hasAttribute("required")),
+      id: null,
+      options: radios.map((r) => ({
+        value: r.getAttribute("value") ?? "",
+        label: getLabelForInput(r, formEl),
+        checked: r.hasAttribute("checked"),
+      })),
+    } as RadioGroupField);
+  }
 
-	// Checkboxes: single vs group
-	for (const [name, boxes] of checkboxMap.entries()) {
-		if (boxes.length === 1) {
-			const box = boxes[0];
-			fields.push({
-				kind: "checkbox-single",
-				name,
-				label: getLabelForInput(box, formEl),
-				required: box.hasAttribute("required"),
-				id: box.id || null,
-				valueAttr: box.getAttribute("value") ?? "on",
-				checked: box.hasAttribute("checked"),
-			} as CheckboxSingleField);
-		} else {
-			fields.push({
-				kind: "checkbox-group",
-				name,
-				label: boxes.map((b) => getLabelForInput(b, formEl)).find(Boolean),
-				required: boxes.some((b) => b.hasAttribute("required")),
-				id: null,
-				options: boxes.map((b) => ({
-					value: b.getAttribute("value") ?? "on",
-					label: getLabelForInput(b, formEl),
-					checked: b.hasAttribute("checked"),
-				})),
-			} as CheckboxGroupField);
-		}
-	}
+  // Checkboxes: single vs group
+  for (const [name, boxes] of checkboxMap.entries()) {
+    if (boxes.length === 1) {
+      const box = boxes[0];
+      fields.push({
+        kind: "checkbox-single",
+        name,
+        label: getLabelForInput(box, formEl),
+        required: box.hasAttribute("required"),
+        id: box.id || null,
+        valueAttr: box.getAttribute("value") ?? "on",
+        checked: box.hasAttribute("checked"),
+      } as CheckboxSingleField);
+    } else {
+      fields.push({
+        kind: "checkbox-group",
+        name,
+        label: boxes.map((b) => getLabelForInput(b, formEl)).find(Boolean),
+        required: boxes.some((b) => b.hasAttribute("required")),
+        id: null,
+        options: boxes.map((b) => ({
+          value: b.getAttribute("value") ?? "on",
+          label: getLabelForInput(b, formEl),
+          checked: b.hasAttribute("checked"),
+        })),
+      } as CheckboxGroupField);
+    }
+  }
 
-	return { method, action, enctype, fields };
+  return { method, action, enctype, fields };
 }
 
 // --- Component ---------------------------------------------------------------
 
 type Props = {
-	submitEvent: (data: SubmitEventParams) => Promise<void>;
-	referenceData?: Record<string, any>;
-	HtmlFormConfigInFlow: FormFieldConfigType;
+  submitEvent: (data: SubmitEventParams) => Promise<void>;
+  referenceData?: Record<string, any>;
+  HtmlFormConfigInFlow: FormFieldConfigType;
 };
 
 export default function ProtocolHTMLForm({
-	submitEvent,
-	referenceData,
-	HtmlFormConfigInFlow,
+  submitEvent,
+  referenceData,
+  HtmlFormConfigInFlow,
 }: Props) {
   const containerRef = useRef<HTMLDivElement | null>(null);
 
@@ -352,7 +352,6 @@ export default function ProtocolHTMLForm({
     );
   }, [referenceData, HtmlFormConfigInFlow.reference]);
 
- 
   // Parse once per formHtml
   const parsed = useMemo<ParsedForm>(() => parseFormHtml(formHtml), [formHtml]);
 
@@ -447,74 +446,51 @@ export default function ProtocolHTMLForm({
   const validateForm = (): boolean => {
     const errors: Record<string, string> = {};
 
-    console.log("Validating form with values:", values);
-    console.log("Parsed fields:", parsed.fields);
-
     for (const field of parsed.fields) {
       if (field.required) {
         const value = values[field.name];
-        console.log(
-          `Checking field ${field.name} (${field.kind}):`,
-          value,
-          "required:",
-          field.required
-        );
 
         // Check if field is empty or invalid
         if (field.kind === "textlike" || field.kind === "textarea") {
           if (!value || (typeof value === "string" && value.trim() === "")) {
             errors[field.name] = `${field.label || field.name} is required`;
-            console.log(`Error for ${field.name}: text field is empty`);
           }
         } else if (field.kind === "select") {
           if (!value || (typeof value === "string" && value === "")) {
             errors[field.name] = `${field.label || field.name} is required`;
-            console.log(`Error for ${field.name}: select field is empty`);
           }
         } else if (field.kind === "radio-group") {
           if (!value || (typeof value === "string" && value === "")) {
             errors[field.name] = `${field.label || field.name} is required`;
-            console.log(`Error for ${field.name}: radio group is empty`);
           }
         } else if (field.kind === "checkbox-group") {
           if (!value || !Array.isArray(value) || value.length === 0) {
             errors[field.name] = `${field.label || field.name} is required`;
-            console.log(`Error for ${field.name}: checkbox group is empty`);
           }
         } else if (field.kind === "file") {
           if (!value || (Array.isArray(value) && value.length === 0)) {
             errors[field.name] = `${field.label || field.name} is required`;
-            console.log(`Error for ${field.name}: file field is empty`);
           }
         }
       }
     }
 
-    console.log("Validation errors:", errors);
     setFieldErrors(errors);
     const isValid = Object.keys(errors).length === 0;
-    console.log("Form is valid:", isValid);
     return isValid;
   };
 
   // Submit the rebuilt form
   const handleSubmit = async () => {
-    console.log("Submit button clicked");
-
     // Validate form before submission
     const isValid = validateForm();
-    console.log("Validation result:", isValid);
 
     if (!isValid) {
-      console.log("Form validation failed, setting error message");
       setError("Please fill in all required fields");
       return;
     }
 
-    console.log("Form is valid, proceeding with submission");
-
     try {
-      console.log("submitting", values);
       setIsSubmitting(true);
       setError(null);
 
@@ -560,12 +536,16 @@ export default function ProtocolHTMLForm({
             if (val != null) fd.append(f.name, String(val));
           }
         }
-        console.log("submitting as formdata", fd);
+
         // res = await fetch(parsed.action || window.location.href, {
         // 	method: parsed.method,
         // 	body: fd,
         // });
-        res = await htmlFormSubmit(parsed.action || window.location.href, fd);
+        res = (await htmlFormSubmit(
+          parsed.action || window.location.href,
+          fd
+        )) as AxiosResponse<any, any>;
+        console.log("res>>>", res);
       } else {
         const params = new URLSearchParams();
         for (const f of parsed.fields) {
@@ -598,17 +578,12 @@ export default function ProtocolHTMLForm({
             if (val != null) params.append(f.name, String(val));
           }
         }
-        console.log(
-          "calling with urlencoded with data",
-          params.toString(),
-          parsed.action
-        );
-        res = await htmlFormSubmit(
+
+        res = (await htmlFormSubmit(
           parsed.action || window.location.href,
           params.toString()
-        );
+        )) as AxiosResponse<any, any>;
       }
-      console.log("response is ", res);
       // Parse response
       const ct =
         typeof res.headers === "object"
@@ -620,16 +595,15 @@ export default function ProtocolHTMLForm({
       } else {
         const text = typeof res.data === "string" ? res.data : String(res.data);
         const match = text.match(/"submission_id"\s*:\s*"([^"]+)"/i);
-        data = match ? { submission_id: match[1] } : { raw: text };
+        data = match ? { submission_id: match[1] } : res.data;
+        // data = match ? { submission_id: match[1] } : { raw: text };
       }
-      console.log("parsed response data", data);
+
       const finalSubmissionId =
         data?.submission_id ??
         data?.data?.submission_id ??
         data?.result?.submission_id ??
         "";
-
-      console.log("extracted submission id", finalSubmissionId);
       if (!finalSubmissionId) {
         throw new Error("No submission_id returned by the form endpoint.");
       }
@@ -667,11 +641,11 @@ export default function ProtocolHTMLForm({
           plainPayload[f.name] = String(val);
         }
       }
-      const Subdata = {
-        jsonpath: { submission_id: finalSubmissionId },
-        formData: { submission_id: finalSubmissionId },
-      };
-      console.log("final data to be sent", Subdata);
+      // const Subdata = {
+      //   jsonpath: { submission_id: finalSubmissionId },
+      //   formData: { submission_id: finalSubmissionId },
+      // };
+
       await submitEvent({
         jsonPath: { submission_id: finalSubmissionId },
         formData: { submission_id: finalSubmissionId },

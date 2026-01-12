@@ -4,6 +4,7 @@ import FormSelect from "../form-select";
 import CheckboxGroup from "../checkbox";
 import ItemCustomisationSelector from "../nested-select";
 import GenericForm from "../generic-form";
+import GenericFormWithPaste from "../generic-form-with-paste";
 import { SubmitEventParams } from "../../../../types/flow-types";
 import Ret10GrocerySelect from "../custom-forms/ret10-grocery-select";
 import ProtocolHTMLForm from "../custom-forms/protocol-html-form";
@@ -12,12 +13,16 @@ import TRV10Select from "../custom-forms/trv10-select";
 import TRV10ScheduleForm from "../custom-forms/trv10-schedule";
 import TRV10ScheduleRentalForm from "../custom-forms/trv10-scheduleRental";
 import TRV11Select from "../custom-forms/trv11-select";
-import JsonSchemaForm from "../../../protocol-playground/ui/extras/rsjf-form";
-import AirlineSelect from "../custom-forms/airline-select";
+import JsonSchemaForm from "../../../../pages/protocol-playground/ui/extras/rsjf-form";
+import AirlineSelect from "@/components/ui/forms/custom-forms/airline-select";
+import AirlineSeatSelect from "@/components/ui/forms/custom-forms/airline-seat-select";
+import HotelSelect from "@/components/ui/forms/custom-forms/hotel-select";
 import TRV12busSeatSelection from "../custom-forms/trv-seat-count";
 import FinvuRedirectForm from "../custom-forms/finvu-redirect-form";
 import DynamicFormHandler from "../custom-forms/dynamic-form-handler";
 import { SessionContext } from "../../../../context/context";
+import IntercitySelect from "../custom-forms/intercity-select";
+import HotelSelectProvider from "../custom-forms/hotel-slect-provider";
 
 export interface FormFieldConfigType {
   name: string;
@@ -31,6 +36,8 @@ export interface FormFieldConfigType {
     | "boolean"
     | "trv12_bus_seat_selection"
     | "airline_select"
+    | "intercity_select"
+    | "airline_seat_select"
     | "ret10_grocery_select"
     | "nestedSelect"
     | "trv_select"
@@ -38,9 +45,11 @@ export interface FormFieldConfigType {
     | "trv10_schedule"
     | "trv10_schedule_rental"
     | "trv11_select"
+    | "hotel_select"
     | "HTML_FORM"
     | "FINVU_REDIRECT"
-    | "DYNAMIC_FORM";
+    | "DYNAMIC_FORM"
+    | "trv13_select_provider";
   payloadField: string;
   values?: string[];
   defaultValue?: string;
@@ -50,6 +59,7 @@ export interface FormFieldConfigType {
   display?: boolean;
   reference?: string;
   schema?: any;
+  required?: boolean;
 }
 
 export type FormConfigType = FormFieldConfigType[];
@@ -70,18 +80,30 @@ export default function FormConfig({
   const sessionData = sessionContext?.sessionData;
 
   const onSubmit = async (data: Record<string, string>) => {
-    const formatedData: Record<string, string> = {};
+    const formatedData: Record<string, string | number> = {};
     const formData: Record<string, string> = data;
     for (const key in data) {
-      const payloadField = formConfig.find(
-        (field) => field.name === key
-      )?.payloadField;
+      const payloadField = formConfig.find((field) => field.name === key)?.payloadField;
       if (payloadField) {
-        formatedData[payloadField] = data[key];
+        // Convert to integer if the payloadField contains 'count' or 'quantity'
+        if (payloadField.includes("count") || payloadField.includes("quantity")) {
+          formatedData[payloadField] = parseInt(data[key], 10) || 0;
+        }
+        // Convert date to ISO 8601 format if payloadField contains 'timestamp' or 'time'
+        else if (payloadField.includes("timestamp") || payloadField.includes("time.")) {
+          const dateValue = data[key];
+          // Check if it's already in ISO format or just a date
+          if (dateValue && !dateValue.includes("T")) {
+            formatedData[payloadField] = `${dateValue}T00:00:00Z`;
+          } else {
+            formatedData[payloadField] = dateValue;
+          }
+        } else {
+          formatedData[payloadField] = data[key];
+        }
       }
     }
     await submitEvent({ jsonPath: formatedData, formData: formData });
-    console.log({ jsonPath: formatedData, formData: formData });
   };
 
   const defaultValues: any = {};
@@ -116,9 +138,7 @@ export default function FormConfig({
       transactionId = sessionData.flowMap[flowId] || undefined;
     }
 
-    const dynamicFormField = formConfig.find(
-      (field) => field.type === "DYNAMIC_FORM"
-    );
+    const dynamicFormField = formConfig.find((field) => field.type === "DYNAMIC_FORM");
 
     return (
       <DynamicFormHandler
@@ -157,6 +177,10 @@ export default function FormConfig({
     return <TRV12busSeatSelection submitEvent={submitEvent} />;
   }
 
+  if (formConfig.find((field) => field.type === "airline_seat_select")) {
+    return <AirlineSeatSelect submitEvent={submitEvent} />;
+  }
+
   if (formConfig.find((field) => field.type === "HTML_FORM")) {
     return ProtocolHTMLForm({
       submitEvent: submitEvent,
@@ -192,12 +216,29 @@ export default function FormConfig({
     return <AirlineSelect submitEvent={submitEvent} />;
   }
 
+  if (formConfig.find((field) => field.type === "intercity_select")) {
+    return <IntercitySelect submitEvent={submitEvent} />;
+  }
+
+  if (formConfig.find((field) => field.type === "hotel_select")) {
+    return <HotelSelect submitEvent={submitEvent} />;
+  }
+
+  if (formConfig.find(field => field.type === "trv13_select_provider")) {
+    return <HotelSelectProvider submitEvent={submitEvent} />;
+  }
+
+  // Check if form has fields that can be populated from on_search (like item_id for TRV13)
+  const enablePaste = formConfig.some((field) => field.name === "item_id");
+  const FormComponent = enablePaste ? GenericFormWithPaste : GenericForm;
+
   return (
-    <GenericForm
+    <FormComponent
       defaultValues={defaultValues}
       className="h-[500px] overflow-scroll"
       onSubmit={onSubmit}
       triggerSubmit={!isNoFieldVisible}
+      enablePaste={enablePaste}
     >
       {formConfig.map((field) => {
         const { display = true } = field;
@@ -211,7 +252,7 @@ export default function FormConfig({
               <FormInput
                 name={field.name}
                 label={field.label}
-                required={true}
+                required={field.required !== false}
                 // key={field.payloadField}
               />
             );
@@ -220,7 +261,7 @@ export default function FormConfig({
               <FormSelect
                 name={field.name}
                 label={field.label}
-                options={field.values}
+                options={field.values || []}
                 // key={field.payloadField}
               />
             );
@@ -234,17 +275,11 @@ export default function FormConfig({
               />
             );
           case "nestedSelect":
-            return (
-              <ItemCustomisationSelector
-                label={field.label}
-                name={field.name}
-              />
-            );
+            return <ItemCustomisationSelector label={field.label} name={field.name} />;
           default:
-            console.log("Invalid field type");
             return <></>;
         }
       })}
-    </GenericForm>
+    </FormComponent>
   );
 }
