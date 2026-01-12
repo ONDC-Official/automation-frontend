@@ -1,4 +1,10 @@
-import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse, InternalAxiosRequestConfig } from "axios";
+import axios, {
+  AxiosError,
+  AxiosInstance,
+  AxiosRequestConfig,
+  AxiosResponse,
+  InternalAxiosRequestConfig,
+} from "axios";
 
 /**
  * API Response wrapper interface
@@ -58,7 +64,6 @@ class ApiClient {
     // Request interceptor
     this.instance.interceptors.request.use(
       (config: InternalAxiosRequestConfig) => {
-        // Add any custom headers here
         // For example, API keys for specific endpoints
         if (config.url?.includes("/api/sessions/flows")) {
           const apiKey = import.meta.env.VITE_DB_SERVICE_API_KEY;
@@ -72,7 +77,7 @@ class ApiClient {
       (error: AxiosError) => {
         console.error("[API Request Error]", error);
         return Promise.reject(error);
-      },
+      }
     );
 
     // Response interceptor
@@ -82,7 +87,7 @@ class ApiClient {
       },
       (error: AxiosError<ApiError>) => {
         return Promise.reject(error);
-      },
+      }
     );
   }
 
@@ -107,7 +112,11 @@ class ApiClient {
   /**
    * POST request
    */
-  public async post<T = unknown>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
+  public async post<T = unknown>(
+    url: string,
+    data?: unknown,
+    config?: AxiosRequestConfig
+  ): Promise<ApiResponse<T>> {
     const response = await this.instance.post<T>(url, data, config);
     return {
       data: response.data,
@@ -118,7 +127,11 @@ class ApiClient {
   /**
    * PUT request
    */
-  public async put<T = unknown>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
+  public async put<T = unknown>(
+    url: string,
+    data?: unknown,
+    config?: AxiosRequestConfig
+  ): Promise<ApiResponse<T>> {
     const response = await this.instance.put<T>(url, data, config);
     return {
       data: response.data,
@@ -129,7 +142,11 @@ class ApiClient {
   /**
    * PATCH request
    */
-  public async patch<T = unknown>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
+  public async patch<T = unknown>(
+    url: string,
+    data?: unknown,
+    config?: AxiosRequestConfig
+  ): Promise<ApiResponse<T>> {
     const response = await this.instance.patch<T>(url, data, config);
     return {
       data: response.data,
@@ -140,7 +157,10 @@ class ApiClient {
   /**
    * DELETE request
    */
-  public async delete<T = unknown>(url: string, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
+  public async delete<T = unknown>(
+    url: string,
+    config?: AxiosRequestConfig
+  ): Promise<ApiResponse<T>> {
     const response = await this.instance.delete<T>(url, config);
     return {
       data: response.data,

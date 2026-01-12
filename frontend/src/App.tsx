@@ -1,9 +1,9 @@
 import { useEffect, useState, useCallback } from "react";
 import { useLocation } from "react-router-dom";
-import { UserDetails } from "@components/Header";
+import { UserDetails } from "@components/Header/types";
 import { UserContext } from "@context/userContext";
 import { getGithubAvatarUrl } from "@utils/regsitry-utils";
-import { SubscriberData } from "@components/registry-components/registry-types";
+import { SubscriberData } from "@components/Registry/registry-types";
 import * as api from "@utils/registry-apis";
 import { SessionProvider } from "@context/context";
 import { trackPageView } from "@utils/analytics";
@@ -48,7 +48,7 @@ function App() {
         return null;
       }
     },
-    [user],
+    [user]
   );
 
   // Fetch subscriber details when user or pathname changes
@@ -89,7 +89,8 @@ function App() {
         refreshUser: refreshUser,
         subscriberData: subscriberData,
         setSubscriberData: setSubscriberData,
-      }}>
+      }}
+    >
       <SessionProvider>
         <Layout />
       </SessionProvider>

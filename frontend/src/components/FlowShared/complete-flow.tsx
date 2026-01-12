@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { toast } from "react-toastify";
 import { v4 as uuidv4 } from "uuid";
 import { FaRegStopCircle } from "react-icons/fa";
@@ -9,7 +9,7 @@ import { FcWorkflow } from "react-icons/fc";
 
 import { Flow, SubmitEventParams } from "@/types/flow-types";
 import { SessionCache } from "@/types/session-types";
-import IconButton from "@components/ui/mini-components/icon-button";
+import IconButton from "@components/IconButton";
 import {
   clearFlowData,
   deleteExpectation,
@@ -24,9 +24,10 @@ import {
 import { FlowMap } from "@/types/flow-state-type";
 import DisplayFlow from "@components/FlowShared/mapped-flow";
 import { getSequenceFromFlow } from "@utils/flow-utils";
-import CircularProgress from "@components/ui/circular-cooldown";
-import Popup from "@components/ui/pop-up/pop-up";
-import FormConfig, { FormConfigType } from "@components/ui/forms/config-form/config-form";
+import CircularProgress from "@components/CircularProgress";
+import Popup from "@/components/PopUp";
+import FormConfig from "@components/ConfigForm";
+import { IFormConfigProps } from "@components/ConfigForm/types";
 import { trackEvent } from "@utils/analytics";
 
 interface AccordionProps {
@@ -35,7 +36,7 @@ interface AccordionProps {
   setActiveFlow: (flowId: string | null) => void;
   sessionCache?: SessionCache | null;
   sessionId: string;
-  setSideView: React.Dispatch<any>;
+  setSideView: React.Dispatch<React.SetStateAction<Record<string, unknown>>>;
   subUrl: string;
   onFlowStop: () => void;
   onFlowClear: () => void;
@@ -54,16 +55,50 @@ export function Accordion({
   const [inputPopUp, setInputPopUp] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [mappedFlow, setMappedFlow] = useState<FlowMap>({
-    sequence: getSequenceFromFlow(sessionCache?.flowConfigs[flow.id] ?? flow, sessionCache, activeFlow),
+    sequence: getSequenceFromFlow(
+      sessionCache?.flowConfigs[flow.id] ?? flow,
+      sessionCache,
+      activeFlow
+    ),
     missedSteps: [],
   });
-  const [activeFormConfig, setActiveFormConfig] = useState<FormConfigType | null>(null);
+  const [activeFormConfig, setActiveFormConfig] = useState<IFormConfigProps | null>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const [maxHeight, setMaxHeight] = useState("0px");
   const apiCallFailCount = useRef(0);
 
+  const getCurrentState = useCallback(
+    async (sessionCache: SessionCache) => {
+      const tx = sessionCache.flowMap?.[flow.id];
+      if (tx) {
+        try {
+          const txData = await getMappedFlow(tx, sessionId);
+          for (let i = 0; i < txData.sequence.length; i++) {
+            const payloads = txData.sequence[i].payloads;
+            if (payloads) {
+              if (!payloads.entryType) {
+                txData.sequence[i].payloads!.entryType = "API";
+              }
+            }
+          }
+          setMappedFlow(txData);
+          apiCallFailCount.current = 0; // Reset fail count on successful fetch
+        } catch (error) {
+          apiCallFailCount.current = apiCallFailCount.current + 1;
+          console.error("Failed to fetch transaction data:", error);
+        }
+      } else {
+        setMappedFlow({
+          sequence: getSequenceFromFlow(flow, sessionCache, activeFlow),
+          missedSteps: [],
+        });
+      }
+    },
+    [flow, sessionId, activeFlow]
+  );
+
   useEffect(() => {
-    const executedFlowId = Object.keys((sessionCache?.flowMap as any) || {});
+    const executedFlowId = Object.keys(sessionCache?.flowMap || {});
 
     if (executedFlowId.includes(flow.id) && sessionCache) {
       getCurrentState(sessionCache);
@@ -74,34 +109,7 @@ export function Accordion({
     } else {
       setActiveFlow(null);
     }
-  }, [flow, sessionCache]);
-
-  const getCurrentState = async (sessionCache: SessionCache) => {
-    const tx = sessionCache.flowMap?.[flow.id];
-    if (tx) {
-      try {
-        const txData = await getMappedFlow(tx, sessionId);
-        for (let i = 0; i < txData.sequence.length; i++) {
-          const payloads = txData.sequence[i].payloads;
-          if (payloads) {
-            if (!payloads.entryType) {
-              txData.sequence[i].payloads!.entryType = "API";
-            }
-          }
-        }
-        setMappedFlow(txData);
-        apiCallFailCount.current = 0; // Reset fail count on successful fetch
-      } catch (error) {
-        apiCallFailCount.current = apiCallFailCount.current + 1;
-        console.error("Failed to fetch transaction data:", error);
-      }
-    } else {
-      setMappedFlow({
-        sequence: getSequenceFromFlow(flow, sessionCache, activeFlow),
-        missedSteps: [],
-      });
-    }
-  };
+  }, [flow, sessionCache, getCurrentState, setActiveFlow]);
 
   const fetchTransactionData = async () => {
     if (activeFlow !== flow.id || !sessionCache) {
@@ -118,7 +126,10 @@ export function Accordion({
 
   async function handleFormForNewFlow(formData: SubmitEventParams) {
     try {
-      await newFlow(sessionId, flow.id, uuidv4(), formData.jsonPath, formData.formData);
+      const inputs: IFormConfigProps | undefined = Array.isArray(formData.formData)
+        ? (formData.formData as IFormConfigProps)
+        : undefined;
+      await newFlow(sessionId, flow.id, uuidv4(), formData.jsonPath, inputs);
       setInputPopUp(false);
       toast.success("Flow started successfully");
     } catch (e) {
@@ -197,11 +208,11 @@ export function Accordion({
   }
 
   const handleDownload = async () => {
-    const payload_ids = mappedFlow?.sequence.flatMap(s => {
+    const payload_ids = mappedFlow?.sequence.flatMap((s) => {
       if (s.payloads?.entryType === "FORM") {
         return [];
       }
-      return s.payloads?.payloads.map(p => p.payloadId) ?? [];
+      return s.payloads?.payloads.map((p) => p.payloadId) ?? [];
     });
 
     if (!payload_ids) {
@@ -237,7 +248,7 @@ export function Accordion({
             icon={<IoPlay className=" text-md" />}
             label="Start flow"
             color="sky"
-            onClick={async e => {
+            onClick={async (e) => {
               addFlowToSessionInDB(sessionId, {
                 id: flow.id,
                 status: "PENDING",
@@ -256,7 +267,7 @@ export function Accordion({
             icon={<FaRegStopCircle className=" text-xl" />}
             label="Stop flow"
             color="red"
-            onClick={async e => {
+            onClick={async (e) => {
               trackEvent({
                 category: "SCENARIO_TESTING-FLOWS",
                 action: `Stopped a flow: ${flow.id}`,
@@ -275,14 +286,18 @@ export function Accordion({
             icon={<AiOutlineDelete className=" text-md" />}
             label="Clear flow data"
             color="orange"
-            onClick={async e => {
+            onClick={async (e) => {
               trackEvent({
                 category: "SCENARIO_TESTING-FLOWS",
                 action: `Cleared a flow: ${flow.id}`,
               });
               e.stopPropagation();
               setMappedFlow({
-                sequence: getSequenceFromFlow(sessionCache?.flowConfigs[flow.id] ?? flow, sessionCache, activeFlow),
+                sequence: getSequenceFromFlow(
+                  sessionCache?.flowConfigs[flow.id] ?? flow,
+                  sessionCache,
+                  activeFlow
+                ),
                 missedSteps: [],
               });
               await clearFlowData(sessionId, flow.id);
@@ -295,7 +310,7 @@ export function Accordion({
             icon={<IoMdDownload className=" text-md" />}
             label="Download Logs"
             color="green"
-            onClick={async e => {
+            onClick={async (e) => {
               trackEvent({
                 category: "SCENARIO_TESTING-FLOWS",
                 action: `Download logs for flow: ${flow.id}`,
@@ -330,7 +345,8 @@ export function Accordion({
         className={`${bg} border rounded-md shadow-sm hover:bg-sky-100 cursor-pointer transition-colors px-5 py-3`}
         onClick={() => setIsOpen(!isOpen)}
         aria-expanded={isOpen}
-        aria-controls={`accordion-content-${flow.id}`}>
+        aria-controls={`accordion-content-${flow.id}`}
+      >
         {/* Top Row: Title + Button */}
         <div className="flex items-center justify-between">
           {/* Text Block */}
@@ -356,11 +372,14 @@ export function Accordion({
         ref={contentRef}
         id={`accordion-content-${flow.id}`}
         className="overflow-hidden transition-all duration-300 ease-in-out"
-        style={{ maxHeight: `${maxHeight}` }}>
+        style={{ maxHeight: `${maxHeight}` }}
+      >
         <div className="px-4 py-5 bg-white">
           <p className="text-gray-700 mb-6">{flow.description}</p>
 
-          <div className="space-y-4 relative">{<DisplayFlow mappedFlow={mappedFlow} flowId={flow.id} />}</div>
+          <div className="space-y-4 relative">
+            {<DisplayFlow mappedFlow={mappedFlow} flowId={flow.id} />}
+          </div>
         </div>
       </div>
       {inputPopUp && activeFormConfig && (
@@ -393,7 +412,8 @@ function ProgressBar({ percent }: { percent: number }) {
         style={{
           width: `${percent}%`,
           backgroundImage: "linear-gradient(to right, #38bdf8, #0369a1)", // Gradient from sky-500 to sky-700
-        }}></div>
+        }}
+      ></div>
     </div>
   );
 }
@@ -401,6 +421,6 @@ function ProgressBar({ percent }: { percent: number }) {
 function getPercent(mappedFlow: FlowMap) {
   const totalSteps = mappedFlow.sequence.length;
   if (totalSteps === 0) return 0;
-  const completedSteps = mappedFlow.sequence.filter(step => step.status === "COMPLETE").length;
+  const completedSteps = mappedFlow.sequence.filter((step) => step.status === "COMPLETE").length;
   return (completedSteps / totalSteps) * 100;
 }

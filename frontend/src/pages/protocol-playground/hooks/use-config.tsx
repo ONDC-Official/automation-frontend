@@ -1,10 +1,11 @@
 import { useContext } from "react";
-import { PlaygroundContext } from "../context/playground-context";
 import { toast } from "react-toastify";
-import JsonSchemaForm from "../ui/extras/rsjf-form";
-import { calcCurrentIndex } from "../mock-engine";
 import MockRunner from "@ondc/automation-mock-runner";
-import { createFlowSessionWithPlayground } from "../utils/request-utils";
+
+import { PlaygroundContext } from "@pages/protocol-playground/context/playground-context";
+import JsonSchemaForm from "@pages/protocol-playground/ui/extras/rsjf-form";
+import { calcCurrentIndex } from "@pages/protocol-playground/mock-engine";
+import { createFlowSessionWithPlayground } from "@pages/protocol-playground/utils/request-utils";
 import { GetRequestEndpoint } from "@components/FlowShared/guides";
 
 // hooks/useConfigOperations.ts
@@ -34,16 +35,17 @@ export const useConfigOperations = () => {
     const input = document.createElement("input");
     input.type = "file";
     input.accept = ".json";
-    input.onchange = (event: any) => {
-      const file = event.target.files[0];
+    input.onchange = (event: Event) => {
+      const target = event.target as HTMLInputElement;
+      const file = target.files?.[0];
       if (file) {
         const reader = new FileReader();
-        reader.onload = e => {
+        reader.onload = (e) => {
           try {
             const config = JSON.parse(e.target?.result as string);
             playgroundContext.setCurrentConfig(config);
             toast.success("Configuration imported successfully");
-          } catch (error) {
+          } catch {
             toast.error("Invalid JSON file");
           }
         };
@@ -59,7 +61,10 @@ export const useConfigOperations = () => {
     toast.success("All configurations deleted");
   };
 
-  const showFormModal = (schema: any, onSubmit: (formData: any) => void) => {
+  const showFormModal = (
+    schema: Record<string, unknown>,
+    onSubmit: (formData: Record<string, unknown>) => void
+  ) => {
     modal.openModal(
       <div className="p-1">
         <h2 className="text-l font-semibold mb-1">Enter Input Data</h2>
@@ -68,13 +73,13 @@ export const useConfigOperations = () => {
           // formData={data.sessionData}
           onSubmit={onSubmit}
         />
-      </div>,
+      </div>
     );
     toast.success("Please fill in the form to continue");
   };
 
   // return true if payload execution was successful
-  const executePayload = async (data: { actionId: string; inputs: any }) => {
+  const executePayload = async (data: { actionId: string; inputs: Record<string, unknown> }) => {
     playgroundContext.setLoading(true);
     try {
       const config = playgroundContext.config;
@@ -90,7 +95,7 @@ export const useConfigOperations = () => {
         playgroundContext.setLoading(false);
         return false;
       }
-      playgroundContext.setActiveTerminalData(s => [...s, result]);
+      playgroundContext.setActiveTerminalData((s) => [...s, result]);
       if (result.success) {
         playgroundContext.updateTransactionHistory(data.actionId, result.result);
       }
@@ -110,7 +115,9 @@ export const useConfigOperations = () => {
       toast.error("No steps to run");
       return { success: false };
     }
-    if (playgroundContext.config.steps.length === playgroundContext.config.transaction_history.length) {
+    if (
+      playgroundContext.config.steps.length === playgroundContext.config.transaction_history.length
+    ) {
       toast.info("All steps have already been executed");
       return { success: false };
     }
@@ -135,8 +142,8 @@ export const useConfigOperations = () => {
       }
 
       // Inputs needed - return a Promise that resolves when form is submitted
-      return new Promise(resolve => {
-        const handleFormSubmit = async (formData: any) => {
+      return new Promise((resolve) => {
+        const handleFormSubmit = async (formData: Record<string, unknown>) => {
           modal.closeModal();
           const res = await executePayload({
             actionId: currentStep.action_id,
@@ -171,7 +178,11 @@ export const useConfigOperations = () => {
 
     playgroundContext.setLoading(true);
     try {
-      const result = await createFlowSessionWithPlayground(playgroundContext.config, subscriberUrl, role);
+      const result = await createFlowSessionWithPlayground(
+        playgroundContext.config,
+        subscriberUrl,
+        role
+      );
 
       if (!result) {
         toast.error("Error creating flow session");
@@ -193,17 +204,17 @@ export const useConfigOperations = () => {
   };
 
   const createFlowSession = () => {
-    async function handleFormSubmit(formData: any) {
+    async function handleFormSubmit(formData: { subscriber_url: string; role: "BAP" | "BPP" }) {
       if (formData.subscriber_url === "testing") {
         const subUrlBap = GetRequestEndpoint(
           playgroundContext.config?.meta.domain || "",
           playgroundContext.config?.meta.version || "",
-          "BAP",
+          "BAP"
         );
         const subUrlBpp = GetRequestEndpoint(
           playgroundContext.config?.meta.domain || "",
           playgroundContext.config?.meta.version || "",
-          "BPP",
+          "BPP"
         );
         await createAndOpenFlowSession(subUrlBap, "BPP");
         await createAndOpenFlowSession(subUrlBpp, "BAP");
@@ -242,9 +253,12 @@ export const useConfigOperations = () => {
             required: ["subscriber_url", "role"],
             additionalProperties: false,
           }}
-          onSubmit={handleFormSubmit}
+          onSubmit={(data: Record<string, unknown>) => {
+            const formData = data as { subscriber_url: string; role: "BAP" | "BPP" };
+            handleFormSubmit(formData);
+          }}
         />
-      </div>,
+      </div>
     );
   };
 
@@ -261,7 +275,7 @@ export const useConfigOperations = () => {
     try {
       playgroundContext.resetTransactionHistory();
       for (const step of playgroundContext.config.steps) {
-        const res = (await runConfig()) as any;
+        const res = (await runConfig()) as { success?: boolean };
         if (!res?.success) {
           toast.error(`Execution stopped at action ${step.action_id}`);
           break;

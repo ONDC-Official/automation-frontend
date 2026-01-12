@@ -4,10 +4,16 @@ import { toast } from "react-toastify";
 import { FaPlus, FaTrash, FaStore, FaClock } from "react-icons/fa";
 import { Input, Select, DatePicker, Tabs } from "antd";
 
-import TimeInput from "@components/ui/forms/time-input";
-import LoadingButton from "@components/ui/forms/loading-button";
+import TimeInput from "@components/TimeInput";
+import LoadingButton from "@components/LoadingButton";
 import { SellerOnboardingData, StoreDetails } from "@pages/seller-onboarding";
-import { indianStates, serviceabilityOptions, Types, unitOptions, weekDays } from "@constants/common";
+import {
+  indianStates,
+  serviceabilityOptions,
+  Types,
+  unitOptions,
+  weekDays,
+} from "@constants/common";
 import { domainCategories } from "@constants/categories";
 
 interface BusinessVerificationFormProps {
@@ -65,7 +71,16 @@ const defaultStore: StoreDetails = {
 };
 
 // Store Timings Section Component
-const StoreTimingsSection = ({ storeIndex, control, watch }: any) => {
+import { Control, UseFormWatch, FieldValues } from "react-hook-form";
+
+interface StoreTimingsSectionProps {
+  storeIndex: number;
+  control: Control<FieldValues>;
+  watch: UseFormWatch<FieldValues>;
+  setValue?: unknown;
+}
+
+const StoreTimingsSection = ({ storeIndex, control, watch }: StoreTimingsSectionProps) => {
   const { fields, append, remove } = useFieldArray({
     control,
     name: `stores.${storeIndex}.timings`,
@@ -95,14 +110,17 @@ const StoreTimingsSection = ({ storeIndex, control, watch }: any) => {
       {fields.map((field, timingIndex) => (
         <div key={field.id} className="border border-gray-200 rounded-lg p-4 bg-white">
           <div className="flex justify-between items-start mb-4">
-            <h5 className="text-sm font-semibold text-gray-700">Timing Configuration {timingIndex + 1}</h5>
+            <h5 className="text-sm font-semibold text-gray-700">
+              Timing Configuration {timingIndex + 1}
+            </h5>
             <div className="flex gap-2">
               {fields.length > 1 && (
                 <button
                   type="button"
                   onClick={() => removeTiming(timingIndex)}
                   className="text-red-500 hover:text-red-700 p-1"
-                  title="Remove timing">
+                  title="Remove timing"
+                >
                   <FaTrash className="text-sm" />
                 </button>
               )}
@@ -128,8 +146,9 @@ const StoreTimingsSection = ({ storeIndex, control, watch }: any) => {
                       size="large"
                       placeholder="Select Fulfillment Type"
                       allowClear
-                      status={error ? "error" : undefined}>
-                      {Types.map(bt => (
+                      status={error ? "error" : undefined}
+                    >
+                      {Types.map((bt) => (
                         <Select.Option key={bt.value} value={bt.value}>
                           {bt.key}
                         </Select.Option>
@@ -160,8 +179,9 @@ const StoreTimingsSection = ({ storeIndex, control, watch }: any) => {
                       size="large"
                       placeholder="Select Start Day"
                       allowClear
-                      status={error ? "error" : undefined}>
-                      {weekDays.map(day => (
+                      status={error ? "error" : undefined}
+                    >
+                      {weekDays.map((day) => (
                         <Select.Option key={day.value} value={day.value}>
                           {day.key}
                         </Select.Option>
@@ -191,8 +211,9 @@ const StoreTimingsSection = ({ storeIndex, control, watch }: any) => {
                       size="large"
                       placeholder="Select End Day"
                       allowClear
-                      status={error ? "error" : undefined}>
-                      {weekDays.map(day => (
+                      status={error ? "error" : undefined}
+                    >
+                      {weekDays.map((day) => (
                         <Select.Option key={day.value} value={day.value}>
                           {day.key}
                         </Select.Option>
@@ -277,7 +298,8 @@ const StoreTimingsSection = ({ storeIndex, control, watch }: any) => {
       <button
         type="button"
         onClick={addTiming}
-        className="flex items-center gap-2 px-4 py-2 border border-sky-600 text-sky-600 rounded-md hover:bg-sky-50 transition-colors">
+        className="flex items-center gap-2 px-4 py-2 border border-sky-600 text-sky-600 rounded-md hover:bg-sky-50 transition-colors"
+      >
         <FaPlus className="text-sm" /> Add Another Timing Configuration
       </button>
 
@@ -309,8 +331,8 @@ const BusinessVerificationForm = ({
   function getCategoriesByDomains(domainNames: string[]): string[] {
     const categories: string[] = [];
 
-    domainNames.forEach(name => {
-      const domain = domainCategories.find(d => d.domain.toLowerCase() === name.toLowerCase());
+    domainNames.forEach((name) => {
+      const domain = domainCategories.find((d) => d.domain.toLowerCase() === name.toLowerCase());
       if (domain) {
         categories.push(...domain.categories);
       }
@@ -343,7 +365,7 @@ const BusinessVerificationForm = ({
     defaultValues: {
       stores:
         initialData.stores && initialData.stores.length > 0
-          ? initialData.stores.map(store => ({
+          ? initialData.stores.map((store) => ({
               ...store,
               // Ensure timings array exists
               timings:
@@ -372,7 +394,7 @@ const BusinessVerificationForm = ({
   useEffect(() => {
     const storeData =
       initialData.stores && initialData.stores.length > 0
-        ? initialData.stores.map(store => ({
+        ? initialData.stores.map((store) => ({
             ...store,
             // Ensure timings array exists
             timings:
@@ -419,13 +441,17 @@ const BusinessVerificationForm = ({
     return time.replace(":", "");
   };
 
-  const onSubmitForm = (data: any) => {
+  interface StoreFormData {
+    stores: Array<Record<string, unknown>>;
+  }
+
+  const onSubmitForm = (data: StoreFormData) => {
     if (!data.stores || data.stores.length === 0) {
       toast.error("Please add at least one store before proceeding");
       return;
     }
 
-    const hasValidStore = data.stores.some((store: any) => {
+    const hasValidStore = data.stores.some((store: Record<string, unknown>) => {
       const baseFieldsValid =
         store.gps &&
         store.locality &&
@@ -437,16 +463,20 @@ const BusinessVerificationForm = ({
         store.email;
 
       // Check timings validation
+      const timings = store.timings as Array<Record<string, unknown>> | undefined;
       const hasValidTimings =
-        store.timings &&
-        store.timings.length > 0 &&
-        store.timings.some(
-          (timing: any) => timing.type && timing.day_from && timing.day_to && timing.time_from && timing.time_to,
+        timings &&
+        Array.isArray(timings) &&
+        timings.length > 0 &&
+        timings.some(
+          (timing: Record<string, unknown>) =>
+            timing.type && timing.day_from && timing.day_to && timing.time_from && timing.time_to
         );
 
       // Check additional required fields
       const additionalFieldsValid =
         store.supported_subcategories &&
+        Array.isArray(store.supported_subcategories) &&
         store.supported_subcategories.length > 0 &&
         store.supported_fulfillments &&
         store.minimum_order_value !== undefined &&
@@ -465,16 +495,22 @@ const BusinessVerificationForm = ({
       return;
     }
 
-    const processedStores = data.stores.map((store: any) => {
+    const processedStores = data.stores.map((store: Record<string, unknown>) => {
       // Process timings
-      let processedTimings = [];
-      if (store.timings && store.timings.length > 0) {
-        processedTimings = store.timings.map((timing: any) => ({
-          type: timing.type || "",
-          day_from: timing.day_from || "",
-          day_to: timing.day_to || "",
-          time_from: convertTimeFormat(timing.time_from) || "",
-          time_to: convertTimeFormat(timing.time_to) || "",
+      let processedTimings: Array<{
+        type: string;
+        day_from: string;
+        day_to: string;
+        time_from: string;
+        time_to: string;
+      }> = [];
+      if (store.timings && Array.isArray(store.timings) && store.timings.length > 0) {
+        processedTimings = store.timings.map((timing: Record<string, unknown>) => ({
+          type: (timing.type as string) || "",
+          day_from: (timing.day_from as string) || "",
+          day_to: (timing.day_to as string) || "",
+          time_from: convertTimeFormat(timing.time_from as string) || "",
+          time_to: convertTimeFormat(timing.time_to as string) || "",
         }));
       }
 
@@ -490,11 +526,11 @@ const BusinessVerificationForm = ({
         email: store.email || "",
 
         // Legacy single timing (kept for backward compatibility)
-        type: store.type || "",
-        day_from: store.day_from || "",
-        day_to: store.day_to || "",
-        time_from: convertTimeFormat(store.time_from) || "",
-        time_to: convertTimeFormat(store.time_to) || "",
+        type: (store.type as string) || "",
+        day_from: (store.day_from as string) || "",
+        day_to: (store.day_to as string) || "",
+        time_from: convertTimeFormat((store.time_from as string) || "") || "",
+        time_to: convertTimeFormat((store.time_to as string) || "") || "",
 
         // New multiple timings
         timings: processedTimings,
@@ -512,20 +548,20 @@ const BusinessVerificationForm = ({
     });
 
     const formData = {
-      stores: processedStores,
+      stores: processedStores as unknown as StoreDetails[],
       ...initialData,
     };
 
     if (isFinalStep && onSubmit) {
-      onSubmit(formData);
+      onSubmit(formData as Partial<SellerOnboardingData>);
     } else if (onNext) {
-      onNext(formData);
+      onNext(formData as Partial<SellerOnboardingData>);
     } else {
       console.error("No onNext or onSubmit handler provided!");
     }
   };
 
-  const onFormError = (errors: any) => {
+  const onFormError = (errors: Record<string, unknown>) => {
     console.error("Form validation errors:", errors);
   };
 
@@ -552,8 +588,9 @@ const BusinessVerificationForm = ({
                 validate: {
                   validCoordinates: (value: string | undefined) => {
                     if (!value) return true;
-                    const parts = value.split(",").map(p => p.trim());
-                    if (parts.length !== 2) return "GPS coordinates must be in format: latitude,longitude";
+                    const parts = value.split(",").map((p) => p.trim());
+                    if (parts.length !== 2)
+                      return "GPS coordinates must be in format: latitude,longitude";
                     const lat = parseFloat(parts[0]);
                     const lng = parseFloat(parts[1]);
                     if (isNaN(lat) || isNaN(lng)) return "Invalid GPS coordinates";
@@ -595,12 +632,18 @@ const BusinessVerificationForm = ({
                 },
                 pattern: {
                   value: /^[a-zA-Z\s\-.0-9]+$/,
-                  message: "Locality can only contain letters, numbers, spaces, hyphens, dots, and commas",
+                  message:
+                    "Locality can only contain letters, numbers, spaces, hyphens, dots, and commas",
                 },
               }}
               render={({ field, fieldState: { error } }) => (
                 <>
-                  <Input {...field} placeholder="Enter Locality" size="large" status={error ? "error" : undefined} />
+                  <Input
+                    {...field}
+                    placeholder="Enter Locality"
+                    size="large"
+                    status={error ? "error" : undefined}
+                  />
                   {error && <p className="text-red-500 text-xs mt-1">{error.message}</p>}
                 </>
               )}
@@ -661,7 +704,12 @@ const BusinessVerificationForm = ({
               }}
               render={({ field, fieldState: { error } }) => (
                 <>
-                  <Input {...field} placeholder="Enter City" size="large" status={error ? "error" : undefined} />
+                  <Input
+                    {...field}
+                    placeholder="Enter City"
+                    size="large"
+                    status={error ? "error" : undefined}
+                  />
                   {error && <p className="text-red-500 text-xs mt-1">{error.message}</p>}
                 </>
               )}
@@ -684,13 +732,21 @@ const BusinessVerificationForm = ({
                   validPincode: (value: string | undefined) => {
                     if (!value) return true; // Allow empty values
                     const pincode = parseInt(value);
-                    return (pincode >= 100000 && pincode <= 999999) || "Please enter a valid Indian PIN code";
+                    return (
+                      (pincode >= 100000 && pincode <= 999999) ||
+                      "Please enter a valid Indian PIN code"
+                    );
                   },
                 },
               }}
               render={({ field, fieldState: { error } }) => (
                 <>
-                  <Input {...field} placeholder="Enter PIN Code" size="large" status={error ? "error" : undefined} />
+                  <Input
+                    {...field}
+                    placeholder="Enter PIN Code"
+                    size="large"
+                    status={error ? "error" : undefined}
+                  />
                   {error && <p className="text-red-500 text-xs mt-1">{error.message}</p>}
                 </>
               )}
@@ -712,8 +768,9 @@ const BusinessVerificationForm = ({
                     size="large"
                     placeholder="Select State"
                     allowClear
-                    status={error ? "error" : undefined}>
-                    {indianStates.map(state => (
+                    status={error ? "error" : undefined}
+                  >
+                    {indianStates.map((state) => (
                       <Select.Option key={state.value} value={state.value}>
                         {state.key}
                       </Select.Option>
@@ -748,7 +805,9 @@ const BusinessVerificationForm = ({
                         "International numbers must be 11-16 digits including country code"
                       );
                     }
-                    return cleaned.length === 10 || "Indian phone numbers must be exactly 10 digits";
+                    return (
+                      cleaned.length === 10 || "Indian phone numbers must be exactly 10 digits"
+                    );
                   },
                 },
               }}
@@ -827,7 +886,7 @@ const BusinessVerificationForm = ({
                 };
 
                 const handleDateRemove = (dateToRemove: string) => {
-                  const newDates = selectedDates.filter(date => date !== dateToRemove);
+                  const newDates = selectedDates.filter((date) => date !== dateToRemove);
                   field.onChange(newDates);
                 };
 
@@ -842,10 +901,10 @@ const BusinessVerificationForm = ({
                         status={error ? "error" : undefined}
                         format="YYYY-MM-DD"
                         value={null}
-                        disabledDate={current => {
+                        disabledDate={(current) => {
                           return current && current.isBefore(new Date(), "day");
                         }}
-                        onChange={(date: any) => {
+                        onChange={(date: { format: (format: string) => string } | null) => {
                           if (date) {
                             const dateStr = date.format("YYYY-MM-DD");
                             handleDateAdd(dateStr);
@@ -860,12 +919,14 @@ const BusinessVerificationForm = ({
                             {selectedDates.map((date, idx) => (
                               <span
                                 key={idx}
-                                className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
+                                className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full"
+                              >
                                 {date}
                                 <button
                                   type="button"
                                   onClick={() => handleDateRemove(date)}
-                                  className="text-blue-600 hover:text-blue-800 ml-1">
+                                  className="text-blue-600 hover:text-blue-800 ml-1"
+                                >
                                   ×
                                 </button>
                               </span>
@@ -894,7 +955,12 @@ const BusinessVerificationForm = ({
           </h4>
         </div>
 
-        <StoreTimingsSection storeIndex={index} control={control} watch={watch} setValue={setValue} />
+        <StoreTimingsSection
+          storeIndex={index}
+          control={control as unknown as Control<FieldValues>}
+          watch={watch as unknown as UseFormWatch<FieldValues>}
+          setValue={setValue}
+        />
       </div>
 
       <div className="space-y-4 mb-6">
@@ -951,7 +1017,8 @@ const BusinessVerificationForm = ({
               rules={{
                 required: "Please select at least one subcategory",
                 validate: {
-                  notEmpty: value => (value && value.length > 0 ? true : "Please select at least one subcategory"),
+                  notEmpty: (value) =>
+                    value && value.length > 0 ? true : "Please select at least one subcategory",
                 },
               }}
               render={({ field, fieldState: { error } }) => (
@@ -965,8 +1032,9 @@ const BusinessVerificationForm = ({
                     allowClear
                     status={error ? "error" : undefined}
                     maxTagCount="responsive"
-                    maxTagPlaceholder={omittedValues => `+${omittedValues.length} more`}>
-                    {categoryOptions.map(category => (
+                    maxTagPlaceholder={(omittedValues) => `+${omittedValues.length} more`}
+                  >
+                    {categoryOptions.map((category) => (
                       <Select.Option key={category} value={category}>
                         {category}
                       </Select.Option>
@@ -997,8 +1065,9 @@ const BusinessVerificationForm = ({
                     size="large"
                     placeholder="Select Fulfillment Types"
                     allowClear
-                    status={error ? "error" : undefined}>
-                    {Types.map(bt => (
+                    status={error ? "error" : undefined}
+                  >
+                    {Types.map((bt) => (
                       <Select.Option key={bt.value} value={bt.value}>
                         {bt.key}
                       </Select.Option>
@@ -1046,7 +1115,12 @@ const BusinessVerificationForm = ({
         </div>
       </div>
 
-      <ServiceabilitySection storeIndex={index} control={control} watch={watch} setValue={setValue} />
+      <ServiceabilitySection
+        storeIndex={index}
+        control={control as unknown as Control<FieldValues>}
+        watch={watch as unknown as UseFormWatch<FieldValues>}
+        setValue={setValue}
+      />
     </div>
   );
 
@@ -1060,12 +1134,13 @@ const BusinessVerificationForm = ({
         {fields.length > 1 && (
           <button
             type="button"
-            onClick={e => {
+            onClick={(e) => {
               e.stopPropagation();
               removeStore(index);
             }}
             className="ml-2 text-red-500 hover:text-red-700 p-1 rounded hover:bg-red-50"
-            title="Remove Store">
+            title="Remove Store"
+          >
             <FaTrash className="text-xs" />
           </button>
         )}
@@ -1084,18 +1159,25 @@ const BusinessVerificationForm = ({
         <button
           type="button"
           onClick={addStore}
-          className="flex items-center gap-2 px-4 py-2 bg-sky-600 text-white rounded-md hover:bg-sky-700 transition-colors">
+          className="flex items-center gap-2 px-4 py-2 bg-sky-600 text-white rounded-md hover:bg-sky-700 transition-colors"
+        >
           <FaPlus /> Add Store
         </button>
       </div>
 
-      <Tabs activeKey={activeTabKey} onChange={setActiveTabKey} type="card" className="mb-6" items={tabItems} />
+      <Tabs
+        activeKey={activeTabKey}
+        onChange={setActiveTabKey}
+        type="card"
+        className="mb-6"
+        items={tabItems}
+      />
 
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
         <p className="text-sm text-blue-800">
           <strong>Note:</strong> You have {fields.length} store
-          {fields.length > 1 ? "s" : ""} configured. Each store will operate independently with its own timings and
-          serviceability settings.
+          {fields.length > 1 ? "s" : ""} configured. Each store will operate independently with its
+          own timings and serviceability settings.
         </p>
       </div>
 
@@ -1115,12 +1197,15 @@ const BusinessVerificationForm = ({
           type="button"
           onClick={onPrevious}
           className="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
-          disabled={isSubmitting}>
+          disabled={isSubmitting}
+        >
           Previous
         </button>
 
         <LoadingButton
-          buttonText={isFinalStep ? (isSubmitting ? "Submitting..." : "Submit Application") : "Next Step"}
+          buttonText={
+            isFinalStep ? (isSubmitting ? "Submitting..." : "Submit Application") : "Next Step"
+          }
           type="submit"
           isLoading={isSubmitting}
         />
@@ -1136,12 +1221,12 @@ const ServiceabilitySection = ({
   setValue,
 }: {
   storeIndex: number;
-  control: any;
-  watch: any;
-  setValue: any;
+  control: Control<FieldValues>;
+  watch: UseFormWatch<FieldValues>;
+  setValue: unknown;
 }) => {
   const { fields, append, remove } = useFieldArray({
-    control,
+    control: control as Control<FieldValues>,
     name: `stores.${storeIndex}.serviceabilities`,
   });
 
@@ -1166,7 +1251,8 @@ const ServiceabilitySection = ({
         <button
           type="button"
           onClick={addServiceability}
-          className="flex items-center gap-2 px-3 py-1 bg-sky-600 text-white rounded-md hover:bg-sky-700 transition-colors text-sm">
+          className="flex items-center gap-2 px-3 py-1 bg-sky-600 text-white rounded-md hover:bg-sky-700 transition-colors text-sm"
+        >
           <FaPlus /> Add Serviceability
         </button>
       </div>
@@ -1177,12 +1263,15 @@ const ServiceabilitySection = ({
         return (
           <div key={field.id} className="border border-gray-200 rounded-lg p-4 bg-gray-50">
             <div className="flex items-center justify-between mb-4">
-              <h5 className="text-sm font-semibold text-gray-600">Serviceability {serviceIndex + 1}</h5>
+              <h5 className="text-sm font-semibold text-gray-600">
+                Serviceability {serviceIndex + 1}
+              </h5>
               {fields.length > 1 && (
                 <button
                   type="button"
                   onClick={() => remove(serviceIndex)}
-                  className="text-red-600 hover:bg-red-50 p-1 rounded transition-colors">
+                  className="text-red-600 hover:bg-red-50 p-1 rounded transition-colors"
+                >
                   <FaTrash />
                 </button>
               )}
@@ -1206,7 +1295,7 @@ const ServiceabilitySection = ({
                         if (!currentServiceability) return true;
 
                         const duplicateExists = watchServiceabilities?.some(
-                          (srv: any, idx: number) => {
+                          (srv: Record<string, unknown>, idx: number) => {
                             if (idx === serviceIndex) return false;
 
                             return (
@@ -1251,7 +1340,7 @@ const ServiceabilitySection = ({
                 </label>
                 <Controller
                   name={`stores.${storeIndex}.serviceabilities.${serviceIndex}.category`}
-                  control={control}
+                  control={control as Control<FieldValues>}
                   rules={{
                     required: "Category is required",
                     validate: {
@@ -1260,19 +1349,23 @@ const ServiceabilitySection = ({
                         const currentServiceability = watchServiceabilities?.[serviceIndex];
                         if (!currentServiceability) return true;
 
-                        const duplicateExists = watchServiceabilities?.some((srv: any, idx: number) => {
-                          if (idx === serviceIndex) return false;
+                        const duplicateExists = watchServiceabilities?.some(
+                          (srv: Record<string, unknown>, idx: number) => {
+                            if (idx === serviceIndex) return false;
 
-                          return (
-                            srv.location === currentServiceability.location &&
-                            srv.category === value &&
-                            srv.type === currentServiceability.type &&
-                            srv.val === currentServiceability.val &&
-                            (srv.type === "10" ? srv.unit === currentServiceability.unit : true)
-                          );
-                        });
+                            return (
+                              srv.location === currentServiceability.location &&
+                              srv.category === value &&
+                              srv.type === currentServiceability.type &&
+                              srv.val === currentServiceability.val &&
+                              (srv.type === "10" ? srv.unit === currentServiceability.unit : true)
+                            );
+                          }
+                        );
 
-                        return duplicateExists ? "A serviceability with these exact values already exists" : true;
+                        return duplicateExists
+                          ? "A serviceability with these exact values already exists"
+                          : true;
                       },
                     },
                   }}
@@ -1282,10 +1375,15 @@ const ServiceabilitySection = ({
                         {...field}
                         className="w-full"
                         size="large"
-                        placeholder={supportedSubcategories.length > 0 ? "Select Category" : "No categories available"}
+                        placeholder={
+                          supportedSubcategories.length > 0
+                            ? "Select Category"
+                            : "No categories available"
+                        }
                         allowClear
                         status={error ? "error" : undefined}
-                        disabled={supportedSubcategories.length === 0}>
+                        disabled={supportedSubcategories.length === 0}
+                      >
                         {supportedSubcategories.map((category: string) => (
                           <Select.Option key={category} value={category}>
                             {category}
@@ -1305,7 +1403,7 @@ const ServiceabilitySection = ({
                 </label>
                 <Controller
                   name={`stores.${storeIndex}.serviceabilities.${serviceIndex}.type`}
-                  control={control}
+                  control={control as Control<FieldValues>}
                   rules={{
                     required: "Serviceability type is required",
                     validate: {
@@ -1314,19 +1412,23 @@ const ServiceabilitySection = ({
                         const currentServiceability = watchServiceabilities?.[serviceIndex];
                         if (!currentServiceability) return true;
 
-                        const duplicateExists = watchServiceabilities?.some((srv: any, idx: number) => {
-                          if (idx === serviceIndex) return false;
+                        const duplicateExists = watchServiceabilities?.some(
+                          (srv: Record<string, unknown>, idx: number) => {
+                            if (idx === serviceIndex) return false;
 
-                          return (
-                            srv.location === currentServiceability.location &&
-                            srv.category === currentServiceability.category &&
-                            srv.type === value &&
-                            srv.val === currentServiceability.val &&
-                            (value === "10" ? srv.unit === currentServiceability.unit : true)
-                          );
-                        });
+                            return (
+                              srv.location === currentServiceability.location &&
+                              srv.category === currentServiceability.category &&
+                              srv.type === value &&
+                              srv.val === currentServiceability.val &&
+                              (value === "10" ? srv.unit === currentServiceability.unit : true)
+                            );
+                          }
+                        );
 
-                        return duplicateExists ? "A serviceability with these exact values already exists" : true;
+                        return duplicateExists
+                          ? "A serviceability with these exact values already exists"
+                          : true;
                       },
                     },
                   }}
@@ -1339,22 +1441,28 @@ const ServiceabilitySection = ({
                         placeholder="Select Type"
                         allowClear
                         status={error ? "error" : undefined}
-                        onChange={value => {
+                        onChange={(value) => {
                           field.onChange(value);
 
                           // Always clear all related fields first when type changes
-                          setValue(`stores.${storeIndex}.serviceabilities.${serviceIndex}.val`, "");
-                          setValue(`stores.${storeIndex}.serviceabilities.${serviceIndex}.unit`, undefined);
-                          setValue(
+                          (setValue as (name: string, value: unknown) => void)(
+                            `stores.${storeIndex}.serviceabilities.${serviceIndex}.val`,
+                            ""
+                          );
+                          (setValue as (name: string, value: unknown) => void)(
+                            `stores.${storeIndex}.serviceabilities.${serviceIndex}.unit`,
+                            undefined
+                          );
+                          (setValue as (name: string, value: unknown) => void)(
                             `stores.${storeIndex}.serviceabilities.${serviceIndex}.location`,
-                            `L${storeIndex + 1}`,
+                            `L${storeIndex + 1}`
                           );
 
                           // If no value selected (cleared), keep fields empty
                           if (!value) {
-                            setValue(
+                            (setValue as (name: string, value: unknown) => void)(
                               `stores.${storeIndex}.serviceabilities.${serviceIndex}.location`,
-                              `L${storeIndex + 1}`,
+                              `L${storeIndex + 1}`
                             );
                             return;
                           }
@@ -1367,35 +1475,48 @@ const ServiceabilitySection = ({
                             // Hyperlocal - clear for user input (radius and unit)
                             // val and unit will be filled by user
                             // Set default location
-                            setValue(
+                            (setValue as (name: string, value: unknown) => void)(
                               `stores.${storeIndex}.serviceabilities.${serviceIndex}.location`,
-                              `L${storeIndex + 1}`,
+                              `L${storeIndex + 1}`
                             );
                           } else if (value === "11") {
                             // Pincode - clear val for user input, set unit automatically
-                            setValue(`stores.${storeIndex}.serviceabilities.${serviceIndex}.unit`, "pincode");
-                            setValue(
+                            (setValue as (name: string, value: unknown) => void)(
+                              `stores.${storeIndex}.serviceabilities.${serviceIndex}.unit`,
+                              "pincode"
+                            );
+                            (setValue as (name: string, value: unknown) => void)(
                               `stores.${storeIndex}.serviceabilities.${serviceIndex}.location`,
-                              `L${storeIndex + 1}`,
+                              `L${storeIndex + 1}`
                             );
                           } else if (value === "12") {
                             // PAN India - set both country code and unit automatically
-                            setValue(`stores.${storeIndex}.serviceabilities.${serviceIndex}.val`, "IND");
-                            setValue(`stores.${storeIndex}.serviceabilities.${serviceIndex}.unit`, "country");
-                            setValue(
+                            (setValue as (name: string, value: unknown) => void)(
+                              `stores.${storeIndex}.serviceabilities.${serviceIndex}.val`,
+                              "IND"
+                            );
+                            (setValue as (name: string, value: unknown) => void)(
+                              `stores.${storeIndex}.serviceabilities.${serviceIndex}.unit`,
+                              "country"
+                            );
+                            (setValue as (name: string, value: unknown) => void)(
                               `stores.${storeIndex}.serviceabilities.${serviceIndex}.location`,
-                              `L${storeIndex + 1}`,
+                              `L${storeIndex + 1}`
                             );
                           } else if (value === "13") {
                             // Polygon - set geojson unit, clear val for user input
-                            setValue(`stores.${storeIndex}.serviceabilities.${serviceIndex}.unit`, "geojson");
-                            setValue(
+                            (setValue as (name: string, value: unknown) => void)(
+                              `stores.${storeIndex}.serviceabilities.${serviceIndex}.unit`,
+                              "geojson"
+                            );
+                            (setValue as (name: string, value: unknown) => void)(
                               `stores.${storeIndex}.serviceabilities.${serviceIndex}.location`,
-                              `L${storeIndex + 1}`,
+                              `L${storeIndex + 1}`
                             );
                           }
-                        }}>
-                        {serviceabilityOptions.map(option => (
+                        }}
+                      >
+                        {serviceabilityOptions.map((option) => (
                           <Select.Option key={option.value} value={option.value}>
                             {option.key}
                           </Select.Option>
@@ -1405,7 +1526,9 @@ const ServiceabilitySection = ({
                     </>
                   )}
                 />
-                <p className="text-xs text-gray-500 mt-1">Recommended option for more accurate locations — polygon</p>
+                <p className="text-xs text-gray-500 mt-1">
+                  Recommended option for more accurate locations — polygon
+                </p>
               </div>
 
               {serviceabilityType === "10" && (
@@ -1433,19 +1556,23 @@ const ServiceabilitySection = ({
                             const currentServiceability = watchServiceabilities?.[serviceIndex];
                             if (!currentServiceability) return true;
 
-                            const duplicateExists = watchServiceabilities?.some((srv: any, idx: number) => {
-                              if (idx === serviceIndex) return false;
+                            const duplicateExists = watchServiceabilities?.some(
+                              (srv: Record<string, unknown>, idx: number) => {
+                                if (idx === serviceIndex) return false;
 
-                              return (
-                                srv.location === currentServiceability.location &&
-                                srv.category === currentServiceability.category &&
-                                srv.type === currentServiceability.type &&
-                                srv.val === value &&
-                                srv.unit === currentServiceability.unit
-                              );
-                            });
+                                return (
+                                  srv.location === currentServiceability.location &&
+                                  srv.category === currentServiceability.category &&
+                                  srv.type === currentServiceability.type &&
+                                  srv.val === value &&
+                                  srv.unit === currentServiceability.unit
+                                );
+                              }
+                            );
 
-                            return duplicateExists ? "A serviceability with these exact values already exists" : true;
+                            return duplicateExists
+                              ? "A serviceability with these exact values already exists"
+                              : true;
                           },
                         },
                       }}
@@ -1481,19 +1608,23 @@ const ServiceabilitySection = ({
                             const currentServiceability = watchServiceabilities?.[serviceIndex];
                             if (!currentServiceability) return true;
 
-                            const duplicateExists = watchServiceabilities?.some((srv: any, idx: number) => {
-                              if (idx === serviceIndex) return false;
+                            const duplicateExists = watchServiceabilities?.some(
+                              (srv: Record<string, unknown>, idx: number) => {
+                                if (idx === serviceIndex) return false;
 
-                              return (
-                                srv.location === currentServiceability.location &&
-                                srv.category === currentServiceability.category &&
-                                srv.type === currentServiceability.type &&
-                                srv.val === currentServiceability.val &&
-                                srv.unit === value
-                              );
-                            });
+                                return (
+                                  srv.location === currentServiceability.location &&
+                                  srv.category === currentServiceability.category &&
+                                  srv.type === currentServiceability.type &&
+                                  srv.val === currentServiceability.val &&
+                                  srv.unit === value
+                                );
+                              }
+                            );
 
-                            return duplicateExists ? "A serviceability with these exact values already exists" : true;
+                            return duplicateExists
+                              ? "A serviceability with these exact values already exists"
+                              : true;
                           },
                         },
                       }}
@@ -1505,8 +1636,9 @@ const ServiceabilitySection = ({
                             size="large"
                             placeholder="Select Unit"
                             allowClear
-                            status={error ? "error" : undefined}>
-                            {unitOptions.map(unit => (
+                            status={error ? "error" : undefined}
+                          >
+                            {unitOptions.map((unit) => (
                               <Select.Option key={unit.value} value={unit.value}>
                                 {unit.key}
                               </Select.Option>
@@ -1534,7 +1666,7 @@ const ServiceabilitySection = ({
                       validate: {
                         validPincodes: (value: string) => {
                           if (!value) return "Pincodes are required";
-                          const pincodes = value.split(",").map(p => p.trim());
+                          const pincodes = value.split(",").map((p) => p.trim());
                           for (const pincode of pincodes) {
                             if (!/^[1-9][0-9]{5}$/.test(pincode)) {
                               return `Invalid pincode: ${pincode}. Must be 6 digits and not start with 0`;
@@ -1547,18 +1679,22 @@ const ServiceabilitySection = ({
                           const currentServiceability = watchServiceabilities?.[serviceIndex];
                           if (!currentServiceability) return true;
 
-                          const duplicateExists = watchServiceabilities?.some((srv: any, idx: number) => {
-                            if (idx === serviceIndex) return false;
+                          const duplicateExists = watchServiceabilities?.some(
+                            (srv: Record<string, unknown>, idx: number) => {
+                              if (idx === serviceIndex) return false;
 
-                            return (
-                              srv.location === currentServiceability.location &&
-                              srv.category === currentServiceability.category &&
-                              srv.type === currentServiceability.type &&
-                              srv.val === value
-                            );
-                          });
+                              return (
+                                srv.location === currentServiceability.location &&
+                                srv.category === currentServiceability.category &&
+                                srv.type === currentServiceability.type &&
+                                srv.val === value
+                              );
+                            }
+                          );
 
-                          return duplicateExists ? "A serviceability with these exact values already exists" : true;
+                          return duplicateExists
+                            ? "A serviceability with these exact values already exists"
+                            : true;
                         },
                       },
                     }}
@@ -1586,7 +1722,7 @@ const ServiceabilitySection = ({
                   </label>
                   <Controller
                     name={`stores.${storeIndex}.serviceabilities.${serviceIndex}.val`}
-                    control={control}
+                    control={control as Control<FieldValues>}
                     rules={{
                       required: "Polygon data is required",
                       validate: {
@@ -1595,7 +1731,7 @@ const ServiceabilitySection = ({
                           try {
                             JSON.parse(value);
                             return true;
-                          } catch (e) {
+                          } catch {
                             return "Invalid GeoJSON format";
                           }
                         },
@@ -1605,19 +1741,23 @@ const ServiceabilitySection = ({
                           if (!currentServiceability) return true;
 
                           // Check for duplicates
-                          const duplicateExists = watchServiceabilities?.some((srv: any, idx: number) => {
-                            if (idx === serviceIndex) return false; // Skip current item
+                          const duplicateExists = watchServiceabilities?.some(
+                            (srv: Record<string, unknown>, idx: number) => {
+                              if (idx === serviceIndex) return false; // Skip current item
 
-                            // Check if all relevant fields match
-                            return (
-                              srv.location === currentServiceability.location &&
-                              srv.category === currentServiceability.category &&
-                              srv.type === currentServiceability.type &&
-                              srv.val === value
-                            );
-                          });
+                              // Check if all relevant fields match
+                              return (
+                                srv.location === currentServiceability.location &&
+                                srv.category === currentServiceability.category &&
+                                srv.type === currentServiceability.type &&
+                                srv.val === value
+                              );
+                            }
+                          );
 
-                          return duplicateExists ? "A serviceability with these exact values already exists" : true;
+                          return duplicateExists
+                            ? "A serviceability with these exact values already exists"
+                            : true;
                         },
                       },
                     }}
@@ -1641,12 +1781,13 @@ const ServiceabilitySection = ({
                 <>
                   <div className="lg:col-span-3 bg-blue-50 p-3 rounded">
                     <p className="text-sm text-blue-800">
-                      Pan-India serviceability selected. This store will serve customers across the entire country.
+                      Pan-India serviceability selected. This store will serve customers across the
+                      entire country.
                     </p>
                   </div>
                   <Controller
                     name={`stores.${storeIndex}.serviceabilities.${serviceIndex}.val`}
-                    control={control}
+                    control={control as Control<FieldValues>}
                     defaultValue="IND"
                     render={({ field }) => <input {...field} type="hidden" value="IND" />}
                   />
@@ -1666,15 +1807,17 @@ const ServiceabilitySection = ({
       {supportedSubcategories.length === 0 && (
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-sm mb-4">
           <p className="text-yellow-800">
-            <strong>Important:</strong> No supported subcategories have been selected for this store. Please select
-            supported subcategories in the Additional Details section above before configuring serviceability.
+            <strong>Important:</strong> No supported subcategories have been selected for this
+            store. Please select supported subcategories in the Additional Details section above
+            before configuring serviceability.
           </p>
         </div>
       )}
 
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm">
         <p className="text-blue-800">
-          <strong>Note:</strong> Serviceability defines where this store can deliver for each category:
+          <strong>Note:</strong> Serviceability defines where this store can deliver for each
+          category:
         </p>
         <ul className="list-disc list-inside mt-2 text-blue-700">
           <li>

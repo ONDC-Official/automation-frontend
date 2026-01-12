@@ -12,7 +12,7 @@ export const fnbAttributes = {
       value: [],
     },
   },
-  
+
   // Optional attributes categorized by subcategory
   optional: {
     // Common F&B attributes
@@ -20,7 +20,7 @@ export const fnbAttributes = {
       mandatory: false,
       value: [
         "Indian",
-        "Chinese", 
+        "Chinese",
         "Continental",
         "Italian",
         "Mexican",
@@ -32,14 +32,14 @@ export const fnbAttributes = {
         "Fast Food",
         "Street Food",
         "Healthy",
-        "Multi-Cuisine"
+        "Multi-Cuisine",
       ],
     },
     course: {
       mandatory: false,
       value: [
         "Appetizer",
-        "Starter", 
+        "Starter",
         "Main Course",
         "Dessert",
         "Beverage",
@@ -49,38 +49,38 @@ export const fnbAttributes = {
         "Snack",
         "Soup",
         "Salad",
-        "Bread"
+        "Bread",
       ],
     },
     allergen_info: {
       mandatory: false,
       value: [],
-      placeholder: "Contains nuts, dairy, gluten etc."
+      placeholder: "Contains nuts, dairy, gluten etc.",
     },
     serving_size: {
       mandatory: false,
       value: [],
-      placeholder: "e.g., 250g, 1 plate, 500ml"
+      placeholder: "e.g., 250g, 1 plate, 500ml",
     },
     nutritional_info: {
       mandatory: false,
       value: [],
-      placeholder: "Calories, proteins, carbs, fats per serving"
+      placeholder: "Calories, proteins, carbs, fats per serving",
     },
     additives_info: {
       mandatory: false,
       value: [],
-      placeholder: "Preservatives, artificial colors, flavors used"
+      placeholder: "Preservatives, artificial colors, flavors used",
     },
     ingredients: {
       mandatory: false,
       value: [],
-      placeholder: "List of ingredients used"
+      placeholder: "List of ingredients used",
     },
     preparation_time: {
       mandatory: false,
       value: [],
-      placeholder: "Time in minutes (e.g., 30)"
+      placeholder: "Time in minutes (e.g., 30)",
     },
     is_halal: {
       mandatory: false,
@@ -98,8 +98,11 @@ export const fnbAttributes = {
 };
 
 // F&B subcategory specific attributes
-export const fnbSubcategoryAttributes: { [key: string]: any } = {
-  "Beverages": {
+export const fnbSubcategoryAttributes: Record<
+  string,
+  { mandatory: Record<string, unknown>; optional: Record<string, unknown> }
+> = {
+  Beverages: {
     mandatory: {},
     optional: {
       beverage_type: {
@@ -109,7 +112,7 @@ export const fnbSubcategoryAttributes: { [key: string]: any } = {
       volume: {
         mandatory: false,
         value: [],
-        placeholder: "e.g., 250ml, 500ml, 1L"
+        placeholder: "e.g., 250ml, 500ml, 1L",
       },
     },
   },
@@ -123,7 +126,7 @@ export const fnbSubcategoryAttributes: { [key: string]: any } = {
       shelf_life: {
         mandatory: false,
         value: [],
-        placeholder: "e.g., 2 days, 1 week"
+        placeholder: "e.g., 2 days, 1 week",
       },
     },
   },
@@ -133,12 +136,12 @@ export const fnbSubcategoryAttributes: { [key: string]: any } = {
       storage_temperature: {
         mandatory: false,
         value: [],
-        placeholder: "e.g., -18°C"
+        placeholder: "e.g., -18°C",
       },
       thawing_instructions: {
         mandatory: false,
         value: [],
-        placeholder: "Thawing and heating instructions"
+        placeholder: "Thawing and heating instructions",
       },
     },
   },
@@ -148,7 +151,7 @@ export const fnbSubcategoryAttributes: { [key: string]: any } = {
       heating_instructions: {
         mandatory: false,
         value: [],
-        placeholder: "Microwave for 2 mins or heat on stove"
+        placeholder: "Microwave for 2 mins or heat on stove",
       },
       meal_type: {
         mandatory: false,
@@ -164,7 +167,7 @@ export const getFnBAttributes = (subcategory: string) => {
     mandatory: fnbAttributes.mandatory,
     optional: fnbAttributes.optional,
   };
-  
+
   if (fnbSubcategoryAttributes[subcategory]) {
     return {
       mandatory: {
@@ -177,7 +180,7 @@ export const getFnBAttributes = (subcategory: string) => {
       },
     };
   }
-  
+
   return baseAttributes;
 };
 
@@ -196,7 +199,7 @@ export const fssaiFields = {
     placeholder: "Name of brand owner",
   },
   brand_owner_address: {
-    mandatory: true, 
+    mandatory: true,
     placeholder: "Complete address of brand owner",
   },
   brand_owner_fssai_license_no: {
