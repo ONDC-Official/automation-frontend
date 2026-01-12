@@ -1,21 +1,46 @@
 import { useState } from "react";
-import { useForm, useFieldArray } from "react-hook-form";
+import { useForm, useFieldArray, useWatch } from "react-hook-form";
 import { FaRegPaste } from "react-icons/fa6";
 import PayloadEditor from "@components/PayloadEditor";
 import { SubmitEventParams } from "@/types/flow-types";
 import { toast } from "react-toastify";
+import { IFormData, ICatalogItem, DEFAULT_FORM_DATA } from "./airline.types";
 
-interface FormItem {
-  itemId: string;
-  count: number;
-  addOnId: string;
-  addOnCount: number;
+interface CatalogItemDescriptor {
+  name?: string;
 }
 
-interface FormData {
-  provider: string;
-  fulfillment: string;
-  items: FormItem[];
+interface CatalogAddOn {
+  id: string;
+  descriptor?: CatalogItemDescriptor;
+}
+
+interface CatalogItem {
+  id: string;
+  descriptor?: CatalogItemDescriptor;
+  add_ons?: CatalogAddOn[];
+}
+
+interface Fulfillment {
+  id: string;
+}
+
+interface Provider {
+  id: string;
+  fulfillments?: Fulfillment[];
+  items?: CatalogItem[];
+}
+
+interface Catalog {
+  providers: Provider[];
+}
+
+interface Message {
+  catalog: Catalog;
+}
+
+interface OnSearchPayload {
+  message: Message;
 }
 
 export default function AirlineSelect({
@@ -25,20 +50,10 @@ export default function AirlineSelect({
 }) {
   const [isPayloadEditorActive, setIsPayloadEditorActive] = useState(false);
   const [errorWhilePaste, setErrorWhilePaste] = useState("");
+  const [availableItems, setAvailableItems] = useState<ICatalogItem[]>([]);
 
-  const { control, register, handleSubmit, setValue } = useForm<FormData>({
-    defaultValues: {
-      provider: "",
-      fulfillment: "",
-      items: [
-        {
-          itemId: "",
-          count: 1,
-          addOnId: "",
-          addOnCount: 1,
-        },
-      ],
-    },
+  const { control, register, handleSubmit, setValue, reset } = useForm<IFormData>({
+    defaultValues: DEFAULT_FORM_DATA,
   });
 
   const { fields, append, remove } = useFieldArray({
@@ -46,28 +61,74 @@ export default function AirlineSelect({
     name: "items",
   });
 
-  interface PastePayload {
-    message?: {
-      catalog?: {
-        providers?: Array<{
-          id?: string;
-          fulfillments?: Array<{ id?: string }>;
-        }>;
-      };
-    };
-  }
+  const watchedItems = useWatch({
+    control,
+    name: "items",
+  });
+
+  const isOnSearchPayload = (data: unknown): data is OnSearchPayload => {
+    if (!data || typeof data !== "object") return false;
+    const obj = data as Record<string, unknown>;
+    if (!obj.message || typeof obj.message !== "object") return false;
+    const message = obj.message as Record<string, unknown>;
+    if (!message.catalog || typeof message.catalog !== "object") return false;
+    const catalog = message.catalog as Record<string, unknown>;
+    if (!Array.isArray(catalog.providers)) return false;
+    if (catalog.providers.length === 0) return false;
+    const provider = catalog.providers[0] as Record<string, unknown>;
+    if (typeof provider.id !== "string") return false;
+    return true;
+  };
+
+  const getAddonsForItem = (itemId: string): { id: string; name: string }[] => {
+    const item = availableItems.find((i) => i.id === itemId);
+    return item?.addOns || [];
+  };
 
   /* ------------------- HANDLE PASTE ------------------- */
-  const handlePaste = (payload: PastePayload) => {
+  const handlePaste = (payload: unknown) => {
     try {
-      if (!payload?.message?.catalog?.providers) {
+      if (!isOnSearchPayload(payload)) {
         throw new Error("Invalid Schema");
       }
 
       const provider = payload.message.catalog.providers[0];
 
+      if (!provider) {
+        throw new Error("No provider found");
+      }
+
+      // Extract items from catalog
+      const catalogItems: ICatalogItem[] = (provider.items || []).map((item: CatalogItem) => ({
+        id: item.id,
+        name: item.descriptor?.name || item.id,
+        addOns: (item.add_ons || []).map((addon: CatalogAddOn) => ({
+          id: addon.id,
+          name: addon.descriptor?.name || addon.id,
+        })),
+      }));
+
+      setAvailableItems(catalogItems);
       setValue("provider", provider.id || "");
       setValue("fulfillment", provider.fulfillments?.[0]?.id || "");
+
+      // Pre-populate first item if available
+      if (catalogItems.length > 0) {
+        reset({
+          provider: provider.id || "",
+          fulfillment: provider.fulfillments?.[0]?.id || "",
+          items: [
+            {
+              itemId: catalogItems[0].id,
+              count: 1,
+              addOnId: catalogItems[0].addOns?.[0]?.id || "",
+              addOnCount: 1,
+            },
+          ],
+        });
+        toast.success(`Found ${catalogItems.length} items in catalog`);
+      }
+      setErrorWhilePaste("");
     } catch (err) {
       setErrorWhilePaste("Invalid payload structure.");
       toast.error("Invalid payload structure");
@@ -78,7 +139,7 @@ export default function AirlineSelect({
   };
 
   /* ------------------- FINAL SUBMIT ------------------- */
-  const onSubmit = async (data: FormData) => {
+  const onSubmit = async (data: IFormData) => {
     const finalItems = data.items.map((item) => ({
       itemId: item.itemId,
       count: item.count,
@@ -113,12 +174,7 @@ export default function AirlineSelect({
 
   return (
     <div>
-      {isPayloadEditorActive && (
-        <PayloadEditor
-          mode="modal"
-          onAdd={(payload: unknown) => handlePaste(payload as PastePayload)}
-        />
-      )}
+      {isPayloadEditorActive && <PayloadEditor mode="modal" onAdd={handlePaste} />}
       {errorWhilePaste && <p className="text-red-500 text-sm italic mt-1">{errorWhilePaste}</p>}
 
       <button
@@ -135,12 +191,23 @@ export default function AirlineSelect({
             {/* ITEM ID */}
             <div className={fieldWrapperStyle}>
               <label className={labelStyle}>Item ID</label>
-              <input
-                type="text"
-                placeholder="Enter Item ID"
-                {...register(`items.${index}.itemId`)}
-                className={inputStyle}
-              />
+              {availableItems.length > 0 ? (
+                <select {...register(`items.${index}.itemId`)} className={inputStyle}>
+                  <option value="">Select an item</option>
+                  {availableItems.map((item) => (
+                    <option key={item.id} value={item.id}>
+                      {item.name} ({item.id})
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <input
+                  type="text"
+                  placeholder="Paste on_search payload to populate items"
+                  {...register(`items.${index}.itemId`)}
+                  className={inputStyle}
+                />
+              )}
             </div>
 
             {/* ITEM QUANTITY */}
@@ -159,12 +226,27 @@ export default function AirlineSelect({
             {/* ADD-ON ID */}
             <div className={fieldWrapperStyle}>
               <label className={labelStyle}>Add-On ID</label>
-              <input
-                type="text"
-                placeholder="Enter Add-On ID"
-                {...register(`items.${index}.addOnId`)}
-                className={inputStyle}
-              />
+              {(() => {
+                const selectedItemId = watchedItems?.[index]?.itemId || "";
+                const itemAddons = getAddonsForItem(selectedItemId);
+                return itemAddons.length > 0 ? (
+                  <select {...register(`items.${index}.addOnId`)} className={inputStyle}>
+                    <option value="">Select an add-on (optional)</option>
+                    {itemAddons.map((addon: { id: string; name: string }) => (
+                      <option key={addon.id} value={addon.id}>
+                        {addon.name} ({addon.id})
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <input
+                    type="text"
+                    placeholder="No add-ons available or select an item first"
+                    {...register(`items.${index}.addOnId`)}
+                    className={inputStyle}
+                  />
+                );
+              })()}
             </div>
 
             {/* ADD-ON QUANTITY */}
@@ -172,7 +254,7 @@ export default function AirlineSelect({
               <label className={labelStyle}>Add-On Quantity</label>
               <input
                 type="number"
-                // min="1"
+                min="1"
                 {...register(`items.${index}.addOnCount`, {
                   valueAsNumber: true,
                 })}
