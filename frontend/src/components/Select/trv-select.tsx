@@ -180,7 +180,6 @@ export default function TRVSelect({
         >
           <FaRegPaste size={14} />
         </button>
-
         {itemOptions.length === 0 && (
           <span className="ml-1.5 text-red-600">
             Please paste the on_search payload containing item details. Once available, the item ID
