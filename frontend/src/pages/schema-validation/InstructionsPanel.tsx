@@ -6,7 +6,7 @@
 
 import { FC } from "react";
 import type { InstructionsPanelProps } from "@pages/schema-validation/types";
-import { SchemaGuide } from "@/components/FlowShared/schema-guide";
+import SchemaGuide from "@/pages/schema-validation/SchemaGuide";
 
 /**
  * InstructionsPanel component that displays usage instructions
