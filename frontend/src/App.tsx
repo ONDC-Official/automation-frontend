@@ -48,7 +48,7 @@ function App() {
         return null;
       }
     },
-    [user],
+    [user]
   );
 
   // Fetch subscriber details when user or pathname changes
@@ -89,7 +89,8 @@ function App() {
         refreshUser: refreshUser,
         subscriberData: subscriberData,
         setSubscriberData: setSubscriberData,
-      }}>
+      }}
+    >
       <SessionProvider>
         <Layout />
       </SessionProvider>
