@@ -33,11 +33,11 @@ export const useMultiImageUpload = (initialValues: string[] = []) => {
   }, []);
 
   const addImage = useCallback((url: string) => {
-    setImageUrls(prev => [...prev, url]);
+    setImageUrls((prev) => [...prev, url]);
   }, []);
 
   const removeImage = useCallback((index: number) => {
-    setImageUrls(prev => prev.filter((_, i) => i !== index));
+    setImageUrls((prev) => prev.filter((_, i) => i !== index));
   }, []);
 
   const clearImages = useCallback(() => {
@@ -59,11 +59,11 @@ export const useMultiImageUpload = (initialValues: string[] = []) => {
 };
 
 // Hook for managing form-specific image state (combines multiple image types)
-export const useFormImageState = <T extends Record<string, any>>(initialState: T) => {
+export const useFormImageState = <T extends Record<string, unknown>>(initialState: T) => {
   const [imageState, setImageState] = useState<T>(initialState);
 
   const updateImageField = useCallback(<K extends keyof T>(field: K, value: T[K]) => {
-    setImageState(prev => ({
+    setImageState((prev) => ({
       ...prev,
       [field]: value,
     }));
@@ -75,7 +75,7 @@ export const useFormImageState = <T extends Record<string, any>>(initialState: T
 
   const clearAllImages = useCallback(() => {
     const clearedState = {} as T;
-    Object.keys(imageState).forEach(key => {
+    Object.keys(imageState).forEach((key) => {
       clearedState[key as keyof T] = Array.isArray(imageState[key as keyof T])
         ? ([] as T[keyof T])
         : ("" as T[keyof T]);

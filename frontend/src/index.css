@@ -119,3 +119,13 @@ pre {
 .antd-input.ant-input-password .ant-input {
   background-color: transparent !important;
 }
+
+/* Ant Design Tooltip custom styling - white background and black text */
+.ant-tooltip .ant-tooltip-inner {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+}
+
+.ant-tooltip .ant-tooltip-arrow::before {
+  background-color: #ffffff !important;
+}
