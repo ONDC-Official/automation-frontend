@@ -46,7 +46,8 @@ const ToolsFeatures: React.FC = () => {
               className="group bg-white border border-sky-100 rounded-2xl hover:border-sky-300 hover:shadow-xl hover:shadow-sky-100/50 transition-all duration-300 cursor-pointer p-8 relative overflow-hidden"
               onClick={() => {
                 navigate(feature.path);
-              }}>
+              }}
+            >
               <div className="absolute inset-0 bg-gradient-to-r from-sky-50/0 to-sky-50/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               <div className="relative flex items-start space-x-5">
                 <div className="flex-shrink-0 w-16 h-16 bg-gradient-to-br from-sky-50 to-sky-100 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
