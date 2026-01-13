@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+// import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 import {
-  ISeatFormData,
+  // ISeatFormData,
   IAirlineSeatSelectProps,
-  DEFAULT_SEAT_FORM_DATA,
+  // DEFAULT_SEAT_FORM_DATA,
   ISelectPayload,
   IParsedFlightData,
   IVehicleGrid,
@@ -13,7 +13,7 @@ import {
 
 export default function AirlineSeatSelect({
   submitEvent,
-  defaultValues = DEFAULT_SEAT_FORM_DATA,
+  // defaultValues = DEFAULT_SEAT_FORM_DATA,
 }: IAirlineSeatSelectProps) {
   const [jsonPayload, setJsonPayload] = useState("");
   const [parsedData, setParsedData] = useState<IParsedFlightData | null>(null);
@@ -374,11 +374,11 @@ export default function AirlineSeatSelect({
                 <div className="flex gap-2 mb-2 ml-8 justify-center">
                   {Array.from({ length: parsedData.grid.yMax || 6 }).map((_, colIndex) => {
                     // Check if this column is a lobby (aisle) AND has no seats
-                    const isYLobby =
-                      parsedData.grid.yLobbyStart !== undefined &&
-                      parsedData.grid.yLobbySize !== undefined &&
-                      colIndex >= parsedData.grid.yLobbyStart &&
-                      colIndex < parsedData.grid.yLobbyStart + parsedData.grid.yLobbySize;
+                    // const isYLobby =
+                    //   parsedData.grid.yLobbyStart !== undefined &&
+                    //   parsedData.grid.yLobbySize !== undefined &&
+                    //   colIndex >= parsedData.grid.yLobbyStart &&
+                    //   colIndex < parsedData.grid.yLobbyStart + parsedData.grid.yLobbySize;
 
                     // If it IS a lobby, we only treat it as a gap if there are NO seats in this column
                     // FORCE SHOW ALL COLUMNS even if they are marked as lobby/aisle in payload
@@ -419,11 +419,11 @@ export default function AirlineSeatSelect({
                           (s) => s.x === rowIndex && s.y === colIndex
                         );
 
-                        const isYLobby =
-                          parsedData.grid.yLobbyStart !== undefined &&
-                          parsedData.grid.yLobbySize !== undefined &&
-                          colIndex >= parsedData.grid.yLobbyStart &&
-                          colIndex < parsedData.grid.yLobbyStart + parsedData.grid.yLobbySize;
+                        // const isYLobby =
+                        //   parsedData.grid.yLobbyStart !== undefined &&
+                        //   parsedData.grid.yLobbySize !== undefined &&
+                        //   colIndex >= parsedData.grid.yLobbyStart &&
+                        //   colIndex < parsedData.grid.yLobbyStart + parsedData.grid.yLobbySize;
 
                         // Only render gap if it's a lobby AND there's no seat here
                         // (Wait, if there are seats in this column elsewhere, we probably shouldn't render a gap spacer at all,
