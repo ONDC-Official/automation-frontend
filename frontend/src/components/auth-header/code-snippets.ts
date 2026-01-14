@@ -68,7 +68,7 @@ export const codeSnippets = {
     except Exception:
         return False, "Authorization header verification failed"`,
   },
-
+  
   go: {
     language: "go",
     label: "Go",
@@ -146,7 +146,7 @@ export const codeSnippets = {
     return false, "Authorization header verification failed"
 }`,
   },
-
+  
   java: {
     language: "java",
     label: "Java",
@@ -230,7 +230,7 @@ export const codeSnippets = {
     return Map.of("is_valid", isValid);
 }`,
   },
-
+  
   nodejs: {
     language: "javascript",
     label: "Node.js",
@@ -300,7 +300,7 @@ digest: BLAKE-512=\${digestBase64}\`;
     return { is_valid: isValid };
 }`,
   },
-
+  
   php: {
     language: "php",
     label: "PHP",

@@ -8,7 +8,7 @@ import ProtocolPlayGround from "@pages/protocol-playground";
 import HistoryPage from "@pages/history";
 import DBBackOffice from "@pages/db-back-office";
 import FlowTestingWrapper from "@pages/flow-testing";
-import NotFoundPage from "@components/NotFound";
+import NotFoundPage from "@components/ui/not-found";
 import ScenarioPage from "@pages/scenario";
 import HomePage from "@pages/home";
 import AuthHeader from "@pages/auth-header";

@@ -1,18 +1,11 @@
-import {
-  useForm,
-  useFieldArray,
-  Controller,
-  Control,
-  FieldValues,
-  UseFormWatch,
-} from "react-hook-form";
-import { FormInput } from "@components/Input";
-import LoadingButton from "@components/LoadingButton";
-import { SellerOnboardingData, MenuItem } from "@pages/seller-onboarding";
+import { useForm, useFieldArray, Controller } from "react-hook-form";
+import { FormInput } from "@components/ui/forms/form-input";
+import LoadingButton from "@components/ui/forms/loading-button";
+import { SellerOnboardingData } from "@pages/seller-onboarding";
 import { weekDays } from "@constants/common";
 import { Select, Button, Card, Modal, Checkbox, Tabs } from "antd";
-import TimeInput from "@components/TimeInput";
-import MultiImageUpload from "@/components/ImageUpload/multi-image-upload";
+import TimeInput from "@components/ui/forms/time-input";
+import MultiImageUpload from "@components/ui/forms/multi-image-upload";
 import { useFormImageState } from "@hooks/useImageUpload";
 import { FaPlus, FaTrash, FaEdit, FaSitemap, FaClock } from "react-icons/fa";
 import { useState, useEffect } from "react";
@@ -54,26 +47,13 @@ interface CustomMenuFormEnhancedProps {
 }
 
 // Component for managing multiple availability timings
-interface AvailabilityTimingsSectionProps {
-  menuIndex: number;
-  control: unknown;
-  watch: UseFormWatch<FieldValues>;
-  setValue?: unknown;
-  register?: unknown;
-  errors?: unknown;
-}
-
-const AvailabilityTimingsSection = ({
-  menuIndex,
-  control,
-  watch,
-}: AvailabilityTimingsSectionProps) => {
+const AvailabilityTimingsSection = ({ menuIndex, control, watch }: any) => {
   const {
     fields: timingFields,
     append: appendTiming,
     remove: removeTiming,
   } = useFieldArray({
-    control: control as unknown as Control<FieldValues>,
+    control,
     name: `menu.${menuIndex}.availabilityTimings`,
   });
 
@@ -111,8 +91,7 @@ const AvailabilityTimingsSection = ({
         <button
           type="button"
           onClick={addTiming}
-          className="text-sm px-3 py-1 border border-sky-600 text-sky-600 rounded-md hover:bg-sky-50 transition-colors"
-        >
+          className="text-sm px-3 py-1 border border-sky-600 text-sky-600 rounded-md hover:bg-sky-50 transition-colors">
           + Add Timing
         </button>
       </div>
@@ -126,8 +105,7 @@ const AvailabilityTimingsSection = ({
                 type="button"
                 onClick={() => handleRemoveTiming(timingIndex)}
                 className="text-red-500 hover:text-red-700 p-1"
-                title="Remove timing"
-              >
+                title="Remove timing">
                 <FaTrash className="text-sm" />
               </button>
             )}
@@ -140,7 +118,7 @@ const AvailabilityTimingsSection = ({
               </label>
               <Controller
                 name={`menu.${menuIndex}.availabilityTimings.${timingIndex}.dayFrom`}
-                control={control as Control<FieldValues>}
+                control={control}
                 rules={{ required: "Starting day is required" }}
                 render={({ field, fieldState: { error } }) => (
                   <>
@@ -150,9 +128,8 @@ const AvailabilityTimingsSection = ({
                       className="w-full"
                       size="large"
                       allowClear
-                      status={error ? "error" : undefined}
-                    >
-                      {weekDays.map((day) => (
+                      status={error ? "error" : undefined}>
+                      {weekDays.map(day => (
                         <Select.Option key={day.value} value={day.value}>
                           {day.key}
                         </Select.Option>
@@ -170,7 +147,7 @@ const AvailabilityTimingsSection = ({
               </label>
               <Controller
                 name={`menu.${menuIndex}.availabilityTimings.${timingIndex}.dayTo`}
-                control={control as Control<FieldValues>}
+                control={control}
                 rules={{ required: "Ending day is required" }}
                 render={({ field, fieldState: { error } }) => (
                   <>
@@ -180,9 +157,8 @@ const AvailabilityTimingsSection = ({
                       className="w-full"
                       size="large"
                       allowClear
-                      status={error ? "error" : undefined}
-                    >
-                      {weekDays.map((day) => (
+                      status={error ? "error" : undefined}>
+                      {weekDays.map(day => (
                         <Select.Option key={day.value} value={day.value}>
                           {day.key}
                         </Select.Option>
@@ -200,7 +176,7 @@ const AvailabilityTimingsSection = ({
               </label>
               <Controller
                 name={`menu.${menuIndex}.availabilityTimings.${timingIndex}.timeFrom`}
-                control={control as Control<FieldValues>}
+                control={control}
                 rules={{
                   required: "Start time is required",
                 }}
@@ -229,7 +205,7 @@ const AvailabilityTimingsSection = ({
               </label>
               <Controller
                 name={`menu.${menuIndex}.availabilityTimings.${timingIndex}.timeTo`}
-                control={control as Control<FieldValues>}
+                control={control}
                 rules={{
                   required: "End time is required",
                 }}
@@ -268,8 +244,8 @@ const AvailabilityTimingsSection = ({
 
       <div className="bg-blue-50 p-3 rounded-lg">
         <p className="text-sm text-blue-800">
-          <strong>Tip:</strong> Add multiple timings for different day ranges (e.g., weekdays vs
-          weekends) or special hours.
+          <strong>Tip:</strong> Add multiple timings for different day ranges (e.g., weekdays vs weekends) or special
+          hours.
         </p>
       </div>
     </div>
@@ -300,26 +276,12 @@ const CustomMenuFormEnhanced = ({
     defaultValues: {
       menu:
         initialData.menuItems && initialData.menuItems.length > 0
-          ? initialData.menuItems.map((item: MenuItem) => ({
+          ? initialData.menuItems.map((item: any) => ({
               ...item,
               // Ensure availabilityTimings array exists
               availabilityTimings:
-                (
-                  item as MenuItem & {
-                    availabilityTimings?: Array<{
-                      dayFrom?: string;
-                      dayTo?: string;
-                      timeFrom?: string;
-                      timeTo?: string;
-                    }>;
-                  }
-                ).availabilityTimings &&
-                Array.isArray(
-                  (item as MenuItem & { availabilityTimings?: unknown[] }).availabilityTimings
-                ) &&
-                ((item as MenuItem & { availabilityTimings?: unknown[] }).availabilityTimings
-                  ?.length ?? 0) > 0
-                  ? (item as MenuItem & { availabilityTimings?: unknown[] }).availabilityTimings!
+                item.availabilityTimings && item.availabilityTimings.length > 0
+                  ? item.availabilityTimings
                   : [
                       {
                         dayFrom: item.dayFrom || "",
@@ -370,17 +332,12 @@ const CustomMenuFormEnhanced = ({
   useEffect(() => {
     const menuData =
       initialData.menuItems && initialData.menuItems.length > 0
-        ? initialData.menuItems.map((item: MenuItem) => ({
+        ? initialData.menuItems.map((item: any) => ({
             ...item,
             // Ensure availabilityTimings array exists
             availabilityTimings:
-              (item as MenuItem & { availabilityTimings?: unknown[] }).availabilityTimings &&
-              Array.isArray(
-                (item as MenuItem & { availabilityTimings?: unknown[] }).availabilityTimings
-              ) &&
-              ((item as MenuItem & { availabilityTimings?: unknown[] }).availabilityTimings
-                ?.length ?? 0) > 0
-                ? (item as MenuItem & { availabilityTimings?: unknown[] }).availabilityTimings!
+              item.availabilityTimings && item.availabilityTimings.length > 0
+                ? item.availabilityTimings
                 : [
                     {
                       dayFrom: item.dayFrom || "",
@@ -417,21 +374,17 @@ const CustomMenuFormEnhanced = ({
             },
           ];
 
-    (reset as (data: unknown) => void)({ menu: menuData });
+    reset({ menu: menuData });
   }, [initialData, reset]);
 
   // Helper function to get nested errors for field arrays
-  const createErrorsObject = (index: number): Record<string, { message?: string }> => {
+  const createErrorsObject = (index: number) => {
     const menuErrors = errors?.menu?.[index];
     if (!menuErrors) return {};
 
-    const flatErrors: Record<string, { message?: string }> = {};
-    Object.keys(menuErrors).forEach((key) => {
-      const errorValue = (menuErrors as Record<string, unknown>)[key];
-      flatErrors[`menu.${index}.${key}`] =
-        typeof errorValue === "object" && errorValue !== null && "message" in errorValue
-          ? { message: String((errorValue as { message?: unknown }).message) }
-          : { message: String(errorValue) };
+    const flatErrors: any = {};
+    Object.keys(menuErrors).forEach(key => {
+      flatErrors[`menu.${index}.${key}`] = (menuErrors as any)[key];
     });
 
     return flatErrors;
@@ -462,7 +415,7 @@ const CustomMenuFormEnhanced = ({
       vegNonVeg: "veg",
       rank: fields.length + 1,
       customizationGroups: [],
-    } as never);
+    });
   };
 
   const removeMenuItem = (index: number) => {
@@ -472,14 +425,7 @@ const CustomMenuFormEnhanced = ({
   };
 
   const handleAddCustomizationGroup = (menuIndex: number) => {
-    const menuItem = watchMenu[menuIndex];
-    const currentGroups =
-      menuItem &&
-      "customizationGroups" in menuItem &&
-      Array.isArray((menuItem as { customizationGroups?: unknown[] }).customizationGroups)
-        ? ((menuItem as { customizationGroups: unknown[] })
-            .customizationGroups as CustomizationGroup[])
-        : [];
+    const currentGroups = watchMenu[menuIndex]?.customizationGroups || [];
     const newGroup: CustomizationGroup = {
       id: `CG${currentGroups.length + 1}`,
       name: "",
@@ -498,21 +444,13 @@ const CustomMenuFormEnhanced = ({
       ],
     };
 
-    setValue(`menu.${menuIndex}.customizationGroups`, [...currentGroups, newGroup] as never);
+    setValue(`menu.${menuIndex}.customizationGroups`, [...currentGroups, newGroup]);
     setEditingGroup(newGroup);
     setShowCustomizationModal(menuIndex);
   };
 
   const handleEditCustomizationGroup = (menuIndex: number, groupIndex: number) => {
-    const menuItem = watchMenu[menuIndex];
-    const groups =
-      menuItem &&
-      "customizationGroups" in menuItem &&
-      Array.isArray((menuItem as { customizationGroups?: unknown[] }).customizationGroups)
-        ? ((menuItem as { customizationGroups: unknown[] })
-            .customizationGroups as CustomizationGroup[])
-        : [];
-    const group = groups[groupIndex];
+    const group = watchMenu[menuIndex]?.customizationGroups?.[groupIndex];
     if (group) {
       setEditingGroup({ ...group });
       setShowCustomizationModal(menuIndex);
@@ -539,26 +477,16 @@ const CustomMenuFormEnhanced = ({
         return;
       }
 
-      const menuItem = watchMenu[showCustomizationModal];
-      const currentGroups =
-        menuItem &&
-        "customizationGroups" in menuItem &&
-        Array.isArray((menuItem as { customizationGroups?: unknown[] }).customizationGroups)
-          ? ((menuItem as { customizationGroups: unknown[] })
-              .customizationGroups as CustomizationGroup[])
-          : [];
-      const existingIndex = currentGroups.findIndex(
-        (g: { id: string }) => g.id === editingGroup.id
-      );
+      const currentGroups = watchMenu[showCustomizationModal]?.customizationGroups || [];
+      const existingIndex = currentGroups.findIndex((g: { id: string }) => g.id === editingGroup.id);
 
-      const updatedGroups = [...currentGroups];
       if (existingIndex >= 0) {
-        updatedGroups[existingIndex] = editingGroup;
+        currentGroups[existingIndex] = editingGroup;
       } else {
-        updatedGroups.push(editingGroup);
+        currentGroups.push(editingGroup);
       }
 
-      setValue(`menu.${showCustomizationModal}.customizationGroups`, updatedGroups as never);
+      setValue(`menu.${showCustomizationModal}.customizationGroups`, currentGroups);
       setShowCustomizationModal(null);
       setEditingGroup(null);
       toast.success("Customization group saved successfully");
@@ -566,23 +494,12 @@ const CustomMenuFormEnhanced = ({
   };
 
   const handleRemoveCustomizationGroup = (menuIndex: number, groupIndex: number) => {
-    const menuItem = watchMenu[menuIndex];
-    const currentGroups =
-      menuItem &&
-      "customizationGroups" in menuItem &&
-      Array.isArray((menuItem as { customizationGroups?: unknown[] }).customizationGroups)
-        ? (menuItem as { customizationGroups: CustomizationGroup[] }).customizationGroups
-        : [];
-    const updatedGroups = [...currentGroups];
-    updatedGroups.splice(groupIndex, 1);
-    setValue(`menu.${menuIndex}.customizationGroups`, updatedGroups as never);
+    const currentGroups = watchMenu[menuIndex]?.customizationGroups || [];
+    currentGroups.splice(groupIndex, 1);
+    setValue(`menu.${menuIndex}.customizationGroups`, currentGroups);
   };
 
-  interface MenuFormData {
-    menu: Array<Record<string, unknown>>;
-  }
-
-  const onSubmit = (data: MenuFormData) => {
+  const onSubmit = (data: any) => {
     try {
       const convertTimeFormat = (time: string) => {
         if (!time) return "";
@@ -590,51 +507,35 @@ const CustomMenuFormEnhanced = ({
       };
 
       const formData = {
-        menuItems: data.menu.map((item: Record<string, unknown>) => {
+        menuItems: data.menu.map((item: any) => {
           // Process availability timings
-          let processedTimings: Array<Record<string, unknown>> = [];
-          if (
-            item.availabilityTimings &&
-            Array.isArray(item.availabilityTimings) &&
-            item.availabilityTimings.length > 0
-          ) {
-            processedTimings = item.availabilityTimings.map((timing: Record<string, unknown>) => ({
-              dayFrom: String(timing.dayFrom || ""),
-              dayTo: String(timing.dayTo || ""),
-              timeFrom: convertTimeFormat(String(timing.timeFrom || "")) || "",
-              timeTo: convertTimeFormat(String(timing.timeTo || "")) || "",
+          let processedTimings = [];
+          if (item.availabilityTimings && item.availabilityTimings.length > 0) {
+            processedTimings = item.availabilityTimings.map((timing: any) => ({
+              dayFrom: timing.dayFrom || "",
+              dayTo: timing.dayTo || "",
+              timeFrom: convertTimeFormat(timing.timeFrom) || "",
+              timeTo: convertTimeFormat(timing.timeTo) || "",
             }));
           }
 
           return {
-            name: String(item.name || ""),
-            shortDescription: String(item.shortDescription || ""),
-            longDescription: String(item.longDescription || ""),
-            images: Array.isArray(item.images) ? item.images.map(String) : [],
+            name: item.name,
+            shortDescription: item.shortDescription,
+            longDescription: item.longDescription,
+            images: item.images,
             // Legacy single timing fields (kept for backward compatibility)
-            dayFrom: String(item.dayFrom || processedTimings[0]?.dayFrom || ""),
-            dayTo: String(item.dayTo || processedTimings[0]?.dayTo || ""),
-            timeFrom:
-              convertTimeFormat(String(item.timeFrom || "")) ||
-              String(processedTimings[0]?.timeFrom || ""),
-            timeTo:
-              convertTimeFormat(String(item.timeTo || "")) ||
-              String(processedTimings[0]?.timeTo || ""),
+            dayFrom: item.dayFrom || processedTimings[0]?.dayFrom || "",
+            dayTo: item.dayTo || processedTimings[0]?.dayTo || "",
+            timeFrom: convertTimeFormat(item.timeFrom) || processedTimings[0]?.timeFrom || "",
+            timeTo: convertTimeFormat(item.timeTo) || processedTimings[0]?.timeTo || "",
             // New multiple availability timings
             availabilityTimings: processedTimings,
-            price: item.price ? String(item.price) : "",
-            category: String(item.category || ""),
-            vegNonVeg: String(item.vegNonVeg || ""),
-            rank:
-              typeof item.rank === "number"
-                ? item.rank
-                : typeof item.rank === "string"
-                  ? parseInt(item.rank, 10) || 1
-                  : 1,
-            customizationGroups:
-              "customizationGroups" in item && Array.isArray(item.customizationGroups)
-                ? item.customizationGroups
-                : [],
+            price: item.price ? item.price.toString() : "",
+            category: item.category,
+            vegNonVeg: item.vegNonVeg,
+            rank: item.rank || 1,
+            customizationGroups: item.customizationGroups || [],
           };
         }),
       };
@@ -677,8 +578,8 @@ const CustomMenuFormEnhanced = ({
                   <h3 className="text-sm font-medium text-blue-800">Optional Step</h3>
                   <div className="mt-2 text-sm text-blue-700">
                     <p>
-                      This step is optional. You can skip it now and add menu items later. Click
-                      "Skip This Step" to proceed without adding custom menu items.
+                      This step is optional. You can skip it now and add menu items later. Click "Skip This Step" to
+                      proceed without adding custom menu items.
                     </p>
                   </div>
                 </div>
@@ -687,14 +588,11 @@ const CustomMenuFormEnhanced = ({
 
             <div className="space-y-6">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-gray-700">
-                  Custom Menu with Customizations
-                </h3>
+                <h3 className="text-lg font-semibold text-gray-700">Custom Menu with Customizations</h3>
                 <button
                   type="button"
                   onClick={addMenuItem}
-                  className="px-4 py-2 text-sm bg-sky-600 text-white rounded-md hover:bg-sky-700 transition-colors"
-                >
+                  className="px-4 py-2 text-sm bg-sky-600 text-white rounded-md hover:bg-sky-700 transition-colors">
                   + Add Menu
                 </button>
               </div>
@@ -710,14 +608,12 @@ const CustomMenuFormEnhanced = ({
                         <button
                           type="button"
                           onClick={() => removeMenuItem(index)}
-                          className="text-red-600 hover:text-red-800 text-sm"
-                        >
+                          className="text-red-600 hover:text-red-800 text-sm">
                           Remove
                         </button>
                       )}
                     </div>
-                  }
-                >
+                  }>
                   <div className="space-y-6">
                     {/* Basic Information */}
                     <div className="space-y-4">
@@ -725,11 +621,11 @@ const CustomMenuFormEnhanced = ({
                       <div className="grid md:grid-cols-1 gap-4">
                         <FormInput
                           label="Menu Name"
-                          labelInfo="Enter Menu Name"
+                          placeholder="Enter Menu Name"
                           name={`menu.${index}.name`}
                           register={register}
                           errors={createErrorsObject(index)}
-                          required
+                          required="Menu name is required"
                           validations={{
                             minLength: {
                               value: 3,
@@ -742,11 +638,11 @@ const CustomMenuFormEnhanced = ({
                       <div className="grid md:grid-cols-2 gap-4">
                         <FormInput
                           label="Short Description"
-                          labelInfo="Enter Short Description"
+                          placeholder="Enter Short Description"
                           name={`menu.${index}.shortDescription`}
                           register={register}
                           errors={createErrorsObject(index)}
-                          required
+                          required="Short description is required"
                           validations={{
                             minLength: {
                               value: 10,
@@ -757,11 +653,11 @@ const CustomMenuFormEnhanced = ({
 
                         <FormInput
                           label="Long Description"
-                          labelInfo="Enter Long Description"
+                          placeholder="Enter Long Description"
                           name={`menu.${index}.longDescription`}
                           register={register}
                           errors={createErrorsObject(index)}
-                          required
+                          required="Long description is required"
                           validations={{
                             minLength: {
                               value: 30,
@@ -778,7 +674,7 @@ const CustomMenuFormEnhanced = ({
                           required={true}
                           folder="workbench-seller-onboarding"
                           value={menuImages.imageState[index] || []}
-                          onChange={(urls) => {
+                          onChange={urls => {
                             menuImages.updateImageField(index, urls);
                             setValue(`menu.${index}.images`, urls.join(","));
                           }}
@@ -806,7 +702,7 @@ const CustomMenuFormEnhanced = ({
                           </label>
                           <Controller
                             name={`menu.${index}.category`}
-                            control={control as Control<FieldValues>}
+                            control={control}
                             rules={{ required: "Category is required" }}
                             render={({ field, fieldState: { error } }) => (
                               <>
@@ -852,7 +748,7 @@ const CustomMenuFormEnhanced = ({
                           </label>
                           <Controller
                             name={`menu.${index}.vegNonVeg`}
-                            control={control as Control<FieldValues>}
+                            control={control}
                             defaultValue="veg"
                             rules={{
                               required: "Veg/Non-veg selection is required",
@@ -890,11 +786,11 @@ const CustomMenuFormEnhanced = ({
                             label="Display Rank"
                             name={`menu.${index}.rank`}
                             type="number"
-                            // min="1"
-                            // placeholder="e.g., 1"
+                            min="1"
+                            placeholder="e.g., 1"
                             register={register}
                             errors={createErrorsObject(index)}
-                            required
+                            required="Display rank is required"
                             validations={{
                               min: {
                                 value: 1,
@@ -902,9 +798,7 @@ const CustomMenuFormEnhanced = ({
                               },
                             }}
                           />
-                          <p className="text-xs text-gray-500 mt-1">
-                            Lower numbers appear first in menu
-                          </p>
+                          <p className="text-xs text-gray-500 mt-1">Lower numbers appear first in menu</p>
                         </div>
                       </div>
                     </div>
@@ -912,8 +806,8 @@ const CustomMenuFormEnhanced = ({
                     {/* Availability Timings - Multiple Timings Support */}
                     <AvailabilityTimingsSection
                       menuIndex={index}
-                      control={control as unknown as Control<FieldValues>}
-                      watch={watch as unknown as UseFormWatch<FieldValues>}
+                      control={control}
+                      watch={watch}
                       setValue={setValue}
                       register={register}
                       errors={errors}
@@ -922,91 +816,64 @@ const CustomMenuFormEnhanced = ({
                     {/* Customizations Section */}
                     <div className="space-y-4">
                       <div className="flex items-center justify-between">
-                        <h5 className="text-sm font-medium text-gray-700">
-                          Customizations & Add-ons
-                        </h5>
+                        <h5 className="text-sm font-medium text-gray-700">Customizations & Add-ons</h5>
                         <Button
                           type="default"
                           size="small"
                           icon={<FaPlus />}
-                          onClick={() => handleAddCustomizationGroup(index)}
-                        >
+                          onClick={() => handleAddCustomizationGroup(index)}>
                           Add Customization Group
                         </Button>
                       </div>
 
-                      {(() => {
-                        const menuItem = watchMenu[index];
-                        const groups =
-                          menuItem &&
-                          "customizationGroups" in menuItem &&
-                          Array.isArray(
-                            (menuItem as { customizationGroups?: unknown[] }).customizationGroups
-                          )
-                            ? ((menuItem as { customizationGroups: unknown[] })
-                                .customizationGroups as CustomizationGroup[])
-                            : [];
-                        return groups.map((group: CustomizationGroup, groupIndex: number) => (
-                          <div
-                            key={group.id}
-                            className="p-4 border border-gray-200 rounded-lg bg-gray-50"
-                          >
-                            <div className="flex justify-between items-start">
-                              <div className="flex-1">
-                                <h6 className="font-medium text-gray-800">
-                                  {group.name || "Unnamed Group"}
-                                  <span className="ml-2 text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded">
-                                    Seq: {group.seq || groupIndex + 1}
+                      {watchMenu[index]?.customizationGroups?.map((group: CustomizationGroup, groupIndex: number) => (
+                        <div key={group.id} className="p-4 border border-gray-200 rounded-lg bg-gray-50">
+                          <div className="flex justify-between items-start">
+                            <div className="flex-1">
+                              <h6 className="font-medium text-gray-800">
+                                {group.name || "Unnamed Group"}
+                                <span className="ml-2 text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded">
+                                  Seq: {group.seq || groupIndex + 1}
+                                </span>
+                              </h6>
+                              <p className="text-sm text-gray-600 mt-1">
+                                Type: {group.type === "single" ? "Single Selection" : "Multiple Selection"} |
+                                {group.required ? " Required" : " Optional"} | Min: {group.minQuantity} | Max:{" "}
+                                {group.maxQuantity}
+                              </p>
+                              <div className="mt-2">
+                                <span className="text-sm text-gray-700">Options: </span>
+                                {group.items.map((item, idx) => (
+                                  <span key={idx} className="text-sm text-gray-600">
+                                    {item.name} (+₹{item.price}){idx < group.items.length - 1 ? ", " : ""}
                                   </span>
-                                </h6>
-                                <p className="text-sm text-gray-600 mt-1">
-                                  Type:{" "}
-                                  {group.type === "single"
-                                    ? "Single Selection"
-                                    : "Multiple Selection"}{" "}
-                                  |{group.required ? " Required" : " Optional"} | Min:{" "}
-                                  {group.minQuantity} | Max: {group.maxQuantity}
-                                </p>
-                                <div className="mt-2">
-                                  <span className="text-sm text-gray-700">Options: </span>
-                                  {group.items.map((item, idx) => (
-                                    <span key={idx} className="text-sm text-gray-600">
-                                      {item.name} (+₹{item.price})
-                                      {idx < group.items.length - 1 ? ", " : ""}
-                                    </span>
-                                  ))}
-                                </div>
-                              </div>
-                              <div className="flex gap-2">
-                                <Button
-                                  type="link"
-                                  size="small"
-                                  icon={<FaEdit />}
-                                  onClick={() => handleEditCustomizationGroup(index, groupIndex)}
-                                />
-                                <Button
-                                  type="link"
-                                  danger
-                                  size="small"
-                                  icon={<FaTrash />}
-                                  onClick={() => handleRemoveCustomizationGroup(index, groupIndex)}
-                                />
+                                ))}
                               </div>
                             </div>
+                            <div className="flex gap-2">
+                              <Button
+                                type="link"
+                                size="small"
+                                icon={<FaEdit />}
+                                onClick={() => handleEditCustomizationGroup(index, groupIndex)}
+                              />
+                              <Button
+                                type="link"
+                                danger
+                                size="small"
+                                icon={<FaTrash />}
+                                onClick={() => handleRemoveCustomizationGroup(index, groupIndex)}
+                              />
+                            </div>
                           </div>
-                        ));
-                      })()}
+                        </div>
+                      ))}
 
-                      {(!("customizationGroups" in (watchMenu[index] || {})) ||
-                        !Array.isArray(
-                          (watchMenu[index] as { customizationGroups?: unknown[] })
-                            ?.customizationGroups
-                        ) ||
-                        (watchMenu[index] as { customizationGroups?: unknown[] })
-                          ?.customizationGroups?.length === 0) && (
+                      {(!watchMenu[index]?.customizationGroups ||
+                        watchMenu[index]?.customizationGroups?.length === 0) && (
                         <p className="text-sm text-gray-500 italic">
-                          No customizations added yet. Add customization groups for size options,
-                          toppings, add-ons, etc.
+                          No customizations added yet. Add customization groups for size options, toppings, add-ons,
+                          etc.
                         </p>
                       )}
                     </div>
@@ -1019,16 +886,14 @@ const CustomMenuFormEnhanced = ({
               <button
                 type="button"
                 onClick={onPrevious}
-                className="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
-              >
+                className="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors">
                 Previous
               </button>
               <div className="flex gap-3">
                 <button
                   type="button"
                   onClick={handleSkip}
-                  className="px-6 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors border border-gray-300"
-                >
+                  className="px-6 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors border border-gray-300">
                   Skip This Step
                 </button>
                 <LoadingButton
@@ -1086,43 +951,27 @@ const CustomMenuFormEnhanced = ({
               Comprehensive View
             </span>
           }
-          key="3"
-        >
-          <CustomMenuComprehensiveView
-            menuItems={
-              watchMenu.filter(
-                (item) =>
-                  item !== null &&
-                  typeof item === "object" &&
-                  "name" in item &&
-                  "category" in item &&
-                  "price" in item &&
-                  "vegNonVeg" in item
-              ) as unknown as MenuItem[]
-            }
-          />
+          key="3">
+          <CustomMenuComprehensiveView menuItems={watchMenu} />
 
           <div className="flex justify-between mt-8">
             <button
               type="button"
               onClick={onPrevious}
-              className="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
-            >
+              className="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors">
               Previous
             </button>
             <div className="flex gap-3">
               <button
                 type="button"
                 onClick={handleSkip}
-                className="px-6 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors border border-gray-300"
-              >
+                className="px-6 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors border border-gray-300">
                 Skip This Step
               </button>
               <button
                 type="button"
                 onClick={handleSubmit(onSubmit)}
-                className="px-6 py-2 bg-sky-600 text-white rounded-md hover:bg-sky-700 transition-colors"
-              >
+                className="px-6 py-2 bg-sky-600 text-white rounded-md hover:bg-sky-700 transition-colors">
                 {isFinalStep ? "Submit Application" : "Next Step"}
               </button>
             </div>
@@ -1139,8 +988,7 @@ const CustomMenuFormEnhanced = ({
           setShowCustomizationModal(null);
           setEditingGroup(null);
         }}
-        width={700}
-      >
+        width={700}>
         {editingGroup && <CustomizationGroupForm group={editingGroup} onChange={setEditingGroup} />}
       </Modal>
     </>
@@ -1198,7 +1046,7 @@ const CustomizationGroupForm = ({
           <input
             type="text"
             value={group.name}
-            onChange={(e) => onChange({ ...group, name: e.target.value })}
+            onChange={e => onChange({ ...group, name: e.target.value })}
             className="w-full px-3 py-2 border border-gray-300 rounded-md"
             placeholder="e.g., Size, Toppings, Add-ons"
           />
@@ -1208,11 +1056,7 @@ const CustomizationGroupForm = ({
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Selection Type <span className="text-red-500">*</span>
           </label>
-          <Select
-            value={group.type}
-            onChange={(value) => onChange({ ...group, type: value })}
-            className="w-full"
-          >
+          <Select value={group.type} onChange={value => onChange({ ...group, type: value })} className="w-full">
             <Select.Option value="single">Single Selection (Radio)</Select.Option>
             <Select.Option value="multiple">Multiple Selection (Checkbox)</Select.Option>
           </Select>
@@ -1226,7 +1070,7 @@ const CustomizationGroupForm = ({
             type="number"
             min="1"
             value={group.seq || 1}
-            onChange={(e) => onChange({ ...group, seq: parseInt(e.target.value) || 1 })}
+            onChange={e => onChange({ ...group, seq: parseInt(e.target.value) || 1 })}
             className="w-full px-3 py-2 border border-gray-300 rounded-md"
             placeholder="1"
           />
@@ -1239,7 +1083,7 @@ const CustomizationGroupForm = ({
           <label className="block text-sm font-medium text-gray-700 mb-1">Required?</label>
           <Checkbox
             checked={group.required}
-            onChange={(e) => {
+            onChange={e => {
               const isRequired = e.target.checked;
               // If required is checked and minQuantity is 0, set it to 1
               const updatedGroup = {
@@ -1248,8 +1092,7 @@ const CustomizationGroupForm = ({
                 minQuantity: isRequired && group.minQuantity === 0 ? 1 : group.minQuantity,
               };
               onChange(updatedGroup);
-            }}
-          >
+            }}>
             This customization is required
           </Checkbox>
         </div>
@@ -1262,7 +1105,7 @@ const CustomizationGroupForm = ({
             type="number"
             min={group.required ? "1" : "0"}
             value={group.minQuantity}
-            onChange={(e) => {
+            onChange={e => {
               const value = parseInt(e.target.value) || 0;
               // If required is checked, don't allow value less than 1
               const minValue = group.required ? Math.max(1, value) : value;
@@ -1283,7 +1126,7 @@ const CustomizationGroupForm = ({
             type="number"
             min="1"
             value={group.maxQuantity}
-            onChange={(e) => onChange({ ...group, maxQuantity: parseInt(e.target.value) || 1 })}
+            onChange={e => onChange({ ...group, maxQuantity: parseInt(e.target.value) || 1 })}
             className="w-full px-3 py-2 border border-gray-300 rounded-md"
           />
         </div>
@@ -1306,7 +1149,7 @@ const CustomizationGroupForm = ({
                 <input
                   type="text"
                   value={item.name}
-                  onChange={(e) =>
+                  onChange={e =>
                     updateCustomizationItem(index, {
                       ...item,
                       name: e.target.value,
@@ -1322,7 +1165,7 @@ const CustomizationGroupForm = ({
                   min="0"
                   step="1"
                   value={item.price}
-                  onChange={(e) =>
+                  onChange={e =>
                     updateCustomizationItem(index, {
                       ...item,
                       price: e.target.value,
@@ -1335,26 +1178,20 @@ const CustomizationGroupForm = ({
               <div className="w-32">
                 <Select
                   value={item.vegNonVeg}
-                  onChange={(value) =>
+                  onChange={value =>
                     updateCustomizationItem(index, {
                       ...item,
                       vegNonVeg: value,
                     })
                   }
-                  className="w-full"
-                >
+                  className="w-full">
                   <Select.Option value="veg">Veg</Select.Option>
                   <Select.Option value="non-veg">Non-Veg</Select.Option>
                   <Select.Option value="egg">Egg</Select.Option>
                 </Select>
               </div>
               {group.items.length > 1 && (
-                <Button
-                  type="text"
-                  danger
-                  icon={<FaTrash />}
-                  onClick={() => removeCustomizationItem(index)}
-                />
+                <Button type="text" danger icon={<FaTrash />} onClick={() => removeCustomizationItem(index)} />
               )}
             </div>
           ))}

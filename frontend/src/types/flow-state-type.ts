@@ -1,4 +1,4 @@
-import { IFormConfigProps } from "@components/ConfigForm/types";
+import { FormConfigType } from "../components/ui/forms/config-form/config-form";
 
 export type ReducedApiData = {
   entryType: "API";
@@ -8,7 +8,7 @@ export type ReducedApiData = {
   subStatus: "SUCCESS" | "ERROR";
   payloads: {
     payloadId: string;
-    response: unknown;
+    response: any;
   }[];
 };
 
@@ -28,21 +28,14 @@ export type ReducedApiList = ReducedApiData[];
 export interface FlowMap {
   sequence: MappedStep[];
   missedSteps: MappedStep[];
-  reference_data?: Record<string, unknown>;
+  reference_data?: Record<string, any>;
 }
 export interface MappedStep {
-  status:
-    | "COMPLETE"
-    | "LISTENING"
-    | "RESPONDING"
-    | "WAITING"
-    | "INPUT-REQUIRED"
-    | "PROCESSING"
-    | "WAITING-SUBMISSION";
+  status: "COMPLETE" | "LISTENING" | "RESPONDING" | "WAITING" | "INPUT-REQUIRED" | "PROCESSING" | "WAITING-SUBMISSION";
   actionId: string;
   owner: "BAP" | "BPP";
   actionType: string;
-  input?: IFormConfigProps;
+  input?: FormConfigType;
   payloads?: ApiHistory;
   index: number;
   description?: string;

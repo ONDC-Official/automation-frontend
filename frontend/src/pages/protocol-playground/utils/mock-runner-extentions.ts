@@ -5,7 +5,7 @@ function getSaveDataMeta(actionId?: string, playgroundConfig?: MockPlaygroundCon
     return {};
   }
   const transactionHistory = playgroundConfig.transaction_history;
-  const metaData: Record<string, { path: string; actionId: string }> = {};
+  const metaData: any = {};
   for (let index = 0; index < transactionHistory.length; index++) {
     const record = transactionHistory[index];
     if (actionId === record.action_id) break;
