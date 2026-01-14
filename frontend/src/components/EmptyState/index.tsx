@@ -1,15 +1,17 @@
 import { FC } from "react";
+import { IEmptyStateProps } from "@components/EmptyState/types";
 
-interface EmptyStateProps {
-  title: string;
-  message: string;
-}
-
-const EmptyState: FC<EmptyStateProps> = ({ title, message }) => (
+const EmptyState: FC<IEmptyStateProps> = ({ title, message }) => (
   <div className="col-span-full mt-8">
     <div className="bg-white border-2 border-dashed border-sky-200 rounded-2xl p-12 text-center">
       <div className="w-16 h-16 bg-gradient-to-br from-sky-100 to-sky-200 rounded-2xl flex items-center justify-center mx-auto mb-6">
-        <svg className="w-8 h-8 text-sky-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+        <svg
+          className="w-8 h-8 text-sky-600"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+          strokeWidth={1.5}
+        >
           <path
             strokeLinecap="round"
             strokeLinejoin="round"

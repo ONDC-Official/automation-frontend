@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState } from "react";
 import { UserContext } from "@context/userContext";
-import { UserDetails } from "../types";
+import { UserDetails } from "@components/Header/types";
 
 export const useUserDetails = () => {
   const [userDetails, setUserDetails] = useState<UserDetails | undefined>(undefined);

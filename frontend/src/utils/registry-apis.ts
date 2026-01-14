@@ -1,9 +1,8 @@
-// src/api/index.ts
-
-import axios from "axios";
-import { SubscriberData } from "../components/registry-components/registry-types";
 import { toast } from "react-toastify";
-import { UserDetails } from "@components/Header";
+import axios from "axios";
+import { SubscriberData } from "@components/Registry/registry-types";
+
+import { UserDetails } from "@components/Header/types";
 
 export const post = async (participantId: string, subscriberData: SubscriberData) => {
   try {
@@ -17,7 +16,7 @@ export const post = async (participantId: string, subscriberData: SubscriberData
       },
       {
         withCredentials: true,
-      },
+      }
     );
   } catch (error) {
     if (axios.isAxiosError(error)) {
@@ -28,7 +27,7 @@ export const post = async (participantId: string, subscriberData: SubscriberData
   }
 };
 
-export const patch = async (data: any, user?: UserDetails) => {
+export const patch = async (data: Record<string, unknown>, user?: UserDetails) => {
   try {
     const participantId = user?.participantId;
     if (!participantId) {
@@ -45,7 +44,7 @@ export const patch = async (data: any, user?: UserDetails) => {
       },
       {
         withCredentials: true,
-      },
+      }
     );
   } catch (error) {
     if (axios.isAxiosError(error)) {
@@ -56,7 +55,10 @@ export const patch = async (data: any, user?: UserDetails) => {
   }
 };
 
-export const delSubscriberDetails = async (deleteData: any, user?: UserDetails) => {
+export const delSubscriberDetails = async (
+  deleteData: Record<string, unknown>,
+  user?: UserDetails
+) => {
   try {
     const participantId = user?.participantId;
     if (!participantId) {
@@ -80,7 +82,9 @@ export const delSubscriberDetails = async (deleteData: any, user?: UserDetails) 
   }
 };
 
-export const getSubscriberDetails = async (user: UserDetails | undefined): Promise<SubscriberData> => {
+export const getSubscriberDetails = async (
+  user: UserDetails | undefined
+): Promise<SubscriberData> => {
   try {
     const participantId = user?.participantId;
     if (!participantId) {
@@ -94,7 +98,7 @@ export const getSubscriberDetails = async (user: UserDetails | undefined): Promi
       },
       {
         withCredentials: true,
-      },
+      }
     );
     const data = res.data;
 
@@ -110,16 +114,28 @@ export const getSubscriberDetails = async (user: UserDetails | undefined): Promi
 
     const convertedData: SubscriberData = {
       keys: data.keys,
-      mappings: data.mappings.map((mapping: any) => {
-        return {
-          id: mapping.id,
-          domain: mapping.domain,
-          type: mapping.type,
-          uri: uris.find((u: any) => u.id === mapping.uri_id)?.uri || "",
-          location_country: locations.find((l: any) => l.id === mapping.location_id)?.country[0] || "",
-          location_city: locations.find((l: any) => l.id === mapping.location_id)?.city || ["*"],
-        };
-      }),
+      mappings: data.mappings.map(
+        (mapping: {
+          id: string;
+          domain: string;
+          type: string;
+          uri_id: string;
+          location_id: string;
+        }) => {
+          return {
+            id: mapping.id,
+            domain: mapping.domain,
+            type: mapping.type,
+            uri: uris.find((u: { id: string; uri: string }) => u.id === mapping.uri_id)?.uri || "",
+            location_country:
+              locations.find((l: { id: string; country: string[] }) => l.id === mapping.location_id)
+                ?.country[0] || "",
+            location_city: locations.find(
+              (l: { id: string; city: string[] }) => l.id === mapping.location_id
+            )?.city || ["*"],
+          };
+        }
+      ),
     };
 
     return convertedData;

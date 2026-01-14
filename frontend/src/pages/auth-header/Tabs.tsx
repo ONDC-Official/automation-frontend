@@ -7,11 +7,8 @@ interface TabsProps {
 }
 
 const Tabs = ({ tabs, activeTab, setActiveTab }: TabsProps) => (
-  <div
-    className="flex gap-2 mb-6 border-b border-gray-200 pb-4"
-    role="tablist"
-    aria-label="Auth header documentation tabs">
-    {tabs.map(tab => (
+  <div className="flex gap-2 mb-6 border-b border-gray-200 pb-4" role="tablist">
+    {tabs.map((tab) => (
       <button
         key={tab.id}
         type="button"
@@ -24,7 +21,8 @@ const Tabs = ({ tabs, activeTab, setActiveTab }: TabsProps) => (
           activeTab === tab.id
             ? "bg-sky-600 text-white shadow-lg shadow-sky-200"
             : "bg-white text-gray-700 hover:bg-gray-100 border border-gray-200"
-        }`}>
+        }`}
+      >
         {tab.icon}
         {tab.label}
       </button>
