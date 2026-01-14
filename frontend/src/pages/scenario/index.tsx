@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import { LuHistory } from "react-icons/lu";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -8,14 +8,13 @@ import RenderFlows from "@components/FlowShared/render-flows";
 import { ReportPage } from "@components/FlowShared/report";
 import { FormGuide } from "@components/FlowShared/guides";
 import InitialFlowForm from "@components/FlowShared/initial-form";
-import NotFound from "@components/NotFound";
-import { useSession } from "@context/sessionContext";
+import NotFound from "@components/ui/not-found";
+import { useSession } from "@context/context";
 import { putCacheData } from "@utils/request-utils";
 import { trackEvent } from "@utils/analytics";
 import { useWorkbenchFlows } from "@hooks/useWorkbenchFlow";
 import { sessionIdSupport } from "@utils/localStorageManager";
 import { ROUTES } from "@constants/routes";
-import { Flow } from "@/types/flow-types";
 
 export default function FlowContent() {
   const {
@@ -31,16 +30,10 @@ export default function FlowContent() {
     // setReport,
   } = useWorkbenchFlows();
   const [isFormSubmitted, setIsFormSubmitted] = useState(false);
-  interface DynamicListItem {
-    key: string;
-    version?: DynamicListItem[];
-    usecase?: DynamicListItem[];
-  }
-
   const [dynamicList, setDynamicList] = useState<{
-    domain: DynamicListItem[];
-    version: DynamicListItem[];
-    usecase: DynamicListItem[];
+    domain: any[];
+    version: any[];
+    usecase: any[];
   }>({
     domain: [],
     version: [],
@@ -65,16 +58,7 @@ export default function FlowContent() {
   const { sessionId: contextSessionId, setSessionId } = useSession();
   const navigate = useNavigate();
 
-  interface FormData {
-    domain: string;
-    version: string;
-    usecaseId: string;
-    subscriberUrl: string;
-    npType: "BAP" | "BPP";
-    env: string;
-  }
-
-  const onSubmit = async (data: FormData) => {
+  const onSubmit = async (data: any) => {
     try {
       data = {
         ...data,
@@ -102,7 +86,7 @@ export default function FlowContent() {
       console.error("error while sending response", e);
     }
   };
-  const fetchFlows = async (data: { domain: string; version: string; usecaseId: string }) => {
+  const fetchFlows = async (data: any) => {
     try {
       const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/config/flows`, {
         params: {
@@ -118,30 +102,20 @@ export default function FlowContent() {
     }
   };
 
-  const onSubmitHandler = async (data: {
-    domain: string;
-    version: string;
-    usecaseId: string;
-    subscriberUrl: string;
-    npType: string;
-    env: string;
-    config?: string;
-  }) => {
+  const onSubmitHandler = async (data: any) => {
     trackEvent({
       category: "SCHEMA_VALIDATION-FORM",
       action: "Form submitted",
     });
     setIsFormSubmitted(true);
     await fetchFlows(data);
-    await onSubmit(data as FormData);
+    await onSubmit(data);
   };
 
   const fetchFormFieldData = async () => {
     try {
-      const response = await axios.get(
-        `${import.meta.env.VITE_BACKEND_URL}/config/senarioFormData`
-      );
-      setDynamicList((prev) => {
+      const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/config/senarioFormData`);
+      setDynamicList(prev => {
         return { ...prev, domain: response.data.domain || [] };
       });
     } catch (e) {
@@ -153,41 +127,26 @@ export default function FlowContent() {
     fetchFormFieldData();
   }, []);
 
-  const fetchSessionData = useCallback(
-    (sessId: string) => {
-      axios
-        .get(`${import.meta.env.VITE_BACKEND_URL}/sessions`, {
-          params: {
-            session_id: sessId,
-          },
-        })
-        .then(
-          (response: {
-            data: {
-              flowConfigs?: Record<string, unknown>;
-              subscriberUrl?: string;
-              activeStep?: number;
-            };
-          }) => {
-            if (response.data.flowConfigs) {
-              setFlows(Object.values(response.data.flowConfigs) as Flow[]);
-            }
-            if (response.data.subscriberUrl) {
-              setSubscriberUrl(response.data.subscriberUrl);
-            }
-            setSession(sessId);
+  function fetchSessionData(sessId: string) {
+    axios
+      .get(`${import.meta.env.VITE_BACKEND_URL}/sessions`, {
+        params: {
+          session_id: sessId,
+        },
+      })
+      .then((response: any) => {
+        if (response.data.flowConfigs) {
+          setFlows(Object.values(response.data.flowConfigs));
+        }
+        setSubscriberUrl(response.data.subscriberUrl);
+        setSession(sessId);
 
-            if (response.data.activeStep !== undefined) {
-              setFlowStepNum(response.data.activeStep);
-            }
-          }
-        )
-        .catch((e: unknown) => {
-          console.error("Error while fetching session: ", e);
-        });
-    },
-    [setFlows, setSubscriberUrl, setSession, setFlowStepNum]
-  );
+        setFlowStepNum(response.data.activeStep);
+      })
+      .catch((e: any) => {
+        console.error("Error while fetching session: ", e);
+      });
+  }
 
   const newSession = () => {
     formData.current = {
@@ -205,7 +164,7 @@ export default function FlowContent() {
     if (contextSessionId && !isFormSubmitted) {
       fetchSessionData(contextSessionId);
     }
-  }, [contextSessionId, isFormSubmitted, fetchSessionData]);
+  }, [contextSessionId, isFormSubmitted]);
 
   // useEffect(() => {
   // 	setFlowStepNum(0);
@@ -233,15 +192,12 @@ export default function FlowContent() {
 
                   <button
                     onClick={() => navigate(ROUTES.HISTORY)}
-                    className="flex items-center gap-2 px-4 py-2 bg-sky-500 text-white rounded-xl hover:bg-sky-600 transition shadow-sm"
-                  >
+                    className="flex items-center gap-2 px-4 py-2 bg-sky-500 text-white rounded-xl hover:bg-sky-600 transition shadow-sm">
                     <LuHistory className="w-6 h-6 text-white" />
                     <span className="font-medium text-lg">Past Sessions</span>
                   </button>
                 </div>
-                <p className="text-gray-600 text-sm">
-                  Please fill in the details below to begin flow testing.
-                </p>
+                <p className="text-gray-600 text-sm">Please fill in the details below to begin flow testing.</p>
               </div>
               <InitialFlowForm
                 formData={formData}

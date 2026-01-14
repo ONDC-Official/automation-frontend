@@ -1,6 +1,6 @@
 import { FiLogIn } from "react-icons/fi";
-import { GuideStepsEnums } from "@/context/guide/types";
-import GuideOverlay from "@components/GuideOverlay";
+import { GuideStepsEnums } from "@context/guideContext";
+import GuideOverlay from "@components/ui/GuideOverlay";
 import { UserDetails } from "./types";
 import { UserIcon } from "./UserIcon";
 
@@ -27,13 +27,8 @@ export const UserProfileSection = ({ userDetails, onLoginClick }: UserProfileSec
         right={0}
         top={55}
         instruction="Step 1: Go to your Profile"
-        handleGoClick={onLoginClick}
-      >
-        <button
-          onClick={onLoginClick}
-          className="mt-2 text-xl"
-          title={userDetails ? "Profile" : "Login"}
-        >
+        handleGoClick={onLoginClick}>
+        <button onClick={onLoginClick} className="mt-2 text-xl" title={userDetails ? "Profile" : "Login"}>
           {userDetails ? (
             <UserIcon user={userDetails} />
           ) : (

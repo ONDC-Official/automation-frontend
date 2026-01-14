@@ -1,15 +1,21 @@
 import { useMemo } from "react";
-import { ICircleProps } from "@components/AnimatedCircles/types";
-import {
-  CIRCLE_COUNT,
-  MIN_SIZE,
-  SIZE_INCREMENT,
-  SIZE_VARIATIONS,
-  MIN_ANIMATION_DURATION,
-  MAX_ANIMATION_DURATION,
-} from "@components/AnimatedCircles/constants";
 
-const Circle = ({ top, left, size, animationDuration }: ICircleProps) => (
+// Constants
+const CIRCLE_COUNT = 30;
+const MIN_SIZE = 4;
+const SIZE_INCREMENT = 2;
+const SIZE_VARIATIONS = 3;
+const MIN_ANIMATION_DURATION = 1;
+const MAX_ANIMATION_DURATION = 3;
+
+interface CircleProps {
+  top: number;
+  left: number;
+  size: number;
+  animationDuration: number;
+}
+
+const Circle = ({ top, left, size, animationDuration }: CircleProps) => (
   <div
     className="absolute bg-gray-300 opacity-20 rounded-full animate-bounce-fast"
     style={{
@@ -33,16 +39,14 @@ const AnimatedCircles = () => {
         top: Math.random() * 100,
         left: Math.random() * 100,
         size,
-        animationDuration:
-          MIN_ANIMATION_DURATION +
-          Math.random() * (MAX_ANIMATION_DURATION - MIN_ANIMATION_DURATION),
+        animationDuration: MIN_ANIMATION_DURATION + Math.random() * (MAX_ANIMATION_DURATION - MIN_ANIMATION_DURATION),
       };
     });
   }, []);
 
   return (
     <div className="absolute inset-0 pointer-events-none grid grid-cols-6 gap-2" aria-hidden="true">
-      {circles.map((circle) => (
+      {circles.map(circle => (
         <Circle
           key={circle.id}
           top={circle.top}

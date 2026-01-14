@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { LuLogOut } from "react-icons/lu";
 
 import { UserContext } from "@context/userContext";
-import JsonDataForm from "@components/Registry/subscriber-form";
+import JsonDataForm from "@components/registry-components/subscriber-form";
 import { AuthService } from "@services/authService";
 
 import { ROUTES } from "@constants/routes";
@@ -57,8 +57,7 @@ const UserProfile = () => {
                 <button
                   type="button"
                   className="px-4 py-2 bg-sky-600 text-white rounded hover:bg-sky-800 flex items-center"
-                  onClick={handleLogout}
-                >
+                  onClick={handleLogout}>
                   <LuLogOut className="inline-block text-lg" />
                   <span className="ml-2">
                     <strong>Logout</strong>

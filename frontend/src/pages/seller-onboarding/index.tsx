@@ -1,13 +1,13 @@
 import { useState } from "react";
-import { toast } from "react-toastify";
-import { FaUser, FaBriefcase, FaUtensils, FaBox } from "react-icons/fa";
-import axios from "axios";
-import Stepper from "@components/Stepper";
+import Stepper from "@components/ui/mini-components/stepper";
 import BasicInformationForm from "@pages/seller-onboarding/basic-information-form";
 import BusinessVerificationForm from "@pages/seller-onboarding/business-verification-form-multiple";
 import CustomMenuFormEnhanced from "@pages/seller-onboarding/custom-menu-form-enhanced";
 import ItemDetailsForm from "@pages/seller-onboarding/item-details-form";
 import OnboardingSuccessPayload from "@pages/seller-onboarding/onboarding-success-payload";
+import { toast } from "react-toastify";
+import { FaUser, FaBriefcase, FaUtensils, FaBox } from "react-icons/fa";
+import axios from "axios";
 
 export interface MenuItem {
   name: string;
@@ -169,12 +169,12 @@ export interface ItemDetails {
     power_consumption?: string;
     capacity?: string;
     energy_rating?: string;
-
-    [key: string]: unknown;
+    // Allow any additional dynamic attributes
+    [key: string]: any;
   };
 
   // Legacy support for direct attribute access (to be deprecated)
-  [key: string]: unknown;
+  [key: string]: any;
 }
 
 export interface StoreDetails {
@@ -264,7 +264,7 @@ const SellerOnboarding = () => {
   const [formData, setFormData] = useState<SellerOnboardingData>({});
   const [isCompleted, setIsCompleted] = useState(false);
   const [completedData, setCompletedData] = useState<SellerOnboardingData>({});
-  const [onSearchPayload, setOnSearchPayload] = useState<unknown>(null);
+  const [onSearchPayload, setOnSearchPayload] = useState<any>(null);
   const [payloadType, setPayloadType] = useState<"single-domain" | "multi-domain">("single-domain");
 
   const isFnBDomain = formData?.domain?.includes("F&B");
@@ -320,23 +320,12 @@ const SellerOnboarding = () => {
       setOnSearchPayload(response.data.data || response.data);
       setPayloadType(response.data.type || "single-domain");
       setIsCompleted(true);
-    } catch (error: unknown) {
+    } catch (error: any) {
       toast.error("Failed to complete onboarding. Please try again.");
 
       // Handle axios error response
-      if (
-        error &&
-        typeof error === "object" &&
-        "response" in error &&
-        error.response &&
-        typeof error.response === "object" &&
-        "data" in error.response &&
-        typeof error.response.data === "object" &&
-        error.response.data &&
-        "message" in error.response.data &&
-        typeof error.response.data.message === "string"
-      ) {
-        toast.error((error as { response: { data: { message: string } } }).response.data.message);
+      if (error.response?.data?.message) {
+        toast.error(error.response.data.message);
       }
     }
   };

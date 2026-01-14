@@ -37,41 +37,24 @@ interface Payload {
   message: Message;
 }
 
-export const getItemsAndCustomistions = (payload: unknown) => {
-  if (
-    payload &&
-    typeof payload === "object" &&
-    "context" in payload &&
-    typeof payload.context === "object" &&
-    payload.context &&
-    "domain" in payload.context &&
-    payload.context.domain === "ONDC:RET11"
-  ) {
-    return parseRET11Items(payload as unknown as Payload);
+export const getItemsAndCustomistions = (payload: any) => {
+  if (payload.context.domain === "ONDC:RET11") {
+    return parseRET11Items(payload);
   }
 };
 
-const parseRET11Items = (
-  payload: Payload
-): {
-  itemList: Record<string, string>;
-  catagoriesList: Record<string, { child?: string[]; items?: Record<string, { child: string[] }> }>;
-  cutomistionToGroupMapping: Record<string, string>;
-} => {
-  const catagories = (payload.message.catalog as Catalog)["bpp/providers"][0].categories;
-  const items = (payload.message.catalog as Catalog)["bpp/providers"][0].items;
+const parseRET11Items = (payload: Payload): { itemList: any; catagoriesList: any; cutomistionToGroupMapping: any } => {
+  const catagories = payload.message.catalog["bpp/providers"][0].categories;
+  const items = payload.message.catalog["bpp/providers"][0].items;
 
-  const catagoriesList: Record<
-    string,
-    { child?: string[]; items?: Record<string, { child: string[] }> }
-  > = {};
-  const itemList: Record<string, string> = {};
-  const cutomistionToGroupMapping: Record<string, string> = {};
+  const catagoriesList: any = {};
+  const itemList: any = {};
+  const cutomistionToGroupMapping: any = {};
 
-  catagories.forEach((item: Category) => {
-    item.tags.forEach((tag) => {
+  catagories.forEach(item => {
+    item.tags.forEach(tag => {
       if (tag.code === "type") {
-        tag.list.forEach((val: TagListItem) => {
+        tag.list.forEach(val => {
           if (val.code === "type" && val.value === "custom_group") {
             catagoriesList[item.id] = { child: [] };
           }
@@ -80,15 +63,15 @@ const parseRET11Items = (
     });
   });
 
-  items.forEach((item: Item) => {
+  items.forEach(item => {
     let parent = "";
     let child: string[] = [];
     let isCusomistaion = false;
     let isItem = false;
     let customGroup = "";
-    item.tags.forEach((tag: Tag) => {
+    item.tags.forEach(tag => {
       if (tag.code === "type") {
-        tag.list.forEach((val: TagListItem) => {
+        tag.list.forEach(val => {
           if (val.code === "type" && val.value === "customization") {
             isCusomistaion = true;
           }
@@ -96,7 +79,7 @@ const parseRET11Items = (
       }
 
       if (tag.code === "type") {
-        tag.list.forEach((val: TagListItem) => {
+        tag.list.forEach(val => {
           if (val.code === "type" && val.value === "item") {
             isItem = true;
           }
@@ -104,23 +87,23 @@ const parseRET11Items = (
       }
 
       if (tag.code === "custom_group") {
-        const idItem = tag.list.find((listItem: TagListItem) => listItem.code === "id");
+        const idItem = tag.list.find(listItem => listItem.code === "id");
         if (idItem) {
           customGroup = idItem.value;
         }
       }
 
       if (tag.code === "parent") {
-        const idItem = tag.list.find((listItem: TagListItem) => listItem.code === "id");
+        const idItem = tag.list.find(listItem => listItem.code === "id");
         if (idItem) {
           parent = idItem.value;
         }
       }
 
       if (tag.code === "child") {
-        const idItem = tag.list.filter((listItem) => listItem.code === "id");
+        const idItem = tag.list.filter(listItem => listItem.code === "id");
         if (idItem) {
-          child = idItem.map((listItem) => listItem.value);
+          child = idItem.map(listItem => listItem.value);
         }
       }
     });
@@ -144,7 +127,7 @@ const parseRET11Items = (
   return { itemList, catagoriesList, cutomistionToGroupMapping };
 };
 
-export const openReportInNewTab = (decodedHtml: string, sessionId: string) => {
+export const openReportInNewTab = (decodedHtml: any, sessionId: any) => {
   // Step 1: Open new tab
   const newTab = window.open("", "_blank");
   if (!newTab) {

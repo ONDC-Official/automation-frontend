@@ -41,7 +41,7 @@ const buildPathMap = (jsonText: string): Map<number, string> => {
 };
 
 // Traverse JSON and map positions to paths
-const traverse = (obj: unknown, path: string, jsonText: string, pathMap: Map<number, string>) => {
+const traverse = (obj: any, path: string, jsonText: string, pathMap: Map<number, string>) => {
   if (obj === null || obj === undefined) return;
 
   if (typeof obj === "object" && !Array.isArray(obj)) {
@@ -57,16 +57,12 @@ const traverse = (obj: unknown, path: string, jsonText: string, pathMap: Map<num
       }
 
       // Recursively traverse
-      const objRecord = obj as Record<string, unknown>;
-      if (typeof objRecord[key] === "object" && objRecord[key] !== null) {
-        traverse(objRecord[key] as Record<string, unknown>, newPath, jsonText, pathMap);
+      if (typeof obj[key] === "object" && obj[key] !== null) {
+        traverse(obj[key], newPath, jsonText, pathMap);
       } else {
         // For primitive values, also map them
-        const valueStr = JSON.stringify(objRecord[key]);
-        const valuePattern = new RegExp(
-          `"${key}"\\s*:\\s*${valueStr.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`,
-          "g"
-        );
+        const valueStr = JSON.stringify(obj[key]);
+        const valuePattern = new RegExp(`"${key}"\\s*:\\s*${valueStr.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`, "g");
         let valueMatch;
         while ((valueMatch = valuePattern.exec(jsonText)) !== null) {
           pathMap.set(valueMatch.index + valueMatch[0].length - valueStr.length, newPath);

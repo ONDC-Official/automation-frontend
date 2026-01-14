@@ -2,12 +2,12 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { Select, message } from "antd";
 
-import { FormInput, LabelWithToolTip } from "@components/Input";
-import LoadingButton from "@components/LoadingButton";
+import { FormInput, LabelWithToolTip } from "@components/ui/forms/form-input";
+import LoadingButton from "@components/ui/forms/loading-button";
 import { SellerOnboardingData } from "@pages/seller-onboarding";
-import { domainOptions } from "@constants/common";
-import MultiImageUpload from "@/components/ImageUpload/multi-image-upload";
-import SingleImageUpload from "@/components/ImageUpload/single-image-upload";
+import { domainOptions } from "@constants/common.tsx";
+import MultiImageUpload from "@components/ui/forms/multi-image-upload";
+import SingleImageUpload from "@components/ui/forms/single-image-upload";
 import { useSingleImageUpload, useMultiImageUpload } from "@hooks/useImageUpload";
 
 interface BasicInformationFormProps {
@@ -22,21 +22,17 @@ const BasicInformationForm = ({ initialData, onNext }: BasicInformationFormProps
   // Use optimized hooks for image state management
   const symbolImage = useSingleImageUpload(initialData?.symbolImage || "");
   const productImages = useMultiImageUpload(
-    initialData?.images
-      ? Array.isArray(initialData.images)
-        ? initialData.images
-        : [initialData.images]
-      : []
+    initialData?.images ? (Array.isArray(initialData.images) ? initialData.images : [initialData.images]) : [],
   );
 
   const getSelectValues = () => {
     if (!selectedDomain || selectedDomain.length === 0) return [];
     return selectedDomain
-      .map((domain) => {
-        const optionByLabel = domainOptions.find((option) => option.key === domain);
+      .map(domain => {
+        const optionByLabel = domainOptions.find(option => option.key === domain);
         if (optionByLabel) return optionByLabel.value;
 
-        const optionByValue = domainOptions.find((option) => option.value === domain);
+        const optionByValue = domainOptions.find(option => option.value === domain);
         if (optionByValue) return optionByValue.value;
 
         return domain;
@@ -45,8 +41,8 @@ const BasicInformationForm = ({ initialData, onNext }: BasicInformationFormProps
   };
 
   const handleDomainChange = (values: string[]) => {
-    const domainLabels = values.map((value) => {
-      const selectedOption = domainOptions.find((option) => option.value === value);
+    const domainLabels = values.map(value => {
+      const selectedOption = domainOptions.find(option => option.value === value);
       return selectedOption ? selectedOption.key : value;
     });
 
@@ -86,9 +82,7 @@ const BasicInformationForm = ({ initialData, onNext }: BasicInformationFormProps
 
     // Update symbol image using hook
     symbolImage.resetImage(
-      initialData?.symbolImage && typeof initialData.symbolImage === "string"
-        ? initialData.symbolImage
-        : ""
+      initialData?.symbolImage && typeof initialData.symbolImage === "string" ? initialData.symbolImage : "",
     );
 
     // Update product images using hook
@@ -99,13 +93,9 @@ const BasicInformationForm = ({ initialData, onNext }: BasicInformationFormProps
     } else {
       productImages.resetImages([]);
     }
-  }, [initialData, reset, productImages, symbolImage]);
+  }, [initialData, reset]);
 
-  interface FormData {
-    [key: string]: unknown;
-  }
-
-  const onSubmit = async (data: FormData) => {
+  const onSubmit = async (data: any) => {
     if (!selectedDomain || selectedDomain.length === 0) {
       setDomainError("Please select at least one domain");
       return;
@@ -147,9 +137,8 @@ const BasicInformationForm = ({ initialData, onNext }: BasicInformationFormProps
           showSearch
           filterOption={(input, option) =>
             (option?.label ?? "").toString().toLowerCase().includes(input.toLowerCase())
-          }
-        >
-          {domainOptions.map((option) => (
+          }>
+          {domainOptions.map(option => (
             <Select.Option key={option.value} value={option.value} label={option.key}>
               {option.key}
             </Select.Option>
@@ -176,11 +165,11 @@ const BasicInformationForm = ({ initialData, onNext }: BasicInformationFormProps
         <FormInput
           label="Provider Name"
           name="provider_name"
-          labelInfo="Enter Provider Name"
+          placeholder="Enter Provider Name"
           type="text"
           register={register}
           errors={errors}
-          required
+          required="Provider Name is required"
           validations={{
             minLength: {
               value: 3,
@@ -199,11 +188,11 @@ const BasicInformationForm = ({ initialData, onNext }: BasicInformationFormProps
         />
         <FormInput
           label="Long Description"
-          labelInfo="Enter Long Description"
+          placeholder="Enter Long Description"
           name="long_desc"
           register={register}
           errors={errors}
-          required
+          required="Long Description is required"
           validations={{
             minLength: {
               value: 20,
@@ -218,11 +207,11 @@ const BasicInformationForm = ({ initialData, onNext }: BasicInformationFormProps
 
         <FormInput
           label="Short Description"
-          labelInfo="Enter Short Description"
+          placeholder="Enter Short Description"
           name="short_desc"
           register={register}
           errors={errors}
-          required
+          required="Short Description is required"
           validations={{
             minLength: {
               value: 3,

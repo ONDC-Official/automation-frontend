@@ -2,7 +2,7 @@ import { useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { trackEvent } from "@utils/analytics";
 import { ROUTES } from "@constants/routes";
-import { NavLink, UserDetails } from "@components/Header/types";
+import { NavLink, UserDetails } from "../types";
 
 interface UseHeaderHandlersProps {
   userDetails: UserDetails | undefined;
@@ -58,7 +58,7 @@ export const useHeaderHandlers = ({
         navigate(link.href);
       }
     },
-    [isOpen, openDropdown, navigate, onSupportClick, setOpenDropdown]
+    [isOpen, openDropdown, navigate, onSupportClick, setOpenDropdown],
   );
 
   const handleSubMenuClick = useCallback(
@@ -67,7 +67,7 @@ export const useHeaderHandlers = ({
       setOpenDropdown(null);
       setIsOpen(false);
     },
-    [navigate, setOpenDropdown, setIsOpen]
+    [navigate, setOpenDropdown, setIsOpen],
   );
 
   const handleMouseEnter = useCallback(
@@ -76,7 +76,7 @@ export const useHeaderHandlers = ({
         setOpenDropdown(link.label);
       }
     },
-    [setOpenDropdown]
+    [setOpenDropdown],
   );
 
   const handleMouseLeave = useCallback(() => {

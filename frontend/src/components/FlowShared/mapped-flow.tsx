@@ -1,60 +1,25 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 
 import { FlowMap, MappedStep } from "@/types/flow-state-type";
-import FormConfig from "@components/ConfigForm";
-import { IFormConfigProps } from "@components/ConfigForm/types";
-import Popup from "@/components/PopUp";
+import FormConfig, { FormConfigType } from "@components/ui/forms/config-form/config-form";
+import Popup from "@components/ui/pop-up/pop-up";
 import { SubmitEventParams } from "@/types/flow-types";
 import { proceedFlow } from "@utils/request-utils";
-import { useSession } from "@context/sessionContext";
+import { useSession } from "@context/context";
 
 import PairedCard from "@components/FlowShared/pair-card";
 
-export default function DisplayFlow({
-  mappedFlow,
-  flowId,
-}: {
-  mappedFlow: FlowMap;
-  flowId: string;
-}) {
+export default function DisplayFlow({ mappedFlow, flowId }: { mappedFlow: FlowMap; flowId: string }) {
   // mappedFlow = dummy;
   const steps = getOrderedSteps(mappedFlow);
   const [inputPopUp, setInputPopUp] = useState(false);
-  const [activeFormConfig, setActiveFormConfig] = useState<IFormConfigProps | undefined>(undefined);
+  const [activeFormConfig, setActiveFormConfig] = useState<FormConfigType | undefined>(undefined);
 
   const { sessionId, sessionData } = useSession();
 
-  const handleFormSubmit = useCallback(
-    async (formData: SubmitEventParams) => {
-      try {
-        const txId = sessionData?.flowMap[flowId];
-        if (!txId) {
-          console.error("Transaction ID not found");
-          return;
-        }
-        // Convert jsonPath to Record<string, unknown> and pass activeFormConfig as inputs
-        await proceedFlow(
-          sessionId,
-          txId,
-          formData.jsonPath as Record<string, unknown>,
-          activeFormConfig
-        );
-        setInputPopUp(false);
-        setActiveFormConfig(undefined);
-      } catch (error) {
-        toast.error("Error submitting form ");
-        console.error("Error submitting form data:", error);
-        setInputPopUp(false);
-      }
-    },
-    [sessionId, sessionData?.flowMap, flowId, activeFormConfig]
-  );
-
   useEffect(() => {
-    const conf = mappedFlow?.sequence?.filter(
-      (s, index) => s.status === "INPUT-REQUIRED" && index !== 0
-    )?.[0]?.input;
+    const conf = mappedFlow?.sequence?.filter((s, index) => s.status === "INPUT-REQUIRED" && index !== 0)?.[0]?.input;
     if (conf?.length === 0) {
       if (sessionData?.activeFlow !== flowId) return;
       handleFormSubmit({ jsonPath: {}, formData: {} });
@@ -64,15 +29,32 @@ export default function DisplayFlow({
     if (conf) {
       setInputPopUp(true);
     }
-  }, [mappedFlow, flowId, handleFormSubmit, sessionData?.activeFlow]);
+  }, [mappedFlow]);
 
   useEffect(() => {
-    const latestSending = mappedFlow?.sequence.find((f) => f.status === "RESPONDING");
+    const latestSending = mappedFlow?.sequence.find(f => f.status === "RESPONDING");
     const transactionId = sessionData?.flowMap[flowId];
     if (latestSending && latestSending.force_proceed && transactionId) {
       proceedFlow(sessionId, transactionId);
     }
-  }, [mappedFlow, flowId, sessionData?.flowMap, sessionId]);
+  }, [mappedFlow]);
+
+  const handleFormSubmit = async (formData: SubmitEventParams) => {
+    try {
+      const txId = sessionData?.flowMap[flowId];
+      if (!txId) {
+        console.error("Transaction ID not found");
+        return;
+      }
+      await proceedFlow(sessionId, txId, formData.jsonPath, formData.formData);
+      setInputPopUp(false);
+      setActiveFormConfig(undefined);
+    } catch (error) {
+      toast.error("Error submitting form ");
+      console.error("Error submitting form data:", error);
+      setInputPopUp(false);
+    }
+  };
   return (
     <>
       <div>
@@ -112,7 +94,7 @@ function getOrderedSteps(mappedFlow: FlowMap): PairedStep[] {
 
     let pairStep: MappedStep | undefined;
     if (step.pairActionId) {
-      pairStep = sequence.find((s) => s.actionId === step.pairActionId);
+      pairStep = sequence.find(s => s.actionId === step.pairActionId);
       if (pairStep && !visited.has(pairStep.actionId)) {
         visited.add(`${pairStep.actionId}_${pairStep.index}`);
       }
