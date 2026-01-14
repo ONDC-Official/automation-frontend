@@ -28,7 +28,7 @@ export default function FlowTestingWrapper() {
       } else {
         toast.error("No flow configurations found in session");
       }
-    } catch (error: unknown) {
+    } catch (error: any) {
       console.error("Error fetching session data:", error);
       toast.error("Failed to load session data");
     } finally {
@@ -64,12 +64,7 @@ export default function FlowTestingWrapper() {
       <div className="min-h-screen bg-gradient-to-br from-sky-50 via-white to-blue-50 flex items-center justify-center">
         <div className="text-center">
           <div className="text-red-500 mb-4">
-            <svg
-              className="w-16 h-16 mx-auto"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
+            <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -92,12 +87,7 @@ export default function FlowTestingWrapper() {
       <div className="min-h-screen bg-gradient-to-br from-sky-50 via-white to-blue-50 flex items-center justify-center">
         <div className="text-center">
           <div className="text-amber-500 mb-4">
-            <svg
-              className="w-16 h-16 mx-auto"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
+            <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"

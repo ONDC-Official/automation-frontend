@@ -1,8 +1,9 @@
-import IconButton from "@components/IconButton";
+import IconButton from "../../../../components/ui/mini-components/icon-button";
 import { FaDownload, FaUpload, FaArrowLeft } from "react-icons/fa";
 import { GrFlows, GrRedo } from "react-icons/gr";
 import { IoMdSkipForward, IoMdTrash } from "react-icons/io";
 
+// components/playground/PlaygroundHeader.tsx
 interface PlaygroundHeaderProps {
   domain?: string;
   version?: string;
@@ -30,12 +31,7 @@ export const PlaygroundHeader = ({
 }: PlaygroundHeaderProps) => (
   <div className="h-16 flex items-center justify-between px-6 bg-gradient-to-r from-white to-sky-50 border-b border-sky-100 shadow-sm">
     <div className="flex items-center gap-6">
-      <IconButton
-        icon={<FaArrowLeft size={16} />}
-        label="Back to Starter"
-        onClick={onBack}
-        color="gray"
-      />
+      <IconButton icon={<FaArrowLeft size={16} />} label="Back to Starter" onClick={onBack} color="gray" />
       <div className="flex items-center gap-3">
         <span className="text-xl font-bold bg-gradient-to-r from-sky-600 via-sky-500 to-sky-600 bg-clip-text text-transparent tracking-tight">
           PLAYGROUND MODE
@@ -61,8 +57,7 @@ export const PlaygroundHeader = ({
     <div className="flex items-center gap-2">
       <button
         onClick={onCreateFlowSession}
-        className="flex items-center gap-2 px-3 py-1.5 bg-sky-50 rounded-lg text-sky-600 border border-sky-100 hover:bg-sky-100 hover:scale-105 transition-transform shadow-sm"
-      >
+        className="flex items-center gap-2 px-3 py-1.5 bg-sky-50 rounded-lg text-sky-600 border border-sky-100 hover:bg-sky-100 hover:scale-105 transition-transform shadow-sm">
         <GrFlows size={16} />
         <span className="font-semibold text-sm">create live session</span>
       </button>
@@ -70,18 +65,8 @@ export const PlaygroundHeader = ({
       <IconButton icon={<FaDownload size={16} />} label="Export" onClick={onExport} color="sky" />
       <IconButton icon={<FaUpload size={16} />} label="Import" onClick={onImport} color="sky" />
       <IconButton icon={<IoMdTrash size={16} />} label="Clear" onClick={onClear} color="red" />
-      <IconButton
-        icon={<GrRedo size={18} />}
-        label="Run current"
-        onClick={onRunCurrent}
-        color="green"
-      />
-      <IconButton
-        icon={<IoMdSkipForward size={18} />}
-        label="Run in sequence"
-        onClick={onRun}
-        color="orange"
-      />
+      <IconButton icon={<GrRedo size={18} />} label="Run current" onClick={onRunCurrent} color="green" />
+      <IconButton icon={<IoMdSkipForward size={18} />} label="Run in sequence" onClick={onRun} color="orange" />
     </div>
   </div>
 );

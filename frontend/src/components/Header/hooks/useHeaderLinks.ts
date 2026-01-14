@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { ROUTES } from "@constants/routes";
-import { NavLink } from "@components/Header/types";
-import { navLinks } from "@components/Header/constants";
+import { NavLink } from "../types";
+import { navLinks } from "../constants";
 
 export const useHeaderLinks = () => {
   const [links, setLinks] = useState<NavLink[]>([]);
@@ -15,9 +15,9 @@ export const useHeaderLinks = () => {
       setLinks(navLinks);
       navigate(ROUTES.HOME);
     } else {
-      const modifiedLinks: NavLink[] = navLinks.map((link) => {
+      const modifiedLinks: NavLink[] = navLinks.map(link => {
         const isMainLinkSelected = link.href === pathName;
-        const isSubMenuSelected = link.subMenu?.some((sub) => sub.href === pathName);
+        const isSubMenuSelected = link.subMenu?.some(sub => sub.href === pathName);
         return {
           ...link,
           selected: isMainLinkSelected || isSubMenuSelected || false,

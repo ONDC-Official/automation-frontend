@@ -1,26 +1,24 @@
-import { Dispatch, SetStateAction, useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Flow, MetadataField } from "@/types/flow-types";
 import { ROUTES } from "@constants/routes";
-import InfoCard from "@/components/FlowShared/info-card";
-import DifficultyCards from "@components/FlowShared/difficulty-cards";
+import InfoCard from "@components/ui/info-card";
+import DifficultyCards from "@components/ui/difficulty-cards";
 import axios from "axios";
 import { toast } from "react-toastify";
-import { ApiData, SessionCache, SessionDifficulty } from "@/types/session-types";
-import {
-  // getCompletePayload,
-  getReport,
-  getTransactionData,
-} from "@utils/request-utils";
+import { ApiData, SessionCache } from "@/types/session-types";
+import { getCompletePayload, getReport, getTransactionData } from "@utils/request-utils";
 import { Accordion } from "@components/FlowShared/complete-flow";
-import { useSession, SessionContext } from "@context/sessionContext";
-import Loader from "@components/Loader";
+import { useSession } from "@context/context";
+import Loader from "@components/ui/mini-components/loader";
 import JsonView from "@uiw/react-json-view";
 import { githubDarkTheme } from "@uiw/react-json-view/githubDark";
-import Tabs from "@components/Tabs";
-import CircularProgress from "@components/CircularProgress";
-import Modal from "@components/Modal";
-import { HiOutlineDocumentReport, HiOutlinePlusCircle, HiEye } from "react-icons/hi";
+import Tabs from "@components/ui/mini-components/tabs";
+import { SessionContext } from "@context/context";
+import CircularProgress from "@components/ui/circular-cooldown";
+import Modal from "@components/modal";
+import GuideModal from "@components/FlowShared/flow-guide";
+import { HiOutlineDocumentReport, HiOutlinePlusCircle, HiEye, HiOutlineQuestionMarkCircle } from "react-icons/hi";
 import jp from "jsonpath";
 import FlowHelperTab from "@components/FlowShared/helper-tab";
 import { GetRequestEndpoint } from "@components/FlowShared/guides";
@@ -32,11 +30,11 @@ import { openReportInNewTab } from "@utils/generic-utils";
 function extractMetadataFromFlows(flows: Flow[]): Record<string, MetadataField[]> {
   const flowMetadataMap: Record<string, MetadataField[]> = {};
 
-  flows.forEach((flow) => {
+  flows.forEach(flow => {
     const flowMetadata: MetadataField[] = [];
 
     // Extract metadata from each sequence step (API call)
-    flow.sequence.forEach((step) => {
+    flow.sequence.forEach(step => {
       // Look for meta-data array (with hyphen) in the sequence object
       const metadataArray = step["meta-data"] || step.metadata;
 
@@ -57,7 +55,7 @@ function extractMetadataFromFlows(flows: Flow[]): Record<string, MetadataField[]
 // Function to extract metadata for a specific flow by flow name
 function extractMetadataByFlowName(
   flowMetadataMap: Record<string, MetadataField[]>,
-  flowName: string
+  flowName: string,
 ): MetadataField[] {
   const flowMetadata = flowMetadataMap[flowName] || [];
 
@@ -65,11 +63,10 @@ function extractMetadataByFlowName(
 }
 
 // Function to extract values from payload using metadata
-function extractMetadataValues(payload: unknown[], metadataFields: MetadataField[]) {
-  const extractedData: Record<string, { value: unknown; name?: string; errorMessage?: string }> =
-    {};
+function extractMetadataValues(payload: any, metadataFields: MetadataField[]) {
+  const extractedData: Record<string, any> = {};
 
-  metadataFields.forEach((meta) => {
+  metadataFields.forEach(meta => {
     try {
       const result = jp.query(payload[0], meta.path);
 
@@ -89,18 +86,11 @@ function extractMetadataValues(payload: unknown[], metadataFields: MetadataField
       extractedData[meta.description.name] = {
         value: displayValue,
       };
-    } catch (error: unknown) {
-      const errorMessage =
-        error &&
-        typeof error === "object" &&
-        "message" in error &&
-        typeof error.message === "string"
-          ? error.message
-          : "Unknown error";
+    } catch (error: any) {
       extractedData[meta.description.name] = {
         name: meta.description.name,
         value: "Data not available",
-        errorMessage: errorMessage,
+        errorMessage: error.message,
       };
     }
   });
@@ -126,36 +116,23 @@ function RenderFlows({
   const [activeFlow, setActiveFlow] = useState<string | null>(null);
   const activeFlowRef = useRef<string | null>(activeFlow);
   const [cacheSessionData, setCacheSessionData] = useState<SessionCache | null>(null);
-  interface SideViewData {
-    payloadId?: string;
-    request?: Record<string, unknown>;
-    response?:
-      | {
-          res?: Array<{ response?: Record<string, unknown> }>;
-        }
-      | Record<string, unknown>;
-  }
-
-  const [sideView, setSideView] = useState<SideViewData>({});
-  const [difficultyCache, setDifficultyCache] = useState<SessionDifficulty>(
-    {} as SessionDifficulty
-  );
+  const [sideView, setSideView] = useState<any>({});
+  const [difficultyCache, setDifficultyCache] = useState<any>({});
   const [isFlowStopped, setIsFlowStopped] = useState<boolean>(false);
-  const [selectedTab, setSelectedTab] = useState<"Request" | "Response" | "Metadata" | "Guide">(
-    "Request"
-  );
-  const [requestData, setRequestData] = useState<Record<string, unknown>>({});
-  const [responseData, setResponseData] = useState<Record<string, unknown>>({});
-  const [metadata, setMetadata] = useState<Record<string, unknown>>({});
+  const [selectedTab, setSelectedTab] = useState<"Request" | "Response" | "Metadata" | "Guide">("Request");
+  const [requestData, setRequestData] = useState({});
+  const [responseData, setResponseData] = useState({});
+  const [metadata, setMetadata] = useState({});
   const apiCallFailCount = useRef(0);
   const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
+  const [isGuideOpen, setIsGuideOpen] = useState(false);
   const navigate = useNavigate();
   const { setSessionId } = useSession();
-  const pollingRef = useRef<NodeJS.Timeout | null>(null);
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const pollingRef = useRef<any>(null);
+  const timeoutRef = useRef<any>(null);
   const [isPolling, setIsPolling] = useState(false);
   const [gotReport, setGotReport] = useState(false);
-  const [flowTags] = useState<string[]>([]);
+  const [flowTags, setFlowTags] = useState<string[]>([]);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [activeCallClickedToggle, setActiveCallClickedToggle] = useState<boolean>(false);
 
@@ -202,98 +179,104 @@ function RenderFlows({
     }, TIMEOUT);
   };
 
+  useEffect(() => {
+    fetchSessionData();
+  }, [subUrl]);
+
+  useEffect(() => {
+    const allTags = new Set(Object.values(flows).flatMap(cfg => cfg.tags ?? []));
+    const tagsArray = [...allTags].filter(tag => tag !== "WORKBENCH");
+    setFlowTags(tagsArray);
+  }, [flows]);
+
+  useEffect(() => {
+    if (sideView?.payloadId) {
+      test();
+    } else {
+      setRequestData(sideView || {});
+      setResponseData(sideView || {});
+      setMetadata({});
+    }
+
+    extractMetadataFromFlows(flows);
+  }, [sideView, flows, activeFlow]);
+
+  const test = async () => {
+    try {
+      // ✅ Fetch payload
+      const data = await getCompletePayload([sideView.payloadId]);
+
+      const requestPayload = data?.[0]?.req || {};
+      let responsePayload: any = {};
+
+      // ✅ Extract response payload safely
+      if (sideView?.response?.res?.[0]?.response) {
+        responsePayload = sideView.response.res[0].response;
+      } else if (sideView?.response) {
+        responsePayload = sideView.response;
+      }
+
+      setRequestData(requestPayload);
+      setResponseData(responsePayload);
+
+      // ✅ Extract metadata if flows are available
+      handleMetadataExtraction(requestPayload);
+    } catch (error) {
+      const requestPayload = sideView?.request || {};
+      let responsePayload: any = {};
+
+      if (sideView?.response?.res?.[0]?.response) {
+        responsePayload = sideView.response.res[0].response;
+      } else if (sideView?.response) {
+        responsePayload = sideView.response;
+      }
+
+      setRequestData(requestPayload);
+      setResponseData(responsePayload);
+
+      // ✅ Extract metadata from fallback
+      handleMetadataExtraction(requestPayload);
+    }
+  };
+
   /**
    * Helper function to handle metadata extraction from flows
    */
-  const handleMetadataExtraction = useCallback(
-    (requestPayload: Record<string, unknown>) => {
-      if (!flows || flows.length === 0) {
-        setMetadata({});
-        return;
-      }
+  const handleMetadataExtraction = (
+    requestPayload: Record<string, any>,
+    // responsePayload: Record<string, any>
+  ) => {
+    if (!flows || flows.length === 0) {
+      setMetadata({});
+      return;
+    }
 
-      const flowMetadataMap = extractMetadataFromFlows(flows);
+    const flowMetadataMap = extractMetadataFromFlows(flows);
 
-      if (!Object.keys(flowMetadataMap).length) {
-        setMetadata({});
-        return;
-      }
+    if (!Object.keys(flowMetadataMap).length) {
+      setMetadata({});
+      return;
+    }
 
-      // Use active flow if available, otherwise use first flow or all flows combined
-      let metadataToUse: MetadataField[] = [];
+    // Use active flow if available, otherwise use first flow or all flows combined
+    let metadataToUse: MetadataField[] = [];
 
-      if (activeFlow && flowMetadataMap[activeFlow]) {
-        metadataToUse = extractMetadataByFlowName(flowMetadataMap, activeFlow);
-      } else {
-        // Combine metadata from all flows if no specific flow is active
-        metadataToUse = Object.values(flowMetadataMap).flat();
-      }
+    if (activeFlow && flowMetadataMap[activeFlow]) {
+      metadataToUse = extractMetadataByFlowName(flowMetadataMap, activeFlow);
+    } else {
+      // Combine metadata from all flows if no specific flow is active
+      metadataToUse = Object.values(flowMetadataMap).flat();
+    }
 
-      if (requestPayload && Object.keys(requestPayload).length > 0) {
-        const Metadata = extractMetadataValues(
-          requestPayload as unknown as unknown[],
-          metadataToUse
-        );
-        setMetadata(Metadata);
-      } else {
-        setMetadata({});
-      }
-    },
-    [flows, activeFlow]
-  );
-
-  // const _test = useCallback(async () => {
-  //   try {
-  //     // ✅ Fetch payload
-  //     const data = await getCompletePayload([sideView.payloadId || ""]);
-
-  //     const requestPayload =
-  //       (data?.[0]?.req as Record<string, unknown>) || ({} as Record<string, unknown>);
-  //     let responsePayload: Record<string, unknown> = {};
-
-  //     // ✅ Extract response payload safely
-  //     if (
-  //       sideView?.response &&
-  //       "res" in sideView.response &&
-  //       Array.isArray(sideView.response.res) &&
-  //       sideView.response.res[0]?.response
-  //     ) {
-  //       responsePayload = sideView.response.res[0].response as Record<string, unknown>;
-  //     } else if (sideView?.response && !("res" in sideView.response)) {
-  //       responsePayload = sideView.response as Record<string, unknown>;
-  //     }
-
-  //     setRequestData(requestPayload);
-  //     setResponseData(responsePayload);
-
-  //     // ✅ Extract metadata if flows are available
-  //     handleMetadataExtraction(requestPayload);
-  //   } catch {
-  //     const requestPayload =
-  //       (sideView?.request as Record<string, unknown>) || ({} as Record<string, unknown>);
-  //     let responsePayload: Record<string, unknown> = {};
-
-  //     if (
-  //       sideView?.response &&
-  //       "res" in sideView.response &&
-  //       Array.isArray(sideView.response.res) &&
-  //       sideView.response.res[0]?.response
-  //     ) {
-  //       responsePayload = sideView.response.res[0].response as Record<string, unknown>;
-  //     } else if (sideView?.response && !("res" in sideView.response)) {
-  //       responsePayload = sideView.response as Record<string, unknown>;
-  //     }
-
-  //     setRequestData(requestPayload);
-  //     setResponseData(responsePayload);
-
-  //     // ✅ Extract metadata from fallback
-  //     handleMetadataExtraction(requestPayload);
-  //   }
-  // }, [sideView, handleMetadataExtraction]);
+    if (requestPayload && Object.keys(requestPayload).length > 0) {
+      const Metadata = extractMetadataValues(requestPayload, metadataToUse);
+      setMetadata(Metadata);
+    } else {
+      setMetadata({});
+    }
+  };
 
   // Update the ref whenever activeFlow changes
-
   useEffect(() => {
     activeFlowRef.current = activeFlow;
   }, [activeFlow]);
@@ -305,37 +288,35 @@ function RenderFlows({
     } else {
       setMetadata({});
     }
-  }, [flows, requestData, responseData, handleMetadataExtraction]);
+  }, [flows, requestData, responseData]);
 
-  const fetchSessionData = useCallback(() => {
+  function fetchSessionData() {
     axios
       .get(`${import.meta.env.VITE_BACKEND_URL}/sessions`, {
         params: {
           session_id: sessionId,
         },
       })
-      .then((response: { data: Record<string, unknown> }) => {
+      .then((response: any) => {
         const filteredData = Object.entries(response.data)
           .filter(([_, value]) => typeof value === "string")
-          .reduce((acc: Record<string, string>, [key, value]) => {
-            acc[key] = value as string;
+          .reduce((acc: any, [key, value]) => {
+            acc[key] = value;
             return acc;
           }, {});
         delete filteredData["active_session_id"];
-        setDifficultyCache(
-          (response.data.sessionDifficulty as SessionDifficulty) || ({} as SessionDifficulty)
-        );
-        setCacheSessionData(response.data as unknown as SessionCache);
+        setDifficultyCache(response.data.sessionDifficulty);
+        setCacheSessionData(response.data);
         apiCallFailCount.current = 0; // Reset fail count on successful fetch
       })
-      .catch((e: unknown) => {
+      .catch((e: any) => {
         console.error("Error while fetching session: ", e);
         apiCallFailCount.current = apiCallFailCount.current + 1;
       });
-  }, [sessionId]);
+  }
 
   async function generateReport() {
-    const body: Record<string, string[]> = {};
+    const body: any = {};
 
     if (!cacheSessionData) {
       toast.error("Error while generating report");
@@ -350,7 +331,7 @@ function RenderFlows({
       if (!transData) continue;
       apiList = transData.apiList;
 
-      body[flow] = (apiList || []).map((data) => {
+      body[flow] = (apiList || []).map(data => {
         return data.payloadId;
       });
     }
@@ -361,7 +342,7 @@ function RenderFlows({
           sessionId: sessionId,
         },
       })
-      .then((response: { data?: { data?: { html?: string } } }) => {
+      .then((response: any) => {
         // setReport(response.data.data);
         // setStep(2);
         if (response?.data?.data?.html) {
@@ -383,17 +364,17 @@ function RenderFlows({
           startPolling();
         }
       })
-      .catch((e) => {
+      .catch(e => {
         console.error(e);
         toast.error("Error while generating report");
       });
   }
 
-  let filteredFlows: Flow[] = [];
+  let filteredFlows: any = [];
 
   if (selectedTags.length) {
     filteredFlows = Object.entries(flows)
-      .filter(([_key, cfg]) => cfg.tags?.some((t) => selectedTags.includes(t)))
+      .filter(([_key, cfg]) => cfg.tags?.some(t => selectedTags.includes(t)))
       .map(([_, cfg]) => cfg);
   } else {
     filteredFlows = flows;
@@ -418,25 +399,28 @@ function RenderFlows({
         responseData,
         sideView,
         metadata,
-        setRequestData: setRequestData as Dispatch<SetStateAction<unknown>>,
-        setResponseData: setResponseData as Dispatch<SetStateAction<unknown>>,
-        setSideView: setSideView as unknown as Dispatch<unknown>,
-        setMetadata: setMetadata as Dispatch<SetStateAction<unknown>>,
+        setRequestData: setRequestData,
+        setResponseData: setResponseData,
+        setSideView: setSideView,
+        setMetadata: setMetadata,
         setActiveCallClickedToggle: setActiveCallClickedToggle,
         activeCallClickedToggle: activeCallClickedToggle,
-      }}
-    >
+      }}>
       <Modal
         isOpen={isErrorModalOpen}
         onClose={() => {
           navigate(ROUTES.HOME);
           setIsErrorModalOpen(false);
-        }}
-      >
+        }}>
         <h1 className="text-lg font-semibold text-gray-800">Alert</h1>
         <p className="text-sm text-gray-600">Sesson has expired.</p>
         <p className="text-sm text-gray-600">Check support to raise a query.</p>
       </Modal>
+      <GuideModal
+        isOpen={isGuideOpen}
+        onClose={() => setIsGuideOpen(false)}
+        domain={cacheSessionData?.domain}
+      />
       <div className="w-full min-h-screen flex flex-col flex-1">
         <div className="space-y-2 pt-4 pr-4 pl-4">
           {cacheSessionData ? (
@@ -478,8 +462,7 @@ function RenderFlows({
                             onClick={async () => {
                               setSessionId("");
                               newSession();
-                            }}
-                          >
+                            }}>
                             <HiOutlinePlusCircle className="text-lg m2-1" />
                             New Session
                           </button>
@@ -495,8 +478,7 @@ function RenderFlows({
                             });
                             await generateReport();
                           }}
-                          disabled={!isFlowStopped}
-                        >
+                          disabled={!isFlowStopped}>
                           <HiOutlineDocumentReport className="text-lg m2-1" />
                           Generate Report
                         </button>
@@ -515,11 +497,21 @@ function RenderFlows({
                               console.error("Failed to decode or open Base64 HTML:", error);
                             }
                           }}
-                          disabled={!gotReport}
-                        >
+                          disabled={!gotReport}>
                           <HiEye className="text-lg m2-1" />
                           View Report
                         </button>
+                      </div>
+                      <div className="flex justify-end">
+                        {newSession && (
+                          <button
+                            className="bg-sky-600 text-white text-sm flex px-2 py-2 rounded hover:bg-sky-700 shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            onClick={() => { setIsGuideOpen(true);
+                            }}>
+                            <HiOutlineQuestionMarkCircle className="text-lg m2-1" />
+                            Guide
+                          </button>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -541,11 +533,7 @@ function RenderFlows({
                     <div className="flex-1 min-w-0">
                       <p className="text-xs font-medium text-gray-600 mb-1">Send your calls to:</p>
                       <code className="block px-3 py-2 bg-white border border-sky-200 rounded text-xs text-sky-700 font-mono break-all">
-                        {GetRequestEndpoint(
-                          cacheSessionData.domain,
-                          cacheSessionData.version,
-                          cacheSessionData.npType
-                        )}
+                        {GetRequestEndpoint(cacheSessionData.domain, cacheSessionData.version, cacheSessionData.npType)}
                         /<span className="text-amber-600">&lt;action&gt;</span>
                       </code>
                     </div>
@@ -557,9 +545,7 @@ function RenderFlows({
                       <BiServer className="w-4 h-4 text-sky-600" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs font-medium text-gray-600 mb-1">
-                        You will receive calls at:
-                      </p>
+                      <p className="text-xs font-medium text-gray-600 mb-1">You will receive calls at:</p>
                       <code className="block px-3 py-2 bg-white border border-sky-200 rounded text-xs text-sky-700 font-mono break-all">
                         {subUrl}/<span className="text-amber-600">&lt;action&gt;</span>
                       </code>
@@ -604,13 +590,9 @@ function RenderFlows({
         <div className="flex flex-1 w-full">
           {/* Left Column - Main Content */}
           <div className="w-full sm:w-[60%] overflow-y-auto p-4">
-            <FilterFlowsMenu
-              flowTags={flowTags}
-              setSelectedTags={setSelectedTags}
-              selectedTags={selectedTags}
-            />
+            <FilterFlowsMenu flowTags={flowTags} setSelectedTags={setSelectedTags} selectedTags={selectedTags} />
             <div className="mb-8 bg-gray-100 p-4 rounded-md border flex-1">
-              {filteredFlows.map((flow: Flow) => (
+              {filteredFlows.map((flow: any) => (
                 <Accordion
                   key={flow.id}
                   flow={flow}
@@ -618,9 +600,7 @@ function RenderFlows({
                   sessionId={sessionId}
                   setActiveFlow={setActiveFlow}
                   sessionCache={cacheSessionData}
-                  setSideView={
-                    setSideView as unknown as Dispatch<SetStateAction<Record<string, unknown>>>
-                  }
+                  setSideView={setSideView}
                   subUrl={subUrl}
                   onFlowStop={() => setIsFlowStopped(true)}
                   onFlowClear={() => handleClearFlow()}
@@ -647,8 +627,7 @@ function RenderFlows({
                         <span
                           className="inline-flex items-center px-1 py-0.5 min-w-[2rem] justify-center rounded-full text-[10px] font-medium bg-gradient-to-r from-yellow-50 to-yellow-100 text-yellow-700 border border-yellow-300 shadow-sm"
                           role="status"
-                          aria-label="Beta release"
-                        >
+                          aria-label="Beta release">
                           Beta
                         </span>
                       </div>
@@ -677,33 +656,23 @@ function RenderFlows({
                           <table className="w-full text-sm border-collapse">
                             <thead>
                               <tr className="border-b border-gray-700">
-                                <th className="text-left py-2 px-3 text-gray-300 font-medium">
-                                  Field Name
-                                </th>
-                                <th className="text-left py-2 px-3 text-gray-300 font-medium">
-                                  Value
-                                </th>
+                                <th className="text-left py-2 px-3 text-gray-300 font-medium">Field Name</th>
+                                <th className="text-left py-2 px-3 text-gray-300 font-medium">Value</th>
                               </tr>
                             </thead>
                             <tbody>
-                              {Object.entries(metadata).map(
-                                ([key, data]: [string, unknown], index) => {
-                                  const dataValue = (data as { value?: unknown })?.value ?? data;
-                                  return (
-                                    <tr
-                                      key={index}
-                                      className="border-b border-gray-700 hover:bg-gray-700/50 transition-colors"
-                                    >
-                                      <td className="py-2 px-3 text-gray-400">{key}</td>
-                                      <td className="py-2 px-3 text-gray-200 whitespace-pre-wrap break-words">
-                                        {typeof dataValue === "object" && dataValue !== null
-                                          ? JSON.stringify(dataValue, null, 2)
-                                          : String(dataValue)}
-                                      </td>
-                                    </tr>
-                                  );
-                                }
-                              )}
+                              {Object.entries(metadata).map(([key, data]: [string, any], index) => (
+                                <tr
+                                  key={index}
+                                  className="border-b border-gray-700 hover:bg-gray-700/50 transition-colors">
+                                  <td className="py-2 px-3 text-gray-400">{key}</td>
+                                  <td className="py-2 px-3 text-gray-200 whitespace-pre-wrap break-words">
+                                    {typeof data.value === "object" && data.value !== null
+                                      ? JSON.stringify(data.value, null, 2)
+                                      : String(data.value)}
+                                  </td>
+                                </tr>
+                              ))}
                             </tbody>
                           </table>
                         ) : (
@@ -714,13 +683,7 @@ function RenderFlows({
                       </div>
                     ) : (
                       <JsonView
-                        value={
-                          selectedTab === "Request"
-                            ? requestData
-                            : selectedTab === "Response"
-                              ? responseData
-                              : {}
-                        }
+                        value={selectedTab === "Request" ? requestData : selectedTab === "Response" ? responseData : {}}
                         style={githubDarkTheme}
                         className="rounded-md"
                         displayDataTypes={false}

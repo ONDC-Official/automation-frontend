@@ -1,7 +1,10 @@
-import { PlaygroundActionStep } from "@ondc/automation-mock-runner";
-import { inputClass } from "@utils/input-class";
+// ===== FORM COMPONENTS =====
+// Extracted form components for better code organization and reusability
 
-import { ONDC_ACTION_LIST } from "@pages/protocol-playground/types";
+import { PlaygroundActionStep } from "@ondc/automation-mock-runner";
+import { inputClass } from "../../../components/ui/forms/inputClass";
+
+import { ONDC_ACTION_LIST } from "../types";
 
 export const AddActionForm = ({
   title,
@@ -16,7 +19,7 @@ export const AddActionForm = ({
     <h2>{title}</h2>
     <div className="flex flex-col gap-2 mt-2">
       <select id="apiAddNameInput" className={inputClass}>
-        {ONDC_ACTION_LIST.map((action) => (
+        {ONDC_ACTION_LIST.map(action => (
           <option key={action} value={action}>
             {action}
           </option>
@@ -24,16 +27,10 @@ export const AddActionForm = ({
       </select>
       <input type="text" placeholder="Action ID" id="actionAddIdInput" className={inputClass} />
       <div className="flex gap-2 mt-2">
-        <button
-          className="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500"
-          onClick={onCancel}
-        >
+        <button className="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500" onClick={onCancel}>
           Cancel
         </button>
-        <button
-          className="px-4 py-2 bg-sky-700 text-white rounded hover:bg-sky-800"
-          onClick={onSubmit}
-        >
+        <button className="px-4 py-2 bg-sky-700 text-white rounded hover:bg-sky-800" onClick={onSubmit}>
           Submit
         </button>
       </div>
@@ -56,16 +53,10 @@ export const DeleteConfirmationForm = ({
     <h2>{title}</h2>
     <p>{description || "Are you sure you want to delete ? This action cannot be undone."}</p>
     <div className="mt-4 flex justify-end gap-2">
-      <button
-        className="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500"
-        onClick={onCancel}
-      >
+      <button className="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500" onClick={onCancel}>
         Cancel
       </button>
-      <button
-        className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
-        onClick={onConfirm}
-      >
+      <button className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700" onClick={onConfirm}>
         Delete
       </button>
     </div>
@@ -92,7 +83,7 @@ export const EditActionForm = ({
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">API Name:</label>
         <select id="editApiNameInput" className={inputClass} defaultValue={currentAction.api}>
-          {ONDC_ACTION_LIST.map((action) => (
+          {ONDC_ACTION_LIST.map(action => (
             <option key={action} value={action}>
               {action}
             </option>
@@ -127,8 +118,7 @@ export const EditActionForm = ({
         <select
           id="editUnsolicitedInput"
           className={inputClass}
-          defaultValue={currentAction.unsolicited ? "yes" : "no"}
-        >
+          defaultValue={currentAction.unsolicited ? "yes" : "no"}>
           <option value="yes">Yes</option>
           <option value="no">No</option>
         </select>
@@ -137,13 +127,9 @@ export const EditActionForm = ({
       {/* Response For */}
       <div className="col-span-2">
         <label className="block text-sm font-medium text-gray-700 mb-1">Response For:</label>
-        <select
-          id="editResponseForInput"
-          className={inputClass}
-          defaultValue={currentAction.responseFor || ""}
-        >
+        <select id="editResponseForInput" className={inputClass} defaultValue={currentAction.responseFor || ""}>
           <option value="">None</option>
-          {previousSteps.map((step) => (
+          {previousSteps.map(step => (
             <option key={step.action_id} value={step.action_id}>
               {step.action_id} ({step.api})
             </option>
@@ -165,16 +151,10 @@ export const EditActionForm = ({
 
     {/* Buttons */}
     <div className="flex gap-2 mt-4 justify-end">
-      <button
-        className="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500"
-        onClick={onCancel}
-      >
+      <button className="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500" onClick={onCancel}>
         Cancel
       </button>
-      <button
-        className="px-4 py-2 bg-sky-700 text-white rounded hover:bg-sky-800"
-        onClick={onUpdate}
-      >
+      <button className="px-4 py-2 bg-sky-700 text-white rounded hover:bg-sky-800" onClick={onUpdate}>
         Update Action
       </button>
     </div>

@@ -1,6 +1,6 @@
 import { Context, createContext } from "react";
-import { UserDetails } from "@components/Header/types";
-import { SubscriberData } from "@components/Registry/registry-types";
+import { UserDetails } from "@components/Header";
+import { SubscriberData } from "../components/registry-components/registry-types";
 
 interface UserContextProps {
   isLoggedIn: boolean;
@@ -10,6 +10,4 @@ interface UserContextProps {
   setSubscriberData: React.Dispatch<React.SetStateAction<SubscriberData>>;
 }
 
-export const UserContext: Context<UserContextProps> = createContext<UserContextProps>(
-  {} as UserContextProps
-);
+export const UserContext: Context<UserContextProps> = createContext<UserContextProps>({} as UserContextProps);

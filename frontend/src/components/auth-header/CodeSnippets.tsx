@@ -42,7 +42,9 @@ const CodeSnippets: React.FC = () => {
         <button
           onClick={() => setShowGenerate(true)}
           className={`px-4 py-2 rounded-lg font-medium transition-all ${
-            showGenerate ? "bg-green-600 text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+            showGenerate
+              ? "bg-green-600 text-white"
+              : "bg-gray-100 text-gray-700 hover:bg-gray-200"
           }`}
         >
           Generate Header
@@ -50,7 +52,9 @@ const CodeSnippets: React.FC = () => {
         <button
           onClick={() => setShowGenerate(false)}
           className={`px-4 py-2 rounded-lg font-medium transition-all ${
-            !showGenerate ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+            !showGenerate
+              ? "bg-blue-600 text-white"
+              : "bg-gray-100 text-gray-700 hover:bg-gray-200"
           }`}
         >
           Verify Header
@@ -103,21 +107,11 @@ const CodeSnippets: React.FC = () => {
           <strong>Note:</strong> These code snippets use the following cryptographic libraries:
         </p>
         <ul className="text-amber-700 text-sm mt-2 list-disc list-inside">
-          <li>
-            <strong>Python:</strong> PyNaCl (nacl)
-          </li>
-          <li>
-            <strong>Go:</strong> golang.org/x/crypto/blake2b, crypto/ed25519
-          </li>
-          <li>
-            <strong>Java:</strong> BouncyCastle
-          </li>
-          <li>
-            <strong>Node.js:</strong> libsodium-wrappers
-          </li>
-          <li>
-            <strong>PHP:</strong> sodium extension
-          </li>
+          <li><strong>Python:</strong> PyNaCl (nacl)</li>
+          <li><strong>Go:</strong> golang.org/x/crypto/blake2b, crypto/ed25519</li>
+          <li><strong>Java:</strong> BouncyCastle</li>
+          <li><strong>Node.js:</strong> libsodium-wrappers</li>
+          <li><strong>PHP:</strong> sodium extension</li>
         </ul>
       </div>
     </div>

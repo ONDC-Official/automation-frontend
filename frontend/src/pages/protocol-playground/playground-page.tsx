@@ -1,7 +1,7 @@
 import { useContext, useEffect, useState } from "react";
 
 import { PlaygroundContext } from "@pages/protocol-playground/context/playground-context";
-import Popup from "@components/PopUp";
+import Popup from "@components/ui/pop-up/pop-up";
 import { PlaygroundRightTabType } from "@pages/protocol-playground/types";
 import { LeftSideView } from "@pages/protocol-playground/ui/LeftSideView";
 import { RightSideView } from "@pages/protocol-playground/ui/RightSideView";
@@ -9,7 +9,7 @@ import { useConfigOperations } from "@pages/protocol-playground/hooks/use-config
 import { PlaygroundHeader } from "@pages/protocol-playground/ui/playground-upper/playground-header";
 import { useModalHandlers } from "@pages/protocol-playground/hooks/use-modal";
 import { usePlaygroundActions } from "@pages/protocol-playground/hooks/use-playground-actions";
-import Loader from "@components/Loader";
+import FullPageLoader from "@components/ui/mini-components/fullpage-loader";
 import { ActionTimeline } from "@pages/protocol-playground/ui/playground-upper/merged-sequcence";
 import ViewOnlyPlaygroundPage from "@pages/protocol-playground/view-only-page";
 
@@ -18,14 +18,8 @@ const PlaygroundPage = () => {
 
   const { activeApi, setActiveApi } = playgroundContext;
 
-  const {
-    exportConfig,
-    importConfig,
-    clearConfig,
-    runConfig,
-    runCurrentConfig,
-    createFlowSession,
-  } = useConfigOperations();
+  const { exportConfig, importConfig, clearConfig, runConfig, runCurrentConfig, createFlowSession } =
+    useConfigOperations();
 
   const handleBack = () => {
     playgroundContext.setCurrentConfig(undefined);
@@ -67,7 +61,7 @@ const PlaygroundPage = () => {
         <Popup isOpen={popupOpen} onClose={closeModal}>
           {popupContent}
         </Popup>
-        {playgroundContext.loading && <Loader fullPage={true} />}
+        {playgroundContext.loading && <FullPageLoader />}
       </div>
     );
   }
@@ -115,7 +109,7 @@ const PlaygroundPage = () => {
       <Popup isOpen={popupOpen} onClose={closeModal}>
         {popupContent}
       </Popup>
-      {playgroundContext.loading && <Loader fullPage={true} />}
+      {playgroundContext.loading && <FullPageLoader />}
     </div>
   );
 };
