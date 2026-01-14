@@ -23,33 +23,36 @@ import DynamicFormHandler from "../custom-forms/dynamic-form-handler";
 import { SessionContext } from "../../../../context/context";
 import IntercitySelect from "../custom-forms/intercity-select";
 import HotelSelectProvider from "../custom-forms/hotel-slect-provider";
+import FIS13ItemSelection from "../custom-forms/fis13_select";
 
 export interface FormFieldConfigType {
   name: string;
   label: string;
   type:
-    | "text"
-    | "select"
-    | "textarea"
-    | "list"
-    | "checkbox"
-    | "boolean"
-    | "trv12_bus_seat_selection"
-    | "airline_select"
-    | "intercity_select"
-    | "airline_seat_select"
-    | "ret10_grocery_select"
-    | "nestedSelect"
-    | "trv_select"
-    | "trv10_select"
-    | "trv10_schedule"
-    | "trv10_schedule_rental"
-    | "trv11_select"
-    | "hotel_select"
-    | "HTML_FORM"
-    | "FINVU_REDIRECT"
-    | "DYNAMIC_FORM"
-    | "trv13_select_provider";
+  | "text"
+  | "select"
+  | "textarea"
+  | "list"
+  | "date"
+  | "checkbox"
+  | "boolean"
+  | "trv12_bus_seat_selection"
+  | "airline_select"
+  | "intercity_select"
+  | "airline_seat_select"
+  | "ret10_grocery_select"
+  | "nestedSelect"
+  | "trv_select"
+  | "trv10_select"
+  | "trv10_schedule"
+  | "trv10_schedule_rental"
+  | "trv11_select"
+  | "hotel_select"
+  | "HTML_FORM"
+  | "FINVU_REDIRECT"
+  | "DYNAMIC_FORM"
+  | "fis13_select"
+  | "trv13_select_provider";
   payloadField: string;
   values?: string[];
   defaultValue?: string;
@@ -173,6 +176,10 @@ export default function FormConfig({
     return <Ret10GrocerySelect submitEvent={submitEvent} />;
   }
 
+  if (formConfig.find((field) => field.type === "fis13_select")) {
+    return <FIS13ItemSelection submitEvent={submitEvent} />;
+  }
+
   if (formConfig.find((field) => field.type === "trv12_bus_seat_selection")) {
     return <TRV12busSeatSelection submitEvent={submitEvent} />;
   }
@@ -253,7 +260,17 @@ export default function FormConfig({
                 name={field.name}
                 label={field.label}
                 required={field.required !== false}
-                // key={field.payloadField}
+              // key={field.payloadField}
+              />
+            );
+          case "date":
+            return (
+              <FormInput
+                name={field.name}
+                label={field.label}
+                required={field.required !== false}
+                type="date"
+              // key={field.payloadField}
               />
             );
           case "select":
@@ -262,7 +279,7 @@ export default function FormConfig({
                 name={field.name}
                 label={field.label}
                 options={field.values || []}
-                // key={field.payloadField}
+              // key={field.payloadField}
               />
             );
           case "checkbox":
