@@ -1,12 +1,8 @@
+// hooks/useModalHandlers.ts
 import { toast } from "react-toastify";
-import { MockPlaygroundConfigType } from "@ondc/automation-mock-runner";
 
-import {
-  AddActionForm,
-  DeleteConfirmationForm,
-  EditActionForm,
-} from "@pages/protocol-playground/ui/from-contents";
-import { getFormValues } from "@pages/protocol-playground/utils/form-helper";
+import { AddActionForm, DeleteConfirmationForm, EditActionForm } from "../ui/from-contents";
+import { getFormValues } from "../utils/form-helper";
 
 interface ModalHandlersProps {
   activeApi: string | undefined;
@@ -15,9 +11,9 @@ interface ModalHandlersProps {
   closeModal: () => void;
   addAction: (api: string, actionId: string, insertIndex?: number) => void;
   deleteAction: (actionId: string) => boolean;
-  updateAction: (actionId: string, formData: Record<string, unknown>) => boolean;
+  updateAction: (actionId: string, formData: any) => boolean;
   clearConfig: () => void;
-  config: MockPlaygroundConfigType | undefined;
+  config: any;
 }
 
 export const useModalHandlers = ({
@@ -55,7 +51,7 @@ export const useModalHandlers = ({
   const addActionBefore = () => {
     if (!activeApi || !config) return;
 
-    const currentIndex = config.steps.findIndex((step) => step.action_id === activeApi);
+    const currentIndex = config.steps.findIndex((step: any) => step.action_id === activeApi);
 
     if (currentIndex !== -1) {
       showAddAction(currentIndex, "Add Action Before");
@@ -65,7 +61,7 @@ export const useModalHandlers = ({
   const addActionAfter = () => {
     if (!activeApi || !config) return;
 
-    const currentIndex = config.steps.findIndex((step) => step.action_id === activeApi);
+    const currentIndex = config.steps.findIndex((step: any) => step.action_id === activeApi);
 
     if (currentIndex !== -1) {
       showAddAction(currentIndex + 1, "Add Action After");
@@ -94,20 +90,19 @@ export const useModalHandlers = ({
         description={`Are you sure you want to delete action ${activeApi}? This action cannot be undone.`}
         onConfirm={handleConfirm}
         onCancel={closeModal}
-      />
+      />,
     );
   };
 
   const showEditAction = () => {
     if (!activeApi) return;
 
-    const currentAction = config?.steps.find((step) => step.action_id === activeApi);
+    const currentAction = config?.steps.find((step: any) => step.action_id === activeApi);
 
     if (!currentAction) return;
 
     const getPreviousSteps = () => {
-      if (!config) return [];
-      const currentIndex = config.steps.findIndex((step) => step.action_id === activeApi);
+      const currentIndex = config.steps.findIndex((step: any) => step.action_id === activeApi);
       return config.steps.slice(0, currentIndex);
     };
 
@@ -143,7 +138,7 @@ export const useModalHandlers = ({
         previousSteps={getPreviousSteps()}
         onUpdate={handleUpdate}
         onCancel={closeModal}
-      />
+      />,
     );
   };
 
@@ -160,7 +155,7 @@ export const useModalHandlers = ({
         description="Are you sure you want to delete all flow configurations? This action cannot be undone."
         onConfirm={handleConfirm}
         onCancel={closeModal}
-      />
+      />,
     );
   };
 

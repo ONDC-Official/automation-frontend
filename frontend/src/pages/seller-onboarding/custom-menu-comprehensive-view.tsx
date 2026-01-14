@@ -41,33 +41,6 @@ interface MenuItem {
   customizationGroups?: CustomizationGroup[];
 }
 
-interface TagListItem {
-  code: string;
-  value: string;
-}
-
-interface Tag {
-  code: string;
-  list: TagListItem[];
-}
-
-interface CatalogItem {
-  id: string;
-  descriptor: { name: string };
-  price: { value: string };
-  category_id?: string;
-  tags: Tag[];
-}
-
-interface CatalogCustomizationItem {
-  id: string;
-  descriptor: { name: string };
-  price: { value: string };
-  tags: Tag[];
-}
-
-type CatalogItemType = CatalogItem | CatalogCustomizationItem;
-
 interface CustomMenuComprehensiveViewProps {
   menuItems: MenuItem[];
 }
@@ -75,7 +48,7 @@ interface CustomMenuComprehensiveViewProps {
 const CustomMenuComprehensiveView: React.FC<CustomMenuComprehensiveViewProps> = ({ menuItems }) => {
   const [activeTab, setActiveTab] = useState("1");
   const [showPayloadModal, setShowPayloadModal] = useState(false);
-  const [selectedPayload, setSelectedPayload] = useState<Record<string, unknown> | null>(null);
+  const [selectedPayload, setSelectedPayload] = useState<any>(null);
 
   // Group items by category and sort by rank
   const categorizedItems = menuItems.reduce(
@@ -87,11 +60,11 @@ const CustomMenuComprehensiveView: React.FC<CustomMenuComprehensiveViewProps> = 
       acc[category].push(item);
       return acc;
     },
-    {} as Record<string, MenuItem[]>
+    {} as Record<string, MenuItem[]>,
   );
 
   // Sort items within each category by rank
-  Object.keys(categorizedItems).forEach((category) => {
+  Object.keys(categorizedItems).forEach(category => {
     categorizedItems[category].sort((a, b) => (a.rank || 999) - (b.rank || 999));
   });
 
@@ -99,9 +72,9 @@ const CustomMenuComprehensiveView: React.FC<CustomMenuComprehensiveViewProps> = 
   const allCustomGroups: CustomizationGroup[] = [];
   const customGroupMap = new Map<string, CustomizationGroup>();
 
-  menuItems.forEach((item) => {
+  menuItems.forEach(item => {
     if (item.customizationGroups) {
-      item.customizationGroups.forEach((group) => {
+      item.customizationGroups.forEach(group => {
         if (!customGroupMap.has(group.id)) {
           customGroupMap.set(group.id, group);
           allCustomGroups.push(group);
@@ -112,8 +85,8 @@ const CustomMenuComprehensiveView: React.FC<CustomMenuComprehensiveViewProps> = 
 
   // Generate mock on_search structure
   const generateMockPayload = () => {
-    const categories: Array<Record<string, unknown>> = [];
-    const items: CatalogItemType[] = [];
+    const categories: any[] = [];
+    const items: any[] = [];
 
     // Add menu categories
     Object.keys(categorizedItems).forEach((categoryName, idx) => {
@@ -134,7 +107,7 @@ const CustomMenuComprehensiveView: React.FC<CustomMenuComprehensiveViewProps> = 
     });
 
     // Add custom groups as categories
-    allCustomGroups.forEach((group) => {
+    allCustomGroups.forEach(group => {
       categories.push({
         id: group.id,
         descriptor: { name: group.name },
@@ -159,28 +132,25 @@ const CustomMenuComprehensiveView: React.FC<CustomMenuComprehensiveViewProps> = 
     let itemCounter = 0;
     let customizationCounter = 0;
 
-    menuItems.forEach((menuItem) => {
+    menuItems.forEach(menuItem => {
       itemCounter++;
       const itemId = `I${itemCounter}`;
 
       // Main item
-      const item: CatalogItem = {
+      const item: any = {
         id: itemId,
         descriptor: { name: menuItem.name },
         price: { value: menuItem.price },
         category_id: menuItem.category,
         tags: [
           { code: "type", list: [{ code: "type", value: "item" }] },
-          {
-            code: "veg_nonveg",
-            list: [{ code: menuItem.vegNonVeg === "veg" ? "veg" : "non-veg", value: "yes" }],
-          },
+          { code: "veg_nonveg", list: [{ code: menuItem.vegNonVeg === "veg" ? "veg" : "non-veg", value: "yes" }] },
         ],
       };
 
       // Add custom group references
       if (menuItem.customizationGroups) {
-        menuItem.customizationGroups.forEach((group) => {
+        menuItem.customizationGroups.forEach(group => {
           item.tags.push({
             code: "custom_group",
             list: [{ code: "id", value: group.id }],
@@ -193,9 +163,9 @@ const CustomMenuComprehensiveView: React.FC<CustomMenuComprehensiveViewProps> = 
       // Add customization items
       if (menuItem.customizationGroups) {
         menuItem.customizationGroups.forEach((group, groupIdx) => {
-          group.items.forEach((custItem) => {
+          group.items.forEach(custItem => {
             customizationCounter++;
-            const customization: CatalogCustomizationItem = {
+            const customization: any = {
               id: `C${customizationCounter}`,
               descriptor: { name: custItem.name },
               price: { value: custItem.price },
@@ -260,7 +230,7 @@ const CustomMenuComprehensiveView: React.FC<CustomMenuComprehensiveViewProps> = 
     });
 
     // Add custom groups
-    allCustomGroups.forEach((group) => {
+    allCustomGroups.forEach(group => {
       categoriesNode.children!.push({
         key: `cg-${group.id}`,
         title: (
@@ -307,7 +277,7 @@ const CustomMenuComprehensiveView: React.FC<CustomMenuComprehensiveViewProps> = 
 
       // Add custom group references
       if (menuItem.customizationGroups) {
-        menuItem.customizationGroups.forEach((group) => {
+        menuItem.customizationGroups.forEach(group => {
           itemNode.children!.push({
             key: `item-${menuIdx}-cg-${group.id}`,
             title: (
@@ -434,10 +404,7 @@ const CustomMenuComprehensiveView: React.FC<CustomMenuComprehensiveViewProps> = 
                         <div className="flex items-center justify-between mb-3">
                           <h5 className="font-medium text-md">
                             {item.name}
-                            <Tag
-                              color={item.vegNonVeg === "veg" ? "green" : "red"}
-                              className="ml-2"
-                            >
+                            <Tag color={item.vegNonVeg === "veg" ? "green" : "red"} className="ml-2">
                               {item.vegNonVeg === "veg" ? "Veg" : "Non-Veg"}
                             </Tag>
                             {item.rank && (
@@ -454,9 +421,7 @@ const CustomMenuComprehensiveView: React.FC<CustomMenuComprehensiveViewProps> = 
                         {item.customizationGroups && item.customizationGroups.length > 0 && (
                           <div className="space-y-3">
                             <div className="flex items-center">
-                              <span className="text-sm font-medium text-gray-700">
-                                Customization Flow:
-                              </span>
+                              <span className="text-sm font-medium text-gray-700">Customization Flow:</span>
                             </div>
 
                             <div className="flex items-center flex-wrap gap-2">
@@ -467,10 +432,7 @@ const CustomMenuComprehensiveView: React.FC<CustomMenuComprehensiveViewProps> = 
                                     <div className="bg-white p-3 rounded-lg border-2 border-purple-300">
                                       <div className="text-sm font-medium mb-1">
                                         {group.name}
-                                        <Badge
-                                          count={group.id}
-                                          style={{ backgroundColor: "#8b5cf6", marginLeft: 8 }}
-                                        />
+                                        <Badge count={group.id} style={{ backgroundColor: "#8b5cf6", marginLeft: 8 }} />
                                         <Tooltip title="Display sequence">
                                           <span className="ml-2 text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded">
                                             Seq: {group.seq || gIdx + 1}
@@ -488,17 +450,11 @@ const CustomMenuComprehensiveView: React.FC<CustomMenuComprehensiveViewProps> = 
                                         )}
                                       </div>
                                       <div className="space-y-1">
-                                        {group.items.map((opt) => (
-                                          <div
-                                            key={opt.id}
-                                            className="text-xs bg-gray-100 px-2 py-1 rounded"
-                                          >
+                                        {group.items.map(opt => (
+                                          <div key={opt.id} className="text-xs bg-gray-100 px-2 py-1 rounded">
                                             {opt.name}
                                             {parseFloat(opt.price) > 0 && (
-                                              <span className="text-gray-500">
-                                                {" "}
-                                                (+₹{opt.price})
-                                              </span>
+                                              <span className="text-gray-500"> (+₹{opt.price})</span>
                                             )}
                                           </div>
                                         ))}
@@ -636,13 +592,10 @@ const CustomMenuComprehensiveView: React.FC<CustomMenuComprehensiveViewProps> = 
           <Button key="close" onClick={() => setShowPayloadModal(false)}>
             Close
           </Button>,
-        ]}
-      >
+        ]}>
         {selectedPayload && (
           <div className="max-h-96 overflow-auto">
-            <pre className="bg-gray-100 p-4 rounded text-xs">
-              {JSON.stringify(selectedPayload, null, 2)}
-            </pre>
+            <pre className="bg-gray-100 p-4 rounded text-xs">{JSON.stringify(selectedPayload, null, 2)}</pre>
           </div>
         )}
       </Modal>

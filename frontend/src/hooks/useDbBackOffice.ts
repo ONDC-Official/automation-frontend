@@ -46,32 +46,14 @@ export const useDbBackOffice = () => {
         } else {
           toast.error("Invalid credentials");
         }
-      } catch (error: unknown) {
-        const errorMessage =
-          error &&
-          typeof error === "object" &&
-          "response" in error &&
-          error.response &&
-          typeof error.response === "object" &&
-          "data" in error.response &&
-          error.response.data &&
-          typeof error.response.data === "object" &&
-          "message" in error.response.data &&
-          typeof error.response.data.message === "string"
-            ? error.response.data.message
-            : error &&
-                typeof error === "object" &&
-                "message" in error &&
-                typeof error.message === "string"
-              ? error.message
-              : "Login failed";
-        toast.error(errorMessage);
+      } catch (error: any) {
+        toast.error(error.response?.data?.message || error.message || "Login failed");
         console.error("Authentication error:", error);
       } finally {
         setIsLoading(false);
       }
     },
-    [credentials]
+    [credentials],
   );
 
   const fetchPayloadData = useCallback(async () => {
@@ -82,12 +64,7 @@ export const useDbBackOffice = () => {
 
     setIsLoading(true);
     try {
-      const url = API_ROUTES.DB.PAYLOADS(
-        fetchParams.domain,
-        fetchParams.version,
-        fetchParams.action,
-        fetchParams.page
-      );
+      const url = API_ROUTES.DB.PAYLOADS(fetchParams.domain, fetchParams.version, fetchParams.action, fetchParams.page);
 
       const response = await apiClient.get(url);
       setPayloadData({
@@ -97,26 +74,8 @@ export const useDbBackOffice = () => {
         data: response.data,
       });
       toast.success("Data fetched successfully!");
-    } catch (error: unknown) {
-      const errorMessage =
-        error &&
-        typeof error === "object" &&
-        "response" in error &&
-        error.response &&
-        typeof error.response === "object" &&
-        "data" in error.response &&
-        error.response.data &&
-        typeof error.response.data === "object" &&
-        "message" in error.response.data &&
-        typeof error.response.data.message === "string"
-          ? error.response.data.message
-          : error &&
-              typeof error === "object" &&
-              "message" in error &&
-              typeof error.message === "string"
-            ? error.message
-            : "Failed to fetch data";
-      toast.error(errorMessage);
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || error.message || "Failed to fetch data");
       console.error("Fetch error:", error);
     } finally {
       setIsLoading(false);

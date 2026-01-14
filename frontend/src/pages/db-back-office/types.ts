@@ -7,7 +7,7 @@ export interface PayloadData {
   domain: string;
   version: string;
   page?: string;
-  data: unknown;
+  data: any;
 }
 
 export interface FetchParams {

@@ -1,4 +1,4 @@
-import { GAEvent } from "@utils/analytics";
+import { GAEvent } from "../../utils/analytics";
 
 export interface Feature {
   title: string;

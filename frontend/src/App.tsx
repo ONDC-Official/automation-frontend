@@ -1,9 +1,9 @@
 import { useEffect, useState, useCallback } from "react";
 import { useLocation } from "react-router-dom";
-import { UserDetails } from "@components/Header/types";
+import { UserDetails } from "@components/Header";
 import { UserContext } from "@context/userContext";
 import { getGithubAvatarUrl } from "@utils/regsitry-utils";
-import { SubscriberData } from "@components/Registry/registry-types";
+import { SubscriberData } from "@components/registry-components/registry-types";
 import * as api from "@utils/registry-apis";
 import { SessionProvider } from "@context/context";
 import { trackPageView } from "@utils/analytics";

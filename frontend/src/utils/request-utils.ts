@@ -1,10 +1,11 @@
+import { apiClient } from "../services/apiClient";
+import { API_ROUTES } from "../services/apiRoutes";
+import { SessionCache, TransactionCache, FlowInDB } from "../types/session-types";
+import { FlowMap } from "../types/flow-state-type";
+import { FormConfigType } from "../components/ui/forms/config-form/config-form";
 import { toast } from "react-toastify";
-import { apiClient } from "@services/apiClient";
-import { API_ROUTES } from "@services/apiRoutes";
-import { SessionCache, TransactionCache, FlowInDB } from "@/types/session-types";
-import { FlowMap } from "@/types/flow-state-type";
-import { IFormConfigProps } from "@components/ConfigForm/types";
 
+// Type definitions for API responses
 interface SessionsResponse {
   sessions: Array<{
     sessionId: string;
@@ -21,16 +22,16 @@ interface ActionsResponse {
   actions: string[];
 }
 
-export interface PayloadResponse {
-  req: unknown;
+interface PayloadResponse {
+  req: any;
   res: {
-    response: unknown;
+    response: any;
   };
 }
 
 interface FlowResponse {
-  inputs?: IFormConfigProps;
-  [key: string]: unknown;
+  inputs?: FormConfigType;
+  [key: string]: any;
 }
 
 export const triggerSearch = async (session: TransactionCache, subUrl: string) => {
@@ -47,7 +48,7 @@ export const triggerSearch = async (session: TransactionCache, subUrl: string) =
   toast.info("search triggered");
 };
 
-export const putCacheData = async (data: Record<string, unknown>, sessionId: string) => {
+export const putCacheData = async (data: any, sessionId: string) => {
   return await apiClient.put(
     API_ROUTES.SESSIONS.BASE,
     {
@@ -57,7 +58,7 @@ export const putCacheData = async (data: Record<string, unknown>, sessionId: str
       params: {
         session_id: sessionId,
       },
-    }
+    },
   );
 };
 
@@ -69,7 +70,7 @@ export const triggerRequest = async (
   flowId: string,
   sessionData: SessionCache,
   subscriberUrl?: string,
-  body?: unknown
+  body?: any,
 ) => {
   try {
     const response = await apiClient.post(API_ROUTES.FLOW.TRIGGER_ACTION(action), body, {
@@ -112,9 +113,9 @@ export const getCompletePayload = async (payload_ids: string[]): Promise<Payload
     });
 
     return response.data;
-  } catch (e: unknown) {
+  } catch (e: any) {
     console.error("error while fetching complete paylaod: ", e);
-    throw new Error(String(e));
+    throw new Error(e);
   }
 };
 
@@ -134,12 +135,7 @@ export const getTransactionData = async (transaction_id: string, subscriber_url:
   }
 };
 
-export const addExpectation = async (
-  action: string,
-  flowId: string,
-  subscriberUrl: string,
-  sessionId: string
-) => {
+export const addExpectation = async (action: string, flowId: string, subscriberUrl: string, sessionId: string) => {
   try {
     await apiClient.post(
       API_ROUTES.SESSIONS.EXPECTATION,
@@ -151,16 +147,12 @@ export const addExpectation = async (
           subscriber_url: subscriberUrl,
           session_id: sessionId,
         },
-      }
+      },
     );
     // toast.info("Expectation added");
-  } catch (e: unknown) {
+  } catch (e: any) {
     console.error(e);
-    const errorMessage =
-      e && typeof e === "object" && "message" in e && typeof e.message === "string"
-        ? e.message
-        : "Error adding expectation";
-    toast.error(errorMessage);
+    toast.error(e?.message ?? "Error adding expectation");
   }
 };
 
@@ -172,28 +164,25 @@ export const deleteExpectation = async (session_id: string, subscriber_url: stri
         subscriber_url,
       },
     });
-  } catch (e: unknown) {
+  } catch (e: any) {
     console.error(e);
   }
 };
 
 export const requestForFlowPermission = async (action: string, subscriberUrl: string) => {
   try {
-    const data = await apiClient.get<{ valid: boolean; message: string }>(
-      API_ROUTES.SESSIONS.FLOW_PERMISSION,
-      {
-        params: {
-          action,
-          subscriber_url: subscriberUrl,
-        },
-      }
-    );
+    const data = await apiClient.get<{ valid: boolean; message: string }>(API_ROUTES.SESSIONS.FLOW_PERMISSION, {
+      params: {
+        action,
+        subscriber_url: subscriberUrl,
+      },
+    });
 
     if (!data.data.valid) {
       toast.error(data.data.message);
     }
     return data.data.valid;
-  } catch (e: unknown) {
+  } catch (e: any) {
     console.error(e);
   }
 };
@@ -232,7 +221,7 @@ export const getMappedFlow = async (transactionId: string, sessionId: string): P
     });
 
     return response.data;
-  } catch {
+  } catch (e) {
     toast.error("Error while fetching mapped flow data");
     throw new Error("Error while fetching mapped flow data");
   }
@@ -241,8 +230,8 @@ export const getMappedFlow = async (transactionId: string, sessionId: string): P
 export const proceedFlow = async (
   sessionId: string,
   transactionId: string,
-  jsonPathChanges?: Record<string, unknown>,
-  inputs?: IFormConfigProps
+  jsonPathChanges?: Record<string, any>,
+  inputs?: any,
 ): Promise<FlowResponse> => {
   try {
     const response = await apiClient.post<FlowResponse>(API_ROUTES.FLOW.PROCEED, {
@@ -253,15 +242,11 @@ export const proceedFlow = async (
     });
 
     return response.data;
-  } catch (e: unknown) {
-    const error =
-      e && typeof e === "object"
-        ? (e as { message?: string; response?: { data?: unknown; status?: number } })
-        : null;
+  } catch (e: any) {
     console.error("❌ [proceedFlow] Error:", {
-      message: error?.message,
-      response: error?.response?.data,
-      status: error?.response?.status,
+      message: e.message,
+      response: e.response?.data,
+      status: e.response?.status,
     });
     throw new Error("Error while proceeding flow");
   }
@@ -271,8 +256,8 @@ export const newFlow = async (
   sessionId: string,
   flowId: string,
   transactionId: string,
-  json_path_changes?: Record<string, unknown>,
-  inputs?: IFormConfigProps
+  json_path_changes?: Record<string, any>,
+  inputs?: any,
 ): Promise<FlowResponse | undefined> => {
   try {
     const response = await apiClient.post<FlowResponse>(API_ROUTES.FLOW.NEW, {
@@ -305,18 +290,18 @@ export const getReportingStatus = async (domain: string, version: string) => {
   }
 };
 
-export async function htmlFormSubmit(link: string, data: Record<string, unknown>) {
+export async function htmlFormSubmit(link: string, data: any) {
   try {
     const res = await apiClient.post(API_ROUTES.FLOW.EXTERNAL_FORM, {
       link: link,
       data: data,
     });
     return res;
-  } catch {
+  } catch (error) {
     throw new Error("ERROR");
   }
 }
-export const updateCustomFlow = async (sessionId: string, flow: Record<string, unknown>) => {
+export const updateCustomFlow = async (sessionId: string, flow: any) => {
   try {
     const data = {
       session_id: sessionId,
@@ -401,7 +386,7 @@ export const updateFlowInSession = async (sessionId: string, flow: FlowInDB) => 
           "Content-Type": "application/json",
           "x-api-key": import.meta.env.VITE_DB_SERVICE_API_KEY,
         },
-      }
+      },
     );
 
     return res.data;

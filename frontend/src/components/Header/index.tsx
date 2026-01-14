@@ -15,20 +15,15 @@ const Header = ({ onSupportClick }: HeaderProps) => {
   const { openDropdown, setOpenDropdown, dropdownRef } = useDropdown();
   const userDetails = useUserDetails();
 
-  const {
-    handleLoginClick,
-    handleLinkClick,
-    handleSubMenuClick,
-    handleMouseEnter,
-    handleMouseLeave,
-  } = useHeaderHandlers({
-    userDetails,
-    isOpen,
-    openDropdown,
-    setOpenDropdown,
-    setIsOpen,
-    onSupportClick,
-  });
+  const { handleLoginClick, handleLinkClick, handleSubMenuClick, handleMouseEnter, handleMouseLeave } =
+    useHeaderHandlers({
+      userDetails,
+      isOpen,
+      openDropdown,
+      setOpenDropdown,
+      setIsOpen,
+      onSupportClick,
+    });
 
   return (
     <header className="fixed top-0 left-0 right-0 bg-white shadow-md z-50">
@@ -55,3 +50,4 @@ const Header = ({ onSupportClick }: HeaderProps) => {
 };
 
 export default Header;
+export type { UserDetails } from "./types";

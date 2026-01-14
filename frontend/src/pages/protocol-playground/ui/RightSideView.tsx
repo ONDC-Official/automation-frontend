@@ -1,12 +1,13 @@
 import { Editor, OnMount } from "@monaco-editor/react";
+import { PLAYGROUND_RIGHT_TABS, PlaygroundRightTabType } from "../types";
+import { useContext, useEffect, useRef, useState } from "react";
+import { PlaygroundContext } from "../context/playground-context";
+import SessionDataTab from "./session-data-tab";
+import { ExecutionResults } from "./extras/terminal";
+import OutputPayloadViewer from "./extras/output-payload-viewer";
 import MockRunner from "@ondc/automation-mock-runner";
-import { PLAYGROUND_RIGHT_TABS, PlaygroundRightTabType } from "@pages/protocol-playground/types";
-import { useContext, useEffect, useRef, useState, useCallback } from "react";
-import { PlaygroundContext } from "@pages/protocol-playground/context/playground-context";
-import SessionDataTab from "@pages/protocol-playground/ui/session-data-tab";
-import { ExecutionResults } from "@pages/protocol-playground/ui/extras/terminal";
-import OutputPayloadViewer from "@pages/protocol-playground/ui/extras/output-payload-viewer";
-import { editorUtils } from "@pages/protocol-playground/utils/editor-utils";
+import { editorUtils } from "../utils/editor-utils";
+import { mockRunnerExtensions } from "../utils/mock-runner-extentions";
 
 export function RightSideView(props: {
   width: string;
@@ -17,11 +18,9 @@ export function RightSideView(props: {
   const { width, activeRightTab, setActiveRightTab } = props;
 
   return (
-    <div
-      className={`border rounded-md ${width} flex flex-col overflow-hidden transition-all duration-500 ease-in-out`}
-    >
+    <div className={`border rounded-md ${width} flex flex-col overflow-hidden transition-all duration-500 ease-in-out`}>
       <div className="flex border-b bg-gray-50 items-center h-8">
-        {PLAYGROUND_RIGHT_TABS.map((tab) => (
+        {PLAYGROUND_RIGHT_TABS.map(tab => (
           <button
             key={tab.id}
             onClick={() => setActiveRightTab(tab.id)}
@@ -29,8 +28,7 @@ export function RightSideView(props: {
               activeRightTab === tab.id
                 ? "bg-white border-b-2 border-sky-500 text-sky-600"
                 : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
-            }`}
-          >
+            }`}>
             {tab.label}
           </button>
         ))}
@@ -44,11 +42,23 @@ export function RightSideView(props: {
 
 function GetRightSideContent({ tabId, actionId }: { tabId: string; actionId: string | undefined }) {
   const playgroundContext = useContext(PlaygroundContext);
-  const [sessionData, setSessionData] = useState<string>("");
-  // const [savedMeta, setSaveMeta] = useState<Record<string, unknown>>({});
-  const savedMetaRef = useRef<Record<string, { path: string; actionId: string }>>({}); // Add this ref
+  const [sessionData, setSessionData] = useState<any>({});
+  // const [savedMeta, setSaveMeta] = useState<any>({});
+  const savedMetaRef = useRef<any>({}); // Add this ref
 
-  const getSessionData = useCallback(async () => {
+  useEffect(() => {
+    const meta = mockRunnerExtensions.getSaveDataMeta(playgroundContext.activeApi, playgroundContext.config);
+    // setSaveMeta(meta);
+    savedMetaRef.current = meta; // Update ref whenever savedMeta changes
+
+    getSessionData().then(data => setSessionData(data));
+  }, [playgroundContext.config, playgroundContext.activeApi]);
+
+  const index = playgroundContext.config?.steps.findIndex(step => step.action_id === actionId) ?? 0;
+  const activePayload =
+    playgroundContext.config?.transaction_history.find(f => f.action_id === actionId)?.payload || undefined;
+
+  const getSessionData = async () => {
     try {
       if (!playgroundContext.config) {
         return JSON.stringify(
@@ -57,40 +67,27 @@ function GetRightSideContent({ tabId, actionId }: { tabId: string; actionId: str
             timestamp: new Date().toISOString(),
           },
           null,
-          2
+          2,
         );
       }
 
-      const currentIndex =
-        playgroundContext.config?.steps.findIndex((step) => step.action_id === actionId) ?? 0;
-      const mockRunner = new MockRunner(playgroundContext.config);
-      const sessionData = await mockRunner.getSessionDataUpToStep(currentIndex);
+      const mockRunner = new MockRunner(playgroundContext.config as any);
+      const sessionData = await mockRunner.getSessionDataUpToStep(index);
 
       return JSON.stringify(sessionData, null, 2);
-    } catch (error: unknown) {
-      const currentIndex =
-        playgroundContext.config?.steps.findIndex((step) => step.action_id === actionId) ?? 0;
+    } catch (error: any) {
       const errorInfo = {
         error: "Failed to generate session data",
-        message:
-          error &&
-          typeof error === "object" &&
-          "message" in error &&
-          typeof error.message === "string"
-            ? error.message
-            : "Unknown error occurred",
-        type:
-          error && typeof error === "object" && "name" in error && typeof error.name === "string"
-            ? error.name
-            : "Error",
-        step: currentIndex,
+        message: error?.message || "Unknown error occurred",
+        type: error?.name || "Error",
+        step: index,
         actionId: actionId,
         timestamp: new Date().toISOString(),
       };
 
       try {
         return JSON.stringify(errorInfo, null, 2);
-      } catch {
+      } catch (stringifyError) {
         // Fallback if even error serialization fails
         return JSON.stringify(
           {
@@ -99,44 +96,21 @@ function GetRightSideContent({ tabId, actionId }: { tabId: string; actionId: str
             timestamp: new Date().toISOString(),
           },
           null,
-          2
+          2,
         );
       }
     }
-  }, [playgroundContext.config, actionId]);
-
-  useEffect(() => {
-    if (tabId === "session" && actionId) {
-      getSessionData().then((data) => {
-        setSessionData(data);
-      });
-    }
-  }, [tabId, actionId, getSessionData]);
+  };
 
   const handleOnMount: OnMount = (editor, monaco) => {
     const modelUri = editor.getModel()?.uri.toString();
     // check if hover provider is already registered
-    interface WindowWithHoverProvider extends Window {
-      __jsonHoverProviderDisposable?: { dispose: () => void };
+    if ((window as any).__jsonHoverProviderDisposable) {
+      (window as any).__jsonHoverProviderDisposable.dispose();
     }
 
-    if ((window as WindowWithHoverProvider).__jsonHoverProviderDisposable) {
-      (window as WindowWithHoverProvider).__jsonHoverProviderDisposable?.dispose();
-    }
-
-    if (!monaco?.languages?.registerHoverProvider) return;
-    const disposable = monaco.languages.registerHoverProvider("json", {
-      provideHover: (
-        model: {
-          uri?: { toString: () => string };
-          getWordAtPosition: (position: {
-            lineNumber: number;
-            column: number;
-          }) => { word: string; startColumn: number; endColumn: number } | null;
-          getValue: () => string;
-        },
-        position: { lineNumber: number; column: number }
-      ) => {
+    const disposable = monaco?.languages?.registerHoverProvider?.("json", {
+      provideHover: (model: any, position: any) => {
         if (modelUri !== model?.uri?.toString()) {
           return null;
         }
@@ -154,12 +128,7 @@ function GetRightSideContent({ tabId, actionId }: { tabId: string; actionId: str
           }
           const metaInfo = currentSavedMeta[firstKey];
           return {
-            range: new monaco.Range(
-              position.lineNumber,
-              word.startColumn,
-              position.lineNumber,
-              word.endColumn
-            ),
+            range: new monaco.Range(position.lineNumber, word.startColumn, position.lineNumber, word.endColumn),
             contents: [
               { value: `last modified at: **${metaInfo.actionId}**` },
               { value: `**from:** \`${metaInfo.path}\`` },
@@ -174,7 +143,7 @@ function GetRightSideContent({ tabId, actionId }: { tabId: string; actionId: str
     });
 
     // Save the disposable globally (or in React ref)
-    (window as WindowWithHoverProvider).__jsonHoverProviderDisposable = disposable;
+    (window as any).__jsonHoverProviderDisposable = disposable;
   };
 
   switch (tabId) {
@@ -203,12 +172,8 @@ function GetRightSideContent({ tabId, actionId }: { tabId: string; actionId: str
       return <SessionDataTab />;
     case "terminal":
       return <ExecutionResults results={playgroundContext.activeTerminalData} />;
-    case "output_payload": {
-      const activePayload =
-        playgroundContext.config?.transaction_history.find((h) => h.action_id === actionId)
-          ?.payload ?? {};
+    case "output_payload":
       return <OutputPayloadViewer payload={activePayload} actionId={actionId} />;
-    }
   }
   return <></>;
 }

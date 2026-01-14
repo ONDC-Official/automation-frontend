@@ -1,5 +1,5 @@
 import { apiClient } from "./apiClient";
-import { UserDetails } from "@components/Header/types";
+import { UserDetails } from "@components/Header";
 import { API_ROUTES } from "./apiRoutes";
 
 /**

@@ -4,7 +4,7 @@ import { ToastContainer } from "react-toastify";
 import Header from "@components/Header";
 import Footer from "@components/Footer";
 import Routes from "@components/Routes";
-import Modal from "@components/Modal";
+import Modal from "@components/modal";
 import Support from "@components/Support";
 
 const Layout: FC = () => {

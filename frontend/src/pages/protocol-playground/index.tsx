@@ -1,9 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { toast } from "react-toastify";
-import MockRunner, {
-  ExecutionResult,
-  MockPlaygroundConfigType,
-} from "@ondc/automation-mock-runner";
+import MockRunner, { ExecutionResult, MockPlaygroundConfigType } from "@ondc/automation-mock-runner";
 
 import { PlaygroundContext } from "@pages/protocol-playground/context/playground-context";
 import GetPlaygroundComponent from "@pages/protocol-playground/starter-page";
@@ -38,9 +35,7 @@ const Body = ({ workbenchFlow }: { workbenchFlow: ReturnType<typeof useWorkbench
 };
 
 const ProtocolPlayGround = () => {
-  const [playgroundState, setPlaygroundState] = useState<MockPlaygroundConfigType | undefined>(
-    undefined
-  );
+  const [playgroundState, setPlaygroundState] = useState<MockPlaygroundConfigType | undefined>(undefined);
   const [currentState, setCurrentState] = useState<"editing" | "running">("editing");
   const [loading, setLoading] = useState(false);
   const [activeApi, setActiveApi] = useState<string | undefined>(undefined);
@@ -56,21 +51,18 @@ const ProtocolPlayGround = () => {
     }
   }, []);
 
-  const setCurrentConfig = useCallback(
-    (config: MockPlaygroundConfigType | undefined) => {
-      if (!config) {
-        localStorage.removeItem("playgroundConfig");
-        setPlaygroundState(undefined);
-        return;
-      }
-      setPlaygroundState(config);
-      localStorage.setItem("playgroundConfig", JSON.stringify(config));
+  function setCurrentConfig(config: MockPlaygroundConfigType | undefined) {
+    if (!config) {
+      localStorage.removeItem("playgroundConfig");
+      setPlaygroundState(undefined);
+      return;
+    }
+    setPlaygroundState(config);
+    localStorage.setItem("playgroundConfig", JSON.stringify(config));
 
-      // Auto-save whenever config is set/updated
-      autoSaveConfig(config);
-    },
-    [autoSaveConfig]
-  );
+    // Auto-save whenever config is set/updated
+    autoSaveConfig(config);
+  }
 
   const updateStepMock = (stepId: string, property: string, value: string) => {
     const current = playgroundState;
@@ -85,7 +77,7 @@ const ProtocolPlayGround = () => {
         return;
       }
     }
-    const newSteps = current.steps.map((step) => {
+    const newSteps = current.steps.map(step => {
       if (step.action_id === stepId) {
         return {
           ...step,
@@ -104,7 +96,7 @@ const ProtocolPlayGround = () => {
     setCurrentConfig(newConfig);
   };
 
-  const updateTransactionHistory = (actionId: string, newPayload: unknown, savedInfo?: unknown) => {
+  const updateTransactionHistory = (actionId: string, newPayload: any, savedInfo?: any) => {
     const current = playgroundState;
     if (!current) return;
     const historyEntry = {
@@ -123,7 +115,7 @@ const ProtocolPlayGround = () => {
     if (actionId === undefined) {
       current.transaction_history = [];
     } else {
-      const index = current.transaction_history.findIndex((entry) => entry.action_id === actionId);
+      const index = current.transaction_history.findIndex(entry => entry.action_id === actionId);
       if (index === -1) {
         toast.error("Action ID not found in transaction history");
         return;
@@ -139,9 +131,7 @@ const ProtocolPlayGround = () => {
     const savedConfig = loadConfig(configId);
     if (savedConfig) {
       setCurrentConfig(savedConfig.config);
-      toast.success(
-        `Loaded config: ${savedConfig.domain}_${savedConfig.version}_${savedConfig.flowId}`
-      );
+      toast.success(`Loaded config: ${savedConfig.domain}_${savedConfig.version}_${savedConfig.flowId}`);
       return true;
     } else {
       toast.error("Failed to load config");
@@ -163,47 +153,44 @@ const ProtocolPlayGround = () => {
     return success;
   };
 
-  const loadConfigFromGist = useCallback(
-    async (gistUrl: string): Promise<boolean> => {
-      try {
-        const gistResult = await fetchGistData(gistUrl);
-        if (!gistResult.success || !gistResult.data) {
-          toast.error(gistResult.error || "Failed to fetch gist");
-          return false;
-        }
-
-        const firstFile = getFirstGistFile(gistResult.data);
-        if (!firstFile) {
-          toast.error("No files found in gist");
-          return false;
-        }
-
-        const config = JSON.parse(firstFile.content);
-        const isValid = new MockRunner(config).validateConfig();
-        if (!isValid.success) {
-          toast.error(`Invalid config in gist: ${isValid.errors?.join(", ") || ""}`);
-          return false;
-        }
-        // Always create a new config instead of replacing current
-        // Save gist config with gist_ prefix (will overwrite if same gist URL)
-        const saveSuccess = saveGistConfig(gistUrl, config);
-        if (saveSuccess) {
-          toast.success(
-            `Config loaded and saved from gist: ${config.meta.domain}_${config.meta.version}_${config.meta.flowId}`
-          );
-        }
-
-        // Set as current config
-        setCurrentConfig(config);
-        return true;
-      } catch (error) {
-        toast.error("Failed to parse config from gist check console for details");
-        console.error("Gist loading error:", error);
+  const loadConfigFromGist = useCallback(async (gistUrl: string): Promise<boolean> => {
+    try {
+      const gistResult = await fetchGistData(gistUrl);
+      if (!gistResult.success || !gistResult.data) {
+        toast.error(gistResult.error || "Failed to fetch gist");
         return false;
       }
-    },
-    [setCurrentConfig]
-  );
+
+      const firstFile = getFirstGistFile(gistResult.data);
+      if (!firstFile) {
+        toast.error("No files found in gist");
+        return false;
+      }
+
+      const config = JSON.parse(firstFile.content);
+      const isValid = new MockRunner(config).validateConfig();
+      if (!isValid.success) {
+        toast.error(`Invalid config in gist: ${isValid.errors?.join(", ") || ""}`);
+        return false;
+      }
+      // Always create a new config instead of replacing current
+      // Save gist config with gist_ prefix (will overwrite if same gist URL)
+      const saveSuccess = saveGistConfig(gistUrl, config);
+      if (saveSuccess) {
+        toast.success(
+          `Config loaded and saved from gist: ${config.meta.domain}_${config.meta.version}_${config.meta.flowId}`,
+        );
+      }
+
+      // Set as current config
+      setCurrentConfig(config);
+      return true;
+    } catch (error) {
+      toast.error("Failed to parse config from gist check console for details");
+      console.error("Gist loading error:", error);
+      return false;
+    }
+  }, []);
 
   // Check for gist parameter in URL on component mount
   useEffect(() => {
@@ -281,8 +268,7 @@ const ProtocolPlayGround = () => {
         getSavedConfigs,
         deleteSavedConfig,
         loadConfigFromGist,
-      }}
-    >
+      }}>
       <div className="mt-2 w-full min-h-screen flex flex-1 flex-col">
         <Body workbenchFlow={workbenchFlow} />
       </div>
