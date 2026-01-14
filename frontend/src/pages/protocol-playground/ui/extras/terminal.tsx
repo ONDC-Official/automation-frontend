@@ -1,4 +1,3 @@
-// components/ExecutionResults.tsx
 import { ExecutionResult } from "@ondc/automation-mock-runner";
 import { useState } from "react";
 import {
@@ -19,7 +18,7 @@ interface ExecutionResultsProps {
 }
 
 export function ExecutionResults({ results }: ExecutionResultsProps) {
-  results = results.filter(r => r !== null && r !== undefined).reverse();
+  results = results.filter((r) => r !== null && r !== undefined).reverse();
 
   const [expandedIndex, setExpandedIndex] = useState<number | null>(0);
   const [expandedSections, setExpandedSections] = useState<{
@@ -32,7 +31,7 @@ export function ExecutionResults({ results }: ExecutionResultsProps) {
   }>({});
 
   const toggleSection = (index: number, section: "result" | "logs" | "error" | "validation") => {
-    setExpandedSections(prev => ({
+    setExpandedSections((prev) => ({
       ...prev,
       [index]: {
         ...prev[index],
@@ -98,11 +97,15 @@ export function ExecutionResults({ results }: ExecutionResultsProps) {
         const sections = expandedSections[index] || {};
 
         return (
-          <div key={index} className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+          <div
+            key={index}
+            className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden"
+          >
             {/* Header */}
             <div
               className="flex items-center justify-between p-3 cursor-pointer hover:bg-gray-50 transition"
-              onClick={() => setExpandedIndex(isExpanded ? null : index)}>
+              onClick={() => setExpandedIndex(isExpanded ? null : index)}
+            >
               <div className="flex items-center gap-3">
                 {result.success ? (
                   <IoCheckmarkCircle className="text-green-500 text-xl flex-shrink-0" />
@@ -111,16 +114,21 @@ export function ExecutionResults({ results }: ExecutionResultsProps) {
                 )}
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="text-sm font-semibold text-gray-900">Execution #{results.length - index}</span>
+                    <span className="text-sm font-semibold text-gray-900">
+                      Execution #{results.length - index}
+                    </span>
                     <span
                       className={`px-2 py-0.5 rounded text-xs font-medium ${
                         result.success ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
-                      }`}>
+                      }`}
+                    >
                       {result.success ? "Success" : "Failed"}
                     </span>
                   </div>
                   <div className="flex items-center gap-3 mt-1">
-                    <span className="text-xs text-gray-500">{formatTimestamp(result.timestamp)}</span>
+                    <span className="text-xs text-gray-500">
+                      {formatTimestamp(result.timestamp)}
+                    </span>
                     {result.executionTime !== undefined && (
                       <span className="flex items-center gap-1 text-xs text-gray-500">
                         <IoTime className="text-sky-500" />
@@ -145,7 +153,8 @@ export function ExecutionResults({ results }: ExecutionResultsProps) {
                   <div className="border-b border-gray-200">
                     <button
                       onClick={() => toggleSection(index, "result")}
-                      className="w-full flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100 transition text-left">
+                      className="w-full flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100 transition text-left"
+                    >
                       <div className="flex items-center gap-2">
                         <IoCodeSlash className="text-sky-500" />
                         <span className="text-xs font-semibold text-gray-700">Result</span>
@@ -171,10 +180,13 @@ export function ExecutionResults({ results }: ExecutionResultsProps) {
                   <div className="border-b border-gray-200">
                     <button
                       onClick={() => toggleSection(index, "error")}
-                      className="w-full flex items-center justify-between p-3 bg-red-50 hover:bg-red-100 transition text-left">
+                      className="w-full flex items-center justify-between p-3 bg-red-50 hover:bg-red-100 transition text-left"
+                    >
                       <div className="flex items-center gap-2">
                         <IoBug className="text-red-500" />
-                        <span className="text-xs font-semibold text-red-700">Error: {result.error.name}</span>
+                        <span className="text-xs font-semibold text-red-700">
+                          Error: {result.error.name}
+                        </span>
                       </div>
                       {sections.error ? (
                         <IoChevronUp className="text-red-400 text-sm" />
@@ -187,7 +199,9 @@ export function ExecutionResults({ results }: ExecutionResultsProps) {
                         <div className="text-xs space-y-2">
                           <div>
                             <span className="text-red-400 font-semibold">Message:</span>
-                            <p className="text-red-300 mt-1 font-mono break-words">{result.error.message}</p>
+                            <p className="text-red-300 mt-1 font-mono break-words">
+                              {result.error.message}
+                            </p>
                           </div>
                           {result.error.stack && (
                             <div>
@@ -208,10 +222,13 @@ export function ExecutionResults({ results }: ExecutionResultsProps) {
                   <div className="border-b border-gray-200">
                     <button
                       onClick={() => toggleSection(index, "logs")}
-                      className="w-full flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100 transition text-left">
+                      className="w-full flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100 transition text-left"
+                    >
                       <div className="flex items-center gap-2">
                         <IoTerminal className="text-sky-500" />
-                        <span className="text-xs font-semibold text-gray-700">Console Logs ({result.logs.length})</span>
+                        <span className="text-xs font-semibold text-gray-700">
+                          Console Logs ({result.logs.length})
+                        </span>
                       </div>
                       {sections.logs ? (
                         <IoChevronUp className="text-gray-400 text-sm" />
@@ -223,10 +240,17 @@ export function ExecutionResults({ results }: ExecutionResultsProps) {
                       <div className="bg-gray-900 p-3 max-h-64 overflow-y-auto">
                         <div className="space-y-1.5">
                           {result.logs.map((log, logIndex) => (
-                            <div key={logIndex} className="flex items-start gap-2 text-xs font-mono">
-                              <span className="text-gray-500 flex-shrink-0">{formatLogTimestamp(log.timestamp)}</span>
+                            <div
+                              key={logIndex}
+                              className="flex items-start gap-2 text-xs font-mono"
+                            >
+                              <span className="text-gray-500 flex-shrink-0">
+                                {formatLogTimestamp(log.timestamp)}
+                              </span>
                               <span className="flex-shrink-0 mt-0.5">{getLogIcon(log.type)}</span>
-                              <span className={`${getLogColor(log.type)} break-all`}>{log.message}</span>
+                              <span className={`${getLogColor(log.type)} break-all`}>
+                                {log.message}
+                              </span>
                             </div>
                           ))}
                         </div>
@@ -240,11 +264,13 @@ export function ExecutionResults({ results }: ExecutionResultsProps) {
                   <div>
                     <button
                       onClick={() => toggleSection(index, "validation")}
-                      className="w-full flex items-center justify-between p-3 bg-yellow-50 hover:bg-yellow-100 transition text-left">
+                      className="w-full flex items-center justify-between p-3 bg-yellow-50 hover:bg-yellow-100 transition text-left"
+                    >
                       <div className="flex items-center gap-2">
                         <IoAlertCircle className="text-yellow-600" />
                         <span className="text-xs font-semibold text-yellow-800">
-                          Validation Issues ({result.validation.errors.length + result.validation.warnings.length})
+                          Validation Issues (
+                          {result.validation.errors.length + result.validation.warnings.length})
                         </span>
                       </div>
                       {sections.validation ? (
@@ -257,10 +283,15 @@ export function ExecutionResults({ results }: ExecutionResultsProps) {
                       <div className="p-3 bg-gray-50">
                         {result.validation.errors.length > 0 && (
                           <div className="mb-2">
-                            <span className="text-xs font-semibold text-red-700 mb-1 block">Errors:</span>
+                            <span className="text-xs font-semibold text-red-700 mb-1 block">
+                              Errors:
+                            </span>
                             <ul className="space-y-1">
                               {result.validation.errors.map((error, i) => (
-                                <li key={i} className="text-xs text-red-600 flex items-start gap-1.5">
+                                <li
+                                  key={i}
+                                  className="text-xs text-red-600 flex items-start gap-1.5"
+                                >
                                   <IoCloseCircle className="flex-shrink-0 mt-0.5" />
                                   <span>{error}</span>
                                 </li>
@@ -270,10 +301,15 @@ export function ExecutionResults({ results }: ExecutionResultsProps) {
                         )}
                         {result.validation.warnings.length > 0 && (
                           <div>
-                            <span className="text-xs font-semibold text-yellow-700 mb-1 block">Warnings:</span>
+                            <span className="text-xs font-semibold text-yellow-700 mb-1 block">
+                              Warnings:
+                            </span>
                             <ul className="space-y-1">
                               {result.validation.warnings.map((warning, i) => (
-                                <li key={i} className="text-xs text-yellow-600 flex items-start gap-1.5">
+                                <li
+                                  key={i}
+                                  className="text-xs text-yellow-600 flex items-start gap-1.5"
+                                >
                                   <IoWarning className="flex-shrink-0 mt-0.5" />
                                   <span>{warning}</span>
                                 </li>

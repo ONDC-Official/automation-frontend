@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Flow } from "../types/flow-types";
+import { Flow } from "@/types/flow-types";
 
 export function useWorkbenchFlows() {
   const [flowStepNum, setFlowStepNum] = useState(0);

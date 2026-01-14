@@ -1,12 +1,34 @@
-import { MappedStep } from "../types/flow-state-type";
-import { Flow } from "../types/flow-types";
-import { ApiData, SessionCache } from "../types/session-types";
+import { MappedStep } from "@/types/flow-state-type";
+import { Flow } from "@/types/flow-types";
+import { ApiData, SessionCache } from "@/types/session-types";
+
+type AckResponse = {
+  message?: {
+    ack?: {
+      status?: string;
+    };
+  };
+};
+
+function isAckResponse(response: unknown): response is AckResponse {
+  return (
+    response !== null &&
+    typeof response === "object" &&
+    "message" in response &&
+    response.message !== null &&
+    typeof response.message === "object" &&
+    "ack" in response.message &&
+    response.message.ack !== null &&
+    typeof response.message.ack === "object" &&
+    "status" in response.message.ack
+  );
+}
 
 export function GetCurrentState(
   index: number,
   flowData: ApiData[],
   thisFlowId: string,
-  currentFlow: string | undefined,
+  currentFlow: string | undefined
 ): "success" | "error" | "pending" | "inactive" {
   if (currentFlow !== thisFlowId) {
     return "inactive";
@@ -18,7 +40,7 @@ export function GetCurrentState(
     return "inactive";
   }
   const response = flowData[index].response;
-  if (response?.message?.ack?.status === "ACK") {
+  if (isAckResponse(response) && response.message?.ack?.status === "ACK") {
     return "success";
   } else {
     return "error";
@@ -46,7 +68,7 @@ export function getRequestResponse(index: number, action: string, flowData?: Api
 export function getSequenceFromFlow(
   flow: Flow,
   sessionData: SessionCache | null | undefined,
-  activeFlow: string | null,
+  activeFlow: string | null
 ): MappedStep[] {
   return flow.sequence.map((step, index) => {
     let status: "WAITING" | "LISTENING" | "RESPONDING" | "INPUT-REQUIRED" = "WAITING";

@@ -1,12 +1,18 @@
+import { Tooltip } from "antd";
 import { PairedStep } from "@components/FlowShared/mapped-flow";
 import { MappedStep } from "@/types/flow-state-type";
-import CustomTooltip from "@components/ui/mini-components/tooltip";
 import { MdSyncAlt } from "react-icons/md";
-import { useSession } from "@context/context";
-import FlippableWrapper from "@components/ui/flippable-div";
-import { getCompletePayload } from "@utils/request-utils";
+import { useSession } from "@context/sessionContext";
+import FlippableWrapper from "@components/FlippableDiv";
+import { getCompletePayload, type PayloadResponse } from "@utils/request-utils";
 
-export default function PairedCard({ pairedStep, flowId }: { pairedStep: PairedStep; flowId: string }) {
+export default function PairedCard({
+  pairedStep,
+  flowId,
+}: {
+  pairedStep: PairedStep;
+  flowId: string;
+}) {
   const { first, second } = pairedStep;
   return (
     <div className="flex flex-col sm:flex-row sm:items-stretch space-y-2 sm:space-y-0 sm:space-x-4 bg-white p-2 rounded-lg">
@@ -35,8 +41,13 @@ export default function PairedCard({ pairedStep, flowId }: { pairedStep: PairedS
 }
 
 function StepDisplay({ step, flowId }: { step: MappedStep; flowId: string }) {
-  const { activeFlowId, setRequestData, setResponseData, activeCallClickedToggle, setActiveCallClickedToggle } =
-    useSession();
+  const {
+    activeFlowId,
+    setRequestData,
+    setResponseData,
+    activeCallClickedToggle,
+    setActiveCallClickedToggle,
+  } = useSession();
 
   const onClickFunc = async () => {
     if (step.status === "INPUT-REQUIRED") {
@@ -55,34 +66,37 @@ function StepDisplay({ step, flowId }: { step: MappedStep; flowId: string }) {
       setResponseData({ info: step.payloads });
       return;
     }
-    const payloadIds = step.payloads?.payloads.map(p => p.payloadId) ?? [];
+    const payloadIds = step.payloads?.payloads.map((p) => p.payloadId) ?? [];
     const payloads = await getCompletePayload(payloadIds);
-    setRequestData(payloads.map((p: any) => p.req));
-    setResponseData(payloads.map((p: any) => p.res.response));
+    setRequestData(payloads.map((p: PayloadResponse) => p.req));
+    setResponseData(payloads.map((p: PayloadResponse) => p.res.response));
   };
 
   const status = step.status === "COMPLETE" ? (step.payloads?.subStatus ?? "ERROR") : step.status;
   const statusStyles = getStatusStyles(status);
   if (step.missedStep) {
-    statusStyles.card = "border-purple-200  bg-gradient-to-br from-purple-50 to-purple-100 shadow-md shadow-purple-200";
+    statusStyles.card =
+      "border-purple-200  bg-gradient-to-br from-purple-50 to-purple-100 shadow-md shadow-purple-200";
   }
   if (flowId !== activeFlowId && ["LISTENING", "RESPONDING", "INPUT-REQUIRED"].includes(status)) {
     statusStyles.messageText = "INACTIVE";
   }
   const apiCount = getCount(step);
   return (
-    // <CustomTooltip content={step.description ?? ""}>
     <FlippableWrapper flipTrigger={step.status}>
       <button
         className={`${statusStyles?.card} w-full h-full rounded-lg p-3 border shadow-sm hover:shadow-lg transition-all duration-200`}
-        onClick={onClickFunc}>
+        onClick={onClickFunc}
+      >
         <div className="w-full flex flex-col space-y-1">
           {/* Header */}
           <div className="flex justify-between items-center">
             <h1 className="text-md font-semibold text-gray-800 flex">
               {step.missedStep ? "" : `${step.index + 1}: `}
               {step.actionType}
-              {step.label && <span className="text-md font-normal text-gray-500 ml-2 ">({step.label})</span>}
+              {step.label && (
+                <span className="text-md font-normal text-gray-500 ml-2 ">({step.label})</span>
+              )}
             </h1>
             <div className="flex items-center gap-2">
               {step.unsolicited && (
@@ -90,33 +104,38 @@ function StepDisplay({ step, flowId }: { step: MappedStep; flowId: string }) {
                   unsolicited
                 </div>
               )}
-              <CustomTooltip content={step.description ?? ""}>
+              <Tooltip title={step.description ?? ""}>
                 <div className="bg-white text-gray-700 text-sm font-semibold border rounded-full px-3 py-1 hover:shadow-md">
                   info
                 </div>
-              </CustomTooltip>
+              </Tooltip>
             </div>
           </div>
           {/* Status Indicator */}
           <div className="flex items-center space-x-2">
             {statusStyles?.messageText && (
               <span
-                className={`${statusStyles.messageBg} text-white text-sm border font-sm rounded-full px-3 py-1 flex`}>
+                className={`${statusStyles.messageBg} text-white text-sm border font-sm rounded-full px-3 py-1 flex`}
+              >
                 {statusStyles?.messageText}
-                {["LISTENING", "RESPONDING", "INPUT-REQUIRED"].includes(status) && flowId === activeFlowId && (
-                  <div className="w-4 h-4 border-2 border-t-2 border-t-yellow-800 border-white rounded-full animate-spin-slow ml-2"></div>
-                )}
+                {["LISTENING", "RESPONDING", "INPUT-REQUIRED"].includes(status) &&
+                  flowId === activeFlowId && (
+                    <div className="w-4 h-4 border-2 border-t-2 border-t-yellow-800 border-white rounded-full animate-spin-slow ml-2"></div>
+                  )}
               </span>
             )}
             {step.missedStep && (
               <span
-                className={`bg-gradient-to-r from-purple-600 to-purple-500 text-white text-sm border font-sm rounded-full px-3 py-1 flex`}>
+                className={`bg-gradient-to-r from-purple-600 to-purple-500 text-white text-sm border font-sm rounded-full px-3 py-1 flex`}
+              >
                 out-of-sequence
               </span>
             )}
             {/* API Count */}
             {apiCount > 0 && (
-              <div className={`${getCountStyles(apiCount)} text-sm font-semibold rounded-full px-3 py-1`}>
+              <div
+                className={`${getCountStyles(apiCount)} text-sm font-semibold rounded-full px-3 py-1`}
+              >
                 <span className="text-black">count: </span>
                 {apiCount}
               </div>
@@ -150,7 +169,7 @@ function getStatusStyles(
     | "INPUT-REQUIRED"
     | "WAITING"
     | "PROCESSING"
-    | "WAITING-SUBMISSION",
+    | "WAITING-SUBMISSION"
 ) {
   switch (status) {
     case "SUCCESS":

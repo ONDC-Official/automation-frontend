@@ -7,17 +7,23 @@ const PayloadDisplay: FC<PayloadDisplayProps> = ({ payloadData }) => (
     <div className="flex justify-between items-center mb-4">
       <h2 className="text-lg font-semibold text-gray-800">Payload Data</h2>
       <div className="flex gap-2 text-xs">
-        <span className="bg-sky-100 text-sky-700 px-2 py-1 rounded">Domain: {payloadData.domain}</span>
-        <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded">Version: {payloadData.version}</span>
+        <span className="bg-sky-100 text-sky-700 px-2 py-1 rounded">
+          Domain: {payloadData.domain}
+        </span>
+        <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded">
+          Version: {payloadData.version}
+        </span>
         {payloadData.page && (
-          <span className="bg-purple-100 text-purple-700 px-2 py-1 rounded">Page: {payloadData.page}</span>
+          <span className="bg-purple-100 text-purple-700 px-2 py-1 rounded">
+            Page: {payloadData.page}
+          </span>
         )}
       </div>
     </div>
 
     <div className="border border-sky-200 rounded-lg overflow-hidden">
       <JsonView
-        value={payloadData.data}
+        value={payloadData.data as object}
         style={{
           backgroundColor: "#f8fafc",
           padding: "16px",

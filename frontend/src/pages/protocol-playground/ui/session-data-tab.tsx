@@ -1,20 +1,17 @@
-import { useContext, useState } from "react";
-import jsonpath from "jsonpath";
-import { inputClass } from "../../../components/ui/forms/inputClass";
-// import { MockPlaygroundConfigType } from "../mock-engine/types";
-import { FaExclamationTriangle, FaPlus } from "react-icons/fa";
-import { PlaygroundContext } from "../context/playground-context";
-import { useEffect } from "react";
-import JsonViewer from "./Json-path-extractor";
-import JsonPathInput from "./json-path-input";
-import { handleAddParam } from "./json-path-input";
-import JsonPathOutputPopup from "./JsonPathOutputModal";
+import { useContext, useState, useEffect } from "react";
 import { MockPlaygroundConfigType } from "@ondc/automation-mock-runner";
+import jsonpath from "jsonpath";
+import { FaExclamationTriangle, FaPlus } from "react-icons/fa";
 
-export enum SelectedType {
-  SavedInfo = "saved_info",
-  SaveData = "saveData",
-}
+import { inputClass } from "@utils/input-class";
+
+import { PlaygroundContext } from "@pages/protocol-playground/context/playground-context";
+
+import JsonViewer from "@pages/protocol-playground/ui/Json-path-extractor";
+import JsonPathInput from "@pages/protocol-playground/ui/json-path-input";
+import { handleAddParam } from "@pages/protocol-playground/ui/json-path-input";
+import JsonPathOutputPopup from "@pages/protocol-playground/ui/JsonPathOutputModal";
+import { SelectedType } from "@pages/protocol-playground/types";
 
 export default function SessionDataTab() {
   const [selectedCall, setSelectedCall] = useState("");
@@ -42,7 +39,7 @@ export default function SessionDataTab() {
     const secondLastActionId = playgroundConfig?.steps[currentLength - 2]?.action_id || "";
 
     setSelectedCall(secondLastActionId);
-  }, []);
+  }, [playgroundConfig?.steps]);
 
   const handleContinue = () => {
     if (!selectedCall || !alias) return;
@@ -52,7 +49,7 @@ export default function SessionDataTab() {
     const updatedConfig: MockPlaygroundConfigType = { ...playgroundConfig };
 
     // Find the step by selected action_id
-    const stepIndex = updatedConfig.steps.findIndex((s: any) => s.action_id === selectedCall);
+    const stepIndex = updatedConfig.steps.findIndex((s) => s.action_id === selectedCall);
     if (stepIndex === -1) return;
 
     // Clone the target step and its saveData
@@ -89,13 +86,13 @@ export default function SessionDataTab() {
     const updatedConfig: MockPlaygroundConfigType = { ...playgroundConfig };
 
     // Find the step for selectedCall
-    const step = updatedConfig.steps?.find(s => s.action_id === selectedCall);
+    const step = updatedConfig.steps?.find((s) => s.action_id === selectedCall);
     if (!step) return;
 
     const saveData = { ...step.mock.saveData };
 
     // Check if path already exists in saveData
-    const existingInSaveData = Object.keys(saveData).find(alias => saveData[alias] === path);
+    const existingInSaveData = Object.keys(saveData).find((alias) => saveData[alias] === path);
 
     if (existingInSaveData) {
       setAlias(existingInSaveData);
@@ -104,14 +101,16 @@ export default function SessionDataTab() {
     }
 
     // Find corresponding transaction_history entry
-    const historyIndex = updatedConfig.transaction_history.findIndex(h => h.action_id === selectedCall);
+    const historyIndex = updatedConfig.transaction_history.findIndex(
+      (h) => h.action_id === selectedCall
+    );
     if (historyIndex === -1) return;
 
     const historyEntry = { ...updatedConfig.transaction_history[historyIndex] };
     const savedInfo = { ...(historyEntry.saved_info || {}) };
 
     // Check if path exists in saved_info — remove if found
-    const existingInSavedInfo = Object.keys(savedInfo).find(alias => savedInfo[alias] === path);
+    const existingInSavedInfo = Object.keys(savedInfo).find((alias) => savedInfo[alias] === path);
 
     if (existingInSavedInfo) {
       delete savedInfo[existingInSavedInfo];
@@ -142,7 +141,7 @@ export default function SessionDataTab() {
 
   const payloadFromTranscationHistory = (action_id: string) => {
     if (!playgroundConfig) return {};
-    const history = playgroundConfig.transaction_history.find(h => h.action_id === action_id);
+    const history = playgroundConfig.transaction_history.find((h) => h.action_id === action_id);
     return history?.payload ?? {};
   };
 
@@ -150,8 +149,10 @@ export default function SessionDataTab() {
     if (!selectedCall || !playgroundConfig) {
       return { status: false, type: null };
     }
-    const history = playgroundConfig.transaction_history.find(history => history.action_id === selectedCall);
-    const step = playgroundConfig.steps.find(s => s.action_id === selectedCall);
+    const history = playgroundConfig.transaction_history.find(
+      (history) => history.action_id === selectedCall
+    );
+    const step = playgroundConfig.steps.find((s) => s.action_id === selectedCall);
 
     const savedInfo = history?.saved_info || {};
     const saveData = step?.mock.saveData || {};
@@ -174,7 +175,9 @@ export default function SessionDataTab() {
     const updatedConfig = { ...playgroundConfig };
 
     // Find the transaction_history entry for the selected call
-    const historyIndex = updatedConfig.transaction_history.findIndex(h => h.action_id === selectedCall);
+    const historyIndex = updatedConfig.transaction_history.findIndex(
+      (h) => h.action_id === selectedCall
+    );
     if (historyIndex === -1) return;
 
     const historyEntry = { ...updatedConfig.transaction_history[historyIndex] };
@@ -201,10 +204,10 @@ export default function SessionDataTab() {
 
     // Clone transaction_history and steps
     const updatedHistory = [...updatedConfig.transaction_history];
-    const updatedSteps = updatedConfig.steps.map(step => ({ ...step }));
+    const updatedSteps = updatedConfig.steps.map((step) => ({ ...step }));
 
     // Find the history entry for selectedCall
-    const historyIndex = updatedHistory.findIndex(h => h.action_id === selectedCall);
+    const historyIndex = updatedHistory.findIndex((h) => h.action_id === selectedCall);
     if (historyIndex === -1) return;
 
     const historyEntry = { ...updatedHistory[historyIndex] };
@@ -215,7 +218,7 @@ export default function SessionDataTab() {
     }
 
     // Find the corresponding step
-    const stepIndex = updatedSteps.findIndex(s => s.action_id === selectedCall);
+    const stepIndex = updatedSteps.findIndex((s) => s.action_id === selectedCall);
     if (stepIndex === -1) return;
 
     const step = { ...updatedSteps[stepIndex] };
@@ -251,7 +254,7 @@ export default function SessionDataTab() {
     const updatedHistory = [...updatedConfig.transaction_history];
 
     // Find the history entry for selectedCall
-    const historyIndex = updatedHistory.findIndex(h => h.action_id === selectedCall);
+    const historyIndex = updatedHistory.findIndex((h) => h.action_id === selectedCall);
     if (historyIndex === -1) return;
 
     const historyEntry = { ...updatedHistory[historyIndex] };
@@ -302,7 +305,8 @@ export default function SessionDataTab() {
     if (!finalAlias) return setError("Alias is required");
 
     try {
-      if (!finalPath.startsWith("EVAL#")) jsonpath.query(payloadFromTranscationHistory(selectedCall), finalPath);
+      if (!finalPath.startsWith("EVAL#"))
+        jsonpath.query(payloadFromTranscationHistory(selectedCall), finalPath);
     } catch (err) {
       setError("Invalid JSONPath format");
       console.error("❌ JSONPath validation failed:", err);
@@ -323,7 +327,7 @@ export default function SessionDataTab() {
     const updatedConfig = { ...playgroundConfig };
 
     // Find the step for selectedCall
-    const stepIndex = updatedConfig.steps.findIndex(s => s.action_id === selectedCall);
+    const stepIndex = updatedConfig.steps.findIndex((s) => s.action_id === selectedCall);
     if (stepIndex === -1) return;
 
     const currentStep = { ...updatedConfig.steps[stepIndex] };
@@ -334,7 +338,8 @@ export default function SessionDataTab() {
 
     // Prevent duplicate paths under different aliases
     const duplicateEntry = Object.entries(saveData).find(
-      ([existingAlias, existingPath]) => existingPath === path && existingAlias !== (oldAlias || alias),
+      ([existingAlias, existingPath]) =>
+        existingPath === path && existingAlias !== (oldAlias || alias)
     );
 
     if (duplicateEntry) {
@@ -364,12 +369,15 @@ export default function SessionDataTab() {
     setPlayGroundConfig(updatedConfig);
   };
 
-  const selectedHistory = playgroundConfig?.transaction_history.find(history => history.action_id === selectedCall);
+  const selectedHistory = playgroundConfig?.transaction_history.find(
+    (history) => history.action_id === selectedCall
+  );
 
   const savedInfo = selectedHistory?.saved_info || {};
   const savedInfoLength = Object.keys(savedInfo).length;
 
-  const saveData = playgroundConfig?.steps.find(s => s.action_id === selectedCall)?.mock.saveData || {};
+  const saveData =
+    playgroundConfig?.steps.find((s) => s.action_id === selectedCall)?.mock.saveData || {};
   const saveDataLength = Object.keys(saveData).length;
 
   // const activeApi =
@@ -389,18 +397,20 @@ export default function SessionDataTab() {
           {/* Alert Text and Buttons */}
           <div className="flex-1">
             <p className="text-red-700 font-semibold mb-2">
-              Are you sure you want to remove this saved data? Removing it will reset the transaction history from the
-              call and ahead.
+              Are you sure you want to remove this saved data? Removing it will reset the
+              transaction history from the call and ahead.
             </p>
             <div className="flex gap-2">
               <button
                 onClick={handleContinue}
-                className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors">
+                className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
+              >
                 Continue
               </button>
               <button
                 onClick={handleCancel}
-                className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors">
+                className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors"
+              >
                 Cancel
               </button>
             </div>
@@ -422,11 +432,12 @@ export default function SessionDataTab() {
           id="apiNameInput"
           className={inputClass}
           value={selectedCall}
-          onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setSelectedCall(e.target.value)}>
+          onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setSelectedCall(e.target.value)}
+        >
           {playgroundConfig?.steps?.length > 1 &&
             playgroundConfig?.steps
               .slice(0, playgroundConfig.steps.length) // skip last element
-              .map(step => (
+              .map((step) => (
                 <option key={step.action_id} value={step.action_id}>
                   {step.action_id}
                 </option>
@@ -437,7 +448,9 @@ export default function SessionDataTab() {
       <div className="flex flex-1 bg-gray-900 text-gray-100 min-h-0 p-4">
         {/* Left side - JSON Viewer */}
         <div className="w-1/2 p-2 overflow-auto">
-          <div className="text-sm text-gray-400 mb-3">💡 Click on object keys (like "context") or primitive values</div>
+          <div className="text-sm text-gray-400 mb-3">
+            💡 Click on object keys (like "context") or primitive values
+          </div>
           <div className="bg-gray-900 p-2 rounded-md font-mono text-sm">
             {/* <div className="text-gray-400">{"{"}</div> */}
             <JsonViewer
@@ -456,9 +469,10 @@ export default function SessionDataTab() {
             <button
               onClick={() => {
                 setError("");
-                setShowInput(prev => !prev);
+                setShowInput((prev) => !prev);
               }}
-              className="flex items-center gap-2 px-3 py-3 bg-sky-500/20 text-sky-300 rounded hover:bg-sky-500/30 transition-colors">
+              className="flex items-center gap-2 px-3 py-3 bg-sky-500/20 text-sky-300 rounded hover:bg-sky-500/30 transition-colors"
+            >
               <FaPlus className="text-sky-300" />
               Add Manually
             </button>
@@ -470,7 +484,7 @@ export default function SessionDataTab() {
                 <input
                   type="text"
                   value={alias}
-                  onChange={e => setAlias(e.target.value)}
+                  onChange={(e) => setAlias(e.target.value)}
                   placeholder="Enter alias (e.g. userInfo)"
                   className="px-3 py-2 rounded bg-gray-900 text-white border border-gray-700 focus:border-sky-500 outline-none"
                 />
@@ -478,7 +492,7 @@ export default function SessionDataTab() {
                 <input
                   type="text"
                   value={path}
-                  onChange={e => setPath(e.target.value)}
+                  onChange={(e) => setPath(e.target.value)}
                   placeholder="Enter JSON path (e.g. $.context.city)"
                   className="px-3 w-full py-2 rounded bg-gray-900 text-white border border-gray-700 focus:border-sky-500 outline-none"
                 />
@@ -487,7 +501,8 @@ export default function SessionDataTab() {
               <div className="flex gap-2 mt-2">
                 <button
                   onClick={() => handleAdd({})}
-                  className="px-4 py-2 bg-sky-600 text-white rounded hover:bg-sky-700 transition-colors">
+                  className="px-4 py-2 bg-sky-600 text-white rounded hover:bg-sky-700 transition-colors"
+                >
                   Save
                 </button>
                 <button
@@ -495,7 +510,8 @@ export default function SessionDataTab() {
                     setShowInput(false);
                     setError("");
                   }}
-                  className="px-4 py-2 bg-gray-700 text-gray-300 rounded hover:bg-gray-600 transition-colors">
+                  className="px-4 py-2 bg-gray-700 text-gray-300 rounded hover:bg-gray-600 transition-colors"
+                >
                   Cancel
                 </button>
               </div>
@@ -508,39 +524,44 @@ export default function SessionDataTab() {
             </div>
           ) : (
             <div className="space-y-2 mt-4">
-              {Object.entries(playgroundConfig.steps.find(s => s.action_id === selectedCall)?.mock.saveData || {}).map(
-                ([alias, path]) => (
-                  <div
-                    key={alias}
-                    className="bg-gray-800 p-3 rounded-lg border border-sky-500/30 flex items-center justify-between group hover:border-sky-500/50 transition-colors">
-                    <JsonPathInput
-                      onDelete={(aliasToDelete: string) => {
-                        setShowAlert(true);
-                        setAlias(aliasToDelete);
-                        // handleRemoveSavedData(alias)
-                      }}
-                      alias={alias}
-                      path={path}
-                      // selectedCall={selectedCall}
-                      error={error}
-                      setError={setError}
-                      handleAdd={handleAdd}
-                      onView={(path: string) => {
-                        setIsViewActive(true);
-                        setViewPath(path);
-                      }}
-                    />
-                  </div>
-                ),
-              )}
+              {Object.entries(
+                playgroundConfig.steps.find((s) => s.action_id === selectedCall)?.mock.saveData ||
+                  {}
+              ).map(([alias, path]) => (
+                <div
+                  key={alias}
+                  className="bg-gray-800 p-3 rounded-lg border border-sky-500/30 flex items-center justify-between group hover:border-sky-500/50 transition-colors"
+                >
+                  <JsonPathInput
+                    onDelete={(aliasToDelete: string) => {
+                      setShowAlert(true);
+                      setAlias(aliasToDelete);
+                      // handleRemoveSavedData(alias)
+                    }}
+                    alias={alias}
+                    path={path}
+                    // selectedCall={selectedCall}
+                    error={error}
+                    setError={setError}
+                    handleAdd={handleAdd}
+                    onView={(path: string) => {
+                      setIsViewActive(true);
+                      setViewPath(path);
+                    }}
+                  />
+                </div>
+              ))}
               {savedInfoLength > 0 && <div className="my-6 border-t border-gray-700" />}
               {savedInfoLength > 0 && (
-                <h2 className="text-xl font-bold mb-4 text-sky-400">Tentative Save Data ({savedInfoLength})</h2>
+                <h2 className="text-xl font-bold mb-4 text-sky-400">
+                  Tentative Save Data ({savedInfoLength})
+                </h2>
               )}
               {Object.entries(savedInfo).map(([alias, path]) => (
                 <div
                   key={alias}
-                  className="bg-gray-800 p-3 rounded-lg border border-sky-500/30 flex items-center justify-between group hover:border-sky-500/50 transition-colors">
+                  className="bg-gray-800 p-3 rounded-lg border border-sky-500/30 flex items-center justify-between group hover:border-sky-500/50 transition-colors"
+                >
                   <JsonPathInput
                     onDelete={() => {
                       removePath(alias);
@@ -564,10 +585,11 @@ export default function SessionDataTab() {
           )}
 
           {savedInfoLength > 0 && (
-            <div className="mt-6 flex flex row gap-4">
+            <div className="mt-6 flex flex-row gap-4">
               <button
                 onClick={handleSave}
-                className="w-full px-4 py-2 bg-emerald-500/20 text-emerald-400 rounded hover:bg-emerald-500/30 transition-colors">
+                className="w-full px-4 py-2 bg-emerald-500/20 text-emerald-400 rounded hover:bg-emerald-500/30 transition-colors"
+              >
                 Save
               </button>
             </div>

@@ -1,4 +1,4 @@
-import { FormConfigType } from "../components/ui/forms/config-form/config-form";
+import { IFormConfigProps } from "@components/ConfigForm/types";
 
 // Define your data types
 export interface FetchFlowsResponse {
@@ -35,7 +35,7 @@ export interface SequenceStep {
   description: string;
   pair: string | null;
   owner: "BAP" | "BPP";
-  input?: FormConfigType;
+  input?: IFormConfigProps;
   expect?: boolean;
   label?: string;
   force_proceed?: boolean;

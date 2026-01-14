@@ -1,11 +1,11 @@
-import { FormConfigType } from "../components/ui/forms/config-form/config-form";
-import { Flow } from "./flow-types";
+import { IFormConfigProps } from "@components/ConfigForm/types";
+import { Flow } from "@/types/flow-types";
 
 export interface ApiData {
   action: string;
   payloadId: string;
   messageId: string;
-  response: any;
+  response: unknown;
   timestamp: string;
 }
 
@@ -64,9 +64,9 @@ export interface State {
   transactionData?: TransactionCache;
   sessionData: SessionCache;
   sessionId: string;
-  setSideView: React.Dispatch<any>;
+  setSideView: React.Dispatch<React.SetStateAction<unknown>>;
   subscriberUrl: string;
-  input?: FormConfigType;
+  input?: IFormConfigProps;
   expect?: boolean;
   activeFlowId: string;
 }
