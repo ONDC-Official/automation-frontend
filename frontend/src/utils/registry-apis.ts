@@ -1,8 +1,6 @@
-// src/api/index.ts
-
 import axios from "axios";
-import { SubscriberData } from "../components/registry-components/registry-types";
 import { toast } from "react-toastify";
+import { SubscriberData } from "@components/registry-components/registry-types";
 import { UserDetails } from "@components/Header";
 
 export const post = async (participantId: string, subscriberData: SubscriberData) => {
@@ -17,7 +15,7 @@ export const post = async (participantId: string, subscriberData: SubscriberData
       },
       {
         withCredentials: true,
-      },
+      }
     );
   } catch (error) {
     if (axios.isAxiosError(error)) {
@@ -28,7 +26,7 @@ export const post = async (participantId: string, subscriberData: SubscriberData
   }
 };
 
-export const patch = async (data: any, user?: UserDetails) => {
+export const patch = async (data: unknown, user?: UserDetails) => {
   try {
     const participantId = user?.participantId;
     if (!participantId) {
@@ -40,12 +38,12 @@ export const patch = async (data: any, user?: UserDetails) => {
       url,
       {
         participant_id: participantId,
-        ...data,
+        ...(data as Record<string, unknown>),
         request_id: `request-${new Date().toISOString()}`,
       },
       {
         withCredentials: true,
-      },
+      }
     );
   } catch (error) {
     if (axios.isAxiosError(error)) {
@@ -56,7 +54,7 @@ export const patch = async (data: any, user?: UserDetails) => {
   }
 };
 
-export const delSubscriberDetails = async (deleteData: any, user?: UserDetails) => {
+export const delSubscriberDetails = async (deleteData: unknown, user?: UserDetails) => {
   try {
     const participantId = user?.participantId;
     if (!participantId) {
@@ -66,21 +64,25 @@ export const delSubscriberDetails = async (deleteData: any, user?: UserDetails) 
     await axios.delete(url, {
       data: {
         participant_id: participantId,
-        ...deleteData,
+        ...(deleteData as Record<string, unknown>),
         request_id: `request-${new Date().toISOString()}`,
       },
       withCredentials: true,
     });
-  } catch (error) {
+  } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
       toast.error(`Error: ${error.response?.data?.details || error.message}`);
     }
-    console.error("Error in delete request:", error);
+    console.error(
+      error instanceof Error ? error.message : `delSubscriberDetails: Unknown error: ${error}`
+    );
     throw new Error("Failed to delete data");
   }
 };
 
-export const getSubscriberDetails = async (user: UserDetails | undefined): Promise<SubscriberData> => {
+export const getSubscriberDetails = async (
+  user: UserDetails | undefined
+): Promise<SubscriberData> => {
   try {
     const participantId = user?.participantId;
     if (!participantId) {
@@ -94,7 +96,7 @@ export const getSubscriberDetails = async (user: UserDetails | undefined): Promi
       },
       {
         withCredentials: true,
-      },
+      }
     );
     const data = res.data;
 
@@ -110,14 +112,19 @@ export const getSubscriberDetails = async (user: UserDetails | undefined): Promi
 
     const convertedData: SubscriberData = {
       keys: data.keys,
-      mappings: data.mappings.map((mapping: any) => {
+      mappings: data.mappings.map((mapping: Record<string, unknown>) => {
         return {
           id: mapping.id,
           domain: mapping.domain,
           type: mapping.type,
-          uri: uris.find((u: any) => u.id === mapping.uri_id)?.uri || "",
-          location_country: locations.find((l: any) => l.id === mapping.location_id)?.country[0] || "",
-          location_city: locations.find((l: any) => l.id === mapping.location_id)?.city || ["*"],
+          uri: uris.find((u: { id: string; uri: string }) => u.id === mapping.uri_id)?.uri || "",
+          location_country:
+            locations.find(
+              (l: { id: string; country: string[]; city: string[] }) => l.id === mapping.location_id
+            )?.country[0] || "",
+          location_city: locations.find(
+            (l: { id: string; country: string[]; city: string[] }) => l.id === mapping.location_id
+          )?.city || ["*"],
         };
       }),
     };

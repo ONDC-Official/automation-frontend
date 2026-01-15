@@ -1,11 +1,20 @@
-import { FormConfigType } from "../components/ui/forms/config-form/config-form";
+import { FormConfigType } from "@components/ui/forms/config-form/config-form";
 import { Flow } from "./flow-types";
+
+export interface ApiResponseData {
+  message?: {
+    ack?: {
+      status?: "ACK" | "NACK";
+    };
+  };
+  [key: string]: unknown;
+}
 
 export interface ApiData {
   action: string;
   payloadId: string;
   messageId: string;
-  response: any;
+  response: ApiResponseData;
   timestamp: string;
 }
 
@@ -64,7 +73,7 @@ export interface State {
   transactionData?: TransactionCache;
   sessionData: SessionCache;
   sessionId: string;
-  setSideView: React.Dispatch<any>;
+  setSideView: React.Dispatch<React.SetStateAction<boolean>>;
   subscriberUrl: string;
   input?: FormConfigType;
   expect?: boolean;
