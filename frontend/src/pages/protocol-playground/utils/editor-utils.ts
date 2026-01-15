@@ -1,3 +1,7 @@
+type JsonValue = string | number | boolean | null | JsonObject | JsonArray;
+type JsonObject = { [key: string]: JsonValue };
+type JsonArray = JsonValue[];
+
 const getJsonPath = (jsonText: string, lineNumber: number, column: number): string => {
   const lines = jsonText.split("\n");
   let charCount = 0;
@@ -41,7 +45,7 @@ const buildPathMap = (jsonText: string): Map<number, string> => {
 };
 
 // Traverse JSON and map positions to paths
-const traverse = (obj: any, path: string, jsonText: string, pathMap: Map<number, string>) => {
+const traverse = (obj: JsonValue, path: string, jsonText: string, pathMap: Map<number, string>) => {
   if (obj === null || obj === undefined) return;
 
   if (typeof obj === "object" && !Array.isArray(obj)) {
@@ -62,7 +66,10 @@ const traverse = (obj: any, path: string, jsonText: string, pathMap: Map<number,
       } else {
         // For primitive values, also map them
         const valueStr = JSON.stringify(obj[key]);
-        const valuePattern = new RegExp(`"${key}"\\s*:\\s*${valueStr.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`, "g");
+        const valuePattern = new RegExp(
+          `"${key}"\\s*:\\s*${valueStr.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`,
+          "g"
+        );
         let valueMatch;
         while ((valueMatch = valuePattern.exec(jsonText)) !== null) {
           pathMap.set(valueMatch.index + valueMatch[0].length - valueStr.length, newPath);

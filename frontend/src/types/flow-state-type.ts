@@ -1,4 +1,5 @@
-import { FormConfigType } from "../components/ui/forms/config-form/config-form";
+import { FormConfigType } from "@components/ui/forms/config-form/config-form";
+import { ApiResponseData } from "./session-types";
 
 export type ReducedApiData = {
   entryType: "API";
@@ -8,7 +9,7 @@ export type ReducedApiData = {
   subStatus: "SUCCESS" | "ERROR";
   payloads: {
     payloadId: string;
-    response: any;
+    response: ApiResponseData;
   }[];
 };
 
@@ -28,10 +29,17 @@ export type ReducedApiList = ReducedApiData[];
 export interface FlowMap {
   sequence: MappedStep[];
   missedSteps: MappedStep[];
-  reference_data?: Record<string, any>;
+  reference_data?: Record<string, unknown>;
 }
 export interface MappedStep {
-  status: "COMPLETE" | "LISTENING" | "RESPONDING" | "WAITING" | "INPUT-REQUIRED" | "PROCESSING" | "WAITING-SUBMISSION";
+  status:
+    | "COMPLETE"
+    | "LISTENING"
+    | "RESPONDING"
+    | "WAITING"
+    | "INPUT-REQUIRED"
+    | "PROCESSING"
+    | "WAITING-SUBMISSION";
   actionId: string;
   owner: "BAP" | "BPP";
   actionType: string;

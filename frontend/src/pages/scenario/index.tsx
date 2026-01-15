@@ -114,8 +114,10 @@ export default function FlowContent() {
 
   const fetchFormFieldData = async () => {
     try {
-      const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/config/senarioFormData`);
-      setDynamicList(prev => {
+      const response = await axios.get(
+        `${import.meta.env.VITE_BACKEND_URL}/config/senarioFormData`
+      );
+      setDynamicList((prev) => {
         return { ...prev, domain: response.data.domain || [] };
       });
     } catch (e) {
@@ -192,12 +194,15 @@ export default function FlowContent() {
 
                   <button
                     onClick={() => navigate(ROUTES.HISTORY)}
-                    className="flex items-center gap-2 px-4 py-2 bg-sky-500 text-white rounded-xl hover:bg-sky-600 transition shadow-sm">
+                    className="flex items-center gap-2 px-4 py-2 bg-sky-500 text-white rounded-xl hover:bg-sky-600 transition shadow-sm"
+                  >
                     <LuHistory className="w-6 h-6 text-white" />
                     <span className="font-medium text-lg">Past Sessions</span>
                   </button>
                 </div>
-                <p className="text-gray-600 text-sm">Please fill in the details below to begin flow testing.</p>
+                <p className="text-gray-600 text-sm">
+                  Please fill in the details below to begin flow testing.
+                </p>
               </div>
               <InitialFlowForm
                 formData={formData}
