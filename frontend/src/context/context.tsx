@@ -28,7 +28,9 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
   const [sessionId, setSessionId] = useState<string>("");
   const [activeFlowId, setActiveFlowId] = useState<string | null>(null);
   const [sessionData, setSessionData] = useState<SessionCache | null>(null);
-  const [selectedTab, setSelectedTab] = useState<"Request" | "Response" | "Metadata" | "Guide">("Request");
+  const [selectedTab, setSelectedTab] = useState<"Request" | "Response" | "Metadata" | "Guide">(
+    "Request"
+  );
   const [requestData, setRequestData] = useState<any>(null);
   const [responseData, setResponseData] = useState<any>(null);
   const [activeCallClickedToggle, setActiveCallClickedToggle] = useState<boolean>(false);
@@ -56,7 +58,8 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
         setSideView, // 👈 fixes missing prop
         metadata, // 👈 optional
         setMetadata,
-      }}>
+      }}
+    >
       {children}
     </SessionContext.Provider>
   );

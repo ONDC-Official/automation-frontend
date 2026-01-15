@@ -1,9 +1,9 @@
-import { apiClient } from "../services/apiClient";
-import { API_ROUTES } from "../services/apiRoutes";
-import { SessionCache, TransactionCache, FlowInDB } from "../types/session-types";
-import { FlowMap } from "../types/flow-state-type";
-import { FormConfigType } from "../components/ui/forms/config-form/config-form";
 import { toast } from "react-toastify";
+import { apiClient } from "@services/apiClient";
+import { API_ROUTES } from "@services/apiRoutes";
+import { SessionCache, TransactionCache, FlowInDB } from "@/types/session-types";
+import { FlowMap } from "@/types/flow-state-type";
+import { FormConfigType } from "@components/ui/forms/config-form/config-form";
 
 // Type definitions for API responses
 interface SessionsResponse {
@@ -22,16 +22,16 @@ interface ActionsResponse {
   actions: string[];
 }
 
-interface PayloadResponse {
-  req: any;
+export interface PayloadResponse<TReq = unknown, TRes = unknown> {
+  req: TReq;
   res: {
-    response: any;
+    response: TRes;
   };
 }
 
 interface FlowResponse {
   inputs?: FormConfigType;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export const triggerSearch = async (session: TransactionCache, subUrl: string) => {
@@ -48,18 +48,12 @@ export const triggerSearch = async (session: TransactionCache, subUrl: string) =
   toast.info("search triggered");
 };
 
-export const putCacheData = async (data: any, sessionId: string) => {
-  return await apiClient.put(
-    API_ROUTES.SESSIONS.BASE,
-    {
-      ...data,
+export const putCacheData = async (data: unknown, sessionId: string) => {
+  return await apiClient.put(API_ROUTES.SESSIONS.BASE, data, {
+    params: {
+      session_id: sessionId,
     },
-    {
-      params: {
-        session_id: sessionId,
-      },
-    },
-  );
+  });
 };
 
 export const triggerRequest = async (
@@ -70,7 +64,7 @@ export const triggerRequest = async (
   flowId: string,
   sessionData: SessionCache,
   subscriberUrl?: string,
-  body?: any,
+  body?: unknown
 ) => {
   try {
     const response = await apiClient.post(API_ROUTES.FLOW.TRIGGER_ACTION(action), body, {
@@ -106,16 +100,18 @@ export const clearFlowData = async (sessionId: string, flowId: string) => {
   }
 };
 
-export const getCompletePayload = async (payload_ids: string[]): Promise<PayloadResponse[]> => {
+export const getCompletePayload = async <TReq = unknown, TRes = unknown>(
+  payload_ids: string[]
+): Promise<PayloadResponse<TReq, TRes>[]> => {
   try {
-    const response = await apiClient.post<PayloadResponse[]>(API_ROUTES.DB.PAYLOAD, {
+    const response = await apiClient.post<PayloadResponse<TReq, TRes>[]>(API_ROUTES.DB.PAYLOAD, {
       payload_ids: payload_ids,
     });
 
     return response.data;
-  } catch (e: any) {
+  } catch (e: unknown) {
     console.error("error while fetching complete paylaod: ", e);
-    throw new Error(e);
+    throw new Error(e instanceof Error ? e.message : `getCompletePayload: Unknown error: ${e}`);
   }
 };
 
@@ -135,7 +131,12 @@ export const getTransactionData = async (transaction_id: string, subscriber_url:
   }
 };
 
-export const addExpectation = async (action: string, flowId: string, subscriberUrl: string, sessionId: string) => {
+export const addExpectation = async (
+  action: string,
+  flowId: string,
+  subscriberUrl: string,
+  sessionId: string
+) => {
   try {
     await apiClient.post(
       API_ROUTES.SESSIONS.EXPECTATION,
@@ -147,12 +148,12 @@ export const addExpectation = async (action: string, flowId: string, subscriberU
           subscriber_url: subscriberUrl,
           session_id: sessionId,
         },
-      },
+      }
     );
     // toast.info("Expectation added");
-  } catch (e: any) {
-    console.error(e);
-    toast.error(e?.message ?? "Error adding expectation");
+  } catch (e: unknown) {
+    toast.error(e instanceof Error ? e.message : `addExpectation: Unknown error: ${e}`);
+    console.error(e instanceof Error ? e.message : `addExpectation: Unknown error: ${e}`);
   }
 };
 
@@ -164,26 +165,31 @@ export const deleteExpectation = async (session_id: string, subscriber_url: stri
         subscriber_url,
       },
     });
-  } catch (e: any) {
-    console.error(e);
+  } catch (e: unknown) {
+    toast.error(e instanceof Error ? e.message : `deleteExpectation: Unknown error: ${e}`);
+    console.error(e instanceof Error ? e.message : `deleteExpectation: Unknown error: ${e}`);
   }
 };
 
 export const requestForFlowPermission = async (action: string, subscriberUrl: string) => {
   try {
-    const data = await apiClient.get<{ valid: boolean; message: string }>(API_ROUTES.SESSIONS.FLOW_PERMISSION, {
-      params: {
-        action,
-        subscriber_url: subscriberUrl,
-      },
-    });
+    const data = await apiClient.get<{ valid: boolean; message: string }>(
+      API_ROUTES.SESSIONS.FLOW_PERMISSION,
+      {
+        params: {
+          action,
+          subscriber_url: subscriberUrl,
+        },
+      }
+    );
 
     if (!data.data.valid) {
       toast.error(data.data.message);
     }
     return data.data.valid;
-  } catch (e: any) {
-    console.error(e);
+  } catch (e: unknown) {
+    toast.error(e instanceof Error ? e.message : `requestForFlowPermission: Unknown error: ${e}`);
+    console.error(e instanceof Error ? e.message : `requestForFlowPermission: Unknown error: ${e}`);
   }
 };
 
@@ -221,17 +227,17 @@ export const getMappedFlow = async (transactionId: string, sessionId: string): P
     });
 
     return response.data;
-  } catch (e) {
-    toast.error("Error while fetching mapped flow data");
-    throw new Error("Error while fetching mapped flow data");
+  } catch (e: unknown) {
+    console.error(e instanceof Error ? e.message : `getMappedFlow: Unknown error: ${e}`);
+    throw new Error(e instanceof Error ? e.message : `getMappedFlow: Unknown error: ${e}`);
   }
 };
 
 export const proceedFlow = async (
   sessionId: string,
   transactionId: string,
-  jsonPathChanges?: Record<string, any>,
-  inputs?: any,
+  jsonPathChanges?: Record<string, unknown>,
+  inputs?: unknown
 ): Promise<FlowResponse> => {
   try {
     const response = await apiClient.post<FlowResponse>(API_ROUTES.FLOW.PROCEED, {
@@ -242,13 +248,11 @@ export const proceedFlow = async (
     });
 
     return response.data;
-  } catch (e: any) {
+  } catch (e: unknown) {
     console.error("❌ [proceedFlow] Error:", {
-      message: e.message,
-      response: e.response?.data,
-      status: e.response?.status,
+      message: e instanceof Error ? e.message : `proceedFlow: Unknown error: ${e}`,
     });
-    throw new Error("Error while proceeding flow");
+    throw new Error(e instanceof Error ? e.message : `proceedFlow: Unknown error: ${e}`);
   }
 };
 
@@ -256,8 +260,8 @@ export const newFlow = async (
   sessionId: string,
   flowId: string,
   transactionId: string,
-  json_path_changes?: Record<string, any>,
-  inputs?: any,
+  json_path_changes?: Record<string, unknown>,
+  inputs?: unknown
 ): Promise<FlowResponse | undefined> => {
   try {
     const response = await apiClient.post<FlowResponse>(API_ROUTES.FLOW.NEW, {
@@ -290,18 +294,20 @@ export const getReportingStatus = async (domain: string, version: string) => {
   }
 };
 
-export async function htmlFormSubmit(link: string, data: any) {
+export async function htmlFormSubmit(link: string, data: unknown) {
   try {
     const res = await apiClient.post(API_ROUTES.FLOW.EXTERNAL_FORM, {
       link: link,
       data: data,
     });
     return res;
-  } catch (error) {
-    throw new Error("ERROR");
+  } catch (e: unknown) {
+    toast.error(e instanceof Error ? e.message : `htmlFormSubmit: Unknown error: ${e}`);
+    console.error(e instanceof Error ? e.message : `htmlFormSubmit: Unknown error: ${e}`);
+    throw new Error(e instanceof Error ? e.message : `htmlFormSubmit: Unknown error: ${e}`);
   }
 }
-export const updateCustomFlow = async (sessionId: string, flow: any) => {
+export const updateCustomFlow = async (sessionId: string, flow: unknown) => {
   try {
     const data = {
       session_id: sessionId,
@@ -309,8 +315,8 @@ export const updateCustomFlow = async (sessionId: string, flow: any) => {
     };
 
     await apiClient.post(API_ROUTES.FLOW.CUSTOM_FLOW, data);
-  } catch (e) {
-    console.error("error setting custom flow", e);
+  } catch (e: unknown) {
+    console.error(e instanceof Error ? e.message : `updateCustomFlow: Unknown error: ${e}`);
   }
 };
 
@@ -386,7 +392,7 @@ export const updateFlowInSession = async (sessionId: string, flow: FlowInDB) => 
           "Content-Type": "application/json",
           "x-api-key": import.meta.env.VITE_DB_SERVICE_API_KEY,
         },
-      },
+      }
     );
 
     return res.data;

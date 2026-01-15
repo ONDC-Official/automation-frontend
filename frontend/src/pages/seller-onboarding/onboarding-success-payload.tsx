@@ -1,32 +1,31 @@
 import React, { useState } from "react";
 import { toast } from "react-toastify";
 import { Button, Card, Tabs, Typography } from "antd";
-import {
-  CopyOutlined,
-  DownloadOutlined,
-  CheckCircleOutlined,
-} from "@ant-design/icons";
+import { CopyOutlined, DownloadOutlined, CheckCircleOutlined } from "@ant-design/icons";
 
 const { Title, Text } = Typography;
 const { TabPane } = Tabs;
 
 interface OnboardingSuccessPayloadProps {
-  submittedData: any;
-  onSearchPayload: any;
+  submittedData: Record<string, unknown>;
+  onSearchPayload: Record<string, unknown>;
   onBack: () => void;
-  payloadType?: 'single-domain' | 'multi-domain';
+  payloadType?: "single-domain" | "multi-domain";
 }
 
 const OnboardingSuccessPayload: React.FC<OnboardingSuccessPayloadProps> = ({
   submittedData,
   onSearchPayload,
   onBack,
-  payloadType = 'single-domain',
+  payloadType = "single-domain",
 }) => {
   const [copiedSection, setCopiedSection] = useState<string | null>(null);
-  
+
   // Check if we have multi-domain payloads
-  const isMultiDomain = payloadType === 'multi-domain' && typeof onSearchPayload === 'object' && !Array.isArray(onSearchPayload);
+  const isMultiDomain =
+    payloadType === "multi-domain" &&
+    typeof onSearchPayload === "object" &&
+    !Array.isArray(onSearchPayload);
 
   const handleCopy = async (text: string, section: string) => {
     try {
@@ -34,12 +33,13 @@ const OnboardingSuccessPayload: React.FC<OnboardingSuccessPayloadProps> = ({
       setCopiedSection(section);
       toast.success(`${section} copied to clipboard!`);
       setTimeout(() => setCopiedSection(null), 3000);
-    } catch (err) {
+    } catch (err: unknown) {
+      console.error("Failed to copy to clipboard", err);
       toast.error("Failed to copy to clipboard");
     }
   };
 
-  const handleDownload = (data: any, filename: string) => {
+  const handleDownload = (data: Record<string, unknown>, filename: string) => {
     const jsonString = JSON.stringify(data, null, 2);
     const blob = new Blob([jsonString], { type: "application/json" });
     const url = URL.createObjectURL(blob);
@@ -53,7 +53,7 @@ const OnboardingSuccessPayload: React.FC<OnboardingSuccessPayloadProps> = ({
     toast.success(`${filename} downloaded!`);
   };
 
-  const formatJson = (data: any) => {
+  const formatJson = (data: Record<string, unknown>) => {
     return JSON.stringify(data, null, 2);
   };
 
@@ -68,8 +68,8 @@ const OnboardingSuccessPayload: React.FC<OnboardingSuccessPayloadProps> = ({
             Seller Onboarding Successful!
           </Title>
           <Text className="text-gray-600">
-            Your seller profile has been created successfully. Below you can
-            view and copy the generated payloads.
+            Your seller profile has been created successfully. Below you can view and copy the
+            generated payloads.
           </Text>
         </div>
 
@@ -89,20 +89,18 @@ const OnboardingSuccessPayload: React.FC<OnboardingSuccessPayloadProps> = ({
                           icon={<CopyOutlined />}
                           onClick={() =>
                             handleCopy(
-                              formatJson(payload),
+                              formatJson(payload as Record<string, unknown>),
                               `${domain} Payload`
                             )
                           }
                         >
-                          {copiedSection === `${domain} Payload`
-                            ? "Copied!"
-                            : "Copy"}
+                          {copiedSection === `${domain} Payload` ? "Copied!" : "Copy"}
                         </Button>
                         <Button
                           icon={<DownloadOutlined />}
                           onClick={() =>
                             handleDownload(
-                              payload,
+                              payload as Record<string, unknown>,
                               `on_search_${domain.toLowerCase()}_payload.json`
                             )
                           }
@@ -114,15 +112,14 @@ const OnboardingSuccessPayload: React.FC<OnboardingSuccessPayloadProps> = ({
 
                     <div className="bg-gray-900 rounded-lg p-4 overflow-auto max-h-96">
                       <pre className="text-green-400 text-sm font-mono whitespace-pre">
-                        {formatJson(payload)}
+                        {formatJson(payload as Record<string, unknown>)}
                       </pre>
                     </div>
 
                     <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                       <p className="text-sm text-blue-800">
-                        <strong>Note:</strong> This {domain} payload is formatted according
-                        to ONDC specifications and can be used for integration with
-                        ONDC network.
+                        <strong>Note:</strong> This {domain} payload is formatted according to ONDC
+                        specifications and can be used for integration with ONDC network.
                       </p>
                     </div>
                   </div>
@@ -139,22 +136,15 @@ const OnboardingSuccessPayload: React.FC<OnboardingSuccessPayloadProps> = ({
                     <div className="space-x-2">
                       <Button
                         icon={<CopyOutlined />}
-                        onClick={() =>
-                          handleCopy(
-                            formatJson(onSearchPayload),
-                            "On Search Payload"
-                          )
-                        }
+                        onClick={() => handleCopy(formatJson(onSearchPayload), "On Search Payload")}
                       >
-                        {copiedSection === "On Search Payload"
-                          ? "Copied!"
-                          : "Copy"}
+                        {copiedSection === "On Search Payload" ? "Copied!" : "Copy"}
                       </Button>
                       <Button
                         icon={<DownloadOutlined />}
                         onClick={() =>
                           handleDownload(
-                            onSearchPayload,
+                            onSearchPayload as Record<string, unknown>,
                             "on_search_payload.json"
                           )
                         }
@@ -166,15 +156,14 @@ const OnboardingSuccessPayload: React.FC<OnboardingSuccessPayloadProps> = ({
 
                   <div className="bg-gray-900 rounded-lg p-4 overflow-auto max-h-96">
                     <pre className="text-green-400 text-sm font-mono whitespace-pre">
-                      {formatJson(onSearchPayload)}
+                      {formatJson(onSearchPayload as Record<string, unknown>)}
                     </pre>
                   </div>
 
                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                     <p className="text-sm text-blue-800">
-                      <strong>Note:</strong> This payload is formatted according
-                      to ONDC specifications and can be used for integration with
-                      ONDC network.
+                      <strong>Note:</strong> This payload is formatted according to ONDC
+                      specifications and can be used for integration with ONDC network.
                     </p>
                   </div>
                 </div>
@@ -191,7 +180,10 @@ const OnboardingSuccessPayload: React.FC<OnboardingSuccessPayloadProps> = ({
                     <Button
                       icon={<CopyOutlined />}
                       onClick={() =>
-                        handleCopy(formatJson(submittedData), "Submitted Data")
+                        handleCopy(
+                          formatJson(submittedData as Record<string, unknown>),
+                          "Submitted Data"
+                        )
                       }
                     >
                       {copiedSection === "Submitted Data" ? "Copied!" : "Copy"}
@@ -199,7 +191,10 @@ const OnboardingSuccessPayload: React.FC<OnboardingSuccessPayloadProps> = ({
                     <Button
                       icon={<DownloadOutlined />}
                       onClick={() =>
-                        handleDownload(submittedData, "submitted_data.json")
+                        handleDownload(
+                          submittedData as Record<string, unknown>,
+                          "submitted_data.json"
+                        )
                       }
                     >
                       Download
@@ -209,12 +204,11 @@ const OnboardingSuccessPayload: React.FC<OnboardingSuccessPayloadProps> = ({
 
                 <div className="bg-gray-900 rounded-lg p-4 overflow-auto max-h-96">
                   <pre className="text-green-400 text-sm font-mono whitespace-pre">
-                    {formatJson(submittedData)}
+                    {formatJson(submittedData as Record<string, unknown>)}
                   </pre>
                 </div>
               </div>
             </TabPane>
-
           </Tabs>
         </Card>
 
@@ -223,16 +217,20 @@ const OnboardingSuccessPayload: React.FC<OnboardingSuccessPayloadProps> = ({
             Back to Dashboard
           </Button>
           {isMultiDomain && (
-            <Button 
-              type="default" 
-              size="large" 
+            <Button
+              type="default"
+              size="large"
               icon={<DownloadOutlined />}
-              onClick={() => handleDownload(onSearchPayload, "all_domain_payloads.json")}
+              onClick={() =>
+                handleDownload(
+                  onSearchPayload as Record<string, unknown>,
+                  "all_domain_payloads.json"
+                )
+              }
             >
               Download All Payloads
             </Button>
           )}
-         
         </div>
       </div>
     </div>

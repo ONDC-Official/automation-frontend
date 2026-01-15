@@ -68,9 +68,9 @@ export async function fetchGistData(gistUrl: string): Promise<GistResponse> {
     // Transform files object to include content
     const files: Record<string, GistFile> = {};
     for (const [filename, fileData] of Object.entries(gistData.files || {})) {
-      const file = fileData as any;
+      const file = fileData as Partial<GistFile>;
       files[filename] = {
-        filename: file.filename,
+        filename: file.filename || filename,
         content: file.content || "",
         language: file.language || "text",
         size: file.size || 0,
