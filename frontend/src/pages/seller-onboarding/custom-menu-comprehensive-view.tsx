@@ -47,8 +47,8 @@ interface CustomMenuComprehensiveViewProps {
 
 const CustomMenuComprehensiveView: React.FC<CustomMenuComprehensiveViewProps> = ({ menuItems }) => {
   const [activeTab, setActiveTab] = useState("1");
-  const [showPayloadModal, setShowPayloadModal] = useState(false);
-  const [selectedPayload, setSelectedPayload] = useState<any>(null);
+  const [showPayloadModal, setShowPayloadModal] = useState<boolean>(false);
+  const [selectedPayload, setSelectedPayload] = useState<Record<string, unknown> | null>(null);
 
   // Group items by category and sort by rank
   const categorizedItems = menuItems.reduce(
@@ -85,8 +85,8 @@ const CustomMenuComprehensiveView: React.FC<CustomMenuComprehensiveViewProps> = 
 
   // Generate mock on_search structure
   const generateMockPayload = () => {
-    const categories: any[] = [];
-    const items: any[] = [];
+    const categories: Record<string, unknown>[] = [];
+    const items: Record<string, unknown>[] = [];
 
     // Add menu categories
     Object.keys(categorizedItems).forEach((categoryName, idx) => {
@@ -137,7 +137,7 @@ const CustomMenuComprehensiveView: React.FC<CustomMenuComprehensiveViewProps> = 
       const itemId = `I${itemCounter}`;
 
       // Main item
-      const item: any = {
+      const item: Record<string, unknown> = {
         id: itemId,
         descriptor: { name: menuItem.name },
         price: { value: menuItem.price },
@@ -154,7 +154,7 @@ const CustomMenuComprehensiveView: React.FC<CustomMenuComprehensiveViewProps> = 
       // Add custom group references
       if (menuItem.customizationGroups) {
         menuItem.customizationGroups.forEach((group) => {
-          item.tags.push({
+          (item.tags as Record<string, unknown>[]).push({
             code: "custom_group",
             list: [{ code: "id", value: group.id }],
           });
@@ -168,7 +168,7 @@ const CustomMenuComprehensiveView: React.FC<CustomMenuComprehensiveViewProps> = 
         menuItem.customizationGroups.forEach((group, groupIdx) => {
           group.items.forEach((custItem) => {
             customizationCounter++;
-            const customization: any = {
+            const customization: Record<string, unknown> = {
               id: `C${customizationCounter}`,
               descriptor: { name: custItem.name },
               price: { value: custItem.price },
@@ -186,7 +186,7 @@ const CustomMenuComprehensiveView: React.FC<CustomMenuComprehensiveViewProps> = 
 
             // Add child tag if there's a next group
             if (groupIdx < menuItem.customizationGroups!.length - 1) {
-              customization.tags.push({
+              (customization.tags as Record<string, unknown>[]).push({
                 code: "child",
                 list: [{ code: "id", value: menuItem.customizationGroups![groupIdx + 1].id }],
               });
