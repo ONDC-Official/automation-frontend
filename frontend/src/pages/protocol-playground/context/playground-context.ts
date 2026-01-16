@@ -3,7 +3,7 @@ import { ExecutionResult, MockPlaygroundConfigType } from "@ondc/automation-mock
 
 import { WorkbenchFlowType } from "@hooks/useWorkbenchFlow";
 import { SavedConfigMetadata } from "@pages/protocol-playground/utils/config-storage";
-interface PlaygroundContextProps {
+export interface PlaygroundContextProps {
   config: MockPlaygroundConfigType | undefined;
   setCurrentConfig: (config: MockPlaygroundConfigType | undefined) => void;
   dirtyConfig: boolean;

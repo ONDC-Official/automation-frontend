@@ -48,9 +48,7 @@ const SingleImageUpload: React.FC<SingleImageUploadProps> = ({
     const file = event.target.files?.[0];
     if (file) {
       if (file.size > maxSizePerFile) {
-        message.error(
-          `File size must be less than ${maxSizePerFile / (1024 * 1024)}MB`
-        );
+        message.error(`File size must be less than ${maxSizePerFile / (1024 * 1024)}MB`);
         event.target.value = "";
         return;
       }
@@ -79,9 +77,8 @@ const SingleImageUpload: React.FC<SingleImageUploadProps> = ({
       formData.append("image", selectedFile);
       formData.append("folder", folder);
 
-      const baseURL =
-        import.meta.env.VITE_BACKEND_URL || "http://localhost:4000";
-        const response = await axios.post(`${baseURL}/images/upload`, formData, {
+      const baseURL = import.meta.env.VITE_BACKEND_URL || "http://localhost:4000";
+      const response = await axios.post(`${baseURL}/images/upload`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
@@ -101,7 +98,7 @@ const SingleImageUpload: React.FC<SingleImageUploadProps> = ({
       } else {
         throw new Error(response.data.message || "Upload failed");
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error uploading image:", error);
       message.error("Failed to upload image. Using default image URL.");
       // Use default URL on upload failure
@@ -129,8 +126,9 @@ const SingleImageUpload: React.FC<SingleImageUploadProps> = ({
       onChange?.(urlInputValue);
       setUrlInputValue("");
       message.success("Image URL set successfully!");
-    } catch (error) {
+    } catch (error: unknown) {
       message.error("Please enter a valid URL");
+      console.error("Error setting image URL:", error);
     }
   };
 
@@ -163,11 +161,7 @@ const SingleImageUpload: React.FC<SingleImageUploadProps> = ({
 
   return (
     <div className={`mb-4 w-full ${className}`}>
-      <LabelWithToolTip
-        labelInfo={labelInfo}
-        label={label}
-        required={required}
-      />
+      <LabelWithToolTip labelInfo={labelInfo} label={label} required={required} />
 
       <div className="space-y-4">
         {allowUrlInput && (
@@ -235,13 +229,7 @@ const SingleImageUpload: React.FC<SingleImageUploadProps> = ({
             >
               Upload
             </Button>
-            <Button
-              type="text"
-              size="small"
-              onClick={removeImage}
-              icon={<DeleteOutlined />}
-              danger
-            >
+            <Button type="text" size="small" onClick={removeImage} icon={<DeleteOutlined />} danger>
               Remove
             </Button>
           </div>
@@ -249,16 +237,8 @@ const SingleImageUpload: React.FC<SingleImageUploadProps> = ({
 
         {uploadedUrl && (
           <div className="flex items-center space-x-2 p-2 bg-blue-50 rounded-md border border-blue-200">
-            <p className="text-sm text-blue-700 font-medium truncate">
-              Url - {uploadedUrl}
-            </p>
-            <Button
-              type="text"
-              size="small"
-              onClick={removeImage}
-              icon={<DeleteOutlined />}
-              danger
-            >
+            <p className="text-sm text-blue-700 font-medium truncate">Url - {uploadedUrl}</p>
+            <Button type="text" size="small" onClick={removeImage} icon={<DeleteOutlined />} danger>
               Remove
             </Button>
           </div>
@@ -296,8 +276,7 @@ const SingleImageUpload: React.FC<SingleImageUploadProps> = ({
       </div>
 
       <p className="text-xs text-gray-500 mt-1">
-        Accepted formats: JPG, PNG, GIF, WebP (Max{" "}
-        {maxSizePerFile / (1024 * 1024)}MB).
+        Accepted formats: JPG, PNG, GIF, WebP (Max {maxSizePerFile / (1024 * 1024)}MB).
       </p>
     </div>
   );
