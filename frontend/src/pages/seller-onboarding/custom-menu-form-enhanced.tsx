@@ -389,7 +389,7 @@ const CustomMenuFormEnhanced = ({
     const menuErrors = errors?.menu?.[index];
     if (!menuErrors) return {};
 
-    const flatErrors: any = {};
+    const flatErrors: Record<string, string> = {};
     Object.keys(menuErrors).forEach((key) => {
       flatErrors[`menu.${index}.${key}`] = (menuErrors as any)[key];
     });

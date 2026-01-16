@@ -1,11 +1,4 @@
-import {
-  ReactNode,
-  useEffect,
-  useRef,
-  cloneElement,
-  isValidElement,
-  ReactElement
-} from "react";
+import { ReactNode, useEffect, useRef, cloneElement, isValidElement, ReactElement } from "react";
 import { GuideStepsEnums, useGuide } from "./../../context/guideContext";
 interface GuideOverlayProps {
   currentStep: GuideStepsEnums;
@@ -18,7 +11,7 @@ interface GuideOverlayProps {
 }
 
 interface InteractiveElementProps {
-  onClick?: (...args: any[]) => void;
+  onClick?: (...args: unknown[]) => void;
   // You might want to add other common props like 'disabled', 'id', etc.
 }
 
@@ -35,7 +28,7 @@ const journey = [
   GuideStepsEnums.Reg10,
   GuideStepsEnums.Reg11,
   GuideStepsEnums.Reg12,
-  GuideStepsEnums.Test1
+  GuideStepsEnums.Test1,
 ];
 
 export default function GuideOverlay({
@@ -72,7 +65,7 @@ export default function GuideOverlay({
 
   const childWithClickHandler = isValidElement(children)
     ? cloneElement(children as ReactElement<InteractiveElementProps>, {
-        onClick: (...args: any[]) => {
+        onClick: (...args: unknown[]) => {
           if (children.props.onClick) {
             children.props.onClick?.(...args);
           }

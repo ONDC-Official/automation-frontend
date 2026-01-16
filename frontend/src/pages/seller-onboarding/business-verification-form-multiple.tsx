@@ -1741,6 +1741,7 @@ const ServiceabilitySection = ({
                             JSON.parse(value);
                             return true;
                           } catch (e) {
+                            console.error("Invalid GeoJSON format:", e);
                             return "Invalid GeoJSON format";
                           }
                         },

@@ -7,7 +7,7 @@ const baseButtonClass = `
 `.trim();
 
 const defaultButtonClass = `
-  w-full bg-sky-600 hover:bg-sky-700
+  w-auto bg-sky-600 hover:bg-sky-700
   focus:ring-blue-300
 `.trim();
 
@@ -16,21 +16,32 @@ const LoadingButton = ({
   buttonText,
   disabled = false,
   isLoading = false,
+  onClick,
+  loadingText = "Loading...",
 }: {
   type?: "submit" | "reset" | "button";
   buttonText: string;
   disabled?: boolean;
-  isLoading?: boolean; // Optional prop
-  isSuccess?: boolean; // Optional prop
-  isError?: boolean; // Optional prop
+  isLoading?: boolean;
+  onClick?: () => void;
+  loadingText?: string;
 }) => {
+  if (onClick) {
+    return (
+      <button
+        type={type}
+        disabled={disabled || isLoading}
+        className={buttonClass}
+        onClick={onClick}
+      >
+        {isLoading ? loadingText : buttonText}
+        {isLoading && <FullPageLoader />}
+      </button>
+    );
+  }
+
   return (
-    <button
-      type={type}
-      disabled={disabled || isLoading}
-      className={buttonClass}
-      style={{ width: "max-content" }}
-    >
+    <button type={type} disabled={disabled || isLoading} className={buttonClass}>
       {buttonText}
       {isLoading && <FullPageLoader />}
     </button>

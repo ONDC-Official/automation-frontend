@@ -6,8 +6,8 @@ import InfoCard from "@components/ui/info-card";
 import DifficultyCards from "@components/ui/difficulty-cards";
 import axios from "axios";
 import { toast } from "react-toastify";
-import { ApiData, SessionCache } from "@/types/session-types";
-import { getCompletePayload, getReport, getTransactionData } from "@utils/request-utils";
+import { SessionCache } from "@/types/session-types";
+import { getCompletePayload, getReport } from "@utils/request-utils";
 import { Accordion } from "@components/FlowShared/complete-flow";
 import { useSession } from "@context/context";
 import Loader from "@components/ui/mini-components/loader";
@@ -31,6 +31,7 @@ import { BiSend, BiServer } from "react-icons/bi";
 import { trackEvent } from "@utils/analytics";
 import FilterFlowsMenu from "@components/FlowShared/filter-flows";
 import { openReportInNewTab } from "@utils/generic-utils";
+import GenerateReportModal from "@components/FlowShared/GenerateReportModal";
 
 function extractMetadataFromFlows(flows: Flow[]): Record<string, MetadataField[]> {
   const flowMetadataMap: Record<string, MetadataField[]> = {};
@@ -91,11 +92,11 @@ function extractMetadataValues(payload: any, metadataFields: MetadataField[]) {
       extractedData[meta.description.name] = {
         value: displayValue,
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       extractedData[meta.description.name] = {
         name: meta.description.name,
         value: "Data not available",
-        errorMessage: error.message,
+        errorMessage: error instanceof Error ? error.message : "Unknown error",
       };
     }
   });
@@ -142,6 +143,7 @@ function RenderFlows({
   const [flowTags, setFlowTags] = useState<string[]>([]);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [activeCallClickedToggle, setActiveCallClickedToggle] = useState<boolean>(false);
+  const [isReportDialogOpen, setIsReportDialogOpen] = useState<boolean>(false);
 
   const startPolling = () => {
     if (isPolling) return; // Prevent multiple starts
@@ -163,6 +165,7 @@ function RenderFlows({
 
       try {
         const result = await getReport(sessionId);
+
         if (result?.data) {
           stopPolling();
           toast.info("Report Generated");
@@ -322,61 +325,6 @@ function RenderFlows({
       });
   }
 
-  async function generateReport() {
-    const body: any = {};
-
-    if (!cacheSessionData) {
-      toast.error("Error while generating report");
-      return;
-    }
-    let apiList: ApiData[] | undefined = undefined;
-
-    for (const flow in cacheSessionData.flowMap) {
-      const transactionId = cacheSessionData.flowMap[flow];
-      if (!transactionId) continue;
-      const transData = await getTransactionData(transactionId, subUrl);
-      if (!transData) continue;
-      apiList = transData.apiList;
-
-      body[flow] = (apiList || []).map((data) => {
-        return data.payloadId;
-      });
-    }
-
-    axios
-      .post(`${import.meta.env.VITE_BACKEND_URL}/flow/report`, body, {
-        params: {
-          sessionId: sessionId,
-        },
-      })
-      .then((response: any) => {
-        // setReport(response.data.data);
-        // setStep(2);
-        if (response?.data?.data?.html) {
-          toast.info("Report Generated");
-
-          const decodedHtml = response.data.data.html;
-          const blob = new Blob([decodedHtml], {
-            type: "text/html",
-          });
-          const url = URL.createObjectURL(blob);
-
-          // Open in a new tab
-          window.open(url, "_blank");
-
-          // Optional: cleanup after a short delay
-          setTimeout(() => URL.revokeObjectURL(url), 5000);
-        } else {
-          toast.info("Generating report. It can take upto 90 sec.");
-          startPolling();
-        }
-      })
-      .catch((e) => {
-        console.error(e);
-        toast.error("Error while generating report");
-      });
-  }
-
   let filteredFlows: any = [];
 
   if (selectedTags.length) {
@@ -430,6 +378,7 @@ function RenderFlows({
         onClose={() => setIsGuideOpen(false)}
         domain={cacheSessionData?.domain}
       />
+
       <div className="w-full min-h-screen flex flex-col flex-1">
         <div className="space-y-2 pt-4 pr-4 pl-4">
           {cacheSessionData ? (
@@ -486,7 +435,7 @@ function RenderFlows({
                               category: "SCENARIO_TESTING-FLOWS",
                               action: "Generate report",
                             });
-                            await generateReport();
+                            setIsReportDialogOpen(true);
                           }}
                           disabled={!isFlowStopped}
                         >
@@ -742,6 +691,18 @@ function RenderFlows({
           </div>
         </div>
       </div>
+
+      {isReportDialogOpen && (
+        <GenerateReportModal
+          flows={flows}
+          subUrl={subUrl}
+          sessionId={sessionId}
+          cacheSessionData={cacheSessionData}
+          open={isReportDialogOpen}
+          onClose={() => setIsReportDialogOpen(false)}
+          startPolling={startPolling}
+        />
+      )}
     </SessionContext.Provider>
   );
 }
