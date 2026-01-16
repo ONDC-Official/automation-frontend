@@ -6,7 +6,7 @@ import { Flow } from "@/types/flow-types";
 import { ApiData, SessionCache } from "@/types/session-types";
 import { getTransactionData } from "@utils/request-utils";
 import Modal from "@components/Modal";
-import { CheckCircleIcon } from "@heroicons/react/20/solid";
+import { CheckCircleIcon, ExclamationCircleIcon } from "@heroicons/react/20/solid";
 import LoadingButton from "@components/ui/forms/loading-button";
 
 type ReportRequestBody = Record<string, string[]>;
@@ -45,6 +45,12 @@ const GenerateReportModal = ({
   const [loading, setLoading] = useState(false);
 
   const generateReport = async () => {
+    if (completedReportableFlows?.length == 0) {
+      toast.error("No completed reportable flows ready for report generation");
+      onClose();
+      return;
+    }
+
     setLoading(true);
     try {
       const body: ReportRequestBody = {};
@@ -135,33 +141,53 @@ const GenerateReportModal = ({
       <div className="w-full">
         <h2 className="text-xl font-semibold text-gray-900 mb-6">Generate Report</h2>
 
-        <div className="rounded-lg bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 p-5 mb-6 shadow-sm">
-          <div className="flex items-start gap-3">
-            <div className="shrink-0 mt-0.5">
-              <div className="rounded-full bg-green-100 p-1.5">
-                <CheckCircleIcon aria-hidden="true" className="size-5 text-green-600" />
+        {completedReportableFlows.length > 0 ? (
+          <div className="rounded-lg bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 p-5 mb-6 shadow-sm">
+            <div className="flex items-start gap-3">
+              <div className="shrink-0 mt-0.5">
+                <div className="rounded-full bg-green-100 p-1.5">
+                  <CheckCircleIcon aria-hidden="true" className="size-5 text-green-600" />
+                </div>
               </div>
-            </div>
-            <div className="flex-1 min-w-0">
-              <h3 className="text-base font-semibold text-green-900 mb-3">
-                {completedReportableFlows.length} completed flow
-                {completedReportableFlows.length > 1 ? "s" : ""} ready for report generation
-              </h3>
-              <div className="space-y-2">
-                {completedReportableFlows.map((flow) => (
-                  <div
-                    key={flow.id}
-                    className="flex items-start gap-3 px-3 py-2.5 bg-white rounded-md border border-green-100 hover:border-green-200 hover:shadow-sm transition-all duration-150"
-                  >
-                    <span className="text-sm font-medium text-gray-800 break-words min-w-0 flex-1">
-                      {flow.title || flow.id}
-                    </span>
-                  </div>
-                ))}
+              <div className="flex-1 min-w-0">
+                <h3 className="text-base font-semibold text-green-900 mb-3">
+                  {completedReportableFlows.length} completed flow
+                  {completedReportableFlows.length > 1 ? "s" : ""} ready for report generation
+                </h3>
+                <div className="space-y-2">
+                  {completedReportableFlows.map((flow) => (
+                    <div
+                      key={flow.id}
+                      className="flex items-start gap-3 px-3 py-2.5 bg-white rounded-md border border-green-100 hover:border-green-200 hover:shadow-sm transition-all duration-150"
+                    >
+                      <span className="text-sm font-medium text-gray-800 break-words min-w-0 flex-1">
+                        {flow.title || flow.id}
+                      </span>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        ) : (
+          <div className="rounded-lg bg-gradient-to-br from-red-50 to-red-10 border border-red-200 p-5 mb-6 shadow-sm">
+            <div className="flex items-start gap-3">
+              <div className="shrink-0 mt-0.5">
+                <div className="rounded-full bg-red-100 p-1.5">
+                  <ExclamationCircleIcon aria-hidden="true" className="size-5 text-red-400" />
+                </div>
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-base font-semibold text-red-700">
+                  None of the flows run in this session are reportable
+                </h3>
+                <p className="text-sm text-red-600 mt-1">
+                  Complete flows with the "REPORTABLE" tag to generate reports.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
 
         <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
           <button
@@ -174,7 +200,7 @@ const GenerateReportModal = ({
             buttonText="Ok"
             isLoading={loading}
             onClick={generateReport}
-            disabled={completedReportableFlows.length === 0 || loading}
+            disabled={loading}
             loadingText="Generating Report..."
           />
         </div>
