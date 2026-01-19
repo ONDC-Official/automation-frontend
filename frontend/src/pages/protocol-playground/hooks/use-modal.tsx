@@ -4,6 +4,33 @@ import { toast } from "react-toastify";
 import { AddActionForm, DeleteConfirmationForm, EditActionForm } from "../ui/from-contents";
 import { getFormValues } from "../utils/form-helper";
 
+interface ActionFormData {
+  api?: string;
+  actionId?: string;
+  owner?: string;
+  unsolicited?: boolean | string;
+  responseFor?: string;
+  description?: string;
+  [key: string]: unknown;
+}
+
+interface StepConfig {
+  action_id: string;
+  api?: string;
+  owner?: string;
+  unsolicited?: boolean | string;
+  responseFor?: string | null;
+  description?: string;
+  mock?: unknown;
+  repeatCount?: number | string | null;
+  [key: string]: unknown;
+}
+
+interface MockConfig {
+  steps: StepConfig[];
+  [key: string]: unknown;
+}
+
 interface ModalHandlersProps {
   activeApi: string | undefined;
   setActiveApi: (api: string | undefined) => void;
@@ -11,9 +38,9 @@ interface ModalHandlersProps {
   closeModal: () => void;
   addAction: (api: string, actionId: string, insertIndex?: number) => void;
   deleteAction: (actionId: string) => boolean;
-  updateAction: (actionId: string, formData: any) => boolean;
+  updateAction: (actionId: string, formData: ActionFormData) => boolean;
   clearConfig: () => void;
-  config: any;
+  config: MockConfig | undefined;
 }
 
 export const useModalHandlers = ({
@@ -51,7 +78,7 @@ export const useModalHandlers = ({
   const addActionBefore = () => {
     if (!activeApi || !config) return;
 
-    const currentIndex = config.steps.findIndex((step: any) => step.action_id === activeApi);
+    const currentIndex = config.steps.findIndex((step: StepConfig) => step.action_id === activeApi);
 
     if (currentIndex !== -1) {
       showAddAction(currentIndex, "Add Action Before");
@@ -61,7 +88,7 @@ export const useModalHandlers = ({
   const addActionAfter = () => {
     if (!activeApi || !config) return;
 
-    const currentIndex = config.steps.findIndex((step: any) => step.action_id === activeApi);
+    const currentIndex = config.steps.findIndex((step: StepConfig) => step.action_id === activeApi);
 
     if (currentIndex !== -1) {
       showAddAction(currentIndex + 1, "Add Action After");
@@ -95,14 +122,14 @@ export const useModalHandlers = ({
   };
 
   const showEditAction = () => {
-    if (!activeApi) return;
+    if (!activeApi || !config) return;
 
-    const currentAction = config?.steps.find((step: any) => step.action_id === activeApi);
+    const currentAction = config.steps.find((step: StepConfig) => step.action_id === activeApi);
 
     if (!currentAction) return;
 
     const getPreviousSteps = () => {
-      const currentIndex = config.steps.findIndex((step: any) => step.action_id === activeApi);
+      const currentIndex = config.steps.findIndex((step: StepConfig) => step.action_id === activeApi);
       return config.steps.slice(0, currentIndex);
     };
 
@@ -133,9 +160,9 @@ export const useModalHandlers = ({
 
     openModal(
       <EditActionForm
-        currentAction={currentAction}
+        currentAction={currentAction as never}
         activeActionId={activeApi}
-        previousSteps={getPreviousSteps()}
+        previousSteps={getPreviousSteps() as never}
         onUpdate={handleUpdate}
         onCancel={closeModal}
       />,

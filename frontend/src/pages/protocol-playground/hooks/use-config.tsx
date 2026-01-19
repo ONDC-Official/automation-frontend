@@ -66,7 +66,7 @@ export const useConfigOperations = () => {
         <JsonSchemaForm
           schema={schema}
           // formData={data.sessionData}
-          onSubmit={onSubmit}
+          onSubmit={onSubmit as (data: Record<string, unknown>) => Promise<void>}
         />
       </div>,
     );

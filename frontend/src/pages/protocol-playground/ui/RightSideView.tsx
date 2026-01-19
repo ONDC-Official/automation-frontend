@@ -1,13 +1,25 @@
 import { Editor, OnMount } from "@monaco-editor/react";
+import { editor, Position } from "monaco-editor";
 import { PLAYGROUND_RIGHT_TABS, PlaygroundRightTabType } from "../types";
 import { useContext, useEffect, useRef, useState } from "react";
 import { PlaygroundContext } from "../context/playground-context";
 import SessionDataTab from "./session-data-tab";
 import { ExecutionResults } from "./extras/terminal";
 import OutputPayloadViewer from "./extras/output-payload-viewer";
-import MockRunner from "@ondc/automation-mock-runner";
+import MockRunner, { MockPlaygroundConfigType } from "@ondc/automation-mock-runner";
 import { editorUtils } from "../utils/editor-utils";
 import { mockRunnerExtensions } from "../utils/mock-runner-extentions";
+
+interface SavedMetadata {
+  [key: string]: {
+    actionId: string;
+    path: string;
+  };
+}
+
+interface WindowWithMonaco extends Window {
+  __jsonHoverProviderDisposable?: { dispose: () => void };
+}
 
 export function RightSideView(props: {
   width: string;
@@ -42,9 +54,9 @@ export function RightSideView(props: {
 
 function GetRightSideContent({ tabId, actionId }: { tabId: string; actionId: string | undefined }) {
   const playgroundContext = useContext(PlaygroundContext);
-  const [sessionData, setSessionData] = useState<any>({});
-  // const [savedMeta, setSaveMeta] = useState<any>({});
-  const savedMetaRef = useRef<any>({}); // Add this ref
+  const [sessionData, setSessionData] = useState<string>("{}");
+  // const [savedMeta, setSaveMeta] = useState<SavedMetadata>({});
+  const savedMetaRef = useRef<SavedMetadata>({}); // Add this ref
 
   useEffect(() => {
     const meta = mockRunnerExtensions.getSaveDataMeta(playgroundContext.activeApi, playgroundContext.config);
@@ -71,15 +83,18 @@ function GetRightSideContent({ tabId, actionId }: { tabId: string; actionId: str
         );
       }
 
-      const mockRunner = new MockRunner(playgroundContext.config as any);
+      const mockRunner = new MockRunner(playgroundContext.config as MockPlaygroundConfigType);
       const sessionData = await mockRunner.getSessionDataUpToStep(index);
 
       return JSON.stringify(sessionData, null, 2);
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
+      const errorName = error instanceof Error ? error.name : "Error";
+      
       const errorInfo = {
         error: "Failed to generate session data",
-        message: error?.message || "Unknown error occurred",
-        type: error?.name || "Error",
+        message: errorMessage,
+        type: errorName,
         step: index,
         actionId: actionId,
         timestamp: new Date().toISOString(),
@@ -87,8 +102,9 @@ function GetRightSideContent({ tabId, actionId }: { tabId: string; actionId: str
 
       try {
         return JSON.stringify(errorInfo, null, 2);
-      } catch (stringifyError) {
+      } catch (newError: unknown) {
         // Fallback if even error serialization fails
+        console.error("Error serializing data:", newError);
         return JSON.stringify(
           {
             error: "Critical error - unable to serialize data",
@@ -105,12 +121,13 @@ function GetRightSideContent({ tabId, actionId }: { tabId: string; actionId: str
   const handleOnMount: OnMount = (editor, monaco) => {
     const modelUri = editor.getModel()?.uri.toString();
     // check if hover provider is already registered
-    if ((window as any).__jsonHoverProviderDisposable) {
-      (window as any).__jsonHoverProviderDisposable.dispose();
+    const windowWithMonaco = window as WindowWithMonaco;
+    if (windowWithMonaco.__jsonHoverProviderDisposable) {
+      windowWithMonaco.__jsonHoverProviderDisposable.dispose();
     }
 
     const disposable = monaco?.languages?.registerHoverProvider?.("json", {
-      provideHover: (model: any, position: any) => {
+      provideHover: (model: editor.ITextModel, position: Position) => {
         if (modelUri !== model?.uri?.toString()) {
           return null;
         }
@@ -143,7 +160,7 @@ function GetRightSideContent({ tabId, actionId }: { tabId: string; actionId: str
     });
 
     // Save the disposable globally (or in React ref)
-    (window as any).__jsonHoverProviderDisposable = disposable;
+    windowWithMonaco.__jsonHoverProviderDisposable = disposable;
   };
 
   switch (tabId) {

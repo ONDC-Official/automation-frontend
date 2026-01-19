@@ -1,6 +1,6 @@
 import { useContext, useState, useMemo } from "react";
 import { PlaygroundContext } from "../context/playground-context";
-import { Editor } from "@monaco-editor/react";
+import { Editor, Monaco } from "@monaco-editor/react";
 import { PLAYGROUND_LEFT_TABS } from "../types";
 import { DarkSkyBlueTheme } from "./editor-themes";
 import MockRunner, {
@@ -87,7 +87,7 @@ export function LeftSideView(props: { width: string; activeApi?: string }) {
 		);
 	};
 
-	const handleEditorWillMount = (monaco: any) => {
+	const handleEditorWillMount = (monaco: Monaco) => {
 		monaco.editor.defineTheme("dark-skyblue", DarkSkyBlueTheme);
 	};
 
