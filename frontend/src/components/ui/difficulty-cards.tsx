@@ -5,7 +5,7 @@ import { putCacheData } from "../../utils/request-utils";
 import { useEffect, useState } from "react";
 import { trackEvent } from "../../utils/analytics";
 
-const keyMapping: any = {
+const keyMapping: Record<string, string> = {
   stopAfterFirstNack: "Stop At Nack",
   timeValidations: "Time Validation",
   protocolValidations: "Protocol Validation",
@@ -26,6 +26,8 @@ interface DifficultyCache {
   totalDifficulty?: number;
 }
 
+type FilteredDifficultyCache = Partial<Omit<DifficultyCache, 'stopAfterFirstNack' | 'sensitiveTTL' | 'useGateway' | 'timeValidations' | 'totalDifficulty'>>;
+
 const skipItems = ["stopAfterFirstNack", "sensitiveTTL", "useGateway", "timeValidations"];
 
 interface IProps {
@@ -34,7 +36,7 @@ interface IProps {
 }
 
 const DifficultyCards = ({ difficulty_cache, sessionId }: IProps) => {
-  const [difficultyCache, setDifficultCache] = useState({});
+  const [difficultyCache, setDifficultCache] = useState<FilteredDifficultyCache>({});
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
@@ -90,9 +92,9 @@ const DifficultyCards = ({ difficulty_cache, sessionId }: IProps) => {
       >
         {Object.entries(difficultyCache).length !== 0 && (
           <div className="flex flex-wrap gap-4 mt-4">
-            {Object.entries(difficultyCache)
+            {(Object.entries(difficultyCache) as [string, boolean | undefined][])
               .filter(([key]) => !skipItems.includes(key))
-              .map(([key, value]: any, index: any) => (
+              .map(([key, value], index: number) => (
                 <div
                   key={index}
                   className="flex items-center justify-between bg-white rounded-md shadow p-2 w-full sm:w-auto sm:flex-1"
@@ -106,8 +108,8 @@ const DifficultyCards = ({ difficulty_cache, sessionId }: IProps) => {
                           category: "SCHEMA_VALIDATION-FLOW_SETTINGS",
                           action: `toggled value: ${key} to: ${value}`,
                         });
-                        setDifficultCache((prevalue: any) => {
-                          prevalue[key] = value;
+                        setDifficultCache((prevalue: FilteredDifficultyCache) => {
+                          prevalue[key as keyof FilteredDifficultyCache] = value;
                           return JSON.parse(JSON.stringify(prevalue));
                         });
                       }}

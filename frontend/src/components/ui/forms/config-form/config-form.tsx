@@ -129,7 +129,7 @@ export default function FormConfig({
     const schemaField = formConfig.find((f) => f.schema);
     return JsonSchemaForm({
       schema: schemaField!.schema,
-      onSubmit: onSubmit,
+      onSubmit: onSubmit as (data: Record<string, unknown>) => Promise<void>,
     });
   }
 

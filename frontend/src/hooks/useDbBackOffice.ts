@@ -1,9 +1,10 @@
 import { useCallback, useState } from "react";
 import { toast } from "react-toastify";
 
-import { apiClient } from "@services/apiClient";
+import { apiClient, ApiError } from "@services/apiClient";
 import { API_ROUTES } from "@services/apiRoutes";
 import { LoginCredentials, PayloadData } from "@pages/db-back-office/types";
+import { AxiosError } from "axios";
 
 type FetchParams = {
   domain: string;
@@ -46,9 +47,9 @@ export const useDbBackOffice = () => {
         } else {
           toast.error("Invalid credentials");
         }
-      } catch (error: any) {
-        toast.error(error.response?.data?.message || error.message || "Login failed");
-        console.error("Authentication error:", error);
+      } catch (error: unknown) {
+        toast.error((error as AxiosError<ApiError>).response?.data?.message || (error as Error).message || "Login failed");
+        console.error("Authentication error:", error as Error );
       } finally {
         setIsLoading(false);
       }
@@ -74,9 +75,9 @@ export const useDbBackOffice = () => {
         data: response.data,
       });
       toast.success("Data fetched successfully!");
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || error.message || "Failed to fetch data");
-      console.error("Fetch error:", error);
+    } catch (error: unknown) {
+      toast.error((error as AxiosError<ApiError>).response?.data?.message || (error as Error).message || "Failed to fetch data");
+      console.error("Fetch error:", error as Error);
     } finally {
       setIsLoading(false);
     }
