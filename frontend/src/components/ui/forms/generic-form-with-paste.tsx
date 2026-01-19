@@ -4,10 +4,7 @@ import { FaRegPaste } from "react-icons/fa6";
 import { toast } from "react-toastify";
 import PayloadEditor from "@/components/ui/mini-components/payload-editor";
 import LoadingButton from "./loading-button";
-import {
-  ICatalogItem,
-  IGenericFormWithPasteProps,
-} from "./generic-form.types";
+import { ICatalogItem, IGenericFormWithPasteProps } from "./generic-form.types";
 
 const GenericFormWithPaste = ({
   defaultValues,
@@ -27,8 +24,6 @@ const GenericFormWithPaste = ({
   const isRequestTriggered = useRef(false);
 
   const [isLoading, setIsLoading] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
-  const [isError, setIsError] = useState(false);
   const [isPayloadEditorActive, setIsPayloadEditorActive] = useState(false);
   const [errorWhilePaste, setErrorWhilePaste] = useState("");
   const [availableItems, setAvailableItems] = useState<ICatalogItem[]>([]);
@@ -67,7 +62,11 @@ const GenericFormWithPaste = ({
             const addonDescriptor = addon.descriptor as Record<string, unknown> | undefined;
             return {
               id: (addon.id as string) || "",
-              name: (addonDescriptor?.name as string) || (addonDescriptor?.short_desc as string) || (addon.id as string) || "",
+              name:
+                (addonDescriptor?.name as string) ||
+                (addonDescriptor?.short_desc as string) ||
+                (addon.id as string) ||
+                "",
             };
           }),
         };
@@ -96,20 +95,21 @@ const GenericFormWithPaste = ({
     setIsPayloadEditorActive(false);
   };
 
-  const handleSubmitForm = useCallback(async (data: Record<string, unknown>) => {
-    setIsLoading(true);
-    setIsSuccess(false);
-    setIsError(false);
-    try {
-      await onSubmit(data);
-      setIsSuccess(true);
-    } catch (error) {
-      setIsError(true);
-      console.error((error as Error)?.message);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [onSubmit]);
+  const handleSubmitForm = useCallback(
+    async (data: Record<string, unknown>) => {
+      setIsLoading(true);
+
+      try {
+        await onSubmit(data);
+      } catch (error) {
+        setIsLoading(false);
+        console.error((error as Error)?.message);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [onSubmit]
+  );
 
   useEffect(() => {
     if (triggerSubmit && !isRequestTriggered.current) {
@@ -132,7 +132,8 @@ const GenericFormWithPaste = ({
           <div className="mb-2 w-full bg-gray-50 border rounded-md p-2 flex">
             <div className="flex justify-between w-full">
               <label className="text-sm font-medium text-gray-600 mb-2">
-                {(childProps.label as string) || "Item ID"} <span className="text-red-500 ml-1">*</span>
+                {(childProps.label as string) || "Item ID"}{" "}
+                <span className="text-red-500 ml-1">*</span>
               </label>
             </div>
             <select
@@ -147,7 +148,7 @@ const GenericFormWithPaste = ({
               ))}
             </select>
             {errors["item_id"] && (
-              <p className="text-red-500 text-xs italic">This field is required</p>
+              <p className="text-red-500 text-xs italic">Field required</p>
             )}
           </div>
         );
@@ -201,7 +202,7 @@ const GenericFormWithPaste = ({
       )}
       <form onSubmit={handleSubmit(handleSubmitForm)} className={className}>
         {renderChildren()}
-        <LoadingButton type="submit" buttonText="Submit" isLoading={isLoading} isSuccess={isSuccess} isError={isError} />
+        <LoadingButton type="submit" buttonText="Submit" isLoading={isLoading} />
       </form>
     </div>
   );

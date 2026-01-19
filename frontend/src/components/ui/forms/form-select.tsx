@@ -40,7 +40,7 @@ const FormSelect = ({
 }: FormSelectProps) => {
   // Register field with react-hook-form for validation
   const registerProps = register(name, {
-    required: required ? (typeof required === "string" ? required : "This field is required") : false,
+    required: required ? (typeof required === "string" ? required : "Field required") : false,
   });
 
   // If currentValue is explicitly provided (including empty string), use controlled mode

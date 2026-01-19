@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { SubmitEventParams } from "../../../../types/flow-types";
-import { FormFieldConfigType } from "../config-form/config-form";
 import jsonpath from "jsonpath";
 import { AxiosResponse } from "axios";
-import { htmlFormSubmit } from "../../../../utils/request-utils";
+
+import { SubmitEventParams } from "@/types/flow-types";
+import { FormFieldConfigType } from "../config-form/config-form";
+
+import { htmlFormSubmit } from "@utils/request-utils";
 // --- Types -------------------------------------------------------------------
 
 type BaseField = {
@@ -105,17 +107,11 @@ type ParsedForm = {
 };
 
 // Value state type for the rebuilt React form
-type ValueState = Record<
-  string,
-  string | string[] | boolean | File | File[] | null | undefined
->;
+type ValueState = Record<string, string | string[] | boolean | File | File[] | null | undefined>;
 
 // --- Helper: label resolution -------------------------------------------------
 
-function getLabelForInput(
-  input: Element,
-  formEl: HTMLFormElement
-): string | undefined {
+function getLabelForInput(input: Element, formEl: HTMLFormElement): string | undefined {
   const id = (input as HTMLInputElement).id;
   if (id) {
     const byFor = formEl.querySelector(`label[for="${CSS.escape(id)}"]`);
@@ -221,9 +217,7 @@ function parseFormHtml(formHtml: string): ParsedForm {
       "tel",
       "search",
     ]);
-    const inputType = supportedTypes.has(type)
-      ? (type as TextLikeField["inputType"])
-      : "text";
+    const inputType = supportedTypes.has(type) ? (type as TextLikeField["inputType"]) : "text";
 
     fields.push({
       kind: "textlike",
@@ -251,9 +245,7 @@ function parseFormHtml(formHtml: string): ParsedForm {
       id: ta.id || null,
       defaultValue: ta.value ?? ta.textContent ?? "",
       placeholder: ta.getAttribute("placeholder") ?? undefined,
-      rows: ta.hasAttribute("rows")
-        ? Number(ta.getAttribute("rows"))
-        : undefined,
+      rows: ta.hasAttribute("rows") ? Number(ta.getAttribute("rows")) : undefined,
     } as TextareaField);
   }
 
@@ -327,11 +319,11 @@ function parseFormHtml(formHtml: string): ParsedForm {
   return { method, action, enctype, fields };
 }
 
-// --- Component ---------------------------------------------------------------
+// --- Component -------------------------------------------------------any--------
 
 type Props = {
   submitEvent: (data: SubmitEventParams) => Promise<void>;
-  referenceData?: Record<string, any>;
+  referenceData?: Record<string, unknown>;
   HtmlFormConfigInFlow: FormFieldConfigType;
 };
 
@@ -345,10 +337,8 @@ export default function ProtocolHTMLForm({
   // Replace with server value
   const formHtml = useMemo<string>(() => {
     return (
-      jsonpath.query(
-        { reference_data: referenceData },
-        HtmlFormConfigInFlow.reference || ""
-      )[0] || ""
+      jsonpath.query({ reference_data: referenceData }, HtmlFormConfigInFlow.reference || "")[0] ||
+      ""
     );
   }, [referenceData, HtmlFormConfigInFlow.reference]);
 
@@ -371,9 +361,7 @@ export default function ProtocolHTMLForm({
           break;
         case "select": {
           const sel = f as SelectField;
-          const selected = sel.options
-            .filter((o) => o.selected)
-            .map((o) => o.value);
+          const selected = sel.options.filter((o) => o.selected).map((o) => o.value);
           v[f.name] = sel.multiple ? selected : (selected[0] ?? "");
           break;
         }
@@ -390,9 +378,7 @@ export default function ProtocolHTMLForm({
         }
         case "checkbox-group": {
           const cg = f as CheckboxGroupField;
-          const selected = cg.options
-            .filter((o) => o.checked)
-            .map((o) => o.value);
+          const selected = cg.options.filter((o) => o.checked).map((o) => o.value);
           v[f.name] = selected;
           break;
         }
@@ -430,8 +416,11 @@ export default function ProtocolHTMLForm({
   }, [formHtml]);
 
   // Change handlers
-  const setField = (name: string, val: any) => {
-    setValues((prev) => ({ ...prev, [name]: val }));
+  const setField = (name: string, val: unknown) => {
+    setValues((prev: ValueState) => ({
+      ...prev,
+      [name]: val as ValueState[string],
+    }));
     // Clear field error when user starts typing
     if (fieldErrors[name]) {
       setFieldErrors((prev) => {
@@ -499,7 +488,7 @@ export default function ProtocolHTMLForm({
         parsed.fields.some((f) => f.kind === "file") ||
         (parsed.enctype || "").toLowerCase().includes("multipart");
 
-      let res: AxiosResponse<any, any>;
+      let res: AxiosResponse<unknown, unknown>;
       if (hasFile) {
         const fd = new FormData();
         for (const f of parsed.fields) {
@@ -528,11 +517,7 @@ export default function ProtocolHTMLForm({
             } else if (v instanceof File) {
               fd.append(f.name, v);
             }
-          } else if (
-            f.kind === "hidden" ||
-            f.kind === "textlike" ||
-            f.kind === "textarea"
-          ) {
+          } else if (f.kind === "hidden" || f.kind === "textlike" || f.kind === "textarea") {
             if (val != null) fd.append(f.name, String(val));
           }
         }
@@ -541,11 +526,10 @@ export default function ProtocolHTMLForm({
         // 	method: parsed.method,
         // 	body: fd,
         // });
-        res = (await htmlFormSubmit(
-          parsed.action || window.location.href,
-          fd
-        )) as AxiosResponse<any, any>;
-        console.log("res>>>", res);
+        res = (await htmlFormSubmit(parsed.action || window.location.href, fd)) as AxiosResponse<
+          unknown,
+          unknown
+        >;
       } else {
         const params = new URLSearchParams();
         for (const f of parsed.fields) {
@@ -559,8 +543,7 @@ export default function ProtocolHTMLForm({
             const arr = (val as string[]) || [];
             for (const item of arr) params.append(f.name, item);
           } else if (f.kind === "radio-group") {
-            if (typeof val === "string" && val !== "")
-              params.append(f.name, val);
+            if (typeof val === "string" && val !== "") params.append(f.name, val);
           } else if (f.kind === "select") {
             if ((f as SelectField).multiple) {
               const arr = (val as string[]) || [];
@@ -570,11 +553,7 @@ export default function ProtocolHTMLForm({
             }
           } else if (f.kind === "file") {
             // no files -> skip in urlencoded mode
-          } else if (
-            f.kind === "hidden" ||
-            f.kind === "textlike" ||
-            f.kind === "textarea"
-          ) {
+          } else if (f.kind === "hidden" || f.kind === "textlike" || f.kind === "textarea") {
             if (val != null) params.append(f.name, String(val));
           }
         }
@@ -582,28 +561,39 @@ export default function ProtocolHTMLForm({
         res = (await htmlFormSubmit(
           parsed.action || window.location.href,
           params.toString()
-        )) as AxiosResponse<any, any>;
+        )) as AxiosResponse<unknown, unknown>;
       }
       // Parse response
       const ct =
         typeof res.headers === "object"
           ? res.headers["content-type"] || res.headers["Content-Type"] || ""
           : "";
-      let data: any;
+      let data: {
+        submission_id?: string;
+        data?: { submission_id?: string };
+        result?: { submission_id?: string };
+      };
       if (ct.includes("application/json")) {
-        data = res.data;
+        data = res.data as {
+          submission_id?: string;
+          data?: { submission_id?: string };
+          result?: { submission_id?: string };
+        };
       } else {
         const text = typeof res.data === "string" ? res.data : String(res.data);
         const match = text.match(/"submission_id"\s*:\s*"([^"]+)"/i);
-        data = match ? { submission_id: match[1] } : res.data;
+        data = match
+          ? { submission_id: match[1] }
+          : (res.data as {
+              submission_id?: string;
+              data?: { submission_id?: string };
+              result?: { submission_id?: string };
+            });
         // data = match ? { submission_id: match[1] } : { raw: text };
       }
 
       const finalSubmissionId =
-        data?.submission_id ??
-        data?.data?.submission_id ??
-        data?.result?.submission_id ??
-        "";
+        data?.submission_id ?? data?.data?.submission_id ?? data?.result?.submission_id ?? "";
       if (!finalSubmissionId) {
         throw new Error("No submission_id returned by the form endpoint.");
       }
@@ -614,10 +604,7 @@ export default function ProtocolHTMLForm({
       const plainPayload: Record<string, string> = {};
       for (const f of parsed.fields) {
         const val = values[f.name];
-        if (
-          f.kind === "checkbox-group" ||
-          (f.kind === "select" && f.multiple)
-        ) {
+        if (f.kind === "checkbox-group" || (f.kind === "select" && f.multiple)) {
           (val as string[] | undefined)?.forEach((v, i) => {
             plainPayload[`${f.name}[${i}]`] = v;
           });
@@ -625,8 +612,7 @@ export default function ProtocolHTMLForm({
           // send filenames only to your submitEvent; upstream already got binary
           if (Array.isArray(val)) {
             val.forEach(
-              (file, i) =>
-                (plainPayload[`${f.name}[${i}]`] = (file as File)?.name ?? "")
+              (file, i) => (plainPayload[`${f.name}[${i}]`] = (file as File)?.name ?? "")
             );
           } else if (val instanceof File) {
             plainPayload[f.name] = val.name;
@@ -650,9 +636,9 @@ export default function ProtocolHTMLForm({
         jsonPath: { submission_id: finalSubmissionId },
         formData: { submission_id: finalSubmissionId },
       });
-    } catch (e: any) {
+    } catch (e: unknown) {
       console.error(e);
-      setError(e?.message || "Submission failed");
+      setError((e as Error)?.message || "Submission failed");
     } finally {
       setIsSubmitting(false);
     }
@@ -673,9 +659,7 @@ export default function ProtocolHTMLForm({
           <span className="text-red-600">{f.required ? " *" : ""}</span>
         </label>
         <div className="mt-1">{children}</div>
-        {fieldErrors[f.name] && (
-          <p className="mt-1 text-sm text-red-600">{fieldErrors[f.name]}</p>
-        )}
+        {fieldErrors[f.name] && <p className="mt-1 text-sm text-red-600">{fieldErrors[f.name]}</p>}
       </div>
     );
 
@@ -693,14 +677,12 @@ export default function ProtocolHTMLForm({
             placeholder={tf.placeholder}
             required={f.required}
             disabled={f.disabled}
-            min={tf.min as any}
-            max={tf.max as any}
-            step={tf.step as any}
+            min={tf.min as number}
+            max={tf.max as number}
+            step={tf.step as number}
             pattern={tf.pattern}
             className={`w-full rounded-md border bg-gray-50 px-3 py-2 focus:outline-none focus:ring-2 ${
-              hasError
-                ? "border-red-500 focus:ring-red-500"
-                : "border-gray-300 focus:ring-blue-500"
+              hasError ? "border-red-500 focus:ring-red-500" : "border-gray-300 focus:ring-blue-500"
             }`}
           />
         );
@@ -719,9 +701,7 @@ export default function ProtocolHTMLForm({
             required={f.required}
             disabled={f.disabled}
             className={`w-full rounded-md bg-gray-50 border px-3 py-2 focus:outline-none focus:ring-2 ${
-              hasError
-                ? "border-red-500 focus:ring-red-500"
-                : "border-gray-300 focus:ring-blue-500"
+              hasError ? "border-red-500 focus:ring-red-500" : "border-gray-300 focus:ring-blue-500"
             }`}
           />
         );
@@ -734,15 +714,11 @@ export default function ProtocolHTMLForm({
           <select
             name={f.name}
             value={
-              (sel.multiple
-                ? ((v as string[]) ?? [])
-                : ((v as string) ?? "")) as any
+              (sel.multiple ? ((v as string[]) ?? []) : ((v as string) ?? "")) as string[] | string
             }
             onChange={(e) => {
               if (sel.multiple) {
-                const opts = Array.from(e.currentTarget.selectedOptions).map(
-                  (o) => o.value
-                );
+                const opts = Array.from(e.currentTarget.selectedOptions).map((o) => o.value);
                 setField(f.name, opts);
               } else {
                 setField(f.name, e.currentTarget.value);
@@ -752,9 +728,7 @@ export default function ProtocolHTMLForm({
             required={f.required}
             disabled={f.disabled}
             className={`w-full rounded-md border bg-gray-50 px-3 py-2 focus:outline-none focus:ring-2 ${
-              hasError
-                ? "border-red-500 focus:ring-red-500"
-                : "border-gray-300 focus:ring-blue-500"
+              hasError ? "border-red-500 focus:ring-red-500" : "border-gray-300 focus:ring-blue-500"
             }`}
           >
             {!sel.multiple && <option value="">-- Select --</option>}
@@ -777,10 +751,7 @@ export default function ProtocolHTMLForm({
                 <span className="text-red-600">{f.required ? " *" : ""}</span>
               </legend>
               {rg.options.map((opt, i) => (
-                <label
-                  key={i}
-                  className="flex items-center gap-2 text-sm text-gray-800"
-                >
+                <label key={i} className="flex items-center gap-2 text-sm text-gray-800">
                   <input
                     type="radio"
                     name={f.name}
@@ -839,10 +810,7 @@ export default function ProtocolHTMLForm({
               {cg.options.map((opt, i) => {
                 const on = arr.includes(opt.value);
                 return (
-                  <label
-                    key={i}
-                    className="flex items-center gap-2 text-sm text-gray-800"
-                  >
+                  <label key={i} className="flex items-center gap-2 text-sm text-gray-800">
                     <input
                       type="checkbox"
                       name={f.name}
@@ -939,15 +907,12 @@ export default function ProtocolHTMLForm({
         <div className="mt-3 text-sm text-gray-700 break-words">
           {submissionId && (
             <span className="text-green-700">
-              Received submission_id:{" "}
-              <code className="break-all">{submissionId}</code>
+              Received submission_id: <code className="break-all">{submissionId}</code>
             </span>
           )}
           {error && (
             <div className="p-3 bg-red-50 border border-red-200 rounded-md">
-              <span className="text-red-600 break-words font-medium">
-                Error: {error}
-              </span>
+              <span className="text-red-600 break-words font-medium">Error: {error}</span>
             </div>
           )}
         </div>

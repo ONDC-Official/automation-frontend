@@ -9,6 +9,8 @@ import {
   IParsedFlightData,
   IVehicleGrid,
   ITag,
+  ISeatDetail,
+  IItem,
 } from "./airline.types";
 
 export default function AirlineSeatSelect({
@@ -54,7 +56,7 @@ export default function AirlineSeatSelect({
 
       // 3. Extract Available Seats from TICKET fulfillments or any fulfillment with SEAT_GRID
       // Also map FulfillmentID -> Seat Info for auto-selection later
-      const fulfillmentMap = new Map<string, any>();
+      const fulfillmentMap = new Map<string, ISeatDetail>();
 
       const availableSeats = order.fulfillments
         .filter((f) => f.tags?.some((t) => t.descriptor.code === "SEAT_GRID"))
@@ -126,12 +128,12 @@ export default function AirlineSeatSelect({
       }
 
       // 4. Extract Items (Passengers)
-      const allItemIds = new Set(order.items.map((i: any) => i.id));
+      const allItemIds = new Set(order.items.map((i: IItem) => i.id));
       const parentItemIds = new Set(
-        order.items.map((i: any) => i.parent_item_id).filter((id: any) => id && allItemIds.has(id))
+        order.items.map((i: IItem) => i.parent_item_id).filter((id: string | undefined) => id && allItemIds.has(id))
       );
 
-      const items = order.items.filter((i: any) => !parentItemIds.has(i.id));
+      const items = order.items.filter((i: IItem) => !parentItemIds.has(i.id));
 
       // 5. Auto-select seats based on item <-> fulfillment linkage
       // DISABLED per user request - user wants to select manually
@@ -178,9 +180,9 @@ export default function AirlineSeatSelect({
       toast.success(
         `Payload parsed: ${items.length} passengers, ${availableSeats.length} seats found.`
       );
-    } catch (e: any) {
+    } catch (e: unknown) {
       console.error(e);
-      toast.error("Failed to parse payload: " + e.message);
+      toast.error("Failed to parse payload: " + (e as Error).message);
     }
   };
 

@@ -1,11 +1,16 @@
 import react from "react";
-// import { useWatch } from "react-hook-form";
+
 import GenericForm from "@components/ui/forms/generic-form";
 import { FormInput } from "@components/ui/forms/form-input";
 import FormSelect from "@components/ui/forms/form-select";
 
 import { UserContext } from "@context/userContext";
 import { trackEvent } from "@utils/analytics";
+import { Domain, DomainVersion } from "@/pages/schema-validation/types";
+
+type DomainVersionWithUsecase = DomainVersion & {
+  usecase: string[];
+};
 
 type FlowTestingFormData = {
   config?: string;
@@ -19,18 +24,18 @@ type FlowTestingFormData = {
 
 export interface InitialFormProps {
   formData: react.MutableRefObject<FlowTestingFormData>;
-  onSubmitHandler: (data: any) => Promise<void>;
+  onSubmitHandler: (data: FlowTestingFormData) => Promise<void>;
   dynamicList: {
-    domain: any[];
-    version: any[];
-    usecase: any[];
+    domain: Domain[];
+    version: DomainVersionWithUsecase[];
+    usecase: string[];
   };
   dynamicValue: FlowTestingFormData;
   setDynamicList: react.Dispatch<
     react.SetStateAction<{
-      domain: any[];
-      version: any[];
-      usecase: any[];
+      domain: Domain[];
+      version: DomainVersionWithUsecase[];
+      usecase: string[];
     }>
   >;
   setDyanmicValue: react.Dispatch<react.SetStateAction<FlowTestingFormData>>;
@@ -47,18 +52,17 @@ export default function InitialFlowForm({
   const user = react.useContext(UserContext);
 
   if (user.userDetails?.participantId && user.subscriberData) {
-    const onSubmit = async (data: any) => {
-      const [domain, type, uri] = data.config.split(" - ");
+    const onSubmit = async (data: FlowTestingFormData) => {
+      const [domain, type, uri] = data?.config?.split(" - ") || [];
       data.npType = type;
       data.domain = domain;
       data.subscriberUrl = uri;
       data.env = "LOGGED-IN";
       await onSubmitHandler(data);
-      console.log("data", domain, type, uri, data);
     };
 
     const configOptions = user.subscriberData.mappings.map(
-      mapping => `${mapping.domain} - ${mapping.type} - ${mapping.uri}`,
+      (mapping) => `${mapping.domain} - ${mapping.type} - ${mapping.uri}`
     );
 
     return (
@@ -69,24 +73,25 @@ export default function InitialFlowForm({
           options={configOptions}
           currentValue={""}
           setSelectedValue={(data: string) => {
-            const [domain, type, uri] = data.split(" - ");
-            console.log("domain", domain, type, uri, data.split(" - "));
+            // const [domain, type, uri] = data.split(" - ");
+            const [domain] = data.split(" - ");
+
             formData.current = {
               ...formData.current,
               domain: domain,
               config: data,
             };
-            setDyanmicValue(prev => ({
+            setDyanmicValue((prev) => ({
               ...prev,
               domain: domain,
               version: "",
               usecaseId: "",
             }));
-            setDynamicList(prev => {
-              let filteredVersion: any = [];
-              prev.domain.forEach((item: any) => {
+            setDynamicList((prev) => {
+              let filteredVersion: DomainVersionWithUsecase[] = [];
+              prev.domain.forEach((item: Domain) => {
                 if (item.key === domain) {
-                  filteredVersion = item.version;
+                  filteredVersion = item.version as DomainVersionWithUsecase[];
                 }
               });
               return {
@@ -104,18 +109,18 @@ export default function InitialFlowForm({
           label="Select Version"
           name="version"
           required={true}
-          options={dynamicList?.version?.map((val: any) => val.key) || []}
+          options={dynamicList?.version?.map((val: DomainVersion) => val.key) || []}
           currentValue={dynamicValue.version}
           setSelectedValue={(data: string) => {
             formData.current = { ...formData.current, version: data };
-            setDyanmicValue(prev => ({
+            setDyanmicValue((prev) => ({
               ...prev,
               version: data,
               usecaseId: "",
             }));
-            setDynamicList(prev => {
-              let filteredUsecase: any = [];
-              prev.version.forEach((item: any) => {
+            setDynamicList((prev) => {
+              let filteredUsecase: string[] = [];
+              prev.version.forEach((item: DomainVersionWithUsecase) => {
                 if (item.key === data) {
                   filteredUsecase = item.usecase;
                 }
@@ -143,7 +148,7 @@ export default function InitialFlowForm({
               ...formData.current,
               usecaseId: data,
             };
-            setDyanmicValue(prev => ({
+            setDyanmicValue((prev) => ({
               ...prev,
               usecaseId: data,
             }));
@@ -200,7 +205,7 @@ export default function InitialFlowForm({
       <FormSelect
         name="domain"
         label="Select Domain"
-        options={dynamicList.domain.map((val: any) => val.key)}
+        options={dynamicList.domain.map((val: Domain) => val.key)}
         currentValue={dynamicValue.domain}
         setSelectedValue={(data: string) => {
           trackEvent({
@@ -209,17 +214,17 @@ export default function InitialFlowForm({
             label: data,
           });
           formData.current = { ...formData.current, domain: data };
-          setDyanmicValue(prev => ({
+          setDyanmicValue((prev) => ({
             ...prev,
             domain: data,
             version: "",
             usecaseId: "",
           }));
-          setDynamicList(prev => {
-            let filteredVersion: any = [];
-            prev.domain.forEach((item: any) => {
+          setDynamicList((prev) => {
+            let filteredVersion: DomainVersionWithUsecase[] = [];
+            prev.domain.forEach((item: Domain) => {
               if (item.key === data) {
-                filteredVersion = item.version;
+                filteredVersion = item.version as DomainVersionWithUsecase[];
               }
             });
             return {
@@ -237,7 +242,7 @@ export default function InitialFlowForm({
         label="Select Version"
         name="version"
         required={true}
-        options={dynamicList?.version?.map((val: any) => val.key) || []}
+        options={dynamicList?.version?.map((val: DomainVersion) => val.key) || []}
         currentValue={dynamicValue.version}
         setSelectedValue={(data: string) => {
           trackEvent({
@@ -246,14 +251,14 @@ export default function InitialFlowForm({
             label: data,
           });
           formData.current = { ...formData.current, version: data };
-          setDyanmicValue(prev => ({
+          setDyanmicValue((prev) => ({
             ...prev,
             version: data,
             usecaseId: "",
           }));
-          setDynamicList(prev => {
-            let filteredUsecase: any = [];
-            prev.version.forEach((item: any) => {
+          setDynamicList((prev) => {
+            let filteredUsecase: string[] = [];
+            prev.version.forEach((item: DomainVersionWithUsecase) => {
               if (item.key === data) {
                 filteredUsecase = item.usecase;
               }
@@ -286,7 +291,7 @@ export default function InitialFlowForm({
             ...formData.current,
             usecaseId: data,
           };
-          setDyanmicValue(prev => ({
+          setDyanmicValue((prev) => ({
             ...prev,
             usecaseId: data,
           }));
@@ -307,7 +312,7 @@ export default function InitialFlowForm({
             action: "Added np type",
             label: data,
           });
-          setDyanmicValue(prev => {
+          setDyanmicValue((prev) => {
             return {
               ...prev,
               npType: data,
@@ -328,7 +333,7 @@ export default function InitialFlowForm({
             action: "Added environment",
             label: data,
           });
-          setDyanmicValue(prev => ({
+          setDyanmicValue((prev) => ({
             ...prev,
             env: data,
           }));
