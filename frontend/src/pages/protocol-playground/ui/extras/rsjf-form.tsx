@@ -12,7 +12,7 @@ import { MdDeleteOutline } from "react-icons/md";
 
 interface JsonSchemaFormProps {
   schema: RJSFSchema;
-  formData?: any;
+  formData?: Record<string, unknown>;
   onSubmit: (data: any) => void;
   onChange?: (data: any) => void;
   title?: string;

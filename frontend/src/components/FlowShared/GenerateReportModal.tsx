@@ -33,6 +33,7 @@ const GenerateReportModal = ({
   open,
   onClose,
   startPolling,
+  setGotReport,
 }: {
   flows: Flow[];
   subUrl: string;
@@ -41,6 +42,7 @@ const GenerateReportModal = ({
   open: boolean;
   onClose: () => void;
   startPolling: () => void;
+  setGotReport: (gotReport: boolean) => void;
 }) => {
   const [loading, setLoading] = useState(false);
 
@@ -97,8 +99,13 @@ const GenerateReportModal = ({
               onClose();
             }, 5000);
           } else if (response?.data?.data?.message?.ack?.status === "ACK") {
-            toast.info("Generating report. It can take upto 90 sec.");
-            startPolling();
+            toast.info("Generating report. It can take upto 90 sec. Please wait...");
+            setGotReport(false);
+
+            setTimeout(() => {
+              startPolling();
+            }, 30000);
+
             onClose();
           } else if (response?.data?.data?.message?.ack?.status === "NACK") {
             toast.error("Error while generating report");

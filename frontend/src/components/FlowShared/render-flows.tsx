@@ -701,6 +701,7 @@ function RenderFlows({
           open={isReportDialogOpen}
           onClose={() => setIsReportDialogOpen(false)}
           startPolling={startPolling}
+          setGotReport={setGotReport}
         />
       )}
     </SessionContext.Provider>
