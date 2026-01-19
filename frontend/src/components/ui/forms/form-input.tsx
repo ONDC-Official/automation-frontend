@@ -49,7 +49,7 @@ const FormInput = ({
         }}
       />
       {errors[name] && (
-        <p className="text-red-500 text-xs italic">{errors[name]?.message || "This field is required"}</p>
+        <p className="text-red-500 text-xs italic">{errors[name]?.message || "Field required"}</p>
       )}
     </div>
   );
@@ -100,7 +100,7 @@ const FormTextInput = ({
         }}
       />
       {errors[name] && (
-        <p className="text-red-500 text-xs italic">{errors[name]?.message || "This field is required"}</p>
+        <p className="text-red-500 text-xs italic">{errors[name]?.message || "Field required"}</p>
       )}
     </div>
   );
