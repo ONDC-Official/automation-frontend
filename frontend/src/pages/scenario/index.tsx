@@ -151,14 +151,16 @@ export default function FlowContent() {
   }
 
   const newSession = () => {
-    formData.current = {
-      domain: "",
-      version: "",
-      usecaseId: "",
-      subscriberUrl: "",
-      npType: "BAP",
-      env: "STAGING",
-    };
+    // formData.current = {
+    //   domain: "",
+    //   version: "",
+    //   usecaseId: "",
+    //   subscriberUrl: "",
+    //   npType: "BAP",
+    //   env: "STAGING",
+    // };
+    
+    setIsFormSubmitted(false);
     setFlowStepNum(0);
   };
 

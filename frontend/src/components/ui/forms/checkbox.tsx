@@ -43,7 +43,7 @@ const CheckboxGroup = ({
             value={code}
             disabled={disabled}
             {...register(name, {
-              required: required && "This field is required",
+              required: required && "Field required",
               default: defaultValue,
               onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
                 const form = e.target.form;
