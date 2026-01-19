@@ -55,7 +55,100 @@ export const DEFAULT_SEAT_FORM_DATA: ISeatFormData = {
 
 // Shared style constants
 export const FORM_STYLES = {
-  inputStyle: "border rounded p-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white",
+  inputStyle:
+    "border rounded p-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white",
   labelStyle: "mb-1 font-semibold text-sm",
   fieldWrapperStyle: "flex flex-col mb-2",
 } as const;
+
+// --- Payload Parsing Interfaces ---
+
+export interface IDescriptor {
+  code?: string;
+  name?: string;
+  short_desc?: string;
+}
+
+export interface ITagListItem {
+  descriptor?: IDescriptor;
+  value?: string;
+}
+
+export interface ITag {
+  descriptor: IDescriptor;
+  display?: boolean;
+  list: ITagListItem[];
+}
+
+export interface IItem {
+  id: string;
+  descriptor: {
+    name: string;
+    code: string;
+  };
+  quantity: {
+    selected: {
+      count: number;
+    };
+  };
+  tags?: ITag[];
+  category_ids?: string[];
+  fulfillment_ids?: string[];
+  parent_item_id?: string;
+}
+
+export interface IFulfillment {
+  id: string;
+  type: string;
+  tags?: ITag[];
+}
+
+export interface IProtocolOrder {
+  items: IItem[];
+  fulfillments: IFulfillment[];
+}
+
+export interface IProtocolMessage {
+  order: IProtocolOrder;
+}
+
+export interface IContext {
+  action: string;
+  transaction_id: string;
+  bpp_id: string;
+  bpp_uri: string;
+}
+
+export interface ISelectPayload {
+  context: IContext;
+  message: IProtocolMessage;
+}
+
+// Seat Grid Structures
+export interface IVehicleGrid {
+  xMax: number;
+  yMax: number;
+  zMax: number;
+  xLobbyStart: number;
+  xLobbySize: number;
+  yLobbyStart: number;
+  yLobbySize: number;
+}
+
+export interface ISeatDetail {
+  x: number;
+  y: number;
+  z: number;
+  seatNumber: string;
+  price: string;
+  available: boolean;
+  fulfillmentId: string;
+}
+
+export interface IParsedFlightData {
+  items: IItem[];
+  fulfillmentId: string;
+  grid: IVehicleGrid;
+  availableSeats: ISeatDetail[]; // Extracted from TICKET fulfillments
+  providerId?: string;
+}

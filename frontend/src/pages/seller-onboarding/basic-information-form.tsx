@@ -22,17 +22,21 @@ const BasicInformationForm = ({ initialData, onNext }: BasicInformationFormProps
   // Use optimized hooks for image state management
   const symbolImage = useSingleImageUpload(initialData?.symbolImage || "");
   const productImages = useMultiImageUpload(
-    initialData?.images ? (Array.isArray(initialData.images) ? initialData.images : [initialData.images]) : [],
+    initialData?.images
+      ? Array.isArray(initialData.images)
+        ? initialData.images
+        : [initialData.images]
+      : []
   );
 
   const getSelectValues = () => {
     if (!selectedDomain || selectedDomain.length === 0) return [];
     return selectedDomain
-      .map(domain => {
-        const optionByLabel = domainOptions.find(option => option.key === domain);
+      .map((domain) => {
+        const optionByLabel = domainOptions.find((option) => option.key === domain);
         if (optionByLabel) return optionByLabel.value;
 
-        const optionByValue = domainOptions.find(option => option.value === domain);
+        const optionByValue = domainOptions.find((option) => option.value === domain);
         if (optionByValue) return optionByValue.value;
 
         return domain;
@@ -41,8 +45,8 @@ const BasicInformationForm = ({ initialData, onNext }: BasicInformationFormProps
   };
 
   const handleDomainChange = (values: string[]) => {
-    const domainLabels = values.map(value => {
-      const selectedOption = domainOptions.find(option => option.value === value);
+    const domainLabels = values.map((value) => {
+      const selectedOption = domainOptions.find((option) => option.value === value);
       return selectedOption ? selectedOption.key : value;
     });
 
@@ -82,7 +86,9 @@ const BasicInformationForm = ({ initialData, onNext }: BasicInformationFormProps
 
     // Update symbol image using hook
     symbolImage.resetImage(
-      initialData?.symbolImage && typeof initialData.symbolImage === "string" ? initialData.symbolImage : "",
+      initialData?.symbolImage && typeof initialData.symbolImage === "string"
+        ? initialData.symbolImage
+        : ""
     );
 
     // Update product images using hook
@@ -95,7 +101,7 @@ const BasicInformationForm = ({ initialData, onNext }: BasicInformationFormProps
     }
   }, [initialData, reset]);
 
-  const onSubmit = async (data: any) => {
+  const onSubmit = async (data: Record<string, string>) => {
     if (!selectedDomain || selectedDomain.length === 0) {
       setDomainError("Please select at least one domain");
       return;
@@ -137,8 +143,9 @@ const BasicInformationForm = ({ initialData, onNext }: BasicInformationFormProps
           showSearch
           filterOption={(input, option) =>
             (option?.label ?? "").toString().toLowerCase().includes(input.toLowerCase())
-          }>
-          {domainOptions.map(option => (
+          }
+        >
+          {domainOptions.map((option) => (
             <Select.Option key={option.value} value={option.value} label={option.key}>
               {option.key}
             </Select.Option>

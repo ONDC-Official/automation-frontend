@@ -1,15 +1,18 @@
+import { useState, useEffect } from "react";
+import { toast } from "react-toastify";
 import { useForm, useFieldArray, Controller } from "react-hook-form";
+import { Select, Button, Card, Modal, Checkbox, Tabs } from "antd";
+import { FaPlus, FaTrash, FaEdit, FaSitemap, FaClock } from "react-icons/fa";
+
 import { FormInput } from "@components/ui/forms/form-input";
 import LoadingButton from "@components/ui/forms/loading-button";
 import { SellerOnboardingData } from "@pages/seller-onboarding";
 import { weekDays } from "@constants/common";
-import { Select, Button, Card, Modal, Checkbox, Tabs } from "antd";
+
 import TimeInput from "@components/ui/forms/time-input";
 import MultiImageUpload from "@components/ui/forms/multi-image-upload";
 import { useFormImageState } from "@hooks/useImageUpload";
-import { FaPlus, FaTrash, FaEdit, FaSitemap, FaClock } from "react-icons/fa";
-import { useState, useEffect } from "react";
-import { toast } from "react-toastify";
+
 import CustomMenuComprehensiveView from "./custom-menu-comprehensive-view";
 
 interface CustomizationItem {
@@ -91,7 +94,8 @@ const AvailabilityTimingsSection = ({ menuIndex, control, watch }: any) => {
         <button
           type="button"
           onClick={addTiming}
-          className="text-sm px-3 py-1 border border-sky-600 text-sky-600 rounded-md hover:bg-sky-50 transition-colors">
+          className="text-sm px-3 py-1 border border-sky-600 text-sky-600 rounded-md hover:bg-sky-50 transition-colors"
+        >
           + Add Timing
         </button>
       </div>
@@ -105,7 +109,8 @@ const AvailabilityTimingsSection = ({ menuIndex, control, watch }: any) => {
                 type="button"
                 onClick={() => handleRemoveTiming(timingIndex)}
                 className="text-red-500 hover:text-red-700 p-1"
-                title="Remove timing">
+                title="Remove timing"
+              >
                 <FaTrash className="text-sm" />
               </button>
             )}
@@ -128,8 +133,9 @@ const AvailabilityTimingsSection = ({ menuIndex, control, watch }: any) => {
                       className="w-full"
                       size="large"
                       allowClear
-                      status={error ? "error" : undefined}>
-                      {weekDays.map(day => (
+                      status={error ? "error" : undefined}
+                    >
+                      {weekDays.map((day) => (
                         <Select.Option key={day.value} value={day.value}>
                           {day.key}
                         </Select.Option>
@@ -157,8 +163,9 @@ const AvailabilityTimingsSection = ({ menuIndex, control, watch }: any) => {
                       className="w-full"
                       size="large"
                       allowClear
-                      status={error ? "error" : undefined}>
-                      {weekDays.map(day => (
+                      status={error ? "error" : undefined}
+                    >
+                      {weekDays.map((day) => (
                         <Select.Option key={day.value} value={day.value}>
                           {day.key}
                         </Select.Option>
@@ -244,8 +251,8 @@ const AvailabilityTimingsSection = ({ menuIndex, control, watch }: any) => {
 
       <div className="bg-blue-50 p-3 rounded-lg">
         <p className="text-sm text-blue-800">
-          <strong>Tip:</strong> Add multiple timings for different day ranges (e.g., weekdays vs weekends) or special
-          hours.
+          <strong>Tip:</strong> Add multiple timings for different day ranges (e.g., weekdays vs
+          weekends) or special hours.
         </p>
       </div>
     </div>
@@ -382,8 +389,8 @@ const CustomMenuFormEnhanced = ({
     const menuErrors = errors?.menu?.[index];
     if (!menuErrors) return {};
 
-    const flatErrors: any = {};
-    Object.keys(menuErrors).forEach(key => {
+    const flatErrors: Record<string, string> = {};
+    Object.keys(menuErrors).forEach((key) => {
       flatErrors[`menu.${index}.${key}`] = (menuErrors as any)[key];
     });
 
@@ -478,7 +485,9 @@ const CustomMenuFormEnhanced = ({
       }
 
       const currentGroups = watchMenu[showCustomizationModal]?.customizationGroups || [];
-      const existingIndex = currentGroups.findIndex((g: { id: string }) => g.id === editingGroup.id);
+      const existingIndex = currentGroups.findIndex(
+        (g: { id: string }) => g.id === editingGroup.id
+      );
 
       if (existingIndex >= 0) {
         currentGroups[existingIndex] = editingGroup;
@@ -578,8 +587,8 @@ const CustomMenuFormEnhanced = ({
                   <h3 className="text-sm font-medium text-blue-800">Optional Step</h3>
                   <div className="mt-2 text-sm text-blue-700">
                     <p>
-                      This step is optional. You can skip it now and add menu items later. Click "Skip This Step" to
-                      proceed without adding custom menu items.
+                      This step is optional. You can skip it now and add menu items later. Click
+                      "Skip This Step" to proceed without adding custom menu items.
                     </p>
                   </div>
                 </div>
@@ -588,11 +597,14 @@ const CustomMenuFormEnhanced = ({
 
             <div className="space-y-6">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-gray-700">Custom Menu with Customizations</h3>
+                <h3 className="text-lg font-semibold text-gray-700">
+                  Custom Menu with Customizations
+                </h3>
                 <button
                   type="button"
                   onClick={addMenuItem}
-                  className="px-4 py-2 text-sm bg-sky-600 text-white rounded-md hover:bg-sky-700 transition-colors">
+                  className="px-4 py-2 text-sm bg-sky-600 text-white rounded-md hover:bg-sky-700 transition-colors"
+                >
                   + Add Menu
                 </button>
               </div>
@@ -608,12 +620,14 @@ const CustomMenuFormEnhanced = ({
                         <button
                           type="button"
                           onClick={() => removeMenuItem(index)}
-                          className="text-red-600 hover:text-red-800 text-sm">
+                          className="text-red-600 hover:text-red-800 text-sm"
+                        >
                           Remove
                         </button>
                       )}
                     </div>
-                  }>
+                  }
+                >
                   <div className="space-y-6">
                     {/* Basic Information */}
                     <div className="space-y-4">
@@ -674,7 +688,7 @@ const CustomMenuFormEnhanced = ({
                           required={true}
                           folder="workbench-seller-onboarding"
                           value={menuImages.imageState[index] || []}
-                          onChange={urls => {
+                          onChange={(urls) => {
                             menuImages.updateImageField(index, urls);
                             setValue(`menu.${index}.images`, urls.join(","));
                           }}
@@ -798,7 +812,9 @@ const CustomMenuFormEnhanced = ({
                               },
                             }}
                           />
-                          <p className="text-xs text-gray-500 mt-1">Lower numbers appear first in menu</p>
+                          <p className="text-xs text-gray-500 mt-1">
+                            Lower numbers appear first in menu
+                          </p>
                         </div>
                       </div>
                     </div>
@@ -816,64 +832,76 @@ const CustomMenuFormEnhanced = ({
                     {/* Customizations Section */}
                     <div className="space-y-4">
                       <div className="flex items-center justify-between">
-                        <h5 className="text-sm font-medium text-gray-700">Customizations & Add-ons</h5>
+                        <h5 className="text-sm font-medium text-gray-700">
+                          Customizations & Add-ons
+                        </h5>
                         <Button
                           type="default"
                           size="small"
                           icon={<FaPlus />}
-                          onClick={() => handleAddCustomizationGroup(index)}>
+                          onClick={() => handleAddCustomizationGroup(index)}
+                        >
                           Add Customization Group
                         </Button>
                       </div>
 
-                      {watchMenu[index]?.customizationGroups?.map((group: CustomizationGroup, groupIndex: number) => (
-                        <div key={group.id} className="p-4 border border-gray-200 rounded-lg bg-gray-50">
-                          <div className="flex justify-between items-start">
-                            <div className="flex-1">
-                              <h6 className="font-medium text-gray-800">
-                                {group.name || "Unnamed Group"}
-                                <span className="ml-2 text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded">
-                                  Seq: {group.seq || groupIndex + 1}
-                                </span>
-                              </h6>
-                              <p className="text-sm text-gray-600 mt-1">
-                                Type: {group.type === "single" ? "Single Selection" : "Multiple Selection"} |
-                                {group.required ? " Required" : " Optional"} | Min: {group.minQuantity} | Max:{" "}
-                                {group.maxQuantity}
-                              </p>
-                              <div className="mt-2">
-                                <span className="text-sm text-gray-700">Options: </span>
-                                {group.items.map((item, idx) => (
-                                  <span key={idx} className="text-sm text-gray-600">
-                                    {item.name} (+₹{item.price}){idx < group.items.length - 1 ? ", " : ""}
+                      {watchMenu[index]?.customizationGroups?.map(
+                        (group: CustomizationGroup, groupIndex: number) => (
+                          <div
+                            key={group.id}
+                            className="p-4 border border-gray-200 rounded-lg bg-gray-50"
+                          >
+                            <div className="flex justify-between items-start">
+                              <div className="flex-1">
+                                <h6 className="font-medium text-gray-800">
+                                  {group.name || "Unnamed Group"}
+                                  <span className="ml-2 text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded">
+                                    Seq: {group.seq || groupIndex + 1}
                                   </span>
-                                ))}
+                                </h6>
+                                <p className="text-sm text-gray-600 mt-1">
+                                  Type:{" "}
+                                  {group.type === "single"
+                                    ? "Single Selection"
+                                    : "Multiple Selection"}{" "}
+                                  |{group.required ? " Required" : " Optional"} | Min:{" "}
+                                  {group.minQuantity} | Max: {group.maxQuantity}
+                                </p>
+                                <div className="mt-2">
+                                  <span className="text-sm text-gray-700">Options: </span>
+                                  {group.items.map((item, idx) => (
+                                    <span key={idx} className="text-sm text-gray-600">
+                                      {item.name} (+₹{item.price})
+                                      {idx < group.items.length - 1 ? ", " : ""}
+                                    </span>
+                                  ))}
+                                </div>
+                              </div>
+                              <div className="flex gap-2">
+                                <Button
+                                  type="link"
+                                  size="small"
+                                  icon={<FaEdit />}
+                                  onClick={() => handleEditCustomizationGroup(index, groupIndex)}
+                                />
+                                <Button
+                                  type="link"
+                                  danger
+                                  size="small"
+                                  icon={<FaTrash />}
+                                  onClick={() => handleRemoveCustomizationGroup(index, groupIndex)}
+                                />
                               </div>
                             </div>
-                            <div className="flex gap-2">
-                              <Button
-                                type="link"
-                                size="small"
-                                icon={<FaEdit />}
-                                onClick={() => handleEditCustomizationGroup(index, groupIndex)}
-                              />
-                              <Button
-                                type="link"
-                                danger
-                                size="small"
-                                icon={<FaTrash />}
-                                onClick={() => handleRemoveCustomizationGroup(index, groupIndex)}
-                              />
-                            </div>
                           </div>
-                        </div>
-                      ))}
+                        )
+                      )}
 
                       {(!watchMenu[index]?.customizationGroups ||
                         watchMenu[index]?.customizationGroups?.length === 0) && (
                         <p className="text-sm text-gray-500 italic">
-                          No customizations added yet. Add customization groups for size options, toppings, add-ons,
-                          etc.
+                          No customizations added yet. Add customization groups for size options,
+                          toppings, add-ons, etc.
                         </p>
                       )}
                     </div>
@@ -886,14 +914,16 @@ const CustomMenuFormEnhanced = ({
               <button
                 type="button"
                 onClick={onPrevious}
-                className="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors">
+                className="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
+              >
                 Previous
               </button>
               <div className="flex gap-3">
                 <button
                   type="button"
                   onClick={handleSkip}
-                  className="px-6 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors border border-gray-300">
+                  className="px-6 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors border border-gray-300"
+                >
                   Skip This Step
                 </button>
                 <LoadingButton
@@ -951,27 +981,31 @@ const CustomMenuFormEnhanced = ({
               Comprehensive View
             </span>
           }
-          key="3">
+          key="3"
+        >
           <CustomMenuComprehensiveView menuItems={watchMenu} />
 
           <div className="flex justify-between mt-8">
             <button
               type="button"
               onClick={onPrevious}
-              className="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors">
+              className="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
+            >
               Previous
             </button>
             <div className="flex gap-3">
               <button
                 type="button"
                 onClick={handleSkip}
-                className="px-6 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors border border-gray-300">
+                className="px-6 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors border border-gray-300"
+              >
                 Skip This Step
               </button>
               <button
                 type="button"
                 onClick={handleSubmit(onSubmit)}
-                className="px-6 py-2 bg-sky-600 text-white rounded-md hover:bg-sky-700 transition-colors">
+                className="px-6 py-2 bg-sky-600 text-white rounded-md hover:bg-sky-700 transition-colors"
+              >
                 {isFinalStep ? "Submit Application" : "Next Step"}
               </button>
             </div>
@@ -988,7 +1022,8 @@ const CustomMenuFormEnhanced = ({
           setShowCustomizationModal(null);
           setEditingGroup(null);
         }}
-        width={700}>
+        width={700}
+      >
         {editingGroup && <CustomizationGroupForm group={editingGroup} onChange={setEditingGroup} />}
       </Modal>
     </>
@@ -1046,7 +1081,7 @@ const CustomizationGroupForm = ({
           <input
             type="text"
             value={group.name}
-            onChange={e => onChange({ ...group, name: e.target.value })}
+            onChange={(e) => onChange({ ...group, name: e.target.value })}
             className="w-full px-3 py-2 border border-gray-300 rounded-md"
             placeholder="e.g., Size, Toppings, Add-ons"
           />
@@ -1056,7 +1091,11 @@ const CustomizationGroupForm = ({
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Selection Type <span className="text-red-500">*</span>
           </label>
-          <Select value={group.type} onChange={value => onChange({ ...group, type: value })} className="w-full">
+          <Select
+            value={group.type}
+            onChange={(value) => onChange({ ...group, type: value })}
+            className="w-full"
+          >
             <Select.Option value="single">Single Selection (Radio)</Select.Option>
             <Select.Option value="multiple">Multiple Selection (Checkbox)</Select.Option>
           </Select>
@@ -1070,7 +1109,7 @@ const CustomizationGroupForm = ({
             type="number"
             min="1"
             value={group.seq || 1}
-            onChange={e => onChange({ ...group, seq: parseInt(e.target.value) || 1 })}
+            onChange={(e) => onChange({ ...group, seq: parseInt(e.target.value) || 1 })}
             className="w-full px-3 py-2 border border-gray-300 rounded-md"
             placeholder="1"
           />
@@ -1083,7 +1122,7 @@ const CustomizationGroupForm = ({
           <label className="block text-sm font-medium text-gray-700 mb-1">Required?</label>
           <Checkbox
             checked={group.required}
-            onChange={e => {
+            onChange={(e) => {
               const isRequired = e.target.checked;
               // If required is checked and minQuantity is 0, set it to 1
               const updatedGroup = {
@@ -1092,7 +1131,8 @@ const CustomizationGroupForm = ({
                 minQuantity: isRequired && group.minQuantity === 0 ? 1 : group.minQuantity,
               };
               onChange(updatedGroup);
-            }}>
+            }}
+          >
             This customization is required
           </Checkbox>
         </div>
@@ -1105,7 +1145,7 @@ const CustomizationGroupForm = ({
             type="number"
             min={group.required ? "1" : "0"}
             value={group.minQuantity}
-            onChange={e => {
+            onChange={(e) => {
               const value = parseInt(e.target.value) || 0;
               // If required is checked, don't allow value less than 1
               const minValue = group.required ? Math.max(1, value) : value;
@@ -1126,7 +1166,7 @@ const CustomizationGroupForm = ({
             type="number"
             min="1"
             value={group.maxQuantity}
-            onChange={e => onChange({ ...group, maxQuantity: parseInt(e.target.value) || 1 })}
+            onChange={(e) => onChange({ ...group, maxQuantity: parseInt(e.target.value) || 1 })}
             className="w-full px-3 py-2 border border-gray-300 rounded-md"
           />
         </div>
@@ -1149,7 +1189,7 @@ const CustomizationGroupForm = ({
                 <input
                   type="text"
                   value={item.name}
-                  onChange={e =>
+                  onChange={(e) =>
                     updateCustomizationItem(index, {
                       ...item,
                       name: e.target.value,
@@ -1165,7 +1205,7 @@ const CustomizationGroupForm = ({
                   min="0"
                   step="1"
                   value={item.price}
-                  onChange={e =>
+                  onChange={(e) =>
                     updateCustomizationItem(index, {
                       ...item,
                       price: e.target.value,
@@ -1178,20 +1218,26 @@ const CustomizationGroupForm = ({
               <div className="w-32">
                 <Select
                   value={item.vegNonVeg}
-                  onChange={value =>
+                  onChange={(value) =>
                     updateCustomizationItem(index, {
                       ...item,
                       vegNonVeg: value,
                     })
                   }
-                  className="w-full">
+                  className="w-full"
+                >
                   <Select.Option value="veg">Veg</Select.Option>
                   <Select.Option value="non-veg">Non-Veg</Select.Option>
                   <Select.Option value="egg">Egg</Select.Option>
                 </Select>
               </div>
               {group.items.length > 1 && (
-                <Button type="text" danger icon={<FaTrash />} onClick={() => removeCustomizationItem(index)} />
+                <Button
+                  type="text"
+                  danger
+                  icon={<FaTrash />}
+                  onClick={() => removeCustomizationItem(index)}
+                />
               )}
             </div>
           ))}
