@@ -8,17 +8,17 @@ const COPY_SUCCESS_DURATION = 2000;
  */
 
 export const useClipboard = () => {
-  const [copied, setCopied] = useState(false);
+    const [copied, setCopied] = useState(false);
 
-  const copyToClipboard = useCallback(async (text: string) => {
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopied(true);
-      setTimeout(() => setCopied(false), COPY_SUCCESS_DURATION);
-    } catch (error) {
-      console.error("Failed to copy text to clipboard:", error);
-    }
-  }, []);
+    const copyToClipboard = useCallback(async (text: string) => {
+        try {
+            await navigator.clipboard.writeText(text);
+            setCopied(true);
+            setTimeout(() => setCopied(false), COPY_SUCCESS_DURATION);
+        } catch (error) {
+            console.error("Failed to copy text to clipboard:", error);
+        }
+    }, []);
 
-  return { copied, copyToClipboard };
+    return { copied, copyToClipboard };
 };
