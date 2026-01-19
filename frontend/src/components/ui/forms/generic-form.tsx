@@ -24,19 +24,14 @@ const GenericForm = ({
   const isRequestTriggered = useRef(false);
 
   const [isLoading, setIsLoading] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
-  const [isError, setIsError] = useState(false);
 
   const handleSubmitForm = async (data: any) => {
     setIsLoading(true);
-    setIsSuccess(false);
-    setIsError(false);
+
     try {
       await onSubmit(data);
-      setIsSuccess(true);
-    } catch (error: any) {
-      setIsError(true);
-      console.error(error?.message);
+    } catch (error: unknown) {
+      console.error((error as Error)?.message);
     } finally {
       setIsLoading(false);
     }
@@ -52,11 +47,12 @@ const GenericForm = ({
   return (
     <form
       onSubmit={handleSubmit(handleSubmitForm)} // Use handleSubmit to manage form submission
-      className={className}>
-      {React.Children.map(children, child =>
-        React.cloneElement(child as React.ReactElement, { register, errors, setValue }),
+      className={className}
+    >
+      {React.Children.map(children, (child) =>
+        React.cloneElement(child as React.ReactElement, { register, errors, setValue })
       )}
-      <LoadingButton type="submit" buttonText="Submit" isLoading={isLoading} isSuccess={isSuccess} isError={isError} />
+      <LoadingButton type="submit" buttonText="Submit" isLoading={isLoading} />
     </form>
   );
 };

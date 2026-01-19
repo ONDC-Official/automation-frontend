@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useForm, useFieldArray, Controller } from "react-hook-form";
+import { useForm, useFieldArray, Controller, Path } from "react-hook-form";
 import { ItemDetails, SellerOnboardingData } from "@pages/seller-onboarding";
 import { toast } from "react-toastify";
 import { FaPlus, FaTrash, FaBox, FaEdit } from "react-icons/fa";
@@ -29,6 +29,13 @@ interface FormData {
   items: ItemDetails[];
 }
 
+interface ItemVariant extends ItemDetails {
+  variantOf: number;
+  variantId: string;
+  variantCombination: { [attribute: string]: string };
+  isVariant: true;
+}
+
 const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, onPrevious }) => {
   // const [selectedSubCategory, setSelectedSubCategory] = useState("");
   // State to track selected optional attributes for each item
@@ -49,7 +56,7 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
     [itemIndex: number]: string[];
   }>({});
   const [itemVariants, setItemVariants] = useState<{
-    [itemIndex: number]: any[];
+    [itemIndex: number]: ItemVariant[];
   }>({});
   const [variantValues, setVariantValues] = useState<{
     [itemIndex: number]: { [attribute: string]: string[] };
@@ -63,7 +70,7 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
     itemIndex: null,
     variantIndex: null,
   });
-  const [editingVariant, setEditingVariant] = useState<any>(null);
+  const [editingVariant, setEditingVariant] = useState<ItemVariant | null>(null);
   const [variantForm] = Form.useForm();
 
   // Use optimized hooks for image state management
@@ -96,7 +103,7 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
 
   const processInitialItems = () => {
     return (
-      initialData.items?.map(item => {
+      initialData.items?.map((item) => {
         const processedItem = { ...item };
 
         // Ensure attributes object exists
@@ -160,7 +167,7 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
           "energy_rating",
         ];
 
-        attributeKeys.forEach(key => {
+        attributeKeys.forEach((key) => {
           if (processedItem[key] !== undefined && processedItem.attributes) {
             processedItem.attributes[key] = processedItem[key];
             delete processedItem[key]; // Remove from root level
@@ -351,7 +358,7 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
       const newConsumerCareState: { [itemIndex: number]: boolean } = {};
       const newVariantState: { [itemIndex: number]: boolean } = {};
       const newVariantAttributes: { [itemIndex: number]: string[] } = {};
-      const newItemVariants: { [itemIndex: number]: any[] } = {};
+      const newItemVariants: { [itemIndex: number]: ItemVariant[] } = {};
       const newVariantValues: { [itemIndex: number]: { [attribute: string]: string[] } } = {};
       const newItemImageUrls: { [itemIndex: number]: string[] } = {};
       const newSymbolImageUrls: { [itemIndex: number]: string } = {};
@@ -397,11 +404,11 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
 
   const updateIsoDuration = (index: number, field: string, unit: string, value: string) => {
     const isoValue = unit === "day" ? `P${value}D` : `PT${value}${unit === "hour" ? "H" : "M"}`;
-    setValue(`items.${index}.${field}` as any, isoValue);
+    setValue(`items.${index}.${field}` as Path<FormData>, isoValue);
   };
 
   const updateCode = (index: number, type: string, value: string) => {
-    setValue(`items.${index}.code` as any, `${type}:${value}`);
+    setValue(`items.${index}.code` as Path<FormData>, `${type}:${value}`);
   };
 
   const addItem = () => {
@@ -567,7 +574,11 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
     return availableAttrs;
   };
 
-  const getAttributePredefinedValues = (domain: string, category: string, attributeName: string): string[] => {
+  const getAttributePredefinedValues = (
+    domain: string,
+    category: string,
+    attributeName: string
+  ): string[] => {
     try {
       const categoryConfig = getCategoryConfig(domain, category);
       if (!categoryConfig || typeof categoryConfig !== "object") {
@@ -587,12 +598,15 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
 
       if (Array.isArray(config.value) && config.value.length > 0) {
         // Ensure all values are strings
-        return config.value.filter(val => typeof val === "string") as string[];
+        return config.value.filter((val) => typeof val === "string") as string[];
       }
 
       return [];
     } catch (error) {
-      console.warn(`Error getting predefined values for ${domain}/${category}/${attributeName}:`, error);
+      console.warn(
+        `Error getting predefined values for ${domain}/${category}/${attributeName}:`,
+        error
+      );
       return [];
     }
   };
@@ -627,7 +641,7 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
     }
 
     // Generate all combinations of variant values
-    const generateCombinations = (attrs: string[], index: number = 0): any[] => {
+    const generateCombinations = (attrs: string[], index: number = 0): Record<string, string>[] => {
       if (index >= attrs.length) {
         return [{}];
       }
@@ -636,7 +650,7 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
       const attrValues = values[attr] || [];
       const remainingCombinations = generateCombinations(attrs, index + 1);
 
-      const combinations: any[] = [];
+      const combinations: Record<string, string>[] = [];
       for (const value of attrValues) {
         for (const combo of remainingCombinations) {
           combinations.push({
@@ -653,22 +667,24 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
 
     // Check for duplicate combinations
     const existingVariants = itemVariants[itemIndex] || [];
-    const existingCombinations = existingVariants.map(v => JSON.stringify(v.variantCombination));
+    const existingCombinations = existingVariants.map((v) => JSON.stringify(v.variantCombination));
 
-    const newCombinations = combinations.filter(combo => {
+    const newCombinations = combinations.filter((combo) => {
       const comboKey = JSON.stringify(combo);
       return !existingCombinations.includes(comboKey);
     });
 
     if (newCombinations.length === 0) {
-      toast.error("All these variant combinations already exist. Please select different attribute values.");
+      toast.error(
+        "All these variant combinations already exist. Please select different attribute values."
+      );
       return;
     }
 
     if (newCombinations.length < combinations.length) {
       const duplicateCount = combinations.length - newCombinations.length;
       toast.warning(
-        `${duplicateCount} duplicate variant(s) skipped. Creating ${newCombinations.length} new variant(s).`,
+        `${duplicateCount} duplicate variant(s) skipped. Creating ${newCombinations.length} new variant(s).`
       );
     }
 
@@ -676,8 +692,8 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
     const existingVariantCount = existingVariants.length;
 
     // Create variant items based on new combinations
-    const variants = newCombinations.map((combo, idx) => {
-      const variantItem = {
+    const variants: ItemVariant[] = newCombinations.map((combo, idx) => {
+      const variantItem: ItemVariant = {
         ...item,
         attributes: {
           ...item.attributes,
@@ -686,7 +702,7 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
         variantOf: itemIndex,
         variantId: `${itemIndex}-${existingVariantCount + idx}`,
         variantCombination: combo,
-        isVariant: true,
+        isVariant: true as const,
       };
 
       // Keep the same name as parent item - variant details are in attributes
@@ -695,18 +711,18 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
       return variantItem;
     });
 
-    setItemVariants(prev => ({
+    setItemVariants((prev) => ({
       ...prev,
       [itemIndex]: [...(prev[itemIndex] || []), ...variants],
     }));
 
-    setShowVariantModal(prev => ({
+    setShowVariantModal((prev) => ({
       ...prev,
       [itemIndex]: false,
     }));
 
     // Clear variant values for this item
-    setVariantValues(prev => ({
+    setVariantValues((prev) => ({
       ...prev,
       [itemIndex]: {},
     }));
@@ -716,12 +732,12 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
     const totalVariants = existingCount + variants.length;
     const actionText = existingCount > 0 ? "Added" : "Created";
     toast.success(
-      `${actionText} ${variants.length} new ${variantText} for ${item.name}. Total: ${totalVariants} variants. Each will appear as a separate catalog item.`,
+      `${actionText} ${variants.length} new ${variantText} for ${item.name}. Total: ${totalVariants} variants. Each will appear as a separate catalog item.`
     );
   };
 
   const removeVariant = (itemIndex: number, variantIndex: number) => {
-    setItemVariants(prev => ({
+    setItemVariants((prev) => ({
       ...prev,
       [itemIndex]: prev[itemIndex].filter((_, idx) => idx !== variantIndex),
     }));
@@ -773,7 +789,7 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
   const handleSaveVariant = () => {
     variantForm
       .validateFields()
-      .then(values => {
+      .then((values) => {
         const { itemIndex, variantIndex } = editVariantModal;
         if (itemIndex === null || variantIndex === null) return;
 
@@ -803,7 +819,7 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
         };
 
         // Update main fields from form values
-        mainFields.forEach(field => {
+        mainFields.forEach((field) => {
           if (values[field] !== undefined) {
             updatedVariant[field] = values[field];
           }
@@ -821,8 +837,8 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
         }
 
         // Preserve existing attributes and update with new attribute values
-        const attributeUpdates: any = {};
-        Object.keys(values).forEach(key => {
+        const attributeUpdates: Record<string, string> = {};
+        Object.keys(values).forEach((key) => {
           if (!mainFields.includes(key)) {
             attributeUpdates[key] = values[key];
           }
@@ -838,8 +854,8 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
 
         // Preserve variantCombination if it exists and update its values
         if (currentVariant.variantCombination) {
-          const variantCombinationUpdates: any = {};
-          Object.keys(currentVariant.variantCombination).forEach(key => {
+          const variantCombinationUpdates: Record<string, string> = {};
+          Object.keys(currentVariant.variantCombination).forEach((key) => {
             if (values[key] !== undefined) {
               variantCombinationUpdates[key] = values[key];
             } else {
@@ -850,7 +866,7 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
         }
 
         // Update the variant in state
-        setItemVariants(prev => ({
+        setItemVariants((prev) => ({
           ...prev,
           [itemIndex]: prev[itemIndex].map((v, idx) => (idx === variantIndex ? updatedVariant : v)),
         }));
@@ -866,7 +882,7 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
 
         toast.success("Variant updated successfully");
       })
-      .catch(error => {
+      .catch((error) => {
         console.error("Validation failed:", error);
         toast.error("Please fill in all required fields");
       });
@@ -885,7 +901,12 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
   // Consumer Care functions
   const getFirstItemConsumerCare = () => {
     const firstItem = watchItems[0];
-    if (firstItem && firstItem.consumer_care_name && firstItem.consumer_care_email && firstItem.consumer_care_contact) {
+    if (
+      firstItem &&
+      firstItem.consumer_care_name &&
+      firstItem.consumer_care_email &&
+      firstItem.consumer_care_contact
+    ) {
       return {
         name: firstItem.consumer_care_name,
         email: firstItem.consumer_care_email,
@@ -896,7 +917,7 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
   };
 
   const handleConsumerCareToggle = (itemIndex: number, checked: boolean) => {
-    setUseExistingConsumerCare(prev => ({
+    setUseExistingConsumerCare((prev) => ({
       ...prev,
       [itemIndex]: checked,
     }));
@@ -917,14 +938,16 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
   };
 
   function getProtocolKeysByCategory(category: string): string[] {
-    const mapping = categoryProtocolMappings.find(item => item.category.toLowerCase() === category.toLowerCase());
+    const mapping = categoryProtocolMappings.find(
+      (item) => item.category.toLowerCase() === category.toLowerCase()
+    );
 
     return mapping?.protocolKeys || [];
   }
 
   // Function to get categories based on selected domain
   function getCategoriesByDomain(domain: string): string[] {
-    const domainConfig = domainCategories.find(item => item.domain === domain);
+    const domainConfig = domainCategories.find((item) => item.domain === domain);
     return domainConfig?.categories || [];
   }
   // Function to get category configuration based on domain
@@ -986,7 +1009,9 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
     }
 
     const mandatoryOnly = Object.fromEntries(
-      Object.entries(categoryConfig).filter(([_, config]: [string, any]) => config.mandatory === true),
+      Object.entries(categoryConfig).filter(
+        ([_, config]: [string, any]) => config.mandatory === true
+      )
     );
     return mandatoryOnly;
   };
@@ -999,7 +1024,9 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
     }
 
     const optionalOnly = Object.fromEntries(
-      Object.entries(categoryConfig).filter(([_, config]: [string, any]) => config.mandatory === false),
+      Object.entries(categoryConfig).filter(
+        ([_, config]: [string, any]) => config.mandatory === false
+      )
     );
     return optionalOnly;
   };
@@ -1009,7 +1036,11 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
     const attrLower = attributeName.toLowerCase();
 
     // Weight related attributes
-    if (attrLower.includes("weight") || attrLower === "net_weight" || attrLower === "gross_weight") {
+    if (
+      attrLower.includes("weight") ||
+      attrLower === "net_weight" ||
+      attrLower === "gross_weight"
+    ) {
       return `Enter ${attributeName.replace(/_/g, " ")} in grams (e.g., 500)`;
     }
 
@@ -1101,7 +1132,11 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
     }
 
     // Nutritional
-    if (attrLower.includes("calories") || attrLower.includes("protein") || attrLower.includes("carbs")) {
+    if (
+      attrLower.includes("calories") ||
+      attrLower.includes("protein") ||
+      attrLower.includes("carbs")
+    ) {
       return `Enter ${attributeName.replace(/_/g, " ")} per 100g/100ml`;
     }
 
@@ -1160,7 +1195,12 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
   };
 
   // Function to render dynamic attribute field
-  const renderAttributeField = (attributeName: string, config: any, itemIndex: number, isOptional: boolean = false) => {
+  const renderAttributeField = (
+    attributeName: string,
+    config: any,
+    itemIndex: number,
+    isOptional: boolean = false
+  ) => {
     const fieldName = `items.${itemIndex}.attributes.${attributeName}` as any;
     const isSelectField = Array.isArray(config.value) && config.value.length > 0;
     const isValidationField = typeof config.value === "string" && config.value.startsWith("/");
@@ -1168,7 +1208,8 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
     return (
       <div key={attributeName}>
         <label className="block text-sm font-medium text-gray-700 mb-1">
-          {attributeName.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase())} {!isOptional && "*"}
+          {attributeName.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())}{" "}
+          {!isOptional && "*"}
         </label>
         <Controller
           name={fieldName}
@@ -1193,7 +1234,8 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                   size="large"
                   placeholder={`Select ${attributeName.replace(/_/g, " ")}`}
                   status={error ? "error" : undefined}
-                  allowClear={isOptional}>
+                  allowClear={isOptional}
+                >
                   {config.value.map((option: string) => (
                     <Select.Option key={option} value={option}>
                       {option}
@@ -1219,14 +1261,16 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
   // Function to handle optional attribute selection
   const handleOptionalAttributeChange = (itemIndex: number, selectedAttributes: string[]) => {
     const previouslySelected = selectedOptionalAttributes[itemIndex] || [];
-    const deselectedAttributes = previouslySelected.filter(attr => !selectedAttributes.includes(attr));
+    const deselectedAttributes = previouslySelected.filter(
+      (attr) => !selectedAttributes.includes(attr)
+    );
 
     // Clear form values for deselected attributes
-    deselectedAttributes.forEach(attrName => {
-      setValue(`items.${itemIndex}.${attrName}` as any, "");
+    deselectedAttributes.forEach((attrName) => {
+      setValue(`items.${itemIndex}.${attrName}` as Path<FormData>, "");
     });
 
-    setSelectedOptionalAttributes(prev => ({
+    setSelectedOptionalAttributes((prev) => ({
       ...prev,
       [itemIndex]: selectedAttributes,
     }));
@@ -1251,7 +1295,8 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                 type="button"
                 onClick={() => removeItem(index)}
                 className="text-red-500 hover:text-red-700 p-1"
-                disabled={fields.length === 1}>
+                disabled={fields.length === 1}
+              >
                 <FaTrash />
               </button>
             </div>
@@ -1296,17 +1341,18 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                             placeholder="Select Domain"
                             allowClear
                             status={error ? "error" : undefined}
-                            onChange={value => {
+                            onChange={(value) => {
                               field.onChange(value);
                               // Clear category when domain changes
-                              setValue(`items.${index}.category` as any, "");
+                              setValue(`items.${index}.category` as Path<FormData>, "");
                               // Clear selected optional attributes when domain changes
-                              setSelectedOptionalAttributes(prev => ({
+                              setSelectedOptionalAttributes((prev) => ({
                                 ...prev,
                                 [index]: [],
                               }));
-                            }}>
-                            {initialData?.domain?.map(domain => (
+                            }}
+                          >
+                            {initialData?.domain?.map((domain) => (
                               <Select.Option key={domain} value={domain}>
                                 {domain}
                               </Select.Option>
@@ -1321,7 +1367,9 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                   {/* Item Code - Hide for F&B domain */}
                   {watchItems[index]?.domain !== "F&B" && (
                     <div className="md:col-span-2">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Item Code</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Item Code
+                      </label>
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
                           <LabelWithToolTip labelInfo={""} label={"Code Type"} required={true} />
@@ -1335,9 +1383,10 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                                 className="w-full"
                                 size="large"
                                 placeholder="Select Code Type"
-                                onChange={value => {
+                                onChange={(value) => {
                                   field.onChange(value);
-                                }}>
+                                }}
+                              >
                                 <Select.Option value="EAN">EAN</Select.Option>
                                 <Select.Option value="ISBN">ISBN</Select.Option>
                                 <Select.Option value="GTIN">GTIN</Select.Option>
@@ -1354,7 +1403,10 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                             name={`items.${index}.code_value`}
                             control={control}
                             rules={{
-                              required: watchItems[index]?.domain !== "F&B" ? "Code value is required" : false,
+                              required:
+                                watchItems[index]?.domain !== "F&B"
+                                  ? "Code value is required"
+                                  : false,
                             }}
                             render={({ field, fieldState: { error } }) => (
                               <>
@@ -1363,13 +1415,15 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                                   placeholder="Enter Code Value"
                                   size="large"
                                   status={error ? "error" : undefined}
-                                  onChange={e => {
+                                  onChange={(e) => {
                                     field.onChange(e);
                                     const codeType = watchItems[index]?.code_type || "EAN";
                                     updateCode(index, codeType, e.target.value);
                                   }}
                                 />
-                                {error && <p className="text-red-500 text-xs mt-1">{error.message}</p>}
+                                {error && (
+                                  <p className="text-red-500 text-xs mt-1">{error.message}</p>
+                                )}
                               </>
                             )}
                           />
@@ -1385,7 +1439,7 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                       required={true}
                       folder="workbench-seller-onboarding"
                       value={symbolImages.imageState[index] || ""}
-                      onChange={url => {
+                      onChange={(url) => {
                         symbolImages.updateImageField(index, url);
                         setValue(`items.${index}.symbol`, url);
                       }}
@@ -1400,7 +1454,7 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                       required={true}
                       folder="workbench-seller-onboarding"
                       value={itemImages.imageState[index] || []}
-                      onChange={urls => {
+                      onChange={(urls) => {
                         itemImages.updateImageField(index, urls);
                         setValue(`items.${index}.images`, urls);
                       }}
@@ -1415,7 +1469,9 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                     <Controller
                       name={`items.${index}.short_desc`}
                       control={control}
-                      render={({ field }) => <Input {...field} placeholder="Enter Short Description" size="large" />}
+                      render={({ field }) => (
+                        <Input {...field} placeholder="Enter Short Description" size="large" />
+                      )}
                     />
                   </div>
 
@@ -1426,7 +1482,12 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                       name={`items.${index}.long_desc`}
                       control={control}
                       render={({ field }) => (
-                        <Input.TextArea {...field} placeholder="Enter Detailed Description" rows={3} size="large" />
+                        <Input.TextArea
+                          {...field}
+                          placeholder="Enter Detailed Description"
+                          rows={3}
+                          size="large"
+                        />
                       )}
                     />
                   </div>
@@ -1443,7 +1504,12 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                       name={`items.${index}.unit`}
                       control={control}
                       render={({ field }) => (
-                        <Select {...field} className="w-full" size="large" placeholder="Select Unit">
+                        <Select
+                          {...field}
+                          className="w-full"
+                          size="large"
+                          placeholder="Select Unit"
+                        >
                           <Select.Option value="unit">Unit</Select.Option>
                           <Select.Option value="dozen">Dozen</Select.Option>
                           <Select.Option value="gram">Gram</Select.Option>
@@ -1462,7 +1528,9 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                     <Controller
                       name={`items.${index}.value`}
                       control={control}
-                      render={({ field }) => <Input {...field} placeholder="Enter Quantity Value" size="large" />}
+                      render={({ field }) => (
+                        <Input {...field} placeholder="Enter Quantity Value" size="large" />
+                      )}
                     />
                   </div>
 
@@ -1475,7 +1543,12 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                       rules={{ required: "Availability is required" }}
                       render={({ field, fieldState: { error } }) => (
                         <>
-                          <Select {...field} className="w-full" size="large" placeholder="Select Availability">
+                          <Select
+                            {...field}
+                            className="w-full"
+                            size="large"
+                            placeholder="Select Availability"
+                          >
                             <Select.Option value="99">Available</Select.Option>
                             <Select.Option value="0">Not Available</Select.Option>
                           </Select>
@@ -1493,7 +1566,13 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                       name={`items.${index}.maximum_count`}
                       control={control}
                       render={({ field }) => (
-                        <Input {...field} type="number" placeholder="Enter Maximum Count" size="large" min={0} />
+                        <Input
+                          {...field}
+                          type="number"
+                          placeholder="Enter Maximum Count"
+                          size="large"
+                          min={0}
+                        />
                       )}
                     />
                   </div>
@@ -1505,7 +1584,13 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                       name={`items.${index}.minimum_count`}
                       control={control}
                       render={({ field }) => (
-                        <Input {...field} type="number" placeholder="Enter Minimum Count" size="large" min={0} />
+                        <Input
+                          {...field}
+                          type="number"
+                          placeholder="Enter Minimum Count"
+                          size="large"
+                          min={0}
+                        />
                       )}
                     />
                   </div>
@@ -1545,7 +1630,13 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                       name={`items.${index}.mrp`}
                       control={control}
                       render={({ field }) => (
-                        <Input {...field} type="number" placeholder="Enter MRP" size="large" min={0} />
+                        <Input
+                          {...field}
+                          type="number"
+                          placeholder="Enter MRP"
+                          size="large"
+                          min={0}
+                        />
                       )}
                     />
                   </div>
@@ -1557,7 +1648,12 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                       name={`items.${index}.currency`}
                       control={control}
                       render={({ field }) => (
-                        <Select {...field} className="w-full" size="large" placeholder="Select Currency">
+                        <Select
+                          {...field}
+                          className="w-full"
+                          size="large"
+                          placeholder="Select Currency"
+                        >
                           <Select.Option value="INR">INR</Select.Option>
                         </Select>
                       )}
@@ -1582,11 +1678,12 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                           size="large"
                           placeholder="Select Store"
                           allowClear
-                          onChange={value => {
+                          onChange={(value) => {
                             field.onChange(value);
-                            setValue(`items.${index}.category` as any, "");
-                          }}>
-                          {initialData?.stores?.map(store => (
+                            setValue(`items.${index}.category` as Path<FormData>, "");
+                          }}
+                        >
+                          {initialData?.stores?.map((store) => (
                             <Select.Option value={store.locality} key={store.locality}>
                               {store.locality}
                             </Select.Option>
@@ -1606,10 +1703,14 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                       render={({ field, fieldState: { error } }) => {
                         const selectedStore = watchItems[index]?.store;
                         const selectedDomain = watchItems[index]?.domain;
-                        const store = initialData?.stores?.find(s => s.locality === selectedStore);
+                        const store = initialData?.stores?.find(
+                          (s) => s.locality === selectedStore
+                        );
 
                         // Get categories based on selected domain
-                        const domainCategoriesList = selectedDomain ? getCategoriesByDomain(selectedDomain) : [];
+                        const domainCategoriesList = selectedDomain
+                          ? getCategoriesByDomain(selectedDomain)
+                          : [];
 
                         // Get store supported subcategories
                         const storeSubcategories = store?.supported_subcategories || [];
@@ -1620,8 +1721,10 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                         if (selectedDomain && domainCategoriesList.length > 0) {
                           // If domain is selected, filter store categories by domain categories
                           if (storeSubcategories.length > 0) {
-                            subcategories = domainCategoriesList.filter(cat =>
-                              storeSubcategories.some(storeCat => storeCat.toLowerCase() === cat.toLowerCase()),
+                            subcategories = domainCategoriesList.filter((cat) =>
+                              storeSubcategories.some(
+                                (storeCat) => storeCat.toLowerCase() === cat.toLowerCase()
+                              )
                             );
                           } else {
                             // If no store categories, use all domain categories
@@ -1647,23 +1750,26 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                                       ? "No categories available"
                                       : "Select Category"
                               }
-                              disabled={!selectedStore || !selectedDomain || subcategories.length === 0}
+                              disabled={
+                                !selectedStore || !selectedDomain || subcategories.length === 0
+                              }
                               status={error ? "error" : undefined}
-                              onChange={value => {
+                              onChange={(value) => {
                                 field.onChange(value);
                                 // setSelectedSubCategory(value);
                                 // Clear selected optional attributes when category changes
-                                setSelectedOptionalAttributes(prev => ({
+                                setSelectedOptionalAttributes((prev) => ({
                                   ...prev,
                                   [index]: [],
                                 }));
-                              }}>
+                              }}
+                            >
                               {subcategories.length === 0 && selectedStore ? (
                                 <Select.Option value="" disabled>
                                   No categories available for this store
                                 </Select.Option>
                               ) : (
-                                subcategories.map(category => (
+                                subcategories.map((category) => (
                                   <Select.Option value={category} key={category}>
                                     {category}
                                   </Select.Option>
@@ -1680,7 +1786,9 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                   {/* Menu Selection for F&B Domain */}
                   {watchItems[index]?.domain === "F&B" && (
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Link to Menu Item</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Link to Menu Item
+                      </label>
                       <Controller
                         name={`items.${index}.menu_item`}
                         control={control}
@@ -1700,7 +1808,8 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                                 }
                                 allowClear
                                 disabled={availableMenus.length === 0}
-                                status={error ? "error" : undefined}>
+                                status={error ? "error" : undefined}
+                              >
                                 {availableMenus.map((menu, menuIndex) => (
                                   <Select.Option value={menu.name} key={menuIndex}>
                                     {menu.name} - {menu.category} ({menu.vegNonVeg})
@@ -1709,10 +1818,13 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                               </Select>
                               {availableMenus.length === 0 && (
                                 <p className="text-amber-600 text-xs mt-1">
-                                  💡 Create menu items in the Custom Menu step to link them with items here
+                                  💡 Create menu items in the Custom Menu step to link them with
+                                  items here
                                 </p>
                               )}
-                              {error && <p className="text-red-500 text-xs mt-1">{error.message}</p>}
+                              {error && (
+                                <p className="text-red-500 text-xs mt-1">{error.message}</p>
+                              )}
                             </>
                           );
                         }}
@@ -1721,13 +1833,22 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                   )}
 
                   <div>
-                    <LabelWithToolTip labelInfo={""} label={"Default Fulfillment Type"} required={true} />
+                    <LabelWithToolTip
+                      labelInfo={""}
+                      label={"Default Fulfillment Type"}
+                      required={true}
+                    />
 
                     <Controller
                       name={`items.${index}.default_fulfillment_type`}
                       control={control}
                       render={({ field }) => (
-                        <Select {...field} className="w-full" size="large" placeholder="Select Fulfillment Type">
+                        <Select
+                          {...field}
+                          className="w-full"
+                          size="large"
+                          placeholder="Select Fulfillment Type"
+                        >
                           <Select.Option value="Delivery">Delivery</Select.Option>
                           <Select.Option value="Self-Pickup">Self-Pickup</Select.Option>
                         </Select>
@@ -1748,9 +1869,10 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                             className="w-full"
                             size="large"
                             placeholder="Select Time Unit"
-                            onChange={value => {
+                            onChange={(value) => {
                               field.onChange(value);
-                            }}>
+                            }}
+                          >
                             <Select.Option value="minute">Minutes</Select.Option>
                             <Select.Option value="hour">Hours</Select.Option>
                             <Select.Option value="day">Days</Select.Option>
@@ -1767,7 +1889,7 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                             placeholder="Value"
                             size="large"
                             min={1}
-                            onChange={e => {
+                            onChange={(e) => {
                               field.onChange(e);
                               const unit = watchItems[index]?.return_window_unit || "hour";
                               updateIsoDuration(index, "return_window", unit, e.target.value);
@@ -1791,11 +1913,12 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                             className="w-full"
                             size="large"
                             placeholder="Select Replacement Time Unit"
-                            onChange={value => {
+                            onChange={(value) => {
                               field.onChange(value);
                               const numValue = watchItems[index]?.replacement_window_value || "1";
                               updateIsoDuration(index, "replacement_window", value, numValue);
-                            }}>
+                            }}
+                          >
                             <Select.Option value="minute">Minutes</Select.Option>
                             <Select.Option value="hour">Hours</Select.Option>
                             <Select.Option value="day">Days</Select.Option>
@@ -1812,7 +1935,7 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                             placeholder="Value"
                             size="large"
                             min={1}
-                            onChange={e => {
+                            onChange={(e) => {
                               field.onChange(e);
                               const unit = watchItems[index]?.replacement_window_unit || "hour";
                               updateIsoDuration(index, "replacement_window", unit, e.target.value);
@@ -1836,11 +1959,12 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                             className="w-full"
                             size="large"
                             placeholder="Select Shipping Time Unit"
-                            onChange={value => {
+                            onChange={(value) => {
                               field.onChange(value);
                               const numValue = watchItems[index]?.time_to_ship_value || "45";
                               updateIsoDuration(index, "time_to_ship", value, numValue);
-                            }}>
+                            }}
+                          >
                             <Select.Option value="minute">Minutes</Select.Option>
                             <Select.Option value="hour">Hours</Select.Option>
                             <Select.Option value="day">Days</Select.Option>
@@ -1857,7 +1981,7 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                             placeholder="Value"
                             size="large"
                             min={1}
-                            onChange={e => {
+                            onChange={(e) => {
                               field.onChange(e);
                               const unit = watchItems[index]?.time_to_ship_unit || "minute";
                               updateIsoDuration(index, "time_to_ship", unit, e.target.value);
@@ -1880,10 +2004,11 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                         <Select
                           {...field}
                           value={field.value ? "yes" : "no"}
-                          onChange={value => field.onChange(value === "yes")}
+                          onChange={(value) => field.onChange(value === "yes")}
                           className="w-full"
                           size="large"
-                          placeholder="Select option">
+                          placeholder="Select option"
+                        >
                           <Select.Option value="yes">Yes</Select.Option>
                           <Select.Option value="no">No</Select.Option>
                         </Select>
@@ -1901,10 +2026,11 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                         <Select
                           {...field}
                           value={field.value ? "yes" : "no"}
-                          onChange={value => field.onChange(value === "yes")}
+                          onChange={(value) => field.onChange(value === "yes")}
                           className="w-full"
                           size="large"
-                          placeholder="Select option">
+                          placeholder="Select option"
+                        >
                           <Select.Option value="yes">Yes</Select.Option>
                           <Select.Option value="no">No</Select.Option>
                         </Select>
@@ -1922,10 +2048,11 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                         <Select
                           {...field}
                           value={field.value ? "yes" : "no"}
-                          onChange={value => field.onChange(value === "yes")}
+                          onChange={(value) => field.onChange(value === "yes")}
                           className="w-full"
                           size="large"
-                          placeholder="Select option">
+                          placeholder="Select option"
+                        >
                           <Select.Option value="yes">Yes</Select.Option>
                           <Select.Option value="no">No</Select.Option>
                         </Select>
@@ -1941,14 +2068,20 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
 
                 if (protocolKeys.length === 0) return null;
 
-                const hasPackaged = protocolKeys.includes("@ondc/org/statutory_reqs_packaged_commodities");
-                const hasPrepackaged = protocolKeys.includes("@ondc/org/statutory_reqs_prepackaged_food");
+                const hasPackaged = protocolKeys.includes(
+                  "@ondc/org/statutory_reqs_packaged_commodities"
+                );
+                const hasPrepackaged = protocolKeys.includes(
+                  "@ondc/org/statutory_reqs_prepackaged_food"
+                );
 
                 const referBackImage = watchItems[index]?.refer_back_image || false;
 
                 return (
                   <div className="md:col-span-2">
-                    <h4 className="font-medium text-gray-700 mb-3">Statutory Requirements ({selectedCategory})</h4>
+                    <h4 className="font-medium text-gray-700 mb-3">
+                      Statutory Requirements ({selectedCategory})
+                    </h4>
 
                     <div className="mb-4">
                       <LabelWithToolTip labelInfo={""} label={"Refer Back Image"} required={true} />
@@ -1960,10 +2093,11 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                           <Select
                             {...field}
                             value={field.value ? "yes" : "no"}
-                            onChange={value => field.onChange(value === "yes")}
+                            onChange={(value) => field.onChange(value === "yes")}
                             className="w-full"
                             size="large"
-                            placeholder="Select option">
+                            placeholder="Select option"
+                          >
                             <Select.Option value="yes">Yes</Select.Option>
                             <Select.Option value="no">No</Select.Option>
                           </Select>
@@ -1981,13 +2115,21 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                         {hasPackaged && (
                           <>
                             <div>
-                              <LabelWithToolTip labelInfo={""} label={"Manufacturer or Packer Name"} required={true} />
+                              <LabelWithToolTip
+                                labelInfo={""}
+                                label={"Manufacturer or Packer Name"}
+                                required={true}
+                              />
 
                               <Controller
                                 name={`items.${index}.manufacturer_or_packer_name`}
                                 control={control}
                                 render={({ field }) => (
-                                  <Input {...field} placeholder="Enter Manufacturer Or Packer Name" size="large" />
+                                  <Input
+                                    {...field}
+                                    placeholder="Enter Manufacturer Or Packer Name"
+                                    size="large"
+                                  />
                                 )}
                               />
                             </div>
@@ -2024,18 +2166,28 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                                 name={`items.${index}.common_or_generic_name_of_commodity`}
                                 control={control}
                                 render={({ field }) => (
-                                  <Input {...field} placeholder="Enter Common Or Generic Name" size="large" />
+                                  <Input
+                                    {...field}
+                                    placeholder="Enter Common Or Generic Name"
+                                    size="large"
+                                  />
                                 )}
                               />
                             </div>
 
                             <div>
-                              <LabelWithToolTip labelInfo={""} label={"Net Quantity or Measure"} required={true} />
+                              <LabelWithToolTip
+                                labelInfo={""}
+                                label={"Net Quantity or Measure"}
+                                required={true}
+                              />
 
                               <Controller
                                 name={`items.${index}.net_quantity_or_measure_of_commodity_in_pkg`}
                                 control={control}
-                                render={({ field }) => <Input {...field} placeholder="e.g., 500g, 1L" size="large" />}
+                                render={({ field }) => (
+                                  <Input {...field} placeholder="e.g., 500g, 1L" size="large" />
+                                )}
                               />
                             </div>
 
@@ -2050,7 +2202,12 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                                 name={`items.${index}.month_year_of_manufacture_packing_import`}
                                 control={control}
                                 render={({ field }) => (
-                                  <Input {...field} placeholder="e.g., 10/2024" size="large" type="date" />
+                                  <Input
+                                    {...field}
+                                    placeholder="e.g., 10/2024"
+                                    size="large"
+                                    type="date"
+                                  />
                                 )}
                               />
                             </div>
@@ -2070,13 +2227,21 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                                 name={`items.${index}.imported_product_country_of_origin`}
                                 control={control}
                                 render={({ field }) => (
-                                  <Input {...field} placeholder="Enter Country Of Origin" size="large" />
+                                  <Input
+                                    {...field}
+                                    placeholder="Enter Country Of Origin"
+                                    size="large"
+                                  />
                                 )}
                               />
                             </div>
 
                             <div>
-                              <LabelWithToolTip labelInfo={""} label={"Nutritional Info"} required={true} />
+                              <LabelWithToolTip
+                                labelInfo={""}
+                                label={"Nutritional Info"}
+                                required={true}
+                              />
 
                               <Controller
                                 name={`items.${index}.nutritional_info`}
@@ -2093,7 +2258,11 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                             </div>
 
                             <div>
-                              <LabelWithToolTip labelInfo={""} label={"Additives Info"} required={true} />
+                              <LabelWithToolTip
+                                labelInfo={""}
+                                label={"Additives Info"}
+                                required={true}
+                              />
 
                               <Controller
                                 name={`items.${index}.additives_info`}
@@ -2110,19 +2279,31 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                             </div>
 
                             <div>
-                              <LabelWithToolTip labelInfo={""} label={"Brand Owner Name"} required={true} />
+                              <LabelWithToolTip
+                                labelInfo={""}
+                                label={"Brand Owner Name"}
+                                required={true}
+                              />
 
                               <Controller
                                 name={`items.${index}.brand_owner_name`}
                                 control={control}
                                 render={({ field }) => (
-                                  <Input {...field} placeholder="Enter Brand Owner Name" size="large" />
+                                  <Input
+                                    {...field}
+                                    placeholder="Enter Brand Owner Name"
+                                    size="large"
+                                  />
                                 )}
                               />
                             </div>
 
                             <div>
-                              <LabelWithToolTip labelInfo={""} label={"Brand Owner Address"} required={true} />
+                              <LabelWithToolTip
+                                labelInfo={""}
+                                label={"Brand Owner Address"}
+                                required={true}
+                              />
 
                               <Controller
                                 name={`items.${index}.brand_owner_address`}
@@ -2139,43 +2320,71 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                             </div>
 
                             <div>
-                              <LabelWithToolTip labelInfo={""} label={"Brand Owner FSSAI License No"} required={true} />
+                              <LabelWithToolTip
+                                labelInfo={""}
+                                label={"Brand Owner FSSAI License No"}
+                                required={true}
+                              />
 
                               <Controller
                                 name={`items.${index}.brand_owner_fssai_license_no`}
                                 control={control}
                                 render={({ field }) => (
-                                  <Input {...field} placeholder="Enter FSSAI License Number" size="large" />
+                                  <Input
+                                    {...field}
+                                    placeholder="Enter FSSAI License Number"
+                                    size="large"
+                                  />
                                 )}
                               />
                             </div>
 
                             <div>
-                              <LabelWithToolTip labelInfo={""} label={"Other FSSAI License No"} required={true} />
+                              <LabelWithToolTip
+                                labelInfo={""}
+                                label={"Other FSSAI License No"}
+                                required={true}
+                              />
 
                               <Controller
                                 name={`items.${index}.other_fssai_license_no`}
                                 control={control}
                                 render={({ field }) => (
-                                  <Input {...field} placeholder="Enter other FSSAI license number" size="large" />
+                                  <Input
+                                    {...field}
+                                    placeholder="Enter other FSSAI license number"
+                                    size="large"
+                                  />
                                 )}
                               />
                             </div>
 
                             <div>
-                              <LabelWithToolTip labelInfo={""} label={"Importer Name"} required={true} />
+                              <LabelWithToolTip
+                                labelInfo={""}
+                                label={"Importer Name"}
+                                required={true}
+                              />
 
                               <Controller
                                 name={`items.${index}.importer_name`}
                                 control={control}
                                 render={({ field }) => (
-                                  <Input {...field} placeholder="Enter Importer Name" size="large" />
+                                  <Input
+                                    {...field}
+                                    placeholder="Enter Importer Name"
+                                    size="large"
+                                  />
                                 )}
                               />
                             </div>
 
                             <div>
-                              <LabelWithToolTip labelInfo={""} label={"Importer Address"} required={true} />
+                              <LabelWithToolTip
+                                labelInfo={""}
+                                label={"Importer Address"}
+                                required={true}
+                              />
 
                               <Controller
                                 name={`items.${index}.importer_address`}
@@ -2192,13 +2401,21 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                             </div>
 
                             <div>
-                              <LabelWithToolTip labelInfo={""} label={"Importer FSSAI License No"} required={true} />
+                              <LabelWithToolTip
+                                labelInfo={""}
+                                label={"Importer FSSAI License No"}
+                                required={true}
+                              />
 
                               <Controller
                                 name={`items.${index}.importer_fssai_license_no`}
                                 control={control}
                                 render={({ field }) => (
-                                  <Input {...field} placeholder="Enter Importer FSSAI License Number" size="large" />
+                                  <Input
+                                    {...field}
+                                    placeholder="Enter Importer FSSAI License Number"
+                                    size="large"
+                                  />
                                 )}
                               />
                             </div>
@@ -2235,7 +2452,8 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                     />
                   </div>
 
-                  {(watchItems[index]?.domain === "Grocery" || watchItems[index]?.domain === "F&B") && (
+                  {(watchItems[index]?.domain === "Grocery" ||
+                    watchItems[index]?.domain === "F&B") && (
                     <>
                       <div>
                         <LabelWithToolTip labelInfo={""} label={"Veg/NonVeg"} required={true} />
@@ -2244,7 +2462,13 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                           name={`items.${index}.veg_non_veg`}
                           control={control}
                           render={({ field }) => (
-                            <Select {...field} className="w-full" size="large" placeholder="Select type" allowClear>
+                            <Select
+                              {...field}
+                              className="w-full"
+                              size="large"
+                              placeholder="Select type"
+                              allowClear
+                            >
                               <Select.Option value="veg">Veg</Select.Option>
                               <Select.Option value="non-veg">Non-Veg</Select.Option>
                             </Select>
@@ -2259,7 +2483,7 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                             required={true}
                             folder="workbench-seller-onboarding"
                             value={backImages.imageState[index] || ""}
-                            onChange={url => {
+                            onChange={(url) => {
                               backImages.updateImageField(index, url);
                               setValue(`items.${index}.back_image`, url);
                             }}
@@ -2279,7 +2503,8 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                   {index > 0 && getFirstItemConsumerCare() && (
                     <Checkbox
                       checked={useExistingConsumerCare[index] || false}
-                      onChange={e => handleConsumerCareToggle(index, e.target.checked)}>
+                      onChange={(e) => handleConsumerCareToggle(index, e.target.checked)}
+                    >
                       Use same as first item
                     </Checkbox>
                   )}
@@ -2309,7 +2534,9 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                       name={`items.${index}.consumer_care_email`}
                       control={control}
                       rules={{
-                        required: useExistingConsumerCare[index] ? false : "Consumer care email is required",
+                        required: useExistingConsumerCare[index]
+                          ? false
+                          : "Consumer care email is required",
                         pattern: useExistingConsumerCare[index]
                           ? undefined
                           : {
@@ -2322,10 +2549,12 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                               validEmail: (value: string | undefined) => {
                                 if (!value) return true;
                                 const email = value.toLowerCase();
-                                if (email.includes("..")) return "Email cannot contain consecutive dots";
+                                if (email.includes(".."))
+                                  return "Email cannot contain consecutive dots";
                                 if (email.startsWith(".") || email.endsWith("."))
                                   return "Email cannot start or end with a dot";
-                                if (email.split("@")[0].length > 64) return "Local part of email is too long";
+                                if (email.split("@")[0].length > 64)
+                                  return "Local part of email is too long";
                                 return true;
                               },
                             },
@@ -2353,7 +2582,9 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                       name={`items.${index}.consumer_care_contact`}
                       control={control}
                       rules={{
-                        required: useExistingConsumerCare[index] ? false : "Contact number is required",
+                        required: useExistingConsumerCare[index]
+                          ? false
+                          : "Contact number is required",
                         pattern: useExistingConsumerCare[index]
                           ? undefined
                           : {
@@ -2369,7 +2600,8 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                                 const phone = value.replace(/[\s-]/g, "");
                                 // Indian phone number validation
                                 if (phone.startsWith("+91")) {
-                                  if (phone.length !== 13) return "Indian number with +91 must be 13 digits total";
+                                  if (phone.length !== 13)
+                                    return "Indian number with +91 must be 13 digits total";
                                   const numberPart = phone.substring(3);
                                   if (!/^[6-9][0-9]{9}$/.test(numberPart))
                                     return "Indian mobile numbers must start with 6-9";
@@ -2404,11 +2636,17 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
               {(() => {
                 const selectedCategory = watchItems[index]?.category || "";
                 const selectedDomain = watchItems[index]?.domain || "";
-                const mandatoryAttributes = getMandatoryAttributes(selectedDomain, selectedCategory);
+                const mandatoryAttributes = getMandatoryAttributes(
+                  selectedDomain,
+                  selectedCategory
+                );
                 const optionalAttributes = getOptionalAttributes(selectedDomain, selectedCategory);
                 const selectedOptionals = selectedOptionalAttributes[index] || [];
 
-                if (Object.keys(mandatoryAttributes).length === 0 && Object.keys(optionalAttributes).length === 0) {
+                if (
+                  Object.keys(mandatoryAttributes).length === 0 &&
+                  Object.keys(optionalAttributes).length === 0
+                ) {
                   return (
                     <div className="md:col-span-2">
                       <h4 className="font-medium text-gray-700 mb-3">Attributes</h4>
@@ -2418,7 +2656,9 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                           <Controller
                             name={`items.${index}.brand`}
                             control={control}
-                            render={({ field }) => <Input {...field} placeholder="Enter brand name" size="large" />}
+                            render={({ field }) => (
+                              <Input {...field} placeholder="Enter brand name" size="large" />
+                            )}
                           />
                         </div>
                       </div>
@@ -2428,15 +2668,19 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
 
                 return (
                   <div className="md:col-span-2">
-                    <h4 className="font-medium text-gray-700 mb-3">Attributes ({selectedCategory})</h4>
+                    <h4 className="font-medium text-gray-700 mb-3">
+                      Attributes ({selectedCategory})
+                    </h4>
 
                     {/* Mandatory Attributes */}
                     {Object.keys(mandatoryAttributes).length > 0 && (
                       <>
-                        <h5 className="text-sm font-medium text-gray-600 mb-2">Required Attributes *</h5>
+                        <h5 className="text-sm font-medium text-gray-600 mb-2">
+                          Required Attributes *
+                        </h5>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                           {Object.entries(mandatoryAttributes).map(([attributeName, config]) =>
-                            renderAttributeField(attributeName, config, index, false),
+                            renderAttributeField(attributeName, config, index, false)
                           )}
                         </div>
                       </>
@@ -2445,7 +2689,9 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                     {/* Optional Attributes Selection */}
                     {Object.keys(optionalAttributes).length > 0 && (
                       <>
-                        <h5 className="text-sm font-medium text-gray-600 mb-2">Additional Optional Attributes</h5>
+                        <h5 className="text-sm font-medium text-gray-600 mb-2">
+                          Additional Optional Attributes
+                        </h5>
                         <div className="mb-4">
                           <label className="block text-sm font-medium text-gray-700 mb-1">
                             Select Additional Attributes (Optional)
@@ -2456,11 +2702,14 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                             size="large"
                             placeholder="Choose optional attributes to add"
                             value={selectedOptionals}
-                            onChange={values => handleOptionalAttributeChange(index, values)}
-                            allowClear>
-                            {Object.keys(optionalAttributes).map(attributeName => (
+                            onChange={(values) => handleOptionalAttributeChange(index, values)}
+                            allowClear
+                          >
+                            {Object.keys(optionalAttributes).map((attributeName) => (
                               <Select.Option key={attributeName} value={attributeName}>
-                                {attributeName.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase())}
+                                {attributeName
+                                  .replace(/_/g, " ")
+                                  .replace(/\b\w/g, (l) => l.toUpperCase())}
                               </Select.Option>
                             ))}
                           </Select>
@@ -2469,9 +2718,11 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                         {/* Render Selected Optional Attributes */}
                         {selectedOptionals.length > 0 && (
                           <>
-                            <h5 className="text-sm font-medium text-gray-600 mb-2">Selected Optional Attributes</h5>
+                            <h5 className="text-sm font-medium text-gray-600 mb-2">
+                              Selected Optional Attributes
+                            </h5>
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                              {selectedOptionals.map(attributeName => {
+                              {selectedOptionals.map((attributeName) => {
                                 const config = optionalAttributes[attributeName];
                                 return renderAttributeField(attributeName, config, index, true);
                               })}
@@ -2491,8 +2742,8 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                 <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
                   <h4 className="font-medium text-blue-900 mb-2">F&B Customizations</h4>
                   <p className="text-sm text-blue-800">
-                    For F&B items, customizations and add-ons are configured in the Custom Menu step. Variants are not
-                    applicable for food items.
+                    For F&B items, customizations and add-ons are configured in the Custom Menu
+                    step. Variants are not applicable for food items.
                   </p>
                 </div>
               </div>
@@ -2503,13 +2754,16 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                   <Button
                     type="default"
                     onClick={() => {
-                      setShowVariantModal(prev => ({
+                      setShowVariantModal((prev) => ({
                         ...prev,
                         [index]: true,
                       }));
                     }}
-                    disabled={!getAvailableAttributesForVariants(index).length}>
-                    {itemVariants[index] && itemVariants[index].length > 0 ? "Add More Variants" : "Create Variants"}
+                    disabled={!getAvailableAttributesForVariants(index).length}
+                  >
+                    {itemVariants[index] && itemVariants[index].length > 0
+                      ? "Add More Variants"
+                      : "Create Variants"}
                   </Button>
                 </div>
 
@@ -2528,34 +2782,47 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                       {itemVariants[index].map((variant, vIdx) => (
                         <div
                           key={vIdx}
-                          className="p-3 border border-gray-200 rounded-lg bg-white shadow-sm hover:shadow-md transition-shadow">
+                          className="p-3 border border-gray-200 rounded-lg bg-white shadow-sm hover:shadow-md transition-shadow"
+                        >
                           <div className="flex justify-between items-start">
                             <div className="flex-1">
-                              <p className="text-sm font-medium text-gray-800 mb-2">{variant.name}</p>
+                              <p className="text-sm font-medium text-gray-800 mb-2">
+                                {variant.name}
+                              </p>
                               <p className="text-xs text-gray-500 mb-2">Variant Attributes:</p>
                               <div className="space-y-1">
-                                {Object.entries(variant.variantCombination || {}).map(([key, value]) => (
-                                  <div key={key} className="flex justify-between text-xs">
-                                    <span className="text-gray-600 capitalize">{key.replace(/_/g, " ")}:</span>
-                                    <span className="font-medium text-gray-800">{String(value)}</span>
-                                  </div>
-                                ))}
+                                {Object.entries(variant.variantCombination || {}).map(
+                                  ([key, value]) => (
+                                    <div key={key} className="flex justify-between text-xs">
+                                      <span className="text-gray-600 capitalize">
+                                        {key.replace(/_/g, " ")}:
+                                      </span>
+                                      <span className="font-medium text-gray-800">
+                                        {String(value)}
+                                      </span>
+                                    </div>
+                                  )
+                                )}
                               </div>
-                              <div className="mt-2 text-xs text-blue-600">Catalog Item ID: I{vIdx + 1}</div>
+                              <div className="mt-2 text-xs text-blue-600">
+                                Catalog Item ID: I{vIdx + 1}
+                              </div>
                             </div>
                             <div className="flex gap-1">
                               <button
                                 type="button"
                                 onClick={() => openEditVariantModal(index, vIdx)}
                                 className="text-blue-500 hover:text-blue-700 p-1 rounded hover:bg-blue-50"
-                                title="View/Edit variant">
+                                title="View/Edit variant"
+                              >
                                 <FaEdit className="text-sm" />
                               </button>
                               <button
                                 type="button"
                                 onClick={() => removeVariant(index, vIdx)}
                                 className="text-red-500 hover:text-red-700 p-1 rounded hover:bg-red-50"
-                                title="Remove variant">
+                                title="Remove variant"
+                              >
                                 <FaTrash className="text-sm" />
                               </button>
                             </div>
@@ -2564,15 +2831,17 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                       ))}
                     </div>
                     <div className="text-xs text-gray-500 bg-blue-50 p-2 rounded border-l-4 border-blue-200">
-                      <strong>Note:</strong> Each variant above will be created as an individual item in your product
-                      catalog. Customers can discover and purchase each variant independently based on their specific
-                      attribute preferences.
+                      <strong>Note:</strong> Each variant above will be created as an individual
+                      item in your product catalog. Customers can discover and purchase each variant
+                      independently based on their specific attribute preferences.
                     </div>
                   </div>
                 )}
 
                 {!getAvailableAttributesForVariants(index).length && (
-                  <p className="text-sm text-gray-500">Add attributes to this item to create variants</p>
+                  <p className="text-sm text-gray-500">
+                    Add attributes to this item to create variants
+                  </p>
                 )}
               </div>
             )}
@@ -2583,7 +2852,8 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
           <button
             type="button"
             onClick={addItem}
-            className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors duration-200 flex items-center gap-2">
+            className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors duration-200 flex items-center gap-2"
+          >
             <FaPlus />
             Add Another Item
           </button>
@@ -2593,7 +2863,8 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
           <button
             type="button"
             onClick={onPrevious}
-            className="bg-gray-500 text-white px-6 py-2 rounded-md hover:bg-gray-600 transition-colors duration-200">
+            className="bg-gray-500 text-white px-6 py-2 rounded-md hover:bg-gray-600 transition-colors duration-200"
+          >
             Previous
           </button>
           <LoadingButton type="submit" buttonText="Next" isLoading={isSubmitting} />
@@ -2605,38 +2876,46 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
         <Modal
           key={`variant-modal-${index}`}
           title={`${
-            itemVariants[index] && itemVariants[index].length > 0 ? "Add More Variants for" : "Create Variants for"
+            itemVariants[index] && itemVariants[index].length > 0
+              ? "Add More Variants for"
+              : "Create Variants for"
           } ${watchItems[index]?.name || `Item ${index + 1}`}`}
           open={showVariantModal[index] || false}
           onCancel={() => {
-            setShowVariantModal(prev => ({
+            setShowVariantModal((prev) => ({
               ...prev,
               [index]: false,
             }));
-            setSelectedVariantAttributes(prev => ({
+            setSelectedVariantAttributes((prev) => ({
               ...prev,
               [index]: [],
             }));
           }}
           onOk={() => handleCreateVariants(index)}
-          width={600}>
+          width={600}
+        >
           <div className="space-y-4">
             <div>
               <p className="text-sm text-gray-600 mb-4">
-                Select which attributes you want to vary for this item. Each variant will inherit all properties from
-                the parent item but differ in the selected attributes. You can create variants with just one attribute
-                and value, or use multiple attributes with various combinations.
+                Select which attributes you want to vary for this item. Each variant will inherit
+                all properties from the parent item but differ in the selected attributes. You can
+                create variants with just one attribute and value, or use multiple attributes with
+                various combinations.
                 {itemVariants[index] && itemVariants[index].length > 0 && (
                   <span className="block mt-2 text-blue-600 font-medium">
-                    This item already has {itemVariants[index].length} variant(s). You can add more variants with
-                    different attributes.
+                    This item already has {itemVariants[index].length} variant(s). You can add more
+                    variants with different attributes.
                   </span>
                 )}
               </p>
             </div>
 
             <div>
-              <LabelWithToolTip labelInfo={""} label={"Select Variant Attributes"} required={true} />
+              <LabelWithToolTip
+                labelInfo={""}
+                label={"Select Variant Attributes"}
+                required={true}
+              />
 
               <Select
                 mode="multiple"
@@ -2644,42 +2923,46 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                 size="large"
                 placeholder="Choose attributes that will differ in variants"
                 value={selectedVariantAttributes[index] || []}
-                onChange={values => {
-                  setSelectedVariantAttributes(prev => ({
+                onChange={(values) => {
+                  setSelectedVariantAttributes((prev) => ({
                     ...prev,
                     [index]: values,
                   }));
                 }}
-                allowClear>
-                {getAvailableAttributesForVariants(index).map(attr => (
+                allowClear
+              >
+                {getAvailableAttributesForVariants(index).map((attr) => (
                   <Select.Option key={attr} value={attr}>
-                    {attr.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase())}
+                    {attr.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())}
                   </Select.Option>
                 ))}
               </Select>
               <p className="text-xs text-gray-500 mt-1">
-                Each selected attribute can have one or more values. Variants will be created for all possible
-                combinations. Examples: "color" alone with 3 values = 3 variants, or "color" (2 values) + "size" (3
-                values) = 6 variants.
+                Each selected attribute can have one or more values. Variants will be created for
+                all possible combinations. Examples: "color" alone with 3 values = 3 variants, or
+                "color" (2 values) + "size" (3 values) = 6 variants.
               </p>
             </div>
 
             {selectedVariantAttributes[index] && selectedVariantAttributes[index].length > 0 && (
               <>
                 <div className="space-y-4">
-                  <h4 className="text-sm font-medium text-gray-700">Provide values for each variant attribute:</h4>
-                  {selectedVariantAttributes[index].map(attr => {
+                  <h4 className="text-sm font-medium text-gray-700">
+                    Provide values for each variant attribute:
+                  </h4>
+                  {selectedVariantAttributes[index].map((attr) => {
                     const item = watchItems[index];
                     const predefinedValues =
                       item?.domain && item?.category
                         ? getAttributePredefinedValues(item.domain, item.category, attr)
                         : [];
-                    const hasPredefinedValues = Array.isArray(predefinedValues) && predefinedValues.length > 0;
+                    const hasPredefinedValues =
+                      Array.isArray(predefinedValues) && predefinedValues.length > 0;
 
                     return (
                       <div key={attr}>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                          {attr.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase())} Values
+                          {attr.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())} Values
                           {hasPredefinedValues && (
                             <span className="text-xs text-blue-600 ml-2">
                               (Select from predefined values or add custom)
@@ -2696,8 +2979,8 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                               : `Enter ${attr} values (press Enter after each)`
                           }
                           value={variantValues[index]?.[attr] || []}
-                          onChange={values => {
-                            setVariantValues(prev => ({
+                          onChange={(values) => {
+                            setVariantValues((prev) => ({
                               ...prev,
                               [index]: {
                                 ...prev[index],
@@ -2705,7 +2988,8 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                               },
                             }));
                           }}
-                          allowClear>
+                          allowClear
+                        >
                           {hasPredefinedValues &&
                             predefinedValues.map((value: string) => (
                               <Select.Option key={value} value={value}>
@@ -2729,7 +3013,7 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                       Preview:{" "}
                       {(() => {
                         const counts = selectedVariantAttributes[index].map(
-                          attr => variantValues[index]?.[attr]?.length || 0,
+                          (attr) => variantValues[index]?.[attr]?.length || 0
                         );
                         const total = counts.reduce((a, b) => a * b || 1, 1);
                         return total;
@@ -2753,41 +3037,49 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
         onCancel={handleCancelEditVariant}
         width={800}
         okText="Save Changes"
-        cancelText="Cancel">
+        cancelText="Cancel"
+      >
         {editingVariant && (
           <Form form={variantForm} layout="vertical" className="max-h-[600px] overflow-y-auto">
             {/* Basic Information Section */}
             <div className="mb-6">
               <h3 className="text-lg font-semibold mb-4 border-b pb-2">Basic Information</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Form.Item label="Item Name" name="name" rules={[{ required: true, message: "Name is required" }]}>
+                <Form.Item
+                  label="Item Name"
+                  name="name"
+                  rules={[{ required: true, message: "Name is required" }]}
+                >
                   <Input placeholder="Enter item name" />
                 </Form.Item>
 
                 {/* Hide Code Type and Code Value for F&B domain */}
-                {editVariantModal.itemIndex !== null && watchItems[editVariantModal.itemIndex]?.domain !== "F&B" && (
-                  <>
-                    <Form.Item
-                      label="Code Type"
-                      name="code_type"
-                      rules={[{ required: true, message: "Code type is required" }]}>
-                      <Select placeholder="Select code type">
-                        <Select.Option value="EAN">EAN</Select.Option>
-                        <Select.Option value="ISBN">ISBN</Select.Option>
-                        <Select.Option value="GTIN">GTIN</Select.Option>
-                        <Select.Option value="HSN">HSN</Select.Option>
-                        <Select.Option value="Others">Others</Select.Option>
-                      </Select>
-                    </Form.Item>
+                {editVariantModal.itemIndex !== null &&
+                  watchItems[editVariantModal.itemIndex]?.domain !== "F&B" && (
+                    <>
+                      <Form.Item
+                        label="Code Type"
+                        name="code_type"
+                        rules={[{ required: true, message: "Code type is required" }]}
+                      >
+                        <Select placeholder="Select code type">
+                          <Select.Option value="EAN">EAN</Select.Option>
+                          <Select.Option value="ISBN">ISBN</Select.Option>
+                          <Select.Option value="GTIN">GTIN</Select.Option>
+                          <Select.Option value="HSN">HSN</Select.Option>
+                          <Select.Option value="Others">Others</Select.Option>
+                        </Select>
+                      </Form.Item>
 
-                    <Form.Item
-                      label="Code Value"
-                      name="code_value"
-                      rules={[{ required: true, message: "Code value is required" }]}>
-                      <Input placeholder="Enter code value" />
-                    </Form.Item>
-                  </>
-                )}
+                      <Form.Item
+                        label="Code Value"
+                        name="code_value"
+                        rules={[{ required: true, message: "Code value is required" }]}
+                      >
+                        <Input placeholder="Enter code value" />
+                      </Form.Item>
+                    </>
+                  )}
 
                 <div className="md:col-span-2">
                   <MultiImageUpload
@@ -2797,12 +3089,16 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                     folder="workbench-seller-onboarding"
                     value={
                       editVariantModal.itemIndex !== null && editVariantModal.variantIndex !== null
-                        ? variantImages.imageState[`${editVariantModal.itemIndex}-${editVariantModal.variantIndex}`] ||
-                          []
+                        ? variantImages.imageState[
+                            `${editVariantModal.itemIndex}-${editVariantModal.variantIndex}`
+                          ] || []
                         : []
                     }
-                    onChange={urls => {
-                      if (editVariantModal.itemIndex !== null && editVariantModal.variantIndex !== null) {
+                    onChange={(urls) => {
+                      if (
+                        editVariantModal.itemIndex !== null &&
+                        editVariantModal.variantIndex !== null
+                      ) {
                         const variantKey = `${editVariantModal.itemIndex}-${editVariantModal.variantIndex}`;
                         variantImages.updateImageField(variantKey, urls);
                         variantForm.setFieldsValue({ images: urls });
@@ -2826,8 +3122,11 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                           ] || ""
                         : ""
                     }
-                    onChange={url => {
-                      if (editVariantModal.itemIndex !== null && editVariantModal.variantIndex !== null) {
+                    onChange={(url) => {
+                      if (
+                        editVariantModal.itemIndex !== null &&
+                        editVariantModal.variantIndex !== null
+                      ) {
                         const variantKey = `${editVariantModal.itemIndex}-${editVariantModal.variantIndex}`;
                         variantSymbolImages.updateImageField(variantKey, url);
                         variantForm.setFieldsValue({ symbol: url });
@@ -2851,14 +3150,16 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                       required: true,
                       message: "Short description is required",
                     },
-                  ]}>
+                  ]}
+                >
                   <Input.TextArea rows={2} placeholder="Enter short description" />
                 </Form.Item>
 
                 <Form.Item
                   label="Long Description"
                   name="long_desc"
-                  rules={[{ required: true, message: "Long description is required" }]}>
+                  rules={[{ required: true, message: "Long description is required" }]}
+                >
                   <Input.TextArea rows={3} placeholder="Enter long description" />
                 </Form.Item>
               </div>
@@ -2871,11 +3172,16 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                 <Form.Item
                   label="Selling Price (₹)"
                   name="selling_price"
-                  rules={[{ required: true, message: "Selling price is required" }]}>
+                  rules={[{ required: true, message: "Selling price is required" }]}
+                >
                   <Input type="number" step="0.01" placeholder="Enter selling price" />
                 </Form.Item>
 
-                <Form.Item label="MRP (₹)" name="mrp" rules={[{ required: true, message: "MRP is required" }]}>
+                <Form.Item
+                  label="MRP (₹)"
+                  name="mrp"
+                  rules={[{ required: true, message: "MRP is required" }]}
+                >
                   <Input type="number" step="0.01" placeholder="Enter MRP" />
                 </Form.Item>
               </div>
@@ -2923,8 +3229,12 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                   {Object.entries(editingVariant.variantCombination).map(([key]) => (
                     <Form.Item
                       key={key}
-                      label={key.replace(/_/g, " ").charAt(0).toUpperCase() + key.replace(/_/g, " ").slice(1)}
-                      name={key}>
+                      label={
+                        key.replace(/_/g, " ").charAt(0).toUpperCase() +
+                        key.replace(/_/g, " ").slice(1)
+                      }
+                      name={key}
+                    >
                       <Input placeholder={`Enter ${key}`} />
                     </Form.Item>
                   ))}
@@ -2956,13 +3266,17 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                           "available_count",
                           "maximum_count",
                           "minimum_count",
-                        ].includes(key),
+                        ].includes(key)
                     )
                     .map(([key]) => (
                       <Form.Item
                         key={key}
-                        label={key.replace(/_/g, " ").charAt(0).toUpperCase() + key.replace(/_/g, " ").slice(1)}
-                        name={key}>
+                        label={
+                          key.replace(/_/g, " ").charAt(0).toUpperCase() +
+                          key.replace(/_/g, " ").slice(1)
+                        }
+                        name={key}
+                      >
                         <Input placeholder={`Enter ${key}`} />
                       </Form.Item>
                     ))}
@@ -2985,7 +3299,9 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                   </div>
                   <div>
                     <span className="font-medium">Is Variant:</span>{" "}
-                    <span className="text-gray-600">{editingVariant?.isVariant ? "Yes" : "No"}</span>
+                    <span className="text-gray-600">
+                      {editingVariant?.isVariant ? "Yes" : "No"}
+                    </span>
                   </div>
                 </div>
               </div>

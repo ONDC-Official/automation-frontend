@@ -6,7 +6,7 @@ export function GetCurrentState(
   index: number,
   flowData: ApiData[],
   thisFlowId: string,
-  currentFlow: string | undefined,
+  currentFlow: string | undefined
 ): "success" | "error" | "pending" | "inactive" {
   if (currentFlow !== thisFlowId) {
     return "inactive";
@@ -18,6 +18,7 @@ export function GetCurrentState(
     return "inactive";
   }
   const response = flowData[index].response;
+
   if (response?.message?.ack?.status === "ACK") {
     return "success";
   } else {
@@ -46,7 +47,7 @@ export function getRequestResponse(index: number, action: string, flowData?: Api
 export function getSequenceFromFlow(
   flow: Flow,
   sessionData: SessionCache | null | undefined,
-  activeFlow: string | null,
+  activeFlow: string | null
 ): MappedStep[] {
   return flow.sequence.map((step, index) => {
     let status: "WAITING" | "LISTENING" | "RESPONDING" | "INPUT-REQUIRED" = "WAITING";
