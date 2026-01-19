@@ -3,10 +3,10 @@ import Features from "@pages/home/Features";
 import Banner from "@pages/home/Banner";
 
 const HomePage: FC = () => (
-  <>
-    <Banner />
-    <Features />
-  </>
+    <>
+        <Banner />
+        <Features />
+    </>
 );
 
 export default HomePage;

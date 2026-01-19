@@ -2,10 +2,10 @@
 // All implementations use BLAKE-512 hashing and Ed25519 signatures
 
 export const codeSnippets = {
-  python: {
-    language: "python",
-    label: "Python",
-    generate: `def create_authorisation_header(payload: str, private_key: str, 
+    python: {
+        language: "python",
+        label: "Python",
+        generate: `def create_authorisation_header(payload: str, private_key: str, 
                               subscriber_id: str, unique_key_id: str) -> tuple[str, str]:
     """
     Create ONDC authorization header from raw JSON payload string.
@@ -37,7 +37,7 @@ export const codeSnippets = {
                   f'signature="{signature_b64}"'
     
     return auth_header, payload`,
-    verify: `def verify_authorisation_header(auth_header: str, payload: str, 
+        verify: `def verify_authorisation_header(auth_header: str, payload: str, 
                                 public_key: str) -> tuple[bool, str]:
     """
     Verify ONDC authorization header against payload.
@@ -67,12 +67,12 @@ export const codeSnippets = {
         return True, ""
     except Exception:
         return False, "Authorization header verification failed"`,
-  },
-  
-  go: {
-    language: "go",
-    label: "Go",
-    generate: `func CreateAuthorisationHeader(payload, privateKey, subscriberId, 
+    },
+
+    go: {
+        language: "go",
+        label: "Go",
+        generate: `func CreateAuthorisationHeader(payload, privateKey, subscriberId, 
     uniqueKeyId string) (string, string, error) {
     currentTime := int(time.Now().Unix())
     ttl := 3600 // 1 hour
@@ -111,7 +111,7 @@ export const codeSnippets = {
 
     return authHeader, payload, nil
 }`,
-    verify: `func VerifyAuthorisationHeader(authHeader, payload, publicKey string) (bool, string) {
+        verify: `func VerifyAuthorisationHeader(authHeader, payload, publicKey string) (bool, string) {
     // Parse authorization header
     _, created, expires, signature, err := parseAuthHeader(authHeader)
     if err != nil {
@@ -145,12 +145,12 @@ export const codeSnippets = {
     }
     return false, "Authorization header verification failed"
 }`,
-  },
-  
-  java: {
-    language: "java",
-    label: "Java",
-    generate: `public static Map<String, Object> createAuthorisationHeader(
+    },
+
+    java: {
+        language: "java",
+        label: "Java",
+        generate: `public static Map<String, Object> createAuthorisationHeader(
         String payload, String privateKey, String subscriberId, String uniqueKeyId) {
     
     long currentTime = Instant.now().getEpochSecond();
@@ -188,7 +188,7 @@ export const codeSnippets = {
     
     return Map.of("authorization_header", authHeader, "payload", payload);
 }`,
-    verify: `public static Map<String, Object> verifyAuthorisationHeader(
+        verify: `public static Map<String, Object> verifyAuthorisationHeader(
         String authHeader, String payload, String publicKey) {
     
     // Parse authorization header
@@ -229,12 +229,12 @@ export const codeSnippets = {
     boolean isValid = verifier.verifySignature(signatureBytes);
     return Map.of("is_valid", isValid);
 }`,
-  },
-  
-  nodejs: {
-    language: "javascript",
-    label: "Node.js",
-    generate: `async function createAuthorisationHeader(payload, privateKey, subscriberId, uniqueKeyId) {
+    },
+
+    nodejs: {
+        language: "javascript",
+        label: "Node.js",
+        generate: `async function createAuthorisationHeader(payload, privateKey, subscriberId, uniqueKeyId) {
     await sodium.ready;
     
     const created = Math.floor(Date.now() / 1000);
@@ -265,7 +265,7 @@ digest: BLAKE-512=\${digestBase64}\`;
 
     return { authorization_header: authHeader, payload };
 }`,
-    verify: `async function verifyAuthorisationHeader(authHeader, payload, publicKey) {
+        verify: `async function verifyAuthorisationHeader(authHeader, payload, publicKey) {
     await sodium.ready;
     
     // Parse authorization header
@@ -299,12 +299,12 @@ digest: BLAKE-512=\${digestBase64}\`;
 
     return { is_valid: isValid };
 }`,
-  },
-  
-  php: {
-    language: "php",
-    label: "PHP",
-    generate: `function createAuthorisationHeader($payload, $privateKey, $subscriberId, $uniqueKeyId) {
+    },
+
+    php: {
+        language: "php",
+        label: "PHP",
+        generate: `function createAuthorisationHeader($payload, $privateKey, $subscriberId, $uniqueKeyId) {
     $currentTime = time();
     $ttl = 3600; // 1 hour
     
@@ -336,7 +336,7 @@ digest: BLAKE-512=\${digestBase64}\`;
         'payload' => $payload
     ];
 }`,
-    verify: `function verifyAuthorisationHeader($authHeader, $payload, $publicKey) {
+        verify: `function verifyAuthorisationHeader($authHeader, $payload, $publicKey) {
     // Parse authorization header
     $parsed = parseAuthHeader($authHeader);
     $created = (int)$parsed['created'];
@@ -369,7 +369,7 @@ digest: BLAKE-512=\${digestBase64}\`;
     
     return ['is_valid' => $isValid];
 }`,
-  },
+    },
 };
 
 export type LanguageKey = keyof typeof codeSnippets;
