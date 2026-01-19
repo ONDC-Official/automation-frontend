@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "react-toastify";
 import { v4 as uuidv4 } from "uuid";
 import { FaRegStopCircle } from "react-icons/fa";
@@ -66,36 +66,6 @@ export function Accordion({
   const [maxHeight, setMaxHeight] = useState("0px");
   const apiCallFailCount = useRef(0);
 
-  const getCurrentState = useCallback(
-    async (sessionCache: SessionCache) => {
-      const tx = sessionCache.flowMap?.[flow.id];
-      if (tx) {
-        try {
-          const txData = await getMappedFlow(tx, sessionId);
-          for (let i = 0; i < txData.sequence.length; i++) {
-            const payloads = txData.sequence[i].payloads;
-            if (payloads) {
-              if (!payloads.entryType) {
-                txData.sequence[i].payloads!.entryType = "API";
-              }
-            }
-          }
-          setMappedFlow(txData);
-          apiCallFailCount.current = 0; // Reset fail count on successful fetch
-        } catch (error) {
-          apiCallFailCount.current = apiCallFailCount.current + 1;
-          console.error("Failed to fetch transaction data:", error);
-        }
-      } else {
-        setMappedFlow({
-          sequence: getSequenceFromFlow(flow, sessionCache, activeFlow),
-          missedSteps: [],
-        });
-      }
-    },
-    [flow, sessionId, activeFlow]
-  );
-
   useEffect(() => {
     const executedFlowId = Object.keys(
       (sessionCache?.flowMap as Record<string, string | null>) || {}
@@ -110,7 +80,34 @@ export function Accordion({
     } else {
       setActiveFlow(null);
     }
-  }, [flow, sessionCache, getCurrentState, setActiveFlow]);
+  }, [flow, sessionCache]);
+
+  const getCurrentState = async (sessionCache: SessionCache) => {
+    const tx = sessionCache.flowMap?.[flow.id];
+    if (tx) {
+      try {
+        const txData = await getMappedFlow(tx, sessionId);
+        for (let i = 0; i < txData.sequence.length; i++) {
+          const payloads = txData.sequence[i].payloads;
+          if (payloads) {
+            if (!payloads.entryType) {
+              txData.sequence[i].payloads!.entryType = "API";
+            }
+          }
+        }
+        setMappedFlow(txData);
+        apiCallFailCount.current = 0; // Reset fail count on successful fetch
+      } catch (error) {
+        apiCallFailCount.current = apiCallFailCount.current + 1;
+        console.error("Failed to fetch transaction data:", error);
+      }
+    } else {
+      setMappedFlow({
+        sequence: getSequenceFromFlow(flow, sessionCache, activeFlow),
+        missedSteps: [],
+      });
+    }
+  };
 
   const fetchTransactionData = async () => {
     if (activeFlow !== flow.id || !sessionCache) {
