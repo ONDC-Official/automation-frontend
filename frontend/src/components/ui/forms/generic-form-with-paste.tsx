@@ -148,7 +148,7 @@ const GenericFormWithPaste = ({
               ))}
             </select>
             {errors["item_id"] && (
-              <p className="text-red-500 text-xs italic">This field is required</p>
+              <p className="text-red-500 text-xs italic">Field required</p>
             )}
           </div>
         );
