@@ -3,13 +3,13 @@ import { UserContext } from "@context/userContext";
 import { UserDetails } from "../types";
 
 export const useUserDetails = () => {
-  const [userDetails, setUserDetails] = useState<UserDetails | undefined>(undefined);
-  const userContext = useContext(UserContext);
-  const user = userContext.userDetails;
+    const [userDetails, setUserDetails] = useState<UserDetails | undefined>(undefined);
+    const userContext = useContext(UserContext);
+    const user = userContext.userDetails;
 
-  useEffect(() => {
-    setUserDetails(user);
-  }, [user]);
+    useEffect(() => {
+        setUserDetails(user);
+    }, [user]);
 
-  return userDetails;
+    return userDetails;
 };

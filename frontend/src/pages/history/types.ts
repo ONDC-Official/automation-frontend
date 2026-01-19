@@ -1,5 +1,5 @@
 export interface Session {
-  sessionId: string;
-  reportExists: boolean;
-  createdAt: string;
+    sessionId: string;
+    reportExists: boolean;
+    createdAt: string;
 }

@@ -15,15 +15,15 @@ import { SchemaGuide } from "@/components/FlowShared/schema-guide";
  * @returns JSX element or null if not visible
  */
 const InstructionsPanel: FC<InstructionsPanelProps> = ({ isVisible }) => {
-  if (!isVisible) {
-    return null;
-  }
+    if (!isVisible) {
+        return null;
+    }
 
-  return (
-    <div className="bg-white border border-sky-100 shadow-sm flex flex-col overflow-hidden animate-fadeIn min-w-0">
-      <SchemaGuide />
-    </div>
-  );
+    return (
+        <div className="bg-white border border-sky-100 shadow-sm flex flex-col overflow-hidden animate-fadeIn min-w-0">
+            <SchemaGuide />
+        </div>
+    );
 };
 
 export default InstructionsPanel;
