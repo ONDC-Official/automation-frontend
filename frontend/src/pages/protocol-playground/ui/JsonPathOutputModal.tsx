@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { Editor } from "@monaco-editor/react";
+import { Editor, Monaco } from "@monaco-editor/react";
 import { MdClose, MdContentCopy, MdCode } from "react-icons/md";
 import { IoCheckmarkCircle } from "react-icons/io5";
 import { DarkSkyBlueTheme } from "./editor-themes";
 
 interface JsonPathOutputPopupProps {
     jsonPath: string;
-    output: any;
+    output: unknown;
     onClose: () => void;
 }
 
@@ -35,7 +35,7 @@ const JsonPathOutputPopup: React.FC<JsonPathOutputPopupProps> = ({ jsonPath, out
         }
     };
 
-    const handleEditorWillMount = (monaco: any) => {
+    const handleEditorWillMount = (monaco: Monaco) => {
         monaco.editor.defineTheme("dark-skyblue", DarkSkyBlueTheme);
     };
 

@@ -1,6 +1,15 @@
 import { useState, useEffect } from "react";
 import { toast } from "react-toastify";
-import { useForm, useFieldArray, Controller } from "react-hook-form";
+import {
+    useForm,
+    useFieldArray,
+    Controller,
+    Control,
+    UseFormWatch,
+    UseFormSetValue,
+    UseFormRegister,
+    FieldErrors,
+} from "react-hook-form";
 import { Select, Button, Card, Modal, Checkbox, Tabs } from "antd";
 import { FaPlus, FaTrash, FaEdit, FaSitemap, FaClock } from "react-icons/fa";
 
@@ -35,12 +44,42 @@ interface CustomizationGroup {
     items: CustomizationItem[];
 }
 
-// interface AvailabilityTiming {
-//   dayFrom?: string;
-//   dayTo?: string;
-//   timeFrom?: string;
-//   timeTo?: string;
-// }
+interface AvailabilityTiming {
+    dayFrom: string;
+    dayTo: string;
+    timeFrom: string;
+    timeTo: string;
+}
+
+interface MenuItemForm {
+    name: string;
+    shortDescription: string;
+    longDescription: string;
+    images: string;
+    dayFrom: string;
+    dayTo: string;
+    timeFrom: string;
+    timeTo: string;
+    availabilityTimings: AvailabilityTiming[];
+    price: string;
+    category: string;
+    vegNonVeg: string;
+    rank: number;
+    customizationGroups: CustomizationGroup[];
+}
+
+interface MenuFormData {
+    menu: MenuItemForm[];
+}
+
+interface AvailabilityTimingsSectionProps {
+    menuIndex: number;
+    watch: UseFormWatch<MenuFormData>;
+    setValue?: UseFormSetValue<MenuFormData>;
+    register?: UseFormRegister<MenuFormData>;
+    errors?: FieldErrors<MenuFormData>;
+    control: Control<MenuFormData>;
+}
 
 interface CustomMenuFormEnhancedProps {
     initialData: SellerOnboardingData;
@@ -50,7 +89,11 @@ interface CustomMenuFormEnhancedProps {
 }
 
 // Component for managing multiple availability timings
-const AvailabilityTimingsSection = ({ menuIndex, control, watch }: any) => {
+const AvailabilityTimingsSection = ({
+    menuIndex,
+    control,
+    watch,
+}: AvailabilityTimingsSectionProps) => {
     const {
         fields: timingFields,
         append: appendTiming,
@@ -301,21 +344,27 @@ const CustomMenuFormEnhanced = ({
         defaultValues: {
             menu:
                 initialData.menuItems && initialData.menuItems.length > 0
-                    ? initialData.menuItems.map((item: any) => ({
-                          ...item,
-                          // Ensure availabilityTimings array exists
-                          availabilityTimings:
-                              item.availabilityTimings && item.availabilityTimings.length > 0
-                                  ? item.availabilityTimings
-                                  : [
-                                        {
-                                            dayFrom: item.dayFrom || "",
-                                            dayTo: item.dayTo || "",
-                                            timeFrom: item.timeFrom || "",
-                                            timeTo: item.timeTo || "",
-                                        },
-                                    ],
-                      }))
+                    ? initialData.menuItems.map((item) => {
+                          const itemWithTimings = item as unknown as MenuItemForm & {
+                              availabilityTimings?: AvailabilityTiming[];
+                          };
+                          return {
+                              ...item,
+                              // Ensure availabilityTimings array exists
+                              availabilityTimings:
+                                  itemWithTimings.availabilityTimings &&
+                                  itemWithTimings.availabilityTimings.length > 0
+                                      ? itemWithTimings.availabilityTimings
+                                      : [
+                                            {
+                                                dayFrom: item.dayFrom || "",
+                                                dayTo: item.dayTo || "",
+                                                timeFrom: item.timeFrom || "",
+                                                timeTo: item.timeTo || "",
+                                            },
+                                        ],
+                          };
+                      })
                     : [
                           {
                               name: "",
@@ -357,22 +406,28 @@ const CustomMenuFormEnhanced = ({
     useEffect(() => {
         const menuData =
             initialData.menuItems && initialData.menuItems.length > 0
-                ? initialData.menuItems.map((item: any) => ({
-                      ...item,
-                      // Ensure availabilityTimings array exists
-                      availabilityTimings:
-                          item.availabilityTimings && item.availabilityTimings.length > 0
-                              ? item.availabilityTimings
-                              : [
-                                    {
-                                        dayFrom: item.dayFrom || "",
-                                        dayTo: item.dayTo || "",
-                                        timeFrom: item.timeFrom || "",
-                                        timeTo: item.timeTo || "",
-                                    },
-                                ],
-                      customizationGroups: item.customizationGroups || [],
-                  }))
+                ? initialData.menuItems.map((item) => {
+                      const itemWithTimings = item as unknown as MenuItemForm & {
+                          availabilityTimings?: AvailabilityTiming[];
+                      };
+                      return {
+                          ...item,
+                          // Ensure availabilityTimings array exists
+                          availabilityTimings:
+                              itemWithTimings.availabilityTimings &&
+                              itemWithTimings.availabilityTimings.length > 0
+                                  ? itemWithTimings.availabilityTimings
+                                  : [
+                                        {
+                                            dayFrom: item.dayFrom || "",
+                                            dayTo: item.dayTo || "",
+                                            timeFrom: item.timeFrom || "",
+                                            timeTo: item.timeTo || "",
+                                        },
+                                    ],
+                          customizationGroups: item.customizationGroups || [],
+                      };
+                  })
                 : [
                       {
                           name: "",
@@ -409,7 +464,9 @@ const CustomMenuFormEnhanced = ({
 
         const flatErrors: Record<string, string> = {};
         Object.keys(menuErrors).forEach((key) => {
-            flatErrors[`menu.${index}.${key}`] = (menuErrors as any)[key];
+            flatErrors[`menu.${index}.${key}`] = (menuErrors as Record<string, unknown>)[
+                key
+            ] as string;
         });
 
         return flatErrors;
@@ -504,7 +561,7 @@ const CustomMenuFormEnhanced = ({
 
             const currentGroups = watchMenu[showCustomizationModal]?.customizationGroups || [];
             const existingIndex = currentGroups.findIndex(
-                (g: { id: string }) => g.id === editingGroup.id
+                (g: CustomizationGroup) => g.id === editingGroup.id
             );
 
             if (existingIndex >= 0) {
@@ -526,7 +583,7 @@ const CustomMenuFormEnhanced = ({
         setValue(`menu.${menuIndex}.customizationGroups`, currentGroups);
     };
 
-    const onSubmit = (data: any) => {
+    const onSubmit = (data: MenuFormData) => {
         try {
             const convertTimeFormat = (time: string) => {
                 if (!time) return "";
@@ -534,16 +591,18 @@ const CustomMenuFormEnhanced = ({
             };
 
             const formData = {
-                menuItems: data.menu.map((item: any) => {
+                menuItems: data.menu.map((item: MenuItemForm) => {
                     // Process availability timings
-                    let processedTimings = [];
+                    let processedTimings: AvailabilityTiming[] = [];
                     if (item.availabilityTimings && item.availabilityTimings.length > 0) {
-                        processedTimings = item.availabilityTimings.map((timing: any) => ({
-                            dayFrom: timing.dayFrom || "",
-                            dayTo: timing.dayTo || "",
-                            timeFrom: convertTimeFormat(timing.timeFrom) || "",
-                            timeTo: convertTimeFormat(timing.timeTo) || "",
-                        }));
+                        processedTimings = item.availabilityTimings.map(
+                            (timing: AvailabilityTiming) => ({
+                                dayFrom: timing.dayFrom || "",
+                                dayTo: timing.dayTo || "",
+                                timeFrom: convertTimeFormat(timing.timeFrom) || "",
+                                timeTo: convertTimeFormat(timing.timeTo) || "",
+                            })
+                        );
                     }
 
                     return {
@@ -568,7 +627,7 @@ const CustomMenuFormEnhanced = ({
                 }),
             };
 
-            onNext(formData);
+            onNext(formData as unknown as Partial<SellerOnboardingData>);
         } catch (error) {
             console.error("Error in form submission:", error);
             alert(
@@ -591,7 +650,10 @@ const CustomMenuFormEnhanced = ({
         <>
             <Tabs defaultActiveKey="1">
                 <Tabs.TabPane tab="Menu" key="1">
-                    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+                    <form
+                        onSubmit={handleSubmit(onSubmit as (data: unknown) => void)}
+                        className="space-y-6"
+                    >
                         {/* Optional Step Notice */}
                         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
                             <div className="flex items-start">
@@ -860,11 +922,15 @@ const CustomMenuFormEnhanced = ({
                                         {/* Availability Timings - Multiple Timings Support */}
                                         <AvailabilityTimingsSection
                                             menuIndex={index}
-                                            control={control}
-                                            watch={watch}
-                                            setValue={setValue}
-                                            register={register}
-                                            errors={errors}
+                                            control={control as unknown as Control<MenuFormData>}
+                                            watch={watch as unknown as UseFormWatch<MenuFormData>}
+                                            setValue={
+                                                setValue as unknown as UseFormSetValue<MenuFormData>
+                                            }
+                                            register={
+                                                register as unknown as UseFormRegister<MenuFormData>
+                                            }
+                                            errors={errors as unknown as FieldErrors<MenuFormData>}
                                         />
 
                                         {/* Customizations Section */}
@@ -1072,7 +1138,7 @@ const CustomMenuFormEnhanced = ({
                             </button>
                             <button
                                 type="button"
-                                onClick={handleSubmit(onSubmit)}
+                                onClick={handleSubmit(onSubmit as (data: unknown) => void)}
                                 className="px-6 py-2 bg-sky-600 text-white rounded-md hover:bg-sky-700 transition-colors"
                             >
                                 {isFinalStep ? "Submit Application" : "Next Step"}

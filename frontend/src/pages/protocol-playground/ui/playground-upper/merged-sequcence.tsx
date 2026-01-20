@@ -1,17 +1,18 @@
 import { useContext } from "react";
-
+import Tippy from "@tippyjs/react";
+import { MockPlaygroundConfigType, TransactionHistoryItem } from "@ondc/automation-mock-runner";
+import { FaExchangeAlt, FaLongArrowAltRight } from "react-icons/fa";
 import { IoMdAdd } from "react-icons/io";
 import { FiCheck } from "react-icons/fi";
-import Tippy from "@tippyjs/react";
-import { PlaygroundContext } from "../../context/playground-context";
+
+import { PlaygroundContext } from "@pages/protocol-playground/context/playground-context";
+import ActionDetailsCard from "@pages/protocol-playground/ui/playground-upper/action-details-card";
+
 import "tippy.js/animations/shift-away-subtle.css";
-import { MockPlaygroundConfigType } from "@ondc/automation-mock-runner";
-import { FaExchangeAlt, FaLongArrowAltRight } from "react-icons/fa";
-import ActionDetailsCard from "./action-details-card";
 
 interface ActionTimelineProps {
     steps: MockPlaygroundConfigType["steps"];
-    transactionHistory: any[];
+    transactionHistory: TransactionHistoryItem[];
     activeApi: string | undefined;
     onApiSelect: (actionId: string) => void;
     onAddAction: () => void;

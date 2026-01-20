@@ -3,6 +3,32 @@ import { TbColumnInsertLeft, TbColumnInsertRight } from "react-icons/tb";
 import { RxReset } from "react-icons/rx";
 import { MdEdit } from "react-icons/md";
 import { IoMdTrash } from "react-icons/io";
+import { MockPlaygroundConfigType } from "@ondc/automation-mock-runner";
+
+import { PlaygroundContextProps } from "@pages/protocol-playground/context/playground-context";
+
+interface ActionData {
+    id: string;
+    stepNumber?: number;
+    config: MockPlaygroundConfigType["steps"][number];
+    responseFor?: string | null;
+    completed: boolean;
+}
+
+interface ActionDetailsCardProps {
+    action: ActionData;
+    onAddBefore?: (id: string) => void;
+    onAddAfter?: (id: string) => void;
+    onEditAction?: (id: string) => void;
+    onDeleteAction?: (id: string) => void;
+    playgroundContext?: PlaygroundContextProps;
+}
+
+interface FieldData {
+    label: string;
+    value: string;
+    valueClass: string;
+}
 
 const ActionDetailsCard = ({
     action,
@@ -11,14 +37,7 @@ const ActionDetailsCard = ({
     onEditAction,
     onDeleteAction,
     playgroundContext,
-}: {
-    action: any;
-    onAddBefore?: (id: string) => void;
-    onAddAfter?: (id: string) => void;
-    onEditAction?: (id: string) => void;
-    onDeleteAction?: (id: string) => void;
-    playgroundContext?: any;
-}) => {
+}: ActionDetailsCardProps) => {
     const method = "POST";
 
     const methodStyles: Record<string, string> = {
@@ -123,7 +142,7 @@ const ActionDetailsCard = ({
                             : "bg-red-100 text-red-700 border-red-200",
                     },
                 ]
-                    .filter(Boolean)
+                    .filter((field): field is FieldData => Boolean(field))
                     .map((field, i) => (
                         <div
                             key={i}
