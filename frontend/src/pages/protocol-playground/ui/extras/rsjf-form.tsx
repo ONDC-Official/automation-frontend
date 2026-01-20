@@ -5,16 +5,22 @@ import {
     FieldTemplateProps,
     ObjectFieldTemplateProps,
     ArrayFieldTemplateProps,
+    ValidatorType,
+    GenericObjectType,
 } from "@rjsf/utils";
 import "./rsjs.css";
 import { GrAdd } from "react-icons/gr";
 import { MdDeleteOutline } from "react-icons/md";
 
+interface FormChangeEvent {
+    formData?: Record<string, unknown>;
+}
+
 interface JsonSchemaFormProps {
     schema: RJSFSchema;
     formData?: Record<string, unknown>;
-    onSubmit: (data: any) => void;
-    onChange?: (data: any) => void;
+    onSubmit: (data: Record<string, unknown>) => Promise<void>;
+    onChange?: (data: Record<string, unknown>) => void;
     title?: string;
 }
 
@@ -111,12 +117,12 @@ export default function JsonSchemaForm({
     onChange,
     title,
 }: JsonSchemaFormProps) {
-    const handleSubmit = ({ formData }: any) => {
-        onSubmit(formData);
+    const handleSubmit = ({ formData }: FormChangeEvent) => {
+        onSubmit(formData as Record<string, unknown>);
     };
 
-    const handleChange = ({ formData }: any) => {
-        onChange?.(formData);
+    const handleChange = ({ formData }: FormChangeEvent) => {
+        onChange?.(formData as Record<string, unknown>);
     };
 
     return (
@@ -125,7 +131,9 @@ export default function JsonSchemaForm({
             <Form
                 schema={schema}
                 formData={formData}
-                validator={validator}
+                validator={
+                    validator as ValidatorType<GenericObjectType, RJSFSchema, GenericObjectType>
+                }
                 onSubmit={handleSubmit}
                 onChange={handleChange}
                 templates={{

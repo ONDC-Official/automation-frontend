@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { LuHistory } from "react-icons/lu";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import axios, { AxiosResponse, AxiosError } from "axios";
 import { toast } from "react-toastify";
 
 import RenderFlows from "@components/FlowShared/render-flows";
@@ -15,6 +15,28 @@ import { trackEvent } from "@utils/analytics";
 import { useWorkbenchFlows } from "@hooks/useWorkbenchFlow";
 import { sessionIdSupport } from "@utils/localStorageManager";
 import { ROUTES } from "@constants/routes";
+import { Domain, DomainVersion } from "@/pages/schema-validation/types";
+import { Flow } from "@/types/flow-types";
+
+type DomainVersionWithUsecase = DomainVersion & {
+    usecase: string[];
+};
+
+interface ScenarioFormData {
+    domain: string;
+    version: string;
+    usecaseId: string;
+    subscriberUrl: string;
+    npType: string;
+    env: string;
+}
+
+interface SessionResponse {
+    sessionId: string;
+    flowConfigs?: Record<string, Flow>;
+    subscriberUrl: string;
+    activeStep: number;
+}
 
 export default function FlowContent() {
     const {
@@ -31,9 +53,9 @@ export default function FlowContent() {
     } = useWorkbenchFlows();
     const [isFormSubmitted, setIsFormSubmitted] = useState(false);
     const [dynamicList, setDynamicList] = useState<{
-        domain: any[];
-        version: any[];
-        usecase: any[];
+        domain: Domain[];
+        version: DomainVersionWithUsecase[];
+        usecase: string[];
     }>({
         domain: [],
         version: [],
@@ -58,23 +80,26 @@ export default function FlowContent() {
     const { sessionId: contextSessionId, setSessionId } = useSession();
     const navigate = useNavigate();
 
-    const onSubmit = async (data: any) => {
+    const onSubmit = async (data: ScenarioFormData) => {
         try {
             data = {
                 ...data,
                 subscriberUrl: data?.subscriberUrl?.replace(/\/+$/, ""),
             };
-            const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/sessions`, {
-                ...data,
-                difficulty_cache: {
-                    stopAfterFirstNack: true,
-                    timeValidations: true,
-                    protocolValidations: true,
-                    useGateway: true,
-                    headerValidaton: true,
-                    totalDifficulty: 100,
-                },
-            });
+            const response = await axios.post<{ sessionId: string }>(
+                `${import.meta.env.VITE_BACKEND_URL}/sessions`,
+                {
+                    ...data,
+                    difficulty_cache: {
+                        stopAfterFirstNack: true,
+                        timeValidations: true,
+                        protocolValidations: true,
+                        useGateway: true,
+                        headerValidaton: true,
+                        totalDifficulty: 100,
+                    },
+                }
+            );
             setSubscriberUrl(data.subscriberUrl);
 
             sessionIdSupport.setScenarioSession(response.data.sessionId);
@@ -86,23 +111,26 @@ export default function FlowContent() {
             console.error("error while sending response", e);
         }
     };
-    const fetchFlows = async (data: any) => {
+    const fetchFlows = async (data: ScenarioFormData) => {
         try {
-            const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/config/flows`, {
-                params: {
-                    domain: data.domain,
-                    version: data.version,
-                    usecase: data.usecaseId,
-                    options: ["WORKBENCH"],
-                },
-            });
+            const response = await axios.get<{ data: { flows: Flow[] } }>(
+                `${import.meta.env.VITE_BACKEND_URL}/config/flows`,
+                {
+                    params: {
+                        domain: data.domain,
+                        version: data.version,
+                        usecase: data.usecaseId,
+                        options: ["WORKBENCH"],
+                    },
+                }
+            );
             setFlows(response.data.data.flows);
         } catch (e) {
             console.error("error while fetching flows", e);
         }
     };
 
-    const onSubmitHandler = async (data: any) => {
+    const onSubmitHandler = async (data: ScenarioFormData) => {
         trackEvent({
             category: "SCHEMA_VALIDATION-FORM",
             action: "Form submitted",
@@ -131,21 +159,21 @@ export default function FlowContent() {
 
     function fetchSessionData(sessId: string) {
         axios
-            .get(`${import.meta.env.VITE_BACKEND_URL}/sessions`, {
+            .get<SessionResponse>(`${import.meta.env.VITE_BACKEND_URL}/sessions`, {
                 params: {
                     session_id: sessId,
                 },
             })
-            .then((response: any) => {
+            .then((response: AxiosResponse<SessionResponse>) => {
                 if (response.data.flowConfigs) {
-                    setFlows(Object.values(response.data.flowConfigs));
+                    setFlows(Object.values(response.data.flowConfigs) as Flow[]);
                 }
                 setSubscriberUrl(response.data.subscriberUrl);
                 setSession(sessId);
 
                 setFlowStepNum(response.data.activeStep);
             })
-            .catch((e: any) => {
+            .catch((e: AxiosError) => {
                 console.error("Error while fetching session: ", e);
             });
     }
