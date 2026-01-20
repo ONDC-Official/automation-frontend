@@ -36,6 +36,11 @@ interface ItemVariant extends ItemDetails {
     isVariant: true;
 }
 
+interface AttributeConfig {
+    mandatory: boolean;
+    value: string[] | string;
+}
+
 const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, onPrevious }) => {
     // const [selectedSubCategory, setSelectedSubCategory] = useState("");
     // State to track selected optional attributes for each item
@@ -1020,7 +1025,7 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
 
         const mandatoryOnly = Object.fromEntries(
             Object.entries(categoryConfig).filter(
-                ([_, config]: [string, any]) => config.mandatory === true
+                ([_, config]) => (config as AttributeConfig).mandatory === true
             )
         );
         return mandatoryOnly;
@@ -1035,7 +1040,7 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
 
         const optionalOnly = Object.fromEntries(
             Object.entries(categoryConfig).filter(
-                ([_, config]: [string, any]) => config.mandatory === false
+                ([_, config]) => (config as AttributeConfig).mandatory === false
             )
         );
         return optionalOnly;
@@ -1207,11 +1212,11 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
     // Function to render dynamic attribute field
     const renderAttributeField = (
         attributeName: string,
-        config: any,
+        config: AttributeConfig,
         itemIndex: number,
         isOptional: boolean = false
     ) => {
-        const fieldName = `items.${itemIndex}.attributes.${attributeName}` as any;
+        const fieldName = `items.${itemIndex}.attributes.${attributeName}` as Path<FormData>;
         const isSelectField = Array.isArray(config.value) && config.value.length > 0;
         const isValidationField = typeof config.value === "string" && config.value.startsWith("/");
 
@@ -1230,14 +1235,14 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                         }),
                         ...(isValidationField && {
                             pattern: {
-                                value: new RegExp(config.value.slice(1, -1)), // Remove leading and trailing '/'
+                                value: new RegExp((config.value as string).slice(1, -1)), // Remove leading and trailing '/'
                                 message: `Please enter a valid ${attributeName.replace(/_/g, " ")}`,
                             },
                         }),
                     }}
                     render={({ field, fieldState: { error } }) => (
                         <>
-                            {isSelectField ? (
+                            {isSelectField && Array.isArray(config.value) ? (
                                 <Select
                                     {...field}
                                     className="w-full"
@@ -1255,6 +1260,7 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                             ) : (
                                 <Input
                                     {...field}
+                                    value={field.value as string}
                                     placeholder={getAttributePlaceholder(attributeName)}
                                     size="large"
                                     status={error ? "error" : undefined}
@@ -3066,7 +3072,7 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                                                         ([attributeName, config]) =>
                                                             renderAttributeField(
                                                                 attributeName,
-                                                                config,
+                                                                config as AttributeConfig,
                                                                 index,
                                                                 false
                                                             )
@@ -3131,7 +3137,7 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                                                                         ];
                                                                     return renderAttributeField(
                                                                         attributeName,
-                                                                        config,
+                                                                        config as AttributeConfig,
                                                                         index,
                                                                         true
                                                                     );

@@ -19,7 +19,7 @@ const JsonPathInput = ({
     onView: (path: string) => void;
     onDelete: (aliasToDelete: string) => void;
     alias: string;
-    path: any;
+    path: string;
     error: string;
     setError: React.Dispatch<React.SetStateAction<string>>;
     handleAdd: (data: handleAddParam) => void;

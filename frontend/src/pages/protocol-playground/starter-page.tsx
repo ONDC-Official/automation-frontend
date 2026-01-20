@@ -6,17 +6,33 @@ import { PlaygroundContext } from "@pages/protocol-playground/context/playground
 import PlaygroundPage from "@pages/protocol-playground/playground-page";
 import { SavedConfigsModal } from "@pages/protocol-playground/ui/saved-configs-modal";
 
+interface UsecaseItem {
+    key: string;
+}
+
+interface VersionItem {
+    key: string;
+    usecase?: UsecaseItem[];
+}
+
+interface DomainItem {
+    key: string;
+    version?: VersionItem[];
+}
+
+interface DynamicList {
+    domain: DomainItem[];
+    version: VersionItem[];
+    usecase: UsecaseItem[];
+}
+
 const StarterPage = () => {
     const { config, setCurrentConfig } = useContext(PlaygroundContext);
     const [domain, setDomain] = useState("");
     const [version, setVersion] = useState("");
     const [flowId, setFlowId] = useState("");
     const [showSavedConfigs, setShowSavedConfigs] = useState(false);
-    const [dynamicList, setDynamicList] = useState<{
-        domain: any[];
-        version: any[];
-        usecase: any[];
-    }>({
+    const [dynamicList, setDynamicList] = useState<DynamicList>({
         domain: [],
         version: [],
         usecase: [],
@@ -132,7 +148,7 @@ const StarterPage = () => {
                                     onChange={(e) => {
                                         setDomain(e.target.value);
                                         const selectedDomainData = dynamicList.domain.find(
-                                            (item: any) => item.key === e.target.value
+                                            (item: DomainItem) => item.key === e.target.value
                                         );
                                         if (selectedDomainData) {
                                             setDynamicList((prev) => ({
@@ -144,7 +160,7 @@ const StarterPage = () => {
                                     className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent transition-all duration-200 text-gray-900 text-sm"
                                 >
                                     <option value="">Select a domain...</option>
-                                    {dynamicList.domain.map((item: any) => (
+                                    {dynamicList.domain.map((item: DomainItem) => (
                                         <option key={item.key} value={item.key}>
                                             {item.key}
                                         </option>
@@ -172,7 +188,7 @@ const StarterPage = () => {
                                     onChange={(e) => {
                                         setVersion(e.target.value);
                                         const selectedVersionData = dynamicList.version.find(
-                                            (item: any) => item.key === e.target.value
+                                            (item: VersionItem) => item.key === e.target.value
                                         );
                                         if (selectedVersionData) {
                                             setDynamicList((prev) => ({
@@ -184,7 +200,7 @@ const StarterPage = () => {
                                     className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent transition-all duration-200 text-gray-900 text-sm"
                                 >
                                     <option value="">Select a version...</option>
-                                    {dynamicList.version.map((item: any) => (
+                                    {dynamicList.version.map((item: VersionItem) => (
                                         <option key={item.key} value={item.key}>
                                             {item.key}
                                         </option>
