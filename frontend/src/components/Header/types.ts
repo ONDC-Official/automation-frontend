@@ -1,28 +1,28 @@
 import { GAEvent } from "@utils/analytics";
 
 export interface SubMenuItem {
-  label: string;
-  href: string;
+    label: string;
+    href: string;
 }
 
 export interface NavLink {
-  label: string;
-  href: string;
-  selected: boolean;
-  subMenu?: SubMenuItem[];
-  analytics?: GAEvent;
+    label: string;
+    href: string;
+    selected: boolean;
+    subMenu?: SubMenuItem[];
+    analytics?: GAEvent;
 }
 
 export interface HeaderProps {
-  onSupportClick: () => void;
+    onSupportClick: () => void;
 }
 
 export interface UserDetails {
-  githubId: string;
-  participantId: string;
-  avatarUrl?: string;
+    githubId: string;
+    participantId: string;
+    avatarUrl?: string;
 }
 
 export interface UserIconProps {
-  user: UserDetails;
+    user: UserDetails;
 }

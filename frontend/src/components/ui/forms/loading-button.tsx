@@ -12,40 +12,40 @@ const defaultButtonClass = `
 `.trim();
 
 const LoadingButton = ({
-  type = "submit",
-  buttonText,
-  disabled = false,
-  isLoading = false,
-  onClick,
-  loadingText = "Loading...",
+    type = "submit",
+    buttonText,
+    disabled = false,
+    isLoading = false,
+    onClick,
+    loadingText = "Loading...",
 }: {
-  type?: "submit" | "reset" | "button";
-  buttonText: string;
-  disabled?: boolean;
-  isLoading?: boolean;
-  onClick?: () => void;
-  loadingText?: string;
+    type?: "submit" | "reset" | "button";
+    buttonText: string;
+    disabled?: boolean;
+    isLoading?: boolean;
+    onClick?: () => void;
+    loadingText?: string;
 }) => {
-  if (onClick) {
-    return (
-      <button
-        type={type}
-        disabled={disabled || isLoading}
-        className={buttonClass}
-        onClick={onClick}
-      >
-        {isLoading ? loadingText : buttonText}
-        {isLoading && <FullPageLoader />}
-      </button>
-    );
-  }
+    if (onClick) {
+        return (
+            <button
+                type={type}
+                disabled={disabled || isLoading}
+                className={buttonClass}
+                onClick={onClick}
+            >
+                {isLoading ? loadingText : buttonText}
+                {isLoading && <FullPageLoader />}
+            </button>
+        );
+    }
 
-  return (
-    <button type={type} disabled={disabled || isLoading} className={buttonClass}>
-      {buttonText}
-      {isLoading && <FullPageLoader />}
-    </button>
-  );
+    return (
+        <button type={type} disabled={disabled || isLoading} className={buttonClass}>
+            {buttonText}
+            {isLoading && <FullPageLoader />}
+        </button>
+    );
 };
 export const buttonClass = `${baseButtonClass} ${defaultButtonClass}`;
 

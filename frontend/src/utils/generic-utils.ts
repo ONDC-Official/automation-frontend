@@ -1,155 +1,158 @@
 import { toast } from "react-toastify";
 
 interface TagListItem {
-  code: string;
-  value: string;
+    code: string;
+    value: string;
 }
 
 interface Tag {
-  code: string;
-  list: TagListItem[];
+    code: string;
+    list: TagListItem[];
 }
 
 interface Category {
-  id: string;
-  tags: Tag[];
+    id: string;
+    tags: Tag[];
 }
 
 interface Item {
-  id: string;
-  tags: Tag[];
+    id: string;
+    tags: Tag[];
 }
 
 interface BPPProvider {
-  categories: Category[];
-  items: Item[];
+    categories: Category[];
+    items: Item[];
 }
 
 interface Catalog {
-  "bpp/providers": BPPProvider[];
+    "bpp/providers": BPPProvider[];
 }
 
 interface Message {
-  catalog: Catalog;
+    catalog: Catalog;
 }
 
 interface Payload {
-  message: Message;
+    message: Message;
 }
 
 export const getItemsAndCustomistions = (payload: {
-  context: { domain: string };
-  message: Message;
+    context: { domain: string };
+    message: Message;
 }) => {
-  if (payload.context.domain === "ONDC:RET11") {
-    return parseRET11Items(payload);
-  }
+    if (payload.context.domain === "ONDC:RET11") {
+        return parseRET11Items(payload);
+    }
 };
 
 const parseRET11Items = (
-  payload: Payload
+    payload: Payload
 ): {
-  itemList: Record<string, string>;
-  catagoriesList: Record<string, { child?: string[]; items?: Record<string, { child: string[] }> }>;
-  cutomistionToGroupMapping: Record<string, string>;
+    itemList: Record<string, string>;
+    catagoriesList: Record<
+        string,
+        { child?: string[]; items?: Record<string, { child: string[] }> }
+    >;
+    cutomistionToGroupMapping: Record<string, string>;
 } => {
-  const catagories = payload.message.catalog["bpp/providers"][0].categories;
-  const items = payload.message.catalog["bpp/providers"][0].items;
+    const catagories = payload.message.catalog["bpp/providers"][0].categories;
+    const items = payload.message.catalog["bpp/providers"][0].items;
 
-  const catagoriesList: Record<
-    string,
-    { child?: string[]; items?: Record<string, { child: string[] }> }
-  > = {};
-  const itemList: Record<string, string> = {};
-  const cutomistionToGroupMapping: Record<string, string> = {};
+    const catagoriesList: Record<
+        string,
+        { child?: string[]; items?: Record<string, { child: string[] }> }
+    > = {};
+    const itemList: Record<string, string> = {};
+    const cutomistionToGroupMapping: Record<string, string> = {};
 
-  catagories.forEach((item) => {
-    item.tags.forEach((tag) => {
-      if (tag.code === "type") {
-        tag.list.forEach((val) => {
-          if (val.code === "type" && val.value === "custom_group") {
-            catagoriesList[item.id] = { child: [] };
-          }
+    catagories.forEach((item) => {
+        item.tags.forEach((tag) => {
+            if (tag.code === "type") {
+                tag.list.forEach((val) => {
+                    if (val.code === "type" && val.value === "custom_group") {
+                        catagoriesList[item.id] = { child: [] };
+                    }
+                });
+            }
         });
-      }
-    });
-  });
-
-  items.forEach((item) => {
-    let parent = "";
-    let child: string[] = [];
-    let isCusomistaion = false;
-    let isItem = false;
-    let customGroup = "";
-    item.tags.forEach((tag) => {
-      if (tag.code === "type") {
-        tag.list.forEach((val) => {
-          if (val.code === "type" && val.value === "customization") {
-            isCusomistaion = true;
-          }
-        });
-      }
-
-      if (tag.code === "type") {
-        tag.list.forEach((val) => {
-          if (val.code === "type" && val.value === "item") {
-            isItem = true;
-          }
-        });
-      }
-
-      if (tag.code === "custom_group") {
-        const idItem = tag.list.find((listItem) => listItem.code === "id");
-        if (idItem) {
-          customGroup = idItem.value;
-        }
-      }
-
-      if (tag.code === "parent") {
-        const idItem = tag.list.find((listItem) => listItem.code === "id");
-        if (idItem) {
-          parent = idItem.value;
-        }
-      }
-
-      if (tag.code === "child") {
-        const idItem = tag.list.filter((listItem) => listItem.code === "id");
-        if (idItem) {
-          child = idItem.map((listItem) => listItem.value);
-        }
-      }
     });
 
-    if (isCusomistaion) {
-      catagoriesList[`${parent}`] = {
-        items: {
-          ...catagoriesList[`${parent}`]?.items,
-          [`${item.id}`]: { child: child },
-        },
-      };
+    items.forEach((item) => {
+        let parent = "";
+        let child: string[] = [];
+        let isCusomistaion = false;
+        let isItem = false;
+        let customGroup = "";
+        item.tags.forEach((tag) => {
+            if (tag.code === "type") {
+                tag.list.forEach((val) => {
+                    if (val.code === "type" && val.value === "customization") {
+                        isCusomistaion = true;
+                    }
+                });
+            }
 
-      cutomistionToGroupMapping[item.id] = parent;
-    }
+            if (tag.code === "type") {
+                tag.list.forEach((val) => {
+                    if (val.code === "type" && val.value === "item") {
+                        isItem = true;
+                    }
+                });
+            }
 
-    if (isItem) {
-      itemList[`${item.id}`] = customGroup;
-    }
-  });
+            if (tag.code === "custom_group") {
+                const idItem = tag.list.find((listItem) => listItem.code === "id");
+                if (idItem) {
+                    customGroup = idItem.value;
+                }
+            }
 
-  return { itemList, catagoriesList, cutomistionToGroupMapping };
+            if (tag.code === "parent") {
+                const idItem = tag.list.find((listItem) => listItem.code === "id");
+                if (idItem) {
+                    parent = idItem.value;
+                }
+            }
+
+            if (tag.code === "child") {
+                const idItem = tag.list.filter((listItem) => listItem.code === "id");
+                if (idItem) {
+                    child = idItem.map((listItem) => listItem.value);
+                }
+            }
+        });
+
+        if (isCusomistaion) {
+            catagoriesList[`${parent}`] = {
+                items: {
+                    ...catagoriesList[`${parent}`]?.items,
+                    [`${item.id}`]: { child: child },
+                },
+            };
+
+            cutomistionToGroupMapping[item.id] = parent;
+        }
+
+        if (isItem) {
+            itemList[`${item.id}`] = customGroup;
+        }
+    });
+
+    return { itemList, catagoriesList, cutomistionToGroupMapping };
 };
 
 export const openReportInNewTab = (decodedHtml: string, sessionId: string) => {
-  // Step 1: Open new tab
-  const newTab = window.open("", "_blank");
-  if (!newTab) {
-    toast.error("Popup blocked! Please allow popups for this site.");
-    return;
-  }
+    // Step 1: Open new tab
+    const newTab = window.open("", "_blank");
+    if (!newTab) {
+        toast.error("Popup blocked! Please allow popups for this site.");
+        return;
+    }
 
-  // Step 2: Write a clean shell with header and iframe
-  newTab.document.open();
-  newTab.document.write(`
+    // Step 2: Write a clean shell with header and iframe
+    newTab.document.open();
+    newTab.document.write(`
       <!DOCTYPE html>
       <html lang="en">
       <head>
@@ -221,24 +224,24 @@ export const openReportInNewTab = (decodedHtml: string, sessionId: string) => {
       </body>
       </html>
     `);
-  newTab.document.close();
+    newTab.document.close();
 
-  // Step 3: Write decoded HTML into iframe
-  newTab.onload = () => {
-    const iframe = newTab.document.getElementById("reportFrame") as HTMLIFrameElement;
-    if (!iframe) return;
+    // Step 3: Write decoded HTML into iframe
+    newTab.onload = () => {
+        const iframe = newTab.document.getElementById("reportFrame") as HTMLIFrameElement;
+        if (!iframe) return;
 
-    const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
-    if (!iframeDoc) return;
+        const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+        if (!iframeDoc) return;
 
-    iframeDoc.open();
-    iframeDoc.write(decodedHtml);
-    iframeDoc.close();
+        iframeDoc.open();
+        iframeDoc.write(decodedHtml);
+        iframeDoc.close();
 
-    // Step 4: Handle PDF download
-    const downloadBtn = newTab.document.getElementById("downloadPdfBtn");
-    downloadBtn?.addEventListener("click", () => {
-      iframe.contentWindow?.print();
-    });
-  };
+        // Step 4: Handle PDF download
+        const downloadBtn = newTab.document.getElementById("downloadPdfBtn");
+        downloadBtn?.addEventListener("click", () => {
+            iframe.contentWindow?.print();
+        });
+    };
 };
