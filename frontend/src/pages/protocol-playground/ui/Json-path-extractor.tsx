@@ -4,7 +4,12 @@ import Tippy from "@tippyjs/react";
 import "tippy.js/animations/perspective-subtle.css";
 
 import { SelectedType } from "./session-data-tab";
-type JsonNode = { [key: string]: any };
+
+type JsonPrimitive = string | number | boolean | null;
+type JsonArray = JsonValue[];
+type JsonObject = { [key: string]: JsonValue };
+type JsonValue = JsonPrimitive | JsonArray | JsonObject;
+type JsonNode = JsonObject;
 
 // Icons for better UX
 const ChevronRight = () => (
@@ -31,7 +36,7 @@ const CopyIcon = () => (
 );
 
 // Get type badge for values
-const getTypeBadge = (value: any) => {
+const getTypeBadge = (value: JsonValue) => {
     if (value === null) return "null";
     if (value === undefined) return "undefined";
     if (typeof value === "string") return "string";
@@ -41,7 +46,7 @@ const getTypeBadge = (value: any) => {
 };
 
 const renderValue = (
-    value: any,
+    value: JsonValue,
     path: string,
     key: string,
     isSelected: (path: string) => { status: boolean; type: SelectedType | null },
@@ -297,7 +302,7 @@ const renderJson = ({
 
                                 {isArray && (
                                     <>
-                                        {value.map((item: any, index: number) => {
+                                        {value.map((item: JsonValue, index: number) => {
                                             const arrayPath = `${newPath}[${index}]`;
 
                                             // Filter array items based on search
@@ -313,7 +318,7 @@ const renderJson = ({
                                                         style={{ marginLeft: `${indent + 10}px` }}
                                                     >
                                                         {renderJson({
-                                                            obj: item,
+                                                            obj: item as JsonObject,
                                                             currentPath: arrayPath,
                                                             level: level + 1,
                                                             collapsedPaths,
@@ -382,8 +387,8 @@ const JsonViewer: React.FC<JsonViewerProps> = ({ data, isSelected, handleKeyClic
 
         const searchLower = searchTerm.toLowerCase();
 
-        const searchObject = (obj: any, path: string = "$") => {
-            Object.entries(obj).forEach(([key, value]) => {
+        const searchObject = (obj: JsonValue, path: string = "$") => {
+            Object.entries(obj || {}).forEach(([key, value]) => {
                 const newPath = `${path}.${key}`;
 
                 // Check if key matches
@@ -437,8 +442,8 @@ const JsonViewer: React.FC<JsonViewerProps> = ({ data, isSelected, handleKeyClic
 
     const collapseAll = () => {
         const allPaths: Record<string, boolean> = {};
-        const collectPaths = (obj: any, path: string = "$") => {
-            Object.entries(obj).forEach(([key, value]) => {
+        const collectPaths = (obj: JsonValue, path: string = "$") => {
+            Object.entries(obj || {}).forEach(([key, value]) => {
                 const newPath = `${path}.${key}`;
                 if (typeof value === "object" && value !== null) {
                     allPaths[newPath] = true;

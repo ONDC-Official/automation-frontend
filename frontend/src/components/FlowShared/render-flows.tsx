@@ -4,7 +4,7 @@ import { Flow, MetadataField } from "@/types/flow-types";
 import { ROUTES } from "@constants/routes";
 import InfoCard from "@components/ui/info-card";
 import DifficultyCards from "@components/ui/difficulty-cards";
-import axios from "axios";
+import axios, { AxiosResponse } from "axios";
 import { toast } from "react-toastify";
 import { SessionCache } from "@/types/session-types";
 import { getCompletePayload, getReport } from "@utils/request-utils";
@@ -69,12 +69,17 @@ function extractMetadataByFlowName(
 }
 
 // Function to extract values from payload using metadata
-function extractMetadataValues(payload: any, metadataFields: MetadataField[]) {
-    const extractedData: Record<string, any> = {};
+function extractMetadataValues(
+    payload: Record<string, unknown> | Record<string, unknown>[],
+    metadataFields: MetadataField[]
+): Record<string, { name?: string; value: unknown; errorMessage?: string }> {
+    const extractedData: Record<string, { name?: string; value: unknown; errorMessage?: string }> =
+        {};
 
     metadataFields.forEach((meta) => {
         try {
-            const result = jp.query(payload[0], meta.path);
+            const payloadData = Array.isArray(payload) ? payload[0] : payload;
+            const result = jp.query(payloadData, meta.path);
 
             const value = result.length > 0 ? result[0] : null;
 
@@ -217,7 +222,7 @@ function RenderFlows({
             const data = await getCompletePayload([sideView.payloadId]);
 
             const requestPayload = data?.[0]?.req || {};
-            let responsePayload: any = {};
+            let responsePayload: Record<string, unknown> = {};
 
             // ✅ Extract response payload safely
             if (sideView?.response?.res?.[0]?.response) {
@@ -231,9 +236,9 @@ function RenderFlows({
 
             // ✅ Extract metadata if flows are available
             handleMetadataExtraction(requestPayload);
-        } catch (error) {
+        } catch (error: unknown) {
             const requestPayload = sideView?.request || {};
-            let responsePayload: any = {};
+            let responsePayload: Record<string, unknown> = {};
 
             if (sideView?.response?.res?.[0]?.response) {
                 responsePayload = sideView.response.res[0].response;
@@ -246,16 +251,14 @@ function RenderFlows({
 
             // ✅ Extract metadata from fallback
             handleMetadataExtraction(requestPayload);
+            console.error("Error while extracting metadata: ", error);
         }
     };
 
     /**
      * Helper function to handle metadata extraction from flows
      */
-    const handleMetadataExtraction = (
-        requestPayload: Record<string, any>
-        // responsePayload: Record<string, any>
-    ) => {
+    const handleMetadataExtraction = (requestPayload: Record<string, any>) => {
         if (!flows || flows.length === 0) {
             setMetadata({});
             return;
@@ -307,10 +310,10 @@ function RenderFlows({
                     session_id: sessionId,
                 },
             })
-            .then((response: any) => {
+            .then((response: AxiosResponse<SessionCache>) => {
                 const filteredData = Object.entries(response.data)
                     .filter(([_, value]) => typeof value === "string")
-                    .reduce((acc: any, [key, value]) => {
+                    .reduce((acc: Record<string, unknown>, [key, value]) => {
                         acc[key] = value;
                         return acc;
                     }, {});
@@ -319,13 +322,13 @@ function RenderFlows({
                 setCacheSessionData(response.data);
                 apiCallFailCount.current = 0; // Reset fail count on successful fetch
             })
-            .catch((e: any) => {
+            .catch((e: unknown) => {
                 console.error("Error while fetching session: ", e);
                 apiCallFailCount.current = apiCallFailCount.current + 1;
             });
     }
 
-    let filteredFlows: any = [];
+    let filteredFlows: Flow[] = [];
 
     if (selectedTags.length) {
         filteredFlows = Object.entries(flows)
@@ -585,7 +588,7 @@ function RenderFlows({
                             selectedTags={selectedTags}
                         />
                         <div className="mb-8 bg-gray-100 p-4 rounded-md border flex-1">
-                            {filteredFlows.map((flow: any) => (
+                            {filteredFlows.map((flow: Flow) => (
                                 <Accordion
                                     key={flow.id}
                                     flow={flow}
