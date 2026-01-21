@@ -14,25 +14,25 @@ import { TOAST_MESSAGES } from "./constants";
  * @throws Shows toast error if payload is invalid or is an array
  */
 export const parsePayload = (payload: string): ParsedPayload | null => {
-  if (payload === "") {
-    toast.warn(TOAST_MESSAGES.EMPTY_PAYLOAD);
-    return null;
-  }
-
-  try {
-    const parsedPayload = JSON.parse(payload) as ParsedPayload;
-
-    if (Array.isArray(parsedPayload)) {
-      toast.warn(TOAST_MESSAGES.ARRAY_NOT_SUPPORTED);
-      return null;
+    if (payload === "") {
+        toast.warn(TOAST_MESSAGES.EMPTY_PAYLOAD);
+        return null;
     }
 
-    return parsedPayload;
-  } catch (error) {
-    console.error("Error while parsing payload:", error);
-    toast.error(TOAST_MESSAGES.INVALID_PAYLOAD);
-    return null;
-  }
+    try {
+        const parsedPayload = JSON.parse(payload) as ParsedPayload;
+
+        if (Array.isArray(parsedPayload)) {
+            toast.warn(TOAST_MESSAGES.ARRAY_NOT_SUPPORTED);
+            return null;
+        }
+
+        return parsedPayload;
+    } catch (error) {
+        console.error("Error while parsing payload:", error);
+        toast.error(TOAST_MESSAGES.INVALID_PAYLOAD);
+        return null;
+    }
 };
 
 /**
@@ -42,14 +42,14 @@ export const parsePayload = (payload: string): ParsedPayload | null => {
  * @returns The action string if valid, null otherwise
  */
 export const validateAction = (parsedPayload: ParsedPayload): string | null => {
-  const action = parsedPayload?.context?.action;
+    const action = parsedPayload?.context?.action;
 
-  if (!action) {
-    toast.warn(TOAST_MESSAGES.MISSING_ACTION);
-    return null;
-  }
+    if (!action) {
+        toast.warn(TOAST_MESSAGES.MISSING_ACTION);
+        return null;
+    }
 
-  return action;
+    return action;
 };
 
 /**
@@ -59,29 +59,32 @@ export const validateAction = (parsedPayload: ParsedPayload): string | null => {
  * @param context - The payload context containing domain and version information
  * @returns True if the domain and version are active, false otherwise
  */
-export const isDomainActive = (activeDomain: ActiveDomainConfig, context: PayloadContext): boolean => {
-  if (!context.domain) {
-    return false;
-  }
-
-  const version = context.version || context.core_version;
-  if (!version) {
-    return false;
-  }
-
-  for (const [, domains] of Object.entries(activeDomain)) {
-    for (const domain of domains) {
-      if (domain.key === context.domain) {
-        for (const ver of domain.version) {
-          if (ver.key === version) {
-            return true;
-          }
-        }
-      }
+export const isDomainActive = (
+    activeDomain: ActiveDomainConfig,
+    context: PayloadContext
+): boolean => {
+    if (!context.domain) {
+        return false;
     }
-  }
 
-  return false;
+    const version = context.version || context.core_version;
+    if (!version) {
+        return false;
+    }
+
+    for (const [, domains] of Object.entries(activeDomain)) {
+        for (const domain of domains) {
+            if (domain.key === context.domain) {
+                for (const ver of domain.version) {
+                    if (ver.key === version) {
+                        return true;
+                    }
+                }
+            }
+        }
+    }
+
+    return false;
 };
 
 /**
@@ -91,12 +94,15 @@ export const isDomainActive = (activeDomain: ActiveDomainConfig, context: Payloa
  * @param context - The payload context containing domain and version information
  * @returns True if domain and version are active, false otherwise
  */
-export const validateDomainAndVersion = (activeDomain: ActiveDomainConfig, context: PayloadContext): boolean => {
-  const isValid = isDomainActive(activeDomain, context);
+export const validateDomainAndVersion = (
+    activeDomain: ActiveDomainConfig,
+    context: PayloadContext
+): boolean => {
+    const isValid = isDomainActive(activeDomain, context);
 
-  if (!isValid) {
-    toast.warn(TOAST_MESSAGES.DOMAIN_NOT_ACTIVE);
-  }
+    if (!isValid) {
+        toast.warn(TOAST_MESSAGES.DOMAIN_NOT_ACTIVE);
+    }
 
-  return isValid;
+    return isValid;
 };
