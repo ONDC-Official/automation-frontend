@@ -9,11 +9,11 @@ import "antd/dist/reset.css";
 import "@styles/bubble.css";
 
 createRoot(document.getElementById("root")!).render(
-  <StrictMode>
-    <BrowserRouter>
-      <GuideProvider>
-        <App />
-      </GuideProvider>
-    </BrowserRouter>
-  </StrictMode>,
+    <StrictMode>
+        <BrowserRouter>
+            <GuideProvider>
+                <App />
+            </GuideProvider>
+        </BrowserRouter>
+    </StrictMode>
 );
