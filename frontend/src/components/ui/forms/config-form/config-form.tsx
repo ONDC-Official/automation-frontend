@@ -24,6 +24,7 @@ import { SessionContext } from "../../../../context/context";
 import IntercitySelect from "../custom-forms/intercity-select";
 import HotelSelectProvider from "../custom-forms/hotel-slect-provider";
 import FIS13ItemSelection from "../custom-forms/fis13_select";
+import RideHailingSelect from "../custom-forms/trv10-201-select";
 
 export interface FormFieldConfigType {
     name: string;
@@ -52,7 +53,8 @@ export interface FormFieldConfigType {
         | "FINVU_REDIRECT"
         | "DYNAMIC_FORM"
         | "fis13_select"
-        | "trv13_select_provider";
+        | "trv13_select_provider"
+        | "trv10_201_select";
     payloadField: string;
     values?: string[];
     defaultValue?: string;
@@ -233,6 +235,10 @@ export default function FormConfig({
 
     if (formConfig.find((field) => field.type === "trv13_select_provider")) {
         return <HotelSelectProvider submitEvent={submitEvent} />;
+    }
+
+    if (formConfig.find((field) => field.type === "trv10_201_select")) {
+        return <RideHailingSelect submitEvent={submitEvent} />;
     }
 
     // Check if form has fields that can be populated from on_search (like item_id for TRV13)
