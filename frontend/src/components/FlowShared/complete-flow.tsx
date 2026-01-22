@@ -28,6 +28,7 @@ import CircularProgress from "@components/ui/circular-cooldown";
 import Popup from "@components/ui/pop-up/pop-up";
 import FormConfig, { FormConfigType } from "@components/ui/forms/config-form/config-form";
 import { trackEvent } from "@utils/analytics";
+import { generatePlaygroundConfigFromFlowConfig } from "@ondc/automation-mock-runner";
 
 interface AccordionProps {
     flow: Flow;
@@ -65,6 +66,8 @@ export function Accordion({
     const contentRef = useRef<HTMLDivElement>(null);
     const [maxHeight, setMaxHeight] = useState("0px");
     const apiCallFailCount = useRef(0);
+    const clickCountRef = useRef(0);
+    const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     useEffect(() => {
         const executedFlowId = Object.keys(
@@ -202,6 +205,46 @@ export function Accordion({
         );
     }
 
+    const handlePlaygroundConversion = async () => {
+        const payload_ids = mappedFlow?.sequence.flatMap((s) => {
+            if (s.payloads?.entryType === "FORM") {
+                return [];
+            }
+            return s.payloads?.payloads.map((p) => p.payloadId) ?? [];
+        });
+
+        if (!payload_ids) {
+            return;
+        }
+        const jsonData = (await getCompletePayload(payload_ids)) as {
+            req: {
+                context: {
+                    domain: string;
+                    action: string;
+                    version?: string;
+                    core_version?: string;
+                    timestamp: string;
+                };
+            };
+        }[];
+        const allPayloads = jsonData.map((data) => data.req);
+        const playroundConfig = await generatePlaygroundConfigFromFlowConfig(allPayloads, flow);
+        const blob = new Blob([JSON.stringify(playroundConfig, null, 2)], {
+            type: "application/json",
+        });
+
+        const url = URL.createObjectURL(blob);
+
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `${flow?.id}-playground-config.json`;
+        document.body.appendChild(a);
+
+        a.click();
+        URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+    };
+
     const handleDownload = async () => {
         const payload_ids = mappedFlow?.sequence.flatMap((s) => {
             if (s.payloads?.entryType === "FORM") {
@@ -333,12 +376,40 @@ export function Accordion({
         );
     }
 
+    async function onAccordionClick() {
+        setIsOpen((prev) => !prev);
+    }
+
+    async function playgroundClick() {
+        try {
+            clickCountRef.current += 1;
+
+            // Reset timer on every click
+            if (timerRef.current) {
+                clearTimeout(timerRef.current);
+            }
+
+            timerRef.current = setTimeout(() => {
+                clickCountRef.current = 0;
+            }, 300); // ⏱️ max gap allowed between clicks
+
+            if (clickCountRef.current === 4) {
+                toast.info("Generating playground config...");
+                await handlePlaygroundConversion();
+                clickCountRef.current = 0; // reset after success
+            }
+        } catch (err) {
+            console.error("Error in downloading playground config", err);
+            toast.error("Error in downloading playground config");
+        }
+    }
+
     const bg = activeFlow === flow.id ? "bg-blue-50" : "bg-white";
     return (
         <div className="rounded-md mb-4 w-full ml-1">
             <div
                 className={`${bg} border rounded-md shadow-sm hover:bg-sky-100 cursor-pointer transition-colors px-5 py-3`}
-                onClick={() => setIsOpen(!isOpen)}
+                onClick={async () => await onAccordionClick()}
                 aria-expanded={isOpen}
                 aria-controls={`accordion-content-${flow.id}`}
             >
@@ -347,7 +418,7 @@ export function Accordion({
                     {/* Text Block */}
                     <div>
                         <div className="flex items-center gap-2 text-base font-bold text-sky-700">
-                            <FcWorkflow className="text-lg" />
+                            <FcWorkflow onClick={playgroundClick} className="text-lg" />
                             {flow.id.split("_").join(" ")}
                         </div>
                         <h2 className="text-black font-medium">{flow?.title}</h2>
