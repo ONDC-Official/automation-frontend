@@ -82,7 +82,7 @@ export default function FlowContent() {
     console.log(setSessionId.toString());
     const navigate = useNavigate();
 
-    const createAndOpenSession = async (data: ScenarioFormData) => {
+    const createAndOpenSession = async (data: ScenarioFormData, newTab = true) => {
         try {
             data = {
                 ...data,
@@ -106,7 +106,11 @@ export default function FlowContent() {
             // Open flow session in new tab
             const currentUrl = window.location.origin;
             const newTabUrl = `${currentUrl}/flow-testing?sessionId=${sessionID}&subscriberUrl=${encodeURIComponent(data.subscriberUrl)}&role=${data.npType}`;
-            window.open(newTabUrl, "_blank");
+            if (newTab) {
+                window.open(newTabUrl, "_blank");
+            } else {
+                window.location.href = newTabUrl;
+            }
         } catch (e) {
             toast.error("Error while creating session");
             console.error("error while sending response", e);
@@ -128,7 +132,7 @@ export default function FlowContent() {
                 await createAndOpenSession(dataCopy);
                 return;
             }
-            await createAndOpenSession(data);
+            await createAndOpenSession(data, false);
         } catch (err) {
             console.error("Error in onSubmit: ", err);
         }
