@@ -25,36 +25,42 @@ import IntercitySelect from "../custom-forms/intercity-select";
 import HotelSelectProvider from "../custom-forms/hotel-slect-provider";
 import FIS13ItemSelection from "../custom-forms/fis13_select";
 import RideHailingSelect from "../custom-forms/trv10-201-select";
+import SearchAccidentalFis13 from "../custom-forms/search-accidental-fis13";
+import SearchHospicashFis13 from "../custom-forms/search-hospicash-fis13";
+import SearchTransitFis13 from "../custom-forms/search-transit-fis13";
 
 export interface FormFieldConfigType {
     name: string;
     label: string;
     type:
-        | "text"
-        | "select"
-        | "textarea"
-        | "list"
-        | "date"
-        | "checkbox"
-        | "boolean"
-        | "trv12_bus_seat_selection"
-        | "airline_select"
-        | "intercity_select"
-        | "airline_seat_select"
-        | "ret10_grocery_select"
-        | "nestedSelect"
-        | "trv_select"
-        | "trv10_select"
-        | "trv10_schedule"
-        | "trv10_schedule_rental"
-        | "trv11_select"
-        | "hotel_select"
-        | "HTML_FORM"
-        | "FINVU_REDIRECT"
-        | "DYNAMIC_FORM"
-        | "fis13_select"
-        | "trv13_select_provider"
-        | "trv10_201_select";
+    | "text"
+    | "select"
+    | "textarea"
+    | "list"
+    | "date"
+    | "checkbox"
+    | "boolean"
+    | "trv12_bus_seat_selection"
+    | "airline_select"
+    | "intercity_select"
+    | "airline_seat_select"
+    | "ret10_grocery_select"
+    | "nestedSelect"
+    | "trv_select"
+    | "trv10_select"
+    | "trv10_schedule"
+    | "trv10_schedule_rental"
+    | "trv11_select"
+    | "hotel_select"
+    | "HTML_FORM"
+    | "FINVU_REDIRECT"
+    | "DYNAMIC_FORM"
+    | "fis13_select"
+    | "trv13_select_provider"
+    | "trv10_201_select"
+    | "search_accidental_fis13"
+    | "search_hospicash_fis13"
+    | "search_transit_fis13";
     payloadField: string;
     values?: string[];
     defaultValue?: string;
@@ -241,6 +247,18 @@ export default function FormConfig({
         return <RideHailingSelect submitEvent={submitEvent} />;
     }
 
+    if (formConfig.find((field) => field.type === "search_accidental_fis13")) {
+        return <SearchAccidentalFis13 submitEvent={submitEvent} />;
+    }
+
+    if (formConfig.find((field) => field.type === "search_hospicash_fis13")) {
+        return <SearchHospicashFis13 submitEvent={submitEvent} />;
+    }
+
+    if (formConfig.find((field) => field.type === "search_transit_fis13")) {
+        return <SearchTransitFis13 submitEvent={submitEvent} />;
+    }
+
     // Check if form has fields that can be populated from on_search (like item_id for TRV13)
     const enablePaste = formConfig.some((field) => field.name === "item_id");
     const FormComponent = enablePaste ? GenericFormWithPaste : GenericForm;
@@ -266,7 +284,7 @@ export default function FormConfig({
                                 name={field.name}
                                 label={field.label}
                                 required={field.required !== false}
-                                // key={field.payloadField}
+                            // key={field.payloadField}
                             />
                         );
                     case "date":
@@ -276,7 +294,7 @@ export default function FormConfig({
                                 label={field.label}
                                 required={field.required !== false}
                                 type="date"
-                                // key={field.payloadField}
+                            // key={field.payloadField}
                             />
                         );
                     case "select":
@@ -285,7 +303,7 @@ export default function FormConfig({
                                 name={field.name}
                                 label={field.label}
                                 options={field.values || []}
-                                // key={field.payloadField}
+                            // key={field.payloadField}
                             />
                         );
                     case "checkbox":
