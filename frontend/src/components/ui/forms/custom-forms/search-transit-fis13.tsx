@@ -266,7 +266,7 @@ export default function SearchTransitFis13({
                             type="submit"
                             className="w-full py-4 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-200 active:scale-[0.98]"
                         >
-                            Search Transit Insurance
+                            Submit
                         </button>
                     </div>
                 </form >
