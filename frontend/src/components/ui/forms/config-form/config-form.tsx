@@ -1,7 +1,7 @@
 import { useContext } from "react";
 import { FormInput } from "../form-input";
 import FormSelect from "../form-select";
-import CheckboxGroup from "../checkbox";
+import CheckboxGroup, { CheckboxOption } from "../checkbox";
 import ItemCustomisationSelector from "../nested-select";
 import GenericForm from "../generic-form";
 import GenericFormWithPaste from "../generic-form-with-paste";
@@ -24,6 +24,7 @@ import { SessionContext } from "../../../../context/context";
 import IntercitySelect from "../custom-forms/intercity-select";
 import HotelSelectProvider from "../custom-forms/hotel-slect-provider";
 import FIS13ItemSelection from "../custom-forms/fis13_select";
+import type { RJSFSchema } from "@rjsf/utils";
 
 export interface FormFieldConfigType {
     name: string;
@@ -57,11 +58,11 @@ export interface FormFieldConfigType {
     values?: string[];
     defaultValue?: string;
     input?: FormFieldConfigType[];
-    options?: any;
-    default?: any;
+    options?: CheckboxOption[];
+    default?: string | string[] | number | boolean | null;
     display?: boolean;
     reference?: string;
-    schema?: any;
+    schema?: RJSFSchema;
     required?: boolean;
 }
 
@@ -75,7 +76,7 @@ export default function FormConfig({
 }: {
     formConfig: FormConfigType;
     submitEvent: (data: SubmitEventParams) => Promise<void>;
-    referenceData?: Record<string, any>;
+    referenceData?: Record<string, unknown>;
     flowId?: string;
 }) {
     const sessionContext = useContext(SessionContext);
@@ -109,7 +110,7 @@ export default function FormConfig({
         await submitEvent({ jsonPath: formatedData, formData: formData });
     };
 
-    const defaultValues: any = {};
+    const defaultValues: Record<string, unknown> = {};
     let isNoFieldVisible = false;
 
     formConfig.forEach((field) => {
@@ -128,7 +129,7 @@ export default function FormConfig({
     if (formConfig.find((f) => f.schema)) {
         const schemaField = formConfig.find((f) => f.schema);
         return JsonSchemaForm({
-            schema: schemaField!.schema,
+            schema: schemaField!.schema as RJSFSchema,
             onSubmit: onSubmit as (data: Record<string, unknown>) => Promise<void>,
         });
     }
@@ -285,10 +286,10 @@ export default function FormConfig({
                     case "checkbox":
                         return (
                             <CheckboxGroup
-                                options={field.options}
+                                options={field.options as CheckboxOption[]}
                                 label={field.label}
                                 name={field.name}
-                                defaultValue={field.default}
+                                defaultValue={field.default as string[] | undefined}
                             />
                         );
                     case "nestedSelect":
