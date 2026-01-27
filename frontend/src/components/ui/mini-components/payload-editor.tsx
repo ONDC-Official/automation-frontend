@@ -2,19 +2,24 @@ import { useState } from "react";
 import ReactDOM from "react-dom";
 import Editor from "@monaco-editor/react";
 
-const PayloadEditor = ({ onAdd }: any) => {
+type PayloadEditorProps = {
+    onAdd: (payload: unknown) => void;
+};
+
+const PayloadEditor = ({ onAdd }: PayloadEditorProps) => {
     const [payload, setPayload] = useState("");
     const [errorText, setErrorText] = useState("");
 
     const handleAddClick = () => {
-        let parsedText = null;
+        let parsedText: unknown = null;
         try {
             parsedText = JSON.parse(payload);
-        } catch (e) {
+        } catch (error: unknown) {
+            console.error("Error parsing JSON:", error);
             setErrorText("Invalid json format");
         }
 
-        onAdd(parsedText);
+        onAdd(parsedText as unknown);
     };
 
     return ReactDOM.createPortal(
@@ -36,8 +41,8 @@ const PayloadEditor = ({ onAdd }: any) => {
                     <Editor
                         height="100%"
                         value={payload}
-                        onChange={(value: any) => {
-                            setPayload(value);
+                        onChange={(value: string | undefined) => {
+                            setPayload(value as unknown as string);
                         }}
                         defaultLanguage="json"
                         theme="vs"
