@@ -13,6 +13,7 @@ interface DynamicInput {
     value: string;
 }
 
+
 export default function SearchHospicashFis13({
     submitEvent,
 }: {
@@ -24,9 +25,7 @@ export default function SearchHospicashFis13({
     const [selectedProviderId, setSelectedProviderId] = useState<string>("");
     const [selectedItemId, setSelectedItemId] = useState<string>("");
     const [dynamicInputs, setDynamicInputs] = useState<DynamicInput[]>([]);
-
     const { register, handleSubmit } = useForm();
-
     const selectedProvider = allProviders.find(p => p.id === selectedProviderId);
     const availableItems = selectedProvider?.items || [];
 
