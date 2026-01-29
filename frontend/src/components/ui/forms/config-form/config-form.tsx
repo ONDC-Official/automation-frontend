@@ -33,34 +33,34 @@ export interface FormFieldConfigType {
     name: string;
     label: string;
     type:
-    | "text"
-    | "select"
-    | "textarea"
-    | "list"
-    | "date"
-    | "checkbox"
-    | "boolean"
-    | "trv12_bus_seat_selection"
-    | "airline_select"
-    | "intercity_select"
-    | "airline_seat_select"
-    | "ret10_grocery_select"
-    | "nestedSelect"
-    | "trv_select"
-    | "trv10_select"
-    | "trv10_schedule"
-    | "trv10_schedule_rental"
-    | "trv11_select"
-    | "hotel_select"
-    | "HTML_FORM"
-    | "FINVU_REDIRECT"
-    | "DYNAMIC_FORM"
-    | "fis13_select"
-    | "trv13_select_provider"
-    | "trv10_201_select"
-    | "search_accidental_fis13"
-    | "search_hospicash_fis13"
-    | "search_transit_fis13";
+        | "text"
+        | "select"
+        | "textarea"
+        | "list"
+        | "date"
+        | "checkbox"
+        | "boolean"
+        | "trv12_bus_seat_selection"
+        | "airline_select"
+        | "intercity_select"
+        | "airline_seat_select"
+        | "ret10_grocery_select"
+        | "nestedSelect"
+        | "trv_select"
+        | "trv10_select"
+        | "trv10_schedule"
+        | "trv10_schedule_rental"
+        | "trv11_select"
+        | "hotel_select"
+        | "HTML_FORM"
+        | "FINVU_REDIRECT"
+        | "DYNAMIC_FORM"
+        | "fis13_select"
+        | "trv13_select_provider"
+        | "trv10_201_select"
+        | "search_accidental_fis13"
+        | "search_hospicash_fis13"
+        | "search_transit_fis13";
     payloadField: string;
     values?: string[];
     defaultValue?: string;
@@ -131,15 +131,6 @@ export default function FormConfig({
             isNoFieldVisible = true;
         }
     });
-
-    // Check for schema form
-    if (formConfig.find((f) => f.schema)) {
-        const schemaField = formConfig.find((f) => f.schema);
-        return JsonSchemaForm({
-            schema: schemaField!.schema,
-            onSubmit: onSubmit as (data: Record<string, unknown>) => Promise<void>,
-        });
-    }
 
     // Check for DYNAMIC_FORM type
     if (formConfig.find((field) => field.type === "DYNAMIC_FORM")) {
@@ -259,6 +250,16 @@ export default function FormConfig({
         return <SearchTransitFis13 submitEvent={submitEvent} />;
     }
 
+    // NOTE: The JsonSchemaForm check must come after all other specific form type checks above.
+    // Check for schema form
+    if (formConfig.find((f) => f.schema)) {
+        const schemaField = formConfig.find((f) => f.schema);
+        return JsonSchemaForm({
+            schema: schemaField!.schema,
+            onSubmit: onSubmit as (data: Record<string, unknown>) => Promise<void>,
+        });
+    }
+
     // Check if form has fields that can be populated from on_search (like item_id for TRV13)
     const enablePaste = formConfig.some((field) => field.name === "item_id");
     const FormComponent = enablePaste ? GenericFormWithPaste : GenericForm;
@@ -284,7 +285,7 @@ export default function FormConfig({
                                 name={field.name}
                                 label={field.label}
                                 required={field.required !== false}
-                            // key={field.payloadField}
+                                // key={field.payloadField}
                             />
                         );
                     case "date":
@@ -294,7 +295,7 @@ export default function FormConfig({
                                 label={field.label}
                                 required={field.required !== false}
                                 type="date"
-                            // key={field.payloadField}
+                                // key={field.payloadField}
                             />
                         );
                     case "select":
@@ -303,7 +304,7 @@ export default function FormConfig({
                                 name={field.name}
                                 label={field.label}
                                 options={field.values || []}
-                            // key={field.payloadField}
+                                // key={field.payloadField}
                             />
                         );
                     case "checkbox":
