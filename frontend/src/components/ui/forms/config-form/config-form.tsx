@@ -28,6 +28,9 @@ import RideHailingSelect from "../custom-forms/trv10-201-select";
 import SearchAccidentalFis13 from "../custom-forms/search-accidental-fis13";
 import SearchHospicashFis13 from "../custom-forms/search-hospicash-fis13";
 import SearchTransitFis13 from "../custom-forms/search-transit-fis13";
+import Metro210Select from "../custom-forms/metro-seat-select";
+import Metro210EndStopUpdate from "../custom-forms/update-end-stop-update";
+import Metro210StartEndStopSelection from "../custom-forms/trv11_start_end_stop_selection";
 
 export interface FormFieldConfigType {
     name: string;
@@ -60,7 +63,10 @@ export interface FormFieldConfigType {
     | "trv10_201_select"
     | "search_accidental_fis13"
     | "search_hospicash_fis13"
-    | "search_transit_fis13";
+    | "search_transit_fis13"
+    | "trv11_210_select"
+    | "trv11_210_update_end_station"
+    | "trv11_210_start_end_stop_selection"
     payloadField: string;
     values?: string[];
     defaultValue?: string;
@@ -257,6 +263,18 @@ export default function FormConfig({
 
     if (formConfig.find((field) => field.type === "search_transit_fis13")) {
         return <SearchTransitFis13 submitEvent={submitEvent} />;
+    }
+
+    if (formConfig.find((field) => field.type === "trv11_210_select")) {
+        return <Metro210Select submitEvent={submitEvent} />;
+    }
+
+    if (formConfig.find((field) => field.type === "trv11_210_update_end_station")) {
+        return <Metro210EndStopUpdate submitEvent={submitEvent} />;
+    }
+
+    if (formConfig.find((field) => field.type === "trv11_210_start_end_stop_selection")) {
+        return <Metro210StartEndStopSelection submitEvent={submitEvent} />;
     }
 
     // Check if form has fields that can be populated from on_search (like item_id for TRV13)
