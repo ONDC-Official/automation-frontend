@@ -20,7 +20,6 @@ export default function SearchAccidentalFis13({
     submitEvent: (data: SubmitEventParams) => Promise<void>;
 }) {
     const [isPayloadEditorActive, setIsPayloadEditorActive] = useState(false);
-    const [cityCode, setCityCode] = useState("*");
     const [allProviders, setAllProviders] = useState<any[]>([]);
     const [selectedProviderId, setSelectedProviderId] = useState<string>("");
     const [selectedItemId, setSelectedItemId] = useState<string>("");
@@ -29,7 +28,6 @@ export default function SearchAccidentalFis13({
 
     // Advanced Manual Mode
     const [isAdvancedOpen, setIsAdvancedOpen] = useState(false);
-    const [manualCityCode, setManualCityCode] = useState("");
     const [manualProviderId, setManualProviderId] = useState("");
     const [manualPolicyId, setManualPolicyId] = useState("");
     const [manualItemId, setManualItemId] = useState("");
@@ -63,7 +61,6 @@ export default function SearchAccidentalFis13({
 
     const handlePaste = (payload: any) => {
         try {
-            const context = payload?.context;
             const message = payload?.message;
             const providers = message?.catalog?.providers;
 
@@ -71,8 +68,6 @@ export default function SearchAccidentalFis13({
                 throw new Error("Invalid payload: No providers found");
             }
 
-            const extractedCityCode = context?.location?.city?.code || "*";
-            setCityCode(extractedCityCode);
             setAllProviders(providers);
 
             // Auto-select first provider and first item
@@ -209,7 +204,6 @@ export default function SearchAccidentalFis13({
                 tags: provider.tags,
                 items: provider.items.filter((item: any) => item.id === selectedItemId),
             },
-            city_code: cityCode,
         };
 
         await submitEvent({
@@ -218,10 +212,9 @@ export default function SearchAccidentalFis13({
         });
     };
 
-    // Manual submission handler
     const onManualSubmit = async (formData: any) => {
-        if (!manualCityCode || !manualProviderId || !manualItemId) {
-            toast.error("Please fill in City Code, Provider ID, and Item ID");
+        if (!manualProviderId || !manualItemId) {
+            toast.error("Please fill in Provider ID and Item ID");
             return;
         }
 
@@ -245,7 +238,6 @@ export default function SearchAccidentalFis13({
                     }]
                 }]
             },
-            city_code: manualCityCode,
         };
 
         await submitEvent({
@@ -289,16 +281,7 @@ export default function SearchAccidentalFis13({
                             {hasData ? (
                                 <div className="space-y-6">
                                     {/* Selection Grid */}
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div>
-                                            <label className={labelStyle}>City Code</label>
-                                            <input
-                                                type="text"
-                                                value={cityCode}
-                                                readOnly
-                                                className="w-full p-2 border border-gray-300 rounded text-sm bg-gray-50"
-                                            />
-                                        </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                         <div>
                                             <label className={labelStyle}>Provider ID</label>
                                             <select
@@ -384,17 +367,7 @@ export default function SearchAccidentalFis13({
                             </summary>
                             <form onSubmit={handleSubmit(onManualSubmit)} className="mt-4 space-y-6">
                                 {/* Manual Selection Grid */}
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div>
-                                        <label className={labelStyle}>City Code</label>
-                                        <input
-                                            type="text"
-                                            value={manualCityCode}
-                                            onChange={(e) => setManualCityCode(e.target.value)}
-                                            placeholder="e.g. std:0123"
-                                            className={inputStyle}
-                                        />
-                                    </div>
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                     <div>
                                         <label className={labelStyle}>Provider ID</label>
                                         <input
@@ -483,17 +456,7 @@ export default function SearchAccidentalFis13({
                     <h3 className="text-base font-semibold text-gray-800 mb-4">Add Item Manually</h3>
                     <form onSubmit={handleSubmit(onManualSubmit)} className="space-y-6">
                         {/* Manual Selection Grid */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label className={labelStyle}>City Code</label>
-                                <input
-                                    type="text"
-                                    value={manualCityCode}
-                                    onChange={(e) => setManualCityCode(e.target.value)}
-                                    placeholder="e.g. std:0123"
-                                    className={inputStyle}
-                                />
-                            </div>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div>
                                 <label className={labelStyle}>Provider ID</label>
                                 <input
