@@ -24,7 +24,15 @@ import { SessionContext } from "../../../../context/context";
 import IntercitySelect from "../custom-forms/intercity-select";
 import HotelSelectProvider from "../custom-forms/hotel-slect-provider";
 import FIS13ItemSelection from "../custom-forms/fis13_select";
-import type { RJSFSchema } from "@rjsf/utils";
+import RideHailingSelect from "../custom-forms/trv10-201-select";
+import SearchAccidentalFis13 from "../custom-forms/search-accidental-fis13";
+import SearchHospicashFis13 from "../custom-forms/search-hospicash-fis13";
+import SearchTransitFis13 from "../custom-forms/search-transit-fis13";
+import SearchDiscoverProductFis13 from "../custom-forms/search-discover-product-fis13";
+import Metro210Select from "../custom-forms/metro-seat-select";
+import Metro210EndStopUpdate from "../custom-forms/update-end-stop-update";
+import Metro210StartEndStopSelection from "../custom-forms/trv11_start_end_stop_selection";
+import { RJSFSchema } from "@rjsf/utils";
 
 export interface FormFieldConfigType {
     name: string;
@@ -53,7 +61,15 @@ export interface FormFieldConfigType {
         | "FINVU_REDIRECT"
         | "DYNAMIC_FORM"
         | "fis13_select"
-        | "trv13_select_provider";
+        | "trv13_select_provider"
+        | "trv10_201_select"
+        | "search_accidental_fis13"
+        | "search_hospicash_fis13"
+        | "search_transit_fis13"
+        | "search_discover_product_fis13"
+        | "trv11_210_select"
+        | "trv11_210_update_end_station"
+        | "trv11_210_start_end_stop_selection";
     payloadField: string;
     values?: string[];
     defaultValue?: string;
@@ -124,15 +140,6 @@ export default function FormConfig({
             isNoFieldVisible = true;
         }
     });
-
-    // Check for schema form
-    if (formConfig.find((f) => f.schema)) {
-        const schemaField = formConfig.find((f) => f.schema);
-        return JsonSchemaForm({
-            schema: schemaField!.schema as RJSFSchema,
-            onSubmit: onSubmit as (data: Record<string, unknown>) => Promise<void>,
-        });
-    }
 
     // Check for DYNAMIC_FORM type
     if (formConfig.find((field) => field.type === "DYNAMIC_FORM")) {
@@ -236,6 +243,48 @@ export default function FormConfig({
         return <HotelSelectProvider submitEvent={submitEvent} />;
     }
 
+    if (formConfig.find((field) => field.type === "trv10_201_select")) {
+        return <RideHailingSelect submitEvent={submitEvent} />;
+    }
+
+    if (formConfig.find((field) => field.type === "search_accidental_fis13")) {
+        return <SearchAccidentalFis13 submitEvent={submitEvent} />;
+    }
+
+    if (formConfig.find((field) => field.type === "search_hospicash_fis13")) {
+        return <SearchHospicashFis13 submitEvent={submitEvent} />;
+    }
+
+    if (formConfig.find((field) => field.type === "search_transit_fis13")) {
+        return <SearchTransitFis13 submitEvent={submitEvent} />;
+    }
+
+    if (formConfig.find((field) => field.type === "search_discover_product_fis13")) {
+        return <SearchDiscoverProductFis13 submitEvent={submitEvent} />;
+    }
+
+    if (formConfig.find((field) => field.type === "trv11_210_select")) {
+        return <Metro210Select submitEvent={submitEvent} />;
+    }
+
+    if (formConfig.find((field) => field.type === "trv11_210_update_end_station")) {
+        return <Metro210EndStopUpdate submitEvent={submitEvent} />;
+    }
+
+    if (formConfig.find((field) => field.type === "trv11_210_start_end_stop_selection")) {
+        return <Metro210StartEndStopSelection submitEvent={submitEvent} />;
+    }
+
+    // NOTE: The JsonSchemaForm check must come after all other specific form type checks above.
+    // Check for schema form
+    if (formConfig.find((f) => f.schema)) {
+        const schemaField = formConfig.find((f) => f.schema);
+        return JsonSchemaForm({
+            schema: schemaField!.schema as RJSFSchema,
+            onSubmit: onSubmit as (data: Record<string, unknown>) => Promise<void>,
+        });
+    }
+
     // Check if form has fields that can be populated from on_search (like item_id for TRV13)
     const enablePaste = formConfig.some((field) => field.name === "item_id");
     const FormComponent = enablePaste ? GenericFormWithPaste : GenericForm;
@@ -286,7 +335,7 @@ export default function FormConfig({
                     case "checkbox":
                         return (
                             <CheckboxGroup
-                                options={field.options as CheckboxOption[]}
+                                options={field.options || []}
                                 label={field.label}
                                 name={field.name}
                                 defaultValue={field.default as string[] | undefined}

@@ -52,10 +52,17 @@ export const useConfigOperations = () => {
                         const config = JSON.parse(
                             (e.target as FileReader | null)?.result as string
                         );
+                        const validConfig = new MockRunner(config).validateConfig();
+                        if (!validConfig.success) {
+                            toast.error(`Invalid configuration: ${validConfig.errors?.join(", ")}`);
+                            return;
+                        }
                         playgroundContext.setCurrentConfig(config);
                         toast.success("Configuration imported successfully");
-                    } catch {
-                        toast.error("Invalid JSON file");
+                    } catch (error) {
+                        console.error("Error reading file:", error);
+                        const message = error instanceof Error ? error.message : "Unknown error";
+                        toast.error(`Invalid JSON file or configuration: ${message}`);
                     }
                 };
                 reader.readAsText(file);

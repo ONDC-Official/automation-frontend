@@ -6,17 +6,18 @@ import { toast } from "react-toastify";
 
 import RenderFlows from "@components/FlowShared/render-flows";
 import { ReportPage } from "@components/FlowShared/report";
-import { FormGuide } from "@components/FlowShared/guides";
+import { FormGuide, GetRequestEndpoint } from "@components/FlowShared/guides";
 import InitialFlowForm from "@components/FlowShared/initial-form";
 import NotFound from "@components/ui/not-found";
 import { useSession } from "@context/context";
 import { putCacheData } from "@utils/request-utils";
 import { trackEvent } from "@utils/analytics";
 import { useWorkbenchFlows } from "@hooks/useWorkbenchFlow";
-import { sessionIdSupport } from "@utils/localStorageManager";
+// import { sessionIdSupport } from "@utils/localStorageManager";
 import { ROUTES } from "@constants/routes";
 import { Domain, DomainVersion } from "@/pages/schema-validation/types";
 import { Flow } from "@/types/flow-types";
+import { sessionIdSupport } from "@/utils/localStorageManager";
 
 type DomainVersionWithUsecase = DomainVersion & {
     usecase: string[];
@@ -78,9 +79,10 @@ export default function FlowContent() {
         env: "STAGING",
     });
     const { sessionId: contextSessionId, setSessionId } = useSession();
+    console.log(setSessionId.toString());
     const navigate = useNavigate();
 
-    const onSubmit = async (data: ScenarioFormData) => {
+    const createAndOpenSession = async (data: ScenarioFormData, newTab = true) => {
         try {
             data = {
                 ...data,
@@ -96,19 +98,43 @@ export default function FlowContent() {
                         protocolValidations: true,
                         useGateway: true,
                         headerValidaton: true,
-                        totalDifficulty: 100,
                     },
                 }
             );
-            setSubscriberUrl(data.subscriberUrl);
-
+            const sessionID = response.data.sessionId;
             sessionIdSupport.setScenarioSession(response.data.sessionId);
-            setSession(response.data.sessionId);
-            setSessionId(response.data.sessionId);
-            setFlowStepNum(1);
+            // Open flow session in new tab
+            const currentUrl = window.location.origin;
+            const newTabUrl = `${currentUrl}/flow-testing?sessionId=${sessionID}&subscriberUrl=${encodeURIComponent(data.subscriberUrl)}&role=${data.npType}`;
+            if (newTab) {
+                window.open(newTabUrl, "_blank");
+            } else {
+                window.location.href = newTabUrl;
+            }
         } catch (e) {
             toast.error("Error while creating session");
             console.error("error while sending response", e);
+        }
+    };
+
+    const onSubmit = async (data: ScenarioFormData) => {
+        try {
+            if (
+                data.subscriberUrl.trim() === "https://testing" ||
+                data.subscriberUrl.trim() === "http://testing"
+            ) {
+                const dataCopy = JSON.parse(JSON.stringify(data)) as ScenarioFormData;
+                dataCopy.npType = "BPP";
+                dataCopy.subscriberUrl = GetRequestEndpoint(data.domain, data.version, "BAP");
+                await createAndOpenSession(dataCopy);
+                dataCopy.npType = "BAP";
+                dataCopy.subscriberUrl = GetRequestEndpoint(data.domain, data.version, "BPP");
+                await createAndOpenSession(dataCopy);
+                return;
+            }
+            await createAndOpenSession(data, false);
+        } catch (err) {
+            console.error("Error in onSubmit: ", err);
         }
     };
     const fetchFlows = async (data: ScenarioFormData) => {

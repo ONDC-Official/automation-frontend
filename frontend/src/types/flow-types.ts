@@ -32,7 +32,7 @@ export interface SequenceStep {
     key: string;
     type: string;
     unsolicited: boolean;
-    description: string;
+    description?: string;
     pair: string | null;
     owner: "BAP" | "BPP";
     input?: FormConfigType;
@@ -40,6 +40,7 @@ export interface SequenceStep {
     label?: string;
     force_proceed?: boolean;
     metadata?: MetadataField[];
+    repeat?: number;
     "meta-data"?: MetadataField[];
 }
 

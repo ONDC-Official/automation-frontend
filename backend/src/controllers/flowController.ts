@@ -28,7 +28,7 @@ export const fetchConfig = (req: Request, res: Response) => {
 
 export const generateReport = async (
 	req: Request,
-	res: Response
+	res: Response,
 ): Promise<void> => {
 	const sessionId = req.query.sessionId as string;
 	const body = req.body;
@@ -47,7 +47,7 @@ export const generateReport = async (
 				headers: {
 					"X-Request-ID": req.correlationId,
 				},
-			}
+			},
 		);
 		if (response.status === 200) {
 			res.status(200).json({
@@ -65,7 +65,7 @@ export const generateReport = async (
 
 export const handleTriggerRequest = async (
 	req: Request,
-	res: Response
+	res: Response,
 ): Promise<void> => {
 	try {
 		logger.info(`Triggering action ${req.params.action}`);
@@ -86,7 +86,7 @@ export const handleTriggerRequest = async (
 		const response = await axios.post(
 			await buildMockBaseURL(
 				`trigger/api-service/${action}`,
-				req.query.session_id as string
+				req.query.session_id as string,
 			),
 			triggerInput,
 			{
@@ -99,7 +99,7 @@ export const handleTriggerRequest = async (
 				headers: {
 					"X-Request-ID": req.correlationId,
 				},
-			}
+			},
 		);
 		logger.info("response" + JSON.stringify(response.data));
 		if (response.status === 200) {
@@ -116,7 +116,7 @@ export const handleTriggerRequest = async (
 				transactionId: req.query.transaction_id,
 				subscriberUrl: req.query.subscriber_url,
 			},
-			error
+			error,
 		);
 		if (error.response && error.response.status === 400) {
 			res.status(400).send(NACK);
@@ -130,7 +130,7 @@ export const handleTriggerRequest = async (
 
 export const validatePayload = async (
 	req: Request,
-	res: Response
+	res: Response,
 ): Promise<void> => {
 	const action = req.params.action;
 	const payload = req.body;
@@ -158,7 +158,7 @@ export const validatePayload = async (
 			`${
 				process.env.API_SERVICE as string
 			}/${domain}/${version}/test/${action}`,
-			payload
+			payload,
 		);
 
 		res.send(response.data);
@@ -170,7 +170,7 @@ export const validatePayload = async (
 
 export const getPredefinedFlows = async (
 	_req: Request,
-	res: Response
+	res: Response,
 ): Promise<void> => {
 	const config = getPredefinedFlowConfig();
 
@@ -185,7 +185,7 @@ export const getPredefinedFlows = async (
 
 export const getExample = async (
 	req: Request,
-	res: Response
+	res: Response,
 ): Promise<void> => {
 	const { filePath } = req.body;
 	const config = fetchExampleConfig(filePath);
@@ -201,13 +201,13 @@ export const getExample = async (
 
 export const getCurrentStateFlow = async (
 	req: Request,
-	res: Response
+	res: Response,
 ): Promise<void> => {
 	try {
 		const { session_id, transaction_id } = req.query;
 		const url = await buildMockBaseURL(
 			"flows/current-status",
-			session_id as string
+			session_id as string,
 		);
 		const response = await axios.get(url, {
 			params: {
@@ -218,7 +218,6 @@ export const getCurrentStateFlow = async (
 				"X-Request-ID": req.correlationId,
 			},
 		});
-		logger.info("current state response fetched successfully");
 		res.status(response.status).send(response.data);
 	} catch (e) {
 		logger.error(
@@ -227,7 +226,7 @@ export const getCurrentStateFlow = async (
 				session_id: req.query.session_id,
 				transaction_id: req.query.transaction_id,
 			},
-			e
+			e,
 		);
 		res.status(500).send(ERROR);
 	}
@@ -260,7 +259,7 @@ export const proceedFlow = async (req: Request, res: Response) => {
 				session_id: req.body.session_id,
 				transaction_id: req.body.transaction_id,
 			},
-			e
+			e,
 		);
 		res.status(500).send(ERROR);
 	}
@@ -290,42 +289,42 @@ export const newFlow = async (req: Request, res: Response) => {
 				transaction_id: req.body.transaction_id,
 				flow_id: req.body.flow_id,
 			},
-			e
+			e,
 		);
 		res.status(500).send(ERROR);
 	}
 };
 
 export const updateFlow = async (req: Request, res: Response) => {
-	const {session_id, flows} = req.body
+	const { session_id, flows } = req.body;
 	try {
-		await updateFlowService(session_id, flows, getLoggerMeta(req))
-		res.send({message: "flow updated."})
-	} catch(e) {
+		await updateFlowService(session_id, flows, getLoggerMeta(req));
+		res.send({ message: "flow updated." });
+	} catch (e) {
 		logger.error(
 			"error while creating new flow",
 			{
 				session_id: req.body.session_id,
 			},
-			e
+			e,
 		);
 		res.status(500).send(ERROR);
 	}
-}
+};
 
 export const getActions = async (req: Request, res: Response) => {
-  try {
-    const { domain, version } = req.body;
+	try {
+		const { domain, version } = req.body;
 
-    const response = await axios.get(
-      `${
-        process.env.MOCK_SERVICE as string
-      }/${domain}/${version}/config/mock-actions`
-    );
+		const response = await axios.get(
+			`${
+				process.env.MOCK_SERVICE as string
+			}/${domain}/${version}/config/mock-actions`,
+		);
 
-    res.send(response.data);
-  } catch (e) {
-    console.error("Something went wrong while fetching actions: ", e);
-	res.status(500).send("Something went wrong");
-  }
+		res.send(response.data);
+	} catch (e) {
+		console.error("Something went wrong while fetching actions: ", e);
+		res.status(500).send("Something went wrong");
+	}
 };
