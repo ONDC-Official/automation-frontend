@@ -123,7 +123,7 @@ export default function FIS13ItemSelection({
 
                     {itemOptions.length === 0 && (
                         <span className="text-xs text-amber-600 bg-amber-50 px-3 py-1.5 rounded-md border border-amber-100 italic">
-                            Please paste the payload (on_search or on_select) to load item options.
+                            Please paste the payload (on_search) to load item options.
                         </span>
                     )}
                 </div>
@@ -150,15 +150,14 @@ export default function FIS13ItemSelection({
                                     <div
                                         key={option.id}
                                         onClick={() => toggleItemSelection(option)}
-                                        className={`flex items-center justify-between p-3 cursor-pointer transition-colors ${
-                                            isSelected ? "bg-blue-50" : "hover:bg-gray-50"
-                                        }`}
+                                        className={`flex items-center justify-between p-3 cursor-pointer transition-colors ${isSelected ? "bg-blue-50" : "hover:bg-gray-50"
+                                            }`}
                                     >
                                         <div className="flex items-center gap-3">
                                             <input
                                                 type="checkbox"
                                                 checked={isSelected}
-                                                onChange={() => {}} // Handled by div onClick
+                                                onChange={() => { }} // Handled by div onClick
                                                 className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
                                             />
                                             <div>
@@ -214,11 +213,10 @@ export default function FIS13ItemSelection({
                 <button
                     type="submit"
                     disabled={selectedItems.length === 0}
-                    className={`w-full py-3 rounded-lg font-semibold transition-all shadow-md ${
-                        selectedItems.length > 0
+                    className={`w-full py-3 rounded-lg font-semibold transition-all shadow-md ${selectedItems.length > 0
                             ? "bg-green-600 text-white hover:bg-green-700 active:transform active:scale-[0.98]"
                             : "bg-gray-300 text-gray-500 cursor-not-allowed"
-                    }`}
+                        }`}
                 >
                     Submit
                 </button>

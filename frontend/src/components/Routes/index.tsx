@@ -18,10 +18,10 @@ const Routes = () => (
     <RouterRoutes>
         <Route path={ROUTES.HOME} element={<HomePage />} />
         <Route path={ROUTES.SCHEMA} element={<SchemaValidationPage />} />
-
+        {/*  Scenario Page Route  is the go to flow testing page with np form*/}
         <Route path={ROUTES.SCENARIO} element={<ScenarioPage />} />
+        {/* ROUTES.FLOW_TESTING is for Flow testing through URL parameters not via scenario testing page */}
         <Route path={ROUTES.FLOW_TESTING} element={<FlowTestingWrapper />} />
-
         <Route path={ROUTES.LOGIN} element={<Login />} />
         <Route path={ROUTES.PROFILE} element={<UserProfile />} />
         <Route path={ROUTES.TOOLS} element={<ToolsPage />} />

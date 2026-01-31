@@ -9,7 +9,7 @@ const EXPECTATION_EXPIRY = 5 * 60 * 1000; // 5 minutes
 export const createSessionService = async (
 	sessionId: string,
 	data: SessionCache,
-	loggerMeta: any
+	loggerMeta: any,
 ) => {
 	const { npType, domain, version, subscriberUrl, env, usecaseId } = data;
 
@@ -21,7 +21,7 @@ export const createSessionService = async (
 				version: version,
 				usecase: usecaseId,
 			},
-		}
+		},
 	);
 	const flows = flowResponse.data.data.flows;
 	const map: Record<string, any> = {};
@@ -55,7 +55,7 @@ export const createSessionService = async (
 		await RedisService.setKey(
 			sessionId,
 			JSON.stringify(finalCache),
-			SESSION_EXPIRY
+			SESSION_EXPIRY,
 		);
 		logger.info("Session created successfully", loggerMeta, finalCache);
 		return "Session created successfully";
@@ -68,12 +68,12 @@ export const createSessionService = async (
 export const createSessionWithCompleteData = async (
 	sessionId: string,
 	sessionData: SessionCache,
-	loggerMeta: any
+	loggerMeta: any,
 ) => {
 	await RedisService.setKey(
 		sessionId,
 		JSON.stringify(sessionData),
-		SESSION_EXPIRY
+		SESSION_EXPIRY,
 	);
 	logger.info("Playground Session created successfully", loggerMeta);
 	return "Playground Session created successfully";
@@ -82,16 +82,16 @@ export const createSessionWithCompleteData = async (
 export const setMockSession = async (
 	sessionId: string,
 	playgroundConfig: any,
-	loggerMeta: any
+	loggerMeta: any,
 ) => {
 	logger.info(
 		`Setting playground config for session ${sessionId} as PLAYGROUND_${sessionId}`,
-		loggerMeta
+		loggerMeta,
 	);
 	await RedisService.setKey(
 		"PLAYGROUND_" + sessionId,
 		JSON.stringify(playgroundConfig),
-		SESSION_EXPIRY
+		SESSION_EXPIRY,
 	);
 	return "Playground config set successfully";
 };
@@ -112,7 +112,7 @@ export const getSessionService = async (sessionId: string) => {
 export const updateSessionService = async (
 	sessionId: string,
 	data: Partial<SessionCache>,
-	loggerMeta: any
+	loggerMeta: any,
 ) => {
 	const {
 		subscriberId,
@@ -150,12 +150,8 @@ export const updateSessionService = async (
 		await RedisService.setKey(
 			sessionId,
 			JSON.stringify(session),
-			SESSION_EXPIRY
+			SESSION_EXPIRY,
 		);
-		logger.info("Session updated successfully", {
-			...data,
-			...loggerMeta,
-		});
 		return "Session updated successfully";
 	} catch (error: any) {
 		logger.error("Error updating session", loggerMeta, error);
@@ -166,7 +162,7 @@ export const updateSessionService = async (
 export const clearFlowService = async (
 	sessionId: string,
 	flowId: string,
-	loggerMeta: any
+	loggerMeta: any,
 ) => {
 	try {
 		const sessionData = await RedisService.getKey(sessionId);
@@ -187,7 +183,7 @@ export const clearFlowService = async (
 		await RedisService.setKey(
 			sessionId,
 			JSON.stringify(session),
-			SESSION_EXPIRY
+			SESSION_EXPIRY,
 		);
 	} catch (e: any) {
 		logger.error("Error clearing flow", loggerMeta, e);
@@ -199,7 +195,7 @@ export const createExpectationService = async (
 	subscriberUrl: string,
 	flowId: string,
 	sessionId: string,
-	expectedAction: string
+	expectedAction: string,
 ): Promise<string> => {
 	try {
 		// Fetch existing session data from Redis
@@ -224,10 +220,10 @@ export const createExpectationService = async (
 				saveLog(
 					sessionId,
 					`Expectation already exists for sessionId: ${sessionId}`,
-					"error"
+					"error",
 				);
 				throw new Error(
-					`Expectation already exists for sessionId: ${sessionId} and flowId: ${flowId}`
+					`Expectation already exists for sessionId: ${sessionId} and flowId: ${flowId}`,
 				);
 			}
 
@@ -235,10 +231,10 @@ export const createExpectationService = async (
 				saveLog(
 					sessionId,
 					`Expectation already exists for action: ${expectedAction}`,
-					"error"
+					"error",
 				);
 				throw new Error(
-					`Expectation already exists for the action: ${expectedAction}`
+					`Expectation already exists for the action: ${expectedAction}`,
 				);
 			}
 
@@ -272,7 +268,7 @@ export const createExpectationService = async (
 				sessionId,
 				expectedAction,
 			},
-			error
+			error,
 		);
 		throw new Error(`Failed to create expectation: ${error.message}`);
 	}
@@ -280,7 +276,7 @@ export const createExpectationService = async (
 
 export const deleteExpectationService = async (
 	sessionId: string,
-	subscriberUrl: string
+	subscriberUrl: string,
 ) => {
 	try {
 		const subscriberData = await RedisService.getKey(subscriberUrl);
@@ -298,7 +294,7 @@ export const deleteExpectationService = async (
 			throw new Error("No active sessions found");
 		}
 		parsed.activeSessions = parsed.activeSessions.filter(
-			(expectation) => expectation.sessionId !== sessionId
+			(expectation) => expectation.sessionId !== sessionId,
 		);
 
 		await RedisService.setKey(subscriberUrl, JSON.stringify(parsed));
@@ -310,7 +306,7 @@ export const deleteExpectationService = async (
 
 export const getTransactionDataService = async (
 	transaction_id: string,
-	subscriber_url: string
+	subscriber_url: string,
 ) => {
 	try {
 		const key = `${transaction_id}::${subscriber_url}`;
@@ -323,7 +319,7 @@ export const getTransactionDataService = async (
 		logger.error(
 			"Error fetching transaction data",
 			{ transaction_id, subscriber_url },
-			e
+			e,
 		);
 		throw new Error("Error fetching transaction data");
 	}
@@ -331,7 +327,7 @@ export const getTransactionDataService = async (
 
 export const requestForFlowPermissionService = async (
 	subscriberUrl: string,
-	action: string
+	action: string,
 ) => {
 	const subscriberData = await RedisService.getKey(subscriberUrl);
 	logger.info("request for flow permission subscriber data:", subscriberData);
@@ -354,7 +350,7 @@ export const requestForFlowPermissionService = async (
 		return true; // Keep valid expectations
 	});
 	const actionExists = parsed.activeSessions.some(
-		(expectation) => expectation.expectedAction === action
+		(expectation) => expectation.expectedAction === action,
 	);
 	await RedisService.setKey(subscriberUrl, JSON.stringify(parsed));
 	if (actionExists) {
@@ -372,7 +368,7 @@ export const requestForFlowPermissionService = async (
 export const updateFlowService = async (
 	sessionId: string,
 	flows: any[],
-	loggerMeta: any
+	loggerMeta: any,
 ) => {
 	try {
 		// Retrieve the session data from Redis
@@ -397,7 +393,7 @@ export const updateFlowService = async (
 		await RedisService.setKey(
 			sessionId,
 			JSON.stringify(session),
-			SESSION_EXPIRY
+			SESSION_EXPIRY,
 		);
 		logger.info("Flow updated successfully", {
 			...flows,
