@@ -4,7 +4,7 @@ import Editor from "@monaco-editor/react";
 import { IoArrowBack } from "react-icons/io5";
 
 interface PayloadEditorProps {
-    onAdd: (parsedPayload: any) => void;
+    onAdd: (parsedPayload: unknown) => void;
     onClose?: () => void;
 }
 
@@ -13,15 +13,16 @@ const PayloadEditor = ({ onAdd, onClose }: PayloadEditorProps) => {
     const [errorText, setErrorText] = useState("");
 
     const handleAddClick = () => {
-        let parsedText = null;
+        let parsedText: unknown = null;
         try {
             parsedText = JSON.parse(payload);
-        } catch (e) {
+        } catch (error: unknown) {
+            console.error("Error parsing JSON:", error);
             setErrorText("Invalid json format");
             return;
         }
 
-        onAdd(parsedText);
+        onAdd(parsedText as unknown);
     };
 
     return ReactDOM.createPortal(
@@ -41,9 +42,7 @@ const PayloadEditor = ({ onAdd, onClose }: PayloadEditorProps) => {
                 <div className="flex items-center justify-between mb-4">
                     <label className="text-lg font-semibold">Paste payload</label>
                     <div className="flex items-center gap-3">
-                        {errorText && (
-                            <p className="text-red-500 text-sm italic">{errorText}</p>
-                        )}
+                        {errorText && <p className="text-red-500 text-sm italic">{errorText}</p>}
                         <button
                             onClick={handleAddClick}
                             className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
@@ -56,8 +55,8 @@ const PayloadEditor = ({ onAdd, onClose }: PayloadEditorProps) => {
                     <Editor
                         height="100%"
                         value={payload}
-                        onChange={(value: any) => {
-                            setPayload(value);
+                        onChange={(value: string | undefined) => {
+                            setPayload(value as unknown as string);
                         }}
                         defaultLanguage="json"
                         theme="vs"
