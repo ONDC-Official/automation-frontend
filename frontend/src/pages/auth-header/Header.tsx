@@ -7,7 +7,7 @@ const Header: FC = () => (
         </h1>
         <p className="text-gray-600">
             Generate and verify ONDC authorization headers using BLAKE-512 hashing and Ed25519
-            signatures. View implementation code in Python, Go, Java, Node.js, and PHP.
+            signatures.View implementation code in Python, Go, Java, Node.js, and PHP.
         </p>
     </header>
 );
