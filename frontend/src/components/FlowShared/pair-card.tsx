@@ -96,7 +96,9 @@ function StepDisplay({ step, flowId }: { step: MappedStep; flowId: string }) {
                     <div className="flex justify-between items-center">
                         <h1 className="text-md font-semibold text-gray-800 flex">
                             {step.missedStep ? "" : `${step.index + 1}: `}
-                            {step.actionType}
+                            {step.actionType === "HTML_FORM" || step.actionType === "DYNAMIC_FORM"
+                                ? step.actionId
+                                : step.actionType}
                             {step.label && (
                                 <span className="text-md font-normal text-gray-500 ml-2 ">
                                     ({step.label})
