@@ -49,10 +49,6 @@ const ItemCustomisationSelector = ({
 
     useEffect(() => {
         setValue?.(name, items);
-        submitEvent?.({
-            jsonPath: {},
-            formData: items as unknown as Record<string, string>,
-        });
     }, [items]);
 
     const handleItemChange = (index: number, value: string) => {
@@ -106,6 +102,10 @@ const ItemCustomisationSelector = ({
             setErrroWhilePaste(e.message || "Something went wrong");
             console.error("Error while handling paste: ", err);
         }
+    };
+
+    const handleSubmit = async () => {
+        await submitEvent?.({ jsonPath: {}, formData: items as unknown as Record<string, string> });
     };
 
     return (
@@ -240,6 +240,16 @@ const ItemCustomisationSelector = ({
                             </div>
                         );
                     })}
+
+                    {submitEvent && (
+                        <button
+                            type="button"
+                            onClick={handleSubmit}
+                            className="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700"
+                        >
+                            Submit
+                        </button>
+                    )}
                 </>
             ) : (
                 <div className="flex items-start gap-3 border-l-4 border-blue-500 bg-blue-50 p-3 rounded">
