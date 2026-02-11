@@ -6,6 +6,7 @@ import { inputClass } from "./inputClass";
 import { LabelWithToolTip } from "./form-input";
 import { getItemsAndCustomistions } from "../../../utils/generic-utils";
 import PayloadEditor from "../mini-components/payload-editor";
+import { SubmitEventParams } from "@/types/flow-types";
 
 interface SelectedItem {
     id: string;
@@ -25,6 +26,7 @@ type ItemCustomisationSelectorProps = {
     name: string;
     label: string;
     setValue?: (name: string, value: SelectedItem[]) => void;
+    submitEvent?: (data: SubmitEventParams) => Promise<void>;
 };
 
 const ItemCustomisationSelector = ({
@@ -32,6 +34,7 @@ const ItemCustomisationSelector = ({
     name,
     label,
     setValue,
+    submitEvent,
 }: ItemCustomisationSelectorProps) => {
     const [items, setItems] = useState<SelectedItem[]>([
         { id: "", customisations: [], relation: {} },
@@ -46,6 +49,10 @@ const ItemCustomisationSelector = ({
 
     useEffect(() => {
         setValue?.(name, items);
+        submitEvent?.({
+            jsonPath: {},
+            formData: items as unknown as Record<string, string>,
+        });
     }, [items]);
 
     const handleItemChange = (index: number, value: string) => {
@@ -193,7 +200,6 @@ const ItemCustomisationSelector = ({
                                     })}
                                 </select>
 
-                                {/* Customisation Selector */}
                                 {item.id && (
                                     <>
                                         <LabelWithToolTip labelInfo="" label={"Customisation"} />
