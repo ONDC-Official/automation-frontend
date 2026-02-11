@@ -50,6 +50,7 @@ export interface FormFieldConfigType {
         | "intercity_select"
         | "airline_seat_select"
         | "ret10_grocery_select"
+        | "ret11_nestedSelect"
         | "nestedSelect"
         | "trv_select"
         | "trv10_select"
@@ -182,6 +183,17 @@ export default function FormConfig({
 
     if (formConfig.find((field) => field.type === "ret10_grocery_select")) {
         return <Ret10GrocerySelect submitEvent={submitEvent} />;
+    }
+
+    if (formConfig.find((field) => field.type === "ret11_nestedSelect")) {
+        const field = formConfig.find((field) => field.type === "ret11_nestedSelect")!;
+        return (
+            <ItemCustomisationSelector
+                name={field.name}
+                label={field.label}
+                submitEvent={submitEvent}
+            />
+        );
     }
 
     if (formConfig.find((field) => field.type === "fis13_select")) {
