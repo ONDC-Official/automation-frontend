@@ -8,9 +8,9 @@ import { toast } from "react-toastify";
 type OfferKey = `offers_${string}`;
 
 type CatalogItem = { id: string };
-type CatalogLocation = { id: string };
+export type CatalogLocation = { id: string };
 type CatalogOffer = { id: string };
-type CatalogProvider = {
+export type CatalogProvider = {
     id: string;
     items: CatalogItem[];
     locations: CatalogLocation[];
@@ -315,6 +315,13 @@ type FormData = {
     }[];
 } & Partial<Record<OfferKey, boolean>>;
 
+type FormDataRET11 = {
+    providerId: string;
+    locationId: string;
+    gps: string;
+    area_code: string;
+} & Partial<Record<OfferKey, boolean>>;
+
 function validateFormData(data: FormData): {
     valid: boolean;
     errors: string[];
@@ -366,6 +373,31 @@ function validateFormData(data: FormData): {
     const selectedOffers = offerKeys.filter((key) => Boolean(data[key]));
     if (selectedOffers.length > 1) {
         errors.push("Only one offer can be selected.");
+    }
+
+    return {
+        valid: errors.length === 0,
+        errors,
+    };
+}
+
+export function validateFormDataRET11(data: FormDataRET11): {
+    valid: boolean;
+    errors: string[];
+} {
+    const errors: string[] = [];
+
+    // Validate top-level fields (excluding items and offer checkboxes)
+    const fieldsToValidate = ["providerId", "gps", "area_code"] as const;
+    for (const key of fieldsToValidate) {
+        if (data[key] === undefined || data[key] === null || data[key] === "") {
+            errors.push(`Field ${key} cannot be empty.`);
+        }
+    }
+
+    // Validate provider_location (must have at least one selection)
+    if (!data.locationId || data.locationId.length === 0) {
+        errors.push("At least one provider location must be selected.");
     }
 
     return {
