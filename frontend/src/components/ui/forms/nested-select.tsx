@@ -6,6 +6,7 @@ import { inputClass } from "./inputClass";
 import { LabelWithToolTip } from "./form-input";
 import { getItemsAndCustomistions } from "../../../utils/generic-utils";
 import PayloadEditor from "../mini-components/payload-editor";
+import { SubmitEventParams } from "@/types/flow-types";
 
 interface SelectedItem {
     id: string;
@@ -25,6 +26,7 @@ type ItemCustomisationSelectorProps = {
     name: string;
     label: string;
     setValue?: (name: string, value: SelectedItem[]) => void;
+    submitEvent?: (data: SubmitEventParams) => Promise<void>;
 };
 
 const ItemCustomisationSelector = ({
@@ -32,6 +34,7 @@ const ItemCustomisationSelector = ({
     name,
     label,
     setValue,
+    submitEvent,
 }: ItemCustomisationSelectorProps) => {
     const [items, setItems] = useState<SelectedItem[]>([
         { id: "", customisations: [], relation: {} },
@@ -99,6 +102,10 @@ const ItemCustomisationSelector = ({
             setErrroWhilePaste(e.message || "Something went wrong");
             console.error("Error while handling paste: ", err);
         }
+    };
+
+    const handleSubmit = async () => {
+        await submitEvent?.({ jsonPath: {}, formData: items as unknown as Record<string, string> });
     };
 
     return (
@@ -193,7 +200,6 @@ const ItemCustomisationSelector = ({
                                     })}
                                 </select>
 
-                                {/* Customisation Selector */}
                                 {item.id && (
                                     <>
                                         <LabelWithToolTip labelInfo="" label={"Customisation"} />
@@ -234,6 +240,16 @@ const ItemCustomisationSelector = ({
                             </div>
                         );
                     })}
+
+                    {submitEvent && (
+                        <button
+                            type="button"
+                            onClick={handleSubmit}
+                            className="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700"
+                        >
+                            Submit
+                        </button>
+                    )}
                 </>
             ) : (
                 <div className="flex items-start gap-3 border-l-4 border-blue-500 bg-blue-50 p-3 rounded">

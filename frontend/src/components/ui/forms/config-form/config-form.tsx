@@ -3,6 +3,7 @@ import { FormInput } from "../form-input";
 import FormSelect from "../form-select";
 import CheckboxGroup, { CheckboxOption } from "../checkbox";
 import ItemCustomisationSelector from "../nested-select";
+import ItemCustomisationSelectorRET11 from "../ret11-nested-select";
 import GenericForm from "../generic-form";
 import GenericFormWithPaste from "../generic-form-with-paste";
 import { SubmitEventParams } from "../../../../types/flow-types";
@@ -50,6 +51,7 @@ export interface FormFieldConfigType {
         | "intercity_select"
         | "airline_seat_select"
         | "ret10_grocery_select"
+        | "ret11_nestedSelect"
         | "nestedSelect"
         | "trv_select"
         | "trv10_select"
@@ -182,6 +184,17 @@ export default function FormConfig({
 
     if (formConfig.find((field) => field.type === "ret10_grocery_select")) {
         return <Ret10GrocerySelect submitEvent={submitEvent} />;
+    }
+
+    if (formConfig.find((field) => field.type === "ret11_nestedSelect")) {
+        const field = formConfig.find((field) => field.type === "ret11_nestedSelect")!;
+        return (
+            <ItemCustomisationSelectorRET11
+                name={field.name}
+                label={field.label}
+                submitEvent={submitEvent}
+            />
+        );
     }
 
     if (formConfig.find((field) => field.type === "fis13_select")) {
