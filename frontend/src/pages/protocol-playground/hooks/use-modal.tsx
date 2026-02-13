@@ -139,16 +139,16 @@ export const useModalHandlers = ({
         );
     };
 
-    const showEditAction = () => {
-        if (!activeApi || !config) return;
+    const showEditAction = (actionId: string) => {
+        if (!actionId || !config) return;
 
-        const currentAction = config.steps.find((step: StepConfig) => step.action_id === activeApi);
+        const currentAction = config.steps.find((step: StepConfig) => step.action_id === actionId);
 
         if (!currentAction) return;
 
         const getPreviousSteps = () => {
             const currentIndex = config.steps.findIndex(
-                (step: StepConfig) => step.action_id === activeApi
+                (step: StepConfig) => step.action_id === actionId
             );
             return config.steps.slice(0, currentIndex);
         };
@@ -168,7 +168,7 @@ export const useModalHandlers = ({
                 return;
             }
 
-            const success = updateAction(activeApi, formData);
+            const success = updateAction(actionId, formData);
 
             if (success) {
                 setActiveApi(formData.actionId);
@@ -181,7 +181,7 @@ export const useModalHandlers = ({
         openModal(
             <EditActionForm
                 currentAction={currentAction as never}
-                activeActionId={activeApi}
+                activeActionId={actionId}
                 previousSteps={getPreviousSteps() as never}
                 onUpdate={handleUpdate}
                 onCancel={closeModal}
