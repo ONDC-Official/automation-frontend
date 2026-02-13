@@ -1,7 +1,7 @@
-import { useContext, useState, useMemo } from "react";
+import { useContext, useState, useMemo, useEffect } from "react";
 import { PlaygroundContext } from "../context/playground-context";
 import { Editor, Monaco } from "@monaco-editor/react";
-import { PLAYGROUND_LEFT_TABS } from "../types";
+import { PLAYGROUND_LEFT_TABS, PLAYGROUND_LEFT_TABS_FORM } from "../types";
 import { DarkSkyBlueTheme } from "./editor-themes";
 import MockRunner, { CodeValidator, getFunctionSchema } from "@ondc/automation-mock-runner";
 import { CodeStatistics } from "./extras/statistics";
@@ -13,8 +13,23 @@ export function LeftSideView(props: { width: string; activeApi?: string }) {
 
     const stepData = playgroundContext.config?.steps.find((f) => f.action_id === activeApi);
 
-    const [activeLeftTab, setActiveLeftTab] = useState<string>(PLAYGROUND_LEFT_TABS[0].id);
-    const activeTabConfig = PLAYGROUND_LEFT_TABS.find((tab) => tab.id === activeLeftTab)!;
+    const isForm = stepData?.api === "dynamic_form";
+
+    const tabs = isForm ? PLAYGROUND_LEFT_TABS_FORM : PLAYGROUND_LEFT_TABS;
+
+    const [activeLeftTab, setActiveLeftTab] = useState<string>(tabs[0].id);
+    const [activeTabConfig, setActiveTabConfig] = useState(tabs[0]);
+    useEffect(() => {
+        const newActiveTabConfig = tabs.find((tab) => tab.id === activeLeftTab);
+        if (newActiveTabConfig) {
+            setActiveTabConfig(newActiveTabConfig);
+        } else {
+            setActiveLeftTab(tabs[0].id);
+            setActiveTabConfig(tabs[0]);
+        }
+    }, [activeLeftTab, activeApi]);
+
+    // const activeTabConfig = tabs.find((tab) => tab.id === activeLeftTab)!;
 
     // Get the current editor content
     const getEditorContent = () => {
@@ -28,7 +43,7 @@ export function LeftSideView(props: { width: string; activeApi?: string }) {
 
     // Calculate statistics and validation for JavaScript code
     const codeAnalysis = useMemo(() => {
-        // Only calculate stats for JavaScript/code tabs, not JSON
+        // Only calculate stats for JavaScript/code tabs, not JSON or HTML
         if (activeTabConfig.language !== "javascript") {
             return null;
         }
@@ -85,7 +100,7 @@ export function LeftSideView(props: { width: string; activeApi?: string }) {
             {/* Header with Tabs */}
             <div className="flex border-b bg-gray-50 items-center h-8">
                 <div className="ml-auto flex overflow-auto">
-                    {PLAYGROUND_LEFT_TABS.map((tab) => (
+                    {tabs.map((tab) => (
                         <button
                             key={tab.id}
                             onClick={() => setActiveLeftTab(tab.id)}

@@ -36,7 +36,12 @@ interface ModalHandlersProps {
     setActiveApi: (api: string | undefined) => void;
     openModal: (content: JSX.Element) => void;
     closeModal: () => void;
-    addAction: (api: string, actionId: string, insertIndex?: number) => void;
+    addAction: (
+        api: string,
+        actionId: string,
+        insertIndex?: number,
+        stepType?: "action" | "form"
+    ) => void;
     deleteAction: (actionId: string) => boolean;
     updateAction: (actionId: string, formData: ActionFormData) => boolean;
     clearConfig: () => void;
@@ -56,10 +61,19 @@ export const useModalHandlers = ({
 }: ModalHandlersProps) => {
     const showAddAction = (insertIndex?: number, title = "Add Action") => {
         const handleSubmit = () => {
-            const { api, actionId } = getFormValues({
+            const { stepType, api, form, actionId } = getFormValues({
+                stepType: "stepTypeInput",
                 api: "apiAddNameInput",
+                form: "formAddNameInput",
                 actionId: "actionAddIdInput",
             });
+            if (stepType === "form") {
+                addAction(form, actionId, insertIndex, stepType);
+                setActiveApi(actionId);
+                closeModal();
+                toast.success("Form added successfully");
+                return;
+            }
 
             if (!api || !actionId) {
                 toast.error("Please fill all fields");

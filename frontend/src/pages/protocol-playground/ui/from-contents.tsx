@@ -4,7 +4,9 @@
 import { PlaygroundActionStep } from "@ondc/automation-mock-runner";
 import { inputClass } from "../../../components/ui/forms/inputClass";
 
-import { ONDC_ACTION_LIST } from "../types";
+import { ONDC_ACTION_LIST, ONDC_FORM_LIST } from "../types";
+
+import { useState } from "react";
 
 export const AddActionForm = ({
     title,
@@ -14,40 +16,71 @@ export const AddActionForm = ({
     title: string;
     onSubmit: () => void;
     onCancel: () => void;
-}) => (
-    <div>
-        <h2>{title}</h2>
-        <div className="flex flex-col gap-2 mt-2">
-            <select id="apiAddNameInput" className={inputClass}>
-                {ONDC_ACTION_LIST.map((action) => (
-                    <option key={action} value={action}>
-                        {action}
-                    </option>
-                ))}
-            </select>
-            <input
-                type="text"
-                placeholder="Action ID"
-                id="actionAddIdInput"
-                className={inputClass}
-            />
-            <div className="flex gap-2 mt-2">
-                <button
-                    className="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500"
-                    onClick={onCancel}
+}) => {
+    const [stepType, setStepType] = useState<"action" | "form">("action");
+
+    return (
+        <div>
+            <h2>{title}</h2>
+            <div className="flex flex-col gap-2 mt-2">
+                {/* Step type selector */}
+                <select
+                    id="stepTypeInput"
+                    className={inputClass}
+                    value={stepType}
+                    onChange={(e) => setStepType(e.target.value as "action" | "form")}
                 >
-                    Cancel
-                </button>
-                <button
-                    className="px-4 py-2 bg-sky-700 text-white rounded hover:bg-sky-800"
-                    onClick={onSubmit}
-                >
-                    Submit
-                </button>
+                    <option value="action">API</option>
+                    <option value="form">FORM</option>
+                </select>
+
+                {/* API select */}
+                {stepType === "action" && (
+                    <select id="apiAddNameInput" className={inputClass}>
+                        {ONDC_ACTION_LIST.map((action) => (
+                            <option key={action} value={action}>
+                                {action}
+                            </option>
+                        ))}
+                    </select>
+                )}
+
+                {/* Form select */}
+                {stepType === "form" && (
+                    <select id="formAddNameInput" className={inputClass}>
+                        {ONDC_FORM_LIST.map((form) => (
+                            <option key={form} value={form}>
+                                {form}
+                            </option>
+                        ))}
+                    </select>
+                )}
+
+                <input
+                    type="text"
+                    placeholder="step id"
+                    id="actionAddIdInput"
+                    className={inputClass}
+                />
+
+                <div className="flex gap-2 mt-2">
+                    <button
+                        className="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500"
+                        onClick={onCancel}
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        className="px-4 py-2 bg-sky-700 text-white rounded hover:bg-sky-800"
+                        onClick={onSubmit}
+                    >
+                        Submit
+                    </button>
+                </div>
             </div>
         </div>
-    </div>
-);
+    );
+};
 
 export const DeleteConfirmationForm = ({
     title,
