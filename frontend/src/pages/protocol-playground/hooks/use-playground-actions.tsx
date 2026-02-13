@@ -17,14 +17,23 @@ type UpdateActionFormData = {
 export const usePlaygroundActions = () => {
     const playgroundContext = useContext(PlaygroundContext);
 
-    const addAction = (api: string, actionId: string, insertIndex?: number) => {
+    const addAction = (
+        api: string,
+        actionId: string,
+        insertIndex?: number,
+        stepType?: "action" | "form"
+    ) => {
         const currentConfig = playgroundContext.config;
         if (!currentConfig) {
             toast.error("No configuration found");
             return;
         }
-
-        const newStep = new MockRunner(currentConfig).getDefaultStep(api, actionId);
+        let newStep;
+        if (stepType === "form" && api === "dynamic_form") {
+            newStep = new MockRunner(currentConfig).getDefaultStep(api, actionId, api);
+        } else {
+            newStep = new MockRunner(currentConfig).getDefaultStep(api, actionId);
+        }
 
         if (!currentConfig.steps) {
             currentConfig.steps = [];

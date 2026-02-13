@@ -28,7 +28,7 @@ export default function DynamicFormHandler({
     // Get session context to update session data
     const { setSessionData } = useSession();
 
-    const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+    const pollingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
     // Use refs to prevent page refresh
 
     const formWindowRef = useRef<Window | null>(null);
@@ -97,7 +97,6 @@ export default function DynamicFormHandler({
     const formSubmissionKey = useMemo<string>(() => {
         if (formName && transactionId) {
             const key = `${transactionId}_${formName}`;
-
             return key;
         }
         return transactionId; // Fallback to just transactionId for backward compatibility

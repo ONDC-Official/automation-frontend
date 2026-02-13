@@ -6,6 +6,8 @@ import { calcCurrentIndex } from "../mock-engine";
 import MockRunner from "@ondc/automation-mock-runner";
 import { createFlowSessionWithPlayground } from "../utils/request-utils";
 import { GetRequestEndpoint } from "@components/FlowShared/guides";
+import MockDynamicForm from "../ui/components/mock-dynamic-form";
+import { v4 as uuidv4 } from "uuid";
 
 type JsonSchema = Record<string, unknown>;
 type FormValues = Record<string, unknown>;
@@ -92,7 +94,11 @@ export const useConfigOperations = () => {
     };
 
     // return true if payload execution was successful
-    const executePayload = async (data: { actionId: string; inputs: FormValues }) => {
+    const executePayload = async (data: {
+        actionId: string;
+        action: string;
+        inputs: FormValues;
+    }) => {
         playgroundContext.setLoading(true);
         try {
             const config = playgroundContext.config;
@@ -113,7 +119,11 @@ export const useConfigOperations = () => {
             }
             playgroundContext.setActiveTerminalData((s) => [...s, result]);
             if (result.success) {
-                playgroundContext.updateTransactionHistory(data.actionId, result.result);
+                playgroundContext.updateTransactionHistory(
+                    data.actionId,
+                    data.action,
+                    result.result
+                );
             }
             modal.closeModal();
             playgroundContext.setLoading(false);
@@ -144,6 +154,39 @@ export const useConfigOperations = () => {
             return { success: false } as RunResult;
         }
         const currentStep = playgroundContext.config.steps[currentIndex];
+
+        if (currentStep.api === "dynamic_form") {
+            const htmlForm64 = currentStep.mock.formHtml;
+            if (!htmlForm64) {
+                toast.error("No form HTML provided for dynamic_form action");
+                return { success: false } as RunResult;
+            }
+            const htmlForm = MockRunner.decodeBase64(htmlForm64);
+            return new Promise<RunResult>((resolve) => {
+                const handleFormSubmit = async (formData: FormValues) => {
+                    console.log("Form data submitted:", formData);
+                    modal.closeModal();
+                    playgroundContext.updateTransactionHistory(
+                        currentStep.action_id,
+                        currentStep.api,
+                        formData,
+                        {
+                            submissionID: uuidv4(),
+                        }
+                    );
+                    // Here you can add logic to execute the payload with the form data if needed
+                    resolve({ success: true } as RunResult);
+                };
+                modal.openModal(
+                    <div className="p-1">
+                        <h2 className="text-l font-semibold mb-1">Fill the form</h2>
+                        <MockDynamicForm htmlForm={htmlForm} onSubmit={handleFormSubmit} />
+                    </div>
+                );
+                toast.success("Please fill in the form to continue");
+            });
+        }
+
         try {
             const inputs = currentStep.mock.inputs || {};
 
@@ -151,6 +194,7 @@ export const useConfigOperations = () => {
             if (inputs === null || Object.keys(inputs).length === 0) {
                 const res = await executePayload({
                     actionId: currentStep.action_id,
+                    action: currentStep.api,
                     inputs: {},
                 });
                 return {
@@ -164,6 +208,7 @@ export const useConfigOperations = () => {
                     modal.closeModal();
                     const res = await executePayload({
                         actionId: currentStep.action_id,
+                        action: currentStep.api,
                         inputs: formData,
                     });
                     resolve({ success: res });
