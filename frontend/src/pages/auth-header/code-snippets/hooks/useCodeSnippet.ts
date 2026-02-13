@@ -9,25 +9,25 @@ import { LanguageKey, FunctionType } from "@pages/auth-header/code-snippets/type
  */
 
 export const useCodeSnippet = () => {
-  const [selectedLang, setSelectedLang] = useState<LanguageKey>("python");
-  const [functionType, setFunctionType] = useState<FunctionType>("generate");
+    const [selectedLang, setSelectedLang] = useState<LanguageKey>("python");
+    const [functionType, setFunctionType] = useState<FunctionType>("generate");
 
-  const languages = useMemo(() => Object.keys(codeSnippets) as LanguageKey[], []);
+    const languages = useMemo(() => Object.keys(codeSnippets) as LanguageKey[], []);
 
-  const currentSnippet = useMemo(() => codeSnippets[selectedLang], [selectedLang]);
+    const currentSnippet = useMemo(() => codeSnippets[selectedLang], [selectedLang]);
 
-  const currentCode = useMemo(
-    () => (functionType === "generate" ? currentSnippet.generate : currentSnippet.verify),
-    [functionType, currentSnippet],
-  );
+    const currentCode = useMemo(
+        () => (functionType === "generate" ? currentSnippet.generate : currentSnippet.verify),
+        [functionType, currentSnippet]
+    );
 
-  return {
-    selectedLang,
-    setSelectedLang,
-    functionType,
-    setFunctionType,
-    languages,
-    currentSnippet,
-    currentCode,
-  };
+    return {
+        selectedLang,
+        setSelectedLang,
+        functionType,
+        setFunctionType,
+        languages,
+        currentSnippet,
+        currentCode,
+    };
 };
