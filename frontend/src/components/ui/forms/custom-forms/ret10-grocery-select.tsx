@@ -316,10 +316,10 @@ type FormData = {
 } & Partial<Record<OfferKey, boolean>>;
 
 type FormDataRET11 = {
-    providerId: string;
-    locationId: string;
-    gps: string;
-    area_code: string;
+    provider: string;
+    provider_location: string[];
+    location_gps: string;
+    location_pin_code: string;
 } & Partial<Record<OfferKey, boolean>>;
 
 function validateFormData(data: FormData): {
@@ -388,7 +388,7 @@ export function validateFormDataRET11(data: FormDataRET11): {
     const errors: string[] = [];
 
     // Validate top-level fields (excluding items and offer checkboxes)
-    const fieldsToValidate = ["providerId", "gps", "area_code"] as const;
+    const fieldsToValidate = ["provider", "location_gps", "location_pin_code"] as const;
     for (const key of fieldsToValidate) {
         if (data[key] === undefined || data[key] === null || data[key] === "") {
             errors.push(`Field ${key} cannot be empty.`);
@@ -396,7 +396,7 @@ export function validateFormDataRET11(data: FormDataRET11): {
     }
 
     // Validate provider_location (must have at least one selection)
-    if (!data.locationId || data.locationId.length === 0) {
+    if (!data.provider_location || data.provider_location.length === 0) {
         errors.push("At least one provider location must be selected.");
     }
 

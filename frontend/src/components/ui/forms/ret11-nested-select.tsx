@@ -33,10 +33,10 @@ interface SelectedItem {
 }
 
 type FormValues = {
-    providerId: string;
-    locationId: string;
-    gps: string;
-    area_code: string;
+    provider: string;
+    provider_location: string[];
+    location_gps: string;
+    location_pin_code: string;
 } & Partial<Record<OfferKey, boolean>>;
 
 type ItemList = Record<string, string>;
@@ -71,10 +71,10 @@ const ItemCustomisationSelectorRET11 = ({
 
     const { control, handleSubmit, watch, register } = useForm<FormValues>({
         defaultValues: {
-            providerId: "",
-            locationId: "",
-            gps: "",
-            area_code: "",
+            provider: "",
+            provider_location: [],
+            location_gps: "",
+            location_pin_code: "",
         },
     });
 
@@ -88,7 +88,7 @@ const ItemCustomisationSelectorRET11 = ({
     const [providerOptions, setProviderOptions] = useState<string[]>([]);
     const [providers, setProviders] = useState<CatalogProvider[]>([]);
 
-    const selectedProvider = watch("providerId");
+    const selectedProvider = watch("provider");
 
     const hasCatalogData = catalogData != null;
 
@@ -338,13 +338,13 @@ const ItemCustomisationSelectorRET11 = ({
 
                         <div className={fieldWrapperStyle}>
                             <label className={labelStyle}>Select Provider Id</label>
-                            {renderSelectOrInput("providerId", providerOptions)}
+                            {renderSelectOrInput("provider", providerOptions)}
                         </div>
 
                         <Controller
-                            name="locationId"
+                            name="provider_location"
                             control={control}
-                            defaultValue={""}
+                            defaultValue={[]}
                             render={({ field }) => {
                                 const provider = providers.find((p) => p.id === selectedProvider);
                                 const locations = provider?.locations || [];
@@ -357,7 +357,7 @@ const ItemCustomisationSelectorRET11 = ({
                                             </label>
                                             <input
                                                 type="text"
-                                                {...register("locationId")}
+                                                {...register("provider_location")}
                                                 className={inputStyle}
                                             />
                                         </>
@@ -388,12 +388,12 @@ const ItemCustomisationSelectorRET11 = ({
 
                         <div className={fieldWrapperStyle}>
                             <label className={labelStyle}>Delivery Location GPS</label>
-                            <input {...register("gps")} className={inputStyle} />
+                            <input {...register("location_gps")} className={inputStyle} />
                         </div>
 
                         <div className={fieldWrapperStyle}>
                             <label className={labelStyle}>Delivery Pin Code</label>
-                            <input {...register("area_code")} className={inputStyle} />
+                            <input {...register("location_pin_code")} className={inputStyle} />
                         </div>
 
                         <button
