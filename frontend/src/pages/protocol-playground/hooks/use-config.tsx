@@ -107,10 +107,8 @@ export const useConfigOperations = () => {
                 playgroundContext.setLoading(false);
                 return false;
             }
-            const result = await new MockRunner(config).runGeneratePayload(
-                data.actionId,
-                data.inputs
-            );
+            const inputs = data.inputs;
+            const result = await new MockRunner(config).runGeneratePayload(data.actionId, inputs);
 
             if (!result) {
                 toast.error("No result from code execution");
