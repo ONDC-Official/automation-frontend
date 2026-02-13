@@ -2,53 +2,56 @@ import { FaHashtag, FaKey } from "react-icons/fa";
 import { FlowStep, AlgorithmInfo, ScenarioRow } from "@pages/auth-header/overview/types";
 
 export const signingFlowSteps: FlowStep[] = [
-  { label: "JSON Payload", bgColor: "bg-sky-100", textColor: "text-sky-800" },
-  { label: "BLAKE2b-512 Hash", bgColor: "bg-amber-100", textColor: "text-amber-800" },
-  { label: "Create Signing String", bgColor: "bg-green-100", textColor: "text-green-800" },
-  { label: "Ed25519 Sign", bgColor: "bg-purple-100", textColor: "text-purple-800" },
-  { label: "Base64 Encode", bgColor: "bg-rose-100", textColor: "text-rose-800" },
-  { label: "Auth Header", bgColor: "bg-indigo-100", textColor: "text-indigo-800" },
+    { label: "JSON Payload", bgColor: "bg-sky-100", textColor: "text-sky-800" },
+    { label: "BLAKE2b-512 Hash", bgColor: "bg-amber-100", textColor: "text-amber-800" },
+    { label: "Create Signing String", bgColor: "bg-green-100", textColor: "text-green-800" },
+    { label: "Ed25519 Sign", bgColor: "bg-purple-100", textColor: "text-purple-800" },
+    { label: "Base64 Encode", bgColor: "bg-rose-100", textColor: "text-rose-800" },
+    { label: "Auth Header", bgColor: "bg-indigo-100", textColor: "text-indigo-800" },
 ];
 
 export const verificationFlowSteps: FlowStep[] = [
-  { label: "Auth Header", bgColor: "bg-indigo-100", textColor: "text-indigo-800" },
-  { label: "Parse Header", bgColor: "bg-orange-100", textColor: "text-orange-800" },
-  { label: "Hash Payload", bgColor: "bg-amber-100", textColor: "text-amber-800" },
-  { label: "Reconstruct Signing String", bgColor: "bg-green-100", textColor: "text-green-800" },
-  { label: "Ed25519 Verify", bgColor: "bg-purple-100", textColor: "text-purple-800" },
-  { label: "✓ Valid / ✗ Invalid", bgColor: "bg-emerald-100", textColor: "text-emerald-800" },
+    { label: "Auth Header", bgColor: "bg-indigo-100", textColor: "text-indigo-800" },
+    { label: "Parse Header", bgColor: "bg-orange-100", textColor: "text-orange-800" },
+    { label: "Hash Payload", bgColor: "bg-amber-100", textColor: "text-amber-800" },
+    { label: "Reconstruct Signing String", bgColor: "bg-green-100", textColor: "text-green-800" },
+    { label: "Ed25519 Verify", bgColor: "bg-purple-100", textColor: "text-purple-800" },
+    { label: "✓ Valid / ✗ Invalid", bgColor: "bg-emerald-100", textColor: "text-emerald-800" },
 ];
 
 export const algorithmCards: AlgorithmInfo[] = [
-  {
-    title: "BLAKE2b-512 Hashing",
-    description:
-      "BLAKE2b is a cryptographic hash function faster than MD5 and SHA-1, while providing security comparable to SHA-3.",
-    icon: <FaHashtag className="text-xl" />,
-    iconBgColor: "bg-amber-100",
-    iconTextColor: "text-amber-600",
-    details: [
-      { label: "Output size", value: "512 bits (64 bytes)" },
-      { label: "Purpose", value: "Creates a fixed-size digest of the payload" },
-      { label: "Property", value: "Any change to payload produces completely different hash" },
-    ],
-    codeExample: "digest = BLAKE2b-512(payload) → 64 bytes → Base64 encoded",
-  },
-  {
-    title: "Ed25519 Signatures",
-    description:
-      "Ed25519 is an elliptic curve digital signature algorithm using Curve25519. It provides high security with small key sizes.",
-    icon: <FaKey className="text-xl" />,
-    iconBgColor: "bg-purple-100",
-    iconTextColor: "text-purple-600",
-    details: [
-      { label: "Private key", value: "32 bytes (seed) or 64 bytes (expanded)" },
-      { label: "Public key", value: "32 bytes" },
-      { label: "Signature", value: "64 bytes" },
-      { label: "Security", value: "~128-bit security level" },
-    ],
-    codeExample: "signature = Ed25519.sign(private_key, signing_string)",
-  },
+    {
+        title: "BLAKE2b-512 Hashing",
+        description:
+            "BLAKE2b is a cryptographic hash function faster than MD5 and SHA-1, while providing security comparable to SHA-3.",
+        icon: <FaHashtag className="text-xl" />,
+        iconBgColor: "bg-amber-100",
+        iconTextColor: "text-amber-600",
+        details: [
+            { label: "Output size", value: "512 bits (64 bytes)" },
+            { label: "Purpose", value: "Creates a fixed-size digest of the payload" },
+            {
+                label: "Property",
+                value: "Any change to payload produces completely different hash",
+            },
+        ],
+        codeExample: "digest = BLAKE2b-512(payload) → 64 bytes → Base64 encoded",
+    },
+    {
+        title: "Ed25519 Signatures",
+        description:
+            "Ed25519 is an elliptic curve digital signature algorithm using Curve25519. It provides high security with small key sizes.",
+        icon: <FaKey className="text-xl" />,
+        iconBgColor: "bg-purple-100",
+        iconTextColor: "text-purple-600",
+        details: [
+            { label: "Private key", value: "32 bytes (seed) or 64 bytes (expanded)" },
+            { label: "Public key", value: "32 bytes" },
+            { label: "Signature", value: "64 bytes" },
+            { label: "Security", value: "~128-bit security level" },
+        ],
+        codeExample: "signature = Ed25519.sign(private_key, signing_string)",
+    },
 ];
 
 export const AI_PROMPT = `Generate two functions for ONDC authorization header creation and verification in [YOUR_LANGUAGE/FRAMEWORK].
@@ -121,158 +124,160 @@ headers="(created) (expires) digest",
 signature="{base64_signature}"`;
 
 export const payloadFormatScenarios: ScenarioRow[] = [
-  {
-    signingPayload: "Minified JSON",
-    verificationPayload: "Same Minified JSON",
-    result: "✓ Valid",
-    reason: "Exact byte match",
-  },
-  {
-    signingPayload: "Formatted JSON",
-    verificationPayload: "Same Formatted JSON",
-    result: "✓ Valid",
-    reason: "Exact byte match",
-  },
-  {
-    signingPayload: "Minified JSON",
-    verificationPayload: "Formatted JSON",
-    result: "✗ Invalid",
-    reason: "Different bytes = different hash",
-  },
-  {
-    signingPayload: "Formatted JSON",
-    verificationPayload: "Minified JSON",
-    result: "✗ Invalid",
-    reason: "Different bytes = different hash",
-  },
-  {
-    signingPayload: "JSON with spaces",
-    verificationPayload: "JSON with tabs",
-    result: "✗ Invalid",
-    reason: "Whitespace affects hash",
-  },
-  {
-    signingPayload: "Original JSON",
-    verificationPayload: "Re-serialized JSON",
-    result: "✗ Invalid",
-    reason: "Parsing + stringify changes format",
-  },
+    {
+        signingPayload: "Minified JSON",
+        verificationPayload: "Same Minified JSON",
+        result: "✓ Valid",
+        reason: "Exact byte match",
+    },
+    {
+        signingPayload: "Formatted JSON",
+        verificationPayload: "Same Formatted JSON",
+        result: "✓ Valid",
+        reason: "Exact byte match",
+    },
+    {
+        signingPayload: "Minified JSON",
+        verificationPayload: "Formatted JSON",
+        result: "✗ Invalid",
+        reason: "Different bytes = different hash",
+    },
+    {
+        signingPayload: "Formatted JSON",
+        verificationPayload: "Minified JSON",
+        result: "✗ Invalid",
+        reason: "Different bytes = different hash",
+    },
+    {
+        signingPayload: "JSON with spaces",
+        verificationPayload: "JSON with tabs",
+        result: "✗ Invalid",
+        reason: "Whitespace affects hash",
+    },
+    {
+        signingPayload: "Original JSON",
+        verificationPayload: "Re-serialized JSON",
+        result: "✗ Invalid",
+        reason: "Parsing + stringify changes format",
+    },
 ];
 
 export const keyScenarios: ScenarioRow[] = [
-  {
-    signingKey: "Private Key A",
-    verificationKey: "Public Key A (matching)",
-    result: "✓ Valid",
-    reason: "Correct key pair",
-  },
-  {
-    signingKey: "Private Key A",
-    verificationKey: "Public Key B (different)",
-    result: "✗ Invalid",
-    reason: "Key mismatch",
-  },
-  {
-    signingKey: "32-byte seed key",
-    verificationKey: "Matching public key",
-    result: "✓ Valid",
-    reason: (
-      <>
-        <span className="text-blue-600 font-medium">(Go, Rust, Java)</span> - Seed expanded correctly
-      </>
-    ),
-  },
-  {
-    signingKey: "64-byte expanded key",
-    verificationKey: "Matching public key",
-    result: "✓ Valid",
-    reason: (
-      <>
-        <span className="text-purple-600 font-medium">(Python, Node.js, PHP)</span> - Full key used
-      </>
-    ),
-  },
+    {
+        signingKey: "Private Key A",
+        verificationKey: "Public Key A (matching)",
+        result: "✓ Valid",
+        reason: "Correct key pair",
+    },
+    {
+        signingKey: "Private Key A",
+        verificationKey: "Public Key B (different)",
+        result: "✗ Invalid",
+        reason: "Key mismatch",
+    },
+    {
+        signingKey: "32-byte seed key",
+        verificationKey: "Matching public key",
+        result: "✓ Valid",
+        reason: (
+            <>
+                <span className="text-blue-600 font-medium">(Go, Rust, Java)</span> - Seed expanded
+                correctly
+            </>
+        ),
+    },
+    {
+        signingKey: "64-byte expanded key",
+        verificationKey: "Matching public key",
+        result: "✓ Valid",
+        reason: (
+            <>
+                <span className="text-purple-600 font-medium">(Python, Node.js, PHP)</span> - Full
+                key used
+            </>
+        ),
+    },
 ];
 
 export const timestampScenarios: ScenarioRow[] = [
-  {
-    scenario: "Fresh header",
-    created: "now - 5 min",
-    expires: "now + 55 min",
-    result: "✓ Valid",
-  },
-  {
-    scenario: "Expired header",
-    created: "now - 2 hours",
-    expires: "now - 1 hour",
-    result: "✗ Invalid (expired)",
-  },
-  {
-    scenario: "Future header",
-    created: "now + 1 hour",
-    expires: "now + 2 hours",
-    result: "✗ Invalid (not yet valid)",
-  },
-  {
-    scenario: "Zero TTL",
-    created: "now",
-    expires: "now",
-    result: "⚠ Marginal",
-  },
+    {
+        scenario: "Fresh header",
+        created: "now - 5 min",
+        expires: "now + 55 min",
+        result: "✓ Valid",
+    },
+    {
+        scenario: "Expired header",
+        created: "now - 2 hours",
+        expires: "now - 1 hour",
+        result: "✗ Invalid (expired)",
+    },
+    {
+        scenario: "Future header",
+        created: "now + 1 hour",
+        expires: "now + 2 hours",
+        result: "✗ Invalid (not yet valid)",
+    },
+    {
+        scenario: "Zero TTL",
+        created: "now",
+        expires: "now",
+        result: "⚠ Marginal",
+    },
 ];
 
 export const payloadModificationScenarios: ScenarioRow[] = [
-  {
-    modificationType: "Value changed",
-    example: '"price": 100 → "price": 200',
-    result: "✗ Invalid",
-    reason: "Content change = different hash",
-  },
-  {
-    modificationType: "Key added",
-    example: 'Added "extra_field": true',
-    result: "✗ Invalid",
-    reason: "Structure change = different hash",
-  },
-  {
-    modificationType: "Key removed",
-    example: 'Removed "optional_field"',
-    result: "✗ Invalid",
-    reason: "Structure change = different hash",
-  },
-  {
-    modificationType: "Key order changed",
-    example: "{ a, b } → { b, a }",
-    result: "✗ Invalid",
-    reason: "Byte sequence changed",
-  },
-  {
-    modificationType: "Trailing newline",
-    example: "{}\n vs {}",
-    result: "✗ Invalid",
-    reason: "Extra byte = different hash",
-  },
+    {
+        modificationType: "Value changed",
+        example: '"price": 100 → "price": 200',
+        result: "✗ Invalid",
+        reason: "Content change = different hash",
+    },
+    {
+        modificationType: "Key added",
+        example: 'Added "extra_field": true',
+        result: "✗ Invalid",
+        reason: "Structure change = different hash",
+    },
+    {
+        modificationType: "Key removed",
+        example: 'Removed "optional_field"',
+        result: "✗ Invalid",
+        reason: "Structure change = different hash",
+    },
+    {
+        modificationType: "Key order changed",
+        example: "{ a, b } → { b, a }",
+        result: "✗ Invalid",
+        reason: "Byte sequence changed",
+    },
+    {
+        modificationType: "Trailing newline",
+        example: "{}\n vs {}",
+        result: "✗ Invalid",
+        reason: "Extra byte = different hash",
+    },
 ];
 
 export const commonIssues = [
-  {
-    issue: "JSON.parse() then JSON.stringify() during verification",
-    solution: "Use raw request body",
-  },
-  {
-    issue: "Using BLAKE2s instead of BLAKE2b",
-    solution: "Ensure 64-byte (512-bit) output",
-  },
-  {
-    issue: "URL-safe Base64 vs standard Base64",
-    solution: "Use standard Base64 with +/= chars",
-  },
-  {
-    issue: "Different newline characters (LF vs CRLF)",
-    solution: "Use LF (\\n) consistently",
-  },
-  {
-    issue: "Encoding differences (UTF-8 BOM)",
-    solution: "Use UTF-8 without BOM",
-  },
+    {
+        issue: "JSON.parse() then JSON.stringify() during verification",
+        solution: "Use raw request body",
+    },
+    {
+        issue: "Using BLAKE2s instead of BLAKE2b",
+        solution: "Ensure 64-byte (512-bit) output",
+    },
+    {
+        issue: "URL-safe Base64 vs standard Base64",
+        solution: "Use standard Base64 with +/= chars",
+    },
+    {
+        issue: "Different newline characters (LF vs CRLF)",
+        solution: "Use LF (\\n) consistently",
+    },
+    {
+        issue: "Encoding differences (UTF-8 BOM)",
+        solution: "Use UTF-8 without BOM",
+    },
 ];
