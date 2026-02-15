@@ -54,10 +54,10 @@ const FlowInformation: FC<FlowInformationProps> = ({ data, selectedFlow, selecte
 
     if (isEmpty) {
         return (
-            <div className="flex flex-col items-center justify-center min-h-[420px] text-center px-8 py-12">
-                <div className="rounded-2xl bg-slate-100/80 p-8 mb-6">
+            <div className="flex flex-col items-center justify-center min-h-[480px] text-center px-8 py-16">
+                <div className="rounded-2xl bg-slate-100 p-10 mb-6 ring-1 ring-slate-200/50">
                     <svg
-                        className="mx-auto h-16 w-16 text-slate-400"
+                        className="mx-auto h-14 w-14 text-slate-400"
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"
@@ -71,17 +71,16 @@ const FlowInformation: FC<FlowInformationProps> = ({ data, selectedFlow, selecte
                         />
                     </svg>
                 </div>
-                <h3 className="text-lg font-semibold text-slate-700 mb-2">No flow selected</h3>
-                <p className="text-slate-500 text-sm max-w-sm">
-                    Choose a flow from the left panel, then select an action to see documentation
-                    and example payloads.
+                <h2 className="text-xl font-semibold text-slate-800 mb-2">No flow selected</h2>
+                <p className="text-slate-600 text-sm max-w-md leading-relaxed">
+                    Select a flow from the sidebar, then choose an action to view its documentation, example payload, and schema validations.
                 </p>
             </div>
         );
     }
 
     return (
-        <div className="p-6 md:p-8 space-y-8">
+        <div className="p-6 md:p-10 space-y-10">
             {selectedFlowData && (
                 <FlowDetailsAndSummary
                     flow={selectedFlowData}
@@ -90,15 +89,15 @@ const FlowInformation: FC<FlowInformationProps> = ({ data, selectedFlow, selecte
             )}
 
             {selectedFlowAction && selectedStep && (
-                <section className="flex flex-col space-y-5">
+                <section className="flex flex-col space-y-6">
                     <div className="rounded-xl border border-slate-200 bg-white overflow-hidden shadow-sm">
-                        <div className="px-5 py-3.5 border-b border-slate-100 bg-slate-50/50">
-                            <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                        <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/60">
+                            <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
                                 Step information
-                            </h2>
+                            </span>
                         </div>
-                        <div className="px-5 py-4">
-                            <p className="text-sm font-semibold text-slate-800 font-mono">
+                        <div className="px-6 py-5">
+                            <p className="text-base font-semibold text-slate-900 font-mono">
                                 {selectedStep.api}
                             </p>
                             {(selectedStep.description ?? selectedStep.summary) && (
@@ -113,15 +112,15 @@ const FlowInformation: FC<FlowInformationProps> = ({ data, selectedFlow, selecte
                         <div className="flex flex-col gap-2">
                             <label
                                 htmlFor="example-select"
-                                className="text-xs font-semibold text-slate-500 uppercase tracking-wider"
+                                className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider"
                             >
-                                Examples
+                                Example payloads
                             </label>
                             <select
                                 id="example-select"
                                 value={selectedExampleIndex}
                                 onChange={(e) => setSelectedExampleIndex(Number(e.target.value))}
-                                className="w-full max-w-xs px-3 py-2 rounded-lg text-sm font-medium border border-slate-200 bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-sky-400 focus:border-sky-400"
+                                className="w-full max-w-sm px-4 py-2.5 rounded-lg text-sm border border-slate-200 bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500/30 focus:border-sky-400"
                             >
                                 {examples.map((ex, i) => (
                                     <option key={i} value={i}>
@@ -134,10 +133,13 @@ const FlowInformation: FC<FlowInformationProps> = ({ data, selectedFlow, selecte
 
                     {hasExampleObject && (
                         <div className="flex flex-col">
-                            <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">
-                                Example payload
+                            <h2 className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-3">
+                                Payload & schema
                             </h2>
-                            <div className="h-[520px] min-h-0 rounded-xl overflow-hidden border border-slate-200 shadow-sm">
+                            <p className="text-slate-600 text-sm mb-3 leading-relaxed">
+                                Click a key in the JSON tree to see its attributes and validations in the right panel.
+                            </p>
+                            <div className="h-[540px] min-h-0 rounded-xl overflow-hidden border border-slate-200 shadow-sm bg-white">
                                 <FlowActionDetails
                                     exampleValue={examplePayload as object}
                                     actionApi={selectedFlowAction}

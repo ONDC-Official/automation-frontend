@@ -15,21 +15,21 @@ const DeveloperGuide: FC = () => {
     }): Promise<void> => Promise.resolve();
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
-            <div className="border-b border-slate-200/80 bg-white/90 backdrop-blur-sm sticky top-0 z-10">
-                <div className="max-w-[1600px] mx-auto px-4 py-4">
-                    <h1 className="text-xl font-semibold text-slate-800 tracking-tight">
+        <div className="min-h-screen bg-slate-50/50">
+            <header className="border-b border-slate-200 bg-white sticky top-0 z-10 shadow-sm">
+                <div className="max-w-[1600px] mx-auto px-6 py-5">
+                    <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
                         Developer Guide
                     </h1>
-                    <p className="text-sm text-slate-500 mt-0.5">
-                        Explore flows, actions, and schema attributes
+                    <p className="text-sm text-slate-600 mt-1 max-w-2xl leading-relaxed">
+                        Explore API flows, request/response actions, schema attributes, and x-validations for each payload field.
                     </p>
                 </div>
-            </div>
+            </header>
             <Filters onSubmit={handleFiltersSubmit} />
-            <div className="max-w-[1600px] mx-auto px-4 pb-8 flex gap-6">
-                <aside className="w-[320px] shrink-0">
-                    <div className="sticky top-[120px]">
+            <div className="max-w-[1600px] mx-auto px-6 pb-10 flex gap-8">
+                <aside className="w-[340px] shrink-0">
+                    <div className="sticky top-[140px]">
                         <FlowsAccordion
                             data={data}
                             selectedFlow={selectedFlow}
@@ -39,7 +39,7 @@ const DeveloperGuide: FC = () => {
                         />
                     </div>
                 </aside>
-                <main className="flex-1 min-w-0 rounded-xl border border-slate-200/80 bg-white shadow-sm overflow-hidden">
+                <main className="flex-1 min-w-0 rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
                     <FlowInformation
                         data={data}
                         selectedFlow={selectedFlow}

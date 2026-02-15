@@ -201,6 +201,28 @@ function getEnumRefsFromNode(node: Record<string, unknown> | undefined): EnumRef
     return refs.length > 0 ? refs : undefined;
 }
 
+/**
+ * Get required (mandatory/optional) for a path from x-attributes, for display in X-Validations.
+ */
+export function getRequiredForPath(
+    spec: OpenAPISpecification | null | undefined,
+    actionApi: string,
+    jsonPath: string,
+    useCaseId?: string
+): "Mandatory" | "Optional" | string {
+    const path = normalizePath(jsonPath);
+    if (!path) return DASH;
+    const attr = getAttributeInfo(
+        getAttributeBase(spec?.["x-attributes"], useCaseId, actionApi),
+        path,
+        undefined
+    );
+    const r = attr.required;
+    if (r === "true") return "Mandatory";
+    if (r === "false") return "Optional";
+    return r;
+}
+
 export function getActionAttributes(
     spec: OpenAPISpecification | null | undefined,
     actionApi: string,
@@ -405,6 +427,14 @@ function flattenValidationRules(
     }
 }
 
+/** Normalize action API for _TESTS_ lookup: strip trailing digits (e.g. on_search1 -> on_search). */
+function getValidationTestKey(tests: Record<string, unknown>, actionApi: string): string | undefined {
+    if (actionApi in tests) return actionApi;
+    const withoutSuffix = actionApi.replace(/\d+$/, "") || actionApi;
+    if (withoutSuffix in tests) return withoutSuffix;
+    return undefined;
+}
+
 export function getValidationsForAction(
     spec: OpenAPISpecification | null | undefined,
     actionApi: string,
@@ -414,20 +444,28 @@ export function getValidationsForAction(
     if (!xv || typeof xv !== "object") return [];
     const tests = xv["_TESTS_"];
     if (!tests || typeof tests !== "object") return [];
-    const groups = tests[actionApi];
+    const testKey = getValidationTestKey(tests as Record<string, unknown>, actionApi);
+    const groups = testKey ? (tests[testKey] as XValidationTestGroup[]) : undefined;
     if (!Array.isArray(groups)) return [];
 
     const normalizedPath = jsonPath ? normalizePath(jsonPath) : null;
     const out: ValidationRuleDisplay[] = [];
 
-    for (const group of groups as XValidationTestGroup[]) {
+    for (const group of groups) {
         const groupDescription =
             (group._DESCRIPTION_ != null ? String(group._DESCRIPTION_) : "") || DASH;
         flattenValidationRules(group._RETURN_ ?? [], groupDescription, out);
     }
 
     if (normalizedPath) {
-        return out.filter((r) => r.attr != null && normalizePath(r.attr) === normalizedPath);
+        return out.filter((r) => {
+            if (r.attr == null) return false;
+            const rulePath = normalizePath(r.attr);
+            return (
+                rulePath === normalizedPath ||
+                rulePath.startsWith(normalizedPath + ".")
+            );
+        });
     }
     return out;
 }

@@ -23,15 +23,15 @@ const Filters: FC<FiltersProps> = ({ onSubmit }) => {
     ];
 
     return (
-        <div className="max-w-[1600px] mx-auto px-4 py-4">
-            <div className="bg-white rounded-xl border border-slate-200/80 shadow-sm overflow-hidden">
-                <div className="px-5 py-4 border-b border-slate-100 bg-slate-50/50">
-                    <h2 className="text-sm font-semibold text-slate-700 uppercase tracking-wider">
+        <div className="max-w-[1600px] mx-auto px-6 py-4">
+            <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/60">
+                    <h2 className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
                         Filters
                     </h2>
                     <p className="text-xs text-slate-500 mt-0.5">Domain, version & use case</p>
                 </div>
-                <GenericForm onSubmit={onSubmit} className="p-5">
+                <GenericForm onSubmit={onSubmit} className="p-6">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                         <FormSelect
                             name="domain"

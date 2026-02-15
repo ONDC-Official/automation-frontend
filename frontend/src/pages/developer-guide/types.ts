@@ -155,6 +155,9 @@ export interface OpenAPISpecification {
               attribute_set?: Record<string, Record<string, unknown>>;
           }>
         | Record<string, { attribute_set?: Record<string, Record<string, unknown>> }>;
-    /** Validation tests keyed by _TESTS_ then by action name */
-    "x-validations"?: Record<string, Record<string, XValidationTestGroup[]>>;
+    /** Validation tests keyed by _TESTS_ then by action name; may also contain other keys (e.g. enums) */
+    "x-validations"?: Record<
+        string,
+        Record<string, XValidationTestGroup[]> | Record<string, unknown>
+    >;
 }

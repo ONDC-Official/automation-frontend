@@ -95,13 +95,13 @@ const FlowActionDetails: FC<FlowActionDetailsProps> = ({
 
     const root = (
         <div className="flex flex-col h-full rounded-xl border border-slate-200 bg-white overflow-hidden shadow-sm">
-            <div className="flex items-center justify-between gap-4 px-4 py-2.5 border-b border-slate-200 bg-slate-50/80 shrink-0">
+            <div className="flex items-center justify-between gap-4 px-4 py-3 border-b border-slate-200 bg-slate-50/70 shrink-0">
                 <Tabs
                     options={TAB_OPTIONS}
                     defaultTab="documentation"
                     onSelectOption={setActiveTab}
                 />
-                <div className="flex items-center gap-1.5 shrink-0">
+                <div className="flex items-center gap-2 shrink-0">
                     <button
                         type="button"
                         onClick={() =>
@@ -157,11 +157,13 @@ const FlowActionDetails: FC<FlowActionDetailsProps> = ({
             <div className="flex-1 flex min-h-0">
                 {activeTab === "documentation" && (
                     <>
-                        <div className="flex-1 flex flex-col min-w-0 max-w-xl border-r border-slate-200">
-                            <div className="px-4 py-2.5 border-b border-slate-100 bg-slate-50/50 text-xs text-slate-500">
+                        <div
+                            className={`flex-1 flex flex-col min-w-0 border-r border-slate-200 ${expanded ? "" : "max-w-xl"}`}
+                        >
+                            <div className="px-4 py-3 border-b border-slate-100 bg-slate-100/60 text-xs text-slate-600">
                                 {editMode
-                                    ? "Edit JSON below, then click Apply"
-                                    : "Click a key in the tree to view its attributes"}
+                                    ? "Edit JSON below, then click Apply to update the tree."
+                                    : "Click any key in the tree to see schema and validations in the right panel."}
                             </div>
                             <div className="flex-1 min-h-0 overflow-auto bg-slate-900 p-4">
                                 {editMode ? (
@@ -190,11 +192,17 @@ const FlowActionDetails: FC<FlowActionDetailsProps> = ({
                                 )}
                             </div>
                         </div>
-                        <div className="w-[420px] shrink-0 flex flex-col min-h-0 p-3 bg-slate-50/50 border-l border-slate-100">
+                        <div
+                            className={`shrink-0 flex flex-col min-h-0 p-4 bg-slate-50/60 border-l border-slate-200 ${expanded ? "w-[600px]" : "w-[420px]"}`}
+                        >
                             <AttributesPanel
                                 attributes={attributes}
                                 stepOwner={stepOwner}
                                 validations={validations}
+                                spec={spec}
+                                actionApi={actionApi}
+                                useCaseId={useCaseId}
+                                isExpanded={expanded}
                             />
                         </div>
                     </>

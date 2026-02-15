@@ -13,6 +13,7 @@ export const EDITOR_CONFIG = {
     language: "json",
     fontSize: 14,
     padding: { top: 16, bottom: 16 },
+    fontFamily: "'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace",
 } as const;
 
 /**
@@ -69,6 +70,7 @@ const PayloadEditor: FC<PayloadEditorProps> = ({
                         minimap: { enabled: false },
                         padding: EDITOR_CONFIG.padding,
                         fontSize: EDITOR_CONFIG.fontSize,
+                        fontFamily: EDITOR_CONFIG.fontFamily,
                         lineNumbers: "on",
                         scrollBeyondLastLine: false,
                         automaticLayout: true,

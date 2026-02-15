@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { LuHistory } from "react-icons/lu";
 import { useNavigate } from "react-router-dom";
 import axios, { AxiosResponse, AxiosError } from "axios";
@@ -15,11 +15,12 @@ import { trackEvent } from "@utils/analytics";
 import { useWorkbenchFlows } from "@hooks/useWorkbenchFlow";
 // import { sessionIdSupport } from "@utils/localStorageManager";
 import { ROUTES } from "@constants/routes";
-import { Domain, DomainVersion } from "@/pages/schema-validation/types";
+import { DomainVersion } from "@/pages/schema-validation/types";
 import { Flow } from "@/types/flow-types";
 import { sessionIdSupport } from "@/utils/localStorageManager";
+import { useFormFieldData } from "@hooks/useFormFieldData";
 
-type DomainVersionWithUsecase = DomainVersion & {
+export type DomainVersionWithUsecase = DomainVersion & {
     usecase: string[];
 };
 
@@ -53,34 +54,12 @@ export default function FlowContent() {
         // setReport,
     } = useWorkbenchFlows();
     const [isFormSubmitted, setIsFormSubmitted] = useState(false);
-    const [dynamicList, setDynamicList] = useState<{
-        domain: Domain[];
-        version: DomainVersionWithUsecase[];
-        usecase: string[];
-    }>({
-        domain: [],
-        version: [],
-        usecase: [],
-    });
-    const [dynamicValue, setDyanmicValue] = useState({
-        domain: "",
-        version: "",
-        usecaseId: "",
-        subscriberUrl: "",
-        npType: "BAP",
-        env: "STAGING",
-    });
-    const formData = useRef({
-        domain: "",
-        version: "",
-        usecaseId: "",
-        subscriberUrl: "",
-        npType: "BAP",
-        env: "STAGING",
-    });
     const { sessionId: contextSessionId, setSessionId } = useSession();
     console.log(setSessionId.toString());
     const navigate = useNavigate();
+
+    const { dynamicList, dynamicValue, formData, setDynamicList, setDyanmicValue } =
+        useFormFieldData();
 
     const createAndOpenSession = async (data: ScenarioFormData, newTab = true) => {
         try {
@@ -165,23 +144,6 @@ export default function FlowContent() {
         await fetchFlows(data);
         await onSubmit(data);
     };
-
-    const fetchFormFieldData = async () => {
-        try {
-            const response = await axios.get(
-                `${import.meta.env.VITE_BACKEND_URL}/config/senarioFormData`
-            );
-            setDynamicList((prev) => {
-                return { ...prev, domain: response.data.domain || [] };
-            });
-        } catch (e) {
-            console.error("error while fetching form field data", e);
-        }
-    };
-
-    useEffect(() => {
-        fetchFormFieldData();
-    }, []);
 
     function fetchSessionData(sessId: string) {
         axios
