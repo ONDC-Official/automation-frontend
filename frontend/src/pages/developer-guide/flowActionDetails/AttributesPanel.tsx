@@ -548,7 +548,7 @@ const AttributesPanel: FC<AttributesPanelProps> = ({
             <div className="h-full flex flex-col rounded-xl border border-slate-200 bg-white overflow-hidden shadow-sm">
                 <div className="px-5 py-4 border-b border-slate-200 bg-slate-50/70">
                     <h3 className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
-                        Schema & validations
+                        Attribute & validations
                     </h3>
                 </div>
                 <div className="flex-1 p-6 flex items-center justify-center text-slate-500 text-sm text-center leading-relaxed">

@@ -7,10 +7,18 @@ import { SelectedType } from "@pages/protocol-playground/ui/session-data-tab";
 import type { OpenAPISpecification } from "../types";
 import { getActionAttributes, getValidationsForAction } from "./schemaAttributes";
 import AttributesPanel from "./AttributesPanel";
+import CommentsPanel from "./CommentsPanel";
+import NotesPanel from "./NotesPanel";
 
 const TAB_OPTIONS = [
     { key: "documentation", label: "Documentation" },
     { key: "ai-driven", label: "Ai Driven" },
+];
+
+const RIGHT_PANEL_TAB_OPTIONS = [
+    { key: "attributes", label: "Attributes" },
+    { key: "comments", label: "Comments" },
+    { key: "notes", label: "Notes" },
 ];
 
 function getValueAtPath(obj: unknown, path: string): unknown {
@@ -43,6 +51,7 @@ const FlowActionDetails: FC<FlowActionDetailsProps> = ({
     stepOwner,
 }) => {
     const [activeTab, setActiveTab] = useState("documentation");
+    const [rightPanelTab, setRightPanelTab] = useState("attributes");
     const [selectedPath, setSelectedPath] = useState<string | null>(null);
     const [expanded, setExpanded] = useState(false);
     const [editMode, setEditMode] = useState(false);
@@ -193,17 +202,42 @@ const FlowActionDetails: FC<FlowActionDetailsProps> = ({
                             </div>
                         </div>
                         <div
-                            className={`shrink-0 flex flex-col min-h-0 p-4 bg-slate-50/60 border-l border-slate-200 ${expanded ? "w-[600px]" : "w-[420px]"}`}
+                            className={`shrink-0 flex flex-col min-h-0 bg-slate-50/60 border-l border-slate-200 ${expanded ? "w-[600px]" : "w-[420px]"}`}
                         >
-                            <AttributesPanel
-                                attributes={attributes}
-                                stepOwner={stepOwner}
-                                validations={validations}
-                                spec={spec}
-                                actionApi={actionApi}
-                                useCaseId={useCaseId}
-                                isExpanded={expanded}
-                            />
+                            <div className="px-4 pt-3 pb-2 border-b border-slate-200 bg-white/80 shrink-0">
+                                <Tabs
+                                    options={RIGHT_PANEL_TAB_OPTIONS}
+                                    defaultTab="attributes"
+                                    onSelectOption={setRightPanelTab}
+                                />
+                            </div>
+                            <div className="flex-1 min-h-0 overflow-hidden p-4">
+                                {rightPanelTab === "attributes" && (
+                                    <AttributesPanel
+                                        attributes={attributes}
+                                        stepOwner={stepOwner}
+                                        validations={validations}
+                                        spec={spec}
+                                        actionApi={actionApi}
+                                        useCaseId={useCaseId}
+                                        isExpanded={expanded}
+                                    />
+                                )}
+                                {rightPanelTab === "comments" && (
+                                    <CommentsPanel
+                                        selectedPath={selectedPath}
+                                        actionApi={actionApi}
+                                        useCaseId={useCaseId}
+                                    />
+                                )}
+                                {rightPanelTab === "notes" && (
+                                    <NotesPanel
+                                        selectedPath={selectedPath}
+                                        actionApi={actionApi}
+                                        useCaseId={useCaseId}
+                                    />
+                                )}
+                            </div>
                         </div>
                     </>
                 )}
