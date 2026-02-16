@@ -24,6 +24,7 @@ export interface PlaygroundContextProps {
     setActiveTerminalData: React.Dispatch<React.SetStateAction<ExecutionResult[]>>;
     updateTransactionHistory: (
         actionId: string,
+        action: string,
         newPayload: TransactionPayload,
         savedInfo?: TransactionSavedInfo
     ) => void;

@@ -72,7 +72,12 @@ const ProtocolPlayGround = () => {
     const updateStepMock = (stepId: string, property: string, value: string) => {
         const current = playgroundState;
         if (!current) return;
-        if (property === "generate" || property === "validate" || property === "requirements") {
+        if (
+            property === "generate" ||
+            property === "validate" ||
+            property === "requirements" ||
+            property === "formHtml"
+        ) {
             value = MockRunner.encodeBase64(value);
         } else {
             try {
@@ -109,6 +114,7 @@ const ProtocolPlayGround = () => {
 
     const updateTransactionHistory = (
         actionId: string,
+        action: string,
         newPayload: TransactionPayload,
         savedInfo?: TransactionSavedInfo
     ) => {
@@ -117,6 +123,7 @@ const ProtocolPlayGround = () => {
         const historyEntry = {
             action_id: actionId,
             payload: newPayload,
+            action: action,
             saved_info: savedInfo || ({} as TransactionSavedInfo),
         };
         current.transaction_history.push(historyEntry);
