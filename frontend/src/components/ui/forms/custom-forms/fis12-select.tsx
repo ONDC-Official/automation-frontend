@@ -180,11 +180,13 @@ export default function FIS12Select({
                                         <option value="" disabled>
                                             Select an item
                                         </option>
-                                        {(selectedProvider.items || []).map((item) => (
-                                            <option key={item.id} value={item.id}>
-                                                {item.id}
-                                            </option>
-                                        ))}
+                                        {(selectedProvider.items || [])
+                                            .filter((item) => item.parent_item_id)
+                                            .map((item) => (
+                                                <option key={item.id} value={item.id}>
+                                                    {item.id}
+                                                </option>
+                                            ))}
                                     </select>
                                 </div>
 
