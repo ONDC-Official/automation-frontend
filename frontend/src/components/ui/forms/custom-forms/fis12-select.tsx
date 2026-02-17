@@ -182,7 +182,7 @@ export default function FIS12Select({
                                         </option>
                                         {(selectedProvider.items || []).map((item) => (
                                             <option key={item.id} value={item.id}>
-                                                {item.descriptor?.name || item.id} ({item.id})
+                                                {item.id}
                                             </option>
                                         ))}
                                     </select>
