@@ -33,7 +33,7 @@ interface Provider {
 
 interface FormValues {
     provider: Provider | null;
-    items: Item[];
+    selectedItem: Item | null;
 }
 
 interface CatalogPayload {
@@ -52,15 +52,15 @@ export default function FIS12Select({
     const [isPayloadEditorActive, setIsPayloadEditorActive] = useState(false);
     const [extractedProviders, setExtractedProviders] = useState<Provider[]>([]);
 
-    const { handleSubmit, setValue, watch, getValues } = useForm<FormValues>({
+    const { handleSubmit, setValue, watch } = useForm<FormValues>({
         defaultValues: {
             provider: null,
-            items: [],
+            selectedItem: null,
         },
     });
 
     const selectedProvider = watch("provider");
-    const selectedItems = watch("items");
+    const selectedItem = watch("selectedItem");
 
     const handlePaste = (payload: unknown) => {
         try {
@@ -73,7 +73,7 @@ export default function FIS12Select({
             setExtractedProviders(providers);
             // Default select the first provider
             setValue("provider", providers[0]);
-            setValue("items", []);
+            setValue("selectedItem", null);
             toast.success("Payload parsed successfully!");
         } catch (error) {
             toast.error("Failed to parse payload.");
@@ -87,17 +87,19 @@ export default function FIS12Select({
             toast.error("Please select a provider.");
             return;
         }
-        if (data.items.length === 0) {
-            toast.error("Please select at least one item.");
+        if (!data.selectedItem) {
+            toast.error("Please select an item.");
             return;
         }
 
         const formattedData = {
             order: {
-                items: data.items.map((item) => ({
-                    id: item.id,
-                    parent_item_id: item.parent_item_id,
-                })),
+                items: [
+                    {
+                        id: data.selectedItem.id,
+                        parent_item_id: data.selectedItem.parent_item_id,
+                    },
+                ],
                 provider: {
                     id: data.provider.id,
                 },
@@ -108,19 +110,6 @@ export default function FIS12Select({
             jsonPath: {},
             formData: formattedData as unknown as Record<string, string>,
         });
-    };
-
-    const toggleItemSelection = (item: Item) => {
-        const currentItems = getValues("items") || [];
-        const isSelected = currentItems.some((i) => i.id === item.id);
-        if (isSelected) {
-            setValue(
-                "items",
-                currentItems.filter((i) => i.id !== item.id)
-            );
-        } else {
-            setValue("items", [...currentItems, item]);
-        }
     };
 
     return (
@@ -157,7 +146,7 @@ export default function FIS12Select({
                                         (p) => p.id === e.target.value
                                     );
                                     setValue("provider", provider || null);
-                                    setValue("items", []);
+                                    setValue("selectedItem", null);
                                 }}
                                 value={selectedProvider?.id || ""}
                             >
@@ -174,97 +163,62 @@ export default function FIS12Select({
 
                         {selectedProvider && (
                             <div className="space-y-4">
-                                <div className="flex justify-between items-center">
-                                    <label className="block text-sm font-semibold text-gray-700">
-                                        Select Items ({selectedItems.length} selected)
+                                <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg">
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                        Select Item
                                     </label>
-                                    {selectedItems.length > 0 && (
-                                        <button
-                                            type="button"
-                                            onClick={() => setValue("items", [])}
-                                            className="text-xs text-red-600 hover:text-red-800 font-medium"
-                                        >
-                                            Clear Selection
-                                        </button>
-                                    )}
+                                    <select
+                                        className="w-full border border-gray-200 rounded-md p-2 focus:ring-2 focus:ring-blue-500 outline-none bg-white font-medium"
+                                        onChange={(e) => {
+                                            const item = selectedProvider.items?.find(
+                                                (i) => i.id === e.target.value
+                                            );
+                                            setValue("selectedItem", item || null);
+                                        }}
+                                        value={selectedItem?.id || ""}
+                                    >
+                                        <option value="" disabled>
+                                            Select an item
+                                        </option>
+                                        {(selectedProvider.items || []).map((item) => (
+                                            <option key={item.id} value={item.id}>
+                                                {item.id}
+                                            </option>
+                                        ))}
+                                    </select>
                                 </div>
-                                <div className="grid grid-cols-1 gap-3">
-                                    {(selectedProvider.items || []).map((item) => {
-                                        const isSelected = selectedItems.some(
-                                            (i) => i.id === item.id
-                                        );
-                                        return (
-                                            <div
-                                                key={item.id}
-                                                onClick={() => toggleItemSelection(item)}
-                                                className={`cursor-pointer p-4 border rounded-xl transition-all duration-200 group ${
-                                                    isSelected
-                                                        ? "border-blue-500 bg-blue-50 shadow-md transform scale-[1.01]"
-                                                        : "border-gray-200 hover:border-blue-200 hover:bg-gray-50 bg-white"
-                                                }`}
-                                            >
-                                                <div className="flex items-center gap-4">
-                                                    <div
-                                                        className={`flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${
-                                                            isSelected
-                                                                ? "bg-blue-600 border-blue-600"
-                                                                : "border-gray-300 group-hover:border-blue-300"
-                                                        }`}
-                                                    >
-                                                        {isSelected && (
-                                                            <svg
-                                                                className="w-4 h-4 text-white"
-                                                                fill="none"
-                                                                viewBox="0 0 24 24"
-                                                                stroke="currentColor"
-                                                            >
-                                                                <path
-                                                                    strokeLinecap="round"
-                                                                    strokeLinejoin="round"
-                                                                    strokeWidth={3}
-                                                                    d="M5 13l4 4L19 7"
-                                                                />
-                                                            </svg>
-                                                        )}
-                                                    </div>
-                                                    <div className="flex-1">
-                                                        <div className="flex justify-between">
-                                                            <div>
-                                                                <h3
-                                                                    className={`font-bold transition-colors ${isSelected ? "text-blue-900" : "text-gray-800"}`}
-                                                                >
-                                                                    {item.descriptor?.name ||
-                                                                        item.id}
-                                                                </h3>
-                                                                <p className="text-xs font-mono text-gray-500">
-                                                                    {item.id}
-                                                                </p>
-                                                            </div>
-                                                            {item.price && (
-                                                                <div className="text-right">
-                                                                    <p className="text-sm font-bold text-green-600">
-                                                                        {item.price.currency}{" "}
-                                                                        {item.price.value}
-                                                                    </p>
-                                                                    {item.descriptor?.code && (
-                                                                        <span className="text-[10px] px-1.5 py-0.5 bg-gray-100 rounded text-gray-600 uppercase">
-                                                                            {item.descriptor.code}
-                                                                        </span>
-                                                                    )}
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                        {item.descriptor?.short_desc && (
-                                                            <p className="text-xs text-gray-600 mt-1 line-clamp-1">
-                                                                {item.descriptor.short_desc}
-                                                            </p>
-                                                        )}
-                                                    </div>
-                                                </div>
+
+                                {selectedItem && (
+                                    <div className="p-4 border border-blue-100 bg-blue-50 rounded-lg animate-in fade-in zoom-in-95 duration-200">
+                                        <div className="flex justify-between items-start">
+                                            <div>
+                                                <h3 className="font-bold text-blue-900">
+                                                    {selectedItem.descriptor?.name ||
+                                                        selectedItem.id}
+                                                </h3>
+                                                <p className="text-xs font-mono text-blue-700">
+                                                    ID: {selectedItem.id}
+                                                </p>
+                                                {selectedItem.parent_item_id && (
+                                                    <p className="text-xs text-gray-600 mt-1">
+                                                        Parent:{" "}
+                                                        <span className="font-semibold">
+                                                            {selectedItem.parent_item_id}
+                                                        </span>
+                                                    </p>
+                                                )}
                                             </div>
-                                        );
-                                    })}
-                                </div>
+                                            {selectedItem.price && (
+                                                <div className="text-right">
+                                                    <p className="text-sm font-bold text-green-600">
+                                                        {selectedItem.price.currency}{" "}
+                                                        {selectedItem.price.value}
+                                                    </p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         )}
                     </div>
