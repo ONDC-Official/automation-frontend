@@ -30,7 +30,7 @@ type BaseField = {
     pattern?: string;
 };
 
-type TextLikeField = BaseField & {
+export type TextLikeField = BaseField & {
     kind: "textlike";
     inputType:
         | "text"
@@ -56,24 +56,24 @@ type TextareaField = BaseField & {
 };
 
 type SelectOption = { value: string; label: string; selected?: boolean };
-type SelectField = BaseField & {
+export type SelectField = BaseField & {
     kind: "select";
     multiple?: boolean;
     options: SelectOption[];
 };
 
-type RadioGroupField = BaseField & {
+export type RadioGroupField = BaseField & {
     kind: "radio-group";
     options: { value: string; label?: string; checked?: boolean }[];
 };
 
-type CheckboxSingleField = BaseField & {
+export type CheckboxSingleField = BaseField & {
     kind: "checkbox-single";
     valueAttr?: string; // default "on" if not present in HTML
     checked?: boolean;
 };
 
-type CheckboxGroupField = BaseField & {
+export type CheckboxGroupField = BaseField & {
     kind: "checkbox-group";
     options: { value: string; label?: string; checked?: boolean }[];
 };
@@ -84,12 +84,12 @@ type FileField = BaseField & {
     accept?: string | null;
 };
 
-type HiddenField = BaseField & {
+export type HiddenField = BaseField & {
     kind: "hidden";
     value: string;
 };
 
-type AnyField =
+export type AnyField =
     | TextLikeField
     | TextareaField
     | SelectField
@@ -99,7 +99,7 @@ type AnyField =
     | FileField
     | HiddenField;
 
-type ParsedForm = {
+export type ParsedForm = {
     method: string;
     action: string;
     enctype?: string | null;
@@ -107,7 +107,10 @@ type ParsedForm = {
 };
 
 // Value state type for the rebuilt React form
-type ValueState = Record<string, string | string[] | boolean | File | File[] | null | undefined>;
+export type ValueState = Record<
+    string,
+    string | string[] | boolean | File | File[] | null | undefined
+>;
 
 // --- Helper: label resolution -------------------------------------------------
 
@@ -130,7 +133,7 @@ function getLabelForInput(input: Element, formEl: HTMLFormElement): string | und
 
 // --- Parser: from HTML to field metadata -------------------------------------
 
-function parseFormHtml(formHtml: string): ParsedForm {
+export function parseFormHtml(formHtml: string): ParsedForm {
     const doc = new DOMParser().parseFromString(formHtml, "text/html");
     const formEl = doc.querySelector("form") as HTMLFormElement | null;
     if (!formEl) {
