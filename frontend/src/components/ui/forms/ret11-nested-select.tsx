@@ -196,7 +196,12 @@ const ItemCustomisationSelectorRET11 = ({
 
     return (
         <div className="p-4 max-w-xl mx-auto space-y-4">
-            {isPayloadEditorActive && <PayloadEditor onAdd={handlePaste} />}
+            {isPayloadEditorActive && (
+                <PayloadEditor
+                    onAdd={handlePaste}
+                    onClose={() => setIsPayloadEditorActive(false)}
+                />
+            )}
             <div className="flex flex-direction-row gap-4">
                 <LabelWithToolTip labelInfo="" label={label} />
                 <>
