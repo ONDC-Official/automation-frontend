@@ -3,6 +3,7 @@ import { FormInput } from "../form-input";
 import FormSelect from "../form-select";
 import CheckboxGroup, { CheckboxOption } from "../checkbox";
 import ItemCustomisationSelector from "../nested-select";
+import ItemCustomisationSelectorRET11 from "../ret11-nested-select";
 import GenericForm from "../generic-form";
 import GenericFormWithPaste from "../generic-form-with-paste";
 import { SubmitEventParams } from "../../../../types/flow-types";
@@ -33,6 +34,7 @@ import SearchDiscoverProductFis13 from "../custom-forms/search-discover-product-
 import Metro210Select from "../custom-forms/metro-seat-select";
 import Metro210EndStopUpdate from "../custom-forms/update-end-stop-update";
 import Metro210StartEndStopSelection from "../custom-forms/trv11_start_end_stop_selection";
+import FIS12Select from "../custom-forms/fis12-select";
 import { RJSFSchema } from "@rjsf/utils";
 
 export interface FormFieldConfigType {
@@ -51,6 +53,7 @@ export interface FormFieldConfigType {
         | "intercity_select"
         | "airline_seat_select"
         | "ret10_grocery_select"
+        | "ret11_nestedSelect"
         | "nestedSelect"
         | "trv_select"
         | "trv10_select"
@@ -71,7 +74,8 @@ export interface FormFieldConfigType {
         | "search_discover_product_fis13"
         | "trv11_210_select"
         | "trv11_210_update_end_station"
-        | "trv11_210_start_end_stop_selection";
+        | "trv11_210_start_end_stop_selection"
+        | "fis12_select_pl";
     payloadField: string;
     values?: string[];
     defaultValue?: string;
@@ -186,6 +190,17 @@ export default function FormConfig({
         return <Ret10GrocerySelect submitEvent={submitEvent} />;
     }
 
+    if (formConfig.find((field) => field.type === "ret11_nestedSelect")) {
+        const field = formConfig.find((field) => field.type === "ret11_nestedSelect")!;
+        return (
+            <ItemCustomisationSelectorRET11
+                name={field.name}
+                label={field.label}
+                submitEvent={submitEvent}
+            />
+        );
+    }
+
     if (formConfig.find((field) => field.type === "fis13_select")) {
         return <FIS13ItemSelection submitEvent={submitEvent} />;
     }
@@ -285,6 +300,10 @@ export default function FormConfig({
 
     if (formConfig.find((field) => field.type === "trv11_210_start_end_stop_selection")) {
         return <Metro210StartEndStopSelection submitEvent={submitEvent} />;
+    }
+
+    if (formConfig.find((field) => field.type === "fis12_select_pl")) {
+        return <FIS12Select submitEvent={submitEvent} />;
     }
 
     // NOTE: The JsonSchemaForm check must come after all other specific form type checks above.

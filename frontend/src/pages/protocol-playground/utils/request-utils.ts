@@ -29,7 +29,7 @@ export async function createFlowSessionWithPlayground(
                 stopAfterFirstNack: false,
                 protocolValidations: true,
                 timeValidations: true,
-                headerValidaton: true,
+                headerValidaton: false,
                 useGzip: false,
             },
             flowConfigs: {

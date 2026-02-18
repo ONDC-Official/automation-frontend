@@ -20,6 +20,9 @@ export const ONDC_ACTION_LIST = [
     "issue",
     "on_issue",
 ] as const;
+
+export const ONDC_FORM_LIST = ["dynamic_form", "html_form (not-implemented-yet"];
+
 export type PlaygroundLeftTabType = "generator" | "default" | "inputs" | "requirements";
 export type PlaygroundRightTabType =
     | "session"
@@ -31,7 +34,7 @@ export type PlaygroundRightTabType =
 export type MockPropertyTab = {
     id: string;
     label: string;
-    language: "javascript" | "json";
+    language: "javascript" | "json" | "html";
     property: keyof PlaygroundActionStep["mock"];
 };
 
@@ -65,6 +68,15 @@ export const PLAYGROUND_LEFT_TABS: MockPropertyTab[] = [
         label: "inputs.json",
         language: "json",
         property: "inputs",
+    },
+];
+
+export const PLAYGROUND_LEFT_TABS_FORM: MockPropertyTab[] = [
+    {
+        id: "form_html",
+        label: "form.html",
+        language: "html",
+        property: "formHtml",
     },
 ];
 
