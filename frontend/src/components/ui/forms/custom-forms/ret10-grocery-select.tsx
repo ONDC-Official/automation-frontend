@@ -136,7 +136,12 @@ export default function Ret10GrocerySelect({
 
     return (
         <div>
-            {isPayloadEditorActive && <PayloadEditor onAdd={handlePaste} />}
+            {isPayloadEditorActive && (
+                <PayloadEditor
+                    onAdd={handlePaste}
+                    onClose={() => setIsPayloadEditorActive(false)}
+                />
+            )}
             {errorWhilePaste && (
                 <p className="text-red-500 text-sm italic mt-1">{errorWhilePaste}</p>
             )}
