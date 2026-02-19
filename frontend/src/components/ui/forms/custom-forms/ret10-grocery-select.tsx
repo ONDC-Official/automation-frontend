@@ -26,6 +26,7 @@ type OnSearchPayload = {
 };
 
 type FormValues = {
+    city_code: string;
     provider: string;
     provider_location: string[];
     location_gps: string;
@@ -48,6 +49,7 @@ export default function Ret10GrocerySelect({
 
     const { control, handleSubmit, watch, register } = useForm<FormValues>({
         defaultValues: {
+            city_code: "",
             provider: "",
             provider_location: [],
             location_gps: "",
@@ -171,6 +173,15 @@ export default function Ret10GrocerySelect({
                     <div className={fieldWrapperStyle}>
                         <label className={labelStyle}>Select Provider Id</label>
                         {renderSelectOrInput("provider", providerOptions)}
+                    </div>
+
+                    <div className={fieldWrapperStyle}>
+                        <label className={labelStyle}>Enter City Code</label>
+                        <input
+                            {...register("city_code")}
+                            className={inputStyle}
+                            placeholder="Enter city code"
+                        />
                     </div>
 
                     <Controller
@@ -309,6 +320,7 @@ export default function Ret10GrocerySelect({
 }
 
 type FormData = {
+    city_code: string;
     provider: string;
     provider_location: string[];
     location_gps: string;
@@ -334,7 +346,12 @@ function validateFormData(data: FormData): {
     const errors: string[] = [];
 
     // Validate top-level fields (excluding items and offer checkboxes)
-    const fieldsToValidate = ["provider", "location_gps", "location_pin_code"] as const;
+    const fieldsToValidate = [
+        "provider",
+        "location_gps",
+        "location_pin_code",
+        "city_code",
+    ] as const;
     for (const key of fieldsToValidate) {
         if (data[key] === undefined || data[key] === null || data[key] === "") {
             errors.push(`Field ${key} cannot be empty.`);
