@@ -111,7 +111,6 @@ export default function FormConfig({
         for (const key in data) {
             const payloadField = formConfig.find((field) => field.name === key)?.payloadField;
             if (payloadField) {
-                // Convert to integer if the payloadField contains 'count' or 'quantity'
                 if (payloadField.includes("count") || payloadField.includes("quantity")) {
                     formatedData[payloadField] = parseInt(data[key], 10) || 0;
                 }
