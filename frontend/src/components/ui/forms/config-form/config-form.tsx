@@ -9,6 +9,7 @@ import GenericFormWithPaste from "../generic-form-with-paste";
 import { SubmitEventParams } from "../../../../types/flow-types";
 import Ret10GrocerySelect from "../custom-forms/ret10-grocery-select";
 import ProtocolHTMLForm from "../custom-forms/protocol-html-form";
+import ProtocolHTMLFormMulti from "../custom-forms/protocol-html-form-multi";
 import TRVSelect from "../custom-forms/trv-select";
 import TRV10Select from "../custom-forms/trv10-select";
 import TRV10ScheduleForm from "../custom-forms/trv10-schedule";
@@ -62,6 +63,7 @@ export interface FormFieldConfigType {
         | "trv11_select"
         | "hotel_select"
         | "HTML_FORM"
+        | "HTML_FORM_MULTI"
         | "FINVU_REDIRECT"
         | "DYNAMIC_FORM"
         | "fis13_select"
@@ -211,7 +213,15 @@ export default function FormConfig({
     if (formConfig.find((field) => field.type === "airline_seat_select")) {
         return <AirlineSeatSelect submitEvent={submitEvent} />;
     }
-
+    if (formConfig.find((field) => field.type === "HTML_FORM_MULTI")) {
+        return ProtocolHTMLFormMulti({
+            submitEvent: submitEvent,
+            referenceData: referenceData,
+            HtmlFormConfigInFlow: formConfig.find(
+                (field) => field.type === "HTML_FORM_MULTI"
+            ) as FormFieldConfigType,
+        });
+    }
     if (formConfig.find((field) => field.type === "HTML_FORM")) {
         return ProtocolHTMLForm({
             submitEvent: submitEvent,
