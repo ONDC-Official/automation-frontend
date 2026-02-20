@@ -9,7 +9,6 @@ import GenericFormWithPaste from "../generic-form-with-paste";
 import { SubmitEventParams } from "../../../../types/flow-types";
 import Ret10GrocerySelect from "../custom-forms/ret10-grocery-select";
 import ProtocolHTMLForm from "../custom-forms/protocol-html-form";
-import ProtocolHTMLFormMulti from "../custom-forms/protocol-html-form-multi";
 import TRVSelect from "../custom-forms/trv-select";
 import TRV10Select from "../custom-forms/trv10-select";
 import TRV10ScheduleForm from "../custom-forms/trv10-schedule";
@@ -35,6 +34,7 @@ import Metro210Select from "../custom-forms/metro-seat-select";
 import Metro210EndStopUpdate from "../custom-forms/update-end-stop-update";
 import Metro210StartEndStopSelection from "../custom-forms/trv11_start_end_stop_selection";
 import FIS12Select from "../custom-forms/fis12-select";
+import FIS12Search from "../custom-forms/fis12-search";
 import { RJSFSchema } from "@rjsf/utils";
 
 export interface FormFieldConfigType {
@@ -62,7 +62,6 @@ export interface FormFieldConfigType {
         | "trv11_select"
         | "hotel_select"
         | "HTML_FORM"
-        | "HTML_FORM_MULTI"
         | "FINVU_REDIRECT"
         | "DYNAMIC_FORM"
         | "fis13_select"
@@ -75,7 +74,8 @@ export interface FormFieldConfigType {
         | "trv11_210_select"
         | "trv11_210_update_end_station"
         | "trv11_210_start_end_stop_selection"
-        | "fis12_select_pl";
+        | "fis12_select_pl"
+        | "fis12_search_pl";
     payloadField: string;
     values?: string[];
     defaultValue?: string;
@@ -213,16 +213,6 @@ export default function FormConfig({
         return <AirlineSeatSelect submitEvent={submitEvent} />;
     }
 
-    if (formConfig.find((field) => field.type === "HTML_FORM_MULTI")) {
-        return ProtocolHTMLFormMulti({
-            submitEvent: submitEvent,
-            referenceData: referenceData,
-            HtmlFormConfigInFlow: formConfig.find(
-                (field) => field.type === "HTML_FORM_MULTI"
-            ) as FormFieldConfigType,
-        });
-    }
-
     if (formConfig.find((field) => field.type === "HTML_FORM")) {
         return ProtocolHTMLForm({
             submitEvent: submitEvent,
@@ -304,6 +294,10 @@ export default function FormConfig({
 
     if (formConfig.find((field) => field.type === "fis12_select_pl")) {
         return <FIS12Select submitEvent={submitEvent} />;
+    }
+
+    if (formConfig.find((field) => field.type === "fis12_search_pl")) {
+        return <FIS12Search submitEvent={submitEvent} />;
     }
 
     // NOTE: The JsonSchemaForm check must come after all other specific form type checks above.
