@@ -1,4 +1,6 @@
 import { FC, useState, useCallback, useEffect } from "react";
+import * as notesApi from "@services/developerGuideNotesApi";
+import type { NoteResponse } from "@services/developerGuideNotesApi";
 
 const STORAGE_PREFIX = "developer-guide-notes";
 
@@ -40,8 +42,27 @@ function saveNotesByPath(
     }
 }
 
-function generateId(): string {
-    return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+function apiNoteToNote(r: NoteResponse): Note {
+    const content = r.note ?? "";
+    const firstLine = content.split("\n")[0]?.trim() || "";
+    const title = firstLine.slice(0, 80) || "Untitled note";
+    return {
+        id: r.id,
+        title,
+        content,
+        createdAt: r.created_at ? new Date(r.created_at).getTime() : Date.now(),
+        updatedAt: r.updated_at ? new Date(r.updated_at).getTime() : Date.now(),
+    };
+}
+
+function notesByPathFromApiList(list: NoteResponse[]): NotesByPath {
+    const byPath: NotesByPath = {};
+    for (const r of list) {
+        const path = r.json_path ?? "$";
+        if (!byPath[path]) byPath[path] = [];
+        byPath[path].push(apiNoteToNote(r));
+    }
+    return byPath;
 }
 
 function formatDateTime(ts: number): string {
@@ -62,12 +83,16 @@ interface NotesPanelProps {
     selectedPath: string | null;
     actionApi: string;
     useCaseId?: string;
+    flowId?: string;
 }
 
-const NotesPanel: FC<NotesPanelProps> = ({ selectedPath, actionApi, useCaseId }) => {
+const NotesPanel: FC<NotesPanelProps> = ({ selectedPath, actionApi, useCaseId, flowId }) => {
+    const useApi = Boolean(flowId && useCaseId);
     const [notesByPath, setNotesByPath] = useState<NotesByPath>(() =>
         loadNotesByPath(actionApi, useCaseId)
     );
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
     const [editingId, setEditingId] = useState<string | null>(null);
     const [isCreating, setIsCreating] = useState(false);
     const [formTitle, setFormTitle] = useState("");
@@ -76,9 +101,32 @@ const NotesPanel: FC<NotesPanelProps> = ({ selectedPath, actionApi, useCaseId })
     const pathKey = selectedPath ?? "$";
     const notes = notesByPath[pathKey] ?? [];
 
+    const fetchNotes = useCallback(async () => {
+        if (!useApi || !flowId || !useCaseId) return;
+        setLoading(true);
+        setError(null);
+        try {
+            const res = await notesApi.getNotes({
+                use_case_id: useCaseId,
+                flow_id: flowId,
+                action_id: actionApi,
+            });
+            const list = Array.isArray(res.data) ? res.data : [];
+            setNotesByPath(notesByPathFromApiList(list));
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "Failed to load notes");
+        } finally {
+            setLoading(false);
+        }
+    }, [useApi, flowId, useCaseId, actionApi]);
+
     useEffect(() => {
-        setNotesByPath(loadNotesByPath(actionApi, useCaseId));
-    }, [actionApi, useCaseId]);
+        if (useApi) {
+            void fetchNotes();
+        } else {
+            setNotesByPath(loadNotesByPath(actionApi, useCaseId));
+        }
+    }, [actionApi, useCaseId, flowId, useApi, fetchNotes]);
 
     const persist = useCallback(
         (path: string, nextNotesForPath: Note[]) => {
@@ -86,11 +134,11 @@ const NotesPanel: FC<NotesPanelProps> = ({ selectedPath, actionApi, useCaseId })
                 const next = { ...prev };
                 if (nextNotesForPath.length === 0) delete next[path];
                 else next[path] = nextNotesForPath;
-                saveNotesByPath(actionApi, useCaseId, next);
+                if (!useApi) saveNotesByPath(actionApi, useCaseId, next);
                 return next;
             });
         },
-        [actionApi, useCaseId]
+        [actionApi, useCaseId, useApi]
     );
 
     const startCreate = useCallback(() => {
@@ -107,29 +155,79 @@ const NotesPanel: FC<NotesPanelProps> = ({ selectedPath, actionApi, useCaseId })
         setFormContent("");
     }, []);
 
-    const saveNote = useCallback(() => {
+    const saveNote = useCallback(async () => {
         const path = pathKey;
         const title = formTitle.trim() || "Untitled note";
         const content = formContent.trim();
+        const noteText = title && content ? `${title}\n${content}` : content || title;
         const now = Date.now();
-        if (editingId) {
-            persist(
-                path,
-                notes.map((n) =>
-                    n.id === editingId ? { ...n, title, content, updatedAt: now } : n
-                )
-            );
-            setEditingId(null);
-        } else if (isCreating) {
-            persist(path, [
-                { id: generateId(), title, content, createdAt: now, updatedAt: now },
-                ...notes,
-            ]);
-            setIsCreating(false);
+
+        if (useApi && flowId && useCaseId) {
+            setError(null);
+            try {
+                if (editingId) {
+                    await notesApi.updateNote(editingId, {
+                        use_case_id: useCaseId,
+                        flow_id: flowId,
+                        action_id: actionApi,
+                        json_path: path,
+                        note: noteText,
+                    });
+                } else {
+                    await notesApi.createNote({
+                        use_case_id: useCaseId,
+                        flow_id: flowId,
+                        action_id: actionApi,
+                        json_path: path,
+                        note: noteText,
+                    });
+                }
+                await fetchNotes();
+                setEditingId(null);
+                setIsCreating(false);
+            } catch (err) {
+                setError(err instanceof Error ? err.message : "Failed to save note");
+                return;
+            }
+        } else {
+            if (editingId) {
+                persist(
+                    path,
+                    notes.map((n) =>
+                        n.id === editingId ? { ...n, title, content, updatedAt: now } : n
+                    )
+                );
+                setEditingId(null);
+            } else if (isCreating) {
+                persist(path, [
+                    {
+                        id: `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
+                        title,
+                        content,
+                        createdAt: now,
+                        updatedAt: now,
+                    },
+                    ...notes,
+                ]);
+                setIsCreating(false);
+            }
         }
         setFormTitle("");
         setFormContent("");
-    }, [pathKey, formTitle, formContent, editingId, isCreating, notes, persist]);
+    }, [
+        pathKey,
+        formTitle,
+        formContent,
+        editingId,
+        isCreating,
+        notes,
+        persist,
+        useApi,
+        flowId,
+        useCaseId,
+        actionApi,
+        fetchNotes,
+    ]);
 
     const editNote = useCallback((note: Note) => {
         setFormTitle(note.title);
@@ -139,14 +237,24 @@ const NotesPanel: FC<NotesPanelProps> = ({ selectedPath, actionApi, useCaseId })
     }, []);
 
     const deleteNote = useCallback(
-        (id: string) => {
+        async (id: string) => {
             if (editingId === id) cancelForm();
-            persist(
-                pathKey,
-                notes.filter((n) => n.id !== id)
-            );
+            if (useApi && flowId && useCaseId) {
+                setError(null);
+                try {
+                    await notesApi.deleteNote(id);
+                    await fetchNotes();
+                } catch (err) {
+                    setError(err instanceof Error ? err.message : "Failed to delete note");
+                }
+            } else {
+                persist(
+                    pathKey,
+                    notes.filter((n) => n.id !== id)
+                );
+            }
         },
-        [pathKey, notes, editingId, cancelForm, persist]
+        [pathKey, notes, editingId, cancelForm, persist, useApi, flowId, useCaseId, fetchNotes]
     );
 
     const showForm = isCreating || editingId !== null;
@@ -154,6 +262,16 @@ const NotesPanel: FC<NotesPanelProps> = ({ selectedPath, actionApi, useCaseId })
 
     return (
         <div className="h-full flex flex-col min-h-0">
+            {error && (
+                <div className="shrink-0 mb-3 px-3 py-2 rounded-xl bg-red-50 text-red-700 text-sm">
+                    {error}
+                </div>
+            )}
+            {loading && (
+                <div className="shrink-0 mb-3 px-3 py-2 rounded-xl bg-slate-100 text-slate-600 text-sm">
+                    Loading notes…
+                </div>
+            )}
             {/* Path + New note */}
             {hasPath && (
                 <div className="flex items-center justify-between gap-2 mb-3 shrink-0">

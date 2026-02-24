@@ -180,6 +180,18 @@ export const apiClient = new ApiClient({
     timeout: 30000,
 });
 
+export const developerGuideApiClient = new ApiClient({
+    baseURL: import.meta.env.VITE_DEVELOPER_GUIDE_BACKEND_URL,
+    withCredentials: true,
+    timeout: 30000,
+});
+
+export const developerGuideNotesApiClient = new ApiClient({
+    baseURL: import.meta.env.VITE_DEVELOPER_GUIDE_NOTES_BACKEND_API_URL,
+    withCredentials: true,
+    timeout: 30000,
+});
+
 // Export the axios instance for direct access if needed
 export const axiosInstance = apiClient.getInstance();
 

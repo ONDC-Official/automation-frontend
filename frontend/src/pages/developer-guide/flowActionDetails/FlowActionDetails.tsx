@@ -39,6 +39,7 @@ interface FlowActionDetailsProps {
     actionApi: string;
     spec: OpenAPISpecification | null | undefined;
     useCaseId?: string;
+    flowId?: string;
     /** Owner from the step (not from attribute). */
     stepOwner?: string;
 }
@@ -48,6 +49,7 @@ const FlowActionDetails: FC<FlowActionDetailsProps> = ({
     actionApi,
     spec,
     useCaseId,
+    flowId,
     stepOwner,
 }) => {
     const [activeTab, setActiveTab] = useState("documentation");
@@ -235,6 +237,7 @@ const FlowActionDetails: FC<FlowActionDetailsProps> = ({
                                         selectedPath={selectedPath}
                                         actionApi={actionApi}
                                         useCaseId={useCaseId}
+                                        flowId={flowId}
                                     />
                                 )}
                             </div>

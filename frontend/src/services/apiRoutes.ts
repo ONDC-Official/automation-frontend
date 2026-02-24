@@ -57,4 +57,9 @@ export const API_ROUTES = {
         LOGOUT: "/auth/logout",
         ME: "/auth/api/me",
     },
+
+    NOTES: {
+        BASE: "/notes",
+        BY_ID: (noteId: string) => `/notes/${noteId}`,
+    },
 } as const;

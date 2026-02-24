@@ -73,7 +73,8 @@ const FlowInformation: FC<FlowInformationProps> = ({ data, selectedFlow, selecte
                 </div>
                 <h2 className="text-xl font-semibold text-slate-800 mb-2">No flow selected</h2>
                 <p className="text-slate-600 text-sm max-w-md leading-relaxed">
-                    Select a flow from the sidebar, then choose an action to view its documentation, example payload, and schema validations.
+                    Select a flow from the sidebar, then choose an action to view its documentation,
+                    example payload, and schema validations.
                 </p>
             </div>
         );
@@ -137,7 +138,8 @@ const FlowInformation: FC<FlowInformationProps> = ({ data, selectedFlow, selecte
                                 Payload & schema
                             </h2>
                             <p className="text-slate-600 text-sm mb-3 leading-relaxed">
-                                Click a key in the JSON tree to see its attributes and validations in the right panel.
+                                Click a key in the JSON tree to see its attributes and validations
+                                in the right panel.
                             </p>
                             <div className="h-[540px] min-h-0 rounded-xl overflow-hidden border border-slate-200 shadow-sm bg-white">
                                 <FlowActionDetails
@@ -148,6 +150,7 @@ const FlowInformation: FC<FlowInformationProps> = ({ data, selectedFlow, selecte
                                         selectedFlowData?.useCaseId ??
                                         selectedFlowData?.meta?.use_case_id
                                     }
+                                    flowId={selectedFlowData?.meta?.flowId ?? selectedFlow}
                                     stepOwner={selectedStep.owner}
                                 />
                             </div>

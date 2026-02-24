@@ -46,7 +46,7 @@ const UserProfile = () => {
                         <div className="flex justify-between items-start flex-col sm:flex-row sm:items-center">
                             <div className="text-gray-700 space-y-1 items-start justify-items-start">
                                 <p>
-                                    <strong>Login:</strong> {userDetails?.githubId || "N/A"}
+                                    <strong>Login:</strong> {userDetails?.username || "N/A"}
                                 </p>
                                 <p>
                                     <strong>Participant ID:</strong>{" "}
