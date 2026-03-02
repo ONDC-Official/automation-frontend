@@ -42,14 +42,14 @@ function normalizePath(p: string): string {
     return p.replace(/^\$\.?/, "").trim() || "";
 }
 
-/** use_case_id -> attribute_set[api] -> attribute at path. */
+/** use_case_id -> attribute_set[api] -> attribute at path. api must be step.api (search, on_search, etc.). */
 function getAttributeBase(
     xa: OpenAPISpecification["x-attributes"],
     useCaseId: string | undefined,
-    actionApi: string
+    api: string
 ): Record<string, unknown> | undefined {
     if (!xa) return undefined;
-    const apiKey = actionApi.replace(/\d+$/, "") || actionApi;
+    const apiKey = api;
 
     if (Array.isArray(xa)) {
         const match = useCaseId
@@ -122,20 +122,6 @@ function mapTagListItem(raw: Record<string, unknown>): TagFieldItem {
     return { code, description, ...(list && list.length > 0 ? { list } : undefined) };
 }
 
-function isEnumArr(v: unknown): v is { code: string; description?: string }[] {
-    return (
-        Array.isArray(v) && v.length > 0 && typeof (v[0] as { code?: unknown })?.code === "string"
-    );
-}
-
-function isTagArr(
-    v: unknown
-): v is { code: string; description?: string; list?: { code: string; description?: string }[] }[] {
-    return (
-        Array.isArray(v) && v.length > 0 && typeof (v[0] as { code?: unknown })?.code === "string"
-    );
-}
-
 function isXAttrEnum(v: unknown): v is {
     type?: string;
     enums?: Array<{ code: string; description?: string; _description?: { info?: string } }>;
@@ -185,14 +171,20 @@ function getEnumRefsFromNode(node: Record<string, unknown> | undefined): EnumRef
     if (!node) return undefined;
 
     const desc = node._description as Record<string, unknown> | undefined;
+    // enumRefs can be on the node (sibling of _description) or inside _description
     const raw = (node.enumRefs as unknown) ?? (desc?.enumRefs as unknown);
 
     if (!Array.isArray(raw) || raw.length === 0) return undefined;
 
     const refs: EnumRef[] = [];
-    for (const r of raw as Array<{ label?: unknown; href?: unknown }>) {
+    for (const r of raw as Array<{ label?: unknown; href?: unknown; url?: unknown }>) {
         if (!r || typeof r !== "object") continue;
-        const href = typeof r.href === "string" ? r.href : undefined;
+        const href =
+            typeof r.href === "string"
+                ? r.href.trim()
+                : typeof r.url === "string"
+                  ? r.url.trim()
+                  : undefined;
         if (!href) continue;
         const label = typeof r.label === "string" && r.label.trim().length > 0 ? r.label : href;
         refs.push({ label, href });
@@ -352,50 +344,50 @@ export function getActionAttributes(
     }
 
     // 4. Fallback: x-enum
-    const xe = spec?.["x-enum"] as Record<string, Record<string, unknown>> | undefined;
-    const enumVal = xe?.[actionApi] ? getAtPath(xe[actionApi], path) : undefined;
-    if (isEnumArr(enumVal)) {
-        const enumOptions: EnumOption[] = enumVal.map((e) => ({
-            code: e.code,
-            description: (e.description as string) || DASH,
-        }));
-        return {
-            kind: "enum",
-            jsonPath: path,
-            enums: enumOptions.map((e) => e.code),
-            enumOptions,
-            required: attr.required,
-            owner: attr.owner,
-            type: attr.type,
-            description: attr.description,
-            enumRefs,
-        } satisfies EnumDetails;
-    }
+    // const xe = spec?.["x-enum"] as Record<string, Record<string, unknown>> | undefined;
+    // const enumVal = xe?.[actionApi] ? getAtPath(xe[actionApi], path) : undefined;
+    // if (isEnumArr(enumVal)) {
+    //     const enumOptions: EnumOption[] = enumVal.map((e) => ({
+    //         code: e.code,
+    //         description: (e.description as string) || DASH,
+    //     }));
+    //     return {
+    //         kind: "enum",
+    //         jsonPath: path,
+    //         enums: enumOptions.map((e) => e.code),
+    //         enumOptions,
+    //         required: attr.required,
+    //         owner: attr.owner,
+    //         type: attr.type,
+    //         description: attr.description,
+    //         enumRefs,
+    //     } satisfies EnumDetails;
+    // }
 
-    // 5. Fallback: x-tags
-    const xt = spec?.["x-tags"] as Record<string, Record<string, unknown>> | undefined;
-    const tagVal = xt?.[actionApi] ? getAtPath(xt[actionApi], path) : undefined;
-    if (isTagArr(tagVal)) {
-        const tagFields: TagField[] = (tagVal as Record<string, unknown>[]).map((t) => {
-            const rawList = t.list;
-            const list: TagFieldItem[] | undefined = Array.isArray(rawList)
-                ? (rawList as Record<string, unknown>[]).map((l) => mapTagListItem(l))
-                : undefined;
-            return {
-                label: String(t.code ?? ""),
-                description: getDescFromNode(t),
-                ...(list && list.length > 0 ? { list } : undefined),
-            };
-        });
-        return {
-            kind: "tag",
-            jsonPath: path,
-            description: DASH,
-            _description: { type: "tag" },
-            tagFields,
-            attributeInfo: attr,
-        } satisfies TagDetails;
-    }
+    // // 5. Fallback: x-tags
+    // const xt = spec?.["x-tags"] as Record<string, Record<string, unknown>> | undefined;
+    // const tagVal = xt?.[actionApi] ? getAtPath(xt[actionApi], path) : undefined;
+    // if (isTagArr(tagVal)) {
+    //     const tagFields: TagField[] = (tagVal as Record<string, unknown>[]).map((t) => {
+    //         const rawList = t.list;
+    //         const list: TagFieldItem[] | undefined = Array.isArray(rawList)
+    //             ? (rawList as Record<string, unknown>[]).map((l) => mapTagListItem(l))
+    //             : undefined;
+    //         return {
+    //             label: String(t.code ?? ""),
+    //             description: getDescFromNode(t),
+    //             ...(list && list.length > 0 ? { list } : undefined),
+    //         };
+    //     });
+    //     return {
+    //         kind: "tag",
+    //         jsonPath: path,
+    //         description: DASH,
+    //         _description: { type: "tag" },
+    //         tagFields,
+    //         attributeInfo: attr,
+    //     } satisfies TagDetails;
+    // }
 
     return emptyAttr();
 }
@@ -428,7 +420,10 @@ function flattenValidationRules(
 }
 
 /** Normalize action API for _TESTS_ lookup: strip trailing digits (e.g. on_search1 -> on_search). */
-function getValidationTestKey(tests: Record<string, unknown>, actionApi: string): string | undefined {
+function getValidationTestKey(
+    tests: Record<string, unknown>,
+    actionApi: string
+): string | undefined {
     if (actionApi in tests) return actionApi;
     const withoutSuffix = actionApi.replace(/\d+$/, "") || actionApi;
     if (withoutSuffix in tests) return withoutSuffix;
@@ -461,10 +456,7 @@ export function getValidationsForAction(
         return out.filter((r) => {
             if (r.attr == null) return false;
             const rulePath = normalizePath(r.attr);
-            return (
-                rulePath === normalizedPath ||
-                rulePath.startsWith(normalizedPath + ".")
-            );
+            return rulePath === normalizedPath || rulePath.startsWith(normalizedPath + ".");
         });
     }
     return out;

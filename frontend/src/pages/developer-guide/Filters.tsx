@@ -1,58 +1,116 @@
 import { FC } from "react";
-import GenericForm from "@components/ui/forms/generic-form";
 import FormSelect from "@components/ui/forms/form-select";
+import { Domain, DomainVersion } from "@/pages/schema-validation/types";
+import { trackEvent } from "@utils/analytics";
+import { useFormFieldData } from "@/hooks/useFormFieldData";
+import { DomainVersionWithUsecase } from "@/pages/scenario";
 
 interface FiltersProps {
     onSubmit: (data: { domain: string; version: string; useCase: string }) => Promise<void>;
 }
 
 const Filters: FC<FiltersProps> = ({ onSubmit }) => {
-    // Placeholder options; replace with API/constants when filters are wired
-    const domainOptions = [{ key: "Select Domain", value: "" }, "Domain 1", "Domain 2", "Domain 3"];
-    const versionOptions = [
-        { key: "Select Version", value: "" },
-        "Version 1",
-        "Version 2",
-        "Version 3",
-    ];
-    const useCaseOptions = [
-        { key: "Select Use Case", value: "" },
-        "Use Case 1",
-        "Use Case 2",
-        "Use Case 3",
-    ];
+    const { dynamicList, dynamicValue, formData, setDynamicList, setDyanmicValue } =
+        useFormFieldData();
 
     return (
-        <div className="max-w-[1600px] mx-auto px-6 py-4">
-            <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-                <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/60">
-                    <h2 className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
-                        Filters
-                    </h2>
-                    <p className="text-xs text-slate-500 mt-0.5">Domain, version & use case</p>
+        <div className="bg-white rounded-lg border border-gray-200 p-4 my-8 mx-4">
+            <h2 className="text-lg font-bold text-gray-800 mb-4">Info</h2>
+            <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <FormSelect
+                        name="domain"
+                        label="Domain"
+                        options={dynamicList.domain.map((val: Domain) => val.key)}
+                        currentValue={dynamicValue.domain}
+                        setSelectedValue={(data: string) => {
+                            trackEvent({
+                                category: "SCHEMA_VALIDATION-FORM",
+                                action: "Added domain",
+                                label: data,
+                            });
+                            formData.current = { ...formData.current, domain: data };
+                            setDyanmicValue((prev) => ({
+                                ...prev,
+                                domain: data,
+                                version: "",
+                                usecaseId: "",
+                            }));
+                            setDynamicList((prev) => {
+                                let filteredVersion: DomainVersionWithUsecase[] = [];
+                                prev.domain.forEach((item: Domain) => {
+                                    if (item.key === data) {
+                                        filteredVersion =
+                                            item.version as DomainVersionWithUsecase[];
+                                    }
+                                });
+                                return {
+                                    ...prev,
+                                    version: filteredVersion,
+                                    usecase: [],
+                                };
+                            });
+                        }}
+                        nonSelectedValue
+                        required={true}
+                    />
+                    <FormSelect
+                        name="version"
+                        label="Version"
+                        options={dynamicList?.version?.map((val: DomainVersion) => val.key) || []}
+                        currentValue={dynamicValue.version}
+                        setSelectedValue={(data: string) => {
+                            formData.current = { ...formData.current, version: data };
+                            setDyanmicValue((prev) => ({
+                                ...prev,
+                                version: data,
+                                usecaseId: "",
+                            }));
+                            setDynamicList((prev) => {
+                                let filteredUsecase: string[] = [];
+                                prev.version.forEach((item: DomainVersionWithUsecase) => {
+                                    if (item.key === data) {
+                                        filteredUsecase = item.usecase;
+                                    }
+                                });
+                                return {
+                                    ...prev,
+                                    usecase: filteredUsecase,
+                                };
+                            });
+                        }}
+                        required={true}
+                        nonSelectedValue
+                    />
+                    <FormSelect
+                        name="useCase"
+                        label="Use Case"
+                        options={dynamicList?.usecase || []}
+                        currentValue={dynamicValue.usecaseId}
+                        setSelectedValue={async (data: string) => {
+                            trackEvent({
+                                category: "SCHEMA_VALIDATION-FORM",
+                                action: "Added usecase",
+                                label: data,
+                            });
+                            formData.current = {
+                                ...formData.current,
+                                usecaseId: data,
+                            };
+                            setDyanmicValue((prev) => ({
+                                ...prev,
+                                usecaseId: data,
+                            }));
+                            await onSubmit({
+                                domain: formData.current.domain,
+                                version: formData.current.version,
+                                useCase: data,
+                            });
+                        }}
+                        nonSelectedValue
+                        required={true}
+                    />
                 </div>
-                <GenericForm onSubmit={onSubmit} className="p-6">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                        <FormSelect
-                            name="domain"
-                            label="Domain"
-                            options={domainOptions}
-                            required={true}
-                        />
-                        <FormSelect
-                            name="version"
-                            label="Version"
-                            options={versionOptions}
-                            required={true}
-                        />
-                        <FormSelect
-                            name="useCase"
-                            label="Use Case"
-                            options={useCaseOptions}
-                            required={true}
-                        />
-                    </div>
-                </GenericForm>
             </div>
         </div>
     );

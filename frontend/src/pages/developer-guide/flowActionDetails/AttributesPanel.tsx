@@ -48,6 +48,8 @@ interface AttributesPanelProps {
     validations?: ValidationRuleDisplay[];
     spec?: OpenAPISpecification | null;
     actionApi?: string;
+    /** step.api (search, on_search, etc.) — used for x-attributes / getRequiredForPath lookup. */
+    stepApi?: string;
     useCaseId?: string;
     isExpanded?: boolean;
 }
@@ -373,8 +375,9 @@ const ValidationsSection: FC<{
     validations: ValidationRuleDisplay[];
     spec?: OpenAPISpecification | null;
     actionApi?: string;
+    stepApi?: string;
     useCaseId?: string;
-}> = ({ validations, spec, actionApi, useCaseId }) => {
+}> = ({ validations, spec, actionApi, stepApi, useCaseId }) => {
     const [searchQuery, setSearchQuery] = useState("");
 
     const grouped = useMemo(() => {
@@ -441,9 +444,10 @@ const ValidationsSection: FC<{
                     filteredGrouped.map(([groupKey, rules]) => {
                         const first = rules[0];
                         const attr = first?.attr ?? null;
+                        const apiForAttrs = stepApi ?? actionApi;
                         const requiredRaw =
-                            attr != null && spec != null && actionApi
-                                ? getRequiredForPath(spec, actionApi, attr, useCaseId)
+                            attr != null && spec != null && apiForAttrs
+                                ? getRequiredForPath(spec, apiForAttrs, attr, useCaseId)
                                 : null;
                         const required =
                             requiredRaw === "—" || requiredRaw === "" ? "Optional" : requiredRaw;
@@ -540,6 +544,7 @@ const AttributesPanel: FC<AttributesPanelProps> = ({
     validations = [],
     spec,
     actionApi,
+    stepApi,
     useCaseId,
     isExpanded = false,
 }) => {
@@ -592,6 +597,7 @@ const AttributesPanel: FC<AttributesPanelProps> = ({
                         validations={validations}
                         spec={spec}
                         actionApi={actionApi}
+                        stepApi={stepApi}
                         useCaseId={useCaseId}
                     />
                 )}

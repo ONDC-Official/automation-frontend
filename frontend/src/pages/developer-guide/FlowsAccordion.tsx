@@ -26,12 +26,12 @@ function buildStepDisplayItems(steps: FlowStep[]): StepDisplayItem[] {
     const items: StepDisplayItem[] = [];
     const actionIdToIdx = new Map<string, number>();
 
-    steps.forEach((s, i) => {
+    steps?.forEach((s, i) => {
         const aid = getActionId(s);
         actionIdToIdx.set(aid, i);
     });
 
-    for (let i = 0; i < steps.length; i++) {
+    for (let i = 0; i < steps?.length; i++) {
         if (displayed.has(i)) continue;
         const step = steps[i];
         const responseFor = step.responseFor;
@@ -147,7 +147,7 @@ const FlowsAccordion: FC<FlowsAccordionProps> = ({
                             className="w-full px-4 py-4 flex items-center justify-between text-left bg-white hover:bg-slate-50/80 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-sky-400/40"
                         >
                             <span className="font-semibold text-slate-800 text-sm">
-                                {flow.meta?.flowId}
+                                {flow.meta?.flowName ?? flow.meta?.flowId}
                             </span>
                             <span
                                 className={`flex items-center justify-center w-8 h-8 rounded-lg bg-slate-100 text-slate-600 shrink-0 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}

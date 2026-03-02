@@ -7,10 +7,10 @@ import { API_ROUTES } from "./apiRoutes";
 import type { ApiResponse } from "./apiClient";
 
 export interface NotePayload {
-    use_case_id: string;
-    flow_id: string;
-    action_id: string;
-    json_path: string;
+    use_case_id?: string;
+    flow_id?: string;
+    action_id?: string;
+    json_path?: string;
     note: string;
 }
 

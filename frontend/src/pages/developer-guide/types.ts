@@ -2,7 +2,7 @@ export interface OpenAPIInfo {
     title: string;
     description: string;
     version: string;
-    domain: string;
+    domain?: string;
 }
 
 export interface OpenAPISecurityScheme {
@@ -91,8 +91,11 @@ export interface FlowStep {
         summary?: string;
         value?: unknown;
     };
+    /** Examples at step level (preferred); also supported under mock.examples for backward compatibility */
+    examples?: MockExample[];
     mock?: {
         examples?: MockExample[];
+        [key: string]: unknown;
     };
 }
 
@@ -102,6 +105,7 @@ export interface Flow {
         use_case_id?: string;
         domain?: string;
         flowId?: string;
+        flowName?: string;
         description?: string;
         [key: string]: unknown;
     };
@@ -141,21 +145,17 @@ export interface OpenAPISpecification {
     openapi: string;
     info: OpenAPIInfo;
     security?: OpenAPISecurity[];
-    paths: {
+    paths?: {
         [path: string]: OpenAPIPathItem;
     };
     components?: OpenAPIComponents;
     "x-flows"?: Flow[];
-    "x-enum"?: Record<string, Record<string, unknown>>;
-    "x-tags"?: Record<string, Record<string, unknown>>;
-    /** Attribute definitions keyed by use_case_id (array form) or legacy record keyed by useCaseId */
     "x-attributes"?:
         | Array<{
               meta?: { use_case_id?: string };
               attribute_set?: Record<string, Record<string, unknown>>;
           }>
         | Record<string, { attribute_set?: Record<string, Record<string, unknown>> }>;
-    /** Validation tests keyed by _TESTS_ then by action name; may also contain other keys (e.g. enums) */
     "x-validations"?: Record<
         string,
         Record<string, XValidationTestGroup[]> | Record<string, unknown>

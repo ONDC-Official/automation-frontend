@@ -15,6 +15,11 @@ function getExamplesFromStep(
     step: FlowStep | undefined
 ): Array<{ name: string; payload: unknown }> {
     if (!step) return [];
+    const fromStep = step.examples?.map((ex) => ({
+        name: ex.name ?? ex.description ?? "Example",
+        payload: ex.payload,
+    }));
+    if (fromStep && fromStep.length > 0) return fromStep;
     const fromMock = step.mock?.examples?.map((ex) => ({
         name: ex.name ?? ex.description ?? "Example",
         payload: ex.payload,
@@ -82,12 +87,7 @@ const FlowInformation: FC<FlowInformationProps> = ({ data, selectedFlow, selecte
 
     return (
         <div className="p-6 md:p-10 space-y-10">
-            {selectedFlowData && (
-                <FlowDetailsAndSummary
-                    flow={selectedFlowData}
-                    selectedFlowAction={selectedFlowAction}
-                />
-            )}
+            {selectedFlowData && <FlowDetailsAndSummary flow={selectedFlowData} />}
 
             {selectedFlowAction && selectedStep && (
                 <section className="flex flex-col space-y-6">
@@ -145,6 +145,7 @@ const FlowInformation: FC<FlowInformationProps> = ({ data, selectedFlow, selecte
                                 <FlowActionDetails
                                     exampleValue={examplePayload as object}
                                     actionApi={selectedFlowAction}
+                                    stepApi={selectedStep.api}
                                     spec={data}
                                     useCaseId={
                                         selectedFlowData?.useCaseId ??

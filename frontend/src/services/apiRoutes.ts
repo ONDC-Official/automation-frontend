@@ -59,7 +59,13 @@ export const API_ROUTES = {
     },
 
     NOTES: {
-        BASE: "/notes",
-        BY_ID: (noteId: string) => `/notes/${noteId}`,
+        BASE: "api/notes",
+        BY_ID: (noteId: string) => `api/notes/${noteId}`,
+    },
+
+    COMMENTS: {
+        BASE: "api/comments",
+        BY_ID: (commentsId: string) => `api/comments/${commentsId}`,
+        RESOLVE: (commentsId: string) => `api/comments/${commentsId}/resolve`,
     },
 } as const;

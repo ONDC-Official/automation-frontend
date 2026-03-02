@@ -22,7 +22,8 @@ const DeveloperGuide: FC = () => {
                         Developer Guide
                     </h1>
                     <p className="text-sm text-slate-600 mt-1 max-w-2xl leading-relaxed">
-                        Explore API flows, request/response actions, schema attributes, and x-validations for each payload field.
+                        Explore API flows, request/response actions, schema attributes, and
+                        x-validations for each payload field.
                     </p>
                 </div>
             </header>

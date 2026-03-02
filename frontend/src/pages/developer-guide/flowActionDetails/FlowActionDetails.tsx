@@ -1,6 +1,6 @@
-import { FC, useState, useCallback, useEffect, ComponentProps, MouseEvent } from "react";
+import { FC, useState, useCallback, ComponentProps, MouseEvent } from "react";
 import { FaCopy } from "react-icons/fa";
-import { FiEdit2, FiMaximize2 } from "react-icons/fi";
+import { FiMaximize2 } from "react-icons/fi";
 import Tabs from "@components/ui/mini-components/tabs";
 import JsonViewer from "@pages/protocol-playground/ui/Json-path-extractor";
 import { SelectedType } from "@pages/protocol-playground/ui/session-data-tab";
@@ -36,7 +36,10 @@ function getValueAtPath(obj: unknown, path: string): unknown {
 
 interface FlowActionDetailsProps {
     exampleValue: object;
+    /** action_id from step (for display, comments/notes keys). */
     actionApi: string;
+    /** api from step (search, on_search, etc.) — used for x-attributes attribute_set lookup. */
+    stepApi?: string;
     spec: OpenAPISpecification | null | undefined;
     useCaseId?: string;
     flowId?: string;
@@ -47,6 +50,7 @@ interface FlowActionDetailsProps {
 const FlowActionDetails: FC<FlowActionDetailsProps> = ({
     exampleValue,
     actionApi,
+    stepApi,
     spec,
     useCaseId,
     flowId,
@@ -56,33 +60,6 @@ const FlowActionDetails: FC<FlowActionDetailsProps> = ({
     const [rightPanelTab, setRightPanelTab] = useState("attributes");
     const [selectedPath, setSelectedPath] = useState<string | null>(null);
     const [expanded, setExpanded] = useState(false);
-    const [editMode, setEditMode] = useState(false);
-    const [editedValue, setEditedValue] = useState<object>(() =>
-        JSON.parse(JSON.stringify(exampleValue))
-    );
-    const [rawEditText, setRawEditText] = useState("");
-    const [editError, setEditError] = useState<string | null>(null);
-
-    useEffect(() => {
-        setEditedValue(JSON.parse(JSON.stringify(exampleValue)));
-    }, [exampleValue]);
-
-    const applyEdit = useCallback(() => {
-        try {
-            const parsed = JSON.parse(rawEditText) as object;
-            setEditedValue(parsed);
-            setEditError(null);
-            setEditMode(false);
-        } catch (err) {
-            setEditError(err instanceof Error ? err.message : "Invalid JSON");
-        }
-    }, [rawEditText]);
-
-    const startEdit = useCallback(() => {
-        setRawEditText(JSON.stringify(editedValue, null, 2));
-        setEditError(null);
-        setEditMode(true);
-    }, [editedValue]);
 
     const handleKeyClick = useCallback((path: string, _k: string, e: MouseEvent) => {
         e.stopPropagation();
@@ -97,12 +74,15 @@ const FlowActionDetails: FC<FlowActionDetailsProps> = ({
         [selectedPath]
     );
 
-    const valueAtPath = selectedPath ? getValueAtPath(editedValue, selectedPath) : undefined;
+    const valueAtPath = selectedPath ? getValueAtPath(exampleValue, selectedPath) : undefined;
 
+    const apiForAttributes = stepApi ?? actionApi;
     const attributes = selectedPath
-        ? getActionAttributes(spec, actionApi, selectedPath, valueAtPath, useCaseId)
+        ? getActionAttributes(spec, apiForAttributes, selectedPath, valueAtPath, useCaseId)
         : null;
-    const validations = selectedPath ? getValidationsForAction(spec, actionApi, selectedPath) : [];
+    const validations = selectedPath
+        ? getValidationsForAction(spec, apiForAttributes, selectedPath)
+        : [];
 
     const root = (
         <div className="flex flex-col h-full rounded-xl border border-slate-200 bg-white overflow-hidden shadow-sm">
@@ -116,45 +96,15 @@ const FlowActionDetails: FC<FlowActionDetailsProps> = ({
                     <button
                         type="button"
                         onClick={() =>
-                            void navigator.clipboard.writeText(JSON.stringify(editedValue, null, 2))
+                            void navigator.clipboard.writeText(
+                                JSON.stringify(exampleValue, null, 2)
+                            )
                         }
                         className="p-2 rounded-lg text-slate-500 hover:bg-slate-200 hover:text-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-sky-400 focus:ring-offset-1"
                         title="Copy JSON"
                     >
                         <FaCopy className="w-4 h-4" />
                     </button>
-                    {editMode ? (
-                        <>
-                            <button
-                                type="button"
-                                onClick={applyEdit}
-                                className="px-3 py-1.5 text-sm font-medium text-white bg-sky-600 rounded-lg hover:bg-sky-700 transition-colors focus:outline-none focus:ring-2 focus:ring-sky-400 focus:ring-offset-1"
-                                title="Apply edit"
-                            >
-                                Apply
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => {
-                                    setEditMode(false);
-                                    setEditError(null);
-                                }}
-                                className="px-3 py-1.5 text-sm font-medium text-slate-700 bg-slate-200 rounded-lg hover:bg-slate-300 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-1"
-                                title="Cancel edit"
-                            >
-                                Cancel
-                            </button>
-                        </>
-                    ) : (
-                        <button
-                            type="button"
-                            onClick={startEdit}
-                            className="p-2 rounded-lg text-slate-500 hover:bg-slate-200 hover:text-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-sky-400 focus:ring-offset-1"
-                            title="Edit JSON"
-                        >
-                            <FiEdit2 className="w-4 h-4" />
-                        </button>
-                    )}
                     <button
                         type="button"
                         onClick={() => setExpanded((e) => !e)}
@@ -172,35 +122,15 @@ const FlowActionDetails: FC<FlowActionDetailsProps> = ({
                             className={`flex-1 flex flex-col min-w-0 border-r border-slate-200 ${expanded ? "" : "max-w-xl"}`}
                         >
                             <div className="px-4 py-3 border-b border-slate-100 bg-slate-100/60 text-xs text-slate-600">
-                                {editMode
-                                    ? "Edit JSON below, then click Apply to update the tree."
-                                    : "Click any key in the tree to see schema and validations in the right panel."}
+                                Click any key in the tree to see schema and validations in the right
+                                panel.
                             </div>
                             <div className="flex-1 min-h-0 overflow-auto bg-slate-900 p-4">
-                                {editMode ? (
-                                    <div className="flex flex-col h-full gap-2">
-                                        <textarea
-                                            value={rawEditText}
-                                            onChange={(e) => {
-                                                setRawEditText(e.target.value);
-                                                setEditError(null);
-                                            }}
-                                            className="flex-1 min-h-[200px] w-full font-mono text-sm text-slate-200 bg-slate-800 border border-slate-600 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500/50 resize-none"
-                                            spellCheck={false}
-                                        />
-                                        {editError && (
-                                            <div className="text-red-400 text-xs">{editError}</div>
-                                        )}
-                                    </div>
-                                ) : (
-                                    <JsonViewer
-                                        data={
-                                            editedValue as ComponentProps<typeof JsonViewer>["data"]
-                                        }
-                                        isSelected={isSelected}
-                                        handleKeyClick={handleKeyClick}
-                                    />
-                                )}
+                                <JsonViewer
+                                    data={exampleValue as ComponentProps<typeof JsonViewer>["data"]}
+                                    isSelected={isSelected}
+                                    handleKeyClick={handleKeyClick}
+                                />
                             </div>
                         </div>
                         <div
@@ -221,6 +151,7 @@ const FlowActionDetails: FC<FlowActionDetailsProps> = ({
                                         validations={validations}
                                         spec={spec}
                                         actionApi={actionApi}
+                                        stepApi={stepApi}
                                         useCaseId={useCaseId}
                                         isExpanded={expanded}
                                     />
@@ -230,6 +161,7 @@ const FlowActionDetails: FC<FlowActionDetailsProps> = ({
                                         selectedPath={selectedPath}
                                         actionApi={actionApi}
                                         useCaseId={useCaseId}
+                                        flowId={flowId}
                                     />
                                 )}
                                 {rightPanelTab === "notes" && (
