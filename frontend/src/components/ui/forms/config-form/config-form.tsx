@@ -73,7 +73,8 @@ export interface FormFieldConfigType {
         | "search_discover_product_fis13"
         | "trv11_210_select"
         | "trv11_210_update_end_station"
-        | "trv11_210_start_end_stop_selection";
+        | "trv11_210_start_end_stop_selection"
+        | "datetime-local";
     payloadField: string;
     values?: string[];
     defaultValue?: string;
@@ -107,11 +108,20 @@ export default function FormConfig({
         const formatedData: Record<string, string | number> = {};
         const formData: Record<string, string> = data;
         for (const key in data) {
-            const payloadField = formConfig.find((field) => field.name === key)?.payloadField;
+            const fieldConfig = formConfig.find((field) => field.name === key);
+            const payloadField = fieldConfig?.payloadField;
             if (payloadField) {
-                // Convert to integer if the payloadField contains 'count' or 'quantity'
                 if (payloadField.includes("count") || payloadField.includes("quantity")) {
                     formatedData[payloadField] = parseInt(data[key], 10) || 0;
+                }
+                // Convert datetime-local and date values to ISO 8601 format
+                else if (fieldConfig?.type === "datetime-local" || fieldConfig?.type === "date") {
+                    const dateValue = data[key];
+                    if (dateValue) {
+                        formatedData[payloadField] = new Date(dateValue).toISOString();
+                    } else {
+                        formatedData[payloadField] = dateValue;
+                    }
                 }
                 // Convert date to ISO 8601 format if payloadField contains 'timestamp' or 'time'
                 else if (payloadField.includes("timestamp") || payloadField.includes("time.")) {
@@ -339,6 +349,16 @@ export default function FormConfig({
                                 label={field.label}
                                 required={field.required !== false}
                                 type="date"
+                                // key={field.payloadField}
+                            />
+                        );
+                    case "datetime-local":
+                        return (
+                            <FormInput
+                                name={field.name}
+                                label={field.label}
+                                required={field.required !== false}
+                                type="datetime-local"
                                 // key={field.payloadField}
                             />
                         );
