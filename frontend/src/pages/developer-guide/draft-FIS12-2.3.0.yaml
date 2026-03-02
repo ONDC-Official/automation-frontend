@@ -23007,28 +23007,16 @@ x-attributes:
                               owner: BAP
                               type: tag
                               tags:
-                                  BAP_TERMS:
-                                      _description:
-                                          required: true
-                                          usage: "--"
-                                          info: This attribute refers to BAP Terms tag group
-                                          owner: BAP
-                                          type: string
-                                      list:
-                                          STATIC_TERMS:
-                                              _description:
-                                                  required: true
-                                                  usage: "--"
-                                                  info: This attribute refers to the static terms
-                                                  owner: BAP
-                                                  type: string
-                                          OFFLINE_CONTRACT:
-                                              _description:
-                                                  required: true
-                                                  usage: "--"
-                                                  info: This attribute refers to the offline contract
-                                                  owner: BAP
-                                                  type: string
+                                  - code: BAP_TERMS
+                                    description: This attribute refers to BAP Terms tag group
+                                    reference: <PR/Issue/Discussion Links md format text>
+                                    list:
+                                        - code: STATIC_TERMS
+                                          description: This attribute refers to the static terms
+                                          reference: <PR/Issue/Discussion Links md format text>
+                                        - code: OFFLINE_CONTRACT
+                                          description: This attribute refers to the offline contract
+                                          reference: <PR/Issue/Discussion Links md format text>
                   _description:
                       required: true
                       usage: "--"
@@ -23877,6 +23865,17 @@ x-attributes:
                               owner: BPP
                               type: tag
                               tags:
+                                  - code: BPP_TERMS
+                                    description: This attribute refers to BAP Terms tag group
+                                    reference: <PR/Issue/Discussion Links md format text>
+                                    list:
+                                        - code: STATIC_TERMS
+                                          description: This attribute refers to the static terms
+                                          reference: <PR/Issue/Discussion Links md format text>
+                                        - code: OFFLINE_CONTRACT
+                                          description: This attribute refers to the offline contract
+                                          reference: <PR/Issue/Discussion Links md format text>
+                              tags1:
                                   BPP_TERMS:
                                       _description:
                                           required: true

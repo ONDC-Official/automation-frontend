@@ -42,6 +42,12 @@ function normalizePath(p: string): string {
     return p.replace(/^\$\.?/, "").trim() || "";
 }
 
+/** Normalize path for validation matching: strip $ and collapse array segments to [*]. */
+function normalizePathForValidationMatch(p: string): string {
+    const withoutRoot = normalizePath(p);
+    return withoutRoot.replace(/\[\d+\]/g, "[*]");
+}
+
 /** use_case_id -> attribute_set[api] -> attribute at path. api must be step.api (search, on_search, etc.). */
 function getAttributeBase(
     xa: OpenAPISpecification["x-attributes"],
@@ -453,10 +459,18 @@ export function getValidationsForAction(
     }
 
     if (normalizedPath) {
+        const selectedNorm = normalizePathForValidationMatch(normalizedPath);
         return out.filter((r) => {
             if (r.attr == null) return false;
-            const rulePath = normalizePath(r.attr);
-            return rulePath === normalizedPath || rulePath.startsWith(normalizedPath + ".");
+            const rulePathNorm = normalizePathForValidationMatch(r.attr);
+            // Match exact path, direct property (path.field), or array descendant (path[*].field).
+            // Use normalized paths so selectedPath "message.catalog.providers[0].items" matches
+            // rule "message.catalog.providers[*].items[*].id".
+            return (
+                rulePathNorm === selectedNorm ||
+                rulePathNorm.startsWith(selectedNorm + ".") ||
+                rulePathNorm.startsWith(selectedNorm + "[")
+            );
         });
     }
     return out;

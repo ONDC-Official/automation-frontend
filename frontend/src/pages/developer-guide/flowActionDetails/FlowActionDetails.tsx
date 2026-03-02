@@ -80,9 +80,7 @@ const FlowActionDetails: FC<FlowActionDetailsProps> = ({
     const attributes = selectedPath
         ? getActionAttributes(spec, apiForAttributes, selectedPath, valueAtPath, useCaseId)
         : null;
-    const validations = selectedPath
-        ? getValidationsForAction(spec, apiForAttributes, selectedPath)
-        : [];
+    const validations = getValidationsForAction(spec, apiForAttributes, selectedPath ?? undefined);
 
     const root = (
         <div className="flex flex-col h-full rounded-xl border border-slate-200 bg-white overflow-hidden shadow-sm">

@@ -1,7 +1,8 @@
-import { FC, useState, useCallback, useEffect } from "react";
+import { FC, useState, useCallback, useEffect, useContext } from "react";
 import * as notesApi from "@services/developerGuideNotesApi";
 import type { NoteResponse } from "@services/developerGuideNotesApi";
 import Loader from "@/components/ui/mini-components/loader";
+import { UserContext } from "@context/userContext";
 
 export interface Note {
     id: string;
@@ -58,6 +59,7 @@ interface NotesPanelProps {
 }
 
 const NotesPanel: FC<NotesPanelProps> = ({ selectedPath, actionApi, useCaseId, flowId }) => {
+    const { isLoggedIn } = useContext(UserContext);
     const useApi = Boolean(flowId && useCaseId);
     const [notesByPath, setNotesByPath] = useState<NotesByPath>({});
     const [loading, setLoading] = useState(false);
@@ -122,6 +124,8 @@ const NotesPanel: FC<NotesPanelProps> = ({ selectedPath, actionApi, useCaseId, f
     }, []);
 
     const saveNote = useCallback(async () => {
+        const isCreate = !editingId;
+        if (isCreate && !isLoggedIn) return;
         const path = pathKey;
         const title = formTitle.trim() || "Untitled note";
         const content = formContent.trim();
@@ -177,6 +181,7 @@ const NotesPanel: FC<NotesPanelProps> = ({ selectedPath, actionApi, useCaseId, f
         setFormTitle("");
         setFormContent("");
     }, [
+        isLoggedIn,
         pathKey,
         formTitle,
         formContent,
@@ -244,32 +249,38 @@ const NotesPanel: FC<NotesPanelProps> = ({ selectedPath, actionApi, useCaseId, f
                             <span className="inline-flex items-center px-2.5 py-1 rounded-lg bg-amber-500/10 text-amber-800 font-mono text-xs break-all min-w-0">
                                 {selectedPath}
                             </span>
-                            <button
-                                type="button"
-                                onClick={startCreate}
-                                disabled={showForm}
-                                className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-amber-700 bg-amber-500/10 rounded-xl hover:bg-amber-500/20 disabled:opacity-50 transition-colors shrink-0"
-                            >
-                                <svg
-                                    className="w-4 h-4"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke="currentColor"
-                                    strokeWidth={2}
+                            {isLoggedIn ? (
+                                <button
+                                    type="button"
+                                    onClick={startCreate}
+                                    disabled={showForm}
+                                    className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-amber-700 bg-amber-500/10 rounded-xl hover:bg-amber-500/20 disabled:opacity-50 transition-colors shrink-0"
                                 >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        d="M12 4v16m8-8H4"
-                                    />
-                                </svg>
-                                New note
-                            </button>
+                                    <svg
+                                        className="w-4 h-4"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
+                                        strokeWidth={2}
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            d="M12 4v16m8-8H4"
+                                        />
+                                    </svg>
+                                    New note
+                                </button>
+                            ) : (
+                                <span className="text-sm text-slate-500 shrink-0">
+                                    Sign in to add notes.
+                                </span>
+                            )}
                         </div>
                     )}
 
-                    {/* Add / Edit form — floating card */}
-                    {hasPath && showForm && (
+                    {/* Add / Edit form — floating card (create only when logged in) */}
+                    {hasPath && showForm && (isLoggedIn || editingId !== null) && (
                         <div className="shrink-0 mb-4 p-4 rounded-2xl bg-white border border-slate-200/80 shadow-sm">
                             <input
                                 type="text"

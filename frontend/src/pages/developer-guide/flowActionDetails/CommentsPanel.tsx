@@ -1,7 +1,8 @@
-import { FC, useState, useCallback, useEffect } from "react";
+import { FC, useState, useCallback, useEffect, useContext } from "react";
 import * as commentsApi from "@services/developerGuideCommentsApi";
 import type { CommentResponse } from "@services/developerGuideCommentsApi";
 import Loader from "@/components/ui/mini-components/loader";
+import { UserContext } from "@context/userContext";
 
 export interface CommentReply {
     id: string;
@@ -66,6 +67,7 @@ interface CommentsPanelProps {
 }
 
 const CommentsPanel: FC<CommentsPanelProps> = ({ selectedPath, actionApi, useCaseId, flowId }) => {
+    const { isLoggedIn } = useContext(UserContext);
     const useApi = Boolean(flowId && useCaseId);
     const [threads, setThreads] = useState<CommentThread[]>([]);
     const [loading, setLoading] = useState(false);
@@ -130,6 +132,7 @@ const CommentsPanel: FC<CommentsPanelProps> = ({ selectedPath, actionApi, useCas
     );
 
     const addComment = useCallback(async () => {
+        if (!isLoggedIn) return;
         const path = selectedPath ?? "$";
         const text = newCommentText.trim();
         if (!text) return;
@@ -163,6 +166,7 @@ const CommentsPanel: FC<CommentsPanelProps> = ({ selectedPath, actionApi, useCas
             setNewCommentText("");
         }
     }, [
+        isLoggedIn,
         selectedPath,
         newCommentText,
         threads,
@@ -176,6 +180,7 @@ const CommentsPanel: FC<CommentsPanelProps> = ({ selectedPath, actionApi, useCas
 
     const addReply = useCallback(
         async (threadId: string) => {
+            if (!isLoggedIn) return;
             const text = (replyTextByThreadId[threadId] ?? "").trim();
             if (!text) return;
 
@@ -217,7 +222,16 @@ const CommentsPanel: FC<CommentsPanelProps> = ({ selectedPath, actionApi, useCas
                 setReplyingToId(null);
             }
         },
-        [threads, replyTextByThreadId, persist, useApi, flowId, useCaseId, fetchComments]
+        [
+            isLoggedIn,
+            threads,
+            replyTextByThreadId,
+            persist,
+            useApi,
+            flowId,
+            useCaseId,
+            fetchComments,
+        ]
     );
 
     const toggleResolved = useCallback(
@@ -296,8 +310,13 @@ const CommentsPanel: FC<CommentsPanelProps> = ({ selectedPath, actionApi, useCas
                         </div>
                     )}
 
-                    {/* Add comment — floating card */}
-                    {hasSelection && (
+                    {/* Add comment — floating card (only when logged in) */}
+                    {hasSelection && !isLoggedIn && (
+                        <div className="shrink-0 mb-4 p-4 rounded-2xl bg-slate-50 border border-slate-200/80 text-center">
+                            <p className="text-sm text-slate-500">Sign in to add comments.</p>
+                        </div>
+                    )}
+                    {hasSelection && isLoggedIn && (
                         <div className="shrink-0 mb-4 p-4 rounded-2xl bg-white border border-slate-200/80 shadow-sm">
                             <textarea
                                 value={newCommentText}
@@ -476,7 +495,8 @@ const CommentsPanel: FC<CommentsPanelProps> = ({ selectedPath, actionApi, useCas
                                             <button
                                                 type="button"
                                                 onClick={() => setReplyingToId(thread.id)}
-                                                className="text-xs font-medium text-sky-600 hover:text-sky-700"
+                                                disabled={!isLoggedIn}
+                                                className="text-xs font-medium text-sky-600 hover:text-sky-700 disabled:opacity-50 disabled:cursor-not-allowed"
                                             >
                                                 Reply
                                             </button>
