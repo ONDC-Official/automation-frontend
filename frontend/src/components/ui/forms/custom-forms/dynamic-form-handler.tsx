@@ -164,10 +164,11 @@ export default function DynamicFormHandler({
                 // Do NOT show completed state - let parent handle closing the modal
                 try {
                     const submission_id = formSubmitted.submission_id || "";
+                    const idType = formSubmitted.idType;
 
                     await submitEvent({
-                        jsonPath: { submission_id: submission_id },
-                        formData: { submission_id: submission_id },
+                        jsonPath: { submission_id: submission_id, ...(idType && { idType }) },
+                        formData: { submission_id: submission_id, ...(idType && { idType }) },
                     });
 
                     // Parent component will close the popup modal after submitEvent completes
