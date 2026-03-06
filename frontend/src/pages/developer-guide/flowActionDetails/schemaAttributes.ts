@@ -247,6 +247,7 @@ export function getActionAttributes(
     if (!path) return { ...emptyAttr(), jsonPath: DASH };
 
     // 1. x-attributes enum (type/enums can be at top level or under _description)
+
     if (isXAttrEnum(attrVal)) {
         const desc = attrVal._description as Record<string, unknown> | undefined;
         const enums = (attrVal.enums ?? desc?.enums) as

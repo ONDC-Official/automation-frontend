@@ -4,6 +4,10 @@ import type { FlowStep } from "./types";
 import { getActionId } from "./utils";
 import FlowDetailsAndSummary from "./FlowDetailsAndSummary";
 import { FlowActionDetails } from "./flowActionDetails";
+import HelperSection, { decodeHelperLib } from "./HelperSection";
+import GenerateSection, { decodeMockGenerate } from "./GenerateSection";
+import ValidateSection, { decodeMockValidate } from "./ValidateSection";
+import RequirementsSection, { decodeMockRequirements } from "./RequirementsSection";
 
 interface FlowInformationProps {
     data: OpenAPISpecification;
@@ -37,6 +41,13 @@ function getExamplesFromStep(
 
 const FlowInformation: FC<FlowInformationProps> = ({ data, selectedFlow, selectedFlowAction }) => {
     const [selectedExampleIndex, setSelectedExampleIndex] = useState(0);
+    const [activeSection, setActiveSection] = useState<
+        "overview" | "preview" | "helper" | "generate" | "validate" | "requirements"
+    >("overview");
+
+    useEffect(() => {
+        setActiveSection("overview");
+    }, [selectedFlowAction]);
 
     const isEmpty = !selectedFlow;
 
@@ -52,6 +63,30 @@ const FlowInformation: FC<FlowInformationProps> = ({ data, selectedFlow, selecte
         examplePayload != null &&
         typeof examplePayload === "object" &&
         !Array.isArray(examplePayload);
+
+    const decodedHelperCode = useMemo(
+        () => decodeHelperLib(selectedFlowData?.helperLib),
+        [selectedFlowData?.helperLib]
+    );
+    const hasHelper = !!decodedHelperCode;
+
+    const decodedGenerateCode = useMemo(
+        () => decodeMockGenerate(selectedStep?.mock?.generate),
+        [selectedStep?.mock?.generate]
+    );
+    const hasGenerate = !!decodedGenerateCode;
+
+    const decodedValidateCode = useMemo(
+        () => decodeMockValidate(selectedStep?.mock?.validate),
+        [selectedStep?.mock?.validate]
+    );
+    const hasValidate = !!decodedValidateCode;
+
+    const decodedRequirementsCode = useMemo(
+        () => decodeMockRequirements(selectedStep?.mock?.requirements),
+        [selectedStep?.mock?.requirements]
+    );
+    const hasRequirements = !!decodedRequirementsCode;
 
     useEffect(() => {
         setSelectedExampleIndex(0);
@@ -86,78 +121,195 @@ const FlowInformation: FC<FlowInformationProps> = ({ data, selectedFlow, selecte
     }
 
     return (
-        <div className="p-6 md:p-10 space-y-10">
-            {selectedFlowData && <FlowDetailsAndSummary flow={selectedFlowData} />}
-
+        <div className="p-6 space-y-10">
             {selectedFlowAction && selectedStep && (
-                <section className="flex flex-col space-y-6">
-                    <div className="rounded-xl border border-slate-200 bg-white overflow-hidden shadow-sm">
-                        <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/60">
-                            <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
-                                Step information
-                            </span>
-                        </div>
-                        <div className="px-6 py-5">
-                            <p className="text-base font-semibold text-slate-900 font-mono">
-                                {selectedStep.api}
-                            </p>
-                            {(selectedStep.description ?? selectedStep.summary) && (
-                                <p className="text-sm text-slate-600 mt-2 leading-relaxed">
-                                    {selectedStep.description ?? selectedStep.summary}
-                                </p>
-                            )}
-                        </div>
-                    </div>
-
-                    {examples.length > 0 && (
-                        <div className="flex flex-col gap-2">
-                            <label
-                                htmlFor="example-select"
-                                className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider"
+                <>
+                    {/* Breadcrumb */}
+                    <nav className="flex items-center gap-2 text-sm mb-6">
+                        <button
+                            onClick={() => setActiveSection("overview")}
+                            className={`px-4 py-2 rounded text-sm font-medium transition-colors ${
+                                activeSection === "overview"
+                                    ? "bg-sky-600 text-white hover:bg-sky-700"
+                                    : "bg-slate-200 text-slate-600 hover:bg-slate-300"
+                            }`}
+                        >
+                            Overview
+                        </button>
+                        {hasExampleObject && (
+                            <button
+                                onClick={() => setActiveSection("preview")}
+                                className={`px-4 py-2 rounded text-sm font-medium transition-colors ${
+                                    activeSection === "preview"
+                                        ? "bg-sky-600 text-white hover:bg-sky-700"
+                                        : "bg-slate-200 text-slate-600 hover:bg-slate-300"
+                                }`}
                             >
-                                Example payloads
-                            </label>
-                            <select
-                                id="example-select"
-                                value={selectedExampleIndex}
-                                onChange={(e) => setSelectedExampleIndex(Number(e.target.value))}
-                                className="w-full max-w-sm px-4 py-2.5 rounded-lg text-sm border border-slate-200 bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500/30 focus:border-sky-400"
+                                Guide
+                            </button>
+                        )}
+                        {hasHelper && (
+                            <button
+                                onClick={() => setActiveSection("helper")}
+                                className={`px-4 py-2 rounded text-sm font-medium transition-colors ${
+                                    activeSection === "helper"
+                                        ? "bg-sky-600 text-white hover:bg-sky-700"
+                                        : "bg-slate-200 text-slate-600 hover:bg-slate-300"
+                                }`}
                             >
-                                {examples.map((ex, i) => (
-                                    <option key={i} value={i}>
-                                        {ex.name}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-                    )}
+                                Helper
+                            </button>
+                        )}
+                        {hasGenerate && (
+                            <button
+                                onClick={() => setActiveSection("generate")}
+                                className={`px-4 py-2 rounded text-sm font-medium transition-colors ${
+                                    activeSection === "generate"
+                                        ? "bg-sky-600 text-white hover:bg-sky-700"
+                                        : "bg-slate-200 text-slate-600 hover:bg-slate-300"
+                                }`}
+                            >
+                                Generate
+                            </button>
+                        )}
+                        {hasValidate && (
+                            <button
+                                onClick={() => setActiveSection("validate")}
+                                className={`px-4 py-2 rounded text-sm font-medium transition-colors ${
+                                    activeSection === "validate"
+                                        ? "bg-sky-600 text-white hover:bg-sky-700"
+                                        : "bg-slate-200 text-slate-600 hover:bg-slate-300"
+                                }`}
+                            >
+                                Validate
+                            </button>
+                        )}
+                        {hasRequirements && (
+                            <button
+                                onClick={() => setActiveSection("requirements")}
+                                className={`px-4 py-2 rounded text-sm font-medium transition-colors ${
+                                    activeSection === "requirements"
+                                        ? "bg-sky-600 text-white hover:bg-sky-700"
+                                        : "bg-slate-200 text-slate-600 hover:bg-slate-300"
+                                }`}
+                            >
+                                Requirements
+                            </button>
+                        )}
+                    </nav>
 
-                    {hasExampleObject && (
-                        <div className="flex flex-col">
-                            <h2 className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-3">
-                                Payload & schema
-                            </h2>
-                            <p className="text-slate-600 text-sm mb-3 leading-relaxed">
-                                Click a key in the JSON tree to see its attributes and validations
-                                in the right panel.
-                            </p>
-                            <div className="h-[540px] min-h-0 rounded-xl overflow-hidden border border-slate-200 shadow-sm bg-white">
-                                <FlowActionDetails
-                                    exampleValue={examplePayload as object}
-                                    actionApi={selectedFlowAction}
-                                    stepApi={selectedStep.api}
-                                    spec={data}
-                                    useCaseId={
-                                        selectedFlowData?.useCaseId ??
-                                        selectedFlowData?.meta?.use_case_id
-                                    }
-                                    flowId={selectedFlowData?.meta?.flowId ?? selectedFlow}
-                                    stepOwner={selectedStep.owner}
-                                />
+                    <section className="flex gap-8 items-start">
+                        {/* Overview section */}
+                        {activeSection === "overview" && (
+                            <div className="flex-1 space-y-6">
+                                {selectedFlowData && (
+                                    <FlowDetailsAndSummary flow={selectedFlowData} />
+                                )}
+                                <div className="rounded-xl border border-slate-200 bg-white overflow-hidden shadow-sm">
+                                    <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/60">
+                                        <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+                                            Action
+                                        </span>
+                                    </div>
+                                    <div className="px-6 py-5">
+                                        <p className="text-base font-semibold text-slate-900 font-mono">
+                                            {selectedStep.api}
+                                        </p>
+                                        {(selectedStep.description ?? selectedStep.summary) && (
+                                            <p className="text-sm text-slate-600 mt-2 leading-relaxed mb-0">
+                                                {selectedStep.description ?? selectedStep.summary}
+                                            </p>
+                                        )}
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                    )}
-                </section>
+                        )}
+
+                        {/* Preview section */}
+                        {activeSection === "preview" && hasExampleObject && (
+                            <div className=" w-full flex flex-col gap-4">
+                                {examples.length > 0 && (
+                                    <div className="flex flex-col gap-2">
+                                        <label
+                                            htmlFor="example-select"
+                                            className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider"
+                                        >
+                                            Examples
+                                        </label>
+                                        <div className="relative w-full max-w-sm">
+                                            <select
+                                                id="example-select"
+                                                value={selectedExampleIndex}
+                                                onChange={(e) =>
+                                                    setSelectedExampleIndex(Number(e.target.value))
+                                                }
+                                                className="w-full px-4 py-2.5  rounded-lg text-sm border border-slate-200 bg-white text-slate-800 focus:outline-none appearance-none"
+                                            >
+                                                {examples.map((ex, i) => (
+                                                    <option key={i} value={i}>
+                                                        {ex.name}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                            <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center">
+                                                <svg
+                                                    className="w-4 h-4 text-slate-700"
+                                                    fill="none"
+                                                    viewBox="0 0 24 24"
+                                                    stroke="currentColor"
+                                                    strokeWidth={2}
+                                                >
+                                                    <path
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        d="M19 9l-7 7-7-7"
+                                                    />
+                                                </svg>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+                                <div className="flex flex-col">
+                                    <div className="w-full h-[540px] min-h-0 rounded-xl overflow-hidden border border-slate-200 shadow-sm bg-white">
+                                        <FlowActionDetails
+                                            exampleValue={examplePayload as object}
+                                            actionApi={selectedFlowAction}
+                                            stepApi={selectedStep.api}
+                                            spec={data}
+                                            useCaseId={
+                                                selectedFlowData?.useCaseId ??
+                                                selectedFlowData?.meta?.use_case_id
+                                            }
+                                            flowId={selectedFlowData?.meta?.flowId ?? selectedFlow}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Helper section */}
+                        {activeSection === "helper" && hasHelper && decodedHelperCode && (
+                            <HelperSection decodedCode={decodedHelperCode} />
+                        )}
+
+                        {/* Generate section */}
+                        {activeSection === "generate" && hasGenerate && decodedGenerateCode && (
+                            <GenerateSection decodedCode={decodedGenerateCode} />
+                        )}
+
+                        {/* Validate section */}
+                        {activeSection === "validate" && hasValidate && decodedValidateCode && (
+                            <ValidateSection decodedCode={decodedValidateCode} />
+                        )}
+
+                        {/* Requirements section */}
+                        {activeSection === "requirements" &&
+                            hasRequirements &&
+                            decodedRequirementsCode && (
+                                <RequirementsSection decodedCode={decodedRequirementsCode} />
+                            )}
+                    </section>
+                </>
             )}
         </div>
     );

@@ -1,4 +1,4 @@
-import { Route, Routes as RouterRoutes } from "react-router-dom";
+import { Navigate, Route, Routes as RouterRoutes } from "react-router-dom";
 import SchemaValidationPage from "@pages/schema-validation";
 import SellerOnboarding from "@pages/seller-onboarding";
 import ToolsPage from "@pages/tools";
@@ -14,6 +14,14 @@ import HomePage from "@pages/home";
 import AuthHeader from "@pages/auth-header";
 import { ROUTES } from "@constants/routes";
 import DeveloperGuide from "@/pages/developer-guide";
+
+/** Developer Guide is only available in development; redirect to home in production */
+const DeveloperGuideRoute = () =>
+    import.meta.env.VITE_ENVIRONMENT === "development" ? (
+        <DeveloperGuide />
+    ) : (
+        <Navigate to={ROUTES.HOME} replace />
+    );
 
 const Routes = () => (
     <RouterRoutes>
@@ -32,7 +40,7 @@ const Routes = () => (
         <Route path="*" element={<NotFoundPage />} />
         <Route path={ROUTES.DB_BACK_OFFICE} element={<DBBackOffice />} />
         <Route path={ROUTES.AUTH_HEADER} element={<AuthHeader />} />
-        <Route path={ROUTES.DEVELOPER_GUIDE} element={<DeveloperGuide />} />
+        <Route path={ROUTES.DEVELOPER_GUIDE} element={<DeveloperGuideRoute />} />
     </RouterRoutes>
 );
 

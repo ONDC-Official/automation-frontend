@@ -95,42 +95,70 @@ const FlowsAccordion: FC<FlowsAccordionProps> = ({
     const toggleFlow = (index: number) => {
         if (openFlowIndex === index) {
             setOpenFlowIndex(null);
+
             setSelectedFlow("");
+
+            setSelectedFlowAction("");
         } else {
             setOpenFlowIndex(index);
-            setSelectedFlow(flows[index].meta?.flowId ?? "");
-        }
 
-        setSelectedFlowAction("");
+            const flowId = flows[index].meta?.flowId ?? "";
+
+            setSelectedFlow(flowId);
+
+            // Auto-select first step
+
+            const displayItems = buildStepDisplayItems(flows[index].steps);
+
+            const firstItem = displayItems[0];
+
+            if (firstItem) {
+                const firstActionId =
+                    firstItem.type === "pair"
+                        ? getActionId(firstItem.request)
+                        : getActionId(firstItem.step);
+
+                setSelectedFlowAction(firstActionId);
+            } else {
+                setSelectedFlowAction("");
+            }
+        }
     };
 
     const handleStepClick = (flowSummary: string, actionId: string) => {
         setSelectedFlow(flowSummary);
+
         setSelectedFlowAction(actionId);
     };
 
     const renderStepButton = (step: FlowStep, flowId: string, isSelected: boolean) => {
         const actionId = getActionId(step);
+        const showUnsolicited = step.unsolicited === true;
+
         return (
             <button
                 key={actionId}
                 onClick={() => handleStepClick(flowId, actionId)}
-                className={`flex-1 min-w-0 text-left px-3 py-2.5 rounded-lg border text-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-sky-400 ${
+                className={`w-full flex-1 min-w-0 text-left px-3 py-2.5 rounded-lg border text-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-sky-400 ${
                     isSelected
                         ? "bg-sky-50 border-sky-300 text-sky-900 shadow-sm ring-1 ring-sky-200/60 font-medium"
                         : "bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100 hover:border-slate-300"
                 }`}
             >
-                <span className="text-sm font-medium truncate block">{step.action_label}</span>
+                <div className="flex items-center justify-center gap-2">
+                    <span className="text-sm font-medium truncate">{step.action_label}</span>
+                    {showUnsolicited && (
+                        <span className="shrink-0 text-[10px] font-semibold uppercase tracking-wide text-amber-600 bg-amber-50 border border-amber-200 rounded px-1.5 py-0.5">
+                            unsolicited
+                        </span>
+                    )}
+                </div>
             </button>
         );
     };
 
     return (
         <div className="space-y-3">
-            <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider px-1 mb-4">
-                Flows
-            </p>
             {flows.map((flow, flowIndex) => {
                 const isOpen = openFlowIndex === flowIndex;
                 const isSelectedFlow = selectedFlow === (flow.meta?.flowId ?? "");
@@ -144,7 +172,7 @@ const FlowsAccordion: FC<FlowsAccordionProps> = ({
                     >
                         <button
                             onClick={() => toggleFlow(flowIndex)}
-                            className="w-full px-4 py-4 flex items-center justify-between text-left bg-white hover:bg-slate-50/80 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-sky-400/40"
+                            className="w-full px-4 py-4 flex gap-1 items-center justify-between text-left bg-white hover:bg-slate-50/80 transition-colors duration-200 focus:outline-none"
                         >
                             <span className="font-semibold text-slate-800 text-sm">
                                 {flow.meta?.flowName ?? flow.meta?.flowId}
@@ -170,7 +198,7 @@ const FlowsAccordion: FC<FlowsAccordionProps> = ({
                         </button>
 
                         {isOpen && (
-                            <div className="px-4 pb-4 pt-2 border-t border-slate-100 bg-slate-50/40">
+                            <div className="px-4 pb-4 pt-2 border-t border-slate-100 bg-slate-50/40  max-h-[calc(100vh-290px)] 2xl:max-h-[calc(100vh-360px)] overflow-y-auto ">
                                 <div className="space-y-2.5 mt-2">
                                     {displayItems.map((item, itemIdx) => {
                                         if (item.type === "pair") {

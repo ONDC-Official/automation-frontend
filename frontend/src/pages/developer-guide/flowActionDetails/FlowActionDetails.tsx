@@ -1,7 +1,5 @@
 import { FC, useState, useCallback, ComponentProps, MouseEvent } from "react";
 import { FaCopy } from "react-icons/fa";
-import { FiMaximize2 } from "react-icons/fi";
-import Tabs from "@components/ui/mini-components/tabs";
 import JsonViewer from "@pages/protocol-playground/ui/Json-path-extractor";
 import { SelectedType } from "@pages/protocol-playground/ui/session-data-tab";
 import type { OpenAPISpecification } from "../types";
@@ -9,11 +7,6 @@ import { getActionAttributes, getValidationsForAction } from "./schemaAttributes
 import AttributesPanel from "./AttributesPanel";
 import CommentsPanel from "./CommentsPanel";
 import NotesPanel from "./NotesPanel";
-
-const TAB_OPTIONS = [
-    { key: "documentation", label: "Documentation" },
-    { key: "ai-driven", label: "Ai Driven" },
-];
 
 const RIGHT_PANEL_TAB_OPTIONS = [
     { key: "attributes", label: "Attributes" },
@@ -43,8 +36,6 @@ interface FlowActionDetailsProps {
     spec: OpenAPISpecification | null | undefined;
     useCaseId?: string;
     flowId?: string;
-    /** Owner from the step (not from attribute). */
-    stepOwner?: string;
 }
 
 const FlowActionDetails: FC<FlowActionDetailsProps> = ({
@@ -54,9 +45,7 @@ const FlowActionDetails: FC<FlowActionDetailsProps> = ({
     spec,
     useCaseId,
     flowId,
-    stepOwner,
 }) => {
-    const [activeTab, setActiveTab] = useState("documentation");
     const [rightPanelTab, setRightPanelTab] = useState("attributes");
     const [selectedPath, setSelectedPath] = useState<string | null>(null);
     const [expanded, setExpanded] = useState(false);
@@ -84,101 +73,78 @@ const FlowActionDetails: FC<FlowActionDetailsProps> = ({
 
     const root = (
         <div className="flex flex-col h-full rounded-xl border border-slate-200 bg-white overflow-hidden shadow-sm">
-            <div className="flex items-center justify-between gap-4 px-4 py-3 border-b border-slate-200 bg-slate-50/70 shrink-0">
-                <Tabs
-                    options={TAB_OPTIONS}
-                    defaultTab="documentation"
-                    onSelectOption={setActiveTab}
-                />
-                <div className="flex items-center gap-2 shrink-0">
-                    <button
-                        type="button"
-                        onClick={() =>
-                            void navigator.clipboard.writeText(
-                                JSON.stringify(exampleValue, null, 2)
-                            )
-                        }
-                        className="p-2 rounded-lg text-slate-500 hover:bg-slate-200 hover:text-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-sky-400 focus:ring-offset-1"
-                        title="Copy JSON"
-                    >
-                        <FaCopy className="w-4 h-4" />
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => setExpanded((e) => !e)}
-                        className="p-2 rounded-lg text-slate-500 hover:bg-slate-200 hover:text-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-sky-400 focus:ring-offset-1"
-                        title={expanded ? "Exit fullscreen" : "Expand"}
-                    >
-                        <FiMaximize2 className="w-4 h-4" />
-                    </button>
-                </div>
-            </div>
             <div className="flex-1 flex min-h-0">
-                {activeTab === "documentation" && (
-                    <>
-                        <div
-                            className={`flex-1 flex flex-col min-w-0 border-r border-slate-200 ${expanded ? "" : "max-w-xl"}`}
+                <div className="w-full flex flex-col min-w-0 border-r border-slate-200">
+                    <div className="flex-1 min-h-0 overflow-auto bg-slate-900 p-4 relative group">
+                        <JsonViewer
+                            data={exampleValue as ComponentProps<typeof JsonViewer>["data"]}
+                            isSelected={isSelected}
+                            handleKeyClick={handleKeyClick}
+                            onExpand={() => setExpanded(true)}
+                            isExpanded={expanded}
+                            onCollapse={() => setExpanded(false)}
+                        />
+                        <button
+                            type="button"
+                            onClick={() =>
+                                void navigator.clipboard.writeText(
+                                    JSON.stringify(exampleValue, null, 2)
+                                )
+                            }
+                            className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white text-sm rounded-lg shadow-lg"
                         >
-                            <div className="px-4 py-3 border-b border-slate-100 bg-slate-100/60 text-xs text-slate-600">
-                                Click any key in the tree to see schema and validations in the right
-                                panel.
-                            </div>
-                            <div className="flex-1 min-h-0 overflow-auto bg-slate-900 p-4">
-                                <JsonViewer
-                                    data={exampleValue as ComponentProps<typeof JsonViewer>["data"]}
-                                    isSelected={isSelected}
-                                    handleKeyClick={handleKeyClick}
-                                />
-                            </div>
-                        </div>
-                        <div
-                            className={`shrink-0 flex flex-col min-h-0 bg-slate-50/60 border-l border-slate-200 ${expanded ? "w-[600px]" : "w-[420px]"}`}
-                        >
-                            <div className="px-4 pt-3 pb-2 border-b border-slate-200 bg-white/80 shrink-0">
-                                <Tabs
-                                    options={RIGHT_PANEL_TAB_OPTIONS}
-                                    defaultTab="attributes"
-                                    onSelectOption={setRightPanelTab}
-                                />
-                            </div>
-                            <div className="flex-1 min-h-0 overflow-hidden p-4">
-                                {rightPanelTab === "attributes" && (
-                                    <AttributesPanel
-                                        attributes={attributes}
-                                        stepOwner={stepOwner}
-                                        validations={validations}
-                                        spec={spec}
-                                        actionApi={actionApi}
-                                        stepApi={stepApi}
-                                        useCaseId={useCaseId}
-                                        isExpanded={expanded}
-                                    />
-                                )}
-                                {rightPanelTab === "comments" && (
-                                    <CommentsPanel
-                                        selectedPath={selectedPath}
-                                        actionApi={actionApi}
-                                        useCaseId={useCaseId}
-                                        flowId={flowId}
-                                    />
-                                )}
-                                {rightPanelTab === "notes" && (
-                                    <NotesPanel
-                                        selectedPath={selectedPath}
-                                        actionApi={actionApi}
-                                        useCaseId={useCaseId}
-                                        flowId={flowId}
-                                    />
-                                )}
-                            </div>
-                        </div>
-                    </>
-                )}
-                {activeTab === "ai-driven" && (
-                    <div className="flex-1 flex items-center justify-center text-slate-500 text-sm p-8 rounded-b-xl bg-slate-50/50">
-                        Ai Driven view — coming soon
+                            <FaCopy className="w-4 h-4" />
+                            Copy
+                        </button>
                     </div>
-                )}
+                </div>
+                <div className="w-1/2 flex flex-col min-h-0 bg-slate-50/60 border-l border-slate-200">
+                    <div className="px-4 pt-3 pb-2 border-b border-slate-200 bg-white/80 shrink-0 flex gap-2">
+                        {RIGHT_PANEL_TAB_OPTIONS.map((tab) => (
+                            <button
+                                key={tab.key}
+                                type="button"
+                                onClick={() => setRightPanelTab(tab.key)}
+                                className={`px-4 py-2 rounded text-sm font-medium transition-colors ${
+                                    rightPanelTab === tab.key
+                                        ? "bg-sky-600 text-white hover:bg-sky-700"
+                                        : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                                }`}
+                            >
+                                {tab.label}
+                            </button>
+                        ))}
+                    </div>
+                    <div className="flex-1 min-h-0 overflow-hidden p-4">
+                        {rightPanelTab === "attributes" && (
+                            <AttributesPanel
+                                attributes={attributes}
+                                validations={validations}
+                                spec={spec}
+                                actionApi={actionApi}
+                                stepApi={stepApi}
+                                useCaseId={useCaseId}
+                                isExpanded={expanded}
+                            />
+                        )}
+                        {rightPanelTab === "comments" && (
+                            <CommentsPanel
+                                selectedPath={selectedPath}
+                                actionApi={actionApi}
+                                useCaseId={useCaseId}
+                                flowId={flowId}
+                            />
+                        )}
+                        {rightPanelTab === "notes" && (
+                            <NotesPanel
+                                selectedPath={selectedPath}
+                                actionApi={actionApi}
+                                useCaseId={useCaseId}
+                                flowId={flowId}
+                            />
+                        )}
+                    </div>
+                </div>
             </div>
         </div>
     );
@@ -195,8 +161,8 @@ const FlowActionDetails: FC<FlowActionDetailsProps> = ({
                         Exit fullscreen
                     </button>
                 </div>
-                <div className="flex-1 min-h-0 p-6 overflow-auto">
-                    <div className="h-full w-full max-w-6xl mx-auto">{root}</div>
+                <div className="flex-1 min-h-0 p-6 overflow-auto flex items-center justify-center">
+                    <div className="h-full w-full mx-20">{root}</div>
                 </div>
             </div>
         );

@@ -81,6 +81,7 @@ export interface FlowStep {
     action_id?: string;
     action_label?: string;
     responseFor?: string | null;
+    unsolicited?: boolean;
     owner?: string;
     description?: string;
     details?: Array<{
@@ -95,6 +96,12 @@ export interface FlowStep {
     examples?: MockExample[];
     mock?: {
         examples?: MockExample[];
+        /** Base64-encoded generate function for this step */
+        generate?: string;
+        /** Base64-encoded validate function for this step */
+        validate?: string;
+        /** Base64-encoded requirements for this step */
+        requirements?: string;
         [key: string]: unknown;
     };
 }
@@ -116,6 +123,8 @@ export interface Flow {
     steps: FlowStep[];
     /** Use case for x-attributes lookup; also read from meta.use_case_id when present */
     useCaseId?: string;
+    /** Base64-encoded helper JS library for mock generation */
+    helperLib?: string;
 }
 
 export interface XValidationRule {

@@ -19,7 +19,7 @@ function apiNoteToNote(r: NoteResponse): Note {
     const firstLine = content.split("\n")[0]?.trim() || "";
     const title = firstLine.slice(0, 80) || "Untitled note";
     return {
-        id: r.id,
+        id: r._id,
         title,
         content,
         createdAt: r.created_at ? new Date(r.created_at).getTime() : Date.now(),
@@ -69,8 +69,11 @@ const NotesPanel: FC<NotesPanelProps> = ({ selectedPath, actionApi, useCaseId, f
     const [formTitle, setFormTitle] = useState("");
     const [formContent, setFormContent] = useState("");
 
+    const showForm = isCreating || editingId !== null;
+    const hasPath = selectedPath != null;
+
     const pathKey = selectedPath ?? "$";
-    const notes = notesByPath[pathKey] ?? [];
+    const notes = Object.values(notesByPath).flat();
 
     const fetchNotes = useCallback(async () => {
         if (!useApi || !flowId || !useCaseId) return;
@@ -227,8 +230,13 @@ const NotesPanel: FC<NotesPanelProps> = ({ selectedPath, actionApi, useCaseId, f
         [pathKey, notes, editingId, cancelForm, persist, useApi, flowId, useCaseId, fetchNotes]
     );
 
-    const showForm = isCreating || editingId !== null;
-    const hasPath = selectedPath != null;
+    if (!isLoggedIn) {
+        return (
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+                <p className="text-sm text-slate-500">Please login to view notes.</p>
+            </div>
+        );
+    }
 
     return (
         <div className="h-full flex flex-col min-h-0">
@@ -280,7 +288,7 @@ const NotesPanel: FC<NotesPanelProps> = ({ selectedPath, actionApi, useCaseId, f
                     )}
 
                     {/* Add / Edit form — floating card (create only when logged in) */}
-                    {hasPath && showForm && (isLoggedIn || editingId !== null) && (
+                    {showForm && (isLoggedIn || editingId !== null) && (
                         <div className="shrink-0 mb-4 p-4 rounded-2xl bg-white border border-slate-200/80 shadow-sm">
                             <input
                                 type="text"
@@ -317,7 +325,7 @@ const NotesPanel: FC<NotesPanelProps> = ({ selectedPath, actionApi, useCaseId, f
 
                     {/* Content */}
                     <div className="flex-1 overflow-auto min-h-0">
-                        {!hasPath && (
+                        {!hasPath && notes.length === 0 && !showForm && (
                             <div className="flex flex-col items-center justify-center py-12 text-center">
                                 <div className="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center mb-3">
                                     <svg
@@ -348,80 +356,102 @@ const NotesPanel: FC<NotesPanelProps> = ({ selectedPath, actionApi, useCaseId, f
                             </div>
                         )}
 
-                        {hasPath && (notes.length > 0 || showForm) && (
+                        {(notes.length > 0 || showForm) && (
                             <div className="space-y-3">
-                                {notes.map((note) => (
-                                    <div
-                                        key={note.id}
-                                        className={`p-4 rounded-2xl border shadow-sm transition-all ${
-                                            editingId === note.id
-                                                ? "hidden"
-                                                : "bg-white border-slate-200/80 hover:shadow-md"
-                                        }`}
-                                    >
-                                        <div className="flex items-start justify-between gap-2">
-                                            <div className="min-w-0 flex-1">
-                                                <h4 className="font-medium text-slate-800 truncate">
-                                                    {note.title}
-                                                </h4>
-                                                <p className="text-xs text-slate-400 mt-0.5">
-                                                    {formatDateTime(note.updatedAt)}
+                                {notes.length > 0 && (
+                                    <p className="text-sm text-slate-600 mb-3">All Notes</p>
+                                )}
+                                {notes.map(
+                                    (note) =>
+                                        editingId !== note.id && (
+                                            <div
+                                                key={note.id}
+                                                className="p-4 rounded-2xl border shadow-sm bg-white border-slate-200/80 hover:shadow-md transition-all"
+                                            >
+                                                <div className="flex items-start justify-between gap-2">
+                                                    <div className="min-w-0 flex-1">
+                                                        <h4 className="font-medium text-slate-800 truncate">
+                                                            {note.title}
+                                                        </h4>
+                                                        <p className="text-xs text-slate-400 mt-0.5">
+                                                            {formatDateTime(note.updatedAt)}
+                                                        </p>
+                                                    </div>
+                                                    <div className="flex items-center gap-0.5 shrink-0 opacity-70 hover:opacity-100">
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => editNote(note)}
+                                                            className="p-1.5 rounded-lg text-slate-400 hover:text-amber-600 hover:bg-amber-500/10 transition-colors"
+                                                            title="Edit"
+                                                        >
+                                                            <svg
+                                                                className="w-4 h-4"
+                                                                fill="none"
+                                                                viewBox="0 0 24 24"
+                                                                stroke="currentColor"
+                                                                strokeWidth={2}
+                                                            >
+                                                                <path
+                                                                    strokeLinecap="round"
+                                                                    strokeLinejoin="round"
+                                                                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                                                                />
+                                                            </svg>
+                                                        </button>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => deleteNote(note.id)}
+                                                            className="p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-500/10 transition-colors"
+                                                            title="Delete"
+                                                        >
+                                                            <svg
+                                                                className="w-4 h-4"
+                                                                fill="none"
+                                                                viewBox="0 0 24 24"
+                                                                stroke="currentColor"
+                                                                strokeWidth={2}
+                                                            >
+                                                                <path
+                                                                    strokeLinecap="round"
+                                                                    strokeLinejoin="round"
+                                                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                                                                />
+                                                            </svg>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                                <p className="text-sm text-slate-600 leading-relaxed mt-2 whitespace-pre-wrap line-clamp-3">
+                                                    {note.content
+                                                        .split("\n")
+                                                        .slice(1)
+                                                        .join("\n")
+                                                        .trim() || "No content"}
                                                 </p>
                                             </div>
-                                            <div className="flex items-center gap-0.5 shrink-0 opacity-70 hover:opacity-100">
-                                                <button
-                                                    type="button"
-                                                    onClick={() => editNote(note)}
-                                                    className="p-1.5 rounded-lg text-slate-400 hover:text-amber-600 hover:bg-amber-500/10 transition-colors"
-                                                    title="Edit"
-                                                >
-                                                    <svg
-                                                        className="w-4 h-4"
-                                                        fill="none"
-                                                        viewBox="0 0 24 24"
-                                                        stroke="currentColor"
-                                                        strokeWidth={2}
-                                                    >
-                                                        <path
-                                                            strokeLinecap="round"
-                                                            strokeLinejoin="round"
-                                                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                                                        />
-                                                    </svg>
-                                                </button>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => deleteNote(note.id)}
-                                                    className="p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-500/10 transition-colors"
-                                                    title="Delete"
-                                                >
-                                                    <svg
-                                                        className="w-4 h-4"
-                                                        fill="none"
-                                                        viewBox="0 0 24 24"
-                                                        stroke="currentColor"
-                                                        strokeWidth={2}
-                                                    >
-                                                        <path
-                                                            strokeLinecap="round"
-                                                            strokeLinejoin="round"
-                                                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                                                        />
-                                                    </svg>
-                                                </button>
-                                            </div>
+                                        )
+                                )}
+                                {!hasPath && (
+                                    <div className="flex flex-col items-center justify-center py-12 text-center">
+                                        <div className="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center mb-3">
+                                            <svg
+                                                className="w-6 h-6 text-slate-400"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                                stroke="currentColor"
+                                                strokeWidth={1.5}
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                                                />
+                                            </svg>
                                         </div>
-                                        {editingId !== note.id && (
-                                            <p className="text-sm text-slate-600 leading-relaxed mt-2 whitespace-pre-wrap line-clamp-3">
-                                                {note.content
-                                                    .split("\n")
-                                                    .slice(1)
-                                                    .join("\n")
-                                                    .trim() || "No content"}
-                                            </p>
-                                        )}
+                                        <p className="text-sm text-slate-500">
+                                            Select a key in the JSON tree to add notes.
+                                        </p>
                                     </div>
-                                ))}
+                                )}
                             </div>
                         )}
                     </div>

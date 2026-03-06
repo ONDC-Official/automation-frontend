@@ -10,14 +10,25 @@ const FlowDetailsAndSummary: FC<FlowDetailsAndSummaryProps> = ({ flow }) => {
     const hasReference = !!flow.reference?.trim();
     const flowTitle = flow.meta?.flowName ?? flow.meta?.flowId ?? flow.summary ?? "";
     const flowDescription = flow.meta?.description ?? "";
+    const domain = typeof flow.meta?.domain === "string" ? flow.meta.domain : undefined;
+    const version = typeof flow.meta?.version === "string" ? flow.meta.version : undefined;
 
     return (
         <div className="space-y-10">
             <section className="space-y-4">
                 <h1 className="text-2xl font-bold text-slate-900 tracking-tight">{flowTitle}</h1>
+                {(domain || version) && (
+                    <p className="text-sm text-slate-500">
+                        {domain && <span className="font-medium">Domain: {domain}</span>}
+                        {domain && version && " · "}
+                        {version && <span className="font-medium">Version: {version}</span>}
+                    </p>
+                )}
                 {flowDescription && (
                     <div className="rounded-xl border border-slate-200 bg-slate-50/80 px-6 py-4">
-                        <p className="text-sm text-slate-700 leading-relaxed">{flowDescription}</p>
+                        <p className="text-sm text-slate-700 leading-relaxed mb-0">
+                            {flowDescription}
+                        </p>
                     </div>
                 )}
             </section>

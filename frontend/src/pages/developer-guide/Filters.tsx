@@ -14,10 +14,9 @@ const Filters: FC<FiltersProps> = ({ onSubmit }) => {
         useFormFieldData();
 
     return (
-        <div className="bg-white rounded-lg border border-gray-200 p-4 my-8 mx-4">
-            <h2 className="text-lg font-bold text-gray-800 mb-4">Info</h2>
+        <div className="bg-white rounded-lg border border-gray-200 p-4">
             <div className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="flex flex-col gap-4">
                     <FormSelect
                         name="domain"
                         label="Domain"

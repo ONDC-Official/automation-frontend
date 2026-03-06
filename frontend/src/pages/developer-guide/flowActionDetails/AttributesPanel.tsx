@@ -42,8 +42,6 @@ function formatRequired(value: string | undefined | null): string {
 
 interface AttributesPanelProps {
     attributes: ActionAttributes | null;
-    /** Owner from the step (not from attribute). */
-    stepOwner?: string;
     /** Validation rules from x-validations for the selected path. */
     validations?: ValidationRuleDisplay[];
     spec?: OpenAPISpecification | null;
@@ -82,9 +80,8 @@ const AttrRow: FC<{ label: string; value: ReactNode }> = ({ label, value }) => (
 
 const AttributeSection: FC<{
     attrs: AttributeDetails;
-    stepOwner?: string;
     isExpanded?: boolean;
-}> = ({ attrs, stepOwner, isExpanded = false }) => {
+}> = ({ attrs }) => {
     return (
         <div className="space-y-6">
             <section>
@@ -92,11 +89,11 @@ const AttributeSection: FC<{
                     Details
                 </h4>
                 <div
-                    className={`rounded-xl bg-slate-50/80 border border-slate-200 p-4 ${isExpanded ? "grid grid-cols-2 gap-x-4 gap-y-0" : "space-y-0"}`}
+                    className={`rounded-xl bg-slate-50/80 border border-slate-200 p-4 grid grid-cols-2 gap-x-4 gap-y-0`}
                 >
                     <AttrRow label="JSON path" value={<ValueBadge>{attrs.jsonPath}</ValueBadge>} />
                     <AttrRow label="Required" value={formatRequired(attrs.required)} />
-                    <AttrRow label="Owner" value={stepOwner ?? attrs.owner ?? "—"} />
+                    <AttrRow label="Owner" value={attrs.owner ?? "—"} />
                     <AttrRow label="Type" value={attrs.type} />
                 </div>
             </section>
@@ -133,22 +130,18 @@ const AttributeSection: FC<{
     );
 };
 
-const EnumSection: FC<{ attrs: EnumDetails; stepOwner?: string; isExpanded?: boolean }> = ({
-    attrs,
-    stepOwner,
-    isExpanded = false,
-}) => (
+const EnumSection: FC<{ attrs: EnumDetails; isExpanded?: boolean }> = ({ attrs }) => (
     <div className="space-y-6">
         <section>
             <h4 className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-2.5">
                 Details
             </h4>
             <div
-                className={`rounded-xl bg-slate-50/80 border border-slate-200 p-4 ${isExpanded ? "grid grid-cols-2 gap-x-4 gap-y-0" : "space-y-0"}`}
+                className={`rounded-xl bg-slate-50/80 border border-slate-200 p-4 grid grid-cols-2 gap-x-4 gap-y-0}`}
             >
                 <AttrRow label="JSON path" value={<ValueBadge>{attrs.jsonPath}</ValueBadge>} />
                 <AttrRow label="Required" value={formatRequired(attrs.required)} />
-                <AttrRow label="Owner" value={stepOwner ?? attrs.owner ?? "—"} />
+                <AttrRow label="Owner" value={attrs.owner ?? "—"} />
                 <AttrRow label="Type" value={attrs.type ?? "—"} />
             </div>
         </section>
@@ -315,11 +308,7 @@ const TagGroupItem: FC<{ field: TagField }> = ({ field }) => {
     );
 };
 
-const TagSection: FC<{ attrs: TagDetails; stepOwner?: string; isExpanded?: boolean }> = ({
-    attrs,
-    stepOwner,
-    isExpanded = false,
-}) => {
+const TagSection: FC<{ attrs: TagDetails; isExpanded?: boolean }> = ({ attrs }) => {
     const description = attrs._description?.info ?? attrs.attributeInfo?.description;
     const tagFields = attrs.tagFields ?? [];
 
@@ -330,14 +319,14 @@ const TagSection: FC<{ attrs: TagDetails; stepOwner?: string; isExpanded?: boole
                     Details
                 </h4>
                 <div
-                    className={`rounded-xl bg-slate-50/80 border border-slate-200 p-4 ${isExpanded ? "grid grid-cols-2 gap-x-4 gap-y-0" : "space-y-0"}`}
+                    className={`rounded-xl bg-slate-50/80 border border-slate-200 p-4 grid grid-cols-2 gap-x-4 gap-y-0}`}
                 >
                     <AttrRow label="JSON path" value={<ValueBadge>{attrs.jsonPath}</ValueBadge>} />
                     <AttrRow
                         label="Required"
                         value={formatRequired(attrs.attributeInfo?.required)}
                     />
-                    <AttrRow label="Owner" value={stepOwner ?? attrs.attributeInfo?.owner ?? "—"} />
+                    <AttrRow label="Owner" value={attrs.attributeInfo?.owner ?? "—"} />
                     <AttrRow label="Type" value={attrs.attributeInfo?.type ?? "—"} />
                 </div>
             </section>
@@ -540,7 +529,6 @@ const ValidationsSection: FC<{
 
 const AttributesPanel: FC<AttributesPanelProps> = ({
     attributes,
-    stepOwner,
     validations = [],
     spec,
     actionApi,
@@ -580,17 +568,13 @@ const AttributesPanel: FC<AttributesPanelProps> = ({
             </div>
             <div className="flex-1 overflow-auto p-4 text-sm">
                 {attributes.kind === "attribute" && (
-                    <AttributeSection
-                        attrs={attributes}
-                        stepOwner={stepOwner}
-                        isExpanded={isExpanded}
-                    />
+                    <AttributeSection attrs={attributes} isExpanded={isExpanded} />
                 )}
                 {attributes.kind === "enum" && (
-                    <EnumSection attrs={attributes} stepOwner={stepOwner} isExpanded={isExpanded} />
+                    <EnumSection attrs={attributes} isExpanded={isExpanded} />
                 )}
                 {attributes.kind === "tag" && (
-                    <TagSection attrs={attributes} stepOwner={stepOwner} isExpanded={isExpanded} />
+                    <TagSection attrs={attributes} isExpanded={isExpanded} />
                 )}
                 {validations.length > 0 && (
                     <ValidationsSection
