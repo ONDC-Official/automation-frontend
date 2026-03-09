@@ -43833,6 +43833,91 @@
                                 }
                             ]
                         }
+                    },
+                    "fulfillments": {
+                        "state": {
+                            "descriptor": {
+                                "code": [
+                                    {
+                                        "code": "INITIATED",
+                                        "description": "When loan gets initiated by lender",
+                                        "reference": "<PR/Issue/Discussion Links md format text"
+                                    },
+                                    {
+                                        "code": "SANCTIONED",
+                                        "description": "Loan sanction is the approval of the loan by lender",
+                                        "reference": "<PR/Issue/Discussion Links md format text"
+                                    },
+                                    {
+                                        "code": "DISBURSED",
+                                        "description": "When the lender delivers the amount to the borrower after verification and approval",
+                                        "reference": "<PR/Issue/Discussion Links md format text"
+                                    },
+                                    {
+                                        "code": "PENDING",
+                                        "description": "When the loan is in pending state",
+                                        "reference": "<PR/Issue/Discussion Links md format text"
+                                    },
+                                    {
+                                        "code": "REJECTED",
+                                        "description": "When the loan request gets rejected by lender due to some reason",
+                                        "reference": "<PR/Issue/Discussion Links md format text"
+                                    },
+                                    {
+                                        "code": "COMPLETED",
+                                        "description": "When the overall process for loan gets over",
+                                        "reference": "<PR/Issue/Discussion Links md format text"
+                                    },
+                                    {
+                                        "code": "PLACED",
+                                        "description": "Describes the base-order's fulfillment state.",
+                                        "reference": "<PR/Issue/Discussion Links md format text"
+                                    },
+                                    {
+                                        "code": "DELIVERED",
+                                        "description": "Describes the base-order's fulfillment state.",
+                                        "reference": "<PR/Issue/Discussion Links md format text"
+                                    },
+                                    {
+                                        "code": "CANCELLED",
+                                        "description": "Describes the base-order's fulfillment state.",
+                                        "reference": "<PR/Issue/Discussion Links md format text"
+                                    },
+                                    {
+                                        "code": "VOID",
+                                        "description": "Describes base-order's fulfillment state.",
+                                        "reference": "<PR/Issue/Discussion Links md format text"
+                                    },
+                                    {
+                                        "code": "RETURNED",
+                                        "description": "Describes base-order's fulfillment state.",
+                                        "reference": "<PR/Issue/Discussion Links md format text"
+                                    },
+                                    {
+                                        "code": "REFUNDED",
+                                        "description": "Describes base-order's fulfillment state.",
+                                        "reference": "<PR/Issue/Discussion Links md format text"
+                                    }
+                                ]
+                            }
+                        },
+                        "type": [
+                            {
+                                "code": "ONLINE",
+                                "description": "Describes the fulfillments type for loan item.",
+                                "reference": "<PR/Issue/Discussion Links md format text"
+                            },
+                            {
+                                "code": "SEMI_ONLINE",
+                                "description": "Describes the fulfillments type for loan item.",
+                                "reference": "<PR/Issue/Discussion Links md format text"
+                            },
+                            {
+                                "code": "BASE_ORDER",
+                                "description": "Describes the fulfillments type for order item",
+                                "reference": "<PR/Issue/Discussion Links md format text."
+                            }
+                        ]
                     }
                 }
             }
@@ -43995,6 +44080,88 @@
                                     }
                                 ]
                             }
+                        }
+                    },
+                    "payments": {
+                        "type": [
+                            {
+                                "code": "ON-ORDER",
+                                "description": "Payment happens on order placement",
+                                "reference": "<PR/Issue/Discussion Links md format text"
+                            },
+                            {
+                                "code": "ON-FULFILLMENT",
+                                "description": "Payment happens on completion of the service",
+                                "reference": "<PR/Issue/Discussion Links md format text"
+                            },
+                            {
+                                "code": "POST-FULFILLMENT",
+                                "description": "Payment happens post completion of the service",
+                                "reference": "<PR/Issue/Discussion Links md format text"
+                            }
+                        ],
+                        "collected_by": [
+                            {
+                                "code": "BPP",
+                                "description": "When seller app is collecting the payment",
+                                "reference": "<PR/Issue/Discussion Links md format text"
+                            },
+                            {
+                                "code": "BAP",
+                                "description": "When buyer app is collecting the payment",
+                                "reference": "<PR/Issue/Discussion Links md format text"
+                            }
+                        ],
+                        "status": [
+                            {
+                                "code": "PAID",
+                                "description": "Reflects current status wheteher installment has been paid or not",
+                                "reference": "<PR/Issue/Discussion Links md format text"
+                            },
+                            {
+                                "code": "NOT-PAID",
+                                "description": "Reflects current status wheteher installment has been paid or not",
+                                "reference": "<PR/Issue/Discussion Links md format text"
+                            },
+                            {
+                                "code": "DEFERRED",
+                                "description": "Reflects current payment status when the installment is deferred.",
+                                "reference": "<PR/Issue/Discussion Links md format text"
+                            },
+                            {
+                                "code": "DELAYED",
+                                "description": "Reflects current payment status when the installment is delayed.",
+                                "reference": "<PR/Issue/Discussion Links md format text"
+                            }
+                        ],
+                        "time": {
+                            "label": [
+                                {
+                                    "code": "MISSED_EMI_PAYMENT",
+                                    "description": "Describes, when buyer missed to make a scheduled installment payment.",
+                                    "reference": "<PR/Issue/Discussion Links md format text"
+                                },
+                                {
+                                    "code": "FORECLOSURE",
+                                    "description": "Describes, when buyer initates the foreclose intent.",
+                                    "reference": "<PR/Issue/Discussion Links md format text"
+                                },
+                                {
+                                    "code": "PRE_PART_PAYMENT",
+                                    "description": "Describes, when buyer initates the pre part intent.",
+                                    "reference": "<PR/Issue/Discussion Links md format text"
+                                },
+                                {
+                                    "code": "INSTALLMENT",
+                                    "description": "Describes, an amount that a borrower makes over a period of time in order to pay off a loan.",
+                                    "reference": "<PR/Issue/Discussion Links md format text"
+                                },
+                                {
+                                    "code": "LOAN_DISBURSMENT",
+                                    "description": "Describes, the payment label",
+                                    "reference": "<PR/Issue/Discussion Links md format text"
+                                }
+                            ]
                         }
                     }
                 }
@@ -44363,6 +44530,88 @@
                                 }
                             ]
                         }
+                    },
+                    "payments": {
+                        "type": [
+                            {
+                                "code": "ON-ORDER",
+                                "description": "Payment happens on order placement",
+                                "reference": "<PR/Issue/Discussion Links md format text"
+                            },
+                            {
+                                "code": "ON-FULFILLMENT",
+                                "description": "Payment happens on completion of the service",
+                                "reference": "<PR/Issue/Discussion Links md format text"
+                            },
+                            {
+                                "code": "POST-FULFILLMENT",
+                                "description": "Payment happens post completion of the service",
+                                "reference": "<PR/Issue/Discussion Links md format text"
+                            }
+                        ],
+                        "collected_by": [
+                            {
+                                "code": "BPP",
+                                "description": "When seller app is collecting the payment",
+                                "reference": "<PR/Issue/Discussion Links md format text"
+                            },
+                            {
+                                "code": "BAP",
+                                "description": "When buyer app is collecting the payment",
+                                "reference": "<PR/Issue/Discussion Links md format text"
+                            }
+                        ],
+                        "status": [
+                            {
+                                "code": "PAID",
+                                "description": "Reflects current status wheteher installment has been paid or not",
+                                "reference": "<PR/Issue/Discussion Links md format text"
+                            },
+                            {
+                                "code": "NOT-PAID",
+                                "description": "Reflects current status wheteher installment has been paid or not",
+                                "reference": "<PR/Issue/Discussion Links md format text"
+                            },
+                            {
+                                "code": "DEFERRED",
+                                "description": "Reflects current payment status when the installment is deferred.",
+                                "reference": "<PR/Issue/Discussion Links md format text"
+                            },
+                            {
+                                "code": "DELAYED",
+                                "description": "Reflects current payment status when the installment is delayed.",
+                                "reference": "<PR/Issue/Discussion Links md format text"
+                            }
+                        ],
+                        "time": {
+                            "label": [
+                                {
+                                    "code": "MISSED_EMI_PAYMENT",
+                                    "description": "Describes, when buyer missed to make a scheduled installment payment.",
+                                    "reference": "<PR/Issue/Discussion Links md format text"
+                                },
+                                {
+                                    "code": "FORECLOSURE",
+                                    "description": "Describes, when buyer initates the foreclose intent.",
+                                    "reference": "<PR/Issue/Discussion Links md format text"
+                                },
+                                {
+                                    "code": "PRE_PART_PAYMENT",
+                                    "description": "Describes, when buyer initates the pre part intent.",
+                                    "reference": "<PR/Issue/Discussion Links md format text"
+                                },
+                                {
+                                    "code": "INSTALLMENT",
+                                    "description": "Describes, an amount that a borrower makes over a period of time in order to pay off a loan.",
+                                    "reference": "<PR/Issue/Discussion Links md format text"
+                                },
+                                {
+                                    "code": "LOAN_DISBURSMENT",
+                                    "description": "Describes, the payment label",
+                                    "reference": "<PR/Issue/Discussion Links md format text"
+                                }
+                            ]
+                        }
                     }
                 }
             }
@@ -44506,6 +44755,88 @@
                                     }
                                 ]
                             }
+                        }
+                    },
+                    "payments": {
+                        "type": [
+                            {
+                                "code": "ON-ORDER",
+                                "description": "Payment happens on order placement",
+                                "reference": "<PR/Issue/Discussion Links md format text"
+                            },
+                            {
+                                "code": "ON-FULFILLMENT",
+                                "description": "Payment happens on completion of the service",
+                                "reference": "<PR/Issue/Discussion Links md format text"
+                            },
+                            {
+                                "code": "POST-FULFILLMENT",
+                                "description": "Payment happens post completion of the service",
+                                "reference": "<PR/Issue/Discussion Links md format text"
+                            }
+                        ],
+                        "collected_by": [
+                            {
+                                "code": "BPP",
+                                "description": "When seller app is collecting the payment",
+                                "reference": "<PR/Issue/Discussion Links md format text"
+                            },
+                            {
+                                "code": "BAP",
+                                "description": "When buyer app is collecting the payment",
+                                "reference": "<PR/Issue/Discussion Links md format text"
+                            }
+                        ],
+                        "status": [
+                            {
+                                "code": "PAID",
+                                "description": "Reflects current status wheteher installment has been paid or not",
+                                "reference": "<PR/Issue/Discussion Links md format text"
+                            },
+                            {
+                                "code": "NOT-PAID",
+                                "description": "Reflects current status wheteher installment has been paid or not",
+                                "reference": "<PR/Issue/Discussion Links md format text"
+                            },
+                            {
+                                "code": "DEFERRED",
+                                "description": "Reflects current payment status when the installment is deferred.",
+                                "reference": "<PR/Issue/Discussion Links md format text"
+                            },
+                            {
+                                "code": "DELAYED",
+                                "description": "Reflects current payment status when the installment is delayed.",
+                                "reference": "<PR/Issue/Discussion Links md format text"
+                            }
+                        ],
+                        "time": {
+                            "label": [
+                                {
+                                    "code": "MISSED_EMI_PAYMENT",
+                                    "description": "Describes, when buyer missed to make a scheduled installment payment.",
+                                    "reference": "<PR/Issue/Discussion Links md format text"
+                                },
+                                {
+                                    "code": "FORECLOSURE",
+                                    "description": "Describes, when buyer initates the foreclose intent.",
+                                    "reference": "<PR/Issue/Discussion Links md format text"
+                                },
+                                {
+                                    "code": "PRE_PART_PAYMENT",
+                                    "description": "Describes, when buyer initates the pre part intent.",
+                                    "reference": "<PR/Issue/Discussion Links md format text"
+                                },
+                                {
+                                    "code": "INSTALLMENT",
+                                    "description": "Describes, an amount that a borrower makes over a period of time in order to pay off a loan.",
+                                    "reference": "<PR/Issue/Discussion Links md format text"
+                                },
+                                {
+                                    "code": "LOAN_DISBURSMENT",
+                                    "description": "Describes, the payment label",
+                                    "reference": "<PR/Issue/Discussion Links md format text"
+                                }
+                            ]
                         }
                     }
                 }
@@ -48298,7 +48629,7 @@
                                             "usage": "--",
                                             "info": "Describes the tags associated to each fulfillment",
                                             "owner": "BPP",
-                                            "type": "string",
+                                            "type": "object",
                                             "tags": [
                                                 {
                                                     "code": "CHECKLISTS",
@@ -48451,7 +48782,7 @@
                                         "usage": "--",
                                         "info": "Describes how an order will be rendered/fulfilled to the end-customer",
                                         "owner": "BPP",
-                                        "type": "string"
+                                        "type": "object"
                                     }
                                 },
                                 "payments": {
@@ -50643,7 +50974,24 @@
                                         "usage": "ONLINE",
                                         "info": "Describes the fulfillment type",
                                         "owner": "BPP",
-                                        "type": "enum"
+                                        "type": "enum",
+                                        "enums": [
+                                            {
+                                                "code": "ONLINE",
+                                                "description": "Describes the fulfillments type for loan item.",
+                                                "reference": "<PR/Issue/Discussion Links md format text"
+                                            },
+                                            {
+                                                "code": "SEMI_ONLINE",
+                                                "description": "Describes the fulfillments type for loan item.",
+                                                "reference": "<PR/Issue/Discussion Links md format text"
+                                            },
+                                            {
+                                                "code": "BASE_ORDER",
+                                                "description": "Describes the fulfillments type for order item",
+                                                "reference": "<PR/Issue/Discussion Links md format text."
+                                            }
+                                        ]
                                     }
                                 },
                                 "tags": {
@@ -50652,7 +51000,7 @@
                                         "usage": "--",
                                         "info": "Describes the tags associated to each fulfillment",
                                         "owner": "BPP",
-                                        "type": "string",
+                                        "type": "object",
                                         "tags": [
                                             {
                                                 "code": "CHECKLISTS",
@@ -50805,7 +51153,7 @@
                                     "usage": "--",
                                     "info": "Describes how an order will be rendered/fulfilled to the end-customer",
                                     "owner": "BPP",
-                                    "type": "string"
+                                    "type": "object"
                                 }
                             },
                             "quote": {
@@ -50973,6 +51321,15 @@
                                     "info": "This refers to the complete description of the mutully agreed upon quotation for this order.",
                                     "owner": "BPP",
                                     "type": "object"
+                                },
+                                "ttl": {
+                                    "_description": {
+                                        "required": true,
+                                        "usage": "PT15D",
+                                        "info": "It explains the time-to-live (TTL) value for a quote, detailing the duration in ISO8601 format.\n \n Example: In this context, \"PT15D\" is given as an example, where \"PT\" indicates a duration period, and \"15D\" signifies 15 days. Therefore, the quote, in this case, is valid for 15 days from the specified timestamp or starting point.",
+                                        "owner": "BPP",
+                                        "type": "string"
+                                    }
                                 }
                             }
                         }
@@ -51431,7 +51788,19 @@
                                         "usage": "BPP",
                                         "info": "Describes the payment collector.",
                                         "owner": "BPP",
-                                        "type": "enum"
+                                        "type": "enum",
+                                        "enums": [
+                                            {
+                                                "code": "BPP",
+                                                "description": "When seller app is collecting the payment",
+                                                "reference": "<PR/Issue/Discussion Links md format text"
+                                            },
+                                            {
+                                                "code": "BAP",
+                                                "description": "When buyer app is collecting the payment",
+                                                "reference": "<PR/Issue/Discussion Links md format text"
+                                            }
+                                        ]
                                     }
                                 },
                                 "type": {
@@ -51440,7 +51809,24 @@
                                         "usage": "ON_FULFILLMENT",
                                         "info": "Describes the payment type.",
                                         "owner": "BPP",
-                                        "type": "enum"
+                                        "type": "enum",
+                                        "enums": [
+                                            {
+                                                "code": "ON-ORDER",
+                                                "description": "Payment happens on order placement",
+                                                "reference": "<PR/Issue/Discussion Links md format text"
+                                            },
+                                            {
+                                                "code": "ON-FULFILLMENT",
+                                                "description": "Payment happens on completion of the service",
+                                                "reference": "<PR/Issue/Discussion Links md format text"
+                                            },
+                                            {
+                                                "code": "POST-FULFILLMENT",
+                                                "description": "Payment happens post completion of the service",
+                                                "reference": "<PR/Issue/Discussion Links md format text"
+                                            }
+                                        ]
                                     }
                                 },
                                 "id": {
@@ -51458,7 +51844,29 @@
                                         "usage": "NOT-PAID",
                                         "info": "Describes the payment status.",
                                         "owner": "BPP",
-                                        "type": "enum"
+                                        "type": "enum",
+                                        "enums": [
+                                            {
+                                                "code": "PAID",
+                                                "description": "Reflects current status wheteher installment has been paid or not",
+                                                "reference": "<PR/Issue/Discussion Links md format text"
+                                            },
+                                            {
+                                                "code": "NOT-PAID",
+                                                "description": "Reflects current status wheteher installment has been paid or not",
+                                                "reference": "<PR/Issue/Discussion Links md format text"
+                                            },
+                                            {
+                                                "code": "DEFERRED",
+                                                "description": "Reflects current payment status when the installment is deferred.",
+                                                "reference": "<PR/Issue/Discussion Links md format text"
+                                            },
+                                            {
+                                                "code": "DELAYED",
+                                                "description": "Reflects current payment status when the installment is delayed.",
+                                                "reference": "<PR/Issue/Discussion Links md format text"
+                                            }
+                                        ]
                                     }
                                 },
                                 "time": {
@@ -51468,7 +51876,34 @@
                                             "usage": "LOAN_DISBURSMENT",
                                             "info": "Describes the payment's time label.",
                                             "owner": "BPP",
-                                            "type": "enum"
+                                            "type": "enum",
+                                            "enums": [
+                                                {
+                                                    "code": "MISSED_EMI_PAYMENT",
+                                                    "description": "Describes, when buyer missed to make a scheduled installment payment.",
+                                                    "reference": "<PR/Issue/Discussion Links md format text"
+                                                },
+                                                {
+                                                    "code": "FORECLOSURE",
+                                                    "description": "Describes, when buyer initates the foreclose intent.",
+                                                    "reference": "<PR/Issue/Discussion Links md format text"
+                                                },
+                                                {
+                                                    "code": "PRE_PART_PAYMENT",
+                                                    "description": "Describes, when buyer initates the pre part intent.",
+                                                    "reference": "<PR/Issue/Discussion Links md format text"
+                                                },
+                                                {
+                                                    "code": "INSTALLMENT",
+                                                    "description": "Describes, an amount that a borrower makes over a period of time in order to pay off a loan.",
+                                                    "reference": "<PR/Issue/Discussion Links md format text"
+                                                },
+                                                {
+                                                    "code": "LOAN_DISBURSMENT",
+                                                    "description": "Describes, the payment label",
+                                                    "reference": "<PR/Issue/Discussion Links md format text"
+                                                }
+                                            ]
                                         }
                                     },
                                     "_description": {
@@ -51511,7 +51946,7 @@
                                     "usage": "--",
                                     "info": "Describes the payments description",
                                     "owner": "BPP",
-                                    "type": "enum"
+                                    "type": "object"
                                 },
                                 "tags": {
                                     "_description": {
@@ -51602,12 +52037,30 @@
                                                     "type": "string"
                                                 }
                                             },
+                                            "name": {
+                                                "_description": {
+                                                    "required": true,
+                                                    "usage": "--",
+                                                    "info": "This attribute refers to the lists descriptor name",
+                                                    "owner": "BPP",
+                                                    "type": "string"
+                                                }
+                                            },
                                             "_description": {
                                                 "required": true,
                                                 "usage": "--",
                                                 "info": "This attribute refers to the list of tags of a tag group",
                                                 "owner": "BPP",
                                                 "type": "object"
+                                            }
+                                        },
+                                        "value": {
+                                            "_description": {
+                                                "required": true,
+                                                "usage": "--",
+                                                "info": "This attribute refers to the lists value",
+                                                "owner": "BPP",
+                                                "type": "string"
                                             }
                                         },
                                         "_description": {
@@ -51626,7 +52079,7 @@
                                     "usage": "--",
                                     "info": "This attribute refers to the tags",
                                     "owner": "BAP",
-                                    "type": "string",
+                                    "type": "object",
                                     "tags": [
                                         {
                                             "code": "BAP_TERMS",
@@ -52988,7 +53441,7 @@
                                         "usage": "--",
                                         "info": "Describes the tags associated to each fulfillment",
                                         "owner": "BPP",
-                                        "type": "string",
+                                        "type": "object",
                                         "tags": [
                                             {
                                                 "code": "CHECKLISTS",
@@ -53141,7 +53594,7 @@
                                     "usage": "--",
                                     "info": "Describes how an order will be rendered/fulfilled to the end-customer",
                                     "owner": "BPP",
-                                    "type": "string"
+                                    "type": "object"
                                 }
                             },
                             "quote": {
@@ -53309,6 +53762,15 @@
                                     "info": "This refers to the complete description of the mutully agreed upon quotation for this order.",
                                     "owner": "BPP",
                                     "type": "object"
+                                },
+                                "ttl": {
+                                    "_description": {
+                                        "required": true,
+                                        "usage": "PT15D",
+                                        "info": "It explains the time-to-live (TTL) value for a quote, detailing the duration in ISO8601 format.\n \n Example: In this context, \"PT15D\" is given as an example, where \"PT\" indicates a duration period, and \"15D\" signifies 15 days. Therefore, the quote, in this case, is valid for 15 days from the specified timestamp or starting point.",
+                                        "owner": "BPP",
+                                        "type": "string"
+                                    }
                                 }
                             },
                             "cancellation_terms": {
@@ -53489,6 +53951,15 @@
                                             "type": "object"
                                         }
                                     },
+                                    "value": {
+                                        "_description": {
+                                            "required": true,
+                                            "usage": "--",
+                                            "info": "This attribute refers to the lists value",
+                                            "owner": "BPP",
+                                            "type": "string"
+                                        }
+                                    },
                                     "_description": {
                                         "required": true,
                                         "usage": "--",
@@ -53505,7 +53976,19 @@
                                         "usage": "BPP",
                                         "info": "Describes the payment collector.",
                                         "owner": "BPP",
-                                        "type": "enum"
+                                        "type": "enum",
+                                        "enums": [
+                                            {
+                                                "code": "BPP",
+                                                "description": "When seller app is collecting the payment",
+                                                "reference": "<PR/Issue/Discussion Links md format text"
+                                            },
+                                            {
+                                                "code": "BAP",
+                                                "description": "When buyer app is collecting the payment",
+                                                "reference": "<PR/Issue/Discussion Links md format text"
+                                            }
+                                        ]
                                     }
                                 },
                                 "type": {
@@ -53514,7 +53997,24 @@
                                         "usage": "ON_FULFILLMENT",
                                         "info": "Describes the payment type.",
                                         "owner": "BPP",
-                                        "type": "enum"
+                                        "type": "enum",
+                                        "enums": [
+                                            {
+                                                "code": "ON-ORDER",
+                                                "description": "Payment happens on order placement",
+                                                "reference": "<PR/Issue/Discussion Links md format text"
+                                            },
+                                            {
+                                                "code": "ON-FULFILLMENT",
+                                                "description": "Payment happens on completion of the service",
+                                                "reference": "<PR/Issue/Discussion Links md format text"
+                                            },
+                                            {
+                                                "code": "POST-FULFILLMENT",
+                                                "description": "Payment happens post completion of the service",
+                                                "reference": "<PR/Issue/Discussion Links md format text"
+                                            }
+                                        ]
                                     }
                                 },
                                 "id": {
@@ -53532,7 +54032,29 @@
                                         "usage": "NOT-PAID",
                                         "info": "Describes the payment status.",
                                         "owner": "BPP",
-                                        "type": "enum"
+                                        "type": "enum",
+                                        "enums": [
+                                            {
+                                                "code": "PAID",
+                                                "description": "Reflects current status wheteher installment has been paid or not",
+                                                "reference": "<PR/Issue/Discussion Links md format text"
+                                            },
+                                            {
+                                                "code": "NOT-PAID",
+                                                "description": "Reflects current status wheteher installment has been paid or not",
+                                                "reference": "<PR/Issue/Discussion Links md format text"
+                                            },
+                                            {
+                                                "code": "DEFERRED",
+                                                "description": "Reflects current payment status when the installment is deferred.",
+                                                "reference": "<PR/Issue/Discussion Links md format text"
+                                            },
+                                            {
+                                                "code": "DELAYED",
+                                                "description": "Reflects current payment status when the installment is delayed.",
+                                                "reference": "<PR/Issue/Discussion Links md format text"
+                                            }
+                                        ]
                                     }
                                 },
                                 "time": {
@@ -53542,7 +54064,34 @@
                                             "usage": "LOAN_DISBURSMENT",
                                             "info": "Describes the payment's time label.",
                                             "owner": "BPP",
-                                            "type": "enum"
+                                            "type": "enum",
+                                            "enums": [
+                                                {
+                                                    "code": "MISSED_EMI_PAYMENT",
+                                                    "description": "Describes, when buyer missed to make a scheduled installment payment.",
+                                                    "reference": "<PR/Issue/Discussion Links md format text"
+                                                },
+                                                {
+                                                    "code": "FORECLOSURE",
+                                                    "description": "Describes, when buyer initates the foreclose intent.",
+                                                    "reference": "<PR/Issue/Discussion Links md format text"
+                                                },
+                                                {
+                                                    "code": "PRE_PART_PAYMENT",
+                                                    "description": "Describes, when buyer initates the pre part intent.",
+                                                    "reference": "<PR/Issue/Discussion Links md format text"
+                                                },
+                                                {
+                                                    "code": "INSTALLMENT",
+                                                    "description": "Describes, an amount that a borrower makes over a period of time in order to pay off a loan.",
+                                                    "reference": "<PR/Issue/Discussion Links md format text"
+                                                },
+                                                {
+                                                    "code": "LOAN_DISBURSMENT",
+                                                    "description": "Describes, the payment label",
+                                                    "reference": "<PR/Issue/Discussion Links md format text"
+                                                }
+                                            ]
                                         }
                                     },
                                     "range": {
@@ -53638,7 +54187,7 @@
                                         "usage": "--",
                                         "info": "Describes the payments tag group as ACCOUNT_DETAILS",
                                         "owner": "BPP",
-                                        "type": "string",
+                                        "type": "object",
                                         "tags": [
                                             {
                                                 "code": "ACCOUNT_DETAILS",
@@ -54096,7 +54645,19 @@
                                         "usage": "BPP",
                                         "info": "Describes the payment collector.",
                                         "owner": "BPP",
-                                        "type": "enum"
+                                        "type": "enum",
+                                        "enums": [
+                                            {
+                                                "code": "BPP",
+                                                "description": "When seller app is collecting the payment",
+                                                "reference": "<PR/Issue/Discussion Links md format text"
+                                            },
+                                            {
+                                                "code": "BAP",
+                                                "description": "When buyer app is collecting the payment",
+                                                "reference": "<PR/Issue/Discussion Links md format text"
+                                            }
+                                        ]
                                     }
                                 },
                                 "type": {
@@ -54105,7 +54666,24 @@
                                         "usage": "ON_FULFILLMENT",
                                         "info": "Describes the payment type.",
                                         "owner": "BPP",
-                                        "type": "enum"
+                                        "type": "enum",
+                                        "enums": [
+                                            {
+                                                "code": "ON-ORDER",
+                                                "description": "Payment happens on order placement",
+                                                "reference": "<PR/Issue/Discussion Links md format text"
+                                            },
+                                            {
+                                                "code": "ON-FULFILLMENT",
+                                                "description": "Payment happens on completion of the service",
+                                                "reference": "<PR/Issue/Discussion Links md format text"
+                                            },
+                                            {
+                                                "code": "POST-FULFILLMENT",
+                                                "description": "Payment happens post completion of the service",
+                                                "reference": "<PR/Issue/Discussion Links md format text"
+                                            }
+                                        ]
                                     }
                                 },
                                 "id": {
@@ -54123,7 +54701,29 @@
                                         "usage": "NOT-PAID",
                                         "info": "Describes the payment status.",
                                         "owner": "BPP",
-                                        "type": "enum"
+                                        "type": "enum",
+                                        "enums": [
+                                            {
+                                                "code": "PAID",
+                                                "description": "Reflects current status wheteher installment has been paid or not",
+                                                "reference": "<PR/Issue/Discussion Links md format text"
+                                            },
+                                            {
+                                                "code": "NOT-PAID",
+                                                "description": "Reflects current status wheteher installment has been paid or not",
+                                                "reference": "<PR/Issue/Discussion Links md format text"
+                                            },
+                                            {
+                                                "code": "DEFERRED",
+                                                "description": "Reflects current payment status when the installment is deferred.",
+                                                "reference": "<PR/Issue/Discussion Links md format text"
+                                            },
+                                            {
+                                                "code": "DELAYED",
+                                                "description": "Reflects current payment status when the installment is delayed.",
+                                                "reference": "<PR/Issue/Discussion Links md format text"
+                                            }
+                                        ]
                                     }
                                 },
                                 "time": {
@@ -54133,7 +54733,34 @@
                                             "usage": "LOAN_DISBURSMENT",
                                             "info": "Describes the payment's time label.",
                                             "owner": "BPP",
-                                            "type": "enum"
+                                            "type": "enum",
+                                            "enums": [
+                                                {
+                                                    "code": "MISSED_EMI_PAYMENT",
+                                                    "description": "Describes, when buyer missed to make a scheduled installment payment.",
+                                                    "reference": "<PR/Issue/Discussion Links md format text"
+                                                },
+                                                {
+                                                    "code": "FORECLOSURE",
+                                                    "description": "Describes, when buyer initates the foreclose intent.",
+                                                    "reference": "<PR/Issue/Discussion Links md format text"
+                                                },
+                                                {
+                                                    "code": "PRE_PART_PAYMENT",
+                                                    "description": "Describes, when buyer initates the pre part intent.",
+                                                    "reference": "<PR/Issue/Discussion Links md format text"
+                                                },
+                                                {
+                                                    "code": "INSTALLMENT",
+                                                    "description": "Describes, an amount that a borrower makes over a period of time in order to pay off a loan.",
+                                                    "reference": "<PR/Issue/Discussion Links md format text"
+                                                },
+                                                {
+                                                    "code": "LOAN_DISBURSMENT",
+                                                    "description": "Describes, the payment label",
+                                                    "reference": "<PR/Issue/Discussion Links md format text"
+                                                }
+                                            ]
                                         }
                                     },
                                     "_description": {
@@ -54176,7 +54803,7 @@
                                     "usage": "--",
                                     "info": "Describes the payments description",
                                     "owner": "BPP",
-                                    "type": "enum"
+                                    "type": "object"
                                 },
                                 "tags": {
                                     "_description": {
@@ -54267,12 +54894,30 @@
                                                     "type": "string"
                                                 }
                                             },
+                                            "name": {
+                                                "_description": {
+                                                    "required": true,
+                                                    "usage": "--",
+                                                    "info": "This attribute refers to the lists descriptor name",
+                                                    "owner": "BPP",
+                                                    "type": "string"
+                                                }
+                                            },
                                             "_description": {
                                                 "required": true,
                                                 "usage": "--",
                                                 "info": "This attribute refers to the list of tags of a tag group",
                                                 "owner": "BPP",
                                                 "type": "object"
+                                            }
+                                        },
+                                        "value": {
+                                            "_description": {
+                                                "required": true,
+                                                "usage": "--",
+                                                "info": "This attribute refers to the lists value",
+                                                "owner": "BPP",
+                                                "type": "string"
                                             }
                                         },
                                         "_description": {
@@ -54291,7 +54936,7 @@
                                     "usage": "--",
                                     "info": "This attribute refers to the tags",
                                     "owner": "BAP",
-                                    "type": "string",
+                                    "type": "object",
                                     "tags": [
                                         {
                                             "code": "BAP_TERMS",
@@ -55736,7 +56381,7 @@
                                         "usage": "--",
                                         "info": "Describes the tags associated to each fulfillment",
                                         "owner": "BPP",
-                                        "type": "string",
+                                        "type": "object",
                                         "tags": [
                                             {
                                                 "code": "CHECKLISTS",
@@ -55889,7 +56534,7 @@
                                     "usage": "--",
                                     "info": "Describes how an order will be rendered/fulfilled to the end-customer",
                                     "owner": "BPP",
-                                    "type": "string"
+                                    "type": "object"
                                 }
                             },
                             "quote": {
@@ -56057,6 +56702,15 @@
                                     "info": "This refers to the complete description of the mutully agreed upon quotation for this order.",
                                     "owner": "BPP",
                                     "type": "object"
+                                },
+                                "ttl": {
+                                    "_description": {
+                                        "required": true,
+                                        "usage": "PT15D",
+                                        "info": "It explains the time-to-live (TTL) value for a quote, detailing the duration in ISO8601 format.\n \n Example: In this context, \"PT15D\" is given as an example, where \"PT\" indicates a duration period, and \"15D\" signifies 15 days. Therefore, the quote, in this case, is valid for 15 days from the specified timestamp or starting point.",
+                                        "owner": "BPP",
+                                        "type": "string"
+                                    }
                                 }
                             },
                             "cancellation_terms": {
@@ -56482,7 +57136,7 @@
                                         "usage": "--",
                                         "info": "Describes the payments tag group as ACCOUNT_DETAILS",
                                         "owner": "BPP",
-                                        "type": "string",
+                                        "type": "object",
                                         "tags": [
                                             {
                                                 "code": "ACCOUNT_DETAILS",
@@ -58000,7 +58654,7 @@
                                         "usage": "--",
                                         "info": "Describes the tags associated to each fulfillment",
                                         "owner": "BPP",
-                                        "type": "string",
+                                        "type": "object",
                                         "tags": [
                                             {
                                                 "code": "CHECKLISTS",
@@ -58153,7 +58807,7 @@
                                     "usage": "--",
                                     "info": "Describes how an order will be rendered/fulfilled to the end-customer",
                                     "owner": "BPP",
-                                    "type": "string"
+                                    "type": "object"
                                 }
                             },
                             "quote": {
@@ -58321,6 +58975,15 @@
                                     "info": "This refers to the complete description of the mutully agreed upon quotation for this order.",
                                     "owner": "BPP",
                                     "type": "object"
+                                },
+                                "ttl": {
+                                    "_description": {
+                                        "required": true,
+                                        "usage": "PT15D",
+                                        "info": "It explains the time-to-live (TTL) value for a quote, detailing the duration in ISO8601 format.\n \n Example: In this context, \"PT15D\" is given as an example, where \"PT\" indicates a duration period, and \"15D\" signifies 15 days. Therefore, the quote, in this case, is valid for 15 days from the specified timestamp or starting point.",
+                                        "owner": "BPP",
+                                        "type": "string"
+                                    }
                                 }
                             },
                             "cancellation_terms": {
@@ -58728,7 +59391,7 @@
                                         "usage": "--",
                                         "info": "Describes the payments tag group as ACCOUNT_DETAILS",
                                         "owner": "BPP",
-                                        "type": "string",
+                                        "type": "object",
                                         "tags": [
                                             {
                                                 "code": "ACCOUNT_DETAILS",
