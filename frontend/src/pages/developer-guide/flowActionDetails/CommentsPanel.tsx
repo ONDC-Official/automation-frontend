@@ -195,7 +195,7 @@ const CommentsPanel: FC<CommentsPanelProps> = ({ selectedPath, actionApi, useCas
                         comment: text,
                         parent_comment_id: threadId,
                     });
-                    await fetchComments(false);
+                    await fetchComments();
                     setReplyTextByThreadId((prev) => ({ ...prev, [threadId]: "" }));
                     setReplyingToId(null);
                 } catch (err) {
@@ -238,6 +238,8 @@ const CommentsPanel: FC<CommentsPanelProps> = ({ selectedPath, actionApi, useCas
 
     const toggleResolved = useCallback(
         async (threadId: string) => {
+            if (!isLoggedIn) return;
+
             const thread = threads.find((t) => t.id === threadId);
             if (!thread) return;
             const newResolved = !thread.resolved;
@@ -246,7 +248,7 @@ const CommentsPanel: FC<CommentsPanelProps> = ({ selectedPath, actionApi, useCas
                 setError(null);
                 try {
                     await commentsApi.resolveComment(threadId, newResolved);
-                    await fetchComments(false);
+                    await fetchComments();
                 } catch (err) {
                     setError(err instanceof Error ? err.message : "Failed to update comment");
                 }
@@ -262,11 +264,13 @@ const CommentsPanel: FC<CommentsPanelProps> = ({ selectedPath, actionApi, useCas
                 persist(next);
             }
         },
-        [threads, persist, useApi, flowId, useCaseId, actionApi, fetchComments]
+        [isLoggedIn, threads, persist, useApi, flowId, useCaseId, actionApi, fetchComments]
     );
 
     const deleteThread = useCallback(
         async (threadId: string) => {
+            if (!isLoggedIn) return;
+
             if (useApi && flowId && useCaseId) {
                 setError(null);
                 try {
@@ -279,26 +283,11 @@ const CommentsPanel: FC<CommentsPanelProps> = ({ selectedPath, actionApi, useCas
                 persist(threads.filter((t) => t.id !== threadId));
             }
         },
-        [threads, persist, useApi, flowId, useCaseId, actionApi, fetchComments]
+        [isLoggedIn, threads, persist, useApi, flowId, useCaseId, actionApi, fetchComments]
     );
 
     const filteredThreads = threads;
     const hasSelection = selectedPath != null;
-
-    if (!isLoggedIn) {
-        return (
-            <div className="h-full flex flex-col rounded-xl border border-slate-200 bg-white overflow-hidden shadow-sm">
-                <div className="px-5 py-4 border-b border-slate-200 bg-slate-50/70 shrink-0">
-                    <h3 className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-0">
-                        Comments
-                    </h3>
-                </div>
-                <div className="flex-1 min-h-0 overflow-auto p-4 flex items-center justify-center">
-                    <p className="text-sm text-slate-500">Please login to view comments.</p>
-                </div>
-            </div>
-        );
-    }
 
     return (
         <div className="h-full flex flex-col rounded-xl border border-slate-200 bg-white overflow-hidden shadow-sm">
@@ -418,7 +407,8 @@ const CommentsPanel: FC<CommentsPanelProps> = ({ selectedPath, actionApi, useCas
                                                                     onClick={() =>
                                                                         toggleResolved(thread.id)
                                                                     }
-                                                                    className="p-1.5 rounded-lg text-slate-400 hover:text-sky-600 hover:bg-sky-500/10 transition-colors"
+                                                                    disabled={!isLoggedIn}
+                                                                    className="p-1.5 rounded-lg text-slate-400 hover:text-sky-600 hover:bg-sky-500/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                                                     title={
                                                                         thread.resolved
                                                                             ? "Reopen"
@@ -435,28 +425,30 @@ const CommentsPanel: FC<CommentsPanelProps> = ({ selectedPath, actionApi, useCas
                                                                         </span>
                                                                     )}
                                                                 </button>
-                                                                <button
-                                                                    type="button"
-                                                                    onClick={() =>
-                                                                        deleteThread(thread.id)
-                                                                    }
-                                                                    className="p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-500/10 transition-colors"
-                                                                    title="Delete"
-                                                                >
-                                                                    <svg
-                                                                        className="w-4 h-4"
-                                                                        fill="none"
-                                                                        viewBox="0 0 24 24"
-                                                                        stroke="currentColor"
-                                                                        strokeWidth={2}
+                                                                {isLoggedIn && (
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() =>
+                                                                            deleteThread(thread.id)
+                                                                        }
+                                                                        className="p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-500/10 transition-colors"
+                                                                        title="Delete"
                                                                     >
-                                                                        <path
-                                                                            strokeLinecap="round"
-                                                                            strokeLinejoin="round"
-                                                                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                                                                        />
-                                                                    </svg>
-                                                                </button>
+                                                                        <svg
+                                                                            className="w-4 h-4"
+                                                                            fill="none"
+                                                                            viewBox="0 0 24 24"
+                                                                            stroke="currentColor"
+                                                                            strokeWidth={2}
+                                                                        >
+                                                                            <path
+                                                                                strokeLinecap="round"
+                                                                                strokeLinejoin="round"
+                                                                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                                                                            />
+                                                                        </svg>
+                                                                    </button>
+                                                                )}
                                                             </div>
                                                         </div>
                                                         <p className="text-xs text-emerald-700 mt-2">
@@ -554,18 +546,19 @@ const CommentsPanel: FC<CommentsPanelProps> = ({ selectedPath, actionApi, useCas
                                                                         </div>
                                                                     </div>
                                                                 ) : (
-                                                                    <button
-                                                                        type="button"
-                                                                        onClick={() =>
-                                                                            setReplyingToId(
-                                                                                thread.id
-                                                                            )
-                                                                        }
-                                                                        disabled={!isLoggedIn}
-                                                                        className="text-xs font-medium text-sky-600 hover:text-sky-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                                                                    >
-                                                                        Reply
-                                                                    </button>
+                                                                    isLoggedIn && (
+                                                                        <button
+                                                                            type="button"
+                                                                            onClick={() =>
+                                                                                setReplyingToId(
+                                                                                    thread.id
+                                                                                )
+                                                                            }
+                                                                            className="text-xs font-medium text-sky-600 hover:text-sky-700"
+                                                                        >
+                                                                            Reply
+                                                                        </button>
+                                                                    )
                                                                 )}
                                                             </div>
                                                         )}
@@ -596,7 +589,8 @@ const CommentsPanel: FC<CommentsPanelProps> = ({ selectedPath, actionApi, useCas
                                                     <button
                                                         type="button"
                                                         onClick={() => toggleResolved(thread.id)}
-                                                        className="p-1.5 rounded-lg text-slate-400 hover:text-sky-600 hover:bg-sky-500/10 transition-colors"
+                                                        disabled={!isLoggedIn}
+                                                        className="p-1.5 rounded-lg text-slate-400 hover:text-sky-600 hover:bg-sky-500/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                                         title={
                                                             thread.resolved ? "Reopen" : "Resolve"
                                                         }
@@ -611,26 +605,28 @@ const CommentsPanel: FC<CommentsPanelProps> = ({ selectedPath, actionApi, useCas
                                                             </span>
                                                         )}
                                                     </button>
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => deleteThread(thread.id)}
-                                                        className="p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-500/10 transition-colors"
-                                                        title="Delete"
-                                                    >
-                                                        <svg
-                                                            className="w-4 h-4"
-                                                            fill="none"
-                                                            viewBox="0 0 24 24"
-                                                            stroke="currentColor"
-                                                            strokeWidth={2}
+                                                    {isLoggedIn && (
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => deleteThread(thread.id)}
+                                                            className="p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-500/10 transition-colors"
+                                                            title="Delete"
                                                         >
-                                                            <path
-                                                                strokeLinecap="round"
-                                                                strokeLinejoin="round"
-                                                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                                                            />
-                                                        </svg>
-                                                    </button>
+                                                            <svg
+                                                                className="w-4 h-4"
+                                                                fill="none"
+                                                                viewBox="0 0 24 24"
+                                                                stroke="currentColor"
+                                                                strokeWidth={2}
+                                                            >
+                                                                <path
+                                                                    strokeLinecap="round"
+                                                                    strokeLinejoin="round"
+                                                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                                                                />
+                                                            </svg>
+                                                        </button>
+                                                    )}
                                                 </div>
                                             </div>
                                             <p className="text-xs text-emerald-700 mt-2">
@@ -719,16 +715,17 @@ const CommentsPanel: FC<CommentsPanelProps> = ({ selectedPath, actionApi, useCas
                                                             </div>
                                                         </div>
                                                     ) : (
-                                                        <button
-                                                            type="button"
-                                                            onClick={() =>
-                                                                setReplyingToId(thread.id)
-                                                            }
-                                                            disabled={!isLoggedIn}
-                                                            className="text-xs font-medium text-sky-600 hover:text-sky-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                                                        >
-                                                            Reply
-                                                        </button>
+                                                        isLoggedIn && (
+                                                            <button
+                                                                type="button"
+                                                                onClick={() =>
+                                                                    setReplyingToId(thread.id)
+                                                                }
+                                                                className="text-xs font-medium text-sky-600 hover:text-sky-700"
+                                                            >
+                                                                Reply
+                                                            </button>
+                                                        )
                                                     )}
                                                 </div>
                                             )}
