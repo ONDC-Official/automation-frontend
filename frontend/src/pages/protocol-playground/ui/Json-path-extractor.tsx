@@ -4,6 +4,8 @@ import Tippy from "@tippyjs/react";
 import "tippy.js/animations/perspective-subtle.css";
 
 import { SelectedType } from "./session-data-tab";
+import { useLocation } from "react-router-dom";
+import { FiMaximize2, FiMinimize2 } from "react-icons/fi";
 
 type JsonPrimitive = string | number | boolean | null;
 type JsonArray = JsonValue[];
@@ -58,7 +60,7 @@ const renderValue = (
     if (!isPrimitive) return null;
 
     let className =
-        "group/value relative cursor-pointer px-2 py-0.5 rounded transition-all duration-150 inline-flex items-center gap-1.5 ";
+        "group/value relative cursor-pointer  py-0.5 rounded transition-all duration-150 inline-flex items-center gap-1.5 ";
     let valueColor = "text-gray-300";
 
     // Color by type
@@ -146,7 +148,7 @@ const renderJson = ({
     searchTerm: string;
     matchingPaths: Set<string>;
 }): JSX.Element => {
-    const indent = level * 20;
+    const indent = level * 10;
 
     const toggleCollapse = (path: string) => {
         setCollapsedPaths((prev) => ({
@@ -183,7 +185,7 @@ const renderJson = ({
                             {(isObject || isArray) && (
                                 <button
                                     onClick={() => toggleCollapse(newPath)}
-                                    className="text-gray-500 hover:text-gray-300 mr-1.5 mt-0.5 transition-colors flex-shrink-0"
+                                    className="text-gray-500 hover:text-gray-300 mr-1.5 mt-1.5 transition-colors flex-shrink-0"
                                     aria-label={isCollapsed ? "Expand" : "Collapse"}
                                 >
                                     {isCollapsed ? <ChevronRight /> : <ChevronDown />}
@@ -217,10 +219,10 @@ const renderJson = ({
                                         } ${
                                             isKeySelected.status
                                                 ? isKeySelected.type === SelectedType.SaveData
-                                                    ? "bg-sky-500/30 text-sky-200 font-semibold px-2 py-0.5 rounded ring-1 ring-sky-500/50"
-                                                    : "bg-gray-500/30 text-gray-100 px-2 py-0.5 font-semibold rounded ring-1 ring-gray-500/50"
+                                                    ? "bg-sky-500/30 text-sky-200 font-semibold pt-0.5 rounded ring-1 ring-sky-500/50"
+                                                    : "bg-gray-500/30 text-gray-100 pt-0.5 font-semibold rounded ring-1 ring-gray-500/50"
                                                 : isObject || isArray
-                                                  ? "text-sky-400 hover:bg-sky-500/10 px-2 py-0.5 rounded hover:ring-1 hover:ring-sky-500/30"
+                                                  ? "text-sky-400 hover:bg-sky-500/10 pt-0.5 rounded hover:ring-1 hover:ring-sky-500/30"
                                                   : "text-sky-400"
                                         }`}
                                     >
@@ -315,7 +317,7 @@ const renderJson = ({
                                                     <div
                                                         key={index}
                                                         className="border-l border-gray-700/50"
-                                                        style={{ marginLeft: `${indent + 10}px` }}
+                                                        // style={{ marginLeft: `${indent + 10}px` }}
                                                     >
                                                         {renderJson({
                                                             obj: item as JsonObject,
@@ -371,11 +373,23 @@ interface JsonViewerProps {
     data: JsonNode;
     isSelected: (path: string) => { status: boolean; type: SelectedType | null };
     handleKeyClick: (path: string, key: string, e: React.MouseEvent) => void;
+    onExpand?: () => void;
+    isExpanded?: boolean; // ADD
+    onCollapse?: () => void;
 }
 
-const JsonViewer: React.FC<JsonViewerProps> = ({ data, isSelected, handleKeyClick }) => {
+const JsonViewer: React.FC<JsonViewerProps> = ({
+    data,
+    isSelected,
+    handleKeyClick,
+    onExpand,
+    isExpanded,
+    onCollapse,
+}) => {
     const [collapsedPaths, setCollapsedPaths] = useState<Record<string, boolean>>({});
     const [searchTerm, setSearchTerm] = useState("");
+    const location = useLocation();
+    const isDeveloperGuide = location.pathname.includes("developer-guide");
 
     // Search logic - find all matching paths
     const matchingPaths = useMemo(() => {
@@ -486,6 +500,52 @@ const JsonViewer: React.FC<JsonViewerProps> = ({ data, isSelected, handleKeyClic
                 >
                     Collapse All
                 </button>
+                {isDeveloperGuide && (
+                    <>
+                        <button
+                            onClick={() => {
+                                const blob = new Blob([JSON.stringify(data, null, 2)], {
+                                    type: "application/json",
+                                });
+                                const url = URL.createObjectURL(blob);
+                                const a = document.createElement("a");
+                                a.href = url;
+                                a.download = "payload.json";
+                                a.click();
+                                URL.revokeObjectURL(url);
+                            }}
+                            className="px-3 py-1.5 text-xs bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded transition-colors text-gray-300 whitespace-nowrap flex items-center gap-1.5"
+                        >
+                            <svg
+                                className="w-3.5 h-3.5"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                                strokeWidth={2}
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                                />
+                            </svg>
+                            Download
+                        </button>
+
+                        <button
+                            type="button"
+                            onClick={isExpanded ? onCollapse : onExpand}
+                            className="p-2 rounded-lg text-slate-500 hover:bg-slate-200 hover:text-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-sky-400 focus:ring-offset-1"
+                            title={isExpanded ? "Exit fullscreen" : "Fullscreen"}
+                        >
+                            {isExpanded ? (
+                                <FiMinimize2 className="w-4 h-4" />
+                            ) : (
+                                <FiMaximize2 className="w-4 h-4" />
+                            )}
+                        </button>
+                    </>
+                )}
             </div>
 
             {/* JSON Tree - with proper scrolling */}
