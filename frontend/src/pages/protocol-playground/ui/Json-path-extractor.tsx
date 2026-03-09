@@ -85,7 +85,7 @@ const renderValue = (
     };
 
     const stringValue = JSON.stringify(value);
-    const isTruncated = stringValue.length > 100;
+    const isTruncated = stringValue ? stringValue.length > 100 : false;
 
     return (
         <Tippy

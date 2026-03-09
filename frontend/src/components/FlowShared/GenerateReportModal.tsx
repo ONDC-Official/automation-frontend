@@ -165,7 +165,7 @@ const GenerateReportModal = ({
                                     {completedReportableFlows.length > 1 ? "s" : ""} ready for
                                     report generation
                                 </h3>
-                                <div className="space-y-2">
+                                <div className="space-y-2 max-h-52 overflow-y-auto pr-1">
                                     {completedReportableFlows.map((flow) => (
                                         <div
                                             key={flow.id}

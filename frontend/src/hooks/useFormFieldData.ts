@@ -1,7 +1,11 @@
 import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { Domain } from "@/pages/schema-validation/types";
-import { DomainVersionWithUsecase } from "@/pages/scenario";
+import { DomainVersion } from "@/pages/schema-validation/types";
+
+export type DomainVersionWithUsecase = DomainVersion & {
+    usecase: string[];
+};
 
 export interface FormData {
     domain: string;

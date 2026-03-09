@@ -3,7 +3,7 @@ import FormSelect from "@components/ui/forms/form-select";
 import { Domain, DomainVersion } from "@/pages/schema-validation/types";
 import { trackEvent } from "@utils/analytics";
 import { useFormFieldData } from "@/hooks/useFormFieldData";
-import { DomainVersionWithUsecase } from "@/pages/scenario";
+import { DomainVersionWithUsecase } from "@/hooks/useFormFieldData";
 
 interface FiltersProps {
     onSubmit: (data: { domain: string; version: string; useCase: string }) => Promise<void>;
