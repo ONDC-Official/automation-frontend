@@ -105,13 +105,13 @@ const AttributeSection: FC<{
                     {safeDescription(attrs._description?.info ?? attrs.description)}
                 </p>
             </section>
-            {attrs.enumRefs && attrs.enumRefs.length > 0 && (
+            {attrs.enumrefs && attrs.enumrefs.length > 0 && (
                 <section>
                     <h4 className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-2.5">
                         Enum references
                     </h4>
                     <ul className="space-y-2 text-sm rounded-xl bg-slate-50/80 border border-slate-200 p-4">
-                        {attrs.enumRefs.map((ref, i) => (
+                        {attrs.enumrefs.map((ref, i) => (
                             <li key={i}>
                                 <a
                                     href={ref.href}
@@ -155,13 +155,13 @@ const EnumSection: FC<{ attrs: EnumDetails; isExpanded?: boolean }> = ({ attrs }
                 </p>
             </section>
         )}
-        {attrs.enumRefs && attrs.enumRefs.length > 0 && (
+        {attrs.enumrefs && attrs.enumrefs.length > 0 && (
             <section>
                 <h4 className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-2.5">
                     Enum references
                 </h4>
                 <ul className="space-y-2 text-sm rounded-xl bg-slate-50/80 border border-slate-200 p-4">
-                    {attrs.enumRefs.map((ref, i) => (
+                    {attrs.enumrefs.map((ref, i) => (
                         <li key={i}>
                             <a
                                 href={ref.href}
@@ -540,7 +540,7 @@ const AttributesPanel: FC<AttributesPanelProps> = ({
         return (
             <div className="h-full flex flex-col rounded-xl border border-slate-200 bg-white overflow-hidden shadow-sm">
                 <div className="px-5 py-4 border-b border-slate-200 bg-slate-50/70">
-                    <h3 className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+                    <h3 className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-0">
                         Attribute & validations
                     </h3>
                 </div>
@@ -562,7 +562,7 @@ const AttributesPanel: FC<AttributesPanelProps> = ({
     return (
         <div className="h-full flex flex-col rounded-xl border border-slate-200 bg-white overflow-hidden shadow-sm">
             <div className="px-5 py-4 border-b border-slate-200 bg-slate-50/70">
-                <h3 className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+                <h3 className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-0">
                     {title}
                 </h3>
             </div>

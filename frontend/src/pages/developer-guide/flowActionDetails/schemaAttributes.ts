@@ -178,7 +178,7 @@ function getEnumRefsFromNode(node: Record<string, unknown> | undefined): EnumRef
 
     const desc = node._description as Record<string, unknown> | undefined;
     // enumRefs can be on the node (sibling of _description) or inside _description
-    const raw = (node.enumRefs as unknown) ?? (desc?.enumRefs as unknown);
+    const raw = (node.enumrefs as unknown) ?? (desc?.enumrefs as unknown);
 
     if (!Array.isArray(raw) || raw.length === 0) return undefined;
 
@@ -233,7 +233,7 @@ export function getActionAttributes(
     const attrBase = getAttributeBase(xa, useCaseId, actionApi);
     const attrVal = attrBase ? (getAtPath(attrBase, path) as Record<string, unknown>) : undefined;
     const attr = getAttributeInfo(attrBase, path, value);
-    const enumRefs = attrVal ? getEnumRefsFromNode(attrVal) : undefined;
+    const enumrefs = attrVal ? getEnumRefsFromNode(attrVal) : undefined;
 
     const emptyAttr = (): AttributeDetails => ({
         kind: "attribute",
@@ -273,7 +273,7 @@ export function getActionAttributes(
             owner: attr.owner,
             type: attr.type || "enum",
             description: attr.description,
-            enumRefs,
+            enumrefs,
         } satisfies EnumDetails;
     }
 
@@ -346,7 +346,7 @@ export function getActionAttributes(
             type: attr.type,
             description: attr.description,
             ...(info && { _description: { info } }),
-            ...(enumRefs && { enumRefs }),
+            ...(enumrefs && { enumrefs }),
         } satisfies AttributeDetails;
     }
 

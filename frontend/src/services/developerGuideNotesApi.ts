@@ -15,7 +15,7 @@ export interface NotePayload {
 }
 
 export interface NoteResponse {
-    id: string;
+    _id: string;
     use_case_id?: string;
     flow_id?: string;
     action_id?: string;

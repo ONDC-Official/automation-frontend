@@ -19,7 +19,7 @@ export interface AttributeDetails extends ActionAttributesBase {
     /** Description from x-attributes node; prefer this for display. */
     _description?: { info?: string };
     /** External enum references (e.g. spreadsheet links) for enum-typed attributes. */
-    enumRefs?: EnumRef[];
+    enumrefs?: EnumRef[];
 }
 
 export interface EnumOption {
@@ -38,7 +38,7 @@ export interface EnumDetails extends ActionAttributesBase {
     type?: string;
     description?: string;
     /** External enum references (e.g. spreadsheet links) for enum-typed attributes. */
-    enumRefs?: EnumRef[];
+    enumrefs?: EnumRef[];
 }
 
 /** Tag list item; can nest to n levels via list. */

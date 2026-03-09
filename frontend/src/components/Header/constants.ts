@@ -1,6 +1,17 @@
 import { ROUTES } from "@constants/routes";
 import { NavLink } from "./types";
 
+const developerGuideLink: NavLink = {
+    label: "Developer Guide",
+    href: ROUTES.DEVELOPER_GUIDE,
+    selected: true,
+    analytics: {
+        category: "NAV",
+        action: "Clicked in developer guide",
+        label: "DEVELOPER_GUIDE",
+    },
+};
+
 export const navLinks: NavLink[] = [
     {
         label: "Home",
@@ -12,6 +23,7 @@ export const navLinks: NavLink[] = [
             label: "HOME",
         },
     },
+    ...(import.meta.env.VITE_ENVIRONMENT === "development" ? [developerGuideLink] : []),
     {
         label: "Schema Validation",
         href: ROUTES.SCHEMA,

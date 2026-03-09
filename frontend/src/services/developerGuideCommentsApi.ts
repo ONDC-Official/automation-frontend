@@ -11,7 +11,7 @@ export interface CommentPayload {
 }
 
 export interface CommentResponse {
-    id: string;
+    _id: string;
     use_case_id?: string;
     flow_id?: string;
     action_id?: string;
@@ -23,6 +23,10 @@ export interface CommentResponse {
     created_at?: string;
     updated_at?: string;
     replies?: ReplyResponse[];
+    user?: {
+        email: string;
+        username: string;
+    };
 }
 
 export interface ReplyPayload {
@@ -35,7 +39,7 @@ export interface ReplyPayload {
 }
 
 export interface ReplyResponse {
-    id: string;
+    _id: string;
     comment?: string;
     created_by?: string;
     created_at?: string;
