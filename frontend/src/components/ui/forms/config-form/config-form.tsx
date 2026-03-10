@@ -38,51 +38,53 @@ import Metro210StartEndStopSelection from "../custom-forms/trv11_start_end_stop_
 import FIS12Select from "../custom-forms/fis12-select";
 import FIS13AddonSelect from "../custom-forms/fis13-addon-select";
 import FIS12Search from "../custom-forms/fis12-search";
+import SelectMetroTRV11 from "../custom-forms/select-metro-trv11";
 import { RJSFSchema } from "@rjsf/utils";
 
 export interface FormFieldConfigType {
     name: string;
     label: string;
     type:
-        | "text"
-        | "select"
-        | "textarea"
-        | "list"
-        | "date"
-        | "checkbox"
-        | "boolean"
-        | "trv12_bus_seat_selection"
-        | "airline_select"
-        | "intercity_select"
-        | "airline_seat_select"
-        | "ret10_grocery_select"
-        | "ret11_nestedSelect"
-        | "retinvl_init"
-        | "nestedSelect"
-        | "trv_select"
-        | "trv10_select"
-        | "trv10_schedule"
-        | "trv10_schedule_rental"
-        | "trv11_select"
-        | "hotel_select"
-        | "HTML_FORM"
-        | "HTML_FORM_MULTI"
-        | "FINVU_REDIRECT"
-        | "DYNAMIC_FORM"
-        | "fis13_select"
-        | "trv13_select_provider"
-        | "trv10_201_select"
-        | "search_accidental_fis13"
-        | "search_hospicash_fis13"
-        | "search_transit_fis13"
-        | "search_discover_product_fis13"
-        | "trv11_210_select"
-        | "trv11_210_update_end_station"
-        | "trv11_210_start_end_stop_selection"
-        | "fis12_select_pl"
-        | "fis12_search_pl"
-        | "fis13_addon_select"
-        | "datetime-local";
+    | "text"
+    | "select"
+    | "textarea"
+    | "list"
+    | "date"
+    | "checkbox"
+    | "boolean"
+    | "trv12_bus_seat_selection"
+    | "airline_select"
+    | "intercity_select"
+    | "airline_seat_select"
+    | "ret10_grocery_select"
+    | "ret11_nestedSelect"
+    | "retinvl_init"
+    | "nestedSelect"
+    | "trv_select"
+    | "trv10_select"
+    | "trv10_schedule"
+    | "trv10_schedule_rental"
+    | "trv11_select"
+    | "hotel_select"
+    | "HTML_FORM"
+    | "HTML_FORM_MULTI"
+    | "FINVU_REDIRECT"
+    | "DYNAMIC_FORM"
+    | "fis13_select"
+    | "trv13_select_provider"
+    | "trv10_201_select"
+    | "search_accidental_fis13"
+    | "search_hospicash_fis13"
+    | "search_transit_fis13"
+    | "search_discover_product_fis13"
+    | "trv11_210_select"
+    | "trv11_210_update_end_station"
+    | "trv11_210_start_end_stop_selection"
+    | "fis12_select_pl"
+    | "fis12_search_pl"
+    | "fis13_addon_select"
+    | "select_metro_trv11"
+    | "datetime-local";
 
     payloadField: string;
     values?: string[];
@@ -334,6 +336,10 @@ export default function FormConfig({
         return <FIS12Search submitEvent={submitEvent} />;
     }
 
+    if (formConfig.find((field) => field.type === "select_metro_trv11")) {
+        return <SelectMetroTRV11 submitEvent={submitEvent} />;
+    }
+
     // NOTE: The JsonSchemaForm check must come after all other specific form type checks above.
     // Check for schema form
     if (formConfig.find((f) => f.schema)) {
@@ -369,7 +375,7 @@ export default function FormConfig({
                                 name={field.name}
                                 label={field.label}
                                 required={field.required !== false}
-                                // key={field.payloadField}
+                            // key={field.payloadField}
                             />
                         );
                     case "date":
@@ -379,7 +385,7 @@ export default function FormConfig({
                                 label={field.label}
                                 required={field.required !== false}
                                 type="date"
-                                // key={field.payloadField}
+                            // key={field.payloadField}
                             />
                         );
                     case "datetime-local":
@@ -389,7 +395,7 @@ export default function FormConfig({
                                 label={field.label}
                                 required={field.required !== false}
                                 type="datetime-local"
-                                // key={field.payloadField}
+                            // key={field.payloadField}
                             />
                         );
                     case "select":
@@ -398,7 +404,7 @@ export default function FormConfig({
                                 name={field.name}
                                 label={field.label}
                                 options={field.values || []}
-                                // key={field.payloadField}
+                            // key={field.payloadField}
                             />
                         );
                     case "checkbox":
