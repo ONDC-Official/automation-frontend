@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useForm, useFieldArray } from "react-hook-form";
+import { useForm, useFieldArray, FieldPath } from "react-hook-form";
 import { FaRegPaste } from "react-icons/fa6";
 import PayloadEditor from "../../mini-components/payload-editor";
 import { SubmitEventParams } from "../../../../types/flow-types";
@@ -21,6 +21,9 @@ type FormItem = {
 };
 
 type FormValues = {
+    billingName: string;
+    billingEmail: string;
+    billingPhone: string;
     items: FormItem[];
 };
 
@@ -35,7 +38,7 @@ type OnSearchPayload = {
     };
 };
 
-export default function SelectMetroTRV11({
+export default function InitMetroTRV11({
     submitEvent,
 }: {
     submitEvent: (data: SubmitEventParams) => Promise<void>;
@@ -46,6 +49,9 @@ export default function SelectMetroTRV11({
 
     const { control, handleSubmit, register } = useForm<FormValues>({
         defaultValues: {
+            billingName: "",
+            billingEmail: "",
+            billingPhone: "",
             items: [{ itemId: "", count: 1 }],
         },
     });
@@ -63,6 +69,11 @@ export default function SelectMetroTRV11({
         }
 
         const output = {
+            billing: {
+                name: data.billingName,
+                email: data.billingEmail,
+                phone: data.billingPhone,
+            },
             items: validItems.map((item) => ({
                 id: item.itemId,
                 quantity: {
@@ -158,6 +169,47 @@ export default function SelectMetroTRV11({
                 className="space-y-4 h-[500px] overflow-y-scroll p-4"
             >
                 <div className="border p-3 rounded space-y-2">
+                    <h3 className="font-bold text-lg mb-2">Billing Details</h3>
+
+                    <div className={fieldWrapperStyle}>
+                        <label className={labelStyle}>Name</label>
+                        <input
+                            type="text"
+                            {...register("billingName" as FieldPath<FormValues>)}
+                            placeholder="Enter billing name"
+                            className={inputStyle}
+                            required
+                        />
+                    </div>
+
+                    <div className={fieldWrapperStyle}>
+                        <label className={labelStyle}>Email</label>
+                        <input
+                            type="email"
+                            {...register(
+                                "billingEmail" as FieldPath<FormValues>
+                            )}
+                            placeholder="Enter billing email"
+                            className={inputStyle}
+                            required
+                        />
+                    </div>
+
+                    <div className={fieldWrapperStyle}>
+                        <label className={labelStyle}>Phone</label>
+                        <input
+                            type="tel"
+                            {...register(
+                                "billingPhone" as FieldPath<FormValues>
+                            )}
+                            placeholder="Enter billing phone"
+                            className={inputStyle}
+                            required
+                        />
+                    </div>
+                </div>
+
+                <div className="border p-3 rounded space-y-2">
                     <h3 className="font-bold text-lg mb-2">Select Items</h3>
 
                     {fields.map((field, index) => (
@@ -173,7 +225,7 @@ export default function SelectMetroTRV11({
                                     <input
                                         type="text"
                                         {...register(
-                                            `items.${index}.itemId` as const
+                                            `items.${index}.itemId` as FieldPath<FormValues>
                                         )}
                                         placeholder="Paste payload first or enter item ID"
                                         className={inputStyle}
@@ -181,7 +233,7 @@ export default function SelectMetroTRV11({
                                 ) : (
                                     <select
                                         {...register(
-                                            `items.${index}.itemId` as const
+                                            `items.${index}.itemId` as FieldPath<FormValues>
                                         )}
                                         className={inputStyle}
                                     >
