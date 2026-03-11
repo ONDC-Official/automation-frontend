@@ -52,7 +52,6 @@ const FlowInformation: FC<FlowInformationProps> = ({ data, selectedFlow, selecte
         | "requirements"
         | "x-validations"
     >("overview");
-    const [xValidationsSearch, setXValidationsSearch] = useState("");
 
     useEffect(() => {
         setActiveSection("overview");
@@ -102,25 +101,6 @@ const FlowInformation: FC<FlowInformationProps> = ({ data, selectedFlow, selecte
         rawValidations as Record<string, ValidationTable>
     )[apiForValidations];
     const hasXValidations = !!selectedValidations;
-    const filteredValidationRows = useMemo(() => {
-        if (!selectedValidations) return [];
-        const q = xValidationsSearch.trim().toLowerCase();
-        if (!q) return selectedValidations.rows;
-        return selectedValidations.rows.filter((row) => {
-            const haystack = [
-                row.rowType,
-                row.name,
-                row.group,
-                row.scope,
-                row.description,
-                row.skipIf,
-                row.errorCode,
-            ]
-                .join(" ")
-                .toLowerCase();
-            return haystack.includes(q);
-        });
-    }, [selectedValidations, xValidationsSearch]);
 
     useEffect(() => {
         setSelectedExampleIndex(0);
@@ -359,59 +339,7 @@ const FlowInformation: FC<FlowInformationProps> = ({ data, selectedFlow, selecte
                         {activeSection === "x-validations" &&
                             hasXValidations &&
                             selectedValidations && (
-                                <div className="w-full flex flex-col gap-4">
-                                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                                        <div>
-                                            <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-                                                X-Validations
-                                            </p>
-                                            <p className="text-sm text-slate-600">
-                                                Showing validation rules for{" "}
-                                                <span className="font-mono text-slate-800">
-                                                    {selectedValidations.action}
-                                                </span>
-                                                .
-                                            </p>
-                                            <p className="mt-1 text-xs text-slate-500">
-                                                {filteredValidationRows.length} of{" "}
-                                                {selectedValidations.numLeafTests} leaf tests
-                                                visible
-                                            </p>
-                                        </div>
-                                        <div className="flex flex-col items-stretch gap-2 sm:items-end">
-                                            <div className="text-right text-xs text-slate-400">
-                                                <p>Code: {selectedValidations.codeName}</p>
-                                                <p>Generated: {selectedValidations.generated}</p>
-                                            </div>
-                                            <div className="relative w-full sm:w-64">
-                                                <input
-                                                    type="text"
-                                                    value={xValidationsSearch}
-                                                    onChange={(e) =>
-                                                        setXValidationsSearch(e.target.value)
-                                                    }
-                                                    placeholder="Search tests, groups, descriptions…"
-                                                    className="w-full rounded-lg border border-slate-200 bg-white pl-9 pr-3 py-2 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500/30 focus:border-sky-400"
-                                                />
-                                                <svg
-                                                    className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400"
-                                                    fill="none"
-                                                    viewBox="0 0 24 24"
-                                                    stroke="currentColor"
-                                                    strokeWidth={2}
-                                                >
-                                                    <path
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                        d="M21 21l-4.35-4.35M11 18a7 7 0 100-14 7 7 0 000 14z"
-                                                    />
-                                                </svg>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <ValidationsTable rows={filteredValidationRows} />
-                                </div>
+                                <ValidationsTable validations={selectedValidations} />
                             )}
                     </section>
                 </>
