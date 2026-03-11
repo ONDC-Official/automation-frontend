@@ -8,6 +8,8 @@ import HelperSection, { decodeHelperLib } from "./HelperSection";
 import GenerateSection, { decodeMockGenerate } from "./GenerateSection";
 import ValidateSection, { decodeMockValidate } from "./ValidateSection";
 import RequirementsSection, { decodeMockRequirements } from "./RequirementsSection";
+import ValidationsTable, { type ValidationTable } from "./ValidationsTable";
+import rawValidations from "./raw_table.json";
 
 interface FlowInformationProps {
     data: OpenAPISpecification;
@@ -42,7 +44,13 @@ function getExamplesFromStep(
 const FlowInformation: FC<FlowInformationProps> = ({ data, selectedFlow, selectedFlowAction }) => {
     const [selectedExampleIndex, setSelectedExampleIndex] = useState(0);
     const [activeSection, setActiveSection] = useState<
-        "overview" | "preview" | "helper" | "generate" | "validate" | "requirements"
+        | "overview"
+        | "preview"
+        | "helper"
+        | "generate"
+        | "validate"
+        | "requirements"
+        | "x-validations"
     >("overview");
 
     useEffect(() => {
@@ -87,6 +95,12 @@ const FlowInformation: FC<FlowInformationProps> = ({ data, selectedFlow, selecte
         [selectedStep?.mock?.requirements]
     );
     const hasRequirements = !!decodedRequirementsCode;
+
+    const apiForValidations = selectedStep?.api ?? selectedFlowAction;
+    const selectedValidations: ValidationTable | undefined = (
+        rawValidations as Record<string, ValidationTable>
+    )[apiForValidations];
+    const hasXValidations = !!selectedValidations;
 
     useEffect(() => {
         setSelectedExampleIndex(0);
@@ -194,6 +208,18 @@ const FlowInformation: FC<FlowInformationProps> = ({ data, selectedFlow, selecte
                                 }`}
                             >
                                 Requirements
+                            </button>
+                        )}
+                        {hasXValidations && (
+                            <button
+                                onClick={() => setActiveSection("x-validations")}
+                                className={`px-4 py-2 rounded text-sm font-medium transition-colors ${
+                                    activeSection === "x-validations"
+                                        ? "bg-sky-600 text-white hover:bg-sky-700"
+                                        : "bg-slate-200 text-slate-600 hover:bg-slate-300"
+                                }`}
+                            >
+                                Validations
                             </button>
                         )}
                     </nav>
@@ -307,6 +333,13 @@ const FlowInformation: FC<FlowInformationProps> = ({ data, selectedFlow, selecte
                             hasRequirements &&
                             decodedRequirementsCode && (
                                 <RequirementsSection decodedCode={decodedRequirementsCode} />
+                            )}
+
+                        {/* x-validations section */}
+                        {activeSection === "x-validations" &&
+                            hasXValidations &&
+                            selectedValidations && (
+                                <ValidationsTable validations={selectedValidations} />
                             )}
                     </section>
                 </>
