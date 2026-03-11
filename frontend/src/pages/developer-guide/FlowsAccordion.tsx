@@ -2,6 +2,8 @@ import { FC, useState } from "react";
 import { OpenAPISpecification } from "./types";
 import type { FlowStep } from "./types";
 import { getActionId } from "./utils";
+import { FcWorkflow } from "react-icons/fc";
+import { FaChevronDown } from "react-icons/fa6";
 
 interface FlowsAccordionProps {
     data: OpenAPISpecification;
@@ -168,37 +170,31 @@ const FlowsAccordion: FC<FlowsAccordionProps> = ({
                 return (
                     <div
                         key={flowIndex}
-                        className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden transition-shadow duration-200 hover:shadow"
+                        className="bg-white rounded-2xl shadow-lg shadow-sky-100/50 overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-sky-200/50 border border-sky-100"
                     >
                         <button
                             onClick={() => toggleFlow(flowIndex)}
-                            className="w-full px-4 py-4 flex gap-1 items-center justify-between text-left bg-white hover:bg-slate-50/80 transition-colors duration-200 focus:outline-none"
+                            type="button"
+                            className="w-full text-left flex items-center justify-between p-4 cursor-pointer bg-gradient-to-r from-sky-50 to-sky-100/50 hover:from-sky-100 hover:to-sky-100 transition-colors duration-200 focus:outline-none"
+                            aria-expanded={isOpen}
                         >
-                            <span className="font-semibold text-slate-800 text-sm">
-                                {flow.meta?.flowName ?? flow.meta?.flowId}
-                            </span>
-                            <span
-                                className={`flex items-center justify-center w-8 h-8 rounded-lg bg-slate-100 text-slate-600 shrink-0 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
-                                aria-hidden
-                            >
-                                <svg
-                                    className="w-4 h-4"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke="currentColor"
-                                    strokeWidth={2}
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        d="M19 9l-7 7-7-7"
-                                    />
-                                </svg>
-                            </span>
+                            <div className="flex items-center gap-3 flex-1 min-w-0">
+                                <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-sky-50 text-sky-600 shrink-0">
+                                    <FcWorkflow className="w-5 h-5" />
+                                </span>
+                                <span className="font-semibold text-gray-900 text-sm break-words">
+                                    {flow.meta?.flowName ?? flow.meta?.flowId}
+                                </span>
+                            </div>
+                            <div className="w-8 h-8 rounded-full bg-white/80 flex items-center justify-center shadow-sm pointer-events-none shrink-0 ml-3">
+                                <FaChevronDown
+                                    className={`w-3 h-3 text-sky-600 transition-transform duration-300 ${isOpen ? "rotate-180" : ""}`}
+                                />
+                            </div>
                         </button>
 
                         {isOpen && (
-                            <div className="px-4 pb-4 pt-2 border-t border-slate-100 bg-slate-50/40  max-h-[calc(100vh-290px)] 2xl:max-h-[calc(100vh-360px)] overflow-y-auto ">
+                            <div className="px-4 pb-4 pt-2 border-t border-slate-100 bg-slate-50/40 max-h-80 overflow-y-auto">
                                 <div className="space-y-2.5 mt-2">
                                     {displayItems.map((item, itemIdx) => {
                                         if (item.type === "pair") {
