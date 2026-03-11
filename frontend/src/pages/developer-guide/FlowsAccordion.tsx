@@ -141,7 +141,7 @@ const FlowsAccordion: FC<FlowsAccordionProps> = ({
             <button
                 key={actionId}
                 onClick={() => handleStepClick(flowId, actionId)}
-                className={`w-full flex-1 min-w-0 text-left px-3 py-2.5 rounded-lg border text-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-sky-400 ${
+                className={`w-full flex-1 min-w-0 text-left px-3 py-2.5 rounded-lg border text-sm transition-all duration-200 ${
                     isSelected
                         ? "bg-sky-50 border-sky-300 text-sky-900 shadow-sm ring-1 ring-sky-200/60 font-medium"
                         : "bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100 hover:border-slate-300"
@@ -193,51 +193,63 @@ const FlowsAccordion: FC<FlowsAccordionProps> = ({
                             </div>
                         </button>
 
-                        {isOpen && (
-                            <div className="px-4 pb-4 pt-2 border-t border-slate-100 bg-slate-50/40 max-h-80 overflow-y-auto">
-                                <div className="space-y-2.5 mt-2">
-                                    {displayItems.map((item, itemIdx) => {
-                                        if (item.type === "pair") {
-                                            const reqActionId = getActionId(item.request);
-                                            const resActionId = getActionId(item.response);
-                                            const isReqSelected =
-                                                isSelectedFlow &&
-                                                selectedFlowAction === reqActionId;
-                                            const isResSelected =
-                                                isSelectedFlow &&
-                                                selectedFlowAction === resActionId;
+                        {/* Animated slide container using CSS grid-rows trick */}
+                        <div
+                            className={`grid transition-all duration-300 ease-in-out ${
+                                isOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
+                            }`}
+                        >
+                            <div className="overflow-hidden">
+                                <div className="px-4 pb-4 pt-2 border-t border-slate-100 bg-slate-50/40 max-h-80 overflow-y-auto">
+                                    <div className="space-y-2.5 mt-2">
+                                        {displayItems.map((item, itemIdx) => {
+                                            if (item.type === "pair") {
+                                                const reqActionId = getActionId(item.request);
+                                                const resActionId = getActionId(item.response);
+                                                const isReqSelected =
+                                                    isSelectedFlow &&
+                                                    selectedFlowAction === reqActionId;
+                                                const isResSelected =
+                                                    isSelectedFlow &&
+                                                    selectedFlowAction === resActionId;
 
+                                                return (
+                                                    <div
+                                                        key={itemIdx}
+                                                        className="flex items-center gap-3"
+                                                    >
+                                                        {renderStepButton(
+                                                            item.request,
+                                                            flowId,
+                                                            isReqSelected
+                                                        )}
+                                                        <ArrowsIcon />
+                                                        {renderStepButton(
+                                                            item.response,
+                                                            flowId,
+                                                            isResSelected
+                                                        )}
+                                                    </div>
+                                                );
+                                            }
+                                            const stepActionId = getActionId(item.step);
+                                            const isSelected =
+                                                isSelectedFlow &&
+                                                selectedFlowAction === stepActionId;
                                             return (
-                                                <div
-                                                    key={itemIdx}
-                                                    className="flex items-center gap-3"
-                                                >
+                                                <div key={itemIdx}>
                                                     {renderStepButton(
-                                                        item.request,
+                                                        item.step,
                                                         flowId,
-                                                        isReqSelected
-                                                    )}
-                                                    <ArrowsIcon />
-                                                    {renderStepButton(
-                                                        item.response,
-                                                        flowId,
-                                                        isResSelected
+                                                        isSelected
                                                     )}
                                                 </div>
                                             );
-                                        }
-                                        const stepActionId = getActionId(item.step);
-                                        const isSelected =
-                                            isSelectedFlow && selectedFlowAction === stepActionId;
-                                        return (
-                                            <div key={itemIdx}>
-                                                {renderStepButton(item.step, flowId, isSelected)}
-                                            </div>
-                                        );
-                                    })}
+                                        })}
+                                    </div>
                                 </div>
                             </div>
-                        )}
+                        </div>
                     </div>
                 );
             })}
