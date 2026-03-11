@@ -1,5 +1,7 @@
 import { FC, useState, useCallback, ComponentProps, MouseEvent } from "react";
 import { FaCopy } from "react-icons/fa";
+import { FiList, FiMessageSquare, FiFileText } from "react-icons/fi";
+import { SegmentedTabs, type TabItem } from "@components/ui/SegmentedTabs";
 import JsonViewer from "@pages/protocol-playground/ui/Json-path-extractor";
 import { SelectedType } from "@pages/protocol-playground/ui/session-data-tab";
 import type { OpenAPISpecification } from "../types";
@@ -8,10 +10,12 @@ import AttributesPanel from "./AttributesPanel";
 import CommentsPanel from "./CommentsPanel";
 import NotesPanel from "./NotesPanel";
 
-const RIGHT_PANEL_TAB_OPTIONS = [
-    { key: "attributes", label: "Attributes" },
-    { key: "comments", label: "Comments" },
-    { key: "notes", label: "Notes" },
+type RightPanelTab = "attributes" | "comments" | "notes";
+
+const RIGHT_PANEL_TABS: TabItem<RightPanelTab>[] = [
+    { id: "attributes", label: "Attributes", icon: FiList },
+    { id: "comments", label: "Comments", icon: FiMessageSquare },
+    { id: "notes", label: "Notes", icon: FiFileText },
 ];
 
 function getValueAtPath(obj: unknown, path: string): unknown {
@@ -46,7 +50,7 @@ const FlowActionDetails: FC<FlowActionDetailsProps> = ({
     useCaseId,
     flowId,
 }) => {
-    const [rightPanelTab, setRightPanelTab] = useState("attributes");
+    const [rightPanelTab, setRightPanelTab] = useState<RightPanelTab>("attributes");
     const [selectedPath, setSelectedPath] = useState<string | null>(null);
     const [expanded, setExpanded] = useState(false);
 
@@ -75,7 +79,7 @@ const FlowActionDetails: FC<FlowActionDetailsProps> = ({
         <div className="flex flex-col h-full rounded-xl border border-slate-200 bg-white overflow-hidden shadow-sm">
             <div className="flex-1 flex min-h-0">
                 <div className="w-full flex flex-col min-w-0 border-r border-slate-200">
-                    <div className="flex-1 min-h-0 overflow-auto bg-slate-900 p-4 relative group">
+                    <div className="flex-1 min-h-0 overflow-auto p-4 relative group">
                         <JsonViewer
                             data={exampleValue as ComponentProps<typeof JsonViewer>["data"]}
                             isSelected={isSelected}
@@ -99,21 +103,12 @@ const FlowActionDetails: FC<FlowActionDetailsProps> = ({
                     </div>
                 </div>
                 <div className="w-1/2 flex flex-col min-h-0 bg-slate-50/60 border-l border-slate-200">
-                    <div className="px-4 pt-3 pb-2 border-b border-slate-200 bg-white/80 shrink-0 flex gap-2">
-                        {RIGHT_PANEL_TAB_OPTIONS.map((tab) => (
-                            <button
-                                key={tab.key}
-                                type="button"
-                                onClick={() => setRightPanelTab(tab.key)}
-                                className={`px-4 py-2 rounded text-sm font-medium transition-colors ${
-                                    rightPanelTab === tab.key
-                                        ? "bg-sky-600 text-white hover:bg-sky-700"
-                                        : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                                }`}
-                            >
-                                {tab.label}
-                            </button>
-                        ))}
+                    <div className="px-4 pt-3 pb-2 border-b border-slate-200 bg-white/80 shrink-0">
+                        <SegmentedTabs<RightPanelTab>
+                            tabs={RIGHT_PANEL_TABS}
+                            active={rightPanelTab}
+                            onChange={setRightPanelTab}
+                        />
                     </div>
                     <div className="flex-1 min-h-0 overflow-hidden p-4">
                         {rightPanelTab === "attributes" && (

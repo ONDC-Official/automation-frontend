@@ -124,3 +124,39 @@ pre {
 .antd-input.ant-input-password .ant-input {
     background-color: transparent !important;
 }
+
+/* ── Global Scrollbar – Sky Blue Professional Theme ── */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: #e0f2fe; /* sky-100 */
+    border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #0ea5e9; /* sky-500 */
+    border-radius: 9999px;
+    border: 1px solid #bae6fd; /* sky-200 */
+    transition: background 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #0284c7; /* sky-600 */
+}
+
+::-webkit-scrollbar-thumb:active {
+    background: #0369a1; /* sky-700 */
+}
+
+::-webkit-scrollbar-corner {
+    background: #e0f2fe;
+}
+
+/* Firefox */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: #0ea5e9 #e0f2fe;
+}
