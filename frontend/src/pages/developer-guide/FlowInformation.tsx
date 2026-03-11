@@ -8,11 +8,31 @@ import HelperSection, { decodeHelperLib } from "./HelperSection";
 import GenerateSection, { decodeMockGenerate } from "./GenerateSection";
 import ValidateSection, { decodeMockValidate } from "./ValidateSection";
 import RequirementsSection, { decodeMockRequirements } from "./RequirementsSection";
+import rawValidations from "./raw_table.json";
 
 interface FlowInformationProps {
     data: OpenAPISpecification;
     selectedFlow: string;
     selectedFlowAction: string;
+}
+
+interface ValidationRow {
+    rowType: string;
+    name: string;
+    group: string;
+    scope: string;
+    description: string;
+    skipIf: string;
+    errorCode: string;
+    successCode: string;
+}
+
+interface ValidationTable {
+    action: string;
+    codeName: string;
+    numLeafTests: number;
+    generated: string;
+    rows: ValidationRow[];
 }
 
 function getExamplesFromStep(
@@ -42,8 +62,15 @@ function getExamplesFromStep(
 const FlowInformation: FC<FlowInformationProps> = ({ data, selectedFlow, selectedFlowAction }) => {
     const [selectedExampleIndex, setSelectedExampleIndex] = useState(0);
     const [activeSection, setActiveSection] = useState<
-        "overview" | "preview" | "helper" | "generate" | "validate" | "requirements"
+        | "overview"
+        | "preview"
+        | "helper"
+        | "generate"
+        | "validate"
+        | "requirements"
+        | "x-validations"
     >("overview");
+    const [xValidationsSearch, setXValidationsSearch] = useState("");
 
     useEffect(() => {
         setActiveSection("overview");
@@ -87,6 +114,31 @@ const FlowInformation: FC<FlowInformationProps> = ({ data, selectedFlow, selecte
         [selectedStep?.mock?.requirements]
     );
     const hasRequirements = !!decodedRequirementsCode;
+
+    const apiForValidations = selectedStep?.api ?? selectedFlowAction;
+    const selectedValidations: ValidationTable | undefined = (
+        rawValidations as Record<string, ValidationTable>
+    )[apiForValidations];
+    const hasXValidations = !!selectedValidations;
+    const filteredValidationRows = useMemo(() => {
+        if (!selectedValidations) return [];
+        const q = xValidationsSearch.trim().toLowerCase();
+        if (!q) return selectedValidations.rows;
+        return selectedValidations.rows.filter((row) => {
+            const haystack = [
+                row.rowType,
+                row.name,
+                row.group,
+                row.scope,
+                row.description,
+                row.skipIf,
+                row.errorCode,
+            ]
+                .join(" ")
+                .toLowerCase();
+            return haystack.includes(q);
+        });
+    }, [selectedValidations, xValidationsSearch]);
 
     useEffect(() => {
         setSelectedExampleIndex(0);
@@ -194,6 +246,18 @@ const FlowInformation: FC<FlowInformationProps> = ({ data, selectedFlow, selecte
                                 }`}
                             >
                                 Requirements
+                            </button>
+                        )}
+                        {hasXValidations && (
+                            <button
+                                onClick={() => setActiveSection("x-validations")}
+                                className={`px-4 py-2 rounded text-sm font-medium transition-colors ${
+                                    activeSection === "x-validations"
+                                        ? "bg-sky-600 text-white hover:bg-sky-700"
+                                        : "bg-slate-200 text-slate-600 hover:bg-slate-300"
+                                }`}
+                            >
+                                x-validations
                             </button>
                         )}
                     </nav>
@@ -307,6 +371,156 @@ const FlowInformation: FC<FlowInformationProps> = ({ data, selectedFlow, selecte
                             hasRequirements &&
                             decodedRequirementsCode && (
                                 <RequirementsSection decodedCode={decodedRequirementsCode} />
+                            )}
+
+                        {/* x-validations section */}
+                        {activeSection === "x-validations" &&
+                            hasXValidations &&
+                            selectedValidations && (
+                                <div className="w-full flex flex-col gap-4">
+                                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                                        <div>
+                                            <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                                                X-Validations
+                                            </p>
+                                            <p className="text-sm text-slate-600">
+                                                Showing validation rules for{" "}
+                                                <span className="font-mono text-slate-800">
+                                                    {selectedValidations.action}
+                                                </span>
+                                                .
+                                            </p>
+                                            <p className="mt-1 text-xs text-slate-500">
+                                                {filteredValidationRows.length} of{" "}
+                                                {selectedValidations.numLeafTests} leaf tests
+                                                visible
+                                            </p>
+                                        </div>
+                                        <div className="flex flex-col items-stretch gap-2 sm:items-end">
+                                            <div className="text-right text-xs text-slate-400">
+                                                <p>Code: {selectedValidations.codeName}</p>
+                                                <p>Generated: {selectedValidations.generated}</p>
+                                            </div>
+                                            <div className="relative w-full sm:w-64">
+                                                <input
+                                                    type="text"
+                                                    value={xValidationsSearch}
+                                                    onChange={(e) =>
+                                                        setXValidationsSearch(e.target.value)
+                                                    }
+                                                    placeholder="Search tests, groups, descriptions…"
+                                                    className="w-full rounded-lg border border-slate-200 bg-white pl-9 pr-3 py-2 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500/30 focus:border-sky-400"
+                                                />
+                                                <svg
+                                                    className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400"
+                                                    fill="none"
+                                                    viewBox="0 0 24 24"
+                                                    stroke="currentColor"
+                                                    strokeWidth={2}
+                                                >
+                                                    <path
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        d="M21 21l-4.35-4.35M11 18a7 7 0 100-14 7 7 0 000 14z"
+                                                    />
+                                                </svg>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+                                        <div className="max-h-[540px] overflow-auto">
+                                            <table className="min-w-full text-left text-xs">
+                                                <thead className="bg-slate-50/90 backdrop-blur sticky top-0 z-10 border-b border-slate-200">
+                                                    <tr>
+                                                        <th className="px-3 py-2 font-semibold text-[11px] text-slate-500 uppercase tracking-wider">
+                                                            #
+                                                        </th>
+                                                        <th className="px-3 py-2 font-semibold text-[11px] text-slate-500 uppercase tracking-wider">
+                                                            Type
+                                                        </th>
+                                                        <th className="px-3 py-2 font-semibold text-[11px] text-slate-500 uppercase tracking-wider">
+                                                            Test Name
+                                                        </th>
+                                                        <th className="px-3 py-2 font-semibold text-[11px] text-slate-500 uppercase tracking-wider">
+                                                            Group
+                                                        </th>
+                                                        <th className="px-3 py-2 font-semibold text-[11px] text-slate-500 uppercase tracking-wider">
+                                                            Scope
+                                                        </th>
+                                                        <th className="px-3 py-2 font-semibold text-[11px] text-slate-500 uppercase tracking-wider w-[34%]">
+                                                            Description
+                                                        </th>
+                                                        <th className="px-3 py-2 font-semibold text-[11px] text-slate-500 uppercase tracking-wider w-[22%]">
+                                                            Skip If
+                                                        </th>
+                                                        <th className="px-3 py-2 font-semibold text-[11px] text-slate-500 uppercase tracking-wider whitespace-nowrap">
+                                                            Error Code
+                                                        </th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {filteredValidationRows.map((row, index) => {
+                                                        const isGroup = row.rowType === "group";
+                                                        return (
+                                                            <tr
+                                                                key={`${row.name}-${index}`}
+                                                                className={
+                                                                    isGroup
+                                                                        ? "bg-slate-50/80 border-t border-slate-200"
+                                                                        : index % 2 === 0
+                                                                          ? "bg-white hover:bg-slate-50/80"
+                                                                          : "bg-slate-50/40 hover:bg-slate-100/80"
+                                                                }
+                                                            >
+                                                                <td className="px-3 py-2 align-top whitespace-nowrap text-[11px] text-slate-500">
+                                                                    {index + 1}
+                                                                </td>
+                                                                <td className="px-3 py-2 align-top whitespace-nowrap text-[11px]">
+                                                                    <span
+                                                                        className={`inline-flex items-center rounded-full px-2 py-0.5 border text-[10px] font-medium ${
+                                                                            isGroup
+                                                                                ? "bg-sky-50 text-sky-700 border-sky-100"
+                                                                                : "bg-emerald-50 text-emerald-700 border-emerald-100"
+                                                                        }`}
+                                                                    >
+                                                                        {row.rowType}
+                                                                    </span>
+                                                                </td>
+                                                                <td className="px-3 py-2 align-top text-xs font-semibold text-slate-800 whitespace-pre">
+                                                                    {row.name}
+                                                                </td>
+                                                                <td className="px-3 py-2 align-top text-xs text-slate-600 whitespace-pre">
+                                                                    {row.group}
+                                                                </td>
+                                                                <td className="px-3 py-2 align-top text-xs text-slate-600 whitespace-pre">
+                                                                    {row.scope}
+                                                                </td>
+                                                                <td className="px-3 py-2 align-top text-xs text-slate-700 whitespace-pre-wrap leading-relaxed">
+                                                                    {row.description}
+                                                                </td>
+                                                                <td className="px-3 py-2 align-top text-xs text-slate-500 whitespace-pre-wrap leading-relaxed">
+                                                                    {row.skipIf}
+                                                                </td>
+                                                                <td className="px-3 py-2 align-top text-xs">
+                                                                    {row.errorCode ? (
+                                                                        <span className="inline-flex items-center rounded-full px-2 py-0.5 bg-rose-50 text-rose-700 border border-rose-100 font-mono">
+                                                                            {row.errorCode}
+                                                                        </span>
+                                                                    ) : (
+                                                                        <span className="text-slate-300 font-mono">
+                                                                            —
+                                                                        </span>
+                                                                    )}
+                                                                </td>
+                                                            </tr>
+                                                        );
+                                                    })}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
                             )}
                     </section>
                 </>
