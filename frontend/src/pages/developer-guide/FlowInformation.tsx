@@ -8,31 +8,13 @@ import HelperSection, { decodeHelperLib } from "./HelperSection";
 import GenerateSection, { decodeMockGenerate } from "./GenerateSection";
 import ValidateSection, { decodeMockValidate } from "./ValidateSection";
 import RequirementsSection, { decodeMockRequirements } from "./RequirementsSection";
+import ValidationsTable, { type ValidationTable } from "./ValidationsTable";
 import rawValidations from "./raw_table.json";
 
 interface FlowInformationProps {
     data: OpenAPISpecification;
     selectedFlow: string;
     selectedFlowAction: string;
-}
-
-interface ValidationRow {
-    rowType: string;
-    name: string;
-    group: string;
-    scope: string;
-    description: string;
-    skipIf: string;
-    errorCode: string;
-    successCode: string;
-}
-
-interface ValidationTable {
-    action: string;
-    codeName: string;
-    numLeafTests: number;
-    generated: string;
-    rows: ValidationRow[];
 }
 
 function getExamplesFromStep(
@@ -257,7 +239,7 @@ const FlowInformation: FC<FlowInformationProps> = ({ data, selectedFlow, selecte
                                         : "bg-slate-200 text-slate-600 hover:bg-slate-300"
                                 }`}
                             >
-                                x-validations
+                                Validations
                             </button>
                         )}
                     </nav>
@@ -428,98 +410,7 @@ const FlowInformation: FC<FlowInformationProps> = ({ data, selectedFlow, selecte
                                         </div>
                                     </div>
 
-                                    <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-                                        <div className="max-h-[540px] overflow-auto">
-                                            <table className="min-w-full text-left text-xs">
-                                                <thead className="bg-slate-50/90 backdrop-blur sticky top-0 z-10 border-b border-slate-200">
-                                                    <tr>
-                                                        <th className="px-3 py-2 font-semibold text-[11px] text-slate-500 uppercase tracking-wider">
-                                                            #
-                                                        </th>
-                                                        <th className="px-3 py-2 font-semibold text-[11px] text-slate-500 uppercase tracking-wider">
-                                                            Type
-                                                        </th>
-                                                        <th className="px-3 py-2 font-semibold text-[11px] text-slate-500 uppercase tracking-wider">
-                                                            Test Name
-                                                        </th>
-                                                        <th className="px-3 py-2 font-semibold text-[11px] text-slate-500 uppercase tracking-wider">
-                                                            Group
-                                                        </th>
-                                                        <th className="px-3 py-2 font-semibold text-[11px] text-slate-500 uppercase tracking-wider">
-                                                            Scope
-                                                        </th>
-                                                        <th className="px-3 py-2 font-semibold text-[11px] text-slate-500 uppercase tracking-wider w-[34%]">
-                                                            Description
-                                                        </th>
-                                                        <th className="px-3 py-2 font-semibold text-[11px] text-slate-500 uppercase tracking-wider w-[22%]">
-                                                            Skip If
-                                                        </th>
-                                                        <th className="px-3 py-2 font-semibold text-[11px] text-slate-500 uppercase tracking-wider whitespace-nowrap">
-                                                            Error Code
-                                                        </th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    {filteredValidationRows.map((row, index) => {
-                                                        const isGroup = row.rowType === "group";
-                                                        return (
-                                                            <tr
-                                                                key={`${row.name}-${index}`}
-                                                                className={
-                                                                    isGroup
-                                                                        ? "bg-slate-50/80 border-t border-slate-200"
-                                                                        : index % 2 === 0
-                                                                          ? "bg-white hover:bg-slate-50/80"
-                                                                          : "bg-slate-50/40 hover:bg-slate-100/80"
-                                                                }
-                                                            >
-                                                                <td className="px-3 py-2 align-top whitespace-nowrap text-[11px] text-slate-500">
-                                                                    {index + 1}
-                                                                </td>
-                                                                <td className="px-3 py-2 align-top whitespace-nowrap text-[11px]">
-                                                                    <span
-                                                                        className={`inline-flex items-center rounded-full px-2 py-0.5 border text-[10px] font-medium ${
-                                                                            isGroup
-                                                                                ? "bg-sky-50 text-sky-700 border-sky-100"
-                                                                                : "bg-emerald-50 text-emerald-700 border-emerald-100"
-                                                                        }`}
-                                                                    >
-                                                                        {row.rowType}
-                                                                    </span>
-                                                                </td>
-                                                                <td className="px-3 py-2 align-top text-xs font-semibold text-slate-800 whitespace-pre">
-                                                                    {row.name}
-                                                                </td>
-                                                                <td className="px-3 py-2 align-top text-xs text-slate-600 whitespace-pre">
-                                                                    {row.group}
-                                                                </td>
-                                                                <td className="px-3 py-2 align-top text-xs text-slate-600 whitespace-pre">
-                                                                    {row.scope}
-                                                                </td>
-                                                                <td className="px-3 py-2 align-top text-xs text-slate-700 whitespace-pre-wrap leading-relaxed">
-                                                                    {row.description}
-                                                                </td>
-                                                                <td className="px-3 py-2 align-top text-xs text-slate-500 whitespace-pre-wrap leading-relaxed">
-                                                                    {row.skipIf}
-                                                                </td>
-                                                                <td className="px-3 py-2 align-top text-xs">
-                                                                    {row.errorCode ? (
-                                                                        <span className="inline-flex items-center rounded-full px-2 py-0.5 bg-rose-50 text-rose-700 border border-rose-100 font-mono">
-                                                                            {row.errorCode}
-                                                                        </span>
-                                                                    ) : (
-                                                                        <span className="text-slate-300 font-mono">
-                                                                            —
-                                                                        </span>
-                                                                    )}
-                                                                </td>
-                                                            </tr>
-                                                        );
-                                                    })}
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    </div>
+                                    <ValidationsTable rows={filteredValidationRows} />
                                 </div>
                             )}
                     </section>
