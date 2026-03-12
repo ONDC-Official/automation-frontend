@@ -81,8 +81,8 @@ jobs:
           file: backend/Dockerfile
           push: true
           tags: |
-            ghcr.io/ondc-official/workbench-ui-backend:${{ needs.version.outputs.image_tag }}
-            ${{ github.ref_name == 'release-staging' && 'ghcr.io/ondc-official/workbench-ui-backend:latest' || '' }}
+            ghcr.io/ondc-official/automation-frontend/backend:${{ needs.version.outputs.image_tag }}
+            ${{ github.ref_name == 'release-staging' && 'ghcr.io/ondc-official/automation-frontend/backend:latest' || '' }}
           cache-from: type=gha,scope=backend
           cache-to: type=gha,mode=max,scope=backend
 
@@ -113,8 +113,8 @@ jobs:
           file: frontend/Dockerfile
           push: true
           tags: |
-            ghcr.io/ondc-official/workbench-ui-frontend:${{ needs.version.outputs.image_tag }}
-            ${{ github.ref_name == 'release-staging' && 'ghcr.io/ondc-official/workbench-ui-frontend:latest' || '' }}
+            ghcr.io/ondc-official/automation-frontend/frontend:${{ needs.version.outputs.image_tag }}
+            ${{ github.ref_name == 'release-staging' && 'ghcr.io/ondc-official/automation-frontend/frontend:latest' || '' }}
           cache-from: type=gha,scope=frontend
           cache-to: type=gha,mode=max,scope=frontend
 
