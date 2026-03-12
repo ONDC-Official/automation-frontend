@@ -187,7 +187,7 @@ const DeveloperGuideFlowPage: FC = () => {
                 >
                     <aside className="w-[380px] h-full border-r border-slate-200 bg-white overflow-y-auto rounded-2xl shadow-lg shadow-sky-100/50">
                         <div className="px-4 pt-4 pb-2 border-b border-slate-100">
-                            <h2 className="text-2xl font-bold text-gray-900 mb-1">Flows</h2>
+                            <h2 className="text-xl font-bold text-gray-900 mb-1">Flows</h2>
                             <p className="text-gray-600 text-sm">
                                 Explore the configured protocol flows
                             </p>

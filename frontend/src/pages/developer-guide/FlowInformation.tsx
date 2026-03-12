@@ -1,5 +1,5 @@
 import { FC, useMemo, useState, useEffect } from "react";
-import { FiCode, FiShield } from "react-icons/fi";
+import { FiCode, FiShield, FiUpload, FiDownload } from "react-icons/fi";
 import { SegmentedTabs, type TabItem } from "@components/ui/SegmentedTabs";
 import { OpenAPISpecification } from "./types";
 import type { FlowStep } from "./types";
@@ -10,6 +10,7 @@ import { FlowActionDetails } from "./flowActionDetails";
 import Loader from "@components/ui/mini-components/loader";
 import ValidationsTable, { type ValidationTable } from "./ValidationsTable";
 import rawValidations from "./raw_table.json";
+import { RequestTab, ResponseTab } from "./RequestResponseTabs";
 
 interface FlowInformationProps {
     data: OpenAPISpecification;
@@ -43,7 +44,7 @@ function getExamplesFromStep(
 
 const FlowInformation: FC<FlowInformationProps> = ({ data, selectedFlow, selectedFlowAction }) => {
     const [selectedExampleIndex, setSelectedExampleIndex] = useState(0);
-    type Section = "preview" | "x-validations";
+    type Section = "preview" | "x-validations" | "request" | "response";
     const [activeSection, setActiveSection] = useState<Section>("preview");
     const [showPreviewDetails, setShowPreviewDetails] = useState(false);
 
@@ -69,11 +70,15 @@ const FlowInformation: FC<FlowInformationProps> = ({ data, selectedFlow, selecte
         [apiForValidations]
     );
     const hasXValidations = !!selectedValidations;
-    const hasTabs = hasExampleObject || hasXValidations;
+    const hasTabs = hasExampleObject || hasXValidations || !!selectedStep;
 
     useEffect(() => {
         // Reset tab state when action changes
-        const defaultSection: Section = hasExampleObject ? "preview" : "x-validations";
+        const defaultSection: Section = hasExampleObject
+            ? "preview"
+            : selectedStep
+              ? "request"
+              : "x-validations";
         setActiveSection(defaultSection);
         setSelectedExampleIndex(0);
         if (defaultSection === "preview") {
@@ -118,6 +123,9 @@ const FlowInformation: FC<FlowInformationProps> = ({ data, selectedFlow, selecte
             setShowPreviewDetails(false);
             setTimeout(() => setShowPreviewDetails(true), 0);
         }
+        if (section !== "preview") {
+            setShowPreviewDetails(false);
+        }
     };
 
     return (
@@ -148,7 +156,11 @@ const FlowInformation: FC<FlowInformationProps> = ({ data, selectedFlow, selecte
                                     <h3 className="text-lg font-semibold text-slate-800">
                                         {activeSection === "preview"
                                             ? "Examples & Schema"
-                                            : "Validations"}
+                                            : activeSection === "request"
+                                              ? "Request"
+                                              : activeSection === "response"
+                                                ? "Response"
+                                                : "Validations"}
                                     </h3>
                                 </div>
                                 <SegmentedTabs<Section>
@@ -158,9 +170,21 @@ const FlowInformation: FC<FlowInformationProps> = ({ data, selectedFlow, selecte
                                         [
                                             {
                                                 id: "preview",
-                                                label: "Examples & Schema",
+                                                label: "Attribute Explorer",
                                                 icon: FiCode,
                                                 visible: hasExampleObject,
+                                            },
+                                            {
+                                                id: "request",
+                                                label: "Request Model",
+                                                icon: FiUpload,
+                                                visible: !!selectedStep,
+                                            },
+                                            {
+                                                id: "response",
+                                                label: "Response Model",
+                                                icon: FiDownload,
+                                                visible: !!selectedStep,
                                             },
                                             {
                                                 id: "x-validations",
@@ -219,7 +243,7 @@ const FlowInformation: FC<FlowInformationProps> = ({ data, selectedFlow, selecte
                                             </div>
                                         </div>
                                     )}
-                                    <div className="w-full h-[560px] min-h-0 rounded-2xl overflow-hidden border border-slate-200 shadow-sm bg-white">
+                                    <div className="w-full h-[700px] min-h-0 rounded-2xl overflow-hidden border border-slate-200 shadow-sm bg-white">
                                         {showPreviewDetails ? (
                                             <FlowActionDetails
                                                 exampleValue={examplePayload as object}
@@ -241,6 +265,22 @@ const FlowInformation: FC<FlowInformationProps> = ({ data, selectedFlow, selecte
                                         )}
                                     </div>
                                 </div>
+                            )}
+
+                            {/* Request tab content */}
+                            {activeSection === "request" && selectedStep && (
+                                <RequestTab
+                                    spec={data}
+                                    api={selectedStep.api ?? selectedFlowAction}
+                                />
+                            )}
+
+                            {/* Response tab content */}
+                            {activeSection === "response" && selectedStep && (
+                                <ResponseTab
+                                    spec={data}
+                                    api={selectedStep.api ?? selectedFlowAction}
+                                />
                             )}
 
                             {/* Validations tab content */}
