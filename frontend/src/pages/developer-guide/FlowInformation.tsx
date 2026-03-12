@@ -1,16 +1,13 @@
 import { FC, useMemo, useState, useEffect } from "react";
-import { FiBookOpen, FiCode, FiShield } from "react-icons/fi";
+import { FiCode, FiShield } from "react-icons/fi";
 import { SegmentedTabs, type TabItem } from "@components/ui/SegmentedTabs";
 import { OpenAPISpecification } from "./types";
 import type { FlowStep } from "./types";
 import { getActionId } from "./utils";
 import FlowDetailsAndSummary from "./FlowDetailsAndSummary";
+import ActionOverview from "./ActionOverview";
 import { FlowActionDetails } from "./flowActionDetails";
 import Loader from "@components/ui/mini-components/loader";
-// import HelperSection, { decodeHelperLib } from "./HelperSection";
-// import GenerateSection, { decodeMockGenerate } from "./GenerateSection";
-// import ValidateSection, { decodeMockValidate } from "./ValidateSection";
-// import RequirementsSection, { decodeMockRequirements } from "./RequirementsSection";
 import ValidationsTable, { type ValidationTable } from "./ValidationsTable";
 import rawValidations from "./raw_table.json";
 
@@ -46,13 +43,14 @@ function getExamplesFromStep(
 
 const FlowInformation: FC<FlowInformationProps> = ({ data, selectedFlow, selectedFlowAction }) => {
     const [selectedExampleIndex, setSelectedExampleIndex] = useState(0);
-    type Section = "overview" | "preview" | "x-validations";
-    const [activeSection, setActiveSection] = useState<Section>("overview");
+    type Section = "preview" | "x-validations";
+    const [activeSection, setActiveSection] = useState<Section>("preview");
     const [showPreviewDetails, setShowPreviewDetails] = useState(false);
 
     const isEmpty = !selectedFlow;
 
     const flows = data["x-flows"] || [];
+
     const selectedFlowData = flows.find(
         (flow) => flow.meta?.flowId === selectedFlow || flow.summary === selectedFlow
     );
@@ -65,42 +63,25 @@ const FlowInformation: FC<FlowInformationProps> = ({ data, selectedFlow, selecte
         typeof examplePayload === "object" &&
         !Array.isArray(examplePayload);
 
-    // const decodedHelperCode = useMemo(
-    //     () => decodeHelperLib(selectedFlowData?.helperLib),
-    //     [selectedFlowData?.helperLib]
-    // );
-    // const hasHelper = !!decodedHelperCode;
-
-    // const decodedGenerateCode = useMemo(
-    //     () => decodeMockGenerate(selectedStep?.mock?.generate),
-    //     [selectedStep?.mock?.generate]
-    // );
-    // const hasGenerate = !!decodedGenerateCode;
-
-    // const decodedValidateCode = useMemo(
-    //     () => decodeMockValidate(selectedStep?.mock?.validate),
-    //     [selectedStep?.mock?.validate]
-    // );
-    // const hasValidate = !!decodedValidateCode;
-
-    // const decodedRequirementsCode = useMemo(
-    //     () => decodeMockRequirements(selectedStep?.mock?.requirements),
-    //     [selectedStep?.mock?.requirements]
-    // );
-    // const hasRequirements = !!decodedRequirementsCode;
-
     const apiForValidations = selectedStep?.api ?? selectedFlowAction;
     const selectedValidations: ValidationTable | undefined = useMemo(
         () => (rawValidations as Record<string, ValidationTable>)[apiForValidations],
         [apiForValidations]
     );
     const hasXValidations = !!selectedValidations;
+    const hasTabs = hasExampleObject || hasXValidations;
 
     useEffect(() => {
-        // When action changes, reset to Overview and clear preview state
-        setActiveSection("overview");
-        setShowPreviewDetails(false);
+        // Reset tab state when action changes
+        const defaultSection: Section = hasExampleObject ? "preview" : "x-validations";
+        setActiveSection(defaultSection);
         setSelectedExampleIndex(0);
+        if (defaultSection === "preview") {
+            setShowPreviewDetails(false);
+            setTimeout(() => setShowPreviewDetails(true), 0);
+        } else {
+            setShowPreviewDetails(false);
+        }
     }, [selectedFlowAction]);
 
     if (isEmpty) {
@@ -135,114 +116,110 @@ const FlowInformation: FC<FlowInformationProps> = ({ data, selectedFlow, selecte
         setActiveSection(section);
         if (section === "preview") {
             setShowPreviewDetails(false);
-            // Defer heavy JSON/schema rendering to next tick so loader can paint first
-            setTimeout(() => {
-                setShowPreviewDetails(true);
-            }, 0);
+            setTimeout(() => setShowPreviewDetails(true), 0);
         }
     };
 
     return (
-        <div className="p-6 space-y-10">
+        <div className="px-8 py-8 space-y-0 w-full">
+            {/* ── Always-visible Overview ── */}
+            {selectedFlowData && (
+                <div className="mb-8">
+                    <FlowDetailsAndSummary flow={selectedFlowData} />
+                </div>
+            )}
+
             {selectedFlowAction && selectedStep && (
                 <>
-                    {/* Tab bar */}
-                    <SegmentedTabs<Section>
-                        className="mb-6"
-                        active={activeSection}
-                        onChange={handleSectionChange}
-                        tabs={
-                            [
-                                { id: "overview", label: "Overview", icon: FiBookOpen },
-                                {
-                                    id: "preview",
-                                    label: "Examples & Schema",
-                                    icon: FiCode,
-                                    visible: hasExampleObject,
-                                },
-                                {
-                                    id: "x-validations",
-                                    label: "Validations",
-                                    icon: FiShield,
-                                    visible: hasXValidations,
-                                },
-                            ] satisfies TabItem<Section>[]
-                        }
-                    />
+                    {/* Action card — always visible */}
+                    <div className="mb-10">
+                        <ActionOverview step={selectedStep} actionId={selectedFlowAction} />
+                    </div>
 
-                    <section className="flex gap-8 items-start">
-                        {/* Overview section */}
-                        {activeSection === "overview" && (
-                            <div className="flex-1 space-y-6">
-                                {selectedFlowData && (
-                                    <FlowDetailsAndSummary flow={selectedFlowData} />
-                                )}
-                                <div className="rounded-xl border border-slate-200 bg-white overflow-hidden shadow-sm">
-                                    <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/60">
-                                        <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
-                                            Action
-                                        </span>
-                                    </div>
-                                    <div className="px-6 py-5">
-                                        <p className="text-base font-semibold text-slate-900 font-mono">
-                                            {selectedStep.api}
-                                        </p>
-                                        {(selectedStep.description ?? selectedStep.summary) && (
-                                            <p className="text-sm text-slate-600 mt-2 leading-relaxed mb-0">
-                                                {selectedStep.description ?? selectedStep.summary}
-                                            </p>
-                                        )}
-                                    </div>
+                    {/* ── Detail tabs section ── */}
+                    {hasTabs && (
+                        <div className="border-t border-slate-200 pt-8">
+                            {/* Section heading */}
+                            <div className="flex items-end justify-between mb-5">
+                                <div>
+                                    <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest mb-1">
+                                        Details
+                                    </p>
+                                    <h3 className="text-lg font-semibold text-slate-800">
+                                        {activeSection === "preview"
+                                            ? "Examples & Schema"
+                                            : "Validations"}
+                                    </h3>
                                 </div>
+                                <SegmentedTabs<Section>
+                                    active={activeSection}
+                                    onChange={handleSectionChange}
+                                    tabs={
+                                        [
+                                            {
+                                                id: "preview",
+                                                label: "Examples & Schema",
+                                                icon: FiCode,
+                                                visible: hasExampleObject,
+                                            },
+                                            {
+                                                id: "x-validations",
+                                                label: "Validations",
+                                                icon: FiShield,
+                                                visible: hasXValidations,
+                                            },
+                                        ] satisfies TabItem<Section>[]
+                                    }
+                                />
                             </div>
-                        )}
 
-                        {/* Preview section */}
-                        {activeSection === "preview" && hasExampleObject && (
-                            <div className=" w-full flex flex-col gap-4">
-                                {examples.length > 0 && (
-                                    <div className="flex flex-col gap-2">
-                                        <label
-                                            htmlFor="example-select"
-                                            className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider"
-                                        >
-                                            Examples
-                                        </label>
-                                        <div className="relative w-full max-w-sm">
-                                            <select
-                                                id="example-select"
-                                                value={selectedExampleIndex}
-                                                onChange={(e) =>
-                                                    setSelectedExampleIndex(Number(e.target.value))
-                                                }
-                                                className="w-full px-4 py-2.5  rounded-lg text-sm border border-slate-200 bg-white text-slate-800 focus:outline-none appearance-none"
+                            {/* Preview tab content */}
+                            {activeSection === "preview" && hasExampleObject && (
+                                <div className="flex flex-col gap-4">
+                                    {examples.length > 1 && (
+                                        <div className="flex items-center gap-3">
+                                            <label
+                                                htmlFor="example-select"
+                                                className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider shrink-0"
                                             >
-                                                {examples.map((ex, i) => (
-                                                    <option key={i} value={i}>
-                                                        {ex.name}
-                                                    </option>
-                                                ))}
-                                            </select>
-                                            <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center">
-                                                <svg
-                                                    className="w-4 h-4 text-slate-700"
-                                                    fill="none"
-                                                    viewBox="0 0 24 24"
-                                                    stroke="currentColor"
-                                                    strokeWidth={2}
+                                                Example
+                                            </label>
+                                            <div className="relative w-full max-w-xs">
+                                                <select
+                                                    id="example-select"
+                                                    value={selectedExampleIndex}
+                                                    onChange={(e) =>
+                                                        setSelectedExampleIndex(
+                                                            Number(e.target.value)
+                                                        )
+                                                    }
+                                                    className="w-full pl-4 pr-9 py-2 rounded-lg text-sm border border-slate-200 bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-400/40 focus:border-sky-300 appearance-none shadow-sm"
                                                 >
-                                                    <path
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                        d="M19 9l-7 7-7-7"
-                                                    />
-                                                </svg>
+                                                    {examples.map((ex, i) => (
+                                                        <option key={i} value={i}>
+                                                            {ex.name}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                                <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center">
+                                                    <svg
+                                                        className="w-4 h-4 text-slate-400"
+                                                        fill="none"
+                                                        viewBox="0 0 24 24"
+                                                        stroke="currentColor"
+                                                        strokeWidth={2}
+                                                    >
+                                                        <path
+                                                            strokeLinecap="round"
+                                                            strokeLinejoin="round"
+                                                            d="M19 9l-7 7-7-7"
+                                                        />
+                                                    </svg>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                )}
-                                <div className="flex flex-col">
-                                    <div className="w-full h-[540px] min-h-0 rounded-xl overflow-hidden border border-slate-200 shadow-sm bg-white">
+                                    )}
+                                    <div className="w-full h-[560px] min-h-0 rounded-2xl overflow-hidden border border-slate-200 shadow-sm bg-white">
                                         {showPreviewDetails ? (
                                             <FlowActionDetails
                                                 exampleValue={examplePayload as object}
@@ -264,34 +241,16 @@ const FlowInformation: FC<FlowInformationProps> = ({ data, selectedFlow, selecte
                                         )}
                                     </div>
                                 </div>
-                            </div>
-                        )}
-                        {/* 
-                        {activeSection === "helper" && hasHelper && decodedHelperCode && (
-                            <HelperSection decodedCode={decodedHelperCode} />
-                        )}
-
-                        {activeSection === "generate" && hasGenerate && decodedGenerateCode && (
-                            <GenerateSection decodedCode={decodedGenerateCode} />
-                        )}
-
-                        {activeSection === "validate" && hasValidate && decodedValidateCode && (
-                            <ValidateSection decodedCode={decodedValidateCode} />
-                        )}
-
-                        {activeSection === "requirements" &&
-                            hasRequirements &&
-                            decodedRequirementsCode && (
-                                <RequirementsSection decodedCode={decodedRequirementsCode} />
-                            )} */}
-
-                        {/* x-validations section */}
-                        {activeSection === "x-validations" &&
-                            hasXValidations &&
-                            selectedValidations && (
-                                <ValidationsTable validations={selectedValidations} />
                             )}
-                    </section>
+
+                            {/* Validations tab content */}
+                            {activeSection === "x-validations" &&
+                                hasXValidations &&
+                                selectedValidations && (
+                                    <ValidationsTable validations={selectedValidations} />
+                                )}
+                        </div>
+                    )}
                 </>
             )}
         </div>
