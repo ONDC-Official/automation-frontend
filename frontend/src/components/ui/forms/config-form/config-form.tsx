@@ -36,6 +36,7 @@ import Metro210StartEndStopSelection from "../custom-forms/trv11_start_end_stop_
 import { RJSFSchema } from "@rjsf/utils";
 import RetINVLInit from "../custom-forms/retinvl-init";
 import SelectMetroTRV11 from "../custom-forms/select-metro-trv11";
+import InitMetroTRV11 from "../custom-forms/init-metro-trv11";
 
 export interface FormFieldConfigType {
     name: string;
@@ -75,8 +76,13 @@ export interface FormFieldConfigType {
     | "trv11_210_select"
     | "trv11_210_update_end_station"
     | "trv11_210_start_end_stop_selection"
-    | "datetime-local"
-    | "select_metro_trv11";
+    | "fis12_select_pl"
+    | "fis12_search_pl"
+    | "fis13_addon_select"
+    | "select_metro_trv11"
+    | "init_metro_trv11"
+    | "datetime-local";
+
     payloadField: string;
     values?: string[];
     defaultValue?: string;
@@ -304,6 +310,12 @@ export default function FormConfig({
 
     if (formConfig.find((field) => field.type === "trv11_210_start_end_stop_selection")) {
         return <Metro210StartEndStopSelection submitEvent={submitEvent} />;
+    }
+
+
+
+    if (formConfig.find((field) => field.type === "init_metro_trv11")) {
+        return <InitMetroTRV11 submitEvent={submitEvent} />;
     }
     if (formConfig.find((field) => field.type === "select_metro_trv11")) {
         return <SelectMetroTRV11 submitEvent={submitEvent} />;

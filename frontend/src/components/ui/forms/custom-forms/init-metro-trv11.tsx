@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useForm, useFieldArray } from "react-hook-form";
+import { useForm, useFieldArray, FieldPath } from "react-hook-form";
 import { FaRegPaste } from "react-icons/fa6";
 import PayloadEditor from "../../mini-components/payload-editor";
 import { SubmitEventParams } from "../../../../types/flow-types";
@@ -21,6 +21,9 @@ type FormItem = {
 };
 
 type FormValues = {
+    billingName: string;
+    billingEmail: string;
+    billingPhone: string;
     items: FormItem[];
 };
 
@@ -35,7 +38,7 @@ type OnSearchPayload = {
     };
 };
 
-export default function SelectMetroTRV11({
+export default function InitMetroTRV11({
     submitEvent,
 }: {
     submitEvent: (data: SubmitEventParams) => Promise<void>;
@@ -46,6 +49,9 @@ export default function SelectMetroTRV11({
 
     const { control, handleSubmit, register } = useForm<FormValues>({
         defaultValues: {
+            billingName: "",
+            billingEmail: "",
+            billingPhone: "",
             items: [{ itemId: "", count: 1 }],
         },
     });
@@ -56,15 +62,18 @@ export default function SelectMetroTRV11({
     });
 
     const onSubmit = async (data: FormValues) => {
-        // Validate at least one item is selected
         const validItems = data.items.filter((item) => item.itemId !== "");
         if (validItems.length === 0) {
             toast.error("Please select at least one item.");
             return;
         }
 
-        // Build the output in the required shape
         const output = {
+            billing: {
+                name: data.billingName,
+                email: data.billingEmail,
+                phone: data.billingPhone,
+            },
             items: validItems.map((item) => ({
                 id: item.itemId,
                 quantity: {
@@ -141,20 +150,65 @@ export default function SelectMetroTRV11({
                     {errorWhilePaste}
                 </p>
             )}
-            <button
-                type="button"
-                onClick={() => setIsPayloadEditorActive(true)}
-                className="p-2 border rounded-full hover:bg-gray-100"
-                title="Paste on_search payload"
-            >
-                <FaRegPaste size={14} />
-            </button>
+            <div className="flex items-center gap-3 mb-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <button
+                    type="button"
+                    onClick={() => setIsPayloadEditorActive(true)}
+                    className="p-2 border rounded-full hover:bg-gray-100 bg-white shrink-0"
+                    title="Paste on_search payload"
+                >
+                    <FaRegPaste size={14} />
+                </button>
+                <p className="text-sm text-blue-700">
+                    Paste the <strong>on_search</strong> payload to auto-populate the item list below.
+                </p>
+            </div>
 
             <form
                 onSubmit={handleSubmit(onSubmit)}
                 className="space-y-4 h-[500px] overflow-y-scroll p-4"
             >
-                {/* Billing Details Section */}
+                <div className="border p-3 rounded space-y-2">
+                    <h3 className="font-bold text-lg mb-2">Billing Details</h3>
+
+                    <div className={fieldWrapperStyle}>
+                        <label className={labelStyle}>Name</label>
+                        <input
+                            type="text"
+                            {...register("billingName" as FieldPath<FormValues>)}
+                            placeholder="Enter billing name"
+                            className={inputStyle}
+                            required
+                        />
+                    </div>
+
+                    <div className={fieldWrapperStyle}>
+                        <label className={labelStyle}>Email</label>
+                        <input
+                            type="email"
+                            {...register(
+                                "billingEmail" as FieldPath<FormValues>
+                            )}
+                            placeholder="Enter billing email"
+                            className={inputStyle}
+                            required
+                        />
+                    </div>
+
+                    <div className={fieldWrapperStyle}>
+                        <label className={labelStyle}>Phone</label>
+                        <input
+                            type="tel"
+                            {...register(
+                                "billingPhone" as FieldPath<FormValues>
+                            )}
+                            placeholder="Enter billing phone"
+                            className={inputStyle}
+                            required
+                        />
+                    </div>
+                </div>
+
                 <div className="border p-3 rounded space-y-2">
                     <h3 className="font-bold text-lg mb-2">Select Items</h3>
 
@@ -171,7 +225,7 @@ export default function SelectMetroTRV11({
                                     <input
                                         type="text"
                                         {...register(
-                                            `items.${index}.itemId` as const
+                                            `items.${index}.itemId` as FieldPath<FormValues>
                                         )}
                                         placeholder="Paste payload first or enter item ID"
                                         className={inputStyle}
@@ -179,7 +233,7 @@ export default function SelectMetroTRV11({
                                 ) : (
                                     <select
                                         {...register(
-                                            `items.${index}.itemId` as const
+                                            `items.${index}.itemId` as FieldPath<FormValues>
                                         )}
                                         className={inputStyle}
                                     >
