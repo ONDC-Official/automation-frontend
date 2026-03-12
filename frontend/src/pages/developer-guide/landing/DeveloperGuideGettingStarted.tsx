@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import DeveloperGuideHeader from "./DeveloperGuideHeader";
 import { ROUTES } from "@constants/routes";
 import gettingStartedContent from "./getting-started.md?raw";
-import MdFileRender from "./MdFileRender";
+import MdFileRender from "@components/MdFileRender";
 
 const DeveloperGuideGettingStarted = () => {
     const navigate = useNavigate();
