@@ -40,6 +40,8 @@ import FIS13AddonSelect from "../custom-forms/fis13-addon-select";
 import FIS12Search from "../custom-forms/fis12-search";
 import SelectMetroTRV11 from "../custom-forms/select-metro-trv11";
 import { RJSFSchema } from "@rjsf/utils";
+import ReteB2BSelect from "../custom-forms/reteb2b-select";
+
 
 export interface FormFieldConfigType {
     name: string;
@@ -57,6 +59,7 @@ export interface FormFieldConfigType {
     | "intercity_select"
     | "airline_seat_select"
     | "ret10_grocery_select"
+    | "reteb2b_select"
     | "ret11_nestedSelect"
     | "retinvl_init"
     | "nestedSelect"
@@ -222,6 +225,11 @@ export default function FormConfig({
     if (formConfig.find((field) => field.type === "ret10_grocery_select")) {
         return <Ret10GrocerySelect submitEvent={submitEvent} />;
     }
+
+    if (formConfig.find((field) => field.type === "reteb2b_select")) {
+        return <ReteB2BSelect submitEvent={submitEvent} />;
+    }
+
     if (formConfig.find((field) => field.type === "retinvl_init")) {
         return <RetINVLInit submitEvent={submitEvent} />;
     }
