@@ -1,10 +1,9 @@
 import { FC, useEffect, useMemo, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { FaArrowLeft, FaChevronLeft } from "react-icons/fa";
+import { FiArrowLeft, FiChevronRight, FiChevronLeft } from "react-icons/fi";
 import FlowsAccordion from "./FlowsAccordion";
 import FlowInformation from "./FlowInformation";
 import data from "./data.json";
-import IconButton from "@components/ui/mini-components/icon-button";
 import Loader from "@components/ui/mini-components/loader";
 import { fetchFormFieldData } from "@utils/request-utils";
 import type { DomainResponse } from "@pages/home/types";
@@ -126,7 +125,7 @@ const DeveloperGuideFlowPage: FC = () => {
 
     if (isLoading) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-slate-50">
+            <div className="min-h-screen flex items-center justify-center bg-white">
                 <Loader />
             </div>
         );
@@ -134,12 +133,12 @@ const DeveloperGuideFlowPage: FC = () => {
 
     if (notFound || !domainKey || !versionKey || !slug) {
         return (
-            <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 px-6">
+            <div className="min-h-screen flex flex-col items-center justify-center bg-white px-6">
                 <p className="text-gray-600 mb-4">Use case not found for this domain/version.</p>
                 <button
                     type="button"
                     onClick={handleBack}
-                    className="px-4 py-2 rounded-lg bg-sky-600 text-white hover:bg-sky-700"
+                    className="px-4 py-2 rounded-lg bg-sky-500 text-white hover:bg-sky-600 text-sm font-medium"
                 >
                     Back to Developer Guide
                 </button>
@@ -148,35 +147,46 @@ const DeveloperGuideFlowPage: FC = () => {
     }
 
     return (
-        <div className="relative bg-slate-50/50">
-            <header className="flex items-center justify-between px-6 bg-gradient-to-r from-white to-sky-50 border-b border-sky-100 shadow-sm py-4">
-                <div className="flex items-center gap-6">
-                    <IconButton
-                        icon={<FaArrowLeft size={16} />}
-                        label="Back"
-                        onClick={handleBack}
-                        color="gray"
-                    />
-                    <span className="text-xl font-bold bg-gradient-to-r from-sky-600 via-sky-500 to-sky-600 bg-clip-text text-transparent tracking-tight whitespace-nowrap">
-                        DEVELOPER GUIDE
-                    </span>
+        <div className="relative bg-white min-h-screen">
+            {/* ── Header ── */}
+            <header className="sticky top-0 z-20 bg-white/90 backdrop-blur-md border-b border-gray-200">
+                <div className="px-6 h-14 flex items-center justify-between gap-4">
+                    {/* Breadcrumb */}
+                    <nav className="flex items-center gap-1.5 text-sm min-w-0">
+                        <button
+                            type="button"
+                            onClick={handleBack}
+                            className="flex items-center gap-1.5 text-gray-500 hover:text-sky-600 transition-colors duration-150 group flex-shrink-0"
+                        >
+                            <FiArrowLeft
+                                size={13}
+                                className="group-hover:-translate-x-0.5 transition-transform duration-150"
+                            />
+                            <span>Developer Guide</span>
+                        </button>
+                        {usecaseLabel && (
+                            <>
+                                <FiChevronRight size={13} className="text-gray-300 flex-shrink-0" />
+                                <span className="text-gray-400 truncate hidden sm:block">
+                                    {domainKey}
+                                </span>
+                                <FiChevronRight
+                                    size={13}
+                                    className="text-gray-300 flex-shrink-0 hidden sm:block"
+                                />
+                                <span className="font-semibold text-gray-800 truncate">
+                                    {usecaseLabel}
+                                </span>
+                            </>
+                        )}
+                    </nav>
+                    {/* Version badge */}
+                    {versionKey && (
+                        <span className="flex-shrink-0 inline-flex items-center px-2.5 py-1 rounded-full bg-sky-50 border border-sky-200 text-sky-700 text-xs font-mono font-semibold">
+                            v{versionKey}
+                        </span>
+                    )}
                 </div>
-                {usecaseLabel && (
-                    <div className="hidden md:flex items-center gap-3 text-sm text-slate-700">
-                        <div className="flex items-center gap-2 px-3 py-1.5 bg-white rounded-lg border border-sky-100">
-                            <span className="text-gray-500">Domain:</span>
-                            <span className="font-semibold text-gray-800">{domainKey}</span>
-                        </div>
-                        <div className="flex items-center gap-2 px-3 py-1.5 bg-white rounded-lg border border-sky-100">
-                            <span className="text-gray-500">Use Case:</span>
-                            <span className="font-semibold text-gray-800">{usecaseLabel}</span>
-                        </div>
-                        <div className="flex items-center gap-2 px-3 py-1.5 bg-white rounded-lg border border-sky-100">
-                            <span className="text-gray-500">Version:</span>
-                            <span className="font-semibold text-gray-800">{versionKey}</span>
-                        </div>
-                    </div>
-                )}
             </header>
 
             <div className="flex flex-1 overflow-hidden px-6 py-6 gap-0">
@@ -210,14 +220,15 @@ const DeveloperGuideFlowPage: FC = () => {
                         title={sidebarOpen ? "Collapse sidebar" : "Expand sidebar"}
                         className={`group flex items-center justify-center h-12 transition-all duration-200 active:scale-95 ${
                             sidebarOpen
-                                ? "w-5 -ml-px rounded-r-lg border-l-0 bg-white border border-slate-200 shadow-sm hover:bg-sky-50 hover:border-sky-300 hover:shadow-md"
-                                : "w-8 rounded-lg bg-sky-500 border border-sky-600 shadow-md shadow-sky-200 hover:bg-sky-600 hover:shadow-sky-300"
+                                ? "w-5 -ml-px rounded-r-lg border-l-0 bg-white border border-gray-200 shadow-sm hover:bg-sky-50 hover:border-sky-300"
+                                : "w-8 rounded-lg bg-sky-500 border border-sky-600 shadow-md shadow-sky-200 hover:bg-sky-600"
                         }`}
                     >
-                        <FaChevronLeft
-                            className={`transition-transform duration-300 text-[9px] ${
+                        <FiChevronLeft
+                            size={10}
+                            className={`transition-transform duration-300 ${
                                 sidebarOpen
-                                    ? "text-slate-400 group-hover:text-sky-500"
+                                    ? "text-gray-400 group-hover:text-sky-500"
                                     : "text-white rotate-180"
                             }`}
                         />

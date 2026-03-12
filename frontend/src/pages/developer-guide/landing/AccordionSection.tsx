@@ -18,24 +18,21 @@ const AccordionSection: FC<AccordionSectionProps> = ({
     const [open, setOpen] = useState(defaultOpen);
 
     return (
-        <section className="mb-10">
-            <div className="bg-white rounded-2xl border border-sky-100 shadow-sm overflow-hidden">
+        <section className="mb-8">
+            <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
                 <button
                     type="button"
-                    className="w-full flex items-center justify-between p-5 bg-gradient-to-r from-white to-sky-50 hover:from-sky-50 hover:to-sky-50/60 transition-colors"
+                    className="w-full flex items-center justify-between px-5 py-4 hover:bg-gray-50 transition-colors duration-150"
                     onClick={() => setOpen((v) => !v)}
                     aria-expanded={open}
                     aria-controls={panelId}
                 >
-                    <span className="text-xl font-semibold bg-gradient-to-r from-sky-600 via-sky-500 to-sky-600 bg-clip-text text-transparent tracking-tight">
-                        {title}
-                    </span>
-
+                    <span className="text-base font-semibold text-gray-900">{title}</span>
                     <span className="flex items-center gap-3">
                         {rightAdornment}
-                        <span className="w-9 h-9 rounded-full bg-white/80 border border-sky-100 flex items-center justify-center shadow-sm">
+                        <span className="w-7 h-7 rounded-lg bg-gray-100 border border-gray-200 flex items-center justify-center">
                             <FaChevronDown
-                                className={`w-3 h-3 text-sky-600 transition-transform duration-300 ${open ? "rotate-180" : ""}`}
+                                className={`w-3 h-3 text-gray-500 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
                             />
                         </span>
                     </span>
@@ -48,11 +45,11 @@ const AccordionSection: FC<AccordionSectionProps> = ({
                     }`}
                     aria-hidden={!open}
                 >
-                    <div className="overflow-hidden border-t border-sky-100">
+                    <div className="overflow-hidden border-t border-gray-100">
                         <div
-                            className={`transition-opacity duration-200 ${open ? "opacity-100" : "opacity-0"}`}
+                            className={`transition-opacity duration-150 ${open ? "opacity-100" : "opacity-0"}`}
                         >
-                            <div className="p-6">{children}</div>
+                            <div className="p-5">{children}</div>
                         </div>
                     </div>
                 </div>

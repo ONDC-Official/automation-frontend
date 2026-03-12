@@ -34,11 +34,11 @@ function safeDescription(s: string): string {
     return hasHtml(s) ? stripHtml(s) : s;
 }
 
-function formatRequired(value: string | undefined | null): string {
-    if (value === "true") return "Mandatory";
-    if (value === "false") return "Optional";
-    return value ?? "—";
-}
+// function formatRequired(value: string | undefined | null): string {
+//     if (value === "true") return "Mandatory";
+//     if (value === "false") return "Optional";
+//     return value ?? "—";
+// }
 
 interface AttributesPanelProps {
     attributes: ActionAttributes | null;
