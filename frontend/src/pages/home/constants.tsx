@@ -6,6 +6,14 @@ import { Feature } from "./types";
 
 export const features: Feature[] = [
     {
+        title: "Developer Guide",
+        subtitle: "Explore ONDC Flows, Schemas, and Examples",
+        description:
+            "Explore ONDC flows, use cases, and protocol actions. View request/response payloads and add notes for your development workflow.",
+        path: ROUTES.DEVELOPER_GUIDE,
+        icon: <FaScrewdriverWrench className="text-sky-600 text-4xl" />,
+    },
+    {
         title: "Schema Validation",
         subtitle: "Verify Individual Payloads Instantly",
         description:
@@ -45,13 +53,5 @@ export const features: Feature[] = [
             "Streamline the seller onboarding process with our comprehensive registration flow. Manage store details, serviceability areas, and product catalogs effortlessly.",
         path: ROUTES.SELLER_ONBOARDING,
         icon: <FaUserPlus className="text-sky-600 text-4xl" />,
-    },
-    {
-        title: "Developer Options",
-        subtitle: "Developer Guide & Flow Explorer",
-        description:
-            "Explore ONDC flows, use cases, and protocol actions. View request/response payloads and add notes for your development workflow.",
-        path: ROUTES.DEVELOPER_GUIDE,
-        icon: <FaScrewdriverWrench className="text-sky-600 text-4xl" />,
     },
 ];
