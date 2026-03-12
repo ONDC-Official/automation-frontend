@@ -1,0 +1,183 @@
+name: Build and Deploy to EKS
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - dev
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  # ──────────────────────────────────────────────
+  # Job 1: Bump version, resolve env & target file
+  # ──────────────────────────────────────────────
+  version:
+    runs-on: ubuntu-latest
+    outputs:
+      image_tag:   ${{ steps.bump.outputs.image_tag }}
+      environment: ${{ steps.bump.outputs.environment }}
+      target_file: ${{ steps.bump.outputs.target_file }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Bump patch version and set outputs
+        id: bump
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          current=$(cat version.txt)
+          IFS='.' read -r major minor patch <<< "$current"
+          patch=$((patch + 1))
+          next="$major.$minor.$patch"
+          echo "$next" > version.txt
+
+          git add version.txt
+          git commit -m "ci: bump version to $next [skip ci]"
+          git push
+
+          if [ "${{ github.ref_name }}" = "release-staging" ]; then
+            env="prod"
+            target="k8/aws/helm/service-layer/values-prod.yaml"
+          else
+            env="dev"
+            target="k8/aws/helm/service-layer/values.yaml"
+          fi
+
+          echo "image_tag=${env}-${next}"   >> $GITHUB_OUTPUT
+          echo "environment=${env}"         >> $GITHUB_OUTPUT
+          echo "target_file=${target}"      >> $GITHUB_OUTPUT
+
+  # ──────────────────────────────────────────────
+  # Job 2a: Build & push backend image (parallel)
+  # ──────────────────────────────────────────────
+  build-backend:
+    needs: version
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push backend image
+        uses: docker/build-push-action@v5
+        with:
+          context: backend
+          file: backend/Dockerfile
+          push: true
+          tags: |
+            ghcr.io/ondc-official/workbench-ui-backend:${{ needs.version.outputs.image_tag }}
+            ${{ github.ref_name == 'release-staging' && 'ghcr.io/ondc-official/workbench-ui-backend:latest' || '' }}
+          cache-from: type=gha,scope=backend
+          cache-to: type=gha,mode=max,scope=backend
+
+  # ──────────────────────────────────────────────
+  # Job 2b: Build & push frontend image (parallel)
+  # ──────────────────────────────────────────────
+  build-frontend:
+    needs: version
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push frontend image
+        uses: docker/build-push-action@v5
+        with:
+          context: frontend
+          file: frontend/Dockerfile
+          push: true
+          tags: |
+            ghcr.io/ondc-official/workbench-ui-frontend:${{ needs.version.outputs.image_tag }}
+            ${{ github.ref_name == 'release-staging' && 'ghcr.io/ondc-official/workbench-ui-frontend:latest' || '' }}
+          cache-from: type=gha,scope=frontend
+          cache-to: type=gha,mode=max,scope=frontend
+
+  # ──────────────────────────────────────────────
+  # Job 3: Update image tags in IaC Helm values
+  # ──────────────────────────────────────────────
+  update-iac:
+    needs: [version, build-backend, build-frontend]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          repositories: automation-iac
+
+      - name: Clone automation-iac repo
+        uses: actions/checkout@v4
+        with:
+          repository: ONDC-Official/automation-iac
+          token: ${{ steps.app-token.outputs.token }}
+          path: automation-iac
+
+      - name: Update uiBackend and uiFrontend image tags in Helm values
+        run: |
+          python3 << 'PYEOF'
+          import re, os
+
+          target = f"automation-iac/{os.environ['TARGET_FILE']}"
+          image_tag = os.environ['IMAGE_TAG']
+
+          with open(target, 'r') as f:
+              lines = f.readlines()
+
+          current_section = None
+          result = []
+          for line in lines:
+              # Track top-level YAML keys (no leading whitespace)
+              if re.match(r'^[a-zA-Z]', line):
+                  current_section = line.strip().rstrip(':').split(':')[0]
+
+              # Replace tag: under uiBackend or uiFrontend sections
+              if current_section in ('uiBackend', 'uiFrontend') and re.match(r'^\s+tag:\s', line):
+                  line = re.sub(r'(tag:\s*).*', rf'\g<1>{image_tag}', line)
+
+              result.append(line)
+
+          with open(target, 'w') as f:
+              f.writelines(result)
+
+          print(f"Updated uiBackend and uiFrontend image tags to: {image_tag}")
+          PYEOF
+        env:
+          TARGET_FILE: ${{ needs.version.outputs.target_file }}
+          IMAGE_TAG:   ${{ needs.version.outputs.image_tag }}
+
+      - name: Commit and push tag update to IaC repo
+        run: |
+          cd automation-iac
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add "${{ needs.version.outputs.target_file }}"
+          git commit -m "ci: update workbench-ui image tags to ${{ needs.version.outputs.image_tag }} (${{ needs.version.outputs.environment }})"
+          git push
