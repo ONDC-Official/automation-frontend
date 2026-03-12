@@ -1,6 +1,6 @@
 import { GoCodespaces, GoWorkflow } from "react-icons/go";
 import { MdSchema } from "react-icons/md";
-import { FaUserPlus, FaKey } from "react-icons/fa6";
+import { FaUserPlus, FaScrewdriverWrench } from "react-icons/fa6";
 import { ROUTES } from "@constants/routes";
 import { Feature } from "./types";
 
@@ -47,11 +47,11 @@ export const features: Feature[] = [
         icon: <FaUserPlus className="text-sky-600 text-4xl" />,
     },
     {
-        title: "Auth Header Tool",
-        subtitle: "Generate & Verify ONDC Headers",
+        title: "Developer Options",
+        subtitle: "Developer Guide & Flow Explorer",
         description:
-            "Utility to understand, generate, and verify ONDC authorization headers using BLAKE-512 and Ed25519 signatures.",
-        path: ROUTES.AUTH_HEADER,
-        icon: <FaKey className="text-sky-600 text-4xl" />,
+            "Explore ONDC flows, use cases, and protocol actions. View request/response payloads and add notes for your development workflow.",
+        path: ROUTES.DEVELOPER_GUIDE,
+        icon: <FaScrewdriverWrench className="text-sky-600 text-4xl" />,
     },
 ];

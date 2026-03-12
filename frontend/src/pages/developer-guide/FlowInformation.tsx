@@ -1,13 +1,16 @@
 import { FC, useMemo, useState, useEffect } from "react";
+import { FiBookOpen, FiCode, FiShield } from "react-icons/fi";
+import { SegmentedTabs, type TabItem } from "@components/ui/SegmentedTabs";
 import { OpenAPISpecification } from "./types";
 import type { FlowStep } from "./types";
 import { getActionId } from "./utils";
 import FlowDetailsAndSummary from "./FlowDetailsAndSummary";
 import { FlowActionDetails } from "./flowActionDetails";
-import HelperSection, { decodeHelperLib } from "./HelperSection";
-import GenerateSection, { decodeMockGenerate } from "./GenerateSection";
-import ValidateSection, { decodeMockValidate } from "./ValidateSection";
-import RequirementsSection, { decodeMockRequirements } from "./RequirementsSection";
+import Loader from "@components/ui/mini-components/loader";
+// import HelperSection, { decodeHelperLib } from "./HelperSection";
+// import GenerateSection, { decodeMockGenerate } from "./GenerateSection";
+// import ValidateSection, { decodeMockValidate } from "./ValidateSection";
+// import RequirementsSection, { decodeMockRequirements } from "./RequirementsSection";
 import ValidationsTable, { type ValidationTable } from "./ValidationsTable";
 import rawValidations from "./raw_table.json";
 
@@ -43,19 +46,9 @@ function getExamplesFromStep(
 
 const FlowInformation: FC<FlowInformationProps> = ({ data, selectedFlow, selectedFlowAction }) => {
     const [selectedExampleIndex, setSelectedExampleIndex] = useState(0);
-    const [activeSection, setActiveSection] = useState<
-        | "overview"
-        | "preview"
-        | "helper"
-        | "generate"
-        | "validate"
-        | "requirements"
-        | "x-validations"
-    >("overview");
-
-    useEffect(() => {
-        setActiveSection("overview");
-    }, [selectedFlowAction]);
+    type Section = "overview" | "preview" | "x-validations";
+    const [activeSection, setActiveSection] = useState<Section>("overview");
+    const [showPreviewDetails, setShowPreviewDetails] = useState(false);
 
     const isEmpty = !selectedFlow;
 
@@ -72,37 +65,41 @@ const FlowInformation: FC<FlowInformationProps> = ({ data, selectedFlow, selecte
         typeof examplePayload === "object" &&
         !Array.isArray(examplePayload);
 
-    const decodedHelperCode = useMemo(
-        () => decodeHelperLib(selectedFlowData?.helperLib),
-        [selectedFlowData?.helperLib]
-    );
-    const hasHelper = !!decodedHelperCode;
+    // const decodedHelperCode = useMemo(
+    //     () => decodeHelperLib(selectedFlowData?.helperLib),
+    //     [selectedFlowData?.helperLib]
+    // );
+    // const hasHelper = !!decodedHelperCode;
 
-    const decodedGenerateCode = useMemo(
-        () => decodeMockGenerate(selectedStep?.mock?.generate),
-        [selectedStep?.mock?.generate]
-    );
-    const hasGenerate = !!decodedGenerateCode;
+    // const decodedGenerateCode = useMemo(
+    //     () => decodeMockGenerate(selectedStep?.mock?.generate),
+    //     [selectedStep?.mock?.generate]
+    // );
+    // const hasGenerate = !!decodedGenerateCode;
 
-    const decodedValidateCode = useMemo(
-        () => decodeMockValidate(selectedStep?.mock?.validate),
-        [selectedStep?.mock?.validate]
-    );
-    const hasValidate = !!decodedValidateCode;
+    // const decodedValidateCode = useMemo(
+    //     () => decodeMockValidate(selectedStep?.mock?.validate),
+    //     [selectedStep?.mock?.validate]
+    // );
+    // const hasValidate = !!decodedValidateCode;
 
-    const decodedRequirementsCode = useMemo(
-        () => decodeMockRequirements(selectedStep?.mock?.requirements),
-        [selectedStep?.mock?.requirements]
-    );
-    const hasRequirements = !!decodedRequirementsCode;
+    // const decodedRequirementsCode = useMemo(
+    //     () => decodeMockRequirements(selectedStep?.mock?.requirements),
+    //     [selectedStep?.mock?.requirements]
+    // );
+    // const hasRequirements = !!decodedRequirementsCode;
 
     const apiForValidations = selectedStep?.api ?? selectedFlowAction;
-    const selectedValidations: ValidationTable | undefined = (
-        rawValidations as Record<string, ValidationTable>
-    )[apiForValidations];
+    const selectedValidations: ValidationTable | undefined = useMemo(
+        () => (rawValidations as Record<string, ValidationTable>)[apiForValidations],
+        [apiForValidations]
+    );
     const hasXValidations = !!selectedValidations;
 
     useEffect(() => {
+        // When action changes, reset to Overview and clear preview state
+        setActiveSection("overview");
+        setShowPreviewDetails(false);
         setSelectedExampleIndex(0);
     }, [selectedFlowAction]);
 
@@ -134,95 +131,44 @@ const FlowInformation: FC<FlowInformationProps> = ({ data, selectedFlow, selecte
         );
     }
 
+    const handleSectionChange = (section: Section) => {
+        setActiveSection(section);
+        if (section === "preview") {
+            setShowPreviewDetails(false);
+            // Defer heavy JSON/schema rendering to next tick so loader can paint first
+            setTimeout(() => {
+                setShowPreviewDetails(true);
+            }, 0);
+        }
+    };
+
     return (
         <div className="p-6 space-y-10">
             {selectedFlowAction && selectedStep && (
                 <>
-                    {/* Breadcrumb */}
-                    <nav className="flex items-center gap-2 text-sm mb-6">
-                        <button
-                            onClick={() => setActiveSection("overview")}
-                            className={`px-4 py-2 rounded text-sm font-medium transition-colors ${
-                                activeSection === "overview"
-                                    ? "bg-sky-600 text-white hover:bg-sky-700"
-                                    : "bg-slate-200 text-slate-600 hover:bg-slate-300"
-                            }`}
-                        >
-                            Overview
-                        </button>
-                        {hasExampleObject && (
-                            <button
-                                onClick={() => setActiveSection("preview")}
-                                className={`px-4 py-2 rounded text-sm font-medium transition-colors ${
-                                    activeSection === "preview"
-                                        ? "bg-sky-600 text-white hover:bg-sky-700"
-                                        : "bg-slate-200 text-slate-600 hover:bg-slate-300"
-                                }`}
-                            >
-                                Guide
-                            </button>
-                        )}
-                        {hasHelper && (
-                            <button
-                                onClick={() => setActiveSection("helper")}
-                                className={`px-4 py-2 rounded text-sm font-medium transition-colors ${
-                                    activeSection === "helper"
-                                        ? "bg-sky-600 text-white hover:bg-sky-700"
-                                        : "bg-slate-200 text-slate-600 hover:bg-slate-300"
-                                }`}
-                            >
-                                Helper
-                            </button>
-                        )}
-                        {hasGenerate && (
-                            <button
-                                onClick={() => setActiveSection("generate")}
-                                className={`px-4 py-2 rounded text-sm font-medium transition-colors ${
-                                    activeSection === "generate"
-                                        ? "bg-sky-600 text-white hover:bg-sky-700"
-                                        : "bg-slate-200 text-slate-600 hover:bg-slate-300"
-                                }`}
-                            >
-                                Generate
-                            </button>
-                        )}
-                        {hasValidate && (
-                            <button
-                                onClick={() => setActiveSection("validate")}
-                                className={`px-4 py-2 rounded text-sm font-medium transition-colors ${
-                                    activeSection === "validate"
-                                        ? "bg-sky-600 text-white hover:bg-sky-700"
-                                        : "bg-slate-200 text-slate-600 hover:bg-slate-300"
-                                }`}
-                            >
-                                Validate
-                            </button>
-                        )}
-                        {hasRequirements && (
-                            <button
-                                onClick={() => setActiveSection("requirements")}
-                                className={`px-4 py-2 rounded text-sm font-medium transition-colors ${
-                                    activeSection === "requirements"
-                                        ? "bg-sky-600 text-white hover:bg-sky-700"
-                                        : "bg-slate-200 text-slate-600 hover:bg-slate-300"
-                                }`}
-                            >
-                                Requirements
-                            </button>
-                        )}
-                        {hasXValidations && (
-                            <button
-                                onClick={() => setActiveSection("x-validations")}
-                                className={`px-4 py-2 rounded text-sm font-medium transition-colors ${
-                                    activeSection === "x-validations"
-                                        ? "bg-sky-600 text-white hover:bg-sky-700"
-                                        : "bg-slate-200 text-slate-600 hover:bg-slate-300"
-                                }`}
-                            >
-                                Validations
-                            </button>
-                        )}
-                    </nav>
+                    {/* Tab bar */}
+                    <SegmentedTabs<Section>
+                        className="mb-6"
+                        active={activeSection}
+                        onChange={handleSectionChange}
+                        tabs={
+                            [
+                                { id: "overview", label: "Overview", icon: FiBookOpen },
+                                {
+                                    id: "preview",
+                                    label: "Examples & Schema",
+                                    icon: FiCode,
+                                    visible: hasExampleObject,
+                                },
+                                {
+                                    id: "x-validations",
+                                    label: "Validations",
+                                    icon: FiShield,
+                                    visible: hasXValidations,
+                                },
+                            ] satisfies TabItem<Section>[]
+                        }
+                    />
 
                     <section className="flex gap-8 items-start">
                         {/* Overview section */}
@@ -297,43 +243,47 @@ const FlowInformation: FC<FlowInformationProps> = ({ data, selectedFlow, selecte
                                 )}
                                 <div className="flex flex-col">
                                     <div className="w-full h-[540px] min-h-0 rounded-xl overflow-hidden border border-slate-200 shadow-sm bg-white">
-                                        <FlowActionDetails
-                                            exampleValue={examplePayload as object}
-                                            actionApi={selectedFlowAction}
-                                            stepApi={selectedStep.api}
-                                            spec={data}
-                                            useCaseId={
-                                                selectedFlowData?.useCaseId ??
-                                                selectedFlowData?.meta?.use_case_id
-                                            }
-                                            flowId={selectedFlowData?.meta?.flowId ?? selectedFlow}
-                                        />
+                                        {showPreviewDetails ? (
+                                            <FlowActionDetails
+                                                exampleValue={examplePayload as object}
+                                                actionApi={selectedFlowAction}
+                                                stepApi={selectedStep.api}
+                                                spec={data}
+                                                useCaseId={
+                                                    selectedFlowData?.useCaseId ??
+                                                    selectedFlowData?.meta?.use_case_id
+                                                }
+                                                flowId={
+                                                    selectedFlowData?.meta?.flowId ?? selectedFlow
+                                                }
+                                            />
+                                        ) : (
+                                            <div className="h-full w-full flex items-center justify-center">
+                                                <Loader />
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             </div>
                         )}
-
-                        {/* Helper section */}
+                        {/* 
                         {activeSection === "helper" && hasHelper && decodedHelperCode && (
                             <HelperSection decodedCode={decodedHelperCode} />
                         )}
 
-                        {/* Generate section */}
                         {activeSection === "generate" && hasGenerate && decodedGenerateCode && (
                             <GenerateSection decodedCode={decodedGenerateCode} />
                         )}
 
-                        {/* Validate section */}
                         {activeSection === "validate" && hasValidate && decodedValidateCode && (
                             <ValidateSection decodedCode={decodedValidateCode} />
                         )}
 
-                        {/* Requirements section */}
                         {activeSection === "requirements" &&
                             hasRequirements &&
                             decodedRequirementsCode && (
                                 <RequirementsSection decodedCode={decodedRequirementsCode} />
-                            )}
+                            )} */}
 
                         {/* x-validations section */}
                         {activeSection === "x-validations" &&

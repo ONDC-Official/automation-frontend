@@ -17,7 +17,20 @@ export const ROUTES = {
     ROOT: "/",
     AUTH_HEADER: "/auth-header",
     DEVELOPER_GUIDE: "/developer-guide",
+    DEVELOPER_GUIDE_GETTING_STARTED: "/developer-guide/getting-started",
+    /** Use case flow: domain and version are URL-encoded if needed; useCase is slug e.g. personal_loan */
+    DEVELOPER_GUIDE_USE_CASE: "/developer-guide/:domain/:version/:useCase",
 } as const;
+
+/** Build path for a specific developer guide use case (domain/version passed as-is; useCase as slug). */
+export function getDeveloperGuideUseCasePath(
+    domain: string,
+    version: string,
+    useCaseSlug: string
+): string {
+    const enc = encodeURIComponent;
+    return `/developer-guide/${enc(domain)}/${enc(version)}/${enc(useCaseSlug)}`;
+}
 
 /**
  * Type for route paths

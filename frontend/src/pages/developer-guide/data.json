@@ -3,7 +3,7 @@
     "info": {
         "title": "ONDC Specification",
         "description": "ONDC Specification",
-        "version": "2.0.0"
+        "version": "2.3.0"
     },
     "security": [
         {
@@ -14,9 +14,9 @@
         {
             "meta": {
                 "domain": "ONDC:FIS12",
-                "version": "2.0.0",
+                "version": "2.3.0",
                 "flowId": "master_search",
-                "use_case_id": "term_loan",
+                "use_case_id": "unified_credit",
                 "description": "This describes the flow as a master search, which can be cached at the NP's end. The buyer app can initiate the journey here by passing the category code as LOAN",
                 "flowName": "Master Search"
             },
@@ -13153,10 +13153,10 @@
         {
             "meta": {
                 "domain": "ONDC:FIS12",
-                "version": "2.0.0",
+                "version": "2.3.0",
                 "flowId": "bl_term_loan_without_aa",
                 "flowName": "Business Loan - Term Loan without Account Aggregator",
-                "use_case_id": "term_loan",
+                "use_case_id": "unified_credit",
                 "description": "Business Loan - Term Loan without Account Aggregator"
             },
             "sequenceDetails": [
@@ -20744,7 +20744,7 @@
                     "action_id": "on_status2",
                     "action_label": "On Status 2",
                     "unsolicited": true,
-                    "description": "The lender sends an unsolicited on_status call to notify the buyer application of the latest order status.  ",
+                    "description": "The lender sends an unsolicited on_status call to notify the buyer application of the latest order status.",
                     "sequenceDetails": [
                         {
                             "description": "The lender sends an unsolicited on_status call with the latest order status.",
@@ -46595,7 +46595,7 @@
     "x-attributes": [
         {
             "meta": {
-                "use_case_id": "term_loan"
+                "use_case_id": "unified_credit"
             },
             "attribute_set": {
                 "search": {

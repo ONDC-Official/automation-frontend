@@ -5,11 +5,11 @@ import { inputClass } from "../../../components/ui/forms/inputClass";
 import { FaExclamationTriangle, FaPlus } from "react-icons/fa";
 import { PlaygroundContext } from "../context/playground-context";
 import { useEffect } from "react";
-import JsonViewer from "./Json-path-extractor";
 import JsonPathInput from "./json-path-input";
 import { handleAddParam } from "./json-path-input";
 import JsonPathOutputPopup from "./JsonPathOutputModal";
 import { MockPlaygroundConfigType } from "@ondc/automation-mock-runner";
+import JsonViewerDark from "./json-path-extractor_old";
 
 export enum SelectedType {
     SavedInfo = "saved_info",
@@ -462,7 +462,7 @@ export default function SessionDataTab() {
                     </div>
                     <div className="bg-gray-900 p-2 rounded-md font-mono text-sm">
                         {/* <div className="text-gray-400">{"{"}</div> */}
-                        <JsonViewer
+                        <JsonViewerDark
                             data={payloadFromTranscationHistory(selectedCall)}
                             isSelected={isSelected}
                             handleKeyClick={handleKeyClick}
