@@ -72,22 +72,22 @@ const ValueBadge: FC<{ children: ReactNode }> = ({ children }) => (
     </span>
 );
 
-const RequiredBadge: FC<{ value: string | undefined | null }> = ({ value }) => {
-    const label = formatRequired(value);
-    const cls =
-        label === "Mandatory"
-            ? "bg-rose-50 text-rose-700 border-rose-200"
-            : label === "Optional"
-              ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-              : "bg-slate-100 text-slate-500 border-slate-200";
-    return (
-        <span
-            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold border ${cls}`}
-        >
-            {label}
-        </span>
-    );
-};
+// const RequiredBadge: FC<{ value: string | undefined | null }> = ({ value }) => {
+//     const label = formatRequired(value);
+//     const cls =
+//         label === "Mandatory"
+//             ? "bg-rose-50 text-rose-700 border-rose-200"
+//             : label === "Optional"
+//               ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+//               : "bg-slate-100 text-slate-500 border-slate-200";
+//     return (
+//         <span
+//             className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold border ${cls}`}
+//         >
+//             {label}
+//         </span>
+//     );
+// };
 
 const AttributeSection: FC<{
     attrs: AttributeDetails;
