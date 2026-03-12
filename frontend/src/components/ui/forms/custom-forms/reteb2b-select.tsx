@@ -240,7 +240,7 @@ export default function ReteB2BSelect({
         }
 
         await submitEvent({
-            jsonPath: form,
+            jsonPath: form as unknown as Record<string, unknown>,
             formData: {},
         });
     };
