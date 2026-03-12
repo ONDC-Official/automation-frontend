@@ -1,4 +1,4 @@
-import { FC, useState, useCallback, ComponentProps, MouseEvent } from "react";
+import { FC, useState, useCallback, ComponentProps, MouseEvent, useMemo } from "react";
 import { FaCopy } from "react-icons/fa";
 import { FiList, FiMessageSquare, FiFileText } from "react-icons/fi";
 import { SegmentedTabs, type TabItem } from "@components/ui/SegmentedTabs";
@@ -67,13 +67,25 @@ const FlowActionDetails: FC<FlowActionDetailsProps> = ({
         [selectedPath]
     );
 
-    const valueAtPath = selectedPath ? getValueAtPath(exampleValue, selectedPath) : undefined;
+    const valueAtPath = useMemo(
+        () => (selectedPath ? getValueAtPath(exampleValue, selectedPath) : undefined),
+        [exampleValue, selectedPath]
+    );
 
     const apiForAttributes = stepApi ?? actionApi;
-    const attributes = selectedPath
-        ? getActionAttributes(spec, apiForAttributes, selectedPath, valueAtPath, useCaseId)
-        : null;
-    const validations = getValidationsForAction(spec, apiForAttributes, selectedPath ?? undefined);
+
+    const attributes = useMemo(
+        () =>
+            selectedPath
+                ? getActionAttributes(spec, apiForAttributes, selectedPath, valueAtPath, useCaseId)
+                : null,
+        [selectedPath, spec, apiForAttributes, valueAtPath, useCaseId]
+    );
+
+    const validations = useMemo(
+        () => getValidationsForAction(spec, apiForAttributes, selectedPath ?? undefined),
+        [spec, apiForAttributes, selectedPath]
+    );
 
     const root = (
         <div className="flex flex-col h-full rounded-xl border border-slate-200 bg-white overflow-hidden shadow-sm">
