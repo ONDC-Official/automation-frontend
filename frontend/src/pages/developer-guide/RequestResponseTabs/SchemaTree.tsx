@@ -21,9 +21,12 @@ function getSchemaType(schema: OpenAPISchema): string {
     return "any";
 }
 
-function getTypeLabel(schema: OpenAPISchema): string {
+function getTypeLabel(schema: OpenAPISchema, resolvedItems?: OpenAPISchema | null): string {
     const t = getSchemaType(schema);
     if (t === "array") {
+        if (resolvedItems?.type && resolvedItems.type !== "object")
+            return `${resolvedItems.type}[]`;
+        if (resolvedItems?.properties) return "object[]";
         const items = schema.items as OpenAPISchema | undefined;
         if (items?.type) return `${items.type}[]`;
         if (items?.["$ref"]) {
@@ -115,7 +118,7 @@ const PropertyRow: FC<PropertyRowProps> = ({
     required,
     depth,
     showRequiredColumn,
-    isLast,
+    isLast: _isLast,
 }) => {
     const ctx = useContext(TreeContext);
     const [localOpen, setLocalOpen] = useState<boolean | null>(null);
@@ -129,6 +132,12 @@ const PropertyRow: FC<PropertyRowProps> = ({
     const isOpen = localOpen ?? (depth === 0 ? true : ctx.defaultOpen);
 
     const resolved = resolveSchema(spec, schema, depth) ?? schema ?? null;
+
+    // Pre-resolve array items so $ref-backed item schemas can be expanded
+    const resolvedItems =
+        resolved?.type === "array"
+            ? (resolveSchema(spec, resolved.items as OpenAPISchema | undefined, depth + 1) ?? null)
+            : null;
 
     if (!resolved) {
         return (
@@ -164,15 +173,11 @@ const PropertyRow: FC<PropertyRowProps> = ({
     }
 
     const hasChildren =
-        !!resolved.properties ||
-        (resolved.type === "array" && !!(resolved.items as OpenAPISchema | undefined)?.properties);
+        !!resolved.properties || (resolved.type === "array" && !!resolvedItems?.properties);
 
     const childSchema: OpenAPISchema | null = (() => {
         if (resolved.properties) return resolved;
-        if (resolved.type === "array") {
-            const items = resolved.items as OpenAPISchema | undefined;
-            if (items?.properties) return resolveSchema(spec, items, depth + 1);
-        }
+        if (resolved.type === "array" && resolvedItems?.properties) return resolvedItems;
         return null;
     })();
 
@@ -225,7 +230,7 @@ const PropertyRow: FC<PropertyRowProps> = ({
                     <span
                         className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-mono font-medium ring-1 ${typeColor(resolved)}`}
                     >
-                        {getTypeLabel(resolved)}
+                        {getTypeLabel(resolved, resolvedItems)}
                     </span>
                 </td>
 

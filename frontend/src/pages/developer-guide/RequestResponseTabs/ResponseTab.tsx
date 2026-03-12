@@ -19,8 +19,9 @@ const ResponseTab: FC<ResponseTabProps> = ({ spec, api }) => {
     const [view, setView] = useState<View>("schema");
     const [selectedExampleIndex, setSelectedExampleIndex] = useState(0);
     const [rawReady, setRawReady] = useState(false);
+    const [schemaReady, setSchemaReady] = useState(false);
 
-    // Defer heavy JsonView render so the browser paints the spinner first
+    // Defer heavy renders so the browser paints the spinner first
     useEffect(() => {
         if (view === "raw") {
             setRawReady(false);
@@ -30,6 +31,12 @@ const ResponseTab: FC<ResponseTabProps> = ({ spec, api }) => {
             setRawReady(false);
         }
     }, [view, api]);
+
+    useEffect(() => {
+        setSchemaReady(false);
+        const id = setTimeout(() => setSchemaReady(true), 0);
+        return () => clearTimeout(id);
+    }, [api]);
 
     const schema = getResponseSchema(spec, api);
     const deepSchema = useMemo(
@@ -77,7 +84,17 @@ const ResponseTab: FC<ResponseTabProps> = ({ spec, api }) => {
                     view === "schema" ? (
                         <div className="rounded-xl border border-slate-200 bg-white overflow-hidden">
                             <div className="overflow-auto max-h-[600px] p-4">
-                                <SchemaTree schema={schema} spec={spec} showRequiredColumn={true} />
+                                {!schemaReady ? (
+                                    <div className="flex items-center justify-center h-40">
+                                        <Loader />
+                                    </div>
+                                ) : (
+                                    <SchemaTree
+                                        schema={schema}
+                                        spec={spec}
+                                        showRequiredColumn={true}
+                                    />
+                                )}
                             </div>
                         </div>
                     ) : (
