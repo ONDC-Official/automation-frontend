@@ -13,12 +13,14 @@ import ScenarioPage from "@pages/scenario";
 import HomePage from "@pages/home";
 import AuthHeader from "@pages/auth-header";
 import { ROUTES } from "@constants/routes";
-import DeveloperGuide from "@/pages/developer-guide";
+import DeveloperGuideLanding from "@/pages/developer-guide/landing/DeveloperGuideLanding";
+import DeveloperGuideFlowPage from "@/pages/developer-guide/DeveloperGuideFlowPage";
+import DeveloperGuideGettingStarted from "@/pages/developer-guide/landing/DeveloperGuideGettingStarted";
 
 /** Developer Guide is only available in development; redirect to home in production */
-const DeveloperGuideRoute = () =>
+const DeveloperGuideWrapper = ({ children }: { children: React.ReactNode }) =>
     import.meta.env.VITE_ENVIRONMENT === "development" ? (
-        <DeveloperGuide />
+        <>{children}</>
     ) : (
         <Navigate to={ROUTES.HOME} replace />
     );
@@ -40,7 +42,30 @@ const Routes = () => (
         <Route path="*" element={<NotFoundPage />} />
         <Route path={ROUTES.DB_BACK_OFFICE} element={<DBBackOffice />} />
         <Route path={ROUTES.AUTH_HEADER} element={<AuthHeader />} />
-        <Route path={ROUTES.DEVELOPER_GUIDE} element={<DeveloperGuideRoute />} />
+        <Route
+            path={ROUTES.DEVELOPER_GUIDE}
+            element={
+                <DeveloperGuideWrapper>
+                    <DeveloperGuideLanding />
+                </DeveloperGuideWrapper>
+            }
+        />
+        <Route
+            path={ROUTES.DEVELOPER_GUIDE_GETTING_STARTED}
+            element={
+                <DeveloperGuideWrapper>
+                    <DeveloperGuideGettingStarted />
+                </DeveloperGuideWrapper>
+            }
+        />
+        <Route
+            path={ROUTES.DEVELOPER_GUIDE_USE_CASE}
+            element={
+                <DeveloperGuideWrapper>
+                    <DeveloperGuideFlowPage />
+                </DeveloperGuideWrapper>
+            }
+        />
     </RouterRoutes>
 );
 
