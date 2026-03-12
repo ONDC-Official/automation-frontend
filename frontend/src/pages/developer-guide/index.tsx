@@ -1,37 +1,278 @@
-import { FC, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { FC, useEffect, useMemo, useState } from "react";
 import { FaArrowLeft, FaChevronLeft } from "react-icons/fa";
 import FlowsAccordion from "./FlowsAccordion";
 import FlowInformation from "./FlowInformation";
 import data from "./data.json";
 import IconButton from "@components/ui/mini-components/icon-button";
-import { ROUTES } from "@constants/routes";
-import DeveloperGuideHeaderFilters from "./DeveloperGuideHeaderFilters";
+import Modal from "@components/Modal";
+import Loader from "@components/ui/mini-components/loader";
+import { fetchFormFieldData } from "@utils/request-utils";
+import type { DomainItem, DomainResponse } from "@pages/home/types";
+import { getActionId } from "./utils";
 
 const DeveloperGuide: FC = () => {
-    const navigate = useNavigate();
     const [selectedFlow, setSelectedFlow] = useState<string>("");
     const [selectedFlowAction, setSelectedFlowAction] = useState<string>("");
     const [sidebarOpen, setSidebarOpen] = useState(true);
+    const [isDomainDialogOpen, setIsDomainDialogOpen] = useState(true);
+    const [activeDomain, setActiveDomain] = useState<DomainResponse>({ domain: [] });
+    const [isLoadingDomains, setIsLoadingDomains] = useState(false);
+    const [domainsError, setDomainsError] = useState<string | null>(null);
+    const [selectedDomainKey, setSelectedDomainKey] = useState<string | null>("ONDC:FIS12");
+    const [selectedVersionKey, setSelectedVersionKey] = useState<string | null>("2.0.3");
+    const [selectedUsecaseLabel, setSelectedUsecaseLabel] = useState<string | null>(
+        "Personal Loan"
+    );
 
-    const handleFiltersSubmit = (_data: {
-        domain: string;
-        version: string;
-        useCase: string;
-    }): Promise<void> => {
-        return Promise.resolve();
+    const flows = useMemo(() => data["x-flows"] || [], []);
+
+    const handleUsecaseSelect = (
+        domain: DomainItem,
+        versionKey: string,
+        usecaseLabel: string,
+        shouldCloseDialog = true
+    ) => {
+        // Currently only ONDC:FIS12 domain flows are enabled
+        const isEnabledDomain = domain.key.toUpperCase() === "ONDC:FIS12";
+        if (!isEnabledDomain) return;
+
+        setSelectedDomainKey(domain.key);
+        setSelectedVersionKey(versionKey);
+        setSelectedUsecaseLabel(usecaseLabel);
+
+        const usecaseSlug = usecaseLabel
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, "_")
+            .replace(/^_+|_+$/g, "");
+
+        const matchingFlow =
+            flows.find((flow) => {
+                const meta = flow.meta ?? {};
+                const domainMeta = String(meta.domain ?? "");
+                const versionMeta = String(meta.version ?? "");
+                const usecaseMeta = String(meta.use_case_id ?? "");
+
+                const matchesDomain =
+                    domainMeta === domain.key ||
+                    domainMeta.endsWith(`:${domain.key}`) ||
+                    domainMeta.includes(domain.key);
+
+                const matchesVersion = !versionKey || versionMeta === versionKey;
+                const matchesUsecase = !usecaseSlug || usecaseMeta === usecaseSlug;
+
+                return matchesDomain && matchesVersion && matchesUsecase;
+            }) ??
+            // Fallback: match only on usecase id
+            flows.find((flow) => {
+                const meta = flow.meta ?? {};
+                const usecaseMeta = String(meta.use_case_id ?? "");
+                return usecaseMeta === usecaseSlug;
+            });
+
+        if (!matchingFlow) return;
+
+        const flowId = String(matchingFlow.meta?.flowId ?? "");
+        setSelectedFlow(flowId);
+
+        const firstStep = matchingFlow.steps?.[0];
+        if (firstStep) {
+            const firstActionId = getActionId(firstStep);
+            setSelectedFlowAction(firstActionId);
+        } else {
+            setSelectedFlowAction("");
+        }
+
+        if (shouldCloseDialog) {
+            setIsDomainDialogOpen(false);
+        }
     };
 
+    useEffect(() => {
+        const loadDomains = async () => {
+            setIsLoadingDomains(true);
+            setDomainsError(null);
+            try {
+                const response = await fetchFormFieldData();
+                if (response && typeof response === "object" && "domain" in response) {
+                    const domainResponse = response as DomainResponse;
+                    setActiveDomain(domainResponse);
+
+                    // Set default selection: ONDC:FIS12 / Personal Loan (2.0.3)
+                    const defaultDomainKey = "ONDC:FIS12";
+                    const defaultVersionKey = "2.0.3";
+                    const defaultUsecaseLabel = "Personal Loan";
+
+                    const defaultDomain = domainResponse.domain.find(
+                        (d) => d.key === defaultDomainKey
+                    );
+                    const defaultVersion = defaultDomain?.version?.find(
+                        (v) => v.key === defaultVersionKey
+                    );
+                    const hasDefaultUsecase =
+                        defaultVersion?.usecase?.includes(defaultUsecaseLabel);
+
+                    if (defaultDomain && defaultVersion && hasDefaultUsecase) {
+                        handleUsecaseSelect(
+                            defaultDomain,
+                            defaultVersionKey,
+                            defaultUsecaseLabel,
+                            false
+                        );
+                    }
+                } else {
+                    setActiveDomain({ domain: [] });
+                }
+            } catch {
+                setDomainsError("Unable to load domains. Please try again later.");
+                setActiveDomain({ domain: [] });
+            } finally {
+                setIsLoadingDomains(false);
+            }
+        };
+
+        loadDomains();
+    }, []);
+
     const handleBack = () => {
-        if (window.history.length > 1) {
-            navigate(-1);
-            return;
-        }
-        navigate(ROUTES.HOME);
+        // Open domain/use case selection dialog instead of navigating away
+        setIsDomainDialogOpen(true);
     };
 
     return (
-        <div className="bg-slate-50/50">
+        <div className="relative bg-slate-50/50">
+            {isLoadingDomains && (
+                <div className="fixed inset-0 z-40 flex items-center justify-center bg-slate-50/80 transition-opacity duration-300">
+                    <Loader />
+                </div>
+            )}
+
+            {!isLoadingDomains && (
+                <Modal
+                    isOpen={isDomainDialogOpen}
+                    onClose={() => {
+                        setIsDomainDialogOpen(false);
+                    }}
+                    fullWidth
+                    className="max-w-6xl max-h-[90vh] transition-opacity duration-300 ease-out"
+                >
+                    <div className="space-y-4 max-h-[82vh] overflow-hidden">
+                        <div>
+                            <h2 className="text-xl font-bold text-gray-900">Select a use case</h2>
+                            <p className="text-sm text-gray-600 mt-1">
+                                Choose a domain and use case to load its flow in the developer
+                                guide.
+                            </p>
+
+                            {selectedDomainKey && selectedUsecaseLabel && selectedVersionKey && (
+                                <div className="hidden md:flex items-center gap-4 text-sm">
+                                    <div className="flex items-center gap-2 px-3 py-1.5 bg-white rounded-lg border border-sky-100">
+                                        <span className="text-gray-500">Domain:</span>
+                                        <span className="font-semibold text-gray-800">
+                                            {selectedDomainKey}
+                                        </span>
+                                    </div>
+                                    <div className="flex items-center gap-2 px-3 py-1.5 bg-white rounded-lg border border-sky-100">
+                                        <span className="text-gray-500">Use Case:</span>
+                                        <span className="font-semibold text-gray-800">
+                                            {selectedUsecaseLabel}
+                                        </span>
+                                    </div>
+                                    <div className="flex items-center gap-2 px-3 py-1.5 bg-white rounded-lg border border-sky-100">
+                                        <span className="text-gray-500">Version:</span>
+                                        <span className="font-semibold text-gray-800">
+                                            {selectedVersionKey}
+                                        </span>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        {domainsError ? (
+                            <p className="text-sm text-red-600">{domainsError}</p>
+                        ) : activeDomain.domain.length === 0 ? (
+                            <p className="text-sm text-gray-500">No domains available.</p>
+                        ) : (
+                            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 max-h-[70vh] overflow-y-auto pt-1 pr-1">
+                                {activeDomain.domain.map((dom, domIndex) => {
+                                    const isEnabledDomain = dom.key.toUpperCase() === "ONDC:FIS12";
+                                    const totalUseCases = (dom.version ?? []).reduce(
+                                        (total, ver) => total + (ver.usecase?.length ?? 0),
+                                        0
+                                    );
+
+                                    return (
+                                        <div
+                                            key={dom.id ?? `${dom.key}-${domIndex}`}
+                                            className={`rounded-2xl border p-4 bg-white shadow-sm flex flex-col gap-3 ${
+                                                isEnabledDomain
+                                                    ? "border-sky-200 hover:border-sky-300 hover:shadow-md transition"
+                                                    : "border-slate-200/70 opacity-70 cursor-not-allowed"
+                                            }`}
+                                        >
+                                            <div className="flex items-center justify-between gap-3">
+                                                <div>
+                                                    <h3 className="text-base font-semibold text-gray-900">
+                                                        {dom.key}
+                                                    </h3>
+                                                    <p className="text-xs text-gray-500 mt-0.5">
+                                                        {totalUseCases} use cases
+                                                    </p>
+                                                </div>
+                                                {!isEnabledDomain && (
+                                                    <span className="text-[10px] uppercase tracking-wide font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 border border-slate-200">
+                                                        Coming soon
+                                                    </span>
+                                                )}
+                                            </div>
+
+                                            <div className="flex flex-nowrap gap-2 mt-1 overflow-x-auto pb-1">
+                                                {dom.version?.map((ver) =>
+                                                    ver.usecase?.map((uc) => {
+                                                        const isEnabled = isEnabledDomain;
+                                                        const isSelected =
+                                                            isEnabled &&
+                                                            selectedDomainKey === dom.key &&
+                                                            selectedVersionKey === ver.key &&
+                                                            selectedUsecaseLabel === uc;
+                                                        return (
+                                                            <button
+                                                                key={`${dom.key}-${ver.key}-${uc}`}
+                                                                type="button"
+                                                                disabled={!isEnabled}
+                                                                onClick={() =>
+                                                                    handleUsecaseSelect(
+                                                                        dom,
+                                                                        ver.key,
+                                                                        uc
+                                                                    )
+                                                                }
+                                                                className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium border transition whitespace-nowrap ${
+                                                                    isEnabled
+                                                                        ? isSelected
+                                                                            ? "bg-sky-600 text-white border-sky-600 shadow-sm"
+                                                                            : "bg-sky-50 text-sky-800 border-sky-300 hover:bg-sky-100 hover:border-sky-400"
+                                                                        : "bg-slate-50 text-slate-400 border-slate-200 cursor-not-allowed"
+                                                                }`}
+                                                            >
+                                                                {uc}
+                                                                {ver.key && (
+                                                                    <span className="ml-1.5 text-[10px] text-sky-700">
+                                                                        ({ver.key})
+                                                                    </span>
+                                                                )}
+                                                            </button>
+                                                        );
+                                                    })
+                                                )}
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        )}
+                    </div>
+                </Modal>
+            )}
             <header className="flex items-center justify-between px-6 bg-gradient-to-r from-white to-sky-50 border-b border-sky-100 shadow-sm py-4">
                 <div className="flex items-center gap-6">
                     <IconButton
@@ -40,15 +281,35 @@ const DeveloperGuide: FC = () => {
                         onClick={handleBack}
                         color="gray"
                     />
-                    <div className="flex items-center gap-3">
-                        <span className="text-xl font-bold bg-gradient-to-r from-sky-600 via-sky-500 to-sky-600 bg-clip-text text-transparent tracking-tight">
-                            DEVELOPER GUIDE
-                        </span>
-                    </div>
+                    <span className="text-xl font-bold bg-gradient-to-r from-sky-600 via-sky-500 to-sky-600 bg-clip-text text-transparent tracking-tight whitespace-nowrap">
+                        DEVELOPER GUIDE
+                    </span>
                 </div>
-                <div className="hidden md:flex flex-wrap items-end justify-end gap-4 text-sm">
-                    <DeveloperGuideHeaderFilters onSubmit={handleFiltersSubmit} />
-                </div>
+                {!isDomainDialogOpen &&
+                    selectedDomainKey &&
+                    selectedUsecaseLabel &&
+                    selectedVersionKey && (
+                        <div className="hidden md:flex items-center gap-3 text-sm text-slate-700">
+                            <div className="flex items-center gap-2 px-3 py-1.5 bg-white rounded-lg border border-sky-100">
+                                <span className="text-gray-500">Domain:</span>
+                                <span className="font-semibold text-gray-800">
+                                    {selectedDomainKey}
+                                </span>
+                            </div>
+                            <div className="flex items-center gap-2 px-3 py-1.5 bg-white rounded-lg border border-sky-100">
+                                <span className="text-gray-500">Use Case:</span>
+                                <span className="font-semibold text-gray-800">
+                                    {selectedUsecaseLabel}
+                                </span>
+                            </div>
+                            <div className="flex items-center gap-2 px-3 py-1.5 bg-white rounded-lg border border-sky-100">
+                                <span className="text-gray-500">Version:</span>
+                                <span className="font-semibold text-gray-800">
+                                    {selectedVersionKey}
+                                </span>
+                            </div>
+                        </div>
+                    )}
             </header>
             <div className="flex flex-1 overflow-hidden px-6 py-6 gap-0">
                 {/* ── Collapsible sidebar wrapper ── */}

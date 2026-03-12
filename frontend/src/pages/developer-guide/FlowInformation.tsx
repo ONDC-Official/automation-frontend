@@ -6,6 +6,7 @@ import type { FlowStep } from "./types";
 import { getActionId } from "./utils";
 import FlowDetailsAndSummary from "./FlowDetailsAndSummary";
 import { FlowActionDetails } from "./flowActionDetails";
+import Loader from "@components/ui/mini-components/loader";
 // import HelperSection, { decodeHelperLib } from "./HelperSection";
 // import GenerateSection, { decodeMockGenerate } from "./GenerateSection";
 // import ValidateSection, { decodeMockValidate } from "./ValidateSection";
@@ -47,10 +48,7 @@ const FlowInformation: FC<FlowInformationProps> = ({ data, selectedFlow, selecte
     const [selectedExampleIndex, setSelectedExampleIndex] = useState(0);
     type Section = "overview" | "preview" | "x-validations";
     const [activeSection, setActiveSection] = useState<Section>("overview");
-
-    useEffect(() => {
-        setActiveSection("overview");
-    }, [selectedFlowAction]);
+    const [showPreviewDetails, setShowPreviewDetails] = useState(false);
 
     const isEmpty = !selectedFlow;
 
@@ -92,12 +90,16 @@ const FlowInformation: FC<FlowInformationProps> = ({ data, selectedFlow, selecte
     // const hasRequirements = !!decodedRequirementsCode;
 
     const apiForValidations = selectedStep?.api ?? selectedFlowAction;
-    const selectedValidations: ValidationTable | undefined = (
-        rawValidations as Record<string, ValidationTable>
-    )[apiForValidations];
+    const selectedValidations: ValidationTable | undefined = useMemo(
+        () => (rawValidations as Record<string, ValidationTable>)[apiForValidations],
+        [apiForValidations]
+    );
     const hasXValidations = !!selectedValidations;
 
     useEffect(() => {
+        // When action changes, reset to Overview and clear preview state
+        setActiveSection("overview");
+        setShowPreviewDetails(false);
         setSelectedExampleIndex(0);
     }, [selectedFlowAction]);
 
@@ -129,6 +131,17 @@ const FlowInformation: FC<FlowInformationProps> = ({ data, selectedFlow, selecte
         );
     }
 
+    const handleSectionChange = (section: Section) => {
+        setActiveSection(section);
+        if (section === "preview") {
+            setShowPreviewDetails(false);
+            // Defer heavy JSON/schema rendering to next tick so loader can paint first
+            setTimeout(() => {
+                setShowPreviewDetails(true);
+            }, 0);
+        }
+    };
+
     return (
         <div className="p-6 space-y-10">
             {selectedFlowAction && selectedStep && (
@@ -137,7 +150,7 @@ const FlowInformation: FC<FlowInformationProps> = ({ data, selectedFlow, selecte
                     <SegmentedTabs<Section>
                         className="mb-6"
                         active={activeSection}
-                        onChange={setActiveSection}
+                        onChange={handleSectionChange}
                         tabs={
                             [
                                 { id: "overview", label: "Overview", icon: FiBookOpen },
@@ -230,17 +243,25 @@ const FlowInformation: FC<FlowInformationProps> = ({ data, selectedFlow, selecte
                                 )}
                                 <div className="flex flex-col">
                                     <div className="w-full h-[540px] min-h-0 rounded-xl overflow-hidden border border-slate-200 shadow-sm bg-white">
-                                        <FlowActionDetails
-                                            exampleValue={examplePayload as object}
-                                            actionApi={selectedFlowAction}
-                                            stepApi={selectedStep.api}
-                                            spec={data}
-                                            useCaseId={
-                                                selectedFlowData?.useCaseId ??
-                                                selectedFlowData?.meta?.use_case_id
-                                            }
-                                            flowId={selectedFlowData?.meta?.flowId ?? selectedFlow}
-                                        />
+                                        {showPreviewDetails ? (
+                                            <FlowActionDetails
+                                                exampleValue={examplePayload as object}
+                                                actionApi={selectedFlowAction}
+                                                stepApi={selectedStep.api}
+                                                spec={data}
+                                                useCaseId={
+                                                    selectedFlowData?.useCaseId ??
+                                                    selectedFlowData?.meta?.use_case_id
+                                                }
+                                                flowId={
+                                                    selectedFlowData?.meta?.flowId ?? selectedFlow
+                                                }
+                                            />
+                                        ) : (
+                                            <div className="h-full w-full flex items-center justify-center">
+                                                <Loader />
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             </div>
