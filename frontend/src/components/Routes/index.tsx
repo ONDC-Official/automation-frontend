@@ -11,6 +11,7 @@ import FlowTestingWrapper from "@pages/flow-testing";
 import NotFoundPage from "@components/ui/not-found";
 import ScenarioPage from "@pages/scenario";
 import HomePage from "@pages/home";
+import SellerLoadTesting from "@pages/seller-load-testing";
 import AuthHeader from "@pages/auth-header";
 import { ROUTES } from "@constants/routes";
 import DeveloperGuideLanding from "@/pages/developer-guide/landing/DeveloperGuideLanding";
@@ -42,6 +43,7 @@ const Routes = () => (
         <Route path="*" element={<NotFoundPage />} />
         <Route path={ROUTES.DB_BACK_OFFICE} element={<DBBackOffice />} />
         <Route path={ROUTES.AUTH_HEADER} element={<AuthHeader />} />
+        <Route path={ROUTES.SELLER_LOAD_TESTING} element={<SellerLoadTesting />} />
         <Route
             path={ROUTES.DEVELOPER_GUIDE}
             element={
