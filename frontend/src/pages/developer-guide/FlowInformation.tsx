@@ -132,7 +132,7 @@ const FlowInformation: FC<FlowInformationProps> = ({ data, selectedFlow, selecte
         <div className="px-8 py-8 space-y-0 w-full">
             {/* ── Always-visible Overview ── */}
             {selectedFlowData && (
-                <div className="mb-8">
+                <div className="mb-6">
                     <FlowDetailsAndSummary flow={selectedFlowData} />
                 </div>
             )}

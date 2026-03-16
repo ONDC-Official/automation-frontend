@@ -51,7 +51,7 @@ export default function FeatureCard({
                 <p className="text-sky-600 text-xs font-semibold mb-2 uppercase tracking-wide">
                     {subtitle}
                 </p>
-                <p className="text-gray-500 text-sm leading-relaxed">{description}</p>
+                <p className="text-gray-600 text-sm leading-relaxed">{description}</p>
             </div>
         </div>
     );

@@ -18,7 +18,7 @@ const FlowDetailsAndSummary: FC<FlowDetailsAndSummaryProps> = ({ flow }) => {
             <section className="space-y-4">
                 <h1 className="text-2xl font-bold text-slate-900 tracking-tight">{flowTitle}</h1>
                 {(domain || version) && (
-                    <p className="text-sm text-slate-500">
+                    <p className="text-sm text-slate-700">
                         {domain && <span className="font-medium">Domain: {domain}</span>}
                         {domain && version && " · "}
                         {version && <span className="font-medium">Version: {version}</span>}
@@ -26,7 +26,7 @@ const FlowDetailsAndSummary: FC<FlowDetailsAndSummaryProps> = ({ flow }) => {
                 )}
                 {flowDescription && (
                     <div className="rounded-xl border border-slate-200 bg-slate-50/80 px-6 py-4">
-                        <p className="text-sm text-slate-700 leading-relaxed mb-0">
+                        <p className="text-sm text-slate-800 leading-relaxed mb-0">
                             {flowDescription}
                         </p>
                     </div>

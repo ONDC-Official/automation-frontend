@@ -606,7 +606,7 @@ const AttributesPanel: FC<AttributesPanelProps> = ({
                     <div className="w-10 h-10 rounded-full bg-sky-50 border border-sky-100 flex items-center justify-center text-sky-400 text-lg">
                         &#x276F;
                     </div>
-                    <p className="text-slate-400 text-sm leading-relaxed max-w-[220px]">
+                    <p className="text-slate-600 text-sm leading-relaxed max-w-[220px]">
                         Click a key in the JSON tree to view its schema, attributes, and
                         validations.
                     </p>
