@@ -70,7 +70,7 @@ const ValidationsTable: FC<ValidationsTableProps> = ({ validations }) => {
     );
 
     return (
-        <div className="w-full flex flex-col gap-4">
+        <div className="w-full flex flex-col gap-4 h-full">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                     <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
@@ -115,7 +115,7 @@ const ValidationsTable: FC<ValidationsTableProps> = ({ validations }) => {
             </div>
 
             <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-                <div className="max-h-[540px] overflow-auto">
+                <div className="max-h-[700px] overflow-auto">
                     <table className="min-w-full table-fixed text-left text-xs">
                         <thead className="bg-slate-50/90 backdrop-blur sticky top-0 z-10 border-b border-slate-200">
                             <tr>

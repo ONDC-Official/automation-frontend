@@ -170,19 +170,19 @@ const FlowInformation: FC<FlowInformationProps> = ({ data, selectedFlow, selecte
                                         [
                                             {
                                                 id: "preview",
-                                                label: "Attribute Explorer",
+                                                label: "Example Payload",
                                                 icon: FiCode,
                                                 visible: hasExampleObject,
                                             },
                                             {
                                                 id: "request",
-                                                label: "Request Model",
+                                                label: "Request Schema",
                                                 icon: FiUpload,
                                                 visible: !!selectedStep,
                                             },
                                             {
                                                 id: "response",
-                                                label: "Response Model",
+                                                label: "Response Schema",
                                                 icon: FiDownload,
                                                 visible: !!selectedStep,
                                             },
