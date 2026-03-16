@@ -104,10 +104,10 @@ const DomainCardsSection: FC<DomainCardsSectionProps> = ({
                             }`}
                         >
                             <div className="min-w-0">
-                                <h3 className="font-bold text-gray-900 text-sm leading-snug truncate">
+                                <h3 className="font-bold text-gray-900 text-md leading-snug truncate">
                                     {dom.key}
                                 </h3>
-                                <p className="text-xs text-sky-600 font-medium mt-0.5">
+                                <p className="text-sm text-sky-600 font-medium mt-0.5">
                                     {useCases.length} use case{useCases.length !== 1 ? "s" : ""}
                                 </p>
                             </div>
@@ -116,7 +116,7 @@ const DomainCardsSection: FC<DomainCardsSectionProps> = ({
                                     Coming Soon
                                 </span>
                             ) : (
-                                <span className="flex-shrink-0 flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-emerald-600">
+                                <span className="flex-shrink-0 flex items-center gap-1 text-sm font-bold uppercase tracking-widest text-emerald-600">
                                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                                     Live
                                 </span>
@@ -135,7 +135,7 @@ const DomainCardsSection: FC<DomainCardsSectionProps> = ({
                                         onClick={() =>
                                             clickable && onUseCaseClick(dom, verKey, label)
                                         }
-                                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-all duration-150 ${
+                                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold border transition-all duration-150 ${
                                             clickable
                                                 ? "bg-sky-50 text-sky-700 border-sky-200 hover:bg-sky-100 hover:border-sky-300 cursor-pointer"
                                                 : "bg-gray-50 text-gray-400 border-gray-100 cursor-not-allowed"
@@ -143,7 +143,7 @@ const DomainCardsSection: FC<DomainCardsSectionProps> = ({
                                     >
                                         {label}
                                         <span
-                                            className={`font-mono text-[10px] ${
+                                            className={`font-mono text-sm ${
                                                 clickable ? "text-sky-400" : "text-gray-300"
                                             }`}
                                         >

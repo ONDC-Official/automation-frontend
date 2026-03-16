@@ -189,13 +189,13 @@ const DeveloperGuideFlowPage: FC = () => {
                 </div>
             </header>
 
-            <div className="flex flex-1 overflow-hidden px-6 py-6 gap-0">
+            <div className="flex items-start px-6 py-6 gap-0">
                 <div
-                    className={`relative flex-shrink-0 overflow-hidden transition-all duration-300 ease-in-out ${
+                    className={`sticky top-0 self-start flex-shrink-0 overflow-hidden transition-all duration-300 ease-in-out ${
                         sidebarOpen ? "w-[380px]" : "w-0"
                     }`}
                 >
-                    <aside className="w-[380px] h-full border-r border-slate-200 bg-white overflow-y-auto rounded-2xl shadow-lg shadow-sky-100/50">
+                    <aside className="w-[380px] h-[calc(100vh-3.5rem)] border-r border-slate-200 bg-white overflow-y-auto rounded-2xl shadow-lg shadow-sky-100/50">
                         <div className="px-4 pt-4 pb-2 border-b border-slate-100">
                             <h2 className="text-xl font-bold text-gray-900 mb-1">Flows</h2>
                             <p className="text-gray-600 text-sm">
@@ -214,7 +214,7 @@ const DeveloperGuideFlowPage: FC = () => {
                     </aside>
                 </div>
 
-                <div className="flex-shrink-0 flex items-start pt-4 z-10">
+                <div className="sticky top-0 self-start flex-shrink-0 flex items-start pt-4 z-10">
                     <button
                         onClick={() => setSidebarOpen((prev) => !prev)}
                         title={sidebarOpen ? "Collapse sidebar" : "Expand sidebar"}
@@ -235,7 +235,7 @@ const DeveloperGuideFlowPage: FC = () => {
                     </button>
                 </div>
 
-                <div className="flex-1 overflow-y-auto min-w-0 pl-4">
+                <div className="flex-1 min-w-0 pl-4">
                     <FlowInformation
                         data={specData}
                         selectedFlow={selectedFlow}

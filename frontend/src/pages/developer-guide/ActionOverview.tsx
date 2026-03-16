@@ -19,7 +19,7 @@ const ActionOverview: FC<ActionOverviewProps> = ({ step, actionId }) => {
     return (
         <div className="rounded-2xl border border-slate-200 bg-white overflow-hidden shadow-sm">
             {/* Header strip */}
-            <div className="flex items-center gap-3 px-6 py-4 bg-gradient-to-r from-sky-50 to-white border-b border-slate-100">
+            <div className="flex items-center gap-3 px-6 py-4 bg-sky-50 border-slate-100">
                 <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-sky-100 text-sky-600 shrink-0">
                     <FaSquareArrowUpRight className="w-4 h-4" />
                 </span>
@@ -60,7 +60,7 @@ const ActionOverview: FC<ActionOverviewProps> = ({ step, actionId }) => {
                     </Tippy>
                 )}
                 {step.responseFor && (
-                    <span className="shrink-0 text-[10px] font-medium text-slate-500 bg-slate-100 border border-slate-200 rounded-full px-3 py-1 font-mono">
+                    <span className="shrink-0 text-[12px] font-bold text-slate-600 bg-slate-100 border border-slate-200 rounded-full px-3 py-1 font-mono">
                         ← {step.responseFor}
                     </span>
                 )}
@@ -68,8 +68,8 @@ const ActionOverview: FC<ActionOverviewProps> = ({ step, actionId }) => {
 
             {/* Description body */}
             {description && (
-                <div className="px-6 py-4">
-                    <p className="text-sm text-slate-600 leading-relaxed mb-0">{description}</p>
+                <div className="px-4 py-4">
+                    <p className="text-sm text-slate-800 leading-relaxed mb-0">{description}</p>
                 </div>
             )}
         </div>

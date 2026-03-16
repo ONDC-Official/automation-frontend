@@ -132,7 +132,7 @@ const FlowInformation: FC<FlowInformationProps> = ({ data, selectedFlow, selecte
         <div className="px-8 py-8 space-y-0 w-full">
             {/* ── Always-visible Overview ── */}
             {selectedFlowData && (
-                <div className="mb-8">
+                <div className="mb-6">
                     <FlowDetailsAndSummary flow={selectedFlowData} />
                 </div>
             )}
@@ -170,19 +170,19 @@ const FlowInformation: FC<FlowInformationProps> = ({ data, selectedFlow, selecte
                                         [
                                             {
                                                 id: "preview",
-                                                label: "Attribute Explorer",
+                                                label: "Example Payload",
                                                 icon: FiCode,
                                                 visible: hasExampleObject,
                                             },
                                             {
                                                 id: "request",
-                                                label: "Request Model",
+                                                label: "Request Schema",
                                                 icon: FiUpload,
                                                 visible: !!selectedStep,
                                             },
                                             {
                                                 id: "response",
-                                                label: "Response Model",
+                                                label: "Response Schema",
                                                 icon: FiDownload,
                                                 visible: !!selectedStep,
                                             },

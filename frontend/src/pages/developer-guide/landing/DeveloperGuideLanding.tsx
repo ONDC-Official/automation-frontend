@@ -82,7 +82,7 @@ const DeveloperGuideLanding: FC = () => {
                         <h1 className="text-4xl md:text-5xl font-bold text-gray-900 leading-tight mb-4">
                             Build on <span className="text-sky-500">ONDC</span>
                         </h1>
-                        <p className="text-base text-gray-500 leading-relaxed">
+                        <p className="text-base text-gray-600 leading-relaxed">
                             Everything you need to integrate with the Open Network for Digital
                             Commerce. Explore guides, authentication tools, and API references
                             organised by domain and use case.
@@ -102,7 +102,7 @@ const DeveloperGuideLanding: FC = () => {
                             <h2 className="text-lg font-bold text-gray-900 leading-none">
                                 ONDC Guides
                             </h2>
-                            <p className="text-xs text-gray-400 mt-0.5">
+                            <p className="text-xs text-gray-600 mt-0.5">
                                 Start here to get up and running quickly
                             </p>
                         </div>
@@ -127,7 +127,7 @@ const DeveloperGuideLanding: FC = () => {
                                 <h2 className="text-lg font-bold text-gray-900 leading-none">
                                     Explore by Domain
                                 </h2>
-                                <p className="text-xs text-gray-400 mt-0.5">
+                                <p className="text-xs text-gray-600 mt-0.5">
                                     Select a use case to dive into flows and specs
                                 </p>
                             </div>
