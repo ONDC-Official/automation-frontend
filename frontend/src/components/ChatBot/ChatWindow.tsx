@@ -87,8 +87,19 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
                     background: "rgba(2, 12, 24, 0.5)",
                     backdropFilter: "blur(5px)",
                     WebkitBackdropFilter: "blur(5px)",
+                    animation: "fsOverlayIn 0.28s ease both",
                 }}
             >
+                <style>{`
+                    @keyframes fsOverlayIn {
+                        from { opacity: 0; }
+                        to   { opacity: 1; }
+                    }
+                    @keyframes fsCardIn {
+                        from { opacity: 0; transform: scale(0.88) translateY(16px); }
+                        to   { opacity: 1; transform: scale(1)    translateY(0); }
+                    }
+                `}</style>
                 {/* Decorative blobs */}
                 <div className="absolute inset-0 overflow-hidden pointer-events-none">
                     <div
@@ -121,14 +132,15 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
                         maxHeight: "820px",
                         boxShadow:
                             "0 32px 80px -8px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.06)",
+                        animation: "fsCardIn 0.32s cubic-bezier(0.16, 1, 0.3, 1) both",
                     }}
                 >
                     {/* ── Left sidebar ── */}
                     <div
-                        className="w-64 flex-shrink-0 flex flex-col border-r border-white/8"
+                        className="w-64 flex-shrink-0 flex flex-col border-r border-white/10"
                         style={{
                             background:
-                                "linear-gradient(180deg, #071a2e 0%, #0a2a45 55%, #0c3d5c 100%)",
+                                "linear-gradient(180deg, #0d2744 0%, #10355a 50%, #0f3f6a 100%)",
                         }}
                     >
                         {/* Profile */}
@@ -161,7 +173,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
                                         boxShadow: "0 0 6px rgba(52,211,153,0.8)",
                                     }}
                                 />
-                                <span className="text-sky-400/70 text-[11px]">
+                                <span className="text-sky-300/90 text-[11px]">
                                     Online · Ready to help
                                 </span>
                             </div>
@@ -169,7 +181,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
 
                         {/* Quick prompts */}
                         <div className="flex-1 overflow-y-auto px-5 py-5">
-                            <p className="text-sky-500/60 text-[10px] uppercase tracking-[0.12em] font-semibold mb-3">
+                            <p className="text-sky-300/80 text-[10px] uppercase tracking-[0.12em] font-semibold mb-3">
                                 Quick Questions
                             </p>
                             <div className="flex flex-col gap-1.5">
@@ -180,18 +192,18 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
                                         disabled={isLoading}
                                         className="group text-left text-[12px] leading-snug px-3 py-2.5 rounded-xl transition-all duration-150 disabled:opacity-40 disabled:cursor-not-allowed"
                                         style={{
-                                            color: "rgba(186,230,253,0.75)",
-                                            border: "1px solid rgba(255,255,255,0.07)",
+                                            color: "rgba(224,242,254,0.90)",
+                                            border: "1px solid rgba(255,255,255,0.10)",
                                         }}
                                         onMouseEnter={(e) => {
                                             (
                                                 e.currentTarget as HTMLButtonElement
-                                            ).style.background = "rgba(56,189,248,0.1)";
+                                            ).style.background = "rgba(56,189,248,0.15)";
                                             (
                                                 e.currentTarget as HTMLButtonElement
-                                            ).style.borderColor = "rgba(56,189,248,0.3)";
+                                            ).style.borderColor = "rgba(56,189,248,0.40)";
                                             (e.currentTarget as HTMLButtonElement).style.color =
-                                                "rgba(224,242,254,1)";
+                                                "rgba(255,255,255,1)";
                                         }}
                                         onMouseLeave={(e) => {
                                             (
@@ -199,9 +211,9 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
                                             ).style.background = "transparent";
                                             (
                                                 e.currentTarget as HTMLButtonElement
-                                            ).style.borderColor = "rgba(255,255,255,0.07)";
+                                            ).style.borderColor = "rgba(255,255,255,0.10)";
                                             (e.currentTarget as HTMLButtonElement).style.color =
-                                                "rgba(186,230,253,0.75)";
+                                                "rgba(224,242,254,0.90)";
                                         }}
                                     >
                                         {prompt}
@@ -215,11 +227,11 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
                             <div
                                 className="rounded-xl px-3.5 py-3"
                                 style={{
-                                    background: "rgba(255,255,255,0.04)",
-                                    border: "1px solid rgba(255,255,255,0.08)",
+                                    background: "rgba(56,189,248,0.08)",
+                                    border: "1px solid rgba(56,189,248,0.18)",
                                 }}
                             >
-                                <p className="text-sky-400/50 text-[10px] leading-relaxed">
+                                <p className="text-sky-200/80 text-[11px] leading-relaxed">
                                     Covers flow testing, schema validation &amp; ONDC protocols.
                                 </p>
                             </div>
