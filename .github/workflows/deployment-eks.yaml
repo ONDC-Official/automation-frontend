@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - testing-eks
+      - main
 
 permissions:
   contents: write
@@ -115,6 +116,11 @@ jobs:
           tags: |
             ghcr.io/ondc-official/automation-frontend/frontend:${{ needs.version.outputs.image_tag }}
             ${{ github.ref_name == 'release-staging' && 'ghcr.io/ondc-official/automation-frontend/frontend:latest' || '' }}
+          build-args: |
+            VITE_BACKEND_URL=${{ vars.VITE_BACKEND_URL }}
+            VITE_BPP_URL=${{ vars.VITE_BPP_URL }}
+            VITE_BAP_URL=${{ vars.VITE_BAP_URL }}
+            VITE_BASE_URL=${{ vars.VITE_BASE_URL }}
           cache-from: type=gha,scope=frontend
           cache-to: type=gha,mode=max,scope=frontend
 
