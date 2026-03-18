@@ -355,7 +355,7 @@ export default function FormConfig({
         return <SelectMetroTRV11 submitEvent={submitEvent} />;
     }
     if (formConfig.find((field) => field.type === "fis14_mutul_fund_select")) {
-        return <SelectMutualFundFIS14 submitEvent={submitEvent} />;
+        return <SelectMutualFundFIS14 submitEvent={submitEvent} formConfig={formConfig} />;
     }
 
     // NOTE: The JsonSchemaForm check must come after all other specific form type checks above.

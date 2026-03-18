@@ -4,6 +4,7 @@ import { FaRegPaste, FaPlus, FaTrash } from "react-icons/fa6";
 import { toast } from "react-toastify";
 import PayloadEditor from "@/components/ui/mini-components/payload-editor";
 import { SubmitEventParams } from "@/types/flow-types";
+import { FormFieldConfigType } from "../config-form/config-form";
 
 /* ─────────────── on_search raw types ─────────────── */
 interface RawItem {
@@ -66,11 +67,23 @@ interface FormValues {
 
 export default function SelectMutualFundFIS14({
     submitEvent,
+    formConfig = [],
 }: {
     submitEvent: (data: SubmitEventParams) => Promise<void>;
+    formConfig?: FormFieldConfigType[];
 }) {
+    // Extra fields from config (not the main fis14 component field)
+    const extraFields = formConfig.filter((f) => f.type !== "fis14_mutul_fund_select");
     const [isPayloadEditorActive, setIsPayloadEditorActive] = useState(false);
     const [catalog, setCatalog] = useState<CatalogData | null>(null);
+
+    // Track values of extra text fields separately to avoid polluting typed FormValues
+    const [extraData, setExtraData] = useState<Record<string, string>>(
+        Object.fromEntries(extraFields.map((f) => [f.name, String(f.default ?? "")]))
+    );
+
+    // Inline validation errors for extra fields
+    const [extraErrors, setExtraErrors] = useState<Record<string, string>>({});
 
     const {
         register,
@@ -155,6 +168,18 @@ export default function SelectMutualFundFIS14({
             return;
         }
 
+        // Validate required extra fields
+        const newExtraErrors: Record<string, string> = {};
+        extraFields.forEach((field) => {
+            if (field.required !== false && !extraData[field.name]?.trim()) {
+                newExtraErrors[field.name] = "This field is required";
+            }
+        });
+        if (Object.keys(newExtraErrors).length > 0) {
+            setExtraErrors(newExtraErrors);
+            return;
+        }
+
         const agentCreds = data.creds.filter((c) => c.id || c.type);
 
         const fulfillmentObj: Record<string, unknown> = {
@@ -192,9 +217,18 @@ export default function SelectMutualFundFIS14({
             },
         };
 
+        // Build formData map for extra fields (e.g. city_code)
+        const extraFieldsData: Record<string, string> = {};
+        extraFields.forEach((field) => {
+            extraFieldsData[field.name] = extraData[field.name] ?? "";
+        });
+
         await submitEvent({
             jsonPath: {},
-            formData: { data: JSON.stringify(selectPayload) },
+            formData: {
+                data: JSON.stringify(selectPayload),
+                ...extraFieldsData,
+            },
         });
     };
 
@@ -484,6 +518,47 @@ export default function SelectMutualFundFIS14({
                             )}
                         </div>
                     </div>
+
+                    {/* ── Extra fields from config (e.g. city_code) ── */}
+                    {extraFields.length > 0 && (
+                        <div className={section}>
+                            <p className={sectionTitle}>Additional Fields</p>
+                            {extraFields.map((field) => (
+                                <div key={field.name} className="flex flex-col">
+                                    <label className={lbl}>
+                                        {field.label}
+                                        {field.required !== false ? " *" : ""}
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={extraData[field.name] ?? ""}
+                                        onChange={(e) => {
+                                            setExtraData((prev) => ({
+                                                ...prev,
+                                                [field.name]: e.target.value,
+                                            }));
+                                            // Clear error when user starts typing
+                                            if (extraErrors[field.name]) {
+                                                setExtraErrors((prev) => {
+                                                    const next = { ...prev };
+                                                    delete next[field.name];
+                                                    return next;
+                                                });
+                                            }
+                                        }}
+                                        className={`${inp} ${
+                                            extraErrors[field.name]
+                                                ? "border-red-500 focus:ring-red-500"
+                                                : ""
+                                        }`}
+                                    />
+                                    {extraErrors[field.name] && (
+                                        <p className={errCls}>{extraErrors[field.name]}</p>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    )}
 
                     {/* ── Submit ── */}
                     <button
