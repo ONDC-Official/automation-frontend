@@ -43,7 +43,7 @@ jobs:
           git commit -m "ci: bump version to $next [skip ci]"
           git push
 
-          if [ "${{ github.ref_name }}" = "release-staging" ]; then
+          if [ "${{ github.ref_name }}" = "main" ]; then
             env="prod"
             target="k8/aws/helm/service-layer/values-prod.yaml"
           else
@@ -83,7 +83,7 @@ jobs:
           push: true
           tags: |
             ghcr.io/ondc-official/automation-frontend/backend:${{ needs.version.outputs.image_tag }}
-            ${{ github.ref_name == 'release-staging' && 'ghcr.io/ondc-official/automation-frontend/backend:latest' || '' }}
+            ${{ github.ref_name == 'main' && 'ghcr.io/ondc-official/automation-frontend/backend:latest' || '' }}
           cache-from: type=gha,scope=backend
           cache-to: type=gha,mode=max,scope=backend
 
@@ -93,6 +93,7 @@ jobs:
   build-frontend:
     needs: version
     runs-on: ubuntu-latest
+    environment: ${{ github.ref_name == 'main' && 'production' || 'dev' }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -115,7 +116,7 @@ jobs:
           push: true
           tags: |
             ghcr.io/ondc-official/automation-frontend/frontend:${{ needs.version.outputs.image_tag }}
-            ${{ github.ref_name == 'release-staging' && 'ghcr.io/ondc-official/automation-frontend/frontend:latest' || '' }}
+            ${{ github.ref_name == 'main' && 'ghcr.io/ondc-official/automation-frontend/frontend:latest' || '' }}
           build-args: |
             VITE_BACKEND_URL=${{ vars.VITE_BACKEND_URL }}
             VITE_BPP_URL=${{ vars.VITE_BPP_URL }}
