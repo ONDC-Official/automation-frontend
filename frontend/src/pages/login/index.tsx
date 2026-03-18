@@ -2,8 +2,9 @@ import { FC } from "react";
 import { UserIcon, GitHubIcon } from "@components/Icons";
 
 const handleLogin = () => {
-    const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:4000";
-    const authUrl = `${backendUrl}/auth/github`;
+    const backendUrl = import.meta.env.VITE_DEVELOPER_GUIDE_BACKEND_URL || "http://localhost:4000";
+    // const authUrl = `${backendUrl}/auth/github`;
+    const authUrl = `${backendUrl}/login`;
     window.location.href = authUrl;
 };
 

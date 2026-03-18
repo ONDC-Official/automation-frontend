@@ -1,4 +1,4 @@
-import { apiClient } from "./apiClient";
+import { developerGuideApiClient } from "./apiClient";
 import { UserDetails } from "@components/Header";
 import { API_ROUTES } from "./apiRoutes";
 
@@ -11,9 +11,15 @@ export class AuthService {
      */
     static async getCurrentUser(): Promise<{ ok: boolean; user: UserDetails } | null> {
         try {
-            const response = await apiClient.get<{ ok: boolean; user: UserDetails }>(
+            // const response = await apiClient.get<{ ok: boolean; user: UserDetails }>(
+            //     API_ROUTES.AUTH.ME
+            // );
+            // return response.data;
+
+            const response = await developerGuideApiClient.get<{ ok: boolean; user: UserDetails }>(
                 API_ROUTES.AUTH.ME
             );
+
             return response.data;
         } catch (error) {
             console.error("Error fetching current user:", error);
@@ -26,7 +32,8 @@ export class AuthService {
      */
     static async logout(): Promise<void> {
         try {
-            await apiClient.post(API_ROUTES.AUTH.LOGOUT, {}, { withCredentials: true });
+            // await apiClient.post(API_ROUTES.AUTH.LOGOUT, {}, { withCredentials: true });
+            await developerGuideApiClient.get(API_ROUTES.AUTH.LOGOUT, {});
         } catch (error) {
             console.error("Error during logout:", error);
             throw error;
