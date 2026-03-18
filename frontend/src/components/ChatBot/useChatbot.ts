@@ -39,6 +39,29 @@ export const useChatbot = (): ChatState & ChatActions => {
         setIsLoading(false);
     }, [input, isLoading]);
 
+    const sendDirectMessage = useCallback(
+        async (text: string) => {
+            const trimmed = text.trim();
+            if (!trimmed || isLoading) return;
+
+            const userMessage = createMessage("user", trimmed);
+            setMessages((prev) => [...prev, userMessage]);
+            setInput("");
+            setIsLoading(true);
+
+            await new Promise((resolve) => setTimeout(resolve, 800));
+            setMessages((prev) => [
+                ...prev,
+                createMessage(
+                    "assistant",
+                    "This feature is coming soon! Our team is working on connecting the assistant."
+                ),
+            ]);
+            setIsLoading(false);
+        },
+        [isLoading]
+    );
+
     const toggleChat = useCallback(() => setIsOpen((prev) => !prev), []);
     const clearMessages = useCallback(
         () =>
@@ -51,5 +74,15 @@ export const useChatbot = (): ChatState & ChatActions => {
         []
     );
 
-    return { messages, isOpen, isLoading, input, sendMessage, toggleChat, setInput, clearMessages };
+    return {
+        messages,
+        isOpen,
+        isLoading,
+        input,
+        sendMessage,
+        sendDirectMessage,
+        toggleChat,
+        setInput,
+        clearMessages,
+    };
 };

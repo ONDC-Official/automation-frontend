@@ -7,9 +7,9 @@ interface ChatInputProps {
     onSend: () => void;
 }
 
-const SendIcon: React.FC = () => (
-    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+const SendIcon = () => (
+    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M3.478 2.405a.75.75 0 00-.926.94l2.432 7.905H13.5a.75.75 0 010 1.5H4.984l-2.432 7.905a.75.75 0 00.926.94 60.519 60.519 0 0018.445-8.986.75.75 0 000-1.218A60.517 60.517 0 003.478 2.405z" />
     </svg>
 );
 
@@ -30,28 +30,48 @@ const ChatInput: React.FC<ChatInputProps> = ({ input, isLoading, setInput, onSen
         }
     };
 
+    const canSend = input.trim() && !isLoading;
+
     return (
-        <div className="px-3 py-3 border-t border-gray-100 bg-white">
-            <div className="flex items-end gap-2 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 focus-within:border-sky-400 focus-within:ring-2 focus-within:ring-sky-50 transition-all">
+        <div
+            className="flex-shrink-0 px-4 py-3 border-t bg-white"
+            style={{ borderColor: "#e0f2fe" }}
+        >
+            <div
+                className="flex items-end gap-2.5 rounded-xl px-3.5 py-2.5 transition-all duration-200"
+                style={{
+                    background: "#f0f9ff",
+                    border: "1.5px solid #bae6fd",
+                    boxShadow: "inset 0 1px 3px rgba(0,0,0,0.03)",
+                }}
+                onFocus={() => {}}
+            >
                 <textarea
                     ref={textareaRef}
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
                     onKeyDown={handleKeyDown}
-                    placeholder="Ask about ONDC flows..."
+                    placeholder="Ask about ONDC flows…"
                     rows={1}
-                    className="flex-1 bg-transparent text-xs text-gray-700 placeholder-gray-400 resize-none focus:outline-none leading-relaxed"
+                    disabled={isLoading}
+                    className="flex-1 bg-transparent text-[13px] text-slate-700 placeholder-slate-400 resize-none focus:outline-none leading-relaxed disabled:opacity-50"
                 />
                 <button
                     onClick={onSend}
-                    disabled={!input.trim() || isLoading}
-                    className="flex-shrink-0 w-7 h-7 rounded-lg bg-gradient-to-br from-sky-600 to-sky-500 text-white flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed hover:from-sky-500 hover:to-sky-400 transition-all shadow-sm"
+                    disabled={!canSend}
+                    className="flex-shrink-0 w-7 h-7 rounded-lg text-white flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-150 hover:scale-105 active:scale-95"
+                    style={{
+                        background: canSend
+                            ? "linear-gradient(135deg, #0369a1, #0284c7)"
+                            : "#cbd5e1",
+                        boxShadow: canSend ? "0 2px 8px rgba(2,132,199,0.4)" : "none",
+                    }}
                 >
                     <SendIcon />
                 </button>
             </div>
-            <p className="text-center text-gray-300 text-[10px] mt-1.5">
-                Enter to send · Shift+Enter for newline
+            <p className="text-center text-slate-400 text-[10px] mt-1.5 select-none">
+                Enter to send · Shift+Enter for new line
             </p>
         </div>
     );

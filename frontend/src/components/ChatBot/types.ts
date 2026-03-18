@@ -14,6 +14,7 @@ export interface ChatState {
 
 export interface ChatActions {
     sendMessage: () => Promise<void>;
+    sendDirectMessage: (text: string) => Promise<void>;
     toggleChat: () => void;
     setInput: (value: string) => void;
     clearMessages: () => void;
