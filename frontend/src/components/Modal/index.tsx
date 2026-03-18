@@ -6,9 +6,10 @@ interface IProps {
     onClose: () => void;
     children: ReactNode;
     className?: string;
+    fullWidth?: boolean;
 }
 
-const Modal = ({ isOpen, onClose, children, className = "" }: IProps) => {
+const Modal = ({ isOpen, onClose, children, className = "", fullWidth = false }: IProps) => {
     if (!isOpen) return null;
 
     return (
@@ -17,7 +18,9 @@ const Modal = ({ isOpen, onClose, children, className = "" }: IProps) => {
             onClick={onClose} // Close modal when clicking outside the content
         >
             <div
-                className={`bg-white rounded-lg shadow-lg p-6 max-w-md w-full ${className}`}
+                className={`bg-white rounded-lg shadow-lg p-6 w-full ${
+                    fullWidth ? "max-w-[96vw]" : "max-w-md"
+                } ${className}`}
                 onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside content
             >
                 <button className="flex float-end" onClick={onClose}>
