@@ -21,6 +21,7 @@ export interface UserDetails {
     githubId: string;
     participantId: string;
     avatarUrl?: string;
+    username?: string;
 }
 
 export interface UserIconProps {

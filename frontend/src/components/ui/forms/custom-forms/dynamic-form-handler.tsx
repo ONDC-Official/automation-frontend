@@ -28,7 +28,7 @@ export default function DynamicFormHandler({
     // Get session context to update session data
     const { setSessionData } = useSession();
 
-    const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+    const pollingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
     // Use refs to prevent page refresh
 
     const formWindowRef = useRef<Window | null>(null);
@@ -97,7 +97,6 @@ export default function DynamicFormHandler({
     const formSubmissionKey = useMemo<string>(() => {
         if (formName && transactionId) {
             const key = `${transactionId}_${formName}`;
-
             return key;
         }
         return transactionId; // Fallback to just transactionId for backward compatibility
@@ -165,10 +164,11 @@ export default function DynamicFormHandler({
                 // Do NOT show completed state - let parent handle closing the modal
                 try {
                     const submission_id = formSubmitted.submission_id || "";
+                    const idType = formSubmitted.idType;
 
                     await submitEvent({
-                        jsonPath: { submission_id: submission_id },
-                        formData: { submission_id: submission_id },
+                        jsonPath: { submission_id: submission_id, ...(idType && { idType }) },
+                        formData: { submission_id: submission_id, ...(idType && { idType }) },
                     });
 
                     // Parent component will close the popup modal after submitEvent completes

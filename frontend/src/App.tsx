@@ -2,9 +2,9 @@ import { useEffect, useState, useCallback } from "react";
 import { useLocation } from "react-router-dom";
 import { UserDetails } from "@components/Header";
 import { UserContext } from "@context/userContext";
-import { getGithubAvatarUrl } from "@utils/regsitry-utils";
+// import { getGithubAvatarUrl } from "@utils/regsitry-utils";
 import { SubscriberData } from "@components/registry-components/registry-types";
-import * as api from "@utils/registry-apis";
+// import * as api from "@utils/registry-apis";
 import { SessionProvider } from "@context/context";
 import { trackPageView } from "@utils/analytics";
 import { AuthService } from "@services/authService";
@@ -31,44 +31,45 @@ function App() {
         trackPageView(location.pathname + location.search);
     }, [location.pathname, location.search]);
 
-    const fetchUserLookUp = useCallback(
-        async (tempUser?: UserDetails): Promise<SubscriberData | null> => {
-            const userToLookup = tempUser ?? user;
+    // const fetchUserLookUp = useCallback(
+    //     async (tempUser?: UserDetails): Promise<SubscriberData | null> => {
+    //         const userToLookup = tempUser ?? user;
 
-            if (!userToLookup) {
-                return null;
-            }
+    //         if (!userToLookup) {
+    //             return null;
+    //         }
 
-            try {
-                const data = await api.getSubscriberDetails(userToLookup);
-                setSubscriberData(data);
-                return data;
-            } catch (error) {
-                console.error("Error fetching subscriber details:", error);
-                return null;
-            }
-        },
-        [user]
-    );
+    //         try {
+    //             const data = await api.getSubscriberDetails(userToLookup);
+    //             setSubscriberData(data);
+    //             return data;
+    //         } catch (error) {
+    //             console.error("Error fetching subscriber details:", error);
+    //             return null;
+    //         }
+    //     },
+    //     [user]
+    // );
 
     // Fetch subscriber details when user or pathname changes
-    useEffect(() => {
-        if (user) {
-            fetchUserLookUp();
-        }
-    }, [location.pathname, user, fetchUserLookUp]);
+    // useEffect(() => {
+    //     if (user) {
+    //         fetchUserLookUp();
+    //     }
+    // }, [location.pathname, user, fetchUserLookUp]);
 
     const refreshUser = useCallback(async (): Promise<void> => {
         try {
             const response = await AuthService.getCurrentUser();
 
             if (response?.ok && response.user) {
-                const avatarUrl = await getGithubAvatarUrl(response.user.githubId);
-                const userWithAvatar: UserDetails = {
-                    ...response.user,
-                    avatarUrl: avatarUrl,
-                };
-                setUser(userWithAvatar);
+                // const avatarUrl = await getGithubAvatarUrl(response.user.githubId);
+                // const userWithAvatar: UserDetails = {
+                //     ...response.user,
+                //     avatarUrl: avatarUrl,
+                // };
+                // setUser(userWithAvatar);
+                setUser(response.user);
                 setIsLoggedIn(true);
             } else {
                 setUser(undefined);
@@ -80,6 +81,10 @@ function App() {
             setIsLoggedIn(false);
         }
     }, []);
+
+    useEffect(() => {
+        refreshUser();
+    }, [refreshUser]);
 
     return (
         <UserContext.Provider

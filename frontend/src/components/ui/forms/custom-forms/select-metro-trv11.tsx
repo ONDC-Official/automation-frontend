@@ -56,14 +56,12 @@ export default function SelectMetroTRV11({
     });
 
     const onSubmit = async (data: FormValues) => {
-        // Validate at least one item is selected
         const validItems = data.items.filter((item) => item.itemId !== "");
         if (validItems.length === 0) {
             toast.error("Please select at least one item.");
             return;
         }
 
-        // Build the output in the required shape
         const output = {
             items: validItems.map((item) => ({
                 id: item.itemId,
@@ -141,20 +139,24 @@ export default function SelectMetroTRV11({
                     {errorWhilePaste}
                 </p>
             )}
-            <button
-                type="button"
-                onClick={() => setIsPayloadEditorActive(true)}
-                className="p-2 border rounded-full hover:bg-gray-100"
-                title="Paste on_search payload"
-            >
-                <FaRegPaste size={14} />
-            </button>
+            <div className="flex items-center gap-3 mb-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <button
+                    type="button"
+                    onClick={() => setIsPayloadEditorActive(true)}
+                    className="p-2 border rounded-full hover:bg-gray-100 bg-white shrink-0"
+                    title="Paste on_search payload"
+                >
+                    <FaRegPaste size={14} />
+                </button>
+                <p className="text-sm text-blue-700">
+                    Paste the <strong>on_search</strong> payload to auto-populate the item list below.
+                </p>
+            </div>
 
             <form
                 onSubmit={handleSubmit(onSubmit)}
                 className="space-y-4 h-[500px] overflow-y-scroll p-4"
             >
-                {/* Billing Details Section */}
                 <div className="border p-3 rounded space-y-2">
                     <h3 className="font-bold text-lg mb-2">Select Items</h3>
 
