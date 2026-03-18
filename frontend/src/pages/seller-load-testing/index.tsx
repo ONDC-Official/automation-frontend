@@ -13,7 +13,7 @@ const SellerLoadTesting = () => {
     } = useForm<FormValues>({
         defaultValues: {
             domain: "ONDC:RET11",
-            version: "1.2.5",
+            version: "1.2.0",
             usecase: "F&B",
             environment: "PRE-PRODUCTION",
         },
