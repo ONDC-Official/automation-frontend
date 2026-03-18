@@ -10,6 +10,7 @@ import { trackPageView } from "@utils/analytics";
 import { AuthService } from "@services/authService";
 import { sessionIdSupport } from "@utils/localStorageManager";
 import Layout from "@components/Layout";
+import Chatbot from "@components/ChatBot";
 
 function App() {
     const location = useLocation();
@@ -98,6 +99,7 @@ function App() {
         >
             <SessionProvider>
                 <Layout />
+                <Chatbot />
             </SessionProvider>
         </UserContext.Provider>
     );
