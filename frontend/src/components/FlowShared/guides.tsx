@@ -12,18 +12,18 @@ export function FormGuide() {
                 multiple domains such as retail, mobility, logistics, services, and more.
             </p>
 
-            <p className="text-gray-600 mb-4 leading-relaxed">
+            {/* <p className="text-gray-600 mb-4 leading-relaxed">
                 Enter your details to get started with the testing as given in below image:
-            </p>
+            </p> */}
 
             {/* Image 1 - Form Input Image */}
-            <div className="mb-6 border border-gray-300 rounded overflow-hidden">
+            {/* <div className="mb-6 border border-gray-300 rounded overflow-hidden">
                 <img
                     src={`/images/scenario-test.png`}
                     alt="Scenario Testing Form"
                     className="w-full h-auto"
                 />
-            </div>
+            </div> */}
 
             {/* Step-by-step Guide */}
             <div className="space-y-5 mb-6">
