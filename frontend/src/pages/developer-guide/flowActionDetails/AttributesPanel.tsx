@@ -1,10 +1,5 @@
 import { FC, useState, useMemo, type ReactNode } from "react";
-import {
-    getReadmeMessage,
-    getValidationsIntroMessage,
-    getReadmeSkipIf,
-} from "../xValidationsReadme";
-import { getRequiredForPath } from "./schemaAttributes";
+import { getValidationsIntroMessage } from "../xValidationsReadme";
 import type { OpenAPISpecification } from "../types";
 import type {
     ActionAttributes,
@@ -15,6 +10,7 @@ import type {
     TagFieldItem,
     ValidationRuleDisplay,
 } from "./types";
+import rawTableData from "../raw_table.json";
 
 const HTML_TAG_RE = /<[^>]+>/g;
 
@@ -406,43 +402,226 @@ const TagSection: FC<{ attrs: TagDetails; isExpanded?: boolean }> = ({ attrs }) 
     );
 };
 
-function normalizePathForGroup(p: string): string {
-    return p.replace(/^\$\.?/, "").trim() || p;
+// ─── Raw Table types ─────────────────────────────────────────────────────────
+interface RawTableRow {
+    rowType: "leaf" | "group";
+    name: string;
+    group: string;
+    scope: string;
+    description: string;
+    skipIf: string;
+    errorCode: string;
+    successCode: string;
 }
 
+// ─── JSON Path helpers ────────────────────────────────────────────────────────
+
+/**
+ * Splits text into alternating plain-text and JSON-path segments.
+ * Tracks bracket depth so filter expressions like $.tags[?(@.x == 'y')]
+ * are captured as a single token.
+ */
+function splitByJsonPaths(text: string): Array<{ text: string; isPath: boolean }> {
+    const result: Array<{ text: string; isPath: boolean }> = [];
+    const n = text.length;
+    let i = 0;
+    let lastPlainStart = 0;
+    while (i < n) {
+        if (text[i] === "$" && i + 1 < n && (text[i + 1] === "." || text[i + 1] === "[")) {
+            if (i > lastPlainStart) {
+                result.push({ text: text.slice(lastPlainStart, i), isPath: false });
+            }
+            let j = i + 1;
+            let depth = 0;
+            while (j < n) {
+                const c = text[j];
+                if (c === "[") {
+                    depth++;
+                } else if (c === "]") {
+                    depth--;
+                    if (depth < 0) break;
+                } else if (
+                    depth === 0 &&
+                    (c === " " ||
+                        c === "\t" ||
+                        c === "\n" ||
+                        c === '"' ||
+                        c === "'" ||
+                        c === "," ||
+                        c === ";" ||
+                        c === ")")
+                ) {
+                    break;
+                }
+                j++;
+            }
+            result.push({ text: text.slice(i, j), isPath: true });
+            i = j;
+            lastPlainStart = j;
+        } else {
+            i++;
+        }
+    }
+    if (lastPlainStart < n) {
+        result.push({ text: text.slice(lastPlainStart), isPath: false });
+    }
+    return result;
+}
+
+function extractJsonPaths(text: string): string[] {
+    return splitByJsonPaths(text)
+        .filter((p) => p.isPath)
+        .map((p) => p.text);
+}
+
+/**
+ * Normalise a JSONPath for prefix matching:
+ *  - ignores _EXTERNAL cross-payload references
+ *  - strips filter expressions [?...] (cuts at that point)
+ *  - replaces [*] wildcards and numeric indices with a dot separator
+ *  - collapses double-dots
+ */
+function normalizePathForMatch(path: string): string {
+    if (path.includes("_EXTERNAL")) return "";
+    // strip leading $. or $ so both "$.context.foo" and "context.foo" compare equally
+    path = path.replace(/^\$\.?/, "").trim();
+    const filterIdx = path.indexOf("[?");
+    if (filterIdx !== -1) path = path.slice(0, filterIdx);
+    path = path.replace(/\[\*\]\./g, ".").replace(/\[\*\]$/, "");
+    path = path.replace(/\[\d+\]\./g, ".").replace(/\[\d+\]$/, "");
+    path = path.replace(/\.{2,}/g, ".").replace(/\.$/, "");
+    return path.trim();
+}
+
+/** True if extractedPath and selectedPath refer to the same or related field.
+ *  - Exact match (after normalisation)
+ *  - Rule path is a child of the selected path (e.g. rule targets items[*].id while user selected items)
+ *  - Rule path was truncated by a filter expression [?...] so its normalised form is a
+ *    prefix of the selected path — ONLY in that case do we allow the reverse direction,
+ *    preventing a plain $.context.ttl rule from matching message.intent.category.descriptor.code.
+ */
+function pathMatches(extractedPath: string, selectedPath: string): boolean {
+    const norm1 = normalizePathForMatch(extractedPath);
+    const norm2 = normalizePathForMatch(selectedPath);
+    if (!norm1 || !norm2) return false;
+    if (norm1 === norm2) return true;
+    // rule targets a sub-field of the selected node
+    if (norm1.startsWith(norm2 + ".")) return true;
+    // rule path was shortened because of a filter expression — allow parent match
+    if (extractedPath.includes("[?") && norm2.startsWith(norm1 + ".")) return true;
+    return false;
+}
+
+// ─── Description renderer with inline highlighted JSONPaths ──────────────────
+
+const DescriptionText: FC<{ text: string }> = ({ text }) => {
+    const parts = splitByJsonPaths(text);
+    return (
+        <>
+            {parts.map((part, i) =>
+                part.isPath ? (
+                    <code
+                        key={i}
+                        className="inline-flex items-center px-1.5 py-0.5 rounded bg-sky-50 text-sky-700 font-mono text-[11px] border border-sky-200 leading-normal"
+                    >
+                        {part.text}
+                    </code>
+                ) : (
+                    <span key={i}>{safeDescription(part.text)}</span>
+                )
+            )}
+        </>
+    );
+};
+
+// ─── Single validation-rule card ─────────────────────────────────────────────
+
+const RawTableCard: FC<{ row: RawTableRow }> = ({ row }) => {
+    const hasSkipIf = row.skipIf.trim() !== "";
+    const hasErrorCode = row.errorCode.trim() !== "";
+
+    return (
+        <div className="rounded-xl border border-sky-100 bg-white shadow-sm overflow-hidden">
+            {/* Header */}
+            <div className="flex items-start justify-between gap-2 px-4 py-2.5 bg-sky-50/60 border-b border-sky-100">
+                <div className="flex flex-col gap-0.5 min-w-0">
+                    <span className="font-mono text-xs font-bold text-sky-800 break-all">
+                        {row.name}
+                    </span>
+                    {row.group.trim() && (
+                        <span className="text-[10px] text-slate-400 truncate" title={row.group}>
+                            {row.group}
+                        </span>
+                    )}
+                </div>
+                {hasErrorCode && (
+                    <span className="shrink-0 inline-flex items-center px-2 py-0.5 rounded-md bg-rose-50 text-rose-600 border border-rose-200 text-[10px] font-semibold">
+                        {row.errorCode}
+                    </span>
+                )}
+            </div>
+            {/* Body */}
+            <div className="px-4 py-3 space-y-3 text-sm">
+                <div className="space-y-1">
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-sky-500">
+                        Rule
+                    </span>
+                    <p className="text-slate-700 leading-relaxed">
+                        <DescriptionText text={row.description} />
+                    </p>
+                </div>
+                {hasSkipIf && (
+                    <div className="space-y-1 pt-2 border-t border-sky-50">
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-sky-500">
+                            Skip If
+                        </span>
+                        <p className="text-slate-500 leading-relaxed">
+                            <DescriptionText text={row.skipIf} />
+                        </p>
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+};
+
+// ─── Validations section (driven by raw_table.json) ──────────────────────────
+
 const ValidationsSection: FC<{
-    validations: ValidationRuleDisplay[];
-    spec?: OpenAPISpecification | null;
-    actionApi?: string;
     stepApi?: string;
-    useCaseId?: string;
-}> = ({ validations, spec, actionApi, stepApi, useCaseId }) => {
+    selectedPath?: string;
+}> = ({ stepApi, selectedPath }) => {
     const [searchQuery, setSearchQuery] = useState("");
 
-    const grouped = useMemo(() => {
-        const map = new Map<string, ValidationRuleDisplay[]>();
-        for (const rule of validations) {
-            const key =
-                rule.attr != null ? normalizePathForGroup(rule.attr) : `__no_attr_${rule.name}`;
-            const list = map.get(key) ?? [];
-            list.push(rule);
-            map.set(key, list);
-        }
-        return Array.from(map.entries());
-    }, [validations]);
+    const allLeafRows = useMemo((): RawTableRow[] => {
+        if (!stepApi) return [];
+        const actionData = (rawTableData as Record<string, { rows: RawTableRow[] }>)[stepApi];
+        if (!actionData?.rows) return [];
+        return actionData.rows.filter((r) => r.rowType === "leaf");
+    }, [stepApi]);
 
-    const filteredGrouped = useMemo(() => {
-        const q = searchQuery.trim().toLowerCase();
-        if (!q) return grouped;
-        return grouped.filter(([groupKey, rules]) => {
-            const first = rules[0];
-            const attr = first?.attr ?? "";
-            return (
-                groupKey.toLowerCase().includes(q) ||
-                (attr && String(attr).toLowerCase().includes(q))
-            );
+    const matchingRows = useMemo((): RawTableRow[] => {
+        if (!selectedPath) return [];
+        const normSelected = normalizePathForMatch(selectedPath.trim());
+        if (!normSelected) return [];
+        return allLeafRows.filter((row) => {
+            const paths = extractJsonPaths(row.description);
+            return paths.some((p) => pathMatches(p, selectedPath));
         });
-    }, [grouped, searchQuery]);
+    }, [allLeafRows, selectedPath]);
+
+    const filteredRows = useMemo((): RawTableRow[] => {
+        const q = searchQuery.trim().toLowerCase();
+        if (!q) return matchingRows;
+        return matchingRows.filter(
+            (row) =>
+                row.name.toLowerCase().includes(q) ||
+                row.description.toLowerCase().includes(q) ||
+                row.group.toLowerCase().includes(q)
+        );
+    }, [matchingRows, searchQuery]);
+
+    if (!stepApi || allLeafRows.length === 0) return null;
 
     return (
         <section className="pt-5">
@@ -451,139 +630,45 @@ const ValidationsSection: FC<{
                     sync-validations
                 </h4>
                 <div className="flex-1 h-px bg-sky-100" />
-                {grouped.length > 0 && (
+                {matchingRows.length > 0 && (
                     <span className="text-[10px] font-semibold text-sky-600 bg-sky-100 px-2 py-0.5 rounded-full">
-                        {grouped.length}
+                        {matchingRows.length}
                     </span>
                 )}
             </div>
             <p className="text-slate-500 text-xs leading-relaxed mb-4 bg-sky-50/60 border border-sky-100 rounded-lg px-3 py-2.5">
                 {getValidationsIntroMessage()}
             </p>
-            {grouped.length > 1 && (
+            {matchingRows.length > 1 && (
                 <div className="mb-4">
                     <input
                         type="search"
-                        placeholder="Search by field path (e.g. context, message)"
+                        placeholder="Filter rules by name, path or description…"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         className="w-full px-3 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500/30 focus:border-sky-400 transition-shadow"
-                        aria-label="Search validations by field"
+                        aria-label="Filter validation rules"
                     />
                     {searchQuery.trim() && (
                         <p className="text-slate-400 text-xs mt-2">
-                            {filteredGrouped.length === 0
-                                ? "No validations match your search."
-                                : `Showing ${filteredGrouped.length} of ${grouped.length} groups`}
+                            {filteredRows.length === 0
+                                ? "No rules match your search."
+                                : `Showing ${filteredRows.length} of ${matchingRows.length} rules`}
                         </p>
                     )}
                 </div>
             )}
             <div className="space-y-3">
-                {filteredGrouped.length === 0 ? (
-                    searchQuery.trim() ? (
-                        <p className="text-slate-400 text-sm py-8 text-center rounded-xl bg-slate-50 border border-slate-200">
-                            No validations match &quot;{searchQuery.trim()}&quot;.
-                        </p>
-                    ) : null
+                {matchingRows.length === 0 ? (
+                    <p className="text-slate-400 text-sm py-8 text-center rounded-xl bg-slate-50 border border-slate-200">
+                        No validation rules found for this field.
+                    </p>
+                ) : filteredRows.length === 0 && searchQuery.trim() ? (
+                    <p className="text-slate-400 text-sm py-8 text-center rounded-xl bg-slate-50 border border-slate-200">
+                        No rules match &quot;{searchQuery.trim()}&quot;.
+                    </p>
                 ) : (
-                    filteredGrouped.map(([groupKey, rules]) => {
-                        const first = rules[0];
-                        const attr = first?.attr ?? null;
-                        const apiForAttrs = stepApi ?? actionApi;
-                        const requiredRaw =
-                            attr != null && spec != null && apiForAttrs
-                                ? getRequiredForPath(spec, apiForAttrs, attr, useCaseId)
-                                : null;
-                        const required =
-                            requiredRaw === "—" || requiredRaw === "" ? "Optional" : requiredRaw;
-                        const messagesRaw = rules.map(
-                            (r) => getReadmeMessage(r.name) ?? r.returnMessage
-                        );
-                        const messages = [...new Set(messagesRaw)];
-                        const skipIfList = rules
-                            .map((r) => getReadmeSkipIf(r.name))
-                            .filter((s): s is string => s != null && s.trim() !== "");
-                        const skipIfUnique = [...new Set(skipIfList)];
-
-                        return (
-                            <div
-                                key={groupKey}
-                                className="rounded-xl border border-sky-100 bg-white shadow-sm overflow-hidden"
-                            >
-                                {/* Card header — field + required */}
-                                {attr != null && (
-                                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 px-4 py-2.5 bg-sky-50/60 border-b border-sky-100">
-                                        <div className="overflow-x-auto flex-1 min-w-0">
-                                            <ValueBadge>{attr}</ValueBadge>
-                                        </div>
-                                        <span
-                                            className={`inline-flex shrink-0 items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold border ${
-                                                required === "Mandatory"
-                                                    ? "bg-rose-50 text-rose-700 border-rose-200"
-                                                    : "bg-emerald-50 text-emerald-700 border-emerald-200"
-                                            }`}
-                                        >
-                                            {required ?? "Optional"}
-                                        </span>
-                                    </div>
-                                )}
-                                {/* Card body */}
-                                <div className="px-4 py-3 space-y-3">
-                                    <div className="space-y-1">
-                                        <span className="text-[10px] font-bold uppercase tracking-widest text-sky-500">
-                                            Validation{messages.length > 1 ? "s" : ""}
-                                        </span>
-                                        <div className="text-sm text-slate-700 leading-relaxed">
-                                            {messages.length === 1 ? (
-                                                safeDescription(messages[0])
-                                            ) : (
-                                                <ul className="space-y-1.5 mt-1">
-                                                    {messages.map((msg, j) => (
-                                                        <li
-                                                            key={j}
-                                                            className="flex items-start gap-2"
-                                                        >
-                                                            <span className="text-amber-400 shrink-0 mt-0.5">
-                                                                •
-                                                            </span>
-                                                            <span>{safeDescription(msg)}</span>
-                                                        </li>
-                                                    ))}
-                                                </ul>
-                                            )}
-                                        </div>
-                                    </div>
-                                    {skipIfUnique.length > 0 && (
-                                        <div className="space-y-1 pt-2 border-t border-sky-50">
-                                            <span className="text-[10px] font-bold uppercase tracking-widest text-sky-500">
-                                                Skip If
-                                            </span>
-                                            <div className="text-sm text-slate-500 leading-relaxed whitespace-pre-wrap">
-                                                {skipIfUnique.length === 1 ? (
-                                                    safeDescription(skipIfUnique[0])
-                                                ) : (
-                                                    <ul className="space-y-1.5 mt-1">
-                                                        {skipIfUnique.map((s, j) => (
-                                                            <li
-                                                                key={j}
-                                                                className="flex items-start gap-2"
-                                                            >
-                                                                <span className="text-slate-300 shrink-0 mt-0.5">
-                                                                    •
-                                                                </span>
-                                                                <span>{safeDescription(s)}</span>
-                                                            </li>
-                                                        ))}
-                                                    </ul>
-                                                )}
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        );
-                    })
+                    filteredRows.map((row) => <RawTableCard key={row.name} row={row} />)
                 )}
             </div>
         </section>
@@ -592,11 +677,11 @@ const ValidationsSection: FC<{
 
 const AttributesPanel: FC<AttributesPanelProps> = ({
     attributes,
-    validations = [],
-    spec,
-    actionApi,
+    validations: _validations = [],
+    spec: _spec,
+    actionApi: _actionApi,
     stepApi,
-    useCaseId,
+    useCaseId: _useCaseId,
     isExpanded = false,
 }) => {
     if (!attributes) {
@@ -637,14 +722,8 @@ const AttributesPanel: FC<AttributesPanelProps> = ({
                 {attributes.kind === "tag" && (
                     <TagSection attrs={attributes} isExpanded={isExpanded} />
                 )}
-                {validations.length > 0 && (
-                    <ValidationsSection
-                        validations={validations}
-                        spec={spec}
-                        actionApi={actionApi}
-                        stepApi={stepApi}
-                        useCaseId={useCaseId}
-                    />
+                {stepApi && (
+                    <ValidationsSection stepApi={stepApi} selectedPath={attributes.jsonPath} />
                 )}
             </div>
         </div>
