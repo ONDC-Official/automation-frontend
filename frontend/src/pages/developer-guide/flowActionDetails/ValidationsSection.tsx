@@ -46,7 +46,7 @@ const RawTableCard: FC<{ row: RawTableRow }> = ({ row }) => {
                         {row.name}
                     </span>
                     {row.group.trim() && (
-                        <span className="text-[10px] text-slate-400 truncate" title={row.group}>
+                        <span className="text-[10px] text-slate-600 truncate" title={row.group}>
                             {row.group}
                         </span>
                     )}
