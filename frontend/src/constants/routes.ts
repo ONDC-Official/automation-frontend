@@ -16,6 +16,7 @@ export const ROUTES = {
     DB_BACK_OFFICE: "/db-back-office",
     ROOT: "/",
     AUTH_HEADER: "/auth-header",
+    FRAMEWORK_HEALTH: "/framework-health",
     DEVELOPER_GUIDE: "/developer-guide",
     DEVELOPER_GUIDE_GETTING_STARTED: "/developer-guide/getting-started",
     SELLER_LOAD_TESTING: "/seller-load-testing",
