@@ -9,6 +9,8 @@ import { getActionAttributes, getValidationsForAction } from "./schemaAttributes
 import AttributesPanel from "./AttributesPanel";
 import CommentsPanel from "./CommentsPanel";
 import NotesPanel from "./NotesPanel";
+import rawTableData from "../raw_table.json";
+import { getLeafRowsForApi, type RawTableAction } from "./attributePanelUtils";
 
 type RightPanelTab = "attributes" | "comments" | "notes";
 
@@ -74,6 +76,11 @@ const FlowActionDetails: FC<FlowActionDetailsProps> = ({
 
     const apiForAttributes = stepApi ?? actionApi;
 
+    const rawTableRows = useMemo(
+        () => getLeafRowsForApi(rawTableData as Record<string, RawTableAction>, apiForAttributes),
+        [apiForAttributes]
+    );
+
     const attributes = useMemo(
         () =>
             selectedPath
@@ -127,6 +134,7 @@ const FlowActionDetails: FC<FlowActionDetailsProps> = ({
                             <AttributesPanel
                                 attributes={attributes}
                                 validations={validations}
+                                rawTableRows={rawTableRows}
                                 spec={spec}
                                 actionApi={actionApi}
                                 stepApi={stepApi}
