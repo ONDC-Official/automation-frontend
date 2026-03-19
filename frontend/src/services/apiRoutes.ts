@@ -58,6 +58,10 @@ export const API_ROUTES = {
         ME: "/auth/api/me",
     },
 
+    HEALTH: {
+        API_SERVICE: "/health/api-service",
+    },
+
     NOTES: {
         BASE: "api/notes",
         BY_ID: (noteId: string) => `api/notes/${noteId}`,
