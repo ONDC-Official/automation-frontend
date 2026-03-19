@@ -1,5 +1,5 @@
-import { FC, useEffect, useMemo, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { FC, useEffect, useMemo, useRef, useState } from "react";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { FiArrowLeft, FiChevronRight, FiChevronLeft } from "react-icons/fi";
 import FlowsAccordion from "./FlowsAccordion";
 import FlowInformation from "./FlowInformation";
@@ -24,6 +24,7 @@ const DeveloperGuideFlowPage: FC = () => {
         useCase: string;
     }>();
     const navigate = useNavigate();
+    const [searchParams, setSearchParams] = useSearchParams();
 
     const [selectedFlow, setSelectedFlow] = useState<string>("");
     const [selectedFlowAction, setSelectedFlowAction] = useState<string>("");
@@ -31,6 +32,10 @@ const DeveloperGuideFlowPage: FC = () => {
     const [domainResponse, setDomainResponse] = useState<DomainResponse | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [notFound, setNotFound] = useState(false);
+
+    // Becomes true once the initial URL-restore effect has written ?flow= & ?action=.
+    // The watcher below only fires *after* that, so it never interferes with initial load.
+    const didInitialSync = useRef(false);
 
     const flows = useMemo(() => specData["x-flows"] ?? [], []);
 
@@ -105,14 +110,56 @@ const DeveloperGuideFlowPage: FC = () => {
         const flowId = String(matchingFlow.meta?.flowId ?? "");
         setSelectedFlow(flowId);
 
-        const firstStep = matchingFlow.steps?.[0];
-        if (firstStep) {
-            setSelectedFlowAction(getActionId(firstStep));
+        // Prefer ?action= URL param if it refers to a valid step in this flow
+        const urlAction = searchParams.get("action");
+        const urlStep = urlAction
+            ? matchingFlow.steps?.find((s) => getActionId(s) === urlAction)
+            : undefined;
+        const targetStep = urlStep ?? matchingFlow.steps?.[0];
+        const resolvedAction = targetStep ? getActionId(targetStep) : "";
+
+        if (resolvedAction) {
+            setSelectedFlowAction(resolvedAction);
         } else {
             setSelectedFlowAction("");
         }
+
+        // Sync resolved values to URL (replace so back-button isn't polluted)
+        setSearchParams(
+            (prev) => {
+                const next = new URLSearchParams(prev);
+                next.set("flow", flowId);
+                if (resolvedAction) next.set("action", resolvedAction);
+                else next.delete("action");
+                return next;
+            },
+            { replace: true }
+        );
+        didInitialSync.current = true;
         setNotFound(false);
     }, [isLoading, domainResponse, domainKey, versionKey, slug, flows]);
+
+    // Atomic watcher: when the user navigates to a different flow or action via the sidebar,
+    // both state values are batched into one render, so this effect always sees the final pair
+    // and writes them in a single setSearchParams call — fixing the race where two separate
+    // setSearchParams calls both read the same stale `prev`.
+    useEffect(() => {
+        if (!didInitialSync.current) return;
+        if (!selectedFlow) return;
+        setSearchParams(
+            (prev) => {
+                const next = new URLSearchParams(prev);
+                next.set("flow", selectedFlow);
+                if (selectedFlowAction) next.set("action", selectedFlowAction);
+                else next.delete("action");
+                next.delete("tab");
+                next.delete("attr");
+                next.delete("panel");
+                return next;
+            },
+            { replace: true }
+        );
+    }, [selectedFlow, selectedFlowAction]);
 
     const handleBack = () => {
         navigate(ROUTES.DEVELOPER_GUIDE);
