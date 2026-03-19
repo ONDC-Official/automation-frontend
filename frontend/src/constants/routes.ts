@@ -18,6 +18,7 @@ export const ROUTES = {
     AUTH_HEADER: "/auth-header",
     DEVELOPER_GUIDE: "/developer-guide",
     DEVELOPER_GUIDE_GETTING_STARTED: "/developer-guide/getting-started",
+    SELLER_LOAD_TESTING: "/seller-load-testing",
     /** Use case flow: domain and version are URL-encoded if needed; useCase is slug e.g. personal_loan */
     DEVELOPER_GUIDE_USE_CASE: "/developer-guide/:domain/:version/:useCase",
 } as const;
