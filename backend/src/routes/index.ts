@@ -10,6 +10,7 @@ import finvuRoutes from "./finvu-routes"; // Import Finvu routes
 
 import guideRoutes from "./guideRoutes";
 import authRoutes from "./gitLoginRoute"; // Import authentication routes
+import healthRoutes from "./healthRoutes"; // Import health check routes
 const router = Router();
 
 // Mount session-related routes
@@ -27,4 +28,5 @@ router.use(finvuRoutes);
 
 router.use("/auth", authRoutes); // Mount authentication routes
 router.use("/guide", guideRoutes);
+router.use("/health", healthRoutes);
 export default router;

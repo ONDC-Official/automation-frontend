@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { FaRegPaste } from "react-icons/fa6";
+import { MdEdit } from "react-icons/md";
 import PayloadEditor from "../../mini-components/payload-editor";
 import { SubmitEventParams } from "../../../../types/flow-types";
 import { toast } from "react-toastify";
@@ -92,11 +93,18 @@ export default function FIS12Search({
             setValue("provider", providers[0]);
             setValue("selectedItem", null);
             toast.success("Payload parsed successfully!");
+            setIsPayloadEditorActive(false);
         } catch (error) {
             toast.error("Failed to parse payload.");
             console.error(error);
         }
-        setIsPayloadEditorActive(false);
+    };
+
+    const handleReset = () => {
+        setExtractedProviders([]);
+        setValue("provider", null);
+        setValue("selectedItem", null);
+        setIsPayloadEditorActive(true);
     };
 
     const onSubmit = async (data: FormValues) => {
@@ -143,14 +151,26 @@ export default function FIS12Search({
                         Select provider and item from the on_search payload
                     </p>
                 </div>
-                <button
-                    type="button"
-                    onClick={() => setIsPayloadEditorActive(true)}
-                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-all font-medium shadow-sm"
-                >
-                    <FaRegPaste size={16} />
-                    Paste Payload
-                </button>
+                <div className="flex items-center gap-2">
+                    {extractedProviders.length > 0 && (
+                        <button
+                            type="button"
+                            onClick={handleReset}
+                            className="flex items-center gap-2 px-4 py-2 bg-amber-500 text-white rounded-md hover:bg-amber-600 transition-all font-medium shadow-sm"
+                        >
+                            <MdEdit size={16} />
+                            Edit Payload
+                        </button>
+                    )}
+                    <button
+                        type="button"
+                        onClick={() => setIsPayloadEditorActive((prev) => !prev)}
+                        className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-all font-medium shadow-sm"
+                    >
+                        <FaRegPaste size={16} />
+                        {isPayloadEditorActive ? "Close Editor" : "Paste Payload"}
+                    </button>
+                </div>
             </div>
 
             {isPayloadEditorActive && <PayloadEditor onAdd={handlePaste} />}

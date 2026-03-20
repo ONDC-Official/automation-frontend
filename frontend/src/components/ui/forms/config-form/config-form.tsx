@@ -36,9 +36,15 @@ import Metro210Select from "../custom-forms/metro-seat-select";
 import Metro210EndStopUpdate from "../custom-forms/update-end-stop-update";
 import Metro210StartEndStopSelection from "../custom-forms/trv11_start_end_stop_selection";
 import FIS12Select from "../custom-forms/fis12-select";
+import FIS13AddonSelect from "../custom-forms/fis13-addon-select";
 import FIS12Search from "../custom-forms/fis12-search";
+import SelectMetroTRV11 from "../custom-forms/select-metro-trv11";
 import { RJSFSchema } from "@rjsf/utils";
 import RetINVLInitILBP from "../custom-forms/retinvl-ilbp";
+import ReteB2BSelect from "../custom-forms/reteb2b-select";
+
+import InitMetroTRV11 from "../custom-forms/init-metro-trv11";
+import SelectMutualFundFIS14 from "../custom-forms/mutual_fund_select";
 
 export interface FormFieldConfigType {
     name: string;
@@ -56,6 +62,7 @@ export interface FormFieldConfigType {
         | "intercity_select"
         | "airline_seat_select"
         | "ret10_grocery_select"
+        | "reteb2b_select"
         | "ret11_nestedSelect"
         | "retinvl_init"
         | "retinvl_init_ilbp"
@@ -81,7 +88,13 @@ export interface FormFieldConfigType {
         | "trv11_210_update_end_station"
         | "trv11_210_start_end_stop_selection"
         | "fis12_select_pl"
-        | "fis12_search_pl";
+        | "fis12_search_pl"
+        | "fis13_addon_select"
+        | "select_metro_trv11"
+        | "init_metro_trv11"
+        | "datetime-local"
+        | "fis14_mutul_fund_select";
+
     payloadField: string;
     values?: string[];
     defaultValue?: string;
@@ -115,10 +128,20 @@ export default function FormConfig({
         const formatedData: Record<string, string | number> = {};
         const formData: Record<string, string> = data;
         for (const key in data) {
-            const payloadField = formConfig.find((field) => field.name === key)?.payloadField;
+            const fieldConfig = formConfig.find((field) => field.name === key);
+            const payloadField = fieldConfig?.payloadField;
             if (payloadField) {
                 if (payloadField.includes("count") || payloadField.includes("quantity")) {
                     formatedData[payloadField] = parseInt(data[key], 10) || 0;
+                }
+                // Convert datetime-local and date values to ISO 8601 format
+                else if (fieldConfig?.type === "datetime-local" || fieldConfig?.type === "date") {
+                    const dateValue = data[key];
+                    if (dateValue) {
+                        formatedData[payloadField] = new Date(dateValue).toISOString();
+                    } else {
+                        formatedData[payloadField] = dateValue;
+                    }
                 }
                 // Convert date to ISO 8601 format if payloadField contains 'timestamp' or 'time'
                 else if (payloadField.includes("timestamp") || payloadField.includes("time.")) {
@@ -214,6 +237,11 @@ export default function FormConfig({
     if (formConfig.find((field) => field.type === "ret10_grocery_select")) {
         return <Ret10GrocerySelect submitEvent={submitEvent} />;
     }
+
+    if (formConfig.find((field) => field.type === "reteb2b_select")) {
+        return <ReteB2BSelect submitEvent={submitEvent} />;
+    }
+
     if (formConfig.find((field) => field.type === "retinvl_init")) {
         return <RetINVLInit submitEvent={submitEvent} />;
     }
@@ -321,8 +349,21 @@ export default function FormConfig({
         return <FIS12Select submitEvent={submitEvent} />;
     }
 
+    if (formConfig.find((field) => field.type === "fis13_addon_select")) {
+        return <FIS13AddonSelect submitEvent={submitEvent} referenceData={referenceData} />;
+    }
     if (formConfig.find((field) => field.type === "fis12_search_pl")) {
         return <FIS12Search submitEvent={submitEvent} />;
+    }
+
+    if (formConfig.find((field) => field.type === "init_metro_trv11")) {
+        return <InitMetroTRV11 submitEvent={submitEvent} />;
+    }
+    if (formConfig.find((field) => field.type === "select_metro_trv11")) {
+        return <SelectMetroTRV11 submitEvent={submitEvent} />;
+    }
+    if (formConfig.find((field) => field.type === "fis14_mutul_fund_select")) {
+        return <SelectMutualFundFIS14 submitEvent={submitEvent} formConfig={formConfig} />;
     }
 
     // NOTE: The JsonSchemaForm check must come after all other specific form type checks above.
@@ -370,6 +411,16 @@ export default function FormConfig({
                                 label={field.label}
                                 required={field.required !== false}
                                 type="date"
+                                // key={field.payloadField}
+                            />
+                        );
+                    case "datetime-local":
+                        return (
+                            <FormInput
+                                name={field.name}
+                                label={field.label}
+                                required={field.required !== false}
+                                type="datetime-local"
                                 // key={field.payloadField}
                             />
                         );

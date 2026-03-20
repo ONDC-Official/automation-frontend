@@ -14,7 +14,7 @@ export const UserProfileSection = ({ userDetails, onLoginClick }: UserProfileSec
         <div className="relative flex items-center">
             {userDetails ? (
                 <span className="mr-2 text-sm md:text-base text-gray-700 mb-2">
-                    <strong>{userDetails.githubId}</strong>
+                    <strong>{userDetails.username}</strong>
                 </span>
             ) : (
                 <span className="mr-2 text-sm md:text-base text-gray-700 mb-2">
