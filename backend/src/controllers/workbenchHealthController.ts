@@ -80,6 +80,10 @@ export const checkAllApiServiceHealth = async (req: Request, res: Response) => {
                     },
                 };
 
+                if (domain === "ONDC:NTS10") {
+                    payload.context.action = "recon";
+                }
+
                 try {
                     const response = await axios.post(url, payload, {
                         headers: { "Content-Type": "application/json" },
