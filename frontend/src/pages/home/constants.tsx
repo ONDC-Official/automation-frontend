@@ -4,8 +4,6 @@ import { FaChartLine, FaUserPlus, FaScrewdriverWrench } from "react-icons/fa6";
 import { ROUTES } from "@constants/routes";
 import { Feature } from "./types";
 
-const isDevEnvironment = import.meta.env.VITE_ENVIRONMENT === "development";
-
 export const features: Feature[] = [
     {
         title: "Developer Guide",
@@ -56,16 +54,12 @@ export const features: Feature[] = [
         path: ROUTES.SELLER_ONBOARDING,
         icon: <FaUserPlus className="text-sky-600 text-4xl" />,
     },
-    ...(isDevEnvironment
-        ? ([
-              {
-                  title: "Seller Load Testing",
-                  subtitle: "Simulate high-volume seller flows",
-                  description:
-                      "Create sessions and run discovery and pre-order load tests for seller integrations.",
-                  path: ROUTES.SELLER_LOAD_TESTING,
-                  icon: <FaChartLine className="text-sky-600 text-4xl" />,
-              },
-          ] as Feature[])
-        : []),
+    {
+        title: "Seller Load Testing",
+        subtitle: "Simulate high-volume seller flows",
+        description:
+            "Create sessions and run discovery and pre-order load tests for seller integrations.",
+        path: ROUTES.SELLER_LOAD_TESTING,
+        icon: <FaChartLine className="text-sky-600 text-4xl" />,
+    },
 ];
