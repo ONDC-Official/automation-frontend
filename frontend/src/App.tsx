@@ -99,7 +99,7 @@ function App() {
         >
             <SessionProvider>
                 <Layout />
-                <Chatbot />
+                {import.meta.env.VITE_ENVIRONMENT === "development" && <Chatbot />}
             </SessionProvider>
         </UserContext.Provider>
     );
