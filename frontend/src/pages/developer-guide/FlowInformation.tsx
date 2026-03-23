@@ -1,4 +1,5 @@
-import { FC, useMemo, useState, useEffect } from "react";
+import { FC, useMemo, useState, useEffect, useRef } from "react";
+import { useSearchParams } from "react-router-dom";
 import { FiCode, FiShield, FiUpload, FiDownload } from "react-icons/fi";
 import { SegmentedTabs, type TabItem } from "@components/ui/SegmentedTabs";
 import { OpenAPISpecification } from "./types";
@@ -43,10 +44,12 @@ function getExamplesFromStep(
 }
 
 const FlowInformation: FC<FlowInformationProps> = ({ data, selectedFlow, selectedFlowAction }) => {
+    const [searchParams, setSearchParams] = useSearchParams();
     const [selectedExampleIndex, setSelectedExampleIndex] = useState(0);
     type Section = "preview" | "x-validations" | "request" | "response";
     const [activeSection, setActiveSection] = useState<Section>("preview");
     const [showPreviewDetails, setShowPreviewDetails] = useState(false);
+    const isFirstActionEffect = useRef(true);
 
     const isEmpty = !selectedFlow;
 
@@ -73,7 +76,23 @@ const FlowInformation: FC<FlowInformationProps> = ({ data, selectedFlow, selecte
     const hasTabs = hasExampleObject || hasXValidations || !!selectedStep;
 
     useEffect(() => {
-        // Reset tab state when action changes
+        const validSections: Section[] = ["preview", "x-validations", "request", "response"];
+
+        // On the very first action (page load / URL restore), try to honour ?tab=
+        if (isFirstActionEffect.current) {
+            isFirstActionEffect.current = false;
+            const urlTab = searchParams.get("tab") as Section | null;
+            if (urlTab && validSections.includes(urlTab)) {
+                setActiveSection(urlTab);
+                if (urlTab === "preview") {
+                    setShowPreviewDetails(false);
+                    setTimeout(() => setShowPreviewDetails(true), 0);
+                }
+                return;
+            }
+        }
+
+        // Subsequent action changes: reset to default and clear subordinate URL params
         const defaultSection: Section = hasExampleObject
             ? "preview"
             : selectedStep
@@ -81,13 +100,23 @@ const FlowInformation: FC<FlowInformationProps> = ({ data, selectedFlow, selecte
               : "x-validations";
         setActiveSection(defaultSection);
         setSelectedExampleIndex(0);
+        setSearchParams(
+            (prev) => {
+                const next = new URLSearchParams(prev);
+                next.set("tab", defaultSection);
+                next.delete("attr");
+                next.delete("panel");
+                return next;
+            },
+            { replace: true }
+        );
         if (defaultSection === "preview") {
             setShowPreviewDetails(false);
             setTimeout(() => setShowPreviewDetails(true), 0);
         } else {
             setShowPreviewDetails(false);
         }
-    }, [selectedFlowAction]);
+    }, [selectedFlowAction]); // eslint-disable-line react-hooks/exhaustive-deps
 
     if (isEmpty) {
         return (
@@ -119,6 +148,17 @@ const FlowInformation: FC<FlowInformationProps> = ({ data, selectedFlow, selecte
 
     const handleSectionChange = (section: Section) => {
         setActiveSection(section);
+        setSearchParams(
+            (prev) => {
+                const next = new URLSearchParams(prev);
+                next.set("tab", section);
+                // Clear attribute-level params when switching tabs
+                next.delete("attr");
+                next.delete("panel");
+                return next;
+            },
+            { replace: true }
+        );
         if (section === "preview") {
             setShowPreviewDetails(false);
             setTimeout(() => setShowPreviewDetails(true), 0);
