@@ -5,17 +5,13 @@ import PayloadEditor from "../../mini-components/payload-editor";
 import { SubmitEventParams } from "../../../../types/flow-types";
 import { toast } from "react-toastify";
 
-type OfferKey = `offers_${string}`;
-
 type CatalogItem = { id: string };
 type CatalogLocation = { id: string };
-type CatalogOffer = { id: string };
 
 type CatalogProvider = {
     id: string;
     items: CatalogItem[];
     locations: CatalogLocation[];
-    offers?: CatalogOffer[];
 };
 
 type OnSearchPayload = {
@@ -32,16 +28,15 @@ type FormValues = {
     provider_location: string[];
     location_gps: string;
     location_pin_code: string;
-
     order_type: "ILBP";
 
     items: {
         itemId: string;
         quantity: number;
         location: string;
-        bidding_price: number; // ✅ ONLY THIS
+        bidding_price: string; // ✅ STRING
     }[];
-} & Partial<Record<OfferKey, boolean>>;
+};
 
 export default function RetINVLInitILBP({
     submitEvent,
@@ -64,13 +59,7 @@ export default function RetINVLInitILBP({
                     itemId: "",
                     quantity: 1,
                     location: "",
-                    bidding_price: 0,
-                },
-                {
-                    itemId: "",
-                    quantity: 1,
-                    location: "",
-                    bidding_price: 0,
+                    bidding_price: "",
                 },
             ],
         },
@@ -122,7 +111,10 @@ export default function RetINVLInitILBP({
         });
     };
 
-    const inputStyle = "border p-2 w-full";
+    const inputStyle =
+        "border rounded p-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white";
+    const labelStyle = "mb-1 font-semibold";
+    const fieldWrapperStyle = "flex flex-col mb-2";
 
     const renderSelectOrInput = (name: string, options: string[]) => {
         if (!options.length) {
@@ -132,7 +124,9 @@ export default function RetINVLInitILBP({
             <select {...register(name as FieldPath<FormValues>)} className={inputStyle}>
                 <option value="">Select...</option>
                 {options.map((o) => (
-                    <option key={o}>{o}</option>
+                    <option key={o} value={o}>
+                        {o}
+                    </option>
                 ))}
             </select>
         );
@@ -147,22 +141,36 @@ export default function RetINVLInitILBP({
                 />
             )}
 
-            <button onClick={() => setIsPayloadEditorActive(true)}>
-                <FaRegPaste />
+            <button
+                type="button"
+                onClick={() => setIsPayloadEditorActive(true)}
+                className="p-2 border rounded-full"
+            >
+                <FaRegPaste size={14} />
             </button>
 
             {!isDataPasted ? (
-                <div>Paste on_search payload</div>
+                <div className="p-3 bg-blue-50 border-l-4 border-blue-500">
+                    Paste on_search payload to continue
+                </div>
             ) : (
-                <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-                    {/* FIXED ORDER TYPE */}
+                <form
+                    onSubmit={handleSubmit(onSubmit)}
+                    className="space-y-4 p-4 h-[500px] overflow-y-scroll"
+                >
+                    {/* ORDER TYPE */}
                     <input type="hidden" value="ILBP" {...register("order_type")} />
-                    <b>Order Type: ILBP</b>
+                    <div className="p-2 bg-blue-50 border-l-4 border-blue-500">
+                        <b>Order Type: ILBP</b>
+                    </div>
 
                     {/* PROVIDER */}
-                    {renderSelectOrInput("provider", providerOptions)}
+                    <div className={fieldWrapperStyle}>
+                        <label className={labelStyle}>Provider</label>
+                        {renderSelectOrInput("provider", providerOptions)}
+                    </div>
 
-                    {/* LOCATION */}
+                    {/* PROVIDER LOCATION */}
                     <Controller
                         name="provider_location"
                         control={control}
@@ -171,9 +179,12 @@ export default function RetINVLInitILBP({
                             const locations = provider?.locations || [];
 
                             return (
-                                <>
+                                <div className="flex flex-col gap-2">
                                     {locations.map((loc) => (
-                                        <label key={loc.id}>
+                                        <label
+                                            key={loc.id}
+                                            className="inline-flex gap-2 items-center"
+                                        >
                                             <input
                                                 type="checkbox"
                                                 checked={field.value?.includes(loc.id)}
@@ -189,32 +200,71 @@ export default function RetINVLInitILBP({
                                             {loc.id}
                                         </label>
                                     ))}
-                                </>
+                                </div>
                             );
                         }}
                     />
 
+                    {/* CITY */}
+                    <div className={fieldWrapperStyle}>
+                        <label className={labelStyle}>City Code</label>
+                        <input {...register("city_code")} className={inputStyle} />
+                    </div>
+
+                    {/* GPS */}
+                    <div className={fieldWrapperStyle}>
+                        <label className={labelStyle}>GPS</label>
+                        <input {...register("location_gps")} className={inputStyle} />
+                    </div>
+
+                    {/* PIN */}
+                    <div className={fieldWrapperStyle}>
+                        <label className={labelStyle}>Pin Code</label>
+                        <input {...register("location_pin_code")} className={inputStyle} />
+                    </div>
+
                     {/* ITEMS */}
                     {fields.map((field, index) => (
-                        <div key={field.id} className="border p-2">
-                            {renderSelectOrInput(`items.${index}.itemId`, itemOptions)}
+                        <div key={field.id} className="border p-3 rounded space-y-2">
+                            <div className={fieldWrapperStyle}>
+                                <label className={labelStyle}>Item ID</label>
+                                {renderSelectOrInput(`items.${index}.itemId`, itemOptions)}
+                            </div>
 
-                            <input
-                                type="number"
-                                {...register(`items.${index}.quantity`, { valueAsNumber: true })}
-                                placeholder="Quantity"
-                            />
+                            <div className={fieldWrapperStyle}>
+                                <label className={labelStyle}>Quantity</label>
+                                <input
+                                    type="number"
+                                    {...register(`items.${index}.quantity`, {
+                                        valueAsNumber: true,
+                                    })}
+                                    className={inputStyle}
+                                />
+                            </div>
 
-                            {/* ONLY BIDDING PRICE */}
-                            <input
-                                type="number"
-                                {...register(`items.${index}.bidding_price`, {
-                                    valueAsNumber: true,
-                                })}
-                                placeholder="Your Bid"
-                            />
+                            <div className={fieldWrapperStyle}>
+                                <label className={labelStyle}>Bidding Price</label>
+                                <input
+                                    type="text"
+                                    inputMode="decimal"
+                                    {...register(`items.${index}.bidding_price`)}
+                                    className={inputStyle}
+                                    placeholder="Enter your bid"
+                                />
+                            </div>
 
-                            {renderSelectOrInput(`items.${index}.location`, locationOptions)}
+                            <div className={fieldWrapperStyle}>
+                                <label className={labelStyle}>Item Location</label>
+                                {renderSelectOrInput(`items.${index}.location`, locationOptions)}
+                            </div>
+
+                            <button
+                                type="button"
+                                onClick={() => remove(index)}
+                                className="px-3 py-1 bg-red-500 text-white rounded"
+                            >
+                                Remove
+                            </button>
                         </div>
                     ))}
 
@@ -225,22 +275,13 @@ export default function RetINVLInitILBP({
                                 itemId: "",
                                 quantity: 1,
                                 location: "",
-                                bidding_price: 0,
+                                bidding_price: "",
                             })
                         }
+                        className="px-4 py-2 bg-blue-600 text-white rounded"
                     >
                         Add Item
                     </button>
-
-                    {fields.map((field, index) => (
-                        <div key={field.id}>
-                            {/* your inputs */}
-
-                            <button type="button" onClick={() => remove(index)}>
-                                Remove
-                            </button>
-                        </div>
-                    ))}
 
                     <button type="submit" className="w-full bg-green-600 text-white py-2 rounded">
                         Submit
@@ -256,8 +297,8 @@ function validateFormData(data: FormValues) {
     const errors: string[] = [];
 
     data.items.forEach((item, index) => {
-        if (!item.bidding_price || item.bidding_price <= 0) {
-            errors.push(`Item ${index + 1}: Bid required`);
+        if (!item.bidding_price || Number(item.bidding_price) <= 0) {
+            errors.push(`Item ${index + 1}: Valid bid required`);
         }
     });
 
