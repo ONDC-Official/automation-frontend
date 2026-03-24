@@ -13,6 +13,7 @@ import {
 	getActions
 } from "../controllers/flowController";
 import validateRequiredParams from "../middlewares/generic";
+import { encryptionMiddleware } from "../middlewares/encryptionMiddleware";
 import otelTracing from "../services/tracing-service";
 import axios from "axios";
 import logger from "@ondc/automation-logger";
@@ -27,6 +28,7 @@ router.post(
 		"query.session_id",
 		"query.subscriber_url"
 	),
+	encryptionMiddleware,
 	handleTriggerRequest
 );
 router.post(
@@ -37,6 +39,7 @@ router.post(
 		"body.context.bap_id",
 		"body.context.bpp_id"
 	),
+	encryptionMiddleware,
 	validatePayload
 );
 router.get("/customFlow", getPredefinedFlows);
@@ -68,7 +71,7 @@ router.post("/external-form", async (req, res) => {
 		res.status(500).send("GATEWAY ERROR");
 	}
 });
-router.post("/custom-flow", otelTracing( 'body.session_id'), updateFlow)
+router.post("/custom-flow", otelTracing('body.session_id'), updateFlow)
 router.post("/actions", otelTracing("body.domain", "body.version"), getActions)
 
 export default router;

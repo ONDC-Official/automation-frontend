@@ -45,6 +45,7 @@ export const createSessionService = async (
 			timeValidations: true,
 			headerValidaton: true,
 			useGzip: false,
+			encryptionEnabled: false,
 		},
 		flowConfigs: map,
 		activeFlow: null,
