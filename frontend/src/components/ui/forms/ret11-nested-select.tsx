@@ -25,7 +25,7 @@ type OnSearchPayload = {
         };
     };
 };
-interface SelectedItem {
+export interface SelectedItem {
     id: string;
     customisations: string[];
     relation: Record<string, string>;
@@ -93,7 +93,7 @@ const ItemCustomisationSelectorRET11 = ({
     const hasCatalogData = catalogData != null;
 
     const onSubmit = async (data: FormValues) => {
-        const { valid, errors } = validateFormDataRET11(data);
+        const { valid, errors } = validateFormDataRET11(data, items);
         if (!valid) {
             toast.error(`Form validation failed: ${errors[0]}`);
             return;
