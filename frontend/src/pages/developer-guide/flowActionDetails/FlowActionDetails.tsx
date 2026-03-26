@@ -5,12 +5,11 @@ import { FiList, FiMessageSquare, FiFileText } from "react-icons/fi";
 import { SegmentedTabs, type TabItem } from "@components/ui/SegmentedTabs";
 import JsonViewer from "@pages/protocol-playground/ui/Json-path-extractor";
 import { SelectedType } from "@pages/protocol-playground/ui/session-data-tab";
-import type { OpenAPISpecification } from "../types";
+import type { OpenAPISpecification, ValidationTableAction } from "../types";
 import { getActionAttributes, getValidationsForAction } from "./schemaAttributes";
 import AttributesPanel from "./AttributesPanel";
 import CommentsPanel from "./CommentsPanel";
 import NotesPanel from "./NotesPanel";
-import rawTableData from "../raw_table.json";
 import { getLeafRowsForApi, type RawTableAction } from "./attributePanelUtils";
 
 type RightPanelTab = "attributes" | "comments" | "notes";
@@ -43,6 +42,8 @@ interface FlowActionDetailsProps {
     spec: OpenAPISpecification | null | undefined;
     useCaseId?: string;
     flowId?: string;
+    /** Validation table data keyed by action name. Loaded lazily from API. */
+    validationTableData?: Record<string, ValidationTableAction> | null;
 }
 
 const FlowActionDetails: FC<FlowActionDetailsProps> = ({
@@ -52,6 +53,7 @@ const FlowActionDetails: FC<FlowActionDetailsProps> = ({
     spec,
     useCaseId,
     flowId,
+    validationTableData,
 }) => {
     const [searchParams, setSearchParams] = useSearchParams();
 
@@ -111,8 +113,10 @@ const FlowActionDetails: FC<FlowActionDetailsProps> = ({
     const apiForAttributes = stepApi ?? actionApi;
 
     const rawTableRows = useMemo(
-        () => getLeafRowsForApi(rawTableData as Record<string, RawTableAction>, apiForAttributes),
-        [apiForAttributes]
+        () => validationTableData
+            ? getLeafRowsForApi(validationTableData as Record<string, RawTableAction>, apiForAttributes)
+            : [],
+        [validationTableData, apiForAttributes]
     );
 
     const attributes = useMemo(

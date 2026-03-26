@@ -72,4 +72,10 @@ export const API_ROUTES = {
         BY_ID: (commentsId: string) => `api/comments/${commentsId}`,
         RESOLVE: (commentsId: string) => `api/comments/${commentsId}/resolve`,
     },
+
+    DEV_GUIDE: {
+        BUILDS: "dev-guide/available-builds",
+        SPEC: (domain: string, version: string) =>
+            `dev-guide/spec/${encodeURIComponent(domain)}/${encodeURIComponent(version)}`,
+    },
 } as const;
