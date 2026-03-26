@@ -4,7 +4,7 @@ import { FiCode, FiLayers, FiSearch } from "react-icons/fi";
 import { fetchBuilds } from "@services/developerGuideSpecApi";
 import { ROUTES, getDeveloperGuideUseCasePath } from "@constants/routes";
 import type { BuildEntry } from "../types";
-import { labelToSlug, isDomainEnabled } from "../utils";
+import { isDomainEnabled } from "../utils";
 import Loader from "@components/ui/mini-components/loader";
 import RecommendedSection from "./RecommendedSection";
 import DomainCardsSection from "./DomainCardsSection";
@@ -39,8 +39,7 @@ const DeveloperGuideLanding: FC = () => {
 
     const handleUseCaseClick = (dom: BuildEntry, versionKey: string, usecaseLabel: string) => {
         if (!isUseCaseEnabled(dom, usecaseLabel)) return;
-        const slug = labelToSlug(usecaseLabel);
-        const path = getDeveloperGuideUseCasePath(dom.key, versionKey, slug);
+        const path = getDeveloperGuideUseCasePath(dom.key, versionKey, usecaseLabel);
         navigate(path);
     };
 
@@ -53,7 +52,7 @@ const DeveloperGuideLanding: FC = () => {
     };
 
     const filteredDomains = builds.filter((d) =>
-        d.key.toLowerCase().includes(domainSearch.toLowerCase()),
+        d.key.toLowerCase().includes(domainSearch.toLowerCase())
     );
 
     if (isLoading) {
