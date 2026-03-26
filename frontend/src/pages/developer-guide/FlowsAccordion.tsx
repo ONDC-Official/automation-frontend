@@ -1,12 +1,11 @@
 import { FC, useState } from "react";
-import { OpenAPISpecification } from "./types";
-import type { FlowStep } from "./types";
+import type { FlowEntry, FlowStep } from "./types";
 import { getActionId } from "./utils";
 import { FcWorkflow } from "react-icons/fc";
 import { FaChevronDown } from "react-icons/fa6";
 
 interface FlowsAccordionProps {
-    data: OpenAPISpecification;
+    flows: FlowEntry[];
     selectedFlow?: string;
     selectedFlowAction?: string;
     setSelectedFlow: (flow: string) => void;
@@ -84,7 +83,7 @@ const ArrowsIcon = () => (
 );
 
 const FlowsAccordion: FC<FlowsAccordionProps> = ({
-    data,
+    flows,
     selectedFlow,
     selectedFlowAction,
     setSelectedFlow,
@@ -92,26 +91,20 @@ const FlowsAccordion: FC<FlowsAccordionProps> = ({
 }) => {
     const [openFlowIndex, setOpenFlowIndex] = useState<number | null>(null);
 
-    const flows = data["x-flows"] || [];
-
     const toggleFlow = (index: number) => {
         if (openFlowIndex === index) {
             setOpenFlowIndex(null);
-
             setSelectedFlow("");
-
             setSelectedFlowAction("");
         } else {
             setOpenFlowIndex(index);
 
-            const flowId = flows[index].meta?.flowId ?? "";
-
+            const flow = flows[index];
+            const flowId = flow.flowId;
             setSelectedFlow(flowId);
 
-            // Auto-select first step
-
-            const displayItems = buildStepDisplayItems(flows[index].steps);
-
+            const steps = flow.config?.steps ?? [];
+            const displayItems = buildStepDisplayItems(steps);
             const firstItem = displayItems[0];
 
             if (firstItem) {
@@ -119,7 +112,6 @@ const FlowsAccordion: FC<FlowsAccordionProps> = ({
                     firstItem.type === "pair"
                         ? getActionId(firstItem.request)
                         : getActionId(firstItem.step);
-
                 setSelectedFlowAction(firstActionId);
             } else {
                 setSelectedFlowAction("");
@@ -127,9 +119,8 @@ const FlowsAccordion: FC<FlowsAccordionProps> = ({
         }
     };
 
-    const handleStepClick = (flowSummary: string, actionId: string) => {
-        setSelectedFlow(flowSummary);
-
+    const handleStepClick = (flowId: string, actionId: string) => {
+        setSelectedFlow(flowId);
         setSelectedFlowAction(actionId);
     };
 
@@ -148,7 +139,9 @@ const FlowsAccordion: FC<FlowsAccordionProps> = ({
                 }`}
             >
                 <div className="flex items-center justify-center gap-2">
-                    <span className="text-sm font-medium truncate">{step.action_label}</span>
+                    <span className="text-sm font-medium truncate">
+                        {step.action_label ?? step.api}
+                    </span>
                     {showUnsolicited && (
                         <span className="shrink-0 text-[10px] font-semibold uppercase tracking-wide text-amber-600 bg-amber-50 border border-amber-200 rounded px-1.5 py-0.5">
                             unsolicited
@@ -163,9 +156,10 @@ const FlowsAccordion: FC<FlowsAccordionProps> = ({
         <div className="space-y-3">
             {flows.map((flow, flowIndex) => {
                 const isOpen = openFlowIndex === flowIndex;
-                const isSelectedFlow = selectedFlow === (flow.meta?.flowId ?? "");
-                const flowId = flow.meta?.flowId ?? "";
-                const displayItems = buildStepDisplayItems(flow.steps);
+                const flowId = flow.flowId;
+                const isSelectedFlow = selectedFlow === flowId;
+                const steps = flow.config?.steps ?? [];
+                const displayItems = buildStepDisplayItems(steps);
 
                 return (
                     <div
@@ -182,9 +176,23 @@ const FlowsAccordion: FC<FlowsAccordionProps> = ({
                                 <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-sky-50 text-sky-600 shrink-0">
                                     <FcWorkflow className="w-5 h-5" />
                                 </span>
-                                <span className="font-semibold text-gray-900 text-sm break-words">
-                                    {flow.meta?.flowName ?? flow.meta?.flowId}
-                                </span>
+                                <div className="flex-1 min-w-0">
+                                    <span className="font-semibold text-gray-900 text-sm break-words block">
+                                        {flow.description || flow.flowId}
+                                    </span>
+                                    {flow.tags.length > 0 && (
+                                        <div className="flex flex-wrap gap-1 mt-1">
+                                            {flow.tags.map((tag) => (
+                                                <span
+                                                    key={tag}
+                                                    className="text-[10px] font-medium text-sky-600 bg-sky-50 border border-sky-200 rounded px-1.5 py-0.5"
+                                                >
+                                                    {tag}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                             <div className="w-8 h-8 rounded-full bg-white/80 flex items-center justify-center shadow-sm pointer-events-none shrink-0 ml-3">
                                 <FaChevronDown
@@ -193,7 +201,6 @@ const FlowsAccordion: FC<FlowsAccordionProps> = ({
                             </div>
                         </button>
 
-                        {/* Animated slide container using CSS grid-rows trick */}
                         <div
                             className={`grid transition-all duration-300 ease-in-out ${
                                 isOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
@@ -221,13 +228,13 @@ const FlowsAccordion: FC<FlowsAccordionProps> = ({
                                                         {renderStepButton(
                                                             item.request,
                                                             flowId,
-                                                            isReqSelected
+                                                            isReqSelected,
                                                         )}
                                                         <ArrowsIcon />
                                                         {renderStepButton(
                                                             item.response,
                                                             flowId,
-                                                            isResSelected
+                                                            isResSelected,
                                                         )}
                                                     </div>
                                                 );
@@ -241,7 +248,7 @@ const FlowsAccordion: FC<FlowsAccordionProps> = ({
                                                     {renderStepButton(
                                                         item.step,
                                                         flowId,
-                                                        isSelected
+                                                        isSelected,
                                                     )}
                                                 </div>
                                             );

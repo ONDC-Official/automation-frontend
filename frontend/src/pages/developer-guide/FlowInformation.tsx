@@ -1,26 +1,38 @@
 import { FC, useMemo, useState, useEffect, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
-import { FiCode, FiShield, FiUpload, FiDownload } from "react-icons/fi";
+import {
+    FiCode,
+    FiShield,
+    FiUpload,
+    FiDownload,
+} from "react-icons/fi";
 import { SegmentedTabs, type TabItem } from "@components/ui/SegmentedTabs";
-import { OpenAPISpecification } from "./types";
-import type { FlowStep } from "./types";
+import type {
+    OpenAPISpecification,
+    FlowEntry,
+    FlowStep,
+    ValidationTableAction,
+} from "./types";
 import { getActionId } from "./utils";
 import FlowDetailsAndSummary from "./FlowDetailsAndSummary";
 import ActionOverview from "./ActionOverview";
 import { FlowActionDetails } from "./flowActionDetails";
 import Loader from "@components/ui/mini-components/loader";
-import ValidationsTable, { type ValidationTable } from "./ValidationsTable";
-import rawValidations from "./raw_table.json";
+import ValidationsTable from "./ValidationsTable";
 import { RequestTab, ResponseTab } from "./RequestResponseTabs";
+import { fetchValidationTable } from "@services/developerGuideSpecApi";
 
 interface FlowInformationProps {
     data: OpenAPISpecification;
+    flows: FlowEntry[];
     selectedFlow: string;
     selectedFlowAction: string;
+    domain: string;
+    version: string;
 }
 
 function getExamplesFromStep(
-    step: FlowStep | undefined
+    step: FlowStep | undefined,
 ): Array<{ name: string; payload: unknown }> {
     if (!step) return [];
     const fromStep = step.examples?.map((ex) => ({
@@ -43,22 +55,40 @@ function getExamplesFromStep(
     return [];
 }
 
-const FlowInformation: FC<FlowInformationProps> = ({ data, selectedFlow, selectedFlowAction }) => {
+type Section = "preview" | "x-validations" | "request" | "response";
+
+const FlowInformation: FC<FlowInformationProps> = ({
+    data,
+    flows,
+    selectedFlow,
+    selectedFlowAction,
+    domain,
+    version,
+}) => {
     const [searchParams, setSearchParams] = useSearchParams();
     const [selectedExampleIndex, setSelectedExampleIndex] = useState(0);
-    type Section = "preview" | "x-validations" | "request" | "response";
     const [activeSection, setActiveSection] = useState<Section>("preview");
     const [showPreviewDetails, setShowPreviewDetails] = useState(false);
     const isFirstActionEffect = useRef(true);
 
+    // Lazy-loaded sections
+    const [validationTable, setValidationTable] = useState<Record<string, ValidationTableAction> | null>(null);
+    const validationTableFetched = useRef(false);
+
+    // Load validation table once (non-blocking, after mount)
+    useEffect(() => {
+        if (validationTableFetched.current || !domain || !version) return;
+        validationTableFetched.current = true;
+        fetchValidationTable(domain, version).then((result) => {
+            if (result?.table) setValidationTable(result.table);
+        }).catch(() => { /* silently ignore */ });
+    }, [domain, version]);
+
     const isEmpty = !selectedFlow;
 
-    const flows = data["x-flows"] || [];
-
-    const selectedFlowData = flows.find(
-        (flow) => flow.meta?.flowId === selectedFlow || flow.summary === selectedFlow
-    );
-    const selectedStep = selectedFlowData?.steps.find((s) => getActionId(s) === selectedFlowAction);
+    const selectedFlowData = flows.find((f) => f.flowId === selectedFlow);
+    const steps = selectedFlowData?.config?.steps ?? [];
+    const selectedStep = steps.find((s) => getActionId(s) === selectedFlowAction);
     const examples = useMemo(() => getExamplesFromStep(selectedStep), [selectedStep]);
     const selectedExample = examples[selectedExampleIndex] ?? examples[0];
     const examplePayload = selectedExample?.payload;
@@ -67,18 +97,24 @@ const FlowInformation: FC<FlowInformationProps> = ({ data, selectedFlow, selecte
         typeof examplePayload === "object" &&
         !Array.isArray(examplePayload);
 
+    // Validation table for the selected action
     const apiForValidations = selectedStep?.api ?? selectedFlowAction;
-    const selectedValidations: ValidationTable | undefined = useMemo(
-        () => (rawValidations as Record<string, ValidationTable>)[apiForValidations],
-        [apiForValidations]
+    const selectedValidations = useMemo(
+        () => (validationTable ? validationTable[apiForValidations] : undefined),
+        [validationTable, apiForValidations],
     );
     const hasXValidations = !!selectedValidations;
+
     const hasTabs = hasExampleObject || hasXValidations || !!selectedStep;
 
     useEffect(() => {
-        const validSections: Section[] = ["preview", "x-validations", "request", "response"];
+        const validSections: Section[] = [
+            "preview",
+            "x-validations",
+            "request",
+            "response",
+        ];
 
-        // On the very first action (page load / URL restore), try to honour ?tab=
         if (isFirstActionEffect.current) {
             isFirstActionEffect.current = false;
             const urlTab = searchParams.get("tab") as Section | null;
@@ -92,12 +128,14 @@ const FlowInformation: FC<FlowInformationProps> = ({ data, selectedFlow, selecte
             }
         }
 
-        // Subsequent action changes: reset to default and clear subordinate URL params
         const defaultSection: Section = hasExampleObject
             ? "preview"
             : selectedStep
               ? "request"
-              : "x-validations";
+              : hasXValidations
+                ? "x-validations"
+                : "preview";
+        
         setActiveSection(defaultSection);
         setSelectedExampleIndex(0);
         setSearchParams(
@@ -108,7 +146,7 @@ const FlowInformation: FC<FlowInformationProps> = ({ data, selectedFlow, selecte
                 next.delete("panel");
                 return next;
             },
-            { replace: true }
+            { replace: true },
         );
         if (defaultSection === "preview") {
             setShowPreviewDetails(false);
@@ -152,12 +190,11 @@ const FlowInformation: FC<FlowInformationProps> = ({ data, selectedFlow, selecte
             (prev) => {
                 const next = new URLSearchParams(prev);
                 next.set("tab", section);
-                // Clear attribute-level params when switching tabs
                 next.delete("attr");
                 next.delete("panel");
                 return next;
             },
-            { replace: true }
+            { replace: true },
         );
         if (section === "preview") {
             setShowPreviewDetails(false);
@@ -170,7 +207,7 @@ const FlowInformation: FC<FlowInformationProps> = ({ data, selectedFlow, selecte
 
     return (
         <div className="px-8 py-8 space-y-0 w-full">
-            {/* ── Always-visible Overview ── */}
+            {/* Always-visible Overview */}
             {selectedFlowData && (
                 <div className="mb-6">
                     <FlowDetailsAndSummary flow={selectedFlowData} />
@@ -179,15 +216,14 @@ const FlowInformation: FC<FlowInformationProps> = ({ data, selectedFlow, selecte
 
             {selectedFlowAction && selectedStep && (
                 <>
-                    {/* Action card — always visible */}
+                    {/* Action card */}
                     <div className="mb-10">
                         <ActionOverview step={selectedStep} actionId={selectedFlowAction} />
                     </div>
 
-                    {/* ── Detail tabs section ── */}
+                    {/* Detail tabs section */}
                     {hasTabs && (
                         <div className="border-t border-slate-200 pt-8">
-                            {/* Section heading */}
                             <div className="flex items-end justify-between mb-5">
                                 <div>
                                     <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest mb-1">
@@ -237,7 +273,7 @@ const FlowInformation: FC<FlowInformationProps> = ({ data, selectedFlow, selecte
                                 />
                             </div>
 
-                            {/* Preview tab content */}
+                            {/* Preview tab */}
                             {activeSection === "preview" && hasExampleObject && (
                                 <div className="flex flex-col gap-4">
                                     {examples.length > 1 && (
@@ -254,7 +290,7 @@ const FlowInformation: FC<FlowInformationProps> = ({ data, selectedFlow, selecte
                                                     value={selectedExampleIndex}
                                                     onChange={(e) =>
                                                         setSelectedExampleIndex(
-                                                            Number(e.target.value)
+                                                            Number(e.target.value),
                                                         )
                                                     }
                                                     className="w-full pl-4 pr-9 py-2 rounded-lg text-sm border border-slate-200 bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-400/40 focus:border-sky-300 appearance-none shadow-sm"
@@ -290,13 +326,9 @@ const FlowInformation: FC<FlowInformationProps> = ({ data, selectedFlow, selecte
                                                 actionApi={selectedFlowAction}
                                                 stepApi={selectedStep.api}
                                                 spec={data}
-                                                useCaseId={
-                                                    selectedFlowData?.useCaseId ??
-                                                    selectedFlowData?.meta?.use_case_id
-                                                }
-                                                flowId={
-                                                    selectedFlowData?.meta?.flowId ?? selectedFlow
-                                                }
+                                                useCaseId={selectedFlowData?.usecase}
+                                                flowId={selectedFlowData?.flowId ?? selectedFlow}
+                                                validationTableData={validationTable}
                                             />
                                         ) : (
                                             <div className="h-full w-full flex items-center justify-center">
@@ -307,7 +339,7 @@ const FlowInformation: FC<FlowInformationProps> = ({ data, selectedFlow, selecte
                                 </div>
                             )}
 
-                            {/* Request tab content */}
+                            {/* Request tab */}
                             {activeSection === "request" && selectedStep && (
                                 <RequestTab
                                     spec={data}
@@ -315,7 +347,7 @@ const FlowInformation: FC<FlowInformationProps> = ({ data, selectedFlow, selecte
                                 />
                             )}
 
-                            {/* Response tab content */}
+                            {/* Response tab */}
                             {activeSection === "response" && selectedStep && (
                                 <ResponseTab
                                     spec={data}
@@ -323,7 +355,7 @@ const FlowInformation: FC<FlowInformationProps> = ({ data, selectedFlow, selecte
                                 />
                             )}
 
-                            {/* Validations tab content */}
+                            {/* Validations tab */}
                             {activeSection === "x-validations" &&
                                 hasXValidations &&
                                 selectedValidations && (
