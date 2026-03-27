@@ -1,4 +1,5 @@
 import { useContext } from "react";
+import { toast } from "react-toastify";
 import { FormInput } from "../form-input";
 import FormSelect from "../form-select";
 import CheckboxGroup, { CheckboxOption } from "../checkbox";
@@ -50,50 +51,50 @@ export interface FormFieldConfigType {
     name: string;
     label: string;
     type:
-        | "text"
-        | "select"
-        | "textarea"
-        | "list"
-        | "date"
-        | "checkbox"
-        | "boolean"
-        | "trv12_bus_seat_selection"
-        | "airline_select"
-        | "intercity_select"
-        | "airline_seat_select"
-        | "ret10_grocery_select"
-        | "reteb2b_select"
-        | "ret11_nestedSelect"
-        | "retinvl_init"
-        | "retinvl_init_ilbp"
-        | "nestedSelect"
-        | "trv_select"
-        | "trv10_select"
-        | "trv10_schedule"
-        | "trv10_schedule_rental"
-        | "trv11_select"
-        | "hotel_select"
-        | "HTML_FORM"
-        | "HTML_FORM_MULTI"
-        | "FINVU_REDIRECT"
-        | "DYNAMIC_FORM"
-        | "fis13_select"
-        | "trv13_select_provider"
-        | "trv10_201_select"
-        | "search_accidental_fis13"
-        | "search_hospicash_fis13"
-        | "search_transit_fis13"
-        | "search_discover_product_fis13"
-        | "trv11_210_select"
-        | "trv11_210_update_end_station"
-        | "trv11_210_start_end_stop_selection"
-        | "fis12_select_pl"
-        | "fis12_search_pl"
-        | "fis13_addon_select"
-        | "select_metro_trv11"
-        | "init_metro_trv11"
-        | "datetime-local"
-        | "fis14_mutul_fund_select";
+    | "text"
+    | "select"
+    | "textarea"
+    | "list"
+    | "date"
+    | "checkbox"
+    | "boolean"
+    | "trv12_bus_seat_selection"
+    | "airline_select"
+    | "intercity_select"
+    | "airline_seat_select"
+    | "ret10_grocery_select"
+    | "reteb2b_select"
+    | "ret11_nestedSelect"
+    | "retinvl_init"
+    | "retinvl_init_ilbp"
+    | "nestedSelect"
+    | "trv_select"
+    | "trv10_select"
+    | "trv10_schedule"
+    | "trv10_schedule_rental"
+    | "trv11_select"
+    | "hotel_select"
+    | "HTML_FORM"
+    | "HTML_FORM_MULTI"
+    | "FINVU_REDIRECT"
+    | "DYNAMIC_FORM"
+    | "fis13_select"
+    | "trv13_select_provider"
+    | "trv10_201_select"
+    | "search_accidental_fis13"
+    | "search_hospicash_fis13"
+    | "search_transit_fis13"
+    | "search_discover_product_fis13"
+    | "trv11_210_select"
+    | "trv11_210_update_end_station"
+    | "trv11_210_start_end_stop_selection"
+    | "fis12_select_pl"
+    | "fis12_search_pl"
+    | "fis13_addon_select"
+    | "select_metro_trv11"
+    | "init_metro_trv11"
+    | "datetime-local"
+    | "fis14_mutul_fund_select";
 
     payloadField: string;
     values?: string[];
@@ -125,6 +126,18 @@ export default function FormConfig({
     const sessionData = sessionContext?.sessionData;
 
     const onSubmit = async (data: Record<string, string>) => {
+        if (sessionData?.activeFlow === "RTO_PLUS_PART_CANCELLATION") {
+            const nestedField = formConfig.find((field) => field.type === "nestedSelect");
+            if (nestedField) {
+                const nestedItems = data[nestedField.name];
+                const itemsArray = Array.isArray(nestedItems) ? nestedItems : [];
+                const filledItems = itemsArray.filter((item: { id: string }) => item.id !== "");
+                if (filledItems.length < 2) {
+                    toast.error("At least 2 items must be selected for this flow.");
+                    return;
+                }
+            }
+        }
         const formatedData: Record<string, string | number> = {};
         const formData: Record<string, string> = data;
         for (const key in data) {
@@ -401,7 +414,7 @@ export default function FormConfig({
                                 name={field.name}
                                 label={field.label}
                                 required={field.required !== false}
-                                // key={field.payloadField}
+                            // key={field.payloadField}
                             />
                         );
                     case "date":
@@ -411,7 +424,7 @@ export default function FormConfig({
                                 label={field.label}
                                 required={field.required !== false}
                                 type="date"
-                                // key={field.payloadField}
+                            // key={field.payloadField}
                             />
                         );
                     case "datetime-local":
@@ -421,7 +434,7 @@ export default function FormConfig({
                                 label={field.label}
                                 required={field.required !== false}
                                 type="datetime-local"
-                                // key={field.payloadField}
+                            // key={field.payloadField}
                             />
                         );
                     case "select":
@@ -430,7 +443,7 @@ export default function FormConfig({
                                 name={field.name}
                                 label={field.label}
                                 options={field.values || []}
-                                // key={field.payloadField}
+                            // key={field.payloadField}
                             />
                         );
                     case "checkbox":
@@ -443,7 +456,7 @@ export default function FormConfig({
                             />
                         );
                     case "nestedSelect":
-                        return <ItemCustomisationSelector label={field.label} name={field.name} />;
+                        return <ItemCustomisationSelector label={field.label} name={field.name} sessionData={sessionData} />;
                     default:
                         return <></>;
                 }
