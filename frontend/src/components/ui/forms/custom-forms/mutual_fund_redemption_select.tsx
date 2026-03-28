@@ -51,7 +51,7 @@ interface CatalogData {
 }
 
 /* ─────────────── redeem mode ─────────────── */
-type RedeemMode = "AMOUNT" | "UNITS" | "ALL";
+type RedeemMode = "AMOUNT" | "MF_UNITS" | "REDEEM_ALL";
 
 const REDEMPTION_TYPES = new Set(["REDEMPTION", "INSTANT_REDEMPTION"]);
 
@@ -183,12 +183,11 @@ export default function SelectMutualFundRedemptionFIS14({
 
         /* ── Build measure based on redeem mode ── */
         let measure: { unit: string; value: string };
-        if (data.redeemMode === "ALL") {
-            measure = { unit: "UNIT", value: "-1" };
-        } else if (data.redeemMode === "UNITS") {
-            measure = { unit: "UNIT", value: data.itemValue };
+        if (data.redeemMode === "REDEEM_ALL") {
+            measure = { unit: "MF_UNITS", value: "-1" };
+        } else if (data.redeemMode === "MF_UNITS") {
+            measure = { unit: "MF_UNITS", value: data.itemValue };
         } else {
-            // AMOUNT
             measure = { unit: "INR", value: data.itemValue };
         }
 
@@ -435,42 +434,44 @@ export default function SelectMutualFundRedemptionFIS14({
                     {isRedemptionType && (
                         <div className={section}>
                             <p className={sectionTitle}>Redemption Mode</p>
-                            <div className="flex gap-4">
-                                {(["AMOUNT", "UNITS", "ALL"] as RedeemMode[]).map((mode) => (
-                                    <label
-                                        key={mode}
-                                        className="flex items-center gap-2 cursor-pointer text-sm font-medium text-gray-700"
-                                    >
-                                        <input
-                                            type="radio"
-                                            value={mode}
-                                            {...register("redeemMode")}
-                                            className="accent-blue-600"
-                                        />
-                                        {mode === "AMOUNT" && "Redeem by Amount"}
-                                        {mode === "UNITS" && "Redeem by Units"}
-                                        {mode === "ALL" && "Redeem All"}
-                                    </label>
-                                ))}
+                            <div className="flex gap-4 flex-wrap">
+                                {(["AMOUNT", "MF_UNITS", "REDEEM_ALL"] as RedeemMode[]).map(
+                                    (mode) => (
+                                        <label
+                                            key={mode}
+                                            className="flex items-center gap-2 cursor-pointer text-sm font-medium text-gray-700"
+                                        >
+                                            <input
+                                                type="radio"
+                                                value={mode}
+                                                {...register("redeemMode")}
+                                                className="accent-blue-600"
+                                            />
+                                            {mode === "AMOUNT" && "Redeem by Amount"}
+                                            {mode === "MF_UNITS" && "Redeem by Units"}
+                                            {mode === "REDEEM_ALL" && "Redeem All"}
+                                        </label>
+                                    )
+                                )}
                             </div>
 
                             {/* Mode hint */}
                             <p className="text-xs text-gray-400">
                                 {watchedRedeemMode === "AMOUNT" &&
                                     'Will send: measure = { unit: "INR", value: <amount> }'}
-                                {watchedRedeemMode === "UNITS" &&
-                                    'Will send: measure = { unit: "UNIT", value: <units> }'}
-                                {watchedRedeemMode === "ALL" &&
-                                    'Will send: measure = { unit: "UNIT", value: "-1" } (full redemption)'}
+                                {watchedRedeemMode === "MF_UNITS" &&
+                                    'Will send: measure = { unit: "MF_UNITS", value: <units> }'}
+                                {watchedRedeemMode === "REDEEM_ALL" &&
+                                    'Will send: measure = { unit: "MF_UNITS", value: "-1" } — full redemption'}
                             </p>
 
-                            {/* Value input — hidden when ALL */}
-                            {watchedRedeemMode !== "ALL" && (
+                            {/* Value input — hidden for Redeem All */}
+                            {watchedRedeemMode !== "REDEEM_ALL" && (
                                 <div className="flex flex-col">
                                     <label className={lbl}>
                                         {watchedRedeemMode === "AMOUNT"
                                             ? "Amount (INR) *"
-                                            : "Number of Units *"}
+                                            : "Number of Units (MF_UNITS) *"}
                                     </label>
                                     <input
                                         type="text"
@@ -483,6 +484,14 @@ export default function SelectMutualFundRedemptionFIS14({
                                     {errors.itemValue && (
                                         <p className={errCls}>{errors.itemValue.message}</p>
                                     )}
+                                </div>
+                            )}
+
+                            {/* Redeem All info box */}
+                            {watchedRedeemMode === "REDEEM_ALL" && (
+                                <div className="bg-blue-50 border border-blue-200 rounded-md p-2 text-xs text-blue-700">
+                                    ⚡ Full redemption — all units will be redeemed. Value{" "}
+                                    <strong>-1</strong> will be sent automatically.
                                 </div>
                             )}
                         </div>
