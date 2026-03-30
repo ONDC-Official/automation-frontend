@@ -2,7 +2,7 @@ import ToggleButton from "./mini-components/toggle-button";
 import { IoIosArrowDropdownCircle } from "react-icons/io";
 import { toast } from "react-toastify";
 import { putCacheData } from "../../utils/request-utils";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { trackEvent } from "../../utils/analytics";
 
 const keyMapping: Record<string, string> = {
@@ -12,6 +12,7 @@ const keyMapping: Record<string, string> = {
     useGateway: "Use Gateway",
     headerValidaton: "Header Validation",
     useGzip: "Use Gzip",
+    encryptionEnabled: "Encryption Validation",
     totalDifficulty: "Total Difficulty",
 };
 
@@ -23,6 +24,7 @@ interface DifficultyCache {
     headerValidaton: boolean;
     sensitiveTTL?: boolean;
     useGzip: boolean;
+    encryptionEnabled?: boolean;
     totalDifficulty?: number;
 }
 
@@ -38,21 +40,41 @@ const skipItems = ["stopAfterFirstNack", "sensitiveTTL", "useGateway", "timeVali
 interface IProps {
     difficulty_cache: DifficultyCache;
     sessionId: string;
+    domain?: string;
+    usecaseId?: string;
+    version?: string;
 }
 
-const DifficultyCards = ({ difficulty_cache, sessionId }: IProps) => {
+const DifficultyCards = ({ difficulty_cache, sessionId, domain, usecaseId, version }: IProps) => {
     const [difficultyCache, setDifficultCache] = useState<FilteredDifficultyCache>({});
     const [isOpen, setIsOpen] = useState(false);
 
+    const isEncryptionAllowed = useMemo(() => {
+        const normalizedDomain = domain?.trim().toUpperCase() || "";
+        const normalizedUseCase = usecaseId?.trim().toUpperCase() || "";
+        const normalizedVersion = version?.trim() || "";
+
+        return (
+            (normalizedDomain === "FIS13" || normalizedDomain === "ONDC:FIS13") &&
+            normalizedVersion === "2.0.1" &&
+            (normalizedUseCase === "HEALTH INSURANCE" || normalizedUseCase === "HEALTH_INSURANCE")
+        );
+    }, [domain, usecaseId, version]);
+
     useEffect(() => {
-        if (difficulty_cache?.totalDifficulty) {
-            delete difficulty_cache.totalDifficulty;
-        }
-        if (difficulty_cache?.sensitiveTTL) delete difficulty_cache.sensitiveTTL;
-        if (difficulty_cache?.stopAfterFirstNack) {
-            delete difficulty_cache.stopAfterFirstNack;
-        }
-        setDifficultCache(difficulty_cache);
+        if (!difficulty_cache) return;
+
+        // Use any to avoid Omit type errors during filtering
+        const filtered: any = { ...difficulty_cache };
+
+        // Remove items that should not be displayed/controlled here
+        delete filtered.totalDifficulty;
+        delete filtered.sensitiveTTL;
+        delete filtered.stopAfterFirstNack;
+        delete filtered.useGateway;
+        delete filtered.timeValidations;
+
+        setDifficultCache(filtered as FilteredDifficultyCache);
     }, [difficulty_cache]);
 
     useEffect(() => {
@@ -84,21 +106,25 @@ const DifficultyCards = ({ difficulty_cache, sessionId }: IProps) => {
                 </div>
 
                 <IoIosArrowDropdownCircle
-                    className={`h-7 w-7 text-sky-700 transform transition-transform duration-300 ${
-                        isOpen ? "rotate-180" : "rotate-0"
-                    }`}
+                    className={`h-7 w-7 text-sky-700 transform transition-transform duration-300 ${isOpen ? "rotate-180" : "rotate-0"
+                        }`}
                 />
             </div>
 
             <div
-                className={`overflow-hidden transition-all duration-300 ${
-                    isOpen ? "max-h-[1000px] opacity-100" : "max-h-0 opacity-0"
-                }`}
+                className={`overflow-hidden transition-all duration-300 ${isOpen ? "max-h-[1000px] opacity-100" : "max-h-0 opacity-0"
+                    }`}
             >
                 {Object.entries(difficultyCache).length !== 0 && (
                     <div className="flex flex-wrap gap-4 mt-4">
                         {(Object.entries(difficultyCache) as [string, boolean | undefined][])
-                            .filter(([key]) => !skipItems.includes(key))
+                            .filter(([key]) => {
+                                if (skipItems.includes(key)) return false;
+                                if (key === "encryptionEnabled") {
+                                    return isEncryptionAllowed;
+                                }
+                                return true;
+                            })
                             .map(([key, value], index: number) => (
                                 <div
                                     key={index}

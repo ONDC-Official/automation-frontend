@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Flow, MetadataField } from "@/types/flow-types";
 import { ROUTES } from "@constants/routes";
@@ -24,6 +24,7 @@ import {
     HiEye,
     HiOutlineQuestionMarkCircle,
 } from "react-icons/hi";
+import { HiLockClosed, HiLockOpen } from "react-icons/hi2";
 import jp from "jsonpath";
 import FlowHelperTab from "@components/FlowShared/helper-tab";
 import { GetRequestEndpoint } from "@components/FlowShared/guides";
@@ -106,11 +107,11 @@ function extractMetadataValues(
             // Filter out empty, null, undefined values and show "Data not available at this moment"
             const displayValue =
                 value === null ||
-                value === undefined ||
-                value === "" ||
-                (typeof value === "string" && value.trim() === "") ||
-                (Array.isArray(value) && value.length === 0) ||
-                (typeof value === "object" && value !== null && Object.keys(value).length === 0)
+                    value === undefined ||
+                    value === "" ||
+                    (typeof value === "string" && value.trim() === "") ||
+                    (Array.isArray(value) && value.length === 0) ||
+                    (typeof value === "object" && value !== null && Object.keys(value).length === 0)
                     ? "Data not available"
                     : value;
 
@@ -148,9 +149,16 @@ function RenderFlows({
     const activeFlowRef = useRef<string | null>(activeFlow);
     const [cacheSessionData, setCacheSessionData] = useState<SessionCache | null>(null);
     const [sideView, setSideView] = useState<SideViewState>({});
-    const [difficultyCache, setDifficultyCache] = useState<SessionCache["sessionDifficulty"]>(
-        {} as SessionCache["sessionDifficulty"]
-    );
+    const [difficultyCache, setDifficultyCache] = useState<SessionCache["sessionDifficulty"]>({
+        sensitiveTTL: true,
+        useGateway: false,
+        stopAfterFirstNack: true,
+        protocolValidations: true,
+        timeValidations: true,
+        headerValidaton: true,
+        useGzip: false,
+        encryptionEnabled: false,
+    });
     const [isFlowStopped, setIsFlowStopped] = useState<boolean>(false);
     const [selectedTab, setSelectedTab] = useState<"Request" | "Response" | "Metadata" | "Guide">(
         "Request"
@@ -173,6 +181,21 @@ function RenderFlows({
     const [selectedTags, setSelectedTags] = useState<string[]>([]);
     const [activeCallClickedToggle, setActiveCallClickedToggle] = useState<boolean>(false);
     const [isReportDialogOpen, setIsReportDialogOpen] = useState<boolean>(false);
+    const [showEncrypted, setShowEncrypted] = useState<boolean>(false);
+    const [encryptedRequestData, setEncryptedRequestData] = useState<string>("");
+    const [encryptedResponseData, setEncryptedResponseData] = useState<string>("");
+
+    const isEncryptionAllowed = useMemo(() => {
+        const normalizedDomain = cacheSessionData?.domain?.trim().toUpperCase() || "";
+        const normalizedUseCase = cacheSessionData?.usecaseId?.trim().toUpperCase() || "";
+        const normalizedVersion = cacheSessionData?.version?.trim() || "";
+
+        return (
+            (normalizedDomain === "FIS13" || normalizedDomain === "ONDC:FIS13") &&
+            normalizedVersion === "2.0.1" &&
+            (normalizedUseCase === "HEALTH INSURANCE" || normalizedUseCase === "HEALTH_INSURANCE")
+        );
+    }, [cacheSessionData]);
 
     const startPolling = () => {
         if (isPolling) return; // Prevent multiple starts
@@ -531,6 +554,9 @@ function RenderFlows({
                             <DifficultyCards
                                 difficulty_cache={difficultyCache}
                                 sessionId={sessionId}
+                                domain={cacheSessionData?.domain}
+                                usecaseId={cacheSessionData?.usecaseId}
+                                version={cacheSessionData?.version}
                             />
                             <div className="bg-gray-50 rounded-lg border border-sky-200 p-4">
                                 <h2 className="text-base font-semibold text-sky-700 mb-3 flex items-center gap-2">
@@ -646,36 +672,82 @@ function RenderFlows({
                         {/* Sticky Container */}
                         <div className=" bg-gray-100 rounded-md border sticky top-20">
                             {/* <h2 className="m-1 text-lg font-semibold">Request & Response</h2> */}
-                            <Tabs
-                                className="mt-4 ml-2"
-                                options={[
-                                    { key: "Request", label: "Request" },
-                                    { key: "Response", label: "Response" },
-                                    {
-                                        key: "Metadata",
-                                        label: (
-                                            <div className="flex items-center gap-1.5">
-                                                <span>Metadata</span>
-                                                <span
-                                                    className="inline-flex items-center px-1 py-0.5 min-w-[2rem] justify-center rounded-full text-[10px] font-medium bg-gradient-to-r from-yellow-50 to-yellow-100 text-yellow-700 border border-yellow-300 shadow-sm"
-                                                    role="status"
-                                                    aria-label="Beta release"
-                                                >
-                                                    Beta
-                                                </span>
-                                            </div>
-                                        ),
-                                    },
-                                    {
-                                        key: "Guide",
-                                        label: "Guide",
-                                    },
-                                ]}
-                                onSelectOption={(value: string) => {
-                                    setSelectedTab(value as "Request" | "Response" | "Metadata");
-                                }}
-                                defaultTab="Request"
-                            />
+                            <div className="flex items-center justify-between mt-4 ml-2 mr-2">
+                                <Tabs
+                                    className=""
+                                    options={[
+                                        { key: "Request", label: "Request" },
+                                        { key: "Response", label: "Response" },
+                                        {
+                                            key: "Metadata",
+                                            label: (
+                                                <div className="flex items-center gap-1.5">
+                                                    <span>Metadata</span>
+                                                    <span
+                                                        className="inline-flex items-center px-1 py-0.5 min-w-[2rem] justify-center rounded-full text-[10px] font-medium bg-gradient-to-r from-yellow-50 to-yellow-100 text-yellow-700 border border-yellow-300 shadow-sm"
+                                                        role="status"
+                                                        aria-label="Beta release"
+                                                    >
+                                                        Beta
+                                                    </span>
+                                                </div>
+                                            ),
+                                        },
+                                        {
+                                            key: "Guide",
+                                            label: "Guide",
+                                        },
+                                    ]}
+                                    onSelectOption={(value: string) => {
+                                        setSelectedTab(value as "Request" | "Response" | "Metadata");
+                                    }}
+                                    defaultTab="Request"
+                                />
+                                {/* Eye Icon Toggle — visible only when encryption is enabled AND session is FIS13 Health Insurance */}
+                                {difficultyCache?.encryptionEnabled &&
+                                    isEncryptionAllowed && (
+                                        <button
+                                            onClick={() => {
+                                                if (!showEncrypted) {
+                                                    // Generate encrypted versions for preview
+                                                    try {
+                                                        setEncryptedRequestData(
+                                                            requestData && Object.keys(requestData).length > 0
+                                                                ? btoa(JSON.stringify(requestData))
+                                                                : ""
+                                                        );
+                                                        setEncryptedResponseData(
+                                                            responseData && Object.keys(responseData).length > 0
+                                                                ? btoa(JSON.stringify(responseData))
+                                                                : ""
+                                                        );
+                                                    } catch {
+                                                        setEncryptedRequestData("[Encryption preview unavailable]");
+                                                        setEncryptedResponseData("[Encryption preview unavailable]");
+                                                    }
+                                                }
+                                                setShowEncrypted(!showEncrypted);
+                                            }}
+                                            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 shadow-sm border ${showEncrypted
+                                                ? "bg-gradient-to-r from-amber-500 to-orange-500 text-white border-amber-600 hover:from-amber-600 hover:to-orange-600"
+                                                : "bg-white text-sky-700 border-sky-300 hover:bg-sky-50 hover:border-sky-400"
+                                                }`}
+                                            title={showEncrypted ? "Show decrypted payload" : "Show encrypted payload"}
+                                        >
+                                            {showEncrypted ? (
+                                                <>
+                                                    <HiLockClosed className="w-3.5 h-3.5" />
+                                                    <span>Encrypted</span>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <HiLockOpen className="w-3.5 h-3.5" />
+                                                    <span>Decrypted</span>
+                                                </>
+                                            )}
+                                        </button>
+                                    )}
+                            </div>
 
                             <div className="p-2">
                                 {cacheSessionData ? (
@@ -713,12 +785,12 @@ function RenderFlows({
                                                                     <td className="py-2 px-3 text-gray-200 whitespace-pre-wrap break-words">
                                                                         {typeof data.value ===
                                                                             "object" &&
-                                                                        data.value !== null
+                                                                            data.value !== null
                                                                             ? JSON.stringify(
-                                                                                  data.value,
-                                                                                  null,
-                                                                                  2
-                                                                              )
+                                                                                data.value,
+                                                                                null,
+                                                                                2
+                                                                            )
                                                                             : String(data.value)}
                                                                     </td>
                                                                 </tr>
@@ -733,14 +805,31 @@ function RenderFlows({
                                                     </div>
                                                 )}
                                             </div>
+                                        ) : showEncrypted && difficultyCache?.encryptionEnabled ? (
+                                            /* Encrypted payload view */
+                                            <div className="bg-gray-900 rounded-md p-4">
+                                                <div className="flex items-center gap-2 mb-3">
+                                                    <HiLockClosed className="w-4 h-4 text-amber-400" />
+                                                    <span className="text-xs font-semibold text-amber-400 uppercase tracking-wider">
+                                                        Encrypted Payload
+                                                    </span>
+                                                </div>
+                                                <pre className="text-xs text-green-400 font-mono whitespace-pre-wrap break-all leading-relaxed overflow-auto max-h-96">
+                                                    {selectedTab === "Request"
+                                                        ? encryptedRequestData || "No data"
+                                                        : selectedTab === "Response"
+                                                            ? encryptedResponseData || "No data"
+                                                            : "Select Request or Response tab"}
+                                                </pre>
+                                            </div>
                                         ) : (
                                             <JsonView
                                                 value={
                                                     selectedTab === "Request"
                                                         ? requestData
                                                         : selectedTab === "Response"
-                                                          ? responseData
-                                                          : {}
+                                                            ? responseData
+                                                            : {}
                                                 }
                                                 style={githubDarkTheme}
                                                 className="rounded-md"

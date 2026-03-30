@@ -37,6 +37,7 @@ export type SessionDifficulty = {
     timeValidations: boolean;
     headerValidaton: boolean;
     useGzip: boolean;
+    encryptionEnabled?: boolean;
 };
 export interface SessionCache {
     // against session_id
