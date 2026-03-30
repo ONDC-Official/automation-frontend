@@ -1,14 +1,16 @@
 import { FC, useState, useCallback, ComponentProps, MouseEvent, useMemo } from "react";
+import { useSearchParams } from "react-router-dom";
 import { FaCopy } from "react-icons/fa";
 import { FiList, FiMessageSquare, FiFileText } from "react-icons/fi";
 import { SegmentedTabs, type TabItem } from "@components/ui/SegmentedTabs";
 import JsonViewer from "@pages/protocol-playground/ui/Json-path-extractor";
 import { SelectedType } from "@pages/protocol-playground/ui/session-data-tab";
-import type { OpenAPISpecification } from "../types";
+import type { OpenAPISpecification, ValidationTableAction } from "../types";
 import { getActionAttributes, getValidationsForAction } from "./schemaAttributes";
 import AttributesPanel from "./AttributesPanel";
 import CommentsPanel from "./CommentsPanel";
 import NotesPanel from "./NotesPanel";
+import { getLeafRowsForApi, type RawTableAction } from "./attributePanelUtils";
 
 type RightPanelTab = "attributes" | "comments" | "notes";
 
@@ -40,6 +42,8 @@ interface FlowActionDetailsProps {
     spec: OpenAPISpecification | null | undefined;
     useCaseId?: string;
     flowId?: string;
+    /** Validation table data keyed by action name. Loaded lazily from API. */
+    validationTableData?: Record<string, ValidationTableAction> | null;
 }
 
 const FlowActionDetails: FC<FlowActionDetailsProps> = ({
@@ -49,15 +53,49 @@ const FlowActionDetails: FC<FlowActionDetailsProps> = ({
     spec,
     useCaseId,
     flowId,
+    validationTableData,
 }) => {
-    const [rightPanelTab, setRightPanelTab] = useState<RightPanelTab>("attributes");
-    const [selectedPath, setSelectedPath] = useState<string | null>(null);
+    const [searchParams, setSearchParams] = useSearchParams();
+
+    const [rightPanelTab, setRightPanelTabState] = useState<RightPanelTab>(() => {
+        const p = searchParams.get("panel");
+        return p === "comments" || p === "notes" ? (p as RightPanelTab) : "attributes";
+    });
+    const [selectedPath, setSelectedPathState] = useState<string | null>(
+        () => searchParams.get("attr") ?? null
+    );
     const [expanded, setExpanded] = useState(false);
 
-    const handleKeyClick = useCallback((path: string, _k: string, e: MouseEvent) => {
-        e.stopPropagation();
-        setSelectedPath(path);
-    }, []);
+    const setRightPanelTab = useCallback(
+        (tab: RightPanelTab) => {
+            setRightPanelTabState(tab);
+            setSearchParams(
+                (prev) => {
+                    const next = new URLSearchParams(prev);
+                    next.set("panel", tab);
+                    return next;
+                },
+                { replace: true }
+            );
+        },
+        [setSearchParams]
+    );
+
+    const handleKeyClick = useCallback(
+        (path: string, _k: string, e: MouseEvent) => {
+            e.stopPropagation();
+            setSelectedPathState(path);
+            setSearchParams(
+                (prev) => {
+                    const next = new URLSearchParams(prev);
+                    next.set("attr", path);
+                    return next;
+                },
+                { replace: true }
+            );
+        },
+        [setSearchParams]
+    );
 
     const isSelected = useCallback(
         (path: string) => ({
@@ -73,6 +111,13 @@ const FlowActionDetails: FC<FlowActionDetailsProps> = ({
     );
 
     const apiForAttributes = stepApi ?? actionApi;
+
+    const rawTableRows = useMemo(
+        () => validationTableData
+            ? getLeafRowsForApi(validationTableData as Record<string, RawTableAction>, apiForAttributes)
+            : [],
+        [validationTableData, apiForAttributes]
+    );
 
     const attributes = useMemo(
         () =>
@@ -127,6 +172,7 @@ const FlowActionDetails: FC<FlowActionDetailsProps> = ({
                             <AttributesPanel
                                 attributes={attributes}
                                 validations={validations}
+                                rawTableRows={rawTableRows}
                                 spec={spec}
                                 actionApi={actionApi}
                                 stepApi={stepApi}

@@ -1,24 +1,28 @@
 import { useNavigate } from "react-router-dom";
-import { FaArrowLeft } from "react-icons/fa";
-import IconButton from "@components/ui/mini-components/icon-button";
+import { FiChevronRight, FiArrowLeft } from "react-icons/fi";
 import { ROUTES } from "@constants/routes";
 
 export default function DeveloperGuideHeader() {
     const navigate = useNavigate();
 
     return (
-        <div className="h-16 flex items-center justify-between bg-gradient-to-r from-white to-sky-50 border-b border-sky-100 shadow-sm">
-            <div className="flex items-center gap-6 w-full container mx-auto">
-                <IconButton
-                    icon={<FaArrowLeft size={16} />}
-                    label="Back to Home"
+        <header className="sticky top-0 z-20 bg-white/90 backdrop-blur-md border-b border-gray-200">
+            <div className="container mx-auto px-6 h-14 flex items-center gap-2">
+                <button
+                    type="button"
                     onClick={() => navigate(ROUTES.HOME)}
-                    color="gray"
-                />
-                <span className="text-xl font-bold bg-gradient-to-r from-sky-600 via-sky-500 to-sky-600 bg-clip-text text-transparent tracking-tight">
-                    DEVELOPER GUIDE
-                </span>
+                    className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-sky-600 transition-colors duration-150 group"
+                    aria-label="Back to Home"
+                >
+                    <FiArrowLeft
+                        size={13}
+                        className="group-hover:-translate-x-0.5 transition-transform duration-150"
+                    />
+                    <span>Home</span>
+                </button>
+                <FiChevronRight size={13} className="text-gray-300" />
+                <span className="text-sm font-semibold text-gray-800">Developer Guide</span>
             </div>
-        </div>
+        </header>
     );
 }

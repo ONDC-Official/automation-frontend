@@ -1,5 +1,4 @@
 import { useNavigate } from "react-router-dom";
-import DeveloperGuideHeader from "./DeveloperGuideHeader";
 import { ROUTES } from "@constants/routes";
 import gettingStartedContent from "./getting-started.md?raw";
 import MdFileRender from "@components/MdFileRender";
@@ -9,9 +8,8 @@ const DeveloperGuideGettingStarted = () => {
 
     return (
         <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-sky-50/30">
-            <DeveloperGuideHeader />
             <main className="container mx-auto py-8 space-y-6">
-                <div className="flex items-center justify-end mb-2">
+                <div className="flex items-center justify-start mb-2">
                     <button
                         type="button"
                         onClick={() => navigate(ROUTES.DEVELOPER_GUIDE)}

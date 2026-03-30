@@ -181,7 +181,7 @@ export const apiClient = new ApiClient({
 });
 
 export const developerGuideApiClient = new ApiClient({
-    baseURL: import.meta.env.VITE_DEVELOPER_GUIDE_BACKEND_URL,
+    baseURL: import.meta.env.VITE_BACKEND_URL,
     withCredentials: true,
     timeout: 30000,
 });

@@ -1,8 +1,13 @@
+// ─── OpenAPI 3.0 Base Types ───────────────────────────────────────────────────
+
 export interface OpenAPIInfo {
-    title: string;
-    description: string;
+    title?: string;
+    description?: string;
     version: string;
     domain?: string;
+    "x-usecases"?: string[];
+    "x-branch-name"?: string;
+    "x-reporting"?: boolean;
 }
 
 export interface OpenAPISecurityScheme {
@@ -23,6 +28,9 @@ export interface OpenAPISchema {
     required?: string[];
     enum?: unknown[];
     allOf?: unknown[];
+    oneOf?: unknown[];
+    anyOf?: unknown[];
+    items?: unknown;
     additionalProperties?: boolean | Record<string, unknown>;
     $ref?: string;
     [key: string]: unknown;
@@ -68,6 +76,8 @@ export interface OpenAPIComponents {
     [key: string]: unknown;
 }
 
+// ─── Flow Types ───────────────────────────────────────────────────────────────
+
 export interface MockExample {
     name?: string;
     description?: string;
@@ -92,40 +102,63 @@ export interface FlowStep {
         summary?: string;
         value?: unknown;
     };
-    /** Examples at step level (preferred); also supported under mock.examples for backward compatibility */
     examples?: MockExample[];
     mock?: {
         examples?: MockExample[];
-        /** Base64-encoded generate function for this step */
         generate?: string;
-        /** Base64-encoded validate function for this step */
         validate?: string;
-        /** Base64-encoded requirements for this step */
         requirements?: string;
         [key: string]: unknown;
     };
 }
 
-export interface Flow {
+export interface FlowConfig {
     summary?: string;
-    meta?: {
-        use_case_id?: string;
-        domain?: string;
-        flowId?: string;
-        flowName?: string;
-        description?: string;
-        [key: string]: unknown;
-    };
-    details?: Array<{
-        description?: string;
-    }>;
-    reference?: string;
     steps: FlowStep[];
-    /** Use case for x-attributes lookup; also read from meta.use_case_id when present */
-    useCaseId?: string;
-    /** Base64-encoded helper JS library for mock generation */
     helperLib?: string;
+    details?: Array<{ description?: string }>;
+    reference?: string;
+    [key: string]: unknown;
 }
+
+export interface FlowEntry {
+    domain?: string;
+    version?: string;
+    type: string;
+    flowId: string;
+    usecase: string;
+    tags: string[];
+    description: string;
+    config: FlowConfig;
+}
+
+// ─── Error Codes ──────────────────────────────────────────────────────────────
+
+export interface ErrorCode {
+    Event: string;
+    Description: string;
+    From: string;
+    code: string | number;
+}
+
+export interface ErrorCodes {
+    code: ErrorCode[];
+}
+
+// ─── Supported Actions ────────────────────────────────────────────────────────
+
+export interface SupportedActions {
+    supportedActions: Record<string, string[]>;
+    apiProperties: Record<
+        string,
+        {
+            async_predecessor: string | null;
+            transaction_partner: string[];
+        }
+    >;
+}
+
+// ─── Validations ──────────────────────────────────────────────────────────────
 
 export interface XValidationRule {
     _NAME_?: string;
@@ -150,6 +183,8 @@ export interface XValidationTestGroup {
     [key: string]: unknown;
 }
 
+// ─── Root Spec Type ───────────────────────────────────────────────────────────
+
 export interface OpenAPISpecification {
     openapi: string;
     info: OpenAPIInfo;
@@ -158,7 +193,7 @@ export interface OpenAPISpecification {
         [path: string]: OpenAPIPathItem;
     };
     components?: OpenAPIComponents;
-    "x-flows"?: Flow[];
+    "x-flows"?: FlowEntry[];
     "x-attributes"?:
         | Array<{
               meta?: { use_case_id?: string };
@@ -169,4 +204,105 @@ export interface OpenAPISpecification {
         string,
         Record<string, XValidationTestGroup[]> | Record<string, unknown>
     >;
+    "x-errorcodes"?: ErrorCodes;
+    "x-supported-actions"?: SupportedActions;
+    "x-docs"?: Record<string, string>;
+    "x-changelog"?: ChangelogEntry[];
+}
+
+// ─── Validation Table (from API validationTable section) ─────────────────────
+
+export interface ValidationTableRow {
+    rowType: "group" | "leaf";
+    name: string;
+    group: string;
+    scope: string;
+    description: string;
+    skipIf: string;
+    errorCode: string;
+    successCode: string;
+}
+
+export interface ValidationTableAction {
+    action: string;
+    codeName: string;
+    numLeafTests: number;
+    generated: string;
+    rows: ValidationTableRow[];
+}
+
+export interface ValidationTableSection {
+    domain?: string;
+    version?: string;
+    ingestedAt?: string;
+    table: Record<string, ValidationTableAction>;
+}
+
+// ─── API Response Types ───────────────────────────────────────────────────────
+
+export interface BuildEntry {
+    key: string;
+    version: Array<{
+        key: string;
+        usecase: string[];
+    }>;
+}
+
+// ─── Changelog Types ─────────────────────────────────────────────────────────
+
+export type ChangeKind = "added" | "removed" | "modified";
+
+export interface ChangeEntry {
+    kind: ChangeKind;
+    /** Dot-path to the changed item */
+    path: string;
+    summary: string;
+    before?: string;
+    after?: string;
+}
+
+export interface ChangeSection {
+    section: string;
+    label: string;
+    totalChanges: number;
+    entries: ChangeEntry[];
+    truncated: boolean;
+    truncatedCount: number;
+}
+
+export interface ChangelogEntry {
+    domain?: string;
+    version?: string;
+    fromVersion: string;
+    toVersion: string;
+    branch?: string;
+    totalChanges: number;
+    generatedAt?: string;
+    summary?: {
+        totalChanges: number;
+        sections: { section: string; label: string; count: number }[];
+    };
+    sections?: ChangeSection[];
+    [key: string]: unknown;
+}
+
+export interface SpecResponse {
+    meta?: Record<string, unknown> | null;
+    flows?: FlowEntry[];
+    attributes?: Array<{
+        domain?: string;
+        version?: string;
+        useCaseId?: string;
+        attributeSet?: Record<string, Record<string, unknown>>;
+    }>;
+    docs?: Array<{
+        domain?: string;
+        version?: string;
+        slug: string;
+        content: string;
+        order?: number;
+    }>;
+    validations?: { validations?: unknown; [key: string]: unknown } | null;
+    validationTable?: ValidationTableSection | null;
+    changelog?: ChangelogEntry[];
 }

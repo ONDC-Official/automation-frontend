@@ -58,6 +58,10 @@ export const API_ROUTES = {
         ME: "/auth/api/me",
     },
 
+    HEALTH: {
+        API_SERVICE: "/health/api-service",
+    },
+
     NOTES: {
         BASE: "api/notes",
         BY_ID: (noteId: string) => `api/notes/${noteId}`,
@@ -67,5 +71,11 @@ export const API_ROUTES = {
         BASE: "api/comments",
         BY_ID: (commentsId: string) => `api/comments/${commentsId}`,
         RESOLVE: (commentsId: string) => `api/comments/${commentsId}/resolve`,
+    },
+
+    DEV_GUIDE: {
+        BUILDS: "dev-guide/available-builds",
+        SPEC: (domain: string, version: string) =>
+            `dev-guide/spec/${encodeURIComponent(domain)}/${encodeURIComponent(version)}`,
     },
 } as const;

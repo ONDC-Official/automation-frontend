@@ -1,4 +1,5 @@
 import { useContext } from "react";
+import { toast } from "react-toastify";
 import { FormInput } from "../form-input";
 import FormSelect from "../form-select";
 import CheckboxGroup, { CheckboxOption } from "../checkbox";
@@ -40,56 +41,62 @@ import FIS13AddonSelect from "../custom-forms/fis13-addon-select";
 import FIS12Search from "../custom-forms/fis12-search";
 import SelectMetroTRV11 from "../custom-forms/select-metro-trv11";
 import { RJSFSchema } from "@rjsf/utils";
+import RetINVLInitILBP from "../custom-forms/retinvl-ilbp";
 import ReteB2BSelect from "../custom-forms/reteb2b-select";
 
 import InitMetroTRV11 from "../custom-forms/init-metro-trv11";
+import SelectMutualFundFIS14 from "../custom-forms/mutual_fund_select";
+import SelectMutualFundRedemptionFIS14 from "../custom-forms/mutual_fund_redemption_select";
 
 export interface FormFieldConfigType {
     name: string;
     label: string;
     type:
-    | "text"
-    | "select"
-    | "textarea"
-    | "list"
-    | "date"
-    | "checkbox"
-    | "boolean"
-    | "trv12_bus_seat_selection"
-    | "airline_select"
-    | "intercity_select"
-    | "airline_seat_select"
-    | "ret10_grocery_select"
-    | "reteb2b_select"
-    | "ret11_nestedSelect"
-    | "retinvl_init"
-    | "nestedSelect"
-    | "trv_select"
-    | "trv10_select"
-    | "trv10_schedule"
-    | "trv10_schedule_rental"
-    | "trv11_select"
-    | "hotel_select"
-    | "HTML_FORM"
-    | "HTML_FORM_MULTI"
-    | "FINVU_REDIRECT"
-    | "DYNAMIC_FORM"
-    | "fis13_select"
-    | "trv13_select_provider"
-    | "trv10_201_select"
-    | "search_accidental_fis13"
-    | "search_hospicash_fis13"
-    | "search_transit_fis13"
-    | "search_discover_product_fis13"
-    | "trv11_210_select"
-    | "trv11_210_update_end_station"
-    | "trv11_210_start_end_stop_selection"
-    | "fis12_select_pl"
-    | "fis12_search_pl"
-    | "fis13_addon_select"
-    | "select_metro_trv11"
-    | "init_metro_trv11"
-    | "datetime-local";
+        | "text"
+        | "select"
+        | "textarea"
+        | "list"
+        | "date"
+        | "checkbox"
+        | "boolean"
+        | "trv12_bus_seat_selection"
+        | "airline_select"
+        | "intercity_select"
+        | "airline_seat_select"
+        | "ret10_grocery_select"
+        | "reteb2b_select"
+        | "ret11_nestedSelect"
+        | "retinvl_init"
+        | "retinvl_init_ilbp"
+        | "nestedSelect"
+        | "trv_select"
+        | "trv10_select"
+        | "trv10_schedule"
+        | "trv10_schedule_rental"
+        | "trv11_select"
+        | "hotel_select"
+        | "HTML_FORM"
+        | "HTML_FORM_MULTI"
+        | "FINVU_REDIRECT"
+        | "DYNAMIC_FORM"
+        | "fis13_select"
+        | "trv13_select_provider"
+        | "trv10_201_select"
+        | "search_accidental_fis13"
+        | "search_hospicash_fis13"
+        | "search_transit_fis13"
+        | "search_discover_product_fis13"
+        | "trv11_210_select"
+        | "trv11_210_update_end_station"
+        | "trv11_210_start_end_stop_selection"
+        | "fis12_select_pl"
+        | "fis12_search_pl"
+        | "fis13_addon_select"
+        | "select_metro_trv11"
+        | "init_metro_trv11"
+        | "datetime-local"
+        | "fis14_mutul_fund_select"
+        | "fis14_mf_redemption_select";
 
     payloadField: string;
     values?: string[];
@@ -121,6 +128,18 @@ export default function FormConfig({
     const sessionData = sessionContext?.sessionData;
 
     const onSubmit = async (data: Record<string, string>) => {
+        if (sessionData?.activeFlow === "RTO_PLUS_PART_CANCELLATION") {
+            const nestedField = formConfig.find((field) => field.type === "nestedSelect");
+            if (nestedField) {
+                const nestedItems = data[nestedField.name];
+                const itemsArray = Array.isArray(nestedItems) ? nestedItems : [];
+                const filledItems = itemsArray.filter((item: { id: string }) => item.id !== "");
+                if (filledItems.length < 2) {
+                    toast.error("At least 2 items must be selected for this flow.");
+                    return;
+                }
+            }
+        }
         const formatedData: Record<string, string | number> = {};
         const formData: Record<string, string> = data;
         for (const key in data) {
@@ -214,6 +233,12 @@ export default function FormConfig({
         return <Ret10GrocerySelect submitEvent={submitEvent} />;
     }
 
+    if (formConfig.find((field) => field.type === "retinvl_init")) {
+        return <RetINVLInit submitEvent={submitEvent} />;
+    }
+    if (formConfig.find((field) => field.type === "retinvl_init_ilbp")) {
+        return <RetINVLInitILBP submitEvent={submitEvent} />;
+    }
     if (formConfig.find((field) => field.type === "ret11_nestedSelect")) {
         const field = formConfig.find((field) => field.type === "ret11_nestedSelect")!;
         return (
@@ -352,6 +377,14 @@ export default function FormConfig({
     if (formConfig.find((field) => field.type === "select_metro_trv11")) {
         return <SelectMetroTRV11 submitEvent={submitEvent} />;
     }
+    if (formConfig.find((field) => field.type === "fis14_mutul_fund_select")) {
+        return <SelectMutualFundFIS14 submitEvent={submitEvent} formConfig={formConfig} />;
+    }
+    if (formConfig.find((field) => field.type === "fis14_mf_redemption_select")) {
+        return (
+            <SelectMutualFundRedemptionFIS14 submitEvent={submitEvent} formConfig={formConfig} />
+        );
+    }
 
     // NOTE: The JsonSchemaForm check must come after all other specific form type checks above.
     // Check for schema form
@@ -388,7 +421,7 @@ export default function FormConfig({
                                 name={field.name}
                                 label={field.label}
                                 required={field.required !== false}
-                            // key={field.payloadField}
+                                // key={field.payloadField}
                             />
                         );
                     case "date":
@@ -398,7 +431,7 @@ export default function FormConfig({
                                 label={field.label}
                                 required={field.required !== false}
                                 type="date"
-                            // key={field.payloadField}
+                                // key={field.payloadField}
                             />
                         );
                     case "datetime-local":
@@ -408,7 +441,7 @@ export default function FormConfig({
                                 label={field.label}
                                 required={field.required !== false}
                                 type="datetime-local"
-                            // key={field.payloadField}
+                                // key={field.payloadField}
                             />
                         );
                     case "select":
@@ -417,7 +450,7 @@ export default function FormConfig({
                                 name={field.name}
                                 label={field.label}
                                 options={field.values || []}
-                            // key={field.payloadField}
+                                // key={field.payloadField}
                             />
                         );
                     case "checkbox":
@@ -430,7 +463,13 @@ export default function FormConfig({
                             />
                         );
                     case "nestedSelect":
-                        return <ItemCustomisationSelector label={field.label} name={field.name} />;
+                        return (
+                            <ItemCustomisationSelector
+                                label={field.label}
+                                name={field.name}
+                                sessionData={sessionData}
+                            />
+                        );
                     default:
                         return <></>;
                 }

@@ -1,10 +1,18 @@
 import { GoCodespaces, GoWorkflow } from "react-icons/go";
 import { MdSchema } from "react-icons/md";
-import { FaUserPlus, FaScrewdriverWrench } from "react-icons/fa6";
+import { FaChartLine, FaUserPlus, FaScrewdriverWrench } from "react-icons/fa6";
 import { ROUTES } from "@constants/routes";
 import { Feature } from "./types";
 
 export const features: Feature[] = [
+    {
+        title: "Developer Guide",
+        subtitle: "Explore ONDC Flows, Schemas, and Examples",
+        description:
+            "Explore ONDC flows, use cases, and protocol actions. View request/response payloads and add notes for your development workflow.",
+        path: ROUTES.DEVELOPER_GUIDE,
+        icon: <FaScrewdriverWrench className="text-sky-600 text-4xl" />,
+    },
     {
         title: "Schema Validation",
         subtitle: "Verify Individual Payloads Instantly",
@@ -47,11 +55,11 @@ export const features: Feature[] = [
         icon: <FaUserPlus className="text-sky-600 text-4xl" />,
     },
     {
-        title: "Developer Options",
-        subtitle: "Developer Guide & Flow Explorer",
+        title: "Seller Load Testing",
+        subtitle: "Simulate high-volume seller flows",
         description:
-            "Explore ONDC flows, use cases, and protocol actions. View request/response payloads and add notes for your development workflow.",
-        path: ROUTES.DEVELOPER_GUIDE,
-        icon: <FaScrewdriverWrench className="text-sky-600 text-4xl" />,
+            "Create sessions and run discovery and pre-order load tests for seller integrations.",
+        path: ROUTES.SELLER_LOAD_TESTING,
+        icon: <FaChartLine className="text-sky-600 text-4xl" />,
     },
 ];
