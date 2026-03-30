@@ -3,20 +3,12 @@ import { SubmitEventParams } from "../../../../types/flow-types";
 import { FaRegPaste } from "react-icons/fa6";
 import PayloadEditor from "../../mini-components/payload-editor";
 
-// --- NEW: Validation Constants ---
-const OFFER_RULES: Record<string, { items: string[], minVal?: number, additive: boolean }> = {
-    "discp10": { items: ["I1", "I2", "I3", "I4"], minVal: 500, additive: true },
-    "flat150": { items: ["I5", "I6", "I7", "I8"], minVal: 1000, additive: true },
-    "slab1": { items: ["I5"], additive: false },
-    "slab2": { items: ["I2"], additive: false },
-    "freebie1": { items: ["I1"], additive: false },
-    "buy2get3": { items: ["I1", "I2"], additive: false },
-};
-
-// Mock Prices for validation (from your on_search object)
-const ITEM_PRICES: Record<string, number> = {
-    "I1": 100, "I2": 200, "I5": 690, "I8": 690 
-};
+export interface DynamicOfferRule {
+    id: string;
+    itemIds: string[];
+    minOrderValue: number;
+    isAdditive: boolean;
+}
 
 interface ReteB2BItem {
     itemId: string;
@@ -80,6 +72,8 @@ export default function ReteB2BSelect({
     const [locationOptions, setLocationOptions] = useState<string[]>([]);
     const [fulfillmentOptions, setFulfillmentOptions] = useState<string[]>([]);
     const [offers, setOffers] = useState<CatalogOffer[]>([]);
+    const [dynamicOfferRules, setDynamicOfferRules] = useState<Record<string, DynamicOfferRule>>({});
+    const [itemPrices, setItemPrices] = useState<Record<string, number>>({});
 
     const [form, setForm] = useState<RetailerCustomerInput>({
         type: "new",
@@ -95,30 +89,36 @@ export default function ReteB2BSelect({
         ],
     });
 
-    // --- NEW: Validation Helper ---
+    // --- Dynamic Validation Helper ---
     const getOfferValidationMessage = (offerId: string): string | null => {
-        const rule = OFFER_RULES[offerId];
+        const rule = dynamicOfferRules[offerId];
         if (!rule) return null;
 
-        // 1. Check if any item in cart is compatible
-        const hasCompatibleItem = form.items.some(item => rule.items.includes(item.itemId));
-        if (!hasCompatibleItem) return `Offer only valid for items: ${rule.items.join(", ")}`;
-
-        // 2. Check Additivity (If current offer is not additive, check if others are already selected)
-        const selected = form.available_offers || [];
-        if (selected.length > 0) {
-            // If we are selecting a non-additive offer
-            if (!rule.additive) return "This offer cannot be combined with others.";
-            
-            // If an existing selected offer is non-additive
-            const hasNonAdditiveSelected = selected.some(id => OFFER_RULES[id] && !OFFER_RULES[id].additive);
-            if (hasNonAdditiveSelected) return "An existing non-combinable offer is already selected.";
+        // 1. Item Compatibility (If the offer is tied to specific items)
+        if (rule.itemIds && rule.itemIds.length > 0) {
+            const hasCompatibleItem = form.items.some(item =>
+                item.itemId && rule.itemIds.includes(item.itemId) && item.quantity > 0
+            );
+            if (!hasCompatibleItem) return `Valid for: ${rule.itemIds.join(", ")}`;
         }
 
-        // 3. Check Minimum Order Value (Optional/Estimated)
-        if (rule.minVal) {
-            const total = form.items.reduce((sum, item) => sum + ((ITEM_PRICES[item.itemId] || 0) * item.quantity), 0);
-            if (total < rule.minVal) return `Min order value of ₹${rule.minVal} required. Current: ₹${total}`;
+        // 2. Additivity
+        const selected = form.available_offers || [];
+        const otherSelected = selected.filter(id => id !== offerId);
+        if (otherSelected.length > 0) {
+            if (!rule.isAdditive) return "Cannot combine with other offers.";
+            const hasNonAdditiveSelected = otherSelected.some(id => dynamicOfferRules[id] && !dynamicOfferRules[id].isAdditive);
+            if (hasNonAdditiveSelected) return "A non-combinable offer is already active.";
+        }
+
+        // 3. Dynamic Order Value Calculation
+        if (rule.minOrderValue > 0) {
+            // If rule has specific itemIds, we only count the value of those qualifying items
+            const total = form.items.reduce((sum, item) => {
+                if (rule.itemIds && rule.itemIds.length > 0 && !rule.itemIds.includes(item.itemId)) return sum;
+                return sum + ((itemPrices[item.itemId] || 0) * item.quantity);
+            }, 0);
+            if (total < rule.minOrderValue) return `Min value ₹${rule.minOrderValue} required on valid items (Current: ₹${total})`;
         }
 
         return null;
@@ -136,23 +136,62 @@ export default function ReteB2BSelect({
                 if (provider.fulfillments) {
                     setFulfillmentOptions(provider.fulfillments.map((f) => f.id));
                 }
-                const collectedOffers: CatalogOffer[] = [];
-                if (provider.offers) {
-                    collectedOffers.push(...provider.offers);
-                }
+
+                // Extract Item Prices Dynamically
+                const parsedPrices: Record<string, number> = {};
                 provider.items?.forEach((item: any) => {
-                    if (item.tags) {
-                        const offerTag = item.tags.find((t: any) => t.code === "offers");
-                        if (offerTag?.list) {
-                            offerTag.list.forEach((o: any) => {
-                                collectedOffers.push({
-                                    id: o.value,
-                                    descriptor: { code: o.code || "unknown" },
-                                });
+                    parsedPrices[item.id] = parseFloat(item.price?.value || "0");
+                });
+                setItemPrices(parsedPrices);
+
+                // Extract Offers and Build Rules Dynamically
+                const rules: Record<string, DynamicOfferRule> = {};
+                const collectedOffers: any[] = provider.offers || [];
+
+                // Standardizing rules from payload tags (highly dynamic to adapt to different on_search structures)
+                collectedOffers.forEach((off: any) => {
+                    let minVal = 0;
+                    let isAdditive = true;
+                    // Provide defaults so even empty structures adapt gracefully
+                    let itemIds: string[] = Array.isArray(off.item_ids) ? off.item_ids : [];
+
+                    // Dynamically scrape all tags to find offer rules constraints
+                    off.tags?.forEach((tag: any) => {
+                        const tCode = tag.code || tag.descriptor?.code;
+                        if (tCode === "rules" || tCode === "qualifier" || tCode === "meta") {
+                            tag.list?.forEach((l: any) => {
+                                const lCode = l.code || l.descriptor?.code;
+                                if (lCode === "min_value") minVal = parseFloat(l.value || "0");
+                                if (lCode === "additive") {
+                                    isAdditive = l.value === "true" || l.value === "yes";
+                                    // Make sure "false" or "no" results in false
+                                    if (l.value === "false" || l.value === "no") isAdditive = false;
+                                }
+                                if (lCode === "item_ids") {
+                                    // In case itemIds are provided as a comma separated string within rules
+                                    if (l.value) {
+                                        itemIds = l.value.split(",").map((s: string) => s.trim());
+                                    }
+                                }
                             });
                         }
-                    }
+                        // Fallback: Check if there's an explicit item_ids tag group with a list of values
+                        if (tCode === "item_ids" && itemIds.length === 0) {
+                            if (tag.list) {
+                                itemIds = tag.list.map((l: any) => l.value);
+                            }
+                        }
+                    });
+
+                    rules[off.id] = {
+                        id: off.id,
+                        itemIds: itemIds,
+                        minOrderValue: minVal,
+                        isAdditive: isAdditive
+                    };
                 });
+                setDynamicOfferRules(rules);
+
                 const uniqueOffers = Array.from(
                     new Map(collectedOffers.map((o) => [o.id, o])).values()
                 );
@@ -208,7 +247,7 @@ export default function ReteB2BSelect({
     const submit = async () => {
         if (!form.city_code) { alert("City code is required"); return; }
         if (form.type === "new") {
-            if (!form.customer_id || !form.phone_number || !form.email || !form.tax_number || 
+            if (!form.customer_id || !form.phone_number || !form.email || !form.tax_number ||
                 !form.provider_tax_number || !form.shop_name || !form.address) {
                 alert("All fields required for new retailer");
                 return;
