@@ -376,11 +376,13 @@ export default function SelectMutualFundRedemptionFIS14({
                                                 ? "Select an item"
                                                 : "Select a provider first"}
                                         </option>
-                                        {(selectedProvider?.items ?? []).map((item) => (
-                                            <option key={item.id} value={item.id}>
-                                                {item.name} ({item.id})
-                                            </option>
-                                        ))}
+                                        {(selectedProvider?.items ?? [])
+                                            .filter((_, index) => index !== 0)
+                                            .map((item) => (
+                                                <option key={item.id} value={item.id}>
+                                                    {item.name} ({item.id})
+                                                </option>
+                                            ))}
                                     </select>
                                 )}
                             />
