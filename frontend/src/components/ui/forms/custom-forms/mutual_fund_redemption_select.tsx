@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useForm, useFieldArray, Controller } from "react-hook-form";
-import { FaRegPaste } from "react-icons/fa6";
+import { FaRegPaste, FaPlus, FaTrash } from "react-icons/fa6";
 import { toast } from "react-toastify";
 import PayloadEditor from "@/components/ui/mini-components/payload-editor";
 import { SubmitEventParams } from "@/types/flow-types";
@@ -106,7 +106,7 @@ export default function SelectMutualFundRedemptionFIS14({
         },
     });
 
-    useFieldArray({ control, name: "agentCreds" });
+    const { fields, append, remove } = useFieldArray({ control, name: "agentCreds" });
 
     const watchedProviderId = watch("providerId");
     const watchedItemId = watch("itemId");
@@ -496,8 +496,8 @@ export default function SelectMutualFundRedemptionFIS14({
                         </div>
                     )}
 
-                    {/* ── Customer Details (commented out) ── */}
-                    {/* <div className={section}>
+                    {/* ── Customer Details ── */}
+                    <div className={section}>
                         <p className={sectionTitle}>Customer</p>
                         <div className="flex flex-col">
                             <label className={lbl}>Customer PAN ID *</label>
@@ -523,10 +523,10 @@ export default function SelectMutualFundRedemptionFIS14({
                                 Sent as customer.person.creds[0] with type FOLIO
                             </p>
                         </div>
-                    </div> */}
+                    </div>
 
-                    {/* ── Agent Details (commented out) ── */}
-                    {/* <div className={section}>
+                    {/* ── Agent Details ── */}
+                    <div className={section}>
                         <p className={sectionTitle}>Agent</p>
                         <div className="flex flex-col">
                             <label className={lbl}>Agent EUIN ID *</label>
@@ -541,6 +541,7 @@ export default function SelectMutualFundRedemptionFIS14({
                             )}
                         </div>
 
+                        {/* Agent org creds */}
                         <div className="flex justify-between items-center pt-1">
                             <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
                                 Agent Organisation Creds
@@ -560,11 +561,15 @@ export default function SelectMutualFundRedemptionFIS14({
                                     <input
                                         type="text"
                                         placeholder="e.g. ARN-124567"
-                                        {...register(`agentCreds.${index}.id`, { required: "Required" })}
+                                        {...register(`agentCreds.${index}.id`, {
+                                            required: "Required",
+                                        })}
                                         className={inp}
                                     />
                                     {errors.agentCreds?.[index]?.id && (
-                                        <p className={errCls}>{errors.agentCreds[index]?.id?.message}</p>
+                                        <p className={errCls}>
+                                            {errors.agentCreds[index]?.id?.message}
+                                        </p>
                                     )}
                                 </div>
                                 <div className="flex-1 flex flex-col">
@@ -572,11 +577,15 @@ export default function SelectMutualFundRedemptionFIS14({
                                     <input
                                         type="text"
                                         placeholder="e.g. ARN or SUB_BROKER_ARN"
-                                        {...register(`agentCreds.${index}.type`, { required: "Required" })}
+                                        {...register(`agentCreds.${index}.type`, {
+                                            required: "Required",
+                                        })}
                                         className={inp}
                                     />
                                     {errors.agentCreds?.[index]?.type && (
-                                        <p className={errCls}>{errors.agentCreds[index]?.type?.message}</p>
+                                        <p className={errCls}>
+                                            {errors.agentCreds[index]?.type?.message}
+                                        </p>
                                     )}
                                 </div>
                                 {fields.length > 1 && (
@@ -590,7 +599,7 @@ export default function SelectMutualFundRedemptionFIS14({
                                 )}
                             </div>
                         ))}
-                    </div> */}
+                    </div>
 
                     {/* ── Extra fields from config ── */}
                     {extraFields.length > 0 && (
