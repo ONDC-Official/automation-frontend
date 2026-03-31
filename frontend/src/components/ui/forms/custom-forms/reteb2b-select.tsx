@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { SubmitEventParams } from "../../../../types/flow-types";
 import { FaRegPaste } from "react-icons/fa6";
 import PayloadEditor from "../../mini-components/payload-editor";
@@ -6,7 +6,11 @@ import PayloadEditor from "../../mini-components/payload-editor";
 export interface DynamicOfferRule {
     id: string;
     itemIds: string[];
-    minOrderValue: number;
+    categoryIds: string[];
+    locationIds: string[];
+    minOrderValue?: number;
+    minItemCount?: number;
+    maxItemCount?: number;
     isAdditive: boolean;
 }
 
@@ -32,9 +36,20 @@ interface RetailerCustomerInput {
     items: ReteB2BItem[];
 }
 
-type CatalogItem = { id: string };
+type CatalogItem = {
+    id: string;
+    descriptor?: { name?: string };
+    category_id?: string;
+    category_ids?: string[];
+    price?: { value?: string };
+};
 type CatalogLocation = { id: string };
 type CatalogFulfillment = { id: string };
+
+type CatalogCategory = {
+    id: string;
+    descriptor?: { name?: string };
+};
 
 type CatalogOffer = {
     id: string;
@@ -47,6 +62,7 @@ type CatalogProvider = {
     id: string;
     items: CatalogItem[];
     locations: CatalogLocation[];
+    categories?: CatalogCategory[];
     fulfillments?: CatalogFulfillment[];
     offers?: CatalogOffer[];
 };
@@ -66,14 +82,16 @@ export default function ReteB2BSelect({
 }) {
     const [isPayloadEditorActive, setIsPayloadEditorActive] = useState(false);
     const [isDataPasted, setIsDataPasted] = useState(false);
-
-    const [, setProviders] = useState<CatalogProvider[]>([]);
     const [itemOptions, setItemOptions] = useState<string[]>([]);
     const [locationOptions, setLocationOptions] = useState<string[]>([]);
     const [fulfillmentOptions, setFulfillmentOptions] = useState<string[]>([]);
     const [offers, setOffers] = useState<CatalogOffer[]>([]);
     const [dynamicOfferRules, setDynamicOfferRules] = useState<Record<string, DynamicOfferRule>>({});
     const [itemPrices, setItemPrices] = useState<Record<string, number>>({});
+    const [itemCategories, setItemCategories] = useState<Record<string, string>>({});
+    const [itemNames, setItemNames] = useState<Record<string, string>>({});
+    const [itemLocations, setItemLocations] = useState<Record<string, string>>({});
+    const [categoryNames, setCategoryNames] = useState<Record<string, string>>({});
 
     const [form, setForm] = useState<RetailerCustomerInput>({
         type: "new",
@@ -90,16 +108,87 @@ export default function ReteB2BSelect({
     });
 
     // --- Dynamic Validation Helper ---
-    const getOfferValidationMessage = (offerId: string): string | null => {
+    const isDynamicCategoryMatch = useCallback((itemCatId: string, itemNameStr: string, ruleCategoryIds: string[]) => {
+        const catName = (itemCatId && categoryNames[itemCatId] ? categoryNames[itemCatId] : (itemCatId || "")).toLowerCase();
+        const itemName = (itemNameStr || "").toLowerCase();
+
+        return ruleCategoryIds.some(ruleCatId => {
+            if (itemCatId === ruleCatId) return true;
+            const rCatName = (categoryNames[ruleCatId] || ruleCatId).toLowerCase();
+
+            if (rCatName && catName && (catName === rCatName || catName.includes(rCatName) || rCatName.includes(catName))) return true;
+            if (rCatName && itemName && (itemName.includes(rCatName) || rCatName.includes(itemName))) return true;
+
+            const ignoreWords = ["and", "the", "for", "with", "all"];
+            const words1 = catName.split(/[\s,&]+/).filter(w => w.length > 2 && !ignoreWords.includes(w));
+            let words2 = rCatName.split(/[\s,&]+/).filter(w => w.length > 2 && !ignoreWords.includes(w));
+            const itemWords = itemName.split(/[\s,&]+/).filter(w => w.length > 2 && !ignoreWords.includes(w));
+
+            // FMCG Aliasing to support specific brand matching via category definitions
+            if (words2.some(w => ["soft", "drink", "drinks", "beverage", "juice", "juices"].includes(w))) {
+                words2 = [...words2, "coca", "cola", "pepsi", "sprite", "fanta", "coke", "limca", "thums", "up", "mazaa", "mirinda", "7up", "mountain", "dew"];
+            }
+            if (words2.some(w => ["atta", "flour", "flours", "sooji"].includes(w))) {
+                words2 = [...words2, "wheat", "chakki", "maida", "besan"];
+            }
+
+            if (words1.some(w1 => words2.some(w2 => w1 === w2 || w1.includes(w2) || w2.includes(w1)))) return true;
+            if (itemWords.some(w1 => words2.some(w2 => w1 === w2 || w1.includes(w2) || w2.includes(w1)))) return true;
+
+            return false;
+        });
+    }, [categoryNames]);
+
+    const getOfferValidationMessage = useCallback((offerId: string): string | null => {
         const rule = dynamicOfferRules[offerId];
         if (!rule) return null;
 
-        // 1. Item Compatibility (If the offer is tied to specific items)
-        if (rule.itemIds && rule.itemIds.length > 0) {
-            const hasCompatibleItem = form.items.some(item =>
-                item.itemId && rule.itemIds.includes(item.itemId) && item.quantity > 0
-            );
-            if (!hasCompatibleItem) return `Valid for: ${rule.itemIds.join(", ")}`;
+        // 1. Item & Category Compatibility
+        const hasItemRules = rule.itemIds && rule.itemIds.length > 0;
+        const hasCategoryRules = rule.categoryIds && rule.categoryIds.length > 0;
+        const hasLocationRules = rule.locationIds && rule.locationIds.length > 0;
+
+        if (hasItemRules || hasCategoryRules || hasLocationRules) {
+            const hasCompatibleItem = form.items.some(item => {
+                if (!item.itemId || item.quantity <= 0) return false;
+
+                // Location Check (Respecting user's selection in the UI dropdown)
+                const itemLocation = item.location || itemLocations[item.itemId];
+                if (hasLocationRules && itemLocation && !rule.locationIds.includes(itemLocation)) {
+                    // Item isn't at a valid location for this offer
+                    return false;
+                }
+
+                let itemMatch = false;
+                if (hasItemRules && rule.itemIds.includes(item.itemId)) {
+                    itemMatch = true;
+                }
+
+                let catMatch = false;
+                if (hasCategoryRules) {
+                    const catId = itemCategories[item.itemId];
+                    const itemName = itemNames[item.itemId] || "";
+                    catMatch = isDynamicCategoryMatch(catId, itemName, rule.categoryIds);
+                }
+
+                if (hasItemRules && hasCategoryRules) return itemMatch && catMatch;
+                if (hasItemRules) return itemMatch;
+                if (hasCategoryRules) return catMatch;
+
+                // If only location rules exist, it automatically passes if it reached here
+                return true;
+            });
+
+            if (!hasCompatibleItem) {
+                let msg = [];
+                if (hasItemRules) msg.push(`items: ${rule.itemIds.join(", ")}`);
+                if (hasCategoryRules) {
+                    const catDisplay = rule.categoryIds.map(id => categoryNames[id] || id).join(", ");
+                    msg.push(`categories: ${catDisplay}`);
+                }
+                if (hasLocationRules) msg.push(`locations: ${rule.locationIds.join(", ")}`);
+                return `Valid for ${msg.join(" AND ")}`;
+            }
         }
 
         // 2. Additivity
@@ -111,38 +200,103 @@ export default function ReteB2BSelect({
             if (hasNonAdditiveSelected) return "A non-combinable offer is already active.";
         }
 
-        // 3. Dynamic Order Value Calculation
-        if (rule.minOrderValue > 0) {
-            // If rule has specific itemIds, we only count the value of those qualifying items
-            const total = form.items.reduce((sum, item) => {
-                if (rule.itemIds && rule.itemIds.length > 0 && !rule.itemIds.includes(item.itemId)) return sum;
-                return sum + ((itemPrices[item.itemId] || 0) * item.quantity);
-            }, 0);
-            if (total < rule.minOrderValue) return `Min value ₹${rule.minOrderValue} required on valid items (Current: ₹${total})`;
+        // 3. Dynamic Qualifiers Calculation
+        // First determine the valid items that qualify for the offer's rules
+        const qualifyingItems = form.items.filter(item => {
+            const hasItemRules = rule.itemIds && rule.itemIds.length > 0;
+            const hasCategoryRules = rule.categoryIds && rule.categoryIds.length > 0;
+            const hasLocationRules = rule.locationIds && rule.locationIds.length > 0;
+
+            if (hasItemRules || hasCategoryRules || hasLocationRules) {
+                const itemLocation = item.location || itemLocations[item.itemId];
+                if (hasLocationRules && itemLocation && !rule.locationIds.includes(itemLocation)) {
+                    return false;
+                }
+
+                let itemMatch = false;
+                if (hasItemRules && rule.itemIds.includes(item.itemId)) {
+                    itemMatch = true;
+                }
+
+                let catMatch = false;
+                if (hasCategoryRules) {
+                    const catId = itemCategories[item.itemId];
+                    const itemName = itemNames[item.itemId] || "";
+                    catMatch = isDynamicCategoryMatch(catId, itemName, rule.categoryIds);
+                }
+
+                if (hasItemRules && hasCategoryRules) return itemMatch && catMatch;
+                if (hasItemRules) return itemMatch;
+                if (hasCategoryRules) return catMatch;
+
+                return false;
+            }
+            return true;
+        });
+
+        // 3a. Min Order Value
+        if (rule.minOrderValue && rule.minOrderValue > 0) {
+            const totalValue = qualifyingItems.reduce((sum, item) => sum + ((itemPrices[item.itemId] || 0) * item.quantity), 0);
+            if (totalValue < rule.minOrderValue) return `Min value ₹${rule.minOrderValue} required on valid items (Current: ₹${totalValue})`;
+        }
+
+        // 3b. Item Count
+        if (rule.minItemCount && rule.minItemCount > 0) {
+            const totalCount = qualifyingItems.reduce((sum, item) => sum + item.quantity, 0);
+            if (totalCount < rule.minItemCount) return `Min quantity ${rule.minItemCount} required on valid items (Current: ${totalCount})`;
+            if (rule.maxItemCount && rule.maxItemCount > 0 && totalCount > rule.maxItemCount) return `Max quantity ${rule.maxItemCount} allowed (Current: ${totalCount})`;
         }
 
         return null;
-    };
+    }, [dynamicOfferRules, form.items, itemLocations, itemPrices, itemCategories, itemNames, categoryNames, isDynamicCategoryMatch]);
 
     const handlePaste = (data: unknown) => {
         try {
             const providers = (data as OnSearchPayload).message.catalog["bpp/providers"];
-            setProviders(providers);
             const provider = providers[0];
 
             if (provider) {
                 setItemOptions(provider.items?.map((i) => i.id) || []);
-                setLocationOptions(provider.locations?.map((l) => l.id) || []);
+
+                const provLocs = provider.locations?.map((l: any) => l.id) || [];
+                const offerLocs = (provider.offers || []).flatMap((o: any) =>
+                    (Array.isArray(o.location_ids) ? o.location_ids : [])
+                        .flatMap((v: any) => typeof v === 'string' ? v.split(',').map((s: string) => s.trim()) : v)
+                ).filter(Boolean);
+                setLocationOptions(Array.from(new Set([...provLocs, ...offerLocs])));
                 if (provider.fulfillments) {
                     setFulfillmentOptions(provider.fulfillments.map((f) => f.id));
                 }
 
-                // Extract Item Prices Dynamically
+                // Extract Item Prices, Names, and Categories Dynamically
                 const parsedPrices: Record<string, number> = {};
+                const parsedCategories: Record<string, string> = {};
+                const parsedItemNames: Record<string, string> = {};
+                const parsedItemLocations: Record<string, string> = {};
                 provider.items?.forEach((item: any) => {
                     parsedPrices[item.id] = parseFloat(item.price?.value || "0");
+                    parsedItemNames[item.id] = item.descriptor?.name || "";
+                    if (item.category_id) {
+                        parsedCategories[item.id] = item.category_id;
+                    } else if (item.category_ids && item.category_ids.length > 0) {
+                        parsedCategories[item.id] = item.category_ids[0];
+                    }
+                    if (item.location_id) {
+                        parsedItemLocations[item.id] = item.location_id;
+                    } else if (item.location_ids && item.location_ids.length > 0) {
+                        parsedItemLocations[item.id] = item.location_ids[0];
+                    }
                 });
                 setItemPrices(parsedPrices);
+                setItemCategories(parsedCategories);
+                setItemNames(parsedItemNames);
+                setItemLocations(parsedItemLocations);
+
+                const parsedCategoryNames: Record<string, string> = {};
+                provider.categories?.forEach((cat: any) => {
+                    parsedCategoryNames[cat.id] = cat.descriptor?.name || "";
+                });
+                setCategoryNames(parsedCategoryNames);
 
                 // Extract Offers and Build Rules Dynamically
                 const rules: Record<string, DynamicOfferRule> = {};
@@ -153,7 +307,17 @@ export default function ReteB2BSelect({
                     let minVal = 0;
                     let isAdditive = true;
                     // Provide defaults so even empty structures adapt gracefully
-                    let itemIds: string[] = Array.isArray(off.item_ids) ? off.item_ids : [];
+                    let rawItemIds = Array.isArray(off.item_ids) ? off.item_ids : (Array.isArray(off.items) ? off.items : []);
+                    let itemIds: string[] = rawItemIds.flatMap((v: any) => typeof v === 'string' ? v.split(',').map((s: string) => s.trim()) : v).filter(Boolean);
+
+                    let categoryIds: string[] = (Array.isArray(off.category_ids) ? off.category_ids : [])
+                        .flatMap((v: any) => typeof v === 'string' ? v.split(',').map((s: string) => s.trim()) : v).filter(Boolean);
+
+                    let locationIds: string[] = (Array.isArray(off.location_ids) ? off.location_ids : [])
+                        .flatMap((v: any) => typeof v === 'string' ? v.split(',').map((s: string) => s.trim()) : v).filter(Boolean);
+
+                    let minItemCount = 0;
+                    let maxItemCount = 0;
 
                     // Dynamically scrape all tags to find offer rules constraints
                     off.tags?.forEach((tag: any) => {
@@ -162,6 +326,8 @@ export default function ReteB2BSelect({
                             tag.list?.forEach((l: any) => {
                                 const lCode = l.code || l.descriptor?.code;
                                 if (lCode === "min_value") minVal = parseFloat(l.value || "0");
+                                if (lCode === "item_count") minItemCount = parseFloat(l.value || "0");
+                                if (lCode === "item_count_upper") maxItemCount = parseFloat(l.value || "0");
                                 if (lCode === "additive") {
                                     isAdditive = l.value === "true" || l.value === "yes";
                                     // Make sure "false" or "no" results in false
@@ -186,7 +352,11 @@ export default function ReteB2BSelect({
                     rules[off.id] = {
                         id: off.id,
                         itemIds: itemIds,
+                        categoryIds: categoryIds,
+                        locationIds: locationIds,
                         minOrderValue: minVal,
+                        minItemCount,
+                        maxItemCount,
                         isAdditive: isAdditive
                     };
                 });
@@ -312,7 +482,7 @@ export default function ReteB2BSelect({
                                     <option value="">Item</option>
                                     {itemOptions.map((id) => <option key={id}>{id}</option>)}
                                 </select>
-                                <input type="number" value={item.quantity} onChange={(e) => handleItemChange(index, "quantity", Number(e.target.value))} className={inputStyle} />
+                                <input min={1} type="number" value={item.quantity} onChange={(e) => handleItemChange(index, "quantity", Number(e.target.value))} className={inputStyle} />
                                 <select value={item.location} onChange={(e) => handleItemChange(index, "location", e.target.value)} className={inputStyle}>
                                     <option value="">Location</option>
                                     {locationOptions.map((loc) => <option key={loc}>{loc}</option>)}
