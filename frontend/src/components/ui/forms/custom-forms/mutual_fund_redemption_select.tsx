@@ -53,8 +53,6 @@ interface CatalogData {
 /* ─────────────── redeem mode ─────────────── */
 type RedeemMode = "AMOUNT" | "MF_UNITS" | "REDEEM_ALL";
 
-const REDEMPTION_TYPES = new Set(["REDEMPTION", "INSTANT_REDEMPTION"]);
-
 /* ─────────────── form types ─────────────── */
 interface AgentCred {
     id: string;
@@ -126,7 +124,6 @@ export default function SelectMutualFundRedemptionFIS14({
             : (selectedProvider?.fulfillments ?? []);
 
     const selectedFulfillment = availableFulfillments.find((f) => f.id === watchedFulfillmentId);
-    const isRedemptionType = REDEMPTION_TYPES.has(selectedFulfillment?.type ?? "");
 
     /* ── paste handler ── */
     const handlePaste = (payload: unknown) => {
@@ -376,11 +373,13 @@ export default function SelectMutualFundRedemptionFIS14({
                                                 ? "Select an item"
                                                 : "Select a provider first"}
                                         </option>
-                                        {(selectedProvider?.items ?? []).map((item) => (
-                                            <option key={item.id} value={item.id}>
-                                                {item.name} ({item.id})
-                                            </option>
-                                        ))}
+                                        {(selectedProvider?.items ?? [])
+                                            .filter((_, index) => index !== 0)
+                                            .map((item) => (
+                                                <option key={item.id} value={item.id}>
+                                                    {item.name} ({item.id})
+                                                </option>
+                                            ))}
                                     </select>
                                 )}
                             />
@@ -430,8 +429,8 @@ export default function SelectMutualFundRedemptionFIS14({
                         )}
                     </div>
 
-                    {/* ── Redemption Mode (only for REDEMPTION / INSTANT_REDEMPTION) ── */}
-                    {isRedemptionType && (
+                    {/* ── Redemption Mode — always shown when a fulfillment is selected ── */}
+                    {selectedFulfillment && (
                         <div className={section}>
                             <p className={sectionTitle}>Redemption Mode</p>
                             <div className="flex gap-4 flex-wrap">
@@ -494,25 +493,6 @@ export default function SelectMutualFundRedemptionFIS14({
                                     <strong>-1</strong> will be sent automatically.
                                 </div>
                             )}
-                        </div>
-                    )}
-
-                    {/* ── Non-redemption: simple amount field ── */}
-                    {!isRedemptionType && selectedFulfillment && (
-                        <div className={section}>
-                            <p className={sectionTitle}>Quantity</p>
-                            <div className="flex flex-col">
-                                <label className={lbl}>Amount (INR) *</label>
-                                <input
-                                    type="text"
-                                    placeholder="e.g. 5000"
-                                    {...register("itemValue", { required: "Required" })}
-                                    className={inp}
-                                />
-                                {errors.itemValue && (
-                                    <p className={errCls}>{errors.itemValue.message}</p>
-                                )}
-                            </div>
                         </div>
                     )}
 
