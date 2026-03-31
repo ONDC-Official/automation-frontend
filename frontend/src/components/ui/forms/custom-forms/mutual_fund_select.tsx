@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useForm, useFieldArray, Controller } from "react-hook-form";
-import { FaRegPaste } from "react-icons/fa6";
+import { FaRegPaste, FaPlus, FaTrash } from "react-icons/fa6";
 import { toast } from "react-toastify";
 import PayloadEditor from "@/components/ui/mini-components/payload-editor";
 import { SubmitEventParams } from "@/types/flow-types";
@@ -104,7 +104,7 @@ export default function SelectMutualFundFIS14({
         },
     });
 
-    useFieldArray({ control, name: "creds" });
+    const { fields, append, remove } = useFieldArray({ control, name: "creds" });
 
     const watchedProviderId = watch("providerId");
     const watchedItemId = watch("itemId");
@@ -436,8 +436,8 @@ export default function SelectMutualFundFIS14({
                         )}
                     </div>
 
-                    {/* ── Fulfillment Creds (commented out) ── */}
-                    {/* <div className={section}>
+                    {/* ── Fulfillment Creds ── */}
+                    <div className={section}>
                         <div className="flex justify-between items-center">
                             <p className={sectionTitle}>Fulfillment Creds</p>
                             <button
@@ -490,10 +490,10 @@ export default function SelectMutualFundFIS14({
                                 )}
                             </div>
                         ))}
-                    </div> */}
+                    </div>
 
-                    {/* ── Person Details (commented out) ── */}
-                    {/* <div className={section}>
+                    {/* ── Person Details ── */}
+                    <div className={section}>
                         <p className={sectionTitle}>Person Details</p>
 
                         <div className="flex flex-col">
@@ -519,7 +519,7 @@ export default function SelectMutualFundFIS14({
                                 <p className={errCls}>{errors.customerPersonId.message}</p>
                             )}
                         </div>
-                    </div> */}
+                    </div>
 
                     {/* ── Extra fields from config (e.g. city_code) ── */}
                     {extraFields.length > 0 && (
