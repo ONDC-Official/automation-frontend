@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useForm, useFieldArray, Controller } from "react-hook-form";
-import { FaRegPaste, FaPlus, FaTrash } from "react-icons/fa6";
+import { FaRegPaste } from "react-icons/fa6";
 import { toast } from "react-toastify";
 import PayloadEditor from "@/components/ui/mini-components/payload-editor";
 import { SubmitEventParams } from "@/types/flow-types";
@@ -52,8 +52,6 @@ interface CatalogData {
 
 /* ─────────────── redeem mode ─────────────── */
 type RedeemMode = "AMOUNT" | "MF_UNITS" | "REDEEM_ALL";
-
-const REDEMPTION_TYPES = new Set(["REDEMPTION", "INSTANT_REDEMPTION"]);
 
 /* ─────────────── form types ─────────────── */
 interface AgentCred {
@@ -108,7 +106,7 @@ export default function SelectMutualFundRedemptionFIS14({
         },
     });
 
-    const { fields, append, remove } = useFieldArray({ control, name: "agentCreds" });
+    useFieldArray({ control, name: "agentCreds" });
 
     const watchedProviderId = watch("providerId");
     const watchedItemId = watch("itemId");
@@ -126,7 +124,6 @@ export default function SelectMutualFundRedemptionFIS14({
             : (selectedProvider?.fulfillments ?? []);
 
     const selectedFulfillment = availableFulfillments.find((f) => f.id === watchedFulfillmentId);
-    const isRedemptionType = REDEMPTION_TYPES.has(selectedFulfillment?.type ?? "");
 
     /* ── paste handler ── */
     const handlePaste = (payload: unknown) => {
@@ -432,8 +429,8 @@ export default function SelectMutualFundRedemptionFIS14({
                         )}
                     </div>
 
-                    {/* ── Redemption Mode (only for REDEMPTION / INSTANT_REDEMPTION) ── */}
-                    {isRedemptionType && (
+                    {/* ── Redemption Mode — always shown when a fulfillment is selected ── */}
+                    {selectedFulfillment && (
                         <div className={section}>
                             <p className={sectionTitle}>Redemption Mode</p>
                             <div className="flex gap-4 flex-wrap">
@@ -499,27 +496,8 @@ export default function SelectMutualFundRedemptionFIS14({
                         </div>
                     )}
 
-                    {/* ── Non-redemption: simple amount field ── */}
-                    {!isRedemptionType && selectedFulfillment && (
-                        <div className={section}>
-                            <p className={sectionTitle}>Quantity</p>
-                            <div className="flex flex-col">
-                                <label className={lbl}>Amount (INR) *</label>
-                                <input
-                                    type="text"
-                                    placeholder="e.g. 5000"
-                                    {...register("itemValue", { required: "Required" })}
-                                    className={inp}
-                                />
-                                {errors.itemValue && (
-                                    <p className={errCls}>{errors.itemValue.message}</p>
-                                )}
-                            </div>
-                        </div>
-                    )}
-
-                    {/* ── Customer Details ── */}
-                    <div className={section}>
+                    {/* ── Customer Details (commented out) ── */}
+                    {/* <div className={section}>
                         <p className={sectionTitle}>Customer</p>
                         <div className="flex flex-col">
                             <label className={lbl}>Customer PAN ID *</label>
@@ -545,10 +523,10 @@ export default function SelectMutualFundRedemptionFIS14({
                                 Sent as customer.person.creds[0] with type FOLIO
                             </p>
                         </div>
-                    </div>
+                    </div> */}
 
-                    {/* ── Agent Details ── */}
-                    <div className={section}>
+                    {/* ── Agent Details (commented out) ── */}
+                    {/* <div className={section}>
                         <p className={sectionTitle}>Agent</p>
                         <div className="flex flex-col">
                             <label className={lbl}>Agent EUIN ID *</label>
@@ -563,7 +541,6 @@ export default function SelectMutualFundRedemptionFIS14({
                             )}
                         </div>
 
-                        {/* Agent org creds */}
                         <div className="flex justify-between items-center pt-1">
                             <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
                                 Agent Organisation Creds
@@ -583,15 +560,11 @@ export default function SelectMutualFundRedemptionFIS14({
                                     <input
                                         type="text"
                                         placeholder="e.g. ARN-124567"
-                                        {...register(`agentCreds.${index}.id`, {
-                                            required: "Required",
-                                        })}
+                                        {...register(`agentCreds.${index}.id`, { required: "Required" })}
                                         className={inp}
                                     />
                                     {errors.agentCreds?.[index]?.id && (
-                                        <p className={errCls}>
-                                            {errors.agentCreds[index]?.id?.message}
-                                        </p>
+                                        <p className={errCls}>{errors.agentCreds[index]?.id?.message}</p>
                                     )}
                                 </div>
                                 <div className="flex-1 flex flex-col">
@@ -599,15 +572,11 @@ export default function SelectMutualFundRedemptionFIS14({
                                     <input
                                         type="text"
                                         placeholder="e.g. ARN or SUB_BROKER_ARN"
-                                        {...register(`agentCreds.${index}.type`, {
-                                            required: "Required",
-                                        })}
+                                        {...register(`agentCreds.${index}.type`, { required: "Required" })}
                                         className={inp}
                                     />
                                     {errors.agentCreds?.[index]?.type && (
-                                        <p className={errCls}>
-                                            {errors.agentCreds[index]?.type?.message}
-                                        </p>
+                                        <p className={errCls}>{errors.agentCreds[index]?.type?.message}</p>
                                     )}
                                 </div>
                                 {fields.length > 1 && (
@@ -621,7 +590,7 @@ export default function SelectMutualFundRedemptionFIS14({
                                 )}
                             </div>
                         ))}
-                    </div>
+                    </div> */}
 
                     {/* ── Extra fields from config ── */}
                     {extraFields.length > 0 && (
