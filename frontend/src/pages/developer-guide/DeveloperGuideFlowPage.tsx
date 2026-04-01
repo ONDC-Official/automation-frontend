@@ -1,6 +1,15 @@
 import { FC, useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
-import { FiArrowLeft, FiChevronRight, FiChevronLeft, FiList, FiAlertTriangle, FiZap, FiFileText, FiClock } from "react-icons/fi";
+import {
+    FiArrowLeft,
+    FiChevronRight,
+    FiChevronLeft,
+    FiList,
+    FiAlertTriangle,
+    FiZap,
+    FiFileText,
+    FiClock,
+} from "react-icons/fi";
 import FlowsAccordion from "./FlowsAccordion";
 import FlowInformation from "./FlowInformation";
 import Loader from "@components/ui/mini-components/loader";
@@ -56,7 +65,8 @@ const DeveloperGuideFlowPage: FC = () => {
     const errorCodes = specData?.["x-errorcodes"];
     const supportedActions = specData?.["x-supported-actions"];
     const hasErrorCodes = !!errorCodes?.code?.length;
-    const hasSupportedActions = !!supportedActions && Object.keys(supportedActions.supportedActions ?? {}).length > 0;
+    const hasSupportedActions =
+        !!supportedActions && Object.keys(supportedActions.supportedActions ?? {}).length > 0;
 
     // Load builds + spec data
     useEffect(() => {
@@ -101,7 +111,13 @@ const DeveloperGuideFlowPage: FC = () => {
     // internally by FlowInformation for preview/request/response tabs).
     useEffect(() => {
         const viewParam = searchParams.get("view");
-        const validViews: TopLevelView[] = ["flows", "error-codes", "supported-actions", "docs", "changelog"];
+        const validViews: TopLevelView[] = [
+            "flows",
+            "error-codes",
+            "supported-actions",
+            "docs",
+            "changelog",
+        ];
         if (viewParam && validViews.includes(viewParam as TopLevelView)) {
             setActiveView(viewParam as TopLevelView);
         }
@@ -155,14 +171,17 @@ const DeveloperGuideFlowPage: FC = () => {
         setSelectedFlowAction(resolvedAction || "");
 
         // Initial setup for URL
-        setSearchParams((prev) => {
-            const next = new URLSearchParams(prev);
-            next.set("flow", flowId);
-            if (resolvedAction) next.set("action", resolvedAction);
-            else next.delete("action");
-            return next;
-        }, { replace: true });
-        
+        setSearchParams(
+            (prev) => {
+                const next = new URLSearchParams(prev);
+                next.set("flow", flowId);
+                if (resolvedAction) next.set("action", resolvedAction);
+                else next.delete("action");
+                return next;
+            },
+            { replace: true }
+        );
+
         didInitialSync.current = true;
     }, [isLoading, specData, flows, slug]);
 
@@ -170,13 +189,16 @@ const DeveloperGuideFlowPage: FC = () => {
     useEffect(() => {
         if (!didInitialSync.current) return;
         if (!selectedFlow) return;
-        setSearchParams((prev) => {
-            const next = new URLSearchParams(prev);
-            next.set("flow", selectedFlow);
-            if (selectedFlowAction) next.set("action", selectedFlowAction);
-            else next.delete("action");
-            return next;
-        }, { replace: true });
+        setSearchParams(
+            (prev) => {
+                const next = new URLSearchParams(prev);
+                next.set("flow", selectedFlow);
+                if (selectedFlowAction) next.set("action", selectedFlowAction);
+                else next.delete("action");
+                return next;
+            },
+            { replace: true }
+        );
     }, [selectedFlow, selectedFlowAction, setSearchParams]);
 
     const handleBack = () => {
@@ -185,11 +207,14 @@ const DeveloperGuideFlowPage: FC = () => {
 
     const handleViewChange = (view: TopLevelView) => {
         setActiveView(view);
-        setSearchParams((prev) => {
-            const next = new URLSearchParams(prev);
-            next.set("view", view);
-            return next;
-        }, { replace: true });
+        setSearchParams(
+            (prev) => {
+                const next = new URLSearchParams(prev);
+                next.set("view", view);
+                return next;
+            },
+            { replace: true }
+        );
     };
 
     const usecaseLabel = useMemo(() => {
@@ -247,7 +272,10 @@ const DeveloperGuideFlowPage: FC = () => {
                                 <span className="text-gray-400 truncate hidden sm:block">
                                     {domainKey}
                                 </span>
-                                <FiChevronRight size={13} className="text-gray-300 flex-shrink-0 hidden sm:block" />
+                                <FiChevronRight
+                                    size={13}
+                                    className="text-gray-300 flex-shrink-0 hidden sm:block"
+                                />
                                 <span className="font-semibold text-gray-800 truncate">
                                     {usecaseLabel}
                                 </span>
@@ -268,8 +296,18 @@ const DeveloperGuideFlowPage: FC = () => {
                         onChange={handleViewChange}
                         tabs={[
                             { id: "flows", label: "Flows", icon: FiList, visible: true },
-                            { id: "error-codes", label: "Error Codes", icon: FiAlertTriangle, visible: hasErrorCodes },
-                            { id: "supported-actions", label: "Actions", icon: FiZap, visible: hasSupportedActions },
+                            {
+                                id: "error-codes",
+                                label: "Error Codes",
+                                icon: FiAlertTriangle,
+                                visible: hasErrorCodes,
+                            },
+                            {
+                                id: "supported-actions",
+                                label: "Actions",
+                                icon: FiZap,
+                                visible: hasSupportedActions,
+                            },
                             { id: "docs", label: "Docs", icon: FiFileText, visible: true },
                             { id: "changelog", label: "Changelog", icon: FiClock, visible: true },
                         ]}
@@ -338,42 +376,54 @@ const DeveloperGuideFlowPage: FC = () => {
                                 />
                             ) : (
                                 <div className="w-full flex items-center justify-center min-h-[50vh]">
-                                    <p className="text-slate-500 font-medium">No flows available for this use case.</p>
+                                    <p className="text-slate-500 font-medium">
+                                        No flows available for this use case.
+                                    </p>
                                 </div>
                             )}
                         </div>
                     </>
                 ) : (
                     /* Content area for Non-Flow top-level tabs */
-                    <div className="flex-1 min-w-0 p-8 max-w-7xl mx-auto w-full">
-                        {activeView === "error-codes" && (
-                            hasErrorCodes && errorCodes ? <ErrorCodesTable errorCodes={errorCodes} /> : <p className="text-slate-500 text-center py-12">No error codes available.</p>
-                        )}
-                        {activeView === "supported-actions" && (
-                            hasSupportedActions && supportedActions ? <SupportedActionsView supportedActions={supportedActions} /> : <p className="text-slate-500 text-center py-12">No actions available.</p>
-                        )}
-                        {activeView === "docs" && (
-                            docsLoading ? (
+                    <div className="flex-1 min-w-0 p-8 max-w-9xl mx-auto w-full">
+                        {activeView === "error-codes" &&
+                            (hasErrorCodes && errorCodes ? (
+                                <ErrorCodesTable errorCodes={errorCodes} />
+                            ) : (
+                                <p className="text-slate-500 text-center py-12">
+                                    No error codes available.
+                                </p>
+                            ))}
+                        {activeView === "supported-actions" &&
+                            (hasSupportedActions && supportedActions ? (
+                                <SupportedActionsView supportedActions={supportedActions} />
+                            ) : (
+                                <p className="text-slate-500 text-center py-12">
+                                    No actions available.
+                                </p>
+                            ))}
+                        {activeView === "docs" &&
+                            (docsLoading ? (
                                 <div className="flex items-center justify-center py-16">
                                     <Loader />
                                 </div>
                             ) : isDocsEmpty ? (
                                 <div className="rounded-xl border border-slate-200 bg-slate-50 py-12 text-center">
-                                    <p className="text-sm text-slate-400">No documentation available.</p>
+                                    <p className="text-sm text-slate-400">
+                                        No documentation available.
+                                    </p>
                                 </div>
                             ) : (
                                 <DocsViewer docs={docs} />
-                            )
-                        )}
-                        {activeView === "changelog" && (
-                            changelogLoading ? (
+                            ))}
+                        {activeView === "changelog" &&
+                            (changelogLoading ? (
                                 <div className="flex items-center justify-center py-16">
                                     <Loader />
                                 </div>
                             ) : (
                                 <ChangelogView changelogs={lazyChangelog || []} />
-                            )
-                        )}
+                            ))}
                     </div>
                 )}
             </div>

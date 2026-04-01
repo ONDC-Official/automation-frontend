@@ -1,18 +1,8 @@
-import { FC, useMemo, useState, useEffect, useRef } from "react";
+import { FC, useMemo, useState, useEffect, useRef, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
-import {
-    FiCode,
-    FiShield,
-    FiUpload,
-    FiDownload,
-} from "react-icons/fi";
+import { FiCode, FiShield, FiUpload, FiDownload } from "react-icons/fi";
 import { SegmentedTabs, type TabItem } from "@components/ui/SegmentedTabs";
-import type {
-    OpenAPISpecification,
-    FlowEntry,
-    FlowStep,
-    ValidationTableAction,
-} from "./types";
+import type { OpenAPISpecification, FlowEntry, FlowStep, ValidationTableAction } from "./types";
 import { getActionId } from "./utils";
 import FlowDetailsAndSummary from "./FlowDetailsAndSummary";
 import ActionOverview from "./ActionOverview";
@@ -32,7 +22,7 @@ interface FlowInformationProps {
 }
 
 function getExamplesFromStep(
-    step: FlowStep | undefined,
+    step: FlowStep | undefined
 ): Array<{ name: string; payload: unknown }> {
     if (!step) return [];
     const fromStep = step.examples?.map((ex) => ({
@@ -70,18 +60,45 @@ const FlowInformation: FC<FlowInformationProps> = ({
     const [activeSection, setActiveSection] = useState<Section>("preview");
     const [showPreviewDetails, setShowPreviewDetails] = useState(false);
     const isFirstActionEffect = useRef(true);
+    const rafRef = useRef<number | null>(null);
+
+    // Double-rAF: guarantees the browser paints at least one frame (showing the
+    // loader) before React mounts the heavy FlowActionDetails + JsonViewer tree.
+    const scheduleShowDetails = useCallback(() => {
+        if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
+        setShowPreviewDetails(false);
+        rafRef.current = requestAnimationFrame(() => {
+            rafRef.current = requestAnimationFrame(() => {
+                setShowPreviewDetails(true);
+                rafRef.current = null;
+            });
+        });
+    }, []);
+
+    useEffect(() => {
+        return () => {
+            if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
+        };
+    }, []);
 
     // Lazy-loaded sections
-    const [validationTable, setValidationTable] = useState<Record<string, ValidationTableAction> | null>(null);
+    const [validationTable, setValidationTable] = useState<Record<
+        string,
+        ValidationTableAction
+    > | null>(null);
     const validationTableFetched = useRef(false);
 
     // Load validation table once (non-blocking, after mount)
     useEffect(() => {
         if (validationTableFetched.current || !domain || !version) return;
         validationTableFetched.current = true;
-        fetchValidationTable(domain, version).then((result) => {
-            if (result?.table) setValidationTable(result.table);
-        }).catch(() => { /* silently ignore */ });
+        fetchValidationTable(domain, version)
+            .then((result) => {
+                if (result?.table) setValidationTable(result.table);
+            })
+            .catch(() => {
+                /* silently ignore */
+            });
     }, [domain, version]);
 
     const isEmpty = !selectedFlow;
@@ -101,19 +118,14 @@ const FlowInformation: FC<FlowInformationProps> = ({
     const apiForValidations = selectedStep?.api ?? selectedFlowAction;
     const selectedValidations = useMemo(
         () => (validationTable ? validationTable[apiForValidations] : undefined),
-        [validationTable, apiForValidations],
+        [validationTable, apiForValidations]
     );
     const hasXValidations = !!selectedValidations;
 
     const hasTabs = hasExampleObject || hasXValidations || !!selectedStep;
 
     useEffect(() => {
-        const validSections: Section[] = [
-            "preview",
-            "x-validations",
-            "request",
-            "response",
-        ];
+        const validSections: Section[] = ["preview", "x-validations", "request", "response"];
 
         if (isFirstActionEffect.current) {
             isFirstActionEffect.current = false;
@@ -121,8 +133,7 @@ const FlowInformation: FC<FlowInformationProps> = ({
             if (urlTab && validSections.includes(urlTab)) {
                 setActiveSection(urlTab);
                 if (urlTab === "preview") {
-                    setShowPreviewDetails(false);
-                    setTimeout(() => setShowPreviewDetails(true), 0);
+                    scheduleShowDetails();
                 }
                 return;
             }
@@ -135,7 +146,7 @@ const FlowInformation: FC<FlowInformationProps> = ({
               : hasXValidations
                 ? "x-validations"
                 : "preview";
-        
+
         setActiveSection(defaultSection);
         setSelectedExampleIndex(0);
         setSearchParams(
@@ -146,15 +157,14 @@ const FlowInformation: FC<FlowInformationProps> = ({
                 next.delete("panel");
                 return next;
             },
-            { replace: true },
+            { replace: true }
         );
         if (defaultSection === "preview") {
-            setShowPreviewDetails(false);
-            setTimeout(() => setShowPreviewDetails(true), 0);
+            scheduleShowDetails();
         } else {
             setShowPreviewDetails(false);
         }
-    }, [selectedFlowAction]); // eslint-disable-line react-hooks/exhaustive-deps
+    }, [selectedFlowAction, scheduleShowDetails]);
 
     if (isEmpty) {
         return (
@@ -194,13 +204,11 @@ const FlowInformation: FC<FlowInformationProps> = ({
                 next.delete("panel");
                 return next;
             },
-            { replace: true },
+            { replace: true }
         );
         if (section === "preview") {
-            setShowPreviewDetails(false);
-            setTimeout(() => setShowPreviewDetails(true), 0);
-        }
-        if (section !== "preview") {
+            scheduleShowDetails();
+        } else {
             setShowPreviewDetails(false);
         }
     };
@@ -290,7 +298,7 @@ const FlowInformation: FC<FlowInformationProps> = ({
                                                     value={selectedExampleIndex}
                                                     onChange={(e) =>
                                                         setSelectedExampleIndex(
-                                                            Number(e.target.value),
+                                                            Number(e.target.value)
                                                         )
                                                     }
                                                     className="w-full pl-4 pr-9 py-2 rounded-lg text-sm border border-slate-200 bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-400/40 focus:border-sky-300 appearance-none shadow-sm"
