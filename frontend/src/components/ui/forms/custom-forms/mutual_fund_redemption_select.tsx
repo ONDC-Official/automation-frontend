@@ -50,39 +50,39 @@ interface CatalogData {
     context: OnSearchPayload["context"];
 }
 
+/* ─────────────── redeem mode ─────────────── */
+type RedeemMode = "AMOUNT" | "MF_UNITS" | "REDEEM_ALL";
+
 /* ─────────────── form types ─────────────── */
-interface Cred {
+interface AgentCred {
     id: string;
     type: string;
 }
 interface FormValues {
     providerId: string;
-    fulfillmentId: string;
-    creds: Cred[];
-    personId: string;
-    customerPersonId: string;
     itemId: string;
-    itemValue: string;
+    fulfillmentId: string;
+    redeemMode: RedeemMode;
+    itemValue: string; // amount or units (ignored when mode=ALL)
+    customerPersonId: string; // PAN  → customer.person.id
+    folioId: string; // FOLIO cred id → customer.person.creds[0].id
+    agentPersonId: string; // EUIN → agent.person.id
+    agentCreds: AgentCred[]; // ARN / SUB_BROKER_ARN → agent.organization.creds
 }
 
-export default function SelectMutualFundFIS14({
+export default function SelectMutualFundRedemptionFIS14({
     submitEvent,
     formConfig = [],
 }: {
     submitEvent: (data: SubmitEventParams) => Promise<void>;
     formConfig?: FormFieldConfigType[];
 }) {
-    // Extra fields from config (not the main fis14 component field)
-    const extraFields = formConfig.filter((f) => f.type !== "fis14_mutul_fund_select");
+    const extraFields = formConfig.filter((f) => f.type !== "fis14_mf_redemption_select");
     const [isPayloadEditorActive, setIsPayloadEditorActive] = useState(false);
     const [catalog, setCatalog] = useState<CatalogData | null>(null);
-
-    // Track values of extra text fields separately to avoid polluting typed FormValues
     const [extraData, setExtraData] = useState<Record<string, string>>(
         Object.fromEntries(extraFields.map((f) => [f.name, String(f.default ?? "")]))
     );
-
-    // Inline validation errors for extra fields
     const [extraErrors, setExtraErrors] = useState<Record<string, string>>({});
 
     const {
@@ -95,26 +95,27 @@ export default function SelectMutualFundFIS14({
     } = useForm<FormValues>({
         defaultValues: {
             providerId: "",
-            fulfillmentId: "",
-            creds: [{ id: "", type: "" }],
-            personId: "",
-            customerPersonId: "",
             itemId: "",
+            fulfillmentId: "",
+            redeemMode: "AMOUNT",
             itemValue: "",
+            customerPersonId: "",
+            folioId: "",
+            agentPersonId: "",
+            agentCreds: [{ id: "", type: "" }],
         },
     });
 
-    const { fields, append, remove } = useFieldArray({ control, name: "creds" });
+    const { fields, append, remove } = useFieldArray({ control, name: "agentCreds" });
 
     const watchedProviderId = watch("providerId");
     const watchedItemId = watch("itemId");
     const watchedFulfillmentId = watch("fulfillmentId");
+    const watchedRedeemMode = watch("redeemMode");
 
-    // Derived selections
     const selectedProvider = catalog?.providers.find((p) => p.id === watchedProviderId);
     const selectedItem = selectedProvider?.items.find((i) => i.id === watchedItemId);
 
-    // Fulfillments: if item has fulfillment_ids, filter to those; else show all
     const availableFulfillments =
         selectedItem && selectedItem.fulfillmentIds.length > 0
             ? (selectedProvider?.fulfillments ?? []).filter((f) =>
@@ -134,7 +135,6 @@ export default function SelectMutualFundFIS14({
             const providers: ParsedProvider[] = rawProviders.map((p) => ({
                 id: p.id,
                 name: p.descriptor?.name ?? p.id,
-                // Show ALL items — no code filter
                 items: (p.items ?? []).map((i) => ({
                     id: i.id,
                     name: i.descriptor?.name ?? i.id,
@@ -147,8 +147,6 @@ export default function SelectMutualFundFIS14({
             }));
 
             setCatalog({ providers, context: raw.context });
-
-            // Pre-select first provider
             setValue("providerId", providers[0].id);
             setValue("fulfillmentId", "");
             setValue("itemId", "");
@@ -168,7 +166,7 @@ export default function SelectMutualFundFIS14({
             return;
         }
 
-        // Validate required extra fields
+        // Validate extra fields
         const newExtraErrors: Record<string, string> = {};
         extraFields.forEach((field) => {
             if (field.required !== false && !extraData[field.name]?.trim()) {
@@ -180,44 +178,57 @@ export default function SelectMutualFundFIS14({
             return;
         }
 
-        const agentCreds = data.creds.filter((c) => c.id || c.type);
+        /* ── Build measure based on redeem mode ── */
+        let measure: { unit: string; value: string };
+        if (data.redeemMode === "REDEEM_ALL") {
+            measure = { unit: "MF_UNITS", value: "-1" };
+        } else if (data.redeemMode === "MF_UNITS") {
+            measure = { unit: "MF_UNITS", value: data.itemValue };
+        } else {
+            measure = { unit: "INR", value: data.itemValue };
+        }
+
+        /* ── Build fulfillment object ── */
+        const agentCreds = data.agentCreds.filter((c) => c.id || c.type);
+
+        const customerPersonObj: Record<string, unknown> = {
+            id: data.customerPersonId,
+        };
+        if (data.folioId) {
+            customerPersonObj.creds = [{ id: data.folioId, type: "FOLIO" }];
+        }
 
         const fulfillmentObj: Record<string, unknown> = {
             id: data.fulfillmentId,
             type: selectedFulfillment?.type ?? "",
+            customer: { person: customerPersonObj },
         };
 
-        if (agentCreds.length > 0 || data.personId) {
+        if (agentCreds.length > 0 || data.agentPersonId) {
             fulfillmentObj.agent = {
+                ...(data.agentPersonId ? { person: { id: data.agentPersonId } } : {}),
                 ...(agentCreds.length > 0 ? { organization: { creds: agentCreds } } : {}),
-                ...(data.personId ? { person: { id: data.personId } } : {}),
             };
-        }
-
-        if (data.customerPersonId) {
-            fulfillmentObj.customer = { person: { id: data.customerPersonId } };
         }
 
         const selectPayload = {
             message: {
                 order: {
-                    fulfillments: [fulfillmentObj],
+                    provider: { id: data.providerId },
                     items: [
                         {
                             id: data.itemId,
                             quantity: {
-                                selected: {
-                                    measure: { unit: "INR", value: data.itemValue },
-                                },
+                                selected: { measure },
                             },
+                            fulfillment_ids: [data.fulfillmentId],
                         },
                     ],
-                    provider: { id: data.providerId },
+                    fulfillments: [fulfillmentObj],
                 },
             },
         };
 
-        // Build formData map for extra fields (e.g. city_code)
         const extraFieldsData: Record<string, string> = {};
         extraFields.forEach((field) => {
             extraFieldsData[field.name] = extraData[field.name] ?? "";
@@ -250,7 +261,7 @@ export default function SelectMutualFundFIS14({
             >
                 <div>
                     <p className="text-sm font-semibold text-gray-700">
-                        Mutual Fund Select (FIS14)
+                        Mutual Fund Redemption Select (FIS14)
                     </p>
                     <p
                         className={`text-xs ${catalog ? "text-gray-400" : "text-amber-600 font-medium"}`}
@@ -302,7 +313,7 @@ export default function SelectMutualFundFIS14({
             {catalog && (
                 <form
                     onSubmit={handleSubmit(onSubmit)}
-                    className="space-y-4 max-h-[540px] overflow-y-auto pr-1"
+                    className="space-y-4 max-h-[600px] overflow-y-auto pr-1"
                 >
                     {/* ── Provider ── */}
                     <div className={section}>
@@ -319,7 +330,6 @@ export default function SelectMutualFundFIS14({
                                         className={inp}
                                         onChange={(e) => {
                                             field.onChange(e);
-                                            // Reset cascading fields
                                             setValue("itemId", "");
                                             setValue("fulfillmentId", "");
                                         }}
@@ -342,7 +352,6 @@ export default function SelectMutualFundFIS14({
                     {/* ── Item ── */}
                     <div className={section}>
                         <p className={sectionTitle}>Item</p>
-
                         <div className="flex flex-col">
                             <label className={lbl}>Item ID *</label>
                             <Controller
@@ -356,7 +365,6 @@ export default function SelectMutualFundFIS14({
                                         disabled={!selectedProvider}
                                         onChange={(e) => {
                                             field.onChange(e);
-                                            // Reset fulfillment when item changes
                                             setValue("fulfillmentId", "");
                                         }}
                                     >
@@ -377,25 +385,11 @@ export default function SelectMutualFundFIS14({
                             />
                             {errors.itemId && <p className={errCls}>{errors.itemId.message}</p>}
                         </div>
-
-                        <div className="flex flex-col">
-                            <label className={lbl}>Item Value (INR) *</label>
-                            <input
-                                type="text"
-                                placeholder="e.g. 3000"
-                                {...register("itemValue", { required: "Required" })}
-                                className={inp}
-                            />
-                            {errors.itemValue && (
-                                <p className={errCls}>{errors.itemValue.message}</p>
-                            )}
-                        </div>
                     </div>
 
                     {/* ── Fulfillment ── */}
                     <div className={section}>
                         <p className={sectionTitle}>Fulfillment</p>
-
                         <div className="flex flex-col">
                             <label className={lbl}>Fulfillment ID *</label>
                             <Controller
@@ -411,7 +405,7 @@ export default function SelectMutualFundFIS14({
                                         </option>
                                         {availableFulfillments.map((f) => (
                                             <option key={f.id} value={f.id}>
-                                                {f.id}
+                                                {f.id} — {f.type}
                                             </option>
                                         ))}
                                     </select>
@@ -422,7 +416,6 @@ export default function SelectMutualFundFIS14({
                             )}
                         </div>
 
-                        {/* Auto-populated type */}
                         {selectedFulfillment && (
                             <div className="flex flex-col">
                                 <label className={lbl}>Fulfillment Type</label>
@@ -436,10 +429,123 @@ export default function SelectMutualFundFIS14({
                         )}
                     </div>
 
-                    {/* ── Fulfillment Creds ── */}
+                    {/* ── Redemption Mode — always shown when a fulfillment is selected ── */}
+                    {selectedFulfillment && (
+                        <div className={section}>
+                            <p className={sectionTitle}>Redemption Mode</p>
+                            <div className="flex gap-4 flex-wrap">
+                                {(["AMOUNT", "MF_UNITS", "REDEEM_ALL"] as RedeemMode[]).map(
+                                    (mode) => (
+                                        <label
+                                            key={mode}
+                                            className="flex items-center gap-2 cursor-pointer text-sm font-medium text-gray-700"
+                                        >
+                                            <input
+                                                type="radio"
+                                                value={mode}
+                                                {...register("redeemMode")}
+                                                className="accent-blue-600"
+                                            />
+                                            {mode === "AMOUNT" && "Redeem by Amount"}
+                                            {mode === "MF_UNITS" && "Redeem by Units"}
+                                            {mode === "REDEEM_ALL" && "Redeem All"}
+                                        </label>
+                                    )
+                                )}
+                            </div>
+
+                            {/* Mode hint */}
+                            <p className="text-xs text-gray-400">
+                                {watchedRedeemMode === "AMOUNT" &&
+                                    'Will send: measure = { unit: "INR", value: <amount> }'}
+                                {watchedRedeemMode === "MF_UNITS" &&
+                                    'Will send: measure = { unit: "MF_UNITS", value: <units> }'}
+                                {watchedRedeemMode === "REDEEM_ALL" &&
+                                    'Will send: measure = { unit: "MF_UNITS", value: "-1" } — full redemption'}
+                            </p>
+
+                            {/* Value input — hidden for Redeem All */}
+                            {watchedRedeemMode !== "REDEEM_ALL" && (
+                                <div className="flex flex-col">
+                                    <label className={lbl}>
+                                        {watchedRedeemMode === "AMOUNT"
+                                            ? "Amount (INR) *"
+                                            : "Number of Units (MF_UNITS) *"}
+                                    </label>
+                                    <input
+                                        type="text"
+                                        placeholder={
+                                            watchedRedeemMode === "AMOUNT" ? "e.g. 3000" : "e.g. 50"
+                                        }
+                                        {...register("itemValue", { required: "Required" })}
+                                        className={inp}
+                                    />
+                                    {errors.itemValue && (
+                                        <p className={errCls}>{errors.itemValue.message}</p>
+                                    )}
+                                </div>
+                            )}
+
+                            {/* Redeem All info box */}
+                            {watchedRedeemMode === "REDEEM_ALL" && (
+                                <div className="bg-blue-50 border border-blue-200 rounded-md p-2 text-xs text-blue-700">
+                                    ⚡ Full redemption — all units will be redeemed. Value{" "}
+                                    <strong>-1</strong> will be sent automatically.
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {/* ── Customer Details ── */}
                     <div className={section}>
-                        <div className="flex justify-between items-center">
-                            <p className={sectionTitle}>Fulfillment Creds</p>
+                        <p className={sectionTitle}>Customer</p>
+                        <div className="flex flex-col">
+                            <label className={lbl}>Customer PAN ID *</label>
+                            <input
+                                type="text"
+                                placeholder="e.g. pan:ARRPP7771N"
+                                {...register("customerPersonId", { required: "Required" })}
+                                className={inp}
+                            />
+                            {errors.customerPersonId && (
+                                <p className={errCls}>{errors.customerPersonId.message}</p>
+                            )}
+                        </div>
+                        <div className="flex flex-col">
+                            <label className={lbl}>Folio Number</label>
+                            <input
+                                type="text"
+                                placeholder="e.g. 78953432/32"
+                                {...register("folioId")}
+                                className={inp}
+                            />
+                            <p className="text-xs text-gray-400 mt-1">
+                                Sent as customer.person.creds[0] with type FOLIO
+                            </p>
+                        </div>
+                    </div>
+
+                    {/* ── Agent Details ── */}
+                    <div className={section}>
+                        <p className={sectionTitle}>Agent</p>
+                        <div className="flex flex-col">
+                            <label className={lbl}>Agent EUIN ID *</label>
+                            <input
+                                type="text"
+                                placeholder="e.g. euin:E52432"
+                                {...register("agentPersonId", { required: "Required" })}
+                                className={inp}
+                            />
+                            {errors.agentPersonId && (
+                                <p className={errCls}>{errors.agentPersonId.message}</p>
+                            )}
+                        </div>
+
+                        {/* Agent org creds */}
+                        <div className="flex justify-between items-center pt-1">
+                            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                                Agent Organisation Creds
+                            </p>
                             <button
                                 type="button"
                                 onClick={() => append({ id: "", type: "" })}
@@ -448,7 +554,6 @@ export default function SelectMutualFundFIS14({
                                 <FaPlus size={10} /> Add Cred
                             </button>
                         </div>
-
                         {fields.map((field, index) => (
                             <div key={field.id} className="flex gap-2 items-end">
                                 <div className="flex-1 flex flex-col">
@@ -456,26 +561,30 @@ export default function SelectMutualFundFIS14({
                                     <input
                                         type="text"
                                         placeholder="e.g. ARN-124567"
-                                        {...register(`creds.${index}.id`, { required: "Required" })}
+                                        {...register(`agentCreds.${index}.id`, {
+                                            required: "Required",
+                                        })}
                                         className={inp}
                                     />
-                                    {errors.creds?.[index]?.id && (
-                                        <p className={errCls}>{errors.creds[index]?.id?.message}</p>
+                                    {errors.agentCreds?.[index]?.id && (
+                                        <p className={errCls}>
+                                            {errors.agentCreds[index]?.id?.message}
+                                        </p>
                                     )}
                                 </div>
                                 <div className="flex-1 flex flex-col">
                                     <label className={lbl}>Type *</label>
                                     <input
                                         type="text"
-                                        placeholder="e.g. ARN"
-                                        {...register(`creds.${index}.type`, {
+                                        placeholder="e.g. ARN or SUB_BROKER_ARN"
+                                        {...register(`agentCreds.${index}.type`, {
                                             required: "Required",
                                         })}
                                         className={inp}
                                     />
-                                    {errors.creds?.[index]?.type && (
+                                    {errors.agentCreds?.[index]?.type && (
                                         <p className={errCls}>
-                                            {errors.creds[index]?.type?.message}
+                                            {errors.agentCreds[index]?.type?.message}
                                         </p>
                                     )}
                                 </div>
@@ -492,36 +601,7 @@ export default function SelectMutualFundFIS14({
                         ))}
                     </div>
 
-                    {/* ── Person Details ── */}
-                    <div className={section}>
-                        <p className={sectionTitle}>Person Details</p>
-
-                        <div className="flex flex-col">
-                            <label className={lbl}>Person ID (Agent) *</label>
-                            <input
-                                type="text"
-                                placeholder="e.g. euin:E52432"
-                                {...register("personId", { required: "Required" })}
-                                className={inp}
-                            />
-                            {errors.personId && <p className={errCls}>{errors.personId.message}</p>}
-                        </div>
-
-                        <div className="flex flex-col">
-                            <label className={lbl}>Customer Person ID *</label>
-                            <input
-                                type="text"
-                                placeholder="e.g. pan:ARRPP7771N"
-                                {...register("customerPersonId", { required: "Required" })}
-                                className={inp}
-                            />
-                            {errors.customerPersonId && (
-                                <p className={errCls}>{errors.customerPersonId.message}</p>
-                            )}
-                        </div>
-                    </div>
-
-                    {/* ── Extra fields from config (e.g. city_code) ── */}
+                    {/* ── Extra fields from config ── */}
                     {extraFields.length > 0 && (
                         <div className={section}>
                             <p className={sectionTitle}>Additional Fields</p>
@@ -539,7 +619,6 @@ export default function SelectMutualFundFIS14({
                                                 ...prev,
                                                 [field.name]: e.target.value,
                                             }));
-                                            // Clear error when user starts typing
                                             if (extraErrors[field.name]) {
                                                 setExtraErrors((prev) => {
                                                     const next = { ...prev };
