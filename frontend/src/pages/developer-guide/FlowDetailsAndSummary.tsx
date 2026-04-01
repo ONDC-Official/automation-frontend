@@ -9,8 +9,8 @@ const FlowDetailsAndSummary: FC<FlowDetailsAndSummaryProps> = ({ flow }) => {
     const config = flow.config;
     const hasDetails = config?.details && config.details.length > 0;
     const hasReference = !!config?.reference?.trim();
-    const flowTitle = flow.description || flow.flowId;
-    const flowSummary = config?.summary ?? "";
+    const flowTitle = flow.flowId.split("_").join(" ");
+    const flowSummary = config?.summary ?? flow.description;
 
     return (
         <div className="space-y-10">
@@ -39,9 +39,7 @@ const FlowDetailsAndSummary: FC<FlowDetailsAndSummaryProps> = ({ flow }) => {
                 )}
                 {flowSummary && (
                     <div className="rounded-xl border border-slate-200 bg-slate-50/80 px-6 py-4">
-                        <p className="text-sm text-slate-800 leading-relaxed mb-0">
-                            {flowSummary}
-                        </p>
+                        <p className="text-sm text-slate-800 leading-relaxed mb-0">{flowSummary}</p>
                     </div>
                 )}
             </section>
@@ -76,9 +74,7 @@ const FlowDetailsAndSummary: FC<FlowDetailsAndSummaryProps> = ({ flow }) => {
                         Reference
                     </h2>
                     <div className="rounded-xl border border-slate-200 bg-slate-50/80 px-6 py-4">
-                        <p className="text-sm text-slate-600 leading-relaxed">
-                            {config.reference}
-                        </p>
+                        <p className="text-sm text-slate-600 leading-relaxed">{config.reference}</p>
                     </div>
                 </section>
             )}
