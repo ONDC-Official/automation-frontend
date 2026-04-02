@@ -44,7 +44,16 @@ export interface SequenceStep {
     "meta-data"?: MetadataField[];
 }
 
+export type OnSearchPayload = {
+    message: {
+        catalog: {
+            "bpp/providers": any[];
+        };
+    };
+};
+
 export interface SubmitEventParams {
     jsonPath: Record<string, unknown>;
     formData: Record<string, string>;
+    catalog?: OnSearchPayload;
 }
