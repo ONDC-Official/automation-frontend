@@ -80,17 +80,18 @@ export default function ReteB2BSelect({
 }: {
     submitEvent: (data: SubmitEventParams) => Promise<void>;
 }) {
+    const [catalogPayload, setCatalogPayload] = useState<OnSearchPayload | null>(null);
     const [isPayloadEditorActive, setIsPayloadEditorActive] = useState(false);
     const [isDataPasted, setIsDataPasted] = useState(false);
     const [itemOptions, setItemOptions] = useState<string[]>([]);
-    const [locationOptions, setLocationOptions] = useState<string[]>([]);
+    const [, setLocationOptions] = useState<string[]>([]);
     const [fulfillmentOptions, setFulfillmentOptions] = useState<string[]>([]);
     const [offers, setOffers] = useState<CatalogOffer[]>([]);
     const [dynamicOfferRules, setDynamicOfferRules] = useState<Record<string, DynamicOfferRule>>({});
     const [itemPrices, setItemPrices] = useState<Record<string, number>>({});
     const [itemCategories, setItemCategories] = useState<Record<string, string>>({});
     const [itemNames, setItemNames] = useState<Record<string, string>>({});
-    const [itemLocations, setItemLocations] = useState<Record<string, string>>({});
+    const [itemLocations, setItemLocations] = useState<Record<string, string[]>>({});
     const [categoryNames, setCategoryNames] = useState<Record<string, string>>({});
 
     const [form, setForm] = useState<RetailerCustomerInput>({
@@ -152,31 +153,20 @@ export default function ReteB2BSelect({
             const hasCompatibleItem = form.items.some(item => {
                 if (!item.itemId || item.quantity <= 0) return false;
 
-                // Location Check (Respecting user's selection in the UI dropdown)
-                const itemLocation = item.location || itemLocations[item.itemId];
-                if (hasLocationRules && itemLocation && !rule.locationIds.includes(itemLocation)) {
-                    // Item isn't at a valid location for this offer
-                    return false;
-                }
+                // Location Check
+                const itemLocation = item.location || (itemLocations[item.itemId]?.[0] || "");
+                const locMatch = hasLocationRules && itemLocation && rule.locationIds.includes(itemLocation);
 
-                let itemMatch = false;
-                if (hasItemRules && rule.itemIds.includes(item.itemId)) {
-                    itemMatch = true;
-                }
+                // Item Check
+                const itemMatch = hasItemRules && rule.itemIds.includes(item.itemId);
 
-                let catMatch = false;
-                if (hasCategoryRules) {
-                    const catId = itemCategories[item.itemId];
-                    const itemName = itemNames[item.itemId] || "";
-                    catMatch = isDynamicCategoryMatch(catId, itemName, rule.categoryIds);
-                }
+                // Category Check
+                const catId = itemCategories[item.itemId];
+                const itemName = itemNames[item.itemId] || "";
+                const catMatch = hasCategoryRules && isDynamicCategoryMatch(catId, itemName, rule.categoryIds);
 
-                if (hasItemRules && hasCategoryRules) return itemMatch && catMatch;
-                if (hasItemRules) return itemMatch;
-                if (hasCategoryRules) return catMatch;
-
-                // If only location rules exist, it automatically passes if it reached here
-                return true;
+                // Valid if ANY of the criteria match (Location OR Item OR Category)
+                return locMatch || itemMatch || catMatch;
             });
 
             if (!hasCompatibleItem) {
@@ -187,7 +177,7 @@ export default function ReteB2BSelect({
                     msg.push(`categories: ${catDisplay}`);
                 }
                 if (hasLocationRules) msg.push(`locations: ${rule.locationIds.join(", ")}`);
-                return `Valid for ${msg.join(" AND ")}`;
+                return `Valid for ${msg.join(" OR ")}`;
             }
         }
 
@@ -208,28 +198,20 @@ export default function ReteB2BSelect({
             const hasLocationRules = rule.locationIds && rule.locationIds.length > 0;
 
             if (hasItemRules || hasCategoryRules || hasLocationRules) {
-                const itemLocation = item.location || itemLocations[item.itemId];
-                if (hasLocationRules && itemLocation && !rule.locationIds.includes(itemLocation)) {
-                    return false;
-                }
+                // Location Check
+                const itemLocation = item.location || (itemLocations[item.itemId]?.[0] || "");
+                const locMatch = hasLocationRules && itemLocation && rule.locationIds.includes(itemLocation);
 
-                let itemMatch = false;
-                if (hasItemRules && rule.itemIds.includes(item.itemId)) {
-                    itemMatch = true;
-                }
+                // Item Check
+                const itemMatch = hasItemRules && rule.itemIds.includes(item.itemId);
 
-                let catMatch = false;
-                if (hasCategoryRules) {
-                    const catId = itemCategories[item.itemId];
-                    const itemName = itemNames[item.itemId] || "";
-                    catMatch = isDynamicCategoryMatch(catId, itemName, rule.categoryIds);
-                }
+                // Category Check
+                const catId = itemCategories[item.itemId];
+                const itemName = itemNames[item.itemId] || "";
+                const catMatch = hasCategoryRules && isDynamicCategoryMatch(catId, itemName, rule.categoryIds);
 
-                if (hasItemRules && hasCategoryRules) return itemMatch && catMatch;
-                if (hasItemRules) return itemMatch;
-                if (hasCategoryRules) return catMatch;
-
-                return false;
+                // Valid if ANY of the criteria match (Location OR Item OR Category)
+                return locMatch || itemMatch || catMatch;
             }
             return true;
         });
@@ -252,7 +234,12 @@ export default function ReteB2BSelect({
 
     const handlePaste = (data: unknown) => {
         try {
-            const providers = (data as OnSearchPayload).message.catalog["bpp/providers"];
+            const parsed = data as OnSearchPayload;
+
+            // STORE FULL CATALOG HERE (MAIN FIX)
+            setCatalogPayload(parsed);
+
+            const providers = parsed.message.catalog["bpp/providers"];
             const provider = providers[0];
 
             if (provider) {
@@ -272,7 +259,7 @@ export default function ReteB2BSelect({
                 const parsedPrices: Record<string, number> = {};
                 const parsedCategories: Record<string, string> = {};
                 const parsedItemNames: Record<string, string> = {};
-                const parsedItemLocations: Record<string, string> = {};
+                const parsedItemLocations: Record<string, string[]> = {};
                 provider.items?.forEach((item: any) => {
                     parsedPrices[item.id] = parseFloat(item.price?.value || "0");
                     parsedItemNames[item.id] = item.descriptor?.name || "";
@@ -281,11 +268,11 @@ export default function ReteB2BSelect({
                     } else if (item.category_ids && item.category_ids.length > 0) {
                         parsedCategories[item.id] = item.category_ids[0];
                     }
-                    if (item.location_id) {
-                        parsedItemLocations[item.id] = item.location_id;
-                    } else if (item.location_ids && item.location_ids.length > 0) {
-                        parsedItemLocations[item.id] = item.location_ids[0];
-                    }
+                    
+                    let locs: string[] = [];
+                    if (item.location_id) locs.push(item.location_id);
+                    if (Array.isArray(item.location_ids)) locs = [...locs, ...item.location_ids];
+                    parsedItemLocations[item.id] = Array.from(new Set(locs.filter(Boolean)));
                 });
                 setItemPrices(parsedPrices);
                 setItemCategories(parsedCategories);
@@ -381,6 +368,15 @@ export default function ReteB2BSelect({
     const handleItemChange = (index: number, key: keyof ReteB2BItem, value: string | number) => {
         const updatedItems = [...form.items];
         updatedItems[index] = { ...updatedItems[index], [key]: value };
+
+        // Auto-populate location if itemId changes
+        if (key === "itemId" && typeof value === "string" && value) {
+            const autoLocations = itemLocations[value];
+            if (autoLocations && autoLocations.length > 0) {
+                updatedItems[index].location = autoLocations[0];
+            }
+        }
+
         // Reset offers if items change (to re-validate)
         setForm({ ...form, items: updatedItems, available_offers: [] });
     };
@@ -423,9 +419,15 @@ export default function ReteB2BSelect({
                 return;
             }
         }
+        if (!catalogPayload) {
+            alert("Please paste on_search payload first");
+            return;
+        }
         await submitEvent({
             jsonPath: {},
             formData: form as unknown as Record<string, string>,
+            catalog: catalogPayload
+
         });
     };
 
@@ -485,7 +487,7 @@ export default function ReteB2BSelect({
                                 <input min={1} type="number" value={item.quantity} onChange={(e) => handleItemChange(index, "quantity", Number(e.target.value))} className={inputStyle} />
                                 <select value={item.location} onChange={(e) => handleItemChange(index, "location", e.target.value)} className={inputStyle}>
                                     <option value="">Location</option>
-                                    {locationOptions.map((loc) => <option key={loc}>{loc}</option>)}
+                                    {(item.itemId && itemLocations[item.itemId] ? itemLocations[item.itemId] : []).map((loc) => <option key={loc}>{loc}</option>)}
                                 </select>
                                 <select value={item.fulfillment_id} onChange={(e) => handleItemChange(index, "fulfillment_id", e.target.value)} className={inputStyle}>
                                     <option value="">Fulfillment</option>
