@@ -47,14 +47,20 @@ const DifficultyCards = ({ difficulty_cache, sessionId }: IProps) => {
     const [isOpen, setIsOpen] = useState(false);
 
     useEffect(() => {
-        if (difficulty_cache?.totalDifficulty) {
-            delete difficulty_cache.totalDifficulty;
+        const newCache = { ...difficulty_cache };
+        if (newCache.totalDifficulty) {
+            delete newCache.totalDifficulty;
         }
-        if (difficulty_cache?.sensitiveTTL) delete difficulty_cache.sensitiveTTL;
-        if (difficulty_cache?.stopAfterFirstNack) {
-            delete difficulty_cache.stopAfterFirstNack;
+        if (newCache.sensitiveTTL) delete newCache.sensitiveTTL;
+        if (newCache.stopAfterFirstNack) {
+            delete newCache.stopAfterFirstNack;
         }
-        setDifficultCache(difficulty_cache);
+        
+        if (!("encryptionValidation" in newCache)) {
+            newCache.encryptionValidation = false;
+        }
+
+        setDifficultCache(newCache);
     }, [difficulty_cache]);
 
     useEffect(() => {
