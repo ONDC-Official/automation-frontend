@@ -12,6 +12,7 @@ const keyMapping: Record<string, string> = {
     useGateway: "Use Gateway",
     headerValidaton: "Header Validation",
     useGzip: "Use Gzip",
+    encryptionValidation: "Encryption Validation",
     totalDifficulty: "Total Difficulty",
 };
 
@@ -23,6 +24,7 @@ interface DifficultyCache {
     headerValidaton: boolean;
     sensitiveTTL?: boolean;
     useGzip: boolean;
+    encryptionValidation?: boolean;
     totalDifficulty?: number;
 }
 
