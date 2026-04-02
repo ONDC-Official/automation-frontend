@@ -1,4 +1,4 @@
-import { FC, useState } from "react";
+import { FC, useState, useEffect, useRef } from "react";
 import type { FlowEntry, FlowStep } from "./types";
 import { getActionId } from "./utils";
 import { FcWorkflow } from "react-icons/fc";
@@ -90,12 +90,34 @@ const FlowsAccordion: FC<FlowsAccordionProps> = ({
     setSelectedFlowAction,
 }) => {
     const [openFlowIndex, setOpenFlowIndex] = useState<number | null>(null);
+    const [transitioningAction, setTransitioningAction] = useState<string | null>(null);
+    const transitionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    // Clear the transitioning state once the parent has confirmed the new action.
+    // Keep it visible for at least 400 ms so the spinner is noticeable.
+    useEffect(() => {
+        if (
+            selectedFlowAction &&
+            transitioningAction &&
+            selectedFlowAction === transitioningAction
+        ) {
+            if (transitionTimerRef.current) clearTimeout(transitionTimerRef.current);
+            transitionTimerRef.current = setTimeout(() => setTransitioningAction(null), 400);
+        }
+    }, [selectedFlowAction, transitioningAction]);
+
+    useEffect(() => {
+        return () => {
+            if (transitionTimerRef.current) clearTimeout(transitionTimerRef.current);
+        };
+    }, []);
 
     const toggleFlow = (index: number) => {
         if (openFlowIndex === index) {
             setOpenFlowIndex(null);
             setSelectedFlow("");
             setSelectedFlowAction("");
+            setTransitioningAction(null);
         } else {
             setOpenFlowIndex(index);
 
@@ -112,6 +134,7 @@ const FlowsAccordion: FC<FlowsAccordionProps> = ({
                     firstItem.type === "pair"
                         ? getActionId(firstItem.request)
                         : getActionId(firstItem.step);
+                setTransitioningAction(firstActionId);
                 setSelectedFlowAction(firstActionId);
             } else {
                 setSelectedFlowAction("");
@@ -120,6 +143,8 @@ const FlowsAccordion: FC<FlowsAccordionProps> = ({
     };
 
     const handleStepClick = (flowId: string, actionId: string) => {
+        if (transitionTimerRef.current) clearTimeout(transitionTimerRef.current);
+        setTransitioningAction(actionId);
         setSelectedFlow(flowId);
         setSelectedFlowAction(actionId);
     };
@@ -127,18 +152,41 @@ const FlowsAccordion: FC<FlowsAccordionProps> = ({
     const renderStepButton = (step: FlowStep, flowId: string, isSelected: boolean) => {
         const actionId = getActionId(step);
         const showUnsolicited = step.unsolicited === true;
+        const isTransitioning = transitioningAction === actionId;
 
         return (
             <button
                 key={actionId}
                 onClick={() => handleStepClick(flowId, actionId)}
+                disabled={isTransitioning}
                 className={`w-full flex-1 min-w-0 text-left px-3 py-2.5 rounded-lg border text-sm transition-all duration-200 ${
-                    isSelected
+                    isSelected || isTransitioning
                         ? "bg-sky-50 border-sky-300 text-sky-900 shadow-sm ring-1 ring-sky-200/60 font-medium"
                         : "bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100 hover:border-slate-300"
                 }`}
             >
                 <div className="flex items-center justify-center gap-2">
+                    {isTransitioning && (
+                        <svg
+                            className="shrink-0 h-3.5 w-3.5 animate-spin text-sky-500"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                        >
+                            <circle
+                                className="opacity-25"
+                                cx="12"
+                                cy="12"
+                                r="10"
+                                stroke="currentColor"
+                                strokeWidth="4"
+                            />
+                            <path
+                                className="opacity-75"
+                                fill="currentColor"
+                                d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                            />
+                        </svg>
+                    )}
                     <span className="text-sm font-medium truncate">
                         {step.action_label ?? step.api}
                     </span>
@@ -160,7 +208,7 @@ const FlowsAccordion: FC<FlowsAccordionProps> = ({
                 const isSelectedFlow = selectedFlow === flowId;
                 const steps = flow.config?.steps ?? [];
                 const displayItems = buildStepDisplayItems(steps);
-
+                const flowName = flowId.split("_").join(" ");
                 return (
                     <div
                         key={flowIndex}
@@ -178,7 +226,7 @@ const FlowsAccordion: FC<FlowsAccordionProps> = ({
                                 </span>
                                 <div className="flex-1 min-w-0">
                                     <span className="font-semibold text-gray-900 text-sm break-words block">
-                                        {flow.description || flow.flowId}
+                                        {flowName}
                                     </span>
                                     {flow.tags.length > 0 && (
                                         <div className="flex flex-wrap gap-1 mt-1">
@@ -207,7 +255,7 @@ const FlowsAccordion: FC<FlowsAccordionProps> = ({
                             }`}
                         >
                             <div className="overflow-hidden">
-                                <div className="px-4 pb-4 pt-2 border-t border-slate-100 bg-slate-50/40 max-h-80 overflow-y-auto">
+                                <div className="px-4 pb-4 pt-2 border-t border-slate-100 bg-slate-50/40 overflow-y-auto">
                                     <div className="space-y-2.5 mt-2">
                                         {displayItems.map((item, itemIdx) => {
                                             if (item.type === "pair") {
@@ -228,13 +276,13 @@ const FlowsAccordion: FC<FlowsAccordionProps> = ({
                                                         {renderStepButton(
                                                             item.request,
                                                             flowId,
-                                                            isReqSelected,
+                                                            isReqSelected
                                                         )}
                                                         <ArrowsIcon />
                                                         {renderStepButton(
                                                             item.response,
                                                             flowId,
-                                                            isResSelected,
+                                                            isResSelected
                                                         )}
                                                     </div>
                                                 );
@@ -248,7 +296,7 @@ const FlowsAccordion: FC<FlowsAccordionProps> = ({
                                                     {renderStepButton(
                                                         item.step,
                                                         flowId,
-                                                        isSelected,
+                                                        isSelected
                                                     )}
                                                 </div>
                                             );

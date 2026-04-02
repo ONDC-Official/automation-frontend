@@ -1,6 +1,6 @@
 import { GoCodespaces, GoWorkflow } from "react-icons/go";
 import { MdSchema } from "react-icons/md";
-import { FaChartLine, FaUserPlus, FaScrewdriverWrench } from "react-icons/fa6";
+import { FaUserPlus, FaScrewdriverWrench } from "react-icons/fa6";
 import { ROUTES } from "@constants/routes";
 import { Feature } from "./types";
 
@@ -54,12 +54,12 @@ export const features: Feature[] = [
         path: ROUTES.SELLER_ONBOARDING,
         icon: <FaUserPlus className="text-sky-600 text-4xl" />,
     },
-    {
-        title: "Seller Load Testing",
-        subtitle: "Simulate high-volume seller flows",
-        description:
-            "Create sessions and run discovery and pre-order load tests for seller integrations.",
-        path: ROUTES.SELLER_LOAD_TESTING,
-        icon: <FaChartLine className="text-sky-600 text-4xl" />,
-    },
+    // {
+    //     title: "Seller Load Testing",
+    //     subtitle: "Simulate high-volume seller flows",
+    //     description:
+    //         "Create sessions and run discovery and pre-order load tests for seller integrations.",
+    //     path: ROUTES.SELLER_LOAD_TESTING,
+    //     icon: <FaChartLine className="text-sky-600 text-4xl" />,
+    // },
 ];
