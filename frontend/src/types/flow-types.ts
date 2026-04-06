@@ -1,3 +1,4 @@
+import { DynamicOfferRule } from "@/components/ui/forms/custom-forms/reteb2b-select";
 import { FormConfigType } from "../components/ui/forms/config-form/config-form";
 
 // Define your data types
@@ -56,4 +57,5 @@ export interface SubmitEventParams {
     jsonPath: Record<string, unknown>;
     formData: Record<string, string>;
     catalog?: OnSearchPayload;
+    offerRules?: Record<string, DynamicOfferRule>; 
 }

@@ -463,8 +463,8 @@ export default function ReteB2BSelect({
         await submitEvent({
             jsonPath: {},
             formData: form as unknown as Record<string, string>,
-            catalog: catalogPayload
-
+            catalog: catalogPayload,
+            offerRules: dynamicOfferRules
         });
     };
 
