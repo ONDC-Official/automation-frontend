@@ -102,7 +102,7 @@ export default function ReteB2BSelect({
     const [isPayloadEditorActive, setIsPayloadEditorActive] = useState(false);
     const [isDataPasted, setIsDataPasted] = useState(false);
     const [itemOptions, setItemOptions] = useState<string[]>([]);
-    const [locationOptions, setLocationOptions] = useState<string[]>([]);
+    const [, setLocationOptions] = useState<string[]>([]);
     const [fulfillmentOptions, setFulfillmentOptions] = useState<string[]>([]);
     const [offers, setOffers] = useState<CatalogOffer[]>([]);
     const [dynamicOfferRules, setDynamicOfferRules] = useState<Record<string, DynamicOfferRule>>({});
