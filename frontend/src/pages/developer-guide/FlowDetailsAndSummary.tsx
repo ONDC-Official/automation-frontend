@@ -1,34 +1,45 @@
 import { FC } from "react";
-import { Flow } from "./types";
+import type { FlowEntry } from "./types";
 
 interface FlowDetailsAndSummaryProps {
-    flow: Flow;
+    flow: FlowEntry;
 }
 
 const FlowDetailsAndSummary: FC<FlowDetailsAndSummaryProps> = ({ flow }) => {
-    const hasDetails = flow.details && flow.details.length > 0;
-    const hasReference = !!flow.reference?.trim();
-    const flowTitle = flow.meta?.flowName ?? flow.meta?.flowId ?? flow.summary ?? "";
-    const flowDescription = flow.meta?.description ?? "";
-    const domain = typeof flow.meta?.domain === "string" ? flow.meta.domain : undefined;
-    const version = typeof flow.meta?.version === "string" ? flow.meta.version : undefined;
+    const config = flow.config;
+    const hasDetails = config?.details && config.details.length > 0;
+    const hasReference = !!config?.reference?.trim();
+    const flowTitle = flow.flowId.split("_").join(" ");
+    const flowSummary = config?.summary ?? flow.description;
 
     return (
         <div className="space-y-10">
             <section className="space-y-4">
                 <h1 className="text-2xl font-bold text-slate-900 tracking-tight">{flowTitle}</h1>
-                {(domain || version) && (
+                {(flow.domain || flow.version) && (
                     <p className="text-sm text-slate-700">
-                        {domain && <span className="font-medium">Domain: {domain}</span>}
-                        {domain && version && " · "}
-                        {version && <span className="font-medium">Version: {version}</span>}
+                        {flow.domain && <span className="font-medium">Domain: {flow.domain}</span>}
+                        {flow.domain && flow.version && " · "}
+                        {flow.version && (
+                            <span className="font-medium">Version: {flow.version}</span>
+                        )}
                     </p>
                 )}
-                {flowDescription && (
+                {flow.tags.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5">
+                        {flow.tags.map((tag) => (
+                            <span
+                                key={tag}
+                                className="inline-flex items-center rounded-full px-2.5 py-0.5 bg-sky-50 text-sky-700 border border-sky-200 text-xs font-medium"
+                            >
+                                {tag}
+                            </span>
+                        ))}
+                    </div>
+                )}
+                {flowSummary && (
                     <div className="rounded-xl border border-slate-200 bg-slate-50/80 px-6 py-4">
-                        <p className="text-sm text-slate-800 leading-relaxed mb-0">
-                            {flowDescription}
-                        </p>
+                        <p className="text-sm text-slate-800 leading-relaxed mb-0">{flowSummary}</p>
                     </div>
                 )}
             </section>
@@ -39,7 +50,7 @@ const FlowDetailsAndSummary: FC<FlowDetailsAndSummaryProps> = ({ flow }) => {
                         Flow details
                     </h2>
                     <div className="space-y-3">
-                        {flow?.details
+                        {config.details
                             ?.filter((d) => d.description)
                             .map((detail, index) => (
                                 <div
@@ -63,7 +74,7 @@ const FlowDetailsAndSummary: FC<FlowDetailsAndSummaryProps> = ({ flow }) => {
                         Reference
                     </h2>
                     <div className="rounded-xl border border-slate-200 bg-slate-50/80 px-6 py-4">
-                        <p className="text-sm text-slate-600 leading-relaxed">{flow.reference}</p>
+                        <p className="text-sm text-slate-600 leading-relaxed">{config.reference}</p>
                     </div>
                 </section>
             )}

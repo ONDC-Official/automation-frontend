@@ -1,3 +1,4 @@
+import { DynamicOfferRule } from "@/components/ui/forms/custom-forms/reteb2b-select";
 import { FormConfigType } from "../components/ui/forms/config-form/config-form";
 
 // Define your data types
@@ -44,7 +45,17 @@ export interface SequenceStep {
     "meta-data"?: MetadataField[];
 }
 
+export type OnSearchPayload = {
+    message: {
+        catalog: {
+            "bpp/providers": any[];
+        };
+    };
+};
+
 export interface SubmitEventParams {
     jsonPath: Record<string, unknown>;
     formData: Record<string, string>;
+    catalog?: OnSearchPayload;
+    offerRules?: Record<string, DynamicOfferRule>; 
 }

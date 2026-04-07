@@ -325,7 +325,7 @@ export default function InitialFlowForm({
             <FormSelect
                 name="env"
                 label="Select Environment"
-                options={["STAGING", "PRE-PRODUCTION"]}
+                options={["PRE-PRODUCTION"]}
                 currentValue={dynamicValue.env}
                 setSelectedValue={(data: string) => {
                     trackEvent({

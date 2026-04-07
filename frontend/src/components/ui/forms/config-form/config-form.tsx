@@ -1,4 +1,5 @@
 import { useContext } from "react";
+import { toast } from "react-toastify";
 import { FormInput } from "../form-input";
 import FormSelect from "../form-select";
 import CheckboxGroup, { CheckboxOption } from "../checkbox";
@@ -45,6 +46,7 @@ import ReteB2BSelect from "../custom-forms/reteb2b-select";
 
 import InitMetroTRV11 from "../custom-forms/init-metro-trv11";
 import SelectMutualFundFIS14 from "../custom-forms/mutual_fund_select";
+import SelectMutualFundRedemptionFIS14 from "../custom-forms/mutual_fund_redemption_select";
 
 export interface FormFieldConfigType {
     name: string;
@@ -93,7 +95,8 @@ export interface FormFieldConfigType {
         | "select_metro_trv11"
         | "init_metro_trv11"
         | "datetime-local"
-        | "fis14_mutul_fund_select";
+        | "fis14_mutul_fund_select"
+        | "fis14_mf_redemption_select";
 
     payloadField: string;
     values?: string[];
@@ -125,6 +128,18 @@ export default function FormConfig({
     const sessionData = sessionContext?.sessionData;
 
     const onSubmit = async (data: Record<string, string>) => {
+        if (sessionData?.activeFlow === "RTO_PLUS_PART_CANCELLATION") {
+            const nestedField = formConfig.find((field) => field.type === "nestedSelect");
+            if (nestedField) {
+                const nestedItems = data[nestedField.name];
+                const itemsArray = Array.isArray(nestedItems) ? nestedItems : [];
+                const filledItems = itemsArray.filter((item: { id: string }) => item.id !== "");
+                if (filledItems.length < 2) {
+                    toast.error("At least 2 items must be selected for this flow.");
+                    return;
+                }
+            }
+        }
         const formatedData: Record<string, string | number> = {};
         const formData: Record<string, string> = data;
         for (const key in data) {
@@ -365,6 +380,11 @@ export default function FormConfig({
     if (formConfig.find((field) => field.type === "fis14_mutul_fund_select")) {
         return <SelectMutualFundFIS14 submitEvent={submitEvent} formConfig={formConfig} />;
     }
+    if (formConfig.find((field) => field.type === "fis14_mf_redemption_select")) {
+        return (
+            <SelectMutualFundRedemptionFIS14 submitEvent={submitEvent} formConfig={formConfig} />
+        );
+    }
 
     // NOTE: The JsonSchemaForm check must come after all other specific form type checks above.
     // Check for schema form
@@ -443,7 +463,13 @@ export default function FormConfig({
                             />
                         );
                     case "nestedSelect":
-                        return <ItemCustomisationSelector label={field.label} name={field.name} />;
+                        return (
+                            <ItemCustomisationSelector
+                                label={field.label}
+                                name={field.name}
+                                sessionData={sessionData}
+                            />
+                        );
                     default:
                         return <></>;
                 }

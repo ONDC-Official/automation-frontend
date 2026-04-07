@@ -38,7 +38,7 @@ export const generateReport = async (
 	}
 	try {
 		const response = await axios.post(
-			`${process.env.REPORTING_SERVICE}report/generate-report`,
+			`${process.env.REPORTING_SERVICE}/generate-report`,
 			body,
 			{
 				params: {

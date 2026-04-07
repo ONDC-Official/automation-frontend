@@ -1,26 +1,12 @@
 import { type FC, type ReactNode, useMemo, useState } from "react";
+import type { ValidationTableAction, ValidationTableRow } from "./types";
 
-export interface ValidationRow {
-    rowType: string;
-    name: string;
-    group: string;
-    scope: string;
-    description: string;
-    skipIf: string;
-    errorCode: string;
-    successCode: string;
-}
-
-export interface ValidationTable {
-    action: string;
-    codeName: string;
-    numLeafTests: number;
-    generated: string;
-    rows: ValidationRow[];
-}
+// Re-export for backward compat
+export type ValidationTable = ValidationTableAction;
+export type ValidationRow = ValidationTableRow;
 
 interface ValidationsTableProps {
-    validations: ValidationTable;
+    validations: ValidationTableAction;
 }
 
 const EMPTY_PLACEHOLDER = "—";
