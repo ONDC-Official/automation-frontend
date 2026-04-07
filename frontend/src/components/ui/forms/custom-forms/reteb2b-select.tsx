@@ -12,10 +12,6 @@ export interface DynamicOfferRule {
     minItemCount?: number;
     maxItemCount?: number;
     isAdditive: boolean;
-    //  ADD THESE
-    valueType?: "percent" | "amount";
-    value?: number;
-    valueCap?: number;
 }
 
 interface ReteB2BItem {
@@ -40,13 +36,27 @@ interface RetailerCustomerInput {
     items: ReteB2BItem[];
 }
 
+    type TargetListItem = {
+        code: string;
+        value: string;
+    };
+
+    type Tag = {
+        code: string;
+        list?: TargetListItem[];
+    };
+
 type CatalogItem = {
     id: string;
     descriptor?: { name?: string };
     category_id?: string;
     category_ids?: string[];
     price?: { value?: string };
+    tags?: Tag[];
+    location_id?: string;
+    location_ids?: string[];
 };
+
 type CatalogLocation = { id: string };
 type CatalogFulfillment = { id: string };
 
@@ -60,6 +70,10 @@ type CatalogOffer = {
     descriptor: {
         code: string;
     };
+    item_ids?: string[];
+    location_ids?: string[];
+    category_ids?: string[];
+    tags?: Tag[];
 };
 
 type CatalogProvider = {
@@ -88,7 +102,7 @@ export default function ReteB2BSelect({
     const [isPayloadEditorActive, setIsPayloadEditorActive] = useState(false);
     const [isDataPasted, setIsDataPasted] = useState(false);
     const [itemOptions, setItemOptions] = useState<string[]>([]);
-    const [, setLocationOptions] = useState<string[]>([]);
+    const [locationOptions, setLocationOptions] = useState<string[]>([]);
     const [fulfillmentOptions, setFulfillmentOptions] = useState<string[]>([]);
     const [offers, setOffers] = useState<CatalogOffer[]>([]);
     const [dynamicOfferRules, setDynamicOfferRules] = useState<Record<string, DynamicOfferRule>>({});
@@ -272,7 +286,7 @@ export default function ReteB2BSelect({
                     } else if (item.category_ids && item.category_ids.length > 0) {
                         parsedCategories[item.id] = item.category_ids[0];
                     }
-                    
+
                     let locs: string[] = [];
                     if (item.location_id) locs.push(item.location_id);
                     if (Array.isArray(item.location_ids)) locs = [...locs, ...item.location_ids];
@@ -295,9 +309,6 @@ export default function ReteB2BSelect({
 
                 // Standardizing rules from payload tags (highly dynamic to adapt to different on_search structures)
                 collectedOffers.forEach((off: any) => {
-                    let valueType: "percent" | "amount" | undefined;
-                    let value = 0;
-                    let valueCap = 0;
                     let minVal = 0;
                     let isAdditive = true;
                     // Provide defaults so even empty structures adapt gracefully
@@ -316,72 +327,42 @@ export default function ReteB2BSelect({
                     // Dynamically scrape all tags to find offer rules constraints
                     off.tags?.forEach((tag: any) => {
                         const tCode = tag.code || tag.descriptor?.code;
-                
-                        /* QUALIFIER / RULES */
-                        if (tCode === "rules" || tCode === "qualifier") {
+                        if (tCode === "rules" || tCode === "qualifier" || tCode === "meta") {
                             tag.list?.forEach((l: any) => {
                                 const lCode = l.code || l.descriptor?.code;
-                
                                 if (lCode === "min_value") minVal = parseFloat(l.value || "0");
                                 if (lCode === "item_count") minItemCount = parseFloat(l.value || "0");
                                 if (lCode === "item_count_upper") maxItemCount = parseFloat(l.value || "0");
-                            });
-                        }
-                
-                        /*  META */
-                        if (tCode === "meta") {
-                            tag.list?.forEach((l: any) => {
-                                const lCode = l.code || l.descriptor?.code;
-                
                                 if (lCode === "additive") {
                                     isAdditive = l.value === "true" || l.value === "yes";
+                                    // Make sure "false" or "no" results in false
                                     if (l.value === "false" || l.value === "no") isAdditive = false;
                                 }
-                            });
-                        }
-                
-                        /* IMPORTANT: BENEFIT (THIS WAS MISSING) */
-                        if (tCode === "benefit") {
-                            tag.list?.forEach((l: any) => {
-                                const lCode = l.code || l.descriptor?.code;
-                
-                                if (lCode === "value_type") {
-                                    valueType = l.value; // percent / amount
-                                }
-                
-                                if (lCode === "value") {
-                                    value = parseFloat(l.value || "0"); // e.g. -5
-                                }
-                
-                                if (lCode === "value_cap") {
-                                    valueCap = parseFloat(l.value || "0"); // e.g. -1000
+                                if (lCode === "item_ids") {
+                                    // In case itemIds are provided as a comma separated string within rules
+                                    if (l.value) {
+                                        itemIds = l.value.split(",").map((s: string) => s.trim());
+                                    }
                                 }
                             });
                         }
-                
-                        /* fallback item_ids */
+                        // Fallback: Check if there's an explicit item_ids tag group with a list of values
                         if (tCode === "item_ids" && itemIds.length === 0) {
                             if (tag.list) {
                                 itemIds = tag.list.map((l: any) => l.value);
                             }
                         }
                     });
-                
-                    /*FINAL RULE OBJECT */
+
                     rules[off.id] = {
                         id: off.id,
-                        itemIds,
-                        categoryIds,
-                        locationIds,
+                        itemIds: itemIds,
+                        categoryIds: categoryIds,
+                        locationIds: locationIds,
                         minOrderValue: minVal,
                         minItemCount,
                         maxItemCount,
-                        isAdditive,
-                
-                        // NEW FIELDS
-                        valueType,
-                        value,
-                        valueCap
+                        isAdditive: isAdditive
                     };
                 });
                 setDynamicOfferRules(rules);
@@ -462,10 +443,13 @@ export default function ReteB2BSelect({
         }
         await submitEvent({
             jsonPath: {},
-            formData: form as unknown as Record<string, string>,
-            catalog: catalogPayload,
-            offerRules: dynamicOfferRules
+            formData: {
+                ...form,
+                live_catalog: catalogPayload
+            } as unknown as Record<string, string>,
+            catalog: catalogPayload
         });
+
     };
 
     const inputStyle = "w-full bg-white border border-gray-300 rounded-md px-3 py-2 text-sm text-gray-900";
