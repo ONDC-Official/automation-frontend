@@ -121,7 +121,7 @@ export default function InsuranceSelect({
 
         setIsSubmitting(true);
         try {
-            const addOnData =
+            const addOnData: Record<string, string> =
                 selectedAddOns.length > 0
                     ? {
                           addon_ids: selectedAddOns.map((s) => s.id).join(","),
