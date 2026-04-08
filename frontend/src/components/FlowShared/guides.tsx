@@ -112,15 +112,6 @@ export function FormGuide() {
                         </code>
                     </div>
                 </div>
-
-                {/* Step 6 */}
-                <div className="space-y-2">
-                    <StepHeader step={6} title="Select Environment:" />
-                    <p className="text-gray-600 pl-10">
-                        Select the environment for which you want to test <b>STAGING</b> OR{" "}
-                        <b>PRE-PRODUCTION</b>
-                    </p>
-                </div>
             </div>
 
             {/* Submit Instructions */}
