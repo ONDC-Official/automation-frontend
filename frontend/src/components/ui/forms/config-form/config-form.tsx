@@ -38,6 +38,7 @@ import Metro210EndStopUpdate from "../custom-forms/update-end-stop-update";
 import Metro210StartEndStopSelection from "../custom-forms/trv11_start_end_stop_selection";
 import FIS12Select from "../custom-forms/fis12-select";
 import FIS13AddonSelect from "../custom-forms/fis13-addon-select";
+import InsuranceSelect from "../custom-forms/insurance-select";
 import FIS12Search from "../custom-forms/fis12-search";
 import SelectMetroTRV11 from "../custom-forms/select-metro-trv11";
 import { RJSFSchema } from "@rjsf/utils";
@@ -96,7 +97,9 @@ export interface FormFieldConfigType {
         | "init_metro_trv11"
         | "datetime-local"
         | "fis14_mutul_fund_select"
-        | "fis14_mf_redemption_select";
+        | "fis14_mf_redemption_select"
+        | "insurance_select"
+        | "datetime-local";
 
     payloadField: string;
     values?: string[];
@@ -259,6 +262,10 @@ export default function FormConfig({
 
     if (formConfig.find((field) => field.type === "retinvl_init")) {
         return <RetINVLInit submitEvent={submitEvent} />;
+    }
+
+    if (formConfig.find((field) => field.type === "insurance_select")) {
+        return <InsuranceSelect submitEvent={submitEvent} />;
     }
 
     if (formConfig.find((field) => field.type === "fis13_select")) {
