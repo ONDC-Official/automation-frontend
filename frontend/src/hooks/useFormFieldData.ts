@@ -35,7 +35,7 @@ export const useFormFieldData = () => {
         usecaseId: "",
         subscriberUrl: "",
         npType: "BAP",
-        env: "STAGING",
+        env: "PRE-PRODUCTION",
     });
 
     const formData = useRef<FormData>({
@@ -44,7 +44,7 @@ export const useFormFieldData = () => {
         usecaseId: "",
         subscriberUrl: "",
         npType: "BAP",
-        env: "STAGING",
+        env: "PRE-PRODUCTION",
     });
 
     const fetchFormFieldData = async () => {

@@ -72,7 +72,7 @@ export default function FlowContent() {
         usecaseId: "",
         subscriberUrl: "",
         npType: "BAP",
-        env: "STAGING",
+        env: "PRE-PRODUCTION",
     });
     const formData = useRef({
         domain: "",
@@ -80,7 +80,7 @@ export default function FlowContent() {
         usecaseId: "",
         subscriberUrl: "",
         npType: "BAP",
-        env: "STAGING",
+        env: "PRE-PRODUCTION",
     });
     const { sessionId: contextSessionId } = useSession();
     const navigate = useNavigate();
@@ -214,15 +214,6 @@ export default function FlowContent() {
     }
 
     const newSession = () => {
-        // formData.current = {
-        //   domain: "",
-        //   version: "",
-        //   usecaseId: "",
-        //   subscriberUrl: "",
-        //   npType: "BAP",
-        //   env: "STAGING",
-        // };
-
         setIsFormSubmitted(false);
         setFlowStepNum(0);
     };
