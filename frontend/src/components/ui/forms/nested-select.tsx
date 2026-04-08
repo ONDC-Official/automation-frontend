@@ -7,6 +7,7 @@ import { LabelWithToolTip } from "./form-input";
 import { getItemsAndCustomistions } from "../../../utils/generic-utils";
 import PayloadEditor from "../mini-components/payload-editor";
 import { SubmitEventParams } from "@/types/flow-types";
+import { toast } from "react-toastify";
 
 interface SelectedItem {
     id: string;
@@ -27,18 +28,21 @@ type ItemCustomisationSelectorProps = {
     label: string;
     setValue?: (name: string, value: SelectedItem[]) => void;
     submitEvent?: (data: SubmitEventParams) => Promise<void>;
+    sessionData: any;
 };
 
 const ItemCustomisationSelector = ({
-    // register,
     name,
     label,
     setValue,
     submitEvent,
+    sessionData,
 }: ItemCustomisationSelectorProps) => {
-    const [items, setItems] = useState<SelectedItem[]>([
-        { id: "", customisations: [], relation: {} },
-    ]);
+    const minItems = sessionData?.activeFlow === "RTO_PLUS_PART_CANCELLATION" ? 2 : 1;
+    const [items, setItems] = useState<SelectedItem[]>(
+        Array.from({ length: minItems }, () => ({ id: "", customisations: [], relation: {} }))
+    );
+
     const [catalogData, setCatalogData] = useState<unknown | null>(null);
     const [errroWhilePaste, setErrroWhilePaste] = useState("");
     const [itemsList, setItemsList] = useState<ItemList>({});
@@ -46,6 +50,16 @@ const ItemCustomisationSelector = ({
     const [groupMapping, setGroupMapping] = useState<CustomisationToGroupMapping>({});
     const [isPayloadEditorActive, setIsPayloadEditorActive] = useState(false);
     const hasCatalogData = catalogData != null;
+
+    useEffect(() => {
+        if (items.length < minItems) {
+            const extra = Array.from(
+                { length: minItems - items.length },
+                () => ({ id: "", customisations: [], relation: {} })
+            );
+            setItems((prev: SelectedItem[]) => [...prev, ...extra]);
+        }
+    }, [minItems]);
 
     useEffect(() => {
         setValue?.(name, items);
@@ -76,6 +90,7 @@ const ItemCustomisationSelector = ({
     };
 
     const removeItem = (index: number) => {
+        if (items.length <= minItems) return;
         setItems((prev) => prev.filter((_, i) => i !== index));
     };
 
@@ -105,6 +120,11 @@ const ItemCustomisationSelector = ({
     };
 
     const handleSubmit = async () => {
+        const filledItems = items.filter((item: SelectedItem) => item.id !== "");
+        if (filledItems.length < minItems) {
+            toast.error(`At least ${minItems} items must be selected for this flow.`);
+            return;
+        }
         await submitEvent?.({ jsonPath: {}, formData: items as unknown as Record<string, string> });
     };
 
@@ -176,7 +196,7 @@ const ItemCustomisationSelector = ({
                                 key={index}
                                 className="relative border p-4 rounded bg-white shadow space-y-4"
                             >
-                                {index !== 0 && (
+                                {items.length > minItems && index >= minItems && (
                                     <div className="absolute top-[-10px] right-[-10px] bg-white">
                                         <button
                                             onClick={() => removeItem(index)}
@@ -217,7 +237,7 @@ const ItemCustomisationSelector = ({
                                                         index,
                                                         e.target.value,
                                                         groupMapping[e.target.value] ||
-                                                            itemsList[`${item?.id}`]
+                                                        itemsList[`${item?.id}`]
                                                     )
                                                 }
                                             >
@@ -245,6 +265,7 @@ const ItemCustomisationSelector = ({
                             </div>
                         );
                     })}
+
 
                     {submitEvent && (
                         <button

@@ -78,7 +78,7 @@ export default function RetINVLInit({
         control,
         name: "items",
     });
-
+    const [catalogPayload, setCatalogPayload] = useState<OnSearchPayload | null>(null);
     const [providerOptions, setProviderOptions] = useState<string[]>([]);
     const [itemOptions, setItemOptions] = useState<string[]>([]);
     const [locationOptions, setLocationOptions] = useState<string[]>([]);
@@ -93,17 +93,26 @@ export default function RetINVLInit({
             toast.error(`Form validation failed: ${errors[0]}`);
             return;
         }
+        if (!catalogPayload) {
+            alert("Please paste on_search payload first");
+            return;
+        }
 
         await submitEvent({
             jsonPath: {},
-            formData: data as unknown as Record<string, string>,
+            formData: {
+                ...data,
+                live_catalog: catalogPayload,
+            } as unknown as Record<string, string>,
         });
     };
 
     const handlePaste = (data: unknown) => {
         try {
             const providers = (data as OnSearchPayload).message.catalog["bpp/providers"];
+            const parsed = data as OnSearchPayload;
             setProviders(providers);
+            setCatalogPayload(parsed);
 
             setProviderOptions(providers.map((p) => p.id));
 
@@ -189,7 +198,6 @@ export default function RetINVLInit({
                         <select {...register("order_type")} className={inputStyle}>
                             <option value="ILBN">ILBN</option>
                             <option value="ILFP">ILFP</option>
-                            <option value="ILBP">ILBP</option>
                         </select>
                     </div>
 

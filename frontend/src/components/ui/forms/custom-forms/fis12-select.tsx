@@ -68,6 +68,7 @@ export default function FIS12Select({
             const providers = data?.message?.catalog?.providers || [];
             if (providers.length === 0) {
                 toast.error("No providers found in the payload.");
+                // Keep editor open so user can fix the payload
                 return;
             }
             setExtractedProviders(providers);
@@ -75,11 +76,12 @@ export default function FIS12Select({
             setValue("provider", providers[0]);
             setValue("selectedItem", null);
             toast.success("Payload parsed successfully!");
+            setIsPayloadEditorActive(false);
         } catch (error) {
             toast.error("Failed to parse payload.");
             console.error(error);
+            // Keep editor open so user can fix the payload
         }
-        setIsPayloadEditorActive(false);
     };
 
     const onSubmit = async (data: FormValues) => {
@@ -126,11 +128,16 @@ export default function FIS12Select({
                     className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-all font-medium shadow-sm"
                 >
                     <FaRegPaste size={16} />
-                    Paste Payload
+                    {extractedProviders.length > 0 ? "Edit Payload" : "Paste Payload"}
                 </button>
             </div>
 
-            {isPayloadEditorActive && <PayloadEditor onAdd={handlePaste} />}
+            {isPayloadEditorActive && (
+                <PayloadEditor
+                    onAdd={handlePaste}
+                    onClose={() => setIsPayloadEditorActive(false)}
+                />
+            )}
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                 {extractedProviders.length > 0 && (

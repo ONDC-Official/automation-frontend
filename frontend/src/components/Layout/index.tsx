@@ -24,7 +24,7 @@ const Layout: FC = () => {
             <Header onSupportClick={handleSupportClick} />
 
             {/* Body */}
-            <div className="pt-[72px] flex-1">
+            <div className="pt-[84px] flex-1">
                 <Routes />
             </div>
 
