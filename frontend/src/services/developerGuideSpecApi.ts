@@ -1,4 +1,4 @@
-import { developerGuideApiClient } from "./apiClient";
+import apiClient, { developerGuideApiClient } from "./apiClient";
 import { API_ROUTES } from "./apiRoutes";
 import type {
     BuildEntry,
@@ -13,7 +13,7 @@ import type {
  * Fetch available domains and versions from the backend.
  */
 export async function fetchBuilds(): Promise<BuildEntry[]> {
-    const response = await developerGuideApiClient.get<BuildEntry[]>(API_ROUTES.DEV_GUIDE.BUILDS);
+    const response = await apiClient.get<BuildEntry[]>(API_ROUTES.DEV_GUIDE.BUILDS);
     return response.data ?? [];
 }
 
@@ -32,7 +32,7 @@ export interface FetchSpecOptions {
 export async function fetchSpec(
     domain: string,
     version: string,
-    options?: FetchSpecOptions,
+    options?: FetchSpecOptions
 ): Promise<OpenAPISpecification> {
     const raw = await fetchSpecRaw(domain, version, options);
     return specResponseToOpenAPI(raw, domain, version);
@@ -44,7 +44,7 @@ export async function fetchSpec(
 export async function fetchSpecRaw(
     domain: string,
     version: string,
-    options?: FetchSpecOptions,
+    options?: FetchSpecOptions
 ): Promise<SpecResponse> {
     const params: Record<string, string> = {};
 
@@ -58,7 +58,7 @@ export async function fetchSpecRaw(
 
     const response = await developerGuideApiClient.get<SpecResponse>(
         API_ROUTES.DEV_GUIDE.SPEC(domain, version),
-        { params },
+        { params }
     );
 
     return response.data;
@@ -72,7 +72,7 @@ export async function fetchSpecRaw(
  */
 export async function fetchValidationTable(
     domain: string,
-    version: string,
+    version: string
 ): Promise<ValidationTableSection | null> {
     const raw = await fetchSpecRaw(domain, version, { include: ["validationTable"] });
     return (raw.validationTable as ValidationTableSection) ?? null;
@@ -81,10 +81,7 @@ export async function fetchValidationTable(
 /**
  * Fetch changelog entries for a domain/version.
  */
-export async function fetchChangelog(
-    domain: string,
-    version: string,
-): Promise<ChangelogEntry[]> {
+export async function fetchChangelog(domain: string, version: string): Promise<ChangelogEntry[]> {
     const raw = await fetchSpecRaw(domain, version, { include: ["changelog"] });
     return (raw.changelog as ChangelogEntry[] | undefined) ?? [];
 }
@@ -96,7 +93,7 @@ export async function fetchChangelog(
 export async function fetchDocs(
     domain: string,
     version: string,
-    docSlug?: string,
+    docSlug?: string
 ): Promise<Record<string, string>> {
     const raw = await fetchSpecRaw(domain, version, {
         include: ["docs"],
@@ -104,9 +101,7 @@ export async function fetchDocs(
     });
     if (!raw.docs?.length) return {};
     return Object.fromEntries(
-        raw.docs
-            .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
-            .map((d) => [d.slug, d.content]),
+        raw.docs.sort((a, b) => (a.order ?? 0) - (b.order ?? 0)).map((d) => [d.slug, d.content])
     );
 }
 
@@ -115,7 +110,7 @@ export async function fetchDocs(
 function specResponseToOpenAPI(
     raw: SpecResponse,
     domain: string,
-    version: string,
+    version: string
 ): OpenAPISpecification {
     const meta = (raw.meta ?? {}) as Record<string, unknown>;
 
@@ -141,7 +136,7 @@ function specResponseToOpenAPI(
         ? Object.fromEntries(
               raw.docs
                   .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
-                  .map((d) => [d.slug, d.content]),
+                  .map((d) => [d.slug, d.content])
           )
         : undefined;
 
@@ -178,9 +173,7 @@ function specResponseToOpenAPI(
         "x-validations": rawValidations
             ? (rawValidations as OpenAPISpecification["x-validations"])
             : undefined,
-        "x-errorcodes": rawErrorCodes?.length
-            ? { code: rawErrorCodes }
-            : undefined,
+        "x-errorcodes": rawErrorCodes?.length ? { code: rawErrorCodes } : undefined,
         "x-supported-actions":
             rawSupportedActions && Object.keys(rawSupportedActions).length > 0
                 ? {
