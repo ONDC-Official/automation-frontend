@@ -3,6 +3,7 @@ import { SubmitEventParams } from "../../../../types/flow-types";
 import { FaRegPaste } from "react-icons/fa6";
 import PayloadEditor from "../../mini-components/payload-editor";
 
+// interface dynamicOfferRule
 export interface DynamicOfferRule {
     id: string;
     itemIds: string[];
