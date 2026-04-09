@@ -54,8 +54,9 @@ export const API_ROUTES = {
     },
 
     AUTH: {
-        LOGOUT: "/auth/logout",
+        // LOGOUT: "/auth/logout",
         ME: "/auth/api/me",
+        EXCHANGE: "/auth/exchange",
     },
 
     HEALTH: {
