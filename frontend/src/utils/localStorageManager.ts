@@ -184,6 +184,40 @@ class SessionIdSupportManager {
     }
 }
 
+/**
+ * Specialized class for managing auth token
+ */
+class AuthTokenManager {
+    private static readonly KEY = "authToken";
+    private storage: LocalStorageManager;
+
+    constructor() {
+        this.storage = LocalStorageManager.getInstance();
+    }
+
+    /**
+     * Get auth token
+     */
+    get(): string | null {
+        return this.storage.getItem<string>(AuthTokenManager.KEY);
+    }
+
+    /**
+     * Save auth token
+     */
+    set(token: string): void {
+        this.storage.setItem<string>(AuthTokenManager.KEY, token);
+    }
+
+    /**
+     * Remove auth token
+     */
+    remove(): void {
+        this.storage.removeItem(AuthTokenManager.KEY);
+    }
+}
+
 // Export singleton instances
 export const localStorageManager = LocalStorageManager.getInstance();
 export const sessionIdSupport = new SessionIdSupportManager();
+export const authTokenManager = new AuthTokenManager();

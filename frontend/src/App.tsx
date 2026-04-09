@@ -8,7 +8,7 @@ import { SubscriberData } from "@components/registry-components/registry-types";
 import { SessionProvider } from "@context/context";
 import { trackPageView } from "@utils/analytics";
 import { AuthService } from "@services/authService";
-import { sessionIdSupport } from "@utils/localStorageManager";
+import { authTokenManager, sessionIdSupport } from "@utils/localStorageManager";
 import Layout from "@components/Layout";
 
 function App() {
@@ -29,6 +29,30 @@ function App() {
     // Track page views for analytics
     useEffect(() => {
         trackPageView(location.pathname + location.search);
+    }, [location.pathname, location.search]);
+
+    // Exchange OAuth code from query params for auth token
+    useEffect(() => {
+        const queryParams = new URLSearchParams(location.search);
+        const codeFromQuery = queryParams.get("code");
+
+        if (!codeFromQuery) {
+            return;
+        }
+
+        const exchangeCodeAndPersistToken = async () => {
+            const token = await AuthService.exchangeCodeForToken(codeFromQuery);
+
+            if (!token) {
+                return;
+            }
+
+            authTokenManager.set(token);
+
+            await refreshUser();
+        };
+
+        exchangeCodeAndPersistToken();
     }, [location.pathname, location.search]);
 
     // const fetchUserLookUp = useCallback(

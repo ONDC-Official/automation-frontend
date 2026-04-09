@@ -5,6 +5,7 @@ import axios from "axios";
 import { PlaygroundContext } from "@pages/protocol-playground/context/playground-context";
 import PlaygroundPage from "@pages/protocol-playground/playground-page";
 import { SavedConfigsModal } from "@pages/protocol-playground/ui/saved-configs-modal";
+import UtilityToolsBar from "@pages/protocol-playground/ui/utility-tools-bar";
 
 interface UsecaseItem {
     key: string;
@@ -70,7 +71,7 @@ const StarterPage = () => {
     }
 
     return (
-        <div className="min-h-screen h-full bg-gradient-to-b from-white via-sky-50/30 to-white flex items-center justify-center px-8 py-16">
+        <div className="min-h-screen h-full bg-gradient-to-b from-white via-sky-50/30 to-white flex flex-col items-center justify-center px-8 py-16">
             {/* Subtle background decoration */}
             <div className="absolute inset-0 overflow-hidden pointer-events-none">
                 <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-sky-100/40 rounded-full blur-3xl transform translate-x-1/3 -translate-y-1/3"></div>
@@ -101,9 +102,10 @@ const StarterPage = () => {
                     </h1>
                     <p className="text-gray-600 text-sm">Configure and test your protocol flows</p>
                 </div>
+                <UtilityToolsBar />
 
                 {/* Card */}
-                <div className="bg-white rounded-3xl shadow-xl shadow-gray-200/50 border border-gray-100 p-8">
+                <div className="bg-white rounded-3xl shadow-xl shadow-gray-200/50 border border-gray-100 p-8 mt-2">
                     {/* Card header */}
                     <div className="mb-8">
                         <h2 className="text-lg font-semibold text-gray-900 mb-1">
