@@ -5,6 +5,7 @@ import axios, {
     AxiosResponse,
     InternalAxiosRequestConfig,
 } from "axios";
+import { authTokenManager } from "@utils/localStorageManager";
 
 /**
  * API Response wrapper interface
@@ -64,6 +65,11 @@ class ApiClient {
         // Request interceptor
         this.instance.interceptors.request.use(
             (config: InternalAxiosRequestConfig) => {
+                const authToken = authTokenManager.get();
+                if (authToken) {
+                    config.headers.Authorization = `Bearer ${authToken}`;
+                }
+
                 // Add any custom headers here
                 // For example, API keys for specific endpoints
                 if (config.url?.includes("/api/sessions/flows")) {
