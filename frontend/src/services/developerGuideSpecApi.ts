@@ -1,4 +1,4 @@
-import apiClient, { developerGuideApiClient } from "./apiClient";
+import apiClient from "./apiClient";
 import { API_ROUTES } from "./apiRoutes";
 import type {
     BuildEntry,
@@ -56,10 +56,9 @@ export async function fetchSpecRaw(
     if (options?.tag) params.tag = options.tag;
     if (options?.docSlug) params.docSlug = options.docSlug;
 
-    const response = await developerGuideApiClient.get<SpecResponse>(
-        API_ROUTES.DEV_GUIDE.SPEC(domain, version),
-        { params }
-    );
+    const response = await apiClient.get<SpecResponse>(API_ROUTES.DEV_GUIDE.SPEC(domain, version), {
+        params,
+    });
 
     return response.data;
 }
