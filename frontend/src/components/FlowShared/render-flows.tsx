@@ -681,7 +681,7 @@ function RenderFlows({
                                 {cacheSessionData ? (
                                     <div
                                         className="rounded-md overflow-auto"
-                                        style={{ maxHeight: "500px" }} // Adjust maxHeight as needed
+                                        style={{ maxHeight: "600px" }} // Adjust maxHeight as needed
                                     >
                                         {selectedTab === "Metadata" ? (
                                             <div className="bg-gray-800 rounded-lg p-4">

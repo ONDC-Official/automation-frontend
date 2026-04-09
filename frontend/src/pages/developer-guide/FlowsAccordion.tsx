@@ -93,6 +93,13 @@ const FlowsAccordion: FC<FlowsAccordionProps> = ({
     const [transitioningAction, setTransitioningAction] = useState<string | null>(null);
     const transitionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+    // Open the accordion for the externally-selected flow (e.g. deep-linked from docs button)
+    useEffect(() => {
+        if (!selectedFlow || flows.length === 0) return;
+        const idx = flows.findIndex((f) => f.flowId === selectedFlow);
+        if (idx >= 0) setOpenFlowIndex(idx);
+    }, [selectedFlow, flows]);
+
     // Clear the transitioning state once the parent has confirmed the new action.
     // Keep it visible for at least 400 ms so the spinner is noticeable.
     useEffect(() => {
