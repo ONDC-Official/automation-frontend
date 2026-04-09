@@ -48,6 +48,7 @@ import ReteB2BSelect from "../custom-forms/reteb2b-select";
 import InitMetroTRV11 from "../custom-forms/init-metro-trv11";
 import SelectMutualFundFIS14 from "../custom-forms/mutual_fund_select";
 import SelectMutualFundRedemptionFIS14 from "../custom-forms/mutual_fund_redemption_select";
+import RetINVLInitOffers from "../custom-forms/retinvl-init-offers";
 
 export interface FormFieldConfigType {
     name: string;
@@ -68,6 +69,7 @@ export interface FormFieldConfigType {
         | "reteb2b_select"
         | "ret11_nestedSelect"
         | "retinvl_init"
+        | "retinvl_init_offers"
         | "retinvl_init_ilbp"
         | "nestedSelect"
         | "trv_select"
@@ -239,6 +241,10 @@ export default function FormConfig({
     if (formConfig.find((field) => field.type === "retinvl_init")) {
         return <RetINVLInit submitEvent={submitEvent} />;
     }
+    if (formConfig.find((field) => field.type === "retinvl_init_offers")) {
+        return <RetINVLInitOffers submitEvent={submitEvent} />;
+    }
+
     if (formConfig.find((field) => field.type === "retinvl_init_ilbp")) {
         return <RetINVLInitILBP submitEvent={submitEvent} />;
     }
