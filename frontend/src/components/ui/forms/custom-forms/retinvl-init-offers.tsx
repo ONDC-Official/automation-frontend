@@ -113,8 +113,121 @@ export default function RetINVLInitOffers({
     const [locationOptions, setLocationOptions] = useState<string[]>([]);
     const [offerOptions, setOfferOptions] = useState<string[]>([]);
     const [providers, setProviders] = useState<CatalogProvider[]>([]);
+    const [dynamicOfferRules, setDynamicOfferRules] = useState<Record<string, DynamicOfferRule>>(
+        {}
+    );
+    const [itemPrices, setItemPrices] = useState<Record<string, number>>({});
+    const [itemCategories, setItemCategories] = useState<Record<string, string>>({});
+    const [itemLocations, setItemLocations] = useState<Record<string, string[]>>({});
+    const [categoryNames, setCategoryNames] = useState<Record<string, string>>({});
 
     const selectedProvider = watch("provider");
+
+    const itemsWatch = watch("items");
+
+    const getOfferValidationMessage = useCallback(
+        (offerId: string): string | null => {
+            const rule = dynamicOfferRules[offerId];
+            if (!rule) return null;
+
+            const hasItemRules = rule.itemIds && rule.itemIds.length > 0;
+            const hasCategoryRules = rule.categoryIds && rule.categoryIds.length > 0;
+            const hasLocationRules = rule.locationIds && rule.locationIds.length > 0;
+
+            if (hasItemRules || hasCategoryRules || hasLocationRules) {
+                const hasCompatibleItem = itemsWatch.some((item) => {
+                    if (!item.itemId || item.quantity <= 0) return false;
+
+                    const itemLocation = item.location || itemLocations[item.itemId]?.[0] || "";
+                    const locMatch =
+                        hasLocationRules && itemLocation && rule.locationIds.includes(itemLocation);
+                    const itemMatch = hasItemRules && rule.itemIds.includes(item.itemId);
+
+                    const catId = itemCategories[item.itemId];
+                    const catMatch = hasCategoryRules && rule.categoryIds.includes(catId);
+
+                    return locMatch || itemMatch || catMatch;
+                });
+
+                if (!hasCompatibleItem) {
+                    const msg: string[] = [];
+                    if (hasItemRules) msg.push(`items: ${rule.itemIds.join(", ")}`);
+                    if (hasCategoryRules) {
+                        const catDisplay = rule.categoryIds
+                            .map((id) => categoryNames[id] || id)
+                            .join(", ");
+                        msg.push(`categories: ${catDisplay}`);
+                    }
+                    if (hasLocationRules) msg.push(`locations: ${rule.locationIds.join(", ")}`);
+                    return `Valid for ${msg.join(" OR ")}`;
+                }
+            }
+
+            const currentValues = watch();
+            const selectedOffers = Object.keys(currentValues)
+                .filter(
+                    (key) => key.startsWith("offers_") && currentValues[key as keyof FormValues]
+                )
+                .map((key) => key.replace("offers_", ""));
+
+            const otherSelected = selectedOffers.filter((id) => id !== offerId);
+            if (otherSelected.length > 0) {
+                if (!rule.isAdditive) return "Cannot combine with other offers.";
+                const hasNonAdditiveSelected = otherSelected.some(
+                    (id) => dynamicOfferRules[id] && !dynamicOfferRules[id].isAdditive
+                );
+                if (hasNonAdditiveSelected) return "A non-combinable offer is already active.";
+            }
+
+            const qualifyingItems = itemsWatch.filter((item) => {
+                const hasItemRules = rule.itemIds && rule.itemIds.length > 0;
+                const hasCategoryRules = rule.categoryIds && rule.categoryIds.length > 0;
+                const hasLocationRules = rule.locationIds && rule.locationIds.length > 0;
+
+                if (hasItemRules || hasCategoryRules || hasLocationRules) {
+                    const itemLocation = item.location || itemLocations[item.itemId]?.[0] || "";
+                    const locMatch =
+                        hasLocationRules && itemLocation && rule.locationIds.includes(itemLocation);
+
+                    const itemMatch = hasItemRules && rule.itemIds.includes(item.itemId);
+
+                    const catId = itemCategories[item.itemId];
+                    const catMatch = hasCategoryRules && rule.categoryIds.includes(catId);
+
+                    return locMatch || itemMatch || catMatch;
+                }
+                return true;
+            });
+
+            if (rule.minOrderValue && rule.minOrderValue > 0) {
+                const totalValue = qualifyingItems.reduce(
+                    (sum, item) => sum + (itemPrices[item.itemId] || 0) * item.quantity,
+                    0
+                );
+                if (totalValue < rule.minOrderValue)
+                    return `Min value ₹${rule.minOrderValue} required on valid items (Current: ₹${totalValue})`;
+            }
+
+            if (rule.minItemCount && rule.minItemCount > 0) {
+                const totalCount = qualifyingItems.reduce((sum, item) => sum + item.quantity, 0);
+                if (totalCount < rule.minItemCount)
+                    return `Min quantity ${rule.minItemCount} required on valid items (Current: ${totalCount})`;
+                if (rule.maxItemCount && rule.maxItemCount > 0 && totalCount > rule.maxItemCount)
+                    return `Max quantity ${rule.maxItemCount} allowed (Current: ${totalCount})`;
+            }
+
+            return null;
+        },
+        [
+            dynamicOfferRules,
+            itemsWatch,
+            itemLocations,
+            itemPrices,
+            itemCategories,
+            categoryNames,
+            watch,
+        ]
+    );
 
     const onSubmit = async (data: FormValues) => {
         const { valid, errors } = validateFormData(data);
@@ -147,13 +260,152 @@ export default function RetINVLInitOffers({
 
             const provider = providers[0];
             if (provider) {
-                setItemOptions(provider.items.map((i) => i.id));
-                setLocationOptions(provider.locations.map((l) => l.id));
+                setItemOptions(provider.items?.map((i) => i.id) || []);
+
+                const provLocs = provider.locations?.map((l: CatalogLocation) => l.id) || [];
+                const offerLocs = (provider.offers || [])
+                    .flatMap((o: CatalogOffer) =>
+                        (Array.isArray(o.location_ids) ? o.location_ids : []).flatMap(
+                            (v: unknown) =>
+                                typeof v === "string"
+                                    ? v.split(",").map((s: string) => s.trim())
+                                    : v
+                        )
+                    )
+                    .filter(Boolean) as string[];
+                setLocationOptions(Array.from(new Set([...provLocs, ...offerLocs])));
+
+                const parsedPrices: Record<string, number> = {};
+                const parsedCategories: Record<string, string> = {};
+                const parsedItemLocations: Record<string, string[]> = {};
+                provider.items?.forEach(
+                    (
+                        item: CatalogItem & {
+                            price?: { value?: string };
+                            category_id?: string;
+                            category_ids?: string[];
+                            location_id?: string;
+                            location_ids?: string[] | string;
+                            descriptor?: { name?: string };
+                        }
+                    ) => {
+                        parsedPrices[item.id] = parseFloat(item.price?.value || "0");
+                        if (item.category_id) {
+                            parsedCategories[item.id] = item.category_id;
+                        } else if (item.category_ids && item.category_ids.length > 0) {
+                            parsedCategories[item.id] = item.category_ids[0];
+                        }
+
+                        let locs: string[] = [];
+                        if (item.location_id) locs.push(item.location_id);
+                        if (Array.isArray(item.location_ids))
+                            locs = [...locs, ...item.location_ids];
+                        parsedItemLocations[item.id] = Array.from(new Set(locs.filter(Boolean)));
+                    }
+                );
+                setItemPrices(parsedPrices);
+                setItemCategories(parsedCategories);
+                setItemLocations(parsedItemLocations);
+
+                const parsedCategoryNames: Record<string, string> = {};
+                (
+                    provider as CatalogProvider & {
+                        categories?: { id: string; descriptor?: { name?: string } }[];
+                    }
+                ).categories?.forEach((cat) => {
+                    parsedCategoryNames[cat.id] = cat.descriptor?.name || "";
+                });
+                setCategoryNames(parsedCategoryNames);
+
+                const rules: Record<string, DynamicOfferRule> = {};
+                const collectedOffers: (CatalogOffer & { items?: string[] })[] =
+                    provider.offers || [];
+
+                collectedOffers.forEach((off) => {
+                    let minVal = 0;
+                    let isAdditive = true;
+                    const rawItemIds = Array.isArray(off.item_ids)
+                        ? off.item_ids
+                        : Array.isArray(off.items)
+                          ? off.items
+                          : [];
+                    let itemIds: string[] = rawItemIds
+                        .flatMap((v: unknown) =>
+                            typeof v === "string" ? v.split(",").map((s: string) => s.trim()) : v
+                        )
+                        .filter(Boolean) as string[];
+
+                    const categoryIds: string[] = (
+                        Array.isArray(off.category_ids) ? off.category_ids : []
+                    )
+                        .flatMap((v: unknown) =>
+                            typeof v === "string" ? v.split(",").map((s: string) => s.trim()) : v
+                        )
+                        .filter(Boolean) as string[];
+
+                    const locationIds: string[] = (
+                        Array.isArray(off.location_ids) ? off.location_ids : []
+                    )
+                        .flatMap((v: unknown) =>
+                            typeof v === "string" ? v.split(",").map((s: string) => s.trim()) : v
+                        )
+                        .filter(Boolean) as string[];
+
+                    let minItemCount = 0;
+                    let maxItemCount = 0;
+
+                    off.tags?.forEach((tag: Tag & { descriptor?: { code?: string } }) => {
+                        const tCode = tag.code || tag.descriptor?.code;
+                        if (tCode === "rules" || tCode === "qualifier" || tCode === "meta") {
+                            tag.list?.forEach(
+                                (l: TargetListItem & { descriptor?: { code?: string } }) => {
+                                    const lCode = l.code || l.descriptor?.code;
+                                    if (lCode === "min_value") minVal = parseFloat(l.value || "0");
+                                    if (lCode === "item_count")
+                                        minItemCount = parseFloat(l.value || "0");
+                                    if (lCode === "item_count_upper")
+                                        maxItemCount = parseFloat(l.value || "0");
+                                    if (lCode === "additive") {
+                                        isAdditive = l.value === "true" || l.value === "yes";
+                                        if (l.value === "false" || l.value === "no")
+                                            isAdditive = false;
+                                    }
+                                    if (lCode === "item_ids") {
+                                        if (l.value) {
+                                            itemIds = l.value
+                                                .split(",")
+                                                .map((s: string) => s.trim());
+                                        }
+                                    }
+                                }
+                            );
+                        }
+                        if (tCode === "item_ids" && itemIds.length === 0) {
+                            if (tag.list) {
+                                itemIds = tag.list.map((l: TargetListItem) => l.value);
+                            }
+                        }
+                    });
+
+                    rules[off.id] = {
+                        id: off.id,
+                        itemIds: itemIds,
+                        categoryIds: categoryIds,
+                        locationIds: locationIds,
+                        minOrderValue: minVal,
+                        minItemCount,
+                        maxItemCount,
+                        isAdditive: isAdditive,
+                    };
+                });
+                setDynamicOfferRules(rules);
+
+                const uniqueOffers = Array.from(
+                    new Map(collectedOffers.map((o) => [o.id, o])).values()
+                );
+                setOfferOptions(uniqueOffers.map((o) => o.id));
             }
 
-            const offers = providers.flatMap((p) => p.offers || []).map((offer) => offer.id);
-
-            setOfferOptions(offers);
             setIsDataPasted(true);
         } catch (err) {
             toast.error("Invalid payload structure.");
@@ -339,17 +591,32 @@ export default function RetINVLInitOffers({
                     {offerOptions.length > 0 && (
                         <div className={fieldWrapperStyle}>
                             <label className={labelStyle}>Available Offers</label>
-                            {offerOptions.map((offerId) => (
-                                <label key={offerId} className="inline-flex gap-2 items-center">
-                                    <input
-                                        type="checkbox"
-                                        value={offerId}
-                                        {...register(`offers_${offerId}` as OfferKey)}
-                                        className="accent-blue-600"
-                                    />
-                                    {offerId}
-                                </label>
-                            ))}
+                            <div className="flex flex-col gap-1">
+                                {offerOptions.map((offerId) => {
+                                    const validationError = getOfferValidationMessage(offerId);
+                                    return (
+                                        <label
+                                            key={offerId}
+                                            className={`flex items-center gap-2 p-1 rounded ${validationError ? "opacity-50 cursor-not-allowed" : "hover:bg-gray-100"}`}
+                                        >
+                                            <input
+                                                type="checkbox"
+                                                {...register(`offers_${offerId}` as OfferKey)}
+                                                disabled={!!validationError}
+                                                className="accent-blue-600"
+                                            />
+                                            <span className="text-sm">
+                                                {offerId}
+                                                {validationError && (
+                                                    <span className="ml-2 text-[10px] text-red-500 italic uppercase">
+                                                        [{validationError}]
+                                                    </span>
+                                                )}
+                                            </span>
+                                        </label>
+                                    );
+                                })}
+                            </div>
                         </div>
                     )}
 
