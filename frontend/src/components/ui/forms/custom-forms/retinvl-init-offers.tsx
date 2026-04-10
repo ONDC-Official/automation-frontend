@@ -240,10 +240,22 @@ export default function RetINVLInitOffers({
             return;
         }
 
+        const selectedOffers = Object.keys(data)
+            .filter((key) => key.startsWith("offers_") && data[key as keyof FormValues])
+            .map((key) => key.replace("offers_", ""));
+
+        const cleanData = { ...data };
+        Object.keys(cleanData).forEach((key) => {
+            if (key.startsWith("offers_")) {
+                delete cleanData[key as keyof FormValues];
+            }
+        });
+
         await submitEvent({
             jsonPath: {},
             formData: {
-                ...data,
+                ...cleanData,
+                available_offers: selectedOffers,
                 live_catalog: catalogPayload,
             } as unknown as Record<string, string>,
         });
