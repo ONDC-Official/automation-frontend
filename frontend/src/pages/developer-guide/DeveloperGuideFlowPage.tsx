@@ -156,7 +156,11 @@ const DeveloperGuideFlowPage: FC = () => {
     useEffect(() => {
         if (isLoading || !specData || flows.length === 0) return;
 
-        const matchingFlow = flows.find((f) => f.usecase === slug) ?? flows[0];
+        const urlFlowId = searchParams.get("flow");
+        const matchingFlow =
+            (urlFlowId ? flows.find((f) => f.flowId === urlFlowId) : null) ??
+            flows.find((f) => f.usecase === slug) ??
+            flows[0];
         if (!matchingFlow) return;
 
         const flowId = matchingFlow.flowId;
