@@ -6,8 +6,6 @@ import { useSession } from "../../../../context/context";
 import { getTransactionData, getCompletePayload } from "../../../../utils/request-utils";
 import { useEffect, useCallback } from "react";
 
-type OfferKey = `offers_${string}`;
-
 type CatalogItem = { id: string };
 type TargetListItem = {
     code: string;
@@ -67,7 +65,8 @@ type FormValues = {
         location: string;
         estimated_price: number;
     }[];
-} & Partial<Record<OfferKey, boolean>>;
+    available_offers: string[];
+};
 
 export default function RetINVLInitOffers({
     submitEvent,
@@ -100,6 +99,7 @@ export default function RetINVLInitOffers({
                     estimated_price: 0,
                 },
             ],
+            available_offers: [],
         },
     });
 
@@ -164,11 +164,7 @@ export default function RetINVLInitOffers({
             }
 
             const currentValues = watch();
-            const selectedOffers = Object.keys(currentValues)
-                .filter(
-                    (key) => key.startsWith("offers_") && currentValues[key as keyof FormValues]
-                )
-                .map((key) => key.replace("offers_", ""));
+            const selectedOffers = currentValues.available_offers || [];
 
             const otherSelected = selectedOffers.filter((id) => id !== offerId);
             if (otherSelected.length > 0) {
@@ -240,22 +236,10 @@ export default function RetINVLInitOffers({
             return;
         }
 
-        const selectedOffers = Object.keys(data)
-            .filter((key) => key.startsWith("offers_") && data[key as keyof FormValues])
-            .map((key) => key.replace("offers_", ""));
-
-        const cleanData = { ...data };
-        Object.keys(cleanData).forEach((key) => {
-            if (key.startsWith("offers_")) {
-                delete cleanData[key as keyof FormValues];
-            }
-        });
-
         await submitEvent({
             jsonPath: {},
             formData: {
-                ...cleanData,
-                available_offers: selectedOffers,
+                ...data,
                 live_catalog: catalogPayload,
             } as unknown as Record<string, string>,
         });
@@ -613,7 +597,8 @@ export default function RetINVLInitOffers({
                                         >
                                             <input
                                                 type="checkbox"
-                                                {...register(`offers_${offerId}` as OfferKey)}
+                                                value={offerId}
+                                                {...register("available_offers")}
                                                 disabled={!!validationError}
                                                 className="accent-blue-600"
                                             />
