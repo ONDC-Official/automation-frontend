@@ -3,6 +3,7 @@ import { SubmitEventParams } from "../../../../types/flow-types";
 import { FaRegPaste } from "react-icons/fa6";
 import PayloadEditor from "../../mini-components/payload-editor";
 
+// interface dynamicOfferRule
 export interface DynamicOfferRule {
     id: string;
     itemIds: string[];
@@ -36,15 +37,15 @@ interface RetailerCustomerInput {
     items: ReteB2BItem[];
 }
 
-    type TargetListItem = {
-        code: string;
-        value: string;
-    };
+type TargetListItem = {
+    code: string;
+    value: string;
+};
 
-    type Tag = {
-        code: string;
-        list?: TargetListItem[];
-    };
+type Tag = {
+    code: string;
+    list?: TargetListItem[];
+};
 
 type CatalogItem = {
     id: string;
@@ -69,11 +70,13 @@ type CatalogOffer = {
     id: string;
     descriptor: {
         code: string;
+        name?: string;
     };
     item_ids?: string[];
     location_ids?: string[];
     category_ids?: string[];
     tags?: Tag[];
+    items?: string[];
 };
 
 type CatalogProvider = {
@@ -188,7 +191,7 @@ export default function ReteB2BSelect({
             });
 
             if (!hasCompatibleItem) {
-                let msg = [];
+                const msg: string[] = [];
                 if (hasItemRules) msg.push(`items: ${rule.itemIds.join(", ")}`);
                 if (hasCategoryRules) {
                     const catDisplay = rule.categoryIds.map(id => categoryNames[id] || id).join(", ");
@@ -258,77 +261,93 @@ export default function ReteB2BSelect({
             setCatalogPayload(parsed);
 
             const providers = parsed.message.catalog["bpp/providers"];
-            const provider = providers[0];
 
-            if (provider) {
-                setItemOptions(provider.items?.map((i) => i.id) || []);
+            if (providers && providers.length > 0) {
+                let allItemOptions: string[] = [];
+                let allProvLocs: string[] = [];
+                let allOfferLocs: string[] = [];
+                let allFulfillmentOptions: string[] = [];
 
-                const provLocs = provider.locations?.map((l: any) => l.id) || [];
-                const offerLocs = (provider.offers || []).flatMap((o: any) =>
-                    (Array.isArray(o.location_ids) ? o.location_ids : [])
-                        .flatMap((v: any) => typeof v === 'string' ? v.split(',').map((s: string) => s.trim()) : v)
-                ).filter(Boolean);
-                setLocationOptions(Array.from(new Set([...provLocs, ...offerLocs])));
-                if (provider.fulfillments) {
-                    setFulfillmentOptions(provider.fulfillments.map((f) => f.id));
-                }
-
-                // Extract Item Prices, Names, and Categories Dynamically
                 const parsedPrices: Record<string, number> = {};
                 const parsedCategories: Record<string, string> = {};
                 const parsedItemNames: Record<string, string> = {};
                 const parsedItemLocations: Record<string, string[]> = {};
-                provider.items?.forEach((item: any) => {
-                    parsedPrices[item.id] = parseFloat(item.price?.value || "0");
-                    parsedItemNames[item.id] = item.descriptor?.name || "";
-                    if (item.category_id) {
-                        parsedCategories[item.id] = item.category_id;
-                    } else if (item.category_ids && item.category_ids.length > 0) {
-                        parsedCategories[item.id] = item.category_ids[0];
+                const parsedCategoryNames: Record<string, string> = {};
+
+                let collectedOffers: CatalogOffer[] = [];
+
+                providers.forEach(provider => {
+                    allItemOptions = [...allItemOptions, ...(provider.items?.map((i) => i.id) || [])];
+
+                    allProvLocs = [...allProvLocs, ...(provider.locations?.map((l: CatalogLocation) => l.id) || [])];
+                    const offerLocs = (provider.offers || []).flatMap((o: CatalogOffer) =>
+                        (Array.isArray(o.location_ids) ? o.location_ids : [])
+                            .flatMap((v: string | string[]) => typeof v === 'string' ? v.split(',').map((s: string) => s.trim()) : v)
+                    ).filter(Boolean);
+                    allOfferLocs = [...allOfferLocs, ...offerLocs];
+
+                    if (provider.fulfillments) {
+                        allFulfillmentOptions = [...allFulfillmentOptions, ...provider.fulfillments.map((f) => f.id)];
                     }
 
-                    let locs: string[] = [];
-                    if (item.location_id) locs.push(item.location_id);
-                    if (Array.isArray(item.location_ids)) locs = [...locs, ...item.location_ids];
-                    parsedItemLocations[item.id] = Array.from(new Set(locs.filter(Boolean)));
+                    // Extract Item Prices, Names, and Categories Dynamically
+                    provider.items?.forEach((item: CatalogItem) => {
+                        parsedPrices[item.id] = parseFloat(item.price?.value || "0");
+                        parsedItemNames[item.id] = item.descriptor?.name || "";
+                        if (item.category_id) {
+                            parsedCategories[item.id] = item.category_id;
+                        } else if (item.category_ids && item.category_ids.length > 0) {
+                            parsedCategories[item.id] = item.category_ids[0];
+                        }
+
+                        let locs: string[] = [];
+                        if (item.location_id) locs.push(item.location_id);
+                        if (Array.isArray(item.location_ids)) locs = [...locs, ...item.location_ids];
+                        parsedItemLocations[item.id] = Array.from(new Set(locs.filter(Boolean)));
+                    });
+
+                    provider.categories?.forEach((cat: CatalogCategory) => {
+                        parsedCategoryNames[cat.id] = cat.descriptor?.name || "";
+                    });
+
+                    collectedOffers = [...collectedOffers, ...(provider.offers || [])];
                 });
+
+                setItemOptions(allItemOptions);
+                setLocationOptions(Array.from(new Set([...allProvLocs, ...allOfferLocs])));
+                setFulfillmentOptions(allFulfillmentOptions);
+
                 setItemPrices(parsedPrices);
                 setItemCategories(parsedCategories);
                 setItemNames(parsedItemNames);
                 setItemLocations(parsedItemLocations);
-
-                const parsedCategoryNames: Record<string, string> = {};
-                provider.categories?.forEach((cat: any) => {
-                    parsedCategoryNames[cat.id] = cat.descriptor?.name || "";
-                });
                 setCategoryNames(parsedCategoryNames);
 
                 // Extract Offers and Build Rules Dynamically
                 const rules: Record<string, DynamicOfferRule> = {};
-                const collectedOffers: any[] = provider.offers || [];
 
                 // Standardizing rules from payload tags (highly dynamic to adapt to different on_search structures)
-                collectedOffers.forEach((off: any) => {
+                collectedOffers.forEach((off: CatalogOffer) => {
                     let minVal = 0;
                     let isAdditive = true;
                     // Provide defaults so even empty structures adapt gracefully
-                    let rawItemIds = Array.isArray(off.item_ids) ? off.item_ids : (Array.isArray(off.items) ? off.items : []);
-                    let itemIds: string[] = rawItemIds.flatMap((v: any) => typeof v === 'string' ? v.split(',').map((s: string) => s.trim()) : v).filter(Boolean);
+                    const rawItemIds = Array.isArray(off.item_ids) ? off.item_ids : (Array.isArray(off.items) ? off.items : []);
+                    let itemIds: string[] = rawItemIds.flatMap((v: string | string[]) => typeof v === 'string' ? v.split(',').map((s: string) => s.trim()) : v).filter(Boolean);
 
-                    let categoryIds: string[] = (Array.isArray(off.category_ids) ? off.category_ids : [])
-                        .flatMap((v: any) => typeof v === 'string' ? v.split(',').map((s: string) => s.trim()) : v).filter(Boolean);
+                    const categoryIds: string[] = (Array.isArray(off.category_ids) ? off.category_ids : [])
+                        .flatMap((v: string | string[]) => typeof v === 'string' ? v.split(',').map((s: string) => s.trim()) : v).filter(Boolean);
 
-                    let locationIds: string[] = (Array.isArray(off.location_ids) ? off.location_ids : [])
-                        .flatMap((v: any) => typeof v === 'string' ? v.split(',').map((s: string) => s.trim()) : v).filter(Boolean);
+                    const locationIds: string[] = (Array.isArray(off.location_ids) ? off.location_ids : [])
+                        .flatMap((v: string | string[]) => typeof v === 'string' ? v.split(',').map((s: string) => s.trim()) : v).filter(Boolean);
 
                     let minItemCount = 0;
                     let maxItemCount = 0;
 
                     // Dynamically scrape all tags to find offer rules constraints
-                    off.tags?.forEach((tag: any) => {
+                    off.tags?.forEach((tag: Tag & { descriptor?: { code?: string } }) => {
                         const tCode = tag.code || tag.descriptor?.code;
                         if (tCode === "rules" || tCode === "qualifier" || tCode === "meta") {
-                            tag.list?.forEach((l: any) => {
+                            tag.list?.forEach((l: TargetListItem & { descriptor?: { code?: string } }) => {
                                 const lCode = l.code || l.descriptor?.code;
                                 if (lCode === "min_value") minVal = parseFloat(l.value || "0");
                                 if (lCode === "item_count") minItemCount = parseFloat(l.value || "0");
@@ -349,7 +368,7 @@ export default function ReteB2BSelect({
                         // Fallback: Check if there's an explicit item_ids tag group with a list of values
                         if (tCode === "item_ids" && itemIds.length === 0) {
                             if (tag.list) {
-                                itemIds = tag.list.map((l: any) => l.value);
+                                itemIds = tag.list.map((l: TargetListItem) => l.value);
                             }
                         }
                     });
