@@ -5,55 +5,55 @@ on:
   push:
     branches:
       - testing-eks
-      - main
+      - release-staging
 
 permissions:
-  contents: write
   packages: write
 
 jobs:
   # ──────────────────────────────────────────────
-  # Job 1: Bump version, resolve env & target file
+  # Job 1: Read semver, compute image tag and target file
+  # - Read version from frontend/package.json
+  # - Compose tag as <env>-<semver>-<short-sha>
+  # - Do NOT auto-increment in CI
   # ──────────────────────────────────────────────
   version:
     runs-on: ubuntu-latest
     outputs:
-      image_tag:   ${{ steps.bump.outputs.image_tag }}
-      environment: ${{ steps.bump.outputs.environment }}
-      target_file: ${{ steps.bump.outputs.target_file }}
+      image_tag:   ${{ steps.set.outputs.image_tag }}
+      environment: ${{ steps.set.outputs.environment }}
+      target_file: ${{ steps.set.outputs.target_file }}
+      version:     ${{ steps.set.outputs.version }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Bump patch version and set outputs
-        id: bump
+      - name: Read version and build image tag
+        id: set
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
+          # Read semver from frontend/package.json
+          VERSION=$(node -p "require('./frontend/package.json').version")
 
-          current=$(cat version.txt)
-          IFS='.' read -r major minor patch <<< "$current"
-          patch=$((patch + 1))
-          next="$major.$minor.$patch"
-          echo "$next" > version.txt
+          # Short SHA for traceability
+          SHORT_SHA=$(git rev-parse --short=7 HEAD)
 
-          git add version.txt
-          git commit -m "ci: bump version to $next [skip ci]"
-          git push
-
+          # Environment mapping: main -> prod, others -> dev
           if [ "${{ github.ref_name }}" = "main" ]; then
-            env="prod"
-            target="k8/aws/helm/service-layer/values-prod.yaml"
+            ENV=prod
+            TARGET="k8/aws/helm/service-layer/values-prod.yaml"
           else
-            env="dev"
-            target="k8/aws/helm/service-layer/values.yaml"
+            ENV=dev
+            TARGET="k8/aws/helm/service-layer/values.yaml"
           fi
 
-          echo "image_tag=${env}-${next}"   >> $GITHUB_OUTPUT
-          echo "environment=${env}"         >> $GITHUB_OUTPUT
-          echo "target_file=${target}"      >> $GITHUB_OUTPUT
+          IMAGE_TAG="${ENV}-${VERSION}-${SHORT_SHA}"
+
+          echo "version=${VERSION}"      >> $GITHUB_OUTPUT
+          echo "image_tag=${IMAGE_TAG}"  >> $GITHUB_OUTPUT
+          echo "environment=${ENV}"      >> $GITHUB_OUTPUT
+          echo "target_file=${TARGET}"   >> $GITHUB_OUTPUT
 
   # ──────────────────────────────────────────────
   # Job 2a: Build & push backend image (parallel)
@@ -75,15 +75,27 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Set backend image metadata
+        id: meta-backend
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/ondc-official/automation-frontend/backend
+          tags: |
+            ${{ needs.version.outputs.image_tag }}
+            ${{ github.ref_name == 'main' && 'latest' || '' }}
+          labels: |
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.source=${{ github.event.repository.html_url }}
+            org.opencontainers.image.version=${{ needs.version.outputs.version }}
+
       - name: Build and push backend image
         uses: docker/build-push-action@v5
         with:
           context: backend
           file: backend/Dockerfile
           push: true
-          tags: |
-            ghcr.io/ondc-official/automation-frontend/backend:${{ needs.version.outputs.image_tag }}
-            ${{ github.ref_name == 'main' && 'ghcr.io/ondc-official/automation-frontend/backend:latest' || '' }}
+          tags: ${{ steps.meta-backend.outputs.tags }}
+          labels: ${{ steps.meta-backend.outputs.labels }}
           cache-from: type=gha,scope=backend
           cache-to: type=gha,mode=max,scope=backend
 
@@ -93,7 +105,7 @@ jobs:
   build-frontend:
     needs: version
     runs-on: ubuntu-latest
-    environment: ${{ github.ref_name == 'main' && 'production' || 'dev' }}
+    environment: ${{ needs.version.outputs.environment }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -108,15 +120,27 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Set frontend image metadata
+        id: meta-frontend
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/ondc-official/automation-frontend/frontend
+          tags: |
+            ${{ needs.version.outputs.image_tag }}
+            ${{ github.ref_name == 'main' && 'latest' || '' }}
+          labels: |
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.source=${{ github.event.repository.html_url }}
+            org.opencontainers.image.version=${{ needs.version.outputs.version }}
+
       - name: Build and push frontend image
         uses: docker/build-push-action@v5
         with:
           context: frontend
           file: frontend/Dockerfile
           push: true
-          tags: |
-            ghcr.io/ondc-official/automation-frontend/frontend:${{ needs.version.outputs.image_tag }}
-            ${{ github.ref_name == 'main' && 'ghcr.io/ondc-official/automation-frontend/frontend:latest' || '' }}
+          tags: ${{ steps.meta-frontend.outputs.tags }}
+          labels: ${{ steps.meta-frontend.outputs.labels }}
           build-args: |
             VITE_BACKEND_URL=${{ vars.VITE_BACKEND_URL }}
             VITE_BPP_URL=${{ vars.VITE_BPP_URL }}
