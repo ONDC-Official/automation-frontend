@@ -304,11 +304,28 @@ export const getReportingStatus = async (domain: string, version: string) => {
     }
 };
 
-export async function htmlFormSubmit(link: string, data: unknown) {
+export async function htmlFormSubmit(link: string, data: unknown, contentType?: string) {
     try {
+        // FormData cannot be JSON-serialised directly — convert to a plain object so field
+        // values are preserved. The backend proxy uses the `contentType` flag to re-encode.
+        let serialisableData: unknown = data;
+        if (data instanceof FormData) {
+            const plain: Record<string, unknown> = {};
+            data.forEach((val, key) => {
+                if (plain[key] !== undefined) {
+                    plain[key] = Array.isArray(plain[key])
+                        ? [...(plain[key] as unknown[]), val]
+                        : [plain[key], val];
+                } else {
+                    plain[key] = val;
+                }
+            });
+            serialisableData = plain;
+        }
         const res = await apiClient.post(API_ROUTES.FLOW.EXTERNAL_FORM, {
             link: link,
-            data: data,
+            data: serialisableData,
+            ...(contentType ? { contentType } : {}),
         });
         return res;
     } catch (e: unknown) {
