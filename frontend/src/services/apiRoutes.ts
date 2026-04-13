@@ -54,8 +54,13 @@ export const API_ROUTES = {
     },
 
     AUTH: {
-        LOGOUT: "/auth/logout",
+        // LOGOUT: "/auth/logout",
         ME: "/auth/api/me",
+        EXCHANGE: "/auth/exchange",
+    },
+
+    HEALTH: {
+        API_SERVICE: "/health/api-service",
     },
 
     NOTES: {
@@ -67,5 +72,11 @@ export const API_ROUTES = {
         BASE: "api/comments",
         BY_ID: (commentsId: string) => `api/comments/${commentsId}`,
         RESOLVE: (commentsId: string) => `api/comments/${commentsId}/resolve`,
+    },
+
+    DEV_GUIDE: {
+        BUILDS: "dev-guide/available-builds",
+        SPEC: (domain: string, version: string) =>
+            `dev-guide/spec/${encodeURIComponent(domain)}/${encodeURIComponent(version)}`,
     },
 } as const;

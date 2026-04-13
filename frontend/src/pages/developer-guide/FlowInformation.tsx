@@ -1,22 +1,24 @@
-import { FC, useMemo, useState, useEffect } from "react";
-import { FiBookOpen, FiCode, FiShield } from "react-icons/fi";
+import { FC, useMemo, useState, useEffect, useRef, useCallback } from "react";
+import { useSearchParams } from "react-router-dom";
+import { FiCode, FiShield, FiUpload, FiDownload } from "react-icons/fi";
 import { SegmentedTabs, type TabItem } from "@components/ui/SegmentedTabs";
-import { OpenAPISpecification } from "./types";
-import type { FlowStep } from "./types";
+import type { OpenAPISpecification, FlowEntry, FlowStep, ValidationTableAction } from "./types";
 import { getActionId } from "./utils";
 import FlowDetailsAndSummary from "./FlowDetailsAndSummary";
+import ActionOverview from "./ActionOverview";
 import { FlowActionDetails } from "./flowActionDetails";
-// import HelperSection, { decodeHelperLib } from "./HelperSection";
-// import GenerateSection, { decodeMockGenerate } from "./GenerateSection";
-// import ValidateSection, { decodeMockValidate } from "./ValidateSection";
-// import RequirementsSection, { decodeMockRequirements } from "./RequirementsSection";
-import ValidationsTable, { type ValidationTable } from "./ValidationsTable";
-import rawValidations from "./raw_table.json";
+import Loader from "@components/ui/mini-components/loader";
+import ValidationsTable from "./ValidationsTable";
+import { RequestTab, ResponseTab } from "./RequestResponseTabs";
+import { fetchValidationTable } from "@services/developerGuideSpecApi";
 
 interface FlowInformationProps {
     data: OpenAPISpecification;
+    flows: FlowEntry[];
     selectedFlow: string;
     selectedFlowAction: string;
+    domain: string;
+    version: string;
 }
 
 function getExamplesFromStep(
@@ -43,22 +45,67 @@ function getExamplesFromStep(
     return [];
 }
 
-const FlowInformation: FC<FlowInformationProps> = ({ data, selectedFlow, selectedFlowAction }) => {
+type Section = "preview" | "x-validations" | "request" | "response";
+
+const FlowInformation: FC<FlowInformationProps> = ({
+    data,
+    flows,
+    selectedFlow,
+    selectedFlowAction,
+    domain,
+    version,
+}) => {
+    const [searchParams, setSearchParams] = useSearchParams();
     const [selectedExampleIndex, setSelectedExampleIndex] = useState(0);
-    type Section = "overview" | "preview" | "x-validations";
-    const [activeSection, setActiveSection] = useState<Section>("overview");
+    const [activeSection, setActiveSection] = useState<Section>("preview");
+    const [showPreviewDetails, setShowPreviewDetails] = useState(false);
+    const isFirstActionEffect = useRef(true);
+    const rafRef = useRef<number | null>(null);
+
+    // Double-rAF: guarantees the browser paints at least one frame (showing the
+    // loader) before React mounts the heavy FlowActionDetails + JsonViewer tree.
+    const scheduleShowDetails = useCallback(() => {
+        if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
+        setShowPreviewDetails(false);
+        rafRef.current = requestAnimationFrame(() => {
+            rafRef.current = requestAnimationFrame(() => {
+                setShowPreviewDetails(true);
+                rafRef.current = null;
+            });
+        });
+    }, []);
 
     useEffect(() => {
-        setActiveSection("overview");
-    }, [selectedFlowAction]);
+        return () => {
+            if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
+        };
+    }, []);
+
+    // Lazy-loaded sections
+    const [validationTable, setValidationTable] = useState<Record<
+        string,
+        ValidationTableAction
+    > | null>(null);
+    const validationTableFetched = useRef(false);
+
+    // Load validation table once (non-blocking, after mount)
+    useEffect(() => {
+        if (validationTableFetched.current || !domain || !version) return;
+        validationTableFetched.current = true;
+        fetchValidationTable(domain, version)
+            .then((result) => {
+                if (result?.table) setValidationTable(result.table);
+            })
+            .catch(() => {
+                /* silently ignore */
+            });
+    }, [domain, version]);
 
     const isEmpty = !selectedFlow;
 
-    const flows = data["x-flows"] || [];
-    const selectedFlowData = flows.find(
-        (flow) => flow.meta?.flowId === selectedFlow || flow.summary === selectedFlow
-    );
-    const selectedStep = selectedFlowData?.steps.find((s) => getActionId(s) === selectedFlowAction);
+    const selectedFlowData = flows.find((f) => f.flowId === selectedFlow);
+    const steps = selectedFlowData?.config?.steps ?? [];
+    const selectedStep = steps.find((s) => getActionId(s) === selectedFlowAction);
     const examples = useMemo(() => getExamplesFromStep(selectedStep), [selectedStep]);
     const selectedExample = examples[selectedExampleIndex] ?? examples[0];
     const examplePayload = selectedExample?.payload;
@@ -67,39 +114,57 @@ const FlowInformation: FC<FlowInformationProps> = ({ data, selectedFlow, selecte
         typeof examplePayload === "object" &&
         !Array.isArray(examplePayload);
 
-    // const decodedHelperCode = useMemo(
-    //     () => decodeHelperLib(selectedFlowData?.helperLib),
-    //     [selectedFlowData?.helperLib]
-    // );
-    // const hasHelper = !!decodedHelperCode;
-
-    // const decodedGenerateCode = useMemo(
-    //     () => decodeMockGenerate(selectedStep?.mock?.generate),
-    //     [selectedStep?.mock?.generate]
-    // );
-    // const hasGenerate = !!decodedGenerateCode;
-
-    // const decodedValidateCode = useMemo(
-    //     () => decodeMockValidate(selectedStep?.mock?.validate),
-    //     [selectedStep?.mock?.validate]
-    // );
-    // const hasValidate = !!decodedValidateCode;
-
-    // const decodedRequirementsCode = useMemo(
-    //     () => decodeMockRequirements(selectedStep?.mock?.requirements),
-    //     [selectedStep?.mock?.requirements]
-    // );
-    // const hasRequirements = !!decodedRequirementsCode;
-
+    // Validation table for the selected action
     const apiForValidations = selectedStep?.api ?? selectedFlowAction;
-    const selectedValidations: ValidationTable | undefined = (
-        rawValidations as Record<string, ValidationTable>
-    )[apiForValidations];
+    const selectedValidations = useMemo(
+        () => (validationTable ? validationTable[apiForValidations] : undefined),
+        [validationTable, apiForValidations]
+    );
     const hasXValidations = !!selectedValidations;
 
+    const hasTabs = hasExampleObject || hasXValidations || !!selectedStep;
+
     useEffect(() => {
+        const validSections: Section[] = ["preview", "x-validations", "request", "response"];
+
+        if (isFirstActionEffect.current) {
+            isFirstActionEffect.current = false;
+            const urlTab = searchParams.get("tab") as Section | null;
+            if (urlTab && validSections.includes(urlTab)) {
+                setActiveSection(urlTab);
+                if (urlTab === "preview") {
+                    scheduleShowDetails();
+                }
+                return;
+            }
+        }
+
+        const defaultSection: Section = hasExampleObject
+            ? "preview"
+            : selectedStep
+              ? "request"
+              : hasXValidations
+                ? "x-validations"
+                : "preview";
+
+        setActiveSection(defaultSection);
         setSelectedExampleIndex(0);
-    }, [selectedFlowAction]);
+        setSearchParams(
+            (prev) => {
+                const next = new URLSearchParams(prev);
+                next.set("tab", defaultSection);
+                next.delete("attr");
+                next.delete("panel");
+                return next;
+            },
+            { replace: true }
+        );
+        if (defaultSection === "preview") {
+            scheduleShowDetails();
+        } else {
+            setShowPreviewDetails(false);
+        }
+    }, [selectedFlowAction, scheduleShowDetails]);
 
     if (isEmpty) {
         return (
@@ -129,148 +194,183 @@ const FlowInformation: FC<FlowInformationProps> = ({ data, selectedFlow, selecte
         );
     }
 
+    const handleSectionChange = (section: Section) => {
+        setActiveSection(section);
+        setSearchParams(
+            (prev) => {
+                const next = new URLSearchParams(prev);
+                next.set("tab", section);
+                next.delete("attr");
+                next.delete("panel");
+                return next;
+            },
+            { replace: true }
+        );
+        if (section === "preview") {
+            scheduleShowDetails();
+        } else {
+            setShowPreviewDetails(false);
+        }
+    };
+
     return (
-        <div className="p-6 space-y-10">
+        <div className="px-8 py-8 space-y-0 w-full">
+            {/* Always-visible Overview */}
+            {selectedFlowData && (
+                <div className="mb-6">
+                    <FlowDetailsAndSummary flow={selectedFlowData} />
+                </div>
+            )}
+
             {selectedFlowAction && selectedStep && (
                 <>
-                    {/* Tab bar */}
-                    <SegmentedTabs<Section>
-                        className="mb-6"
-                        active={activeSection}
-                        onChange={setActiveSection}
-                        tabs={
-                            [
-                                { id: "overview", label: "Overview", icon: FiBookOpen },
-                                {
-                                    id: "preview",
-                                    label: "Examples & Schema",
-                                    icon: FiCode,
-                                    visible: hasExampleObject,
-                                },
-                                {
-                                    id: "x-validations",
-                                    label: "Validations",
-                                    icon: FiShield,
-                                    visible: hasXValidations,
-                                },
-                            ] satisfies TabItem<Section>[]
-                        }
-                    />
+                    {/* Action card */}
+                    <div className="mb-10">
+                        <ActionOverview step={selectedStep} actionId={selectedFlowAction} />
+                    </div>
 
-                    <section className="flex gap-8 items-start">
-                        {/* Overview section */}
-                        {activeSection === "overview" && (
-                            <div className="flex-1 space-y-6">
-                                {selectedFlowData && (
-                                    <FlowDetailsAndSummary flow={selectedFlowData} />
-                                )}
-                                <div className="rounded-xl border border-slate-200 bg-white overflow-hidden shadow-sm">
-                                    <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/60">
-                                        <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
-                                            Action
-                                        </span>
-                                    </div>
-                                    <div className="px-6 py-5">
-                                        <p className="text-base font-semibold text-slate-900 font-mono">
-                                            {selectedStep.api}
-                                        </p>
-                                        {(selectedStep.description ?? selectedStep.summary) && (
-                                            <p className="text-sm text-slate-600 mt-2 leading-relaxed mb-0">
-                                                {selectedStep.description ?? selectedStep.summary}
-                                            </p>
+                    {/* Detail tabs section */}
+                    {hasTabs && (
+                        <div className="border-t border-slate-200 pt-8">
+                            <div className="flex items-end justify-between mb-5">
+                                <div>
+                                    <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest mb-1">
+                                        Details
+                                    </p>
+                                    <h3 className="text-lg font-semibold text-slate-800">
+                                        {activeSection === "preview"
+                                            ? "Examples & Schema"
+                                            : activeSection === "request"
+                                              ? "Request"
+                                              : activeSection === "response"
+                                                ? "Response"
+                                                : "Validations"}
+                                    </h3>
+                                </div>
+                                <SegmentedTabs<Section>
+                                    active={activeSection}
+                                    onChange={handleSectionChange}
+                                    tabs={
+                                        [
+                                            {
+                                                id: "preview",
+                                                label: "Example Payload",
+                                                icon: FiCode,
+                                                visible: hasExampleObject,
+                                            },
+                                            {
+                                                id: "request",
+                                                label: "Request Schema",
+                                                icon: FiUpload,
+                                                visible: !!selectedStep,
+                                            },
+                                            {
+                                                id: "response",
+                                                label: "Response Schema",
+                                                icon: FiDownload,
+                                                visible: !!selectedStep,
+                                            },
+                                            {
+                                                id: "x-validations",
+                                                label: "Validations",
+                                                icon: FiShield,
+                                                visible: hasXValidations,
+                                            },
+                                        ] satisfies TabItem<Section>[]
+                                    }
+                                />
+                            </div>
+
+                            {/* Preview tab */}
+                            {activeSection === "preview" && hasExampleObject && (
+                                <div className="flex flex-col gap-4">
+                                    {examples.length > 1 && (
+                                        <div className="flex items-center gap-3">
+                                            <label
+                                                htmlFor="example-select"
+                                                className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider shrink-0"
+                                            >
+                                                Example
+                                            </label>
+                                            <div className="relative w-full max-w-xs">
+                                                <select
+                                                    id="example-select"
+                                                    value={selectedExampleIndex}
+                                                    onChange={(e) =>
+                                                        setSelectedExampleIndex(
+                                                            Number(e.target.value)
+                                                        )
+                                                    }
+                                                    className="w-full pl-4 pr-9 py-2 rounded-lg text-sm border border-slate-200 bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-400/40 focus:border-sky-300 appearance-none shadow-sm"
+                                                >
+                                                    {examples.map((ex, i) => (
+                                                        <option key={i} value={i}>
+                                                            {ex.name}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                                <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center">
+                                                    <svg
+                                                        className="w-4 h-4 text-slate-400"
+                                                        fill="none"
+                                                        viewBox="0 0 24 24"
+                                                        stroke="currentColor"
+                                                        strokeWidth={2}
+                                                    >
+                                                        <path
+                                                            strokeLinecap="round"
+                                                            strokeLinejoin="round"
+                                                            d="M19 9l-7 7-7-7"
+                                                        />
+                                                    </svg>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+                                    <div className="w-full h-[700px] min-h-0 rounded-2xl overflow-hidden border border-slate-200 shadow-sm bg-white">
+                                        {showPreviewDetails ? (
+                                            <FlowActionDetails
+                                                exampleValue={examplePayload as object}
+                                                actionApi={selectedFlowAction}
+                                                stepApi={selectedStep.api}
+                                                spec={data}
+                                                useCaseId={selectedFlowData?.usecase}
+                                                flowId={selectedFlowData?.flowId ?? selectedFlow}
+                                                validationTableData={validationTable}
+                                            />
+                                        ) : (
+                                            <div className="h-full w-full flex items-center justify-center">
+                                                <Loader />
+                                            </div>
                                         )}
                                     </div>
                                 </div>
-                            </div>
-                        )}
-
-                        {/* Preview section */}
-                        {activeSection === "preview" && hasExampleObject && (
-                            <div className=" w-full flex flex-col gap-4">
-                                {examples.length > 0 && (
-                                    <div className="flex flex-col gap-2">
-                                        <label
-                                            htmlFor="example-select"
-                                            className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider"
-                                        >
-                                            Examples
-                                        </label>
-                                        <div className="relative w-full max-w-sm">
-                                            <select
-                                                id="example-select"
-                                                value={selectedExampleIndex}
-                                                onChange={(e) =>
-                                                    setSelectedExampleIndex(Number(e.target.value))
-                                                }
-                                                className="w-full px-4 py-2.5  rounded-lg text-sm border border-slate-200 bg-white text-slate-800 focus:outline-none appearance-none"
-                                            >
-                                                {examples.map((ex, i) => (
-                                                    <option key={i} value={i}>
-                                                        {ex.name}
-                                                    </option>
-                                                ))}
-                                            </select>
-                                            <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center">
-                                                <svg
-                                                    className="w-4 h-4 text-slate-700"
-                                                    fill="none"
-                                                    viewBox="0 0 24 24"
-                                                    stroke="currentColor"
-                                                    strokeWidth={2}
-                                                >
-                                                    <path
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                        d="M19 9l-7 7-7-7"
-                                                    />
-                                                </svg>
-                                            </div>
-                                        </div>
-                                    </div>
-                                )}
-                                <div className="flex flex-col">
-                                    <div className="w-full h-[540px] min-h-0 rounded-xl overflow-hidden border border-slate-200 shadow-sm bg-white">
-                                        <FlowActionDetails
-                                            exampleValue={examplePayload as object}
-                                            actionApi={selectedFlowAction}
-                                            stepApi={selectedStep.api}
-                                            spec={data}
-                                            useCaseId={
-                                                selectedFlowData?.useCaseId ??
-                                                selectedFlowData?.meta?.use_case_id
-                                            }
-                                            flowId={selectedFlowData?.meta?.flowId ?? selectedFlow}
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-                        {/* 
-                        {activeSection === "helper" && hasHelper && decodedHelperCode && (
-                            <HelperSection decodedCode={decodedHelperCode} />
-                        )}
-
-                        {activeSection === "generate" && hasGenerate && decodedGenerateCode && (
-                            <GenerateSection decodedCode={decodedGenerateCode} />
-                        )}
-
-                        {activeSection === "validate" && hasValidate && decodedValidateCode && (
-                            <ValidateSection decodedCode={decodedValidateCode} />
-                        )}
-
-                        {activeSection === "requirements" &&
-                            hasRequirements &&
-                            decodedRequirementsCode && (
-                                <RequirementsSection decodedCode={decodedRequirementsCode} />
-                            )} */}
-
-                        {/* x-validations section */}
-                        {activeSection === "x-validations" &&
-                            hasXValidations &&
-                            selectedValidations && (
-                                <ValidationsTable validations={selectedValidations} />
                             )}
-                    </section>
+
+                            {/* Request tab */}
+                            {activeSection === "request" && selectedStep && (
+                                <RequestTab
+                                    spec={data}
+                                    api={selectedStep.api ?? selectedFlowAction}
+                                />
+                            )}
+
+                            {/* Response tab */}
+                            {activeSection === "response" && selectedStep && (
+                                <ResponseTab
+                                    spec={data}
+                                    api={selectedStep.api ?? selectedFlowAction}
+                                />
+                            )}
+
+                            {/* Validations tab */}
+                            {activeSection === "x-validations" &&
+                                hasXValidations &&
+                                selectedValidations && (
+                                    <ValidationsTable validations={selectedValidations} />
+                                )}
+                        </div>
+                    )}
                 </>
             )}
         </div>

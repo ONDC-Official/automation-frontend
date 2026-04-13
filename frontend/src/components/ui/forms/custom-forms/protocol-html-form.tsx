@@ -489,9 +489,9 @@ export default function ProtocolHTMLForm({
             setError(null);
 
             // Decide encoding: default url-encoded; fallback to multipart if file fields exist
-            const hasFile =
-                parsed.fields.some((f) => f.kind === "file") ||
-                (parsed.enctype || "").toLowerCase().includes("multipart");
+            // Only use FormData when enctype is explicitly multipart.
+            // File inputs are handled inline (as text) in the urlencoded path below.
+            const hasFile = (parsed.enctype || "").toLowerCase().includes("multipart");
 
             let res: AxiosResponse<unknown, unknown>;
             if (hasFile) {

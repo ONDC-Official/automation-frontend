@@ -4,6 +4,7 @@ import { FaRegPaste } from "react-icons/fa6";
 import PayloadEditor from "../../mini-components/payload-editor";
 import { SubmitEventParams } from "../../../../types/flow-types";
 import { toast } from "react-toastify";
+import { SelectedItem } from "../ret11-nested-select";
 
 type OfferKey = `offers_${string}`;
 
@@ -403,7 +404,10 @@ function validateFormData(data: FormData): {
     };
 }
 
-export function validateFormDataRET11(data: FormDataRET11): {
+export function validateFormDataRET11(
+    data: FormDataRET11,
+    items: SelectedItem[]
+): {
     valid: boolean;
     errors: string[];
 } {
@@ -420,6 +424,15 @@ export function validateFormDataRET11(data: FormDataRET11): {
     // Validate provider_location (must have at least one selection)
     if (!data.provider_location || data.provider_location.length === 0) {
         errors.push("At least one provider location must be selected.");
+    }
+
+    if (!items || items.length < 2) {
+        errors.push("At least 2 items must be selected.");
+    }
+
+    const validItems = items.filter((item) => item.id);
+    if (validItems.length < 2) {
+        errors.push("At least 2 valid items (with IDs) must be selected.");
     }
 
     return {

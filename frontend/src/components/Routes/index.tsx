@@ -11,14 +11,18 @@ import FlowTestingWrapper from "@pages/flow-testing";
 import NotFoundPage from "@components/ui/not-found";
 import ScenarioPage from "@pages/scenario";
 import HomePage from "@pages/home";
+import SellerLoadTesting from "@pages/seller-load-testing";
 import AuthHeader from "@pages/auth-header";
+import FrameworkHealthPage from "@pages/framework-health";
 import { ROUTES } from "@constants/routes";
-import DeveloperGuide from "@/pages/developer-guide";
+import DeveloperGuideLanding from "@/pages/developer-guide/landing/DeveloperGuideLanding";
+import DeveloperGuideFlowPage from "@/pages/developer-guide/DeveloperGuideFlowPage";
+import DeveloperGuideGettingStarted from "@/pages/developer-guide/landing/DeveloperGuideGettingStarted";
 
 /** Developer Guide is only available in development; redirect to home in production */
-const DeveloperGuideRoute = () =>
+const DeveloperGuideWrapper = ({ children }: { children: React.ReactNode }) =>
     import.meta.env.VITE_ENVIRONMENT === "development" ? (
-        <DeveloperGuide />
+        <>{children}</>
     ) : (
         <Navigate to={ROUTES.HOME} replace />
     );
@@ -40,7 +44,32 @@ const Routes = () => (
         <Route path="*" element={<NotFoundPage />} />
         <Route path={ROUTES.DB_BACK_OFFICE} element={<DBBackOffice />} />
         <Route path={ROUTES.AUTH_HEADER} element={<AuthHeader />} />
-        <Route path={ROUTES.DEVELOPER_GUIDE} element={<DeveloperGuideRoute />} />
+        <Route path={ROUTES.SELLER_LOAD_TESTING} element={<SellerLoadTesting />} />
+        <Route path={ROUTES.FRAMEWORK_HEALTH} element={<FrameworkHealthPage />} />
+        <Route
+            path={ROUTES.DEVELOPER_GUIDE}
+            element={
+                <DeveloperGuideWrapper>
+                    <DeveloperGuideLanding />
+                </DeveloperGuideWrapper>
+            }
+        />
+        <Route
+            path={ROUTES.DEVELOPER_GUIDE_GETTING_STARTED}
+            element={
+                <DeveloperGuideWrapper>
+                    <DeveloperGuideGettingStarted />
+                </DeveloperGuideWrapper>
+            }
+        />
+        <Route
+            path={ROUTES.DEVELOPER_GUIDE_USE_CASE}
+            element={
+                <DeveloperGuideWrapper>
+                    <DeveloperGuideFlowPage />
+                </DeveloperGuideWrapper>
+            }
+        />
     </RouterRoutes>
 );
 

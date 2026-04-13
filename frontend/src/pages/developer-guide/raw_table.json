@@ -3,7 +3,7 @@
         "action": "search",
         "codeName": "L1validations",
         "numLeafTests": 88,
-        "generated": "2026-03-10",
+        "generated": "2026-03-11",
         "rows": [
             {
                 "rowType": "group",
@@ -131,7 +131,7 @@
                 "group": "SEARCH_CONTEXT > CONTEXT_REQUIRED",
                 "scope": "",
                 "description": "- $.context.bpp_id must be present in the payload",
-                "skipIf": "- $.message.intent.provider.id must **not** be present in the payload",
+                "skipIf": "- $.message.intent.provider.id is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -141,7 +141,7 @@
                 "group": "SEARCH_CONTEXT > CONTEXT_REQUIRED",
                 "scope": "",
                 "description": "- $.context.bpp_uri must be present in the payload",
-                "skipIf": "- $.message.intent.provider.id must **not** be present in the payload",
+                "skipIf": "- $.message.intent.provider.id is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -161,7 +161,7 @@
                 "group": "SEARCH_CONTEXT > CONTEXT_ENUM",
                 "scope": "",
                 "description": "- All elements of $.context.location.country.code must be in [\"IND\"]",
-                "skipIf": "- $.context.location.country.code must **not** be present in the payload",
+                "skipIf": "- $.context.location.country.code is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -171,7 +171,7 @@
                 "group": "SEARCH_CONTEXT > CONTEXT_ENUM",
                 "scope": "",
                 "description": "- All elements of $.context.domain must be in [\"ONDC:FIS12\"]",
-                "skipIf": "- $.context.domain must **not** be present in the payload",
+                "skipIf": "- $.context.domain is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -191,7 +191,7 @@
                 "group": "SEARCH_CONTEXT > CONTEXT_REGEX",
                 "scope": "",
                 "description": "- All elements of $.context.location.city.code must follow every regex in [\"(\\\\*)\\|(^std\\\\:[0-9]{2,4}$)\"]",
-                "skipIf": "- $.context.location.city.code must **not** be present in the payload",
+                "skipIf": "- $.context.location.city.code is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -201,7 +201,7 @@
                 "group": "SEARCH_CONTEXT > CONTEXT_REGEX",
                 "scope": "",
                 "description": "- All elements of $.context.timestamp must follow every regex in [\"^\\\\d{4}-\\\\d{2}-\\\\d{2}T\\\\d{2}:\\\\d{2}:\\\\d{2}(\\\\.\\\\d+)?(Z\\|[+-]\\\\d{2}:\\\\d{2})$\"]",
-                "skipIf": "- $.context.timestamp must **not** be present in the payload",
+                "skipIf": "- $.context.timestamp is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -211,7 +211,7 @@
                 "group": "SEARCH_CONTEXT > CONTEXT_REGEX",
                 "scope": "",
                 "description": "- All elements of $.context.bap_id must follow every regex in [\"^(?!.*\\b(?:http\\|https\\|www)\\b)[a-zA-Z0-9-]+(\\.[a-zA-Z0-9-]+)+$\"]",
-                "skipIf": "- $.context.bap_id must **not** be present in the payload",
+                "skipIf": "- $.context.bap_id is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -221,7 +221,7 @@
                 "group": "SEARCH_CONTEXT > CONTEXT_REGEX",
                 "scope": "",
                 "description": "- All elements of $.context.bap_uri must follow every regex in [\"^https:\\/\\/(www\\.)?[a-zA-Z0-9-]+(\\.[a-zA-Z0-9-]+)+(/)?$\"]",
-                "skipIf": "- $.context.bap_uri must **not** be present in the payload",
+                "skipIf": "- $.context.bap_uri is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -231,7 +231,7 @@
                 "group": "SEARCH_CONTEXT > CONTEXT_REGEX",
                 "scope": "",
                 "description": "- All elements of $.context.ttl must follow every regex in [\"^P(?=\\\\d\\|T\\\\d)(\\\\d+Y)?(\\\\d+M)?(\\\\d+D)?(T(\\\\d+H)?(\\\\d+M)?(\\\\d+S)?)?$\"]",
-                "skipIf": "- $.context.ttl must **not** be present in the payload",
+                "skipIf": "- $.context.ttl is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -241,7 +241,7 @@
                 "group": "SEARCH_CONTEXT > CONTEXT_REGEX",
                 "scope": "",
                 "description": "- All elements of $.context.bpp_id must follow every regex in [\"^(?!.*\\b(?:http\\|https\\|www)\\b)[a-zA-Z0-9-]+(\\.[a-zA-Z0-9-]+)+$\"]",
-                "skipIf": "**All of the following must be true:** - $.context.bpp_id must **not** be present in the payload - $.message.intent.provider.id must **not** be present in the payload",
+                "skipIf": "- **All of the following must be true:** - $.context.bpp_id is not in the payload - $.message.intent.provider.id is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -251,7 +251,7 @@
                 "group": "SEARCH_CONTEXT > CONTEXT_REGEX",
                 "scope": "",
                 "description": "- All elements of $.context.bpp_uri must follow every regex in [\"^https:\\/\\/(www\\.)?[a-zA-Z0-9-]+(\\.[a-zA-Z0-9-]+)+(/)?$\"]",
-                "skipIf": "**All of the following must be true:** - $.context.bpp_uri must **not** be present in the payload - $.message.intent.provider.id must **not** be present in the payload",
+                "skipIf": "- **All of the following must be true:** - $.context.bpp_uri is not in the payload - $.message.intent.provider.id is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -261,7 +261,7 @@
                 "group": "",
                 "scope": "",
                 "description": "Sub-tests: REQUIRED_CATEGORY_CODE, VALID_ENUM_CATEGORY_CODE",
-                "skipIf": "- $.message.intent.provider.id must be present in the payload",
+                "skipIf": "- $.message.intent.provider.id is in the payload",
                 "errorCode": "",
                 "successCode": ""
             },
@@ -281,7 +281,7 @@
                 "group": "SEARCH_CATEGORY_CODE",
                 "scope": "",
                 "description": "- All elements of $.message.intent.category.descriptor.code must be in [\"LOAN\", \"UNSECURED_PERSONAL\", \"SECURED_PERSONAL\", \"OFFERS\", \"ADDITIONAL_DATA\", \"PERSONAL_FINANCING\", \"CONSUMER_INVOICE_FINANCING\", \"AGRI_PURCHASE_FINANCE\", \"ELECTRONICS_PURCHASE_FINANCE\", \"BUSINESS\", \"SOLE_PROPRIETORSHIP\", \"OTHER\", \"PARTNERSHIP_FIRM\", \"PRIVATE_LTD\", \"INVOICE_FINANCING\", \"GOLD_LOAN\", \"LAMF\", \"TERM_LOAN\", \"CREDIT_LINE\", \"DOCUMENT_BASED_DRAWDOWN\", \"NON_DOCUMENT_BASED_DRAWDOWN\", \"BANKING\", \"STATEMENT_UPLOAD\", \"AA_BANKING\", \"GST\", \"AA_GST\", \"GSP\", \"RETURN_UPLOAD\", \"MUTUAL_FUND\", \"AA_LOAN\", \"MFC\", \"ITR\", \"UPLOAD\", \"BUREAU_LOAN\", \"DERIVED_DATA\", \"ADDITIONAL_UPLOAD\", \"RTA\"]",
-                "skipIf": "- $.message.intent.category.descriptor.code must **not** be present in the payload",
+                "skipIf": "- $.message.intent.category.descriptor.code is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -291,7 +291,7 @@
                 "group": "",
                 "scope": "",
                 "description": "Sub-tests: REQUIRED_ITEM_FIELDS",
-                "skipIf": "- $.message.intent.provider.id must **not** be present in the payload",
+                "skipIf": "- $.message.intent.provider.id is not in the payload",
                 "errorCode": "",
                 "successCode": ""
             },
@@ -361,7 +361,7 @@
                 "group": "SEARCH_ITEMS > REQUIRED_ITEM_FIELDS > REQUIRED_XINPUT_FIELDS",
                 "scope": "",
                 "description": "- $.message.intent.provider.items[*].xinput.form_response.submission_id must be present in the payload",
-                "skipIf": "- $._EXTERNAL._SELF.message.intent.provider.id must **not** equal CONSENT_APPROVAL",
+                "skipIf": "- $._EXTERNAL._SELF.message.intent.provider.id is not equal to CONSENT_APPROVAL",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -371,7 +371,7 @@
                 "group": "SEARCH_ITEMS > REQUIRED_ITEM_FIELDS > REQUIRED_XINPUT_FIELDS",
                 "scope": "",
                 "description": "Sub-tests: REQUIRED_FIELD_PAN_NAME_1, REQUIRED_FIELD_DOB, REQUIRED_FIELD_GENDER, REQUIRED_FIELD_PAN, REQUIRED_FIELD_CONTACT_NUMBER, REQUIRED_FIELD_EMPLOYMENT_TYPE, REQUIRED_FIELD_INCOME, REQUIRED_FIELD_COMPANY_NAME, REQUIRED_FIELD_BUREAU_CONSENT",
-                "skipIf": "- Not all elements of $.message.intent.provider.items[*].xinput.head.descriptor.code may be in [\"PERSONAL_INFORMATION\"]",
+                "skipIf": "- not all elements of $.message.intent.provider.items[*].xinput.head.descriptor.code are in [\"PERSONAL_INFORMATION\"]",
                 "errorCode": "",
                 "successCode": ""
             },
@@ -471,7 +471,7 @@
                 "group": "SEARCH_ITEMS > REQUIRED_ITEM_FIELDS > REQUIRED_XINPUT_FIELDS",
                 "scope": "",
                 "description": "Sub-tests: REQUIRED_FIELD_CONSENT_HANDLER",
-                "skipIf": "- None of $.message.intent.provider.items[*].xinput.head.descriptor.code may be in [\"CONSENT_APPROVAL\"]",
+                "skipIf": "- none of $.message.intent.provider.items[*].xinput.head.descriptor.code are in [\"CONSENT_APPROVAL\"]",
                 "errorCode": "",
                 "successCode": ""
             },
@@ -491,7 +491,7 @@
                 "group": "SEARCH_ITEMS > REQUIRED_ITEM_FIELDS > REQUIRED_XINPUT_FIELDS",
                 "scope": "",
                 "description": "Sub-tests: REQUIRED_FIELD_PAN, REQUIRED_FULL_NAME, REQUIRED_FIELD_GENDER, REQUIRED_FIELD_DOB, REQUIRED_FIELD_CONTACT_NUMBER, REQUIRED_FIELD_PINCODE, REQUIRED_FIELD_JWELLERY, REQUIRED_FIELD_PURITY, REQUIRED_FIELD_BUREAU_CONSENT",
-                "skipIf": "- Not all elements of $.message.intent.provider.items[*].xinput.head.descriptor.code may be in [\"PERSONAL_INFORMATION_GOLD\"]",
+                "skipIf": "- not all elements of $.message.intent.provider.items[*].xinput.head.descriptor.code are in [\"PERSONAL_INFORMATION_GOLD\"]",
                 "errorCode": "",
                 "successCode": ""
             },
@@ -591,7 +591,7 @@
                 "group": "SEARCH_ITEMS > REQUIRED_ITEM_FIELDS > REQUIRED_XINPUT_FIELDS",
                 "scope": "",
                 "description": "Sub-tests: REQUIRED_FIELD_GSTIN_PROFILE_1, REQUIRED_FIELD_GSTR_B2B_INVOICE_1, REQUIRED_FIELD_GSTR_B2B_CDNR_1, REQUIRED_FIELD_GSTR_B2B_INVOICES_1, REQUIRED_FIELD_GSTR_3B_SUMMARY_1, REQUIRED_FIELD_BANK_STATEMENT_FILES, REQUIRED_FIELD_BANK_NAME, REQUIRED_FIELD_MIME_TYPE",
-                "skipIf": "- Not all elements of $.message.intent.provider.items[*].xinput.head.descriptor.code may be in [\"BANK_STATEMENT_AND_GST_RETURNS\"]",
+                "skipIf": "- not all elements of $.message.intent.provider.items[*].xinput.head.descriptor.code are in [\"BANK_STATEMENT_AND_GST_RETURNS\"]",
                 "errorCode": "",
                 "successCode": ""
             },
@@ -681,7 +681,7 @@
                 "group": "SEARCH_ITEMS > REQUIRED_ITEM_FIELDS > REQUIRED_XINPUT_FIELDS",
                 "scope": "",
                 "description": "Sub-tests: REQUIRED_FIELD_FINANCIAL_STATEMENTS, REQUIRED_FIELD_SHAREHOLDING_PATTERN, REQUIRED_FIELD_ITR",
-                "skipIf": "- Not all elements of $.message.intent.provider.items[*].xinput.head.descriptor.code may be in [\"BUSINESS_AND_FINANCIAL_DOCUMENTS\"]",
+                "skipIf": "- not all elements of $.message.intent.provider.items[*].xinput.head.descriptor.code are in [\"BUSINESS_AND_FINANCIAL_DOCUMENTS\"]",
                 "errorCode": "",
                 "successCode": ""
             },
@@ -721,7 +721,7 @@
                 "group": "SEARCH_ITEMS > REQUIRED_ITEM_FIELDS > REQUIRED_XINPUT_FIELDS",
                 "scope": "",
                 "description": "Sub-tests: REQUIRED_FIELD_PAN, REQUIRED_FULL_NAME, REQUIRED_DOB, REQUIRED_CONSTITUTION, REQUIRED_BUSINESS_PAN, REQUIRED_DOI, REQUIRED_NATURE_OF_BUSINESS, REQUIRED_ANNUAL_TURNOVER, REQUIRED_BUSINESS_PINCODE",
-                "skipIf": "- Not all elements of $.message.intent.provider.items[*].xinput.head.descriptor.code may be in [\"PERSONAL_INFORMATION_TERM\"]",
+                "skipIf": "- not all elements of $.message.intent.provider.items[*].xinput.head.descriptor.code are in [\"PERSONAL_INFORMATION_TERM\"]",
                 "errorCode": "",
                 "successCode": ""
             },
@@ -821,7 +821,7 @@
                 "group": "SEARCH_ITEMS > REQUIRED_ITEM_FIELDS > REQUIRED_XINPUT_FIELDS",
                 "scope": "",
                 "description": "Sub-tests: REQUIRED_FIELD_PAN, REQUIRED_FIELD_FULL_NAME, REQUIRED_FIELD_CONSTITUION, REQUIRED_FIELD_GENDER, REQUIRED_FIELD_EMPLOYMENT_TYPE, REQUIRED_FIELD_DOB, REQUIRED_FIELD_ANNUAL_INCOME, REQUIRED_FIELD_MOBILE_NUMBER, REQUIRED_FIELD_EMAIL_ID",
-                "skipIf": "- Not all elements of $.message.intent.provider.items[*].xinput.head.descriptor.code may be in [\"PERSONAL_INFORMATION_LAMF\"]",
+                "skipIf": "- not all elements of $.message.intent.provider.items[*].xinput.head.descriptor.code are in [\"PERSONAL_INFORMATION_LAMF\"]",
                 "errorCode": "",
                 "successCode": ""
             },
@@ -921,7 +921,7 @@
                 "group": "SEARCH_ITEMS > REQUIRED_ITEM_FIELDS > REQUIRED_XINPUT_FIELDS",
                 "scope": "",
                 "description": "Sub-tests: REQUIRED_FIELD_BUREAU_CONSENT",
-                "skipIf": "- Not all elements of $.message.intent.provider.items[*].xinput.head.descriptor.code may be in [\"ORGANIZATION_INFORMATION\"]",
+                "skipIf": "- not all elements of $.message.intent.provider.items[*].xinput.head.descriptor.code are in [\"ORGANIZATION_INFORMATION\"]",
                 "errorCode": "",
                 "successCode": ""
             },
@@ -951,7 +951,7 @@
                 "group": "SEARCH_ITEMS > REQUIRED_ITEM_FIELDS > VALID_XINPUT_ENUMS",
                 "scope": "",
                 "description": "- All elements of $.message.intent.provider.items[*].xinput.head.descriptor.code must be in [\"PERSONAL_INFORMATION\", \"CONSENT_APPROVAL\", \"ORGANIZATION_INFORMATION\", \"MERCHANT_AND_PRDOUCT_DETAILS\", \"BANK_STATEMENT_AND_GST_RETURNS\", \"BUSINESS_AND_FINANCIAL_DOCUMENTS\", \"ORGANIZATION_INFORMATION\", \"PERSONAL_INFORMATION_TERM\", \"PERSONAL_INFORMATION_GOLD\", \"PERSONAL_INFORMATION_TERM_GST\", \"PERSONAL_INFORMATION_BUSINESS_TERM\", \"PERSONAL_INFORMATION_LAMF\"]",
-                "skipIf": "- $.message.intent.provider.items[*].xinput.head.descriptor.code must **not** be present in the payload",
+                "skipIf": "- $.message.intent.provider.items[*].xinput.head.descriptor.code is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -961,7 +961,7 @@
                 "group": "",
                 "scope": "",
                 "description": "Sub-tests: REQUIRED_FULFILLMENT_ITEMS",
-                "skipIf": "- $.message.intent.provider.fulfillments[*].customer.person.name must **not** be present in the payload",
+                "skipIf": "- $.message.intent.provider.fulfillments[*].customer.person.name is not in the payload",
                 "errorCode": "",
                 "successCode": ""
             },
@@ -1091,7 +1091,7 @@
                 "group": "SEARCH_TAGS",
                 "scope": "",
                 "description": "- All elements of $.message.intent.tags[*].descriptor.code must be in [\"BAP_TERMS\", \"BPP_TERMS\"]",
-                "skipIf": "- $.message.intent.tags[*].descriptor.code must **not** be present in the payload",
+                "skipIf": "- $.message.intent.tags[*].descriptor.code is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -1111,7 +1111,7 @@
         "action": "on_search",
         "codeName": "L1validations",
         "numLeafTests": 115,
-        "generated": "2026-03-10",
+        "generated": "2026-03-11",
         "rows": [
             {
                 "rowType": "group",
@@ -1269,7 +1269,7 @@
                 "group": "ON_SEARCH_CONTEXT > CONTEXT_ENUM",
                 "scope": "",
                 "description": "- All elements of $.context.location.country.code must be in [\"IND\"]",
-                "skipIf": "- $.context.location.country.code must **not** be present in the payload",
+                "skipIf": "- $.context.location.country.code is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -1279,7 +1279,7 @@
                 "group": "ON_SEARCH_CONTEXT > CONTEXT_ENUM",
                 "scope": "",
                 "description": "- All elements of $.context.domain must be in [\"ONDC:FIS12\"]",
-                "skipIf": "- $.context.domain must **not** be present in the payload",
+                "skipIf": "- $.context.domain is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -1299,7 +1299,7 @@
                 "group": "ON_SEARCH_CONTEXT > CONTEXT_REGEX",
                 "scope": "",
                 "description": "- All elements of $.context.location.city.code must follow every regex in [\"(\\\\*)\\|(^std\\\\:[0-9]{2,4}$)\"]",
-                "skipIf": "- $.context.location.city.code must **not** be present in the payload",
+                "skipIf": "- $.context.location.city.code is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -1309,7 +1309,7 @@
                 "group": "ON_SEARCH_CONTEXT > CONTEXT_REGEX",
                 "scope": "",
                 "description": "- All elements of $.context.timestamp must follow every regex in [\"^\\\\d{4}-\\\\d{2}-\\\\d{2}T\\\\d{2}:\\\\d{2}:\\\\d{2}(\\\\.\\\\d+)?(Z\\|[+-]\\\\d{2}:\\\\d{2})$\"]",
-                "skipIf": "- $.context.timestamp must **not** be present in the payload",
+                "skipIf": "- $.context.timestamp is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -1319,7 +1319,7 @@
                 "group": "ON_SEARCH_CONTEXT > CONTEXT_REGEX",
                 "scope": "",
                 "description": "- All elements of $.context.bap_id must follow every regex in [\"^(?!.*\\b(?:http\\|https\\|www)\\b)[a-zA-Z0-9-]+(\\.[a-zA-Z0-9-]+)+$\"]",
-                "skipIf": "- $.context.bap_id must **not** be present in the payload",
+                "skipIf": "- $.context.bap_id is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -1329,7 +1329,7 @@
                 "group": "ON_SEARCH_CONTEXT > CONTEXT_REGEX",
                 "scope": "",
                 "description": "- All elements of $.context.bap_uri must follow every regex in [\"^https:\\/\\/(www\\.)?[a-zA-Z0-9-]+(\\.[a-zA-Z0-9-]+)+(/)?$\"]",
-                "skipIf": "- $.context.bap_uri must **not** be present in the payload",
+                "skipIf": "- $.context.bap_uri is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -1339,7 +1339,7 @@
                 "group": "ON_SEARCH_CONTEXT > CONTEXT_REGEX",
                 "scope": "",
                 "description": "- All elements of $.context.ttl must follow every regex in [\"^P(?=\\\\d\\|T\\\\d)(\\\\d+Y)?(\\\\d+M)?(\\\\d+D)?(T(\\\\d+H)?(\\\\d+M)?(\\\\d+S)?)?$\"]",
-                "skipIf": "- $.context.ttl must **not** be present in the payload",
+                "skipIf": "- $.context.ttl is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -1349,7 +1349,7 @@
                 "group": "ON_SEARCH_CONTEXT > CONTEXT_REGEX",
                 "scope": "",
                 "description": "- All elements of $.context.bpp_id must follow every regex in [\"^(?!.*\\b(?:http\\|https\\|www)\\b)[a-zA-Z0-9-]+(\\.[a-zA-Z0-9-]+)+$\"]",
-                "skipIf": "- $.context.bpp_id must **not** be present in the payload",
+                "skipIf": "- $.context.bpp_id is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -1359,7 +1359,7 @@
                 "group": "ON_SEARCH_CONTEXT > CONTEXT_REGEX",
                 "scope": "",
                 "description": "- All elements of $.context.bpp_uri must follow every regex in [\"^https:\\/\\/(www\\.)?[a-zA-Z0-9-]+(\\.[a-zA-Z0-9-]+)+(/)?$\"]",
-                "skipIf": "- $.context.bpp_uri must **not** be present in the payload",
+                "skipIf": "- $.context.bpp_uri is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -1429,7 +1429,7 @@
                 "group": "",
                 "scope": "",
                 "description": "Sub-tests: ON_SEARCH_CATEGORIES_NAME, ON_SEARCH_CATEGORIES_CODE, ON_SEARCH_CATEGORIES_ID, ON_SEARCH_CATEGORIES_PARENT_ID, VALID_ENUM_CATEGORY_CODE",
-                "skipIf": "- $.message.catalog.providers[*].categories[*].id must **not** be present in the payload",
+                "skipIf": "- $.message.catalog.providers[*].categories[*].id is not in the payload",
                 "errorCode": "",
                 "successCode": ""
             },
@@ -1469,7 +1469,7 @@
                 "group": "ON_SEARCH_CATEGORIES",
                 "scope": "",
                 "description": "- $.message.catalog.providers[*].categories[*].parent_category_id must be present in the payload",
-                "skipIf": "- At least one of $.message.catalog.providers[*].categories[*].descriptor.code must be in [\"LOAN\"]",
+                "skipIf": "- any of $.message.catalog.providers[*].categories[*].descriptor.code are in [\"LOAN\"]",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -1479,7 +1479,7 @@
                 "group": "ON_SEARCH_CATEGORIES",
                 "scope": "",
                 "description": "- All elements of $.message.catalog.providers[*].categories[*].descriptor.code must be in [\"LOAN\", \"UNSECURED_PERSONAL\", \"SECURED_PERSONAL\", \"OFFERS\", \"ADDITIONAL_DATA\", \"PERSONAL_FINANCING\", \"CONSUMER_INVOICE_FINANCING\", \"AGRI_PURCHASE_FINANCE\", \"ELECTRONICS_PURCHASE_FINANCE\", \"BUSINESS\", \"SOLE_PROPRIETORSHIP\", \"OTHER\", \"PARTNERSHIP_FIRM\", \"PRIVATE_LTD\", \"INVOICE_FINANCING\", \"GOLD_LOAN\", \"LAMF\", \"TERM_LOAN\", \"CREDIT_LINE\", \"DOCUMENT_BASED_DRAWDOWN\", \"NON_DOCUMENT_BASED_DRAWDOWN\", \"BANKING\", \"STATEMENT_UPLOAD\", \"AA_BANKING\", \"GST\", \"AA_GST\", \"GSP\", \"RETURN_UPLOAD\", \"MUTUAL_FUND\", \"AA_LOAN\", \"MFC\", \"ITR\", \"UPLOAD\", \"BUREAU_LOAN\", \"DERIVED_DATA\", \"ADDITIONAL_UPLOAD\", \"RTA\"]",
-                "skipIf": "- $.message.catalog.providers[*].categories[*].descriptor.code must **not** be present in the payload",
+                "skipIf": "- $.message.catalog.providers[*].categories[*].descriptor.code is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -1539,7 +1539,7 @@
                 "group": "ON_SEARCH_ITEMS > REQUIRED_ITEMS",
                 "scope": "",
                 "description": "- At least one of $.message.catalog.providers[*].items[*].category_ids[*] must be in $.message.catalog.providers[*].categories[*].id",
-                "skipIf": "- $.message.catalog.providers[*].categories[*].id must **not** be present in the payload",
+                "skipIf": "- $.message.catalog.providers[*].categories[*].id is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -1559,7 +1559,7 @@
                 "group": "ON_SEARCH_ITEMS > REQUIRED_ITEMS",
                 "scope": "",
                 "description": "Sub-tests: REQUIRED_HEAD_CODE, REQUIRED_HEAD_NAME, REQUIRED_FORM_HEADINGS, REQUIRED_FORM_ID, REQUIRED_FORM_MIME_TYPE, PERSONAL_LOAN_FIELDS, REQUIRED_CONSENT_FIELDS, INVOICE_LOAN_FIELDS, GOLD_LOAN_FIELDS, WORKING_CAPITAL_LOAN_FIELDS, BUSINESS_AND_FINANCIAL_DOCUMENTS_FIELDS, TERM_LOAN_FIELDS, TERM_LOAN_FIELDS_GST, LAMF_FIELDS",
-                "skipIf": "**All of the following must be true:** - $.message.catalog.providers[*].items[*].tags[*].descriptor.code must **not** be present in the payload - Not all elements of $.message.catalog.providers[*].items[*].tags[*].descriptor.code may be in [\"LOAN_INFO\"]",
+                "skipIf": "- **All of the following must be true:** - $.message.catalog.providers[*].items[*].tags[*].descriptor.code is not in the payload - not all elements of $.message.catalog.providers[*].items[*].tags[*].descriptor.code are in [\"LOAN_INFO\"]",
                 "errorCode": "",
                 "successCode": ""
             },
@@ -1619,7 +1619,7 @@
                 "group": "ON_SEARCH_ITEMS > REQUIRED_ITEMS > REQUIRED_XINPUT_FIELDS",
                 "scope": "",
                 "description": "Sub-tests: REQUIRED_FIELD_PAN_NAME, REQUIRED_FIELD_DOB, REQUIRED_FIELD_GENDER, REQUIRED_FIELD_PAN, REQUIRED_FIELD_CONTACT_NUMBER, REQUIRED_FIELD_EMPLOYMENT_TYPE, REQUIRED_FIELD_INCOME, REQUIRED_FIELD_COMPANY_NAME, REQUIRED_FIELD_BUREAU_CONSENT",
-                "skipIf": "- Not all elements of $.message.catalog.providers[*].items[*].xinput.head.descriptor.code may be in [\"PERSONAL_INFORMATION\"]",
+                "skipIf": "- not all elements of $.message.catalog.providers[*].items[*].xinput.head.descriptor.code are in [\"PERSONAL_INFORMATION\"]",
                 "errorCode": "",
                 "successCode": ""
             },
@@ -1719,7 +1719,7 @@
                 "group": "ON_SEARCH_ITEMS > REQUIRED_ITEMS > REQUIRED_XINPUT_FIELDS",
                 "scope": "",
                 "description": "Sub-tests: REQUIRED_FIELD_CONSENT_HANDLER",
-                "skipIf": "- None of $.message.catalog.providers[*].items[*].xinput.head.descriptor.code may be in [\"CONSENT_APPROVAL\"]",
+                "skipIf": "- none of $.message.catalog.providers[*].items[*].xinput.head.descriptor.code are in [\"CONSENT_APPROVAL\"]",
                 "errorCode": "",
                 "successCode": ""
             },
@@ -1739,7 +1739,7 @@
                 "group": "ON_SEARCH_ITEMS > REQUIRED_ITEMS > REQUIRED_XINPUT_FIELDS",
                 "scope": "",
                 "description": "Sub-tests: REQUIRED_FIELD_BUREAU_CONSENT",
-                "skipIf": "- Not all elements of $.message.catalog.providers[*].items[*].xinput.head.descriptor.code may be in [\"ORGANIZATION_INFORMATION\"]",
+                "skipIf": "- not all elements of $.message.catalog.providers[*].items[*].xinput.head.descriptor.code are in [\"ORGANIZATION_INFORMATION\"]",
                 "errorCode": "",
                 "successCode": ""
             },
@@ -1759,7 +1759,7 @@
                 "group": "ON_SEARCH_ITEMS > REQUIRED_ITEMS > REQUIRED_XINPUT_FIELDS",
                 "scope": "",
                 "description": "Sub-tests: REQUIRED_FIELD_PAN, REQUIRED_FULL_NAME, REQUIRED_FIELD_GENDER, REQUIRED_FIELD_DOB, REQUIRED_FIELD_CONTACT_NUMBER, REQUIRED_FIELD_PINCODE, REQUIRED_FIELD_JWELLERY, REQUIRED_FIELD_PURITY, REQUIRED_FIELD_BUREAU_CONSENT, REQUIRED_CONSENT_FIELDS",
-                "skipIf": "- Not all elements of $.message.catalog.providers[*].items[*].xinput.head.descriptor.code may be in [\"PERSONAL_INFORMATION_GOLD\"]",
+                "skipIf": "- not all elements of $.message.catalog.providers[*].items[*].xinput.head.descriptor.code are in [\"PERSONAL_INFORMATION_GOLD\"]",
                 "errorCode": "",
                 "successCode": ""
             },
@@ -1859,7 +1859,7 @@
                 "group": "ON_SEARCH_ITEMS > REQUIRED_ITEMS > REQUIRED_XINPUT_FIELDS > GOLD_LOAN_FIELDS",
                 "scope": "",
                 "description": "Sub-tests: REQUIRED_FIELD_AA_ID",
-                "skipIf": "- None of $.message.order.items[*].xinput.head.descriptor.code may be in [\"CONSENT_APPROVAL\"]",
+                "skipIf": "- none of $.message.order.items[*].xinput.head.descriptor.code are in [\"CONSENT_APPROVAL\"]",
                 "errorCode": "",
                 "successCode": ""
             },
@@ -1879,7 +1879,7 @@
                 "group": "ON_SEARCH_ITEMS > REQUIRED_ITEMS > REQUIRED_XINPUT_FIELDS",
                 "scope": "",
                 "description": "Sub-tests: REQUIRED_FIELD_GSTIN_PROFILE_1, REQUIRED_FIELD_GSTR_B2B_INVOICE_1, REQUIRED_FIELD_GSTR_B2B_CDNR_1, REQUIRED_FIELD_GSTR_B2B_INVOICES_1, REQUIRED_FIELD_GSTR_3B_SUMMARY_1, REQUIRED_FIELD_BANK_STATEMENT_FILES, REQUIRED_FIELD_BANK_NAME, REQUIRED_FIELD_MIME_TYPE",
-                "skipIf": "- Not all elements of $.message.catalog.providers[*].items[*].xinput.head.descriptor.code may be in [\"BANK_STATEMENT_AND_GST_RETURNS\"]",
+                "skipIf": "- not all elements of $.message.catalog.providers[*].items[*].xinput.head.descriptor.code are in [\"BANK_STATEMENT_AND_GST_RETURNS\"]",
                 "errorCode": "",
                 "successCode": ""
             },
@@ -1969,7 +1969,7 @@
                 "group": "ON_SEARCH_ITEMS > REQUIRED_ITEMS > REQUIRED_XINPUT_FIELDS",
                 "scope": "",
                 "description": "Sub-tests: REQUIRED_FIELD_FINANCIAL_STATEMENTS, REQUIRED_FIELD_SHAREHOLDING_PATTERN, REQUIRED_FIELD_ITR",
-                "skipIf": "- Not all elements of $.message.catalog.providers[*].items[*].xinput.head.descriptor.code may be in [\"BUSINESS_AND_FINANCIAL_DOCUMENTS\"]",
+                "skipIf": "- not all elements of $.message.catalog.providers[*].items[*].xinput.head.descriptor.code are in [\"BUSINESS_AND_FINANCIAL_DOCUMENTS\"]",
                 "errorCode": "",
                 "successCode": ""
             },
@@ -2009,7 +2009,7 @@
                 "group": "ON_SEARCH_ITEMS > REQUIRED_ITEMS > REQUIRED_XINPUT_FIELDS",
                 "scope": "",
                 "description": "Sub-tests: REQUIRED_FIELD_PAN, REQUIRED_FULL_NAME, REQUIRED_DOB, REQUIRED_CONSTITUTION, REQUIRED_BUSINESS_PAN, REQUIRED_DOI, REQUIRED_NATURE_OF_BUSINESS, REQUIRED_ANNUAL_TURNOVER, REQUIRED_BUSINESS_PINCODE",
-                "skipIf": "- Not all elements of $.message.catalog.providers[*].items[*].xinput.head.descriptor.code may be in [\"PERSONAL_INFORMATION_TERM\"]",
+                "skipIf": "- not all elements of $.message.catalog.providers[*].items[*].xinput.head.descriptor.code are in [\"PERSONAL_INFORMATION_TERM\"]",
                 "errorCode": "",
                 "successCode": ""
             },
@@ -2109,7 +2109,7 @@
                 "group": "ON_SEARCH_ITEMS > REQUIRED_ITEMS > REQUIRED_XINPUT_FIELDS",
                 "scope": "",
                 "description": "Sub-tests: REQUIRED_FIELD_BUREAU_CONSENT",
-                "skipIf": "- Not all elements of $.message.catalog.providers[*].items[*].xinput.head.descriptor.code may be in [\"PERSONAL_INFORMATION_TERM_GST\"]",
+                "skipIf": "- not all elements of $.message.catalog.providers[*].items[*].xinput.head.descriptor.code are in [\"PERSONAL_INFORMATION_TERM_GST\"]",
                 "errorCode": "",
                 "successCode": ""
             },
@@ -2129,7 +2129,7 @@
                 "group": "ON_SEARCH_ITEMS > REQUIRED_ITEMS > REQUIRED_XINPUT_FIELDS",
                 "scope": "",
                 "description": "Sub-tests: REQUIRED_FIELD_PAN, REQUIRED_FIELD_FULL_NAME, REQUIRED_FIELD_CONSTITUION, REQUIRED_FIELD_GENDER, REQUIRED_FIELD_EMPLOYMENT_TYPE, REQUIRED_FIELD_DOB, REQUIRED_FIELD_ANNUAL_INCOME, REQUIRED_FIELD_MOBILE_NUMBER, REQUIRED_FIELD_EMAIL_ID",
-                "skipIf": "- Not all elements of $.message.catalog.providers[*].items[*].xinput.head.descriptor.code may be in [\"PERSONAL_INFORMATION_LAMF\"]",
+                "skipIf": "- not all elements of $.message.catalog.providers[*].items[*].xinput.head.descriptor.code are in [\"PERSONAL_INFORMATION_LAMF\"]",
                 "errorCode": "",
                 "successCode": ""
             },
@@ -2239,7 +2239,7 @@
                 "group": "ON_SEARCH_ITEMS > VALID_ENUM_ITEMS",
                 "scope": "",
                 "description": "- All elements of $.message.catalog.providers[*].items[*].descriptor.code must be in [\"LOAN\"]",
-                "skipIf": "- $.message.catalog.providers[*].items[*].descriptor.code must **not** be present in the payload",
+                "skipIf": "- $.message.catalog.providers[*].items[*].descriptor.code is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -2249,7 +2249,7 @@
                 "group": "ON_SEARCH_ITEMS > VALID_ENUM_ITEMS",
                 "scope": "",
                 "description": "- All elements of $.message.catalog.providers[*].items[*].xinput.head.descriptor.code must be in [\"PERSONAL_INFORMATION\", \"CONSENT_APPROVAL\", \"ORGANIZATION_INFORMATION\", \"MERCHANT_AND_PRDOUCT_DETAILS\", \"BANK_STATEMENT_AND_GST_RETURNS\", \"BUSINESS_AND_FINANCIAL_DOCUMENTS\", \"ORGANIZATION_INFORMATION\", \"PERSONAL_INFORMATION_TERM\", \"PERSONAL_INFORMATION_GOLD\", \"PERSONAL_INFORMATION_TERM_GST\", \"PERSONAL_INFORMATION_BUSINESS_TERM\", \"PERSONAL_INFORMATION_LAMF\"]",
-                "skipIf": "- $.message.catalog.providers[*].items[*].xinput.head.descriptor.code must **not** be present in the payload",
+                "skipIf": "- $.message.catalog.providers[*].items[*].xinput.head.descriptor.code is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -2309,7 +2309,7 @@
                 "group": "ON_SEARCH_FULFILLMENTS > VALID_FULFILLMENT_ITEMS",
                 "scope": "",
                 "description": "- All elements of $.message.catalog.providers[*].fulfillments[*].type must be in [\"ONLINE\", \"SEMI_ONLINE\"]",
-                "skipIf": "- $.message.catalog.providers[*].fulfillments[*].type must **not** be present in the payload",
+                "skipIf": "- $.message.catalog.providers[*].fulfillments[*].type is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -2329,7 +2329,7 @@
                 "group": "ON_SEARCH_FULFILLMENTS > VALID_FULFILLMENT_TAGS",
                 "scope": "",
                 "description": "- All elements of $.message.catalog.providers[*].fulfillments[*].tags[*].descriptor.code must be in [\"CHECKLISTS\"]",
-                "skipIf": "- $.message.catalog.providers[*].fulfillments[*].tags[*].descriptor.code must **not** be present in the payload",
+                "skipIf": "- $.message.catalog.providers[*].fulfillments[*].tags[*].descriptor.code is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -2429,7 +2429,7 @@
                 "group": "ON_SEARCH_PAYMENTS > VALID_PAYMENT_ITEMS",
                 "scope": "",
                 "description": "- All elements of $.message.catalog.providers[*].payments[*].type must be in [\"ON_ORDER\", \"ON_FULFILLMENT\", \"POST_FULFILLMENT\"]",
-                "skipIf": "- $.message.catalog.providers[*].payments[*].type must **not** be present in the payload",
+                "skipIf": "- $.message.catalog.providers[*].payments[*].type is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -2439,7 +2439,7 @@
                 "group": "ON_SEARCH_PAYMENTS > VALID_PAYMENT_ITEMS",
                 "scope": "",
                 "description": "- All elements of $.message.catalog.providers[*].payments[*].status must be in [\"NOT-PAID\", \"PAID\", \"DEFERRED\", \"DELAYED\"]",
-                "skipIf": "- $.message.catalog.providers[*].payments[*].status must **not** be present in the payload",
+                "skipIf": "- $.message.catalog.providers[*].payments[*].status is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -2449,7 +2449,7 @@
                 "group": "ON_SEARCH_PAYMENTS > VALID_PAYMENT_ITEMS",
                 "scope": "",
                 "description": "- All elements of [\"BPP\", \"CONSUMER\"] must be in $.message.catalog.providers[*].payments[*].collected_by",
-                "skipIf": "- $.message.catalog.providers[*].payments[*].collected_by must **not** be present in the payload",
+                "skipIf": "- $.message.catalog.providers[*].payments[*].collected_by is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -2459,7 +2459,7 @@
                 "group": "ON_SEARCH_PAYMENTS > VALID_PAYMENT_ITEMS",
                 "scope": "",
                 "description": "- All elements of [\"INSTALLMENT\", \"LOAN_DISBURSMENT\"] must be in $.message.catalog.providers[*].payments[*].time.label",
-                "skipIf": "- $.message.catalog.providers[*].payments[*].time.label must **not** be present in the payload",
+                "skipIf": "- $.message.catalog.providers[*].payments[*].time.label is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -2479,7 +2479,7 @@
                 "group": "ON_SEARCH_TAGS",
                 "scope": "",
                 "description": "- All elements of $.message.catalog.tags[*].descriptor.code must be in [\"BAP_TERMS\", \"BPP_TERMS\"]",
-                "skipIf": "- $.message.catalog.tags[*].descriptor.code must **not** be present in the payload",
+                "skipIf": "- $.message.catalog.tags[*].descriptor.code is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -2509,7 +2509,7 @@
                 "group": "ON_SEARCH_PROVIDER_TAGS",
                 "scope": "",
                 "description": "- All elements of $.message.catalog.providers[*].tags[*].descriptor.code must be in [\"CONTACT_INFO\", \"LSP_INFO\"]",
-                "skipIf": "- $.message.catalog.providers[*].tags[*].descriptor.code must **not** be present in the payload",
+                "skipIf": "- $.message.catalog.providers[*].tags[*].descriptor.code is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -2539,7 +2539,7 @@
                 "group": "",
                 "scope": "",
                 "description": "Sub-tests: REQUIRED_LOAN_INFO_TAG_GROUP, REQUIRED_LOAN_OFFER_TAGS",
-                "skipIf": "**All of the following must be true:** - $.message.catalog.providers[*].items[*].tags[*].descriptor.code must **not** be present in the payload - Not all elements of $.message.catalog.providers[*].items[*].tags[*].descriptor.code may be in [\"LOAN_INFO\", \"LOAN_OFFER\"]",
+                "skipIf": "- **All of the following must be true:** - $.message.catalog.providers[*].items[*].tags[*].descriptor.code is not in the payload - not all elements of $.message.catalog.providers[*].items[*].tags[*].descriptor.code are in [\"LOAN_INFO\", \"LOAN_OFFER\"]",
                 "errorCode": "",
                 "successCode": ""
             },
@@ -2569,7 +2569,7 @@
         "action": "select",
         "codeName": "L1validations",
         "numLeafTests": 40,
-        "generated": "2026-03-10",
+        "generated": "2026-03-11",
         "rows": [
             {
                 "rowType": "group",
@@ -2727,7 +2727,7 @@
                 "group": "SELECT_CONTEXT > CONTEXT_ENUM",
                 "scope": "",
                 "description": "- All elements of $.context.location.country.code must be in [\"IND\"]",
-                "skipIf": "- $.context.location.country.code must **not** be present in the payload",
+                "skipIf": "- $.context.location.country.code is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -2737,7 +2737,7 @@
                 "group": "SELECT_CONTEXT > CONTEXT_ENUM",
                 "scope": "",
                 "description": "- All elements of $.context.domain must be in [\"ONDC:FIS12\"]",
-                "skipIf": "- $.context.domain must **not** be present in the payload",
+                "skipIf": "- $.context.domain is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -2757,7 +2757,7 @@
                 "group": "SELECT_CONTEXT > CONTEXT_REGEX",
                 "scope": "",
                 "description": "- All elements of $.context.location.city.code must follow every regex in [\"(\\\\*)\\|(^std\\\\:[0-9]{2,4}$)\"]",
-                "skipIf": "- $.context.location.city.code must **not** be present in the payload",
+                "skipIf": "- $.context.location.city.code is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -2767,7 +2767,7 @@
                 "group": "SELECT_CONTEXT > CONTEXT_REGEX",
                 "scope": "",
                 "description": "- All elements of $.context.timestamp must follow every regex in [\"^\\\\d{4}-\\\\d{2}-\\\\d{2}T\\\\d{2}:\\\\d{2}:\\\\d{2}(\\\\.\\\\d+)?(Z\\|[+-]\\\\d{2}:\\\\d{2})$\"]",
-                "skipIf": "- $.context.timestamp must **not** be present in the payload",
+                "skipIf": "- $.context.timestamp is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -2777,7 +2777,7 @@
                 "group": "SELECT_CONTEXT > CONTEXT_REGEX",
                 "scope": "",
                 "description": "- All elements of $.context.bap_id must follow every regex in [\"^(?!.*\\b(?:http\\|https\\|www)\\b)[a-zA-Z0-9-]+(\\.[a-zA-Z0-9-]+)+$\"]",
-                "skipIf": "- $.context.bap_id must **not** be present in the payload",
+                "skipIf": "- $.context.bap_id is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -2787,7 +2787,7 @@
                 "group": "SELECT_CONTEXT > CONTEXT_REGEX",
                 "scope": "",
                 "description": "- All elements of $.context.bap_uri must follow every regex in [\"^https:\\/\\/(www\\.)?[a-zA-Z0-9-]+(\\.[a-zA-Z0-9-]+)+(/)?$\"]",
-                "skipIf": "- $.context.bap_uri must **not** be present in the payload",
+                "skipIf": "- $.context.bap_uri is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -2797,7 +2797,7 @@
                 "group": "SELECT_CONTEXT > CONTEXT_REGEX",
                 "scope": "",
                 "description": "- All elements of $.context.ttl must follow every regex in [\"^P(?=\\\\d\\|T\\\\d)(\\\\d+Y)?(\\\\d+M)?(\\\\d+D)?(T(\\\\d+H)?(\\\\d+M)?(\\\\d+S)?)?$\"]",
-                "skipIf": "- $.context.ttl must **not** be present in the payload",
+                "skipIf": "- $.context.ttl is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -2807,7 +2807,7 @@
                 "group": "SELECT_CONTEXT > CONTEXT_REGEX",
                 "scope": "",
                 "description": "- All elements of $.context.bpp_id must follow every regex in [\"^(?!.*\\b(?:http\\|https\\|www)\\b)[a-zA-Z0-9-]+(\\.[a-zA-Z0-9-]+)+$\"]",
-                "skipIf": "- $.context.bpp_id must **not** be present in the payload",
+                "skipIf": "- $.context.bpp_id is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -2817,7 +2817,7 @@
                 "group": "SELECT_CONTEXT > CONTEXT_REGEX",
                 "scope": "",
                 "description": "- All elements of $.context.bpp_uri must follow every regex in [\"^https:\\/\\/(www\\.)?[a-zA-Z0-9-]+(\\.[a-zA-Z0-9-]+)+(/)?$\"]",
-                "skipIf": "- $.context.bpp_uri must **not** be present in the payload",
+                "skipIf": "- $.context.bpp_uri is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -2867,7 +2867,7 @@
                 "group": "REQUIRED_ITEM_FIELDS",
                 "scope": "",
                 "description": "Sub-tests: SET_LOAN_AMOUNT_FORM, REQUIRED_FORM_SUBMISSION_ID, BUSINESS_KYC_FORM",
-                "skipIf": "- $.message.order.items[*].xinput.form.id must **not** be present in the payload",
+                "skipIf": "- $.message.order.items[*].xinput.form.id is not in the payload",
                 "errorCode": "",
                 "successCode": ""
             },
@@ -2877,7 +2877,7 @@
                 "group": "REQUIRED_ITEM_FIELDS > REQUIRED_XINPUT_ITEMS",
                 "scope": "",
                 "description": "Sub-tests: REQUIRED_REQUEST_AMOUNT, REQUIRED_REQUEST_TERM",
-                "skipIf": "- $.message.order.items[*].xinput.head.descriptor.code must **not** equal [\"SET_LOAN_AMOUNT\"]",
+                "skipIf": "- $.message.order.items[*].xinput.head.descriptor.code is not equal to [\"SET_LOAN_AMOUNT\"]",
                 "errorCode": "",
                 "successCode": ""
             },
@@ -2907,7 +2907,7 @@
                 "group": "REQUIRED_ITEM_FIELDS > REQUIRED_XINPUT_ITEMS",
                 "scope": "",
                 "description": "- $.message.order.items[*].xinput.form_response.submission_id must be present in the payload",
-                "skipIf": "- Not all elements of $.message.order.items[*].xinput.head.descriptor.code may be in [\"INDIVIDUAL_KYC\", \"MANUAL_VERIFICATION\"]",
+                "skipIf": "- not all elements of $.message.order.items[*].xinput.head.descriptor.code are in [\"INDIVIDUAL_KYC\", \"MANUAL_VERIFICATION\"]",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -2917,7 +2917,7 @@
                 "group": "REQUIRED_ITEM_FIELDS > REQUIRED_XINPUT_ITEMS",
                 "scope": "",
                 "description": "Sub-tests: REQUIRED_COMPANY_PAN, REQUIRED_GST_CERTIFICATE, REQUIRED_BUSINESS_PROOF, REQUIRED_APPLICATION_FORM",
-                "skipIf": "- $.message.order.items[*].xinput.head.descriptor.code must **not** equal [\"BUSINESS_KYC\"]",
+                "skipIf": "- $.message.order.items[*].xinput.head.descriptor.code is not equal to [\"BUSINESS_KYC\"]",
                 "errorCode": "",
                 "successCode": ""
             },
@@ -2967,7 +2967,7 @@
                 "group": "REQUIRED_ITEM_FIELDS",
                 "scope": "",
                 "description": "Sub-tests: VALID_ITEM_TAGS, VALID_PLEDGE_TAGS",
-                "skipIf": "- $.message.order.items[*].tags[*].descriptor.code must **not** be present in the payload",
+                "skipIf": "- $.message.order.items[*].tags[*].descriptor.code is not in the payload",
                 "errorCode": "",
                 "successCode": ""
             },
@@ -2977,7 +2977,7 @@
                 "group": "REQUIRED_ITEM_FIELDS > VALID_TAGS",
                 "scope": "",
                 "description": "- All elements of $.message.order.items[*].tags[*].descriptor.code must be in [\"PLEDGE_REQUIREMENTS\"]",
-                "skipIf": "- $.message.order.items[*].tags[*].descriptor.code must **not** be present in the payload",
+                "skipIf": "- $.message.order.items[*].tags[*].descriptor.code is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -3017,7 +3017,7 @@
                 "group": "REQUIRED_FULFILMENT_ITEMS",
                 "scope": "",
                 "description": "Sub-tests: REQUIRED_CUSTOMER_DOB, REQUIRED_CUSTOMER_GENDER, REQUIRED_CREDS, REQUIRED_CUSTOMER_CONTACT_EMAIL, REQUIRED_CUSTOMER_CONTACT_PHONE",
-                "skipIf": "- $.message.order.fulfillments[*].customer.person.name must **not** be present in the payload",
+                "skipIf": "- $.message.order.fulfillments[*].customer.person.name is not in the payload",
                 "errorCode": "",
                 "successCode": ""
             },
@@ -3047,7 +3047,7 @@
                 "group": "REQUIRED_FULFILMENT_ITEMS > REQUIRED_CUSTOMER_ITEMS",
                 "scope": "",
                 "description": "Sub-tests: REQUIRED_CUSTOMER_CREDS_ID, REQUIRED_CUSTOMER_CREDS_TYPE",
-                "skipIf": "- $.message.order.fulfillments[*].customer.person.creds[*].id must **not** be present in the payload",
+                "skipIf": "- $.message.order.fulfillments[*].customer.person.creds[*].id is not in the payload",
                 "errorCode": "",
                 "successCode": ""
             },
@@ -3097,7 +3097,7 @@
         "action": "on_select",
         "codeName": "L1validations",
         "numLeafTests": 61,
-        "generated": "2026-03-10",
+        "generated": "2026-03-11",
         "rows": [
             {
                 "rowType": "group",
@@ -3255,7 +3255,7 @@
                 "group": "ON_SELECT_CONTEXT > CONTEXT_ENUM",
                 "scope": "",
                 "description": "- All elements of $.context.location.country.code must be in [\"IND\"]",
-                "skipIf": "- $.context.location.country.code must **not** be present in the payload",
+                "skipIf": "- $.context.location.country.code is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -3265,7 +3265,7 @@
                 "group": "ON_SELECT_CONTEXT > CONTEXT_ENUM",
                 "scope": "",
                 "description": "- All elements of $.context.domain must be in [\"ONDC:FIS12\"]",
-                "skipIf": "- $.context.domain must **not** be present in the payload",
+                "skipIf": "- $.context.domain is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -3285,7 +3285,7 @@
                 "group": "ON_SELECT_CONTEXT > CONTEXT_REGEX",
                 "scope": "",
                 "description": "- All elements of $.context.location.city.code must follow every regex in [\"(\\\\*)\\|(^std\\\\:[0-9]{2,4}$)\"]",
-                "skipIf": "- $.context.location.city.code must **not** be present in the payload",
+                "skipIf": "- $.context.location.city.code is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -3295,7 +3295,7 @@
                 "group": "ON_SELECT_CONTEXT > CONTEXT_REGEX",
                 "scope": "",
                 "description": "- All elements of $.context.timestamp must follow every regex in [\"^\\\\d{4}-\\\\d{2}-\\\\d{2}T\\\\d{2}:\\\\d{2}:\\\\d{2}(\\\\.\\\\d+)?(Z\\|[+-]\\\\d{2}:\\\\d{2})$\"]",
-                "skipIf": "- $.context.timestamp must **not** be present in the payload",
+                "skipIf": "- $.context.timestamp is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -3305,7 +3305,7 @@
                 "group": "ON_SELECT_CONTEXT > CONTEXT_REGEX",
                 "scope": "",
                 "description": "- All elements of $.context.bap_id must follow every regex in [\"^(?!.*\\b(?:http\\|https\\|www)\\b)[a-zA-Z0-9-]+(\\.[a-zA-Z0-9-]+)+$\"]",
-                "skipIf": "- $.context.bap_id must **not** be present in the payload",
+                "skipIf": "- $.context.bap_id is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -3315,7 +3315,7 @@
                 "group": "ON_SELECT_CONTEXT > CONTEXT_REGEX",
                 "scope": "",
                 "description": "- All elements of $.context.bap_uri must follow every regex in [\"^https:\\/\\/(www\\.)?[a-zA-Z0-9-]+(\\.[a-zA-Z0-9-]+)+(/)?$\"]",
-                "skipIf": "- $.context.bap_uri must **not** be present in the payload",
+                "skipIf": "- $.context.bap_uri is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -3325,7 +3325,7 @@
                 "group": "ON_SELECT_CONTEXT > CONTEXT_REGEX",
                 "scope": "",
                 "description": "- All elements of $.context.ttl must follow every regex in [\"^P(?=\\\\d\\|T\\\\d)(\\\\d+Y)?(\\\\d+M)?(\\\\d+D)?(T(\\\\d+H)?(\\\\d+M)?(\\\\d+S)?)?$\"]",
-                "skipIf": "- $.context.ttl must **not** be present in the payload",
+                "skipIf": "- $.context.ttl is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -3335,7 +3335,7 @@
                 "group": "ON_SELECT_CONTEXT > CONTEXT_REGEX",
                 "scope": "",
                 "description": "- All elements of $.context.bpp_id must follow every regex in [\"^(?!.*\\b(?:http\\|https\\|www)\\b)[a-zA-Z0-9-]+(\\.[a-zA-Z0-9-]+)+$\"]",
-                "skipIf": "- $.context.bpp_id must **not** be present in the payload",
+                "skipIf": "- $.context.bpp_id is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -3345,7 +3345,7 @@
                 "group": "ON_SELECT_CONTEXT > CONTEXT_REGEX",
                 "scope": "",
                 "description": "- All elements of $.context.bpp_uri must follow every regex in [\"^https:\\/\\/(www\\.)?[a-zA-Z0-9-]+(\\.[a-zA-Z0-9-]+)+(/)?$\"]",
-                "skipIf": "- $.context.bpp_uri must **not** be present in the payload",
+                "skipIf": "- $.context.bpp_uri is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -3355,7 +3355,7 @@
                 "group": "",
                 "scope": "",
                 "description": "Sub-tests: ON_SELECT_PROVIDER_ID, ON_SELECT_PROVIDER_NAME, ON_SELECT_PROVIDER_IMAGES_URL, ON_SELECT_PROVIDER_IMAGES_SIZE_TYPE",
-                "skipIf": "- $.message.order.provider.id must **not** be present in the payload",
+                "skipIf": "- $.message.order.provider.id is not in the payload",
                 "errorCode": "",
                 "successCode": ""
             },
@@ -3415,7 +3415,7 @@
                 "group": "ON_SELECT_PROVIDER_TAGS",
                 "scope": "",
                 "description": "- All elements of $.message.order.provider.tags[*].descriptor.code must be in [\"CONTACT_INFO\", \"LSP_INFO\"]",
-                "skipIf": "- $.message.order.provider.tags[*].descriptor.code must **not** be present in the payload",
+                "skipIf": "- $.message.order.provider.tags[*].descriptor.code is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -3535,7 +3535,7 @@
                 "group": "ON_SELECT_ITEMS > REQUIRED_ITEMS",
                 "scope": "",
                 "description": "Sub-tests: REQUIRED_HEAD_CODE, REQUIRED_HEAD_NAME, REQUIRED_FORM_HEADINGS, REQUIRED_FORM_ID, REQUIRED_FORM_MIME_TYPE, REQUIRED_FORM_RESPONSE, ON_SELECT_LOAN_AMOUNT_FORM, VALID_FORM_HEADINGS",
-                "skipIf": "- $.message.order.items[*].xinput.form.id must **not** be present in the payload",
+                "skipIf": "- $.message.order.items[*].xinput.form.id is not in the payload",
                 "errorCode": "",
                 "successCode": ""
             },
@@ -3545,7 +3545,7 @@
                 "group": "ON_SELECT_ITEMS > REQUIRED_ITEMS > REQUIRED_XINPUT_FIELDS",
                 "scope": "",
                 "description": "- $.message.order.items[*].xinput.head.descriptor.code must be present in the payload",
-                "skipIf": "- $.message.order.items[*].xinput.form_response.submission_id must be present in the payload",
+                "skipIf": "- $.message.order.items[*].xinput.form_response.submission_id is in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -3555,7 +3555,7 @@
                 "group": "ON_SELECT_ITEMS > REQUIRED_ITEMS > REQUIRED_XINPUT_FIELDS",
                 "scope": "",
                 "description": "- $.message.order.items[*].xinput.head.descriptor.name must be present in the payload",
-                "skipIf": "- $.message.order.items[*].xinput.form_response.submission_id must be present in the payload",
+                "skipIf": "- $.message.order.items[*].xinput.form_response.submission_id is in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -3565,7 +3565,7 @@
                 "group": "ON_SELECT_ITEMS > REQUIRED_ITEMS > REQUIRED_XINPUT_FIELDS",
                 "scope": "",
                 "description": "- $.message.order.items[*].xinput.head.headings[*] must be present in the payload",
-                "skipIf": "- $.message.order.items[*].xinput.form_response.submission_id must be present in the payload",
+                "skipIf": "- $.message.order.items[*].xinput.form_response.submission_id is in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -3585,7 +3585,7 @@
                 "group": "ON_SELECT_ITEMS > REQUIRED_ITEMS > REQUIRED_XINPUT_FIELDS",
                 "scope": "",
                 "description": "- $.message.order.items[*].xinput.form.mime_type must be present in the payload",
-                "skipIf": "- $.message.order.items[*].xinput.form_response.submission_id must be present in the payload",
+                "skipIf": "- $.message.order.items[*].xinput.form_response.submission_id is in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -3595,7 +3595,7 @@
                 "group": "ON_SELECT_ITEMS > REQUIRED_ITEMS > REQUIRED_XINPUT_FIELDS",
                 "scope": "",
                 "description": "Sub-tests: REQUIRED_FORM_STATUS, REQUIRED_FORM_SUBMISSION_ID",
-                "skipIf": "- $.message.order.items[*].xinput.form_response.submission_id must **not** be present in the payload",
+                "skipIf": "- $.message.order.items[*].xinput.form_response.submission_id is not in the payload",
                 "errorCode": "",
                 "successCode": ""
             },
@@ -3625,7 +3625,7 @@
                 "group": "ON_SELECT_ITEMS > REQUIRED_ITEMS > REQUIRED_XINPUT_FIELDS",
                 "scope": "",
                 "description": "Sub-tests: REQUIRED_REQUEST_AMOUNT, REQUIRED_REQUEST_TERM",
-                "skipIf": "- $.message.order.items[*].xinput.head.descriptor.code must **not** equal [\"SET_LOAN_AMOUNT\"]",
+                "skipIf": "- $.message.order.items[*].xinput.head.descriptor.code is not equal to [\"SET_LOAN_AMOUNT\"]",
                 "errorCode": "",
                 "successCode": ""
             },
@@ -3665,7 +3665,7 @@
                 "group": "ON_SELECT_ITEMS > REQUIRED_ITEMS > REQUIRED_XINPUT_FIELDS > VALID_FORM_HEADINGS",
                 "scope": "",
                 "description": "- All elements of $.message.order.items[*].xinput.head.headings[*] must be in [\"INDIVIDUAL_KYC\", \"BUSINESS_KYC\", \"SET_LOAN_AMOUNT\"]",
-                "skipIf": "- $.message.order.items[*].xinput.form_response.submission_id must be present in the payload",
+                "skipIf": "- $.message.order.items[*].xinput.form_response.submission_id is in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -3675,7 +3675,7 @@
                 "group": "",
                 "scope": "",
                 "description": "Sub-tests: REQUIRED_LOAN_INFO, REQUIRED_LOAN_OFFER",
-                "skipIf": "**All of the following must be true:** - $.message.order.items[*].tags[*].descriptor.code must **not** be present in the payload - Not all elements of $.message.order.items[*].tags[*].descriptor.code may be in [\"LOAN_INFO\", \"LOAN_OFFER\"]",
+                "skipIf": "- **All of the following must be true:** - $.message.order.items[*].tags[*].descriptor.code is not in the payload - not all elements of $.message.order.items[*].tags[*].descriptor.code are in [\"LOAN_INFO\", \"LOAN_OFFER\"]",
                 "errorCode": "",
                 "successCode": ""
             },
@@ -3755,7 +3755,7 @@
                 "group": "ON_SELECT_FULFILLMENTS > VALID_FULFILLMENT_ITEMS",
                 "scope": "",
                 "description": "- All elements of $.message.order.fulfillments[*].type must be in [\"ONLINE\", \"SEMI_ONLINE\"]",
-                "skipIf": "- $.message.order.fulfillments[*].type must **not** be present in the payload",
+                "skipIf": "- $.message.order.fulfillments[*].type is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -3775,7 +3775,7 @@
                 "group": "ON_SELECT_FULFILLMENTS > VALID_FULFILLMENT_TAGS",
                 "scope": "",
                 "description": "- All elements of $.message.order.fulfillments[*].tags[*].descriptor.code must be in [\"CHECKLISTS\"]",
-                "skipIf": "- $.message.order.fulfillments[*].tags[*].descriptor.code must **not** be present in the payload",
+                "skipIf": "- $.message.order.fulfillments[*].tags[*].descriptor.code is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -3795,7 +3795,7 @@
                 "group": "",
                 "scope": "",
                 "description": "Sub-tests: REQUIRED_COMMON_QUOTE_ITEMS, VALID_COMMON_QUOTE_ITEMS",
-                "skipIf": "- $.message.order.quote.id must **not** be present in the payload",
+                "skipIf": "- $.message.order.quote.id is not in the payload",
                 "errorCode": "",
                 "successCode": ""
             },
@@ -3915,7 +3915,7 @@
         "action": "init",
         "codeName": "L1validations",
         "numLeafTests": 49,
-        "generated": "2026-03-10",
+        "generated": "2026-03-11",
         "rows": [
             {
                 "rowType": "group",
@@ -4073,7 +4073,7 @@
                 "group": "INIT_CONTEXT > CONTEXT_ENUM",
                 "scope": "",
                 "description": "- All elements of $.context.location.country.code must be in [\"IND\"]",
-                "skipIf": "- $.context.location.country.code must **not** be present in the payload",
+                "skipIf": "- $.context.location.country.code is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -4083,7 +4083,7 @@
                 "group": "INIT_CONTEXT > CONTEXT_ENUM",
                 "scope": "",
                 "description": "- All elements of $.context.domain must be in [\"ONDC:FIS12\"]",
-                "skipIf": "- $.context.domain must **not** be present in the payload",
+                "skipIf": "- $.context.domain is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -4103,7 +4103,7 @@
                 "group": "INIT_CONTEXT > CONTEXT_REGEX",
                 "scope": "",
                 "description": "- All elements of $.context.location.city.code must follow every regex in [\"(\\\\*)\\|(^std\\\\:[0-9]{2,4}$)\"]",
-                "skipIf": "- $.context.location.city.code must **not** be present in the payload",
+                "skipIf": "- $.context.location.city.code is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -4113,7 +4113,7 @@
                 "group": "INIT_CONTEXT > CONTEXT_REGEX",
                 "scope": "",
                 "description": "- All elements of $.context.timestamp must follow every regex in [\"^\\\\d{4}-\\\\d{2}-\\\\d{2}T\\\\d{2}:\\\\d{2}:\\\\d{2}(\\\\.\\\\d+)?(Z\\|[+-]\\\\d{2}:\\\\d{2})$\"]",
-                "skipIf": "- $.context.timestamp must **not** be present in the payload",
+                "skipIf": "- $.context.timestamp is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -4123,7 +4123,7 @@
                 "group": "INIT_CONTEXT > CONTEXT_REGEX",
                 "scope": "",
                 "description": "- All elements of $.context.bap_id must follow every regex in [\"^(?!.*\\b(?:http\\|https\\|www)\\b)[a-zA-Z0-9-]+(\\.[a-zA-Z0-9-]+)+$\"]",
-                "skipIf": "- $.context.bap_id must **not** be present in the payload",
+                "skipIf": "- $.context.bap_id is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -4133,7 +4133,7 @@
                 "group": "INIT_CONTEXT > CONTEXT_REGEX",
                 "scope": "",
                 "description": "- All elements of $.context.bap_uri must follow every regex in [\"^https:\\/\\/(www\\.)?[a-zA-Z0-9-]+(\\.[a-zA-Z0-9-]+)+(/)?$\"]",
-                "skipIf": "- $.context.bap_uri must **not** be present in the payload",
+                "skipIf": "- $.context.bap_uri is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -4143,7 +4143,7 @@
                 "group": "INIT_CONTEXT > CONTEXT_REGEX",
                 "scope": "",
                 "description": "- All elements of $.context.ttl must follow every regex in [\"^P(?=\\\\d\\|T\\\\d)(\\\\d+Y)?(\\\\d+M)?(\\\\d+D)?(T(\\\\d+H)?(\\\\d+M)?(\\\\d+S)?)?$\"]",
-                "skipIf": "- $.context.ttl must **not** be present in the payload",
+                "skipIf": "- $.context.ttl is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -4153,7 +4153,7 @@
                 "group": "INIT_CONTEXT > CONTEXT_REGEX",
                 "scope": "",
                 "description": "- All elements of $.context.bpp_id must follow every regex in [\"^(?!.*\\b(?:http\\|https\\|www)\\b)[a-zA-Z0-9-]+(\\.[a-zA-Z0-9-]+)+$\"]",
-                "skipIf": "- $.context.bpp_id must **not** be present in the payload",
+                "skipIf": "- $.context.bpp_id is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -4163,7 +4163,7 @@
                 "group": "INIT_CONTEXT > CONTEXT_REGEX",
                 "scope": "",
                 "description": "- All elements of $.context.bpp_uri must follow every regex in [\"^https:\\/\\/(www\\.)?[a-zA-Z0-9-]+(\\.[a-zA-Z0-9-]+)+(/)?$\"]",
-                "skipIf": "- $.context.bpp_uri must **not** be present in the payload",
+                "skipIf": "- $.context.bpp_uri is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -4213,7 +4213,7 @@
                 "group": "REQUIRED_ITEM_FIELDS",
                 "scope": "",
                 "description": "Sub-tests: REQUIRED_HEAD_CODE, REQUIRED_FORM_ID, REQUIRED_SUBMISSION_ID",
-                "skipIf": "- $.message.order.items[*].xinput.form.id must **not** be present in the payload",
+                "skipIf": "- $.message.order.items[*].xinput.form.id is not in the payload",
                 "errorCode": "",
                 "successCode": ""
             },
@@ -4243,7 +4243,7 @@
                 "group": "REQUIRED_ITEM_FIELDS > REQUIRED_XINPUT_ITEMS",
                 "scope": "",
                 "description": "- $.message.order.items[*].xinput.form_response.submission_id must be present in the payload",
-                "skipIf": "- $.message.order.items[*].xinput.form_response.submission_id must **not** be present in the payload",
+                "skipIf": "- $.message.order.items[*].xinput.form_response.submission_id is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -4303,7 +4303,7 @@
                 "group": "INIT_PAYMENT_ITEMS > REQUIRED_PAYMENT_ITEMS",
                 "scope": "",
                 "description": "- $.message.order.payments[*].collected_by must be present in the payload",
-                "skipIf": "- Not all elements of $.message.order.payments[*].time.label may be in [\"LOAN_DISBURSMENT\"]",
+                "skipIf": "- not all elements of $.message.order.payments[*].time.label are in [\"LOAN_DISBURSMENT\"]",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -4313,7 +4313,7 @@
                 "group": "INIT_PAYMENT_ITEMS > REQUIRED_PAYMENT_ITEMS",
                 "scope": "",
                 "description": "- $.message.order.payments[*].params.bank_account_number must be present in the payload",
-                "skipIf": "- Not all elements of $.message.order.payments[*].time.label may be in [\"LOAN_DISBURSMENT\"]",
+                "skipIf": "- not all elements of $.message.order.payments[*].time.label are in [\"LOAN_DISBURSMENT\"]",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -4323,7 +4323,7 @@
                 "group": "INIT_PAYMENT_ITEMS > REQUIRED_PAYMENT_ITEMS",
                 "scope": "",
                 "description": "- $.message.order.payments[*].params.bank_code must be present in the payload",
-                "skipIf": "- Not all elements of $.message.order.payments[*].time.label may be in [\"LOAN_DISBURSMENT\"]",
+                "skipIf": "- not all elements of $.message.order.payments[*].time.label are in [\"LOAN_DISBURSMENT\"]",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -4353,7 +4353,7 @@
                 "group": "INIT_PAYMENT_ITEMS > VALID_PAYMENT_ITEMS",
                 "scope": "",
                 "description": "- All elements of $.message.order.payments[*].type must be in [\"ON_ORDER\", \"ON_FULFILLMENT\", \"POST_FULFILLMENT\"]",
-                "skipIf": "- $.message.order.payments[*].type must **not** be present in the payload",
+                "skipIf": "- $.message.order.payments[*].type is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -4363,7 +4363,7 @@
                 "group": "INIT_PAYMENT_ITEMS > VALID_PAYMENT_ITEMS",
                 "scope": "",
                 "description": "- All elements of $.message.order.payments[*].status must be in [\"NOT-PAID\", \"PAID\", \"DEFERRED\", \"DELAYED\"]",
-                "skipIf": "- $.message.order.payments[*].status must **not** be present in the payload",
+                "skipIf": "- $.message.order.payments[*].status is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -4373,7 +4373,7 @@
                 "group": "INIT_PAYMENT_ITEMS > VALID_PAYMENT_ITEMS",
                 "scope": "",
                 "description": "- All elements of $.message.order.payments[*].collected_by must be in [\"BPP\", \"CONSUMER\"]",
-                "skipIf": "- $.message.order.payments[*].collected_by must **not** be present in the payload",
+                "skipIf": "- $.message.order.payments[*].collected_by is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -4383,7 +4383,7 @@
                 "group": "INIT_PAYMENT_ITEMS > VALID_PAYMENT_ITEMS",
                 "scope": "",
                 "description": "- All elements of $.message.order.payments[*].time.label must be in [\"INSTALLMENT\", \"LOAN_DISBURSMENT\"]",
-                "skipIf": "- $.message.order.payments[*].time.label must **not** be present in the payload",
+                "skipIf": "- $.message.order.payments[*].time.label is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -4413,7 +4413,7 @@
                 "group": "REQUIRED_FULFILMENT_ITEMS",
                 "scope": "",
                 "description": "Sub-tests: REQUIRED_CUSTOMER_DOB, REQUIRED_CUSTOMER_GENDER, REQUIRED_CREDS, REQUIRED_CUSTOMER_CONTACT_EMAIL, REQUIRED_CUSTOMER_CONTACT_PHONE",
-                "skipIf": "- $.message.order.fulfillments[*].customer.person.name must **not** be present in the payload",
+                "skipIf": "- $.message.order.fulfillments[*].customer.person.name is not in the payload",
                 "errorCode": "",
                 "successCode": ""
             },
@@ -4443,7 +4443,7 @@
                 "group": "REQUIRED_FULFILMENT_ITEMS > REQUIRED_CUSTOMER_ITEMS",
                 "scope": "",
                 "description": "Sub-tests: REQUIRED_CUSTOMER_CREDS_ID, REQUIRED_CUSTOMER_CREDS_TYPE",
-                "skipIf": "- $.message.order.fulfillments[*].customer.person.creds[*].id must **not** be present in the payload",
+                "skipIf": "- $.message.order.fulfillments[*].customer.person.creds[*].id is not in the payload",
                 "errorCode": "",
                 "successCode": ""
             },
@@ -4503,7 +4503,7 @@
                 "group": "INIT_PAYMENT_TAGS",
                 "scope": "",
                 "description": "- All elements of $.message.order.payments[*].tags[*].descriptor.code must be in [\"ACCOUNT_DETAILS\", \"BREAKUP\"]",
-                "skipIf": "- $.message.order.payments[*].tags[*].descriptor.code must **not** be present in the payload",
+                "skipIf": "- $.message.order.payments[*].tags[*].descriptor.code is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -4533,7 +4533,7 @@
                 "group": "INIT_BAP_TERM_TAGS",
                 "scope": "",
                 "description": "- All elements of $.message.order.tags[*].descriptor.code must be in [\"BAP_TERMS\", \"BPP_TERMS\"]",
-                "skipIf": "- $.message.order.tags[*].descriptor.code must **not** be present in the payload",
+                "skipIf": "- $.message.order.tags[*].descriptor.code is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -4553,7 +4553,7 @@
         "action": "on_init",
         "codeName": "L1validations",
         "numLeafTests": 95,
-        "generated": "2026-03-10",
+        "generated": "2026-03-11",
         "rows": [
             {
                 "rowType": "group",
@@ -4711,7 +4711,7 @@
                 "group": "ON_INIT_CONTEXT > CONTEXT_ENUM",
                 "scope": "",
                 "description": "- All elements of $.context.location.country.code must be in [\"IND\"]",
-                "skipIf": "- $.context.location.country.code must **not** be present in the payload",
+                "skipIf": "- $.context.location.country.code is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -4721,7 +4721,7 @@
                 "group": "ON_INIT_CONTEXT > CONTEXT_ENUM",
                 "scope": "",
                 "description": "- All elements of $.context.domain must be in [\"ONDC:FIS12\"]",
-                "skipIf": "- $.context.domain must **not** be present in the payload",
+                "skipIf": "- $.context.domain is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -4741,7 +4741,7 @@
                 "group": "ON_INIT_CONTEXT > CONTEXT_REGEX",
                 "scope": "",
                 "description": "- All elements of $.context.location.city.code must follow every regex in [\"(\\\\*)\\|(^std\\\\:[0-9]{2,4}$)\"]",
-                "skipIf": "- $.context.location.city.code must **not** be present in the payload",
+                "skipIf": "- $.context.location.city.code is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -4751,7 +4751,7 @@
                 "group": "ON_INIT_CONTEXT > CONTEXT_REGEX",
                 "scope": "",
                 "description": "- All elements of $.context.timestamp must follow every regex in [\"^\\\\d{4}-\\\\d{2}-\\\\d{2}T\\\\d{2}:\\\\d{2}:\\\\d{2}(\\\\.\\\\d+)?(Z\\|[+-]\\\\d{2}:\\\\d{2})$\"]",
-                "skipIf": "- $.context.timestamp must **not** be present in the payload",
+                "skipIf": "- $.context.timestamp is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -4761,7 +4761,7 @@
                 "group": "ON_INIT_CONTEXT > CONTEXT_REGEX",
                 "scope": "",
                 "description": "- All elements of $.context.bap_id must follow every regex in [\"^(?!.*\\b(?:http\\|https\\|www)\\b)[a-zA-Z0-9-]+(\\.[a-zA-Z0-9-]+)+$\"]",
-                "skipIf": "- $.context.bap_id must **not** be present in the payload",
+                "skipIf": "- $.context.bap_id is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -4771,7 +4771,7 @@
                 "group": "ON_INIT_CONTEXT > CONTEXT_REGEX",
                 "scope": "",
                 "description": "- All elements of $.context.bap_uri must follow every regex in [\"^https:\\/\\/(www\\.)?[a-zA-Z0-9-]+(\\.[a-zA-Z0-9-]+)+(/)?$\"]",
-                "skipIf": "- $.context.bap_uri must **not** be present in the payload",
+                "skipIf": "- $.context.bap_uri is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -4781,7 +4781,7 @@
                 "group": "ON_INIT_CONTEXT > CONTEXT_REGEX",
                 "scope": "",
                 "description": "- All elements of $.context.ttl must follow every regex in [\"^P(?=\\\\d\\|T\\\\d)(\\\\d+Y)?(\\\\d+M)?(\\\\d+D)?(T(\\\\d+H)?(\\\\d+M)?(\\\\d+S)?)?$\"]",
-                "skipIf": "- $.context.ttl must **not** be present in the payload",
+                "skipIf": "- $.context.ttl is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -4791,7 +4791,7 @@
                 "group": "ON_INIT_CONTEXT > CONTEXT_REGEX",
                 "scope": "",
                 "description": "- All elements of $.context.bpp_id must follow every regex in [\"^(?!.*\\b(?:http\\|https\\|www)\\b)[a-zA-Z0-9-]+(\\.[a-zA-Z0-9-]+)+$\"]",
-                "skipIf": "- $.context.bpp_id must **not** be present in the payload",
+                "skipIf": "- $.context.bpp_id is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -4801,7 +4801,7 @@
                 "group": "ON_INIT_CONTEXT > CONTEXT_REGEX",
                 "scope": "",
                 "description": "- All elements of $.context.bpp_uri must follow every regex in [\"^https:\\/\\/(www\\.)?[a-zA-Z0-9-]+(\\.[a-zA-Z0-9-]+)+(/)?$\"]",
-                "skipIf": "- $.context.bpp_uri must **not** be present in the payload",
+                "skipIf": "- $.context.bpp_uri is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -4811,7 +4811,7 @@
                 "group": "",
                 "scope": "",
                 "description": "Sub-tests: ON_SELECT_PROVIDER_ID, ON_SELECT_PROVIDER_NAME, ON_SELECT_PROVIDER_IMAGES_URL, ON_SELECT_PROVIDER_IMAGES_SIZE_TYPE",
-                "skipIf": "- $.message.order.provider.id must **not** be present in the payload",
+                "skipIf": "- $.message.order.provider.id is not in the payload",
                 "errorCode": "",
                 "successCode": ""
             },
@@ -4871,7 +4871,7 @@
                 "group": "ON_SELECT_PROVIDER_TAGS",
                 "scope": "",
                 "description": "- All elements of $.message.order.provider.tags[*].descriptor.code must be in [\"CONTACT_INFO\", \"LSP_INFO\"]",
-                "skipIf": "- $.message.order.provider.tags[*].descriptor.code must **not** be present in the payload",
+                "skipIf": "- $.message.order.provider.tags[*].descriptor.code is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -4991,7 +4991,7 @@
                 "group": "ON_INIT_ITEMS > REQUIRED_ITEMS",
                 "scope": "",
                 "description": "Sub-tests: REQUIRED_XINPUT_ITEMS, VALID_XINPUT_FIELDS",
-                "skipIf": "- $.message.order.items[*].xinput.form.id must **not** be present in the payload",
+                "skipIf": "- $.message.order.items[*].xinput.form.id is not in the payload",
                 "errorCode": "",
                 "successCode": ""
             },
@@ -5011,7 +5011,7 @@
                 "group": "ON_INIT_ITEMS > REQUIRED_ITEMS > REQUIRED_XINPUT_FIELDS > REQUIRED_XINPUT_ITEMS",
                 "scope": "",
                 "description": "- $.message.order.items[*].xinput.head.descriptor.code must be present in the payload",
-                "skipIf": "- $.message.order.items[*].xinput.form_response.submission_id must be present in the payload",
+                "skipIf": "- $.message.order.items[*].xinput.form_response.submission_id is in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -5021,7 +5021,7 @@
                 "group": "ON_INIT_ITEMS > REQUIRED_ITEMS > REQUIRED_XINPUT_FIELDS > REQUIRED_XINPUT_ITEMS",
                 "scope": "",
                 "description": "- $.message.order.items[*].xinput.head.descriptor.name must be present in the payload",
-                "skipIf": "- $.message.order.items[*].xinput.form_response.submission_id must be present in the payload",
+                "skipIf": "- $.message.order.items[*].xinput.form_response.submission_id is in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -5031,7 +5031,7 @@
                 "group": "ON_INIT_ITEMS > REQUIRED_ITEMS > REQUIRED_XINPUT_FIELDS > REQUIRED_XINPUT_ITEMS",
                 "scope": "",
                 "description": "- $.message.order.items[*].xinput.head.headings[*] must be present in the payload",
-                "skipIf": "- $.message.order.items[*].xinput.form_response.submission_id must be present in the payload",
+                "skipIf": "- $.message.order.items[*].xinput.form_response.submission_id is in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -5051,7 +5051,7 @@
                 "group": "ON_INIT_ITEMS > REQUIRED_ITEMS > REQUIRED_XINPUT_FIELDS > REQUIRED_XINPUT_ITEMS",
                 "scope": "",
                 "description": "- $.message.order.items[*].xinput.form.mime_type must be present in the payload",
-                "skipIf": "- $.message.order.items[*].xinput.form_response.submission_id must be present in the payload",
+                "skipIf": "- $.message.order.items[*].xinput.form_response.submission_id is in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -5061,7 +5061,7 @@
                 "group": "ON_INIT_ITEMS > REQUIRED_ITEMS > REQUIRED_XINPUT_FIELDS > REQUIRED_XINPUT_ITEMS",
                 "scope": "",
                 "description": "Sub-tests: REQUIRED_FORM_STATUS, REQUIRED_FORM_SUBMISSION_ID",
-                "skipIf": "- $.message.order.items[*].xinput.form_response.submission_id must **not** be present in the payload",
+                "skipIf": "- $.message.order.items[*].xinput.form_response.submission_id is not in the payload",
                 "errorCode": "",
                 "successCode": ""
             },
@@ -5091,7 +5091,7 @@
                 "group": "ON_INIT_ITEMS > REQUIRED_ITEMS > REQUIRED_XINPUT_FIELDS > REQUIRED_XINPUT_ITEMS",
                 "scope": "",
                 "description": "- $.message.order.items[*].xinput.form_response.submission_id must be present in the payload",
-                "skipIf": "- $.message.order.items[*].xinput.form_response.submission_id must **not** be present in the payload",
+                "skipIf": "- $.message.order.items[*].xinput.form_response.submission_id is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -5111,7 +5111,7 @@
                 "group": "ON_INIT_ITEMS > REQUIRED_ITEMS > REQUIRED_XINPUT_FIELDS > VALID_XINPUT_FIELDS",
                 "scope": "",
                 "description": "- All elements of $.message.order.items[*].xinput.head.headings[*] must be in [\"KYC\", \"EMANDATE\", \"LOAN_AGREEMENT\", \"INDIVIDUAL_KYC\", \"ENTITY_KYC\", \"ENACH\", \"ESIGN\"]",
-                "skipIf": "- $.message.order.items[*].xinput.form_response.submission_id must be present in the payload",
+                "skipIf": "- $.message.order.items[*].xinput.form_response.submission_id is in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -5121,7 +5121,7 @@
                 "group": "",
                 "scope": "",
                 "description": "Sub-tests: REQUIRED_LOAN_INFO, REQUIRED_LOAN_OFFER",
-                "skipIf": "**All of the following must be true:** - $.message.order.items[*].tags[*].descriptor.code must **not** be present in the payload - Not all elements of $.message.order.items[*].tags[*].descriptor.code may be in [\"LOAN_INFO\", \"LOAN_OFFER\"]",
+                "skipIf": "- **All of the following must be true:** - $.message.order.items[*].tags[*].descriptor.code is not in the payload - not all elements of $.message.order.items[*].tags[*].descriptor.code are in [\"LOAN_INFO\", \"LOAN_OFFER\"]",
                 "errorCode": "",
                 "successCode": ""
             },
@@ -5191,7 +5191,7 @@
                 "group": "ON_INIT_FULFILLMENTS > REQUIRED_FULFILLMENT_ITEMS",
                 "scope": "",
                 "description": "Sub-tests: REQUIRED_CUSTOMER_CREDS_ID, REQUIRED_CUSTOMER_CREDS_TYPE",
-                "skipIf": "- $.message.order.fulfillments[*].customer.person.creds[*].id must **not** be present in the payload",
+                "skipIf": "- $.message.order.fulfillments[*].customer.person.creds[*].id is not in the payload",
                 "errorCode": "",
                 "successCode": ""
             },
@@ -5221,7 +5221,7 @@
                 "group": "ON_INIT_FULFILLMENTS > REQUIRED_FULFILLMENT_ITEMS",
                 "scope": "",
                 "description": "- $.message.order.fulfillments[*].customer.person.name must be present in the payload",
-                "skipIf": "- $.message.order.fulfillments[*].customer.person.name must **not** be present in the payload",
+                "skipIf": "- $.message.order.fulfillments[*].customer.person.name is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -5231,7 +5231,7 @@
                 "group": "ON_INIT_FULFILLMENTS > REQUIRED_FULFILLMENT_ITEMS",
                 "scope": "",
                 "description": "Sub-tests: REQUIRED_CUSTOMER_CONTACT_NUMBER, REQUIRED_CUSTOMER_CONTACT_EMAIL",
-                "skipIf": "- $.message.order.fulfillments[*].customer.contact.phone must **not** be present in the payload",
+                "skipIf": "- $.message.order.fulfillments[*].customer.contact.phone is not in the payload",
                 "errorCode": "",
                 "successCode": ""
             },
@@ -5261,7 +5261,7 @@
                 "group": "ON_INIT_FULFILLMENTS > REQUIRED_FULFILLMENT_ITEMS",
                 "scope": "",
                 "description": "Sub-tests: REQUIRED_ORG_ADDRESS, REQUIRED_ORG_STATE, REQUIRED_ORG_CITY, REQUIRED_ORG_CODE, REQUIRED_ORG_CONTACT_PHONE, REQUIRED_ORG_CONTACT_EMAIL",
-                "skipIf": "- $.message.order.fulfillments[*].customer.organization.address must **not** be present in the payload",
+                "skipIf": "- $.message.order.fulfillments[*].customer.organization.address is not in the payload",
                 "errorCode": "",
                 "successCode": ""
             },
@@ -5351,7 +5351,7 @@
                 "group": "ON_INIT_FULFILLMENTS > VALID_FULFILLMENT_ITEMS",
                 "scope": "",
                 "description": "- All elements of $.message.order.fulfillments[*].type must be in [\"ONLINE\", \"SEMI_ONLINE\"]",
-                "skipIf": "- $.message.order.fulfillments[*].type must **not** be present in the payload",
+                "skipIf": "- $.message.order.fulfillments[*].type is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -5361,7 +5361,7 @@
                 "group": "ON_INIT_FULFILLMENTS > VALID_FULFILLMENT_ITEMS",
                 "scope": "",
                 "description": "- All elements of $.message.order.fulfillments[*].state.descriptor.code must be in [\"INITIATED\", \"SANCTIONED\", \"DISBURSED\"]",
-                "skipIf": "- $.message.order.fulfillments[*].state.descriptor.code must **not** be present in the payload",
+                "skipIf": "- $.message.order.fulfillments[*].state.descriptor.code is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -5381,7 +5381,7 @@
                 "group": "ON_INIT_FULFILLMENTS > VALID_FULFILLMENT_TAGS",
                 "scope": "",
                 "description": "- All elements of $.message.order.fulfillments[*].tags[*].descriptor.code must be in [\"CHECKLISTS\"]",
-                "skipIf": "- $.message.order.fulfillments[*].tags[*].descriptor.code must **not** be present in the payload",
+                "skipIf": "- $.message.order.fulfillments[*].tags[*].descriptor.code is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -5401,7 +5401,7 @@
                 "group": "",
                 "scope": "",
                 "description": "Sub-tests: REQUIRED_COMMON_QUOTE_ITEMS, VALID_COMMON_QUOTE_ITEMS",
-                "skipIf": "- $.message.order.quote.id must **not** be present in the payload",
+                "skipIf": "- $.message.order.quote.id is not in the payload",
                 "errorCode": "",
                 "successCode": ""
             },
@@ -5571,7 +5571,7 @@
                 "group": "ON_INIT_PAYMENTS > REQUIRED_PAYMENT_ITEMS",
                 "scope": "",
                 "description": "- $.message.order.payments[*].collected_by must be present in the payload",
-                "skipIf": "- Not all elements of $.message.order.payments[*].time.label may be in [\"LOAN_DISBURSMENT\"]",
+                "skipIf": "- not all elements of $.message.order.payments[*].time.label are in [\"LOAN_DISBURSMENT\"]",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -5581,7 +5581,7 @@
                 "group": "ON_INIT_PAYMENTS > REQUIRED_PAYMENT_ITEMS",
                 "scope": "",
                 "description": "- $.message.order.payments[*].params.bank_account_number must be present in the payload",
-                "skipIf": "- Not all elements of $.message.order.payments[*].time.label may be in [\"LOAN_DISBURSMENT\"]",
+                "skipIf": "- not all elements of $.message.order.payments[*].time.label are in [\"LOAN_DISBURSMENT\"]",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -5591,7 +5591,7 @@
                 "group": "ON_INIT_PAYMENTS > REQUIRED_PAYMENT_ITEMS",
                 "scope": "",
                 "description": "- $.message.order.payments[*].params.bank_code must be present in the payload",
-                "skipIf": "- Not all elements of $.message.order.payments[*].time.label may be in [\"LOAN_DISBURSMENT\"]",
+                "skipIf": "- not all elements of $.message.order.payments[*].time.label are in [\"LOAN_DISBURSMENT\"]",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -5611,7 +5611,7 @@
                 "group": "ON_INIT_PAYMENTS > REQUIRED_PAYMENT_ITEMS",
                 "scope": "",
                 "description": "Sub-tests: REQUIRED_TRANSACTION_ID, REQUIRED_PAYMENTS_AMOUNT, REQUIRED_PAYMENTS_CURRENCY",
-                "skipIf": "- Not all elements of $.message.order.payments[*].status may be in [\"PAID\"]",
+                "skipIf": "- not all elements of $.message.order.payments[*].status are in [\"PAID\"]",
                 "errorCode": "",
                 "successCode": ""
             },
@@ -5651,7 +5651,7 @@
                 "group": "ON_INIT_PAYMENTS > REQUIRED_PAYMENT_ITEMS",
                 "scope": "",
                 "description": "Sub-tests: REQUIRED_TIME_DURATION",
-                "skipIf": "- $.message.order.payments[*].url must **not** be present in the payload",
+                "skipIf": "- $.message.order.payments[*].url is not in the payload",
                 "errorCode": "",
                 "successCode": ""
             },
@@ -5671,7 +5671,7 @@
                 "group": "ON_INIT_PAYMENTS > REQUIRED_PAYMENT_ITEMS",
                 "scope": "",
                 "description": "Sub-tests: REQUIRED_TIME_START_RANGE, REQUIRED_TIME_END_RANGE",
-                "skipIf": "- Not all elements of $.message.order.payments[*].time.label may be in [\"INSTALLMENT\"]",
+                "skipIf": "- not all elements of $.message.order.payments[*].time.label are in [\"INSTALLMENT\"]",
                 "errorCode": "",
                 "successCode": ""
             },
@@ -5711,7 +5711,7 @@
                 "group": "ON_INIT_PAYMENT_TAGS",
                 "scope": "",
                 "description": "- All elements of $.message.order.payments[*].tags[*].descriptor.code must be in [\"ACCOUNT_DETAILS\", \"BREAKUP\"]",
-                "skipIf": "- $.message.order.payments[*].tags[*].descriptor.code must **not** be present in the payload",
+                "skipIf": "- $.message.order.payments[*].tags[*].descriptor.code is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -5751,7 +5751,7 @@
                 "group": "ON_INIT_CANCELLATION_TERMS",
                 "scope": "",
                 "description": "Sub-tests: REQUIRED_EXTERNAL_REF_MIME_TYPE, REQUIRED_EXTERNAL_REF_URL",
-                "skipIf": "- $.message.order.cancellation_terms[*].external_ref.mimetype must **not** be present in the payload",
+                "skipIf": "- $.message.order.cancellation_terms[*].external_ref.mimetype is not in the payload",
                 "errorCode": "",
                 "successCode": ""
             },
@@ -5781,7 +5781,7 @@
                 "group": "ON_INIT_CANCELLATION_TERMS",
                 "scope": "",
                 "description": "Sub-tests: REQUIRED_FULFILLMENT_STATE_CODE, REQUIRED_CANCELLATION_FEE",
-                "skipIf": "- $.message.order.cancellation_terms[*].fulfillment_state.descriptor.code must **not** be present in the payload",
+                "skipIf": "- $.message.order.cancellation_terms[*].fulfillment_state.descriptor.code is not in the payload",
                 "errorCode": "",
                 "successCode": ""
             },
@@ -5821,7 +5821,7 @@
                 "group": "ON_INIT_TAGS",
                 "scope": "",
                 "description": "- All elements of $.message.order.tags[*].descriptor.code must be in [\"BAP_TERMS\", \"BPP_TERMS\"]",
-                "skipIf": "- $.message.order.tags[*].descriptor.code must **not** be present in the payload",
+                "skipIf": "- $.message.order.tags[*].descriptor.code is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -5841,7 +5841,7 @@
         "action": "confirm",
         "codeName": "L1validations",
         "numLeafTests": 36,
-        "generated": "2026-03-10",
+        "generated": "2026-03-11",
         "rows": [
             {
                 "rowType": "group",
@@ -5999,7 +5999,7 @@
                 "group": "CONFIRM_CONTEXT > CONTEXT_ENUM",
                 "scope": "",
                 "description": "- All elements of $.context.location.country.code must be in [\"IND\"]",
-                "skipIf": "- $.context.location.country.code must **not** be present in the payload",
+                "skipIf": "- $.context.location.country.code is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -6009,7 +6009,7 @@
                 "group": "CONFIRM_CONTEXT > CONTEXT_ENUM",
                 "scope": "",
                 "description": "- All elements of $.context.domain must be in [\"ONDC:FIS12\"]",
-                "skipIf": "- $.context.domain must **not** be present in the payload",
+                "skipIf": "- $.context.domain is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -6029,7 +6029,7 @@
                 "group": "CONFIRM_CONTEXT > CONTEXT_REGEX",
                 "scope": "",
                 "description": "- All elements of $.context.location.city.code must follow every regex in [\"(\\\\*)\\|(^std\\\\:[0-9]{2,4}$)\"]",
-                "skipIf": "- $.context.location.city.code must **not** be present in the payload",
+                "skipIf": "- $.context.location.city.code is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -6039,7 +6039,7 @@
                 "group": "CONFIRM_CONTEXT > CONTEXT_REGEX",
                 "scope": "",
                 "description": "- All elements of $.context.timestamp must follow every regex in [\"^\\\\d{4}-\\\\d{2}-\\\\d{2}T\\\\d{2}:\\\\d{2}:\\\\d{2}(\\\\.\\\\d+)?(Z\\|[+-]\\\\d{2}:\\\\d{2})$\"]",
-                "skipIf": "- $.context.timestamp must **not** be present in the payload",
+                "skipIf": "- $.context.timestamp is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -6049,7 +6049,7 @@
                 "group": "CONFIRM_CONTEXT > CONTEXT_REGEX",
                 "scope": "",
                 "description": "- All elements of $.context.bap_id must follow every regex in [\"^(?!.*\\b(?:http\\|https\\|www)\\b)[a-zA-Z0-9-]+(\\.[a-zA-Z0-9-]+)+$\"]",
-                "skipIf": "- $.context.bap_id must **not** be present in the payload",
+                "skipIf": "- $.context.bap_id is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -6059,7 +6059,7 @@
                 "group": "CONFIRM_CONTEXT > CONTEXT_REGEX",
                 "scope": "",
                 "description": "- All elements of $.context.bap_uri must follow every regex in [\"^https:\\/\\/(www\\.)?[a-zA-Z0-9-]+(\\.[a-zA-Z0-9-]+)+(/)?$\"]",
-                "skipIf": "- $.context.bap_uri must **not** be present in the payload",
+                "skipIf": "- $.context.bap_uri is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -6069,7 +6069,7 @@
                 "group": "CONFIRM_CONTEXT > CONTEXT_REGEX",
                 "scope": "",
                 "description": "- All elements of $.context.ttl must follow every regex in [\"^P(?=\\\\d\\|T\\\\d)(\\\\d+Y)?(\\\\d+M)?(\\\\d+D)?(T(\\\\d+H)?(\\\\d+M)?(\\\\d+S)?)?$\"]",
-                "skipIf": "- $.context.ttl must **not** be present in the payload",
+                "skipIf": "- $.context.ttl is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -6079,7 +6079,7 @@
                 "group": "CONFIRM_CONTEXT > CONTEXT_REGEX",
                 "scope": "",
                 "description": "- All elements of $.context.bpp_id must follow every regex in [\"^(?!.*\\b(?:http\\|https\\|www)\\b)[a-zA-Z0-9-]+(\\.[a-zA-Z0-9-]+)+$\"]",
-                "skipIf": "- $.context.bpp_id must **not** be present in the payload",
+                "skipIf": "- $.context.bpp_id is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -6089,7 +6089,7 @@
                 "group": "CONFIRM_CONTEXT > CONTEXT_REGEX",
                 "scope": "",
                 "description": "- All elements of $.context.bpp_uri must follow every regex in [\"^https:\\/\\/(www\\.)?[a-zA-Z0-9-]+(\\.[a-zA-Z0-9-]+)+(/)?$\"]",
-                "skipIf": "- $.context.bpp_uri must **not** be present in the payload",
+                "skipIf": "- $.context.bpp_uri is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -6189,7 +6189,7 @@
                 "group": "CONFIRM_PAYMENTS > REQUIRED_PAYMENT_ITEMS",
                 "scope": "",
                 "description": "- $.message.order.payments[*].collected_by must be present in the payload",
-                "skipIf": "- Not all elements of $.message.order.payments[*].time.label may be in [\"LOAN_DISBURSMENT\"]",
+                "skipIf": "- not all elements of $.message.order.payments[*].time.label are in [\"LOAN_DISBURSMENT\"]",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -6199,7 +6199,7 @@
                 "group": "CONFIRM_PAYMENTS > REQUIRED_PAYMENT_ITEMS",
                 "scope": "",
                 "description": "- $.message.order.payments[*].params.bank_account_number must be present in the payload",
-                "skipIf": "- Not all elements of $.message.order.payments[*].time.label may be in [\"LOAN_DISBURSMENT\"]",
+                "skipIf": "- not all elements of $.message.order.payments[*].time.label are in [\"LOAN_DISBURSMENT\"]",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -6209,7 +6209,7 @@
                 "group": "CONFIRM_PAYMENTS > REQUIRED_PAYMENT_ITEMS",
                 "scope": "",
                 "description": "- $.message.order.payments[*].params.bank_code must be present in the payload",
-                "skipIf": "- Not all elements of $.message.order.payments[*].time.label may be in [\"LOAN_DISBURSMENT\"]",
+                "skipIf": "- not all elements of $.message.order.payments[*].time.label are in [\"LOAN_DISBURSMENT\"]",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -6239,7 +6239,7 @@
                 "group": "CONFIRM_PAYMENT_TAGS",
                 "scope": "",
                 "description": "- All elements of $.message.order.payments[*].tags[*].descriptor.code must be in [\"ACCOUNT_DETAILS\", \"BREAKUP\"]",
-                "skipIf": "- $.message.order.payments[*].tags[*].descriptor.code must **not** be present in the payload",
+                "skipIf": "- $.message.order.payments[*].tags[*].descriptor.code is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -6269,7 +6269,7 @@
                 "group": "CONFIRM_TAGS",
                 "scope": "",
                 "description": "- All elements of $.message.order.tags[*].descriptor.code must be in [\"BAP_TERMS\", \"BPP_TERMS\"]",
-                "skipIf": "- $.message.order.tags[*].descriptor.code must **not** be present in the payload",
+                "skipIf": "- $.message.order.tags[*].descriptor.code is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -6299,7 +6299,7 @@
         "action": "on_confirm",
         "codeName": "L1validations",
         "numLeafTests": 109,
-        "generated": "2026-03-10",
+        "generated": "2026-03-11",
         "rows": [
             {
                 "rowType": "group",
@@ -6457,7 +6457,7 @@
                 "group": "ON_CONFIRM_CONTEXT > CONTEXT_ENUM",
                 "scope": "",
                 "description": "- All elements of $.context.location.country.code must be in [\"IND\"]",
-                "skipIf": "- $.context.location.country.code must **not** be present in the payload",
+                "skipIf": "- $.context.location.country.code is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -6467,7 +6467,7 @@
                 "group": "ON_CONFIRM_CONTEXT > CONTEXT_ENUM",
                 "scope": "",
                 "description": "- All elements of $.context.domain must be in [\"ONDC:FIS12\"]",
-                "skipIf": "- $.context.domain must **not** be present in the payload",
+                "skipIf": "- $.context.domain is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -6487,7 +6487,7 @@
                 "group": "ON_CONFIRM_CONTEXT > CONTEXT_REGEX",
                 "scope": "",
                 "description": "- All elements of $.context.location.city.code must follow every regex in [\"(\\\\*)\\|(^std\\\\:[0-9]{2,4}$)\"]",
-                "skipIf": "- $.context.location.city.code must **not** be present in the payload",
+                "skipIf": "- $.context.location.city.code is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -6497,7 +6497,7 @@
                 "group": "ON_CONFIRM_CONTEXT > CONTEXT_REGEX",
                 "scope": "",
                 "description": "- All elements of $.context.timestamp must follow every regex in [\"^\\\\d{4}-\\\\d{2}-\\\\d{2}T\\\\d{2}:\\\\d{2}:\\\\d{2}(\\\\.\\\\d+)?(Z\\|[+-]\\\\d{2}:\\\\d{2})$\"]",
-                "skipIf": "- $.context.timestamp must **not** be present in the payload",
+                "skipIf": "- $.context.timestamp is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -6507,7 +6507,7 @@
                 "group": "ON_CONFIRM_CONTEXT > CONTEXT_REGEX",
                 "scope": "",
                 "description": "- All elements of $.context.bap_id must follow every regex in [\"^(?!.*\\b(?:http\\|https\\|www)\\b)[a-zA-Z0-9-]+(\\.[a-zA-Z0-9-]+)+$\"]",
-                "skipIf": "- $.context.bap_id must **not** be present in the payload",
+                "skipIf": "- $.context.bap_id is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -6517,7 +6517,7 @@
                 "group": "ON_CONFIRM_CONTEXT > CONTEXT_REGEX",
                 "scope": "",
                 "description": "- All elements of $.context.bap_uri must follow every regex in [\"^https:\\/\\/(www\\.)?[a-zA-Z0-9-]+(\\.[a-zA-Z0-9-]+)+(/)?$\"]",
-                "skipIf": "- $.context.bap_uri must **not** be present in the payload",
+                "skipIf": "- $.context.bap_uri is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -6527,7 +6527,7 @@
                 "group": "ON_CONFIRM_CONTEXT > CONTEXT_REGEX",
                 "scope": "",
                 "description": "- All elements of $.context.ttl must follow every regex in [\"^P(?=\\\\d\\|T\\\\d)(\\\\d+Y)?(\\\\d+M)?(\\\\d+D)?(T(\\\\d+H)?(\\\\d+M)?(\\\\d+S)?)?$\"]",
-                "skipIf": "- $.context.ttl must **not** be present in the payload",
+                "skipIf": "- $.context.ttl is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -6537,7 +6537,7 @@
                 "group": "ON_CONFIRM_CONTEXT > CONTEXT_REGEX",
                 "scope": "",
                 "description": "- All elements of $.context.bpp_id must follow every regex in [\"^(?!.*\\b(?:http\\|https\\|www)\\b)[a-zA-Z0-9-]+(\\.[a-zA-Z0-9-]+)+$\"]",
-                "skipIf": "- $.context.bpp_id must **not** be present in the payload",
+                "skipIf": "- $.context.bpp_id is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -6547,7 +6547,7 @@
                 "group": "ON_CONFIRM_CONTEXT > CONTEXT_REGEX",
                 "scope": "",
                 "description": "- All elements of $.context.bpp_uri must follow every regex in [\"^https:\\/\\/(www\\.)?[a-zA-Z0-9-]+(\\.[a-zA-Z0-9-]+)+(/)?$\"]",
-                "skipIf": "- $.context.bpp_uri must **not** be present in the payload",
+                "skipIf": "- $.context.bpp_uri is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -6667,7 +6667,7 @@
                 "group": "",
                 "scope": "",
                 "description": "Sub-tests: ON_SELECT_PROVIDER_ID, ON_SELECT_PROVIDER_NAME, ON_SELECT_PROVIDER_IMAGES_URL, ON_SELECT_PROVIDER_IMAGES_SIZE_TYPE",
-                "skipIf": "- $.message.order.provider.id must **not** be present in the payload",
+                "skipIf": "- $.message.order.provider.id is not in the payload",
                 "errorCode": "",
                 "successCode": ""
             },
@@ -6727,7 +6727,7 @@
                 "group": "ON_SELECT_PROVIDER_TAGS",
                 "scope": "",
                 "description": "- All elements of $.message.order.provider.tags[*].descriptor.code must be in [\"CONTACT_INFO\", \"LSP_INFO\"]",
-                "skipIf": "- $.message.order.provider.tags[*].descriptor.code must **not** be present in the payload",
+                "skipIf": "- $.message.order.provider.tags[*].descriptor.code is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -6847,7 +6847,7 @@
                 "group": "ON_INIT_ITEMS > REQUIRED_ITEMS",
                 "scope": "",
                 "description": "Sub-tests: REQUIRED_XINPUT_ITEMS, VALID_XINPUT_FIELDS",
-                "skipIf": "- $.message.order.items[*].xinput.form.id must **not** be present in the payload",
+                "skipIf": "- $.message.order.items[*].xinput.form.id is not in the payload",
                 "errorCode": "",
                 "successCode": ""
             },
@@ -6867,7 +6867,7 @@
                 "group": "ON_INIT_ITEMS > REQUIRED_ITEMS > REQUIRED_XINPUT_FIELDS > REQUIRED_XINPUT_ITEMS",
                 "scope": "",
                 "description": "- $.message.order.items[*].xinput.head.descriptor.code must be present in the payload",
-                "skipIf": "- $.message.order.items[*].xinput.form_response.submission_id must be present in the payload",
+                "skipIf": "- $.message.order.items[*].xinput.form_response.submission_id is in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -6877,7 +6877,7 @@
                 "group": "ON_INIT_ITEMS > REQUIRED_ITEMS > REQUIRED_XINPUT_FIELDS > REQUIRED_XINPUT_ITEMS",
                 "scope": "",
                 "description": "- $.message.order.items[*].xinput.head.descriptor.name must be present in the payload",
-                "skipIf": "- $.message.order.items[*].xinput.form_response.submission_id must be present in the payload",
+                "skipIf": "- $.message.order.items[*].xinput.form_response.submission_id is in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -6887,7 +6887,7 @@
                 "group": "ON_INIT_ITEMS > REQUIRED_ITEMS > REQUIRED_XINPUT_FIELDS > REQUIRED_XINPUT_ITEMS",
                 "scope": "",
                 "description": "- $.message.order.items[*].xinput.head.headings[*] must be present in the payload",
-                "skipIf": "- $.message.order.items[*].xinput.form_response.submission_id must be present in the payload",
+                "skipIf": "- $.message.order.items[*].xinput.form_response.submission_id is in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -6907,7 +6907,7 @@
                 "group": "ON_INIT_ITEMS > REQUIRED_ITEMS > REQUIRED_XINPUT_FIELDS > REQUIRED_XINPUT_ITEMS",
                 "scope": "",
                 "description": "- $.message.order.items[*].xinput.form.mime_type must be present in the payload",
-                "skipIf": "- $.message.order.items[*].xinput.form_response.submission_id must be present in the payload",
+                "skipIf": "- $.message.order.items[*].xinput.form_response.submission_id is in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -6917,7 +6917,7 @@
                 "group": "ON_INIT_ITEMS > REQUIRED_ITEMS > REQUIRED_XINPUT_FIELDS > REQUIRED_XINPUT_ITEMS",
                 "scope": "",
                 "description": "Sub-tests: REQUIRED_FORM_STATUS, REQUIRED_FORM_SUBMISSION_ID",
-                "skipIf": "- $.message.order.items[*].xinput.form_response.submission_id must **not** be present in the payload",
+                "skipIf": "- $.message.order.items[*].xinput.form_response.submission_id is not in the payload",
                 "errorCode": "",
                 "successCode": ""
             },
@@ -6947,7 +6947,7 @@
                 "group": "ON_INIT_ITEMS > REQUIRED_ITEMS > REQUIRED_XINPUT_FIELDS > REQUIRED_XINPUT_ITEMS",
                 "scope": "",
                 "description": "- $.message.order.items[*].xinput.form_response.submission_id must be present in the payload",
-                "skipIf": "- $.message.order.items[*].xinput.form_response.submission_id must **not** be present in the payload",
+                "skipIf": "- $.message.order.items[*].xinput.form_response.submission_id is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -6967,7 +6967,7 @@
                 "group": "ON_INIT_ITEMS > REQUIRED_ITEMS > REQUIRED_XINPUT_FIELDS > VALID_XINPUT_FIELDS",
                 "scope": "",
                 "description": "- All elements of $.message.order.items[*].xinput.head.headings[*] must be in [\"KYC\", \"EMANDATE\", \"LOAN_AGREEMENT\", \"INDIVIDUAL_KYC\", \"ENTITY_KYC\", \"ENACH\", \"ESIGN\"]",
-                "skipIf": "- $.message.order.items[*].xinput.form_response.submission_id must be present in the payload",
+                "skipIf": "- $.message.order.items[*].xinput.form_response.submission_id is in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -6977,7 +6977,7 @@
                 "group": "",
                 "scope": "",
                 "description": "Sub-tests: REQUIRED_LOAN_INFO, REQUIRED_LOAN_OFFER",
-                "skipIf": "**All of the following must be true:** - $.message.order.items[*].tags[*].descriptor.code must **not** be present in the payload - Not all elements of $.message.order.items[*].tags[*].descriptor.code may be in [\"LOAN_INFO\", \"LOAN_OFFER\"]",
+                "skipIf": "- **All of the following must be true:** - $.message.order.items[*].tags[*].descriptor.code is not in the payload - not all elements of $.message.order.items[*].tags[*].descriptor.code are in [\"LOAN_INFO\", \"LOAN_OFFER\"]",
                 "errorCode": "",
                 "successCode": ""
             },
@@ -7047,7 +7047,7 @@
                 "group": "ON_INIT_FULFILLMENTS > REQUIRED_FULFILLMENT_ITEMS",
                 "scope": "",
                 "description": "Sub-tests: REQUIRED_CUSTOMER_CREDS_ID, REQUIRED_CUSTOMER_CREDS_TYPE",
-                "skipIf": "- $.message.order.fulfillments[*].customer.person.creds[*].id must **not** be present in the payload",
+                "skipIf": "- $.message.order.fulfillments[*].customer.person.creds[*].id is not in the payload",
                 "errorCode": "",
                 "successCode": ""
             },
@@ -7077,7 +7077,7 @@
                 "group": "ON_INIT_FULFILLMENTS > REQUIRED_FULFILLMENT_ITEMS",
                 "scope": "",
                 "description": "- $.message.order.fulfillments[*].customer.person.name must be present in the payload",
-                "skipIf": "- $.message.order.fulfillments[*].customer.person.name must **not** be present in the payload",
+                "skipIf": "- $.message.order.fulfillments[*].customer.person.name is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -7087,7 +7087,7 @@
                 "group": "ON_INIT_FULFILLMENTS > REQUIRED_FULFILLMENT_ITEMS",
                 "scope": "",
                 "description": "Sub-tests: REQUIRED_CUSTOMER_CONTACT_NUMBER, REQUIRED_CUSTOMER_CONTACT_EMAIL",
-                "skipIf": "- $.message.order.fulfillments[*].customer.contact.phone must **not** be present in the payload",
+                "skipIf": "- $.message.order.fulfillments[*].customer.contact.phone is not in the payload",
                 "errorCode": "",
                 "successCode": ""
             },
@@ -7117,7 +7117,7 @@
                 "group": "ON_INIT_FULFILLMENTS > REQUIRED_FULFILLMENT_ITEMS",
                 "scope": "",
                 "description": "Sub-tests: REQUIRED_ORG_ADDRESS, REQUIRED_ORG_STATE, REQUIRED_ORG_CITY, REQUIRED_ORG_CODE, REQUIRED_ORG_CONTACT_PHONE, REQUIRED_ORG_CONTACT_EMAIL",
-                "skipIf": "- $.message.order.fulfillments[*].customer.organization.address must **not** be present in the payload",
+                "skipIf": "- $.message.order.fulfillments[*].customer.organization.address is not in the payload",
                 "errorCode": "",
                 "successCode": ""
             },
@@ -7207,7 +7207,7 @@
                 "group": "ON_INIT_FULFILLMENTS > VALID_FULFILLMENT_ITEMS",
                 "scope": "",
                 "description": "- All elements of $.message.order.fulfillments[*].type must be in [\"ONLINE\", \"SEMI_ONLINE\"]",
-                "skipIf": "- $.message.order.fulfillments[*].type must **not** be present in the payload",
+                "skipIf": "- $.message.order.fulfillments[*].type is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -7217,7 +7217,7 @@
                 "group": "ON_INIT_FULFILLMENTS > VALID_FULFILLMENT_ITEMS",
                 "scope": "",
                 "description": "- All elements of $.message.order.fulfillments[*].state.descriptor.code must be in [\"INITIATED\", \"SANCTIONED\", \"DISBURSED\"]",
-                "skipIf": "- $.message.order.fulfillments[*].state.descriptor.code must **not** be present in the payload",
+                "skipIf": "- $.message.order.fulfillments[*].state.descriptor.code is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -7237,7 +7237,7 @@
                 "group": "ON_INIT_FULFILLMENTS > VALID_FULFILLMENT_TAGS",
                 "scope": "",
                 "description": "- All elements of $.message.order.fulfillments[*].tags[*].descriptor.code must be in [\"CHECKLISTS\"]",
-                "skipIf": "- $.message.order.fulfillments[*].tags[*].descriptor.code must **not** be present in the payload",
+                "skipIf": "- $.message.order.fulfillments[*].tags[*].descriptor.code is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -7257,7 +7257,7 @@
                 "group": "",
                 "scope": "",
                 "description": "Sub-tests: REQUIRED_COMMON_QUOTE_ITEMS, VALID_COMMON_QUOTE_ITEMS",
-                "skipIf": "- $.message.order.quote.id must **not** be present in the payload",
+                "skipIf": "- $.message.order.quote.id is not in the payload",
                 "errorCode": "",
                 "successCode": ""
             },
@@ -7427,7 +7427,7 @@
                 "group": "ON_INIT_PAYMENTS > REQUIRED_PAYMENT_ITEMS",
                 "scope": "",
                 "description": "- $.message.order.payments[*].collected_by must be present in the payload",
-                "skipIf": "- Not all elements of $.message.order.payments[*].time.label may be in [\"LOAN_DISBURSMENT\"]",
+                "skipIf": "- not all elements of $.message.order.payments[*].time.label are in [\"LOAN_DISBURSMENT\"]",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -7437,7 +7437,7 @@
                 "group": "ON_INIT_PAYMENTS > REQUIRED_PAYMENT_ITEMS",
                 "scope": "",
                 "description": "- $.message.order.payments[*].params.bank_account_number must be present in the payload",
-                "skipIf": "- Not all elements of $.message.order.payments[*].time.label may be in [\"LOAN_DISBURSMENT\"]",
+                "skipIf": "- not all elements of $.message.order.payments[*].time.label are in [\"LOAN_DISBURSMENT\"]",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -7447,7 +7447,7 @@
                 "group": "ON_INIT_PAYMENTS > REQUIRED_PAYMENT_ITEMS",
                 "scope": "",
                 "description": "- $.message.order.payments[*].params.bank_code must be present in the payload",
-                "skipIf": "- Not all elements of $.message.order.payments[*].time.label may be in [\"LOAN_DISBURSMENT\"]",
+                "skipIf": "- not all elements of $.message.order.payments[*].time.label are in [\"LOAN_DISBURSMENT\"]",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -7467,7 +7467,7 @@
                 "group": "ON_INIT_PAYMENTS > REQUIRED_PAYMENT_ITEMS",
                 "scope": "",
                 "description": "Sub-tests: REQUIRED_TRANSACTION_ID, REQUIRED_PAYMENTS_AMOUNT, REQUIRED_PAYMENTS_CURRENCY",
-                "skipIf": "- Not all elements of $.message.order.payments[*].status may be in [\"PAID\"]",
+                "skipIf": "- not all elements of $.message.order.payments[*].status are in [\"PAID\"]",
                 "errorCode": "",
                 "successCode": ""
             },
@@ -7507,7 +7507,7 @@
                 "group": "ON_INIT_PAYMENTS > REQUIRED_PAYMENT_ITEMS",
                 "scope": "",
                 "description": "Sub-tests: REQUIRED_TIME_DURATION",
-                "skipIf": "- $.message.order.payments[*].url must **not** be present in the payload",
+                "skipIf": "- $.message.order.payments[*].url is not in the payload",
                 "errorCode": "",
                 "successCode": ""
             },
@@ -7527,7 +7527,7 @@
                 "group": "ON_INIT_PAYMENTS > REQUIRED_PAYMENT_ITEMS",
                 "scope": "",
                 "description": "Sub-tests: REQUIRED_TIME_START_RANGE, REQUIRED_TIME_END_RANGE",
-                "skipIf": "- Not all elements of $.message.order.payments[*].time.label may be in [\"INSTALLMENT\"]",
+                "skipIf": "- not all elements of $.message.order.payments[*].time.label are in [\"INSTALLMENT\"]",
                 "errorCode": "",
                 "successCode": ""
             },
@@ -7567,7 +7567,7 @@
                 "group": "ON_INIT_PAYMENT_TAGS",
                 "scope": "",
                 "description": "- All elements of $.message.order.payments[*].tags[*].descriptor.code must be in [\"ACCOUNT_DETAILS\", \"BREAKUP\"]",
-                "skipIf": "- $.message.order.payments[*].tags[*].descriptor.code must **not** be present in the payload",
+                "skipIf": "- $.message.order.payments[*].tags[*].descriptor.code is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -7607,7 +7607,7 @@
                 "group": "ON_INIT_CANCELLATION_TERMS",
                 "scope": "",
                 "description": "Sub-tests: REQUIRED_EXTERNAL_REF_MIME_TYPE, REQUIRED_EXTERNAL_REF_URL",
-                "skipIf": "- $.message.order.cancellation_terms[*].external_ref.mimetype must **not** be present in the payload",
+                "skipIf": "- $.message.order.cancellation_terms[*].external_ref.mimetype is not in the payload",
                 "errorCode": "",
                 "successCode": ""
             },
@@ -7637,7 +7637,7 @@
                 "group": "ON_INIT_CANCELLATION_TERMS",
                 "scope": "",
                 "description": "Sub-tests: REQUIRED_FULFILLMENT_STATE_CODE, REQUIRED_CANCELLATION_FEE",
-                "skipIf": "- $.message.order.cancellation_terms[*].fulfillment_state.descriptor.code must **not** be present in the payload",
+                "skipIf": "- $.message.order.cancellation_terms[*].fulfillment_state.descriptor.code is not in the payload",
                 "errorCode": "",
                 "successCode": ""
             },
@@ -7677,7 +7677,7 @@
                 "group": "CONFIRM_TAGS",
                 "scope": "",
                 "description": "- All elements of $.message.order.tags[*].descriptor.code must be in [\"BAP_TERMS\", \"BPP_TERMS\"]",
-                "skipIf": "- $.message.order.tags[*].descriptor.code must **not** be present in the payload",
+                "skipIf": "- $.message.order.tags[*].descriptor.code is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -7767,7 +7767,7 @@
         "action": "update",
         "codeName": "L1validations",
         "numLeafTests": 27,
-        "generated": "2026-03-10",
+        "generated": "2026-03-11",
         "rows": [
             {
                 "rowType": "group",
@@ -7925,7 +7925,7 @@
                 "group": "UPDATE_CONTEXT > CONTEXT_ENUM",
                 "scope": "",
                 "description": "- All elements of $.context.location.country.code must be in [\"IND\"]",
-                "skipIf": "- $.context.location.country.code must **not** be present in the payload",
+                "skipIf": "- $.context.location.country.code is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -7935,7 +7935,7 @@
                 "group": "UPDATE_CONTEXT > CONTEXT_ENUM",
                 "scope": "",
                 "description": "- All elements of $.context.domain must be in [\"ONDC:FIS12\"]",
-                "skipIf": "- $.context.domain must **not** be present in the payload",
+                "skipIf": "- $.context.domain is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -7955,7 +7955,7 @@
                 "group": "UPDATE_CONTEXT > CONTEXT_REGEX",
                 "scope": "",
                 "description": "- All elements of $.context.location.city.code must follow every regex in [\"(\\\\*)\\|(^std\\\\:[0-9]{2,4}$)\"]",
-                "skipIf": "- $.context.location.city.code must **not** be present in the payload",
+                "skipIf": "- $.context.location.city.code is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -7965,7 +7965,7 @@
                 "group": "UPDATE_CONTEXT > CONTEXT_REGEX",
                 "scope": "",
                 "description": "- All elements of $.context.timestamp must follow every regex in [\"^\\\\d{4}-\\\\d{2}-\\\\d{2}T\\\\d{2}:\\\\d{2}:\\\\d{2}(\\\\.\\\\d+)?(Z\\|[+-]\\\\d{2}:\\\\d{2})$\"]",
-                "skipIf": "- $.context.timestamp must **not** be present in the payload",
+                "skipIf": "- $.context.timestamp is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -7975,7 +7975,7 @@
                 "group": "UPDATE_CONTEXT > CONTEXT_REGEX",
                 "scope": "",
                 "description": "- All elements of $.context.bap_id must follow every regex in [\"^(?!.*\\b(?:http\\|https\\|www)\\b)[a-zA-Z0-9-]+(\\.[a-zA-Z0-9-]+)+$\"]",
-                "skipIf": "- $.context.bap_id must **not** be present in the payload",
+                "skipIf": "- $.context.bap_id is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -7985,7 +7985,7 @@
                 "group": "UPDATE_CONTEXT > CONTEXT_REGEX",
                 "scope": "",
                 "description": "- All elements of $.context.bap_uri must follow every regex in [\"^https:\\/\\/(www\\.)?[a-zA-Z0-9-]+(\\.[a-zA-Z0-9-]+)+(/)?$\"]",
-                "skipIf": "- $.context.bap_uri must **not** be present in the payload",
+                "skipIf": "- $.context.bap_uri is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -7995,7 +7995,7 @@
                 "group": "UPDATE_CONTEXT > CONTEXT_REGEX",
                 "scope": "",
                 "description": "- All elements of $.context.ttl must follow every regex in [\"^P(?=\\\\d\\|T\\\\d)(\\\\d+Y)?(\\\\d+M)?(\\\\d+D)?(T(\\\\d+H)?(\\\\d+M)?(\\\\d+S)?)?$\"]",
-                "skipIf": "- $.context.ttl must **not** be present in the payload",
+                "skipIf": "- $.context.ttl is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -8005,7 +8005,7 @@
                 "group": "UPDATE_CONTEXT > CONTEXT_REGEX",
                 "scope": "",
                 "description": "- All elements of $.context.bpp_id must follow every regex in [\"^(?!.*\\b(?:http\\|https\\|www)\\b)[a-zA-Z0-9-]+(\\.[a-zA-Z0-9-]+)+$\"]",
-                "skipIf": "- $.context.bpp_id must **not** be present in the payload",
+                "skipIf": "- $.context.bpp_id is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -8015,7 +8015,7 @@
                 "group": "UPDATE_CONTEXT > CONTEXT_REGEX",
                 "scope": "",
                 "description": "- All elements of $.context.bpp_uri must follow every regex in [\"^https:\\/\\/(www\\.)?[a-zA-Z0-9-]+(\\.[a-zA-Z0-9-]+)+(/)?$\"]",
-                "skipIf": "- $.context.bpp_uri must **not** be present in the payload",
+                "skipIf": "- $.context.bpp_uri is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -8045,7 +8045,7 @@
                 "group": "",
                 "scope": "",
                 "description": "Sub-tests: REQUIRED_ITEM_ID, REQUIRED_XINPUT_ITEMS",
-                "skipIf": "- $.message.order.items[*].id must **not** be present in the payload",
+                "skipIf": "- $.message.order.items[*].id is not in the payload",
                 "errorCode": "",
                 "successCode": ""
             },
@@ -8065,7 +8065,7 @@
                 "group": "REQUIRED_ITEMS_FIELDS",
                 "scope": "",
                 "description": "Sub-tests: REQUIRED_HEAD_CODE, REQUIRED_FORM_ID, REQUIRED_SUBMISSION_ID",
-                "skipIf": "- $.message.order.items[*].xinput.form.id must **not** be present in the payload",
+                "skipIf": "- $.message.order.items[*].xinput.form.id is not in the payload",
                 "errorCode": "",
                 "successCode": ""
             },
@@ -8095,7 +8095,7 @@
                 "group": "REQUIRED_ITEMS_FIELDS > REQUIRED_XINPUT_ITEMS",
                 "scope": "",
                 "description": "- $.message.order.items[*].xinput.form_response.submission_id must be present in the payload",
-                "skipIf": "- $.message.order.items[*].xinput.form_response.submission_id must **not** be present in the payload",
+                "skipIf": "- $.message.order.items[*].xinput.form_response.submission_id is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             }
@@ -8105,7 +8105,7 @@
         "action": "on_update",
         "codeName": "L1validations",
         "numLeafTests": 109,
-        "generated": "2026-03-10",
+        "generated": "2026-03-11",
         "rows": [
             {
                 "rowType": "group",
@@ -8263,7 +8263,7 @@
                 "group": "ON_UPDATE_CONTEXT > CONTEXT_ENUM",
                 "scope": "",
                 "description": "- All elements of $.context.location.country.code must be in [\"IND\"]",
-                "skipIf": "- $.context.location.country.code must **not** be present in the payload",
+                "skipIf": "- $.context.location.country.code is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -8273,7 +8273,7 @@
                 "group": "ON_UPDATE_CONTEXT > CONTEXT_ENUM",
                 "scope": "",
                 "description": "- All elements of $.context.domain must be in [\"ONDC:FIS12\"]",
-                "skipIf": "- $.context.domain must **not** be present in the payload",
+                "skipIf": "- $.context.domain is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -8293,7 +8293,7 @@
                 "group": "ON_UPDATE_CONTEXT > CONTEXT_REGEX",
                 "scope": "",
                 "description": "- All elements of $.context.location.city.code must follow every regex in [\"(\\\\*)\\|(^std\\\\:[0-9]{2,4}$)\"]",
-                "skipIf": "- $.context.location.city.code must **not** be present in the payload",
+                "skipIf": "- $.context.location.city.code is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -8303,7 +8303,7 @@
                 "group": "ON_UPDATE_CONTEXT > CONTEXT_REGEX",
                 "scope": "",
                 "description": "- All elements of $.context.timestamp must follow every regex in [\"^\\\\d{4}-\\\\d{2}-\\\\d{2}T\\\\d{2}:\\\\d{2}:\\\\d{2}(\\\\.\\\\d+)?(Z\\|[+-]\\\\d{2}:\\\\d{2})$\"]",
-                "skipIf": "- $.context.timestamp must **not** be present in the payload",
+                "skipIf": "- $.context.timestamp is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -8313,7 +8313,7 @@
                 "group": "ON_UPDATE_CONTEXT > CONTEXT_REGEX",
                 "scope": "",
                 "description": "- All elements of $.context.bap_id must follow every regex in [\"^(?!.*\\b(?:http\\|https\\|www)\\b)[a-zA-Z0-9-]+(\\.[a-zA-Z0-9-]+)+$\"]",
-                "skipIf": "- $.context.bap_id must **not** be present in the payload",
+                "skipIf": "- $.context.bap_id is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -8323,7 +8323,7 @@
                 "group": "ON_UPDATE_CONTEXT > CONTEXT_REGEX",
                 "scope": "",
                 "description": "- All elements of $.context.bap_uri must follow every regex in [\"^https:\\/\\/(www\\.)?[a-zA-Z0-9-]+(\\.[a-zA-Z0-9-]+)+(/)?$\"]",
-                "skipIf": "- $.context.bap_uri must **not** be present in the payload",
+                "skipIf": "- $.context.bap_uri is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -8333,7 +8333,7 @@
                 "group": "ON_UPDATE_CONTEXT > CONTEXT_REGEX",
                 "scope": "",
                 "description": "- All elements of $.context.ttl must follow every regex in [\"^P(?=\\\\d\\|T\\\\d)(\\\\d+Y)?(\\\\d+M)?(\\\\d+D)?(T(\\\\d+H)?(\\\\d+M)?(\\\\d+S)?)?$\"]",
-                "skipIf": "- $.context.ttl must **not** be present in the payload",
+                "skipIf": "- $.context.ttl is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -8343,7 +8343,7 @@
                 "group": "ON_UPDATE_CONTEXT > CONTEXT_REGEX",
                 "scope": "",
                 "description": "- All elements of $.context.bpp_id must follow every regex in [\"^(?!.*\\b(?:http\\|https\\|www)\\b)[a-zA-Z0-9-]+(\\.[a-zA-Z0-9-]+)+$\"]",
-                "skipIf": "- $.context.bpp_id must **not** be present in the payload",
+                "skipIf": "- $.context.bpp_id is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -8353,7 +8353,7 @@
                 "group": "ON_UPDATE_CONTEXT > CONTEXT_REGEX",
                 "scope": "",
                 "description": "- All elements of $.context.bpp_uri must follow every regex in [\"^https:\\/\\/(www\\.)?[a-zA-Z0-9-]+(\\.[a-zA-Z0-9-]+)+(/)?$\"]",
-                "skipIf": "- $.context.bpp_uri must **not** be present in the payload",
+                "skipIf": "- $.context.bpp_uri is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -8473,7 +8473,7 @@
                 "group": "",
                 "scope": "",
                 "description": "Sub-tests: ON_SELECT_PROVIDER_ID, ON_SELECT_PROVIDER_NAME, ON_SELECT_PROVIDER_IMAGES_URL, ON_SELECT_PROVIDER_IMAGES_SIZE_TYPE",
-                "skipIf": "- $.message.order.provider.id must **not** be present in the payload",
+                "skipIf": "- $.message.order.provider.id is not in the payload",
                 "errorCode": "",
                 "successCode": ""
             },
@@ -8533,7 +8533,7 @@
                 "group": "ON_SELECT_PROVIDER_TAGS",
                 "scope": "",
                 "description": "- All elements of $.message.order.provider.tags[*].descriptor.code must be in [\"CONTACT_INFO\", \"LSP_INFO\"]",
-                "skipIf": "- $.message.order.provider.tags[*].descriptor.code must **not** be present in the payload",
+                "skipIf": "- $.message.order.provider.tags[*].descriptor.code is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -8653,7 +8653,7 @@
                 "group": "ON_INIT_ITEMS > REQUIRED_ITEMS",
                 "scope": "",
                 "description": "Sub-tests: REQUIRED_XINPUT_ITEMS, VALID_XINPUT_FIELDS",
-                "skipIf": "- $.message.order.items[*].xinput.form.id must **not** be present in the payload",
+                "skipIf": "- $.message.order.items[*].xinput.form.id is not in the payload",
                 "errorCode": "",
                 "successCode": ""
             },
@@ -8673,7 +8673,7 @@
                 "group": "ON_INIT_ITEMS > REQUIRED_ITEMS > REQUIRED_XINPUT_FIELDS > REQUIRED_XINPUT_ITEMS",
                 "scope": "",
                 "description": "- $.message.order.items[*].xinput.head.descriptor.code must be present in the payload",
-                "skipIf": "- $.message.order.items[*].xinput.form_response.submission_id must be present in the payload",
+                "skipIf": "- $.message.order.items[*].xinput.form_response.submission_id is in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -8683,7 +8683,7 @@
                 "group": "ON_INIT_ITEMS > REQUIRED_ITEMS > REQUIRED_XINPUT_FIELDS > REQUIRED_XINPUT_ITEMS",
                 "scope": "",
                 "description": "- $.message.order.items[*].xinput.head.descriptor.name must be present in the payload",
-                "skipIf": "- $.message.order.items[*].xinput.form_response.submission_id must be present in the payload",
+                "skipIf": "- $.message.order.items[*].xinput.form_response.submission_id is in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -8693,7 +8693,7 @@
                 "group": "ON_INIT_ITEMS > REQUIRED_ITEMS > REQUIRED_XINPUT_FIELDS > REQUIRED_XINPUT_ITEMS",
                 "scope": "",
                 "description": "- $.message.order.items[*].xinput.head.headings[*] must be present in the payload",
-                "skipIf": "- $.message.order.items[*].xinput.form_response.submission_id must be present in the payload",
+                "skipIf": "- $.message.order.items[*].xinput.form_response.submission_id is in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -8713,7 +8713,7 @@
                 "group": "ON_INIT_ITEMS > REQUIRED_ITEMS > REQUIRED_XINPUT_FIELDS > REQUIRED_XINPUT_ITEMS",
                 "scope": "",
                 "description": "- $.message.order.items[*].xinput.form.mime_type must be present in the payload",
-                "skipIf": "- $.message.order.items[*].xinput.form_response.submission_id must be present in the payload",
+                "skipIf": "- $.message.order.items[*].xinput.form_response.submission_id is in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -8723,7 +8723,7 @@
                 "group": "ON_INIT_ITEMS > REQUIRED_ITEMS > REQUIRED_XINPUT_FIELDS > REQUIRED_XINPUT_ITEMS",
                 "scope": "",
                 "description": "Sub-tests: REQUIRED_FORM_STATUS, REQUIRED_FORM_SUBMISSION_ID",
-                "skipIf": "- $.message.order.items[*].xinput.form_response.submission_id must **not** be present in the payload",
+                "skipIf": "- $.message.order.items[*].xinput.form_response.submission_id is not in the payload",
                 "errorCode": "",
                 "successCode": ""
             },
@@ -8753,7 +8753,7 @@
                 "group": "ON_INIT_ITEMS > REQUIRED_ITEMS > REQUIRED_XINPUT_FIELDS > REQUIRED_XINPUT_ITEMS",
                 "scope": "",
                 "description": "- $.message.order.items[*].xinput.form_response.submission_id must be present in the payload",
-                "skipIf": "- $.message.order.items[*].xinput.form_response.submission_id must **not** be present in the payload",
+                "skipIf": "- $.message.order.items[*].xinput.form_response.submission_id is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -8773,7 +8773,7 @@
                 "group": "ON_INIT_ITEMS > REQUIRED_ITEMS > REQUIRED_XINPUT_FIELDS > VALID_XINPUT_FIELDS",
                 "scope": "",
                 "description": "- All elements of $.message.order.items[*].xinput.head.headings[*] must be in [\"KYC\", \"EMANDATE\", \"LOAN_AGREEMENT\", \"INDIVIDUAL_KYC\", \"ENTITY_KYC\", \"ENACH\", \"ESIGN\"]",
-                "skipIf": "- $.message.order.items[*].xinput.form_response.submission_id must be present in the payload",
+                "skipIf": "- $.message.order.items[*].xinput.form_response.submission_id is in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -8783,7 +8783,7 @@
                 "group": "",
                 "scope": "",
                 "description": "Sub-tests: REQUIRED_LOAN_INFO, REQUIRED_LOAN_OFFER",
-                "skipIf": "**All of the following must be true:** - $.message.order.items[*].tags[*].descriptor.code must **not** be present in the payload - Not all elements of $.message.order.items[*].tags[*].descriptor.code may be in [\"LOAN_INFO\", \"LOAN_OFFER\"]",
+                "skipIf": "- **All of the following must be true:** - $.message.order.items[*].tags[*].descriptor.code is not in the payload - not all elements of $.message.order.items[*].tags[*].descriptor.code are in [\"LOAN_INFO\", \"LOAN_OFFER\"]",
                 "errorCode": "",
                 "successCode": ""
             },
@@ -8853,7 +8853,7 @@
                 "group": "ON_INIT_FULFILLMENTS > REQUIRED_FULFILLMENT_ITEMS",
                 "scope": "",
                 "description": "Sub-tests: REQUIRED_CUSTOMER_CREDS_ID, REQUIRED_CUSTOMER_CREDS_TYPE",
-                "skipIf": "- $.message.order.fulfillments[*].customer.person.creds[*].id must **not** be present in the payload",
+                "skipIf": "- $.message.order.fulfillments[*].customer.person.creds[*].id is not in the payload",
                 "errorCode": "",
                 "successCode": ""
             },
@@ -8883,7 +8883,7 @@
                 "group": "ON_INIT_FULFILLMENTS > REQUIRED_FULFILLMENT_ITEMS",
                 "scope": "",
                 "description": "- $.message.order.fulfillments[*].customer.person.name must be present in the payload",
-                "skipIf": "- $.message.order.fulfillments[*].customer.person.name must **not** be present in the payload",
+                "skipIf": "- $.message.order.fulfillments[*].customer.person.name is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -8893,7 +8893,7 @@
                 "group": "ON_INIT_FULFILLMENTS > REQUIRED_FULFILLMENT_ITEMS",
                 "scope": "",
                 "description": "Sub-tests: REQUIRED_CUSTOMER_CONTACT_NUMBER, REQUIRED_CUSTOMER_CONTACT_EMAIL",
-                "skipIf": "- $.message.order.fulfillments[*].customer.contact.phone must **not** be present in the payload",
+                "skipIf": "- $.message.order.fulfillments[*].customer.contact.phone is not in the payload",
                 "errorCode": "",
                 "successCode": ""
             },
@@ -8923,7 +8923,7 @@
                 "group": "ON_INIT_FULFILLMENTS > REQUIRED_FULFILLMENT_ITEMS",
                 "scope": "",
                 "description": "Sub-tests: REQUIRED_ORG_ADDRESS, REQUIRED_ORG_STATE, REQUIRED_ORG_CITY, REQUIRED_ORG_CODE, REQUIRED_ORG_CONTACT_PHONE, REQUIRED_ORG_CONTACT_EMAIL",
-                "skipIf": "- $.message.order.fulfillments[*].customer.organization.address must **not** be present in the payload",
+                "skipIf": "- $.message.order.fulfillments[*].customer.organization.address is not in the payload",
                 "errorCode": "",
                 "successCode": ""
             },
@@ -9013,7 +9013,7 @@
                 "group": "ON_INIT_FULFILLMENTS > VALID_FULFILLMENT_ITEMS",
                 "scope": "",
                 "description": "- All elements of $.message.order.fulfillments[*].type must be in [\"ONLINE\", \"SEMI_ONLINE\"]",
-                "skipIf": "- $.message.order.fulfillments[*].type must **not** be present in the payload",
+                "skipIf": "- $.message.order.fulfillments[*].type is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -9023,7 +9023,7 @@
                 "group": "ON_INIT_FULFILLMENTS > VALID_FULFILLMENT_ITEMS",
                 "scope": "",
                 "description": "- All elements of $.message.order.fulfillments[*].state.descriptor.code must be in [\"INITIATED\", \"SANCTIONED\", \"DISBURSED\"]",
-                "skipIf": "- $.message.order.fulfillments[*].state.descriptor.code must **not** be present in the payload",
+                "skipIf": "- $.message.order.fulfillments[*].state.descriptor.code is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -9043,7 +9043,7 @@
                 "group": "ON_INIT_FULFILLMENTS > VALID_FULFILLMENT_TAGS",
                 "scope": "",
                 "description": "- All elements of $.message.order.fulfillments[*].tags[*].descriptor.code must be in [\"CHECKLISTS\"]",
-                "skipIf": "- $.message.order.fulfillments[*].tags[*].descriptor.code must **not** be present in the payload",
+                "skipIf": "- $.message.order.fulfillments[*].tags[*].descriptor.code is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -9063,7 +9063,7 @@
                 "group": "",
                 "scope": "",
                 "description": "Sub-tests: REQUIRED_COMMON_QUOTE_ITEMS, VALID_COMMON_QUOTE_ITEMS",
-                "skipIf": "- $.message.order.quote.id must **not** be present in the payload",
+                "skipIf": "- $.message.order.quote.id is not in the payload",
                 "errorCode": "",
                 "successCode": ""
             },
@@ -9233,7 +9233,7 @@
                 "group": "ON_INIT_PAYMENTS > REQUIRED_PAYMENT_ITEMS",
                 "scope": "",
                 "description": "- $.message.order.payments[*].collected_by must be present in the payload",
-                "skipIf": "- Not all elements of $.message.order.payments[*].time.label may be in [\"LOAN_DISBURSMENT\"]",
+                "skipIf": "- not all elements of $.message.order.payments[*].time.label are in [\"LOAN_DISBURSMENT\"]",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -9243,7 +9243,7 @@
                 "group": "ON_INIT_PAYMENTS > REQUIRED_PAYMENT_ITEMS",
                 "scope": "",
                 "description": "- $.message.order.payments[*].params.bank_account_number must be present in the payload",
-                "skipIf": "- Not all elements of $.message.order.payments[*].time.label may be in [\"LOAN_DISBURSMENT\"]",
+                "skipIf": "- not all elements of $.message.order.payments[*].time.label are in [\"LOAN_DISBURSMENT\"]",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -9253,7 +9253,7 @@
                 "group": "ON_INIT_PAYMENTS > REQUIRED_PAYMENT_ITEMS",
                 "scope": "",
                 "description": "- $.message.order.payments[*].params.bank_code must be present in the payload",
-                "skipIf": "- Not all elements of $.message.order.payments[*].time.label may be in [\"LOAN_DISBURSMENT\"]",
+                "skipIf": "- not all elements of $.message.order.payments[*].time.label are in [\"LOAN_DISBURSMENT\"]",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -9273,7 +9273,7 @@
                 "group": "ON_INIT_PAYMENTS > REQUIRED_PAYMENT_ITEMS",
                 "scope": "",
                 "description": "Sub-tests: REQUIRED_TRANSACTION_ID, REQUIRED_PAYMENTS_AMOUNT, REQUIRED_PAYMENTS_CURRENCY",
-                "skipIf": "- Not all elements of $.message.order.payments[*].status may be in [\"PAID\"]",
+                "skipIf": "- not all elements of $.message.order.payments[*].status are in [\"PAID\"]",
                 "errorCode": "",
                 "successCode": ""
             },
@@ -9313,7 +9313,7 @@
                 "group": "ON_INIT_PAYMENTS > REQUIRED_PAYMENT_ITEMS",
                 "scope": "",
                 "description": "Sub-tests: REQUIRED_TIME_DURATION",
-                "skipIf": "- $.message.order.payments[*].url must **not** be present in the payload",
+                "skipIf": "- $.message.order.payments[*].url is not in the payload",
                 "errorCode": "",
                 "successCode": ""
             },
@@ -9333,7 +9333,7 @@
                 "group": "ON_INIT_PAYMENTS > REQUIRED_PAYMENT_ITEMS",
                 "scope": "",
                 "description": "Sub-tests: REQUIRED_TIME_START_RANGE, REQUIRED_TIME_END_RANGE",
-                "skipIf": "- Not all elements of $.message.order.payments[*].time.label may be in [\"INSTALLMENT\"]",
+                "skipIf": "- not all elements of $.message.order.payments[*].time.label are in [\"INSTALLMENT\"]",
                 "errorCode": "",
                 "successCode": ""
             },
@@ -9373,7 +9373,7 @@
                 "group": "ON_INIT_PAYMENT_TAGS",
                 "scope": "",
                 "description": "- All elements of $.message.order.payments[*].tags[*].descriptor.code must be in [\"ACCOUNT_DETAILS\", \"BREAKUP\"]",
-                "skipIf": "- $.message.order.payments[*].tags[*].descriptor.code must **not** be present in the payload",
+                "skipIf": "- $.message.order.payments[*].tags[*].descriptor.code is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -9413,7 +9413,7 @@
                 "group": "ON_INIT_CANCELLATION_TERMS",
                 "scope": "",
                 "description": "Sub-tests: REQUIRED_EXTERNAL_REF_MIME_TYPE, REQUIRED_EXTERNAL_REF_URL",
-                "skipIf": "- $.message.order.cancellation_terms[*].external_ref.mimetype must **not** be present in the payload",
+                "skipIf": "- $.message.order.cancellation_terms[*].external_ref.mimetype is not in the payload",
                 "errorCode": "",
                 "successCode": ""
             },
@@ -9443,7 +9443,7 @@
                 "group": "ON_INIT_CANCELLATION_TERMS",
                 "scope": "",
                 "description": "Sub-tests: REQUIRED_FULFILLMENT_STATE_CODE, REQUIRED_CANCELLATION_FEE",
-                "skipIf": "- $.message.order.cancellation_terms[*].fulfillment_state.descriptor.code must **not** be present in the payload",
+                "skipIf": "- $.message.order.cancellation_terms[*].fulfillment_state.descriptor.code is not in the payload",
                 "errorCode": "",
                 "successCode": ""
             },
@@ -9483,7 +9483,7 @@
                 "group": "CONFIRM_TAGS",
                 "scope": "",
                 "description": "- All elements of $.message.order.tags[*].descriptor.code must be in [\"BAP_TERMS\", \"BPP_TERMS\"]",
-                "skipIf": "- $.message.order.tags[*].descriptor.code must **not** be present in the payload",
+                "skipIf": "- $.message.order.tags[*].descriptor.code is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -9573,7 +9573,7 @@
         "action": "status",
         "codeName": "L1validations",
         "numLeafTests": 22,
-        "generated": "2026-03-10",
+        "generated": "2026-03-11",
         "rows": [
             {
                 "rowType": "group",
@@ -9731,7 +9731,7 @@
                 "group": "STATUS_CONTEXT > CONTEXT_ENUM",
                 "scope": "",
                 "description": "- All elements of $.context.location.country.code must be in [\"IND\"]",
-                "skipIf": "- $.context.location.country.code must **not** be present in the payload",
+                "skipIf": "- $.context.location.country.code is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -9741,7 +9741,7 @@
                 "group": "STATUS_CONTEXT > CONTEXT_ENUM",
                 "scope": "",
                 "description": "- All elements of $.context.domain must be in [\"ONDC:FIS12\"]",
-                "skipIf": "- $.context.domain must **not** be present in the payload",
+                "skipIf": "- $.context.domain is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -9761,7 +9761,7 @@
                 "group": "STATUS_CONTEXT > CONTEXT_REGEX",
                 "scope": "",
                 "description": "- All elements of $.context.location.city.code must follow every regex in [\"(\\\\*)\\|(^std\\\\:[0-9]{2,4}$)\"]",
-                "skipIf": "- $.context.location.city.code must **not** be present in the payload",
+                "skipIf": "- $.context.location.city.code is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -9771,7 +9771,7 @@
                 "group": "STATUS_CONTEXT > CONTEXT_REGEX",
                 "scope": "",
                 "description": "- All elements of $.context.timestamp must follow every regex in [\"^\\\\d{4}-\\\\d{2}-\\\\d{2}T\\\\d{2}:\\\\d{2}:\\\\d{2}(\\\\.\\\\d+)?(Z\\|[+-]\\\\d{2}:\\\\d{2})$\"]",
-                "skipIf": "- $.context.timestamp must **not** be present in the payload",
+                "skipIf": "- $.context.timestamp is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -9781,7 +9781,7 @@
                 "group": "STATUS_CONTEXT > CONTEXT_REGEX",
                 "scope": "",
                 "description": "- All elements of $.context.bap_id must follow every regex in [\"^(?!.*\\b(?:http\\|https\\|www)\\b)[a-zA-Z0-9-]+(\\.[a-zA-Z0-9-]+)+$\"]",
-                "skipIf": "- $.context.bap_id must **not** be present in the payload",
+                "skipIf": "- $.context.bap_id is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -9791,7 +9791,7 @@
                 "group": "STATUS_CONTEXT > CONTEXT_REGEX",
                 "scope": "",
                 "description": "- All elements of $.context.bap_uri must follow every regex in [\"^https:\\/\\/(www\\.)?[a-zA-Z0-9-]+(\\.[a-zA-Z0-9-]+)+(/)?$\"]",
-                "skipIf": "- $.context.bap_uri must **not** be present in the payload",
+                "skipIf": "- $.context.bap_uri is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -9801,7 +9801,7 @@
                 "group": "STATUS_CONTEXT > CONTEXT_REGEX",
                 "scope": "",
                 "description": "- All elements of $.context.ttl must follow every regex in [\"^P(?=\\\\d\\|T\\\\d)(\\\\d+Y)?(\\\\d+M)?(\\\\d+D)?(T(\\\\d+H)?(\\\\d+M)?(\\\\d+S)?)?$\"]",
-                "skipIf": "- $.context.ttl must **not** be present in the payload",
+                "skipIf": "- $.context.ttl is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -9811,7 +9811,7 @@
                 "group": "STATUS_CONTEXT > CONTEXT_REGEX",
                 "scope": "",
                 "description": "- All elements of $.context.bpp_id must follow every regex in [\"^(?!.*\\b(?:http\\|https\\|www)\\b)[a-zA-Z0-9-]+(\\.[a-zA-Z0-9-]+)+$\"]",
-                "skipIf": "- $.context.bpp_id must **not** be present in the payload",
+                "skipIf": "- $.context.bpp_id is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -9821,7 +9821,7 @@
                 "group": "STATUS_CONTEXT > CONTEXT_REGEX",
                 "scope": "",
                 "description": "- All elements of $.context.bpp_uri must follow every regex in [\"^https:\\/\\/(www\\.)?[a-zA-Z0-9-]+(\\.[a-zA-Z0-9-]+)+(/)?$\"]",
-                "skipIf": "- $.context.bpp_uri must **not** be present in the payload",
+                "skipIf": "- $.context.bpp_uri is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -9841,7 +9841,7 @@
         "action": "on_status",
         "codeName": "L1validations",
         "numLeafTests": 101,
-        "generated": "2026-03-10",
+        "generated": "2026-03-11",
         "rows": [
             {
                 "rowType": "group",
@@ -9999,7 +9999,7 @@
                 "group": "ON_STATUS_CONTEXT > CONTEXT_ENUM",
                 "scope": "",
                 "description": "- All elements of $.context.location.country.code must be in [\"IND\"]",
-                "skipIf": "- $.context.location.country.code must **not** be present in the payload",
+                "skipIf": "- $.context.location.country.code is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -10009,7 +10009,7 @@
                 "group": "ON_STATUS_CONTEXT > CONTEXT_ENUM",
                 "scope": "",
                 "description": "- All elements of $.context.domain must be in [\"ONDC:FIS12\"]",
-                "skipIf": "- $.context.domain must **not** be present in the payload",
+                "skipIf": "- $.context.domain is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -10029,7 +10029,7 @@
                 "group": "ON_STATUS_CONTEXT > CONTEXT_REGEX",
                 "scope": "",
                 "description": "- All elements of $.context.location.city.code must follow every regex in [\"(\\\\*)\\|(^std\\\\:[0-9]{2,4}$)\"]",
-                "skipIf": "- $.context.location.city.code must **not** be present in the payload",
+                "skipIf": "- $.context.location.city.code is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -10039,7 +10039,7 @@
                 "group": "ON_STATUS_CONTEXT > CONTEXT_REGEX",
                 "scope": "",
                 "description": "- All elements of $.context.timestamp must follow every regex in [\"^\\\\d{4}-\\\\d{2}-\\\\d{2}T\\\\d{2}:\\\\d{2}:\\\\d{2}(\\\\.\\\\d+)?(Z\\|[+-]\\\\d{2}:\\\\d{2})$\"]",
-                "skipIf": "- $.context.timestamp must **not** be present in the payload",
+                "skipIf": "- $.context.timestamp is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -10049,7 +10049,7 @@
                 "group": "ON_STATUS_CONTEXT > CONTEXT_REGEX",
                 "scope": "",
                 "description": "- All elements of $.context.bap_id must follow every regex in [\"^(?!.*\\b(?:http\\|https\\|www)\\b)[a-zA-Z0-9-]+(\\.[a-zA-Z0-9-]+)+$\"]",
-                "skipIf": "- $.context.bap_id must **not** be present in the payload",
+                "skipIf": "- $.context.bap_id is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -10059,7 +10059,7 @@
                 "group": "ON_STATUS_CONTEXT > CONTEXT_REGEX",
                 "scope": "",
                 "description": "- All elements of $.context.bap_uri must follow every regex in [\"^https:\\/\\/(www\\.)?[a-zA-Z0-9-]+(\\.[a-zA-Z0-9-]+)+(/)?$\"]",
-                "skipIf": "- $.context.bap_uri must **not** be present in the payload",
+                "skipIf": "- $.context.bap_uri is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -10069,7 +10069,7 @@
                 "group": "ON_STATUS_CONTEXT > CONTEXT_REGEX",
                 "scope": "",
                 "description": "- All elements of $.context.ttl must follow every regex in [\"^P(?=\\\\d\\|T\\\\d)(\\\\d+Y)?(\\\\d+M)?(\\\\d+D)?(T(\\\\d+H)?(\\\\d+M)?(\\\\d+S)?)?$\"]",
-                "skipIf": "- $.context.ttl must **not** be present in the payload",
+                "skipIf": "- $.context.ttl is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -10079,7 +10079,7 @@
                 "group": "ON_STATUS_CONTEXT > CONTEXT_REGEX",
                 "scope": "",
                 "description": "- All elements of $.context.bpp_id must follow every regex in [\"^(?!.*\\b(?:http\\|https\\|www)\\b)[a-zA-Z0-9-]+(\\.[a-zA-Z0-9-]+)+$\"]",
-                "skipIf": "- $.context.bpp_id must **not** be present in the payload",
+                "skipIf": "- $.context.bpp_id is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -10089,7 +10089,7 @@
                 "group": "ON_STATUS_CONTEXT > CONTEXT_REGEX",
                 "scope": "",
                 "description": "- All elements of $.context.bpp_uri must follow every regex in [\"^https:\\/\\/(www\\.)?[a-zA-Z0-9-]+(\\.[a-zA-Z0-9-]+)+(/)?$\"]",
-                "skipIf": "- $.context.bpp_uri must **not** be present in the payload",
+                "skipIf": "- $.context.bpp_uri is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -10099,7 +10099,7 @@
                 "group": "",
                 "scope": "",
                 "description": "Sub-tests: REQUIRED_ORDER_ID, REQUIRED_ORDER_STATUS, REQUIRED_ORDER_CREATED_AT, REQUIRED_ORDER_UPDATED_AT, CREATED_AT_UPDATED_AT_EQUALITY",
-                "skipIf": "- $.message.order.id must **not** be present in the payload",
+                "skipIf": "- $.message.order.id is not in the payload",
                 "errorCode": "",
                 "successCode": ""
             },
@@ -10159,7 +10159,7 @@
                 "group": "",
                 "scope": "",
                 "description": "Sub-tests: ON_SELECT_PROVIDER_ID, ON_SELECT_PROVIDER_NAME, ON_SELECT_PROVIDER_IMAGES_URL, ON_SELECT_PROVIDER_IMAGES_SIZE_TYPE",
-                "skipIf": "- $.message.order.provider.id must **not** be present in the payload",
+                "skipIf": "- $.message.order.provider.id is not in the payload",
                 "errorCode": "",
                 "successCode": ""
             },
@@ -10219,7 +10219,7 @@
                 "group": "ON_SELECT_PROVIDER_TAGS",
                 "scope": "",
                 "description": "- All elements of $.message.order.provider.tags[*].descriptor.code must be in [\"CONTACT_INFO\", \"LSP_INFO\"]",
-                "skipIf": "- $.message.order.provider.tags[*].descriptor.code must **not** be present in the payload",
+                "skipIf": "- $.message.order.provider.tags[*].descriptor.code is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -10339,7 +10339,7 @@
                 "group": "ON_STATUS_ITEMS > REQUIRED_ITEMS",
                 "scope": "",
                 "description": "Sub-tests: REQUIRED_XINPUT_ITEMS",
-                "skipIf": "- $.message.order.items[*].xinput.form_response.submission_id must **not** be present in the payload",
+                "skipIf": "- $.message.order.items[*].xinput.form_response.submission_id is not in the payload",
                 "errorCode": "",
                 "successCode": ""
             },
@@ -10369,7 +10369,7 @@
                 "group": "ON_STATUS_ITEMS > REQUIRED_ITEMS > REQUIRED_XINPUT_FIELDS > REQUIRED_XINPUT_ITEMS",
                 "scope": "",
                 "description": "Sub-tests: REQUIRED_FORM_STATUS, REQUIRED_FORM_SUBMISSION_ID",
-                "skipIf": "- $.message.order.items[*].xinput.form_response.submission_id must **not** be present in the payload",
+                "skipIf": "- $.message.order.items[*].xinput.form_response.submission_id is not in the payload",
                 "errorCode": "",
                 "successCode": ""
             },
@@ -10399,7 +10399,7 @@
                 "group": "ON_STATUS_ITEMS > REQUIRED_ITEMS > REQUIRED_XINPUT_FIELDS > REQUIRED_XINPUT_ITEMS",
                 "scope": "",
                 "description": "- $.message.order.items[*].xinput.form_response.submission_id must be present in the payload",
-                "skipIf": "- $.message.order.items[*].xinput.form_response.submission_id must **not** be present in the payload",
+                "skipIf": "- $.message.order.items[*].xinput.form_response.submission_id is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -10409,7 +10409,7 @@
                 "group": "",
                 "scope": "",
                 "description": "Sub-tests: REQUIRED_LOAN_INFO, REQUIRED_LOAN_OFFER",
-                "skipIf": "**All of the following must be true:** - $.message.order.items[*].tags[*].descriptor.code must **not** be present in the payload - Not all elements of $.message.order.items[*].tags[*].descriptor.code may be in [\"LOAN_INFO\", \"LOAN_OFFER\"]",
+                "skipIf": "- **All of the following must be true:** - $.message.order.items[*].tags[*].descriptor.code is not in the payload - not all elements of $.message.order.items[*].tags[*].descriptor.code are in [\"LOAN_INFO\", \"LOAN_OFFER\"]",
                 "errorCode": "",
                 "successCode": ""
             },
@@ -10479,7 +10479,7 @@
                 "group": "ON_INIT_FULFILLMENTS > REQUIRED_FULFILLMENT_ITEMS",
                 "scope": "",
                 "description": "Sub-tests: REQUIRED_CUSTOMER_CREDS_ID, REQUIRED_CUSTOMER_CREDS_TYPE",
-                "skipIf": "- $.message.order.fulfillments[*].customer.person.creds[*].id must **not** be present in the payload",
+                "skipIf": "- $.message.order.fulfillments[*].customer.person.creds[*].id is not in the payload",
                 "errorCode": "",
                 "successCode": ""
             },
@@ -10509,7 +10509,7 @@
                 "group": "ON_INIT_FULFILLMENTS > REQUIRED_FULFILLMENT_ITEMS",
                 "scope": "",
                 "description": "- $.message.order.fulfillments[*].customer.person.name must be present in the payload",
-                "skipIf": "- $.message.order.fulfillments[*].customer.person.name must **not** be present in the payload",
+                "skipIf": "- $.message.order.fulfillments[*].customer.person.name is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -10519,7 +10519,7 @@
                 "group": "ON_INIT_FULFILLMENTS > REQUIRED_FULFILLMENT_ITEMS",
                 "scope": "",
                 "description": "Sub-tests: REQUIRED_CUSTOMER_CONTACT_NUMBER, REQUIRED_CUSTOMER_CONTACT_EMAIL",
-                "skipIf": "- $.message.order.fulfillments[*].customer.contact.phone must **not** be present in the payload",
+                "skipIf": "- $.message.order.fulfillments[*].customer.contact.phone is not in the payload",
                 "errorCode": "",
                 "successCode": ""
             },
@@ -10549,7 +10549,7 @@
                 "group": "ON_INIT_FULFILLMENTS > REQUIRED_FULFILLMENT_ITEMS",
                 "scope": "",
                 "description": "Sub-tests: REQUIRED_ORG_ADDRESS, REQUIRED_ORG_STATE, REQUIRED_ORG_CITY, REQUIRED_ORG_CODE, REQUIRED_ORG_CONTACT_PHONE, REQUIRED_ORG_CONTACT_EMAIL",
-                "skipIf": "- $.message.order.fulfillments[*].customer.organization.address must **not** be present in the payload",
+                "skipIf": "- $.message.order.fulfillments[*].customer.organization.address is not in the payload",
                 "errorCode": "",
                 "successCode": ""
             },
@@ -10639,7 +10639,7 @@
                 "group": "ON_INIT_FULFILLMENTS > VALID_FULFILLMENT_ITEMS",
                 "scope": "",
                 "description": "- All elements of $.message.order.fulfillments[*].type must be in [\"ONLINE\", \"SEMI_ONLINE\"]",
-                "skipIf": "- $.message.order.fulfillments[*].type must **not** be present in the payload",
+                "skipIf": "- $.message.order.fulfillments[*].type is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -10649,7 +10649,7 @@
                 "group": "ON_INIT_FULFILLMENTS > VALID_FULFILLMENT_ITEMS",
                 "scope": "",
                 "description": "- All elements of $.message.order.fulfillments[*].state.descriptor.code must be in [\"INITIATED\", \"SANCTIONED\", \"DISBURSED\"]",
-                "skipIf": "- $.message.order.fulfillments[*].state.descriptor.code must **not** be present in the payload",
+                "skipIf": "- $.message.order.fulfillments[*].state.descriptor.code is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -10669,7 +10669,7 @@
                 "group": "ON_INIT_FULFILLMENTS > VALID_FULFILLMENT_TAGS",
                 "scope": "",
                 "description": "- All elements of $.message.order.fulfillments[*].tags[*].descriptor.code must be in [\"CHECKLISTS\"]",
-                "skipIf": "- $.message.order.fulfillments[*].tags[*].descriptor.code must **not** be present in the payload",
+                "skipIf": "- $.message.order.fulfillments[*].tags[*].descriptor.code is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -10689,7 +10689,7 @@
                 "group": "",
                 "scope": "",
                 "description": "Sub-tests: REQUIRED_COMMON_QUOTE_ITEMS, VALID_COMMON_QUOTE_ITEMS",
-                "skipIf": "- $.message.order.quote.id must **not** be present in the payload",
+                "skipIf": "- $.message.order.quote.id is not in the payload",
                 "errorCode": "",
                 "successCode": ""
             },
@@ -10859,7 +10859,7 @@
                 "group": "ON_INIT_PAYMENTS > REQUIRED_PAYMENT_ITEMS",
                 "scope": "",
                 "description": "- $.message.order.payments[*].collected_by must be present in the payload",
-                "skipIf": "- Not all elements of $.message.order.payments[*].time.label may be in [\"LOAN_DISBURSMENT\"]",
+                "skipIf": "- not all elements of $.message.order.payments[*].time.label are in [\"LOAN_DISBURSMENT\"]",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -10869,7 +10869,7 @@
                 "group": "ON_INIT_PAYMENTS > REQUIRED_PAYMENT_ITEMS",
                 "scope": "",
                 "description": "- $.message.order.payments[*].params.bank_account_number must be present in the payload",
-                "skipIf": "- Not all elements of $.message.order.payments[*].time.label may be in [\"LOAN_DISBURSMENT\"]",
+                "skipIf": "- not all elements of $.message.order.payments[*].time.label are in [\"LOAN_DISBURSMENT\"]",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -10879,7 +10879,7 @@
                 "group": "ON_INIT_PAYMENTS > REQUIRED_PAYMENT_ITEMS",
                 "scope": "",
                 "description": "- $.message.order.payments[*].params.bank_code must be present in the payload",
-                "skipIf": "- Not all elements of $.message.order.payments[*].time.label may be in [\"LOAN_DISBURSMENT\"]",
+                "skipIf": "- not all elements of $.message.order.payments[*].time.label are in [\"LOAN_DISBURSMENT\"]",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -10899,7 +10899,7 @@
                 "group": "ON_INIT_PAYMENTS > REQUIRED_PAYMENT_ITEMS",
                 "scope": "",
                 "description": "Sub-tests: REQUIRED_TRANSACTION_ID, REQUIRED_PAYMENTS_AMOUNT, REQUIRED_PAYMENTS_CURRENCY",
-                "skipIf": "- Not all elements of $.message.order.payments[*].status may be in [\"PAID\"]",
+                "skipIf": "- not all elements of $.message.order.payments[*].status are in [\"PAID\"]",
                 "errorCode": "",
                 "successCode": ""
             },
@@ -10939,7 +10939,7 @@
                 "group": "ON_INIT_PAYMENTS > REQUIRED_PAYMENT_ITEMS",
                 "scope": "",
                 "description": "Sub-tests: REQUIRED_TIME_DURATION",
-                "skipIf": "- $.message.order.payments[*].url must **not** be present in the payload",
+                "skipIf": "- $.message.order.payments[*].url is not in the payload",
                 "errorCode": "",
                 "successCode": ""
             },
@@ -10959,7 +10959,7 @@
                 "group": "ON_INIT_PAYMENTS > REQUIRED_PAYMENT_ITEMS",
                 "scope": "",
                 "description": "Sub-tests: REQUIRED_TIME_START_RANGE, REQUIRED_TIME_END_RANGE",
-                "skipIf": "- Not all elements of $.message.order.payments[*].time.label may be in [\"INSTALLMENT\"]",
+                "skipIf": "- not all elements of $.message.order.payments[*].time.label are in [\"INSTALLMENT\"]",
                 "errorCode": "",
                 "successCode": ""
             },
@@ -10999,7 +10999,7 @@
                 "group": "ON_INIT_PAYMENT_TAGS",
                 "scope": "",
                 "description": "- All elements of $.message.order.payments[*].tags[*].descriptor.code must be in [\"ACCOUNT_DETAILS\", \"BREAKUP\"]",
-                "skipIf": "- $.message.order.payments[*].tags[*].descriptor.code must **not** be present in the payload",
+                "skipIf": "- $.message.order.payments[*].tags[*].descriptor.code is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -11039,7 +11039,7 @@
                 "group": "ON_INIT_CANCELLATION_TERMS",
                 "scope": "",
                 "description": "Sub-tests: REQUIRED_EXTERNAL_REF_MIME_TYPE, REQUIRED_EXTERNAL_REF_URL",
-                "skipIf": "- $.message.order.cancellation_terms[*].external_ref.mimetype must **not** be present in the payload",
+                "skipIf": "- $.message.order.cancellation_terms[*].external_ref.mimetype is not in the payload",
                 "errorCode": "",
                 "successCode": ""
             },
@@ -11069,7 +11069,7 @@
                 "group": "ON_INIT_CANCELLATION_TERMS",
                 "scope": "",
                 "description": "Sub-tests: REQUIRED_FULFILLMENT_STATE_CODE, REQUIRED_CANCELLATION_FEE",
-                "skipIf": "- $.message.order.cancellation_terms[*].fulfillment_state.descriptor.code must **not** be present in the payload",
+                "skipIf": "- $.message.order.cancellation_terms[*].fulfillment_state.descriptor.code is not in the payload",
                 "errorCode": "",
                 "successCode": ""
             },
@@ -11109,7 +11109,7 @@
                 "group": "CONFIRM_TAGS",
                 "scope": "",
                 "description": "- All elements of $.message.order.tags[*].descriptor.code must be in [\"BAP_TERMS\", \"BPP_TERMS\"]",
-                "skipIf": "- $.message.order.tags[*].descriptor.code must **not** be present in the payload",
+                "skipIf": "- $.message.order.tags[*].descriptor.code is not in the payload",
                 "errorCode": "30000",
                 "successCode": ""
             },
@@ -11139,7 +11139,7 @@
                 "group": "",
                 "scope": "",
                 "description": "Sub-tests: REQUIRED_DOCUMENT_CODE, REQUIRED_DOCUMENT_NAME, REQUIRED_DOCUMENT_TYPE, REQUIRED_DOCUMENT_URL, VALID_DESCRIPTOR_CODE",
-                "skipIf": "- $.message.order.documents[*].descriptor.code must **not** be present in the payload",
+                "skipIf": "- $.message.order.documents[*].descriptor.code is not in the payload",
                 "errorCode": "",
                 "successCode": ""
             },
