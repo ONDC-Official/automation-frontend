@@ -3,11 +3,12 @@ import { PlaygroundContext } from "../context/playground-context";
 import { toast } from "react-toastify";
 import JsonSchemaForm from "../ui/extras/rsjf-form";
 import { calcCurrentIndex } from "../mock-engine";
-import MockRunner from "@ondc/automation-mock-runner";
+import MockRunner, { MockPlaygroundConfigType } from "@ondc/automation-mock-runner";
 import { createFlowSessionWithPlayground } from "../utils/request-utils";
 import { GetRequestEndpoint } from "@components/FlowShared/guides";
 import MockDynamicForm from "../ui/components/mock-dynamic-form";
 import { v4 as uuidv4 } from "uuid";
+import { stringify as yamlStringify } from "yaml";
 
 type JsonSchema = Record<string, unknown>;
 type FormValues = Record<string, unknown>;
@@ -347,6 +348,61 @@ export const useConfigOperations = () => {
         }
     };
 
+    const exportConfigForDeployment = async () => {
+        if (!playgroundContext.config) {
+            toast.error("No configuration to export");
+            return;
+        }
+
+        try {
+            playgroundContext.resetTransactionHistory();
+
+            // Run every step exactly like runCurrentConfig does, with full form/input support
+            for (const step of playgroundContext.config.steps) {
+                const res = await runConfig();
+                if (!res?.success) {
+                    toast.error(`Export stopped at step "${step.action_id}"`);
+                    return;
+                }
+            }
+
+            // All steps ran — clone the now-populated config
+            const config: MockPlaygroundConfigType = JSON.parse(
+                JSON.stringify(playgroundContext.config)
+            );
+
+            // Map each transaction history entry's payload into the matching step's examples
+            for (const historyEntry of config.transaction_history) {
+                const step = config.steps.find((s) => s.action_id === historyEntry.action_id);
+                if (step && historyEntry.payload !== undefined) {
+                    step.examples = [
+                        {
+                            name: `example for ${step.api}`,
+                            payload: historyEntry.payload,
+                            type: "request",
+                            description: step.description,
+                        },
+                    ];
+                }
+            }
+
+            // Clear transaction history for deployment artifact
+            config.transaction_history = [];
+
+            const dataStr = yamlStringify(config);
+            const flowName = `${config.meta.flowId}_deployment_config`;
+            const dataUri = "data:application/yaml;charset=utf-8," + encodeURIComponent(dataStr);
+            const linkElement = document.createElement("a");
+            linkElement.setAttribute("href", dataUri);
+            linkElement.setAttribute("download", `${flowName}.yaml`);
+            linkElement.click();
+            toast.success("Deployment configuration exported successfully");
+        } catch (e) {
+            console.error("Error exporting config for deployment:", e);
+            toast.error("Export failed: " + (e instanceof Error ? e.message : "Unknown error"));
+        }
+    };
+
     return {
         exportConfig,
         importConfig,
@@ -354,5 +410,6 @@ export const useConfigOperations = () => {
         runConfig,
         createFlowSession,
         runCurrentConfig,
+        exportConfigForDeployment,
     };
 };

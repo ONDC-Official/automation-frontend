@@ -24,6 +24,7 @@ const PlaygroundPage = () => {
 
     const {
         exportConfig,
+        exportConfigForDeployment,
         importConfig,
         clearConfig,
         runConfig,
@@ -130,6 +131,7 @@ const PlaygroundPage = () => {
                         await runConfig();
                     }}
                     onCreateFlowSession={createFlowSession}
+                    onExportForDeployment={exportConfigForDeployment}
                     onRunCurrent={async () => {
                         await runCurrentConfig();
                     }}

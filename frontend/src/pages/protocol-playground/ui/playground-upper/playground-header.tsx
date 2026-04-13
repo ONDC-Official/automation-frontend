@@ -2,7 +2,7 @@ import IconButton from "../../../../components/ui/mini-components/icon-button";
 import { FaDownload, FaUpload, FaArrowLeft } from "react-icons/fa";
 import { GrRedo } from "react-icons/gr";
 import { IoMdSkipForward, IoMdTrash } from "react-icons/io";
-import { TbAutomaticGearboxFilled } from "react-icons/tb";
+import { TbAutomaticGearboxFilled, TbDatabaseExport } from "react-icons/tb";
 
 // components/playground/PlaygroundHeader.tsx
 interface PlaygroundHeaderProps {
@@ -10,6 +10,7 @@ interface PlaygroundHeaderProps {
     version?: string;
     flowId?: string;
     onExport: () => void;
+    onExportForDeployment: () => void;
     onImport: () => void;
     onClear: () => void;
     onRun: () => void;
@@ -23,6 +24,7 @@ export const PlaygroundHeader = ({
     version,
     flowId,
     onExport,
+    onExportForDeployment,
     onImport,
     onClear,
     onRun,
@@ -96,6 +98,12 @@ export const PlaygroundHeader = ({
                 label="Run in sequence"
                 onClick={onRun}
                 color="orange"
+            />
+            <IconButton
+                icon={<TbDatabaseExport size={16} />}
+                label="Export for deployment"
+                onClick={onExportForDeployment}
+                color="sky"
             />
         </div>
     </div>
