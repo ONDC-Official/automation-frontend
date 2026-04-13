@@ -190,9 +190,11 @@ export default function ProtocolHTMLFormMulti({
                 });
             }
 
+            const isMultipart = (parsed.enctype || "").toLowerCase().includes("multipart");
             const res = (await htmlFormSubmit(
                 parsed.action || window.location.href,
-                arrayPayload
+                arrayPayload,
+                isMultipart ? "multipart/form-data" : undefined
             )) as AxiosResponse<unknown, unknown>;
 
             // Parse response for submission_id

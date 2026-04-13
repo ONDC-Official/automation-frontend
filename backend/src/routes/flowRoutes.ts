@@ -59,8 +59,29 @@ router.post(
 );
 router.post("/external-form", async (req, res) => {
 	try {
-		const { link, data } = req.body;
-		const exRes = await axios.post(link, data);
+		const { link, data, contentType } = req.body;
+
+		let postData: unknown = data;
+		const headers: Record<string, string> = {};
+
+		if (contentType && (contentType as string).toLowerCase().includes("multipart/form-data")) {
+			// FormData cannot survive JSON serialisation — re-encode as urlencoded.
+			// All fields in this path are text/select/checkbox (no binary file bytes).
+			const params = new URLSearchParams();
+			for (const [k, v] of Object.entries(data as Record<string, unknown>)) {
+				if (Array.isArray(v)) {
+					for (const item of v) params.append(k, String(item));
+				} else if (v != null) {
+					params.append(k, String(v));
+				}
+			}
+			postData = params.toString();
+			headers["Content-Type"] = "application/x-www-form-urlencoded";
+		} else if (contentType) {
+			headers["Content-Type"] = contentType as string;
+		}
+
+		const exRes = await axios.post(link, postData, { headers });
 		logger.info("Submission response", exRes);
 		res.status(exRes.status).send(exRes.data);
 	} catch (e) {
@@ -68,7 +89,7 @@ router.post("/external-form", async (req, res) => {
 		res.status(500).send("GATEWAY ERROR");
 	}
 });
-router.post("/custom-flow", otelTracing( 'body.session_id'), updateFlow)
+router.post("/custom-flow", otelTracing('body.session_id'), updateFlow)
 router.post("/actions", otelTracing("body.domain", "body.version"), getActions)
 
 export default router;

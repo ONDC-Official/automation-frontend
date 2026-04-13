@@ -533,9 +533,22 @@ export default function ProtocolHTMLForm({
                 // 	method: parsed.method,
                 // 	body: fd,
                 // });
+                // Convert FormData to a plain object for JSON transport.
+                // The backend proxy receives contentType and re-encodes as urlencoded.
+                const plainObj: Record<string, unknown> = {};
+                fd.forEach((val, key) => {
+                    if (plainObj[key] !== undefined) {
+                        plainObj[key] = Array.isArray(plainObj[key])
+                            ? [...(plainObj[key] as unknown[]), val]
+                            : [plainObj[key], val];
+                    } else {
+                        plainObj[key] = val;
+                    }
+                });
                 res = (await htmlFormSubmit(
                     parsed.action || window.location.href,
-                    fd
+                    plainObj,
+                    "multipart/form-data"
                 )) as AxiosResponse<unknown, unknown>;
             } else {
                 const params = new URLSearchParams();
