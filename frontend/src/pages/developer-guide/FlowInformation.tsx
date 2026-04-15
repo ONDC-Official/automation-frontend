@@ -42,6 +42,8 @@ function getExamplesFromStep(
                 payload: step.example.value,
             },
         ];
+    if (step.mock?.defaultPayload != null)
+        return [{ name: "Default", payload: step.mock.defaultPayload }];
     return [];
 }
 
