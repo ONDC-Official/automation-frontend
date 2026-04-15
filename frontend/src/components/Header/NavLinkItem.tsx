@@ -32,8 +32,10 @@ export const NavLinkItem = ({
             onMouseLeave={onMouseLeave}
         >
             <a
-                className={`hover:text-sky-500 py-1 cursor-pointer flex items-center ${
-                    link.selected ? "text-sky-500 border-b-2 border-sky-500" : "text-gray-500"
+                className={`cursor-pointer flex items-center px-3 py-1.5 rounded-full text-sm font-medium tracking-wide transition-all duration-200 ${
+                    link.selected
+                        ? "bg-sky-50 text-sky-600 font-semibold"
+                        : "text-gray-500 hover:text-sky-600 hover:bg-sky-50/60"
                 }`}
                 onClick={() => onLinkClick(link)}
             >
@@ -47,13 +49,13 @@ export const NavLinkItem = ({
             {link.subMenu && isDropdownOpen && (
                 <div
                     className={`${
-                        isOpen ? "static mt-2 ml-4" : "absolute top-full left-0 mt-1"
-                    } bg-white border border-gray-200 rounded-md shadow-lg min-w-48 z-50`}
+                        isOpen ? "static mt-2 ml-4" : "absolute top-full left-0 mt-2"
+                    } bg-white border border-gray-100 rounded-2xl shadow-2xl min-w-48 z-50 overflow-hidden py-1`}
                 >
                     {link.subMenu.map((subItem, subIndex) => (
                         <a
                             key={subIndex}
-                            className="block px-4 py-2 text-gray-700 hover:bg-sky-50 hover:text-sky-600 first:rounded-t-md last:rounded-b-md cursor-pointer"
+                            className="block mx-1 px-3 py-2 text-sm text-gray-600 hover:bg-sky-50 hover:text-sky-600 rounded-lg cursor-pointer transition-colors duration-150"
                             onClick={() => onSubMenuClick(subItem.href)}
                         >
                             {subItem.label}

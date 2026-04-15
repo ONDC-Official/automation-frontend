@@ -17,10 +17,10 @@ export const Logo = () => {
             <img
                 src="https://ondc.org/assets/theme/images/ondc_registered_logo.svg?v=d864655110"
                 alt="Logo"
-                className="h-10 w-auto"
+                className="h-8 w-auto"
             />
             <pre
-                className="text-2xl font-bold text-transparent bg-gradient-to-r from-sky-600 to-sky-400 bg-clip-text ml-1 mb-1"
+                className="text-xl font-bold text-transparent bg-gradient-to-r from-sky-600 to-sky-400 bg-clip-text ml-1 mb-1"
                 style={{
                     fontWeight: "1000",
                 }}

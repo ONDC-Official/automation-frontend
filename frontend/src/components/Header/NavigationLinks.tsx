@@ -32,9 +32,9 @@ export const NavigationLinks = ({
         <ul
             className={`${
                 isOpen
-                    ? "absolute top-16 left-0 right-0 bg-white p-4 md:static flex flex-col md:flex-row"
+                    ? "absolute top-full left-0 right-0 bg-white/98 backdrop-blur-md border-b border-sky-100 shadow-xl p-4 md:static flex flex-col md:flex-row"
                     : "hidden md:flex md:flex-row"
-            } space-x-6`}
+            } space-x-1`}
         >
             {links.map((link, index) => (
                 <GuideOverlay
