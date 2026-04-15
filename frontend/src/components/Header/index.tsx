@@ -31,25 +31,28 @@ const Header = ({ onSupportClick }: HeaderProps) => {
     });
 
     return (
-        <header className="fixed top-0 left-0 right-0 bg-white shadow-md z-50">
-            <nav className="container mx-auto flex items-center justify-between p-2">
-                <Logo />
+        <header className="fixed top-0 left-0 right-0 z-50">
+            <div className="h-0.5 bg-gradient-to-r from-sky-400 via-sky-500 to-sky-600" />
+            <div className="bg-white/95 backdrop-blur-md border-b border-gray-100 shadow-[0_2px_20px_rgba(0,0,0,0.06)] max-h-20">
+                <nav className="container mx-auto flex items-center justify-between px-6 h-20">
+                    <Logo />
 
-                <MobileMenuButton isOpen={isOpen} onToggle={() => setIsOpen(!isOpen)} />
+                    <MobileMenuButton isOpen={isOpen} onToggle={() => setIsOpen(!isOpen)} />
 
-                <NavigationLinks
-                    links={links}
-                    isOpen={isOpen}
-                    openDropdown={openDropdown}
-                    dropdownRef={dropdownRef}
-                    onLinkClick={handleLinkClick}
-                    onSubMenuClick={handleSubMenuClick}
-                    onMouseEnter={handleMouseEnter}
-                    onMouseLeave={handleMouseLeave}
-                />
+                    <NavigationLinks
+                        links={links}
+                        isOpen={isOpen}
+                        openDropdown={openDropdown}
+                        dropdownRef={dropdownRef}
+                        onLinkClick={handleLinkClick}
+                        onSubMenuClick={handleSubMenuClick}
+                        onMouseEnter={handleMouseEnter}
+                        onMouseLeave={handleMouseLeave}
+                    />
 
-                <UserProfileSection userDetails={userDetails} onLoginClick={handleLoginClick} />
-            </nav>
+                    <UserProfileSection userDetails={userDetails} onLoginClick={handleLoginClick} />
+                </nav>
+            </div>
         </header>
     );
 };

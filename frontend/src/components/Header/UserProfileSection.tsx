@@ -13,14 +13,10 @@ export const UserProfileSection = ({ userDetails, onLoginClick }: UserProfileSec
     return (
         <div className="relative flex items-center">
             {userDetails ? (
-                <span className="mr-2 text-sm md:text-base text-gray-700 mb-2">
-                    <strong>{userDetails.username}</strong>
+                <span className="mr-3 text-sm font-semibold text-gray-700 hidden md:inline">
+                    {userDetails.username}
                 </span>
-            ) : (
-                <span className="mr-2 text-sm md:text-base text-gray-700 mb-2">
-                    <strong>login</strong>
-                </span>
-            )}
+            ) : null}
 
             <GuideOverlay
                 currentStep={GuideStepsEnums.Reg1}
@@ -31,14 +27,15 @@ export const UserProfileSection = ({ userDetails, onLoginClick }: UserProfileSec
             >
                 <button
                     onClick={onLoginClick}
-                    className="mt-2 text-xl"
+                    className="flex items-center focus:outline-none focus:ring-2 focus:ring-sky-300 focus:ring-offset-1 rounded-full transition-all duration-200"
                     title={userDetails ? "Profile" : "Login"}
                 >
                     {userDetails ? (
                         <UserIcon user={userDetails} />
                     ) : (
-                        <div className="w-10 h-10 rounded-full shadow-sm bg-sky-100 mx-auto mb-4 text-gray-700 flex items-center justify-center">
-                            <FiLogIn />
+                        <div className="h-9 flex items-center gap-1.5 border border-sky-300 text-sky-600 bg-sky-50 rounded-full px-4 text-sm font-medium hover:bg-sky-100 hover:border-sky-500 transition-all duration-200">
+                            <FiLogIn className="text-base" />
+                            <span>Login</span>
                         </div>
                     )}
                 </button>
