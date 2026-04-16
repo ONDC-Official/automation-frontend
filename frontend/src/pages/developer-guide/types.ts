@@ -108,6 +108,7 @@ export interface FlowStep {
         generate?: string;
         validate?: string;
         requirements?: string;
+        defaultPayload?: any;
         [key: string]: unknown;
     };
 }
