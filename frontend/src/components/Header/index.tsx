@@ -30,9 +30,17 @@ const Header = ({ onSupportClick }: HeaderProps) => {
         onSupportClick,
     });
 
+    const env = import.meta.env.VITE_ENVIRONMENT;
+    const isDev = env && env === "development";
+
     return (
         <header className="fixed top-0 left-0 right-0 z-50">
             <div className="h-0.5 bg-gradient-to-r from-sky-400 via-sky-500 to-sky-600" />
+            {isDev && (
+                <div className="bg-amber-400 text-amber-900 text-xs font-semibold text-center py-0.5 tracking-wide uppercase">
+                    {env} environment — not a production release
+                </div>
+            )}
             <div className="bg-white/95 backdrop-blur-md border-b border-gray-100 shadow-[0_2px_20px_rgba(0,0,0,0.06)] max-h-20">
                 <nav className="container mx-auto flex items-center justify-between px-6 h-20">
                     <Logo />
