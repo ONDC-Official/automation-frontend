@@ -123,17 +123,14 @@ const FlowInformation: FC<FlowInformationProps> = ({
         [validationTable, apiForValidations]
     );
     const hasXValidations = !!selectedValidations;
+    const canShowChatbot = Boolean(selectedStep) && domain === "FIS12" && version === "2.3.0";
 
     const hasTabs = hasExampleObject || hasXValidations || !!selectedStep;
 
     useEffect(() => {
-        const validSections: Section[] = [
-            "preview",
-            "x-validations",
-            "request",
-            "response",
-            "chatbot",
-        ];
+        const validSections: Section[] = canShowChatbot
+            ? ["preview", "x-validations", "request", "response", "chatbot"]
+            : ["preview", "x-validations", "request", "response"];
 
         if (isFirstActionEffect.current) {
             isFirstActionEffect.current = false;
@@ -172,7 +169,7 @@ const FlowInformation: FC<FlowInformationProps> = ({
         } else {
             setShowPreviewDetails(false);
         }
-    }, [selectedFlowAction, scheduleShowDetails]);
+    }, [selectedFlowAction, scheduleShowDetails, canShowChatbot, searchParams]);
 
     if (isEmpty) {
         return (
@@ -290,7 +287,7 @@ const FlowInformation: FC<FlowInformationProps> = ({
                                                 id: "chatbot",
                                                 label: "Chatbot",
                                                 icon: AiFillBoxPlot,
-                                                visible: !!selectedStep,
+                                                visible: canShowChatbot,
                                             },
                                         ] satisfies TabItem<Section>[]
                                     }
@@ -387,7 +384,7 @@ const FlowInformation: FC<FlowInformationProps> = ({
                                 )}
 
                             {/* Chatbot tab */}
-                            {activeSection === "chatbot" && selectedStep && (
+                            {activeSection === "chatbot" && canShowChatbot && selectedStep && (
                                 <Chatbot
                                     domain={domain}
                                     version={version}
