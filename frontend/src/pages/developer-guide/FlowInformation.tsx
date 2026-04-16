@@ -9,8 +9,10 @@ import ActionOverview from "./ActionOverview";
 import { FlowActionDetails } from "./flowActionDetails";
 import Loader from "@components/ui/mini-components/loader";
 import ValidationsTable from "./ValidationsTable";
+import Chatbot from "@components/Chatbot";
 import { RequestTab, ResponseTab } from "./RequestResponseTabs";
 import { fetchValidationTable } from "@services/developerGuideSpecApi";
+import { AiFillBoxPlot } from "react-icons/ai";
 
 interface FlowInformationProps {
     data: OpenAPISpecification;
@@ -47,7 +49,7 @@ function getExamplesFromStep(
     return [];
 }
 
-type Section = "preview" | "x-validations" | "request" | "response";
+type Section = "preview" | "x-validations" | "request" | "response" | "chatbot";
 
 const FlowInformation: FC<FlowInformationProps> = ({
     data,
@@ -123,11 +125,14 @@ const FlowInformation: FC<FlowInformationProps> = ({
         [validationTable, apiForValidations]
     );
     const hasXValidations = !!selectedValidations;
+    const canShowChatbot = Boolean(selectedStep) && domain === "FIS12" && version === "2.3.0";
 
     const hasTabs = hasExampleObject || hasXValidations || !!selectedStep;
 
     useEffect(() => {
-        const validSections: Section[] = ["preview", "x-validations", "request", "response"];
+        const validSections: Section[] = canShowChatbot
+            ? ["preview", "x-validations", "request", "response", "chatbot"]
+            : ["preview", "x-validations", "request", "response"];
 
         if (isFirstActionEffect.current) {
             isFirstActionEffect.current = false;
@@ -166,7 +171,7 @@ const FlowInformation: FC<FlowInformationProps> = ({
         } else {
             setShowPreviewDetails(false);
         }
-    }, [selectedFlowAction, scheduleShowDetails]);
+    }, [selectedFlowAction, scheduleShowDetails, canShowChatbot, searchParams]);
 
     if (isEmpty) {
         return (
@@ -246,7 +251,9 @@ const FlowInformation: FC<FlowInformationProps> = ({
                                               ? "Request"
                                               : activeSection === "response"
                                                 ? "Response"
-                                                : "Validations"}
+                                                : activeSection === "chatbot"
+                                                  ? "Chatbot"
+                                                  : "Validations"}
                                     </h3>
                                 </div>
                                 <SegmentedTabs<Section>
@@ -277,6 +284,12 @@ const FlowInformation: FC<FlowInformationProps> = ({
                                                 label: "Validations",
                                                 icon: FiShield,
                                                 visible: hasXValidations,
+                                            },
+                                            {
+                                                id: "chatbot",
+                                                label: "Chatbot",
+                                                icon: AiFillBoxPlot,
+                                                visible: canShowChatbot,
                                             },
                                         ] satisfies TabItem<Section>[]
                                     }
@@ -371,6 +384,17 @@ const FlowInformation: FC<FlowInformationProps> = ({
                                 selectedValidations && (
                                     <ValidationsTable validations={selectedValidations} />
                                 )}
+
+                            {/* Chatbot tab */}
+                            {activeSection === "chatbot" && canShowChatbot && selectedStep && (
+                                <Chatbot
+                                    domain={domain}
+                                    version={version}
+                                    flowId={selectedFlowData?.flowId ?? selectedFlow}
+                                    actionId={selectedFlowAction}
+                                    actionApi={selectedStep.api ?? selectedFlowAction}
+                                />
+                            )}
                         </div>
                     )}
                 </>
