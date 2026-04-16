@@ -9,8 +9,10 @@ import ActionOverview from "./ActionOverview";
 import { FlowActionDetails } from "./flowActionDetails";
 import Loader from "@components/ui/mini-components/loader";
 import ValidationsTable from "./ValidationsTable";
+import Chatbot from "@components/Chatbot";
 import { RequestTab, ResponseTab } from "./RequestResponseTabs";
 import { fetchValidationTable } from "@services/developerGuideSpecApi";
+import { AiFillBoxPlot } from "react-icons/ai";
 
 interface FlowInformationProps {
     data: OpenAPISpecification;
@@ -45,7 +47,7 @@ function getExamplesFromStep(
     return [];
 }
 
-type Section = "preview" | "x-validations" | "request" | "response";
+type Section = "preview" | "x-validations" | "request" | "response" | "chatbot";
 
 const FlowInformation: FC<FlowInformationProps> = ({
     data,
@@ -125,7 +127,13 @@ const FlowInformation: FC<FlowInformationProps> = ({
     const hasTabs = hasExampleObject || hasXValidations || !!selectedStep;
 
     useEffect(() => {
-        const validSections: Section[] = ["preview", "x-validations", "request", "response"];
+        const validSections: Section[] = [
+            "preview",
+            "x-validations",
+            "request",
+            "response",
+            "chatbot",
+        ];
 
         if (isFirstActionEffect.current) {
             isFirstActionEffect.current = false;
@@ -244,7 +252,9 @@ const FlowInformation: FC<FlowInformationProps> = ({
                                               ? "Request"
                                               : activeSection === "response"
                                                 ? "Response"
-                                                : "Validations"}
+                                                : activeSection === "chatbot"
+                                                  ? "Chatbot"
+                                                  : "Validations"}
                                     </h3>
                                 </div>
                                 <SegmentedTabs<Section>
@@ -275,6 +285,12 @@ const FlowInformation: FC<FlowInformationProps> = ({
                                                 label: "Validations",
                                                 icon: FiShield,
                                                 visible: hasXValidations,
+                                            },
+                                            {
+                                                id: "chatbot",
+                                                label: "Chatbot",
+                                                icon: AiFillBoxPlot,
+                                                visible: !!selectedStep,
                                             },
                                         ] satisfies TabItem<Section>[]
                                     }
@@ -369,6 +385,17 @@ const FlowInformation: FC<FlowInformationProps> = ({
                                 selectedValidations && (
                                     <ValidationsTable validations={selectedValidations} />
                                 )}
+
+                            {/* Chatbot tab */}
+                            {activeSection === "chatbot" && selectedStep && (
+                                <Chatbot
+                                    domain={domain}
+                                    version={version}
+                                    flowId={selectedFlowData?.flowId ?? selectedFlow}
+                                    actionId={selectedFlowAction}
+                                    actionApi={selectedStep.api ?? selectedFlowAction}
+                                />
+                            )}
                         </div>
                     )}
                 </>
