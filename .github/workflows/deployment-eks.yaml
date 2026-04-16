@@ -4,8 +4,8 @@ on:
   workflow_dispatch:
   push:
     branches:
+      - testing-eks
       - release-staging
-      - main
 
 permissions:
   packages: write
@@ -13,6 +13,9 @@ permissions:
 jobs:
   # ──────────────────────────────────────────────
   # Job 1: Read semver, compute image tag and target file
+  # - Read version from frontend/package.json
+  # - Compose tag as <env>-<semver>-<short-sha>
+  # - Do NOT auto-increment in CI
   # ──────────────────────────────────────────────
   version:
     runs-on: ubuntu-latest
@@ -30,17 +33,16 @@ jobs:
       - name: Read version and build image tag
         id: set
         run: |
+          # Read semver from frontend/package.json
           VERSION=$(node -p "require('./frontend/package.json').version")
+
+          # Short SHA for traceability
           SHORT_SHA=$(git rev-parse --short=7 HEAD)
 
-          BRANCH="${{ github.ref_name }}"
-
-          if [ "$BRANCH" = "release-staging" ]; then
+          # Environment mapping: main -> prod, others -> dev
+          if [ "${{ github.ref_name }}" = "main" ]; then
             ENV=prod
             TARGET="k8/aws/helm/service-layer/values-prod.yaml"
-          elif [ "$BRANCH" = "main" ]; then
-            ENV=dev
-            TARGET="k8/aws/helm/service-layer/values.yaml"
           else
             ENV=dev
             TARGET="k8/aws/helm/service-layer/values.yaml"
@@ -54,7 +56,7 @@ jobs:
           echo "target_file=${TARGET}"   >> $GITHUB_OUTPUT
 
   # ──────────────────────────────────────────────
-  # Job 2a: Build & push backend image
+  # Job 2a: Build & push backend image (parallel)
   # ──────────────────────────────────────────────
   build-backend:
     needs: version
@@ -80,7 +82,7 @@ jobs:
           images: ghcr.io/ondc-official/automation-frontend/backend
           tags: |
             ${{ needs.version.outputs.image_tag }}
-            ${{ github.ref_name == 'release-staging' && 'latest' || '' }}
+            ${{ github.ref_name == 'main' && 'latest' || '' }}
           labels: |
             org.opencontainers.image.revision=${{ github.sha }}
             org.opencontainers.image.source=${{ github.event.repository.html_url }}
@@ -98,7 +100,7 @@ jobs:
           cache-to: type=gha,mode=max,scope=backend
 
   # ──────────────────────────────────────────────
-  # Job 2b: Build & push frontend image
+  # Job 2b: Build & push frontend image (parallel)
   # ──────────────────────────────────────────────
   build-frontend:
     needs: version
@@ -125,7 +127,7 @@ jobs:
           images: ghcr.io/ondc-official/automation-frontend/frontend
           tags: |
             ${{ needs.version.outputs.image_tag }}
-            ${{ github.ref_name == 'release-staging' && 'latest' || '' }}
+            ${{ github.ref_name == 'main' && 'latest' || '' }}
           labels: |
             org.opencontainers.image.revision=${{ github.sha }}
             org.opencontainers.image.source=${{ github.event.repository.html_url }}
@@ -184,9 +186,11 @@ jobs:
           current_section = None
           result = []
           for line in lines:
+              # Track top-level YAML keys (no leading whitespace)
               if re.match(r'^[a-zA-Z]', line):
                   current_section = line.strip().rstrip(':').split(':')[0]
 
+              # Replace tag: under uiBackend or uiFrontend sections
               if current_section in ('uiBackend', 'uiFrontend') and re.match(r'^\s+tag:\s', line):
                   line = re.sub(r'(tag:\s*).*', rf'\g<1>{image_tag}', line)
 
