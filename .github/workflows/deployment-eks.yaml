@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - testing-eks
+      - main
       - release-staging
 
 permissions:
@@ -39,8 +39,8 @@ jobs:
           # Short SHA for traceability
           SHORT_SHA=$(git rev-parse --short=7 HEAD)
 
-          # Environment mapping: main -> prod, others -> dev
-          if [ "${{ github.ref_name }}" = "main" ]; then
+          # Environment mapping: release-staging -> prod, main -> dev
+          if [ "${{ github.ref_name }}" = "release-staging" ]; then
             ENV=prod
             TARGET="k8/aws/helm/service-layer/values-prod.yaml"
           else
@@ -82,7 +82,7 @@ jobs:
           images: ghcr.io/ondc-official/automation-frontend/backend
           tags: |
             ${{ needs.version.outputs.image_tag }}
-            ${{ github.ref_name == 'main' && 'latest' || '' }}
+            ${{ github.ref_name == 'release-staging' && 'latest' || '' }}
           labels: |
             org.opencontainers.image.revision=${{ github.sha }}
             org.opencontainers.image.source=${{ github.event.repository.html_url }}
@@ -127,7 +127,7 @@ jobs:
           images: ghcr.io/ondc-official/automation-frontend/frontend
           tags: |
             ${{ needs.version.outputs.image_tag }}
-            ${{ github.ref_name == 'main' && 'latest' || '' }}
+            ${{ github.ref_name == 'release-staging' && 'latest' || '' }}
           labels: |
             org.opencontainers.image.revision=${{ github.sha }}
             org.opencontainers.image.source=${{ github.event.repository.html_url }}
@@ -137,7 +137,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: frontend
-          file: frontend/Dockerfile
+          file: frontend/Dockerfile.eks
           push: true
           tags: ${{ steps.meta-frontend.outputs.tags }}
           labels: ${{ steps.meta-frontend.outputs.labels }}
