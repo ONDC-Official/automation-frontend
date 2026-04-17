@@ -37,7 +37,7 @@ export function SegmentedTabs<T extends string = string>({
                         key={tab.id}
                         type="button"
                         onClick={() => onChange(tab.id)}
-                        className={`group flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                        className={`group flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all duration-200 ${
                             isActive
                                 ? "bg-white text-sky-600 shadow-sm border border-sky-100 ring-1 ring-sky-200/50"
                                 : "text-slate-500 hover:text-slate-700 hover:bg-white/60"
