@@ -133,10 +133,10 @@ const FlowInformation: FC<FlowInformationProps> = ({
         const validSections: Section[] = canShowChatbot
             ? ["preview", "x-validations", "request", "response", "chatbot"]
             : ["preview", "x-validations", "request", "response"];
+        const urlTab = searchParams.get("tab") as Section | null;
 
         if (isFirstActionEffect.current) {
             isFirstActionEffect.current = false;
-            const urlTab = searchParams.get("tab") as Section | null;
             if (urlTab && validSections.includes(urlTab)) {
                 setActiveSection(urlTab);
                 if (urlTab === "preview") {
@@ -144,6 +144,20 @@ const FlowInformation: FC<FlowInformationProps> = ({
                 }
                 return;
             }
+        }
+
+        // Keep section in sync with URL tab changes (e.g. browser nav or tab click),
+        // and avoid resetting to default on every search param update.
+        if (urlTab && validSections.includes(urlTab)) {
+            if (activeSection !== urlTab) {
+                setActiveSection(urlTab);
+                if (urlTab === "preview") {
+                    scheduleShowDetails();
+                } else {
+                    setShowPreviewDetails(false);
+                }
+            }
+            return;
         }
 
         const defaultSection: Section = hasExampleObject
