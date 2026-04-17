@@ -125,7 +125,7 @@ const FlowInformation: FC<FlowInformationProps> = ({
         [validationTable, apiForValidations]
     );
     const hasXValidations = !!selectedValidations;
-    const canShowChatbot = Boolean(selectedStep) && domain === "FIS12" && version === "2.3.0";
+    const canShowChatbot = Boolean(selectedStep) && domain === "ONDC:FIS12" && version === "2.3.0";
 
     const hasTabs = hasExampleObject || hasXValidations || !!selectedStep;
 
