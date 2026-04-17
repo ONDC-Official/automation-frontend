@@ -53,6 +53,38 @@ const ChatMessages: FC<ChatMessagesProps> = ({
                         opacity: 1;
                     }
                 }
+
+                .chatbot-markdown table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    margin-top: 0.75rem;
+                    margin-bottom: 0.75rem;
+                    font-size: 0.8125rem;
+                    line-height: 1.35;
+                }
+
+                .chatbot-markdown th,
+                .chatbot-markdown td {
+                    border: 1px solid rgb(226 232 240);
+                    padding: 0.5rem 0.625rem;
+                    vertical-align: top;
+                    text-align: left;
+                }
+
+                .chatbot-markdown th {
+                    background: rgb(248 250 252);
+                    font-weight: 600;
+                    color: rgb(51 65 85);
+                }
+
+                .chatbot-markdown tr:nth-child(even) td {
+                    background: rgb(248 250 252 / 0.45);
+                }
+
+                .chatbot-markdown table code {
+                    white-space: pre-wrap;
+                    word-break: break-word;
+                }
             `}
         </style>
         {messages.map((message, index) => {
@@ -87,7 +119,7 @@ const ChatMessages: FC<ChatMessagesProps> = ({
                             <p className="whitespace-pre-wrap">{message.text}</p>
                         ) : (
                             <div
-                                className="prose prose-sm max-w-none prose-pre:rounded-lg prose-pre:bg-slate-900 prose-code:before:content-[''] prose-code:after:content-['']"
+                                className="chatbot-markdown prose prose-sm max-w-none prose-pre:rounded-lg prose-pre:bg-slate-900 prose-code:before:content-[''] prose-code:after:content-['']"
                                 dangerouslySetInnerHTML={{ __html: message.html }}
                             />
                         )}
