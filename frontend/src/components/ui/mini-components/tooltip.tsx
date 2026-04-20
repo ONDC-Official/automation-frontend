@@ -15,7 +15,7 @@ const CustomTooltip = ({ content, children }: { content: string; children: React
             placement="right"
             animation="perspective-subtle"
             zIndex={9999}
-            appendTo={document.body} // Ensures the tooltip is rendered outside parent containers
+            appendTo={() => document.fullscreenElement as Element ?? document.body}
         >
             {children}
         </Tippy>

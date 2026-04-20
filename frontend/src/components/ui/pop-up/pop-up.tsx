@@ -59,7 +59,7 @@ export default function Popup({
                     )}
                 </div>
             </div>,
-            document.body
+            document.fullscreenElement ?? document.body
         );
     }
 
@@ -103,6 +103,6 @@ export default function Popup({
                 </div>
             </div>
         </div>,
-        document.body
+        document.fullscreenElement ?? document.body
     );
 }

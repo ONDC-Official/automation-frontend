@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 
 import { PlaygroundContext } from "@pages/protocol-playground/context/playground-context";
 import Popup from "@components/ui/pop-up/pop-up";
@@ -16,6 +16,8 @@ import { FaEdit } from "react-icons/fa";
 import MockRunner, { MockPlaygroundConfigType } from "@ondc/automation-mock-runner";
 import { toast } from "react-toastify";
 import { RawConfigEditorModal } from "@pages/protocol-playground/ui/raw-config-editor-modal";
+import { PlaygroundHelpModal } from "@pages/protocol-playground/ui/playground-help-modal";
+import { FlowInfoModal } from "@pages/protocol-playground/ui/flow-info-modal";
 
 const PlaygroundPage = () => {
     const playgroundContext = useContext(PlaygroundContext);
@@ -53,10 +55,29 @@ const PlaygroundPage = () => {
     const [isRawEditorOpen, setIsRawEditorOpen] = useState(false);
     const [rawConfigValue, setRawConfigValue] = useState("");
     const [rawConfigError, setRawConfigError] = useState<string | null>(null);
+    const [isHelpOpen, setIsHelpOpen] = useState(false);
+    const [isFlowInfoOpen, setIsFlowInfoOpen] = useState(false);
 
     const isTransactionViewerActive = activeRightTab === "transaction";
     const leftPanelWidth = isTransactionViewerActive ? "w-[30%]" : "w-1/2";
     const rightPanelWidth = isTransactionViewerActive ? "w-[70%]" : "w-1/2";
+
+    const containerRef = useRef<HTMLDivElement>(null);
+    const [isFullscreen, setIsFullscreen] = useState(false);
+
+    useEffect(() => {
+        const handleFullscreenChange = () => setIsFullscreen(!!document.fullscreenElement);
+        document.addEventListener("fullscreenchange", handleFullscreenChange);
+        return () => document.removeEventListener("fullscreenchange", handleFullscreenChange);
+    }, []);
+
+    const toggleFullscreen = () => {
+        if (!document.fullscreenElement) {
+            containerRef.current?.requestFullscreen();
+        } else {
+            document.exitFullscreen();
+        }
+    };
 
     const [devMode, setDevMode] = useState<boolean>(true);
     useEffect(() => {
@@ -118,7 +139,7 @@ const PlaygroundPage = () => {
     }
 
     return (
-        <div className="w-full h-screen min-h-screen flex flex-col">
+        <div ref={containerRef} className="w-full h-screen min-h-screen flex flex-col bg-white">
             <div>
                 <PlaygroundHeader
                     domain={playgroundContext.config?.meta.domain || "N/A"}
@@ -136,6 +157,10 @@ const PlaygroundPage = () => {
                         await runCurrentConfig();
                     }}
                     onBack={handleBack}
+                    onHelp={() => setIsHelpOpen(true)}
+                    onEditMeta={() => setIsFlowInfoOpen(true)}
+                    isFullscreen={isFullscreen}
+                    onToggleFullscreen={toggleFullscreen}
                 />
                 <ActionTimeline
                     steps={playgroundContext.config?.steps || []}
@@ -149,7 +174,7 @@ const PlaygroundPage = () => {
                     onAddAfter={modalHandlers.addActionAfter}
                 />
             </div>
-            <div className="flex gap-4 h-full mt-1 max-h-[82vh]">
+            <div className={`flex gap-4 mt-1 ${isFullscreen ? "flex-1 overflow-hidden" : "h-full max-h-[82vh]"}`}>
                 <LeftSideView width={leftPanelWidth} activeApi={activeApi} />
                 <RightSideView
                     width={rightPanelWidth}
@@ -182,6 +207,15 @@ const PlaygroundPage = () => {
                 {popupContent}
             </Popup>
             {playgroundContext.loading && <FullPageLoader />}
+            <PlaygroundHelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
+            {playgroundContext.config && (
+                <FlowInfoModal
+                    isOpen={isFlowInfoOpen}
+                    meta={playgroundContext.config.meta}
+                    onSave={playgroundContext.updateConfigMeta}
+                    onClose={() => setIsFlowInfoOpen(false)}
+                />
+            )}
         </div>
     );
 };

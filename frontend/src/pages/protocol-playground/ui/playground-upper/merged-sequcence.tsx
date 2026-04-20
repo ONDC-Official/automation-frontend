@@ -76,7 +76,7 @@ export const ActionTimeline = ({
                                 arrow={false}
                                 offset={[0, 12]}
                                 maxWidth="none"
-                                appendTo={() => document.body}
+                                appendTo={() => document.fullscreenElement as Element ?? document.body}
                             >
                                 <button
                                     onClick={() => onApiSelect(action.id)}
