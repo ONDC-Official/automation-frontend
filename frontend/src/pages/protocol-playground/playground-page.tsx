@@ -12,12 +12,12 @@ import { usePlaygroundActions } from "@pages/protocol-playground/hooks/use-playg
 import FullPageLoader from "@components/ui/mini-components/fullpage-loader";
 import { ActionTimeline } from "@pages/protocol-playground/ui/playground-upper/merged-sequcence";
 import ViewOnlyPlaygroundPage from "@pages/protocol-playground/view-only-page";
-import { FaEdit } from "react-icons/fa";
 import MockRunner, { MockPlaygroundConfigType } from "@ondc/automation-mock-runner";
 import { toast } from "react-toastify";
 import { RawConfigEditorModal } from "@pages/protocol-playground/ui/raw-config-editor-modal";
 import { PlaygroundHelpModal } from "@pages/protocol-playground/ui/playground-help-modal";
 import { FlowInfoModal } from "@pages/protocol-playground/ui/flow-info-modal";
+import { ExportReviewModal } from "@pages/protocol-playground/ui/export-review-modal";
 
 const PlaygroundPage = () => {
     const playgroundContext = useContext(PlaygroundContext);
@@ -26,12 +26,13 @@ const PlaygroundPage = () => {
 
     const {
         exportConfig,
-        exportConfigForDeployment,
         importConfig,
         clearConfig,
         runConfig,
         runCurrentConfig,
         createFlowSession,
+        runAllStepsForExport,
+        finalizeExportForDeployment,
     } = useConfigOperations();
 
     const handleBack = () => {
@@ -57,6 +58,8 @@ const PlaygroundPage = () => {
     const [rawConfigError, setRawConfigError] = useState<string | null>(null);
     const [isHelpOpen, setIsHelpOpen] = useState(false);
     const [isFlowInfoOpen, setIsFlowInfoOpen] = useState(false);
+    const [exportReviewConfig, setExportReviewConfig] = useState<MockPlaygroundConfigType | null>(null);
+    const [isExportDownloading, setIsExportDownloading] = useState(false);
 
     const isTransactionViewerActive = activeRightTab === "transaction";
     const leftPanelWidth = isTransactionViewerActive ? "w-[30%]" : "w-1/2";
@@ -126,6 +129,27 @@ const PlaygroundPage = () => {
         }
     };
 
+    const handleExportForDeployment = async () => {
+        const snapshot = await runAllStepsForExport();
+        if (snapshot) setExportReviewConfig(snapshot);
+    };
+
+    const handleExportConfirm = async (overrides: Record<string, string>) => {
+        if (!exportReviewConfig) return;
+        setIsExportDownloading(true);
+        try {
+            await finalizeExportForDeployment(exportReviewConfig, overrides);
+        } finally {
+            setIsExportDownloading(false);
+            setExportReviewConfig(null);
+        }
+    };
+
+    const handleExportCancel = () => {
+        setExportReviewConfig(null);
+        toast.info("Export cancelled. Steps remain executed.");
+    };
+
     if (!devMode) {
         return (
             <div>
@@ -152,13 +176,14 @@ const PlaygroundPage = () => {
                         await runConfig();
                     }}
                     onCreateFlowSession={createFlowSession}
-                    onExportForDeployment={exportConfigForDeployment}
+                    onExportForDeployment={handleExportForDeployment}
                     onRunCurrent={async () => {
                         await runCurrentConfig();
                     }}
                     onBack={handleBack}
                     onHelp={() => setIsHelpOpen(true)}
                     onEditMeta={() => setIsFlowInfoOpen(true)}
+                    onEditRaw={openRawEditor}
                     isFullscreen={isFullscreen}
                     onToggleFullscreen={toggleFullscreen}
                 />
@@ -182,15 +207,6 @@ const PlaygroundPage = () => {
                     setActiveRightTab={setActiveRightTab}
                     activeApi={activeApi}
                 />
-            </div>
-            <div className="flex justify-start gap-4 ml-2 mt-2 mb-2">
-                <button
-                    onClick={openRawEditor}
-                    className="flex items-center gap-2 px-3 py-1.5 bg-gray-800 rounded-lg text-white border border-gray-100 hover:bg-gray-900 hover:scale-105 transition-transform shadow-sm"
-                >
-                    <FaEdit size={16} />
-                    <span className="font-semibold text-sm">Edit raw</span>
-                </button>
             </div>
             <RawConfigEditorModal
                 isOpen={isRawEditorOpen}
@@ -216,6 +232,12 @@ const PlaygroundPage = () => {
                     onClose={() => setIsFlowInfoOpen(false)}
                 />
             )}
+            <ExportReviewModal
+                config={exportReviewConfig}
+                onConfirm={handleExportConfirm}
+                onCancel={handleExportCancel}
+                isDownloading={isExportDownloading}
+            />
         </div>
     );
 };

@@ -7,6 +7,7 @@ import {
     FaDownload,
     FaUpload,
     FaPencilAlt,
+    FaEdit,
 } from "react-icons/fa";
 import { GrRedo } from "react-icons/gr";
 import { IoMdSkipForward, IoMdTrash } from "react-icons/io";
@@ -27,6 +28,7 @@ interface PlaygroundHeaderProps {
     onBack: () => void;
     onHelp: () => void;
     onEditMeta: () => void;
+    onEditRaw: () => void;
     isFullscreen?: boolean;
     onToggleFullscreen?: () => void;
 }
@@ -35,10 +37,12 @@ const FileMenu = ({
     onExport,
     onImport,
     onExportForDeployment,
+    onEditRaw,
 }: {
     onExport: () => void;
     onImport: () => void;
     onExportForDeployment: () => void;
+    onEditRaw: () => void;
 }) => {
     const [open, setOpen] = useState(false);
     const ref = useRef<HTMLDivElement>(null);
@@ -103,6 +107,17 @@ const FileMenu = ({
                         <TbDatabaseExport size={14} className="text-emerald-500 shrink-0" />
                         Export Deployment YAML
                     </button>
+                    <div className="my-1 border-t border-gray-100" />
+                    <button
+                        className={item}
+                        onClick={() => {
+                            onEditRaw();
+                            setOpen(false);
+                        }}
+                    >
+                        <FaEdit size={13} className="text-gray-500 shrink-0" />
+                        Edit Raw Config
+                    </button>
                 </div>
             )}
         </div>
@@ -123,6 +138,7 @@ export const PlaygroundHeader = ({
     onBack,
     onHelp,
     onEditMeta,
+    onEditRaw,
     isFullscreen,
     onToggleFullscreen,
 }: PlaygroundHeaderProps) => (
@@ -177,6 +193,7 @@ export const PlaygroundHeader = ({
                 onExport={onExport}
                 onImport={onImport}
                 onExportForDeployment={onExportForDeployment}
+                onEditRaw={onEditRaw}
             />
 
             <IconButton

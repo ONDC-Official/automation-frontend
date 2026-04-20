@@ -15,6 +15,7 @@ export default function Popup({
     disableClose?: boolean;
 }) {
     const [isVisible, setIsVisible] = useState(false);
+    const [isShown, setIsShown] = useState(false);
     const [isMinimized, setIsMinimized] = useState(false);
     const { activeCallClickedToggle } = useSession();
 
@@ -25,8 +26,11 @@ export default function Popup({
     useEffect(() => {
         if (isOpen) {
             setIsVisible(true);
-            setIsMinimized(false); // Reset minimized state when reopened
+            setIsMinimized(false);
+            // Two rAF calls ensure the browser paints the hidden state before transitioning in
+            requestAnimationFrame(() => requestAnimationFrame(() => setIsShown(true)));
         } else {
+            setIsShown(false);
             const timer = setTimeout(() => setIsVisible(false), 300);
             return () => clearTimeout(timer);
         }
@@ -66,7 +70,7 @@ export default function Popup({
     return ReactDOM.createPortal(
         <div
             className={`fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 transition-opacity duration-300 p-4 ${
-                isOpen ? "opacity-100" : "opacity-0"
+                isShown ? "opacity-100" : "opacity-0"
             }`}
             onClick={() => {
                 if (!disableClose && onClose) onClose();
@@ -74,7 +78,7 @@ export default function Popup({
         >
             <div
                 className={`bg-white rounded-lg shadow-lg p-4 w-full max-w-md sm:max-w-lg md:max-w-xl lg:max-w-2xl max-h-[90vh] relative transition-transform duration-300 transform overflow-y-auto overflow-x-hidden ${
-                    isOpen ? "scale-100" : "scale-95"
+                    isShown ? "scale-100" : "scale-95"
                 }`}
                 style={{ scrollbarWidth: "thin", scrollbarColor: "#d1d5db #f3f4f6" }}
                 onClick={(e) => e.stopPropagation()}

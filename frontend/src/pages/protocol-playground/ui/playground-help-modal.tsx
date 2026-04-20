@@ -5,7 +5,6 @@ import {
     FaChevronRight,
     FaCode,
     FaDownload,
-    FaPlay,
     FaQuestionCircle,
     FaTimes,
 } from "react-icons/fa";
