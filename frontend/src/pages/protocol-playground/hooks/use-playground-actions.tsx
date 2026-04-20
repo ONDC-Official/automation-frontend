@@ -29,7 +29,7 @@ export const usePlaygroundActions = () => {
             return;
         }
         let newStep;
-        if (stepType === "form" && api === "dynamic_form") {
+        if (stepType === "form" && (api === "dynamic_form" || api === "html_form")) {
             newStep = new MockRunner(currentConfig).getDefaultStep(api, actionId, api);
         } else {
             newStep = new MockRunner(currentConfig).getDefaultStep(api, actionId);

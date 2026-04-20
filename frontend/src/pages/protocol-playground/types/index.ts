@@ -27,7 +27,7 @@ export const ONDC_ACTION_LIST = [
     "on_report",
 ] as const;
 
-export const ONDC_FORM_LIST = ["dynamic_form", "html_form (not-implemented-yet"];
+export const ONDC_FORM_LIST = ["dynamic_form", "html_form"];
 
 export type PlaygroundLeftTabType = "generator" | "default" | "inputs" | "requirements";
 export type PlaygroundRightTabType =
