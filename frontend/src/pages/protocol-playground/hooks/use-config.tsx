@@ -348,32 +348,40 @@ export const useConfigOperations = () => {
         }
     };
 
-    const exportConfigForDeployment = async () => {
+    const runAllStepsForExport = async (): Promise<MockPlaygroundConfigType | null> => {
         if (!playgroundContext.config) {
             toast.error("No configuration to export");
-            return;
+            return null;
         }
-
         try {
             playgroundContext.resetTransactionHistory();
-
-            // Run every step exactly like runCurrentConfig does, with full form/input support
             for (const step of playgroundContext.config.steps) {
                 const res = await runConfig();
                 if (!res?.success) {
                     toast.error(`Export stopped at step "${step.action_id}"`);
-                    return;
+                    return null;
                 }
             }
+            return JSON.parse(JSON.stringify(playgroundContext.config)) as MockPlaygroundConfigType;
+        } catch (e) {
+            console.error("Error running steps for export:", e);
+            toast.error("Export failed: " + (e instanceof Error ? e.message : "Unknown error"));
+            return null;
+        }
+    };
 
-            // All steps ran — clone the now-populated config
-            const config: MockPlaygroundConfigType = JSON.parse(
-                JSON.stringify(playgroundContext.config)
-            );
-
-            // Map each transaction history entry's payload into the matching step's examples
-            for (const historyEntry of config.transaction_history) {
-                const step = config.steps.find((s) => s.action_id === historyEntry.action_id);
+    const finalizeExportForDeployment = async (
+        snapshot: MockPlaygroundConfigType,
+        descriptionOverrides: Record<string, string>
+    ): Promise<void> => {
+        try {
+            for (const step of snapshot.steps) {
+                if (Object.prototype.hasOwnProperty.call(descriptionOverrides, step.action_id)) {
+                    step.description = descriptionOverrides[step.action_id];
+                }
+            }
+            for (const historyEntry of snapshot.transaction_history) {
+                const step = snapshot.steps.find((s) => s.action_id === historyEntry.action_id);
                 if (step && historyEntry.payload !== undefined) {
                     step.examples = [
                         {
@@ -385,22 +393,25 @@ export const useConfigOperations = () => {
                     ];
                 }
             }
-
-            // Clear transaction history for deployment artifact
-            config.transaction_history = [];
-
-            const dataStr = yamlStringify(config);
-            const flowName = `${config.meta.flowId}_deployment_config`;
+            snapshot.transaction_history = [];
+            const dataStr = yamlStringify(snapshot);
+            const flowName = `${snapshot.meta.flowId}_deployment_config`;
             const dataUri = "data:application/yaml;charset=utf-8," + encodeURIComponent(dataStr);
-            const linkElement = document.createElement("a");
-            linkElement.setAttribute("href", dataUri);
-            linkElement.setAttribute("download", `${flowName}.yaml`);
-            linkElement.click();
+            const link = document.createElement("a");
+            link.setAttribute("href", dataUri);
+            link.setAttribute("download", `${flowName}.yaml`);
+            link.click();
             toast.success("Deployment configuration exported successfully");
         } catch (e) {
-            console.error("Error exporting config for deployment:", e);
+            console.error("Error finalizing export:", e);
             toast.error("Export failed: " + (e instanceof Error ? e.message : "Unknown error"));
         }
+    };
+
+    const exportConfigForDeployment = async () => {
+        const snapshot = await runAllStepsForExport();
+        if (!snapshot) return;
+        await finalizeExportForDeployment(snapshot, {});
     };
 
     return {
@@ -411,5 +422,7 @@ export const useConfigOperations = () => {
         createFlowSession,
         runCurrentConfig,
         exportConfigForDeployment,
+        runAllStepsForExport,
+        finalizeExportForDeployment,
     };
 };

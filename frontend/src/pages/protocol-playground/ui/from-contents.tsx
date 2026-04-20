@@ -126,7 +126,7 @@ export const EditActionForm = ({
     onUpdate: () => void;
     onCancel: () => void;
 }) => (
-    <div className="w-96">
+    <div className="w-full">
         <h2 className="text-lg font-bold mb-4">Edit Action Configuration</h2>
         <div className="grid grid-cols-2 gap-3">
             {/* API Name */}

@@ -50,7 +50,7 @@ const PayloadEditor = ({ onAdd, onClose }: PayloadEditorProps) => {
                     )}
                 </div>
             </div>,
-            document.body
+            document.fullscreenElement ?? document.body
         );
     }
 

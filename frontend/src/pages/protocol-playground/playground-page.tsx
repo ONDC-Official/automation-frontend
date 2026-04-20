@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 
 import { PlaygroundContext } from "@pages/protocol-playground/context/playground-context";
 import Popup from "@components/ui/pop-up/pop-up";
@@ -12,10 +12,12 @@ import { usePlaygroundActions } from "@pages/protocol-playground/hooks/use-playg
 import FullPageLoader from "@components/ui/mini-components/fullpage-loader";
 import { ActionTimeline } from "@pages/protocol-playground/ui/playground-upper/merged-sequcence";
 import ViewOnlyPlaygroundPage from "@pages/protocol-playground/view-only-page";
-import { FaEdit } from "react-icons/fa";
 import MockRunner, { MockPlaygroundConfigType } from "@ondc/automation-mock-runner";
 import { toast } from "react-toastify";
 import { RawConfigEditorModal } from "@pages/protocol-playground/ui/raw-config-editor-modal";
+import { PlaygroundHelpModal } from "@pages/protocol-playground/ui/playground-help-modal";
+import { FlowInfoModal } from "@pages/protocol-playground/ui/flow-info-modal";
+import { ExportReviewModal } from "@pages/protocol-playground/ui/export-review-modal";
 
 const PlaygroundPage = () => {
     const playgroundContext = useContext(PlaygroundContext);
@@ -24,12 +26,13 @@ const PlaygroundPage = () => {
 
     const {
         exportConfig,
-        exportConfigForDeployment,
         importConfig,
         clearConfig,
         runConfig,
         runCurrentConfig,
         createFlowSession,
+        runAllStepsForExport,
+        finalizeExportForDeployment,
     } = useConfigOperations();
 
     const handleBack = () => {
@@ -53,10 +56,31 @@ const PlaygroundPage = () => {
     const [isRawEditorOpen, setIsRawEditorOpen] = useState(false);
     const [rawConfigValue, setRawConfigValue] = useState("");
     const [rawConfigError, setRawConfigError] = useState<string | null>(null);
+    const [isHelpOpen, setIsHelpOpen] = useState(false);
+    const [isFlowInfoOpen, setIsFlowInfoOpen] = useState(false);
+    const [exportReviewConfig, setExportReviewConfig] = useState<MockPlaygroundConfigType | null>(null);
+    const [isExportDownloading, setIsExportDownloading] = useState(false);
 
     const isTransactionViewerActive = activeRightTab === "transaction";
     const leftPanelWidth = isTransactionViewerActive ? "w-[30%]" : "w-1/2";
     const rightPanelWidth = isTransactionViewerActive ? "w-[70%]" : "w-1/2";
+
+    const containerRef = useRef<HTMLDivElement>(null);
+    const [isFullscreen, setIsFullscreen] = useState(false);
+
+    useEffect(() => {
+        const handleFullscreenChange = () => setIsFullscreen(!!document.fullscreenElement);
+        document.addEventListener("fullscreenchange", handleFullscreenChange);
+        return () => document.removeEventListener("fullscreenchange", handleFullscreenChange);
+    }, []);
+
+    const toggleFullscreen = () => {
+        if (!document.fullscreenElement) {
+            containerRef.current?.requestFullscreen();
+        } else {
+            document.exitFullscreen();
+        }
+    };
 
     const [devMode, setDevMode] = useState<boolean>(true);
     useEffect(() => {
@@ -105,6 +129,27 @@ const PlaygroundPage = () => {
         }
     };
 
+    const handleExportForDeployment = async () => {
+        const snapshot = await runAllStepsForExport();
+        if (snapshot) setExportReviewConfig(snapshot);
+    };
+
+    const handleExportConfirm = async (overrides: Record<string, string>) => {
+        if (!exportReviewConfig) return;
+        setIsExportDownloading(true);
+        try {
+            await finalizeExportForDeployment(exportReviewConfig, overrides);
+        } finally {
+            setIsExportDownloading(false);
+            setExportReviewConfig(null);
+        }
+    };
+
+    const handleExportCancel = () => {
+        setExportReviewConfig(null);
+        toast.info("Export cancelled. Steps remain executed.");
+    };
+
     if (!devMode) {
         return (
             <div>
@@ -118,7 +163,7 @@ const PlaygroundPage = () => {
     }
 
     return (
-        <div className="w-full h-screen min-h-screen flex flex-col">
+        <div ref={containerRef} className="w-full h-screen min-h-screen flex flex-col bg-white">
             <div>
                 <PlaygroundHeader
                     domain={playgroundContext.config?.meta.domain || "N/A"}
@@ -131,11 +176,16 @@ const PlaygroundPage = () => {
                         await runConfig();
                     }}
                     onCreateFlowSession={createFlowSession}
-                    onExportForDeployment={exportConfigForDeployment}
+                    onExportForDeployment={handleExportForDeployment}
                     onRunCurrent={async () => {
                         await runCurrentConfig();
                     }}
                     onBack={handleBack}
+                    onHelp={() => setIsHelpOpen(true)}
+                    onEditMeta={() => setIsFlowInfoOpen(true)}
+                    onEditRaw={openRawEditor}
+                    isFullscreen={isFullscreen}
+                    onToggleFullscreen={toggleFullscreen}
                 />
                 <ActionTimeline
                     steps={playgroundContext.config?.steps || []}
@@ -149,7 +199,7 @@ const PlaygroundPage = () => {
                     onAddAfter={modalHandlers.addActionAfter}
                 />
             </div>
-            <div className="flex gap-4 h-full mt-1 max-h-[82vh]">
+            <div className={`flex gap-4 mt-1 ${isFullscreen ? "flex-1 overflow-hidden" : "h-full max-h-[82vh]"}`}>
                 <LeftSideView width={leftPanelWidth} activeApi={activeApi} />
                 <RightSideView
                     width={rightPanelWidth}
@@ -157,15 +207,6 @@ const PlaygroundPage = () => {
                     setActiveRightTab={setActiveRightTab}
                     activeApi={activeApi}
                 />
-            </div>
-            <div className="flex justify-start gap-4 ml-2 mt-2 mb-2">
-                <button
-                    onClick={openRawEditor}
-                    className="flex items-center gap-2 px-3 py-1.5 bg-gray-800 rounded-lg text-white border border-gray-100 hover:bg-gray-900 hover:scale-105 transition-transform shadow-sm"
-                >
-                    <FaEdit size={16} />
-                    <span className="font-semibold text-sm">Edit raw</span>
-                </button>
             </div>
             <RawConfigEditorModal
                 isOpen={isRawEditorOpen}
@@ -182,6 +223,21 @@ const PlaygroundPage = () => {
                 {popupContent}
             </Popup>
             {playgroundContext.loading && <FullPageLoader />}
+            <PlaygroundHelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
+            {playgroundContext.config && (
+                <FlowInfoModal
+                    isOpen={isFlowInfoOpen}
+                    meta={playgroundContext.config.meta}
+                    onSave={playgroundContext.updateConfigMeta}
+                    onClose={() => setIsFlowInfoOpen(false)}
+                />
+            )}
+            <ExportReviewModal
+                config={exportReviewConfig}
+                onConfirm={handleExportConfirm}
+                onCancel={handleExportCancel}
+                isDownloading={isExportDownloading}
+            />
         </div>
     );
 };

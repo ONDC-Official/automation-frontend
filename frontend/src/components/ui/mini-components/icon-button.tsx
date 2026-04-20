@@ -41,6 +41,7 @@ const IconButton: React.FC<IconButtonProps> = ({
             placement="top"
             arrow={true}
             animation="perspective-subtle"
+            appendTo={() => document.fullscreenElement as Element ?? document.body}
         >
             <button onClick={onClick} className={className} aria-label={label}>
                 {icon}

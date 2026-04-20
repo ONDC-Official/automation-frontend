@@ -32,6 +32,8 @@ const StarterPage = () => {
     const [domain, setDomain] = useState("");
     const [version, setVersion] = useState("");
     const [flowId, setFlowId] = useState("");
+    const [description, setDescription] = useState("");
+    const [useCaseId, setUseCaseId] = useState("");
     const [showSavedConfigs, setShowSavedConfigs] = useState(false);
     const [dynamicList, setDynamicList] = useState<DynamicList>({
         domain: [],
@@ -66,7 +68,10 @@ const StarterPage = () => {
 
     function SetConfig(domain: string, version: string, flowId: string) {
         if (domain && version && flowId) {
-            setCurrentConfig(createInitialMockConfig(domain, version, flowId));
+            const initial = createInitialMockConfig(domain, version, flowId);
+            if (description.trim()) initial.meta.description = description.trim();
+            if (useCaseId.trim()) initial.meta.use_case_id = useCaseId.trim();
+            setCurrentConfig(initial);
         }
     }
 
@@ -231,6 +236,39 @@ const StarterPage = () => {
                                 placeholder="Enter unique flow identifier"
                                 className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent transition-all duration-200 text-gray-900 placeholder-gray-400 text-sm"
                             />
+                        </div>
+
+                        {/* Optional details */}
+                        <div className="pt-2 border-t border-gray-100">
+                            <p className="text-xs font-medium text-gray-400 uppercase tracking-widest mb-4">
+                                Optional Details
+                            </p>
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Use Case ID
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={useCaseId}
+                                        onChange={(e) => setUseCaseId(e.target.value)}
+                                        placeholder="e.g. UCS-001"
+                                        className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent transition-all duration-200 text-gray-900 placeholder-gray-400 text-sm"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Description
+                                    </label>
+                                    <textarea
+                                        rows={2}
+                                        value={description}
+                                        onChange={(e) => setDescription(e.target.value)}
+                                        placeholder="What does this flow test?"
+                                        className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent transition-all duration-200 text-gray-900 placeholder-gray-400 text-sm resize-none"
+                                    />
+                                </div>
+                            </div>
                         </div>
 
                         {/* Submit button */}

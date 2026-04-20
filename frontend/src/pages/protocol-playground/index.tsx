@@ -130,6 +130,13 @@ const ProtocolPlayGround = () => {
         setCurrentConfig({ ...current });
     };
 
+    type Meta = MockPlaygroundConfigType["meta"];
+    const updateConfigMeta = (patch: Partial<Meta>) => {
+        if (!playgroundState) return;
+        const updated = { ...playgroundState, meta: { ...playgroundState.meta, ...patch } };
+        setCurrentConfig(updated);
+    };
+
     const updateHelperLib = (newCode: string) => {
         const current = playgroundState;
         if (!current) return;
@@ -280,13 +287,14 @@ const ProtocolPlayGround = () => {
                 loading,
                 setLoading,
                 workbenchFlow,
+                updateConfigMeta,
                 loadSavedConfig,
                 getSavedConfigs,
                 deleteSavedConfig,
                 loadConfigFromGist,
             }}
         >
-            <div className="mt-2 w-full min-h-screen flex flex-1 flex-col">
+            <div className="mt-4 w-full min-h-screen flex flex-1 flex-col">
                 <Body workbenchFlow={workbenchFlow} />
             </div>
         </PlaygroundContext.Provider>

@@ -1,6 +1,8 @@
 import { Context, createContext } from "react";
 import { ExecutionResult, MockPlaygroundConfigType } from "@ondc/automation-mock-runner";
 
+type Meta = MockPlaygroundConfigType["meta"];
+
 import { WorkbenchFlowType } from "@hooks/useWorkbenchFlow";
 import { SavedConfigMetadata } from "@pages/protocol-playground/utils/config-storage";
 
@@ -30,6 +32,7 @@ export interface PlaygroundContextProps {
     ) => void;
     updateHelperLib: (newCode: string) => void;
     resetTransactionHistory: (actionId?: string) => void;
+    updateConfigMeta: (patch: Partial<Meta>) => void;
 
     useModal: {
         popupOpen: boolean;

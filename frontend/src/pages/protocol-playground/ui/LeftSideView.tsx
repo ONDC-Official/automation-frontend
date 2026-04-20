@@ -133,7 +133,7 @@ export function LeftSideView(props: { width: string; activeApi?: string }) {
                     beforeMount={handleEditorWillMount}
                     height="100%"
                     language={activeTabConfig.language}
-                    value={getEditorContent()}
+                    defaultValue={getEditorContent()}
                     onChange={handleEditorChange}
                     options={{
                         padding: { top: 16, bottom: 16 },
@@ -141,8 +141,8 @@ export function LeftSideView(props: { width: string; activeApi?: string }) {
                         lineNumbers: "on",
                         scrollBeyondLastLine: true,
                         automaticLayout: true,
-                        formatOnPaste: true,
-                        formatOnType: true,
+                        formatOnPaste: false,
+                        formatOnType: false,
                     }}
                 />
             </div>
