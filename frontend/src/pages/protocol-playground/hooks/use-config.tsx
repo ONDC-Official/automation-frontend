@@ -154,7 +154,7 @@ export const useConfigOperations = () => {
         }
         const currentStep = playgroundContext.config.steps[currentIndex];
 
-        if (currentStep.api === "dynamic_form") {
+        if (currentStep.api === "dynamic_form" || currentStep.api === "html_form") {
             const htmlForm64 = currentStep.mock.formHtml;
             if (!htmlForm64) {
                 toast.error("No form HTML provided for dynamic_form action");
