@@ -13,7 +13,7 @@ export function LeftSideView(props: { width: string; activeApi?: string }) {
 
     const stepData = playgroundContext.config?.steps.find((f) => f.action_id === activeApi);
 
-    const isForm = stepData?.api === "dynamic_form";
+    const isForm = stepData?.api === "dynamic_form" || stepData?.api === "html_form";
 
     const tabs = isForm ? PLAYGROUND_LEFT_TABS_FORM : PLAYGROUND_LEFT_TABS;
 
