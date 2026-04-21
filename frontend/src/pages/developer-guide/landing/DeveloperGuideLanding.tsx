@@ -1,13 +1,23 @@
 import { FC, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { FiCode, FiLayers, FiSearch } from "react-icons/fi";
+import { FiCode, FiLayers, FiSearch, FiFileText, FiArrowRight } from "react-icons/fi";
 import { fetchBuilds } from "@services/developerGuideSpecApi";
-import { ROUTES, getDeveloperGuideUseCasePath } from "@constants/routes";
-import type { BuildEntry } from "../types";
+import { fetchDocList } from "@services/developerDocsApi";
+import { ROUTES, getDeveloperGuideUseCasePath, getDeveloperGuideDocPath } from "@constants/routes";
+import type { BuildEntry, DocMeta } from "../types";
 import { isDomainEnabled } from "../utils";
 import Loader from "@components/ui/mini-components/loader";
 import RecommendedSection from "./RecommendedSection";
 import DomainCardsSection from "./DomainCardsSection";
+
+const DocCardSkeleton: FC = () => (
+    <div className="animate-pulse rounded-xl border border-slate-200 bg-white p-5 space-y-3">
+        <div className="h-8 w-8 rounded-lg bg-slate-200" />
+        <div className="h-4 bg-slate-200 rounded w-2/3" />
+        <div className="h-3 bg-slate-100 rounded w-full" />
+        <div className="h-3 bg-slate-100 rounded w-4/5" />
+    </div>
+);
 
 const DeveloperGuideLanding: FC = () => {
     const navigate = useNavigate();
@@ -15,6 +25,8 @@ const DeveloperGuideLanding: FC = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [domainSearch, setDomainSearch] = useState("");
+    const [docs, setDocs] = useState<DocMeta[]>([]);
+    const [docsLoading, setDocsLoading] = useState(true);
 
     useEffect(() => {
         const load = async () => {
@@ -31,6 +43,13 @@ const DeveloperGuideLanding: FC = () => {
             }
         };
         load();
+    }, []);
+
+    useEffect(() => {
+        fetchDocList()
+            .then((data) => setDocs(data))
+            .catch(() => setDocs([]))
+            .finally(() => setDocsLoading(false));
     }, []);
 
     const isUseCaseEnabled = (dom: BuildEntry, _usecaseLabel: string) => {
@@ -106,6 +125,61 @@ const DeveloperGuideLanding: FC = () => {
                         onAuthToolsClick={handleAuthToolsClick}
                     />
                 </section>
+
+                <div className="border-t border-gray-100" />
+
+                {/* General Documentation */}
+                {(docsLoading || docs.length > 0) && (
+                    <section>
+                        <div className="flex items-center gap-3 mb-7">
+                            <div className="w-8 h-8 rounded-lg bg-sky-100 border border-sky-200 flex items-center justify-center flex-shrink-0">
+                                <FiFileText size={15} className="text-sky-600" />
+                            </div>
+                            <div>
+                                <h2 className="text-lg font-bold text-gray-900 leading-none">
+                                    General Documentation
+                                </h2>
+                                <p className="text-xs text-gray-600 mt-0.5">
+                                    Core concepts and reference guides for ONDC
+                                </p>
+                            </div>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                            {docsLoading
+                                ? Array.from({ length: 3 }).map((_, i) => (
+                                      <DocCardSkeleton key={i} />
+                                  ))
+                                : docs.map((doc) => (
+                                      <button
+                                          key={doc.slug}
+                                          type="button"
+                                          onClick={() =>
+                                              navigate(getDeveloperGuideDocPath(doc.slug))
+                                          }
+                                          className="group text-left rounded-lg border border-gray-200 shadow-sm bg-white p-5 hover:border-sky-300 hover:shadow-md transition-all duration-150 flex flex-col gap-3"
+                                      >
+                                          <div className="w-9 h-9 rounded-lg bg-sky-50 border border-sky-100 flex items-center justify-center flex-shrink-0">
+                                              <FiFileText size={17} className="text-sky-600" />
+                                          </div>
+                                          <div className="flex-1">
+                                              <p className="text-sm font-semibold text-slate-800 group-hover:text-sky-700 transition-colors leading-snug">
+                                                  {doc.label}
+                                              </p>
+                                              {doc.shortDescription && (
+                                                  <p className="mt-1 text-xs text-slate-500 leading-relaxed line-clamp-2">
+                                                      {doc.shortDescription}
+                                                  </p>
+                                              )}
+                                          </div>
+                                          <div className="flex items-center gap-1 text-xs font-medium text-sky-600 group-hover:gap-2 transition-all">
+                                              Read more
+                                              <FiArrowRight size={12} />
+                                          </div>
+                                      </button>
+                                  ))}
+                        </div>
+                    </section>
+                )}
 
                 <div className="border-t border-gray-100" />
 

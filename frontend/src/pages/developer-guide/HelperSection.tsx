@@ -2,7 +2,7 @@ import { FC, useRef, useEffect } from "react";
 import Editor, { OnMount } from "@monaco-editor/react";
 import * as acorn from "acorn";
 import * as walk from "acorn-walk";
-import MockRunner from "@ondc/automation-mock-runner";
+import { decodeBase64 } from "./utils";
 import type { editor } from "monaco-editor";
 
 /** Build a map of function name -> full definition source for hover. */
@@ -31,16 +31,9 @@ function getFunctionDefinitions(code: string): Map<string, string> {
     return map;
 }
 
-/** Decode flow helperLib (base64) using same util as protocol-playground. */
+/** Decode flow helperLib (base64). */
 export function decodeHelperLib(helperLib: string | undefined): string | null {
-    if (!helperLib || typeof helperLib !== "string") return null;
-    const trimmed = helperLib.trim();
-    if (!trimmed) return null;
-    try {
-        return MockRunner.decodeBase64(trimmed);
-    } catch {
-        return trimmed;
-    }
+    return decodeBase64(helperLib);
 }
 
 interface HelperSectionProps {
