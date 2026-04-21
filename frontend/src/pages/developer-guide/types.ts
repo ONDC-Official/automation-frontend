@@ -1,3 +1,11 @@
+// ─── Developer Docs ───────────────────────────────────────────────────────────
+
+export interface DocMeta {
+    slug: string;
+    label: string;
+    shortDescription: string;
+}
+
 // ─── OpenAPI 3.0 Base Types ───────────────────────────────────────────────────
 
 export interface OpenAPIInfo {

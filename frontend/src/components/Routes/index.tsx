@@ -18,6 +18,7 @@ import { ROUTES } from "@constants/routes";
 import DeveloperGuideLanding from "@/pages/developer-guide/landing/DeveloperGuideLanding";
 import DeveloperGuideFlowPage from "@/pages/developer-guide/DeveloperGuideFlowPage";
 import DeveloperGuideGettingStarted from "@/pages/developer-guide/landing/DeveloperGuideGettingStarted";
+import DeveloperGuideDocPage from "@/pages/developer-guide/DeveloperGuideDocPage";
 
 /** Developer Guide is only available in development; redirect to home in production */
 const DeveloperGuideWrapper = ({ children }: { children: React.ReactNode }) =>
@@ -67,6 +68,14 @@ const Routes = () => (
             element={
                 <DeveloperGuideWrapper>
                     <DeveloperGuideFlowPage />
+                </DeveloperGuideWrapper>
+            }
+        />
+        <Route
+            path={ROUTES.DEVELOPER_GUIDE_DOC}
+            element={
+                <DeveloperGuideWrapper>
+                    <DeveloperGuideDocPage />
                 </DeveloperGuideWrapper>
             }
         />

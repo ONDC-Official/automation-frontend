@@ -22,6 +22,8 @@ export const ROUTES = {
     SELLER_LOAD_TESTING: "/seller-load-testing",
     /** Use case flow: domain and version are URL-encoded if needed; useCase is slug e.g. personal_loan */
     DEVELOPER_GUIDE_USE_CASE: "/developer-guide/:domain/:version/:useCase",
+    /** General developer doc page, slug matches filename in GitHub docs/developer-docs */
+    DEVELOPER_GUIDE_DOC: "/developer-guide/docs/:slug",
 } as const;
 
 /** Build path for a specific developer guide use case (domain/version passed as-is; useCase as slug). */
@@ -32,6 +34,10 @@ export function getDeveloperGuideUseCasePath(
 ): string {
     const enc = encodeURIComponent;
     return `/developer-guide/${enc(domain)}/${enc(version)}/${enc(useCaseSlug)}`;
+}
+
+export function getDeveloperGuideDocPath(slug: string): string {
+    return `/developer-guide/docs/${slug}`;
 }
 
 /**

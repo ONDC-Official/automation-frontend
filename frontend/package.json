@@ -27,6 +27,7 @@
         "acorn-walk": "^8.3.4",
         "antd": "^5.29.3",
         "axios": "^1.13.2",
+        "highlight.js": "^11.11.1",
         "jsonpath": "^1.1.1",
         "jsonpath-plus": "^10.3.0",
         "lockr": "^0.9.0-beta.2",
@@ -40,6 +41,10 @@
         "react-router-dom": "^7.11.0",
         "react-to-print": "^3.2.0",
         "react-toastify": "^11.0.5",
+        "rehype-autolink-headings": "^7.1.0",
+        "rehype-highlight": "^7.0.2",
+        "rehype-slug": "^6.0.0",
+        "remark-gfm": "^4.0.1",
         "uuid": "^11.1.0"
     },
     "devDependencies": {
