@@ -84,7 +84,7 @@ const FileMenu = ({
                         }}
                     >
                         <FaDownload size={13} className="text-sky-500 shrink-0" />
-                        Download(not for depoloyment)
+                        Download(NOT for deployment)
                     </button>
                     <button
                         className={item}
