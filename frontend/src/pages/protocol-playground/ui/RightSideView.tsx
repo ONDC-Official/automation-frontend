@@ -10,6 +10,7 @@ import MockRunner, { MockPlaygroundConfigType } from "@ondc/automation-mock-runn
 import { editorUtils } from "../utils/editor-utils";
 import { mockRunnerExtensions } from "../utils/mock-runner-extentions";
 import CommonLibView from "./playground-upper/common-lib-view";
+import { AIChatPanel } from "../ai/ui/AIChatPanel";
 
 interface SavedMetadata {
     [key: string]: {
@@ -211,6 +212,8 @@ function GetRightSideContent({ tabId, actionId }: { tabId: string; actionId: str
             return <OutputPayloadViewer payload={activePayload} actionId={actionId} />;
         case "common_lib":
             return <CommonLibView />;
+        case "ai_chat":
+            return <AIChatPanel actionId={actionId} />;
     }
     return <></>;
 }
