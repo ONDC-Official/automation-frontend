@@ -12,6 +12,7 @@ import guideRoutes from "./guideRoutes";
 import authRoutes from "./gitLoginRoute"; // Import authentication routes
 import healthRoutes from "./healthRoutes"; // Import health check routes
 import devGuideRoutes from "./devGuideRoutes";
+import aiProxyRoutes from "./aiProxyRoutes";
 const router = Router();
 
 // Mount session-related routes
@@ -31,4 +32,5 @@ router.use("/auth", authRoutes); // Mount authentication routes
 router.use("/guide", guideRoutes);
 router.use("/health", healthRoutes);
 router.use("/dev-guide", devGuideRoutes);
+router.use("/ai", aiProxyRoutes);
 export default router;
