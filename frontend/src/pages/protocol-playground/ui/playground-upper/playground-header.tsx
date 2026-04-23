@@ -76,7 +76,7 @@ const FileMenu = ({
 
             {open && (
                 <div className="absolute right-0 top-full mt-1.5 w-52 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden z-50 py-1">
-                    {/* <button
+                    <button
                         className={item}
                         onClick={() => {
                             onExport();
@@ -84,8 +84,8 @@ const FileMenu = ({
                         }}
                     >
                         <FaDownload size={13} className="text-sky-500 shrink-0" />
-                        Download(not for depoloyment)
-                    </button> */}
+                        Download(NOT for deployment)
+                    </button>
                     <button
                         className={item}
                         onClick={() => {
