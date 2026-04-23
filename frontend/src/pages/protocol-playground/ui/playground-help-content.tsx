@@ -828,4 +828,32 @@ export const FAQS: Faq[] = [
             </p>
         ),
     },
+    {
+        q: "How do I add a Finvu verification form step?",
+        a: (
+            <div className="space-y-3 text-sm text-gray-700">
+                <p>
+                    For any action step where you want to open the Finvu verification form, set its{" "}
+                    <Badge color="amber">inputs.json</Badge> to the following — the mock-runner
+                    detects the <code>finvu_verification</code> id and renders the Finvu flow
+                    instead of a generic form:
+                </p>
+                <pre className="bg-gray-900 text-emerald-400 text-xs rounded-lg p-3 overflow-x-auto">
+                    {`{\n  "id": "finvu_verification",\n  "jsonSchema": {}\n}`}
+                </pre>
+                <p>
+                    In any <strong>prior step's</strong> generator, call{" "}
+                    <code>generateConsentHandler</code> to produce the consent data that the Finvu
+                    form needs. Save the result via saveData so it is available in{" "}
+                    <code>sessionData</code> when the form step runs.
+                </p>
+                <p>
+                    To change the Finvu URL (e.g. point at a different environment), open the{" "}
+                    <strong>raw config editor</strong> and edit the{" "}
+                    <code>external_session_data</code> field — that is where the Finvu base URL is
+                    stored and read from at runtime.
+                </p>
+            </div>
+        ),
+    },
 ];
