@@ -10,6 +10,7 @@ import { trackPageView } from "@utils/analytics";
 import { AuthService } from "@services/authService";
 import { authTokenManager, sessionIdSupport } from "@utils/localStorageManager";
 import Layout from "@components/Layout";
+import Chatbot from "@components/ChatBot";
 
 function App() {
     const location = useLocation();
@@ -122,6 +123,7 @@ function App() {
         >
             <SessionProvider>
                 <Layout />
+                {import.meta.env.VITE_ENVIRONMENT === "development" && <Chatbot />}
             </SessionProvider>
         </UserContext.Provider>
     );
