@@ -18,6 +18,7 @@ import { RawConfigEditorModal } from "@pages/protocol-playground/ui/raw-config-e
 import { PlaygroundHelpModal } from "@pages/protocol-playground/ui/playground-help-modal";
 import { FlowInfoModal } from "@pages/protocol-playground/ui/flow-info-modal";
 import { ExportReviewModal } from "@pages/protocol-playground/ui/export-review-modal";
+import { AIProvider } from "@pages/protocol-playground/ai/context/ai-provider";
 
 const PlaygroundPage = () => {
     const playgroundContext = useContext(PlaygroundContext);
@@ -58,12 +59,14 @@ const PlaygroundPage = () => {
     const [rawConfigError, setRawConfigError] = useState<string | null>(null);
     const [isHelpOpen, setIsHelpOpen] = useState(false);
     const [isFlowInfoOpen, setIsFlowInfoOpen] = useState(false);
-    const [exportReviewConfig, setExportReviewConfig] = useState<MockPlaygroundConfigType | null>(null);
+    const [exportReviewConfig, setExportReviewConfig] = useState<MockPlaygroundConfigType | null>(
+        null
+    );
     const [isExportDownloading, setIsExportDownloading] = useState(false);
 
-    const isTransactionViewerActive = activeRightTab === "transaction";
-    const leftPanelWidth = isTransactionViewerActive ? "w-[30%]" : "w-1/2";
-    const rightPanelWidth = isTransactionViewerActive ? "w-[70%]" : "w-1/2";
+    const isWideRight = activeRightTab === "transaction";
+    const leftPanelWidth = isWideRight ? "w-[30%]" : "w-1/2";
+    const rightPanelWidth = isWideRight ? "w-[70%]" : "w-1/2";
 
     const containerRef = useRef<HTMLDivElement>(null);
     const [isFullscreen, setIsFullscreen] = useState(false);
@@ -163,82 +166,86 @@ const PlaygroundPage = () => {
     }
 
     return (
-        <div ref={containerRef} className="w-full h-screen min-h-screen flex flex-col bg-white">
-            <div>
-                <PlaygroundHeader
-                    domain={playgroundContext.config?.meta.domain || "N/A"}
-                    version={playgroundContext.config?.meta.version || "N/A"}
-                    flowId={playgroundContext.config?.meta.flowId || "N/A"}
-                    onExport={exportConfig}
-                    onImport={importConfig}
-                    onClear={modalHandlers.showDeleteConfirmation}
-                    onRun={async () => {
-                        await runConfig();
+        <AIProvider>
+            <div ref={containerRef} className="w-full h-screen min-h-screen flex flex-col bg-white">
+                <div>
+                    <PlaygroundHeader
+                        domain={playgroundContext.config?.meta.domain || "N/A"}
+                        version={playgroundContext.config?.meta.version || "N/A"}
+                        flowId={playgroundContext.config?.meta.flowId || "N/A"}
+                        onExport={exportConfig}
+                        onImport={importConfig}
+                        onClear={modalHandlers.showDeleteConfirmation}
+                        onRun={async () => {
+                            await runConfig();
+                        }}
+                        onCreateFlowSession={createFlowSession}
+                        onExportForDeployment={handleExportForDeployment}
+                        onRunCurrent={async () => {
+                            await runCurrentConfig();
+                        }}
+                        onBack={handleBack}
+                        onHelp={() => setIsHelpOpen(true)}
+                        onEditMeta={() => setIsFlowInfoOpen(true)}
+                        onEditRaw={openRawEditor}
+                        isFullscreen={isFullscreen}
+                        onToggleFullscreen={toggleFullscreen}
+                    />
+                    <ActionTimeline
+                        steps={playgroundContext.config?.steps || []}
+                        transactionHistory={playgroundContext.config?.transaction_history || []}
+                        activeApi={activeApi}
+                        onApiSelect={setActiveApi}
+                        onAddAction={modalHandlers.showAddAction}
+                        onEditAction={modalHandlers.showEditAction}
+                        onDeleteAction={modalHandlers.deleteAction}
+                        onAddBefore={modalHandlers.addActionBefore}
+                        onAddAfter={modalHandlers.addActionAfter}
+                    />
+                </div>
+                <div
+                    className={`flex gap-4 mt-1 ${isFullscreen ? "flex-1 overflow-hidden" : "h-full max-h-[82vh]"}`}
+                >
+                    <LeftSideView width={leftPanelWidth} activeApi={activeApi} />
+                    <RightSideView
+                        width={rightPanelWidth}
+                        activeRightTab={activeRightTab}
+                        setActiveRightTab={setActiveRightTab}
+                        activeApi={activeApi}
+                    />
+                </div>
+                <RawConfigEditorModal
+                    isOpen={isRawEditorOpen}
+                    value={rawConfigValue}
+                    error={rawConfigError}
+                    onChange={(value) => {
+                        setRawConfigValue(value);
+                        if (rawConfigError) setRawConfigError(null);
                     }}
-                    onCreateFlowSession={createFlowSession}
-                    onExportForDeployment={handleExportForDeployment}
-                    onRunCurrent={async () => {
-                        await runCurrentConfig();
-                    }}
-                    onBack={handleBack}
-                    onHelp={() => setIsHelpOpen(true)}
-                    onEditMeta={() => setIsFlowInfoOpen(true)}
-                    onEditRaw={openRawEditor}
-                    isFullscreen={isFullscreen}
-                    onToggleFullscreen={toggleFullscreen}
+                    onSave={handleSaveRawConfig}
+                    onClose={closeRawEditor}
                 />
-                <ActionTimeline
-                    steps={playgroundContext.config?.steps || []}
-                    transactionHistory={playgroundContext.config?.transaction_history || []}
-                    activeApi={activeApi}
-                    onApiSelect={setActiveApi}
-                    onAddAction={modalHandlers.showAddAction}
-                    onEditAction={modalHandlers.showEditAction}
-                    onDeleteAction={modalHandlers.deleteAction}
-                    onAddBefore={modalHandlers.addActionBefore}
-                    onAddAfter={modalHandlers.addActionAfter}
+                <Popup isOpen={popupOpen} onClose={closeModal}>
+                    {popupContent}
+                </Popup>
+                {playgroundContext.loading && <FullPageLoader />}
+                <PlaygroundHelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
+                {playgroundContext.config && (
+                    <FlowInfoModal
+                        isOpen={isFlowInfoOpen}
+                        meta={playgroundContext.config.meta}
+                        onSave={playgroundContext.updateConfigMeta}
+                        onClose={() => setIsFlowInfoOpen(false)}
+                    />
+                )}
+                <ExportReviewModal
+                    config={exportReviewConfig}
+                    onConfirm={handleExportConfirm}
+                    onCancel={handleExportCancel}
+                    isDownloading={isExportDownloading}
                 />
             </div>
-            <div className={`flex gap-4 mt-1 ${isFullscreen ? "flex-1 overflow-hidden" : "h-full max-h-[82vh]"}`}>
-                <LeftSideView width={leftPanelWidth} activeApi={activeApi} />
-                <RightSideView
-                    width={rightPanelWidth}
-                    activeRightTab={activeRightTab}
-                    setActiveRightTab={setActiveRightTab}
-                    activeApi={activeApi}
-                />
-            </div>
-            <RawConfigEditorModal
-                isOpen={isRawEditorOpen}
-                value={rawConfigValue}
-                error={rawConfigError}
-                onChange={(value) => {
-                    setRawConfigValue(value);
-                    if (rawConfigError) setRawConfigError(null);
-                }}
-                onSave={handleSaveRawConfig}
-                onClose={closeRawEditor}
-            />
-            <Popup isOpen={popupOpen} onClose={closeModal}>
-                {popupContent}
-            </Popup>
-            {playgroundContext.loading && <FullPageLoader />}
-            <PlaygroundHelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
-            {playgroundContext.config && (
-                <FlowInfoModal
-                    isOpen={isFlowInfoOpen}
-                    meta={playgroundContext.config.meta}
-                    onSave={playgroundContext.updateConfigMeta}
-                    onClose={() => setIsFlowInfoOpen(false)}
-                />
-            )}
-            <ExportReviewModal
-                config={exportReviewConfig}
-                onConfirm={handleExportConfirm}
-                onCancel={handleExportCancel}
-                isDownloading={isExportDownloading}
-            />
-        </div>
+        </AIProvider>
     );
 };
 

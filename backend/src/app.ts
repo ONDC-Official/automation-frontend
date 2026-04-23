@@ -13,41 +13,47 @@ const app = express();
 RedisService.useDb(0);
 
 let redisStore = new RedisStore({
-	client: RedisService,
+    client: RedisService,
 });
 
 app.use(
-	session({
-		store: redisStore,
-		secret: process.env.SESSION_SECRET || "your-secret",
-		resave: false,
-		saveUninitialized: false,
-		cookie: {
-			secure: process.env.NODE_ENV === "production", // For production, set to true
-			maxAge: 24 * 60 * 60 * 1000, // 1 day expiration
-		},
-	})
+    session({
+        store: redisStore,
+        secret: process.env.SESSION_SECRET || "your-secret",
+        resave: false,
+        saveUninitialized: false,
+        cookie: {
+            secure: process.env.NODE_ENV === "production", // For production, set to true
+            maxAge: 24 * 60 * 60 * 1000, // 1 day expiration
+        },
+    }),
 );
 
 app.use(
-	cors({
-		origin: process.env.NODE_ENV === "development" 
-			? true  // Allow all origins in development
-			: [
-				"http://localhost:5173",
-				"http://localhost:4000",
-				"https://saarthi.ondc.org.in",
-				"https://preview--ondc-developer-portal.lovable.app",
-				"https://workbench.ondc.tech"
-			],
-		credentials: true,
-		methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-		allowedHeaders: ["Content-Type", "Authorization", "Cookie"],
-	})
+    cors({
+        origin:
+            process.env.NODE_ENV === "development"
+                ? true // Allow all origins in development
+                : [
+                      "http://localhost:5173",
+                      "http://localhost:4000",
+                      "https://saarthi.ondc.org.in",
+                      "https://preview--ondc-developer-portal.lovable.app",
+                      "https://workbench.ondc.tech",
+                  ],
+        credentials: true,
+        methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        allowedHeaders: [
+            "Content-Type",
+            "Authorization",
+            "Cookie",
+            "x-proxy-target",
+        ],
+    }),
 );
 
-app.use(express.json({ limit: '75mb' }));
-app.use(express.urlencoded({ limit: '75mb', extended: true }));
+app.use(express.json({ limit: "75mb" }));
+app.use(express.urlencoded({ limit: "75mb", extended: true }));
 // app.use(express.json());
 // Middleware to parse cookies
 app.use(cookieParser());
