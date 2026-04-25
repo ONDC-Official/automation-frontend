@@ -3,7 +3,7 @@ import axios from 'axios';
 import { RedisService } from 'ondc-automation-cache-lib';
 import logger from '@ondc/automation-logger';
 
-const FINVU_SERVICE_URL = process.env.FINVU_SERVICE_URL ;
+const FINVU_SERVICE_URL = process.env.FINVU_SERVICE_URL;
 
 /**
  * Proxy endpoint to verify consent with Finvu AA Service
@@ -58,7 +58,8 @@ export const verifyConsent: RequestHandler = async (req: Request, res: Response)
       const finvuResponse = await axios.post(
         `${FINVU_SERVICE_URL}/finvu-aa/consent/verify`,
         {
-          transactionId
+          transactionId,
+          sessionId
         },
         {
           timeout: 15000, // 15 second timeout
@@ -286,9 +287,9 @@ export const handleFinvuCallback: RequestHandler = async (req: Request, res: Res
       status: status || 'success'
     }), 3600);
 
-    logger.info('Finvu completion flag set in Redis', { 
+    logger.info('Finvu completion flag set in Redis', {
       transaction_id,
-      key: completionKey 
+      key: completionKey
     });
 
 
@@ -439,11 +440,11 @@ export const checkFinvuCompletion: RequestHandler = async (req: Request, res: Re
 
     if (completionData) {
       const data = JSON.parse(completionData);
-      logger.info('Finvu completion check: COMPLETED', { 
+      logger.info('Finvu completion check: COMPLETED', {
         transaction_id,
-        timestamp: data.timestamp 
+        timestamp: data.timestamp
       });
-      
+
       res.json({
         completed: true,
         timestamp: data.timestamp,
