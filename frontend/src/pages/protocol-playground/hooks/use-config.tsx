@@ -109,7 +109,16 @@ export const useConfigOperations = () => {
                 return false;
             }
             const inputs = data.inputs;
-            const result = await new MockRunner(config).runGeneratePayload(data.actionId, inputs);
+            const externalData = {
+                ...config.transaction_data?.external_session_data,
+                bapUri: config.transaction_data.bap_uri,
+                bppUri: config.transaction_data.bpp_uri,
+            };
+            const result = await new MockRunner(config).runGeneratePayload(
+                data.actionId,
+                inputs,
+                externalData
+            );
 
             if (!result) {
                 toast.error("No result from code execution");
