@@ -124,8 +124,7 @@ export const verifyConsent: RequestHandler = async (req: Request, res: Response)
       // Return the Finvu URL to frontend
       res.status(200).json({
         success: true,
-        // url: finvuResponse.data.url ,
-        url:"https://reactjssdk.finvu.in/?ecreq=uLcQnXsSgpl9-R7gvvq6xLx7Y-2m0H2IBCyrFdkYCzFsoW9PIiipeL6y-dxe0norPtwz79d_xbtYEqWj1ohq6YYlpfqNiMzGj-nzYn7kgcvMHFb69LLQyNoFCyNQVkPnwoRA3-7V6m5mt4WEamlLQulaxOnEDAG3RctsAjFB4vMriWtdJuzStX9VnV0MkGPkC1umSeWs7sf2iLUEkE0h3lygtCLvMuOsSfcBQBJi7gi3yWFZQcQrlyHo_-FA6ToZvIOgLeAd0LkXoQ18VulMWUV-IAeQx_z10hRpvJzrZsmm16Ho0ekjIyVMu1TcquVwpZ_AbmkdEzzg6QCi4dMtIOvqXDlcJLmunMKSp63qIy6yDeY7AvyaWsjftKH5A9koSxmBnO5fqhaATYURrgEc70Prer5-uz6uo5LsPa2BM4c=&reqdate=260420261224416&fi=XllRWkFVRFc=&requestorType=fmVg",
+        url: finvuResponse.data.url ,
         encryptedRequest: finvuResponse.data.encryptedRequest,
         requestDate: finvuResponse.data.requestDate,
         encryptedFiuId: finvuResponse.data.encryptedFiuId

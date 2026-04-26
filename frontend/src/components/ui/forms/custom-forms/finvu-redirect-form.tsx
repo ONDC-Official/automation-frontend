@@ -50,22 +50,16 @@ export default function FinvuRedirectForm({
         try {
             setPollCount((prev) => prev + 1);
 
-            // const response = await axios.get(
-            //     `${import.meta.env.VITE_BACKEND_URL}/finvu/check-completion`,
-            //     {
-            //         params: {
-            //             session_id: sessionId,
-            //             transaction_id: transactionId,
-            //         },
-            //         timeout: 5000,
-            //     }
-            // );
-            //++++++++++++++++++++ testing ++++++++++++++++++++
-            const response = {
-                data: {
-                    completed: true,
-                },
-            };
+            const response = await axios.get(
+                `${import.meta.env.VITE_BACKEND_URL}/finvu/check-completion`,
+                {
+                    params: {
+                        session_id: sessionId,
+                        transaction_id: transactionId,
+                    },
+                    timeout: 5000,
+                }
+            );
 
             if (response.data.completed) {
                 hasCompletedRef.current = true;
