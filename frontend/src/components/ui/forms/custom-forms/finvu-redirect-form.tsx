@@ -48,6 +48,7 @@ export default function FinvuRedirectForm({
         if (hasCompletedRef.current) return;
 
         try {
+            setStatus("completed"); // For testing purpose will remove later
             setPollCount((prev) => prev + 1);
 
             const response = await axios.get(
