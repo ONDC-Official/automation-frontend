@@ -44,6 +44,16 @@ export const verifyConsent: RequestHandler = async (req: Request, res: Response)
         });
       }
 
+      //  if (sessionDataKey) {
+      //   sessionData = JSON.parse(sessionDataKey);
+      //   logger.info('Session data retrieved for session key', {
+      //     sessionKey,
+      //     hasConsentHandler: !!sessionData?.consentHandler,
+      //     hasCustomerId: !!sessionData?.customer_id,
+      //     sessionData: sessionData,
+      //   });
+      // }
+
        if (sessionDataKey) {
         sessionData = JSON.parse(sessionDataKey);
         logger.info('Session data retrieved for session key', {
@@ -52,6 +62,29 @@ export const verifyConsent: RequestHandler = async (req: Request, res: Response)
           hasCustomerId: !!sessionData?.customer_id,
           sessionData: sessionData,
         });
+
+        /**FETCH MOKE DATA USING SESSION ID Start*/
+        const subUrl = sessionData?.subscriberUrl;
+        logger.info('[FINVU] subscriberUrl extracted from ui-session-data', { subUrl });
+
+        if (subUrl) {
+          const resolvedKey = `MOCK_DATA::${transactionId}::${subUrl}`;
+          logger.info('[FINVU] Resolved composite Redis key', { resolvedKey });
+          let mockSessionDataKey = await RedisService.getKey(resolvedKey);
+          if (mockSessionDataKey) {
+            const mockSessionData = JSON.parse(mockSessionDataKey);
+            logger.info('[FINVU] Session data fetched', {
+              resolvedKey,
+              hasConsentHandler: !!sessionData?.consentHandler,
+              hasCustomerId: !!sessionData?.customer_id,
+              sessionData: mockSessionData,
+            });
+          }
+
+        } else {
+          logger.info('[FINVU] subscriberUrl not found — using bare transactionId');
+        }
+        /**FETCH MOKE DATA USING SESSION ID Start END*/
       }
     } catch (error: any) {
       logger.info('Failed to retrieve session data', {
