@@ -40,8 +40,7 @@ export const verifyConsent: RequestHandler = async (req: Request, res: Response)
           sessionKey,
           hasConsentHandler: !!sessionData?.consentHandler,
           hasCustomerId: !!sessionData?.customer_id,
-          sessionData: sessionData,
-          sessionDataKey: JSON.parse(sessionDataKey)
+          sessionData: sessionData
         });
       }
 
