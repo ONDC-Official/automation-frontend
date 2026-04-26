@@ -33,12 +33,25 @@ export const verifyConsent: RequestHandler = async (req: Request, res: Response)
 
     try {
       const rawSessionData = await RedisService.getKey(sessionKey);
+      const sessionDataKey = await RedisService.getKey(sessionId)
       if (rawSessionData) {
         sessionData = JSON.parse(rawSessionData);
-        logger.info('Session data retrieved for consent verification', {
+        logger.info('Session data retrieved for consent verification from transaction_id', {
           sessionKey,
           hasConsentHandler: !!sessionData?.consentHandler,
-          hasCustomerId: !!sessionData?.customer_id
+          hasCustomerId: !!sessionData?.customer_id,
+          sessionData: sessionData,
+          sessionDataKey: JSON.parse(sessionDataKey)
+        });
+      }
+
+       if (sessionDataKey) {
+        sessionData = JSON.parse(sessionDataKey);
+        logger.info('Session data retrieved for session key', {
+          sessionKey,
+          hasConsentHandler: !!sessionData?.consentHandler,
+          hasCustomerId: !!sessionData?.customer_id,
+          sessionData: sessionData,
         });
       }
     } catch (error: any) {
@@ -72,7 +85,8 @@ export const verifyConsent: RequestHandler = async (req: Request, res: Response)
 
       logger.info('Finvu AA Service response received', {
         hasUrl: !!finvuResponse.data?.url,
-        status: finvuResponse.status
+        status: finvuResponse.status,
+        url: finvuResponse.data?.url
       });
 
       // Return the Finvu URL to frontend
