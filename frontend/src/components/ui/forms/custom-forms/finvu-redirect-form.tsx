@@ -48,19 +48,24 @@ export default function FinvuRedirectForm({
         if (hasCompletedRef.current) return;
 
         try {
-            setStatus("completed"); // For testing purpose will remove later
             setPollCount((prev) => prev + 1);
 
-            const response = await axios.get(
-                `${import.meta.env.VITE_BACKEND_URL}/finvu/check-completion`,
-                {
-                    params: {
-                        session_id: sessionId,
-                        transaction_id: transactionId,
-                    },
-                    timeout: 5000,
-                }
-            );
+            // const response = await axios.get(
+            //     `${import.meta.env.VITE_BACKEND_URL}/finvu/check-completion`,
+            //     {
+            //         params: {
+            //             session_id: sessionId,
+            //             transaction_id: transactionId,
+            //         },
+            //         timeout: 5000,
+            //     }
+            // );
+            //++++++++++++++++++++ testing ++++++++++++++++++++
+            const response = {
+                data: {
+                    completed: true,
+                },
+            };
 
             if (response.data.completed) {
                 hasCompletedRef.current = true;
