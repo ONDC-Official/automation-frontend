@@ -44,17 +44,7 @@ export const verifyConsent: RequestHandler = async (req: Request, res: Response)
         });
       }
 
-      //  if (sessionDataKey) {
-      //   sessionData = JSON.parse(sessionDataKey);
-      //   logger.info('Session data retrieved for session key', {
-      //     sessionKey,
-      //     hasConsentHandler: !!sessionData?.consentHandler,
-      //     hasCustomerId: !!sessionData?.customer_id,
-      //     sessionData: sessionData,
-      //   });
-      // }
-
-       if (sessionDataKey) {
+      if (sessionDataKey) {
         sessionData = JSON.parse(sessionDataKey);
         logger.info('Session data retrieved for session key', {
           sessionKey,
@@ -65,15 +55,15 @@ export const verifyConsent: RequestHandler = async (req: Request, res: Response)
 
         /**FETCH MOKE DATA USING SESSION ID Start*/
         const subUrl = sessionData?.subscriberUrl;
-        logger.info('[FINVU] subscriberUrl extracted from ui-session-data', { subUrl });
+        logger.info('ubscriberUrl extracted from ui-session-data', { subUrl });
 
         if (subUrl) {
           const resolvedKey = `MOCK_DATA::${transactionId}::${subUrl}`;
-          logger.info('[FINVU] Resolved composite Redis key', { resolvedKey });
+          logger.info('Resolved composite Redis key', { resolvedKey });
           let mockSessionDataKey = await RedisService.getKey(resolvedKey);
           if (mockSessionDataKey) {
             const mockSessionData = JSON.parse(mockSessionDataKey);
-            logger.info('[FINVU] Session data fetched', {
+            logger.info('Session data fetched', {
               resolvedKey,
               hasConsentHandler: !!sessionData?.consentHandler,
               hasCustomerId: !!sessionData?.customer_id,
@@ -82,7 +72,7 @@ export const verifyConsent: RequestHandler = async (req: Request, res: Response)
           }
 
         } else {
-          logger.info('[FINVU] subscriberUrl not found — using bare transactionId');
+          logger.info('subscriberUrl not found — using bare transactionId');
         }
         /**FETCH MOKE DATA USING SESSION ID Start END*/
       }
@@ -124,7 +114,7 @@ export const verifyConsent: RequestHandler = async (req: Request, res: Response)
       // Return the Finvu URL to frontend
       res.status(200).json({
         success: true,
-        url: finvuResponse.data.url ,
+        url: finvuResponse.data.url,
         encryptedRequest: finvuResponse.data.encryptedRequest,
         requestDate: finvuResponse.data.requestDate,
         encryptedFiuId: finvuResponse.data.encryptedFiuId
