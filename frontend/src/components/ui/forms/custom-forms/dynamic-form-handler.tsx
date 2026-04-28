@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import axios from "axios";
 import { SubmitEventParams } from "../../../../types/flow-types";
+
 import jsonpath from "jsonpath";
 import { FormFieldConfigType } from "../config-form/config-form";
 import { useSession } from "../../../../context/context";
@@ -300,41 +301,16 @@ export default function DynamicFormHandler({
                     );
                 }
 
-                // The formServiceUrl already contains all query parameters (session_id, flow_id, transaction_id)
-                // since it's generated dynamically by the mock service generator
-                // Just call it directly to get the JSON response with formUrl
-                // For dynamic forms, this will return: { success: true, type: "dynamic", formUrl: "...", message: "..." }
-                const response = await axios.get(formServiceUrl, {
-                    timeout: 10000,
-                });
+                // Navigate directly to the URL from reference_data — it IS the final destination.
+                // The mock service is responsible for storing the correct URL in the session.
+                setFormUrl(formServiceUrl);
 
-                // Check if response is JSON with formUrl (dynamic form)
-                if (response.data && typeof response.data === "object" && response.data.formUrl) {
-                    const dynamicFormUrl = response.data.formUrl;
-
-                    if (!dynamicFormUrl) {
-                        throw new Error("Form URL is empty in response!");
-                    }
-
-                    // Store the URL to open in new tab
-                    setFormUrl(dynamicFormUrl);
-
-                    // Navigate the already-opened window to the form URL
-                    if (formWindow && !formWindow.closed) {
-                        formWindow.location.href = dynamicFormUrl;
-                    } else {
-                        throw new Error("Form window was closed before navigation");
-                    }
-
-                    // Start polling for completion
+                if (formWindow && !formWindow.closed) {
+                    formWindow.location.href = formServiceUrl;
                     startPolling();
-                    return;
+                } else {
+                    throw new Error("Form window was closed before navigation");
                 }
-
-                // If we get here, response might be HTML or unexpected format
-                throw new Error(
-                    "Expected JSON response with formUrl, but got: " + typeof response.data
-                );
             } catch (error: unknown) {
                 console.error("Error opening form:", error);
                 setStatus("error");
