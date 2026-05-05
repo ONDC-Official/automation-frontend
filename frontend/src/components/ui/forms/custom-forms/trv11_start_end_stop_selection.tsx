@@ -99,7 +99,6 @@ export default function Metro210StartEndStopSelection({ submitEvent }: IMetroEnd
         }
     };
 
-
     // Find the index of selected start station
     const selectedStartIndex = useMemo(() => {
         if (!selectedStartStopCode) return -1;
@@ -207,8 +206,10 @@ export default function Metro210StartEndStopSelection({ submitEvent }: IMetroEnd
             {showPasteInput ? (
                 <div className="border border-blue-200 bg-blue-50/80 p-4 rounded-xl shadow-inner mb-4 space-y-3">
                     <div className="flex justify-between items-center">
-                        <label className="text-sm font-bold text-blue-900">Paste on_search Payload</label>
-                        <button 
+                        <label className="text-sm font-bold text-blue-900">
+                            Paste on_search Payload
+                        </label>
+                        <button
                             onClick={() => setShowPasteInput(false)}
                             className="text-gray-400 hover:text-gray-600"
                         >
@@ -223,12 +224,6 @@ export default function Metro210StartEndStopSelection({ submitEvent }: IMetroEnd
                     />
                     <div className="flex gap-2">
                         <button
-                            onClick={handleProcessPayload}
-                            className="flex-1 bg-blue-600 text-white py-2 rounded-lg text-sm font-bold hover:bg-blue-700 transition-colors"
-                        >
-                            Load Data
-                        </button>
-                        <button
                             onClick={() => {
                                 setJsonPayload("");
                                 setShowPasteInput(false);
@@ -236,6 +231,12 @@ export default function Metro210StartEndStopSelection({ submitEvent }: IMetroEnd
                             className="flex-1 bg-gray-200 text-gray-700 py-2 rounded-lg text-sm font-bold hover:bg-gray-300 transition-colors"
                         >
                             Cancel
+                        </button>
+                        <button
+                            onClick={handleProcessPayload}
+                            className="flex-1 bg-blue-600 text-white py-2 rounded-lg text-sm font-bold hover:bg-blue-700 transition-colors"
+                        >
+                            Load Data
                         </button>
                     </div>
                 </div>
@@ -283,21 +284,6 @@ export default function Metro210StartEndStopSelection({ submitEvent }: IMetroEnd
                         placeholder="e.g., std:080"
                         className={inputStyle}
                     />
-                </div>
-
-                {/* Vehicle Category Dropdown */}
-                <div className={fieldWrapperStyle}>
-                    <label className={labelStyle}>
-                        Vehicle Category <span className="text-red-500">*</span>
-                    </label>
-                    <select
-                        value={vehicleCategory}
-                        onChange={(e) => setVehicleCategory(e.target.value)}
-                        required
-                        className={inputStyle}
-                    >
-                        <option value="METRO">METRO</option>
-                    </select>
                 </div>
 
                 {/* BPP ID Input */}
