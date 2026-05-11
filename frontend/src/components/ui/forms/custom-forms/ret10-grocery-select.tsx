@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm, useFieldArray, Controller, FieldPath } from "react-hook-form";
 import { FaRegPaste } from "react-icons/fa6";
 import PayloadEditor from "../../mini-components/payload-editor";
@@ -74,6 +74,18 @@ export default function Ret10GrocerySelect({
     const [providers, setProviders] = useState<CatalogProvider[]>([]);
 
     const selectedProvider = watch("provider");
+
+    // Effect to update item and location options when selectedProvider changes
+    useEffect(() => {
+        const provider = providers.find((p) => p.id === selectedProvider);
+        if (provider) {
+            setItemOptions(provider.items.map((i) => i.id));
+            setLocationOptions(provider.locations.map((l) => l.id));
+        } else {
+            setItemOptions([]);
+            setLocationOptions([]);
+        }
+    }, [selectedProvider, providers]);
 
     const onSubmit = async (data: FormValues) => {
         const { valid, errors } = validateFormData(data);
