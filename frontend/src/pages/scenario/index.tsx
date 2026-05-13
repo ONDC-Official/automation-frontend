@@ -223,6 +223,7 @@ export default function FlowContent() {
             setSavedPreferences(mapped);
         } catch {
             // Not logged in or no saved preferences — leave defaults
+            console.warn("Could not fetch saved preferences, possibly not logged in");
         }
     };
 
