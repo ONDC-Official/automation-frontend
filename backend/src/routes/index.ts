@@ -13,6 +13,7 @@ import authRoutes from "./gitLoginRoute"; // Import authentication routes
 import healthRoutes from "./healthRoutes"; // Import health check routes
 import devGuideRoutes from "./devGuideRoutes";
 import aiProxyRoutes from "./aiProxyRoutes";
+import scenarioPreferencesRoutes from "./scenarioPreferencesRoutes";
 const router = Router();
 
 // Mount session-related routes
@@ -29,6 +30,7 @@ router.use("/images", imageRoutes); // Add image routes
 router.use(finvuRoutes);
 
 router.use("/auth", authRoutes); // Mount authentication routes
+router.use("/user", scenarioPreferencesRoutes);
 router.use("/guide", guideRoutes);
 router.use("/health", healthRoutes);
 router.use("/dev-guide", devGuideRoutes);
