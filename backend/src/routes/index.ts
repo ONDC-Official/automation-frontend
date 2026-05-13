@@ -7,6 +7,7 @@ import configRoutes from "./configRoute";
 import sellerRoutes from "./sellerRoutes"; // Import seller routes
 import imageRoutes from "./imageRoutes"; // Import image routes
 import finvuRoutes from "./finvu-routes"; // Import Finvu routes
+import formRoutes from "./form-routes"; // Import Form routes
 
 import guideRoutes from "./guideRoutes";
 import authRoutes from "./gitLoginRoute"; // Import authentication routes
@@ -26,6 +27,7 @@ router.use("/images", imageRoutes); // Add image routes
 
 // Mount Finvu routes (no prefix - routes have full paths)
 router.use(finvuRoutes);
+router.use(formRoutes);
 
 router.use("/auth", authRoutes); // Mount authentication routes
 router.use("/guide", guideRoutes);
