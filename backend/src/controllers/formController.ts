@@ -5,29 +5,30 @@ import logger from '@ondc/automation-logger';
 /**
  * Check if form callback has been received
  * Polled by the frontend after user submits form in popup
- * GET /form/check-completion?transaction_id=X
+ * GET /form/check-completion?transaction_id=X&form_id=Y
  */
 export const checkFormCompletion: RequestHandler = async (req: Request, res: Response) => {
   try {
-    const { transaction_id } = req.query;
+    const { transaction_id, form_id } = req.query;
 
-    logger.info('Form completion check', { transaction_id });
+    logger.info('Form completion check', { transaction_id, form_id });
 
-    if (!transaction_id) {
+    if (!transaction_id || !form_id) {
       res.status(400).json({
-        error: 'transaction_id is required',
+        error: 'transaction_id and form_id are required',
         completed: false
       });
       return;
     }
 
-    const completionKey = `form_completed:${transaction_id}`;
+    const completionKey = `form_completed:${transaction_id}:${form_id}`;
     const completionData = await RedisService.getKey(completionKey);
 
     if (completionData) {
       const data = JSON.parse(completionData);
       logger.info('Form completion check: COMPLETED', {
         transaction_id,
+        form_id,
         timestamp: data.timestamp
       });
 
@@ -40,7 +41,7 @@ export const checkFormCompletion: RequestHandler = async (req: Request, res: Res
       return;
     }
 
-    logger.debug('Form completion check: PENDING', { transaction_id });
+    logger.debug('Form completion check: PENDING', { transaction_id, form_id });
     res.json({ completed: false });
 
   } catch (error: any) {
