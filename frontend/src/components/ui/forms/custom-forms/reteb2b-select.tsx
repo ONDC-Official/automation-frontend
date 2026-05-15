@@ -650,7 +650,7 @@ export default function ReteB2BSelect({
                         <option value="new">New Retailer</option>
                         <option value="existing">Existing Retailer</option>
                     </select>
-                    {label("Customer ID", form.type === "new")}
+                    {label("Customer ID", form.type !== "new")}
                     <input
                         value={form.customer_id}
                         onChange={(e) => handleChange("customer_id", e.target.value)}
