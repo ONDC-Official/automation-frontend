@@ -6,6 +6,7 @@ import { UserContext } from "@context/userContext";
 import JsonDataForm from "@components/registry-components/subscriber-form";
 import { AuthService } from "@services/authService";
 import ScenarioPreferencesForm from "./scenario-preferences-form";
+import PastReportsSection from "./past-reports-section";
 
 import { ROUTES } from "@constants/routes";
 
@@ -55,7 +56,15 @@ const UserProfile = () => {
                                 </p>
                             </div>
 
-                            <div className="mt-4 sm:mt-0 sm:ml-6">
+                            <div className="mt-4 sm:mt-0 sm:ml-6 flex items-center gap-3">
+                                <a
+                                    href="http://ondc-common-alb-3cbab6333a4a606a.elb.ap-south-1.amazonaws.com/"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="px-4 py-2 bg-emerald-600 text-white rounded hover:bg-emerald-800 flex items-center"
+                                >
+                                    <strong>Redirect to Registry</strong>
+                                </a>
                                 <button
                                     type="button"
                                     className="px-4 py-2 bg-sky-600 text-white rounded hover:bg-sky-800 flex items-center"
@@ -73,6 +82,7 @@ const UserProfile = () => {
 
                 <JsonDataForm />
                 <ScenarioPreferencesForm />
+                <PastReportsSection />
             </div>
         </div>
     );
