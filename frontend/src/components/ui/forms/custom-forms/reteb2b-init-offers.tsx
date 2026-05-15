@@ -119,7 +119,11 @@ export default function ReteB2BInitOffers({
 
     const [form, setForm] = useState<RetailerCustomerInput>({
         type: "new",
-        city_code: "",
+        city_code: "std:080",
+        provider_tax_number: "ABCDE1234E",
+        shop_name: "Default Shop",
+        address: "Default Address",
+        state_code: "KA",
         available_offers: [],
         items: [
             {
@@ -697,19 +701,24 @@ export default function ReteB2BInitOffers({
                         onChange={(e) => handleChange("provider_tax_number", e.target.value)}
                         className={inputStyle}
                     />
-                    {label("Shop Name", form.type === "new")}
+                    {label("Shop Name", true)}
                     <input
                         value={form.shop_name}
                         onChange={(e) => handleChange("shop_name", e.target.value)}
                         className={inputStyle}
                     />
-                    {label("Address", form.type === "new")}
+                    {label("Address", true)}
                     <input
                         value={form.address}
                         onChange={(e) => handleChange("address", e.target.value)}
                         className={inputStyle}
                     />
-
+                    {label("State Code", true)}
+                    <input
+                        value={form.state_code}
+                        onChange={(e) => handleChange("state_code", e.target.value)}
+                        className={inputStyle}
+                    />
                     {/* ITEMS SECTION */}
                     <div>
                         <h3 className="font-bold">Items</h3>
