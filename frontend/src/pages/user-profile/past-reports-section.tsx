@@ -24,11 +24,10 @@ export default function PastReportsSection() {
     const [viewingId, setViewingId] = useState<string | null>(null);
 
     useEffect(() => {
-        if (!userDetails?.githubId) return;
-
+        if (!userDetails?.username) return;
         setLoading(true);
         apiClient
-            .get<PastReport[]>(API_ROUTES.USER.PAST_REPORTS(userDetails.githubId))
+            .get<PastReport[]>(API_ROUTES.USER.PAST_REPORTS(userDetails.username))
             .then((res) => setReports(Array.isArray(res.data) ? res.data : []))
             .catch((e) => {
                 const status = e?.response?.status;
@@ -40,7 +39,7 @@ export default function PastReportsSection() {
                 }
             })
             .finally(() => setLoading(false));
-    }, [userDetails?.githubId]);
+    }, [userDetails?.username]);
 
     const handleViewReport = async (testId: string) => {
         setViewingId(testId);
