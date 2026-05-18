@@ -1,4 +1,5 @@
 import { useContext } from "react";
+import { PiShieldStarBold } from "react-icons/pi";
 
 import { AIContext } from "../context/ai-context";
 
@@ -11,10 +12,13 @@ export function LockedBanner() {
 
     return (
         <div className="rounded border border-sky-200 bg-sky-50 px-4 py-3 flex items-center justify-between gap-3">
-            <div className="text-sm text-sky-900">
-                {configured
-                    ? "AI key is locked for this session. Unlock to start chatting."
-                    : "No AI key configured yet. Set one up to enable chat and autocomplete."}
+            <div className="flex items-start gap-2 text-sm text-sky-900">
+                <PiShieldStarBold className="h-4 w-4 mt-0.5 shrink-0 text-sky-600" />
+                <span>
+                    {configured
+                        ? "Protocol Guardian is locked for this session. Unlock to start chatting."
+                        : "Protocol Guardian needs an API key. Set one up to enable chat and autocomplete."}
+                </span>
             </div>
             <button
                 type="button"

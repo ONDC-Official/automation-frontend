@@ -9,6 +9,7 @@ import { GetRequestEndpoint } from "@components/FlowShared/guides";
 import MockDynamicForm from "../ui/components/mock-dynamic-form";
 import { v4 as uuidv4 } from "uuid";
 import { stringify as yamlStringify } from "yaml";
+import { configForGroup, getGroupSteps } from "../utils/step-group";
 
 type JsonSchema = Record<string, unknown>;
 type FormValues = Record<string, unknown>;
@@ -99,6 +100,7 @@ export const useConfigOperations = () => {
         actionId: string;
         action: string;
         inputs: FormValues;
+        extraStep?: boolean;
     }) => {
         playgroundContext.setLoading(true);
         try {
@@ -114,7 +116,8 @@ export const useConfigOperations = () => {
                 bapUri: config.transaction_data.bap_uri,
                 bppUri: config.transaction_data.bpp_uri,
             };
-            const result = await new MockRunner(config).runGeneratePayload(
+            const runnerConfig = configForGroup(config, data.extraStep ? "extra" : "main");
+            const result = await new MockRunner(runnerConfig).runGeneratePayload(
                 data.actionId,
                 inputs,
                 externalData
@@ -144,24 +147,27 @@ export const useConfigOperations = () => {
         }
     };
 
-    const runConfig = async () => {
-        if (!playgroundContext.config?.steps || playgroundContext.config.steps.length === 0) {
+    const runConfig = async (extraStep = false) => {
+        const config = playgroundContext.config;
+        const group = extraStep ? "extra" : "main";
+        const steps = getGroupSteps(config, group);
+        if (!config || steps.length === 0) {
             toast.error("No steps to run");
             return { success: false } as RunResult;
         }
-        if (
-            playgroundContext.config.steps.length ===
-            playgroundContext.config.transaction_history.length
-        ) {
+        const executedCount = steps.filter((s) =>
+            config.transaction_history.some((h) => h.action_id === s.action_id)
+        ).length;
+        if (executedCount === steps.length) {
             toast.info("All steps have already been executed");
             return { success: false } as RunResult;
         }
-        const currentIndex = calcCurrentIndex(playgroundContext.config);
-        if (currentIndex === -1) {
+        const currentIndex = calcCurrentIndex(configForGroup(config, group));
+        if (currentIndex === -1 || currentIndex >= steps.length) {
             toast.info("All steps have been executed");
             return { success: false } as RunResult;
         }
-        const currentStep = playgroundContext.config.steps[currentIndex];
+        const currentStep = steps[currentIndex];
 
         if (currentStep.api === "dynamic_form" || currentStep.api === "html_form") {
             const htmlForm64 = currentStep.mock.formHtml;
@@ -204,6 +210,7 @@ export const useConfigOperations = () => {
                     actionId: currentStep.action_id,
                     action: currentStep.api,
                     inputs: {},
+                    extraStep,
                 });
                 return {
                     success: res,
@@ -218,6 +225,7 @@ export const useConfigOperations = () => {
                         actionId: currentStep.action_id,
                         action: currentStep.api,
                         inputs: formData,
+                        extraStep,
                     });
                     resolve({ success: res });
                 };
@@ -330,7 +338,7 @@ export const useConfigOperations = () => {
         );
     };
 
-    const runCurrentConfig = async () => {
+    const runCurrentConfig = async (extraStep = false) => {
         if (!playgroundContext.config) {
             toast.error("No configuration found");
             return;
@@ -342,8 +350,12 @@ export const useConfigOperations = () => {
         }
         try {
             playgroundContext.resetTransactionHistory();
-            for (const step of playgroundContext.config.steps) {
-                const res = await runConfig();
+            const steps = getGroupSteps(
+                playgroundContext.config,
+                extraStep ? "extra" : "main"
+            );
+            for (const step of steps) {
+                const res = await runConfig(extraStep);
                 if (!res?.success) {
                     toast.error(`Execution stopped at action ${step.action_id}`);
                     break;

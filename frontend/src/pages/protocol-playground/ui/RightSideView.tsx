@@ -10,6 +10,8 @@ import MockRunner, { MockPlaygroundConfigType } from "@ondc/automation-mock-runn
 import { editorUtils } from "../utils/editor-utils";
 import { mockRunnerExtensions } from "../utils/mock-runner-extentions";
 import CommonLibView from "./playground-upper/common-lib-view";
+import { AIChatPanel } from "../ai/ui/AIChatPanel";
+import { configForGroup, getGroupSteps } from "../utils/step-group";
 // import { AIChatPanel } from "../ai/ui/AIChatPanel";
 
 interface SavedMetadata {
@@ -66,16 +68,19 @@ function GetRightSideContent({ tabId, actionId }: { tabId: string; actionId: str
     useEffect(() => {
         const meta = mockRunnerExtensions.getSaveDataMeta(
             playgroundContext.activeApi,
-            playgroundContext.config
+            playgroundContext.config,
+            playgroundContext.stepGroup
         );
         // setSaveMeta(meta);
         savedMetaRef.current = meta; // Update ref whenever savedMeta changes
 
         getSessionData().then((data) => setSessionData(data));
-    }, [playgroundContext.config, playgroundContext.activeApi]);
+    }, [playgroundContext.config, playgroundContext.activeApi, playgroundContext.stepGroup]);
 
-    const index =
-        playgroundContext.config?.steps.findIndex((step) => step.action_id === actionId) ?? 0;
+    const index = getGroupSteps(
+        playgroundContext.config,
+        playgroundContext.stepGroup
+    ).findIndex((step) => step.action_id === actionId);
     const activePayload =
         playgroundContext.config?.transaction_history.find((f) => f.action_id === actionId)
             ?.payload || undefined;
@@ -93,7 +98,12 @@ function GetRightSideContent({ tabId, actionId }: { tabId: string; actionId: str
                 );
             }
 
-            const mockRunner = new MockRunner(playgroundContext.config as MockPlaygroundConfigType);
+            const mockRunner = new MockRunner(
+                configForGroup(
+                    playgroundContext.config as MockPlaygroundConfigType,
+                    playgroundContext.stepGroup
+                )
+            );
             const sessionData = await mockRunner.getSessionDataUpToStep(index);
 
             return JSON.stringify(sessionData, null, 2);
@@ -212,8 +222,8 @@ function GetRightSideContent({ tabId, actionId }: { tabId: string; actionId: str
             return <OutputPayloadViewer payload={activePayload} actionId={actionId} />;
         case "common_lib":
             return <CommonLibView />;
-        // case "ai_chat":
-        //     return <AIChatPanel actionId={actionId} />;
+        case "ai_chat":
+            return <AIChatPanel actionId={actionId} />;
     }
     return <></>;
 }

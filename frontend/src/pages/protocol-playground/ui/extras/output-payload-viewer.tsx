@@ -21,6 +21,7 @@ import {
 } from "react-icons/io5";
 
 import { PlaygroundContext } from "@pages/protocol-playground/context/playground-context";
+import { configForGroup } from "@pages/protocol-playground/utils/step-group";
 import {
     ActiveDomainConfig,
     Domain,
@@ -157,7 +158,9 @@ export default function OutputPayloadViewer({
                 setIsLoading(false);
                 return;
             }
-            const runner = new MockRunner(config);
+            const runner = new MockRunner(
+                configForGroup(config, playgroundContext.stepGroup)
+            );
             runner.logger.setLogLevel(3);
             const l2Result = await runner.runValidatePayload(actionId || "", payload);
             playgroundContext.setActiveTerminalData((s) => [...s, l2Result]);

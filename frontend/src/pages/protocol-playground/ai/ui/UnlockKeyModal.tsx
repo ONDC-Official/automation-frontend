@@ -1,6 +1,7 @@
 import { FormEvent, useEffect, useState } from "react";
+import { PiShieldStarBold } from "react-icons/pi";
 
-import Modal from "@components/Modal";
+import Popup from "@components/ui/pop-up/pop-up";
 import { InvalidPassphraseError, unlockKey } from "@utils/secure-key-store";
 
 interface UnlockKeyModalProps {
@@ -55,14 +56,21 @@ export function UnlockKeyModal({
     };
 
     return (
-        <Modal isOpen={isOpen} onClose={onClose}>
-            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-                <div>
-                    <h2 className="text-lg font-semibold text-gray-900">Unlock AI key</h2>
-                    <p className="text-sm text-gray-600 mt-1">
-                        Enter the passphrase you set up on this device. The key is decrypted in
-                        memory only — nothing is written back.
-                    </p>
+        <Popup isOpen={isOpen} onClose={onClose}>
+            <form onSubmit={handleSubmit} className="flex flex-col gap-4 pr-8">
+                <div className="flex items-start gap-3">
+                    <span className="inline-flex items-center justify-center h-9 w-9 rounded-md bg-gradient-to-br from-sky-500 to-indigo-600 text-white shadow-sm shrink-0">
+                        <PiShieldStarBold className="h-5 w-5" />
+                    </span>
+                    <div>
+                        <h2 className="text-lg font-semibold text-gray-900">
+                            Unlock Protocol Guardian
+                        </h2>
+                        <p className="text-sm text-gray-600 mt-1">
+                            Enter the passphrase you set up on this device. The key is
+                            decrypted in memory only — nothing is written back.
+                        </p>
+                    </div>
                 </div>
                 <label className="flex flex-col gap-1 text-sm text-gray-700">
                     Passphrase
@@ -103,6 +111,6 @@ export function UnlockKeyModal({
                     </div>
                 </div>
             </form>
-        </Modal>
+        </Popup>
     );
 }

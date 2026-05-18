@@ -4,7 +4,6 @@ import MockRunner, {
     ExecutionResult,
     MockPlaygroundConfigType,
 } from "@ondc/automation-mock-runner";
-
 import { PlaygroundContext } from "@pages/protocol-playground/context/playground-context";
 import GetPlaygroundComponent from "@pages/protocol-playground/starter-page";
 import { usePlaygroundModals } from "@pages/protocol-playground/hooks/use-playground-modal";
@@ -18,7 +17,13 @@ import {
     SavedConfigMetadata,
     saveGistConfig,
 } from "@pages/protocol-playground/utils/config-storage";
+
 import { fetchGistData, getFirstGistFile } from "@pages/protocol-playground/utils/fetch-gist";
+import {
+    StepGroup,
+    getGroupSteps,
+    setGroupSteps,
+} from "@pages/protocol-playground/utils/step-group";
 
 const Body = ({ workbenchFlow }: { workbenchFlow: ReturnType<typeof useWorkbenchFlows> }) => {
     switch (workbenchFlow.flowStepNum) {
@@ -44,6 +49,7 @@ const ProtocolPlayGround = () => {
     const [currentState, setCurrentState] = useState<"editing" | "running">("editing");
     const [loading, setLoading] = useState(false);
     const [activeApi, setActiveApi] = useState<string | undefined>(undefined);
+    const [stepGroup, setStepGroup] = useState<StepGroup>("main");
     const [activeTerminalData, setActiveTerminalData] = useState<ExecutionResult[]>([]);
     const [dirtyConfig, setDirtyConfig] = useState(true);
 
@@ -87,7 +93,7 @@ const ProtocolPlayGround = () => {
                 return;
             }
         }
-        const newSteps = current.steps.map((step) => {
+        const newSteps = getGroupSteps(current, stepGroup).map((step) => {
             if (step.action_id === stepId) {
                 return {
                     ...step,
@@ -99,10 +105,7 @@ const ProtocolPlayGround = () => {
             }
             return step;
         });
-        const newConfig = {
-            ...current,
-            steps: newSteps,
-        };
+        const newConfig = setGroupSteps(current, stepGroup, newSteps);
         setCurrentConfig(newConfig);
     };
 
@@ -164,7 +167,6 @@ const ProtocolPlayGround = () => {
     };
 
     // Config management functions
-
     const loadSavedConfig = (configId: string): boolean => {
         const savedConfig = loadConfig(configId);
         if (savedConfig) {
@@ -278,6 +280,8 @@ const ProtocolPlayGround = () => {
                 updateStepMock,
                 activeApi,
                 setActiveApi,
+                stepGroup,
+                setStepGroup,
                 activeTerminalData,
                 setActiveTerminalData,
                 useModal: usePlaygroundModals(),

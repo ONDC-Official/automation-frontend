@@ -5,15 +5,21 @@ import { PLAYGROUND_LEFT_TABS, PLAYGROUND_LEFT_TABS_FORM } from "../types";
 import { DarkSkyBlueTheme } from "./editor-themes";
 import MockRunner, { CodeValidator, getFunctionSchema } from "@ondc/automation-mock-runner";
 import { CodeStatistics } from "./extras/statistics";
+import { getGroupSteps } from "../utils/step-group";
 
 // import { CodeStatistics } from "@ondc/automation-mock-runner"
 export function LeftSideView(props: { width: string; activeApi?: string }) {
     const { width, activeApi } = props;
     const playgroundContext = useContext(PlaygroundContext);
 
-    const stepData = playgroundContext.config?.steps.find((f) => f.action_id === activeApi);
+    const stepData = getGroupSteps(playgroundContext.config, playgroundContext.stepGroup).find(
+        (f) => f.action_id === activeApi
+    );
 
-    const isForm = stepData?.api === "dynamic_form" || stepData?.api === "html_form";
+    const isForm =
+        stepData?.api === "dynamic_form" ||
+        stepData?.api === "html_form" ||
+        stepData?.api === "DYNAMIC_FORM";
 
     const tabs = isForm ? PLAYGROUND_LEFT_TABS_FORM : PLAYGROUND_LEFT_TABS;
 
@@ -133,7 +139,7 @@ export function LeftSideView(props: { width: string; activeApi?: string }) {
                     beforeMount={handleEditorWillMount}
                     height="100%"
                     language={activeTabConfig.language}
-                    defaultValue={getEditorContent()}
+                    value={getEditorContent()}
                     onChange={handleEditorChange}
                     options={{
                         padding: { top: 16, bottom: 16 },

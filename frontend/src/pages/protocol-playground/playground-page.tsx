@@ -1,5 +1,4 @@
 import { useContext, useEffect, useRef, useState } from "react";
-
 import { PlaygroundContext } from "@pages/protocol-playground/context/playground-context";
 import Popup from "@components/ui/pop-up/pop-up";
 import { PlaygroundRightTabType } from "@pages/protocol-playground/types";
@@ -20,11 +19,20 @@ import { FlowInfoModal } from "@pages/protocol-playground/ui/flow-info-modal";
 import { ExportReviewModal } from "@pages/protocol-playground/ui/export-review-modal";
 import { GitHubImportModal } from "@pages/protocol-playground/ui/github-import-modal";
 import { AIProvider } from "@pages/protocol-playground/ai/context/ai-provider";
+import { StepGroup, getGroupSteps } from "@pages/protocol-playground/utils/step-group";
 
 const PlaygroundPage = () => {
     const playgroundContext = useContext(PlaygroundContext);
 
-    const { activeApi, setActiveApi } = playgroundContext;
+    const { activeApi, setActiveApi, stepGroup, setStepGroup } = playgroundContext;
+
+    const groupSteps = getGroupSteps(playgroundContext.config, stepGroup);
+
+    const handleStepGroupChange = (group: StepGroup) => {
+        setStepGroup(group);
+        const firstStep = getGroupSteps(playgroundContext.config, group)[0];
+        setActiveApi(firstStep?.action_id);
+    };
 
     const {
         exportConfig,
@@ -52,6 +60,7 @@ const PlaygroundPage = () => {
         updateAction,
         clearConfig,
         config: playgroundContext.config,
+        stepGroup,
     });
 
     const handleImportFromGitHub = () => {
@@ -215,17 +224,23 @@ const PlaygroundPage = () => {
                         domain={playgroundContext.config?.meta.domain || "N/A"}
                         version={playgroundContext.config?.meta.version || "N/A"}
                         flowId={playgroundContext.config?.meta.flowId || "N/A"}
+                        stepGroup={stepGroup}
+                        onStepGroupChange={handleStepGroupChange}
+                        mainStepCount={playgroundContext.config?.steps.length || 0}
+                        extraStepCount={
+                            playgroundContext.config?.extra_steps?.steps.length || 0
+                        }
                         onExport={exportConfig}
                         onImport={importConfig}
                         onImportFromGitHub={handleImportFromGitHub}
                         onClear={modalHandlers.showDeleteConfirmation}
                         onRun={async () => {
-                            await runConfig();
+                            await runConfig(stepGroup === "extra");
                         }}
                         onCreateFlowSession={createFlowSession}
                         onExportForDeployment={handleExportForDeployment}
                         onRunCurrent={async () => {
-                            await runCurrentConfig();
+                            await runCurrentConfig(stepGroup === "extra");
                         }}
                         onBack={handleBack}
                         onHelp={() => setIsHelpOpen(true)}
@@ -235,7 +250,7 @@ const PlaygroundPage = () => {
                         onToggleFullscreen={toggleFullscreen}
                     />
                     <ActionTimeline
-                        steps={playgroundContext.config?.steps || []}
+                        steps={groupSteps}
                         transactionHistory={playgroundContext.config?.transaction_history || []}
                         activeApi={activeApi}
                         onApiSelect={setActiveApi}

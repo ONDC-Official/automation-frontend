@@ -9,9 +9,12 @@ import {
 } from "@utils/secure-key-store";
 
 import { useAiSettings } from "../hooks/use-ai-settings";
+import { PendingApprovalsProvider } from "../hooks/use-pending-approvals";
+import { ProposeEditModal } from "../ui/ProposeEditModal";
 import { SetupKeyModal } from "../ui/SetupKeyModal";
 import { UnlockKeyModal } from "../ui/UnlockKeyModal";
 import { AIContext, type UnlockGateResult } from "./ai-context";
+import { ChatSessionProvider } from "./chat-session-context";
 
 type PendingGate = {
     resolve: (result: UnlockGateResult) => void;
@@ -139,7 +142,10 @@ export function AIProvider({ children }: { children: ReactNode }) {
 
     return (
         <AIContext.Provider value={value}>
-            {children}
+            <PendingApprovalsProvider>
+                <ChatSessionProvider>{children}</ChatSessionProvider>
+                <ProposeEditModal />
+            </PendingApprovalsProvider>
             <SetupKeyModal
                 isOpen={setupOpen}
                 onClose={closeAuthModals}

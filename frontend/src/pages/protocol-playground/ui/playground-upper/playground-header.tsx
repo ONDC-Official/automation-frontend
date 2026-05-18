@@ -14,11 +14,16 @@ import { GrRedo } from "react-icons/gr";
 import { IoMdSkipForward, IoMdTrash } from "react-icons/io";
 import { TbAutomaticGearboxFilled, TbDatabaseExport } from "react-icons/tb";
 import { MdFullscreen, MdFullscreenExit } from "react-icons/md";
+import { StepGroup } from "@pages/protocol-playground/utils/step-group";
 
 interface PlaygroundHeaderProps {
     domain?: string;
     version?: string;
     flowId?: string;
+    stepGroup: StepGroup;
+    onStepGroupChange: (group: StepGroup) => void;
+    mainStepCount: number;
+    extraStepCount: number;
     onExport: () => void;
     onExportForDeployment: () => void;
     onImport: () => void;
@@ -138,10 +143,36 @@ const FileMenu = ({
     );
 };
 
+const StepGroupSelector = ({
+    stepGroup,
+    onStepGroupChange,
+    mainStepCount,
+    extraStepCount,
+}: {
+    stepGroup: StepGroup;
+    onStepGroupChange: (group: StepGroup) => void;
+    mainStepCount: number;
+    extraStepCount: number;
+}) => (
+    <select
+        value={stepGroup}
+        onChange={(e) => onStepGroupChange(e.target.value as StepGroup)}
+        title="Choose which step group to edit"
+        className="px-2.5 py-1.5 rounded-md text-sm font-medium text-sky-700 bg-sky-100 hover:bg-sky-200 transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-400 focus:ring-offset-1 cursor-pointer"
+    >
+        <option value="main">Main Steps ({mainStepCount})</option>
+        <option value="extra">Extra Steps ({extraStepCount})</option>
+    </select>
+);
+
 export const PlaygroundHeader = ({
     domain,
     version,
     flowId,
+    stepGroup,
+    onStepGroupChange,
+    mainStepCount,
+    extraStepCount,
     onExport,
     onExportForDeployment,
     onImport,
@@ -178,6 +209,15 @@ export const PlaygroundHeader = ({
             <span className="text-md font-bold bg-gradient-to-r from-sky-600 to-sky-500 bg-clip-text text-transparent tracking-tight whitespace-nowrap">
                 PLAYGROUND
             </span>
+
+            <div className="w-px h-6 bg-gray-200 mx-1" />
+
+            <StepGroupSelector
+                stepGroup={stepGroup}
+                onStepGroupChange={onStepGroupChange}
+                mainStepCount={mainStepCount}
+                extraStepCount={extraStepCount}
+            />
 
             <div className="w-px h-6 bg-gray-200 mx-1" />
 
