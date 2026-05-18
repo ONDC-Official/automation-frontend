@@ -13,6 +13,7 @@ const keyMapping: Record<string, string> = {
     headerValidaton: "Header Validation",
     useGzip: "Use Gzip",
     encryptionValidation: "Encryption Validation",
+    useCare: "Use Care",
     totalDifficulty: "Total Difficulty",
 };
 
@@ -25,6 +26,7 @@ interface DifficultyCache {
     sensitiveTTL?: boolean;
     useGzip: boolean;
     encryptionValidation?: boolean;
+    useCare?: boolean;
     totalDifficulty?: number;
 }
 
@@ -55,9 +57,12 @@ const DifficultyCards = ({ difficulty_cache, sessionId }: IProps) => {
         if (newCache.stopAfterFirstNack) {
             delete newCache.stopAfterFirstNack;
         }
-        
+
         if (!("encryptionValidation" in newCache)) {
             newCache.encryptionValidation = false;
+        }
+        if (!("useCare" in newCache)) {
+            newCache.useCare = false;
         }
 
         setDifficultCache(newCache);
