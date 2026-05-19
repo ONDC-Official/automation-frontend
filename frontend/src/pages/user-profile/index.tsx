@@ -46,6 +46,7 @@ const UserProfile = () => {
     ];
 
     useEffect(() => {
+        console.warn("JWT token:", token);
         refreshUser();
     }, [refreshUser]);
 
