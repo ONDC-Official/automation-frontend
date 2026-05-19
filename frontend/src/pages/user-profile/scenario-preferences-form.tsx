@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
+import { LuPlus, LuX } from "react-icons/lu";
 
 import { FormInput } from "@components/ui/forms/form-input";
 import FormSelect from "@components/ui/forms/form-select";
@@ -60,7 +61,11 @@ const EMPTY_PREFERENCES: ScenarioPreferences = {
     env: "PRE-PRODUCTION",
 };
 
-export default function ScenarioPreferencesForm() {
+type Props = {
+    externalOpenTrigger?: number;
+};
+
+export default function ScenarioPreferencesForm({ externalOpenTrigger = 0 }: Props) {
     const {
         register: registerField,
         handleSubmit,
@@ -86,6 +91,7 @@ export default function ScenarioPreferencesForm() {
     const [isSaving, setIsSaving] = useState(false);
     const [isFetching, setIsFetching] = useState(true);
     const [editingKey, setEditingKey] = useState<string | null>(null);
+    const [isFormOpen, setIsFormOpen] = useState(false);
 
     const allDomainsRef = useRef<Domain[]>([]);
 
@@ -94,6 +100,10 @@ export default function ScenarioPreferencesForm() {
             setIsFetching(false)
         );
     }, []);
+
+    useEffect(() => {
+        if (externalOpenTrigger > 0) setIsFormOpen(true);
+    }, [externalOpenTrigger]);
 
     const fetchDomainData = async () => {
         try {
@@ -128,6 +138,7 @@ export default function ScenarioPreferencesForm() {
     const handleEdit = (key: string) => {
         const config = savedPrefs[key];
         setEditingKey(key);
+        setIsFormOpen(true);
         reset({
             configName: key,
             subscriberUrl: config.subscriberUrl,
@@ -147,6 +158,7 @@ export default function ScenarioPreferencesForm() {
 
     const handleCancelEdit = () => {
         setEditingKey(null);
+        setIsFormOpen(false);
         reset(EMPTY_PREFERENCES);
         setDynamicValue(EMPTY_PREFERENCES);
         setDynamicList((prev) => ({ ...prev, version: [] }));
@@ -186,6 +198,7 @@ export default function ScenarioPreferencesForm() {
             }));
             toast.success(editingKey ? "Configuration updated" : "Configuration saved");
             setEditingKey(null);
+            setIsFormOpen(false);
             reset(EMPTY_PREFERENCES);
             setDynamicValue(EMPTY_PREFERENCES);
             setDynamicList((prev) => ({ ...prev, version: [] }));
@@ -228,169 +241,207 @@ export default function ScenarioPreferencesForm() {
                 </div>
             ) : (
                 <div className="max-w-2xl mx-auto space-y-6">
-                    {/* Add / Edit config form */}
-                    <form onSubmit={handleSubmit(onSubmit)} className="space-y-1">
-                        {editingKey && (
-                            <p className="text-xs font-medium text-sky-600 mb-1">
-                                Editing: <span className="font-bold">{editingKey}</span>
-                            </p>
+                    {/* Saved configs list */}
+                    <div id="saved-configs" className="scroll-mt-24">
+                        {Object.keys(savedPrefs).length > 0 && (
+                            <div>
+                                <h3 className="text-sm font-semibold text-gray-700 mb-2">
+                                    Saved Configurations
+                                </h3>
+                                <div className="space-y-2">
+                                    {Object.entries(savedPrefs).map(([key, config]) => (
+                                        <div
+                                            key={key}
+                                            className={`flex items-center justify-between px-4 py-3 bg-white rounded-lg border ${editingKey === key ? "border-sky-400" : "border-gray-200"}`}
+                                        >
+                                            <div>
+                                                <p className="text-sm font-semibold text-gray-800">
+                                                    {key}
+                                                </p>
+                                                <p className="text-xs text-gray-500 mt-0.5">
+                                                    {config.domain} &nbsp;·&nbsp; {config.version}{" "}
+                                                    &nbsp;·&nbsp; {config.npType}
+                                                </p>
+                                                <p className="text-xs text-gray-400 mt-0.5">
+                                                    {config.subscriberUrl}
+                                                </p>
+                                            </div>
+                                            <div className="flex items-center gap-4 ml-6">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleEdit(key)}
+                                                    className="text-sky-500 hover:text-sky-700 text-sm font-medium"
+                                                >
+                                                    Edit
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleDelete(key)}
+                                                    className="text-red-400 hover:text-red-600 text-sm font-medium"
+                                                >
+                                                    Delete
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
                         )}
-                        <FormInput
-                            register={register}
-                            errors={errors}
-                            label="Config Name"
-                            name="configName"
-                            required={editingKey ? undefined : "Required"}
-                            labelInfo=""
-                            disabled={!!editingKey}
-                            validations={
-                                editingKey
-                                    ? {}
-                                    : {
-                                          validate: (value: string) =>
-                                              !savedPrefs[value.trim()] ||
-                                              "A configuration with this name already exists, choose a different name",
-                                      }
-                            }
-                        />
-                        <FormInput
-                            register={register}
-                            errors={errors}
-                            label="Subscriber URL"
-                            name="subscriberUrl"
-                            required="Required"
-                            labelInfo=""
-                            validations={{
-                                pattern: {
-                                    value: /^https?:\/\/.*/i,
-                                    message: "URL must start with http:// or https://",
-                                },
-                            }}
-                        />
-                        <FormSelect
-                            register={register}
-                            errors={errors}
-                            setValue={setValue}
-                            name="domain"
-                            label="Domain"
-                            options={dynamicList.domain.map((d) => d.key)}
-                            currentValue={dynamicValue.domain}
-                            setSelectedValue={(val) => {
-                                setDynamicValue((prev) => ({ ...prev, domain: val, version: "" }));
-                                setValue("version", "");
-                                const match = allDomainsRef.current.find((d) => d.key === val);
-                                setDynamicList((prev) => ({
-                                    ...prev,
-                                    version: (match?.version as DomainVersionWithUsecase[]) || [],
-                                }));
-                            }}
-                            nonSelectedValue
-                            required
-                        />
-                        <FormSelect
-                            register={register}
-                            errors={errors}
-                            setValue={setValue}
-                            name="version"
-                            label="Version"
-                            options={dynamicList.version.map((v) => v.key)}
-                            currentValue={dynamicValue.version}
-                            setSelectedValue={(val) => {
-                                setDynamicValue((prev) => ({ ...prev, version: val }));
-                            }}
-                            nonSelectedValue
-                            required
-                        />
-                        <FormSelect
-                            register={register}
-                            errors={errors}
-                            setValue={setValue}
-                            name="npType"
-                            label="App Type"
-                            options={["BAP", "BPP"]}
-                            currentValue={dynamicValue.npType}
-                            setSelectedValue={(val) =>
-                                setDynamicValue((prev) => ({ ...prev, npType: val }))
-                            }
-                            required
-                        />
-                        <FormSelect
-                            register={register}
-                            errors={errors}
-                            setValue={setValue}
-                            name="env"
-                            label="Environment"
-                            options={["PRE-PRODUCTION"]}
-                            currentValue={dynamicValue.env}
-                            setSelectedValue={(val) =>
-                                setDynamicValue((prev) => ({ ...prev, env: val }))
-                            }
-                            required
-                        />
-                        <div className="pt-3 flex items-center gap-3">
-                            <LoadingButton
-                                type="submit"
-                                buttonText={
-                                    editingKey ? "Update Configuration" : "Save Configuration"
-                                }
-                                loadingText={editingKey ? "Updating..." : "Saving..."}
-                                isLoading={isSaving}
-                            />
-                            {editingKey && (
+                    </div>
+
+                    {/* Add / Edit form */}
+                    {!isFormOpen ? (
+                        <button
+                            type="button"
+                            onClick={() => setIsFormOpen(true)}
+                            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-sky-700 bg-sky-50 hover:bg-sky-100 border border-sky-200 hover:border-sky-300 rounded-xl transition-all"
+                        >
+                            <LuPlus className="text-base" />
+                            Add a preference for scenario testing
+                        </button>
+                    ) : (
+                        <div className="bg-white rounded-xl border border-gray-200 p-5">
+                            <div className="flex items-center justify-between mb-4">
+                                <p className="text-sm font-semibold text-gray-700">
+                                    {editingKey ? (
+                                        <>
+                                            Editing:{" "}
+                                            <span className="text-sky-600">{editingKey}</span>
+                                        </>
+                                    ) : (
+                                        "New Configuration"
+                                    )}
+                                </p>
                                 <button
                                     type="button"
                                     onClick={handleCancelEdit}
-                                    className="text-sm text-gray-500 hover:text-gray-700"
+                                    className="text-gray-400 hover:text-gray-600 transition-colors"
+                                    aria-label="Close form"
                                 >
-                                    Cancel
+                                    <LuX className="text-lg" />
                                 </button>
-                            )}
-                        </div>
-                    </form>
-
-                    {/* Saved configs list */}
-                    {Object.keys(savedPrefs).length > 0 && (
-                        <div>
-                            <h3 className="text-sm font-semibold text-gray-700 mb-2">
-                                Saved Configurations
-                            </h3>
-                            <div className="space-y-2">
-                                {Object.entries(savedPrefs).map(([key, config]) => (
-                                    <div
-                                        key={key}
-                                        className={`flex items-center justify-between px-4 py-3 bg-white rounded-lg border ${editingKey === key ? "border-sky-400" : "border-gray-200"}`}
-                                    >
-                                        <div>
-                                            <p className="text-sm font-semibold text-gray-800">
-                                                {key}
-                                            </p>
-                                            <p className="text-xs text-gray-500 mt-0.5">
-                                                {config.domain} &nbsp;·&nbsp; {config.version}{" "}
-                                                &nbsp;·&nbsp; {config.npType}
-                                            </p>
-                                            <p className="text-xs text-gray-400 mt-0.5">
-                                                {config.subscriberUrl}
-                                            </p>
-                                        </div>
-                                        <div className="flex items-center gap-4 ml-6">
-                                            <button
-                                                type="button"
-                                                onClick={() => handleEdit(key)}
-                                                className="text-sky-500 hover:text-sky-700 text-sm font-medium"
-                                            >
-                                                Edit
-                                            </button>
-                                            <button
-                                                type="button"
-                                                onClick={() => handleDelete(key)}
-                                                className="text-red-400 hover:text-red-600 text-sm font-medium"
-                                            >
-                                                Delete
-                                            </button>
-                                        </div>
-                                    </div>
-                                ))}
                             </div>
+                            <form onSubmit={handleSubmit(onSubmit)} className="space-y-1">
+                                <FormInput
+                                    register={register}
+                                    errors={errors}
+                                    label="Config Name"
+                                    name="configName"
+                                    required={editingKey ? undefined : "Required"}
+                                    labelInfo=""
+                                    disabled={!!editingKey}
+                                    validations={
+                                        editingKey
+                                            ? {}
+                                            : {
+                                                  validate: (value: string) =>
+                                                      !savedPrefs[value.trim()] ||
+                                                      "A configuration with this name already exists, choose a different name",
+                                              }
+                                    }
+                                />
+                                <FormInput
+                                    register={register}
+                                    errors={errors}
+                                    label="Subscriber URL"
+                                    name="subscriberUrl"
+                                    required="Required"
+                                    labelInfo=""
+                                    validations={{
+                                        pattern: {
+                                            value: /^https?:\/\/.*/i,
+                                            message: "URL must start with http:// or https://",
+                                        },
+                                    }}
+                                />
+                                <FormSelect
+                                    register={register}
+                                    errors={errors}
+                                    setValue={setValue}
+                                    name="domain"
+                                    label="Domain"
+                                    options={dynamicList.domain.map((d) => d.key)}
+                                    currentValue={dynamicValue.domain}
+                                    setSelectedValue={(val) => {
+                                        setDynamicValue((prev) => ({
+                                            ...prev,
+                                            domain: val,
+                                            version: "",
+                                        }));
+                                        setValue("version", "");
+                                        const match = allDomainsRef.current.find(
+                                            (d) => d.key === val
+                                        );
+                                        setDynamicList((prev) => ({
+                                            ...prev,
+                                            version:
+                                                (match?.version as DomainVersionWithUsecase[]) ||
+                                                [],
+                                        }));
+                                    }}
+                                    nonSelectedValue
+                                    required
+                                />
+                                <FormSelect
+                                    register={register}
+                                    errors={errors}
+                                    setValue={setValue}
+                                    name="version"
+                                    label="Version"
+                                    options={dynamicList.version.map((v) => v.key)}
+                                    currentValue={dynamicValue.version}
+                                    setSelectedValue={(val) => {
+                                        setDynamicValue((prev) => ({ ...prev, version: val }));
+                                    }}
+                                    nonSelectedValue
+                                    required
+                                />
+                                <FormSelect
+                                    register={register}
+                                    errors={errors}
+                                    setValue={setValue}
+                                    name="npType"
+                                    label="App Type"
+                                    options={["BAP", "BPP"]}
+                                    currentValue={dynamicValue.npType}
+                                    setSelectedValue={(val) =>
+                                        setDynamicValue((prev) => ({ ...prev, npType: val }))
+                                    }
+                                    required
+                                />
+                                <FormSelect
+                                    register={register}
+                                    errors={errors}
+                                    setValue={setValue}
+                                    name="env"
+                                    label="Environment"
+                                    options={["PRE-PRODUCTION"]}
+                                    currentValue={dynamicValue.env}
+                                    setSelectedValue={(val) =>
+                                        setDynamicValue((prev) => ({ ...prev, env: val }))
+                                    }
+                                    required
+                                />
+                                <div className="pt-3 flex items-center gap-3">
+                                    <LoadingButton
+                                        type="submit"
+                                        buttonText={
+                                            editingKey
+                                                ? "Update Configuration"
+                                                : "Save Configuration"
+                                        }
+                                        loadingText={editingKey ? "Updating..." : "Saving..."}
+                                        isLoading={isSaving}
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={handleCancelEdit}
+                                        className="text-sm text-gray-500 hover:text-gray-700"
+                                    >
+                                        Cancel
+                                    </button>
+                                </div>
+                            </form>
                         </div>
                     )}
                 </div>

@@ -185,6 +185,9 @@ export default function FlowContent() {
         setIsFormSubmitted(true);
         // await fetchFlows(data);
         await onSubmit(data);
+        setIsFormSubmitted(false);
+        setSelectedConfigKey("");
+        setSelectedUsecaseId("");
     };
 
     const fetchFormFieldData = async (): Promise<Domain[]> => {
@@ -352,10 +355,9 @@ export default function FlowContent() {
                                                         Select a configuration
                                                     </option>
                                                     {Object.entries(savedPreferences).map(
-                                                        ([key, config]) => (
+                                                        ([key]) => (
                                                             <option key={key} value={key}>
-                                                                {config.domain} | {config.version} |{" "}
-                                                                {config.npType}
+                                                                {key}
                                                             </option>
                                                         )
                                                     )}
