@@ -127,6 +127,11 @@ export default function DynamicFormHandler({
         try {
             setPollCount((prev) => prev + 1);
 
+            // Log the form being polled on every tick so it's easy to identify
+            console.warn(
+                `🔄 [DynamicForm] Poll #${pollCount} | transactionId: "${transactionId}" | formName: "${formName}" | key: "${formSubmissionKey}"`
+            );
+
             // Check if form was submitted by querying the session data
             // Use actualSessionId extracted from form URL, NOT the sessionId prop!
             const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/sessions`, {
@@ -145,7 +150,22 @@ export default function DynamicFormHandler({
             // Use formSubmissionKey (transactionId_formName) to distinguish between multiple forms
             const formSubmitted = response.data?.formSubmissions?.[formSubmissionKey];
 
+            // Log on first poll so the key is visible without flooding the console
+            if (pollCount === 1) {
+                console.warn("🔍 [DynamicForm] Polling — checking Redis key:", formSubmissionKey);
+                console.warn(
+                    "   ➤ formSubmissions in session:",
+                    Object.keys(response.data?.formSubmissions ?? {})
+                );
+            }
+
             if (formSubmitted && !hasCompletedRef.current) {
+                console.warn("✅ [DynamicForm] Form submission found!", {
+                    key: formSubmissionKey,
+                    submission_id: formSubmitted.submission_id,
+                    idType: formSubmitted.idType,
+                });
+
                 hasCompletedRef.current = true;
 
                 // Stop polling immediately
@@ -204,6 +224,14 @@ export default function DynamicFormHandler({
         isPollingRef.current = true;
         setPollCount(0);
 
+        // Log all polling identifiers once so they are easy to inspect
+        console.warn("🔄 [DynamicForm] Starting polling with:");
+        console.warn("   ➤ transactionId     :", transactionId || "(empty — check flowMap)");
+        console.warn("   ➤ formName          :", formName || "(empty — check formServiceUrl path)");
+        console.warn("   ➤ formSubmissionKey :", formSubmissionKey, " ← Redis key being polled");
+        console.warn("   ➤ actualSessionId   :", actualSessionId, " ← session queried on backend");
+        console.warn("   ➤ formServiceUrl    :", formServiceUrl);
+
         // Poll immediately first time
         checkCompletion();
 
@@ -211,7 +239,14 @@ export default function DynamicFormHandler({
         pollingIntervalRef.current = setInterval(() => {
             checkCompletion();
         }, 3000);
-    }, [transactionId, checkCompletion]);
+    }, [
+        transactionId,
+        formName,
+        formSubmissionKey,
+        actualSessionId,
+        formServiceUrl,
+        checkCompletion,
+    ]);
 
     // Handle start form - NO navigation/refresh
     const handleOpenForm = useCallback(
