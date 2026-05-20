@@ -246,9 +246,10 @@ export default function ReteB2BInitOffers({
                     // Category Check
                     const catId = itemCategories[item.itemId];
                     const itemName = itemNames[item.itemId] || "";
-                    const catMatch =
-                        hasCategoryRules &&
-                        isDynamicCategoryMatch(catId, itemName, rule.categoryIds);
+                    let catMatch = true;
+                    if (hasCategoryRules) {
+                        catMatch = isDynamicCategoryMatch(catId, itemName, rule.categoryIds);
+                    }
 
                     // Valid if ANY of the criteria match (Location OR Item OR Category)
                     return locMatch && itemMatch && catMatch;
@@ -298,9 +299,10 @@ export default function ReteB2BInitOffers({
                     // Category Check
                     const catId = itemCategories[item.itemId];
                     const itemName = itemNames[item.itemId] || "";
-                    const catMatch =
-                        hasCategoryRules &&
-                        isDynamicCategoryMatch(catId, itemName, rule.categoryIds);
+                    let catMatch = true;
+                    if (hasCategoryRules) {
+                        catMatch = isDynamicCategoryMatch(catId, itemName, rule.categoryIds);
+                    }
 
                     // Valid if ANY of the criteria match (Location OR Item OR Category)
                     return locMatch && itemMatch && catMatch;
