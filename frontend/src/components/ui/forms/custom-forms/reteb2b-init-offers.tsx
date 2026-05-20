@@ -250,7 +250,7 @@ export default function ReteB2BInitOffers({
                         isDynamicCategoryMatch(catId, itemName, rule.categoryIds);
 
                     // Valid if ANY of the criteria match (Location OR Item OR Category)
-                    return locMatch || itemMatch || catMatch;
+                    return locMatch && itemMatch && catMatch;
                 });
 
                 if (!hasCompatibleItem) {
