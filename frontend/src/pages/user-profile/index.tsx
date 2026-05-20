@@ -17,7 +17,7 @@ import ScenarioPreferencesForm from "./scenario-preferences-form";
 import PastReportsSection from "./past-reports-section";
 import { ROUTES } from "@constants/routes";
 
-const REGISTRY_URL = "http://ondc-common-alb-3cbab6333a4a606a.elb.ap-south-1.amazonaws.com/";
+const REGISTRY_URL = import.meta.env.VITE_REGISTRY_URL as string;
 
 const UserProfile = () => {
     const { refreshUser, userDetails } = useContext(UserContext);
@@ -46,7 +46,6 @@ const UserProfile = () => {
     ];
 
     useEffect(() => {
-        console.warn("JWT token:", token);
         refreshUser();
     }, [refreshUser]);
 
@@ -79,16 +78,36 @@ const UserProfile = () => {
     };
 
     return (
-        <div className="font-sans flex min-h-screen p-4 gap-5 max-w-screen-2xl mx-auto w-full">
+        <div className="font-sans flex min-h-screen px-2 pt-4 pb-2 gap-3 max-w-screen-2xl mx-auto w-full">
             {/* Left sidebar nav */}
-            <aside className="w-72 shrink-0">
+            <aside className="w-80 shrink-0">
                 <div className="sticky top-4 h-[calc(100vh-2rem)] bg-white rounded-2xl shadow-lg flex flex-col overflow-hidden border border-gray-100">
                     {/* Sidebar header */}
-                    <div className="px-6 py-6 bg-gradient-to-br from-slate-700 to-slate-900 text-center">
-                        <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">
-                            User Profile
+                    <div className="px-6 py-8 bg-gradient-to-br from-sky-400 to-sky-600 text-center">
+                        <div className="mb-4 flex justify-center">
+                            {userDetails?.avatarUrl ? (
+                                <img
+                                    src={userDetails.avatarUrl}
+                                    alt={`${userDetails.githubId}'s avatar`}
+                                    className="w-16 h-16 rounded-full border-2 border-white/60 object-cover shadow-md"
+                                />
+                            ) : (
+                                <div className="w-16 h-16 rounded-full bg-white/20 border-2 border-white/40 flex items-center justify-center shadow-md">
+                                    <LuUser className="text-2xl text-white" />
+                                </div>
+                            )}
+                        </div>
+                        <p className="text-sm font-bold text-white truncate">
+                            {userDetails?.username || "Guest"}
                         </p>
-                        <p className="text-base font-semibold text-white">Navigation</p>
+                        {userDetails?.participantId && (
+                            <p className="text-xs text-sky-100 mt-0.5 truncate">
+                                {userDetails.participantId}
+                            </p>
+                        )}
+                        <p className="text-xs font-semibold text-sky-200 uppercase tracking-widest mt-3">
+                            Navigation
+                        </p>
                     </div>
 
                     {/* Nav items */}
@@ -138,21 +157,6 @@ const UserProfile = () => {
                     <h1 className="text-3xl font-bold text-gray-900 mb-4 mt-4">User Profile</h1>
                     <div className="max-w-4xl mx-auto p-6 bg-white rounded-xl">
                         <div className="flex items-center gap-6">
-                            {/* GitHub avatar */}
-                            <div className="shrink-0">
-                                {userDetails?.avatarUrl ? (
-                                    <img
-                                        src={userDetails.avatarUrl}
-                                        alt={`${userDetails.githubId}'s avatar`}
-                                        className="w-20 h-20 rounded-full border-2 border-slate-200 object-cover shadow-md"
-                                    />
-                                ) : (
-                                    <div className="w-20 h-20 rounded-full bg-sky-100 border-2 border-sky-200 flex items-center justify-center shadow-md">
-                                        <LuUser className="text-3xl text-sky-500" />
-                                    </div>
-                                )}
-                            </div>
-
                             {/* User info */}
                             <div className="flex-1 text-left text-gray-700 space-y-1">
                                 <p>
