@@ -20,6 +20,7 @@ import { ExportReviewModal } from "@pages/protocol-playground/ui/export-review-m
 import { GitHubImportModal } from "@pages/protocol-playground/ui/github-import-modal";
 import { AIProvider } from "@pages/protocol-playground/ai/context/ai-provider";
 import { StepGroup, getGroupSteps } from "@pages/protocol-playground/utils/step-group";
+import { validateConfigGroups } from "@pages/protocol-playground/utils/step-group-rules";
 
 const PlaygroundPage = () => {
     const playgroundContext = useContext(PlaygroundContext);
@@ -40,6 +41,7 @@ const PlaygroundPage = () => {
         clearConfig,
         runConfig,
         runCurrentConfig,
+        retriggerSelectedExtraStep,
         createFlowSession,
         runAllStepsForExport,
         finalizeExportForDeployment,
@@ -171,6 +173,12 @@ const PlaygroundPage = () => {
                 toast.error(validationError);
                 return;
             }
+            const ruleError = validateConfigGroups(parsedConfig);
+            if (ruleError) {
+                setRawConfigError(ruleError);
+                toast.error(ruleError);
+                return;
+            }
             playgroundContext.setCurrentConfig(parsedConfig);
             setIsRawEditorOpen(false);
             setRawConfigError(null);
@@ -242,6 +250,9 @@ const PlaygroundPage = () => {
                         onRunCurrent={async () => {
                             await runCurrentConfig(stepGroup === "extra");
                         }}
+                        onRetrigger={async () => {
+                            await retriggerSelectedExtraStep();
+                        }}
                         onBack={handleBack}
                         onHelp={() => setIsHelpOpen(true)}
                         onEditMeta={() => setIsFlowInfoOpen(true)}
@@ -307,6 +318,11 @@ const PlaygroundPage = () => {
                     defaultDomain={playgroundContext.config?.meta.domain}
                     onClose={() => setIsGitHubImportOpen(false)}
                     onImport={(config) => {
+                        const ruleError = validateConfigGroups(config);
+                        if (ruleError) {
+                            toast.error(ruleError);
+                            return;
+                        }
                         playgroundContext.setCurrentConfig(config);
                         toast.success("Flow imported from GitHub successfully");
                     }}

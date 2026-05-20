@@ -33,6 +33,11 @@ export interface PlaygroundContextProps {
         newPayload: TransactionPayload,
         savedInfo?: TransactionSavedInfo
     ) => void;
+    appendExtraStepRun: (
+        actionId: string,
+        action: string,
+        newPayload: TransactionPayload
+    ) => void;
     updateHelperLib: (newCode: string) => void;
     resetTransactionHistory: (actionId?: string) => void;
     updateConfigMeta: (patch: Partial<Meta>) => void;

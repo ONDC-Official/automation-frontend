@@ -6,12 +6,11 @@ import { PlaygroundContext } from "../context/playground-context";
 import SessionDataTab from "./session-data-tab";
 import { ExecutionResults } from "./extras/terminal";
 import OutputPayloadViewer from "./extras/output-payload-viewer";
-import MockRunner, { MockPlaygroundConfigType } from "@ondc/automation-mock-runner";
 import { editorUtils } from "../utils/editor-utils";
 import { mockRunnerExtensions } from "../utils/mock-runner-extentions";
 import CommonLibView from "./playground-upper/common-lib-view";
 import { AIChatPanel } from "../ai/ui/AIChatPanel";
-import { configForGroup, getGroupSteps } from "../utils/step-group";
+import { getSessionUpToActionId } from "../utils/transaction-view";
 // import { AIChatPanel } from "../ai/ui/AIChatPanel";
 
 interface SavedMetadata {
@@ -68,8 +67,7 @@ function GetRightSideContent({ tabId, actionId }: { tabId: string; actionId: str
     useEffect(() => {
         const meta = mockRunnerExtensions.getSaveDataMeta(
             playgroundContext.activeApi,
-            playgroundContext.config,
-            playgroundContext.stepGroup
+            playgroundContext.config
         );
         // setSaveMeta(meta);
         savedMetaRef.current = meta; // Update ref whenever savedMeta changes
@@ -77,13 +75,12 @@ function GetRightSideContent({ tabId, actionId }: { tabId: string; actionId: str
         getSessionData().then((data) => setSessionData(data));
     }, [playgroundContext.config, playgroundContext.activeApi, playgroundContext.stepGroup]);
 
-    const index = getGroupSteps(
-        playgroundContext.config,
-        playgroundContext.stepGroup
-    ).findIndex((step) => step.action_id === actionId);
+    const rawPayload = playgroundContext.config?.transaction_history.find(
+        (f) => f.action_id === actionId
+    )?.payload;
+    // Extra-step entries hold an array of payloads (one per run) — show the latest.
     const activePayload =
-        playgroundContext.config?.transaction_history.find((f) => f.action_id === actionId)
-            ?.payload || undefined;
+        (Array.isArray(rawPayload) ? rawPayload[rawPayload.length - 1] : rawPayload) || undefined;
 
     const getSessionData = async () => {
         try {
@@ -98,13 +95,11 @@ function GetRightSideContent({ tabId, actionId }: { tabId: string; actionId: str
                 );
             }
 
-            const mockRunner = new MockRunner(
-                configForGroup(
-                    playgroundContext.config as MockPlaygroundConfigType,
-                    playgroundContext.stepGroup
-                )
+            // Session reflects the WHOLE transaction history (main + extra runs).
+            const sessionData = await getSessionUpToActionId(
+                playgroundContext.config,
+                actionId
             );
-            const sessionData = await mockRunner.getSessionDataUpToStep(index);
 
             return JSON.stringify(sessionData, null, 2);
         } catch (error: unknown) {
@@ -115,7 +110,6 @@ function GetRightSideContent({ tabId, actionId }: { tabId: string; actionId: str
                 error: "Failed to generate session data",
                 message: errorMessage,
                 type: errorName,
-                step: index,
                 actionId: actionId,
                 timestamp: new Date().toISOString(),
             };

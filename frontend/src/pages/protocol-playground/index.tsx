@@ -24,6 +24,7 @@ import {
     getGroupSteps,
     setGroupSteps,
 } from "@pages/protocol-playground/utils/step-group";
+import { validateConfigGroups } from "@pages/protocol-playground/utils/step-group-rules";
 
 const Body = ({ workbenchFlow }: { workbenchFlow: ReturnType<typeof useWorkbenchFlows> }) => {
     switch (workbenchFlow.flowStepNum) {
@@ -133,6 +134,34 @@ const ProtocolPlayGround = () => {
         setCurrentConfig({ ...current });
     };
 
+    // Record one run of an extra step. The entry's `payload` is an array — the
+    // first run creates it, every retrigger appends another payload.
+    // Mutates in place (like updateTransactionHistory) so a sequential
+    // run loop sees each appended run immediately.
+    const appendExtraStepRun = (
+        actionId: string,
+        action: string,
+        newPayload: TransactionPayload
+    ) => {
+        const current = playgroundState;
+        if (!current) return;
+        const existing = current.transaction_history.find((h) => h.action_id === actionId);
+        if (existing) {
+            const prev = Array.isArray(existing.payload)
+                ? existing.payload
+                : [existing.payload];
+            existing.payload = [...prev, newPayload];
+        } else {
+            current.transaction_history.push({
+                action_id: actionId,
+                action,
+                payload: [newPayload],
+                saved_info: {} as TransactionSavedInfo,
+            });
+        }
+        setCurrentConfig({ ...current });
+    };
+
     type Meta = MockPlaygroundConfigType["meta"];
     const updateConfigMeta = (patch: Partial<Meta>) => {
         if (!playgroundState) return;
@@ -215,6 +244,11 @@ const ProtocolPlayGround = () => {
                 toast.error(`Invalid config in gist: ${isValid.errors?.join(", ") || ""}`);
                 return false;
             }
+            const ruleError = validateConfigGroups(config);
+            if (ruleError) {
+                toast.error(`Invalid config in gist: ${ruleError}`);
+                return false;
+            }
             // Always create a new config instead of replacing current
             // Save gist config with gist_ prefix (will overwrite if same gist URL)
             const saveSuccess = saveGistConfig(gistUrl, config);
@@ -287,6 +321,7 @@ const ProtocolPlayGround = () => {
                 useModal: usePlaygroundModals(),
                 updateHelperLib,
                 updateTransactionHistory,
+                appendExtraStepRun,
                 resetTransactionHistory,
                 loading,
                 setLoading,

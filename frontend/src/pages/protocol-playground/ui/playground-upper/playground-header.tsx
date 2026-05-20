@@ -12,7 +12,7 @@ import {
 } from "react-icons/fa";
 import { GrRedo } from "react-icons/gr";
 import { IoMdSkipForward, IoMdTrash } from "react-icons/io";
-import { TbAutomaticGearboxFilled, TbDatabaseExport } from "react-icons/tb";
+import { TbAutomaticGearboxFilled, TbDatabaseExport, TbRepeat } from "react-icons/tb";
 import { MdFullscreen, MdFullscreenExit } from "react-icons/md";
 import { StepGroup } from "@pages/protocol-playground/utils/step-group";
 
@@ -31,6 +31,7 @@ interface PlaygroundHeaderProps {
     onClear: () => void;
     onRun: () => void;
     onRunCurrent: () => void;
+    onRetrigger: () => void;
     onCreateFlowSession: () => void;
     onBack: () => void;
     onHelp: () => void;
@@ -180,6 +181,7 @@ export const PlaygroundHeader = ({
     onClear,
     onRun,
     onRunCurrent,
+    onRetrigger,
     onCreateFlowSession,
     onBack,
     onHelp,
@@ -282,6 +284,15 @@ export const PlaygroundHeader = ({
                 onClick={onRun}
                 color="orange"
             />
+
+            {stepGroup === "extra" && (
+                <IconButton
+                    icon={<TbRepeat size={16} />}
+                    label="Retrigger selected extra step"
+                    onClick={onRetrigger}
+                    color="sky"
+                />
+            )}
 
             {onToggleFullscreen && (
                 <>

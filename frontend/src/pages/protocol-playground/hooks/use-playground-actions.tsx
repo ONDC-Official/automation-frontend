@@ -3,6 +3,7 @@ import { PlaygroundContext } from "../context/playground-context";
 import { toast } from "react-toastify";
 import MockRunner from "@ondc/automation-mock-runner";
 import { getGroupSteps, setGroupSteps } from "../utils/step-group";
+import { validateConfigGroups } from "../utils/step-group-rules";
 // import { getDefaultStep } from "../mock-engine";
 
 type UpdateActionFormData = {
@@ -23,11 +24,11 @@ export const usePlaygroundActions = () => {
         actionId: string,
         insertIndex?: number,
         stepType?: "action" | "form"
-    ) => {
+    ): boolean => {
         const currentConfig = playgroundContext.config;
         if (!currentConfig) {
             toast.error("No configuration found");
-            return;
+            return false;
         }
         const group = playgroundContext.stepGroup;
         let newStep;
@@ -44,7 +45,15 @@ export const usePlaygroundActions = () => {
             steps.push(newStep);
         }
 
-        playgroundContext.setCurrentConfig(setGroupSteps(currentConfig, group, steps));
+        const candidate = setGroupSteps(currentConfig, group, steps);
+        const ruleError = validateConfigGroups(candidate);
+        if (ruleError) {
+            toast.error(ruleError);
+            return false;
+        }
+
+        playgroundContext.setCurrentConfig(candidate);
+        return true;
     };
 
     const deleteAction = (actionId: string) => {
@@ -82,7 +91,13 @@ export const usePlaygroundActions = () => {
                 responseFor: data.responseFor || null,
                 description: data.description,
             };
-            playgroundContext.setCurrentConfig(setGroupSteps(currentConfig, group, steps));
+            const candidate = setGroupSteps(currentConfig, group, steps);
+            const ruleError = validateConfigGroups(candidate);
+            if (ruleError) {
+                toast.error(ruleError);
+                return false;
+            }
+            playgroundContext.setCurrentConfig(candidate);
             return true;
         }
         return false;

@@ -152,7 +152,11 @@ export default function SessionDataTab() {
     const payloadFromTranscationHistory = (action_id: string) => {
         if (!playgroundConfig) return {};
         const history = playgroundConfig.transaction_history.find((h) => h.action_id === action_id);
-        return history?.payload ?? {};
+        const payload = history?.payload;
+        // Extra-step entries hold an array of payloads (one per run) — use the
+        // first run as the representative shape for JSON-path picking.
+        if (Array.isArray(payload)) return payload[0] ?? {};
+        return payload ?? {};
     };
 
     const isSelected = (path: string): { status: boolean; type: SelectedType | null } => {

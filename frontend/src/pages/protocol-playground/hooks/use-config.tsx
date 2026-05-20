@@ -10,6 +10,8 @@ import MockDynamicForm from "../ui/components/mock-dynamic-form";
 import { v4 as uuidv4 } from "uuid";
 import { stringify as yamlStringify } from "yaml";
 import { configForGroup, getGroupSteps } from "../utils/step-group";
+import { validateConfigGroups } from "../utils/step-group-rules";
+import { getFullSession } from "../utils/transaction-view";
 
 type JsonSchema = Record<string, unknown>;
 type FormValues = Record<string, unknown>;
@@ -61,6 +63,11 @@ export const useConfigOperations = () => {
                             toast.error(`Invalid configuration: ${validConfig.errors?.join(", ")}`);
                             return;
                         }
+                        const ruleError = validateConfigGroups(config);
+                        if (ruleError) {
+                            toast.error(ruleError);
+                            return;
+                        }
                         playgroundContext.setCurrentConfig(config);
                         toast.success("Configuration imported successfully");
                     } catch (error) {
@@ -95,12 +102,11 @@ export const useConfigOperations = () => {
         toast.success("Please fill in the form to continue");
     };
 
-    // return true if payload execution was successful
+    // return true if payload execution was successful — main steps
     const executePayload = async (data: {
         actionId: string;
         action: string;
         inputs: FormValues;
-        extraStep?: boolean;
     }) => {
         playgroundContext.setLoading(true);
         try {
@@ -116,8 +122,7 @@ export const useConfigOperations = () => {
                 bapUri: config.transaction_data.bap_uri,
                 bppUri: config.transaction_data.bpp_uri,
             };
-            const runnerConfig = configForGroup(config, data.extraStep ? "extra" : "main");
-            const result = await new MockRunner(runnerConfig).runGeneratePayload(
+            const result = await new MockRunner(config).runGeneratePayload(
                 data.actionId,
                 inputs,
                 externalData
@@ -143,6 +148,61 @@ export const useConfigOperations = () => {
         } catch (e) {
             playgroundContext.setLoading(false);
             console.error("Error executing payload:", e);
+            return false;
+        }
+    };
+
+    // Execute one run of an extra step. The session is built from the WHOLE
+    // transaction history (main + extra), and the result is appended to the
+    // extra step's array-payload history entry.
+    const executeExtraStep = async (data: {
+        actionId: string;
+        action: string;
+        inputs: FormValues;
+    }) => {
+        playgroundContext.setLoading(true);
+        try {
+            const config = playgroundContext.config;
+            if (!config) {
+                toast.error("No configuration found");
+                playgroundContext.setLoading(false);
+                return false;
+            }
+            const session = await getFullSession(config);
+            Object.assign(session, {
+                ...config.transaction_data?.external_session_data,
+                bapUri: config.transaction_data.bap_uri,
+                bppUri: config.transaction_data.bpp_uri,
+            });
+            if (Object.keys(data.inputs).length > 0) {
+                session.user_inputs = data.inputs;
+            }
+            const runnerConfig = { ...config, steps: getGroupSteps(config, "extra") };
+            const result = await new MockRunner(runnerConfig).runGeneratePayloadWithSession(
+                data.actionId,
+                session
+            );
+
+            if (!result) {
+                toast.error("No result from code execution");
+                playgroundContext.setLoading(false);
+                return false;
+            }
+            playgroundContext.setActiveTerminalData((s) => [...s, result]);
+            if (result.success) {
+                playgroundContext.appendExtraStepRun(
+                    data.actionId,
+                    data.action,
+                    result.result
+                );
+            }
+            modal.closeModal();
+            playgroundContext.setLoading(false);
+            toast.success("Extra step executed. Check console for details.");
+            return result.success;
+        } catch (e) {
+            playgroundContext.setLoading(false);
+            console.error("Error executing extra step:", e);
             return false;
         }
     };
@@ -180,15 +240,22 @@ export const useConfigOperations = () => {
                 const handleFormSubmit = async (formData: FormValues) => {
                     console.log("Form data submitted:", formData);
                     modal.closeModal();
-                    playgroundContext.updateTransactionHistory(
-                        currentStep.action_id,
-                        currentStep.api,
-                        formData,
-                        {
-                            submissionID: uuidv4(),
-                        }
-                    );
-                    // Here you can add logic to execute the payload with the form data if needed
+                    if (extraStep) {
+                        playgroundContext.appendExtraStepRun(
+                            currentStep.action_id,
+                            currentStep.api,
+                            formData
+                        );
+                    } else {
+                        playgroundContext.updateTransactionHistory(
+                            currentStep.action_id,
+                            currentStep.api,
+                            formData,
+                            {
+                                submissionID: uuidv4(),
+                            }
+                        );
+                    }
                     resolve({ success: true } as RunResult);
                 };
                 modal.openModal(
@@ -204,14 +271,22 @@ export const useConfigOperations = () => {
         try {
             const inputs = currentStep.mock.inputs || {};
 
+            const runStep = (stepInputs: FormValues) =>
+                extraStep
+                    ? executeExtraStep({
+                          actionId: currentStep.action_id,
+                          action: currentStep.api,
+                          inputs: stepInputs,
+                      })
+                    : executePayload({
+                          actionId: currentStep.action_id,
+                          action: currentStep.api,
+                          inputs: stepInputs,
+                      });
+
             // No inputs needed - execute immediately
             if (inputs === null || Object.keys(inputs).length === 0) {
-                const res = await executePayload({
-                    actionId: currentStep.action_id,
-                    action: currentStep.api,
-                    inputs: {},
-                    extraStep,
-                });
+                const res = await runStep({});
                 return {
                     success: res,
                 } as RunResult;
@@ -221,12 +296,7 @@ export const useConfigOperations = () => {
             return new Promise<RunResult>((resolve) => {
                 const handleFormSubmit = async (formData: FormValues) => {
                     modal.closeModal();
-                    const res = await executePayload({
-                        actionId: currentStep.action_id,
-                        action: currentStep.api,
-                        inputs: formData,
-                        extraStep,
-                    });
+                    const res = await runStep(formData);
                     resolve({ success: res });
                 };
 
@@ -349,11 +419,22 @@ export const useConfigOperations = () => {
             return;
         }
         try {
-            playgroundContext.resetTransactionHistory();
-            const steps = getGroupSteps(
-                playgroundContext.config,
-                extraStep ? "extra" : "main"
-            );
+            const config = playgroundContext.config;
+            if (extraStep) {
+                // Reset only extra-step history — keep main-step history intact
+                const extraIds = new Set(
+                    getGroupSteps(config, "extra").map((s) => s.action_id)
+                );
+                const firstExtra = config.transaction_history.find((h) =>
+                    extraIds.has(h.action_id)
+                );
+                if (firstExtra) {
+                    playgroundContext.resetTransactionHistory(firstExtra.action_id);
+                }
+            } else {
+                playgroundContext.resetTransactionHistory();
+            }
+            const steps = getGroupSteps(config, extraStep ? "extra" : "main");
             for (const step of steps) {
                 const res = await runConfig(extraStep);
                 if (!res?.success) {
@@ -367,6 +448,67 @@ export const useConfigOperations = () => {
         } catch (e) {
             console.error("Error running current config:", e);
         }
+    };
+
+    // Re-run the currently selected extra step, appending another payload to its
+    // transaction-history entry. Visible only while the extra group is selected.
+    const retriggerSelectedExtraStep = async () => {
+        const config = playgroundContext.config;
+        if (!config) {
+            toast.error("No configuration found");
+            return;
+        }
+        const actionId = playgroundContext.activeApi;
+        if (!actionId) {
+            toast.error("Select an extra step to retrigger");
+            return;
+        }
+        const step = getGroupSteps(config, "extra").find((s) => s.action_id === actionId);
+        if (!step) {
+            toast.error("Selected step is not an extra step");
+            return;
+        }
+
+        if (step.api === "dynamic_form" || step.api === "html_form") {
+            const htmlForm64 = step.mock.formHtml;
+            if (!htmlForm64) {
+                toast.error("No form HTML provided for this form step");
+                return;
+            }
+            const htmlForm = MockRunner.decodeBase64(htmlForm64);
+            modal.openModal(
+                <div className="p-1">
+                    <h2 className="text-l font-semibold mb-1">Fill the form</h2>
+                    <MockDynamicForm
+                        htmlForm={htmlForm}
+                        onSubmit={async (formData: FormValues) => {
+                            modal.closeModal();
+                            playgroundContext.appendExtraStepRun(
+                                step.action_id,
+                                step.api,
+                                formData
+                            );
+                        }}
+                    />
+                </div>
+            );
+            toast.success("Please fill in the form to continue");
+            return;
+        }
+
+        const inputs = step.mock.inputs || {};
+        if (inputs === null || Object.keys(inputs).length === 0) {
+            await executeExtraStep({ actionId, action: step.api, inputs: {} });
+            return;
+        }
+        if (!step.mock.inputs.jsonSchema) {
+            toast.error("No input schema defined for this action");
+            return;
+        }
+        showFormModal(step.mock.inputs.jsonSchema, async (formData: FormValues) => {
+            modal.closeModal();
+            await executeExtraStep({ actionId, action: step.api, inputs: formData });
+        });
     };
 
     const runAllStepsForExport = async (): Promise<MockPlaygroundConfigType | null> => {
@@ -442,6 +584,7 @@ export const useConfigOperations = () => {
         runConfig,
         createFlowSession,
         runCurrentConfig,
+        retriggerSelectedExtraStep,
         exportConfigForDeployment,
         runAllStepsForExport,
         finalizeExportForDeployment,

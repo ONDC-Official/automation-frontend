@@ -43,7 +43,7 @@ interface ModalHandlersProps {
         actionId: string,
         insertIndex?: number,
         stepType?: "action" | "form"
-    ) => void;
+    ) => boolean;
     deleteAction: (actionId: string) => boolean;
     updateAction: (actionId: string, formData: ActionFormData) => boolean;
     clearConfig: () => void;
@@ -78,7 +78,7 @@ export const useModalHandlers = ({
                 actionId: "actionAddIdInput",
             });
             if (stepType === "form") {
-                addAction(form, actionId, insertIndex, stepType);
+                if (!addAction(form, actionId, insertIndex, stepType)) return;
                 setActiveApi(actionId);
                 closeModal();
                 toast.success("Form added successfully");
@@ -90,7 +90,7 @@ export const useModalHandlers = ({
                 return;
             }
 
-            addAction(api, actionId, insertIndex);
+            if (!addAction(api, actionId, insertIndex)) return;
             setActiveApi(actionId);
             closeModal();
             toast.success("Action added successfully");
