@@ -4,7 +4,6 @@ import { SubmitEventParams } from "../../../../types/flow-types";
 
 import jsonpath from "jsonpath";
 import { FormFieldConfigType } from "../config-form/config-form";
-import { useSession } from "../../../../context/context";
 
 interface DynamicFormHandlerProps {
     submitEvent: (data: SubmitEventParams) => Promise<void>;
@@ -17,7 +16,6 @@ interface DynamicFormHandlerProps {
 export default function DynamicFormHandler({
     submitEvent,
     referenceData,
-    sessionId,
     transactionId,
     formConfig,
 }: DynamicFormHandlerProps) {
@@ -25,9 +23,6 @@ export default function DynamicFormHandler({
     const [formUrl, setFormUrl] = useState<string>("");
     const [errorMessage, setErrorMessage] = useState<string>("");
     const [pollCount, setPollCount] = useState<number>(0);
-
-    // Get session context to update session data
-    const { setSessionData } = useSession();
 
     const pollingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
     // Use refs to prevent page refresh
@@ -54,25 +49,7 @@ export default function DynamicFormHandler({
         }
     }, [formConfig, referenceData]);
 
-    // Extract session_id from the form URL (this is the CORRECT session_id for polling)
-    const actualSessionId = useMemo<string>(() => {
-        if (!formServiceUrl) return sessionId; // Fallback to prop if URL not available
-
-        try {
-            const urlObj = new URL(formServiceUrl);
-            const extractedSessionId = urlObj.searchParams.get("session_id");
-
-            if (extractedSessionId) {
-                return extractedSessionId;
-            }
-        } catch (error) {
-            console.error("❌ Error extracting session_id from URL:", error);
-        }
-
-        return sessionId; // Fallback to prop
-    }, [formServiceUrl, sessionId]);
-
-    // Extract form name from the form URL to create unique key for formSubmissions
+    // Extract form name from the form URL — used as form_id in the check-completion API
     // URL format: http://form-service/forms/{domain}/{formName}?session_id=...
     const formName = useMemo<string>(() => {
         if (!formServiceUrl) return "";
@@ -94,15 +71,6 @@ export default function DynamicFormHandler({
         return "";
     }, [formServiceUrl]);
 
-    // Create unique form key for checking formSubmissions (matches backend key format)
-    const formSubmissionKey = useMemo<string>(() => {
-        if (formName && transactionId) {
-            const key = `${transactionId}_${formName}`;
-            return key;
-        }
-        return transactionId; // Fallback to just transactionId for backward compatibility
-    }, [transactionId, formName]);
-
     // Cleanup function - prevents memory leaks and ensures no refresh
     const cleanup = useCallback(() => {
         if (pollingIntervalRef.current) {
@@ -120,50 +88,52 @@ export default function DynamicFormHandler({
         };
     }, [cleanup]);
 
-    // Check completion function - polls backend to check if form was submitted
+    // Check completion function - polls GET /form/check-completion?transaction_id=X&form_id=Y
+    // This is ONLY used by DYNAMIC_FORM type — does not affect HTML_FORM or any other form type.
     const checkCompletion = useCallback(async () => {
         if (hasCompletedRef.current) return;
+
+        // Guard: cannot poll without both identifiers
+        if (!transactionId || !formName) {
+            console.warn("⚠️ [DynamicForm] Cannot poll: transactionId or formName missing", {
+                transactionId,
+                formName,
+            });
+            return;
+        }
 
         try {
             setPollCount((prev) => prev + 1);
 
-            // Log the form being polled on every tick so it's easy to identify
+            // Log every tick so transactionId and formName are visible in the console
             console.warn(
-                `🔄 [DynamicForm] Poll #${pollCount} | transactionId: "${transactionId}" | formName: "${formName}" | key: "${formSubmissionKey}"`
+                `🔄 [DynamicForm] Poll #${pollCount} | transactionId: "${transactionId}" | formName (form_id): "${formName}"`
             );
 
-            // Check if form was submitted by querying the session data
-            // Use actualSessionId extracted from form URL, NOT the sessionId prop!
-            const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/sessions`, {
-                params: {
-                    session_id: actualSessionId,
-                },
-                timeout: 5000,
-            });
+            // ── New API: purpose-built completion check ──────────────────────────────
+            // GET /form/check-completion?transaction_id={transactionId}&form_id={formName}
+            // Backend reads Redis key: form_completed:{transactionId}:{formName}
+            // Expected response: { completed: boolean, success: "true"|"false", message: string, timestamp: string }
+            const response = await axios.get(
+                `${import.meta.env.VITE_BACKEND_URL}/form/check-completion`,
+                {
+                    params: {
+                        transaction_id: transactionId,
+                        form_id: formName,
+                    },
+                    timeout: 5000,
+                }
+            );
+            // ────────────────────────────────────────────────────────────────────────
 
-            // Update session context with latest data so mapped-flow can see formSubmissions
-            if (setSessionData && response.data) {
-                setSessionData(response.data);
-            }
+            const { completed, success } = response.data ?? {};
 
-            // Check if the form submission was completed for this specific form
-            // Use formSubmissionKey (transactionId_formName) to distinguish between multiple forms
-            const formSubmitted = response.data?.formSubmissions?.[formSubmissionKey];
-
-            // Log on first poll so the key is visible without flooding the console
-            if (pollCount === 1) {
-                console.warn("🔍 [DynamicForm] Polling — checking Redis key:", formSubmissionKey);
-                console.warn(
-                    "   ➤ formSubmissions in session:",
-                    Object.keys(response.data?.formSubmissions ?? {})
-                );
-            }
-
-            if (formSubmitted && !hasCompletedRef.current) {
-                console.warn("✅ [DynamicForm] Form submission found!", {
-                    key: formSubmissionKey,
-                    submission_id: formSubmitted.submission_id,
-                    idType: formSubmitted.idType,
+            if (completed === true && success === "true" && !hasCompletedRef.current) {
+                console.warn("✅ [DynamicForm] Form completed!", {
+                    transactionId,
+                    formName,
+                    message: response.data.message,
+                    timestamp: response.data.timestamp,
                 });
 
                 hasCompletedRef.current = true;
@@ -180,19 +150,18 @@ export default function DynamicFormHandler({
                     }
                 }
 
-                // Immediately submit to proceed with flow
-                // Pass the submission_id just like HTML_FORM does
-                // Do NOT show completed state - let parent handle closing the modal
+                // Proceed the flow — generate a temporary submission_id to satisfy
+                // the mock service's json_path_changes requirement.
+                // TODO: replace with actual submission_id from /form/check-completion
+                // once the backend returns it from the Redis form_completed key.
                 try {
-                    const submission_id = formSubmitted.submission_id || "";
-                    const idType = formSubmitted.idType;
-
+                    const submission_id = crypto.randomUUID();
+                    console.warn("⚠️ [DynamicForm] Using temporary submission_id:", submission_id);
                     await submitEvent({
-                        jsonPath: { submission_id: submission_id, ...(idType && { idType }) },
-                        formData: { submission_id: submission_id, ...(idType && { idType }) },
+                        jsonPath: { submission_id },
+                        formData: { submission_id },
                     });
-
-                    // Parent component will close the popup modal after submitEvent completes
+                    // Parent (mapped-flow) will close the popup modal after submitEvent
                 } catch (error) {
                     console.error("❌ [DynamicForm] Error submitting event:", error);
                     setErrorMessage("Form complete but failed to proceed. Please try again.");
@@ -203,17 +172,7 @@ export default function DynamicFormHandler({
             const err = error as { message?: string };
             console.error("Error checking completion:", err.message);
         }
-    }, [
-        actualSessionId,
-        sessionId,
-        transactionId,
-        formSubmissionKey,
-        formName,
-        submitEvent,
-        cleanup,
-        pollCount,
-        setSessionData,
-    ]);
+    }, [transactionId, formName, submitEvent, cleanup, pollCount]);
 
     // Start polling function
     const startPolling = useCallback(() => {
@@ -224,13 +183,14 @@ export default function DynamicFormHandler({
         isPollingRef.current = true;
         setPollCount(0);
 
-        // Log all polling identifiers once so they are easy to inspect
+        // Log identifiers so they are visible in the console when polling starts
         console.warn("🔄 [DynamicForm] Starting polling with:");
-        console.warn("   ➤ transactionId     :", transactionId || "(empty — check flowMap)");
-        console.warn("   ➤ formName          :", formName || "(empty — check formServiceUrl path)");
-        console.warn("   ➤ formSubmissionKey :", formSubmissionKey, " ← Redis key being polled");
-        console.warn("   ➤ actualSessionId   :", actualSessionId, " ← session queried on backend");
-        console.warn("   ➤ formServiceUrl    :", formServiceUrl);
+        console.warn("   ➤ transactionId  :", transactionId || "(empty — check flowMap)");
+        console.warn("   ➤ formName (form_id):", formName || "(empty — check formServiceUrl path)");
+        console.warn(
+            "   ➤ endpoint       :",
+            `${import.meta.env.VITE_BACKEND_URL}/form/check-completion`
+        );
 
         // Poll immediately first time
         checkCompletion();
@@ -239,14 +199,7 @@ export default function DynamicFormHandler({
         pollingIntervalRef.current = setInterval(() => {
             checkCompletion();
         }, 3000);
-    }, [
-        transactionId,
-        formName,
-        formSubmissionKey,
-        actualSessionId,
-        formServiceUrl,
-        checkCompletion,
-    ]);
+    }, [transactionId, formName, checkCompletion]);
 
     // Handle start form - NO navigation/refresh
     const handleOpenForm = useCallback(
@@ -369,7 +322,7 @@ export default function DynamicFormHandler({
                 cleanup();
             }
         },
-        [sessionId, transactionId, referenceData, formServiceUrl, startPolling, cleanup]
+        [transactionId, referenceData, formServiceUrl, startPolling, cleanup]
     );
 
     // Handle reopen - NO navigation

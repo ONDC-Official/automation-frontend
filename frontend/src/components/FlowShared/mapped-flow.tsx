@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "react-toastify";
 
 import { FlowMap, MappedStep } from "@/types/flow-state-type";
@@ -23,8 +23,14 @@ export default function DisplayFlow({
     const [activeFormConfig, setActiveFormConfig] = useState<FormConfigType | undefined>(undefined);
 
     const { sessionId, sessionData } = useSession();
+    const isSubmittingRef = useRef(false);
 
     useEffect(() => {
+        // Don't reopen the popup while a proceedFlow call is in flight.
+        // This prevents the race condition where the 5s mappedFlow poll fires
+        // before the backend updates the step status from INPUT-REQUIRED.
+        if (isSubmittingRef.current) return;
+
         const conf = mappedFlow?.sequence?.filter(
             (s, index) => s.status === "INPUT-REQUIRED" && index !== 0
         )?.[0]?.input;
@@ -48,6 +54,7 @@ export default function DisplayFlow({
     }, [mappedFlow]);
 
     const handleFormSubmit = async (formData: SubmitEventParams) => {
+        isSubmittingRef.current = true;
         try {
             const txId = sessionData?.flowMap[flowId];
             if (!txId) {
@@ -61,6 +68,13 @@ export default function DisplayFlow({
             toast.error("Error submitting form ");
             console.error("Error submitting form data:", error);
             setInputPopUp(false);
+        } finally {
+            // Unlock the guard after 5s — matches the render-flows polling interval.
+            // This ensures the next mappedFlow update (which reflects the updated step
+            // status from the backend) is processed normally instead of being blocked.
+            setTimeout(() => {
+                isSubmittingRef.current = false;
+            }, 5000);
         }
     };
     return (
