@@ -10,6 +10,10 @@ import { openReportInNewTab } from "@utils/generic-utils";
 
 type PastReport = {
     test_id: string;
+    total_tests?: number;
+    passed_tests?: number;
+    createdAt: string;
+    updatedAt: string;
 };
 
 function truncateId(id: string, len = 28): string {
@@ -28,7 +32,9 @@ export default function PastReportsSection() {
         setLoading(true);
         apiClient
             .get<PastReport[]>(API_ROUTES.USER.PAST_REPORTS(userDetails.username))
-            .then((res) => setReports(Array.isArray(res.data) ? res.data : []))
+            .then((res) => {
+                setReports(Array.isArray(res.data) ? res.data : []);
+            })
             .catch((e) => {
                 const status = e?.response?.status;
                 if (status === 404 || status === 204) {
@@ -74,36 +80,67 @@ export default function PastReportsSection() {
                 </div>
             ) : (
                 <div className="max-w-2xl mx-auto space-y-2">
-                    {reports.map((report) => (
-                        <div
-                            key={report.test_id}
-                            className="flex items-center justify-between px-4 py-3 bg-white rounded-lg border border-gray-200"
-                        >
-                            <div className="flex items-center gap-3 min-w-0">
-                                <LuFileText className="text-gray-400 text-lg shrink-0" />
-                                <p
-                                    className="text-sm font-mono text-gray-700 truncate"
-                                    title={report.test_id}
-                                >
-                                    {truncateId(report.test_id)}
-                                </p>
-                            </div>
+                    {reports.map((report) => {
+                        const hasStats = report.total_tests != null && report.passed_tests != null;
+                        const allPassed = hasStats && report.passed_tests === report.total_tests;
+                        const updatedDate = new Date(report.updatedAt).toLocaleDateString(
+                            undefined,
+                            { day: "numeric", month: "short", year: "numeric" }
+                        );
 
-                            <button
-                                type="button"
-                                disabled={viewingId === report.test_id}
-                                className="flex items-center gap-1 text-sky-500 hover:text-sky-700 text-sm font-medium disabled:opacity-50 ml-4 shrink-0"
-                                onClick={() => handleViewReport(report.test_id)}
+                        return (
+                            <div
+                                key={report.test_id}
+                                className="flex items-center justify-between px-4 py-3 bg-white rounded-lg border border-gray-200"
                             >
-                                {viewingId === report.test_id ? (
-                                    <LuLoader className="text-base animate-spin" />
-                                ) : (
-                                    <LuExternalLink className="text-base" />
-                                )}
-                                View
-                            </button>
-                        </div>
-                    ))}
+                                <div className="flex items-center gap-3 min-w-0">
+                                    <LuFileText className="text-gray-400 text-lg shrink-0" />
+                                    <div className="min-w-0">
+                                        <p
+                                            className="text-sm font-mono text-gray-700 truncate"
+                                            title={report.test_id}
+                                        >
+                                            {truncateId(report.test_id)}
+                                        </p>
+                                        <p className="text-xs text-gray-400 mt-0.5">
+                                            {hasStats ? (
+                                                <span
+                                                    className={
+                                                        allPassed
+                                                            ? "text-green-600"
+                                                            : "text-amber-500"
+                                                    }
+                                                >
+                                                    {report.passed_tests}/{report.total_tests}{" "}
+                                                    passed
+                                                </span>
+                                            ) : (
+                                                <span className="text-gray-400 italic">
+                                                    No stats available
+                                                </span>
+                                            )}
+                                            <span className="mx-1.5">·</span>
+                                            Updated {updatedDate}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <button
+                                    type="button"
+                                    disabled={viewingId === report.test_id}
+                                    className="flex items-center gap-1 text-sky-500 hover:text-sky-700 text-sm font-medium disabled:opacity-50 ml-4 shrink-0"
+                                    onClick={() => handleViewReport(report.test_id)}
+                                >
+                                    {viewingId === report.test_id ? (
+                                        <LuLoader className="text-base animate-spin" />
+                                    ) : (
+                                        <LuExternalLink className="text-base" />
+                                    )}
+                                    View
+                                </button>
+                            </div>
+                        );
+                    })}
                 </div>
             )}
         </div>
