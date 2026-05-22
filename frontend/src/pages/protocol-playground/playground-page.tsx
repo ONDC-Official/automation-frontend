@@ -10,6 +10,7 @@ import { useModalHandlers } from "@pages/protocol-playground/hooks/use-modal";
 import { usePlaygroundActions } from "@pages/protocol-playground/hooks/use-playground-actions";
 import FullPageLoader from "@components/ui/mini-components/fullpage-loader";
 import { ActionTimeline } from "@pages/protocol-playground/ui/playground-upper/merged-sequcence";
+import TraceView from "@pages/protocol-playground/ui/extras/trace-view";
 import ViewOnlyPlaygroundPage from "@pages/protocol-playground/view-only-page";
 import MockRunner, { MockPlaygroundConfigType } from "@ondc/automation-mock-runner";
 import { toast } from "react-toastify";
@@ -111,6 +112,7 @@ const PlaygroundPage = () => {
     const [rawConfigError, setRawConfigError] = useState<string | null>(null);
     const [isHelpOpen, setIsHelpOpen] = useState(false);
     const [isFlowInfoOpen, setIsFlowInfoOpen] = useState(false);
+    const [isTraceOpen, setIsTraceOpen] = useState(false);
     const [isGitHubImportOpen, setIsGitHubImportOpen] = useState(false);
     const [exportReviewConfig, setExportReviewConfig] = useState<MockPlaygroundConfigType | null>(
         null
@@ -235,9 +237,7 @@ const PlaygroundPage = () => {
                         stepGroup={stepGroup}
                         onStepGroupChange={handleStepGroupChange}
                         mainStepCount={playgroundContext.config?.steps.length || 0}
-                        extraStepCount={
-                            playgroundContext.config?.extra_steps?.steps.length || 0
-                        }
+                        extraStepCount={playgroundContext.config?.extra_steps?.steps.length || 0}
                         onExport={exportConfig}
                         onImport={importConfig}
                         onImportFromGitHub={handleImportFromGitHub}
@@ -256,6 +256,7 @@ const PlaygroundPage = () => {
                         onBack={handleBack}
                         onHelp={() => setIsHelpOpen(true)}
                         onEditMeta={() => setIsFlowInfoOpen(true)}
+                        onViewTrace={() => setIsTraceOpen(true)}
                         onEditRaw={openRawEditor}
                         isFullscreen={isFullscreen}
                         onToggleFullscreen={toggleFullscreen}
@@ -297,6 +298,15 @@ const PlaygroundPage = () => {
                 <Popup isOpen={popupOpen} onClose={closeModal}>
                     {popupContent}
                 </Popup>
+                {playgroundContext.config && (
+                    <Popup
+                        isOpen={isTraceOpen}
+                        onClose={() => setIsTraceOpen(false)}
+                        widthClass="max-w-2xl md:max-w-3xl lg:max-w-5xl"
+                    >
+                        <TraceView config={playgroundContext.config} />
+                    </Popup>
+                )}
                 {playgroundContext.loading && <FullPageLoader />}
                 <PlaygroundHelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
                 {playgroundContext.config && (

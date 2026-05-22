@@ -8,11 +8,13 @@ export default function Popup({
     isOpen,
     onClose,
     disableClose = false,
+    widthClass = "max-w-md sm:max-w-lg md:max-w-xl lg:max-w-2xl",
 }: {
     children: React.ReactNode;
     isOpen: boolean;
     onClose?: () => void;
     disableClose?: boolean;
+    widthClass?: string;
 }) {
     const [isVisible, setIsVisible] = useState(false);
     const [isShown, setIsShown] = useState(false);
@@ -92,7 +94,7 @@ export default function Popup({
             }}
         >
             <div
-                className={`bg-white rounded-lg shadow-lg p-4 w-full max-w-md sm:max-w-lg md:max-w-xl lg:max-w-2xl max-h-[90vh] relative transition-transform duration-300 transform overflow-y-auto overflow-x-hidden ${
+                className={`bg-white rounded-lg shadow-lg p-4 w-full ${widthClass} max-h-[90vh] relative transition-transform duration-300 transform overflow-y-auto overflow-x-hidden ${
                     isShown ? "scale-100" : "scale-95"
                 }`}
                 style={{ scrollbarWidth: "thin", scrollbarColor: "#d1d5db #f3f4f6" }}

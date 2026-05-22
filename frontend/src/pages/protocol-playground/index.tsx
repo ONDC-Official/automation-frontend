@@ -135,10 +135,12 @@ const ProtocolPlayGround = () => {
         setCurrentConfig({ ...current });
     };
 
-    // Record one run of an extra step. The entry's `payload` is an array — the
-    // first run creates it, every retrigger appends another payload.
-    // Mutates in place (like updateTransactionHistory) so a sequential
-    // run loop sees each appended run immediately.
+    // Record one run of an extra step as its OWN chronological transaction_history
+    // entry. Extra steps can run multiple times and in any order, so appending a
+    // fresh entry (instead of merging into a payload[] on the first entry)
+    // preserves true execution order — session calculation then sees every run
+    // interleaved exactly as it happened. Mutates in place (like
+    // updateTransactionHistory) so a sequential run loop sees each run immediately.
     const appendExtraStepRun = (
         actionId: string,
         action: string,
@@ -146,18 +148,12 @@ const ProtocolPlayGround = () => {
     ) => {
         const current = playgroundState;
         if (!current) return;
-        const existing = current.transaction_history.find((h) => h.action_id === actionId);
-        if (existing) {
-            const prev = Array.isArray(existing.payload) ? existing.payload : [existing.payload];
-            existing.payload = [...prev, newPayload];
-        } else {
-            current.transaction_history.push({
-                action_id: actionId,
-                action,
-                payload: [newPayload],
-                saved_info: {} as TransactionSavedInfo,
-            });
-        }
+        current.transaction_history.push({
+            action_id: actionId,
+            action,
+            payload: newPayload,
+            saved_info: {} as TransactionSavedInfo,
+        });
         setCurrentConfig({ ...current });
     };
 

@@ -10,7 +10,7 @@ import { editorUtils } from "../utils/editor-utils";
 import { mockRunnerExtensions } from "../utils/mock-runner-extentions";
 import CommonLibView from "./playground-upper/common-lib-view";
 import { AIChatPanel } from "../ai/ui/AIChatPanel";
-import { getSessionUpToActionId } from "../utils/transaction-view";
+import { getFullSession, getSessionUpToActionId } from "../utils/transaction-view";
 // import { AIChatPanel } from "../ai/ui/AIChatPanel";
 
 interface SavedMetadata {
@@ -65,24 +65,34 @@ function GetRightSideContent({ tabId, actionId }: { tabId: string; actionId: str
     const savedMetaRef = useRef<SavedMetadata>({}); // Add this ref
 
     useEffect(() => {
-        const meta = mockRunnerExtensions.getSaveDataMeta(
-            playgroundContext.activeApi,
+        // Session data only drives the "session" tab — skip work otherwise.
+        if (tabId !== "session") return;
+        let cancelled = false;
+        // Use the same `actionId` everywhere (prop is the single source of truth).
+        savedMetaRef.current = mockRunnerExtensions.getSaveDataMeta(
+            actionId,
             playgroundContext.config
         );
-        // setSaveMeta(meta);
-        savedMetaRef.current = meta; // Update ref whenever savedMeta changes
 
-        getSessionData().then((data) => setSessionData(data));
-    }, [playgroundContext.config, playgroundContext.activeApi, playgroundContext.stepGroup]);
+        // Guard against out-of-order async resolution: only the latest run
+        // (matching the current config/actionId/stepGroup) may set state.
+        getSessionData().then((data) => {
+            if (!cancelled) setSessionData(data);
+        });
+        return () => {
+            cancelled = true;
+        };
+        // Recompute whenever any input to the session changes, or we (re-)enter
+        // the tab. exhaustive-deps is disabled project-wide; deps are explicit.
+    }, [tabId, actionId, playgroundContext.config, playgroundContext.stepGroup]);
 
-    const rawPayload = playgroundContext.config?.transaction_history.find(
-        (f) => f.action_id === actionId
-    )?.payload;
-    // Extra-step entries hold an array of payloads (one per run) — show the latest.
-    const activePayload =
-        (Array.isArray(rawPayload) ? rawPayload[rawPayload.length - 1] : rawPayload) || undefined;
-    // For extra steps, expose every run so the viewer can page through them.
-    const payloadRuns = Array.isArray(rawPayload) ? rawPayload : undefined;
+    // Extra steps record one transaction_history entry per run, in execution
+    // order. Collect every run for this action so the viewer can page through
+    // them and we can show the latest.
+    const payloadRuns = (playgroundContext.config?.transaction_history ?? [])
+        .filter((f) => f.action_id === actionId)
+        .map((e) => e.payload);
+    const activePayload = payloadRuns[payloadRuns.length - 1] || undefined;
 
     const getSessionData = async () => {
         try {
@@ -97,8 +107,16 @@ function GetRightSideContent({ tabId, actionId }: { tabId: string; actionId: str
                 );
             }
 
-            // Session reflects the WHOLE transaction history (main + extra runs).
-            const sessionData = await getSessionUpToActionId(playgroundContext.config, actionId);
+            // Match how each group is actually generated:
+            //  - Main steps run once, in order, against the session UP TO that
+            //    step (MockRunner.runGeneratePayload) -> getSessionUpToActionId.
+            //  - Extra steps run multiple times, in any order, and are generated
+            //    against the WHOLE accumulated session (executeExtraStep ->
+            //    getFullSession), so the preview must be the full session.
+            const sessionData =
+                playgroundContext.stepGroup === "extra"
+                    ? await getFullSession(playgroundContext.config)
+                    : await getSessionUpToActionId(playgroundContext.config, actionId);
 
             return JSON.stringify(sessionData, null, 2);
         } catch (error: unknown) {
@@ -189,7 +207,10 @@ function GetRightSideContent({ tabId, actionId }: { tabId: string; actionId: str
         case "session":
             return (
                 <Editor
-                    key={`${actionId}-${tabId}`}
+                    // Stable key: never remount on actionId/group change. The
+                    // async session result flows in purely via the controlled
+                    // `value`, so it can't be lost to a remount-with-stale-value.
+                    key="session-data-editor"
                     theme="dark-skyblue"
                     onMount={handleOnMount}
                     height="100%"

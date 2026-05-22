@@ -36,19 +36,15 @@ export const ActionTimeline = ({
     const playgroundContext = useContext(PlaygroundContext);
 
     const actionData = steps.map((step, index) => {
-        const history = transactionHistory.find((th) => th.action_id === step.action_id);
-        // Extra steps store an array of payloads (one per run); count them.
-        const runCount = history
-            ? Array.isArray(history.payload)
-                ? history.payload.length
-                : 1
-            : 0;
+        // Extra steps record one history entry per run, in execution order.
+        const runs = transactionHistory.filter((th) => th.action_id === step.action_id);
+        const runCount = runs.length;
         return {
             id: step.action_id,
             stepNumber: index + 1,
             config: step,
             responseFor: step.responseFor,
-            completed: !!history,
+            completed: runs.length > 0,
             runCount,
         };
     });

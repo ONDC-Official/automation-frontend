@@ -14,54 +14,25 @@ export function findStepDef(
     );
 }
 
-/** Normalise a transaction-history `payload` (object | array) to an array of payloads. */
-function payloadList(payload: unknown): unknown[] {
-    return Array.isArray(payload) ? payload : [payload];
-}
-
 /**
- * Returns a step def whose saveData keys are `APPEND#`-prefixed, so MockRunner
- * accumulates (rather than overwrites) values across the step's repeated runs.
- * Already-prefixed keys are left untouched.
- */
-function accumulateSaveData(def: PlaygroundActionStep): PlaygroundActionStep {
-    const saveData = def.mock.saveData ?? {};
-    const next: Record<string, string> = {};
-    for (const key in saveData) {
-        next[key.startsWith("APPEND#") ? key : `APPEND#${key}`] = saveData[key];
-    }
-    return { ...def, mock: { ...def.mock, saveData: next } };
-}
-
-/**
- * Builds a config whose `steps` and `transaction_history` are positionally aligned
- * and one-payload-per-entry: an extra step that ran N times (its entry holds a
- * payload array of length N) is exploded into N synthetic entries + N step copies.
+ * Builds a config whose `steps` and `transaction_history` are positionally
+ * aligned: every history entry (one per run, in execution order) is paired with
+ * its step def. Extra steps that ran multiple times appear as multiple entries.
  *
  * The result is safe to feed to `new MockRunner(...)` — `getSessionDataUpToStep`
  * maps entry `i` to `steps[i]` positionally and treats each payload as one object.
  *
- * When `accumulateExtra` is set, a multi-run extra step's saveData keys are
- * `APPEND#`-prefixed so EVERY run contributes to the session (not just the last).
+ * saveData is used exactly as authored, including for multi-run extra steps.
  */
-export function buildLinearConfig(
-    config: MockPlaygroundConfigType,
-    accumulateExtra = false
-): MockPlaygroundConfigType {
+export function buildLinearConfig(config: MockPlaygroundConfigType): MockPlaygroundConfigType {
     const steps: PlaygroundActionStep[] = [];
     const transaction_history: MockPlaygroundConfigType["transaction_history"] = [];
 
     for (const entry of config.transaction_history) {
         const def = findStepDef(config, entry.action_id);
         if (!def) continue;
-        const payloads = payloadList(entry.payload);
-        // An array payload identifies an extra step that ran one or more times.
-        const effectiveDef =
-            accumulateExtra && Array.isArray(entry.payload) ? accumulateSaveData(def) : def;
-        for (const payload of payloads) {
-            steps.push(effectiveDef);
-            transaction_history.push({ ...entry, payload });
-        }
+        steps.push(def);
+        transaction_history.push(entry);
     }
 
     return { ...config, steps, transaction_history };
@@ -69,30 +40,42 @@ export function buildLinearConfig(
 
 /**
  * Live session data accumulated over the WHOLE transaction history — main and
- * extra steps, with every retrigger applied. `APPEND#` saveData keys accumulate
- * across exploded retriggers natively.
+ * extra steps, with every retrigger applied.
  */
 export async function getFullSession(
     config: MockPlaygroundConfigType
 ): Promise<Record<string, unknown>> {
-    const linear = buildLinearConfig(config, true);
+    const linear = buildLinearConfig(config);
     return new MockRunner(linear).getSessionDataUpToStep(linear.transaction_history.length);
 }
 
 /**
- * Session data as seen by `actionId` — everything in history up to (but not
- * including) that step's first run. Falls back to the full session when the
- * step has not run yet.
+ * Session data a MAIN step would see when generated — mirrors
+ * `MockRunner.runGeneratePayload`: the session is built from the first `index`
+ * history entries, where `index` is the step's POSITION in `config.steps`.
+ *
+ * `getSessionDataUpToStep` THROWS when fewer steps have run than the step's
+ * position requires, so selecting a step whose predecessors haven't run surfaces
+ * an error (rendered by the caller) instead of a stale full session.
  */
 export async function getSessionUpToActionId(
     config: MockPlaygroundConfigType,
     actionId: string | undefined
 ): Promise<Record<string, unknown>> {
-    const linear = buildLinearConfig(config, true);
-    let index = linear.transaction_history.length;
-    if (actionId) {
-        const found = linear.transaction_history.findIndex((h) => h.action_id === actionId);
-        if (found !== -1) index = found;
-    }
-    return new MockRunner(linear).getSessionDataUpToStep(index);
+    if (!actionId) return {};
+    const index = config.steps.findIndex((s) => s.action_id === actionId);
+    // Not a main step (extra steps go through getFullSession) — nothing to show.
+    if (index < 0) return {};
+    // Use a MAIN-ONLY history view: `index` is a position among main steps, so
+    // the length check and positional alignment must ignore extra-step entries.
+    // Otherwise extra runs inflate transaction_history.length and a main step
+    // whose predecessors haven't run wrongly shows a session (and reads a
+    // misaligned extra entry). Main steps run in order, so the filtered history
+    // stays aligned with config.steps.
+    const mainIds = new Set(config.steps.map((s) => s.action_id));
+    const mainConfig = {
+        ...config,
+        transaction_history: config.transaction_history.filter((h) => mainIds.has(h.action_id)),
+    };
+    return new MockRunner(mainConfig).getSessionDataUpToStep(index);
 }

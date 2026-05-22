@@ -9,6 +9,7 @@ import {
     FaPencilAlt,
     FaEdit,
     FaGithub,
+    FaRegEye,
 } from "react-icons/fa";
 import { GrRedo } from "react-icons/gr";
 import { IoMdSkipForward, IoMdTrash } from "react-icons/io";
@@ -36,6 +37,7 @@ interface PlaygroundHeaderProps {
     onBack: () => void;
     onHelp: () => void;
     onEditMeta: () => void;
+    onViewTrace: () => void;
     onEditRaw: () => void;
     isFullscreen?: boolean;
     onToggleFullscreen?: () => void;
@@ -185,6 +187,7 @@ export const PlaygroundHeader = ({
     onBack,
     onHelp,
     onEditMeta,
+    onViewTrace,
     onEditRaw,
     isFullscreen,
     onToggleFullscreen,
@@ -239,6 +242,13 @@ export const PlaygroundHeader = ({
                     className="p-2.5 rounded-lg bg-white shadow-sm text-black hover:bg-sky-100 hover:text-sky-600 transition-colors"
                 >
                     <FaPencilAlt size={14} />
+                </button>
+                <button
+                    onClick={onViewTrace}
+                    title="View execution trace"
+                    className="p-2.5 rounded-lg bg-white shadow-sm text-black hover:bg-sky-100 hover:text-sky-600 transition-colors"
+                >
+                    <FaRegEye size={14} />
                 </button>
             </div>
         </div>

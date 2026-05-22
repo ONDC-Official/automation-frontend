@@ -151,12 +151,9 @@ export default function SessionDataTab() {
 
     const payloadFromTranscationHistory = (action_id: string) => {
         if (!playgroundConfig) return {};
+        // First run of the action — representative shape for JSON-path picking.
         const history = playgroundConfig.transaction_history.find((h) => h.action_id === action_id);
-        const payload = history?.payload;
-        // Extra-step entries hold an array of payloads (one per run) — use the
-        // first run as the representative shape for JSON-path picking.
-        if (Array.isArray(payload)) return payload[0] ?? {};
-        return payload ?? {};
+        return history?.payload ?? {};
     };
 
     const isSelected = (path: string): { status: boolean; type: SelectedType | null } => {
@@ -390,8 +387,7 @@ export default function SessionDataTab() {
     const savedInfo = selectedHistory?.saved_info || {};
     const savedInfoLength = Object.keys(savedInfo).length;
 
-    const saveData =
-        groupSteps.find((s) => s.action_id === selectedCall)?.mock.saveData || {};
+    const saveData = groupSteps.find((s) => s.action_id === selectedCall)?.mock.saveData || {};
     const saveDataLength = Object.keys(saveData).length;
 
     // const activeApi =

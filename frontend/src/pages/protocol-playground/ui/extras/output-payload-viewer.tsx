@@ -171,9 +171,8 @@ export default function OutputPayloadViewer({
                 setIsLoading(false);
                 return;
             }
-            // Linear view: history & steps aligned across both groups + retriggers,
-            // with extra-step runs accumulated into the session.
-            const runner = new MockRunner(buildLinearConfig(config, true));
+            // Linear view: history & steps aligned across both groups + retriggers.
+            const runner = new MockRunner(buildLinearConfig(config));
             runner.logger.setLogLevel(3);
             const l2Result = await runner.runValidatePayload(actionId || "", payload);
             playgroundContext.setActiveTerminalData((s) => [...s, l2Result]);
