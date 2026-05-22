@@ -61,6 +61,7 @@ export function RightSideView(props: {
 function GetRightSideContent({ tabId, actionId }: { tabId: string; actionId: string | undefined }) {
     const playgroundContext = useContext(PlaygroundContext);
     const [sessionData, setSessionData] = useState<string>("{}");
+    const [isSessionLoading, setIsSessionLoading] = useState(false);
     // const [savedMeta, setSaveMeta] = useState<SavedMetadata>({});
     const savedMetaRef = useRef<SavedMetadata>({}); // Add this ref
 
@@ -76,8 +77,11 @@ function GetRightSideContent({ tabId, actionId }: { tabId: string; actionId: str
 
         // Guard against out-of-order async resolution: only the latest run
         // (matching the current config/actionId/stepGroup) may set state.
+        setIsSessionLoading(true);
         getSessionData().then((data) => {
-            if (!cancelled) setSessionData(data);
+            if (cancelled) return;
+            setSessionData(data);
+            setIsSessionLoading(false);
         });
         return () => {
             cancelled = true;
@@ -206,27 +210,39 @@ function GetRightSideContent({ tabId, actionId }: { tabId: string; actionId: str
     switch (tabId) {
         case "session":
             return (
-                <Editor
-                    // Stable key: never remount on actionId/group change. The
-                    // async session result flows in purely via the controlled
-                    // `value`, so it can't be lost to a remount-with-stale-value.
-                    key="session-data-editor"
-                    theme="dark-skyblue"
-                    onMount={handleOnMount}
-                    height="100%"
-                    language="json"
-                    value={sessionData}
-                    options={{
-                        padding: { top: 16, bottom: 16 },
-                        fontSize: 16,
-                        lineNumbers: "on",
-                        scrollBeyondLastLine: true,
-                        automaticLayout: true,
-                        formatOnPaste: true,
-                        formatOnType: true,
-                        readOnly: true,
-                    }}
-                />
+                <div className="relative h-full">
+                    <Editor
+                        // Stable key: never remount on actionId/group change. The
+                        // async session result flows in purely via the controlled
+                        // `value`, so it can't be lost to a remount-with-stale-value.
+                        key="session-data-editor"
+                        theme="dark-skyblue"
+                        onMount={handleOnMount}
+                        height="100%"
+                        language="json"
+                        value={sessionData}
+                        options={{
+                            padding: { top: 16, bottom: 16 },
+                            fontSize: 16,
+                            lineNumbers: "on",
+                            scrollBeyondLastLine: true,
+                            automaticLayout: true,
+                            formatOnPaste: true,
+                            formatOnType: true,
+                            readOnly: true,
+                        }}
+                    />
+                    {isSessionLoading && (
+                        <div className="absolute inset-0 flex items-center justify-center bg-[#0b1220]/40 backdrop-blur-[1px] pointer-events-none">
+                            <div className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-white/90 shadow-sm">
+                                <div className="w-3.5 h-3.5 border-2 border-sky-500 border-t-transparent rounded-full animate-spin" />
+                                <span className="text-xs font-medium text-gray-700">
+                                    Computing session…
+                                </span>
+                            </div>
+                        </div>
+                    )}
+                </div>
             );
         case "transaction":
             return <SessionDataTab />;
