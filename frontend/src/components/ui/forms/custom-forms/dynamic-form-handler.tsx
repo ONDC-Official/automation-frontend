@@ -49,11 +49,28 @@ export default function DynamicFormHandler({
         }
     }, [formConfig, referenceData]);
 
-    // Extract form name from the form URL — used as form_id in the check-completion API
-    // URL format: http://form-service/forms/{domain}/{formName}?session_id=...
+    // Resolve the form_id to use when polling /form/check-completion.
+    //
+    // Priority:
+    //   ① referenceData.form_id — the canonical xinput.form.id saved by the mock
+    //      service's saveData config (e.g. "$.message...xinput.form.id").
+    //      This is the value the form-service uses as the Redis key suffix.
+    //   ② URL-path last segment — legacy fallback for flows where form_id is not
+    //      yet saved in reference_data (e.g. path: /forms/FIS13/Ekyc_details_form
+    //      → "Ekyc_details_form").
     const formName = useMemo<string>(() => {
-        if (!formServiceUrl) return "";
+        // ① Best: use xinput.form.id saved directly in reference_data by mock saveData
+        const directFormId = referenceData?.form_id as string | undefined;
+        if (directFormId?.trim()) {
+            console.warn(
+                "🎯 [DynamicForm] Using xinput form_id from reference_data:",
+                directFormId
+            );
+            return directFormId.trim();
+        }
 
+        // ② Fallback: derive form name from URL path
+        if (!formServiceUrl) return "";
         try {
             const urlObj = new URL(formServiceUrl);
             const pathParts = urlObj.pathname.split("/").filter(Boolean);
@@ -61,7 +78,10 @@ export default function DynamicFormHandler({
             // So formName is the last part
             if (pathParts.length >= 3) {
                 const extractedFormName = pathParts[pathParts.length - 1];
-
+                console.warn(
+                    "⚠️ [DynamicForm] form_id not in reference_data — falling back to URL-path:",
+                    extractedFormName
+                );
                 return extractedFormName;
             }
         } catch (error) {
@@ -69,7 +89,7 @@ export default function DynamicFormHandler({
         }
 
         return "";
-    }, [formServiceUrl]);
+    }, [referenceData, formServiceUrl]);
 
     // Cleanup function - prevents memory leaks and ensures no refresh
     const cleanup = useCallback(() => {
