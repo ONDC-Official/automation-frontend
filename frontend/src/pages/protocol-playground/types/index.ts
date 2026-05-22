@@ -21,6 +21,8 @@ export const ONDC_ACTION_LIST = [
     "on_issue",
     "issue_close",
     "on_issue_close",
+    "rating",
+    "on_rating",
     "recon",
     "on_recon",
     "report",

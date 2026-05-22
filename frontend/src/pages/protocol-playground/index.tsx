@@ -25,6 +25,7 @@ import {
     setGroupSteps,
 } from "@pages/protocol-playground/utils/step-group";
 import { validateConfigGroups } from "@pages/protocol-playground/utils/step-group-rules";
+import { encodeBase64 } from "@pages/protocol-playground/utils/base64";
 
 const Body = ({ workbenchFlow }: { workbenchFlow: ReturnType<typeof useWorkbenchFlows> }) => {
     switch (workbenchFlow.flowStepNum) {
@@ -85,7 +86,7 @@ const ProtocolPlayGround = () => {
             property === "requirements" ||
             property === "formHtml"
         ) {
-            value = MockRunner.encodeBase64(value);
+            value = encodeBase64(value);
         } else {
             try {
                 value = JSON.parse(value);
@@ -147,9 +148,7 @@ const ProtocolPlayGround = () => {
         if (!current) return;
         const existing = current.transaction_history.find((h) => h.action_id === actionId);
         if (existing) {
-            const prev = Array.isArray(existing.payload)
-                ? existing.payload
-                : [existing.payload];
+            const prev = Array.isArray(existing.payload) ? existing.payload : [existing.payload];
             existing.payload = [...prev, newPayload];
         } else {
             current.transaction_history.push({
@@ -172,7 +171,7 @@ const ProtocolPlayGround = () => {
     const updateHelperLib = (newCode: string) => {
         const current = playgroundState;
         if (!current) return;
-        current.helperLib = MockRunner.encodeBase64(newCode);
+        current.helperLib = encodeBase64(newCode);
         setCurrentConfig(current);
     };
 
