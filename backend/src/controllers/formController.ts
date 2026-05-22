@@ -1,6 +1,8 @@
 import { Request, Response, RequestHandler } from 'express';
 import { RedisService } from 'ondc-automation-cache-lib';
 import logger from '@ondc/automation-logger';
+import { getSessionByTransactionId } from '../services/sessionService';
+import { SessionCache } from '../interfaces/newSessionData';
 
 /**
  * Check if form callback has been received
@@ -21,6 +23,28 @@ export const checkFormCompletion: RequestHandler = async (req: Request, res: Res
       return;
     }
 
+    // Fetch session data via reverse-index (txn:session:{transaction_id} -> sessionId)
+    // Non-fatal: a missing entry means the flow pre-dates this index or was never registered.
+    const sessionData: SessionCache | null = await getSessionByTransactionId(
+      transaction_id as string
+    );
+    if (sessionData) {
+      logger.info('Session data resolved for form completion check', {
+        transaction_id,
+        form_id,
+        domain: sessionData.domain,
+        subscriberUrl: sessionData.subscriberUrl,
+        npType: sessionData.npType,
+        sessionData,
+      });
+    } else {
+      logger.warning('Could not resolve session for transaction_id', {
+        transaction_id,
+        form_id,
+      });
+    }
+
+    
     const completionKey = `form_completed:${transaction_id}:${form_id}`;
     const completionData = await RedisService.getKey(completionKey);
 

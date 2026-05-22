@@ -365,6 +365,28 @@ export const requestForFlowPermissionService = async (
 	};
 };
 
+export const getSessionByTransactionId = async (
+	transactionId: string,
+): Promise<SessionCache | null> => {
+	try {
+		const sessionId = await RedisService.getKey(`txn:session:${transactionId}`);
+		if (!sessionId) {
+			logger.debug("No reverse-index entry found for transaction", {
+				transactionId,
+			});
+			return null;
+		}
+		return await getSessionService(sessionId);
+	} catch (e: any) {
+		logger.error(
+			"Error fetching session by transactionId",
+			{ transactionId },
+			e,
+		);
+		return null;
+	}
+};
+
 export const updateFlowService = async (
 	sessionId: string,
 	flows: any[],

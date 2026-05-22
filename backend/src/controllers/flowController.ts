@@ -1,4 +1,3 @@
-// FILE: uiController.ts
 import { Request, Response } from "express";
 import { fetchConfigService } from "../services/flowService";
 import { updateFlowService } from "../services/sessionService";
@@ -12,6 +11,7 @@ import logger from "@ondc/automation-logger";
 import { saveLog } from "../utils/console";
 import { buildMockBaseURL } from "../utils";
 import { getLoggerMeta } from "../utils/logger-meta-utilts";
+import { RedisService } from "ondc-automation-cache-lib";
 
 export const fetchConfig = (req: Request, res: Response) => {
 	try {
@@ -280,6 +280,20 @@ export const newFlow = async (req: Request, res: Response) => {
 				"X-Request-ID": req.correlationId,
 			},
 		});
+
+		// Write reverse-index so controllers that only have transaction_id
+		// (e.g. checkFormCompletion) can resolve the parent session.
+		// TTL matches SESSION_EXPIRY (24 h).
+		await RedisService.setKey(
+			`txn:session:${transaction_id}`,
+			session_id,
+			3600 * 24,
+		);
+		logger.debug("Reverse-index key written", {
+			key: `txn:session:${transaction_id}`,
+			session_id,
+		});
+
 		res.status(response.status).send(response.data);
 	} catch (e) {
 		logger.error(
