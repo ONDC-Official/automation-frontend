@@ -370,6 +370,10 @@ export const getSessionByTransactionId = async (
 ): Promise<SessionCache | null> => {
 	try {
 		const sessionId = await RedisService.getKey(`txn:session:${transactionId}`);
+		logger.debug("Session id found for transaction", {
+			transactionId,
+			sessionId,
+		});
 		if (!sessionId) {
 			logger.debug("No reverse-index entry found for transaction", {
 				transactionId,
