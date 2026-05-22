@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
-import { LuPlus, LuX } from "react-icons/lu";
+import { LuPlus, LuX, LuTriangleAlert } from "react-icons/lu";
+import { Modal } from "antd";
 
 import { FormInput } from "@components/ui/forms/form-input";
 import FormSelect from "@components/ui/forms/form-select";
@@ -226,6 +227,31 @@ export default function ScenarioPreferencesForm({ externalOpenTrigger = 0 }: Pro
         }
     };
 
+    const confirmDelete = (configKey: string) => {
+        Modal.confirm({
+            title: "Delete configuration",
+            icon: <LuTriangleAlert className="text-xl mr-2" style={{ color: "#ef4444" }} />,
+            content: (
+                <span>
+                    Are you sure you want to delete{" "}
+                    <span className="font-semibold text-gray-900">{configKey}</span>? This action
+                    cannot be undone.
+                </span>
+            ),
+            okText: "Delete",
+            cancelText: "Cancel",
+            centered: true,
+            okButtonProps: {
+                style: {
+                    backgroundColor: "#ef4444",
+                    borderColor: "#ef4444",
+                    color: "#fff",
+                },
+            },
+            onOk: () => handleDelete(configKey),
+        });
+    };
+
     return (
         <div className="bg-gray-100 p-2 rounded-md shadow-sm mt-4">
             <h2 className="text-xl font-bold text-gray-900 mb-1 mt-2">
@@ -276,7 +302,7 @@ export default function ScenarioPreferencesForm({ externalOpenTrigger = 0 }: Pro
                                                 </button>
                                                 <button
                                                     type="button"
-                                                    onClick={() => handleDelete(key)}
+                                                    onClick={() => confirmDelete(key)}
                                                     className="text-red-400 hover:text-red-600 text-sm font-medium"
                                                 >
                                                     Delete

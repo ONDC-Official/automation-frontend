@@ -1,17 +1,9 @@
-import { useCallback, useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-    LuLogOut,
-    LuExternalLink,
-    LuUser,
-    LuSettings,
-    LuBookmark,
-    LuFileText,
-} from "react-icons/lu";
+import { LuExternalLink, LuUser, LuSettings, LuBookmark, LuFileText } from "react-icons/lu";
 
 import { UserContext } from "@context/userContext";
 import JsonDataForm from "@components/registry-components/subscriber-form";
-import { AuthService } from "@services/authService";
 import { authTokenManager } from "@utils/localStorageManager";
 import ScenarioPreferencesForm from "./scenario-preferences-form";
 import PastReportsSection from "./past-reports-section";
@@ -55,21 +47,6 @@ const UserProfile = () => {
         }
     }, [navigate, userDetails]);
 
-    const handleLogout = useCallback(async () => {
-        try {
-            await AuthService.logout();
-        } catch (error) {
-            console.error("Logout failed:", error);
-        } finally {
-            try {
-                await refreshUser();
-            } catch (refreshError) {
-                console.error("Failed to refresh user after logout:", refreshError);
-            }
-            navigate(ROUTES.HOME);
-        }
-    }, [navigate, refreshUser]);
-
     const scrollTo = (id: string) => {
         if (id === "add-scenario-config") {
             setScenarioFormTrigger((t) => t + 1);
@@ -106,7 +83,7 @@ const UserProfile = () => {
                             </p>
                         )}
                         <p className="text-xs font-semibold text-sky-200 uppercase tracking-widest mt-3">
-                            Navigation
+                            Account
                         </p>
                     </div>
 
@@ -156,29 +133,14 @@ const UserProfile = () => {
                 >
                     <h1 className="text-3xl font-bold text-gray-900 mb-4 mt-4">User Profile</h1>
                     <div className="max-w-4xl mx-auto p-6 bg-white rounded-xl">
-                        <div className="flex items-center gap-6">
-                            {/* User info */}
-                            <div className="flex-1 text-left text-gray-700 space-y-1">
-                                <p>
-                                    <strong>Login:</strong> {userDetails?.username || "N/A"}
-                                </p>
-                                <p>
-                                    <strong>Participant ID:</strong>{" "}
-                                    {userDetails?.participantId || "N/A"}
-                                </p>
-                            </div>
-
-                            {/* Logout */}
-                            <div className="shrink-0">
-                                <button
-                                    type="button"
-                                    className="px-4 py-2 bg-sky-600 text-white rounded hover:bg-sky-800 flex items-center gap-2"
-                                    onClick={handleLogout}
-                                >
-                                    <LuLogOut className="text-lg" />
-                                    <strong>Logout</strong>
-                                </button>
-                            </div>
+                        <div className="text-left text-gray-700 space-y-1">
+                            <p>
+                                <strong>Login:</strong> {userDetails?.username || "N/A"}
+                            </p>
+                            <p>
+                                <strong>Participant ID:</strong>{" "}
+                                {userDetails?.participantId || "N/A"}
+                            </p>
                         </div>
                     </div>
                 </div>
