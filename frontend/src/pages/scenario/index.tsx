@@ -347,8 +347,11 @@ export default function FlowContent() {
                                                     className="w-full bg-gray-50 text-slate-700 text-sm border border-slate-200 rounded-md px-3 py-2 focus:outline-none focus:border-blue-500 hover:border-blue-300 shadow-sm"
                                                     value={selectedConfigKey}
                                                     onChange={(e) => {
-                                                        setSelectedConfigKey(e.target.value);
-                                                        setSelectedUsecaseId("");
+                                                        const key = e.target.value;
+                                                        setSelectedConfigKey(key);
+                                                        setSelectedUsecaseId(
+                                                            savedPreferences[key]?.usecaseId || ""
+                                                        );
                                                     }}
                                                 >
                                                     <option value="" disabled>
@@ -364,7 +367,7 @@ export default function FlowContent() {
                                                 </select>
                                             </div>
 
-                                            {/* Usecase picker — shown after config is selected */}
+                                            {/* Config summary + usecase picker (only when missing in config) */}
                                             {selectedConfigKey &&
                                                 (() => {
                                                     const cfg = savedPreferences[selectedConfigKey];
@@ -376,6 +379,7 @@ export default function FlowContent() {
                                                     )?.find((v) => v.key === cfg.version);
                                                     const usecaseOptions =
                                                         versionData?.usecase || [];
+                                                    const hasSavedUsecase = !!cfg.usecaseId;
                                                     return (
                                                         <div className="space-y-3">
                                                             <div className="text-xs text-gray-500 px-1">
@@ -384,32 +388,48 @@ export default function FlowContent() {
                                                                 </span>{" "}
                                                                 {cfg.subscriberUrl}
                                                             </div>
-                                                            <div className="flex flex-col gap-1">
-                                                                <label className="text-sm font-bold text-sky-700 ml-1">
-                                                                    Select Use Case{" "}
-                                                                    <span className="text-red-500">
-                                                                        *
+                                                            {hasSavedUsecase ? (
+                                                                <div className="text-xs text-gray-500 px-1">
+                                                                    <span className="font-medium text-gray-600">
+                                                                        Use Case:
+                                                                    </span>{" "}
+                                                                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-fuchsia-50 text-fuchsia-700 border border-fuchsia-200">
+                                                                        {cfg.usecaseId}
                                                                     </span>
-                                                                </label>
-                                                                <select
-                                                                    className="w-full bg-gray-50 text-slate-700 text-sm border border-slate-200 rounded-md px-3 py-2 focus:outline-none focus:border-blue-500 hover:border-blue-300 shadow-sm"
-                                                                    value={selectedUsecaseId}
-                                                                    onChange={(e) =>
-                                                                        setSelectedUsecaseId(
-                                                                            e.target.value
-                                                                        )
-                                                                    }
-                                                                >
-                                                                    <option value="" disabled>
-                                                                        Select a use case
-                                                                    </option>
-                                                                    {usecaseOptions.map((uc) => (
-                                                                        <option key={uc} value={uc}>
-                                                                            {uc}
+                                                                </div>
+                                                            ) : (
+                                                                <div className="flex flex-col gap-1">
+                                                                    <label className="text-sm font-bold text-sky-700 ml-1">
+                                                                        Select Use Case{" "}
+                                                                        <span className="text-red-500">
+                                                                            *
+                                                                        </span>
+                                                                    </label>
+                                                                    <select
+                                                                        className="w-full bg-gray-50 text-slate-700 text-sm border border-slate-200 rounded-md px-3 py-2 focus:outline-none focus:border-blue-500 hover:border-blue-300 shadow-sm"
+                                                                        value={selectedUsecaseId}
+                                                                        onChange={(e) =>
+                                                                            setSelectedUsecaseId(
+                                                                                e.target.value
+                                                                            )
+                                                                        }
+                                                                    >
+                                                                        <option value="" disabled>
+                                                                            Select a use case
                                                                         </option>
-                                                                    ))}
-                                                                </select>
-                                                            </div>
+                                                                        {usecaseOptions.map(
+                                                                            (uc) => (
+                                                                                <option
+                                                                                    key={uc}
+                                                                                    value={uc}
+                                                                                >
+                                                                                    {uc}
+                                                                                </option>
+                                                                            )
+                                                                        )}
+                                                                    </select>
+                                                                </div>
+                                                            )}
                                                         </div>
                                                     );
                                                 })()}
