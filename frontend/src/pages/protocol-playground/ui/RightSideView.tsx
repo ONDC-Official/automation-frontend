@@ -81,6 +81,8 @@ function GetRightSideContent({ tabId, actionId }: { tabId: string; actionId: str
     // Extra-step entries hold an array of payloads (one per run) — show the latest.
     const activePayload =
         (Array.isArray(rawPayload) ? rawPayload[rawPayload.length - 1] : rawPayload) || undefined;
+    // For extra steps, expose every run so the viewer can page through them.
+    const payloadRuns = Array.isArray(rawPayload) ? rawPayload : undefined;
 
     const getSessionData = async () => {
         try {
@@ -96,10 +98,7 @@ function GetRightSideContent({ tabId, actionId }: { tabId: string; actionId: str
             }
 
             // Session reflects the WHOLE transaction history (main + extra runs).
-            const sessionData = await getSessionUpToActionId(
-                playgroundContext.config,
-                actionId
-            );
+            const sessionData = await getSessionUpToActionId(playgroundContext.config, actionId);
 
             return JSON.stringify(sessionData, null, 2);
         } catch (error: unknown) {
@@ -213,7 +212,13 @@ function GetRightSideContent({ tabId, actionId }: { tabId: string; actionId: str
         case "terminal":
             return <ExecutionResults results={playgroundContext.activeTerminalData} />;
         case "output_payload":
-            return <OutputPayloadViewer payload={activePayload} actionId={actionId} />;
+            return (
+                <OutputPayloadViewer
+                    payload={activePayload}
+                    runs={payloadRuns}
+                    actionId={actionId}
+                />
+            );
         case "common_lib":
             return <CommonLibView />;
         case "ai_chat":

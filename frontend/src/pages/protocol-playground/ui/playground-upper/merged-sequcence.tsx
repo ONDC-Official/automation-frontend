@@ -35,13 +35,23 @@ export const ActionTimeline = ({
 }: ActionTimelineProps) => {
     const playgroundContext = useContext(PlaygroundContext);
 
-    const actionData = steps.map((step, index) => ({
-        id: step.action_id,
-        stepNumber: index + 1,
-        config: step,
-        responseFor: step.responseFor,
-        completed: transactionHistory.some((th) => th.action_id === step.action_id) || false,
-    }));
+    const actionData = steps.map((step, index) => {
+        const history = transactionHistory.find((th) => th.action_id === step.action_id);
+        // Extra steps store an array of payloads (one per run); count them.
+        const runCount = history
+            ? Array.isArray(history.payload)
+                ? history.payload.length
+                : 1
+            : 0;
+        return {
+            id: step.action_id,
+            stepNumber: index + 1,
+            config: step,
+            responseFor: step.responseFor,
+            completed: !!history,
+            runCount,
+        };
+    });
 
     return (
         <div className="h-16 flex items-center px-6 bg-gradient-to-b from-gray-50 to-white border-b border-gray-200 overflow-x-auto">
@@ -76,7 +86,9 @@ export const ActionTimeline = ({
                                 arrow={false}
                                 offset={[0, 12]}
                                 maxWidth="none"
-                                appendTo={() => document.fullscreenElement as Element ?? document.body}
+                                appendTo={() =>
+                                    (document.fullscreenElement as Element) ?? document.body
+                                }
                             >
                                 <button
                                     onClick={() => onApiSelect(action.id)}
@@ -110,6 +122,13 @@ export const ActionTimeline = ({
                                         {/* Active Pulse Effect */}
                                         {isActive && !isCompleted && (
                                             <span className="absolute inset-0 rounded-full bg-sky-400 animate-ping opacity-20"></span>
+                                        )}
+
+                                        {/* Run-count badge (extra steps run multiple times) */}
+                                        {action.runCount > 1 && (
+                                            <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 flex items-center justify-center rounded-full bg-amber-500 text-white text-[10px] font-bold leading-none ring-2 ring-white">
+                                                ×{action.runCount}
+                                            </span>
                                         )}
                                     </div>
 

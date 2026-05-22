@@ -165,7 +165,7 @@ export function LeftSideView(props: { width: string; activeApi?: string }) {
                     beforeMount={handleEditorWillMount}
                     height="100%"
                     language={activeTabConfig.language}
-                    value={getEditorContent()}
+                    defaultValue={getEditorContent()}
                     onChange={handleEditorChange}
                     options={{
                         padding: { top: 16, bottom: 16 },

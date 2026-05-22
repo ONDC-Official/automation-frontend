@@ -155,15 +155,14 @@ const StepGroupSelector = ({
     mainStepCount: number;
     extraStepCount: number;
 }) => (
-    <select
-        value={stepGroup}
-        onChange={(e) => onStepGroupChange(e.target.value as StepGroup)}
-        title="Choose which step group to edit"
+    <button
+        type="button"
+        onClick={() => onStepGroupChange(stepGroup === "main" ? "extra" : "main")}
+        title="Click to switch step group"
         className="px-2.5 py-1.5 rounded-md text-sm font-medium text-sky-700 bg-sky-100 hover:bg-sky-200 transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-400 focus:ring-offset-1 cursor-pointer"
     >
-        <option value="main">Main Steps ({mainStepCount})</option>
-        <option value="extra">Extra Steps ({extraStepCount})</option>
-    </select>
+        {stepGroup === "main" ? `Main Steps (${mainStepCount})` : `Extra Steps (${extraStepCount})`}
+    </button>
 );
 
 export const PlaygroundHeader = ({
