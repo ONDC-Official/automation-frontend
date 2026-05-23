@@ -25,7 +25,7 @@ export const checkFormCompletion: RequestHandler = async (req: Request, res: Res
 
     // Fetch session data via reverse-index (txn:session:{transaction_id} -> sessionId)
     // Non-fatal: a missing entry means the flow pre-dates this index or was never registered.
-    const sessionData: SessionCache | null = await getSessionByTransactionId(
+    const sessionData: any | null = await getSessionByTransactionId(
       transaction_id as string
     );
     if (sessionData) {

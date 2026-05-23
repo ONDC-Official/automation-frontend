@@ -369,18 +369,18 @@ export const getSessionByTransactionId = async (
 	transactionId: string,
 ): Promise<SessionCache | null> => {
 	try {
-		const sessionId = await RedisService.getKey(`txn:session:${transactionId}`);
-		logger.debug("Session id found for transaction", {
+		const sessionData = await RedisService.getKey(transactionId);
+		logger.debug("Session data fetched for transaction", {
 			transactionId,
-			sessionId,
+			found: !!sessionData,
 		});
-		if (!sessionId) {
-			logger.debug("No reverse-index entry found for transaction", {
+		if (!sessionData) {
+			logger.debug("No session data found for transaction", {
 				transactionId,
 			});
 			return null;
 		}
-		return await getSessionService(sessionId);
+		return JSON.parse(sessionData);
 	} catch (e: any) {
 		logger.error(
 			"Error fetching session by transactionId",
