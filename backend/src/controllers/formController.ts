@@ -11,13 +11,13 @@ import { SessionCache } from '../interfaces/newSessionData';
  */
 export const checkFormCompletion: RequestHandler = async (req: Request, res: Response) => {
   try {
-    const { transaction_id, form_id } = req.query;
+    const { transaction_id } = req.query;
 
-    logger.info('Form completion check', { transaction_id, form_id });
+    logger.info('Form completion check', { transaction_id });
 
-    if (!transaction_id || !form_id) {
+    if (!transaction_id) {
       res.status(400).json({
-        error: 'transaction_id and form_id are required',
+        error: 'transaction_id is required',
         completed: false
       });
       return;
@@ -28,10 +28,10 @@ export const checkFormCompletion: RequestHandler = async (req: Request, res: Res
     const sessionData: any | null = await getSessionByTransactionId(
       transaction_id as string
     );
+    const form_id = sessionData?.form_id;
     if (sessionData) {
       logger.info('Session data resolved for form completion check', {
         transaction_id,
-        form_id,
         domain: sessionData.domain,
         subscriberUrl: sessionData.subscriberUrl,
         npType: sessionData.npType,
@@ -39,8 +39,7 @@ export const checkFormCompletion: RequestHandler = async (req: Request, res: Res
       });
     } else {
       logger.warning('Could not resolve session for transaction_id', {
-        transaction_id,
-        form_id,
+        transaction_id
       });
     }
 
