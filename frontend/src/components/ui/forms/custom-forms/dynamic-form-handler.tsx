@@ -119,7 +119,6 @@ export default function DynamicFormHandler({
                 {
                     params: {
                         transaction_id: transactionId,
-                        form_id: formName,
                     },
                     timeout: 5000,
                 }
