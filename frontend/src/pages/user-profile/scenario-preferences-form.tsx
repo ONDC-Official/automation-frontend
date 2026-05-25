@@ -1,8 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
+import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import { LuPlus, LuX, LuTriangleAlert, LuPencil, LuTrash2 } from "react-icons/lu";
+import { LuPlus, LuX, LuTriangleAlert, LuPencil, LuTrash2, LuRocket } from "react-icons/lu";
 import { Modal } from "antd";
+
+import { ROUTES } from "@constants/routes";
 
 import { FormInput } from "@components/ui/forms/form-input";
 import FormSelect from "@components/ui/forms/form-select";
@@ -68,6 +71,8 @@ type Props = {
 };
 
 export default function ScenarioPreferencesForm({ externalOpenTrigger = 0 }: Props) {
+    const navigate = useNavigate();
+
     const {
         register: registerField,
         handleSubmit,
@@ -231,6 +236,10 @@ export default function ScenarioPreferencesForm({ externalOpenTrigger = 0 }: Pro
         }
     };
 
+    const handleLaunch = (configKey: string) => {
+        navigate(`${ROUTES.SCENARIO}?config=${encodeURIComponent(configKey)}`);
+    };
+
     const confirmDelete = (configKey: string) => {
         Modal.confirm({
             title: "Delete configuration",
@@ -270,32 +279,239 @@ export default function ScenarioPreferencesForm({ externalOpenTrigger = 0 }: Pro
                     <span className="text-gray-400 text-sm">Loading...</span>
                 </div>
             ) : (
-                <div className="max-w-2xl mx-auto space-y-6">
+                <div className="max-w-4xl mx-auto space-y-6">
+                    {/* Add / Edit form */}
+                    <div id="add-scenario-config-form" className="scroll-mt-24">
+                        {!isFormOpen ? (
+                            <button
+                                type="button"
+                                onClick={() => setIsFormOpen(true)}
+                                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-sky-700 bg-sky-50 hover:bg-sky-100 border border-sky-200 hover:border-sky-300 rounded-xl transition-all"
+                            >
+                                <LuPlus className="text-base" />
+                                Add a preference for scenario testing
+                            </button>
+                        ) : (
+                            <div className="bg-white rounded-xl border border-gray-200 p-5">
+                                <div className="flex items-center justify-between mb-4">
+                                    <p className="text-sm font-semibold text-gray-700">
+                                        {editingKey ? (
+                                            <>
+                                                Editing:{" "}
+                                                <span className="text-sky-600">{editingKey}</span>
+                                            </>
+                                        ) : (
+                                            "New Configuration"
+                                        )}
+                                    </p>
+                                    <button
+                                        type="button"
+                                        onClick={handleCancelEdit}
+                                        className="text-gray-400 hover:text-gray-600 transition-colors"
+                                        aria-label="Close form"
+                                    >
+                                        <LuX className="text-lg" />
+                                    </button>
+                                </div>
+                                <form onSubmit={handleSubmit(onSubmit)} className="space-y-1">
+                                    <FormInput
+                                        register={register}
+                                        errors={errors}
+                                        label="Config Name"
+                                        name="configName"
+                                        required={editingKey ? undefined : "Required"}
+                                        labelInfo=""
+                                        disabled={!!editingKey}
+                                        validations={
+                                            editingKey
+                                                ? {}
+                                                : {
+                                                      validate: (value: string) =>
+                                                          !savedPrefs[value.trim()] ||
+                                                          "A configuration with this name already exists, choose a different name",
+                                                  }
+                                        }
+                                    />
+                                    <FormInput
+                                        register={register}
+                                        errors={errors}
+                                        label="Subscriber URL"
+                                        name="subscriberUrl"
+                                        required="Required"
+                                        labelInfo=""
+                                        validations={{
+                                            pattern: {
+                                                value: /^https?:\/\/.*/i,
+                                                message: "URL must start with http:// or https://",
+                                            },
+                                        }}
+                                    />
+                                    <FormSelect
+                                        register={register}
+                                        errors={errors}
+                                        setValue={setValue}
+                                        name="domain"
+                                        label="Domain"
+                                        options={dynamicList.domain.map((d) => d.key)}
+                                        currentValue={dynamicValue.domain}
+                                        setSelectedValue={(val) => {
+                                            setDynamicValue((prev) => ({
+                                                ...prev,
+                                                domain: val,
+                                                version: "",
+                                                usecaseId: "",
+                                            }));
+                                            setValue("version", "");
+                                            setValue("usecaseId", "");
+                                            const match = allDomainsRef.current.find(
+                                                (d) => d.key === val
+                                            );
+                                            setDynamicList((prev) => ({
+                                                ...prev,
+                                                version:
+                                                    (match?.version as DomainVersionWithUsecase[]) ||
+                                                    [],
+                                                usecase: [],
+                                            }));
+                                        }}
+                                        nonSelectedValue
+                                        required
+                                    />
+                                    <FormSelect
+                                        register={register}
+                                        errors={errors}
+                                        setValue={setValue}
+                                        name="version"
+                                        label="Version"
+                                        options={dynamicList.version.map((v) => v.key)}
+                                        currentValue={dynamicValue.version}
+                                        setSelectedValue={(val) => {
+                                            setDynamicValue((prev) => ({
+                                                ...prev,
+                                                version: val,
+                                                usecaseId: "",
+                                            }));
+                                            setValue("usecaseId", "");
+                                            const versionMatch = dynamicList.version.find(
+                                                (v) => v.key === val
+                                            );
+                                            setDynamicList((prev) => ({
+                                                ...prev,
+                                                usecase: versionMatch?.usecase || [],
+                                            }));
+                                        }}
+                                        nonSelectedValue
+                                        required
+                                    />
+                                    <FormSelect
+                                        register={register}
+                                        errors={errors}
+                                        setValue={setValue}
+                                        name="usecaseId"
+                                        label="Use Case"
+                                        options={dynamicList.usecase}
+                                        currentValue={dynamicValue.usecaseId}
+                                        setSelectedValue={(val) =>
+                                            setDynamicValue((prev) => ({ ...prev, usecaseId: val }))
+                                        }
+                                        nonSelectedValue
+                                        required
+                                    />
+                                    <FormSelect
+                                        register={register}
+                                        errors={errors}
+                                        setValue={setValue}
+                                        name="npType"
+                                        label="App Type"
+                                        options={["BAP", "BPP"]}
+                                        currentValue={dynamicValue.npType}
+                                        setSelectedValue={(val) =>
+                                            setDynamicValue((prev) => ({ ...prev, npType: val }))
+                                        }
+                                        required
+                                    />
+                                    <div className="pt-3 flex items-center gap-3">
+                                        <LoadingButton
+                                            type="submit"
+                                            buttonText={
+                                                editingKey
+                                                    ? "Update Configuration"
+                                                    : "Save Configuration"
+                                            }
+                                            loadingText={editingKey ? "Updating..." : "Saving..."}
+                                            isLoading={isSaving}
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={handleCancelEdit}
+                                            className="text-sm text-gray-500 hover:text-gray-700"
+                                        >
+                                            Cancel
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        )}
+                    </div>
+
                     {/* Saved configs list */}
                     <div id="saved-configs" className="scroll-mt-24">
                         {Object.keys(savedPrefs).length > 0 && (
                             <div>
-                                <h3 className="text-sm font-semibold text-gray-700 mb-2">
+                                <h3 className="text-sm font-semibold text-gray-700 mb-3">
                                     Saved Configurations
                                 </h3>
-                                <div className="space-y-2">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     {Object.entries(savedPrefs).map(([key, config]) => (
                                         <div
                                             key={key}
-                                            className={`flex items-center justify-between px-4 py-3 bg-white rounded-lg border ${editingKey === key ? "border-sky-400" : "border-gray-200"}`}
+                                            className={`flex flex-col bg-white rounded-xl border shadow-sm hover:shadow-md transition-all ${
+                                                editingKey === key
+                                                    ? "border-sky-300 ring-2 ring-sky-100"
+                                                    : "border-gray-200"
+                                            }`}
                                         >
-                                            <div>
-                                                <p className="text-sm font-semibold text-gray-800">
-                                                    {key}
+                                            {/* Card body */}
+                                            <div className="px-4 pt-4 pb-3 flex-1">
+                                                {/* Name row + action icons */}
+                                                <div className="flex items-start justify-between gap-2">
+                                                    <p className="text-base font-bold text-gray-900 leading-tight break-all">
+                                                        {key}
+                                                    </p>
+                                                    <div className="flex items-center gap-1 shrink-0 ml-2">
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => handleEdit(key)}
+                                                            className="inline-flex items-center justify-center w-7 h-7 rounded-md text-gray-400 hover:text-sky-600 hover:bg-sky-50 transition-colors"
+                                                            aria-label="Edit configuration"
+                                                        >
+                                                            <LuPencil className="text-sm" />
+                                                        </button>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => confirmDelete(key)}
+                                                            className="inline-flex items-center justify-center w-7 h-7 rounded-md text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+                                                            aria-label="Delete configuration"
+                                                        >
+                                                            <LuTrash2 className="text-sm" />
+                                                        </button>
+                                                    </div>
+                                                </div>
+
+                                                {/* Subscriber URL */}
+                                                <p className="text-[11px] text-gray-400 font-mono mt-1 break-all leading-relaxed">
+                                                    {config.subscriberUrl}
                                                 </p>
-                                                <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
+
+                                                {/* Badge pills */}
+                                                <div className="flex flex-wrap gap-1.5 mt-3">
                                                     <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-indigo-50 text-indigo-700 border border-indigo-200">
                                                         {config.domain}
                                                     </span>
                                                     <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
                                                         {config.version}
                                                     </span>
-                                                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-amber-50 text-amber-700 border border-amber-200">
+                                                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-sky-50 text-sky-700 border border-sky-200">
                                                         {config.npType}
                                                     </span>
                                                     {config.usecaseId && (
@@ -303,29 +519,24 @@ export default function ScenarioPreferencesForm({ externalOpenTrigger = 0 }: Pro
                                                             {config.usecaseId}
                                                         </span>
                                                     )}
+                                                    {config.env && (
+                                                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-amber-50 text-amber-700 border border-amber-200">
+                                                            {config.env}
+                                                        </span>
+                                                    )}
                                                 </div>
-                                                <p className="text-xs text-gray-400 mt-1">
-                                                    {config.subscriberUrl}
-                                                </p>
                                             </div>
-                                            <div className="flex items-center gap-2 ml-6">
+
+                                            {/* Launch button footer */}
+                                            <div className="px-4 pb-4 pt-2 border-t border-gray-100">
                                                 <button
                                                     type="button"
-                                                    onClick={() => handleEdit(key)}
-                                                    className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-sky-600 hover:text-sky-700 hover:bg-sky-50 text-sm font-medium transition-colors"
-                                                    aria-label="Edit configuration"
+                                                    onClick={() => handleLaunch(key)}
+                                                    className="w-full flex items-center justify-center gap-2 py-2 rounded-lg bg-sky-600 hover:bg-sky-700 text-white text-sm font-semibold transition-colors shadow-sm"
+                                                    aria-label="Launch scenario testing"
                                                 >
-                                                    <LuPencil className="text-base" />
-                                                    Edit
-                                                </button>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => confirmDelete(key)}
-                                                    className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-red-500 hover:text-red-600 hover:bg-red-50 text-sm font-medium transition-colors"
-                                                    aria-label="Delete configuration"
-                                                >
-                                                    <LuTrash2 className="text-base" />
-                                                    Delete
+                                                    <LuRocket className="text-base" />
+                                                    Launch
                                                 </button>
                                             </div>
                                         </div>
@@ -334,178 +545,6 @@ export default function ScenarioPreferencesForm({ externalOpenTrigger = 0 }: Pro
                             </div>
                         )}
                     </div>
-
-                    {/* Add / Edit form */}
-                    {!isFormOpen ? (
-                        <button
-                            type="button"
-                            onClick={() => setIsFormOpen(true)}
-                            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-sky-700 bg-sky-50 hover:bg-sky-100 border border-sky-200 hover:border-sky-300 rounded-xl transition-all"
-                        >
-                            <LuPlus className="text-base" />
-                            Add a preference for scenario testing
-                        </button>
-                    ) : (
-                        <div className="bg-white rounded-xl border border-gray-200 p-5">
-                            <div className="flex items-center justify-between mb-4">
-                                <p className="text-sm font-semibold text-gray-700">
-                                    {editingKey ? (
-                                        <>
-                                            Editing:{" "}
-                                            <span className="text-sky-600">{editingKey}</span>
-                                        </>
-                                    ) : (
-                                        "New Configuration"
-                                    )}
-                                </p>
-                                <button
-                                    type="button"
-                                    onClick={handleCancelEdit}
-                                    className="text-gray-400 hover:text-gray-600 transition-colors"
-                                    aria-label="Close form"
-                                >
-                                    <LuX className="text-lg" />
-                                </button>
-                            </div>
-                            <form onSubmit={handleSubmit(onSubmit)} className="space-y-1">
-                                <FormInput
-                                    register={register}
-                                    errors={errors}
-                                    label="Config Name"
-                                    name="configName"
-                                    required={editingKey ? undefined : "Required"}
-                                    labelInfo=""
-                                    disabled={!!editingKey}
-                                    validations={
-                                        editingKey
-                                            ? {}
-                                            : {
-                                                  validate: (value: string) =>
-                                                      !savedPrefs[value.trim()] ||
-                                                      "A configuration with this name already exists, choose a different name",
-                                              }
-                                    }
-                                />
-                                <FormInput
-                                    register={register}
-                                    errors={errors}
-                                    label="Subscriber URL"
-                                    name="subscriberUrl"
-                                    required="Required"
-                                    labelInfo=""
-                                    validations={{
-                                        pattern: {
-                                            value: /^https?:\/\/.*/i,
-                                            message: "URL must start with http:// or https://",
-                                        },
-                                    }}
-                                />
-                                <FormSelect
-                                    register={register}
-                                    errors={errors}
-                                    setValue={setValue}
-                                    name="domain"
-                                    label="Domain"
-                                    options={dynamicList.domain.map((d) => d.key)}
-                                    currentValue={dynamicValue.domain}
-                                    setSelectedValue={(val) => {
-                                        setDynamicValue((prev) => ({
-                                            ...prev,
-                                            domain: val,
-                                            version: "",
-                                            usecaseId: "",
-                                        }));
-                                        setValue("version", "");
-                                        setValue("usecaseId", "");
-                                        const match = allDomainsRef.current.find(
-                                            (d) => d.key === val
-                                        );
-                                        setDynamicList((prev) => ({
-                                            ...prev,
-                                            version:
-                                                (match?.version as DomainVersionWithUsecase[]) ||
-                                                [],
-                                            usecase: [],
-                                        }));
-                                    }}
-                                    nonSelectedValue
-                                    required
-                                />
-                                <FormSelect
-                                    register={register}
-                                    errors={errors}
-                                    setValue={setValue}
-                                    name="version"
-                                    label="Version"
-                                    options={dynamicList.version.map((v) => v.key)}
-                                    currentValue={dynamicValue.version}
-                                    setSelectedValue={(val) => {
-                                        setDynamicValue((prev) => ({
-                                            ...prev,
-                                            version: val,
-                                            usecaseId: "",
-                                        }));
-                                        setValue("usecaseId", "");
-                                        const versionMatch = dynamicList.version.find(
-                                            (v) => v.key === val
-                                        );
-                                        setDynamicList((prev) => ({
-                                            ...prev,
-                                            usecase: versionMatch?.usecase || [],
-                                        }));
-                                    }}
-                                    nonSelectedValue
-                                    required
-                                />
-                                <FormSelect
-                                    register={register}
-                                    errors={errors}
-                                    setValue={setValue}
-                                    name="usecaseId"
-                                    label="Use Case"
-                                    options={dynamicList.usecase}
-                                    currentValue={dynamicValue.usecaseId}
-                                    setSelectedValue={(val) =>
-                                        setDynamicValue((prev) => ({ ...prev, usecaseId: val }))
-                                    }
-                                    nonSelectedValue
-                                    required
-                                />
-                                <FormSelect
-                                    register={register}
-                                    errors={errors}
-                                    setValue={setValue}
-                                    name="npType"
-                                    label="App Type"
-                                    options={["BAP", "BPP"]}
-                                    currentValue={dynamicValue.npType}
-                                    setSelectedValue={(val) =>
-                                        setDynamicValue((prev) => ({ ...prev, npType: val }))
-                                    }
-                                    required
-                                />
-                                <div className="pt-3 flex items-center gap-3">
-                                    <LoadingButton
-                                        type="submit"
-                                        buttonText={
-                                            editingKey
-                                                ? "Update Configuration"
-                                                : "Save Configuration"
-                                        }
-                                        loadingText={editingKey ? "Updating..." : "Saving..."}
-                                        isLoading={isSaving}
-                                    />
-                                    <button
-                                        type="button"
-                                        onClick={handleCancelEdit}
-                                        className="text-sm text-gray-500 hover:text-gray-700"
-                                    >
-                                        Cancel
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-                    )}
                 </div>
             )}
         </div>
