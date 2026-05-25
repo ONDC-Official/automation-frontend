@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { LuHistory } from "react-icons/lu";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import axios, { AxiosResponse, AxiosError } from "axios";
 import { toast } from "react-toastify";
 
@@ -95,6 +95,7 @@ export default function FlowContent() {
     });
     const { sessionId: contextSessionId } = useSession();
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
 
     const [existingSessions, setExistingSessions] = useState<PreviousSessionItem[]>([]);
     const [isInitializing, setIsInitializing] = useState(true);
@@ -204,13 +205,13 @@ export default function FlowContent() {
         }
     };
 
-    const fetchAndApplyPreferences = async () => {
+    const fetchAndApplyPreferences = async (): Promise<Record<string, ScenarioFormData>> => {
         try {
             const response = await apiClient.get<Record<string, SavedPrefAPI>>(
                 API_ROUTES.USER.SCENARIO_PREFERENCES
             );
             const raw = response.data;
-            if (!raw) return;
+            if (!raw) return {};
 
             const mapped: Record<string, ScenarioFormData> = {};
             Object.entries(raw).forEach(([key, val]) => {
@@ -224,9 +225,10 @@ export default function FlowContent() {
                 };
             });
             setSavedPreferences(mapped);
+            return mapped;
         } catch {
-            // Not logged in or no saved preferences — leave defaults
             console.warn("Could not fetch saved preferences, possibly not logged in");
+            return {};
         }
     };
 
@@ -235,9 +237,15 @@ export default function FlowContent() {
         if (storedSessions) {
             setExistingSessions(JSON.parse(storedSessions));
         }
-        Promise.all([fetchFormFieldData(), fetchAndApplyPreferences()]).finally(() =>
-            setIsInitializing(false)
-        );
+        Promise.all([fetchFormFieldData(), fetchAndApplyPreferences()])
+            .then(([, prefs]) => {
+                const configKey = searchParams.get("config");
+                if (configKey && prefs[configKey]) {
+                    setSelectedConfigKey(configKey);
+                    setSelectedUsecaseId(prefs[configKey].usecaseId || "");
+                }
+            })
+            .finally(() => setIsInitializing(false));
     }, []);
 
     function fetchSessionData(sessId: string) {
