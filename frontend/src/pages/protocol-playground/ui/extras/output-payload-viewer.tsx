@@ -3,7 +3,10 @@ import JsonView from "@uiw/react-json-view";
 import { toast } from "react-toastify";
 import Markdown from "react-markdown";
 import axios from "axios";
-import MockRunner, { MockPlaygroundConfigType } from "@ondc/automation-mock-runner";
+import MockRunner, {
+    ExecutionResult,
+    MockPlaygroundConfigType,
+} from "@ondc/automation-mock-runner";
 import { Editor } from "@monaco-editor/react";
 
 import { fetchFormFieldData } from "@utils/request-utils";
@@ -46,9 +49,7 @@ interface ValidateReqsModalProps {
     actionId: string | undefined;
     config: MockPlaygroundConfigType | undefined;
     onResult: (result: { valid: boolean; code: number; description: string }) => void;
-    setActiveTerminalData: React.Dispatch<
-        React.SetStateAction<import("@ondc/automation-mock-runner").ExecutionResult[]>
-    >;
+    setActiveTerminalData: React.Dispatch<React.SetStateAction<ExecutionResult[]>>;
 }
 
 function ValidateRequirementsModal({
@@ -97,6 +98,8 @@ function ValidateRequirementsModal({
         }
         if (!isOpen) {
             hasFetched.current = false;
+            setResult(null);
+            setJsonError(null);
         }
     }, [isOpen, fetchSession]);
 
@@ -376,7 +379,7 @@ export default function OutputPayloadViewer({
 
         let isDomainActive = false;
 
-        Object.entries(activeDomain).map((data: [string, Domain[]]) => {
+        Object.entries(activeDomain).forEach((data: [string, Domain[]]) => {
             const [_key, domains] = data;
 
             domains.forEach((domain: Domain) => {
