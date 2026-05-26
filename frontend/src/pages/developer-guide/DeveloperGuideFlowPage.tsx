@@ -254,9 +254,9 @@ const DeveloperGuideFlowPage: FC = () => {
     const isDocsEmpty = !docs || Object.keys(docs).length === 0;
 
     return (
-        <div className="relative bg-white min-h-screen flex flex-col">
+        <div className="relative bg-white min-h-screen flex flex-col top-4">
             {/* Header */}
-            <header className="sticky top-0 z-20 bg-white/90 backdrop-blur-md border-b border-gray-200">
+            <header className="sticky top-0 z-20 bg-white/90 backdrop-blur-md border-b border-gray-200 shadow-sm">
                 <div className="px-6 h-14 flex items-center justify-between gap-4">
                     <nav className="flex items-center gap-1.5 text-sm min-w-0">
                         <button
@@ -265,20 +265,33 @@ const DeveloperGuideFlowPage: FC = () => {
                             className="flex items-center gap-1.5 text-gray-500 hover:text-sky-600 transition-colors duration-150 group flex-shrink-0"
                         >
                             <FiArrowLeft
-                                size={13}
+                                size={15}
                                 className="group-hover:-translate-x-0.5 transition-transform duration-150"
                             />
-                            <span>Developer Guide</span>
+                            <span className="font-semibold text-gray-800 truncate">
+                                Developer Guide
+                            </span>
                         </button>
                         {usecaseLabel && (
                             <>
-                                <FiChevronRight size={13} className="text-gray-300 flex-shrink-0" />
-                                <span className="text-gray-400 truncate hidden sm:block">
+                                <FiChevronRight size={15} className="flex-shrink-0" />
+                                <span className="font-semibold text-gray-800 truncate">
                                     {domainKey}
                                 </span>
+                                {versionKey && (
+                                    <>
+                                        <FiChevronRight
+                                            size={15}
+                                            className="flex-shrink-0 hidden sm:block"
+                                        />
+                                        <span className="font-semibold text-gray-800 truncate">
+                                            v{versionKey}
+                                        </span>
+                                    </>
+                                )}
                                 <FiChevronRight
-                                    size={13}
-                                    className="text-gray-300 flex-shrink-0 hidden sm:block"
+                                    size={15}
+                                    className="flex-shrink-0 hidden sm:block"
                                 />
                                 <span className="font-semibold text-gray-800 truncate">
                                     {usecaseLabel}
@@ -286,15 +299,6 @@ const DeveloperGuideFlowPage: FC = () => {
                             </>
                         )}
                     </nav>
-                    {versionKey && (
-                        <span className="flex-shrink-0 inline-flex items-center px-2.5 py-1 rounded-full bg-sky-50 border border-sky-200 text-sky-700 text-xs font-mono font-semibold">
-                            v{versionKey}
-                        </span>
-                    )}
-                </div>
-
-                {/* Top Level Nav Tabs */}
-                <div className="px-6 pt-3 pb-2 bg-white shadow-sm flex items-center justify-end">
                     <SegmentedTabs<TopLevelView>
                         active={activeView}
                         onChange={handleViewChange}
