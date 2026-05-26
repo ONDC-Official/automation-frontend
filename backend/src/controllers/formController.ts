@@ -25,33 +25,17 @@ export const checkFormCompletion: RequestHandler = async (req: Request, res: Res
 
     // Fetch session data via reverse-index (txn:session:{transaction_id} -> sessionId)
     // Non-fatal: a missing entry means the flow pre-dates this index or was never registered.
-    const sessionData: any | null = await getSessionByTransactionId(
-      transaction_id as string
-    );
-    const form_id = sessionData?.form_id;
-    if (sessionData) {
-      logger.info('Session data resolved for form completion check', {
-        transaction_id,
-        domain: sessionData.domain,
-        subscriberUrl: sessionData.subscriberUrl,
-        npType: sessionData.npType,
-        sessionData,
-      });
-    } else {
-      logger.warning('Could not resolve session for transaction_id', {
-        transaction_id
-      });
-    }
+    
+   
 
     
-    const completionKey = `form_completed:${transaction_id}:${form_id}`;
+    const completionKey = `form_completed:${transaction_id}`;
     const completionData = await RedisService.getKey(completionKey);
 
     if (completionData) {
       const data = JSON.parse(completionData);
       logger.info('Form completion check: COMPLETED', {
         transaction_id,
-        form_id,
         timestamp: data.timestamp
       });
 
@@ -64,7 +48,7 @@ export const checkFormCompletion: RequestHandler = async (req: Request, res: Res
       return;
     }
 
-    logger.debug('Form completion check: PENDING', { transaction_id, form_id });
+    logger.debug('Form completion check: PENDING', { transaction_id });
     res.json({ completed: false });
 
   } catch (error: any) {
