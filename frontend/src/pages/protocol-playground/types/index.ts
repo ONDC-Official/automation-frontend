@@ -27,6 +27,7 @@ export const ONDC_ACTION_LIST = [
     "on_recon",
     "report",
     "on_report",
+    "catalog_rejection",
 ] as const;
 
 export const ONDC_FORM_LIST = ["dynamic_form", "html_form"];
