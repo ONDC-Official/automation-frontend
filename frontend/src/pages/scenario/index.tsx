@@ -236,10 +236,12 @@ export default function FlowContent() {
         const storedSessions = localStorage.getItem("flowTestingSessions");
         if (storedSessions) {
             const parsed = JSON.parse(storedSessions) as PreviousSessionItem[];
-            parsed.sort(
-                (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-            );
-            setExistingSessions(parsed);
+            const valid = parsed.filter((s) => Date.now() < new Date(s.expiresAt).getTime());
+            if (valid.length !== parsed.length) {
+                localStorage.setItem("flowTestingSessions", JSON.stringify(valid));
+            }
+            valid.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+            setExistingSessions(valid);
         }
         Promise.all([fetchFormFieldData(), fetchAndApplyPreferences()])
             .then(([, prefs]) => {
