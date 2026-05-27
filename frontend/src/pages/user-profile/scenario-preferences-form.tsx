@@ -283,14 +283,16 @@ export default function ScenarioPreferencesForm({ externalOpenTrigger = 0 }: Pro
                     {/* Add / Edit form */}
                     <div id="add-scenario-config-form" className="scroll-mt-24">
                         {!isFormOpen ? (
-                            <button
-                                type="button"
-                                onClick={() => setIsFormOpen(true)}
-                                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-sky-700 bg-sky-50 hover:bg-sky-100 border border-sky-200 hover:border-sky-300 rounded-xl transition-all"
-                            >
-                                <LuPlus className="text-base" />
-                                Add a preference for scenario testing
-                            </button>
+                            <div className="flex justify-center">
+                                <button
+                                    type="button"
+                                    onClick={() => setIsFormOpen(true)}
+                                    className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-sky-700 bg-sky-50 hover:bg-sky-100 border border-sky-200 hover:border-sky-300 rounded-xl transition-all"
+                                >
+                                    <LuPlus className="text-base" />
+                                    Add a preference for scenario testing
+                                </button>
+                            </div>
                         ) : (
                             <div className="bg-white rounded-xl border border-gray-200 p-5">
                                 <div className="flex items-center justify-between mb-4">
@@ -458,31 +460,33 @@ export default function ScenarioPreferencesForm({ externalOpenTrigger = 0 }: Pro
                     <div id="saved-configs" className="scroll-mt-24">
                         {Object.keys(savedPrefs).length > 0 && (
                             <div>
-                                <h3 className="text-sm font-semibold text-gray-700 mb-3">
+                                <h3 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-3">
                                     Saved Configurations
                                 </h3>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     {Object.entries(savedPrefs).map(([key, config]) => (
                                         <div
                                             key={key}
-                                            className={`flex flex-col bg-white rounded-xl border shadow-sm hover:shadow-md transition-all ${
+                                            className={`group flex flex-col bg-white rounded-lg border transition-all hover:shadow-md hover:border-gray-300 ${
                                                 editingKey === key
-                                                    ? "border-sky-300 ring-2 ring-sky-100"
+                                                    ? "border-sky-300 ring-1 ring-sky-100"
                                                     : "border-gray-200"
                                             }`}
                                         >
-                                            {/* Card body */}
-                                            <div className="px-4 pt-4 pb-3 flex-1">
+                                            <div className="px-5 py-4 flex-1">
                                                 {/* Name row + action icons */}
                                                 <div className="flex items-start justify-between gap-2">
-                                                    <p className="text-base font-bold text-gray-900 leading-tight break-all">
+                                                    <p
+                                                        className="text-base font-semibold text-gray-900 leading-snug break-all"
+                                                        title={key}
+                                                    >
                                                         {key}
                                                     </p>
-                                                    <div className="flex items-center gap-1 shrink-0 ml-2">
+                                                    <div className="flex items-center gap-1 shrink-0 -mt-0.5 -mr-1">
                                                         <button
                                                             type="button"
                                                             onClick={() => handleEdit(key)}
-                                                            className="inline-flex items-center justify-center w-7 h-7 rounded-md text-gray-400 hover:text-sky-600 hover:bg-sky-50 transition-colors"
+                                                            className="inline-flex items-center justify-center w-7 h-7 rounded text-sky-600 hover:text-sky-700 hover:bg-sky-50 transition-colors"
                                                             aria-label="Edit configuration"
                                                         >
                                                             <LuPencil className="text-sm" />
@@ -490,7 +494,7 @@ export default function ScenarioPreferencesForm({ externalOpenTrigger = 0 }: Pro
                                                         <button
                                                             type="button"
                                                             onClick={() => confirmDelete(key)}
-                                                            className="inline-flex items-center justify-center w-7 h-7 rounded-md text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+                                                            className="inline-flex items-center justify-center w-7 h-7 rounded text-red-500 hover:text-red-600 hover:bg-red-50 transition-colors"
                                                             aria-label="Delete configuration"
                                                         >
                                                             <LuTrash2 className="text-sm" />
@@ -499,28 +503,31 @@ export default function ScenarioPreferencesForm({ externalOpenTrigger = 0 }: Pro
                                                 </div>
 
                                                 {/* Subscriber URL */}
-                                                <p className="text-[11px] text-gray-400 font-mono mt-1 break-all leading-relaxed">
+                                                <p
+                                                    className="text-xs text-gray-400 font-mono mt-1.5 truncate"
+                                                    title={config.subscriberUrl}
+                                                >
                                                     {config.subscriberUrl}
                                                 </p>
 
                                                 {/* Badge pills */}
-                                                <div className="flex flex-wrap gap-1.5 mt-3">
-                                                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-indigo-50 text-indigo-700 border border-indigo-200">
+                                                <div className="flex flex-wrap gap-1.5 mt-3.5">
+                                                    <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-indigo-50 text-indigo-700">
                                                         {config.domain}
                                                     </span>
-                                                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                                    <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-emerald-50 text-emerald-700">
                                                         {config.version}
                                                     </span>
-                                                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-sky-50 text-sky-700 border border-sky-200">
+                                                    <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-sky-50 text-sky-700">
                                                         {config.npType}
                                                     </span>
                                                     {config.usecaseId && (
-                                                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-fuchsia-50 text-fuchsia-700 border border-fuchsia-200">
+                                                        <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-fuchsia-50 text-fuchsia-700">
                                                             {config.usecaseId}
                                                         </span>
                                                     )}
                                                     {config.env && (
-                                                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-amber-50 text-amber-700 border border-amber-200">
+                                                        <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-amber-50 text-amber-700">
                                                             {config.env}
                                                         </span>
                                                     )}
@@ -528,14 +535,14 @@ export default function ScenarioPreferencesForm({ externalOpenTrigger = 0 }: Pro
                                             </div>
 
                                             {/* Launch button footer */}
-                                            <div className="px-4 pb-4 pt-2 border-t border-gray-100">
+                                            <div className="px-5 pb-4 pt-1 flex justify-end">
                                                 <button
                                                     type="button"
                                                     onClick={() => handleLaunch(key)}
-                                                    className="w-full flex items-center justify-center gap-2 py-2 rounded-lg bg-sky-600 hover:bg-sky-700 text-white text-sm font-semibold transition-colors shadow-sm"
+                                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-sky-600 hover:bg-sky-700 text-white text-xs font-medium transition-colors"
                                                     aria-label="Launch scenario testing"
                                                 >
-                                                    <LuRocket className="text-base" />
+                                                    <LuRocket className="text-xs" />
                                                     Launch
                                                 </button>
                                             </div>
