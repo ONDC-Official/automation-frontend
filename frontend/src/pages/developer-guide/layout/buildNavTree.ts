@@ -6,7 +6,7 @@ import {
 } from "@utils/markdownToc";
 import type { BuildEntry, DocMeta } from "../types";
 import { groupBuildsByFamily, getDomainFamilyLabel, getDomainShortLabel } from "../domainGrouping";
-import { isDomainEnabled } from "../utils";
+import { isDomainEnabled, sortDocsByPreferredSequence } from "../utils";
 import gettingStartedContent from "../landing/getting-started.md?raw";
 import type { NavNode } from "./navTypes";
 import { DOCS_WITH_SIDEBAR_SECTIONS } from "./docsWithSidebarSections";
@@ -75,10 +75,16 @@ function buildGettingStartedNav(): NavNode {
             searchText: entry.text,
         }));
 
+    const defaultGettingStartedPath =
+        sectionLinks.length > 0
+            ? (sectionLinks[0] as Extract<NavNode, { type: "link" }>).path
+            : `${ROUTES.DEVELOPER_GUIDE_GETTING_STARTED}#1-pick-a-use-case`;
+
     return {
         id: "getting-started",
         label: "Getting Started",
         type: "group",
+        path: defaultGettingStartedPath,
         defaultOpen: true,
         children: sectionLinks,
     };
@@ -96,6 +102,7 @@ export function buildNavTree(
         if (aEnabled !== bEnabled) return aEnabled ? -1 : 1;
         return a.key.localeCompare(b.key);
     });
+    const sortedDocs = sortDocsByPreferredSequence(docs);
 
     function buildUseCaseNodes(dom: BuildEntry): NavNode[] {
         return (dom.version ?? [])
@@ -180,15 +187,15 @@ export function buildNavTree(
             path: ROUTES.DEVELOPER_GUIDE_GENERAL,
             defaultOpen: true,
             searchText: "general documentation auth tools guides reference",
-            children: [
-                {
+            children: (() => {
+                const authToolsNode: NavNode = {
                     id: "auth-tools",
                     label: "Auth Tools",
                     type: "link",
                     path: ROUTES.DEVELOPER_GUIDE_AUTH_TOOLS,
                     searchText: "auth authorization header blake ed25519",
-                },
-                ...docs.map((doc) => {
+                };
+                const docNodes = sortedDocs.map((doc) => {
                     const markdown = docMarkdownBySlug?.[doc.slug];
                     if (DOCS_WITH_SIDEBAR_SECTIONS.has(doc.slug) && markdown) {
                         return buildDocNavWithSections(doc, markdown);
@@ -200,8 +207,10 @@ export function buildNavTree(
                         path: getDeveloperGuideDocPath(doc.slug),
                         searchText: `${doc.label} ${doc.shortDescription} ${doc.slug}`,
                     };
-                }),
-            ],
+                });
+
+                return [...docNodes.slice(0, 2), authToolsNode, ...docNodes.slice(2)];
+            })(),
         },
     ];
 
