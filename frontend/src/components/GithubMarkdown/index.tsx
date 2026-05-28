@@ -105,12 +105,12 @@ const components: Components = {
         );
     },
     td({ children }) {
-        return (
-            <td className="px-4 py-2.5 text-slate-700 border-b border-slate-100">{children}</td>
-        );
+        return <td className="px-4 py-2.5 text-slate-700 border-b border-slate-100">{children}</td>;
     },
     tr({ children }) {
-        return <tr className="even:bg-slate-50 hover:bg-slate-100/60 transition-colors">{children}</tr>;
+        return (
+            <tr className="even:bg-slate-50 hover:bg-slate-100/60 transition-colors">{children}</tr>
+        );
     },
     blockquote({ children }) {
         return (
@@ -123,7 +123,7 @@ const components: Components = {
         return (
             <h1
                 id={id}
-                className="text-2xl font-bold text-slate-900 mt-8 mb-3 pb-2 border-b border-slate-200 scroll-mt-24"
+                className="text-2xl font-bold text-slate-900 my-4 pb-2 border-b border-slate-200 scroll-mt-24"
             >
                 {children}
             </h1>
@@ -148,10 +148,7 @@ const components: Components = {
     },
     h4({ children, id }) {
         return (
-            <h4
-                id={id}
-                className="text-sm font-semibold text-slate-700 mt-4 mb-1.5 scroll-mt-24"
-            >
+            <h4 id={id} className="text-sm font-semibold text-slate-700 mt-4 mb-1.5 scroll-mt-24">
                 {children}
             </h4>
         );
@@ -163,16 +160,14 @@ const components: Components = {
                 href={href}
                 target={isExternal ? "_blank" : undefined}
                 rel={isExternal ? "noopener noreferrer" : undefined}
-                className="text-sky-600 hover:text-sky-800 underline underline-offset-2 transition-colors"
+                className="text-sky-600 hover:text-sky-800 hover:underline underline-offset-2 transition-colors"
             >
                 {children}
             </a>
         );
     },
     ul({ children }) {
-        return (
-            <ul className="my-3 ml-5 space-y-1 list-disc marker:text-slate-400">{children}</ul>
-        );
+        return <ul className="my-3 ml-5 space-y-1 list-disc marker:text-slate-400">{children}</ul>;
     },
     ol({ children }) {
         return (

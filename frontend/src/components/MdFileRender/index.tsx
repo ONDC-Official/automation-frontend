@@ -40,7 +40,7 @@ const MdFileRender: FC<MdFileRenderProps> = ({
                     </div>
                 )}
                 {/* Content */}
-                <div className="flex-1 min-w-0 px-6 md:px-8 py-6">
+                <div className="flex-1 min-w-0 px-3 md:px-4 py-3">
                     <GithubMarkdown content={mdData} />
                 </div>
             </div>

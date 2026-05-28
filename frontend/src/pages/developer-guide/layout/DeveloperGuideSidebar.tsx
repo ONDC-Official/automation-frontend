@@ -1,6 +1,7 @@
 import { FC, useEffect, useMemo, useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
-import { FiChevronDown, FiChevronRight } from "react-icons/fi";
+import { FiChevronRight, FiMinus, FiPlus } from "react-icons/fi";
+import { ROUTES } from "@constants/routes";
 import { useDeveloperGuideShell } from "./DeveloperGuideShellContext";
 import type { NavNode } from "./navTypes";
 import { isNavGroup, isNavLink } from "./navTypes";
@@ -144,6 +145,13 @@ const NavLinkItem: FC<{ node: Extract<NavNode, { type: "link" }>; depth: number 
 
                     return (
                         <>
+                            <FiChevronRight
+                                size={13}
+                                className={`shrink-0 ${
+                                    isActive ? "text-sky-500" : "text-slate-400"
+                                }`}
+                                aria-hidden
+                            />
                             <span className="truncate flex-1 min-w-0">{node.label}</span>
                             {node.suffix && (
                                 <span
@@ -153,17 +161,6 @@ const NavLinkItem: FC<{ node: Extract<NavNode, { type: "link" }>; depth: number 
                                 >
                                     {node.suffix}
                                 </span>
-                            )}
-                            {node.showArrow && (
-                                <FiChevronRight
-                                    size={14}
-                                    className={`shrink-0 transition-colors ${
-                                        isActive
-                                            ? "text-sky-500"
-                                            : "text-slate-400 group-hover:text-sky-500"
-                                    }`}
-                                    aria-hidden
-                                />
                             )}
                         </>
                     );
@@ -179,11 +176,20 @@ const NavGroupItem: FC<{
     searchQuery: string;
 }> = ({ node, depth, searchQuery }) => {
     const location = useLocation();
+    const isDeveloperGuideLanding =
+        (location.pathname === ROUTES.DEVELOPER_GUIDE ||
+            location.pathname === `${ROUTES.DEVELOPER_GUIDE}/`) &&
+        !location.hash;
     const hasActiveChild = useMemo(
         () => nodeHasActiveDescendant(node, location.pathname, location.hash),
         [node, location.pathname, location.hash]
     );
-    const [open, setOpen] = useState(node.defaultOpen ?? (depth < 1 || hasActiveChild));
+    const [open, setOpen] = useState(() => {
+        if (isDeveloperGuideLanding && depth === 0) {
+            return false;
+        }
+        return node.defaultOpen ?? (depth < 1 || hasActiveChild);
+    });
 
     useEffect(() => {
         if (searchQuery.trim()) setOpen(true);
@@ -195,10 +201,19 @@ const NavGroupItem: FC<{
     const headerActive = linkHash
         ? location.pathname === linkPath && location.hash === linkHash
         : groupPathActive;
+    const headerRowActive = headerActive && !hasActiveChild;
 
     useEffect(() => {
-        if (hasActiveChild || headerActive) setOpen(true);
-    }, [hasActiveChild, headerActive]);
+        if (searchQuery.trim()) return;
+
+        // Keep only the active route branch expanded; collapse siblings.
+        if (isDeveloperGuideLanding && depth === 0) {
+            setOpen(false);
+            return;
+        }
+
+        setOpen(hasActiveChild || headerActive);
+    }, [hasActiveChild, headerActive, searchQuery, isDeveloperGuideLanding, depth, node.id]);
     const headerClass =
         depth === 0
             ? "text-[11px] uppercase tracking-[0.1em] font-semibold"
@@ -208,17 +223,23 @@ const NavGroupItem: FC<{
         <div className={depth === 0 ? "mb-1 first:mt-0 not-first:mt-4" : ""}>
             {node.path ? (
                 <div
-                    className="flex items-center gap-1 w-full py-2 pr-3 rounded-lg transition-colors"
+                    className={`flex items-center gap-1 w-full py-2 pr-3 rounded-lg transition-colors ${
+                        headerRowActive
+                            ? "bg-sky-50 shadow-[inset_0_0_0_1px_rgba(14,165,233,0.2)]"
+                            : ""
+                    }`}
                     style={{ paddingLeft }}
                 >
                     <button
                         type="button"
                         onClick={() => setOpen((prev) => !prev)}
-                        className="p-0.5 rounded hover:bg-white/80 text-slate-400 shrink-0"
+                        className={`p-0.5 rounded hover:bg-white/80 shrink-0 ${
+                            headerRowActive ? "text-sky-500" : "text-slate-400"
+                        }`}
                         aria-expanded={open}
                         aria-label={open ? "Collapse section" : "Expand section"}
                     >
-                        {open ? <FiChevronDown size={14} /> : <FiChevronRight size={14} />}
+                        {open ? <FiMinus size={14} /> : <FiPlus size={14} />}
                     </button>
                     <NavLink
                         to={node.path}
@@ -227,8 +248,8 @@ const NavGroupItem: FC<{
                             [
                                 "group/header truncate flex-1 min-w-0 text-left transition-colors rounded-md px-1 py-0.5 flex items-center gap-1",
                                 headerClass,
-                                headerActive && !hasActiveChild
-                                    ? "text-sky-700 bg-sky-50 shadow-[inset_0_0_0_1px_rgba(14,165,233,0.2)]"
+                                headerRowActive
+                                    ? "text-sky-700"
                                     : depth === 0
                                       ? "text-slate-500 hover:text-slate-700"
                                       : "text-slate-800 hover:bg-white/80",
@@ -251,9 +272,9 @@ const NavGroupItem: FC<{
                     style={{ paddingLeft }}
                 >
                     {open ? (
-                        <FiChevronDown size={14} className="text-slate-400 shrink-0" />
+                        <FiMinus size={14} className="text-slate-400 shrink-0" />
                     ) : (
-                        <FiChevronRight size={14} className="text-slate-400 shrink-0" />
+                        <FiPlus size={14} className="text-slate-400 shrink-0" />
                     )}
                     <span className="truncate">{node.label}</span>
                 </button>

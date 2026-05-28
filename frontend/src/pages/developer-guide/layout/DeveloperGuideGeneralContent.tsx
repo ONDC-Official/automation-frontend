@@ -4,10 +4,12 @@ import { FiFileText, FiKey, FiLayers } from "react-icons/fi";
 import { ROUTES, getDeveloperGuideDocPath } from "@constants/routes";
 import { useDeveloperGuideShell } from "./DeveloperGuideShellContext";
 import DeveloperGuideGuideCard from "./DeveloperGuideGuideCard";
+import { sortDocsByPreferredSequence } from "../utils";
 
 const DeveloperGuideGeneralContent: FC = () => {
     const navigate = useNavigate();
     const { docs } = useDeveloperGuideShell();
+    const sortedDocs = sortDocsByPreferredSequence(docs);
 
     return (
         <div className="min-h-full">
@@ -29,6 +31,19 @@ const DeveloperGuideGeneralContent: FC = () => {
 
             <div className="px-6 md:px-10 py-10 md:py-12">
                 <div className="grid gap-5 md:gap-6 grid-cols-[repeat(auto-fit,minmax(min(100%,260px),1fr))] items-stretch">
+                    {sortedDocs.slice(0, 2).map((doc) => (
+                        <DeveloperGuideGuideCard
+                            key={doc.slug}
+                            title={doc.label}
+                            subtitle="Documentation"
+                            description={
+                                doc.shortDescription ||
+                                "Read the guide for concepts, conventions, and integration details."
+                            }
+                            icon={<FiFileText size={20} className="text-sky-600" />}
+                            onClick={() => navigate(getDeveloperGuideDocPath(doc.slug))}
+                        />
+                    ))}
                     <DeveloperGuideGuideCard
                         title="Auth Tools"
                         subtitle="Authorization"
@@ -36,7 +51,7 @@ const DeveloperGuideGeneralContent: FC = () => {
                         icon={<FiKey size={20} className="text-sky-600" />}
                         onClick={() => navigate(ROUTES.DEVELOPER_GUIDE_AUTH_TOOLS)}
                     />
-                    {docs.map((doc) => (
+                    {sortedDocs.slice(2).map((doc) => (
                         <DeveloperGuideGuideCard
                             key={doc.slug}
                             title={doc.label}
