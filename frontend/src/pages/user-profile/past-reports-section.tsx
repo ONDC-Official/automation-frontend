@@ -1,11 +1,11 @@
-import React, { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import {
     LuFileText,
     LuExternalLink,
     LuLoader,
-    LuCheckCircle2,
-    LuXCircle,
-    LuClock,
+    LuCircleCheck,
+    LuCircleX,
+    LuClock3,
 } from "react-icons/lu";
 import { toast } from "react-toastify";
 
@@ -77,9 +77,9 @@ function FlowSummaryGrid({ summary }: { summary: FlowSummary }) {
                 {/* Category label */}
                 <div className="flex items-center gap-2 min-w-0">
                     {allDone ? (
-                        <LuCheckCircle2 className="text-emerald-500 shrink-0" size={14} />
+                        <LuCircleCheck className="text-emerald-500 shrink-0" size={14} />
                     ) : (
-                        <LuClock className="text-amber-500 shrink-0" size={14} />
+                        <LuClock3 className="text-amber-500 shrink-0" size={14} />
                     )}
                     <span className="text-xs font-semibold text-gray-600 uppercase tracking-wide">
                         {label}
@@ -258,12 +258,12 @@ export default function PastReportsSection() {
                                                     {hasStats ? (
                                                         <>
                                                             {allPassed ? (
-                                                                <LuCheckCircle2
+                                                                <LuCircleCheck
                                                                     size={11}
                                                                     className="text-emerald-500 shrink-0"
                                                                 />
                                                             ) : (
-                                                                <LuXCircle
+                                                                <LuCircleX
                                                                     size={11}
                                                                     className="text-amber-500 shrink-0"
                                                                 />
