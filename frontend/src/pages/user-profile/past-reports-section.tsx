@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { LuFileText, LuExternalLink, LuLoader } from "react-icons/lu";
 import { toast } from "react-toastify";
 
@@ -155,46 +155,44 @@ export default function PastReportsSection() {
                                     </button>
                                 </div>
 
-                                {/* Flow summary badges */}
+                                {/* Flow summary — pill cards matching design */}
                                 {report.flow_summary &&
-                                    Object.keys(report.flow_summary).length > 0 && (
-                                        <div className="flex flex-wrap gap-1.5 mt-1">
-                                            {(
-                                                Object.entries(report.flow_summary) as [
-                                                    string,
-                                                    FlowCategorySummary,
-                                                ][]
-                                            ).map(([category, stats]) => {
-                                                const allDone = stats.completed === stats.total;
-                                                const tagColors: Record<string, string> = {
-                                                    REPORTABLE: allDone
-                                                        ? "bg-blue-50 text-blue-700 border-blue-200"
-                                                        : "bg-blue-50 text-blue-500 border-blue-100",
-                                                    MANDATORY: allDone
-                                                        ? "bg-green-50 text-green-700 border-green-200"
-                                                        : "bg-red-50 text-red-600 border-red-200",
-                                                    OPTIONAL: allDone
-                                                        ? "bg-purple-50 text-purple-700 border-purple-200"
-                                                        : "bg-gray-50 text-gray-500 border-gray-200",
-                                                };
-                                                const colorClass =
-                                                    tagColors[category] ??
-                                                    "bg-gray-50 text-gray-600 border-gray-200";
-                                                return (
-                                                    <span
-                                                        key={category}
-                                                        className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold border ${colorClass}`}
-                                                        title={`${category}: ${stats.completed} of ${stats.total} completed`}
-                                                    >
-                                                        {category}
-                                                        <span className="font-mono">
-                                                            {stats.completed}/{stats.total}
-                                                        </span>
-                                                    </span>
-                                                );
-                                            })}
-                                        </div>
-                                    )}
+                                    (() => {
+                                        const SHOW_CATEGORIES = ["MANDATORY", "OPTIONAL"] as const;
+                                        const pills: React.ReactNode[] = [];
+
+                                        for (const cat of SHOW_CATEGORIES) {
+                                            const stats = report.flow_summary[cat];
+                                            if (!stats) continue;
+                                            const label =
+                                                cat.charAt(0) + cat.slice(1).toLowerCase();
+                                            const remaining = stats.total - stats.completed;
+                                            pills.push(
+                                                <span
+                                                    key={`${cat}-completed`}
+                                                    className="inline-flex items-center px-3 py-1 rounded-md text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200"
+                                                >
+                                                    Completed {label.toLowerCase()} flows:&nbsp;
+                                                    <strong>
+                                                        {stats.completed} out of {stats.total}
+                                                    </strong>
+                                                </span>,
+                                                <span
+                                                    key={`${cat}-remaining`}
+                                                    className="inline-flex items-center px-3 py-1 rounded-md text-xs font-medium bg-slate-50 text-slate-600 border border-slate-200"
+                                                >
+                                                    Remaining {label.toLowerCase()} flows:&nbsp;
+                                                    <strong>
+                                                        {remaining} out of {stats.total}
+                                                    </strong>
+                                                </span>
+                                            );
+                                        }
+
+                                        return pills.length > 0 ? (
+                                            <div className="flex flex-wrap gap-2 mt-1">{pills}</div>
+                                        ) : null;
+                                    })()}
                             </div>
                         );
                     })}
