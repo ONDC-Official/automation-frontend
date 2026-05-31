@@ -12,6 +12,11 @@ import { UserContext } from "@context/userContext";
 
 type ReportRequestBody = Record<string, string[]>;
 
+type FlowCategorySummary = { total: number; completed: number };
+type FlowSummary = Record<string, FlowCategorySummary>;
+
+const TRACKED_TAGS = ["REPORTABLE", "MANDATORY", "OPTIONAL"] as const;
+
 interface ReportResponseData {
     data?: {
         html?: string;
@@ -78,15 +83,34 @@ const GenerateReportModal = ({
                 });
             }
 
+            // Compute flow_summary across all tracked tag categories
+            const flow_summary: FlowSummary = {};
+            for (const tag of TRACKED_TAGS) {
+                const flowsWithTag = flows.filter((f) => f.tags?.includes(tag));
+                if (flowsWithTag.length === 0) continue;
+                const completedWithTag = flowsWithTag.filter(
+                    (f) =>
+                        f.id in cacheSessionData.flowMap && cacheSessionData.flowMap[f.id] !== null
+                );
+                flow_summary[tag] = {
+                    total: flowsWithTag.length,
+                    completed: completedWithTag.length,
+                };
+            }
+
             const params: Record<string, string> = { sessionId };
             if (userDetails?.username) {
                 params.user_id = userDetails.username;
             }
 
             axios
-                .post(`${import.meta.env.VITE_BACKEND_URL}/flow/report`, body, {
-                    params,
-                })
+                .post(
+                    `${import.meta.env.VITE_BACKEND_URL}/flow/report`,
+                    { ...body, flow_summary },
+                    {
+                        params,
+                    }
+                )
                 .then((response: ReportResponse) => {
                     setLoading(false);
 

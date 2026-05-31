@@ -8,10 +8,23 @@ import { API_ROUTES } from "@services/apiRoutes";
 import { getReport } from "@utils/request-utils";
 import { openReportInNewTab } from "@utils/generic-utils";
 
+type FlowCategorySummary = {
+    total: number;
+    completed: number;
+};
+
+type FlowSummary = {
+    REPORTABLE?: FlowCategorySummary;
+    MANDATORY?: FlowCategorySummary;
+    OPTIONAL?: FlowCategorySummary;
+    [key: string]: FlowCategorySummary | undefined;
+};
+
 type PastReport = {
     test_id: string;
     total_tests?: number;
     passed_tests?: number;
+    flow_summary?: FlowSummary;
     createdAt: string;
     updatedAt: string;
 };
@@ -91,53 +104,97 @@ export default function PastReportsSection() {
                         return (
                             <div
                                 key={report.test_id}
-                                className="flex items-center justify-between px-4 py-3 bg-white rounded-lg border border-gray-200"
+                                className="flex flex-col gap-2 px-4 py-3 bg-white rounded-lg border border-gray-200"
                             >
-                                <div className="flex items-center gap-3 min-w-0">
-                                    <LuFileText className="text-gray-400 text-lg shrink-0" />
-                                    <div className="min-w-0">
-                                        <p
-                                            className="text-sm font-mono text-gray-700 truncate"
-                                            title={report.test_id}
-                                        >
-                                            {truncateId(report.test_id)}
-                                        </p>
-                                        <p className="text-xs text-gray-400 mt-0.5">
-                                            {hasStats ? (
-                                                <span
-                                                    className={
-                                                        allPassed
-                                                            ? "text-green-600"
-                                                            : "text-amber-500"
-                                                    }
-                                                >
-                                                    {report.passed_tests}/{report.total_tests}{" "}
-                                                    passed
-                                                </span>
-                                            ) : (
-                                                <span className="text-gray-400 italic">
-                                                    No stats available
-                                                </span>
-                                            )}
-                                            <span className="mx-1.5">·</span>
-                                            Updated {updatedDate}
-                                        </p>
+                                {/* Top row: icon + id + view button */}
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-3 min-w-0">
+                                        <LuFileText className="text-gray-400 text-lg shrink-0" />
+                                        <div className="min-w-0">
+                                            <p
+                                                className="text-sm font-mono text-gray-700 truncate"
+                                                title={report.test_id}
+                                            >
+                                                {truncateId(report.test_id)}
+                                            </p>
+                                            <p className="text-xs text-gray-400 mt-0.5">
+                                                {hasStats ? (
+                                                    <span
+                                                        className={
+                                                            allPassed
+                                                                ? "text-green-600"
+                                                                : "text-amber-500"
+                                                        }
+                                                    >
+                                                        {report.passed_tests}/{report.total_tests}{" "}
+                                                        passed
+                                                    </span>
+                                                ) : (
+                                                    <span className="text-gray-400 italic">
+                                                        No stats available
+                                                    </span>
+                                                )}
+                                                <span className="mx-1.5">·</span>
+                                                Updated {updatedDate}
+                                            </p>
+                                        </div>
                                     </div>
+
+                                    <button
+                                        type="button"
+                                        disabled={viewingId === report.test_id}
+                                        className="flex items-center gap-1 text-sky-500 hover:text-sky-700 text-sm font-medium disabled:opacity-50 ml-4 shrink-0"
+                                        onClick={() => handleViewReport(report.test_id)}
+                                    >
+                                        {viewingId === report.test_id ? (
+                                            <LuLoader className="text-base animate-spin" />
+                                        ) : (
+                                            <LuExternalLink className="text-base" />
+                                        )}
+                                        View
+                                    </button>
                                 </div>
 
-                                <button
-                                    type="button"
-                                    disabled={viewingId === report.test_id}
-                                    className="flex items-center gap-1 text-sky-500 hover:text-sky-700 text-sm font-medium disabled:opacity-50 ml-4 shrink-0"
-                                    onClick={() => handleViewReport(report.test_id)}
-                                >
-                                    {viewingId === report.test_id ? (
-                                        <LuLoader className="text-base animate-spin" />
-                                    ) : (
-                                        <LuExternalLink className="text-base" />
+                                {/* Flow summary badges */}
+                                {report.flow_summary &&
+                                    Object.keys(report.flow_summary).length > 0 && (
+                                        <div className="flex flex-wrap gap-1.5 mt-1">
+                                            {(
+                                                Object.entries(report.flow_summary) as [
+                                                    string,
+                                                    FlowCategorySummary,
+                                                ][]
+                                            ).map(([category, stats]) => {
+                                                const allDone = stats.completed === stats.total;
+                                                const tagColors: Record<string, string> = {
+                                                    REPORTABLE: allDone
+                                                        ? "bg-blue-50 text-blue-700 border-blue-200"
+                                                        : "bg-blue-50 text-blue-500 border-blue-100",
+                                                    MANDATORY: allDone
+                                                        ? "bg-green-50 text-green-700 border-green-200"
+                                                        : "bg-red-50 text-red-600 border-red-200",
+                                                    OPTIONAL: allDone
+                                                        ? "bg-purple-50 text-purple-700 border-purple-200"
+                                                        : "bg-gray-50 text-gray-500 border-gray-200",
+                                                };
+                                                const colorClass =
+                                                    tagColors[category] ??
+                                                    "bg-gray-50 text-gray-600 border-gray-200";
+                                                return (
+                                                    <span
+                                                        key={category}
+                                                        className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold border ${colorClass}`}
+                                                        title={`${category}: ${stats.completed} of ${stats.total} completed`}
+                                                    >
+                                                        {category}
+                                                        <span className="font-mono">
+                                                            {stats.completed}/{stats.total}
+                                                        </span>
+                                                    </span>
+                                                );
+                                            })}
+                                        </div>
                                     )}
-                                    View
-                                </button>
                             </div>
                         );
                     })}

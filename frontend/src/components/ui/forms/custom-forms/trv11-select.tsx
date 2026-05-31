@@ -28,14 +28,6 @@ type CatalogFulfillment = { id: string; type?: string };
 type CatalogProvider = { id: string; fulfillments?: CatalogFulfillment[]; items?: CatalogItem[] };
 type OnSearchPayload = { message?: { catalog?: { providers?: CatalogProvider[] } } };
 
-// [
-//   {
-//       "itemId": "I1",
-//       "count": 1,
-//       "addOns": []
-//   }
-// ]
-
 export default function TRV11Select({
     submitEvent,
 }: {
