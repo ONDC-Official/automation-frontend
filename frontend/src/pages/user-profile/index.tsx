@@ -1,6 +1,13 @@
 import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { LuExternalLink, LuUser, LuSettings, LuBookmark, LuFileText } from "react-icons/lu";
+import {
+    LuExternalLink,
+    LuUser,
+    LuSettings,
+    LuBookmark,
+    LuFileText,
+    LuHistory,
+} from "react-icons/lu";
 
 import { UserContext } from "@context/userContext";
 import JsonDataForm from "@components/registry-components/subscriber-form";
@@ -24,17 +31,20 @@ const UserProfile = () => {
             label: "Redirect to Registry",
             id: null as string | null,
             href: registryUrl,
+            route: null as string | null,
             icon: LuExternalLink,
         },
-        { label: "Profile Section", id: "profile-section", href: null, icon: LuUser },
+        { label: "Profile Section", id: "profile-section", href: null, route: null, icon: LuUser },
         {
             label: "Add Scenario Testing Config",
             id: "add-scenario-config",
             href: null,
+            route: null,
             icon: LuSettings,
         },
-        { label: "Saved Configs", id: "saved-configs", href: null, icon: LuBookmark },
-        { label: "Past Reports", id: "past-reports", href: null, icon: LuFileText },
+        { label: "Saved Configs", id: "saved-configs", href: null, route: null, icon: LuBookmark },
+        { label: "Past Reports", id: "past-reports", href: null, route: null, icon: LuFileText },
+        { label: "History", id: null, href: null, route: ROUTES.HISTORY, icon: LuHistory },
     ];
 
     useEffect(() => {
@@ -104,6 +114,16 @@ const UserProfile = () => {
                                     </span>
                                     <LuExternalLink className="text-sm text-emerald-500 group-hover:text-emerald-700 transition-colors" />
                                 </a>
+                            ) : item.route ? (
+                                <button
+                                    key={item.label}
+                                    type="button"
+                                    className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-sky-600 hover:text-sky-800 hover:bg-sky-50 hover:border-sky-200 border border-transparent transition-all group text-left"
+                                    onClick={() => navigate(item.route!)}
+                                >
+                                    <item.icon className="text-lg text-sky-400 group-hover:text-sky-600 shrink-0 transition-colors" />
+                                    {item.label}
+                                </button>
                             ) : (
                                 <button
                                     key={item.label}
