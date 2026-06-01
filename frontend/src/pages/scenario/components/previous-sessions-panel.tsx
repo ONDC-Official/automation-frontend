@@ -5,6 +5,7 @@ export type PreviousSessionItem = {
     subscriberUrl: string;
     role: string;
     timestamp: string;
+    expiresAt: string;
 };
 
 type PreviousSessionsPanelProps = {

@@ -1,17 +1,16 @@
-import { useCallback, useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-    LuLogOut,
     LuExternalLink,
     LuUser,
     LuSettings,
     LuBookmark,
     LuFileText,
+    LuHistory,
 } from "react-icons/lu";
 
 import { UserContext } from "@context/userContext";
 import JsonDataForm from "@components/registry-components/subscriber-form";
-import { AuthService } from "@services/authService";
 import { authTokenManager } from "@utils/localStorageManager";
 import ScenarioPreferencesForm from "./scenario-preferences-form";
 import PastReportsSection from "./past-reports-section";
@@ -32,17 +31,20 @@ const UserProfile = () => {
             label: "Redirect to Registry",
             id: null as string | null,
             href: registryUrl,
+            route: null as string | null,
             icon: LuExternalLink,
         },
-        { label: "Profile Section", id: "profile-section", href: null, icon: LuUser },
+        { label: "Profile Section", id: "profile-section", href: null, route: null, icon: LuUser },
         {
             label: "Add Scenario Testing Config",
             id: "add-scenario-config",
             href: null,
+            route: null,
             icon: LuSettings,
         },
-        { label: "Saved Configs", id: "saved-configs", href: null, icon: LuBookmark },
-        { label: "Past Reports", id: "past-reports", href: null, icon: LuFileText },
+        { label: "Saved Configs", id: "saved-configs", href: null, route: null, icon: LuBookmark },
+        { label: "Past Reports", id: "past-reports", href: null, route: null, icon: LuFileText },
+        { label: "History", id: null, href: null, route: ROUTES.HISTORY, icon: LuHistory },
     ];
 
     useEffect(() => {
@@ -54,21 +56,6 @@ const UserProfile = () => {
             navigate(ROUTES.HOME);
         }
     }, [navigate, userDetails]);
-
-    const handleLogout = useCallback(async () => {
-        try {
-            await AuthService.logout();
-        } catch (error) {
-            console.error("Logout failed:", error);
-        } finally {
-            try {
-                await refreshUser();
-            } catch (refreshError) {
-                console.error("Failed to refresh user after logout:", refreshError);
-            }
-            navigate(ROUTES.HOME);
-        }
-    }, [navigate, refreshUser]);
 
     const scrollTo = (id: string) => {
         if (id === "add-scenario-config") {
@@ -106,7 +93,7 @@ const UserProfile = () => {
                             </p>
                         )}
                         <p className="text-xs font-semibold text-sky-200 uppercase tracking-widest mt-3">
-                            Navigation
+                            Account
                         </p>
                     </div>
 
@@ -127,6 +114,16 @@ const UserProfile = () => {
                                     </span>
                                     <LuExternalLink className="text-sm text-emerald-500 group-hover:text-emerald-700 transition-colors" />
                                 </a>
+                            ) : item.route ? (
+                                <button
+                                    key={item.label}
+                                    type="button"
+                                    className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-sky-600 hover:text-sky-800 hover:bg-sky-50 hover:border-sky-200 border border-transparent transition-all group text-left"
+                                    onClick={() => navigate(item.route!)}
+                                >
+                                    <item.icon className="text-lg text-sky-400 group-hover:text-sky-600 shrink-0 transition-colors" />
+                                    {item.label}
+                                </button>
                             ) : (
                                 <button
                                     key={item.label}
@@ -156,29 +153,14 @@ const UserProfile = () => {
                 >
                     <h1 className="text-3xl font-bold text-gray-900 mb-4 mt-4">User Profile</h1>
                     <div className="max-w-4xl mx-auto p-6 bg-white rounded-xl">
-                        <div className="flex items-center gap-6">
-                            {/* User info */}
-                            <div className="flex-1 text-left text-gray-700 space-y-1">
-                                <p>
-                                    <strong>Login:</strong> {userDetails?.username || "N/A"}
-                                </p>
-                                <p>
-                                    <strong>Participant ID:</strong>{" "}
-                                    {userDetails?.participantId || "N/A"}
-                                </p>
-                            </div>
-
-                            {/* Logout */}
-                            <div className="shrink-0">
-                                <button
-                                    type="button"
-                                    className="px-4 py-2 bg-sky-600 text-white rounded hover:bg-sky-800 flex items-center gap-2"
-                                    onClick={handleLogout}
-                                >
-                                    <LuLogOut className="text-lg" />
-                                    <strong>Logout</strong>
-                                </button>
-                            </div>
+                        <div className="text-left text-gray-700 space-y-1">
+                            <p>
+                                <strong>Login:</strong> {userDetails?.username || "N/A"}
+                            </p>
+                            <p>
+                                <strong>Participant ID:</strong>{" "}
+                                {userDetails?.participantId || "N/A"}
+                            </p>
                         </div>
                     </div>
                 </div>

@@ -1,5 +1,5 @@
 import MockRunner from "@ondc/automation-mock-runner";
-import type { FlowStep, BuildEntry } from "./types";
+import type { FlowStep, BuildEntry, DocMeta } from "./types";
 
 /**
  * Decode a base64-encoded string (e.g. mock.generate / mock.validate /
@@ -38,8 +38,8 @@ export function getUsecaseLabelFromBuilds(
 ): string | null {
     const domain = builds.find((d) => d.key === domainKey);
     if (!domain?.version) return null;
-    // Normalize slug for comparison: treat hyphens and underscores as equivalent
-    const normalizeSlug = (s: string) => s.toLowerCase().replace(/[-_]+/g, "-");
+    // Normalize slug for comparison: spaces, hyphens, and underscores are equivalent
+    const normalizeSlug = (s: string) => s.toLowerCase().replace(/[\s_-]+/g, "-");
     const normalizedSlug = normalizeSlug(slug);
     for (const ver of domain.version) {
         if (ver.key !== versionKey) continue;
@@ -54,4 +54,37 @@ export function getUsecaseLabelFromBuilds(
 /** A domain is enabled if it has at least one version with use cases. */
 export function isDomainEnabled(domain: BuildEntry): boolean {
     return domain.version.some((v) => v.usecase.length > 0);
+}
+
+const PRIORITY_DOC_ORDER = ["about ondc", "registry gateway", "network observability", "faqs"];
+
+function normalizeDocKey(value: string): string {
+    return value
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, " ")
+        .trim();
+}
+
+function getPriorityDocIndex(doc: DocMeta): number {
+    const labelKey = normalizeDocKey(doc.label);
+    const slugKey = normalizeDocKey(doc.slug);
+    return PRIORITY_DOC_ORDER.findIndex(
+        (key) =>
+            labelKey === key || labelKey.includes(key) || slugKey === key || slugKey.includes(key)
+    );
+}
+
+export function sortDocsByPreferredSequence(docs: DocMeta[]): DocMeta[] {
+    return [...docs].sort((a, b) => {
+        const aPriority = getPriorityDocIndex(a);
+        const bPriority = getPriorityDocIndex(b);
+
+        if (aPriority !== -1 || bPriority !== -1) {
+            if (aPriority === -1) return 1;
+            if (bPriority === -1) return -1;
+            return aPriority - bPriority;
+        }
+
+        return a.label.localeCompare(b.label);
+    });
 }

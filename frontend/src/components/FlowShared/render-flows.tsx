@@ -787,18 +787,24 @@ function updateLocalStorageSession(sessionData: SessionCache, sessionId: string)
     if (sessionData.usecaseId === "PLAYGROUND-FLOW") {
         return;
     }
+    const now = new Date();
     const data = {
         sessionId: sessionId,
         subscriberUrl: sessionData.subscriberUrl,
         role: sessionData.npType,
-        timestamp: new Date().toISOString(),
+        timestamp: now.toISOString(),
+        expiresAt: new Date(now.getTime() + 24 * 60 * 60 * 1000).toISOString(),
     };
     const currentData = JSON.parse(localStorage.getItem("flowTestingSessions") || "[]");
     const existingIndex = currentData.findIndex(
         (item: { sessionId: string }) => item.sessionId === sessionId
     );
     if (existingIndex !== -1) {
-        currentData[existingIndex] = data;
+        currentData[existingIndex] = {
+            ...data,
+            timestamp: currentData[existingIndex].timestamp,
+            expiresAt: currentData[existingIndex].expiresAt,
+        };
     } else {
         currentData.push(data);
     }
