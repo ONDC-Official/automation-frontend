@@ -9,16 +9,22 @@ import {
     FaPencilAlt,
     FaEdit,
     FaGithub,
+    FaRegEye,
 } from "react-icons/fa";
 import { GrRedo } from "react-icons/gr";
 import { IoMdSkipForward, IoMdTrash } from "react-icons/io";
-import { TbAutomaticGearboxFilled, TbDatabaseExport } from "react-icons/tb";
+import { TbAutomaticGearboxFilled, TbDatabaseExport, TbRepeat } from "react-icons/tb";
 import { MdFullscreen, MdFullscreenExit } from "react-icons/md";
+import { StepGroup } from "@pages/protocol-playground/utils/step-group";
 
 interface PlaygroundHeaderProps {
     domain?: string;
     version?: string;
     flowId?: string;
+    stepGroup: StepGroup;
+    onStepGroupChange: (group: StepGroup) => void;
+    mainStepCount: number;
+    extraStepCount: number;
     onExport: () => void;
     onExportForDeployment: () => void;
     onImport: () => void;
@@ -26,10 +32,12 @@ interface PlaygroundHeaderProps {
     onClear: () => void;
     onRun: () => void;
     onRunCurrent: () => void;
+    onRetrigger: () => void;
     onCreateFlowSession: () => void;
     onBack: () => void;
     onHelp: () => void;
     onEditMeta: () => void;
+    onViewTrace: () => void;
     onEditRaw: () => void;
     isFullscreen?: boolean;
     onToggleFullscreen?: () => void;
@@ -138,10 +146,35 @@ const FileMenu = ({
     );
 };
 
+const StepGroupSelector = ({
+    stepGroup,
+    onStepGroupChange,
+    mainStepCount,
+    extraStepCount,
+}: {
+    stepGroup: StepGroup;
+    onStepGroupChange: (group: StepGroup) => void;
+    mainStepCount: number;
+    extraStepCount: number;
+}) => (
+    <button
+        type="button"
+        onClick={() => onStepGroupChange(stepGroup === "main" ? "extra" : "main")}
+        title="Click to switch step group"
+        className="px-2.5 py-1.5 rounded-md text-sm font-medium text-sky-700 bg-sky-100 hover:bg-sky-200 transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-400 focus:ring-offset-1 cursor-pointer"
+    >
+        {stepGroup === "main" ? `Main Steps (${mainStepCount})` : `Extra Steps (${extraStepCount})`}
+    </button>
+);
+
 export const PlaygroundHeader = ({
     domain,
     version,
     flowId,
+    stepGroup,
+    onStepGroupChange,
+    mainStepCount,
+    extraStepCount,
     onExport,
     onExportForDeployment,
     onImport,
@@ -149,10 +182,12 @@ export const PlaygroundHeader = ({
     onClear,
     onRun,
     onRunCurrent,
+    onRetrigger,
     onCreateFlowSession,
     onBack,
     onHelp,
     onEditMeta,
+    onViewTrace,
     onEditRaw,
     isFullscreen,
     onToggleFullscreen,
@@ -181,6 +216,15 @@ export const PlaygroundHeader = ({
 
             <div className="w-px h-6 bg-gray-200 mx-1" />
 
+            <StepGroupSelector
+                stepGroup={stepGroup}
+                onStepGroupChange={onStepGroupChange}
+                mainStepCount={mainStepCount}
+                extraStepCount={extraStepCount}
+            />
+
+            <div className="w-px h-6 bg-gray-200 mx-1" />
+
             {/* Meta badges + edit */}
             <div className="hidden md:flex items-center gap-2 text-md">
                 <span className="px-2.5 py-1 bg-white text-md rounded-lg border border-sky-100 text-gray-700 font-medium truncate">
@@ -198,6 +242,13 @@ export const PlaygroundHeader = ({
                     className="p-2.5 rounded-lg bg-white shadow-sm text-black hover:bg-sky-100 hover:text-sky-600 transition-colors"
                 >
                     <FaPencilAlt size={14} />
+                </button>
+                <button
+                    onClick={onViewTrace}
+                    title="View execution trace"
+                    className="p-2.5 rounded-lg bg-white shadow-sm text-black hover:bg-sky-100 hover:text-sky-600 transition-colors"
+                >
+                    <FaRegEye size={14} />
                 </button>
             </div>
         </div>
@@ -242,6 +293,15 @@ export const PlaygroundHeader = ({
                 onClick={onRun}
                 color="orange"
             />
+
+            {stepGroup === "extra" && (
+                <IconButton
+                    icon={<TbRepeat size={16} />}
+                    label="Retrigger selected extra step"
+                    onClick={onRetrigger}
+                    color="sky"
+                />
+            )}
 
             {onToggleFullscreen && (
                 <>

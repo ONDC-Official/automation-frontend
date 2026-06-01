@@ -5,6 +5,7 @@ type Meta = MockPlaygroundConfigType["meta"];
 
 import { WorkbenchFlowType } from "@hooks/useWorkbenchFlow";
 import { SavedConfigMetadata } from "@pages/protocol-playground/utils/config-storage";
+import { StepGroup } from "@pages/protocol-playground/utils/step-group";
 
 type TransactionHistoryEntry = MockPlaygroundConfigType["transaction_history"][number];
 type TransactionPayload = TransactionHistoryEntry extends { payload: infer P } ? P : unknown;
@@ -22,6 +23,8 @@ export interface PlaygroundContextProps {
     updateStepMock: (stepId: string, property: string, value: string) => void;
     activeApi: string | undefined;
     setActiveApi: React.Dispatch<React.SetStateAction<string | undefined>>;
+    stepGroup: StepGroup;
+    setStepGroup: React.Dispatch<React.SetStateAction<StepGroup>>;
     activeTerminalData: ExecutionResult[];
     setActiveTerminalData: React.Dispatch<React.SetStateAction<ExecutionResult[]>>;
     updateTransactionHistory: (
@@ -29,6 +32,11 @@ export interface PlaygroundContextProps {
         action: string,
         newPayload: TransactionPayload,
         savedInfo?: TransactionSavedInfo
+    ) => void;
+    appendExtraStepRun: (
+        actionId: string,
+        action: string,
+        newPayload: TransactionPayload
     ) => void;
     updateHelperLib: (newCode: string) => void;
     resetTransactionHistory: (actionId?: string) => void;

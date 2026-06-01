@@ -10,6 +10,7 @@ import { handleAddParam } from "./json-path-input";
 import JsonPathOutputPopup from "./JsonPathOutputModal";
 import { MockPlaygroundConfigType } from "@ondc/automation-mock-runner";
 import JsonViewerDark from "./json-path-extractor_old";
+import { getGroupSteps, setGroupSteps } from "../utils/step-group";
 
 export enum SelectedType {
     SavedInfo = "saved_info",
@@ -22,7 +23,9 @@ export default function SessionDataTab() {
         config: playgroundConfig,
         setCurrentConfig: setPlayGroundConfig,
         resetTransactionHistory,
+        stepGroup,
     } = useContext(PlaygroundContext);
+    const groupSteps = getGroupSteps(playgroundConfig, stepGroup);
     const [showAlert, setShowAlert] = useState(false);
     const [showInput, setShowInput] = useState(false);
     const [alias, setAlias] = useState<string>("");
@@ -32,44 +35,44 @@ export default function SessionDataTab() {
     const [viewPath, setViewPath] = useState<string>("");
 
     useEffect(() => {
-        const currentLength = playgroundConfig?.steps?.length || 0;
+        const currentLength = groupSteps.length;
 
         if (!currentLength && currentLength < 2) {
             setSelectedCall("");
             return;
         }
 
-        const secondLastActionId = playgroundConfig?.steps[currentLength - 2]?.action_id || "";
+        const secondLastActionId = groupSteps[currentLength - 2]?.action_id || "";
 
         setSelectedCall(secondLastActionId);
-    }, []);
+    }, [stepGroup]);
 
     const handleContinue = () => {
         if (!selectedCall || !alias) return;
 
         // Clone the current config
         if (!playgroundConfig) return;
-        const updatedConfig: MockPlaygroundConfigType = { ...playgroundConfig };
 
-        // Find the step by selected action_id
-        const stepIndex = updatedConfig.steps.findIndex(
+        // Find the step by selected action_id (within the active step group)
+        const steps = [...groupSteps];
+        const stepIndex = steps.findIndex(
             (s: { action_id: string }) => s.action_id === selectedCall
         );
         if (stepIndex === -1) return;
 
         // Clone the target step and its saveData
-        const step = { ...updatedConfig.steps[stepIndex] };
+        const step = { ...steps[stepIndex] };
         const updatedSaveData = { ...step.mock.saveData };
 
         // Remove the alias if present
         delete updatedSaveData[alias];
 
         // Write back the updated step
-        step.mock.saveData = updatedSaveData;
-        updatedConfig.steps[stepIndex] = step;
+        step.mock = { ...step.mock, saveData: updatedSaveData };
+        steps[stepIndex] = step;
 
         // Commit changes
-        setPlayGroundConfig(updatedConfig);
+        setPlayGroundConfig(setGroupSteps(playgroundConfig, stepGroup, steps));
 
         // Reset UI and state
         resetTransactionHistory();
@@ -90,8 +93,8 @@ export default function SessionDataTab() {
         // Clone current config
         const updatedConfig: MockPlaygroundConfigType = { ...playgroundConfig };
 
-        // Find the step for selectedCall
-        const step = updatedConfig.steps?.find((s) => s.action_id === selectedCall);
+        // Find the step for selectedCall (within the active step group)
+        const step = groupSteps.find((s) => s.action_id === selectedCall);
         if (!step) return;
 
         const saveData = { ...step.mock.saveData };
@@ -148,6 +151,7 @@ export default function SessionDataTab() {
 
     const payloadFromTranscationHistory = (action_id: string) => {
         if (!playgroundConfig) return {};
+        // First run of the action — representative shape for JSON-path picking.
         const history = playgroundConfig.transaction_history.find((h) => h.action_id === action_id);
         return history?.payload ?? {};
     };
@@ -159,7 +163,7 @@ export default function SessionDataTab() {
         const history = playgroundConfig.transaction_history.find(
             (history) => history.action_id === selectedCall
         );
-        const step = playgroundConfig.steps.find((s) => s.action_id === selectedCall);
+        const step = groupSteps.find((s) => s.action_id === selectedCall);
 
         const savedInfo = history?.saved_info || {};
         const saveData = step?.mock.saveData || {};
@@ -209,9 +213,9 @@ export default function SessionDataTab() {
         // Clone the playgroundConfig
         const updatedConfig = { ...playgroundConfig };
 
-        // Clone transaction_history and steps
+        // Clone transaction_history and steps (within the active step group)
         const updatedHistory = [...updatedConfig.transaction_history];
-        const updatedSteps = updatedConfig.steps.map((step) => ({ ...step }));
+        const updatedSteps = groupSteps.map((step) => ({ ...step }));
 
         // Find the history entry for selectedCall
         const historyIndex = updatedHistory.findIndex((h) => h.action_id === selectedCall);
@@ -244,11 +248,13 @@ export default function SessionDataTab() {
         updatedHistory[historyIndex] = { ...historyEntry, saved_info: {} };
 
         // Commit the updated config
-        setPlayGroundConfig({
-            ...updatedConfig,
-            transaction_history: updatedHistory,
-            steps: updatedSteps,
-        });
+        setPlayGroundConfig(
+            setGroupSteps(
+                { ...updatedConfig, transaction_history: updatedHistory },
+                stepGroup,
+                updatedSteps
+            )
+        );
     };
 
     const editSavedInfo = (oldAlias: string, newAlias: string, newPath: string) => {
@@ -330,14 +336,12 @@ export default function SessionDataTab() {
     const onAdd = (alias: string, path: string, oldAlias?: string) => {
         if (!selectedCall || !playgroundConfig) return;
 
-        // Clone playgroundConfig
-        const updatedConfig = { ...playgroundConfig };
-
-        // Find the step for selectedCall
-        const stepIndex = updatedConfig.steps.findIndex((s) => s.action_id === selectedCall);
+        // Find the step for selectedCall (within the active step group)
+        const steps = [...groupSteps];
+        const stepIndex = steps.findIndex((s) => s.action_id === selectedCall);
         if (stepIndex === -1) return;
 
-        const currentStep = { ...updatedConfig.steps[stepIndex] };
+        const currentStep = { ...steps[stepIndex] };
         const saveData = { ...currentStep.mock.saveData }; // clone saveData
 
         // Determine if we are editing or adding
@@ -364,7 +368,7 @@ export default function SessionDataTab() {
         }
 
         // Update the step with new saveData
-        updatedConfig.steps[stepIndex] = {
+        steps[stepIndex] = {
             ...currentStep,
             mock: {
                 ...currentStep.mock,
@@ -373,7 +377,7 @@ export default function SessionDataTab() {
         };
 
         // Commit the updated config
-        setPlayGroundConfig(updatedConfig);
+        setPlayGroundConfig(setGroupSteps(playgroundConfig, stepGroup, steps));
     };
 
     const selectedHistory = playgroundConfig?.transaction_history.find(
@@ -383,8 +387,7 @@ export default function SessionDataTab() {
     const savedInfo = selectedHistory?.saved_info || {};
     const savedInfoLength = Object.keys(savedInfo).length;
 
-    const saveData =
-        playgroundConfig?.steps.find((s) => s.action_id === selectedCall)?.mock.saveData || {};
+    const saveData = groupSteps.find((s) => s.action_id === selectedCall)?.mock.saveData || {};
     const saveDataLength = Object.keys(saveData).length;
 
     // const activeApi =
@@ -443,14 +446,12 @@ export default function SessionDataTab() {
                         setSelectedCall(e.target.value)
                     }
                 >
-                    {playgroundConfig?.steps?.length > 1 &&
-                        playgroundConfig?.steps
-                            .slice(0, playgroundConfig.steps.length) // skip last element
-                            .map((step) => (
-                                <option key={step.action_id} value={step.action_id}>
-                                    {step.action_id}
-                                </option>
-                            ))}
+                    {groupSteps.length > 1 &&
+                        groupSteps.map((step) => (
+                            <option key={step.action_id} value={step.action_id}>
+                                {step.action_id}
+                            </option>
+                        ))}
                 </select>
             </div>
 
@@ -536,8 +537,8 @@ export default function SessionDataTab() {
                     ) : (
                         <div className="space-y-2 mt-4">
                             {Object.entries(
-                                playgroundConfig.steps.find((s) => s.action_id === selectedCall)
-                                    ?.mock.saveData || {}
+                                groupSteps.find((s) => s.action_id === selectedCall)?.mock
+                                    .saveData || {}
                             ).map(([alias, path]) => (
                                 <div
                                     key={alias}

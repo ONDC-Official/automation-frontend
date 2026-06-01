@@ -1,5 +1,11 @@
 import type { StreamEvent } from "./types";
 
+// Bound the wait between SSE frames. Without this, a silently stalled
+// upstream (no [DONE], no error, just an idle TCP connection) hangs the
+// agent loop forever — the consumer's await on this generator suspends
+// indefinitely and isStreaming never resets.
+const STREAM_IDLE_TIMEOUT_MS = 90_000;
+
 interface StreamingChoiceDelta {
     content?: string;
     tool_calls?: Array<{
@@ -36,7 +42,39 @@ export async function* parseSSEStream(
     try {
         while (true) {
             if (signal?.aborted) return;
-            const { done, value } = await reader.read();
+            let timeoutId: ReturnType<typeof setTimeout> | undefined;
+            let timedOut = false;
+            let result: ReadableStreamReadResult<Uint8Array>;
+            try {
+                result = await Promise.race([
+                    reader.read(),
+                    new Promise<ReadableStreamReadResult<Uint8Array>>((_, reject) => {
+                        timeoutId = setTimeout(() => {
+                            timedOut = true;
+                            reject(new Error("stream idle timeout"));
+                        }, STREAM_IDLE_TIMEOUT_MS);
+                    }),
+                ]);
+            } catch (err) {
+                if (timedOut) {
+                    yield {
+                        type: "error",
+                        message: `AI stream stalled — no data for ${
+                            STREAM_IDLE_TIMEOUT_MS / 1000
+                        }s.`,
+                    };
+                    try {
+                        await reader.cancel();
+                    } catch {
+                        // already torn down; ignore.
+                    }
+                    return;
+                }
+                throw err;
+            } finally {
+                if (timeoutId) clearTimeout(timeoutId);
+            }
+            const { done, value } = result;
             if (done) break;
             buffer += decoder.decode(value, { stream: true });
             const frames = buffer.split("\n\n");

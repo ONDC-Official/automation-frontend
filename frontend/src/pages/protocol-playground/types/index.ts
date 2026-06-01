@@ -39,8 +39,8 @@ export type PlaygroundRightTabType =
     | "transaction"
     | "terminal"
     | "output_payload"
-    | "common_lib";
-// | "ai_chat";
+    | "common_lib"
+    | "ai_chat";
 
 export type MockPropertyTab = {
     id: string;
@@ -97,6 +97,10 @@ export type PlaygroundRightTab = {
 };
 
 export const PLAYGROUND_RIGHT_TABS: PlaygroundRightTab[] = [
+    // {
+    //     id: "ai_chat",
+    //     label: "Guardian",
+    // },
     {
         id: "session",
         label: "Live Session Data",
@@ -117,8 +121,4 @@ export const PLAYGROUND_RIGHT_TABS: PlaygroundRightTab[] = [
         id: "terminal",
         label: "Terminal",
     },
-    // {
-    //     id: "ai_chat",
-    //     label: "AI",
-    // },
 ];

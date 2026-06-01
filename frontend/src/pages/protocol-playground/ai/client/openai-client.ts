@@ -1,6 +1,39 @@
 import { parseSSEStream } from "./streaming";
 import type { ChatCompletionRequest, ChatCompletionResponse, StreamEvent } from "./types";
 
+// Bound the time we wait for the LLM (or proxy) to send response headers.
+// Without this, DNS/TLS/proxy stalls hang fetch() until the OS gives up.
+// Once headers arrive, the per-frame STREAM_IDLE_TIMEOUT_MS in streaming.ts
+// takes over — we don't want a long but healthy generation to abort here.
+const FETCH_HEADERS_TIMEOUT_MS = 30_000;
+
+async function fetchWithHeadersTimeout(
+    url: string,
+    init: RequestInit,
+    userSignal: AbortSignal | undefined,
+    timeoutMs: number
+): Promise<Response> {
+    const ctrl = new AbortController();
+    if (userSignal?.aborted) {
+        ctrl.abort(userSignal.reason);
+    } else if (userSignal) {
+        // Listener intentionally not removed: it must stay active for the
+        // streaming body so user Stop still aborts mid-response.
+        userSignal.addEventListener("abort", () => ctrl.abort(userSignal.reason), {
+            once: true,
+        });
+    }
+    const timeoutId = setTimeout(
+        () => ctrl.abort(new DOMException("Initial fetch timeout", "TimeoutError")),
+        timeoutMs
+    );
+    try {
+        return await fetch(url, { ...init, signal: ctrl.signal });
+    } finally {
+        clearTimeout(timeoutId);
+    }
+}
+
 export interface OpenAIClient {
     chatCompletions: (
         req: ChatCompletionRequest,
@@ -58,12 +91,16 @@ export function createOpenAIClient({
         req: ChatCompletionRequest,
         signal?: AbortSignal
     ): Promise<ChatCompletionResponse> {
-        const response = await fetch(fetchUrl, {
-            method: "POST",
-            headers,
-            body: JSON.stringify({ ...req, stream: false }),
+        const response = await fetchWithHeadersTimeout(
+            fetchUrl,
+            {
+                method: "POST",
+                headers,
+                body: JSON.stringify({ ...req, stream: false }),
+            },
             signal,
-        });
+            FETCH_HEADERS_TIMEOUT_MS
+        );
         if (!response.ok) {
             throw new Error(`AI request failed: HTTP ${response.status}`);
         }
@@ -74,12 +111,16 @@ export function createOpenAIClient({
         req: ChatCompletionRequest,
         signal?: AbortSignal
     ): AsyncGenerator<StreamEvent, void, void> {
-        const response = await fetch(fetchUrl, {
-            method: "POST",
-            headers,
-            body: JSON.stringify({ ...req, stream: true }),
+        const response = await fetchWithHeadersTimeout(
+            fetchUrl,
+            {
+                method: "POST",
+                headers,
+                body: JSON.stringify({ ...req, stream: true }),
+            },
             signal,
-        });
+            FETCH_HEADERS_TIMEOUT_MS
+        );
         if (!response.ok) {
             throw new Error(`AI stream request failed: HTTP ${response.status}`);
         }

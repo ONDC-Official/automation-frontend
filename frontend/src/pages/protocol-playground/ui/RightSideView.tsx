@@ -6,10 +6,11 @@ import { PlaygroundContext } from "../context/playground-context";
 import SessionDataTab from "./session-data-tab";
 import { ExecutionResults } from "./extras/terminal";
 import OutputPayloadViewer from "./extras/output-payload-viewer";
-import MockRunner, { MockPlaygroundConfigType } from "@ondc/automation-mock-runner";
 import { editorUtils } from "../utils/editor-utils";
 import { mockRunnerExtensions } from "../utils/mock-runner-extentions";
 import CommonLibView from "./playground-upper/common-lib-view";
+import { AIChatPanel } from "../ai/ui/AIChatPanel";
+import { getFullSession, getSessionUpToActionId } from "../utils/transaction-view";
 // import { AIChatPanel } from "../ai/ui/AIChatPanel";
 
 interface SavedMetadata {
@@ -60,25 +61,42 @@ export function RightSideView(props: {
 function GetRightSideContent({ tabId, actionId }: { tabId: string; actionId: string | undefined }) {
     const playgroundContext = useContext(PlaygroundContext);
     const [sessionData, setSessionData] = useState<string>("{}");
+    const [isSessionLoading, setIsSessionLoading] = useState(false);
     // const [savedMeta, setSaveMeta] = useState<SavedMetadata>({});
     const savedMetaRef = useRef<SavedMetadata>({}); // Add this ref
 
     useEffect(() => {
-        const meta = mockRunnerExtensions.getSaveDataMeta(
-            playgroundContext.activeApi,
+        // Session data only drives the "session" tab — skip work otherwise.
+        if (tabId !== "session") return;
+        let cancelled = false;
+        // Use the same `actionId` everywhere (prop is the single source of truth).
+        savedMetaRef.current = mockRunnerExtensions.getSaveDataMeta(
+            actionId,
             playgroundContext.config
         );
-        // setSaveMeta(meta);
-        savedMetaRef.current = meta; // Update ref whenever savedMeta changes
 
-        getSessionData().then((data) => setSessionData(data));
-    }, [playgroundContext.config, playgroundContext.activeApi]);
+        // Guard against out-of-order async resolution: only the latest run
+        // (matching the current config/actionId/stepGroup) may set state.
+        setIsSessionLoading(true);
+        getSessionData().then((data) => {
+            if (cancelled) return;
+            setSessionData(data);
+            setIsSessionLoading(false);
+        });
+        return () => {
+            cancelled = true;
+        };
+        // Recompute whenever any input to the session changes, or we (re-)enter
+        // the tab. exhaustive-deps is disabled project-wide; deps are explicit.
+    }, [tabId, actionId, playgroundContext.config, playgroundContext.stepGroup]);
 
-    const index =
-        playgroundContext.config?.steps.findIndex((step) => step.action_id === actionId) ?? 0;
-    const activePayload =
-        playgroundContext.config?.transaction_history.find((f) => f.action_id === actionId)
-            ?.payload || undefined;
+    // Extra steps record one transaction_history entry per run, in execution
+    // order. Collect every run for this action so the viewer can page through
+    // them and we can show the latest.
+    const payloadRuns = (playgroundContext.config?.transaction_history ?? [])
+        .filter((f) => f.action_id === actionId)
+        .map((e) => e.payload);
+    const activePayload = payloadRuns[payloadRuns.length - 1] || undefined;
 
     const getSessionData = async () => {
         try {
@@ -93,8 +111,16 @@ function GetRightSideContent({ tabId, actionId }: { tabId: string; actionId: str
                 );
             }
 
-            const mockRunner = new MockRunner(playgroundContext.config as MockPlaygroundConfigType);
-            const sessionData = await mockRunner.getSessionDataUpToStep(index);
+            // Match how each group is actually generated:
+            //  - Main steps run once, in order, against the session UP TO that
+            //    step (MockRunner.runGeneratePayload) -> getSessionUpToActionId.
+            //  - Extra steps run multiple times, in any order, and are generated
+            //    against the WHOLE accumulated session (executeExtraStep ->
+            //    getFullSession), so the preview must be the full session.
+            const sessionData =
+                playgroundContext.stepGroup === "extra"
+                    ? await getFullSession(playgroundContext.config)
+                    : await getSessionUpToActionId(playgroundContext.config, actionId);
 
             return JSON.stringify(sessionData, null, 2);
         } catch (error: unknown) {
@@ -105,7 +131,6 @@ function GetRightSideContent({ tabId, actionId }: { tabId: string; actionId: str
                 error: "Failed to generate session data",
                 message: errorMessage,
                 type: errorName,
-                step: index,
                 actionId: actionId,
                 timestamp: new Date().toISOString(),
             };
@@ -185,35 +210,56 @@ function GetRightSideContent({ tabId, actionId }: { tabId: string; actionId: str
     switch (tabId) {
         case "session":
             return (
-                <Editor
-                    key={`${actionId}-${tabId}`}
-                    theme="dark-skyblue"
-                    onMount={handleOnMount}
-                    height="100%"
-                    language="json"
-                    value={sessionData}
-                    options={{
-                        padding: { top: 16, bottom: 16 },
-                        fontSize: 16,
-                        lineNumbers: "on",
-                        scrollBeyondLastLine: true,
-                        automaticLayout: true,
-                        formatOnPaste: true,
-                        formatOnType: true,
-                        readOnly: true,
-                    }}
-                />
+                <div className="relative h-full">
+                    <Editor
+                        // Stable key: never remount on actionId/group change. The
+                        // async session result flows in purely via the controlled
+                        // `value`, so it can't be lost to a remount-with-stale-value.
+                        key="session-data-editor"
+                        theme="dark-skyblue"
+                        onMount={handleOnMount}
+                        height="100%"
+                        language="json"
+                        value={sessionData}
+                        options={{
+                            padding: { top: 16, bottom: 16 },
+                            fontSize: 16,
+                            lineNumbers: "on",
+                            scrollBeyondLastLine: true,
+                            automaticLayout: true,
+                            formatOnPaste: true,
+                            formatOnType: true,
+                            readOnly: true,
+                        }}
+                    />
+                    {isSessionLoading && (
+                        <div className="absolute inset-0 flex items-center justify-center bg-[#0b1220]/40 backdrop-blur-[1px] pointer-events-none">
+                            <div className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-white/90 shadow-sm">
+                                <div className="w-3.5 h-3.5 border-2 border-sky-500 border-t-transparent rounded-full animate-spin" />
+                                <span className="text-xs font-medium text-gray-700">
+                                    Computing session…
+                                </span>
+                            </div>
+                        </div>
+                    )}
+                </div>
             );
         case "transaction":
             return <SessionDataTab />;
         case "terminal":
             return <ExecutionResults results={playgroundContext.activeTerminalData} />;
         case "output_payload":
-            return <OutputPayloadViewer payload={activePayload} actionId={actionId} />;
+            return (
+                <OutputPayloadViewer
+                    payload={activePayload}
+                    runs={payloadRuns}
+                    actionId={actionId}
+                />
+            );
         case "common_lib":
             return <CommonLibView />;
-        // case "ai_chat":
-        //     return <AIChatPanel actionId={actionId} />;
+        case "ai_chat":
+            return <AIChatPanel actionId={actionId} />;
     }
     return <></>;
 }

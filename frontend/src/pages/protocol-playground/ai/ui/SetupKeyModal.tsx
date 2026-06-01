@@ -1,7 +1,8 @@
 import { FormEvent, useEffect, useState } from "react";
+import { PiShieldStarBold } from "react-icons/pi";
 import { toast } from "react-toastify";
 
-import Modal from "@components/Modal";
+import Popup from "@components/ui/pop-up/pop-up";
 import { setupKey } from "@utils/secure-key-store";
 
 interface SetupKeyModalProps {
@@ -60,14 +61,21 @@ export function SetupKeyModal({ isOpen, onClose, onSuccess }: SetupKeyModalProps
     };
 
     return (
-        <Modal isOpen={isOpen} onClose={onClose}>
-            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-                <div>
-                    <h2 className="text-lg font-semibold text-gray-900">Set up AI key</h2>
-                    <p className="text-sm text-gray-600 mt-1">
-                        Paste your OpenAI-compatible API key. It is encrypted in your browser with
-                        your passphrase and never sent to any backend.
-                    </p>
+        <Popup isOpen={isOpen} onClose={onClose}>
+            <form onSubmit={handleSubmit} className="flex flex-col gap-4 pr-8">
+                <div className="flex items-start gap-3">
+                    <span className="inline-flex items-center justify-center h-9 w-9 rounded-md bg-gradient-to-br from-sky-500 to-indigo-600 text-white shadow-sm shrink-0">
+                        <PiShieldStarBold className="h-5 w-5" />
+                    </span>
+                    <div>
+                        <h2 className="text-lg font-semibold text-gray-900">
+                            Set up Protocol Guardian
+                        </h2>
+                        <p className="text-sm text-gray-600 mt-1">
+                            Paste your OpenAI-compatible API key. It is encrypted in your
+                            browser with your passphrase and never sent to any backend.
+                        </p>
+                    </div>
                 </div>
                 <label className="flex flex-col gap-1 text-sm text-gray-700">
                     API key
@@ -125,6 +133,6 @@ export function SetupKeyModal({ isOpen, onClose, onSuccess }: SetupKeyModalProps
                     </button>
                 </div>
             </form>
-        </Modal>
+        </Popup>
     );
 }

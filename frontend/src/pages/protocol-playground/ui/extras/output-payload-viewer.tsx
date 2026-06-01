@@ -28,6 +28,7 @@ import {
 } from "react-icons/io5";
 
 import { PlaygroundContext } from "@pages/protocol-playground/context/playground-context";
+import { buildLinearConfig } from "@pages/protocol-playground/utils/transaction-view";
 import {
     ActiveDomainConfig,
     Domain,
@@ -308,12 +309,25 @@ function ValidateRequirementsModal({
 // ─── Main Component ────────────────────────────────────────────────────────────
 
 export default function OutputPayloadViewer({
-    payload,
+    payload: propPayload,
+    runs,
     actionId,
 }: {
     payload: ProtocolPayload;
+    runs?: ProtocolPayload[];
     actionId: string | undefined;
 }) {
+    // Extra steps run multiple times — `runs` holds every recorded run.
+    // Default to the latest; let the user page back through earlier runs.
+    const [selectedRun, setSelectedRun] = useState<number>(runs ? runs.length - 1 : 0);
+    useEffect(() => {
+        setSelectedRun(runs ? runs.length - 1 : 0);
+    }, [actionId, runs?.length]);
+
+    const hasRuns = !!runs && runs.length > 0;
+    const runIndex = hasRuns ? Math.min(selectedRun, runs.length - 1) : 0;
+    // The payload shown / validated is the selected run (or the single payload).
+    const payload = hasRuns ? (runs[runIndex] ?? propPayload) : propPayload;
     const [activeDomain, setActiveDomain] = useState<ActiveDomainConfig>({});
     const [mdData, setMdData] = useState("");
     const [loading, setIsLoading] = useState(false);
@@ -435,7 +449,8 @@ export default function OutputPayloadViewer({
                 setIsLoading(false);
                 return;
             }
-            const runner = new MockRunner(config);
+            // Linear view: history & steps aligned across both groups + retriggers.
+            const runner = new MockRunner(buildLinearConfig(config));
             runner.logger.setLogLevel(3);
             const l2Result = await runner.runValidatePayload(actionId || "", payload);
             playgroundContext.setActiveTerminalData((s) => [...s, l2Result]);
@@ -553,6 +568,11 @@ export default function OutputPayloadViewer({
                             <span className="text-sm font-semibold text-gray-700">
                                 Payload Data
                             </span>
+                            {hasRuns && runs.length > 1 && (
+                                <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-sky-100 text-sky-700">
+                                    {runs.length} runs
+                                </span>
+                            )}
                         </div>
                         {showPayload ? (
                             <IoChevronUp className="text-gray-400" />
@@ -562,6 +582,23 @@ export default function OutputPayloadViewer({
                     </button>
                     {showPayload && (
                         <div className="bg-white p-4">
+                            {hasRuns && runs.length > 1 && (
+                                <div className="flex flex-wrap items-center gap-1.5 mb-3">
+                                    {runs.map((_, i) => (
+                                        <button
+                                            key={i}
+                                            onClick={() => setSelectedRun(i)}
+                                            className={`px-2.5 py-1 rounded-md text-xs font-semibold transition ${
+                                                i === runIndex
+                                                    ? "bg-sky-500 text-white shadow-sm"
+                                                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                                            }`}
+                                        >
+                                            Run {i + 1}
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
                             <div className="rounded overflow-hidden">
                                 <JsonView value={payload} collapsed={1} />
                             </div>

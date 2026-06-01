@@ -263,6 +263,27 @@ export const proceedFlow = async (
     }
 };
 
+export const triggerExtra = async (
+    sessionId: string,
+    transactionId: string,
+    triggerExtraKey: string,
+    inputs?: unknown
+): Promise<FlowResponse> => {
+    try {
+        const response = await apiClient.post<FlowResponse>(API_ROUTES.FLOW.PROCEED, {
+            session_id: sessionId,
+            transaction_id: transactionId,
+            inputs: inputs,
+            trigger_extra: triggerExtraKey,
+        });
+
+        return response.data;
+    } catch (e: unknown) {
+        console.error(e instanceof Error ? e.message : `triggerExtra: Unknown error: ${e}`);
+        throw new Error(e instanceof Error ? e.message : `triggerExtra: Unknown error: ${e}`);
+    }
+};
+
 export const newFlow = async (
     sessionId: string,
     flowId: string,
@@ -327,6 +348,7 @@ export const updateCustomFlow = async (sessionId: string, flow: unknown) => {
         await apiClient.post(API_ROUTES.FLOW.CUSTOM_FLOW, data);
     } catch (e: unknown) {
         console.error(e instanceof Error ? e.message : `updateCustomFlow: Unknown error: ${e}`);
+        throw new Error(e instanceof Error ? e.message : `updateCustomFlow: Unknown error: ${e}`);
     }
 };
 

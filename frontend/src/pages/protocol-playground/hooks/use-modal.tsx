@@ -3,6 +3,8 @@ import { toast } from "react-toastify";
 
 import { AddActionForm, DeleteConfirmationForm, EditActionForm } from "../ui/from-contents";
 import { getFormValues } from "../utils/form-helper";
+import { StepGroup, getGroupSteps } from "../utils/step-group";
+import { MockPlaygroundConfigType } from "@ondc/automation-mock-runner";
 
 interface ActionFormData {
     api?: string;
@@ -41,11 +43,12 @@ interface ModalHandlersProps {
         actionId: string,
         insertIndex?: number,
         stepType?: "action" | "form"
-    ) => void;
+    ) => boolean;
     deleteAction: (actionId: string) => boolean;
     updateAction: (actionId: string, formData: ActionFormData) => boolean;
     clearConfig: () => void;
     config: MockConfig | undefined;
+    stepGroup: StepGroup;
 }
 
 export const useModalHandlers = ({
@@ -58,7 +61,14 @@ export const useModalHandlers = ({
     updateAction,
     clearConfig,
     config,
+    stepGroup,
 }: ModalHandlersProps) => {
+    const groupSteps = (): StepConfig[] =>
+        getGroupSteps(
+            config as MockPlaygroundConfigType | undefined,
+            stepGroup
+        ) as unknown as StepConfig[];
+
     const showAddAction = (insertIndex?: number, title = "Add Action") => {
         const handleSubmit = () => {
             const { stepType, api, form, actionId } = getFormValues({
@@ -68,7 +78,7 @@ export const useModalHandlers = ({
                 actionId: "actionAddIdInput",
             });
             if (stepType === "form") {
-                addAction(form, actionId, insertIndex, stepType);
+                if (!addAction(form, actionId, insertIndex, stepType)) return;
                 setActiveApi(actionId);
                 closeModal();
                 toast.success("Form added successfully");
@@ -80,7 +90,7 @@ export const useModalHandlers = ({
                 return;
             }
 
-            addAction(api, actionId, insertIndex);
+            if (!addAction(api, actionId, insertIndex)) return;
             setActiveApi(actionId);
             closeModal();
             toast.success("Action added successfully");
@@ -92,7 +102,7 @@ export const useModalHandlers = ({
     const addActionBefore = () => {
         if (!activeApi || !config) return;
 
-        const currentIndex = config.steps.findIndex(
+        const currentIndex = groupSteps().findIndex(
             (step: StepConfig) => step.action_id === activeApi
         );
 
@@ -104,7 +114,7 @@ export const useModalHandlers = ({
     const addActionAfter = () => {
         if (!activeApi || !config) return;
 
-        const currentIndex = config.steps.findIndex(
+        const currentIndex = groupSteps().findIndex(
             (step: StepConfig) => step.action_id === activeApi
         );
 
@@ -142,15 +152,16 @@ export const useModalHandlers = ({
     const showEditAction = (actionId: string) => {
         if (!actionId || !config) return;
 
-        const currentAction = config.steps.find((step: StepConfig) => step.action_id === actionId);
+        const steps = groupSteps();
+        const currentAction = steps.find((step: StepConfig) => step.action_id === actionId);
 
         if (!currentAction) return;
 
         const getPreviousSteps = () => {
-            const currentIndex = config.steps.findIndex(
+            const currentIndex = steps.findIndex(
                 (step: StepConfig) => step.action_id === actionId
             );
-            return config.steps.slice(0, currentIndex);
+            return steps.slice(0, currentIndex);
         };
 
         const handleUpdate = () => {

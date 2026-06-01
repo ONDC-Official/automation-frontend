@@ -8,6 +8,7 @@ import { RxReset } from "react-icons/rx";
 import { HiOutlineInformationCircle } from "react-icons/hi2";
 import Tippy from "@tippyjs/react";
 import "tippy.js/dist/tippy.css";
+import { getGroupSteps } from "../utils/step-group";
 
 interface ActionIdConfigurationPanelProps {
     actionId: string | undefined;
@@ -34,9 +35,10 @@ export function ActionIdConfigurationPanel({
         );
     }
 
-    const actionConfig = playgroundContext.config?.steps.find(
-        (step) => step.action_id === actionId
-    );
+    const actionConfig = getGroupSteps(
+        playgroundContext.config,
+        playgroundContext.stepGroup
+    ).find((step) => step.action_id === actionId);
 
     if (!actionConfig) {
         return (

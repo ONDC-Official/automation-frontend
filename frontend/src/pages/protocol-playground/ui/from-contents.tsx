@@ -6,7 +6,8 @@ import { inputClass } from "../../../components/ui/forms/inputClass";
 
 import { ONDC_ACTION_LIST, ONDC_FORM_LIST } from "../types";
 
-import { useState } from "react";
+import { useContext, useState } from "react";
+import { PlaygroundContext } from "../context/playground-context";
 
 export const AddActionForm = ({
     title,
@@ -17,22 +18,28 @@ export const AddActionForm = ({
     onSubmit: () => void;
     onCancel: () => void;
 }) => {
+    const { stepGroup } = useContext(PlaygroundContext);
+    // Form steps are only allowed in the main group — extra steps run multiple
+    // times and forms aren't supported there.
+    const allowForm = stepGroup !== "extra";
     const [stepType, setStepType] = useState<"action" | "form">("action");
 
     return (
         <div>
             <h2>{title}</h2>
             <div className="flex flex-col gap-2 mt-2">
-                {/* Step type selector */}
-                <select
-                    id="stepTypeInput"
-                    className={inputClass}
-                    value={stepType}
-                    onChange={(e) => setStepType(e.target.value as "action" | "form")}
-                >
-                    <option value="action">API</option>
-                    <option value="form">FORM</option>
-                </select>
+                {/* Step type selector — only when forms are allowed */}
+                {allowForm && (
+                    <select
+                        id="stepTypeInput"
+                        className={inputClass}
+                        value={stepType}
+                        onChange={(e) => setStepType(e.target.value as "action" | "form")}
+                    >
+                        <option value="action">API</option>
+                        <option value="form">FORM</option>
+                    </select>
+                )}
 
                 {/* API select */}
                 {stepType === "action" && (
