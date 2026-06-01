@@ -47,7 +47,7 @@ const Tabs = ({
                 {finalOptions.map((option) => (
                     <button
                         key={option.key}
-                        className={`flex-1 text-center font-semibold text-xs px-2 py-1 ${
+                        className={`flex-1 text-center font-semibold text-sm px-2 py-1 ${
                             activeTab === option.key
                                 ? "border-b-2 border-sky-500 text-sky-500"
                                 : "text-gray-500 hover:text-sky-500"

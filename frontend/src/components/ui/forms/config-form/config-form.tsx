@@ -52,6 +52,7 @@ import SelectMutualFundRedemptionFIS14 from "../custom-forms/mutual_fund_redempt
 import RetINVLInitOffers from "../custom-forms/retinvl-init-offers";
 import Metro200StartEndStopSelection from "../custom-forms/trv11_start_end_stop_selection_200";
 import Metro210CommonItemFulfillmentSelection from "../custom-forms/trv11_210_common_item_fulfillment_select";
+import ManualIdOverride from "../custom-forms/manual-id-override";
 
 export interface FormFieldConfigType {
     name: string;
@@ -107,6 +108,7 @@ export interface FormFieldConfigType {
         | "fis14_mf_redemption_select"
         | "insurance_select"
         | "datetime-local"
+        | "manual_id"
         | "trv11_210_common_item_fulfillment_select";
 
     payloadField: string;
@@ -421,6 +423,19 @@ export default function FormConfig({
                 flowId={flowId}
             />
         );
+    }
+
+    // manual_id: a step that just needs a manual trigger. Its schema fixes `id` to the action, so
+    // there's no real choice — render an override form with only a submit button. Must come before
+    // the generic schema check below (a manual_id field also carries a `schema`).
+    if (formConfig.find((field) => field.type === "manual_id")) {
+        const manualField = formConfig.find((field) => field.type === "manual_id")!;
+        const idSchema = (manualField.schema?.properties?.id ?? {}) as {
+            default?: string;
+            enum?: string[];
+        };
+        const actionId = idSchema.default ?? idSchema.enum?.[0];
+        return <ManualIdOverride submitEvent={submitEvent} actionId={actionId} />;
     }
 
     // NOTE: The JsonSchemaForm check must come after all other specific form type checks above.

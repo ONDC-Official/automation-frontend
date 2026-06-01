@@ -16,6 +16,7 @@ export interface Flow {
     title?: string;
     description: string;
     sequence: SequenceStep[];
+    extraSequence: SequenceStep[];
     metadata?: MetadataField[];
     tags?: [string];
 }
@@ -43,6 +44,7 @@ export interface SequenceStep {
     metadata?: MetadataField[];
     repeat?: number;
     "meta-data"?: MetadataField[];
+    manual?: boolean;
 }
 
 export type OnSearchPayload = {
@@ -57,5 +59,5 @@ export interface SubmitEventParams {
     jsonPath: Record<string, unknown>;
     formData: Record<string, string>;
     catalog?: OnSearchPayload;
-    offerRules?: Record<string, DynamicOfferRule>; 
+    offerRules?: Record<string, DynamicOfferRule>;
 }

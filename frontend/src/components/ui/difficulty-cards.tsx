@@ -1,10 +1,12 @@
 import ToggleButton from "./mini-components/toggle-button";
+import CustomTooltip from "./mini-components/tooltip";
 import { IoIosArrowDropdownCircle } from "react-icons/io";
 import { IoInformationCircleOutline } from "react-icons/io5";
 import { toast } from "react-toastify";
 import { putCacheData } from "../../utils/request-utils";
-import { useEffect, useState } from "react";
+import { useEffect, useState, ReactNode } from "react";
 import { trackEvent } from "../../utils/analytics";
+import { useSession } from "@context/context";
 
 const keyDetailsMapping: Record<string, { label: string; info: string }> = {
     stopAfterFirstNack: {
@@ -80,7 +82,10 @@ interface IProps {
 const DifficultyCards = ({ difficulty_cache, sessionId }: IProps) => {
     const [difficultyCache, setDifficultCache] = useState<FilteredDifficultyCache>({});
     const [isOpen, setIsOpen] = useState(false);
-    const [openInfoKey, setOpenInfoKey] = useState<string | null>(null);
+    // Frontend-only UI prefs (persisted in localStorage by the provider, NOT saved to the backend
+    // session like the difficulty settings below).
+    const { autoScrollEnabled, setAutoScrollEnabled, experimentalMode, setExperimentalMode } =
+        useSession();
 
     useEffect(() => {
         const newCache = { ...difficulty_cache };
@@ -123,96 +128,127 @@ const DifficultyCards = ({ difficulty_cache, sessionId }: IProps) => {
         }
     };
     return (
-        <button className="w-full bg-gray-100 border backdrop-blur-md rounded-md p-4 shadow-sm flex flex-col gap-4 hover:bg-sky-50">
-            {/* Header with Button */}
-            <div
-                className="flex flex-row justify-between items-center cursor-pointer"
+        <div className="w-full rounded-lg border border-gray-200 bg-gray-100 p-4 shadow-sm">
+            {/* Header / disclosure toggle */}
+            <button
+                type="button"
                 onClick={() => setIsOpen(!isOpen)}
+                aria-expanded={isOpen}
+                className="flex w-full items-center justify-between rounded-md text-left transition-colors hover:opacity-90"
             >
-                <div className="text-md font-bold text-sky-700 mt-2 flex gap-2">
-                    <div className="w-1 h-5 bg-sky-700 rounded-full"></div>
+                <span className="flex items-center gap-2 text-base font-bold text-sky-700">
+                    <span className="h-5 w-1 rounded-full bg-sky-700"></span>
                     Flow Settings
-                </div>
-
+                </span>
                 <IoIosArrowDropdownCircle
-                    className={`h-7 w-7 text-sky-700 transform transition-transform duration-300 ${
+                    className={`h-7 w-7 shrink-0 text-sky-700 transition-transform duration-300 ${
                         isOpen ? "rotate-180" : "rotate-0"
                     }`}
                 />
-            </div>
+            </button>
 
             <div
-                className={`transition-all duration-300 ${
-                    isOpen
-                        ? "max-h-[1000px] opacity-100 overflow-visible"
-                        : "max-h-0 opacity-0 overflow-hidden"
+                className={`overflow-hidden transition-all duration-300 ${
+                    isOpen ? "mt-4 max-h-[1200px] opacity-100" : "max-h-0 opacity-0"
                 }`}
             >
-                {Object.entries(difficultyCache).length !== 0 && (
-                    <div className="flex flex-wrap gap-4 mt-4">
-                        {(Object.entries(difficultyCache) as [string, boolean | undefined][])
-                            .filter(([key]) => !skipItems.includes(key))
-                            .map(([key, value], index: number) => (
-                                <div
-                                    key={index}
-                                    className="flex flex-col bg-white rounded-md shadow p-2 w-full sm:w-auto sm:flex-1"
-                                >
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-1 relative">
-                                            <button
-                                                type="button"
-                                                className="text-yellow-500 hover:text-yellow-600"
-                                                onClick={(event) => {
-                                                    event.stopPropagation();
-                                                    setOpenInfoKey(
-                                                        openInfoKey === key ? null : key
-                                                    );
-                                                }}
-                                                aria-label={`Show information for ${
-                                                    keyDetailsMapping[key]?.label ?? key
-                                                }`}
-                                            >
-                                                <IoInformationCircleOutline className="h-5 w-5" />
-                                            </button>
-                                            <span className="text-sm font-bold text-sky-700">
-                                                {keyDetailsMapping[key]?.label ?? key}
-                                            </span>
-                                            {openInfoKey === key && (
-                                                <div className="absolute top-7 left-0 z-20 w-64 rounded-md border border-sky-200 bg-sky-700 text-white text-xs font-normal p-2 shadow-lg">
-                                                    {keyDetailsMapping[key]?.info ??
-                                                        "No information available."}
-                                                </div>
-                                            )}
-                                        </div>
-                                        <span className="text-sm text-gray-800 font-medium ml-2">
-                                            <ToggleButton
-                                                initialValue={value}
-                                                onToggle={(value: boolean) => {
-                                                    trackEvent({
-                                                        category: "SCHEMA_VALIDATION-FLOW_SETTINGS",
-                                                        action: `toggled value: ${key} to: ${value}`,
-                                                    });
-                                                    setDifficultCache(
-                                                        (prevalue: FilteredDifficultyCache) => {
-                                                            prevalue[
-                                                                key as keyof FilteredDifficultyCache
-                                                            ] = value;
-                                                            return JSON.parse(
-                                                                JSON.stringify(prevalue)
-                                                            );
-                                                        }
-                                                    );
-                                                }}
-                                            />
-                                        </span>
-                                    </div>
-                                </div>
-                            ))}
+                {/* Frontend-only UI prefs — local to this browser, not saved to the session. */}
+                <section>
+                    <h4 className="mb-2 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-400">
+                        Local · not saved to session
+                    </h4>
+                    <div className="flex flex-wrap gap-2">
+                        <SettingRow
+                            label="Auto-scroll"
+                            info="Auto scroll the page as new api updates in the flow"
+                        >
+                            <ToggleButton
+                                initialValue={autoScrollEnabled ?? true}
+                                onToggle={(value: boolean) => setAutoScrollEnabled?.(value)}
+                            />
+                        </SettingRow>
+                        <SettingRow
+                            label="Experimental Mode"
+                            info="Advanced features to do custom testing through playground"
+                        >
+                            <ToggleButton
+                                initialValue={experimentalMode ?? false}
+                                onToggle={(value: boolean) => setExperimentalMode?.(value)}
+                            />
+                        </SettingRow>
                     </div>
+                </section>
+
+                {Object.entries(difficultyCache).length !== 0 && (
+                    <section className="mt-4 border-t border-gray-200 pt-4">
+                        <h4 className="mb-2 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-400">
+                            Session validations
+                        </h4>
+                        <div className="flex flex-wrap gap-2">
+                            {(Object.entries(difficultyCache) as [string, boolean | undefined][])
+                                .filter(([key]) => !skipItems.includes(key))
+                                .map(([key, value]) => (
+                                    <SettingRow
+                                        key={key}
+                                        label={keyDetailsMapping[key]?.label ?? key}
+                                        info={keyDetailsMapping[key]?.info}
+                                    >
+                                        <ToggleButton
+                                            initialValue={value}
+                                            onToggle={(value: boolean) => {
+                                                trackEvent({
+                                                    category: "SCHEMA_VALIDATION-FLOW_SETTINGS",
+                                                    action: `toggled value: ${key} to: ${value}`,
+                                                });
+                                                setDifficultCache(
+                                                    (prevalue: FilteredDifficultyCache) => {
+                                                        prevalue[
+                                                            key as keyof FilteredDifficultyCache
+                                                        ] = value;
+                                                        return JSON.parse(JSON.stringify(prevalue));
+                                                    }
+                                                );
+                                            }}
+                                        />
+                                    </SettingRow>
+                                ))}
+                        </div>
+                    </section>
                 )}
             </div>
-        </button>
+        </div>
     );
 };
+
+// Compact label + toggle chip that sizes to its content (so simple toggles stay small and wrap).
+// When `info` is given, an info icon shows the description in a Tippy tooltip on hover/focus.
+function SettingRow({
+    label,
+    children,
+    info,
+}: {
+    label: string;
+    children: ReactNode;
+    info?: string;
+}) {
+    return (
+        <div className="inline-flex items-center gap-2 rounded-md border border-gray-200 bg-white px-2.5 py-1.5 shadow-sm">
+            <span className="whitespace-nowrap text-sm font-medium text-sky-700">{label}</span>
+
+            <span className="shrink-0">{children}</span>
+            {info && (
+                <CustomTooltip content={info}>
+                    <span
+                        tabIndex={0}
+                        aria-label={`Info: ${label}`}
+                        className="shrink-0 cursor-help text-gray-400 transition-colors hover:text-sky-600"
+                    >
+                        <IoInformationCircleOutline className="h-4 w-4" />
+                    </span>
+                </CustomTooltip>
+            )}
+        </div>
+    );
+}
 
 export default DifficultyCards;
