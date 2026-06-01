@@ -11,6 +11,8 @@ interface SessionsResponse {
         sessionId: string;
         reportExists: boolean;
         createdAt: string;
+        domain?: string;
+        version?: string;
     }>;
 }
 
@@ -382,12 +384,19 @@ export const getReport = async (sessionId: string): Promise<ReportResponse> => {
     }
 };
 
-export const getSessions = async (subId: string, npType: string): Promise<SessionsResponse> => {
+export const getSessions = async (
+    subId: string,
+    npType: string,
+    domain?: string,
+    version?: string
+): Promise<SessionsResponse> => {
     try {
         const res = await apiClient.get<SessionsResponse>(API_ROUTES.DB.SESSIONS, {
             params: {
                 sub_id: subId,
                 np_type: npType,
+                ...(domain && { domain }),
+                ...(version && { version }),
             },
         });
 

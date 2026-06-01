@@ -64,6 +64,7 @@ export const API_ROUTES = {
         SCENARIO_PREFERENCE_BY_KEY: (configKey: string) =>
             `/user/scenario-preferences/${configKey}`,
         PAST_REPORTS: (userId: string) => `/reports/user/${userId}`,
+        FLOW_DATA: "/reports/flow-data",
     },
 
     HEALTH: {

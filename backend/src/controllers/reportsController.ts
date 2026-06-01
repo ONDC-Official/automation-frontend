@@ -3,6 +3,7 @@ import axiosWithApiKey from "../utils/axios";
 import logger from "@ondc/automation-logger";
 
 const DB_SERVICE = process.env.DB_SERVICE as string;
+const REPORTING_SERVICE = process.env.REPORTING_SERVICE as string;
 
 export const getPastReports = async (req: Request, res: Response) => {
     try {
@@ -18,6 +19,28 @@ export const getPastReports = async (req: Request, res: Response) => {
             return;
         }
         logger.error("Error fetching past reports", { user_id: req.params.user_id }, e);
+        res.status(status || 500).send(e?.response?.data || { error: true, message: e?.message });
+    }
+};
+
+/**
+ * POST /reports/flow-data
+ * Proxies to the report service which owns the ENABLED_DOMAINS check and Pramaan API call.
+ */
+export const fetchFlowData = async (req: Request, res: Response) => {
+    try {
+        const response = await axiosWithApiKey.post(
+            `${REPORTING_SERVICE}/flow-data`,
+            req.body,
+            {
+                headers: { "content-type": "application/json" },
+                timeout: 35000,
+            }
+        );
+        res.send(response.data);
+    } catch (e: any) {
+        const status = e?.response?.status;
+        logger.error("Error proxying flow-data to report service", { body: req.body }, e);
         res.status(status || 500).send(e?.response?.data || { error: true, message: e?.message });
     }
 };
