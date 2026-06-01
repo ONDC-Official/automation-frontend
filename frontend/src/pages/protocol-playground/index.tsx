@@ -4,7 +4,6 @@ import MockRunner, {
     ExecutionResult,
     MockPlaygroundConfigType,
 } from "@ondc/automation-mock-runner";
-
 import { PlaygroundContext } from "@pages/protocol-playground/context/playground-context";
 import GetPlaygroundComponent from "@pages/protocol-playground/starter-page";
 import { usePlaygroundModals } from "@pages/protocol-playground/hooks/use-playground-modal";
@@ -18,7 +17,14 @@ import {
     SavedConfigMetadata,
     saveGistConfig,
 } from "@pages/protocol-playground/utils/config-storage";
+
 import { fetchGistData, getFirstGistFile } from "@pages/protocol-playground/utils/fetch-gist";
+import {
+    StepGroup,
+    getGroupSteps,
+    setGroupSteps,
+} from "@pages/protocol-playground/utils/step-group";
+import { validateConfigGroups } from "@pages/protocol-playground/utils/step-group-rules";
 import { encodeBase64 } from "@pages/protocol-playground/utils/base64";
 
 const Body = ({ workbenchFlow }: { workbenchFlow: ReturnType<typeof useWorkbenchFlows> }) => {
@@ -45,6 +51,7 @@ const ProtocolPlayGround = () => {
     const [currentState, setCurrentState] = useState<"editing" | "running">("editing");
     const [loading, setLoading] = useState(false);
     const [activeApi, setActiveApi] = useState<string | undefined>(undefined);
+    const [stepGroup, setStepGroup] = useState<StepGroup>("main");
     const [activeTerminalData, setActiveTerminalData] = useState<ExecutionResult[]>([]);
     const [dirtyConfig, setDirtyConfig] = useState(true);
 
@@ -88,7 +95,7 @@ const ProtocolPlayGround = () => {
                 return;
             }
         }
-        const newSteps = current.steps.map((step) => {
+        const newSteps = getGroupSteps(current, stepGroup).map((step) => {
             if (step.action_id === stepId) {
                 return {
                     ...step,
@@ -100,10 +107,7 @@ const ProtocolPlayGround = () => {
             }
             return step;
         });
-        const newConfig = {
-            ...current,
-            steps: newSteps,
-        };
+        const newConfig = setGroupSteps(current, stepGroup, newSteps);
         setCurrentConfig(newConfig);
     };
 
@@ -128,6 +132,28 @@ const ProtocolPlayGround = () => {
             saved_info: savedInfo || ({} as TransactionSavedInfo),
         };
         current.transaction_history.push(historyEntry);
+        setCurrentConfig({ ...current });
+    };
+
+    // Record one run of an extra step as its OWN chronological transaction_history
+    // entry. Extra steps can run multiple times and in any order, so appending a
+    // fresh entry (instead of merging into a payload[] on the first entry)
+    // preserves true execution order — session calculation then sees every run
+    // interleaved exactly as it happened. Mutates in place (like
+    // updateTransactionHistory) so a sequential run loop sees each run immediately.
+    const appendExtraStepRun = (
+        actionId: string,
+        action: string,
+        newPayload: TransactionPayload
+    ) => {
+        const current = playgroundState;
+        if (!current) return;
+        current.transaction_history.push({
+            action_id: actionId,
+            action,
+            payload: newPayload,
+            saved_info: {} as TransactionSavedInfo,
+        });
         setCurrentConfig({ ...current });
     };
 
@@ -165,7 +191,6 @@ const ProtocolPlayGround = () => {
     };
 
     // Config management functions
-
     const loadSavedConfig = (configId: string): boolean => {
         const savedConfig = loadConfig(configId);
         if (savedConfig) {
@@ -212,6 +237,11 @@ const ProtocolPlayGround = () => {
             const isValid = new MockRunner(config).validateConfig();
             if (!isValid.success) {
                 toast.error(`Invalid config in gist: ${isValid.errors?.join(", ") || ""}`);
+                return false;
+            }
+            const ruleError = validateConfigGroups(config);
+            if (ruleError) {
+                toast.error(`Invalid config in gist: ${ruleError}`);
                 return false;
             }
             // Always create a new config instead of replacing current
@@ -279,11 +309,14 @@ const ProtocolPlayGround = () => {
                 updateStepMock,
                 activeApi,
                 setActiveApi,
+                stepGroup,
+                setStepGroup,
                 activeTerminalData,
                 setActiveTerminalData,
                 useModal: usePlaygroundModals(),
                 updateHelperLib,
                 updateTransactionHistory,
+                appendExtraStepRun,
                 resetTransactionHistory,
                 loading,
                 setLoading,

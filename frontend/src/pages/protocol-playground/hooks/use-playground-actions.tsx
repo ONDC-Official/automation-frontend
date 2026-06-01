@@ -2,6 +2,8 @@ import { useContext } from "react";
 import { PlaygroundContext } from "../context/playground-context";
 import { toast } from "react-toastify";
 import MockRunner from "@ondc/automation-mock-runner";
+import { getGroupSteps, setGroupSteps } from "../utils/step-group";
+import { validateConfigGroups } from "../utils/step-group-rules";
 // import { getDefaultStep } from "../mock-engine";
 
 type UpdateActionFormData = {
@@ -22,12 +24,13 @@ export const usePlaygroundActions = () => {
         actionId: string,
         insertIndex?: number,
         stepType?: "action" | "form"
-    ) => {
+    ): boolean => {
         const currentConfig = playgroundContext.config;
         if (!currentConfig) {
             toast.error("No configuration found");
-            return;
+            return false;
         }
+        const group = playgroundContext.stepGroup;
         let newStep;
         if (stepType === "form" && (api === "dynamic_form" || api === "html_form")) {
             newStep = new MockRunner(currentConfig).getDefaultStep(api, actionId, api);
@@ -35,28 +38,35 @@ export const usePlaygroundActions = () => {
             newStep = new MockRunner(currentConfig).getDefaultStep(api, actionId);
         }
 
-        if (!currentConfig.steps) {
-            currentConfig.steps = [];
-        }
-
+        const steps = [...getGroupSteps(currentConfig, group)];
         if (insertIndex !== undefined) {
-            currentConfig.steps.splice(insertIndex, 0, newStep);
+            steps.splice(insertIndex, 0, newStep);
         } else {
-            currentConfig.steps.push(newStep);
+            steps.push(newStep);
         }
 
-        playgroundContext.setCurrentConfig(currentConfig);
+        const candidate = setGroupSteps(currentConfig, group, steps);
+        const ruleError = validateConfigGroups(candidate);
+        if (ruleError) {
+            toast.error(ruleError);
+            return false;
+        }
+
+        playgroundContext.setCurrentConfig(candidate);
+        return true;
     };
 
     const deleteAction = (actionId: string) => {
         const currentConfig = playgroundContext.config;
         if (!currentConfig) return false;
+        const group = playgroundContext.stepGroup;
 
-        const stepIndex = currentConfig.steps.findIndex((step) => step.action_id === actionId);
+        const steps = [...getGroupSteps(currentConfig, group)];
+        const stepIndex = steps.findIndex((step) => step.action_id === actionId);
 
         if (stepIndex !== -1) {
-            currentConfig.steps.splice(stepIndex, 1);
-            playgroundContext.setCurrentConfig(currentConfig);
+            steps.splice(stepIndex, 1);
+            playgroundContext.setCurrentConfig(setGroupSteps(currentConfig, group, steps));
             return true;
         }
         return false;
@@ -66,13 +76,14 @@ export const usePlaygroundActions = () => {
         const data = formData as UpdateActionFormData;
         const currentConfig = playgroundContext.config;
         if (!currentConfig) return false;
+        const group = playgroundContext.stepGroup;
 
-        const updatedConfig = { ...currentConfig };
-        const stepIndex = updatedConfig.steps.findIndex((step) => step.action_id === actionId);
+        const steps = [...getGroupSteps(currentConfig, group)];
+        const stepIndex = steps.findIndex((step) => step.action_id === actionId);
 
         if (stepIndex !== -1) {
-            updatedConfig.steps[stepIndex] = {
-                ...updatedConfig.steps[stepIndex],
+            steps[stepIndex] = {
+                ...steps[stepIndex],
                 api: data.api,
                 action_id: data.actionId,
                 owner: data.owner as "BAP" | "BPP",
@@ -80,7 +91,13 @@ export const usePlaygroundActions = () => {
                 responseFor: data.responseFor || null,
                 description: data.description,
             };
-            playgroundContext.setCurrentConfig(updatedConfig);
+            const candidate = setGroupSteps(currentConfig, group, steps);
+            const ruleError = validateConfigGroups(candidate);
+            if (ruleError) {
+                toast.error(ruleError);
+                return false;
+            }
+            playgroundContext.setCurrentConfig(candidate);
             return true;
         }
         return false;

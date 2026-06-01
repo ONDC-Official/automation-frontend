@@ -25,6 +25,12 @@ interface SessionContextProps {
     setMetadata: Dispatch<SetStateAction<SessionMetadata>>;
     setActiveCallClickedToggle: React.Dispatch<React.SetStateAction<boolean>>;
     activeCallClickedToggle: boolean;
+    // Frontend-only UI prefs (persisted in localStorage, NOT in the backend session). Optional so
+    // providers that don't manage them fall back to defaults (handled by readers).
+    autoScrollEnabled?: boolean;
+    setAutoScrollEnabled?: Dispatch<SetStateAction<boolean>>;
+    experimentalMode?: boolean;
+    setExperimentalMode?: Dispatch<SetStateAction<boolean>>;
 }
 
 export const SessionContext = createContext<SessionContextProps | undefined>(undefined);

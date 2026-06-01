@@ -1,5 +1,4 @@
 import { useContext, useEffect, useRef, useState } from "react";
-
 import { PlaygroundContext } from "@pages/protocol-playground/context/playground-context";
 import Popup from "@components/ui/pop-up/pop-up";
 import { PlaygroundRightTabType } from "@pages/protocol-playground/types";
@@ -11,6 +10,7 @@ import { useModalHandlers } from "@pages/protocol-playground/hooks/use-modal";
 import { usePlaygroundActions } from "@pages/protocol-playground/hooks/use-playground-actions";
 import FullPageLoader from "@components/ui/mini-components/fullpage-loader";
 import { ActionTimeline } from "@pages/protocol-playground/ui/playground-upper/merged-sequcence";
+import TraceView from "@pages/protocol-playground/ui/extras/trace-view";
 import ViewOnlyPlaygroundPage from "@pages/protocol-playground/view-only-page";
 import MockRunner, { MockPlaygroundConfigType } from "@ondc/automation-mock-runner";
 import { toast } from "react-toastify";
@@ -20,11 +20,21 @@ import { FlowInfoModal } from "@pages/protocol-playground/ui/flow-info-modal";
 import { ExportReviewModal } from "@pages/protocol-playground/ui/export-review-modal";
 import { GitHubImportModal } from "@pages/protocol-playground/ui/github-import-modal";
 import { AIProvider } from "@pages/protocol-playground/ai/context/ai-provider";
+import { StepGroup, getGroupSteps } from "@pages/protocol-playground/utils/step-group";
+import { validateConfigGroups } from "@pages/protocol-playground/utils/step-group-rules";
 
 const PlaygroundPage = () => {
     const playgroundContext = useContext(PlaygroundContext);
 
-    const { activeApi, setActiveApi } = playgroundContext;
+    const { activeApi, setActiveApi, stepGroup, setStepGroup } = playgroundContext;
+
+    const groupSteps = getGroupSteps(playgroundContext.config, stepGroup);
+
+    const handleStepGroupChange = (group: StepGroup) => {
+        setStepGroup(group);
+        const firstStep = getGroupSteps(playgroundContext.config, group)[0];
+        setActiveApi(firstStep?.action_id);
+    };
 
     const {
         exportConfig,
@@ -32,6 +42,7 @@ const PlaygroundPage = () => {
         clearConfig,
         runConfig,
         runCurrentConfig,
+        retriggerSelectedExtraStep,
         createFlowSession,
         runAllStepsForExport,
         finalizeExportForDeployment,
@@ -52,6 +63,7 @@ const PlaygroundPage = () => {
         updateAction,
         clearConfig,
         config: playgroundContext.config,
+        stepGroup,
     });
 
     const handleImportFromGitHub = () => {
@@ -100,6 +112,7 @@ const PlaygroundPage = () => {
     const [rawConfigError, setRawConfigError] = useState<string | null>(null);
     const [isHelpOpen, setIsHelpOpen] = useState(false);
     const [isFlowInfoOpen, setIsFlowInfoOpen] = useState(false);
+    const [isTraceOpen, setIsTraceOpen] = useState(false);
     const [isGitHubImportOpen, setIsGitHubImportOpen] = useState(false);
     const [exportReviewConfig, setExportReviewConfig] = useState<MockPlaygroundConfigType | null>(
         null
@@ -162,6 +175,12 @@ const PlaygroundPage = () => {
                 toast.error(validationError);
                 return;
             }
+            const ruleError = validateConfigGroups(parsedConfig);
+            if (ruleError) {
+                setRawConfigError(ruleError);
+                toast.error(ruleError);
+                return;
+            }
             playgroundContext.setCurrentConfig(parsedConfig);
             setIsRawEditorOpen(false);
             setRawConfigError(null);
@@ -215,27 +234,35 @@ const PlaygroundPage = () => {
                         domain={playgroundContext.config?.meta.domain || "N/A"}
                         version={playgroundContext.config?.meta.version || "N/A"}
                         flowId={playgroundContext.config?.meta.flowId || "N/A"}
+                        stepGroup={stepGroup}
+                        onStepGroupChange={handleStepGroupChange}
+                        mainStepCount={playgroundContext.config?.steps.length || 0}
+                        extraStepCount={playgroundContext.config?.extra_steps?.steps.length || 0}
                         onExport={exportConfig}
                         onImport={importConfig}
                         onImportFromGitHub={handleImportFromGitHub}
                         onClear={modalHandlers.showDeleteConfirmation}
                         onRun={async () => {
-                            await runConfig();
+                            await runConfig(stepGroup === "extra");
                         }}
                         onCreateFlowSession={createFlowSession}
                         onExportForDeployment={handleExportForDeployment}
                         onRunCurrent={async () => {
-                            await runCurrentConfig();
+                            await runCurrentConfig(stepGroup === "extra");
+                        }}
+                        onRetrigger={async () => {
+                            await retriggerSelectedExtraStep();
                         }}
                         onBack={handleBack}
                         onHelp={() => setIsHelpOpen(true)}
                         onEditMeta={() => setIsFlowInfoOpen(true)}
+                        onViewTrace={() => setIsTraceOpen(true)}
                         onEditRaw={openRawEditor}
                         isFullscreen={isFullscreen}
                         onToggleFullscreen={toggleFullscreen}
                     />
                     <ActionTimeline
-                        steps={playgroundContext.config?.steps || []}
+                        steps={groupSteps}
                         transactionHistory={playgroundContext.config?.transaction_history || []}
                         activeApi={activeApi}
                         onApiSelect={setActiveApi}
@@ -271,6 +298,15 @@ const PlaygroundPage = () => {
                 <Popup isOpen={popupOpen} onClose={closeModal}>
                     {popupContent}
                 </Popup>
+                {playgroundContext.config && (
+                    <Popup
+                        isOpen={isTraceOpen}
+                        onClose={() => setIsTraceOpen(false)}
+                        widthClass="max-w-2xl md:max-w-3xl lg:max-w-5xl"
+                    >
+                        <TraceView config={playgroundContext.config} />
+                    </Popup>
+                )}
                 {playgroundContext.loading && <FullPageLoader />}
                 <PlaygroundHelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
                 {playgroundContext.config && (
@@ -292,6 +328,11 @@ const PlaygroundPage = () => {
                     defaultDomain={playgroundContext.config?.meta.domain}
                     onClose={() => setIsGitHubImportOpen(false)}
                     onImport={(config) => {
+                        const ruleError = validateConfigGroups(config);
+                        if (ruleError) {
+                            toast.error(ruleError);
+                            return;
+                        }
                         playgroundContext.setCurrentConfig(config);
                         toast.success("Flow imported from GitHub successfully");
                     }}

@@ -11,8 +11,7 @@ import { getCompletePayload, getReport } from "@utils/request-utils";
 import { Accordion } from "@components/FlowShared/complete-flow";
 import { useSession } from "@context/context";
 import Loader from "@components/ui/mini-components/loader";
-import JsonView from "@uiw/react-json-view";
-import { githubDarkTheme } from "@uiw/react-json-view/githubDark";
+import SearchableJsonView from "@components/FlowShared/searchable-json-view";
 import Tabs from "@components/ui/mini-components/tabs";
 import { SessionContext } from "@context/context";
 import CircularProgress from "@components/ui/circular-cooldown";
@@ -173,6 +172,36 @@ function RenderFlows({
     const [selectedTags, setSelectedTags] = useState<string[]>([]);
     const [activeCallClickedToggle, setActiveCallClickedToggle] = useState<boolean>(false);
     const [isReportDialogOpen, setIsReportDialogOpen] = useState<boolean>(false);
+    // Frontend-only UI prefs (persisted in localStorage; NOT saved to the backend session).
+    // Auto-scroll defaults on; experimental mode defaults off.
+    const [autoScrollEnabled, setAutoScrollEnabled] = useState<boolean>(() => {
+        try {
+            return localStorage.getItem("flow-auto-scroll-enabled") !== "false";
+        } catch {
+            return true;
+        }
+    });
+    useEffect(() => {
+        try {
+            localStorage.setItem("flow-auto-scroll-enabled", String(autoScrollEnabled));
+        } catch {
+            /* ignore storage failures */
+        }
+    }, [autoScrollEnabled]);
+    const [experimentalMode, setExperimentalMode] = useState<boolean>(() => {
+        try {
+            return localStorage.getItem("flow-experimental-mode") === "true";
+        } catch {
+            return false;
+        }
+    });
+    useEffect(() => {
+        try {
+            localStorage.setItem("flow-experimental-mode", String(experimentalMode));
+        } catch {
+            /* ignore storage failures */
+        }
+    }, [experimentalMode]);
 
     const startPolling = () => {
         if (isPolling) return; // Prevent multiple starts
@@ -380,6 +409,7 @@ function RenderFlows({
                 setSessionId,
                 activeFlowId: activeFlow,
                 sessionData: cacheSessionData,
+                setSessionData: setCacheSessionData,
                 selectedTab: selectedTab,
                 requestData,
                 responseData,
@@ -399,6 +429,10 @@ function RenderFlows({
                 >,
                 setActiveCallClickedToggle: setActiveCallClickedToggle,
                 activeCallClickedToggle: activeCallClickedToggle,
+                autoScrollEnabled: autoScrollEnabled,
+                setAutoScrollEnabled: setAutoScrollEnabled,
+                experimentalMode: experimentalMode,
+                setExperimentalMode: setExperimentalMode,
             }}
         >
             <Modal
@@ -454,7 +488,7 @@ function RenderFlows({
                                             sqSize={16}
                                             strokeWidth={2}
                                         />
-                                        <div className="flex justify-end gap-2">
+                                        <div className="flex justify-end gap-2 items-center">
                                             <div className="flex justify-end">
                                                 {newSession && (
                                                     <button
@@ -642,7 +676,7 @@ function RenderFlows({
                     </div>
 
                     {/* Right Column - Sticky Request & Response */}
-                    <div className="w-full sm:w-[40%] p-4">
+                    <div className="w-full sm:w-[45%] p-2">
                         {/* Sticky Container */}
                         <div className=" bg-gray-100 rounded-md border sticky top-20">
                             {/* <h2 className="m-1 text-lg font-semibold">Request & Response</h2> */}
@@ -651,21 +685,21 @@ function RenderFlows({
                                 options={[
                                     { key: "Request", label: "Request" },
                                     { key: "Response", label: "Response" },
-                                    {
-                                        key: "Metadata",
-                                        label: (
-                                            <div className="flex items-center gap-1.5">
-                                                <span>Metadata</span>
-                                                <span
-                                                    className="inline-flex items-center px-1 py-0.5 min-w-[2rem] justify-center rounded-full text-[10px] font-medium bg-gradient-to-r from-yellow-50 to-yellow-100 text-yellow-700 border border-yellow-300 shadow-sm"
-                                                    role="status"
-                                                    aria-label="Beta release"
-                                                >
-                                                    Beta
-                                                </span>
-                                            </div>
-                                        ),
-                                    },
+                                    // {
+                                    //     key: "Metadata",
+                                    //     label: (
+                                    //         <div className="flex items-center gap-1.5">
+                                    //             <span>Metadata</span>
+                                    //             <span
+                                    //                 className="inline-flex items-center px-1 py-0.5 min-w-[2rem] justify-center rounded-full text-[10px] font-medium bg-gradient-to-r from-yellow-50 to-yellow-100 text-yellow-700 border border-yellow-300 shadow-sm"
+                                    //                 role="status"
+                                    //                 aria-label="Beta release"
+                                    //             >
+                                    //                 Beta
+                                    //             </span>
+                                    //         </div>
+                                    //     ),
+                                    // },
                                     {
                                         key: "Guide",
                                         label: "Guide",
@@ -734,7 +768,7 @@ function RenderFlows({
                                                 )}
                                             </div>
                                         ) : (
-                                            <JsonView
+                                            <SearchableJsonView
                                                 value={
                                                     selectedTab === "Request"
                                                         ? requestData
@@ -742,9 +776,6 @@ function RenderFlows({
                                                           ? responseData
                                                           : {}
                                                 }
-                                                style={githubDarkTheme}
-                                                className="rounded-md"
-                                                displayDataTypes={false}
                                             />
                                         )}
                                     </div>

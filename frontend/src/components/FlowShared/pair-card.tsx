@@ -1,3 +1,5 @@
+import { useState } from "react";
+import { toast } from "react-toastify";
 import { MdSyncAlt } from "react-icons/md";
 import { HiOutlineBookOpen } from "react-icons/hi";
 
@@ -6,8 +8,9 @@ import CustomTooltip from "@components/ui/mini-components/tooltip";
 import FlippableWrapper from "@components/ui/flippable-div";
 
 import { MappedStep } from "@/types/flow-state-type";
+import { Flow } from "@/types/flow-types";
 import { useSession } from "@context/context";
-import { getCompletePayload, PayloadResponse } from "@utils/request-utils";
+import { getCompletePayload, PayloadResponse, updateCustomFlow } from "@utils/request-utils";
 import { openDevGuide } from "@utils/dev-guide-url-gen";
 
 export default function PairedCard({
@@ -49,7 +52,43 @@ function StepDisplay({ step, flowId }: { step: MappedStep; flowId: string }) {
         activeCallClickedToggle,
         setActiveCallClickedToggle,
         sessionData,
+        setSessionData,
+        sessionId,
+        experimentalMode,
     } = useSession();
+    const [isUpdatingManual, setIsUpdatingManual] = useState(false);
+
+    const flowConfig = sessionData?.flowConfigs?.[flowId];
+    const seqStep = flowConfig?.sequence.find((s) => s.key === step.actionId);
+    const isManual = seqStep?.manual ?? false;
+    const stepInput = step.input ?? seqStep?.input;
+    const hasInput = Array.isArray(stepInput) ? stepInput.length > 0 : stepInput != null;
+
+    const handleManualToggle = async (next: boolean) => {
+        if (!sessionData || !setSessionData || !flowConfig || isUpdatingManual) return;
+        const prevSessionData = sessionData;
+        const updatedFlow: Flow = {
+            ...flowConfig,
+            sequence: flowConfig.sequence.map((s) =>
+                s.key === step.actionId ? { ...s, manual: next } : s
+            ),
+        };
+        // Optimistically reflect the change locally.
+        setSessionData({
+            ...sessionData,
+            flowConfigs: { ...sessionData.flowConfigs, [flowId]: updatedFlow },
+        });
+        setIsUpdatingManual(true);
+        try {
+            await updateCustomFlow(sessionId, updatedFlow);
+        } catch (e) {
+            setSessionData(prevSessionData); // revert on failure
+            toast.error("Failed to update manual mode");
+            console.error(e);
+        } finally {
+            setIsUpdatingManual(false);
+        }
+    };
 
     const onClickFunc = async () => {
         if (step.status === "INPUT-REQUIRED") {
@@ -85,6 +124,16 @@ function StepDisplay({ step, flowId }: { step: MappedStep; flowId: string }) {
     }
     const isFormType = ["HTML_FORM", "HTML_FORM_MULTI", "DYNAMIC_FORM"].includes(step.actionType);
     const apiCount = getCount(step);
+
+    // The per-step auto/manual switch is an advanced control — only shown in experimental mode.
+    // Otherwise: only counterparty-owned API steps awaiting their turn can be switched.
+    const showAutoToggle =
+        !!experimentalMode &&
+        !!seqStep &&
+        !isFormType &&
+        !hasInput &&
+        step.status === "WAITING" &&
+        step.owner !== sessionData?.npType;
 
     return (
         <FlippableWrapper flipTrigger={step.status}>
@@ -173,9 +222,33 @@ function StepDisplay({ step, flowId }: { step: MappedStep; flowId: string }) {
                                 out-of-sequence
                             </span>
                         )}
-                        <span className="bg-white/80 text-black text-xs font-semibold border border-gray-200 rounded-full px-2 py-0.5 uppercase tracking-wide">
-                            {isFormType ? "form" : "api"}
-                        </span>
+                        {isFormType && (
+                            <span className="bg-white/80 text-black text-xs font-semibold border border-gray-200 rounded-full px-2 py-0.5 uppercase tracking-wide">
+                                form
+                            </span>
+                        )}
+                        {hasInput && step.owner !== sessionData?.npType && (
+                            <span className="bg-white/80 text-black text-xs font-semibold border border-gray-200 rounded-full px-2 py-0.5 uppercase tracking-wide">
+                                inputs
+                            </span>
+                        )}
+                        {step.owner === sessionData?.npType && (
+                            <span className="bg-yellow-50 text-yellow-700 border border-yellow-200 text-xs font-semibold rounded-full px-2 py-0.5 uppercase tracking-wide">
+                                you send
+                            </span>
+                        )}
+                        {step.owner !== sessionData?.npType && (
+                            <span className="bg-violet-50 text-violet-700 border border-violet-200 text-xs font-semibold rounded-full px-2 py-0.5 uppercase tracking-wide">
+                                mock
+                            </span>
+                        )}
+                        {showAutoToggle && (
+                            <AutoToggle
+                                isAuto={!isManual}
+                                disabled={isUpdatingManual}
+                                onToggle={(nextAuto) => handleManualToggle(!nextAuto)}
+                            />
+                        )}
                         {apiCount > 0 && (
                             <span
                                 className={`${getCountStyles(apiCount)} text-sm font-semibold rounded-full px-2.5 py-0.5`}
@@ -197,6 +270,56 @@ function StepDisplay({ step, flowId }: { step: MappedStep; flowId: string }) {
                 </div>
             </div>
         </FlippableWrapper>
+    );
+}
+
+function AutoToggle({
+    isAuto,
+    disabled,
+    onToggle,
+}: {
+    isAuto: boolean;
+    disabled: boolean;
+    onToggle: (next: boolean) => void;
+}) {
+    const stop = (e: React.SyntheticEvent) => {
+        e.stopPropagation();
+    };
+    return (
+        <CustomTooltip content="Toggle auto mode for this step">
+            <button
+                type="button"
+                role="switch"
+                aria-checked={isAuto}
+                aria-label="Auto mode"
+                disabled={disabled}
+                onPointerDown={stop}
+                onMouseDown={stop}
+                onClick={(e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    onToggle(!isAuto);
+                }}
+                className={`flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-xs font-semibold uppercase tracking-wide transition-all duration-150 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed ${
+                    isAuto
+                        ? "bg-sky-50 border-sky-300 text-sky-700"
+                        : "bg-white/80 border-gray-200 text-gray-500 hover:border-gray-300"
+                }`}
+            >
+                <span>auto</span>
+                <span
+                    className={`relative inline-flex h-3.5 w-6 items-center rounded-full transition-colors duration-150 ${
+                        isAuto ? "bg-sky-600" : "bg-gray-300"
+                    }`}
+                >
+                    <span
+                        className={`inline-block h-2.5 w-2.5 transform rounded-full bg-white shadow transition-transform duration-150 ${
+                            isAuto ? "translate-x-3" : "translate-x-0.5"
+                        }`}
+                    />
+                </span>
+            </button>
+        </CustomTooltip>
     );
 }
 
