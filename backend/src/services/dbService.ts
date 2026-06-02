@@ -205,3 +205,22 @@ export const updateFlowInSession = async (sessionId: string, flow: Flow) => {
     throw new Error("Error while updating flow in session");
   }
 };
+
+export const getSubscriberUrlsByUserId = async (userId: string): Promise<string[]> => {
+  const config: AxiosRequestConfig = {
+    method: "get",
+    url: `${DB_SERVICE}/api/sessions/subscriber-urls/${userId}`,
+    headers: {
+      "Content-Type": "application/json",
+      "x-api-key": DB_SERVICE_API_KEY,
+    },
+  };
+
+  try {
+    const response = await axios2.request(config);
+    return response.data?.subscriberUrls ?? [];
+  } catch (e: any) {
+    logger.error("Error fetching subscriber URLs by userId", { userId, error: e.message });
+    throw new Error("Error fetching subscriber URLs by userId");
+  }
+};
