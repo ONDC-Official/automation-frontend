@@ -47,25 +47,16 @@ export default function TRV11PartialSelect({
     const [isPayloadEditorActive, setIsPayloadEditorActive] = useState(false);
     const [errorWhilePaste, setErrorWhilePaste] = useState("");
 
-    const [parsedItems, setParsedItems] = useState<OrderItem[]>([]);
     const [fulfillmentOptions, setFulfillmentOptions] = useState<OrderFulfillment[]>([]);
-    const [providerId, setProviderId] = useState("");
-    const [orderId, setOrderId] = useState("");
 
     const {
         handleSubmit,
         register,
-        watch,
         setValue,
         formState: { errors },
     } = useForm<FormValues>({
         defaultValues: { fulfillmentId: "" },
     });
-
-    const selectedFulfillmentId = watch("fulfillmentId");
-    const selectedFulfillment = fulfillmentOptions.find(
-        (f: any) => f.id === selectedFulfillmentId
-    );
 
 
     const onSubmit = async (data: FormValues) => {
@@ -102,13 +93,10 @@ export default function TRV11PartialSelect({
                 throw new Error("No 'order' object found in the payload.");
             }
 
-            setParsedItems(order.items ?? []);
             const ticketFulfillments = (order.fulfillments ?? []).filter(
                 (f) => f.type?.toUpperCase() === "TICKET"
             );
             setFulfillmentOptions(ticketFulfillments);
-            setProviderId(order.provider?.id ?? "");
-            setOrderId(order.id ?? "");
 
             if (ticketFulfillments.length > 0) {
                 setValue("fulfillmentId", ticketFulfillments[0].id);
@@ -126,14 +114,12 @@ export default function TRV11PartialSelect({
     };
 
 
-    const inputStyle =
-        "border rounded p-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white";
-    const labelStyle = "mb-1 font-semibold";
-    const fieldWrapperStyle = "flex flex-col mb-2";
+    const inputStyle = "w-full p-2 border border-gray-300 rounded text-sm";
+    const labelStyle = "block text-sm font-medium text-gray-600 mb-1";
 
 
     return (
-        <div>
+        <div className="p-4">
             {isPayloadEditorActive && (
                 <PayloadEditor
                     onAdd={handlePaste}
@@ -142,86 +128,32 @@ export default function TRV11PartialSelect({
             )}
 
             {errorWhilePaste && (
-                <p className="text-red-500 text-sm italic mt-1">{errorWhilePaste}</p>
+                <p className="text-red-500 text-sm italic mt-1 mb-4">{errorWhilePaste}</p>
             )}
 
-            <div className="flex items-center gap-3 mb-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+            {/* Top Row: Paste Button + Hint */}
+            <div className="flex items-center gap-4 mb-6">
                 <button
                     type="button"
                     onClick={() => setIsPayloadEditorActive(true)}
-                    className="p-2 border rounded-full hover:bg-gray-100 bg-white shrink-0"
-                    title="Paste on_confirm payload"
+                    className="flex items-center gap-2 py-2.5 px-5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all font-medium shadow-sm"
                 >
-                    <FaRegPaste size={14} />
+                    <FaRegPaste size={18} />
+                    <span>Paste Payload</span>
                 </button>
-                <p className="text-sm text-blue-700">
-                    Paste the <strong>on_confirm</strong> payload to auto-populate
-                    the fulfillment list below.
-                </p>
+                <span className="text-sm text-amber-700 bg-amber-50 border border-amber-200 px-4 py-2 rounded-lg">
+                    Please paste the payload (on_confirm) to load fulfillment options.
+                </span>
             </div>
 
-            <form
-                onSubmit={handleSubmit(onSubmit)}
-                className="space-y-4 h-[500px] overflow-y-scroll p-4"
-            >
-                {(orderId || providerId) && (
-                    <div className="border p-3 rounded bg-gray-50 space-y-2 text-sm">
-                        {orderId && (
-                            <div className={fieldWrapperStyle}>
-                                <label className={labelStyle}>Order ID</label>
-                                <div
-                                    className={`${inputStyle} bg-gray-100 text-gray-700 cursor-default`}
-                                >
-                                    {orderId}
-                                </div>
-                            </div>
-                        )}
-                        {providerId && (
-                            <div className={fieldWrapperStyle}>
-                                <label className={labelStyle}>Provider ID</label>
-                                <div
-                                    className={`${inputStyle} bg-gray-100 text-gray-700 cursor-default`}
-                                >
-                                    {providerId}
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                )}
+            {/* Main Form Section */}
+            <form onSubmit={handleSubmit(onSubmit)}>
+                <div className="border-2 border-dashed border-gray-200 rounded-xl p-6 mb-6">
+                    <h3 className="text-base font-semibold text-gray-800 mb-4">Select Fulfillment</h3>
 
-                {parsedItems.length > 0 && (
-                    <div className="border p-3 rounded space-y-2 bg-gray-50">
-                        <h3 className="font-bold text-sm text-gray-700 mb-1">
-                            Ordered Items
-                        </h3>
-                        {parsedItems.map((item) => (
-                            <div
-                                key={item.id}
-                                className="flex items-center justify-between text-sm border-b pb-1 last:border-b-0"
-                            >
-                                <span className="font-medium text-gray-800">
-                                    {item.descriptor?.name
-                                        ? `${item.descriptor.name} (${item.id})`
-                                        : item.id}
-                                    {item.descriptor?.code && (
-                                        <span className="ml-1 text-xs text-gray-400">
-                                            [{item.descriptor.code}]
-                                        </span>
-                                    )}
-                                </span>
-                                <span className="text-gray-500 text-xs">
-                                    Qty: {item.quantity?.selected?.count ?? 1}
-                                </span>
-                            </div>
-                        ))}
-                    </div>
-                )}
-
-                <div className="border p-3 rounded space-y-2">
-                    <div className={fieldWrapperStyle}>
+                    <div className="space-y-1">
                         <label className={labelStyle}>
-                            Select Fulfillment{" "}
-                            <span className="text-red-500">*</span>
+                            Fulfillment ID <span className="text-red-500">*</span>
                         </label>
 
                         {fulfillmentOptions.length === 0 ? (
@@ -251,33 +183,12 @@ export default function TRV11PartialSelect({
                             </p>
                         )}
                     </div>
-
-                    {selectedFulfillment && (
-                        <div className="mt-2 p-3 bg-green-50 border border-green-200 rounded text-xs font-mono text-green-800">
-                            <p className="font-bold mb-1 text-green-900 not-italic">
-                                Output Preview:
-                            </p>
-                            <pre className="whitespace-pre-wrap break-all">
-                                {JSON.stringify(
-                                    {
-                                        fulfillments: [
-                                            {
-                                                id: selectedFulfillment.id,
-                                                type: selectedFulfillment.type,
-                                            },
-                                        ],
-                                    },
-                                    null,
-                                    2
-                                )}
-                            </pre>
-                        </div>
-                    )}
                 </div>
 
+                {/* Submit Button */}
                 <button
                     type="submit"
-                    className="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700"
+                    className="w-full py-3 rounded-lg font-semibold transition-all bg-blue-600 text-white hover:bg-blue-700 shadow-md"
                 >
                     Submit
                 </button>
