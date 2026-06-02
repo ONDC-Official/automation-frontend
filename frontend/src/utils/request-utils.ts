@@ -442,3 +442,15 @@ export const updateFlowInSession = async (sessionId: string, flow: FlowInDB) => 
         throw new Error("ERROR while updating flow in session");
     }
 };
+
+export const getSubscriberUrls = async (userId: string): Promise<string[]> => {
+    try {
+        const res = await apiClient.get<{ subscriberUrls: string[] }>(
+            API_ROUTES.DB.SUBSCRIBER_URLS(userId)
+        );
+        return res.data?.subscriberUrls ?? [];
+    } catch (error) {
+        console.error("Error fetching subscriber URLs:", error);
+        return [];
+    }
+};
