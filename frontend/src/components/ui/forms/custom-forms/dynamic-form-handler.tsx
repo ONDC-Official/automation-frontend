@@ -5,6 +5,12 @@ import { SubmitEventParams } from "../../../../types/flow-types";
 import jsonpath from "jsonpath";
 import { FormFieldConfigType } from "../config-form/config-form";
 
+// ── Polling constants ──────────────────────────────────────────────────────────
+const POLL_INTERVAL_MS = 1_000; // 1 second between each poll
+const MAX_POLL_DURATION_MS = 120_000; // 2 minutes total timeout
+const MAX_POLLS = MAX_POLL_DURATION_MS / POLL_INTERVAL_MS; // = 120 polls
+// ──────────────────────────────────────────────────────────────────────────────
+
 interface DynamicFormHandlerProps {
     submitEvent: (data: SubmitEventParams) => Promise<void>;
     referenceData?: Record<string, unknown>;
@@ -19,17 +25,26 @@ export default function DynamicFormHandler({
     transactionId,
     formConfig,
 }: DynamicFormHandlerProps) {
-    const [status, setStatus] = useState<"idle" | "waiting" | "completed" | "error">("idle");
+    const [status, setStatus] = useState<"idle" | "waiting" | "completed" | "error" | "timeout">(
+        "idle"
+    );
     const [formUrl, setFormUrl] = useState<string>("");
     const [errorMessage, setErrorMessage] = useState<string>("");
-    const [pollCount, setPollCount] = useState<number>(0);
+
+    // pollDisplay is only for rendering — source of truth is pollCountRef
+    const [pollDisplay, setPollDisplay] = useState<number>(0);
 
     const pollingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
     // Use refs to prevent page refresh
-
     const formWindowRef = useRef<Window | null>(null);
     const isPollingRef = useRef<boolean>(false);
     const hasCompletedRef = useRef<boolean>(false);
+
+    // Tracks actual poll count synchronously (avoids stale-closure issues with state)
+    const pollCountRef = useRef<number>(0);
+
+    // Tracks when polling started (for elapsed-time logging)
+    const pollStartTimeRef = useRef<number>(0);
 
     // Extract form URL from reference data (same way as HTML_FORM)
     const formServiceUrl = useMemo<string>(() => {
@@ -49,11 +64,28 @@ export default function DynamicFormHandler({
         }
     }, [formConfig, referenceData]);
 
-    // Extract form name from the form URL — used as form_id in the check-completion API
-    // URL format: http://form-service/forms/{domain}/{formName}?session_id=...
+    // Resolve the form_id to use when polling /form/check-completion.
+    //
+    // Priority:
+    //   ① referenceData.form_id — the canonical xinput.form.id saved by the mock
+    //      service's saveData config (e.g. "$.message...xinput.form.id").
+    //      This is the value the form-service uses as the Redis key suffix.
+    //   ② URL-path last segment — legacy fallback for flows where form_id is not
+    //      yet saved in reference_data (e.g. path: /forms/FIS13/Ekyc_details_form
+    //      → "Ekyc_details_form").
     const formName = useMemo<string>(() => {
-        if (!formServiceUrl) return "";
+        // ① Best: use xinput.form.id saved directly in reference_data by mock saveData
+        const directFormId = referenceData?.form_id as string | undefined;
+        if (directFormId?.trim()) {
+            console.warn(
+                "🎯 [DynamicForm] Using xinput form_id from reference_data:",
+                directFormId
+            );
+            return directFormId.trim();
+        }
 
+        // ② Fallback: derive form name from URL path
+        if (!formServiceUrl) return "";
         try {
             const urlObj = new URL(formServiceUrl);
             const pathParts = urlObj.pathname.split("/").filter(Boolean);
@@ -61,7 +93,10 @@ export default function DynamicFormHandler({
             // So formName is the last part
             if (pathParts.length >= 3) {
                 const extractedFormName = pathParts[pathParts.length - 1];
-
+                console.warn(
+                    "⚠️ [DynamicForm] form_id not in reference_data — falling back to URL-path:",
+                    extractedFormName
+                );
                 return extractedFormName;
             }
         } catch (error) {
@@ -69,7 +104,7 @@ export default function DynamicFormHandler({
         }
 
         return "";
-    }, [formServiceUrl]);
+    }, [referenceData, formServiceUrl]);
 
     // Cleanup function - prevents memory leaks and ensures no refresh
     const cleanup = useCallback(() => {
@@ -93,7 +128,7 @@ export default function DynamicFormHandler({
     const checkCompletion = useCallback(async () => {
         if (hasCompletedRef.current) return;
 
-        // Guard: cannot poll without both identifiers
+        // ── Guard 1: identifiers ─────────────────────────────────────────────
         if (!transactionId || !formName) {
             console.warn("⚠️ [DynamicForm] Cannot poll: transactionId or formName missing", {
                 transactionId,
@@ -102,15 +137,30 @@ export default function DynamicFormHandler({
             return;
         }
 
-        try {
-            setPollCount((prev) => prev + 1);
+        // ── Guard 2: max poll / timeout ──────────────────────────────────────
+        pollCountRef.current += 1;
+        setPollDisplay(pollCountRef.current); // trigger UI re-render
 
-            // Log every tick so transactionId and formName are visible in the console
+        if (pollCountRef.current > MAX_POLLS) {
             console.warn(
-                `🔄 [DynamicForm] Poll #${pollCount} | transactionId: "${transactionId}" | formName (form_id): "${formName}"`
+                `⏱️ [DynamicForm] Polling timed out after ${MAX_POLL_DURATION_MS / 1000}s ` +
+                    `(${MAX_POLLS} polls)`
             );
+            cleanup();
+            setStatus("timeout");
+            return;
+        }
 
-            // ── New API: purpose-built completion check ──────────────────────────────
+        // ── Elapsed time log ─────────────────────────────────────────────────
+        const elapsedSec = ((Date.now() - pollStartTimeRef.current) / 1000).toFixed(1);
+        console.warn(
+            `🔄 [DynamicForm] Poll #${pollCountRef.current}/${MAX_POLLS} | ` +
+                `elapsed: ${elapsedSec}s | ` +
+                `transactionId: "${transactionId}" | form_id: "${formName}"`
+        );
+
+        try {
+            // ── New API: purpose-built completion check ───────────────────────
             // GET /form/check-completion?transaction_id={transactionId}&form_id={formName}
             // Backend reads Redis key: form_completed:{transactionId}:{formName}
             // Expected response: { completed: boolean, success: "true"|"false", message: string, timestamp: string }
@@ -119,11 +169,12 @@ export default function DynamicFormHandler({
                 {
                     params: {
                         transaction_id: transactionId,
+                        form_id: formName, // BUG FIX: was missing — backend needs both to resolve Redis key
                     },
                     timeout: 5000,
                 }
             );
-            // ────────────────────────────────────────────────────────────────────────
+            // ─────────────────────────────────────────────────────────────────
 
             const { completed, success } = response.data ?? {};
 
@@ -131,6 +182,8 @@ export default function DynamicFormHandler({
                 console.warn("✅ [DynamicForm] Form completed!", {
                     transactionId,
                     formName,
+                    poll: pollCountRef.current,
+                    elapsedSec,
                     message: response.data.message,
                     timestamp: response.data.timestamp,
                 });
@@ -160,6 +213,7 @@ export default function DynamicFormHandler({
                         jsonPath: { submission_id },
                         formData: { submission_id },
                     });
+                    setStatus("completed"); // BUG FIX: was never set — "completed" UI was dead code
                     // Parent (mapped-flow) will close the popup modal after submitEvent
                 } catch (error) {
                     console.error("❌ [DynamicForm] Error submitting event:", error);
@@ -168,10 +222,22 @@ export default function DynamicFormHandler({
                 }
             }
         } catch (error: unknown) {
+            // NOTE: do NOT set "error" status here — network blips are expected during
+            // polling; we keep retrying until MAX_POLLS is reached.
             const err = error as { message?: string };
             console.error("Error checking completion:", err.message);
         }
-    }, [transactionId, formName, submitEvent, cleanup, pollCount]);
+    }, [transactionId, formName, submitEvent, cleanup]);
+    // NOTE: pollCountRef & pollDisplay are intentionally NOT in deps — they are refs/
+    // updated imperatively. This prevents checkCompletion from being recreated on
+    // every tick, which was the root cause of the stale-closure bug.
+
+    // Keep a ref to the latest checkCompletion so setInterval always calls the
+    // most up-to-date closure (anti-stale-closure pattern for intervals).
+    const checkCompletionRef = useRef(checkCompletion);
+    useEffect(() => {
+        checkCompletionRef.current = checkCompletion;
+    }, [checkCompletion]);
 
     // Start polling function
     const startPolling = useCallback(() => {
@@ -180,24 +246,28 @@ export default function DynamicFormHandler({
         }
 
         isPollingRef.current = true;
-        setPollCount(0);
+        pollCountRef.current = 0; // reset counter
+        setPollDisplay(0); // reset display
+        pollStartTimeRef.current = Date.now(); // mark start time
 
         // Log identifiers so they are visible in the console when polling starts
-        console.warn("🔄 [DynamicForm] Starting polling with:");
-        console.warn("   ➤ transactionId  :", transactionId || "(empty — check flowMap)");
-        console.warn("   ➤ formName (form_id):", formName || "(empty — check formServiceUrl path)");
+        console.warn("🔄 [DynamicForm] Starting polling:");
+        console.warn(`   ➤ interval      : ${POLL_INTERVAL_MS}ms`);
+        console.warn(`   ➤ max duration  : ${MAX_POLL_DURATION_MS / 1000}s (${MAX_POLLS} polls)`);
+        console.warn("   ➤ transactionId :", transactionId || "(empty — check flowMap)");
+        console.warn("   ➤ form_id       :", formName || "(empty — check formServiceUrl path)");
         console.warn(
-            "   ➤ endpoint       :",
+            "   ➤ endpoint      :",
             `${import.meta.env.VITE_BACKEND_URL}/form/check-completion`
         );
 
         // Poll immediately first time
         checkCompletion();
 
-        // Then poll every 3 seconds
+        // Then poll every POLL_INTERVAL_MS using ref to avoid stale closure
         pollingIntervalRef.current = setInterval(() => {
-            checkCompletion();
-        }, 3000);
+            checkCompletionRef.current();
+        }, POLL_INTERVAL_MS);
     }, [transactionId, formName, checkCompletion]);
 
     // Handle start form - NO navigation/refresh
@@ -273,7 +343,7 @@ export default function DynamicFormHandler({
             try {
                 setStatus("waiting");
                 setErrorMessage("");
-                setPollCount(0);
+                setPollDisplay(0);
 
                 // Mark flow as active in localStorage (prevents accidental navigation)
                 localStorage.setItem("dynamic_form_flow_active", "true");
@@ -321,7 +391,7 @@ export default function DynamicFormHandler({
                 cleanup();
             }
         },
-        [transactionId, referenceData, formServiceUrl, startPolling, cleanup]
+        [transactionId, formServiceUrl, startPolling, cleanup]
     );
 
     // Handle reopen - NO navigation
@@ -351,7 +421,9 @@ export default function DynamicFormHandler({
             cleanup();
             setStatus("idle");
             setErrorMessage("");
-            setPollCount(0);
+            setPollDisplay(0);
+            pollCountRef.current = 0;
+            pollStartTimeRef.current = 0;
             hasCompletedRef.current = false;
         },
         [cleanup]
@@ -384,11 +456,12 @@ export default function DynamicFormHandler({
                     <p className="text-gray-600 mb-4">
                         Please complete and submit the form in the tab that was opened.
                     </p>
-                    <p className="text-sm text-gray-500 mb-2">
-                        Checking automatically... (Poll #{pollCount})
+                    <p className="text-sm text-gray-500 mb-1">
+                        Poll #{pollDisplay} of {MAX_POLLS}
                     </p>
                     <p className="text-xs text-gray-400 mb-4">
-                        This page will NOT refresh. Stay here while completing the form.
+                        Time remaining: ~{Math.max(0, MAX_POLLS - pollDisplay)}s &nbsp;|&nbsp; This
+                        page will NOT refresh.
                     </p>
                     <button
                         type="button"
@@ -405,6 +478,30 @@ export default function DynamicFormHandler({
                     <div className="text-5xl mb-4">✓</div>
                     <h3 className="text-lg font-medium mb-2">Form Submitted Successfully!</h3>
                     <p className="text-gray-600">Proceeding to next step...</p>
+                </div>
+            )}
+
+            {status === "timeout" && (
+                <div className="text-center">
+                    <div className="text-yellow-500 text-5xl mb-4">⏱</div>
+                    <h3 className="text-lg font-medium text-yellow-600 mb-2">
+                        Form Submission Timed Out
+                    </h3>
+                    <p className="text-gray-600 mb-2">
+                        We waited {MAX_POLL_DURATION_MS / 1000} seconds but the form was not
+                        completed.
+                    </p>
+                    <p className="text-sm text-gray-500 mb-4">
+                        If you submitted the form, please try again. Otherwise, check your
+                        connection.
+                    </p>
+                    <button
+                        type="button"
+                        onClick={handleRetry}
+                        className="bg-blue-600 text-white py-2 px-6 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                        Try Again
+                    </button>
                 </div>
             )}
 
