@@ -585,7 +585,6 @@ export default function ReteB2BSelect({
         }
         if (form.type === "new") {
             if (
-                !form.customer_id ||
                 !form.phone_number ||
                 !form.email ||
                 !form.tax_number ||
