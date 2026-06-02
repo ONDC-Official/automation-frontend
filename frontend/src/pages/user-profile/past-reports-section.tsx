@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from "react";
-import { LuFileText, LuExternalLink, LuLoader, LuChevronDown, LuChevronUp } from "react-icons/lu";
+import { LuFileText, LuExternalLink, LuLoader, LuCircleCheck } from "react-icons/lu";
 import { toast } from "react-toastify";
 
 import { UserContext } from "@context/userContext";
@@ -29,27 +29,26 @@ type PastReport = {
     updatedAt: string;
 };
 
-function truncateId(id: string, len = 36): string {
+function truncateId(id: string, len = 32): string {
     if (id.length <= len) return id;
     return `${id.slice(0, len / 2)}…${id.slice(-len / 2)}`;
 }
 
-// --- Circular donut ring ---
-function CircleRing({
+// Circular donut ring — centerText is "80%" for Overall or "1/9" for Mandatory/Optional
+function DonutRing({
     pct,
-    size = 72,
-    stroke = 8,
+    size = 64,
+    stroke = 6,
     label,
-    sublabel,
+    centerText,
     color,
 }: {
     pct: number;
     size?: number;
     stroke?: number;
     label: string;
-    sublabel: string;
-    color: string; // tailwind stroke color class — we use inline style instead
-    colorHex: string;
+    centerText: string;
+    color: string;
 }) {
     const r = (size - stroke) / 2;
     const circ = 2 * Math.PI * r;
@@ -57,10 +56,9 @@ function CircleRing({
     const cx = size / 2;
 
     return (
-        <div className="flex flex-col items-center gap-1.5">
+        <div className="flex flex-col items-center gap-1">
             <div className="relative" style={{ width: size, height: size }}>
                 <svg width={size} height={size} style={{ transform: "rotate(-90deg)" }}>
-                    {/* Track */}
                     <circle
                         cx={cx}
                         cy={cx}
@@ -69,7 +67,6 @@ function CircleRing({
                         stroke="#e5e7eb"
                         strokeWidth={stroke}
                     />
-                    {/* Progress */}
                     <circle
                         cx={cx}
                         cy={cx}
@@ -83,178 +80,13 @@ function CircleRing({
                         style={{ transition: "stroke-dashoffset 0.7s ease" }}
                     />
                 </svg>
-                {/* Centre label */}
                 <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-[13px] font-bold text-gray-700">{pct}%</span>
-                </div>
-            </div>
-            <div className="text-center">
-                <p className="text-[11px] font-semibold text-gray-600 uppercase tracking-wider">
-                    {label}
-                </p>
-                <p className="text-[10px] text-gray-400">{sublabel}</p>
-            </div>
-        </div>
-    );
-}
-
-function FlowSummaryRings({ summary }: { summary: FlowSummary }) {
-    const FLOW_CATEGORIES = ["MANDATORY", "OPTIONAL"] as const;
-    const rows = FLOW_CATEGORIES.filter((cat) => summary[cat] != null);
-
-    const colorMap: Record<string, string> = {
-        MANDATORY: "#3b82f6", // blue-500
-        OPTIONAL: "#a855f7", // purple-500
-    };
-
-    return (
-        <div className="flex items-start justify-center gap-8 px-5 py-4">
-            {rows.map((cat) => {
-                const stats = summary[cat]!;
-                const pct = stats.total > 0 ? Math.round((stats.completed / stats.total) * 100) : 0;
-                const allDone = stats.completed === stats.total;
-                const hexColor = allDone ? "#10b981" : colorMap[cat]; // emerald if 100%
-                return (
-                    <CircleRing
-                        key={cat}
-                        pct={pct}
-                        size={76}
-                        stroke={8}
-                        label={cat}
-                        sublabel={`${stats.completed}/${stats.total} flows`}
-                        color={hexColor}
-                        colorHex={hexColor}
-                    />
-                );
-            })}
-        </div>
-    );
-}
-
-function ReportCard({
-    report,
-    viewingId,
-    onView,
-}: {
-    report: PastReport;
-    viewingId: string | null;
-    onView: (id: string) => void;
-}) {
-    const [expanded, setExpanded] = useState(false);
-    const hasStats = report.total_tests != null && report.passed_tests != null;
-    const allPassed = hasStats && report.passed_tests === report.total_tests;
-    const passRate =
-        hasStats && report.total_tests! > 0
-            ? Math.round((report.passed_tests! / report.total_tests!) * 100)
-            : null;
-
-    const updatedDate = new Date(report.updatedAt).toLocaleDateString("en-IN", {
-        day: "numeric",
-        month: "short",
-        year: "numeric",
-    });
-
-    const FLOW_CATEGORIES = ["MANDATORY", "OPTIONAL"] as const;
-    const flowRows = FLOW_CATEGORIES.filter((cat) => report.flow_summary?.[cat] != null);
-    const hasFlowData = flowRows.length > 0;
-
-    return (
-        <div className="border border-blue-100 rounded-lg overflow-hidden bg-white shadow-sm hover:shadow-md transition-shadow duration-200">
-            {/* Card header row */}
-            <div className="flex items-center justify-between gap-4 px-5 py-4">
-                {/* Left: icon + id */}
-                <div className="flex items-center gap-3 min-w-0 flex-1">
-                    <div className="p-2 rounded-md bg-blue-50 border border-blue-100 shrink-0">
-                        <LuFileText size={14} className="text-blue-500" />
-                    </div>
-                    <div className="min-w-0">
-                        <p
-                            className="text-[13px] font-mono text-gray-700 truncate font-medium"
-                            title={report.test_id}
-                        >
-                            {truncateId(report.test_id)}
-                        </p>
-                        <p className="text-[11px] text-gray-400 mt-0.5">Updated {updatedDate}</p>
-                    </div>
-                </div>
-
-                {/* Overall pass rate donut — always visible when stats present */}
-                {hasStats && (
-                    <div className="shrink-0">
-                        <CircleRing
-                            pct={passRate ?? 0}
-                            size={52}
-                            stroke={6}
-                            label=""
-                            sublabel=""
-                            color={
-                                passRate === 100
-                                    ? "#10b981"
-                                    : passRate! >= 70
-                                      ? "#f59e0b"
-                                      : "#ef4444"
-                            }
-                            colorHex=""
-                        />
-                    </div>
-                )}
-
-                {/* Right: view + expand */}
-                <div className="flex items-center gap-2 shrink-0">
-                    <button
-                        type="button"
-                        id={`view-report-${report.test_id}`}
-                        disabled={viewingId === report.test_id}
-                        onClick={() => onView(report.test_id)}
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold
-                                   bg-blue-600 text-white hover:bg-blue-700
-                                   disabled:opacity-40 disabled:cursor-not-allowed
-                                   transition-colors duration-150"
-                    >
-                        {viewingId === report.test_id ? (
-                            <LuLoader size={12} className="animate-spin" />
-                        ) : (
-                            <LuExternalLink size={12} />
-                        )}
-                        View Report
-                    </button>
-
-                    {hasFlowData && (
-                        <button
-                            type="button"
-                            onClick={() => setExpanded((v) => !v)}
-                            className="p-1.5 rounded-md text-blue-400 hover:text-blue-600 hover:bg-blue-50 transition-colors duration-150"
-                            title={expanded ? "Hide flow summary" : "Show flow summary"}
-                        >
-                            {expanded ? <LuChevronUp size={14} /> : <LuChevronDown size={14} />}
-                        </button>
-                    )}
-                </div>
-            </div>
-
-            {/* Pass rate stats text (always visible when stats present) */}
-            {hasStats && (
-                <div className="px-5 pb-3 -mt-1 flex items-center gap-2 text-[11px] text-gray-400">
-                    <span>
-                        <span
-                            className={`font-bold ${allPassed ? "text-emerald-600" : "text-amber-600"}`}
-                        >
-                            {report.passed_tests}/{report.total_tests}
-                        </span>{" "}
-                        passed
+                    <span className="text-[11px] font-bold text-gray-700 leading-none">
+                        {centerText}
                     </span>
                 </div>
-            )}
-
-            {/* Expandable flow summary — circular donut rings */}
-            {hasFlowData && expanded && (
-                <div className="border-t border-blue-100 bg-blue-50/30">
-                    <p className="px-5 pt-3 text-[10px] font-semibold text-blue-400 uppercase tracking-widest">
-                        Flow Coverage
-                    </p>
-                    <FlowSummaryRings summary={report.flow_summary!} />
-                </div>
-            )}
+            </div>
+            <span className="text-[10px] text-gray-500 font-medium">{label}</span>
         </div>
     );
 }
@@ -300,48 +132,167 @@ export default function PastReportsSection() {
     };
 
     return (
-        <section className="mt-4">
-            {/* Banner header — matches Pramaan UI style */}
-            <div className="bg-blue-50 border border-blue-100 rounded-lg px-6 py-5 mb-5 text-center">
-                <div className="flex items-center justify-center gap-2 mb-1">
-                    <LuFileText size={18} className="text-blue-600" />
-                    <h2 className="text-lg font-bold text-gray-800">Past Test Reports</h2>
+        <section className="mt-6 px-1">
+            {/* Header */}
+            <div className="mb-5">
+                <div className="flex items-center gap-2 mb-0.5">
+                    <LuFileText className="text-sky-600" size={18} />
+                    <h2 className="text-lg font-bold text-gray-800 tracking-tight">Past Reports</h2>
                     {reports.length > 0 && (
-                        <span className="text-[11px] font-semibold bg-blue-600 text-white px-2 py-0.5 rounded-full">
+                        <span className="ml-1 text-[11px] font-semibold bg-sky-100 text-sky-600 px-2 py-0.5 rounded-full">
                             {reports.length}
                         </span>
                     )}
                 </div>
-                <p className="text-sm text-blue-600 max-w-md mx-auto leading-snug">
-                    View and manage reports from your previous testing sessions. Each report shows
-                    test pass rate and flow coverage details.
+                <p className="text-xs text-gray-400 ml-6">
+                    Reports generated from your previous testing sessions.
                 </p>
             </div>
 
-            {/* Body */}
             {loading ? (
-                <div className="flex flex-col items-center justify-center py-16 text-blue-300">
-                    <LuLoader size={28} className="animate-spin mb-3" />
-                    <p className="text-sm text-gray-400 font-medium">Loading reports…</p>
+                <div className="flex flex-col items-center justify-center py-14 text-gray-400">
+                    <LuLoader className="text-3xl mb-3 animate-spin text-sky-400" />
+                    <p className="text-sm font-medium">Loading reports…</p>
                 </div>
             ) : reports.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-16 border border-dashed border-blue-200 rounded-lg bg-blue-50/30">
-                    <LuFileText size={36} className="text-blue-200 mb-3" />
-                    <p className="text-sm font-semibold text-gray-500">No reports yet</p>
-                    <p className="text-xs text-gray-400 mt-1 max-w-xs text-center">
-                        Generate a report from a testing session — it will appear here.
+                <div className="flex flex-col items-center justify-center py-14 text-gray-300">
+                    <LuFileText className="text-5xl mb-3" />
+                    <p className="text-sm font-semibold text-gray-400">No reports yet</p>
+                    <p className="text-xs text-gray-300 mt-0.5">
+                        Generate a report from your testing session to see it here.
                     </p>
                 </div>
             ) : (
-                <div className="space-y-2.5">
-                    {reports.map((report) => (
-                        <ReportCard
-                            key={report.test_id}
-                            report={report}
-                            viewingId={viewingId}
-                            onView={handleViewReport}
-                        />
-                    ))}
+                <div className="space-y-3">
+                    {reports.map((report) => {
+                        const hasStats = report.total_tests != null && report.passed_tests != null;
+                        const allPassed = hasStats && report.passed_tests === report.total_tests;
+                        const passRate =
+                            hasStats && report.total_tests! > 0
+                                ? Math.round((report.passed_tests! / report.total_tests!) * 100)
+                                : 0;
+                        const overallColor =
+                            passRate === 100 ? "#10b981" : passRate >= 70 ? "#f59e0b" : "#ef4444";
+
+                        const mandatoryStats = report.flow_summary?.MANDATORY;
+                        const optionalStats = report.flow_summary?.OPTIONAL;
+
+                        const mandatoryPct =
+                            mandatoryStats && mandatoryStats.total > 0
+                                ? Math.round(
+                                      (mandatoryStats.completed / mandatoryStats.total) * 100
+                                  )
+                                : 0;
+                        const optionalPct =
+                            optionalStats && optionalStats.total > 0
+                                ? Math.round((optionalStats.completed / optionalStats.total) * 100)
+                                : 0;
+
+                        const updatedDate = new Date(report.updatedAt).toLocaleDateString("en-IN", {
+                            day: "numeric",
+                            month: "short",
+                            year: "numeric",
+                        });
+
+                        return (
+                            <div
+                                key={report.test_id}
+                                className="flex items-center gap-4 bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md hover:border-gray-300 transition-all duration-200 px-4 py-3.5"
+                            >
+                                {/* Left: doc icon + truncated id + passed badge + date */}
+                                <div className="flex items-center gap-3 min-w-0 flex-1">
+                                    <div className="shrink-0 p-2 rounded-lg border border-gray-200 bg-white">
+                                        <LuFileText size={16} className="text-gray-500" />
+                                    </div>
+                                    <div className="min-w-0">
+                                        <p
+                                            className="text-[13px] font-mono font-semibold text-gray-800 truncate"
+                                            title={report.test_id}
+                                        >
+                                            {truncateId(report.test_id)}
+                                        </p>
+                                        <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+                                            {hasStats && (
+                                                <span
+                                                    className={`inline-flex items-center gap-1 text-[11px] font-semibold px-1.5 py-0.5 rounded-full border ${
+                                                        allPassed
+                                                            ? "text-emerald-700 bg-emerald-50 border-emerald-200"
+                                                            : "text-amber-700 bg-amber-50 border-amber-200"
+                                                    }`}
+                                                >
+                                                    <LuCircleCheck size={10} />
+                                                    {report.passed_tests}/{report.total_tests}{" "}
+                                                    passed
+                                                </span>
+                                            )}
+                                            <span className="text-[11px] text-gray-400">
+                                                · {updatedDate}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Center: 3 donut rings */}
+                                <div className="flex items-center gap-4 shrink-0">
+                                    {hasStats && (
+                                        <DonutRing
+                                            pct={passRate}
+                                            size={48}
+                                            stroke={5}
+                                            label="Overall"
+                                            centerText={`${passRate}%`}
+                                            color={overallColor}
+                                        />
+                                    )}
+                                    <DonutRing
+                                        pct={mandatoryPct}
+                                        size={48}
+                                        stroke={5}
+                                        label="Mandatory"
+                                        centerText={
+                                            mandatoryStats
+                                                ? `${mandatoryStats.completed}/${mandatoryStats.total}`
+                                                : "–"
+                                        }
+                                        color={mandatoryPct === 100 ? "#10b981" : "#f59e0b"}
+                                    />
+                                    <DonutRing
+                                        pct={optionalPct}
+                                        size={48}
+                                        stroke={5}
+                                        label="Optional"
+                                        centerText={
+                                            optionalStats
+                                                ? `${optionalStats.completed}/${optionalStats.total}`
+                                                : "–"
+                                        }
+                                        color={optionalPct === 100 ? "#10b981" : "#f59e0b"}
+                                    />
+                                </div>
+
+                                {/* Right: View button */}
+                                <button
+                                    type="button"
+                                    id={`view-report-${report.test_id}`}
+                                    disabled={viewingId === report.test_id}
+                                    onClick={() => handleViewReport(report.test_id)}
+                                    className="shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-lg text-[13px] font-semibold
+                                               bg-sky-600 text-white border border-sky-600
+                                               hover:bg-sky-700 hover:border-sky-700
+                                               disabled:opacity-40 disabled:cursor-not-allowed
+                                               transition-all duration-150"
+                                    //className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-sky-700 bg-sky-50 hover:bg-sky-100 border border-sky-200 hover:border-sky-300 rounded-xl transition-all"
+                                >
+                                    {viewingId === report.test_id ? (
+                                        <LuLoader className="animate-spin" size={13} />
+                                    ) : (
+                                        <LuExternalLink size={13} />
+                                    )}
+                                    View
+                                </button>
+                            </div>
+                        );
+                    })}
                 </div>
             )}
         </section>
