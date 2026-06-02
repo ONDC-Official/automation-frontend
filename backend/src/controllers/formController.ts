@@ -11,13 +11,13 @@ import { SessionCache } from '../interfaces/newSessionData';
  */
 export const checkFormCompletion: RequestHandler = async (req: Request, res: Response) => {
   try {
-    const { transaction_id, form_id } = req.query;
+    const { transaction_id } = req.query;
 
-    logger.info('Form completion check', { transaction_id, form_id });
+    logger.info('Form completion check', { transaction_id });
 
-    if (!transaction_id || !form_id) {
+    if (!transaction_id) {
       res.status(400).json({
-        error: 'transaction_id and form_id are required',
+        error: 'transaction_id is required',
         completed: false
       });
       return;
@@ -25,34 +25,17 @@ export const checkFormCompletion: RequestHandler = async (req: Request, res: Res
 
     // Fetch session data via reverse-index (txn:session:{transaction_id} -> sessionId)
     // Non-fatal: a missing entry means the flow pre-dates this index or was never registered.
-    const sessionData: any | null = await getSessionByTransactionId(
-      transaction_id as string
-    );
-    if (sessionData) {
-      logger.info('Session data resolved for form completion check', {
-        transaction_id,
-        form_id,
-        domain: sessionData.domain,
-        subscriberUrl: sessionData.subscriberUrl,
-        npType: sessionData.npType,
-        sessionData,
-      });
-    } else {
-      logger.warning('Could not resolve session for transaction_id', {
-        transaction_id,
-        form_id,
-      });
-    }
+    
+   
 
     
-    const completionKey = `form_completed:${transaction_id}:${form_id}`;
+    const completionKey = `form_completed:${transaction_id}`;
     const completionData = await RedisService.getKey(completionKey);
 
     if (completionData) {
       const data = JSON.parse(completionData);
       logger.info('Form completion check: COMPLETED', {
         transaction_id,
-        form_id,
         timestamp: data.timestamp
       });
 
@@ -65,7 +48,7 @@ export const checkFormCompletion: RequestHandler = async (req: Request, res: Res
       return;
     }
 
-    logger.debug('Form completion check: PENDING', { transaction_id, form_id });
+    logger.debug('Form completion check: PENDING', { transaction_id });
     res.json({ completed: false });
 
   } catch (error: any) {

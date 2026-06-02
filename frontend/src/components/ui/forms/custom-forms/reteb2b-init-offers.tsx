@@ -614,7 +614,6 @@ export default function ReteB2BInitOffers({
         }
         if (form.type === "new") {
             if (
-                !form.customer_id ||
                 !form.phone_number ||
                 !form.email ||
                 !form.tax_number ||
