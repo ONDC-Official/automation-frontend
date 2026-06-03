@@ -34,23 +34,23 @@ const CircleProgress: FC<{ done: number; total: number; color: string; label: st
     color,
     label,
 }) => {
-    const r = 30;
+    const r = 20;
     const circumference = 2 * Math.PI * r;
     const pct = total > 0 ? done / total : 0;
     const offset = circumference * (1 - pct);
 
     return (
         <div className="flex flex-col items-center gap-1">
-            <div className="relative w-16 h-16">
-                <svg width="64" height="64" viewBox="0 0 64 64" className="-rotate-90">
-                    <circle cx="32" cy="32" r={r} fill="none" stroke="#e2e8f0" strokeWidth="5.5" />
+            <div className="relative w-12 h-12">
+                <svg width="48" height="48" viewBox="0 0 48 48" className="-rotate-90">
+                    <circle cx="24" cy="24" r={r} fill="none" stroke="#e2e8f0" strokeWidth="4" />
                     <circle
-                        cx="32"
-                        cy="32"
+                        cx="24"
+                        cy="24"
                         r={r}
                         fill="none"
                         stroke={color}
-                        strokeWidth="5.5"
+                        strokeWidth="4"
                         strokeLinecap="round"
                         strokeDasharray={circumference}
                         strokeDashoffset={offset}
@@ -58,10 +58,10 @@ const CircleProgress: FC<{ done: number; total: number; color: string; label: st
                     />
                 </svg>
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <span className="text-xs font-bold leading-none" style={{ color }}>
+                    <span className="text-[10px] font-bold leading-none" style={{ color }}>
                         {Math.round(pct * 100)}%
                     </span>
-                    <span className="text-[9px] text-slate-400 font-semibold mt-0.5">
+                    <span className="text-[8px] text-slate-400 font-semibold mt-0.5">
                         {done}/{total}
                     </span>
                 </div>
@@ -78,7 +78,7 @@ const StatusBadge: FC<{ status: FlowStatus }> = ({ status }) => {
     const config: Record<FlowStatus, { cls: string; label: string }> = {
         PASS: { cls: "bg-green-50 text-green-600 border-green-200", label: "✓ Passed" },
         FAIL: { cls: "bg-red-50 text-red-600 border-red-200", label: "✗ Failed" },
-        ATTEMPTED: { cls: "bg-amber-50 text-amber-600 border-amber-200", label: "⏳ Pending" },
+        ATTEMPTED: { cls: "bg-amber-50 text-amber-600 border-amber-200", label: "⏳ Run" },
         NOT_RUN: { cls: "bg-slate-100 text-slate-400 border-slate-200", label: "– Not Run" },
     };
     const { cls, label } = config[status] ?? config.NOT_RUN;
@@ -90,21 +90,6 @@ const StatusBadge: FC<{ status: FlowStatus }> = ({ status }) => {
         </span>
     );
 };
-
-// --- Summary pill ---
-const SummaryPill: FC<{ dotColor: string; label: string; entry: FlowSummaryEntry }> = ({
-    dotColor,
-    label,
-    entry,
-}) => (
-    <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5">
-        <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: dotColor }} />
-        <span className="text-xs font-semibold text-slate-500">{label}</span>
-        <span className="text-sm font-bold text-slate-800 ml-1">
-            {entry.completed} / {entry.total}
-        </span>
-    </div>
-);
 
 // --- Session card ---
 interface SessionCardProps {
@@ -135,20 +120,14 @@ const SessionCard: FC<SessionCardProps> = ({
     const handleExpand = async () => {
         const next = !expanded;
         setExpanded(next);
-
         if (next && !detailFetched.current) {
             detailFetched.current = true;
             setLoadingDetail(true);
             try {
-                const res = await apiClient.put<SessionCache>(
-                    API_ROUTES.SESSIONS.BASE,
-                    {},
-                    {
-                        params: { session_id: session.sessionId },
-                    }
-                );
+                const res = await apiClient.get<SessionCache>(API_ROUTES.SESSIONS.BASE, {
+                    params: { session_id: session.sessionId },
+                });
                 const detail = res.data;
-
                 // flowMap from detail API → attempted flows (flowId → transactionId | null)
                 const attemptedMap = detail.flowMap ?? {};
                 const flowConfigs = detail.flowConfigs ?? {};
@@ -178,7 +157,6 @@ const SessionCard: FC<SessionCardProps> = ({
                         status: "ATTEMPTED" as FlowStatus,
                     }));
                 }
-
                 setFlowRows(rows);
             } catch (e) {
                 console.error("Failed to fetch session detail", e);
@@ -189,7 +167,6 @@ const SessionCard: FC<SessionCardProps> = ({
             }
         }
     };
-
     const handleResume = (e: React.MouseEvent) => {
         e.stopPropagation();
         navigate(
@@ -286,11 +263,11 @@ const SessionCard: FC<SessionCardProps> = ({
             {expanded && (
                 <div className="px-6 py-5">
                     {/* Summary pills */}
-                    <div className="flex gap-3 flex-wrap mb-5">
+                    {/* <div className="flex gap-3 flex-wrap mb-5">
                         <SummaryPill dotColor="#0b7ec8" label="Overall Completed" entry={rep} />
                         <SummaryPill dotColor="#16a34a" label="Mandatory Completed" entry={mand} />
                         <SummaryPill dotColor="#d97706" label="Optional Completed" entry={opt} />
-                    </div>
+                    </div> */}
 
                     {/* Flows table */}
                     {loadingDetail ? (
