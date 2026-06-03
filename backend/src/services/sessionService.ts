@@ -3,6 +3,7 @@ import { SessionCache, SubscriberCache } from "../interfaces/newSessionData";
 import { saveLog } from "../utils/console";
 import axios from "../utils/axios";
 import logger from "@ondc/automation-logger";
+import { upsertSessionInDb } from "./dbService";
 const SESSION_EXPIRY = 3600 * 24; // 24 hour
 const EXPECTATION_EXPIRY = 5 * 60 * 1000; // 5 minutes
 
@@ -57,6 +58,15 @@ export const createSessionService = async (
 			JSON.stringify(finalCache),
 			SESSION_EXPIRY,
 		);
+
+		upsertSessionInDb(sessionId, {
+			userId: data.userId,
+			npType,
+			npId: subscriberUrl,
+			domain,
+			version,
+		}).catch((e) => logger.error("DB session upsert failed", loggerMeta, e));
+
 		logger.info("Session created successfully", loggerMeta, finalCache);
 		return "Session created successfully";
 	} catch (e: any) {

@@ -206,6 +206,35 @@ export const updateFlowInSession = async (sessionId: string, flow: Flow) => {
   }
 };
 
+export const upsertSessionInDb = async (
+  sessionId: string,
+  data: {
+    userId?: string;
+    npType: string;
+    npId?: string;
+    domain?: string;
+    version?: string;
+  }
+) => {
+  const config: AxiosRequestConfig = {
+    method: "post",
+    url: `${DB_SERVICE}/api/sessions/upsert`,
+    headers: {
+      "Content-Type": "application/json",
+      "x-api-key": DB_SERVICE_API_KEY,
+    },
+    data: { sessionId, ...data },
+  };
+
+  try {
+    const response = await axios2.request(config);
+    return response.data;
+  } catch (e: any) {
+    logger.error("Error upserting session in DB", { sessionId, error: e.message });
+    throw new Error("Error upserting session in DB");
+  }
+};
+
 export const getSubscriberUrlsByUserId = async (userId: string): Promise<string[]> => {
   const config: AxiosRequestConfig = {
     method: "get",

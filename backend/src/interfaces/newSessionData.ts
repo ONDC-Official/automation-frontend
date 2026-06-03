@@ -61,4 +61,5 @@ export interface SessionCache {
     flowConfigs: Record<FlowId, Flow>;
     activeFlow: null | string;
     activeStep: number;
+    userId?: string;
 }
