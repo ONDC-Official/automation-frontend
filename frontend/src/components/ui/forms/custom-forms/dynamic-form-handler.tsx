@@ -6,8 +6,8 @@ import jsonpath from "jsonpath";
 import { FormFieldConfigType } from "../config-form/config-form";
 
 // ── Polling constants ──────────────────────────────────────────────────────────
-const POLL_INTERVAL_MS = 1_000; // 1 second between each poll
-const MAX_POLL_DURATION_MS = 120_000; // 2 minutes total timeout
+const POLL_INTERVAL_MS = 2_000; // 1 second between each poll
+const MAX_POLL_DURATION_MS = 300_000; // 2 minutes total timeout
 const MAX_POLLS = MAX_POLL_DURATION_MS / POLL_INTERVAL_MS; // = 120 polls
 // ──────────────────────────────────────────────────────────────────────────────
 
