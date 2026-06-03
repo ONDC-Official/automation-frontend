@@ -11,6 +11,12 @@ interface SessionsResponse {
         sessionId: string;
         reportExists: boolean;
         createdAt: string;
+        domain?: string;
+        version?: string;
+        userId?: string | null;
+        flows?: Array<{ id: string; status: "PENDING" | "COMPLETED"; payloads?: string[] }>;
+        flowSummary?: Record<string, { total: number; completed: number }> | null;
+        flowMap?: Record<string, "PASS" | "FAIL"> | null;
     }>;
 }
 
@@ -382,12 +388,19 @@ export const getReport = async (sessionId: string): Promise<ReportResponse> => {
     }
 };
 
-export const getSessions = async (subId: string, npType: string): Promise<SessionsResponse> => {
+export const getSessions = async (
+    subId: string,
+    npType: string,
+    domain?: string,
+    version?: string
+): Promise<SessionsResponse> => {
     try {
         const res = await apiClient.get<SessionsResponse>(API_ROUTES.DB.SESSIONS, {
             params: {
                 sub_id: subId,
                 np_type: npType,
+                ...(domain && { domain }),
+                ...(version && { version }),
             },
         });
 
@@ -431,5 +444,17 @@ export const updateFlowInSession = async (sessionId: string, flow: FlowInDB) => 
     } catch (error) {
         console.error("Error while updating flow in session:", error);
         throw new Error("ERROR while updating flow in session");
+    }
+};
+
+export const getSubscriberUrls = async (userId: string): Promise<string[]> => {
+    try {
+        const res = await apiClient.get<{ subscriberUrls: string[] }>(
+            API_ROUTES.DB.SUBSCRIBER_URLS(userId)
+        );
+        return res.data?.subscriberUrls ?? [];
+    } catch (error) {
+        console.error("Error fetching subscriber URLs:", error);
+        return [];
     }
 };

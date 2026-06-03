@@ -8,6 +8,7 @@ import {
 	updateFlowInSessionController,
 	tryAuthenticateAdmin,
 	getPayloadFromDomainVersion,
+	getSubscriberUrlsController,
 } from "../controllers/dbController";
 import otelTracing from "../services/tracing-service";
 
@@ -44,5 +45,7 @@ router.put(
 	otelTracing("", "query.session_id"),
 	updateFlowInSessionController
 );
+
+router.get("/subscriber-urls/:userId", getSubscriberUrlsController);
 
 export default router;

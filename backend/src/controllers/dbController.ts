@@ -7,6 +7,7 @@ import {
 	addFlowToSession,
 	updateFlowInSession,
 	getPayloadFromDomainVersionFromDb,
+	getSubscriberUrlsByUserId,
 } from "../services/dbService";
 import logger from "@ondc/automation-logger";
 
@@ -229,5 +230,22 @@ export const tryAuthenticateAdmin = async (req: Request, res: Response) => {
 		res.send({ authenticated: true });
 	} else {
 		res.send({ authenticated: false });
+	}
+};
+
+export const getSubscriberUrlsController = async (req: Request, res: Response) => {
+	const { userId } = req.params;
+
+	if (!userId) {
+		res.status(400).send({ error: true, message: "userId is required" });
+		return;
+	}
+
+	try {
+		const subscriberUrls = await getSubscriberUrlsByUserId(userId);
+		res.send({ subscriberUrls });
+	} catch (e: any) {
+		logger.error("Error fetching subscriber URLs for user", { userId, error: e });
+		res.status(500).send({ error: true, message: e?.message || "Error fetching subscriber URLs" });
 	}
 };

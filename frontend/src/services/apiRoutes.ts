@@ -35,6 +35,7 @@ export const API_ROUTES = {
         ADMIN_AUTH: "/db/admin/auth",
         PAYLOADS: (domain: string, version: string, action: string, page?: string) =>
             `/db/payloads/${domain}/${version}/${action}/${page || "1"}`,
+        SUBSCRIBER_URLS: (userId: string) => `/db/subscriber-urls/${userId}`,
     },
 
     // Config routes
@@ -64,6 +65,7 @@ export const API_ROUTES = {
         SCENARIO_PREFERENCE_BY_KEY: (configKey: string) =>
             `/user/scenario-preferences/${configKey}`,
         PAST_REPORTS: (userId: string) => `/reports/user/${userId}`,
+        FLOW_DATA: "/reports/flow-data",
     },
 
     HEALTH: {

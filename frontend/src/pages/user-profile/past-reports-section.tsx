@@ -1,12 +1,5 @@
 import { useContext, useEffect, useState } from "react";
-import {
-    LuFileText,
-    LuExternalLink,
-    LuLoader,
-    LuCircleCheck,
-    LuCircleX,
-    LuClock3,
-} from "react-icons/lu";
+import { LuFileText, LuExternalLink, LuLoader, LuCircleCheck } from "react-icons/lu";
 import { toast } from "react-toastify";
 
 import { UserContext } from "@context/userContext";
@@ -41,100 +34,61 @@ function truncateId(id: string, len = 32): string {
     return `${id.slice(0, len / 2)}…${id.slice(-len / 2)}`;
 }
 
-function PassRateBar({ passed, total }: { passed: number; total: number }) {
-    const pct = total > 0 ? Math.round((passed / total) * 100) : 0;
-    const color = pct === 100 ? "bg-emerald-500" : pct >= 70 ? "bg-amber-400" : "bg-red-400";
+// Circular donut ring — centerText is "80%" for Overall or "1/9" for Mandatory/Optional
+function DonutRing({
+    pct,
+    size = 64,
+    stroke = 6,
+    label,
+    centerText,
+    color,
+}: {
+    pct: number;
+    size?: number;
+    stroke?: number;
+    label: string;
+    centerText: string;
+    color: string;
+}) {
+    const r = (size - stroke) / 2;
+    const circ = 2 * Math.PI * r;
+    const offset = circ - (pct / 100) * circ;
+    const cx = size / 2;
+
     return (
-        <div className="flex items-center gap-2 mt-1.5">
-            <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                <div
-                    className={`h-full rounded-full transition-all duration-500 ${color}`}
-                    style={{ width: `${pct}%` }}
-                />
-            </div>
-            <span className="text-[11px] font-semibold tabular-nums text-gray-500 shrink-0">
-                {pct}%
-            </span>
-        </div>
-    );
-}
-
-function FlowSummaryGrid({ summary }: { summary: FlowSummary }) {
-    const CATEGORIES = ["MANDATORY", "OPTIONAL"] as const;
-
-    const rows = CATEGORIES.map((cat) => {
-        const stats = summary[cat];
-        if (!stats) return null;
-        const label = cat.charAt(0) + cat.slice(1).toLowerCase();
-        const remaining = stats.total - stats.completed;
-        const allDone = stats.completed === stats.total;
-
-        return (
-            <div
-                key={cat}
-                className="flex items-center justify-between gap-3 py-2 px-3 rounded-lg bg-gray-50 border border-gray-100"
-            >
-                {/* Category label */}
-                <div className="flex items-center gap-2 min-w-0">
-                    {allDone ? (
-                        <LuCircleCheck className="text-emerald-500 shrink-0" size={14} />
-                    ) : (
-                        <LuClock3 className="text-amber-500 shrink-0" size={14} />
-                    )}
-                    <span className="text-xs font-semibold text-gray-600 uppercase tracking-wide">
-                        {label}
+        <div className="flex flex-col items-center gap-1">
+            <div className="relative" style={{ width: size, height: size }}>
+                <svg width={size} height={size} style={{ transform: "rotate(-90deg)" }}>
+                    <circle
+                        cx={cx}
+                        cy={cx}
+                        r={r}
+                        fill="none"
+                        stroke="#e5e7eb"
+                        strokeWidth={stroke}
+                    />
+                    <circle
+                        cx={cx}
+                        cy={cx}
+                        r={r}
+                        fill="none"
+                        stroke={color}
+                        strokeWidth={stroke}
+                        strokeDasharray={circ}
+                        strokeDashoffset={offset}
+                        strokeLinecap="round"
+                        style={{ transition: "stroke-dashoffset 0.7s ease" }}
+                    />
+                </svg>
+                <div className="absolute inset-0 flex items-center justify-center">
+                    <span className="text-[11px] font-bold text-gray-700 leading-none">
+                        {centerText}
                     </span>
                 </div>
-
-                {/* Mini progress bar + counts */}
-                <div className="flex items-center gap-3 shrink-0">
-                    {/* completed */}
-                    <div className="flex items-center gap-1">
-                        <span className="text-[11px] text-gray-400">Done</span>
-                        <span
-                            className={`text-[11px] font-bold tabular-nums ${
-                                allDone ? "text-emerald-600" : "text-gray-700"
-                            }`}
-                        >
-                            {stats.completed}/{stats.total}
-                        </span>
-                    </div>
-
-                    {/* divider */}
-                    <span className="text-gray-300 text-xs">·</span>
-
-                    {/* remaining */}
-                    <div className="flex items-center gap-1">
-                        <span className="text-[11px] text-gray-400">Left</span>
-                        <span
-                            className={`text-[11px] font-bold tabular-nums ${
-                                remaining === 0 ? "text-emerald-600" : "text-amber-600"
-                            }`}
-                        >
-                            {remaining}
-                        </span>
-                    </div>
-
-                    {/* inline progress pill */}
-                    <div className="w-16 h-1.5 bg-gray-200 rounded-full overflow-hidden">
-                        <div
-                            className={`h-full rounded-full ${allDone ? "bg-emerald-500" : "bg-amber-400"}`}
-                            style={{
-                                width:
-                                    stats.total > 0
-                                        ? `${Math.round((stats.completed / stats.total) * 100)}%`
-                                        : "0%",
-                            }}
-                        />
-                    </div>
-                </div>
             </div>
-        );
-    }).filter(Boolean);
-
-    if (rows.length === 0) return null;
-
-    return <div className="mt-2 flex flex-col gap-1.5">{rows}</div>;
+            <span className="text-[10px] text-gray-500 font-medium">{label}</span>
+        </div>
+    );
 }
 
 export default function PastReportsSection() {
@@ -213,121 +167,129 @@ export default function PastReportsSection() {
                     {reports.map((report) => {
                         const hasStats = report.total_tests != null && report.passed_tests != null;
                         const allPassed = hasStats && report.passed_tests === report.total_tests;
-                        const updatedDate = new Date(report.updatedAt).toLocaleDateString(
-                            undefined,
-                            { day: "numeric", month: "short", year: "numeric" }
-                        );
-                        const hasFlowSummary =
-                            report.flow_summary &&
-                            Object.values(report.flow_summary).some((v) => v != null);
+                        const passRate =
+                            hasStats && report.total_tests! > 0
+                                ? Math.round((report.passed_tests! / report.total_tests!) * 100)
+                                : 0;
+                        const overallColor =
+                            passRate === 100 ? "#10b981" : passRate >= 70 ? "#f59e0b" : "#ef4444";
+
+                        const mandatoryStats = report.flow_summary?.MANDATORY;
+                        const optionalStats = report.flow_summary?.OPTIONAL;
+
+                        const mandatoryPct =
+                            mandatoryStats && mandatoryStats.total > 0
+                                ? Math.round(
+                                      (mandatoryStats.completed / mandatoryStats.total) * 100
+                                  )
+                                : 0;
+                        const optionalPct =
+                            optionalStats && optionalStats.total > 0
+                                ? Math.round((optionalStats.completed / optionalStats.total) * 100)
+                                : 0;
+
+                        const updatedDate = new Date(report.updatedAt).toLocaleDateString("en-IN", {
+                            day: "numeric",
+                            month: "short",
+                            year: "numeric",
+                        });
 
                         return (
                             <div
                                 key={report.test_id}
-                                className="group bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md hover:border-sky-200 transition-all duration-200 overflow-hidden"
+                                className="flex items-center gap-4 bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md hover:border-gray-300 transition-all duration-200 px-4 py-3.5"
                             >
-                                {/* Top accent strip — green if all passed, amber otherwise */}
-                                <div
-                                    className={`h-0.5 w-full ${
-                                        !hasStats
-                                            ? "bg-gray-200"
-                                            : allPassed
-                                              ? "bg-emerald-400"
-                                              : "bg-amber-400"
-                                    }`}
-                                />
-
-                                <div className="px-4 py-3.5">
-                                    {/* Row 1: icon + id + view button */}
-                                    <div className="flex items-start justify-between gap-3">
-                                        <div className="flex items-start gap-2.5 min-w-0">
-                                            <div className="mt-0.5 p-1.5 rounded-md bg-sky-50 border border-sky-100 shrink-0">
-                                                <LuFileText className="text-sky-500" size={13} />
-                                            </div>
-
-                                            <div className="min-w-0 flex-1">
-                                                <p
-                                                    className="text-[13px] font-mono font-medium text-gray-700 truncate leading-snug"
-                                                    title={report.test_id}
-                                                >
-                                                    {truncateId(report.test_id)}
-                                                </p>
-
-                                                {/* Pass / fail line */}
-                                                <div className="flex items-center gap-1.5 mt-0.5">
-                                                    {hasStats ? (
-                                                        <>
-                                                            {allPassed ? (
-                                                                <LuCircleCheck
-                                                                    size={11}
-                                                                    className="text-emerald-500 shrink-0"
-                                                                />
-                                                            ) : (
-                                                                <LuCircleX
-                                                                    size={11}
-                                                                    className="text-amber-500 shrink-0"
-                                                                />
-                                                            )}
-                                                            <span
-                                                                className={`text-[11px] font-semibold tabular-nums ${
-                                                                    allPassed
-                                                                        ? "text-emerald-600"
-                                                                        : "text-amber-500"
-                                                                }`}
-                                                            >
-                                                                {report.passed_tests}/
-                                                                {report.total_tests} passed
-                                                            </span>
-                                                        </>
-                                                    ) : (
-                                                        <span className="text-[11px] text-gray-400 italic">
-                                                            No test stats
-                                                        </span>
-                                                    )}
-                                                    <span className="text-gray-300 text-[11px]">
-                                                        ·
-                                                    </span>
-                                                    <span className="text-[11px] text-gray-400">
-                                                        {updatedDate}
-                                                    </span>
-                                                </div>
-
-                                                {/* Progress bar */}
-                                                {hasStats && (
-                                                    <PassRateBar
-                                                        passed={report.passed_tests!}
-                                                        total={report.total_tests!}
-                                                    />
-                                                )}
-                                            </div>
-                                        </div>
-
-                                        {/* View button */}
-                                        <button
-                                            type="button"
-                                            id={`view-report-${report.test_id}`}
-                                            disabled={viewingId === report.test_id}
-                                            onClick={() => handleViewReport(report.test_id)}
-                                            className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold
-                                                       bg-sky-50 text-sky-600 border border-sky-200
-                                                       hover:bg-sky-600 hover:text-white hover:border-sky-600
-                                                       disabled:opacity-40 disabled:cursor-not-allowed
-                                                       transition-all duration-150"
-                                        >
-                                            {viewingId === report.test_id ? (
-                                                <LuLoader className="animate-spin" size={12} />
-                                            ) : (
-                                                <LuExternalLink size={12} />
-                                            )}
-                                            View
-                                        </button>
+                                {/* Left: doc icon + truncated id + passed badge + date */}
+                                <div className="flex items-center gap-3 min-w-0 flex-1">
+                                    <div className="shrink-0 p-2 rounded-lg border border-gray-200 bg-white">
+                                        <LuFileText size={16} className="text-gray-500" />
                                     </div>
-
-                                    {/* Flow summary grid */}
-                                    {hasFlowSummary && (
-                                        <FlowSummaryGrid summary={report.flow_summary!} />
-                                    )}
+                                    <div className="min-w-0">
+                                        <p
+                                            className="text-[13px] font-mono font-semibold text-gray-800 truncate"
+                                            title={report.test_id}
+                                        >
+                                            {truncateId(report.test_id)}
+                                        </p>
+                                        <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+                                            {hasStats && (
+                                                <span
+                                                    className={`inline-flex items-center gap-1 text-[11px] font-semibold px-1.5 py-0.5 rounded-full border ${
+                                                        allPassed
+                                                            ? "text-emerald-700 bg-emerald-50 border-emerald-200"
+                                                            : "text-amber-700 bg-amber-50 border-amber-200"
+                                                    }`}
+                                                >
+                                                    <LuCircleCheck size={10} />
+                                                    {report.passed_tests}/{report.total_tests}{" "}
+                                                    passed
+                                                </span>
+                                            )}
+                                            <span className="text-[11px] text-gray-400">
+                                                · {updatedDate}
+                                            </span>
+                                        </div>
+                                    </div>
                                 </div>
+
+                                {/* Center: 3 donut rings */}
+                                <div className="flex items-center gap-4 shrink-0">
+                                    {hasStats && (
+                                        <DonutRing
+                                            pct={passRate}
+                                            size={48}
+                                            stroke={5}
+                                            label="Overall"
+                                            centerText={`${passRate}%`}
+                                            color={overallColor}
+                                        />
+                                    )}
+                                    <DonutRing
+                                        pct={mandatoryPct}
+                                        size={48}
+                                        stroke={5}
+                                        label="Mandatory"
+                                        centerText={
+                                            mandatoryStats
+                                                ? `${mandatoryStats.completed}/${mandatoryStats.total}`
+                                                : "–"
+                                        }
+                                        color={mandatoryPct === 100 ? "#10b981" : "#f59e0b"}
+                                    />
+                                    <DonutRing
+                                        pct={optionalPct}
+                                        size={48}
+                                        stroke={5}
+                                        label="Optional"
+                                        centerText={
+                                            optionalStats
+                                                ? `${optionalStats.completed}/${optionalStats.total}`
+                                                : "–"
+                                        }
+                                        color={optionalPct === 100 ? "#10b981" : "#f59e0b"}
+                                    />
+                                </div>
+
+                                {/* Right: View button */}
+                                <button
+                                    type="button"
+                                    id={`view-report-${report.test_id}`}
+                                    disabled={viewingId === report.test_id}
+                                    onClick={() => handleViewReport(report.test_id)}
+                                    className="shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-lg text-[13px] font-semibold
+                                               bg-sky-600 text-white border border-sky-600
+                                               hover:bg-sky-700 hover:border-sky-700
+                                               disabled:opacity-40 disabled:cursor-not-allowed
+                                               transition-all duration-150"
+                                    //className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-sky-700 bg-sky-50 hover:bg-sky-100 border border-sky-200 hover:border-sky-300 rounded-xl transition-all"
+                                >
+                                    {viewingId === report.test_id ? (
+                                        <LuLoader className="animate-spin" size={13} />
+                                    ) : (
+                                        <LuExternalLink size={13} />
+                                    )}
+                                    View
+                                </button>
                             </div>
                         );
                     })}
