@@ -79,7 +79,7 @@ const StatusBadge: FC<{ status: FlowStatus }> = ({ status }) => {
     const config: Record<FlowStatus, { cls: string; label: string }> = {
         PASS: { cls: "bg-green-50 text-green-600 border-green-200", label: "✓ Passed" },
         FAIL: { cls: "bg-red-50 text-red-600 border-red-200", label: "✗ Failed" },
-        ATTEMPTED: { cls: "bg-amber-50 text-amber-600 border-amber-200", label: "⏳ Attempted" },
+        ATTEMPTED: { cls: "bg-amber-50 text-amber-600 border-amber-200", label: "⏳ Pending" },
         NOT_RUN: { cls: "bg-slate-100 text-slate-400 border-slate-200", label: "– Not Run" },
     };
     const { cls, label } = config[status] ?? config.NOT_RUN;
@@ -156,22 +156,32 @@ const SessionCard: FC<SessionCardProps> = ({
                 const attemptedMap = detail.flowMap ?? {};
                 const flowConfigs = detail.flowConfigs ?? {};
 
-                const rows: FlowRow[] = Object.entries(flowConfigs).map(([id, flow]) => {
-                    let status: FlowStatus = "NOT_RUN";
-                    if (id in dbFlowMap) {
-                        status = dbFlowMap[id] as "PASS" | "FAIL";
-                    } else if (id in attemptedMap && attemptedMap[id] !== null) {
-                        status = "ATTEMPTED";
-                    }
+                const deriveStatus = (id: string): FlowStatus => {
+                    if (id in dbFlowMap) return dbFlowMap[id] as "PASS" | "FAIL";
+                    if (id in attemptedMap && attemptedMap[id] !== null) return "ATTEMPTED";
+                    return "NOT_RUN";
+                };
 
-                    const tags = flow.tags ?? [];
-                    const type =
-                        tags.find((t) => ["MANDATORY", "OPTIONAL", "REPORTABLE"].includes(t)) ??
-                        "MANDATORY";
-                    const name = flow.description || flow.title || id;
+                let rows: FlowRow[];
 
-                    return { id, name, type, status };
-                });
+                if (Object.keys(flowConfigs).length > 0) {
+                    // Build rows from session detail flow configs (has names + tags)
+                    rows = Object.entries(flowConfigs).map(([id, flow]) => {
+                        const tags = flow.tags ?? [];
+                        const type =
+                            tags.find((t) => ["MANDATORY", "OPTIONAL"].includes(t)) ?? "OPTIONAL";
+                        const name = flow.description || flow.title || id;
+                        return { id, name, type, status: deriveStatus(id) };
+                    });
+                } else {
+                    // Fallback: build rows from first API's flowMap keys only
+                    rows = Object.keys(dbFlowMap).map((id) => ({
+                        id,
+                        name: id.replace(/_/g, " "),
+                        type: "OPTIONAL",
+                        status: dbFlowMap[id] as "PASS" | "FAIL",
+                    }));
+                }
 
                 setFlowRows(rows);
             } catch (e) {
