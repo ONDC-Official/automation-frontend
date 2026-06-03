@@ -135,20 +135,14 @@ const SessionCard: FC<SessionCardProps> = ({
     const handleExpand = async () => {
         const next = !expanded;
         setExpanded(next);
-
         if (next && !detailFetched.current) {
             detailFetched.current = true;
             setLoadingDetail(true);
             try {
-                const res = await apiClient.put<SessionCache>(
-                    API_ROUTES.SESSIONS.BASE,
-                    {},
-                    {
-                        params: { session_id: session.sessionId },
-                    }
-                );
+                const res = await apiClient.get<SessionCache>(API_ROUTES.SESSIONS.BASE, {
+                    params: { session_id: session.sessionId },
+                });
                 const detail = res.data;
-
                 // flowMap from detail API → attempted flows (flowId → transactionId | null)
                 const attemptedMap = detail.flowMap ?? {};
                 const flowConfigs = detail.flowConfigs ?? {};
@@ -178,7 +172,6 @@ const SessionCard: FC<SessionCardProps> = ({
                         status: "ATTEMPTED" as FlowStatus,
                     }));
                 }
-
                 setFlowRows(rows);
             } catch (e) {
                 console.error("Failed to fetch session detail", e);
@@ -189,7 +182,6 @@ const SessionCard: FC<SessionCardProps> = ({
             }
         }
     };
-
     const handleResume = (e: React.MouseEvent) => {
         e.stopPropagation();
         navigate(
