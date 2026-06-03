@@ -13,6 +13,10 @@ interface SessionsResponse {
         createdAt: string;
         domain?: string;
         version?: string;
+        userId?: string | null;
+        flows?: Array<{ id: string; status: "PENDING" | "COMPLETED"; payloads?: string[] }>;
+        flowSummary?: Record<string, { total: number; completed: number }> | null;
+        flowMap?: Record<string, "PASS" | "FAIL"> | null;
     }>;
 }
 
