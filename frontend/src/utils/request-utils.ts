@@ -33,8 +33,15 @@ export interface PayloadResponse<TReq = unknown, TRes = unknown> {
 
 interface FlowResponse {
     inputs?: FormConfigType;
+    // Playground mock returns these from /flows/proceed (actUponFlow → sendSuccess). HTTP is always
+    // 200, so callers must inspect `success` to know whether the action actually dispatched.
+    success?: boolean;
+    message?: string;
+    jobIds?: string[];
     [key: string]: unknown;
 }
+
+export type ProceedResult = FlowResponse;
 
 export const triggerSearch = async (session: TransactionCache, subUrl: string) => {
     if (session.subscriberType === "BAP") {
@@ -285,6 +292,52 @@ export const triggerExtra = async (
         throw new Error(e instanceof Error ? e.message : `triggerExtra: Unknown error: ${e}`);
     }
 };
+
+// ---------------------------------------------------------------------------
+// Real-Time Ride Map Integration helpers
+// ---------------------------------------------------------------------------
+
+export interface RouteResponse {
+    geometry: [number, number][]; // [lat, lng] points, road-following
+    distance: number; // metres
+    duration: number; // seconds
+}
+
+/**
+ * Fetch a road-following route between two "lat, lng" points via the backend OSRM proxy.
+ * Returns null on failure so callers can fall back to a straight line.
+ */
+export const getRoute = async (from: string, to: string): Promise<RouteResponse | null> => {
+    try {
+        const response = await apiClient.get<RouteResponse>(API_ROUTES.FLOW.ROUTE, {
+            params: { from, to },
+        });
+        return response.data;
+    } catch (e) {
+        console.error(e instanceof Error ? e.message : `getRoute: Unknown error: ${e}`);
+        return null;
+    }
+};
+
+export interface GeocodeResult {
+    name: string;
+    lat: number;
+    lng: number;
+}
+
+/** Search for a place by name via the backend Nominatim proxy. Returns [] on failure. */
+export const geocodePlace = async (q: string): Promise<GeocodeResult[]> => {
+    try {
+        const response = await apiClient.get<GeocodeResult[]>(API_ROUTES.FLOW.GEOCODE, {
+            params: { q },
+        });
+        return response.data ?? [];
+    } catch (e) {
+        console.error(e instanceof Error ? e.message : `geocodePlace: Unknown error: ${e}`);
+        return [];
+    }
+};
+
 
 export const newFlow = async (
     sessionId: string,

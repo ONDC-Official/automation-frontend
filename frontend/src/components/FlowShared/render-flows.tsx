@@ -31,6 +31,7 @@ import { trackEvent } from "@utils/analytics";
 import FilterFlowsMenu from "@components/FlowShared/filter-flows";
 import { openReportInNewTab } from "@utils/generic-utils";
 import GenerateReportModal from "@components/FlowShared/GenerateReportModal";
+import RideMapTab from "@components/FlowShared/ride-map-tab";
 
 type ExtractedMetadataValue = { name?: string; value: unknown; errorMessage?: string };
 
@@ -151,7 +152,9 @@ function RenderFlows({
         {} as SessionCache["sessionDifficulty"]
     );
     const [isFlowStopped, setIsFlowStopped] = useState<boolean>(false);
-    const [selectedTab, setSelectedTab] = useState<"Request" | "Response" | "Metadata" | "Guide">(
+    const [selectedTab, setSelectedTab] = useState<
+        "Request" | "Response" | "Metadata" | "Guide" | "Application"
+    >(
         "Request"
     );
     const [requestData, setRequestData] = useState<Record<string, unknown>>({});
@@ -704,9 +707,20 @@ function RenderFlows({
                                         key: "Guide",
                                         label: "Guide",
                                     },
+                                    {
+                                        key: "Application",
+                                        label: "Application",
+                                    },
                                 ]}
                                 onSelectOption={(value: string) => {
-                                    setSelectedTab(value as "Request" | "Response" | "Metadata");
+                                    setSelectedTab(
+                                        value as
+                                            | "Request"
+                                            | "Response"
+                                            | "Metadata"
+                                            | "Guide"
+                                            | "Application"
+                                    );
                                 }}
                                 defaultTab="Request"
                             />
@@ -767,6 +781,8 @@ function RenderFlows({
                                                     </div>
                                                 )}
                                             </div>
+                                        ) : selectedTab === "Application" ? (
+                                            <RideMapTab flowId={activeFlow} />
                                         ) : (
                                             <SearchableJsonView
                                                 value={

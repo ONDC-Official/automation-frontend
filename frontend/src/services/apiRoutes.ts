@@ -16,6 +16,8 @@ export const API_ROUTES = {
         EXTERNAL_FORM: "/flow/external-form",
         CUSTOM_FLOW: "/flow/custom-flow",
         ACTIONS: "/flow/actions",
+        ROUTE: "/flow/route",
+        GEOCODE: "/flow/geocode",
     },
 
     // Session routes
