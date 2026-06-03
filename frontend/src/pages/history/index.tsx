@@ -9,7 +9,6 @@ import {
 } from "react-icons/lu";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
-
 import { getSessions, getReport } from "@utils/request-utils";
 import { openReportInNewTab } from "@utils/generic-utils";
 import { apiClient } from "@services/apiClient";
@@ -150,22 +149,19 @@ const SessionCard: FC<SessionCardProps> = ({
                 );
                 const detail = res.data;
 
-                // flowMap from first API → PASS / FAIL per flowId
-                const dbFlowMap = session.flowMap ?? {};
-                // flowMap from second API → attempted flows (flowId → transactionId | null)
+                // flowMap from detail API → attempted flows (flowId → transactionId | null)
                 const attemptedMap = detail.flowMap ?? {};
                 const flowConfigs = detail.flowConfigs ?? {};
 
+                // All flows come from flowConfigs; flowMap presence determines ATTEMPTED vs NOT_RUN
                 const deriveStatus = (id: string): FlowStatus => {
-                    if (id in dbFlowMap) return dbFlowMap[id] as "PASS" | "FAIL";
-                    if (id in attemptedMap && attemptedMap[id] !== null) return "ATTEMPTED";
+                    if (id in attemptedMap) return "ATTEMPTED";
                     return "NOT_RUN";
                 };
 
                 let rows: FlowRow[];
 
                 if (Object.keys(flowConfigs).length > 0) {
-                    // Build rows from session detail flow configs (has names + tags)
                     rows = Object.entries(flowConfigs).map(([id, flow]) => {
                         const tags = flow.tags ?? [];
                         const type =
@@ -174,12 +170,12 @@ const SessionCard: FC<SessionCardProps> = ({
                         return { id, name, type, status: deriveStatus(id) };
                     });
                 } else {
-                    // Fallback: build rows from first API's flowMap keys only
-                    rows = Object.keys(dbFlowMap).map((id) => ({
+                    // Fallback when no flowConfigs: show attempted flows from flowMap
+                    rows = Object.keys(attemptedMap).map((id) => ({
                         id,
                         name: id.replace(/_/g, " "),
                         type: "OPTIONAL",
-                        status: dbFlowMap[id] as "PASS" | "FAIL",
+                        status: "ATTEMPTED" as FlowStatus,
                     }));
                 }
 
