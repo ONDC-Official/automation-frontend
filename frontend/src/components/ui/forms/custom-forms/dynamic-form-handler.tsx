@@ -129,10 +129,9 @@ export default function DynamicFormHandler({
         if (hasCompletedRef.current) return;
 
         // ── Guard 1: identifiers ─────────────────────────────────────────────
-        if (!transactionId || !formName) {
+        if (!transactionId) {
             console.warn("⚠️ [DynamicForm] Cannot poll: transactionId or formName missing", {
-                transactionId,
-                formName,
+                transactionId
             });
             return;
         }
@@ -168,8 +167,7 @@ export default function DynamicFormHandler({
                 `${import.meta.env.VITE_BACKEND_URL}/form/check-completion`,
                 {
                     params: {
-                        transaction_id: transactionId,
-                        form_id: formName, // BUG FIX: was missing — backend needs both to resolve Redis key
+                        transaction_id: transactionId
                     },
                     timeout: 5000,
                 }
@@ -268,7 +266,7 @@ export default function DynamicFormHandler({
         pollingIntervalRef.current = setInterval(() => {
             checkCompletionRef.current();
         }, POLL_INTERVAL_MS);
-    }, [transactionId, formName, checkCompletion]);
+    }, [transactionId, checkCompletion]);
 
     // Handle start form - NO navigation/refresh
     const handleOpenForm = useCallback(
