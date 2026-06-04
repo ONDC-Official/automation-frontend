@@ -216,6 +216,7 @@ export const upsertSessionInDb = async (
     version?: string;
   }
 ) => {
+  console.log("data=>>>>>>",JSON.stringify(data))
   const config: AxiosRequestConfig = {
     method: "post",
     url: `${DB_SERVICE}/api/sessions/upsert`,
