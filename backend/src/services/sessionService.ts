@@ -14,6 +14,11 @@ export const createSessionService = async (
 ) => {
 	const { npType, domain, version, subscriberUrl, env, usecaseId } = data;
 
+	logger.info(
+		`[createSessionService] userId received: ${data.userId ?? "NOT PROVIDED"}`,
+		loggerMeta,
+	);
+
 	const flowResponse = await axios.get(
 		`${process.env.CONFIG_SERVICE as string}/ui/flow`,
 		{
@@ -29,6 +34,7 @@ export const createSessionService = async (
 	for (const flow of flows) {
 		map[flow.id] = flow;
 	}
+	
 	let finalCache: SessionCache = {
 		transactionIds: [],
 		flowMap: {},

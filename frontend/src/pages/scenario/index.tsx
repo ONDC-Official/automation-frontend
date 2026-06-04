@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useContext } from "react";
 import { LuHistory } from "react-icons/lu";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import axios, { AxiosResponse, AxiosError } from "axios";
@@ -24,6 +24,7 @@ import {
 } from "@/pages/scenario/components/previous-sessions-panel";
 import { apiClient } from "@services/apiClient";
 import { API_ROUTES } from "@services/apiRoutes";
+import { UserContext } from "@context/userContext";
 
 type DomainVersionWithUsecase = DomainVersion & {
     usecase: string[];
@@ -94,6 +95,7 @@ export default function FlowContent() {
         env: "PRE-PRODUCTION",
     });
     const { sessionId: contextSessionId } = useSession();
+    const { userDetails } = useContext(UserContext);
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
 
@@ -110,10 +112,12 @@ export default function FlowContent() {
                 ...data,
                 subscriberUrl: data?.subscriberUrl?.replace(/\/+$/, ""),
             };
+
             const response = await axios.post<{ sessionId: string }>(
                 `${import.meta.env.VITE_BACKEND_URL}/sessions`,
                 {
                     ...data,
+                    userId: userDetails?.username,
                     difficulty_cache: {
                         stopAfterFirstNack: true,
                         timeValidations: true,
