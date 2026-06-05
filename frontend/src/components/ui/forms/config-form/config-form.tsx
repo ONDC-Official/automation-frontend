@@ -51,6 +51,7 @@ import SelectMutualFundFIS14 from "../custom-forms/mutual_fund_select";
 import SelectMutualFundRedemptionFIS14 from "../custom-forms/mutual_fund_redemption_select";
 import RetINVLInitOffers from "../custom-forms/retinvl-init-offers";
 import Metro210CommonItemFulfillmentSelection from "../custom-forms/trv11_210_common_item_fulfillment_select";
+import Metro200StartEndStopSelection from "../custom-forms/trv11_start_end_stop_selection_200";
 
 export interface FormFieldConfigType {
     name: string;
@@ -105,7 +106,8 @@ export interface FormFieldConfigType {
         | "fis14_mf_redemption_select"
         | "insurance_select"
         | "datetime-local"
-        | "trv11_210_common_item_fulfillment_select";
+        | "trv11_210_common_item_fulfillment_select"
+        | "trv11_start_end_stop_selection_200";
 
     payloadField: string;
     values?: string[];
@@ -379,6 +381,10 @@ export default function FormConfig({
 
     if (formConfig.find((field) => field.type === "trv11_210_start_end_stop_selection")) {
         return <Metro210StartEndStopSelection submitEvent={submitEvent} />;
+    }
+
+    if (formConfig.find((field) => field.type === "trv11_start_end_stop_selection_200")) {
+        return <Metro200StartEndStopSelection submitEvent={submitEvent} />;
     }
 
     if (formConfig.find((field) => field.type === "fis12_select_pl")) {
