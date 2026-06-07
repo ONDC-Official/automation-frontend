@@ -16,6 +16,11 @@ export interface GitHubFile {
     download_url: string;
 }
 
+export interface FetchedFile {
+    name: string;
+    content: string;
+}
+
 async function githubFetch<T>(url: string): Promise<T> {
     const response = await fetch(url, {
         headers: { Accept: "application/vnd.github.v3+json" },
@@ -55,12 +60,31 @@ export async function fetchYamlFiles(branch: string, folder: string): Promise<Gi
         .map((item) => ({ name: item.name, download_url: item.download_url! }));
 }
 
+/**
+ * Fetches every YAML file across every flow folder in a branch.
+ * Folders are listed first, then each folder's YAML files are fetched in parallel.
+ */
+export async function fetchAllYamlFiles(branch: string): Promise<GitHubFile[]> {
+    const folders = await fetchFlowFolders(branch);
+    const perFolder = await Promise.all(folders.map((folder) => fetchYamlFiles(branch, folder)));
+    return perFolder.flat();
+}
+
 export async function fetchRawYaml(downloadUrl: string): Promise<string> {
     const response = await fetch(downloadUrl);
     if (!response.ok) {
         throw new Error(`Failed to fetch file: ${response.status} ${response.statusText}`);
     }
     return response.text();
+}
+
+/**
+ * Fetches raw content for every file in parallel.
+ */
+export async function fetchAllRawFiles(files: GitHubFile[]): Promise<FetchedFile[]> {
+    return Promise.all(
+        files.map(async (f) => ({ name: f.name, content: await fetchRawYaml(f.download_url) }))
+    );
 }
 
 /**

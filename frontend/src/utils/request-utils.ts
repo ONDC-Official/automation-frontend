@@ -13,6 +13,11 @@ interface SessionsResponse {
         createdAt: string;
         domain?: string;
         version?: string;
+        usecaseId?: string;
+        userId?: string | null;
+        flows?: Array<{ id: string; status: "PENDING" | "COMPLETED"; payloads?: string[] }>;
+        flowSummary?: Record<string, { total: number; completed: number }> | null;
+        flowMap?: Record<string, "PASS" | "FAIL"> | null;
     }>;
 }
 
@@ -437,6 +442,18 @@ export const getReport = async (sessionId: string): Promise<ReportResponse> => {
     }
 };
 
+export const getPayloadsBySessionId = async (sessionId: string): Promise<PayloadResponse[]> => {
+    try {
+        const res = await apiClient.get<PayloadResponse[]>(
+            API_ROUTES.DB.SESSION_PAYLOADS(sessionId)
+        );
+        return res.data ?? [];
+    } catch (error) {
+        console.error("Error while getting payloads for session: ", error);
+        throw new Error("ERROR while getting payloads for session");
+    }
+};
+
 export const getSessions = async (
     subId: string,
     npType: string,
@@ -493,5 +510,17 @@ export const updateFlowInSession = async (sessionId: string, flow: FlowInDB) => 
     } catch (error) {
         console.error("Error while updating flow in session:", error);
         throw new Error("ERROR while updating flow in session");
+    }
+};
+
+export const getSubscriberUrls = async (userId: string): Promise<string[]> => {
+    try {
+        const res = await apiClient.get<{ subscriberUrls: string[] }>(
+            API_ROUTES.DB.SUBSCRIBER_URLS(userId)
+        );
+        return res.data?.subscriberUrls ?? [];
+    } catch (error) {
+        console.error("Error fetching subscriber URLs:", error);
+        return [];
     }
 };

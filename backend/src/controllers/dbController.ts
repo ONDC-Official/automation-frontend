@@ -7,6 +7,8 @@ import {
 	addFlowToSession,
 	updateFlowInSession,
 	getPayloadFromDomainVersionFromDb,
+	getSubscriberUrlsByUserId,
+	getPayloadsBySessionId,
 } from "../services/dbService";
 import logger from "@ondc/automation-logger";
 
@@ -63,6 +65,8 @@ export const getReport = async (req: Request, res: Response) => {
 export const getSessions = async (req: Request, res: Response) => {
 	const subID: string = req.query.sub_id as string;
 	const npType: string = req.query.np_type as string;
+	const domain: string | undefined = req.query.domain as string | undefined;
+	const version: string | undefined = req.query.version as string | undefined;
 
 	if (!subID || !npType) {
 		res
@@ -72,13 +76,13 @@ export const getSessions = async (req: Request, res: Response) => {
 	}
 
 	try {
-		const response = await getSessionsForSubId(subID, npType);
+		const response = await getSessionsForSubId(subID, npType, domain, version);
 
 		res.send(response);
 	} catch (e: any) {
 		logger.error(
 			"Error fetching payload for session ids",
-			{ payload_ids: subID, npType },
+			{ payload_ids: subID, npType, domain, version },
 			e
 		);
 		res.status(500).send({ error: true, message: e?.message || e });
@@ -166,6 +170,23 @@ export const addFlowToSessionController = async (
 	}
 };
 
+export const getPayloadsForSessionController = async (req: Request, res: Response) => {
+	const { sessionId } = req.params;
+
+	if (!sessionId) {
+		res.status(400).send({ error: true, message: "Session id is required" });
+		return;
+	}
+
+	try {
+		const response = await getPayloadsBySessionId(sessionId);
+		res.send(response);
+	} catch (e: any) {
+		logger.error("Error fetching payloads for session", { sessionId }, e);
+		res.status(500).send({ error: true, message: e?.message || e });
+	}
+};
+
 export const getPayloadFromDomainVersion = async (
 	req: Request,
 	res: Response
@@ -229,5 +250,22 @@ export const tryAuthenticateAdmin = async (req: Request, res: Response) => {
 		res.send({ authenticated: true });
 	} else {
 		res.send({ authenticated: false });
+	}
+};
+
+export const getSubscriberUrlsController = async (req: Request, res: Response) => {
+	const { userId } = req.params;
+
+	if (!userId) {
+		res.status(400).send({ error: true, message: "userId is required" });
+		return;
+	}
+
+	try {
+		const subscriberUrls = await getSubscriberUrlsByUserId(userId);
+		res.send({ subscriberUrls });
+	} catch (e: any) {
+		logger.error("Error fetching subscriber URLs for user", { userId, error: e });
+		res.status(500).send({ error: true, message: e?.message || "Error fetching subscriber URLs" });
 	}
 };

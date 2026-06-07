@@ -37,12 +37,15 @@ export const API_ROUTES = {
         ADMIN_AUTH: "/db/admin/auth",
         PAYLOADS: (domain: string, version: string, action: string, page?: string) =>
             `/db/payloads/${domain}/${version}/${action}/${page || "1"}`,
+        SUBSCRIBER_URLS: (userId: string) => `/db/subscriber-urls/${userId}`,
+        SESSION_PAYLOADS: (sessionId: string) => `/db/sessions/${sessionId}/payloads`,
     },
 
     // Config routes
     CONFIG: {
         SCENARIO_FORM_DATA: "/config/senarioFormData",
         REPORTING_STATUS: "/config/reportingStatus",
+        FLOWS: "/config/flows",
     },
 
     // Logs routes
