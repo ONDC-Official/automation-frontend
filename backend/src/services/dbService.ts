@@ -1,7 +1,6 @@
 import axios from "../utils/axios";
 import axios2, { AxiosRequestConfig } from "axios";
 import logger from "@ondc/automation-logger";
-
 const DB_SERVICE = process.env.DB_SERVICE;
 const DB_SERVICE_API_KEY = process.env.DB_SERVICE_API_KEY;
 
@@ -62,13 +61,20 @@ export const getReportForSessionId = async (sessionId: string) => {
 	}
 };
 
-export const getSessionsForSubId = async (subId: string, npType: string) => {
+export const getSessionsForSubId = async (
+  subId: string,
+  npType: string,
+  domain?: string,
+  version?: string
+) => {
   let config: AxiosRequestConfig = {
     method: "get",
     url: `${DB_SERVICE}/api/sessions/filter`,
     params: {
       np_type: npType,
       np_id: subId,
+      ...(domain && { domain }),
+      ...(version && { version }),
     },
     headers: {
       "Content-Type": "application/json",
@@ -210,13 +216,14 @@ export const upsertSessionInDb = async (
   sessionId: string,
   data: {
     userId?: string;
-    npType: string;
+    npType?: string;
     npId?: string;
+    usecaseId?: string,
     domain?: string;
     version?: string;
+    flowMap?:any;
   }
 ) => {
-  console.log("data=>>>>>>",JSON.stringify(data))
   const config: AxiosRequestConfig = {
     method: "post",
     url: `${DB_SERVICE}/api/sessions/upsert`,
@@ -231,8 +238,33 @@ export const upsertSessionInDb = async (
     const response = await axios2.request(config);
     return response.data;
   } catch (e: any) {
-    logger.error("Error upserting session in DB", { sessionId, error: e.message });
+    logger.error("Error upserting session in DB", {
+      sessionId,
+      data,
+      error: e.message,
+      status: e.response?.status,
+      responseData: e.response?.data,
+    });
     throw new Error("Error upserting session in DB");
+  }
+};
+
+export const getPayloadsBySessionId = async (sessionId: string) => {
+  const config: AxiosRequestConfig = {
+    method: "get",
+    url: `${DB_SERVICE}/api/sessions/payload/${sessionId}`,
+    headers: {
+      "Content-Type": "application/json",
+      "x-api-key": DB_SERVICE_API_KEY,
+    },
+  };
+
+  try {
+    const response = await axios2.request(config);
+    return response.data;
+  } catch (e: any) {
+    logger.error("Error fetching payloads for session", { sessionId, error: e.message });
+    throw new Error("Error fetching payloads for session");
   }
 };
 

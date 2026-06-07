@@ -13,6 +13,7 @@ interface SessionsResponse {
         createdAt: string;
         domain?: string;
         version?: string;
+        usecaseId?: string;
         userId?: string | null;
         flows?: Array<{ id: string; status: "PENDING" | "COMPLETED"; payloads?: string[] }>;
         flowSummary?: Record<string, { total: number; completed: number }> | null;
@@ -385,6 +386,18 @@ export const getReport = async (sessionId: string): Promise<ReportResponse> => {
     } catch (error) {
         console.error("error while getting action: ", error);
         throw new Error("ERROR while getting action");
+    }
+};
+
+export const getPayloadsBySessionId = async (sessionId: string): Promise<PayloadResponse[]> => {
+    try {
+        const res = await apiClient.get<PayloadResponse[]>(
+            API_ROUTES.DB.SESSION_PAYLOADS(sessionId)
+        );
+        return res.data ?? [];
+    } catch (error) {
+        console.error("Error while getting payloads for session: ", error);
+        throw new Error("ERROR while getting payloads for session");
     }
 };
 

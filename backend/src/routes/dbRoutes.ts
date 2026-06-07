@@ -9,6 +9,7 @@ import {
 	tryAuthenticateAdmin,
 	getPayloadFromDomainVersion,
 	getSubscriberUrlsController,
+	getPayloadsForSessionController,
 } from "../controllers/dbController";
 import otelTracing from "../services/tracing-service";
 
@@ -19,6 +20,7 @@ router.post(
 	otelTracing("body.transaction_id", "body.session_id"),
 	getPayload
 );
+
 router.get("/report", otelTracing("", "query.session_id"), getReport);
 
 router.get(
@@ -33,6 +35,7 @@ router.get(
 	otelTracing("", "query.sub_id", "query.np_type"),
 	getSessions
 );
+
 router.post("/user", otelTracing("", ""), createUserController);
 
 router.post(
@@ -40,6 +43,7 @@ router.post(
 	otelTracing("", "query.session_id"),
 	addFlowToSessionController
 );
+
 router.put(
 	"/flows/:sessionId",
 	otelTracing("", "query.session_id"),
@@ -47,5 +51,11 @@ router.put(
 );
 
 router.get("/subscriber-urls/:userId", getSubscriberUrlsController);
+
+router.get(
+	"/sessions/:sessionId/payloads",
+	otelTracing("", "params.sessionId"),
+	getPayloadsForSessionController
+);
 
 export default router;
