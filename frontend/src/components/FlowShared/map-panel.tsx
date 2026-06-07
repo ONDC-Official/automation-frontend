@@ -54,6 +54,8 @@ export interface MapPanelProps {
     currentState?: string;
     /** Fired when the controller clicks a ride-state button (passes the RIDE_* code). */
     onRideState?: (state: string) => void;
+    /** Changes when the pickup/drop change — re-fits the map to the fresh locations. */
+    fitKey?: string;
 }
 
 const pinIcon = (color: string, glyph: string) =>
@@ -143,16 +145,17 @@ function PlaceDriverOnClick({ enabled, onPlace }: { enabled: boolean; onPlace: (
     return null;
 }
 
-/** Pans/zooms to fit the points ONCE on first mount — never re-centers on updates. */
-function FitOnce({ points }: { points: LatLng[] }) {
+/** Pans/zooms to fit the points — once per `fitKey` (i.e. re-fits when pickup/drop change), but
+ *  never on every driver-position update. */
+function FitOnce({ points, fitKey }: { points: LatLng[]; fitKey?: string }) {
     const map = useMap();
-    const done = useRef(false);
+    const lastKey = useRef<string | undefined>(undefined);
     useEffect(() => {
-        if (done.current || points.length === 0) return;
-        done.current = true;
+        if (points.length === 0 || lastKey.current === fitKey) return;
+        lastKey.current = fitKey;
         if (points.length === 1) map.setView(points[0], 14);
         else map.fitBounds(L.latLngBounds(points), { padding: [40, 40] });
-    }, [map, points]);
+    }, [map, points, fitKey]);
     return null;
 }
 
@@ -169,6 +172,7 @@ export default function MapPanel({
     progress = 0,
     currentState,
     onRideState,
+    fitKey,
 }: MapPanelProps) {
     const pickup = useMemo(() => parseGps(pickupGps), [pickupGps]);
     const drop = useMemo(() => parseGps(dropGps), [dropGps]);
@@ -315,7 +319,7 @@ export default function MapPanel({
                         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
                         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                     />
-                    <FitOnce points={fitPoints} />
+                    <FitOnce points={fitPoints} fitKey={fitKey} />
                     <PlaceDriverOnClick
                         enabled={canDrag && !driver}
                         onPlace={(gps) => onDriverMove?.(gps)}

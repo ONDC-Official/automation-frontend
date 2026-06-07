@@ -110,8 +110,10 @@ export default function RideMapTab({ flowId }: { flowId: string | null }) {
     }, [mappedFlow]);
 
     // `code` is the RIDE_* fulfillment-state code (the button values are the codes themselves).
-    const sendRideState = async (code: string) => {
-        if (!transactionId || !sessionData) return;
+    // Returns true only when the on_status/on_update was actually dispatched to the buyer — callers
+    // gate the driver animation on this so movement never starts before the buyer is updated.
+    const sendRideState = async (code: string): Promise<boolean> => {
+        if (!transactionId || !sessionData) return false;
         const prevPhase = localPhase;
         setLocalPhase(code);
         // RIDE_ENDED is delivered via on_update (per the contract); all other states via on_status.
@@ -122,11 +124,14 @@ export default function RideMapTab({ flowId }: { flowId: string | null }) {
                 setLocalPhase(prevPhase);
                 toast.error(res.message || "Ride state not dispatched");
                 console.warn("on_status_state trigger rejected:", res.message);
+                return false;
             }
+            return true;
         } catch (e) {
             setLocalPhase(prevPhase);
             toast.error("Failed to send ride state");
             console.error(e);
+            return false;
         }
     };
 
@@ -227,21 +232,26 @@ export default function RideMapTab({ flowId }: { flowId: string | null }) {
     };
 
     // Enroute → animate to pickup → auto Arrived. Started → animate to drop → auto End+Completed.
+    // The driver animation starts ONLY after the on_status/on_update is acknowledged (sendRideState
+    // returns true) — i.e. the buyer has actually been updated. A failed/undelivered send aborts.
     const handleRideState = async (code: string) => {
         if (code === "RIDE_ENROUTE_PICKUP") {
-            await sendRideState(code);
+            const ok = await sendRideState(code);
+            if (!ok) return; // buyer not updated → do not start animation
             const driverNow = localDriverGps ?? rideMap.driverGps ?? rideMap.pickupGps;
             const seg = await buildSegment(driverNow, rideMap.pickupGps, "pickup");
             if (seg) setActiveRoute(seg);
-            animateDriver(seg?.geometry ?? [], () => {
-                sendRideState("RIDE_ARRIVED_PICKUP");
-                // ⑦ Auto-run: after arriving, continue to Started on its own.
-                if (autoRunRef.current) setTimeout(() => handleRideState("RIDE_STARTED"), 1200);
+            animateDriver(seg?.geometry ?? [], async () => {
+                const arrived = await sendRideState("RIDE_ARRIVED_PICKUP");
+                // ⑦ Auto-run: after arriving, continue to Started on its own (only if delivered).
+                if (arrived && autoRunRef.current)
+                    setTimeout(() => handleRideState("RIDE_STARTED"), 1200);
             });
             return;
         }
         if (code === "RIDE_STARTED") {
-            await sendRideState(code);
+            const ok = await sendRideState(code);
+            if (!ok) return; // buyer not updated → do not start animation
             const seg = await buildSegment(rideMap.pickupGps, rideMap.dropGps, "destination");
             if (seg) setActiveRoute(seg);
             animateDriver(seg?.geometry ?? [], () => endRide());
@@ -310,6 +320,29 @@ export default function RideMapTab({ flowId }: { flowId: string | null }) {
         toast.info("Tracking reset");
     };
 
+    // Full reset whenever the active ride (transaction) changes — a fresh map for each flow, even
+    // if the component is not remounted. Initialised to the current txn so it does NOT fire on the
+    // first mount, only on an actual switch/restart.
+    const prevTxnRef = useRef<string | undefined>(transactionId);
+    useEffect(() => {
+        if (prevTxnRef.current === transactionId) return;
+        prevTxnRef.current = transactionId;
+        stopAnimation();
+        autoRunRef.current = false;
+        setAutoRunActive(false);
+        setLocalDriverGps(undefined);
+        setLocalPhase(undefined);
+        setActiveRoute(null);
+        setTripRoute(null);
+        setPhaseTimes({});
+        setTrackingReset(false);
+        setLastUpdate(undefined);
+        completedFiredRef.current = false;
+        autoStateFiredRef.current.clear();
+        payloadCacheRef.current.clear();
+        setRideMap({ isTracking: false, hasLocations: false });
+    }, [transactionId]);
+
     const phase = localPhase ?? rideMap.phase ?? currentRideState(mappedFlow);
     const rideEnded = isRideEnded(phase);
     const driverGpsForMap = isController
@@ -328,11 +361,14 @@ export default function RideMapTab({ flowId }: { flowId: string | null }) {
         setPhaseTimes((prev) => (prev[phase] ? prev : { ...prev, [phase]: new Date().toISOString() }));
     }, [phase]);
 
-    // Trip route: fetch pickup→drop as soon as both locations are known so the full trip path is
-    // always shown (preview and throughout the ride). The active segment (enroute = driver→pickup)
-    // is layered on top of this persistent base.
+    // Trip route: (re)fetch pickup→drop whenever the locations change so the full trip path is
+    // always fresh — a new search shows the new route, not a stale one. The active segment
+    // (enroute = driver→pickup) is layered on top of this persistent base.
     useEffect(() => {
-        if (tripRoute || !rideMap.pickupGps || !rideMap.dropGps) return;
+        if (!rideMap.pickupGps || !rideMap.dropGps) {
+            setTripRoute(null);
+            return;
+        }
         let cancelled = false;
         buildSegment(rideMap.pickupGps, rideMap.dropGps, "destination").then((seg) => {
             if (!cancelled && seg) setTripRoute(seg);
@@ -340,7 +376,6 @@ export default function RideMapTab({ flowId }: { flowId: string | null }) {
         return () => {
             cancelled = true;
         };
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [rideMap.pickupGps, rideMap.dropGps]);
 
     // Driver progress along the active segment (drives two-tone route + ETA panel).
@@ -392,6 +427,7 @@ export default function RideMapTab({ flowId }: { flowId: string | null }) {
                         interactive={false}
                         route={tripRoute?.geometry}
                         progress={0}
+                        fitKey={`${rideMap.pickupGps ?? ""}|${rideMap.dropGps ?? ""}`}
                     />
                 </div>
             );
@@ -497,6 +533,7 @@ export default function RideMapTab({ flowId }: { flowId: string | null }) {
                 route={activeRoute?.geometry ?? tripRoute?.geometry}
                 tripRoute={tripRoute?.geometry}
                 progress={progress}
+                fitKey={`${rideMap.pickupGps ?? ""}|${rideMap.dropGps ?? ""}`}
                 onDriverMove={sendDriverMove}
                 onReset={handleResetTracking}
                 currentState={phase}

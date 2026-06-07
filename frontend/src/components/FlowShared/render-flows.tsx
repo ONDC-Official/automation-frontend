@@ -800,7 +800,9 @@ function RenderFlows({
                                                 )}
                                             </div>
                                         ) : selectedTab === "Application" ? (
-                                            <RideMapTab flowId={activeFlow} />
+                                            // key={activeFlow} → remount on flow switch so the map
+                                            // fully resets (no stale driver/route/state carryover).
+                                            <RideMapTab key={activeFlow ?? "none"} flowId={activeFlow} />
                                         ) : (
                                             <SearchableJsonView
                                                 value={
