@@ -11,6 +11,7 @@ import { proceedFlow, triggerExtra } from "@utils/request-utils";
 import { useSession } from "@context/context";
 
 import PairedCard from "@components/FlowShared/pair-card";
+import { isTrackingPhaseStep, isTrackingActive } from "@components/FlowShared/ride-map-utils";
 
 export default function DisplayFlow({
     mappedFlow,
@@ -55,10 +56,17 @@ export default function DisplayFlow({
     const lastScrolledKeyRef = useRef<string | undefined>(undefined);
 
     const transactionId = sessionData?.flowMap[flowId] ?? undefined;
-    // Counterparty-owned extra-sequence steps that can be fired on demand.
+    // Counterparty-owned extra-sequence steps that can be fired on demand (e.g. on_track /
+    // on_status). These remain visible as "Extra Trigger" buttons alongside the ride map.
     const eligibleExtras = (sessionData?.flowConfigs?.[flowId]?.extraSequence ?? []).filter(
         (s) => s.owner !== sessionData?.npType
     );
+
+    // --- Real-Time Ride Map Integration ------------------------------------
+    // The map UI now lives in the right-panel "Application" tab (RideMapTab). Here we only need to
+    // know whether the tracking phase is active, to stop the flow engine auto-proceeding past
+    // on_confirm — the seller drives track/on_track/on_status manually from the map.
+    const trackingActive = isTrackingActive(mappedFlow);
 
     useEffect(() => {
         // Sequence steps (skip first — that's the flow's initial trigger) take priority over extras.
@@ -68,6 +76,16 @@ export default function DisplayFlow({
         const extraStep = mappedFlow?.extraSteps?.find((s) => s.status === "INPUT-REQUIRED");
         const target = seqStep ?? extraStep;
         const conf = target?.input;
+        // Ride Map (Part A): once the ride is assigned (on_confirm complete), the tracking phase is
+        // fully manual — do NOT auto-open/auto-submit input for track/on_track/on_status/etc. The
+        // seller advances these via the map controls. EXCEPTION: `on_track_on_assign` shares the
+        // initial driver location and is seller-input-driven, so let its input form auto-open.
+        if (
+            trackingActive &&
+            isTrackingPhaseStep(target?.actionType) &&
+            target?.actionId !== "on_track_on_assign"
+        )
+            return;
         // Extra steps must be advanced via triggerExtra (carries `trigger_extra`); use the step's
         // actionId as the trigger key. Undefined => sequence step => proceedFlow.
         const extraKey = !seqStep && extraStep ? extraStep.actionId : undefined;
@@ -95,6 +113,9 @@ export default function DisplayFlow({
     useEffect(() => {
         const latestSending = mappedFlow?.sequence.find((f) => f.status === "RESPONDING");
         const transactionId = sessionData?.flowMap[flowId];
+        // Ride Map (Part A): never auto-proceed tracking-phase steps after on_confirm — the seller
+        // drives them manually via the map.
+        if (trackingActive && isTrackingPhaseStep(latestSending?.actionType)) return;
         if (latestSending && latestSending.force_proceed && transactionId) {
             proceedFlow(sessionId, transactionId);
         }

@@ -1,16 +1,45 @@
+import { useMemo } from "react";
 import Form from "@rjsf/core";
 import validator from "@rjsf/validator-ajv8";
 import {
     RJSFSchema,
+    UiSchema,
     FieldTemplateProps,
     ObjectFieldTemplateProps,
     ArrayFieldTemplateProps,
     ValidatorType,
     GenericObjectType,
+    RegistryWidgetsType,
 } from "@rjsf/utils";
 import "./rsjs.css";
 import { GrAdd } from "react-icons/gr";
 import { MdDeleteOutline } from "react-icons/md";
+import GpsWidget from "@components/ui/forms/custom-forms/GpsMapPicker";
+
+const WIDGETS: RegistryWidgetsType = { gps: GpsWidget };
+
+/** A schema property is a GPS coordinate if it maps to a *.location.gps payload field
+ * or its name looks like a gps field (e.g. start_gps / end_gps). */
+function isGpsProperty(name: string, prop: Record<string, unknown>): boolean {
+    const payloadField = prop?.["x-payloadField"];
+    if (typeof payloadField === "string" && payloadField.includes("location.gps")) return true;
+    return /(^|_)gps$/i.test(name);
+}
+
+/** Build a uiSchema that routes GPS properties (recursively) to the custom map-picker widget. */
+function buildGpsUiSchema(schema: RJSFSchema): UiSchema {
+    const ui: UiSchema = {};
+    const props = (schema?.properties ?? {}) as Record<string, RJSFSchema>;
+    for (const [name, prop] of Object.entries(props)) {
+        if (prop && typeof prop === "object" && prop.type === "object" && prop.properties) {
+            const nested = buildGpsUiSchema(prop);
+            if (Object.keys(nested).length) ui[name] = nested;
+        } else if (isGpsProperty(name, prop as Record<string, unknown>)) {
+            ui[name] = { "ui:widget": "gps" };
+        }
+    }
+    return ui;
+}
 
 interface FormChangeEvent {
     formData?: Record<string, unknown>;
@@ -125,11 +154,16 @@ export default function JsonSchemaForm({
         onChange?.(formData as Record<string, unknown>);
     };
 
+    // Route GPS fields (e.g. start_gps / end_gps in the search form) to the map-picker widget.
+    const uiSchema = useMemo(() => buildGpsUiSchema(schema), [schema]);
+
     return (
         <div className="rjsf-custom-form">
             {title && <h2 className="form-title">{title}</h2>}
             <Form
                 schema={schema}
+                uiSchema={uiSchema}
+                widgets={WIDGETS}
                 formData={formData}
                 validator={
                     validator as ValidatorType<GenericObjectType, RJSFSchema, GenericObjectType>

@@ -10,6 +10,8 @@ interface IProps {
     onSelectOption: (option: string) => void;
     className?: string;
     defaultTab?: string;
+    /** When provided, the active tab is controlled by the parent (highlight follows this key). */
+    activeKey?: string;
     // Legacy props for backward compatibility
     option1?: string;
     option2?: string;
@@ -20,6 +22,7 @@ const Tabs = ({
     onSelectOption,
     className = "",
     defaultTab,
+    activeKey,
     // Legacy props
     option1,
     option2,
@@ -35,7 +38,9 @@ const Tabs = ({
                 ]
               : [];
 
-    const [activeTab, setActiveTab] = useState(defaultTab || finalOptions[0]?.key || "");
+    const [internalTab, setInternalTab] = useState(defaultTab || finalOptions[0]?.key || "");
+    // Controlled when `activeKey` is supplied; otherwise self-manage.
+    const activeTab = activeKey ?? internalTab;
 
     if (finalOptions.length === 0) {
         return null;
@@ -53,7 +58,7 @@ const Tabs = ({
                                 : "text-gray-500 hover:text-sky-500"
                         }`}
                         onClick={() => {
-                            setActiveTab(option.key);
+                            setInternalTab(option.key);
                             onSelectOption(option.key);
                         }}
                     >

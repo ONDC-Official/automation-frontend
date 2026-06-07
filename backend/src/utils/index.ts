@@ -10,11 +10,11 @@ export const buildMockBaseURL = async (url: string, sessionId: string) => {
 	if (usecase === "PLAYGROUND-FLOW") {
 		return `${mockUrl}/playground/${url}`;
 	}
-	if (mockUrl.includes("localhost")) {
-		logger.info("Mock service is running in localhost");
-		const newUrl = `${mockUrl}/${sessionData.domain}/${url}`;
-		return newUrl;
-	}
+	// if (mockUrl.includes("localhost")) {
+	// 	logger.info("Mock service is running in localhost");
+	// 	const newUrl = `${mockUrl}/${sessionData.domain}/${url}`;
+	// 	return newUrl;
+	// }
 	const generatedURL = `${mockUrl}/${sessionData.domain}/${sessionData.version}/${url}`;
 	return generatedURL;
 };
