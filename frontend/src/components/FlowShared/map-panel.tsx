@@ -14,6 +14,7 @@ import { getRoute } from "@utils/request-utils";
 import {
     bearing,
     parseGps,
+    splitPathAt,
     RIDE_STATE_ORDER,
     RIDE_STATE_BUTTON_LABEL,
     RIDE_CANCEL_STATE,
@@ -41,6 +42,14 @@ export interface MapPanelProps {
     onDriverMove?: (gps: string) => void;
     onReset?: () => void;
     locked?: boolean;
+    /** Route geometry [lat,lng][] supplied by the parent (so the same path drives animation + ETA).
+     *  When omitted, the panel fetches pickup→drop itself. */
+    route?: LatLng[];
+    /** The full pickup→destination trip path, drawn as a persistent blue base so the trip route
+     *  stays visible even while the active segment is driver→pickup (enroute). */
+    tripRoute?: LatLng[];
+    /** Fraction (0..1) of the route covered — splits the polyline into covered/remaining. */
+    progress?: number;
     /** The current ride state (highlights the matching button). */
     currentState?: string;
     /** Fired when the controller clicks a ride-state button (passes the RIDE_* code). */
@@ -56,23 +65,73 @@ const pinIcon = (color: string, glyph: string) =>
         popupAnchor: [0, -26],
     });
 
-/** Directional driver arrow, rotated to `heading` degrees (0 = North, clockwise). */
+/** Top-down car marker, rotated to `heading` degrees (0 = North, clockwise). */
 const driverArrowIcon = (heading: number) =>
     L.divIcon({
         className: "ride-map-driver",
-        html: `<div style="transform:rotate(${heading}deg);width:34px;height:34px;display:flex;align-items:center;justify-content:center;">
-            <svg width="34" height="34" viewBox="0 0 24 24" style="filter:drop-shadow(0 1px 2px rgba(0,0,0,.5));">
-              <circle cx="12" cy="12" r="11" fill="#fff"/>
-              <path d="M12 2 L19 21 L12 16 L5 21 Z" fill="#2563eb"/>
+        html: `<div style="width:36px;height:36px;display:flex;align-items:center;justify-content:center;filter:drop-shadow(0 1px 2px rgba(0,0,0,.45));">
+            <svg width="34" height="34" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="11.5" fill="#fff"/>
+              <g transform="rotate(${heading} 12 12)">
+                <rect x="8" y="4.5" width="8" height="15" rx="3" fill="#2563eb"/>
+                <rect x="9.2" y="6" width="5.6" height="3.6" rx="1" fill="#bfdbfe"/>
+                <rect x="9.2" y="14.6" width="5.6" height="2.6" rx="1" fill="#1e40af"/>
+              </g>
             </svg>
         </div>`,
-        iconSize: [34, 34],
-        iconAnchor: [17, 17],
-        popupAnchor: [0, -17],
+        iconSize: [36, 36],
+        iconAnchor: [18, 18],
+        popupAnchor: [0, -18],
     });
 
 const PICKUP_ICON = pinIcon("#16a34a", "P");
 const DROP_ICON = pinIcon("#dc2626", "D");
+
+/** Small inline swatches that mirror the real map markers, for the legend. */
+const LegendPin = ({ color, glyph }: { color: string; glyph: string }) => (
+    <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden>
+        <path d="M12 2C7.6 2 4 5.6 4 10c0 5.5 8 12 8 12s8-6.5 8-12c0-4.4-3.6-8-8-8z" fill={color} />
+        <text x="12" y="13" textAnchor="middle" fontSize="9" fontWeight="700" fill="#fff">
+            {glyph}
+        </text>
+    </svg>
+);
+const LegendCar = () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden>
+        <circle cx="12" cy="12" r="11" fill="#fff" stroke="#e5e7eb" />
+        <rect x="8" y="5" width="8" height="14" rx="3" fill="#2563eb" />
+        <rect x="9.2" y="6.5" width="5.6" height="3.4" rx="1" fill="#bfdbfe" />
+    </svg>
+);
+
+/** Legend describing the map markers + route, shown directly under the map. */
+function MapLegend({ hasRoute }: { hasRoute: boolean }) {
+    return (
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 rounded-md border border-gray-200 bg-gray-50 px-3 py-1.5 text-xs text-gray-600">
+            <span className="flex items-center gap-1.5">
+                <LegendPin color="#16a34a" glyph="P" /> Pickup
+            </span>
+            <span className="flex items-center gap-1.5">
+                <LegendPin color="#dc2626" glyph="D" /> Destination
+            </span>
+            <span className="flex items-center gap-1.5">
+                <LegendCar /> Driver
+            </span>
+            {hasRoute && (
+                <>
+                    <span className="flex items-center gap-1.5">
+                        <span className="inline-block h-1 w-5 rounded-full bg-[#2563eb]" /> Remaining
+                        route
+                    </span>
+                    <span className="flex items-center gap-1.5">
+                        <span className="inline-block h-1 w-5 rounded-full bg-[#94a3b8]" /> Covered
+                        route
+                    </span>
+                </>
+            )}
+        </div>
+    );
+}
 
 /** Lets the seller click the map to PLACE the driver when none exists yet. */
 function PlaceDriverOnClick({ enabled, onPlace }: { enabled: boolean; onPlace: (gps: string) => void }) {
@@ -105,6 +164,9 @@ export default function MapPanel({
     interactive,
     onDriverMove,
     onReset,
+    route: routeProp,
+    tripRoute,
+    progress = 0,
     currentState,
     onRideState,
 }: MapPanelProps) {
@@ -112,7 +174,13 @@ export default function MapPanel({
     const drop = useMemo(() => parseGps(dropGps), [dropGps]);
     const driver = useMemo(() => parseGps(driverGps), [driverGps]);
 
-    const [route, setRoute] = useState<LatLng[]>([]);
+    const [fetchedRoute, setFetchedRoute] = useState<LatLng[]>([]);
+    // Parent-supplied route wins (keeps animation/ETA/render on the same geometry).
+    const route = routeProp?.length ? routeProp : fetchedRoute;
+    const [covered, remaining] = useMemo(
+        () => (route.length > 1 ? splitPathAt(route, progress) : [[], route]),
+        [route, progress]
+    );
 
     // Track previous driver position to derive heading for the arrow.
     const prevDriverRef = useRef<LatLng | null>(null);
@@ -129,21 +197,22 @@ export default function MapPanel({
         prevDriverRef.current = driver;
     }, [driver, drop]);
 
-    // Road-following route between pickup and drop (static for the ride).
+    // Road-following route between pickup and drop (only when the parent doesn't supply one).
     useEffect(() => {
+        if (routeProp?.length) return;
         let cancelled = false;
         if (!pickup || !drop) {
-            setRoute([]);
+            setFetchedRoute([]);
             return;
         }
         getRoute(toGpsString(pickup), toGpsString(drop)).then((res) => {
             if (cancelled) return;
-            setRoute(res?.geometry?.length ? res.geometry : [pickup, drop]);
+            setFetchedRoute(res?.geometry?.length ? res.geometry : [pickup, drop]);
         });
         return () => {
             cancelled = true;
         };
-    }, [pickupGps, dropGps]);
+    }, [pickupGps, dropGps, routeProp]);
 
     const fitPoints = useMemo(
         () => [pickup, drop, driver].filter((p): p is LatLng => Boolean(p)),
@@ -157,6 +226,13 @@ export default function MapPanel({
     // Rebuild the arrow icon only when the heading actually changes, so the marker stays stable
     // during a drag (recreating the icon every render breaks dragging).
     const driverIcon = useMemo(() => driverArrowIcon(Math.round(heading)), [heading]);
+
+    const mapRef = useRef<L.Map | null>(null);
+    const recenter = () => {
+        if (!mapRef.current || fitPoints.length === 0) return;
+        if (fitPoints.length === 1) mapRef.current.setView(fitPoints[0], 14);
+        else mapRef.current.fitBounds(L.latLngBounds(fitPoints), { padding: [40, 40] });
+    };
 
     return (
         <div className="flex flex-col gap-2">
@@ -217,10 +293,19 @@ export default function MapPanel({
             )}
 
             <div
-                className="rounded-md overflow-hidden border border-gray-200"
+                className="relative rounded-md overflow-hidden border border-gray-200"
                 style={{ height: 360 }}
             >
+                <button
+                    type="button"
+                    onClick={recenter}
+                    title="Recenter / fit"
+                    className="absolute bottom-3 left-3 z-[500] flex h-8 w-8 items-center justify-center rounded-md border border-gray-300 bg-white text-gray-600 shadow hover:bg-gray-50"
+                >
+                    ⊕
+                </button>
                 <MapContainer
+                    ref={mapRef}
                     center={initialCenter}
                     zoom={13}
                     style={{ height: "100%", width: "100%" }}
@@ -236,10 +321,26 @@ export default function MapPanel({
                         onPlace={(gps) => onDriverMove?.(gps)}
                     />
 
-                    {route.length > 0 && (
+                    {/* Persistent pickup→destination trip path (blue base) — stays visible while the
+                        active segment is driver→pickup during enroute. */}
+                    {tripRoute && tripRoute.length > 1 && (
                         <Polyline
-                            positions={route}
-                            pathOptions={{ color: "#2563eb", weight: 4, opacity: 0.7 }}
+                            positions={tripRoute}
+                            pathOptions={{ color: "#2563eb", weight: 5, opacity: 0.85 }}
+                        />
+                    )}
+
+                    {/* Two-tone route: covered (dim) + remaining (bright). */}
+                    {remaining.length > 1 && (
+                        <Polyline
+                            positions={remaining}
+                            pathOptions={{ color: "#2563eb", weight: 5, opacity: 0.85 }}
+                        />
+                    )}
+                    {covered.length > 1 && (
+                        <Polyline
+                            positions={covered}
+                            pathOptions={{ color: "#94a3b8", weight: 5, opacity: 0.6 }}
                         />
                     )}
 
@@ -275,6 +376,9 @@ export default function MapPanel({
                     )}
                 </MapContainer>
             </div>
+
+            {/* Legend describing the map markers + route. */}
+            <MapLegend hasRoute={route.length > 1 || (tripRoute?.length ?? 0) > 1} />
 
             {interactive && !driver && (
                 <p className="text-xs text-amber-600">

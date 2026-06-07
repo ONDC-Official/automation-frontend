@@ -9,12 +9,128 @@ import { getCompletePayload } from "@utils/request-utils";
  * All parsing is tolerant (recursive search) since exact nesting varies by flow.
  */
 
+export interface RideDriver {
+    name?: string;
+    phone?: string;
+    rating?: string;
+}
+export interface RideVehicle {
+    registration?: string;
+    make?: string;
+    model?: string;
+    category?: string;
+    color?: string;
+}
+export interface RideFare {
+    value?: string;
+    currency?: string;
+}
+
 export interface RideMapData {
     pickupGps?: string;
     dropGps?: string;
     driverGps?: string;
     phase?: string;
     isTracking: boolean;
+    /** True once pickup & drop are known (from search onward) — enough to show the map preview. */
+    hasLocations: boolean;
+    /** `message.order.status` from the latest order-bearing payload (on_status/on_update/on_confirm/on_cancel). */
+    orderStatus?: string;
+    /** Error block (e.g. `{code:"90203", message:"Driver not assigned…"}`) from the latest payload. */
+    error?: { code?: string; message?: string };
+    driver?: RideDriver;
+    vehicle?: RideVehicle;
+    fare?: RideFare;
+}
+
+/** What the map should display, derived purely from order.status + ride state (+ error). */
+export type RideDisplayKind =
+    | "DRIVER_NOT_FOUND"
+    | "AWAITING_DRIVER"
+    | "CANCELLED"
+    | "CANCELLING"
+    | "COMPLETED"
+    | "ACTIVE"
+    | "AWAITING";
+
+export interface RideDisplay {
+    kind: RideDisplayKind;
+    title: string;
+    detail?: string;
+    /** Whether the seller's ride-state controls / driver simulation should be offered. */
+    showsControls: boolean;
+}
+
+const RIDE_ACTIVE_STATES = new Set([
+    "RIDE_ASSIGNED",
+    "RIDE_ENROUTE_PICKUP",
+    "RIDE_ARRIVED_PICKUP",
+    "RIDE_STARTED",
+    "RIDE_ENDED",
+]);
+
+/**
+ * Decide what the map shows from the live order status + ride state (+ error). Priority order
+ * matters — terminal/failure outcomes are checked before the active-ride case. Note `order.status`
+ * stays ACTIVE through the whole ride (even at RIDE_COMPLETED), so completion is keyed off the
+ * ride state, and the transient SOFT_UPDATE/UPDATED statuses are treated as active.
+ */
+export function deriveRideDisplay(input: {
+    phase?: string;
+    orderStatus?: string;
+    error?: { code?: string; message?: string };
+}): RideDisplay {
+    const { phase, orderStatus, error } = input;
+    const status = (orderStatus || "").toUpperCase();
+
+    // 1) Driver never assigned (explicit error on on_confirm).
+    const errMsg = (error?.message || "").toLowerCase();
+    if (error && (error.code === "90203" || errMsg.includes("driver not assigned") || errMsg.includes("driver not found"))) {
+        return {
+            kind: "DRIVER_NOT_FOUND",
+            title: "Driver not found",
+            detail: error.message || "No driver was assigned to this order.",
+            showsControls: false,
+        };
+    }
+
+    // 2) Cancelled (hard) — ride state or order status.
+    if (phase === "RIDE_CANCELLED" || status === "CANCELLED") {
+        return { kind: "CANCELLED", title: "Ride cancelled", detail: "This ride was cancelled.", showsControls: false };
+    }
+
+    // 3) Soft cancel requested (not yet final).
+    if (status === "SOFT_CANCEL") {
+        return {
+            kind: "CANCELLING",
+            title: "Cancellation in progress",
+            detail: "A cancellation has been requested for this ride.",
+            showsControls: false,
+        };
+    }
+
+    // 4) Completed — keyed off ride state (order.status stays ACTIVE) or an explicit COMPLETE.
+    if (phase === "RIDE_COMPLETED" || status === "COMPLETE" || status === "COMPLETED") {
+        return { kind: "COMPLETED", title: "Ride completed", showsControls: false };
+    }
+
+    // 5) Confirmed but driver not yet assigned (assignment happens later via on_update).
+    if (phase === "RIDE_CONFIRMED") {
+        return {
+            kind: "AWAITING_DRIVER",
+            title: "Driver not assigned yet",
+            detail: "The order is confirmed; a driver has not been assigned yet.",
+            showsControls: false,
+        };
+    }
+
+    // 6) Active ride (SOFT_UPDATE/UPDATED are transient → still active).
+    if (phase && RIDE_ACTIVE_STATES.has(phase)) {
+        return { kind: "ACTIVE", title: "Ride in progress", showsControls: true };
+    }
+
+    // 7) Nothing assigned yet (pre-confirm / awaiting).
+    return { kind: "AWAITING", title: "Awaiting ride", showsControls: false };
 }
 
 const RIDE_PHASE_LABELS: Record<string, string> = {
@@ -91,6 +207,84 @@ export function haversineMeters(a: LatLng, b: LatLng): number {
     const h =
         Math.sin(dLat / 2) ** 2 + Math.sin(dLon / 2) ** 2 * Math.cos(lat1) * Math.cos(lat2);
     return 2 * R * Math.asin(Math.sqrt(h));
+}
+
+// Timeline order + short labels for the status stepper (RIDE_ASSIGNED is set by on_confirm).
+export const RIDE_TIMELINE = [
+    "RIDE_ASSIGNED",
+    "RIDE_ENROUTE_PICKUP",
+    "RIDE_ARRIVED_PICKUP",
+    "RIDE_STARTED",
+    "RIDE_ENDED",
+    "RIDE_COMPLETED",
+] as const;
+export const RIDE_TIMELINE_LABEL: Record<string, string> = {
+    RIDE_ASSIGNED: "Assigned",
+    RIDE_ENROUTE_PICKUP: "Enroute",
+    RIDE_ARRIVED_PICKUP: "Arrived",
+    RIDE_STARTED: "Started",
+    RIDE_ENDED: "Ended",
+    RIDE_COMPLETED: "Completed",
+};
+
+export const formatKm = (m?: number): string =>
+    m == null ? "" : `${(m / 1000).toFixed(m < 1000 ? 2 : 1)} km`;
+export const formatMin = (s?: number): string =>
+    s == null ? "" : `${Math.max(1, Math.round(s / 60))} min`;
+
+/** Closest point on segment a→b to p (planar approx), with its parametric t in [0,1]. */
+function closestOnSegment(p: LatLng, a: LatLng, b: LatLng): { point: LatLng; t: number } {
+    const dx = b[0] - a[0];
+    const dy = b[1] - a[1];
+    const len2 = dx * dx + dy * dy;
+    let t = len2 ? ((p[0] - a[0]) * dx + (p[1] - a[1]) * dy) / len2 : 0;
+    t = Math.max(0, Math.min(1, t));
+    return { point: [a[0] + dx * t, a[1] + dy * t], t };
+}
+
+/** Fraction (0..1) of the route the driver has covered — nearest point on the polyline. */
+export function progressAlong(path: LatLng[], point: LatLng | null): number {
+    if (!point || path.length < 2) return 0;
+    const cum = [0];
+    for (let i = 1; i < path.length; i++) cum.push(cum[i - 1] + haversineMeters(path[i - 1], path[i]));
+    const total = cum[cum.length - 1];
+    if (total === 0) return 0;
+    let bestDist = Infinity;
+    let bestAlong = 0;
+    for (let i = 1; i < path.length; i++) {
+        const { point: cp, t } = closestOnSegment(point, path[i - 1], path[i]);
+        const d = haversineMeters(point, cp);
+        if (d < bestDist) {
+            bestDist = d;
+            bestAlong = cum[i - 1] + (cum[i] - cum[i - 1]) * t;
+        }
+    }
+    return Math.max(0, Math.min(1, bestAlong / total));
+}
+
+/** Split a polyline at `fraction` into [covered, remaining] for two-tone rendering. */
+export function splitPathAt(path: LatLng[], fraction: number): [LatLng[], LatLng[]] {
+    if (path.length < 2) return [path, []];
+    const cum = [0];
+    for (let i = 1; i < path.length; i++) cum.push(cum[i - 1] + haversineMeters(path[i - 1], path[i]));
+    const total = cum[cum.length - 1];
+    if (total === 0) return [path, []];
+    const target = Math.max(0, Math.min(1, fraction)) * total;
+    const covered: LatLng[] = [path[0]];
+    for (let i = 1; i < path.length; i++) {
+        if (cum[i] < target) {
+            covered.push(path[i]);
+        } else {
+            const segLen = cum[i] - cum[i - 1];
+            const t = segLen ? (target - cum[i - 1]) / segLen : 0;
+            const a = path[i - 1];
+            const b = path[i];
+            const mid: LatLng = [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t];
+            covered.push(mid);
+            return [covered, [mid, ...path.slice(i)]];
+        }
+    }
+    return [covered, []];
 }
 
 /** Position at `fraction` (0..1) of the total length along a polyline path — drives animation. */
@@ -262,6 +456,54 @@ function findTrackingGps(obj: unknown): string | undefined {
     return undefined;
 }
 
+/** First value found under `key` anywhere in the object tree. */
+function findByKey(obj: unknown, key: string): any {
+    if (!obj || typeof obj !== "object") return undefined;
+    const rec = obj as Record<string, any>;
+    if (rec[key] !== undefined && rec[key] !== null) return rec[key];
+    for (const v of Object.values(rec)) {
+        const found = findByKey(v, key);
+        if (found !== undefined) return found;
+    }
+    return undefined;
+}
+
+/** Pull driver (agent), vehicle and fare (quote.price) details from a confirm/on_status payload. */
+function extractRideInfo(payload: unknown): {
+    driver?: RideDriver;
+    vehicle?: RideVehicle;
+    fare?: RideFare;
+} {
+    const agent = findByKey(payload, "agent");
+    const vehicle = findByKey(payload, "vehicle");
+    const price = findByKey(payload, "price"); // quote.price
+    const rating = findByKey(agent, "rating") ?? findByKey(payload, "rating");
+
+    const driver: RideDriver | undefined =
+        agent || rating
+            ? {
+                  name: agent?.person?.name,
+                  phone: agent?.contact?.phone,
+                  rating: typeof rating === "string" || typeof rating === "number" ? String(rating) : undefined,
+              }
+            : undefined;
+    const veh: RideVehicle | undefined = vehicle
+        ? {
+              registration: vehicle.registration,
+              make: vehicle.make,
+              model: vehicle.model,
+              category: vehicle.category,
+              color: vehicle.color,
+          }
+        : undefined;
+    const fare: RideFare | undefined =
+        price && (price.value != null || price.currency != null)
+            ? { value: price.value != null ? String(price.value) : undefined, currency: price.currency }
+            : undefined;
+
+    return { driver, vehicle: veh, fare };
+}
+
 /**
  * Across one or more step lists (sequence / extraSteps / missedSteps), return the payloadId of the
  * step whose API payload has the LATEST timestamp for the given actionType. Side-agnostic: a
@@ -284,6 +526,58 @@ function latestPayloadId(stepLists: MappedStep[][], actionType: string): string 
         }
     }
     return bestId;
+}
+
+/**
+ * The payloadId of the single LATEST (by timestamp) API payload across several actionTypes.
+ * Used to find the most recent "order-bearing" call (on_status/on_update/on_confirm/on_cancel) so
+ * the ride state + order status reflect the true current state — `on_track` is excluded because it
+ * carries only tracking GPS, no order/state.
+ */
+function latestPayloadIdAcross(stepLists: MappedStep[][], actionTypes: string[]): string | undefined {
+    const wanted = new Set(actionTypes);
+    let bestId: string | undefined;
+    let bestTs = -Infinity;
+    for (const steps of stepLists) {
+        for (const s of steps) {
+            if (!wanted.has(s.actionType)) continue;
+            const payloads = s.payloads;
+            if (payloads && payloads.entryType === "API" && payloads.payloads?.length) {
+                const ts = new Date(payloads.timestamp).getTime();
+                if (ts >= bestTs) {
+                    bestTs = ts;
+                    bestId = payloads.payloads[payloads.payloads.length - 1].payloadId;
+                }
+            }
+        }
+    }
+    return bestId;
+}
+
+/** Find `message.order.status` anywhere in the object tree (first `order` object with a string status). */
+function findOrderStatus(obj: unknown): string | undefined {
+    if (!obj || typeof obj !== "object") return undefined;
+    const rec = obj as Record<string, any>;
+    if (rec.order && typeof rec.order.status === "string") return rec.order.status;
+    for (const v of Object.values(rec)) {
+        const found = findOrderStatus(v);
+        if (found) return found;
+    }
+    return undefined;
+}
+
+/** Find an `error` block carrying a code/message anywhere in the object tree. */
+function findError(obj: unknown): { code?: string; message?: string } | undefined {
+    if (!obj || typeof obj !== "object") return undefined;
+    const rec = obj as Record<string, any>;
+    if (rec.error && (rec.error.code != null || rec.error.message != null)) {
+        return { code: rec.error.code != null ? String(rec.error.code) : undefined, message: rec.error.message };
+    }
+    for (const v of Object.values(rec)) {
+        const found = findError(v);
+        if (found) return found;
+    }
+    return undefined;
 }
 
 async function fetchReq(
@@ -323,25 +617,77 @@ export async function deriveRideMapData(
     const isComplete = (actionType: string) =>
         lists.some((l) => l.some((s) => s.actionType === actionType && s.status === "COMPLETE"));
 
-    // Tracking is active once the ride is confirmed — from EITHER side's view.
-    if (!isComplete("on_confirm") && !isComplete("confirm")) {
-        return { isTracking: false };
-    }
+    // Tracking (driver simulation + state controls) is active once the ride is confirmed.
+    const isTracking = isComplete("on_confirm") || isComplete("confirm");
 
     // Stops (pickup/drop) come from whichever confirmation payload this side has.
     const confirmReq = await fetchReq(
         latestPayloadId(lists, "on_confirm") ?? latestPayloadId(lists, "confirm"),
         cache
     );
-    const trackReq = await fetchReq(latestPayloadId(lists, "on_track"), cache);
-    const statusReq = await fetchReq(latestPayloadId(lists, "on_status"), cache);
 
-    const stops = findStops(confirmReq);
+    // For the early preview (before confirm), pull pickup/drop from the first available payload in
+    // the chain — search/select/init carry the entered start & end locations. This lets the map
+    // render the moment the user enters start/end, on both buyer and seller sides.
+    let stops = findStops(confirmReq);
+    if (!stops) {
+        const LOCATION_ACTIONS = [
+            "on_select",
+            "select",
+            "on_init",
+            "init",
+            "on_search",
+            "search",
+        ];
+        for (const action of LOCATION_ACTIONS) {
+            const req = await fetchReq(latestPayloadId(lists, action), cache);
+            const found = findStops(req);
+            if (found) {
+                stops = found;
+                break;
+            }
+        }
+    }
     const pickupGps = stopGps(stops, "START");
     const dropGps = stopGps(stops, "END");
+    const hasLocations = !!(pickupGps && dropGps);
+
+    // Driver / state details only exist once the ride is confirmed; skip those fetches in preview.
+    if (!isTracking) {
+        return { pickupGps, dropGps, hasLocations, isTracking: false };
+    }
+
+    const trackReq = await fetchReq(latestPayloadId(lists, "on_track"), cache);
+
+    // Latest ORDER-bearing payload (on_status/on_update/on_confirm/on_cancel + their request
+    // counterparts) — drives the ride state, order status and any error. Crucially this includes
+    // on_update (post-confirm driver assignment + soft states) and on_cancel (RIDE_CANCELLED),
+    // which the previous on_status-only derivation could not see. on_track is excluded — it carries
+    // only tracking GPS.
+    const ORDER_ACTIONS = [
+        "on_status",
+        "on_update",
+        "on_confirm",
+        "on_cancel",
+        "confirm",
+        "status",
+        "update",
+        "cancel",
+    ];
+    const orderReq = await fetchReq(latestPayloadIdAcross(lists, ORDER_ACTIONS), cache);
+
     const driverGps = findTrackingGps(trackReq);
-    // Latest on_status phase; fall back to the confirmation state (RIDE_ASSIGNED).
-    const phase = findRidePhase(statusReq) ?? findRidePhase(confirmReq);
+    // Ride state / order status / error from the latest order payload; fall back to confirmation.
+    const phase = findRidePhase(orderReq) ?? findRidePhase(confirmReq);
+    const orderStatus = findOrderStatus(orderReq) ?? findOrderStatus(confirmReq);
+    const error = findError(orderReq) ?? findError(confirmReq);
+
+    // Driver / vehicle / fare — prefer the confirmation payload, fall back to the latest order payload.
+    const infoFromConfirm = extractRideInfo(confirmReq);
+    const infoFromOrder = extractRideInfo(orderReq);
+    const driver = infoFromConfirm.driver ?? infoFromOrder.driver;
+    const vehicle = infoFromConfirm.vehicle ?? infoFromOrder.vehicle;
+    const fare = infoFromConfirm.fare ?? infoFromOrder.fare;
 
     return {
         pickupGps,
@@ -349,5 +695,11 @@ export async function deriveRideMapData(
         driverGps,
         phase,
         isTracking: true,
+        hasLocations,
+        orderStatus,
+        error,
+        driver,
+        vehicle,
+        fare,
     };
 }

@@ -350,6 +350,23 @@ function RenderFlows({
         activeFlowRef.current = activeFlow;
     }, [activeFlow]);
 
+    // For ride-hailing (TRV) sessions, surface the live map by default: auto-select the
+    // "Application" tab once the session loads so the map is visible the moment start/end
+    // locations are entered — on both buyer (BPP) and seller (BAP) sides. Runs once so it
+    // never fights a manual tab change the user makes afterwards.
+    const tabAutoDefaultedRef = useRef(false);
+    useEffect(() => {
+        if (tabAutoDefaultedRef.current) return;
+        const domain = cacheSessionData?.domain ?? "";
+        const usecase = cacheSessionData?.usecaseId ?? "";
+        const isRideHailing =
+            domain.includes("TRV") || /ride[\s-]?hailing/i.test(usecase);
+        if (isRideHailing) {
+            tabAutoDefaultedRef.current = true;
+            setSelectedTab("Application");
+        }
+    }, [cacheSessionData]);
+
     // Extract metadata whenever flows are provided
     useEffect(() => {
         if (flows && flows.length > 0) {
@@ -723,6 +740,7 @@ function RenderFlows({
                                     );
                                 }}
                                 defaultTab="Request"
+                                activeKey={selectedTab}
                             />
 
                             <div className="p-2">
