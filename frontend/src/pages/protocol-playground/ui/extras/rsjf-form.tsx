@@ -27,8 +27,10 @@ function isGpsProperty(name: string, prop: Record<string, unknown>): boolean {
 }
 
 /** Build a uiSchema that routes GPS properties (recursively) to the custom map-picker widget. */
-function buildGpsUiSchema(schema: RJSFSchema): UiSchema {
-    const ui: UiSchema = {};
+function buildGpsUiSchema(
+    schema: RJSFSchema
+): UiSchema<Record<string, unknown>, RJSFSchema, GenericObjectType> {
+    const ui: UiSchema<Record<string, unknown>, RJSFSchema, GenericObjectType> = {};
     const props = (schema?.properties ?? {}) as Record<string, RJSFSchema>;
     for (const [name, prop] of Object.entries(props)) {
         if (prop && typeof prop === "object" && prop.type === "object" && prop.properties) {

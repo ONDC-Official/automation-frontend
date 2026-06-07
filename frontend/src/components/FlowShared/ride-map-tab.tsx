@@ -16,6 +16,7 @@ import {
     parseGps,
     haversineMeters,
     type LatLng,
+    type RideMapData,
 } from "@components/FlowShared/ride-map-utils";
 import {
     RideTimeline,
@@ -38,16 +39,10 @@ export default function RideMapTab({ flowId }: { flowId: string | null }) {
     const transactionId = flowId ? (sessionData?.flowMap?.[flowId] ?? undefined) : undefined;
 
     const [mappedFlow, setMappedFlow] = useState<FlowMap>({ sequence: [], missedSteps: [] });
-    const [rideMap, setRideMap] = useState<{
-        pickupGps?: string;
-        dropGps?: string;
-        driverGps?: string;
-        phase?: string;
-        isTracking: boolean;
-        hasLocations?: boolean;
-        orderStatus?: string;
-        error?: { code?: string; message?: string };
-    }>({ isTracking: false, hasLocations: false });
+    const [rideMap, setRideMap] = useState<RideMapData>({
+        isTracking: false,
+        hasLocations: false,
+    });
     const [localDriverGps, setLocalDriverGps] = useState<string | undefined>(undefined);
     const [localPhase, setLocalPhase] = useState<string | undefined>(undefined);
     const [trackingReset, setTrackingReset] = useState(false);
