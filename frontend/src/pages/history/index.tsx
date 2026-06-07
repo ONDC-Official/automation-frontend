@@ -1,4 +1,4 @@
-import { useState, useRef, FC } from "react";
+import { useState, useRef, FC, useContext, useEffect } from "react";
 import {
     LuHistory,
     LuLoader,
@@ -6,19 +6,29 @@ import {
     LuSearch,
     LuExternalLink,
     LuFileText,
+    LuDownload,
 } from "react-icons/lu";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
-import { getSessions, getReport } from "@utils/request-utils";
+import {
+    getSessions,
+    getReport,
+    getSubscriberUrls,
+    getPayloadsBySessionId,
+} from "@utils/request-utils";
 import { openReportInNewTab } from "@utils/generic-utils";
 import { apiClient } from "@services/apiClient";
 import { API_ROUTES } from "@services/apiRoutes";
 import { Session, FlowSummaryEntry } from "@pages/history/types";
 import { SessionCache } from "@/types/session-types";
+import { Flow } from "@/types/flow-types";
+import { Domain } from "@/pages/schema-validation/types";
 import { ROUTES } from "@constants/routes";
+import { UserContext } from "@context/userContext";
+import CustomTooltip from "@components/ui/mini-components/tooltip";
 
 // --- Local types ---
-type FlowStatus = "PASS" | "FAIL" | "ATTEMPTED" | "NOT_RUN";
+type FlowStatus = "PASS" | "FAIL" | "RUN" | "NOT_RUN";
 
 interface FlowRow {
     id: string;
@@ -78,7 +88,7 @@ const StatusBadge: FC<{ status: FlowStatus }> = ({ status }) => {
     const config: Record<FlowStatus, { cls: string; label: string }> = {
         PASS: { cls: "bg-green-50 text-green-600 border-green-200", label: "✓ Passed" },
         FAIL: { cls: "bg-red-50 text-red-600 border-red-200", label: "✗ Failed" },
-        ATTEMPTED: { cls: "bg-amber-50 text-amber-600 border-amber-200", label: "⏳ Run" },
+        RUN: { cls: "bg-amber-50 text-amber-600 border-amber-200", label: "⏳ Run" },
         NOT_RUN: { cls: "bg-slate-100 text-slate-400 border-slate-200", label: "– Not Run" },
     };
     const { cls, label } = config[status] ?? config.NOT_RUN;
@@ -110,12 +120,69 @@ const SessionCard: FC<SessionCardProps> = ({
     const [expanded, setExpanded] = useState(false);
     const [flowRows, setFlowRows] = useState<FlowRow[]>([]);
     const [loadingDetail, setLoadingDetail] = useState(false);
+    const [hasPayloads, setHasPayloads] = useState(true);
+    const [downloadingLogs, setDownloadingLogs] = useState(false);
     const detailFetched = useRef(false);
     const navigate = useNavigate();
+
+    useEffect(() => {
+        let cancelled = false;
+        getPayloadsBySessionId(session.sessionId)
+            .then((payloads) => {
+                if (!cancelled) setHasPayloads((payloads?.length ?? 0) > 0);
+            })
+            .catch(() => {
+                if (!cancelled) setHasPayloads(false);
+            });
+        return () => {
+            cancelled = true;
+        };
+    }, [session.sessionId]);
+
+    const handleDownloadLogs = async (e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (!hasPayloads || downloadingLogs) return;
+
+        setDownloadingLogs(true);
+        try {
+            const payloads = await getPayloadsBySessionId(session.sessionId);
+            const blob = new Blob([JSON.stringify(payloads, null, 2)], {
+                type: "application/json",
+            });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `${session.sessionId}-logs.json`;
+            document.body.appendChild(a);
+            a.click();
+            URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+        } catch (error) {
+            console.error("Error downloading logs: ", error);
+            toast.error("Failed to download logs");
+        } finally {
+            setDownloadingLogs(false);
+        }
+    };
 
     const rep: FlowSummaryEntry = session.flowSummary?.REPORTABLE ?? { total: 0, completed: 0 };
     const mand: FlowSummaryEntry = session.flowSummary?.MANDATORY ?? { total: 0, completed: 0 };
     const opt: FlowSummaryEntry = session.flowSummary?.OPTIONAL ?? { total: 0, completed: 0 };
+
+    const buildRowsFromFlows = (
+        flows: Record<string, Flow> | Flow[],
+        deriveStatus: (id: string) => FlowStatus
+    ): FlowRow[] => {
+        const entries = Array.isArray(flows)
+            ? flows.map((flow) => [flow.id, flow] as const)
+            : Object.entries(flows);
+        return entries.map(([id, flow]) => {
+            const tags = flow.tags ?? [];
+            const type = tags.find((t) => ["MANDATORY", "OPTIONAL"].includes(t)) ?? "OPTIONAL";
+            const name = id;
+            return { id, name, type, status: deriveStatus(id) };
+        });
+    };
 
     const handleExpand = async () => {
         const next = !expanded;
@@ -124,42 +191,61 @@ const SessionCard: FC<SessionCardProps> = ({
             detailFetched.current = true;
             setLoadingDetail(true);
             try {
-                const res = await apiClient.get<SessionCache>(API_ROUTES.SESSIONS.BASE, {
-                    params: { session_id: session.sessionId },
-                });
-                const detail = res.data;
-                // flowMap from detail API → attempted flows (flowId → transactionId | null)
-                const attemptedMap = detail.flowMap ?? {};
-                const flowConfigs = detail.flowConfigs ?? {};
+                // Pass/Fail map from session analytics — used to derive flow status
+                const resultMap = session.flowMap ?? {};
+                const deriveStatusFromResult = (id: string): FlowStatus =>
+                    resultMap[id] === "PASS" || resultMap[id] === "FAIL" || resultMap[id] === "RUN"
+                        ? resultMap[id]
+                        : "NOT_RUN";
 
-                // All flows come from flowConfigs; flowMap presence determines ATTEMPTED vs NOT_RUN
-                const deriveStatus = (id: string): FlowStatus => {
-                    if (id in attemptedMap) return "ATTEMPTED";
-                    return "NOT_RUN";
-                };
-
-                let rows: FlowRow[];
-
-                if (Object.keys(flowConfigs).length > 0) {
-                    rows = Object.entries(flowConfigs).map(([id, flow]) => {
-                        const tags = flow.tags ?? [];
-                        const type =
-                            tags.find((t) => ["MANDATORY", "OPTIONAL"].includes(t)) ?? "OPTIONAL";
-                        const name = flow.description || flow.title || id;
-                        return { id, name, type, status: deriveStatus(id) };
-                    });
+                // if (session.domain && session.version && session.usecaseId) {
+                if (session) {
+                    // Fetch flow definitions directly from config service
+                    const res = await apiClient.get<{ data: { flows: Flow[] } }>(
+                        API_ROUTES.CONFIG.FLOWS,
+                        {
+                            params: {
+                                domain: session?.domain || "ONDC:FIS12", // session.domain,
+                                version: session?.version || "2.0.2", //session.version,
+                                usecase: session?.usecaseId || "GOLD LOAN", //session.usecaseId,
+                            },
+                        }
+                    );
+                    setFlowRows(
+                        buildRowsFromFlows(res.data?.data?.flows ?? [], deriveStatusFromResult)
+                    );
                 } else {
-                    // Fallback when no flowConfigs: show attempted flows from flowMap
-                    rows = Object.keys(attemptedMap).map((id) => ({
-                        id,
-                        name: id.replace(/_/g, " "),
-                        type: "OPTIONAL",
-                        status: "ATTEMPTED" as FlowStatus,
-                    }));
+                    // Fallback for older sessions without stored domain/version/usecaseId:
+                    // pull flow configs from the (possibly expired) session cache
+                    const res = await apiClient.get<SessionCache>(API_ROUTES.SESSIONS.BASE, {
+                        params: { session_id: session?.sessionId },
+                    });
+                    const detail = res.data;
+                    const attemptedMap = detail.flowMap ?? {};
+                    const flowConfigs = detail.flowConfigs ?? {};
+                    if (Object.keys(flowConfigs).length > 0) {
+                        setFlowRows(
+                            buildRowsFromFlows(flowConfigs, (id) =>
+                                resultMap[id] === "PASS" || resultMap[id] === "FAIL"
+                                    ? resultMap[id]
+                                    : id in attemptedMap
+                                      ? "RUN"
+                                      : "NOT_RUN"
+                            )
+                        );
+                    } else {
+                        setFlowRows(
+                            Object.keys(attemptedMap).map((id) => ({
+                                id,
+                                name: id.replace(/_/g, " "),
+                                type: "OPTIONAL",
+                                status: "ATTEMPTED" as FlowStatus,
+                            }))
+                        );
+                    }
                 }
-                setFlowRows(rows);
             } catch (e) {
-                console.error("Failed to fetch session detail", e);
+                console.error("Failed to fetch session flows", e);
                 toast.error("Failed to load session details");
                 detailFetched.current = false;
             } finally {
@@ -167,6 +253,8 @@ const SessionCard: FC<SessionCardProps> = ({
             }
         }
     };
+    const isResumeDisabled =
+        Date.now() - new Date(session.createdAt).getTime() > 48 * 60 * 60 * 1000;
     const handleResume = (e: React.MouseEvent) => {
         e.stopPropagation();
         navigate(
@@ -237,13 +325,47 @@ const SessionCard: FC<SessionCardProps> = ({
 
                 {/* Action buttons */}
                 <div className="flex items-center gap-2 flex-shrink-0 ml-2">
-                    <button
-                        className="flex items-center gap-1.5 px-4 py-2 bg-sky-600 text-white text-xs font-bold rounded-lg hover:bg-sky-700 transition-colors"
-                        onClick={handleResume}
-                    >
-                        Resume
-                        <LuExternalLink size={12} />
-                    </button>
+                    {(() => {
+                        const resumeButton = (
+                            <button
+                                className="flex items-center gap-1.5 px-4 py-2 bg-sky-600 text-white text-xs font-bold rounded-lg hover:bg-sky-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-sky-600"
+                                onClick={handleResume}
+                                disabled={isResumeDisabled}
+                            >
+                                Resume
+                                <LuExternalLink size={12} />
+                            </button>
+                        );
+                        return isResumeDisabled ? (
+                            <CustomTooltip content="Session is older than 48 hours and can no longer be resumed.">
+                                <span className="cursor-not-allowed">{resumeButton}</span>
+                            </CustomTooltip>
+                        ) : (
+                            resumeButton
+                        );
+                    })()}
+                    {(() => {
+                        const downloadButton = (
+                            <button
+                                className="w-8 h-8 flex items-center justify-center border border-slate-200 rounded-lg bg-slate-50 text-slate-500 hover:border-sky-300 hover:text-sky-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:border-slate-200 disabled:hover:text-slate-500"
+                                onClick={handleDownloadLogs}
+                                disabled={!hasPayloads || downloadingLogs}
+                            >
+                                {downloadingLogs ? (
+                                    <LuLoader size={14} className="animate-spin" />
+                                ) : (
+                                    <LuDownload size={14} />
+                                )}
+                            </button>
+                        );
+                        return !hasPayloads ? (
+                            <CustomTooltip content="No logs available to download for this session.">
+                                <span className="cursor-not-allowed">{downloadButton}</span>
+                            </CustomTooltip>
+                        ) : (
+                            downloadButton
+                        );
+                    })()}
                     <div
                         className={`w-8 h-8 flex items-center justify-center border rounded-lg bg-slate-50 transition-all ${
                             expanded
@@ -358,19 +480,81 @@ const SessionCard: FC<SessionCardProps> = ({
 
 // --- Main page ---
 const HistoryPage: FC = () => {
+    const { userDetails } = useContext(UserContext);
     const [subscriberId, setSubscriberId] = useState("");
+    const [subscriberOptions, setSubscriberOptions] = useState<string[]>([]);
+    const [loadingSubscribers, setLoadingSubscribers] = useState(false);
+    const [searchText, setSearchText] = useState("");
+    const [dropdownOpen, setDropdownOpen] = useState(false);
+    const dropdownRef = useRef<HTMLDivElement>(null);
     const [npType, setNpType] = useState("BAP");
+    const [domains, setDomains] = useState<Domain[]>([]);
+    const [selectedDomain, setSelectedDomain] = useState("");
+    const [selectedVersion, setSelectedVersion] = useState("");
     const [sessions, setSessions] = useState<Session[]>([]);
     const [loading, setLoading] = useState(false);
     const [isFetched, setIsFetched] = useState(false);
     const [viewingId, setViewingId] = useState<string | null>(null);
+
+    const versionOptions = domains.find((d) => d.key === selectedDomain)?.version ?? [];
+
+    useEffect(() => {
+        const fetchSubscribers = async () => {
+            if (!userDetails?.username) return;
+            setLoadingSubscribers(true);
+            try {
+                const urls = await getSubscriberUrls(userDetails?.username);
+                setSubscriberOptions(urls);
+            } catch {
+                setSubscriberOptions([]);
+            } finally {
+                setLoadingSubscribers(false);
+            }
+        };
+        const fetchDomains = async () => {
+            try {
+                const res = await apiClient.get<{ domain: Domain[] }>(
+                    API_ROUTES.CONFIG.SCENARIO_FORM_DATA
+                );
+                setDomains(res.data.domain ?? []);
+            } catch {
+                setDomains([]);
+            }
+        };
+        fetchSubscribers();
+        fetchDomains();
+    }, [userDetails?.githubId]);
+
+    useEffect(() => {
+        const handleClickOutside = (e: MouseEvent) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+                setDropdownOpen(false);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
+
+    const filteredOptions = subscriberOptions.filter((url) =>
+        url.toLowerCase().includes(searchText.toLowerCase())
+    );
+
+    const handleDomainChange = (domain: string) => {
+        setSelectedDomain(domain);
+        setSelectedVersion("");
+    };
 
     const handleFetchSessions = async () => {
         if (!subscriberId.trim()) return;
         setLoading(true);
         setSessions([]);
         try {
-            const response = await getSessions(subscriberId, npType);
+            const response = await getSessions(
+                subscriberId,
+                npType,
+                selectedDomain || undefined,
+                selectedVersion || undefined
+            );
             setSessions(
                 (response.sessions as Session[])
                     .slice()
@@ -422,14 +606,94 @@ const HistoryPage: FC = () => {
                     Enter Subscriber Details
                 </p>
                 <div className="flex gap-2.5 items-center flex-wrap">
-                    <input
-                        type="text"
-                        value={subscriberId}
-                        onChange={(e) => setSubscriberId(e.target.value)}
-                        onKeyDown={(e) => e.key === "Enter" && handleFetchSessions()}
-                        placeholder="Subscriber ID (e.g. preprod.profittuners.bwsindia.com)"
-                        className="flex-1 min-w-48 bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-700 placeholder:text-slate-400 focus:outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-100 focus:bg-white transition-all"
-                    />
+                    {/* Searchable subscriber dropdown */}
+                    <div className="relative flex-1 min-w-48" ref={dropdownRef}>
+                        <div
+                            className={`flex items-center bg-slate-50 border rounded-xl px-4 py-2.5 transition-all ${dropdownOpen ? "border-sky-400 ring-2 ring-sky-100 bg-white" : "border-slate-200"}`}
+                            onClick={() => setDropdownOpen(true)}
+                        >
+                            {loadingSubscribers ? (
+                                <LuLoader
+                                    size={13}
+                                    className="animate-spin text-slate-400 mr-2 flex-shrink-0"
+                                />
+                            ) : (
+                                <LuSearch size={13} className="text-slate-400 mr-2 flex-shrink-0" />
+                            )}
+                            <input
+                                type="text"
+                                value={dropdownOpen ? searchText : subscriberId}
+                                onChange={(e) => {
+                                    setSearchText(e.target.value);
+                                    setDropdownOpen(true);
+                                }}
+                                onFocus={() => setDropdownOpen(true)}
+                                onKeyDown={(e) => {
+                                    if (e.key === "Enter") {
+                                        setDropdownOpen(false);
+                                        handleFetchSessions();
+                                    }
+                                    if (e.key === "Escape") setDropdownOpen(false);
+                                }}
+                                placeholder={
+                                    loadingSubscribers
+                                        ? "Loading subscribers…"
+                                        : "Select or type a Subscriber ID"
+                                }
+                                className="flex-1 bg-transparent text-sm text-slate-700 placeholder:text-slate-400 focus:outline-none"
+                            />
+                        </div>
+
+                        {dropdownOpen && (
+                            <div className="absolute z-20 mt-1 w-full bg-white border border-slate-200 rounded-xl shadow-lg max-h-56 overflow-y-auto">
+                                {filteredOptions.length === 0 ? (
+                                    <div className="px-4 py-3 text-sm text-slate-400 text-center">
+                                        {loadingSubscribers ? "Loading…" : "No subscribers found"}
+                                    </div>
+                                ) : (
+                                    filteredOptions.map((url) => (
+                                        <button
+                                            key={url}
+                                            type="button"
+                                            className={`w-full text-left px-4 py-2.5 text-sm hover:bg-sky-50 hover:text-sky-700 transition-colors truncate ${subscriberId === url ? "bg-sky-50 text-sky-700 font-semibold" : "text-slate-700"}`}
+                                            onClick={() => {
+                                                setSubscriberId(url);
+                                                setSearchText("");
+                                                setDropdownOpen(false);
+                                            }}
+                                        >
+                                            {url}
+                                        </button>
+                                    ))
+                                )}
+                            </div>
+                        )}
+                    </div>
+                    <select
+                        value={selectedDomain}
+                        onChange={(e) => handleDomainChange(e.target.value)}
+                        className="min-w-36 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-700 focus:outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-100 focus:bg-white transition-all cursor-pointer"
+                    >
+                        <option value="">All Domains</option>
+                        {domains.map((d) => (
+                            <option key={d.key} value={d.key}>
+                                {d.key}
+                            </option>
+                        ))}
+                    </select>
+                    <select
+                        value={selectedVersion}
+                        onChange={(e) => setSelectedVersion(e.target.value)}
+                        disabled={!selectedDomain}
+                        className="min-w-32 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-700 focus:outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-100 focus:bg-white transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        <option value="">All Versions</option>
+                        {versionOptions.map((v) => (
+                            <option key={v.key} value={v.key}>
+                                {v.key}
+                            </option>
+                        ))}
+                    </select>
                     <select
                         value={npType}
                         onChange={(e) => setNpType(e.target.value)}

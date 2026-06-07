@@ -190,11 +190,7 @@ export const useConfigOperations = () => {
             }
             playgroundContext.setActiveTerminalData((s) => [...s, result]);
             if (result.success) {
-                playgroundContext.appendExtraStepRun(
-                    data.actionId,
-                    data.action,
-                    result.result
-                );
+                playgroundContext.appendExtraStepRun(data.actionId, data.action, result.result);
             }
             modal.closeModal();
             playgroundContext.setLoading(false);
@@ -238,7 +234,6 @@ export const useConfigOperations = () => {
             const htmlForm = MockRunner.decodeBase64(htmlForm64);
             return new Promise<RunResult>((resolve) => {
                 const handleFormSubmit = async (formData: FormValues) => {
-                    console.log("Form data submitted:", formData);
                     modal.closeModal();
                     if (extraStep) {
                         playgroundContext.appendExtraStepRun(
@@ -422,9 +417,7 @@ export const useConfigOperations = () => {
             const config = playgroundContext.config;
             if (extraStep) {
                 // Reset only extra-step history — keep main-step history intact
-                const extraIds = new Set(
-                    getGroupSteps(config, "extra").map((s) => s.action_id)
-                );
+                const extraIds = new Set(getGroupSteps(config, "extra").map((s) => s.action_id));
                 const firstExtra = config.transaction_history.find((h) =>
                     extraIds.has(h.action_id)
                 );

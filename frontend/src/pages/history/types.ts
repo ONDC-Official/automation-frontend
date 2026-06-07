@@ -15,6 +15,7 @@ export interface Session {
     createdAt: string;
     domain?: string;
     version?: string;
+    usecaseId?: string;
     userId?: string | null;
     flows?: SessionFlow[];
     flowSummary?: Record<string, FlowSummaryEntry> | null;
