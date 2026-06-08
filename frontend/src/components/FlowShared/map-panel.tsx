@@ -122,8 +122,8 @@ function MapLegend({ hasRoute }: { hasRoute: boolean }) {
             {hasRoute && (
                 <>
                     <span className="flex items-center gap-1.5">
-                        <span className="inline-block h-1 w-5 rounded-full bg-[#2563eb]" /> Remaining
-                        route
+                        <span className="inline-block h-1 w-5 rounded-full bg-[#2563eb]" />{" "}
+                        Remaining route
                     </span>
                     <span className="flex items-center gap-1.5">
                         <span className="inline-block h-1 w-5 rounded-full bg-[#94a3b8]" /> Covered
@@ -136,7 +136,13 @@ function MapLegend({ hasRoute }: { hasRoute: boolean }) {
 }
 
 /** Lets the seller click the map to PLACE the driver when none exists yet. */
-function PlaceDriverOnClick({ enabled, onPlace }: { enabled: boolean; onPlace: (gps: string) => void }) {
+function PlaceDriverOnClick({
+    enabled,
+    onPlace,
+}: {
+    enabled: boolean;
+    onPlace: (gps: string) => void;
+}) {
     useMapEvents({
         click(e) {
             if (enabled) onPlace(`${e.latlng.lat}, ${e.latlng.lng}`);

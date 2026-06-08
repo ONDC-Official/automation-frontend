@@ -23,9 +23,7 @@ const initials = (name?: string): string =>
         .join("") || "🚕";
 
 const fmtTime = (iso?: string): string =>
-    iso
-        ? new Date(iso).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-        : "";
+    iso ? new Date(iso).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "";
 
 /**
  * Status stepper: Assigned → Enroute → Arrived → Started → Ended → Completed.
@@ -41,7 +39,9 @@ export function RideTimeline({
     times: Record<string, string>;
     cancelled?: boolean;
 }) {
-    const currentIdx = currentState ? RIDE_TIMELINE.indexOf(currentState as (typeof RIDE_TIMELINE)[number]) : -1;
+    const currentIdx = currentState
+        ? RIDE_TIMELINE.indexOf(currentState as (typeof RIDE_TIMELINE)[number])
+        : -1;
 
     return (
         <div className="w-full overflow-x-auto py-1">
@@ -150,7 +150,9 @@ export function RideInfoCard({
                 <div className="flex items-center gap-2 text-sm font-semibold text-gray-800">
                     <span className="truncate">{driver?.name || "Driver"}</span>
                     {driver?.rating && (
-                        <span className="text-xs font-normal text-amber-600">⭐ {driver.rating}</span>
+                        <span className="text-xs font-normal text-amber-600">
+                            ⭐ {driver.rating}
+                        </span>
                     )}
                 </div>
                 <div className="truncate text-xs text-gray-500">
@@ -237,7 +239,9 @@ export function CompletionSummary({
         <div className="rounded-lg border border-gray-200 bg-white p-4">
             <div className="mb-3 flex items-center gap-2">
                 <span className="text-lg">{cancelled ? "🚫" : "✅"}</span>
-                <h3 className={`text-base font-semibold ${cancelled ? "text-red-700" : "text-emerald-700"}`}>
+                <h3
+                    className={`text-base font-semibold ${cancelled ? "text-red-700" : "text-emerald-700"}`}
+                >
                     {cancelled ? "Ride Cancelled" : "Ride Completed"}
                 </h3>
             </div>

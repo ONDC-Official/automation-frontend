@@ -343,7 +343,6 @@ export const geocodePlace = async (q: string): Promise<GeocodeResult[]> => {
     }
 };
 
-
 export const newFlow = async (
     sessionId: string,
     flowId: string,

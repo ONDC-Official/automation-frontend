@@ -50,7 +50,12 @@ export default function RideMapTab({ flowId }: { flowId: string | null }) {
     const payloadCacheRef = useRef<Map<string, unknown>>(new Map());
 
     // Active segment route (drives the map polyline, the two-tone progress and the ETA panel).
-    type Segment = { geometry: LatLng[]; distance?: number; duration?: number; target: "pickup" | "destination" };
+    type Segment = {
+        geometry: LatLng[];
+        distance?: number;
+        duration?: number;
+        target: "pickup" | "destination";
+    };
     const [activeRoute, setActiveRoute] = useState<Segment | null>(null);
     // Persistent full pickup→destination trip path — drawn as a blue base so it stays visible even
     // while the active segment is driver→pickup (enroute).
@@ -93,10 +98,7 @@ export default function RideMapTab({ flowId }: { flowId: string | null }) {
     useEffect(() => {
         let cancelled = false;
         (async () => {
-            const data = await deriveRideMapData(
-                mappedFlow,
-                payloadCacheRef.current as Map<string, any>
-            );
+            const data = await deriveRideMapData(mappedFlow, payloadCacheRef.current);
             if (!cancelled) setRideMap(data);
         })();
         return () => {
@@ -131,9 +133,11 @@ export default function RideMapTab({ flowId }: { flowId: string | null }) {
     };
 
     // --- Driver auto-movement animation ------------------------------------
-    const animRef = useRef<{ visual: number | null; net: number | null; cancelled: boolean } | null>(
-        null
-    );
+    const animRef = useRef<{
+        visual: number | null;
+        net: number | null;
+        cancelled: boolean;
+    } | null>(null);
     const BASE_SEGMENT_MS = 20000; // ~20s to traverse a segment at 1×
     const VISUAL_MS = 200; // smooth marker update
     const NET_MS = 2000; // on_track sent to the buyer every 2s
@@ -171,10 +175,20 @@ export default function RideMapTab({ flowId }: { flowId: string | null }) {
         if (!from || !to) return null;
         const res = await getRoute(fromGps as string, toGps as string);
         if (res?.geometry?.length) {
-            return { geometry: res.geometry, distance: res.distance, duration: res.duration, target };
+            return {
+                geometry: res.geometry,
+                distance: res.distance,
+                duration: res.duration,
+                target,
+            };
         }
         const dist = haversineMeters(from, to);
-        return { geometry: [from, to], distance: dist, duration: dist / 11.1 /* ~40km/h */, target };
+        return {
+            geometry: [from, to],
+            distance: dist,
+            duration: dist / 11.1 /* ~40km/h */,
+            target,
+        };
     };
 
     // Animate the driver along `path` over SEGMENT_MS: smooth local marker (VISUAL_MS),
@@ -186,7 +200,11 @@ export default function RideMapTab({ flowId }: { flowId: string | null }) {
             return;
         }
         const startTs = Date.now();
-        const state = { visual: null as number | null, net: null as number | null, cancelled: false };
+        const state = {
+            visual: null as number | null,
+            net: null as number | null,
+            cancelled: false,
+        };
         animRef.current = state;
         const posAt = (f: number): string | undefined => {
             const p = pointAlong(path, f);
@@ -348,12 +366,15 @@ export default function RideMapTab({ flowId }: { flowId: string | null }) {
     useEffect(() => {
         if (driverGpsForMap) setLastUpdate(Date.now());
     }, [driverGpsForMap]);
-    const agoSec = lastUpdate != null ? Math.max(0, Math.round((Date.now() - lastUpdate) / 1000)) : undefined;
+    const agoSec =
+        lastUpdate != null ? Math.max(0, Math.round((Date.now() - lastUpdate) / 1000)) : undefined;
 
     // Record the time each ride state is first seen (powers the timeline on both sides).
     useEffect(() => {
         if (!phase) return;
-        setPhaseTimes((prev) => (prev[phase] ? prev : { ...prev, [phase]: new Date().toISOString() }));
+        setPhaseTimes((prev) =>
+            prev[phase] ? prev : { ...prev, [phase]: new Date().toISOString() }
+        );
     }, [phase]);
 
     // Trip route: (re)fetch pickup→drop whenever the locations change so the full trip path is
@@ -402,7 +423,9 @@ export default function RideMapTab({ flowId }: { flowId: string | null }) {
             display.kind === "CANCELLED" ||
             display.kind === "CANCELLING")
     ) {
-        return <RideStatusPanel kind={display.kind} title={display.title} detail={display.detail} />;
+        return (
+            <RideStatusPanel kind={display.kind} title={display.title} detail={display.detail} />
+        );
     }
 
     if (!rideMap.isTracking || trackingReset) {
@@ -434,9 +457,7 @@ export default function RideMapTab({ flowId }: { flowId: string | null }) {
         );
     }
 
-    const showEta =
-        !!activeRoute &&
-        (phase === "RIDE_ENROUTE_PICKUP" || phase === "RIDE_STARTED");
+    const showEta = !!activeRoute && (phase === "RIDE_ENROUTE_PICKUP" || phase === "RIDE_STARTED");
     const finished = phase === "RIDE_COMPLETED" || phase === "RIDE_CANCELLED";
 
     return (
@@ -509,9 +530,7 @@ export default function RideMapTab({ flowId }: { flowId: string | null }) {
             {/* ③ Live ETA / distance / progress (during movement segments) */}
             {showEta && (
                 <RideInfoPanel
-                    targetLabel={
-                        activeRoute?.target === "pickup" ? "to pickup" : "to destination"
-                    }
+                    targetLabel={activeRoute?.target === "pickup" ? "to pickup" : "to destination"}
                     totalDistanceM={activeRoute?.distance}
                     totalDurationS={activeRoute?.duration}
                     progress={progress}

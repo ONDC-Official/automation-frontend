@@ -289,10 +289,7 @@ export default function DisplayFlow({
             )}
             <div>
                 {steps.map((pairedStep) => (
-                    <div
-                        key={stepSignature(pairedStep.first)}
-                        ref={registerRow(pairedStep)}
-                    >
+                    <div key={stepSignature(pairedStep.first)} ref={registerRow(pairedStep)}>
                         <PairedCard pairedStep={pairedStep} flowId={flowId} />
                     </div>
                 ))}
@@ -395,7 +392,10 @@ function getScrollParent(el: HTMLElement): HTMLElement | null {
     let parent = el.parentElement;
     while (parent) {
         const overflowY = getComputedStyle(parent).overflowY;
-        if ((overflowY === "auto" || overflowY === "scroll") && parent.scrollHeight > parent.clientHeight) {
+        if (
+            (overflowY === "auto" || overflowY === "scroll") &&
+            parent.scrollHeight > parent.clientHeight
+        ) {
             return parent;
         }
         parent = parent.parentElement;
