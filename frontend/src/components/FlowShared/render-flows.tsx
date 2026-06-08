@@ -154,9 +154,7 @@ function RenderFlows({
     const [isFlowStopped, setIsFlowStopped] = useState<boolean>(false);
     const [selectedTab, setSelectedTab] = useState<
         "Request" | "Response" | "Metadata" | "Guide" | "Application"
-    >(
-        "Request"
-    );
+    >("Request");
     const [requestData, setRequestData] = useState<Record<string, unknown>>({});
     const [responseData, setResponseData] = useState<Record<string, unknown> | SideViewResponse>(
         {}
@@ -359,8 +357,7 @@ function RenderFlows({
         if (tabAutoDefaultedRef.current) return;
         const domain = cacheSessionData?.domain ?? "";
         const usecase = cacheSessionData?.usecaseId ?? "";
-        const isRideHailing =
-            domain.includes("TRV") || /ride[\s-]?hailing/i.test(usecase);
+        const isRideHailing = domain.includes("TRV") || /ride[\s-]?hailing/i.test(usecase);
         if (isRideHailing) {
             tabAutoDefaultedRef.current = true;
             setSelectedTab("Application");
@@ -802,7 +799,10 @@ function RenderFlows({
                                         ) : selectedTab === "Application" ? (
                                             // key={activeFlow} → remount on flow switch so the map
                                             // fully resets (no stale driver/route/state carryover).
-                                            <RideMapTab key={activeFlow ?? "none"} flowId={activeFlow} />
+                                            <RideMapTab
+                                                key={activeFlow ?? "none"}
+                                                flowId={activeFlow}
+                                            />
                                         ) : (
                                             <SearchableJsonView
                                                 value={

@@ -198,16 +198,15 @@ const SessionCard: FC<SessionCardProps> = ({
                         ? resultMap[id]
                         : "NOT_RUN";
 
-                // if (session.domain && session.version && session.usecaseId) {
-                if (session) {
+                if (session.domain && session.version && session.usecaseId) {
                     // Fetch flow definitions directly from config service
                     const res = await apiClient.get<{ data: { flows: Flow[] } }>(
                         API_ROUTES.CONFIG.FLOWS,
                         {
                             params: {
-                                domain: session?.domain || "ONDC:FIS12", // session.domain,
-                                version: session?.version || "2.0.2", //session.version,
-                                usecase: session?.usecaseId || "GOLD LOAN", //session.usecaseId,
+                                domain: session.domain,
+                                version: session.version,
+                                usecase: session.usecaseId,
                             },
                         }
                     );
@@ -218,7 +217,9 @@ const SessionCard: FC<SessionCardProps> = ({
                     // Fallback for older sessions without stored domain/version/usecaseId:
                     // pull flow configs from the (possibly expired) session cache
                     const res = await apiClient.get<SessionCache>(API_ROUTES.SESSIONS.BASE, {
-                        params: { session_id: (session as { sessionId?: string } | undefined)?.sessionId },
+                        params: {
+                            session_id: (session as { sessionId?: string } | undefined)?.sessionId,
+                        },
                     });
                     const detail = res.data;
                     const attemptedMap = detail.flowMap ?? {};

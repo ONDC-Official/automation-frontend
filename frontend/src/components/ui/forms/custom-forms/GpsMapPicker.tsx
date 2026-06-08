@@ -111,7 +111,9 @@ export function SingleLocationPickerModal({
                             type="text"
                             value={query}
                             onChange={(e) => setQuery(e.target.value)}
-                            onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), runSearch())}
+                            onKeyDown={(e) =>
+                                e.key === "Enter" && (e.preventDefault(), runSearch())
+                            }
                             placeholder="Search a place…"
                             className="w-full border border-gray-300 rounded px-3 py-2 pr-9 text-sm bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-sky-500"
                         />
@@ -173,7 +175,9 @@ export function SingleLocationPickerModal({
                         </MapContainer>
                     </div>
                     <p className="mt-2 text-xs text-gray-600">
-                        {pin ? `Selected: ${toGps(pin)}` : "Search, click or drag to set the location."}
+                        {pin
+                            ? `Selected: ${toGps(pin)}`
+                            : "Search, click or drag to set the location."}
                     </p>
                 </div>
 

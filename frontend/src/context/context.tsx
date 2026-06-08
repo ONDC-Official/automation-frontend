@@ -14,7 +14,9 @@ interface SessionContextProps {
     sessionData: SessionCache | null | undefined;
     setSessionData?: Dispatch<SetStateAction<SessionCache | null>>;
     selectedTab: "Request" | "Response" | "Metadata" | "Guide" | "Application";
-    setSelectedTab?: Dispatch<SetStateAction<"Request" | "Response" | "Metadata" | "Guide" | "Application">>;
+    setSelectedTab?: Dispatch<
+        SetStateAction<"Request" | "Response" | "Metadata" | "Guide" | "Application">
+    >;
     requestData: SessionPayloadData;
     setRequestData: Dispatch<SetStateAction<SessionPayloadData>>;
     responseData: SessionPayloadData;
@@ -39,9 +41,9 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
     const [sessionId, setSessionId] = useState<string>("");
     const [activeFlowId, setActiveFlowId] = useState<string | null>(null);
     const [sessionData, setSessionData] = useState<SessionCache | null>(null);
-    const [selectedTab, setSelectedTab] = useState<"Request" | "Response" | "Metadata" | "Guide" | "Application">(
-        "Request"
-    );
+    const [selectedTab, setSelectedTab] = useState<
+        "Request" | "Response" | "Metadata" | "Guide" | "Application"
+    >("Request");
     const [requestData, setRequestData] = useState<SessionPayloadData>(null);
     const [responseData, setResponseData] = useState<SessionPayloadData>(null);
     const [activeCallClickedToggle, setActiveCallClickedToggle] = useState<boolean>(false);

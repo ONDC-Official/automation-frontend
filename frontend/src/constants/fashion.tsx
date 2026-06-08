@@ -69,7 +69,10 @@ const BASE_FASHION_FIELDS: FashionEntry = {
     colour: { mandatory: false, value: "/^#([a-fA-F0-9]{6})/" },
     size: { mandatory: false, value: SIZE },
     brand: { mandatory: false, value: [] },
-    size_chart: { mandatory: false, value: "/^https?://[-A-Za-z0-9+&@#/%?=~_|!:,.;]*[-A-Za-z0-9+&@#/%=~_|]$/" },
+    size_chart: {
+        mandatory: false,
+        value: "/^https?://[-A-Za-z0-9+&@#/%?=~_|!:,.;]*[-A-Za-z0-9+&@#/%=~_|]$/",
+    },
     fabric: { mandatory: false, value: FABRIC },
     strap_material: { mandatory: false, value: STRAP_MATERIAL },
     water_resistant: { mandatory: false, value: [] },
@@ -171,91 +174,443 @@ function createEntry(mandatoryFields: string[], excludeFields: string[] = []): F
 }
 
 export const fashion: Record<string, FashionEntry> = {
-    Shirts: createEntry(["gender", "colour", "size", "brand", "size_chart", "fabric", "colour_name"]),
-    "T Shirts": createEntry(["gender", "colour", "size", "brand", "size_chart", "fabric", "colour_name"]),
-    Sweatshirts: createEntry(["gender", "colour", "size", "brand", "size_chart", "fabric", "colour_name"]),
-    "Kurtas & Kurta Sets": createEntry(["gender", "colour", "size", "brand", "size_chart", "fabric", "colour_name"]),
-    "Jackets & Coats": createEntry(["gender", "colour", "brand", "size_chart", "fabric", "colour_name"], ["size"]),
-    Sweaters: createEntry(["gender", "colour", "brand", "size_chart", "fabric", "colour_name"], ["size"]),
-    "Stoles and Scarves": createEntry(["gender", "colour", "brand", "size_chart", "fabric", "colour_name"], ["size"]),
-    Mufflers: createEntry(["gender", "colour", "brand", "size_chart", "fabric", "colour_name"], ["size"]),
-    Suits: createEntry(["gender", "colour", "brand", "size_chart", "fabric", "colour_name"], ["size"]),
-    Sherwanis: createEntry(["gender", "colour", "size", "brand", "size_chart", "fabric", "colour_name"]),
-    "Track Shirts": createEntry(["gender", "colour", "size", "brand", "size_chart", "fabric", "colour_name"]),
-    "Track Suits": createEntry(["gender", "colour", "brand", "size_chart", "fabric", "colour_name"], ["size"]),
-    "Unstitched Fabrics": createEntry(["gender", "colour", "brand", "fabric", "colour_name"], ["size"]),
-    Dresses: createEntry(["gender", "colour", "size", "brand", "size_chart", "fabric", "colour_name"]),
+    Shirts: createEntry([
+        "gender",
+        "colour",
+        "size",
+        "brand",
+        "size_chart",
+        "fabric",
+        "colour_name",
+    ]),
+    "T Shirts": createEntry([
+        "gender",
+        "colour",
+        "size",
+        "brand",
+        "size_chart",
+        "fabric",
+        "colour_name",
+    ]),
+    Sweatshirts: createEntry([
+        "gender",
+        "colour",
+        "size",
+        "brand",
+        "size_chart",
+        "fabric",
+        "colour_name",
+    ]),
+    "Kurtas & Kurta Sets": createEntry([
+        "gender",
+        "colour",
+        "size",
+        "brand",
+        "size_chart",
+        "fabric",
+        "colour_name",
+    ]),
+    "Jackets & Coats": createEntry(
+        ["gender", "colour", "brand", "size_chart", "fabric", "colour_name"],
+        ["size"]
+    ),
+    Sweaters: createEntry(
+        ["gender", "colour", "brand", "size_chart", "fabric", "colour_name"],
+        ["size"]
+    ),
+    "Stoles and Scarves": createEntry(
+        ["gender", "colour", "brand", "size_chart", "fabric", "colour_name"],
+        ["size"]
+    ),
+    Mufflers: createEntry(
+        ["gender", "colour", "brand", "size_chart", "fabric", "colour_name"],
+        ["size"]
+    ),
+    Suits: createEntry(
+        ["gender", "colour", "brand", "size_chart", "fabric", "colour_name"],
+        ["size"]
+    ),
+    Sherwanis: createEntry([
+        "gender",
+        "colour",
+        "size",
+        "brand",
+        "size_chart",
+        "fabric",
+        "colour_name",
+    ]),
+    "Track Shirts": createEntry([
+        "gender",
+        "colour",
+        "size",
+        "brand",
+        "size_chart",
+        "fabric",
+        "colour_name",
+    ]),
+    "Track Suits": createEntry(
+        ["gender", "colour", "brand", "size_chart", "fabric", "colour_name"],
+        ["size"]
+    ),
+    "Unstitched Fabrics": createEntry(
+        ["gender", "colour", "brand", "fabric", "colour_name"],
+        ["size"]
+    ),
+    Dresses: createEntry([
+        "gender",
+        "colour",
+        "size",
+        "brand",
+        "size_chart",
+        "fabric",
+        "colour_name",
+    ]),
     Tops: createEntry(["gender", "colour", "size", "brand", "size_chart", "fabric", "colour_name"]),
-    Trousers: createEntry(["gender", "colour", "brand", "size_chart", "fabric", "colour_name"], ["size"]),
-    Capris: createEntry(["gender", "colour", "brand", "size_chart", "fabric", "colour_name"], ["size"]),
-    Coordinates: createEntry(["gender", "colour", "size", "brand", "size_chart", "fabric", "colour_name"]),
-    Playsuits: createEntry(["gender", "colour", "size", "brand", "size_chart", "fabric", "colour_name"]),
-    Jumpsuits: createEntry(["gender", "colour", "size", "brand", "size_chart", "fabric", "colour_name"]),
-    "Shrugs & Blouses": createEntry(["gender", "colour", "size", "brand", "size_chart", "fabric", "colour_name"]),
-    "Blazers & Waistcoats": createEntry(["gender", "colour", "size", "brand", "size_chart", "fabric", "colour_name"]),
-    "Tights, Leggings & Jeggings": createEntry(["gender", "colour", "brand", "size_chart", "fabric", "colour_name"], ["size"]),
-    "Track Pants": createEntry(["gender", "colour", "brand", "size_chart", "fabric", "colour_name"], ["size"]),
-    Jeans: createEntry(["gender", "colour", "brand", "size_chart", "fabric", "colour_name"], ["size"]),
-    Shorts: createEntry(["gender", "colour", "brand", "size_chart", "fabric", "colour_name"], ["size"]),
-    Joggers: createEntry(["gender", "colour", "brand", "size_chart", "fabric", "colour_name"], ["size"]),
-    "Dhotis & Dhoti Pants": createEntry(["gender", "colour", "brand", "size_chart", "fabric", "colour_name"], ["size"]),
-    Churidars: createEntry(["gender", "colour", "brand", "size_chart", "fabric", "colour_name"], ["size"]),
-    Salwars: createEntry(["gender", "colour", "brand", "size_chart", "fabric", "colour_name"], ["size"]),
-    "Dungarees & Jumpsuits": createEntry(["gender", "colour", "brand", "size_chart", "fabric", "colour_name"], ["size"]),
-    Skirts: createEntry(["gender", "colour", "brand", "size_chart", "fabric", "colour_name"], ["size"]),
-    "Clothing Sets": createEntry(["gender", "colour", "brand", "size_chart", "fabric", "colour_name"], ["size"]),
-    Belts: createEntry(["gender", "colour", "brand", "size_chart", "colour_name", "material", "reversible"], ["size"]),
+    Trousers: createEntry(
+        ["gender", "colour", "brand", "size_chart", "fabric", "colour_name"],
+        ["size"]
+    ),
+    Capris: createEntry(
+        ["gender", "colour", "brand", "size_chart", "fabric", "colour_name"],
+        ["size"]
+    ),
+    Coordinates: createEntry([
+        "gender",
+        "colour",
+        "size",
+        "brand",
+        "size_chart",
+        "fabric",
+        "colour_name",
+    ]),
+    Playsuits: createEntry([
+        "gender",
+        "colour",
+        "size",
+        "brand",
+        "size_chart",
+        "fabric",
+        "colour_name",
+    ]),
+    Jumpsuits: createEntry([
+        "gender",
+        "colour",
+        "size",
+        "brand",
+        "size_chart",
+        "fabric",
+        "colour_name",
+    ]),
+    "Shrugs & Blouses": createEntry([
+        "gender",
+        "colour",
+        "size",
+        "brand",
+        "size_chart",
+        "fabric",
+        "colour_name",
+    ]),
+    "Blazers & Waistcoats": createEntry([
+        "gender",
+        "colour",
+        "size",
+        "brand",
+        "size_chart",
+        "fabric",
+        "colour_name",
+    ]),
+    "Tights, Leggings & Jeggings": createEntry(
+        ["gender", "colour", "brand", "size_chart", "fabric", "colour_name"],
+        ["size"]
+    ),
+    "Track Pants": createEntry(
+        ["gender", "colour", "brand", "size_chart", "fabric", "colour_name"],
+        ["size"]
+    ),
+    Jeans: createEntry(
+        ["gender", "colour", "brand", "size_chart", "fabric", "colour_name"],
+        ["size"]
+    ),
+    Shorts: createEntry(
+        ["gender", "colour", "brand", "size_chart", "fabric", "colour_name"],
+        ["size"]
+    ),
+    Joggers: createEntry(
+        ["gender", "colour", "brand", "size_chart", "fabric", "colour_name"],
+        ["size"]
+    ),
+    "Dhotis & Dhoti Pants": createEntry(
+        ["gender", "colour", "brand", "size_chart", "fabric", "colour_name"],
+        ["size"]
+    ),
+    Churidars: createEntry(
+        ["gender", "colour", "brand", "size_chart", "fabric", "colour_name"],
+        ["size"]
+    ),
+    Salwars: createEntry(
+        ["gender", "colour", "brand", "size_chart", "fabric", "colour_name"],
+        ["size"]
+    ),
+    "Dungarees & Jumpsuits": createEntry(
+        ["gender", "colour", "brand", "size_chart", "fabric", "colour_name"],
+        ["size"]
+    ),
+    Skirts: createEntry(
+        ["gender", "colour", "brand", "size_chart", "fabric", "colour_name"],
+        ["size"]
+    ),
+    "Clothing Sets": createEntry(
+        ["gender", "colour", "brand", "size_chart", "fabric", "colour_name"],
+        ["size"]
+    ),
+    Belts: createEntry(
+        ["gender", "colour", "brand", "size_chart", "colour_name", "material", "reversible"],
+        ["size"]
+    ),
     "Caps & Hats": createEntry(["gender", "colour", "brand", "colour_name", "material"], ["size"]),
-    "Kurtis, Tunics": createEntry(["gender", "colour", "size", "brand", "size_chart", "fabric", "colour_name"]),
-    Sarees: createEntry(["gender", "colour", "brand", "size_chart", "fabric", "colour_name"], ["size"]),
-    "Ethnic Wear": createEntry(["gender", "colour", "brand", "size_chart", "fabric", "colour_name"], ["size"]),
-    Palazzos: createEntry(["gender", "colour", "brand", "size_chart", "fabric", "colour_name"], ["size"]),
-    "Dress Materials": createEntry(["gender", "colour", "size", "brand", "size_chart", "fabric", "colour_name"]),
-    "Lehenga Cholis": createEntry(["gender", "colour", "brand", "size_chart", "fabric", "colour_name"], ["size"]),
-    "Dupattas & Shawls": createEntry(["gender", "colour", "brand", "size_chart", "fabric", "colour_name"], ["size"]),
-    "Burqas & Hijabs": createEntry(["gender", "colour", "brand", "size_chart", "fabric", "colour_name"], ["size"]),
-    Blouses: createEntry(["gender", "colour", "brand", "size_chart", "fabric", "colour_name"], ["size"]),
-    "Blouse Pieces": createEntry(["gender", "colour", "brand", "size_chart", "fabric", "colour_name"], ["size"]),
-    Briefs: createEntry(["gender", "colour", "brand", "size_chart", "fabric", "colour_name"], ["size"]),
-    Boxers: createEntry(["gender", "colour", "brand", "size_chart", "fabric", "colour_name"], ["size"]),
-    Vests: createEntry(["gender", "colour", "brand", "size_chart", "fabric", "colour_name"], ["size"]),
-    Robes: createEntry(["gender", "colour", "size", "brand", "size_chart", "fabric", "colour_name"]),
-    "Night Suits": createEntry(["gender", "colour", "size", "brand", "size_chart", "fabric", "colour_name"]),
-    "Thermal Wear": createEntry(["gender", "colour", "size", "brand", "size_chart", "fabric", "colour_name"]),
-    "Swim Bottoms": createEntry(["gender", "colour", "brand", "size_chart", "fabric", "colour_name"], ["size"]),
-    Swimwear: createEntry(["gender", "colour", "size", "brand", "size_chart", "fabric", "colour_name"]),
-    Bra: createEntry(["gender", "colour", "brand", "size_chart", "fabric", "colour_name"], ["size"]),
-    Shapewear: createEntry(["gender", "colour", "size", "brand", "size_chart", "fabric", "colour_name"]),
-    "Sleepwear & Loungewear": createEntry(["gender", "colour", "brand", "size_chart", "fabric", "colour_name"], ["size"]),
-    Camisoles: createEntry(["gender", "colour", "size", "brand", "size_chart", "fabric", "colour_name"]),
-    "Lingerie Sets & Accessories": createEntry(["gender", "colour", "brand", "size_chart", "fabric", "colour_name"], ["size"]),
-    "Bath Robes": createEntry(["gender", "colour", "size", "brand", "size_chart", "fabric", "colour_name"]),
+    "Kurtis, Tunics": createEntry([
+        "gender",
+        "colour",
+        "size",
+        "brand",
+        "size_chart",
+        "fabric",
+        "colour_name",
+    ]),
+    Sarees: createEntry(
+        ["gender", "colour", "brand", "size_chart", "fabric", "colour_name"],
+        ["size"]
+    ),
+    "Ethnic Wear": createEntry(
+        ["gender", "colour", "brand", "size_chart", "fabric", "colour_name"],
+        ["size"]
+    ),
+    Palazzos: createEntry(
+        ["gender", "colour", "brand", "size_chart", "fabric", "colour_name"],
+        ["size"]
+    ),
+    "Dress Materials": createEntry([
+        "gender",
+        "colour",
+        "size",
+        "brand",
+        "size_chart",
+        "fabric",
+        "colour_name",
+    ]),
+    "Lehenga Cholis": createEntry(
+        ["gender", "colour", "brand", "size_chart", "fabric", "colour_name"],
+        ["size"]
+    ),
+    "Dupattas & Shawls": createEntry(
+        ["gender", "colour", "brand", "size_chart", "fabric", "colour_name"],
+        ["size"]
+    ),
+    "Burqas & Hijabs": createEntry(
+        ["gender", "colour", "brand", "size_chart", "fabric", "colour_name"],
+        ["size"]
+    ),
+    Blouses: createEntry(
+        ["gender", "colour", "brand", "size_chart", "fabric", "colour_name"],
+        ["size"]
+    ),
+    "Blouse Pieces": createEntry(
+        ["gender", "colour", "brand", "size_chart", "fabric", "colour_name"],
+        ["size"]
+    ),
+    Briefs: createEntry(
+        ["gender", "colour", "brand", "size_chart", "fabric", "colour_name"],
+        ["size"]
+    ),
+    Boxers: createEntry(
+        ["gender", "colour", "brand", "size_chart", "fabric", "colour_name"],
+        ["size"]
+    ),
+    Vests: createEntry(
+        ["gender", "colour", "brand", "size_chart", "fabric", "colour_name"],
+        ["size"]
+    ),
+    Robes: createEntry([
+        "gender",
+        "colour",
+        "size",
+        "brand",
+        "size_chart",
+        "fabric",
+        "colour_name",
+    ]),
+    "Night Suits": createEntry([
+        "gender",
+        "colour",
+        "size",
+        "brand",
+        "size_chart",
+        "fabric",
+        "colour_name",
+    ]),
+    "Thermal Wear": createEntry([
+        "gender",
+        "colour",
+        "size",
+        "brand",
+        "size_chart",
+        "fabric",
+        "colour_name",
+    ]),
+    "Swim Bottoms": createEntry(
+        ["gender", "colour", "brand", "size_chart", "fabric", "colour_name"],
+        ["size"]
+    ),
+    Swimwear: createEntry([
+        "gender",
+        "colour",
+        "size",
+        "brand",
+        "size_chart",
+        "fabric",
+        "colour_name",
+    ]),
+    Bra: createEntry(
+        ["gender", "colour", "brand", "size_chart", "fabric", "colour_name"],
+        ["size"]
+    ),
+    Shapewear: createEntry([
+        "gender",
+        "colour",
+        "size",
+        "brand",
+        "size_chart",
+        "fabric",
+        "colour_name",
+    ]),
+    "Sleepwear & Loungewear": createEntry(
+        ["gender", "colour", "brand", "size_chart", "fabric", "colour_name"],
+        ["size"]
+    ),
+    Camisoles: createEntry([
+        "gender",
+        "colour",
+        "size",
+        "brand",
+        "size_chart",
+        "fabric",
+        "colour_name",
+    ]),
+    "Lingerie Sets & Accessories": createEntry(
+        ["gender", "colour", "brand", "size_chart", "fabric", "colour_name"],
+        ["size"]
+    ),
+    "Bath Robes": createEntry([
+        "gender",
+        "colour",
+        "size",
+        "brand",
+        "size_chart",
+        "fabric",
+        "colour_name",
+    ]),
     Towels: createEntry(["gender", "colour", "size", "brand", "colour_name"]),
-    Pyjamas: createEntry(["gender", "colour", "size", "brand", "size_chart", "fabric", "colour_name"]),
-    "Party Wear": createEntry(["gender", "colour", "size", "brand", "size_chart", "fabric", "colour_name"]),
-    "Innerwear & Sleepwear": createEntry(["gender", "colour", "brand", "size_chart", "fabric", "colour_name"], ["size"]),
-    "Nightwear & Loungewear": createEntry(["gender", "colour", "size", "brand", "size_chart", "fabric", "colour_name"]),
-    Watches: createEntry(["gender", "colour", "brand", "strap_material", "water_resistant", "display", "glass_material", "colour_name"], ["size"]),
+    Pyjamas: createEntry([
+        "gender",
+        "colour",
+        "size",
+        "brand",
+        "size_chart",
+        "fabric",
+        "colour_name",
+    ]),
+    "Party Wear": createEntry([
+        "gender",
+        "colour",
+        "size",
+        "brand",
+        "size_chart",
+        "fabric",
+        "colour_name",
+    ]),
+    "Innerwear & Sleepwear": createEntry(
+        ["gender", "colour", "brand", "size_chart", "fabric", "colour_name"],
+        ["size"]
+    ),
+    "Nightwear & Loungewear": createEntry([
+        "gender",
+        "colour",
+        "size",
+        "brand",
+        "size_chart",
+        "fabric",
+        "colour_name",
+    ]),
+    Watches: createEntry(
+        [
+            "gender",
+            "colour",
+            "brand",
+            "strap_material",
+            "water_resistant",
+            "display",
+            "glass_material",
+            "colour_name",
+        ],
+        ["size"]
+    ),
     Gloves: createEntry(["gender", "colour", "brand", "colour_name"], ["size"]),
-    Socks: createEntry(["gender", "colour", "brand", "size_chart", "fabric", "colour_name"], ["size"]),
+    Socks: createEntry(
+        ["gender", "colour", "brand", "size_chart", "fabric", "colour_name"],
+        ["size"]
+    ),
     Stockings: createEntry(["gender", "colour", "brand", "fabric", "colour_name"], ["size"]),
     Laces: createEntry(["gender", "colour", "fabric", "colour_name"], ["brand", "size"]),
     "Soles & Charms": createEntry(["gender", "colour", "brand", "colour_name"], ["size"]),
     "Shoe Racks & Organisers": createEntry(["gender", "colour", "size", "brand", "colour_name"]),
     "Shoe Care - Accessories": createEntry(["gender", "colour", "size", "brand", "colour_name"]),
-    "Flip-Flops & Flats": createEntry(["gender", "colour", "brand", "size_chart", "fabric", "colour_name"], ["size"]),
-    "Sandals & Floaters": createEntry(["gender", "colour", "brand", "size_chart", "fabric", "colour_name"], ["size"]),
+    "Flip-Flops & Flats": createEntry(
+        ["gender", "colour", "brand", "size_chart", "fabric", "colour_name"],
+        ["size"]
+    ),
+    "Sandals & Floaters": createEntry(
+        ["gender", "colour", "brand", "size_chart", "fabric", "colour_name"],
+        ["size"]
+    ),
     Backpacks: createEntry(["gender", "colour", "size", "brand", "fabric", "colour_name"]),
     Handbags: createEntry(["gender", "colour", "brand", "colour_name"], ["size"]),
-    "Trolley, Luggage & Suitcases": createEntry(["gender", "colour", "size", "brand", "fabric", "colour_name"]),
-    "Formal Shoes": createEntry(["gender", "colour", "brand", "size_chart", "fabric", "colour_name"], ["size"]),
-    "Casual Shoes": createEntry(["gender", "colour", "brand", "size_chart", "fabric", "colour_name"], ["size"]),
-    "Sports Shoes": createEntry(["gender", "colour", "brand", "size_chart", "fabric", "colour_name", "sport_type"], ["size"]),
-    "Outdoor Shoes": createEntry(["gender", "colour", "brand", "size_chart", "colour_name"], ["size"]),
-    "Work & Safety Shoes": createEntry(["gender", "colour", "brand", "size_chart", "colour_name"], ["size"]),
-    "Ethnic Shoes": createEntry(["gender", "colour", "brand", "size_chart", "fabric", "colour_name"], ["size"]),
+    "Trolley, Luggage & Suitcases": createEntry([
+        "gender",
+        "colour",
+        "size",
+        "brand",
+        "fabric",
+        "colour_name",
+    ]),
+    "Formal Shoes": createEntry(
+        ["gender", "colour", "brand", "size_chart", "fabric", "colour_name"],
+        ["size"]
+    ),
+    "Casual Shoes": createEntry(
+        ["gender", "colour", "brand", "size_chart", "fabric", "colour_name"],
+        ["size"]
+    ),
+    "Sports Shoes": createEntry(
+        ["gender", "colour", "brand", "size_chart", "fabric", "colour_name", "sport_type"],
+        ["size"]
+    ),
+    "Outdoor Shoes": createEntry(
+        ["gender", "colour", "brand", "size_chart", "colour_name"],
+        ["size"]
+    ),
+    "Work & Safety Shoes": createEntry(
+        ["gender", "colour", "brand", "size_chart", "colour_name"],
+        ["size"]
+    ),
+    "Ethnic Shoes": createEntry(
+        ["gender", "colour", "brand", "size_chart", "fabric", "colour_name"],
+        ["size"]
+    ),
     Boots: createEntry(["gender", "colour", "brand", "size_chart", "colour_name"], ["size"]),
-    Heels: createEntry(["gender", "colour", "brand", "size_chart", "fabric", "colour_name"], ["size"]),
+    Heels: createEntry(
+        ["gender", "colour", "brand", "size_chart", "fabric", "colour_name"],
+        ["size"]
+    ),
     "Contact Lenses": createEntry(["gender", "colour", "brand", "colour_name"], ["size"]),
     "Eye Glasses": createEntry(["gender", "colour", "brand", "colour_name"], ["size"]),
     "Eye Glass Frames": createEntry(["gender", "colour", "brand", "colour_name"], ["size"]),
@@ -263,21 +618,63 @@ export const fashion: Record<string, FashionEntry> = {
     "Contact Lens Cases": createEntry(["gender", "colour", "brand", "colour_name"], ["size"]),
     "Contact Lens Solutions": createEntry(["gender", "colour", "size", "brand", "colour_name"]),
     "Contact Lens Tweezers": createEntry(["gender", "colour", "size", "brand", "colour_name"]),
-    "Eyeglasses Pouches & Cases": createEntry(["gender", "colour", "brand", "colour_name"], ["size"]),
+    "Eyeglasses Pouches & Cases": createEntry(
+        ["gender", "colour", "brand", "colour_name"],
+        ["size"]
+    ),
     "Microfiber Wipes": createEntry(["gender", "colour", "size", "brand", "colour_name"]),
     "Eyewear Slings": createEntry(["gender", "colour", "size", "brand", "colour_name"]),
-    Bracelets: createEntry(["gender", "colour", "brand", "colour_name", "base_metal", "plating"], ["size"]),
-    Chains: createEntry(["gender", "colour", "brand", "colour_name", "base_metal", "plating"], ["size"]),
-    Mangalsutra: createEntry(["gender", "colour", "brand", "colour_name", "base_metal", "plating"], ["size"]),
-    Anklets: createEntry(["gender", "colour", "brand", "colour_name", "base_metal", "plating"], ["size"]),
+    Bracelets: createEntry(
+        ["gender", "colour", "brand", "colour_name", "base_metal", "plating"],
+        ["size"]
+    ),
+    Chains: createEntry(
+        ["gender", "colour", "brand", "colour_name", "base_metal", "plating"],
+        ["size"]
+    ),
+    Mangalsutra: createEntry(
+        ["gender", "colour", "brand", "colour_name", "base_metal", "plating"],
+        ["size"]
+    ),
+    Anklets: createEntry(
+        ["gender", "colour", "brand", "colour_name", "base_metal", "plating"],
+        ["size"]
+    ),
     "Bangles & Bracelets": createEntry(["gender", "colour", "brand", "colour_name"], ["size"]),
-    Necklaces: createEntry(["gender", "colour", "brand", "colour_name", "base_metal", "plating"], ["size"]),
-    Earrings: createEntry(["gender", "colour", "brand", "colour_name", "base_metal", "plating"], ["size"]),
-    "Jewellery Sets": createEntry(["gender", "colour", "brand", "colour_name", "base_metal", "plating"], ["size"]),
-    "Nosepins & Noserings": createEntry(["gender", "colour", "brand", "colour_name", "base_metal", "plating"], ["size"]),
-    Pendants: createEntry(["gender", "colour", "brand", "colour_name", "base_metal", "plating"], ["size"]),
-    Rings: createEntry(["gender", "colour", "brand", "colour_name", "base_metal", "plating"], ["size"]),
-    "Toe Rings": createEntry(["gender", "colour", "brand", "colour_name", "base_metal", "plating"], ["size"]),
-    "Gold Coins": createEntry(["gender", "colour", "brand", "colour_name", "base_metal", "plating"], ["size"]),
-    Brooch: createEntry(["gender", "colour", "brand", "colour_name", "base_metal", "plating"], ["size"]),
+    Necklaces: createEntry(
+        ["gender", "colour", "brand", "colour_name", "base_metal", "plating"],
+        ["size"]
+    ),
+    Earrings: createEntry(
+        ["gender", "colour", "brand", "colour_name", "base_metal", "plating"],
+        ["size"]
+    ),
+    "Jewellery Sets": createEntry(
+        ["gender", "colour", "brand", "colour_name", "base_metal", "plating"],
+        ["size"]
+    ),
+    "Nosepins & Noserings": createEntry(
+        ["gender", "colour", "brand", "colour_name", "base_metal", "plating"],
+        ["size"]
+    ),
+    Pendants: createEntry(
+        ["gender", "colour", "brand", "colour_name", "base_metal", "plating"],
+        ["size"]
+    ),
+    Rings: createEntry(
+        ["gender", "colour", "brand", "colour_name", "base_metal", "plating"],
+        ["size"]
+    ),
+    "Toe Rings": createEntry(
+        ["gender", "colour", "brand", "colour_name", "base_metal", "plating"],
+        ["size"]
+    ),
+    "Gold Coins": createEntry(
+        ["gender", "colour", "brand", "colour_name", "base_metal", "plating"],
+        ["size"]
+    ),
+    Brooch: createEntry(
+        ["gender", "colour", "brand", "colour_name", "base_metal", "plating"],
+        ["size"]
+    ),
 };

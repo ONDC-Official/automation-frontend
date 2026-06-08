@@ -143,7 +143,9 @@ export const SelectBox = ({
                                     }}
                                     onMouseEnter={() => setHighlight(i)}
                                     className={`px-3 py-2 cursor-pointer truncate ${
-                                        i === highlight ? "bg-sky-100 text-sky-800" : "text-gray-800"
+                                        i === highlight
+                                            ? "bg-sky-100 text-sky-800"
+                                            : "text-gray-800"
                                     } ${opt === value ? "font-semibold" : ""}`}
                                 >
                                     {opt}

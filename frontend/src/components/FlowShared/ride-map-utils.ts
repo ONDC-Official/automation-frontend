@@ -85,7 +85,12 @@ export function deriveRideDisplay(input: {
 
     // 1) Driver never assigned (explicit error on on_confirm).
     const errMsg = (error?.message || "").toLowerCase();
-    if (error && (error.code === "90203" || errMsg.includes("driver not assigned") || errMsg.includes("driver not found"))) {
+    if (
+        error &&
+        (error.code === "90203" ||
+            errMsg.includes("driver not assigned") ||
+            errMsg.includes("driver not found"))
+    ) {
         return {
             kind: "DRIVER_NOT_FOUND",
             title: "Driver not found",
@@ -96,7 +101,12 @@ export function deriveRideDisplay(input: {
 
     // 2) Cancelled (hard) — ride state or order status.
     if (phase === "RIDE_CANCELLED" || status === "CANCELLED") {
-        return { kind: "CANCELLED", title: "Ride cancelled", detail: "This ride was cancelled.", showsControls: false };
+        return {
+            kind: "CANCELLED",
+            title: "Ride cancelled",
+            detail: "This ride was cancelled.",
+            showsControls: false,
+        };
     }
 
     // 3) Soft cancel requested (not yet final).
@@ -204,8 +214,7 @@ export function haversineMeters(a: LatLng, b: LatLng): number {
     const dLon = toRad(b[1] - a[1]);
     const lat1 = toRad(a[0]);
     const lat2 = toRad(b[0]);
-    const h =
-        Math.sin(dLat / 2) ** 2 + Math.sin(dLon / 2) ** 2 * Math.cos(lat1) * Math.cos(lat2);
+    const h = Math.sin(dLat / 2) ** 2 + Math.sin(dLon / 2) ** 2 * Math.cos(lat1) * Math.cos(lat2);
     return 2 * R * Math.asin(Math.sqrt(h));
 }
 
@@ -246,7 +255,8 @@ function closestOnSegment(p: LatLng, a: LatLng, b: LatLng): { point: LatLng; t: 
 export function progressAlong(path: LatLng[], point: LatLng | null): number {
     if (!point || path.length < 2) return 0;
     const cum = [0];
-    for (let i = 1; i < path.length; i++) cum.push(cum[i - 1] + haversineMeters(path[i - 1], path[i]));
+    for (let i = 1; i < path.length; i++)
+        cum.push(cum[i - 1] + haversineMeters(path[i - 1], path[i]));
     const total = cum[cum.length - 1];
     if (total === 0) return 0;
     let bestDist = Infinity;
@@ -266,7 +276,8 @@ export function progressAlong(path: LatLng[], point: LatLng | null): number {
 export function splitPathAt(path: LatLng[], fraction: number): [LatLng[], LatLng[]] {
     if (path.length < 2) return [path, []];
     const cum = [0];
-    for (let i = 1; i < path.length; i++) cum.push(cum[i - 1] + haversineMeters(path[i - 1], path[i]));
+    for (let i = 1; i < path.length; i++)
+        cum.push(cum[i - 1] + haversineMeters(path[i - 1], path[i]));
     const total = cum[cum.length - 1];
     if (total === 0) return [path, []];
     const target = Math.max(0, Math.min(1, fraction)) * total;
@@ -292,7 +303,8 @@ export function pointAlong(path: LatLng[], fraction: number): LatLng | null {
     if (!path || path.length === 0) return null;
     if (path.length === 1) return path[0];
     const cum = [0];
-    for (let i = 1; i < path.length; i++) cum.push(cum[i - 1] + haversineMeters(path[i - 1], path[i]));
+    for (let i = 1; i < path.length; i++)
+        cum.push(cum[i - 1] + haversineMeters(path[i - 1], path[i]));
     const total = cum[cum.length - 1];
     if (total === 0) return path[0];
     const target = Math.max(0, Math.min(1, fraction)) * total;
@@ -306,7 +318,10 @@ export function pointAlong(path: LatLng[], fraction: number): LatLng | null {
 }
 
 /** Map an on_status step's key (or on_confirm) to the ride state it represents. */
-export function stepToRideState(actionType: string, actionId: string): RideState | "RIDE_ASSIGNED" | undefined {
+export function stepToRideState(
+    actionType: string,
+    actionId: string
+): RideState | "RIDE_ASSIGNED" | undefined {
     if (actionType === "on_confirm") return "RIDE_ASSIGNED";
     if (actionType !== "on_status") return undefined;
     const key = (actionId || "").toLowerCase();
@@ -383,18 +398,20 @@ export function nextAutoState(
     const drop = parseGps(dropGps);
     if (!driver) return undefined;
     if (drop && haversineMeters(driver, drop) <= GEOFENCE_METERS) return "RIDE_ENDED";
-    if (pickup && haversineMeters(driver, pickup) <= GEOFENCE_METERS)
-        return "RIDE_ARRIVED_PICKUP";
+    if (pickup && haversineMeters(driver, pickup) <= GEOFENCE_METERS) return "RIDE_ARRIVED_PICKUP";
     return undefined;
 }
 
 // --- tolerant recursive extractors ------------------------------------------
 
+const asRecord = (v: unknown): Record<string, unknown> | undefined =>
+    v && typeof v === "object" ? (v as Record<string, unknown>) : undefined;
+
 /** Find the first array under key `stops` anywhere in the object tree. */
-function findStops(obj: unknown): any[] | null {
-    if (!obj || typeof obj !== "object") return null;
-    const rec = obj as Record<string, unknown>;
-    if (Array.isArray(rec.stops)) return rec.stops as any[];
+function findStops(obj: unknown): unknown[] | null {
+    const rec = asRecord(obj);
+    if (!rec) return null;
+    if (Array.isArray(rec.stops)) return rec.stops;
     for (const v of Object.values(rec)) {
         const found = findStops(v);
         if (found) return found;
@@ -402,10 +419,11 @@ function findStops(obj: unknown): any[] | null {
     return null;
 }
 
-function stopGps(stops: any[] | null, type: string): string | undefined {
+function stopGps(stops: unknown[] | null, type: string): string | undefined {
     if (!stops) return undefined;
-    const s = stops.find((st) => st?.type === type);
-    return s?.location?.gps;
+    const s = asRecord(stops.find((st) => asRecord(st)?.type === type));
+    const location = asRecord(s?.location);
+    return typeof location?.gps === "string" ? location.gps : undefined;
 }
 
 /**
@@ -420,9 +438,9 @@ function stopGps(stops: any[] | null, type: string): string | undefined {
 function findRidePhase(obj: unknown): string | undefined {
     // 1) Precise: message.order.fulfillments[*].state.descriptor.code (what the generate updates).
     const collectStateCodes = (node: unknown, out: string[]): void => {
-        if (!node || typeof node !== "object") return;
-        const rec = node as Record<string, any>;
-        const code = rec.state?.descriptor?.code;
+        const rec = asRecord(node);
+        if (!rec) return;
+        const code = asRecord(asRecord(rec.state)?.descriptor)?.code;
         if (typeof code === "string" && code.startsWith("RIDE_")) out.push(code);
         for (const v of Object.values(rec)) collectStateCodes(v, out);
     };
@@ -432,8 +450,8 @@ function findRidePhase(obj: unknown): string | undefined {
 
     // 2) Fallback: any RIDE_* `code` anywhere (older/looser payload shapes).
     const broad = (node: unknown): string | undefined => {
-        if (!node || typeof node !== "object") return undefined;
-        const rec = node as Record<string, any>;
+        const rec = asRecord(node);
+        if (!rec) return undefined;
         if (typeof rec.code === "string" && rec.code.startsWith("RIDE_")) return rec.code;
         for (const v of Object.values(rec)) {
             const f = broad(v);
@@ -445,9 +463,9 @@ function findRidePhase(obj: unknown): string | undefined {
 }
 
 function findTrackingGps(obj: unknown): string | undefined {
-    if (!obj || typeof obj !== "object") return undefined;
-    const rec = obj as Record<string, any>;
-    const gps = rec.tracking?.location?.gps;
+    const rec = asRecord(obj);
+    if (!rec) return undefined;
+    const gps = asRecord(asRecord(rec.tracking)?.location)?.gps;
     if (typeof gps === "string") return gps;
     for (const v of Object.values(rec)) {
         const found = findTrackingGps(v);
@@ -457,9 +475,9 @@ function findTrackingGps(obj: unknown): string | undefined {
 }
 
 /** First value found under `key` anywhere in the object tree. */
-function findByKey(obj: unknown, key: string): any {
-    if (!obj || typeof obj !== "object") return undefined;
-    const rec = obj as Record<string, any>;
+function findByKey(obj: unknown, key: string): unknown {
+    const rec = asRecord(obj);
+    if (!rec) return undefined;
     if (rec[key] !== undefined && rec[key] !== null) return rec[key];
     for (const v of Object.values(rec)) {
         const found = findByKey(v, key);
@@ -474,31 +492,41 @@ function extractRideInfo(payload: unknown): {
     vehicle?: RideVehicle;
     fare?: RideFare;
 } {
-    const agent = findByKey(payload, "agent");
-    const vehicle = findByKey(payload, "vehicle");
-    const price = findByKey(payload, "price"); // quote.price
+    const agent = asRecord(findByKey(payload, "agent"));
+    const vehicle = asRecord(findByKey(payload, "vehicle"));
+    const price = asRecord(findByKey(payload, "price")); // quote.price
     const rating = findByKey(agent, "rating") ?? findByKey(payload, "rating");
+
+    const person = asRecord(agent?.person);
+    const contact = asRecord(agent?.contact);
+    const asString = (v: unknown): string | undefined => (typeof v === "string" ? v : undefined);
 
     const driver: RideDriver | undefined =
         agent || rating
             ? {
-                  name: agent?.person?.name,
-                  phone: agent?.contact?.phone,
-                  rating: typeof rating === "string" || typeof rating === "number" ? String(rating) : undefined,
+                  name: asString(person?.name),
+                  phone: asString(contact?.phone),
+                  rating:
+                      typeof rating === "string" || typeof rating === "number"
+                          ? String(rating)
+                          : undefined,
               }
             : undefined;
     const veh: RideVehicle | undefined = vehicle
         ? {
-              registration: vehicle.registration,
-              make: vehicle.make,
-              model: vehicle.model,
-              category: vehicle.category,
-              color: vehicle.color,
+              registration: asString(vehicle.registration),
+              make: asString(vehicle.make),
+              model: asString(vehicle.model),
+              category: asString(vehicle.category),
+              color: asString(vehicle.color),
           }
         : undefined;
     const fare: RideFare | undefined =
         price && (price.value != null || price.currency != null)
-            ? { value: price.value != null ? String(price.value) : undefined, currency: price.currency }
+            ? {
+                  value: price.value != null ? String(price.value) : undefined,
+                  currency: asString(price.currency),
+              }
             : undefined;
 
     return { driver, vehicle: veh, fare };
@@ -534,7 +562,10 @@ function latestPayloadId(stepLists: MappedStep[][], actionType: string): string 
  * the ride state + order status reflect the true current state — `on_track` is excluded because it
  * carries only tracking GPS, no order/state.
  */
-function latestPayloadIdAcross(stepLists: MappedStep[][], actionTypes: string[]): string | undefined {
+function latestPayloadIdAcross(
+    stepLists: MappedStep[][],
+    actionTypes: string[]
+): string | undefined {
     const wanted = new Set(actionTypes);
     let bestId: string | undefined;
     let bestTs = -Infinity;
@@ -556,9 +587,10 @@ function latestPayloadIdAcross(stepLists: MappedStep[][], actionTypes: string[])
 
 /** Find `message.order.status` anywhere in the object tree (first `order` object with a string status). */
 function findOrderStatus(obj: unknown): string | undefined {
-    if (!obj || typeof obj !== "object") return undefined;
-    const rec = obj as Record<string, any>;
-    if (rec.order && typeof rec.order.status === "string") return rec.order.status;
+    const rec = asRecord(obj);
+    if (!rec) return undefined;
+    const order = asRecord(rec.order);
+    if (typeof order?.status === "string") return order.status;
     for (const v of Object.values(rec)) {
         const found = findOrderStatus(v);
         if (found) return found;
@@ -568,10 +600,14 @@ function findOrderStatus(obj: unknown): string | undefined {
 
 /** Find an `error` block carrying a code/message anywhere in the object tree. */
 function findError(obj: unknown): { code?: string; message?: string } | undefined {
-    if (!obj || typeof obj !== "object") return undefined;
-    const rec = obj as Record<string, any>;
-    if (rec.error && (rec.error.code != null || rec.error.message != null)) {
-        return { code: rec.error.code != null ? String(rec.error.code) : undefined, message: rec.error.message };
+    const rec = asRecord(obj);
+    if (!rec) return undefined;
+    const error = asRecord(rec.error);
+    if (error && (error.code != null || error.message != null)) {
+        return {
+            code: error.code != null ? String(error.code) : undefined,
+            message: typeof error.message === "string" ? error.message : undefined,
+        };
     }
     for (const v of Object.values(rec)) {
         const found = findError(v);
@@ -582,8 +618,8 @@ function findError(obj: unknown): { code?: string; message?: string } | undefine
 
 async function fetchReq(
     payloadId: string | undefined,
-    cache: Map<string, any>
-): Promise<any | undefined> {
+    cache: Map<string, unknown>
+): Promise<unknown | undefined> {
     if (!payloadId) return undefined;
     if (cache.has(payloadId)) return cache.get(payloadId);
     try {
@@ -603,7 +639,7 @@ async function fetchReq(
  */
 export async function deriveRideMapData(
     mappedFlow: FlowMap,
-    cache: Map<string, any>
+    cache: Map<string, unknown>
 ): Promise<RideMapData> {
     // Side-agnostic: a received action may be recorded in any of these lists. The provider (BPP)
     // doesn't record its own sends, so it relies on `confirm` (received from BAP); the buyer (BAP)
@@ -631,14 +667,7 @@ export async function deriveRideMapData(
     // render the moment the user enters start/end, on both buyer and seller sides.
     let stops = findStops(confirmReq);
     if (!stops) {
-        const LOCATION_ACTIONS = [
-            "on_select",
-            "select",
-            "on_init",
-            "init",
-            "on_search",
-            "search",
-        ];
+        const LOCATION_ACTIONS = ["on_select", "select", "on_init", "init", "on_search", "search"];
         for (const action of LOCATION_ACTIONS) {
             const req = await fetchReq(latestPayloadId(lists, action), cache);
             const found = findStops(req);
