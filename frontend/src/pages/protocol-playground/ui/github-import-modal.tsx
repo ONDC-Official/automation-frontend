@@ -9,8 +9,9 @@ import {
     matchDomainToBranch,
     GitHubFile,
 } from "@pages/protocol-playground/utils/fetch-github";
-import { FaGithub, FaSpinner, FaChevronDown } from "react-icons/fa";
+import { FaGithub, FaSpinner } from "react-icons/fa";
 import Popup from "@components/ui/pop-up/pop-up";
+import { SelectBox, Spinner } from "@pages/protocol-playground/ui/components/github-select";
 
 interface GitHubImportModalProps {
     isOpen: boolean;
@@ -18,67 +19,6 @@ interface GitHubImportModalProps {
     onClose: () => void;
     onImport: (config: MockPlaygroundConfigType) => void;
 }
-
-const Spinner = () => (
-    <FaSpinner className="animate-spin text-sky-500 inline-block ml-2" size={13} />
-);
-
-const SelectBox = ({
-    label,
-    value,
-    options,
-    disabled,
-    loading,
-    placeholder,
-    onChange,
-}: {
-    label: string;
-    value: string;
-    options: string[];
-    disabled: boolean;
-    loading: boolean;
-    placeholder: string;
-    onChange: (v: string) => void;
-}) => {
-    const selectId = `select-${label
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/^-|-$/g, "")}`;
-    return (
-        <div className="flex flex-col gap-1">
-            <label
-                htmlFor={selectId}
-                className="text-sm font-semibold text-gray-600 flex items-center gap-1"
-            >
-                {label}
-                {loading && <Spinner />}
-            </label>
-            <div className="relative">
-                <select
-                    id={selectId}
-                    value={value}
-                    disabled={disabled || loading}
-                    onChange={(e) => onChange(e.target.value)}
-                    className={`w-full appearance-none border rounded-lg px-3 py-2.5 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400 transition-colors
-                    ${disabled || loading ? "bg-gray-50 text-gray-400 border-gray-200 cursor-not-allowed" : "bg-white text-gray-800 border-sky-200 hover:border-sky-400 cursor-pointer"}`}
-                >
-                    <option value="" disabled>
-                        {placeholder}
-                    </option>
-                    {options.map((opt) => (
-                        <option key={opt} value={opt}>
-                            {opt}
-                        </option>
-                    ))}
-                </select>
-                <FaChevronDown
-                    size={11}
-                    className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
-                />
-            </div>
-        </div>
-    );
-};
 
 export const GitHubImportModal = ({
     isOpen,

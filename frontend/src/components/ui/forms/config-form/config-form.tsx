@@ -17,6 +17,7 @@ import TRV10Select from "../custom-forms/trv10-select";
 import TRV10ScheduleForm from "../custom-forms/trv10-schedule";
 import TRV10ScheduleRentalForm from "../custom-forms/trv10-scheduleRental";
 import TRV11Select from "../custom-forms/trv11-select";
+import TRV11PartialSelect from "../custom-forms/trv11-201-partial-select";
 import JsonSchemaForm from "../../../../pages/protocol-playground/ui/extras/rsjf-form";
 import AirlineSelect from "@/components/ui/forms/custom-forms/airline-select";
 import AirlineSeatSelect from "@/components/ui/forms/custom-forms/airline-seat-select";
@@ -82,6 +83,7 @@ export interface FormFieldConfigType {
         | "trv10_schedule"
         | "trv10_schedule_rental"
         | "trv11_select"
+        | "trv11_201_partial_select"
         | "hotel_select"
         | "HTML_FORM"
         | "HTML_FORM_MULTI"
@@ -335,6 +337,10 @@ export default function FormConfig({
 
     if (formConfig.find((field) => field.type === "trv11_select")) {
         return <TRV11Select submitEvent={submitEvent} />;
+    }
+
+    if (formConfig.find((field) => field.type === "trv11_201_partial_select")) {
+        return <TRV11PartialSelect submitEvent={submitEvent} />;
     }
 
     if (formConfig.find((field) => field.type === "airline_select")) {

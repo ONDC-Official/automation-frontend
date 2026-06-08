@@ -31,6 +31,7 @@ import { trackEvent } from "@utils/analytics";
 import FilterFlowsMenu from "@components/FlowShared/filter-flows";
 import { openReportInNewTab } from "@utils/generic-utils";
 import GenerateReportModal from "@components/FlowShared/GenerateReportModal";
+import RideMapTab from "@components/FlowShared/ride-map-tab";
 
 type ExtractedMetadataValue = { name?: string; value: unknown; errorMessage?: string };
 
@@ -151,9 +152,9 @@ function RenderFlows({
         {} as SessionCache["sessionDifficulty"]
     );
     const [isFlowStopped, setIsFlowStopped] = useState<boolean>(false);
-    const [selectedTab, setSelectedTab] = useState<"Request" | "Response" | "Metadata" | "Guide">(
-        "Request"
-    );
+    const [selectedTab, setSelectedTab] = useState<
+        "Request" | "Response" | "Metadata" | "Guide" | "Application"
+    >("Request");
     const [requestData, setRequestData] = useState<Record<string, unknown>>({});
     const [responseData, setResponseData] = useState<Record<string, unknown> | SideViewResponse>(
         {}
@@ -346,6 +347,22 @@ function RenderFlows({
     useEffect(() => {
         activeFlowRef.current = activeFlow;
     }, [activeFlow]);
+
+    // For ride-hailing (TRV) sessions, surface the live map by default: auto-select the
+    // "Application" tab once the session loads so the map is visible the moment start/end
+    // locations are entered — on both buyer (BPP) and seller (BAP) sides. Runs once so it
+    // never fights a manual tab change the user makes afterwards.
+    const tabAutoDefaultedRef = useRef(false);
+    useEffect(() => {
+        if (tabAutoDefaultedRef.current) return;
+        const domain = cacheSessionData?.domain ?? "";
+        const usecase = cacheSessionData?.usecaseId ?? "";
+        const isRideHailing = domain.includes("TRV") || /ride[\s-]?hailing/i.test(usecase);
+        if (isRideHailing) {
+            tabAutoDefaultedRef.current = true;
+            setSelectedTab("Application");
+        }
+    }, [cacheSessionData]);
 
     // Extract metadata whenever flows are provided
     useEffect(() => {
@@ -704,11 +721,23 @@ function RenderFlows({
                                         key: "Guide",
                                         label: "Guide",
                                     },
+                                    {
+                                        key: "Application",
+                                        label: "Application",
+                                    },
                                 ]}
                                 onSelectOption={(value: string) => {
-                                    setSelectedTab(value as "Request" | "Response" | "Metadata");
+                                    setSelectedTab(
+                                        value as
+                                            | "Request"
+                                            | "Response"
+                                            | "Metadata"
+                                            | "Guide"
+                                            | "Application"
+                                    );
                                 }}
                                 defaultTab="Request"
+                                activeKey={selectedTab}
                             />
 
                             <div className="p-2">
@@ -767,6 +796,13 @@ function RenderFlows({
                                                     </div>
                                                 )}
                                             </div>
+                                        ) : selectedTab === "Application" ? (
+                                            // key={activeFlow} → remount on flow switch so the map
+                                            // fully resets (no stale driver/route/state carryover).
+                                            <RideMapTab
+                                                key={activeFlow ?? "none"}
+                                                flowId={activeFlow}
+                                            />
                                         ) : (
                                             <SearchableJsonView
                                                 value={

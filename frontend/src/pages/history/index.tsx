@@ -217,7 +217,9 @@ const SessionCard: FC<SessionCardProps> = ({
                     // Fallback for older sessions without stored domain/version/usecaseId:
                     // pull flow configs from the (possibly expired) session cache
                     const res = await apiClient.get<SessionCache>(API_ROUTES.SESSIONS.BASE, {
-                        params: { session_id: session.sessionId },
+                        params: {
+                            session_id: (session as { sessionId?: string } | undefined)?.sessionId,
+                        },
                     });
                     const detail = res.data;
                     const attemptedMap = detail.flowMap ?? {};

@@ -1,9 +1,11 @@
 import { useState } from "react";
 
 import { FlowConverterModal } from "@pages/protocol-playground/ui/components/flow-converter";
+import { SchemaGeneratorModal } from "@pages/protocol-playground/ui/components/schema-generator";
 
 const UtilityToolsBar = () => {
     const [showFlowConverter, setShowFlowConverter] = useState(false);
+    const [showSchemaGenerator, setShowSchemaGenerator] = useState(false);
 
     return (
         <>
@@ -33,7 +35,7 @@ const UtilityToolsBar = () => {
                     </button>
                     <div className="w-px h-5 bg-gray-200" />
                     <button
-                        onClick={() => {}}
+                        onClick={() => setShowSchemaGenerator(true)}
                         className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium text-gray-600 hover:text-sky-700 hover:bg-sky-50 transition-all duration-200"
                     >
                         <svg
@@ -49,7 +51,7 @@ const UtilityToolsBar = () => {
                                 d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
                             />
                         </svg>
-                        Config Validator
+                        Schema Generator
                     </button>
                 </div>
             </div>
@@ -57,6 +59,11 @@ const UtilityToolsBar = () => {
             <FlowConverterModal
                 isOpen={showFlowConverter}
                 onClose={() => setShowFlowConverter(false)}
+            />
+
+            <SchemaGeneratorModal
+                isOpen={showSchemaGenerator}
+                onClose={() => setShowSchemaGenerator(false)}
             />
         </>
     );
