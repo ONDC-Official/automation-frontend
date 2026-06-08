@@ -32,6 +32,7 @@ import FilterFlowsMenu from "@components/FlowShared/filter-flows";
 import { openReportInNewTab } from "@utils/generic-utils";
 import GenerateReportModal from "@components/FlowShared/GenerateReportModal";
 import RideMapTab from "@components/FlowShared/ride-map-tab";
+import { isRideMapEnabled } from "@components/FlowShared/ride-map-utils";
 
 type ExtractedMetadataValue = { name?: string; value: unknown; errorMessage?: string };
 
@@ -348,21 +349,28 @@ function RenderFlows({
         activeFlowRef.current = activeFlow;
     }, [activeFlow]);
 
-    // For ride-hailing (TRV) sessions, surface the live map by default: auto-select the
-    // "Application" tab once the session loads so the map is visible the moment start/end
-    // locations are entered — on both buyer (BPP) and seller (BAP) sides. Runs once so it
-    // never fights a manual tab change the user makes afterwards.
+    // The ride-map feature (Application tab + live map) is only available for ONDC:TRV10 2.0.1.
+    const mapEnabled = isRideMapEnabled(cacheSessionData?.domain, cacheSessionData?.version);
+
+    // For the map-enabled domain, surface the live map by default: auto-select the "Application"
+    // tab once the session loads so the map is visible the moment start/end locations are entered
+    // — on both buyer (BPP) and seller (BAP) sides. Runs once so it never fights a manual tab
+    // change the user makes afterwards.
     const tabAutoDefaultedRef = useRef(false);
     useEffect(() => {
         if (tabAutoDefaultedRef.current) return;
-        const domain = cacheSessionData?.domain ?? "";
-        const usecase = cacheSessionData?.usecaseId ?? "";
-        const isRideHailing = domain.includes("TRV") || /ride[\s-]?hailing/i.test(usecase);
-        if (isRideHailing) {
+        if (mapEnabled) {
             tabAutoDefaultedRef.current = true;
             setSelectedTab("Application");
         }
-    }, [cacheSessionData]);
+    }, [mapEnabled]);
+
+    // If the session is not map-enabled, never leave the UI on the (now hidden) Application tab.
+    useEffect(() => {
+        if (!mapEnabled && selectedTab === "Application") {
+            setSelectedTab("Request");
+        }
+    }, [mapEnabled, selectedTab]);
 
     // Extract metadata whenever flows are provided
     useEffect(() => {
@@ -721,10 +729,10 @@ function RenderFlows({
                                         key: "Guide",
                                         label: "Guide",
                                     },
-                                    {
-                                        key: "Application",
-                                        label: "Application",
-                                    },
+                                    // Application (ride map) tab only for the map-enabled domain.
+                                    ...(mapEnabled
+                                        ? [{ key: "Application", label: "Application" }]
+                                        : []),
                                 ]}
                                 onSelectOption={(value: string) => {
                                     setSelectedTab(
@@ -796,7 +804,7 @@ function RenderFlows({
                                                     </div>
                                                 )}
                                             </div>
-                                        ) : selectedTab === "Application" ? (
+                                        ) : selectedTab === "Application" && mapEnabled ? (
                                             // key={activeFlow} → remount on flow switch so the map
                                             // fully resets (no stale driver/route/state carryover).
                                             <RideMapTab
