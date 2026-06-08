@@ -43,6 +43,15 @@ export interface RideMapData {
     fare?: RideFare;
 }
 
+/**
+ * The ride-map feature (Application tab + live map) is gated to a single domain/version so it
+ * never appears for other ONDC domains. Matched against the session's `domain` + `version`.
+ */
+export const RIDE_MAP_DOMAIN = "ONDC:TRV10";
+export const RIDE_MAP_VERSION = "2.1.0";
+export const isRideMapEnabled = (domain?: string, version?: string): boolean =>
+    domain === RIDE_MAP_DOMAIN && version === RIDE_MAP_VERSION;
+
 /** What the map should display, derived purely from order.status + ride state (+ error). */
 export type RideDisplayKind =
     | "DRIVER_NOT_FOUND"
