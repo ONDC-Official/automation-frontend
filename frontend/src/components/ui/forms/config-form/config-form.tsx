@@ -19,6 +19,7 @@ import TRV10ScheduleRentalForm from "../custom-forms/trv10-scheduleRental";
 import TRV11Select from "../custom-forms/trv11-select";
 import TRV11PartialSelect from "../custom-forms/trv11-201-partial-select";
 import JsonSchemaForm from "../../../../pages/protocol-playground/ui/extras/rsjf-form";
+import { isRideMapEnabled } from "@components/FlowShared/ride-map-utils";
 import AirlineSelect from "@/components/ui/forms/custom-forms/airline-select";
 import AirlineSeatSelect from "@/components/ui/forms/custom-forms/airline-seat-select";
 import HotelSelect from "@/components/ui/forms/custom-forms/hotel-select";
@@ -456,6 +457,8 @@ export default function FormConfig({
         return JsonSchemaForm({
             schema: schemaField!.schema as RJSFSchema,
             onSubmit: onSubmit as (data: Record<string, unknown>) => Promise<void>,
+            // GPS map-picker only for the ride-map domain (TRV10 2.1.0); other domains get plain inputs.
+            mapEnabled: isRideMapEnabled(sessionData?.domain, sessionData?.version),
         });
     }
 

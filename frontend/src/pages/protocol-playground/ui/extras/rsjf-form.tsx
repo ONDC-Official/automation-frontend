@@ -53,6 +53,9 @@ interface JsonSchemaFormProps {
     onSubmit: (data: Record<string, unknown>) => Promise<void>;
     onChange?: (data: Record<string, unknown>) => void;
     title?: string;
+    /** Route GPS fields to the Leaflet map-picker. Only enabled for the ride-map domain
+     *  (TRV10 2.1.0); for every other domain GPS fields render as plain text inputs. */
+    mapEnabled?: boolean;
 }
 
 // Custom Field Template with improved layout
@@ -147,6 +150,7 @@ export default function JsonSchemaForm({
     onSubmit,
     onChange,
     title,
+    mapEnabled = false,
 }: JsonSchemaFormProps) {
     const handleSubmit = ({ formData }: FormChangeEvent) => {
         onSubmit(formData as Record<string, unknown>);
@@ -156,8 +160,15 @@ export default function JsonSchemaForm({
         onChange?.(formData as Record<string, unknown>);
     };
 
-    // Route GPS fields (e.g. start_gps / end_gps in the search form) to the map-picker widget.
-    const uiSchema = useMemo(() => buildGpsUiSchema(schema), [schema]);
+    // Route GPS fields (e.g. start_gps / end_gps in the search form) to the map-picker widget —
+    // ONLY for the ride-map domain. Other domains get an empty uiSchema (plain inputs).
+    const uiSchema = useMemo(
+        () =>
+            mapEnabled
+                ? buildGpsUiSchema(schema)
+                : ({} as UiSchema<Record<string, unknown>, RJSFSchema, GenericObjectType>),
+        [schema, mapEnabled]
+    );
 
     return (
         <div className="rjsf-custom-form">

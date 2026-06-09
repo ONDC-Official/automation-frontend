@@ -2,6 +2,7 @@ import { useContext } from "react";
 import { PlaygroundContext } from "../context/playground-context";
 import { toast } from "react-toastify";
 import JsonSchemaForm from "../ui/extras/rsjf-form";
+import { isRideMapEnabled } from "@components/FlowShared/ride-map-utils";
 import { calcCurrentIndex } from "../mock-engine";
 import MockRunner, { MockPlaygroundConfigType } from "@ondc/automation-mock-runner";
 import { createFlowSessionWithPlayground } from "../utils/request-utils";
@@ -96,6 +97,10 @@ export const useConfigOperations = () => {
                     schema={schema}
                     // formData={data.sessionData}
                     onSubmit={onSubmit as (data: Record<string, unknown>) => Promise<void>}
+                    mapEnabled={isRideMapEnabled(
+                        playgroundContext.config?.meta?.domain,
+                        playgroundContext.config?.meta?.version
+                    )}
                 />
             </div>
         );

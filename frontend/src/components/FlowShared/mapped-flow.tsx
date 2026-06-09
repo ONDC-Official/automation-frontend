@@ -11,7 +11,11 @@ import { proceedFlow, triggerExtra } from "@utils/request-utils";
 import { useSession } from "@context/context";
 
 import PairedCard from "@components/FlowShared/pair-card";
-import { isTrackingPhaseStep, isTrackingActive } from "@components/FlowShared/ride-map-utils";
+import {
+    isTrackingPhaseStep,
+    isTrackingActive,
+    isRideMapEnabled,
+} from "@components/FlowShared/ride-map-utils";
 
 export default function DisplayFlow({
     mappedFlow,
@@ -66,7 +70,11 @@ export default function DisplayFlow({
     // The map UI now lives in the right-panel "Application" tab (RideMapTab). Here we only need to
     // know whether the tracking phase is active, to stop the flow engine auto-proceeding past
     // on_confirm — the seller drives track/on_track/on_status manually from the map.
-    const trackingActive = isTrackingActive(mappedFlow);
+    // IMPORTANT: this engine override must apply ONLY for the ride-map domain/version (TRV10 2.1.0).
+    // For every other domain `trackingActive` stays false, so the normal auto-proceed behaviour of
+    // track/on_track/on_status/on_update/status is fully preserved and their flows are unaffected.
+    const trackingActive =
+        isRideMapEnabled(sessionData?.domain, sessionData?.version) && isTrackingActive(mappedFlow);
 
     useEffect(() => {
         // Sequence steps (skip first — that's the flow's initial trigger) take priority over extras.
