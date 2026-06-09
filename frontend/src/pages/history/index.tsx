@@ -656,6 +656,7 @@ const HistoryPage: FC = () => {
                                         <button
                                             key={url}
                                             type="button"
+                                            title={url}
                                             className={`w-full text-left px-4 py-2.5 text-sm hover:bg-sky-50 hover:text-sky-700 transition-colors truncate ${subscriberId === url ? "bg-sky-50 text-sky-700 font-semibold" : "text-slate-700"}`}
                                             onClick={() => {
                                                 setSubscriberId(url);
@@ -705,7 +706,9 @@ const HistoryPage: FC = () => {
                     </select>
                     <button
                         onClick={handleFetchSessions}
-                        disabled={loading || !subscriberId.trim()}
+                        disabled={
+                            loading || !subscriberId.trim() || !selectedDomain || !selectedVersion
+                        }
                         className="flex items-center gap-1.5 px-6 py-2.5 bg-sky-600 text-white text-sm font-bold rounded-xl hover:bg-sky-700 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed transition-all whitespace-nowrap"
                     >
                         {loading ? (
