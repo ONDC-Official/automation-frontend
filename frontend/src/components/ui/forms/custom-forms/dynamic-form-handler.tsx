@@ -322,6 +322,22 @@ export default function DynamicFormHandler({
                     );
                 }
 
+                // Clear any leftover completion from a previous form in this
+                // transaction so polling only reacts to THIS form's callback.
+                // Non-fatal: a failure here just falls back to today's behavior.
+                try {
+                    await axios.post(
+                        `${import.meta.env.VITE_BACKEND_URL}/form/reset-completion`,
+                        null,
+                        { params: { transaction_id: transactionId }, timeout: 5000 }
+                    );
+                } catch (resetError) {
+                    console.warn(
+                        "⚠️ [DynamicForm] Could not reset completion state (continuing):",
+                        resetError
+                    );
+                }
+
                 // Navigate directly to the URL from reference_data — it IS the final destination.
                 // The mock service is responsible for storing the correct URL in the session.
                 setFormUrl(formServiceUrl);
