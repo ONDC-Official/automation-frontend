@@ -1,7 +1,6 @@
-import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import axios from "axios";
 import { SubmitEventParams } from "../../../../types/flow-types";
-import jsonpath from "jsonpath";
 import { FormFieldConfigType } from "../config-form/config-form";
 
 // ── Polling constants ──────────────────────────────────────────────────────────
@@ -20,20 +19,17 @@ interface ManualDynamicFormHandlerProps {
 
 /**
  * MANUAL_DYNAMIC_FORM step handler (currently only the LAMF single_redirection
- * flow). Unlike DynamicFormHandler it never opens the form itself: the buyer
- * copies the form URL and opens it manually in a new tab. Polling for the
- * completion callback starts automatically on mount, and the flow proceeds
- * once the form's final step fires the callback.
+ * flow). Unlike DynamicFormHandler it never opens or even shows the form URL —
+ * the buyer gets it from the on_select payload's xinput. This step only waits
+ * for the form's callback: polling starts automatically on mount, and the flow
+ * proceeds once the form's final step fires the callback.
  */
 export default function ManualDynamicFormHandler({
     submitEvent,
-    referenceData,
     transactionId,
-    formConfig,
 }: ManualDynamicFormHandlerProps) {
     const [status, setStatus] = useState<"waiting" | "completed" | "error" | "timeout">("waiting");
     const [errorMessage, setErrorMessage] = useState<string>("");
-    const [copied, setCopied] = useState<boolean>(false);
 
     // pollDisplay is only for rendering — source of truth is pollCountRef
     const [pollDisplay, setPollDisplay] = useState<number>(0);
@@ -42,22 +38,6 @@ export default function ManualDynamicFormHandler({
     const isPollingRef = useRef<boolean>(false);
     const hasCompletedRef = useRef<boolean>(false);
     const pollCountRef = useRef<number>(0);
-
-    // Extract form URL from reference data (same way as DynamicFormHandler)
-    const formServiceUrl = useMemo<string>(() => {
-        if (!formConfig || !formConfig.reference) {
-            console.warn("⚠️ [ManualDynamicForm] No reference field found in form config");
-            return "";
-        }
-        try {
-            const url =
-                jsonpath.query({ reference_data: referenceData }, formConfig.reference)[0] || "";
-            return url as string;
-        } catch (error) {
-            console.error("❌ [ManualDynamicForm] Error extracting form URL:", error);
-            return "";
-        }
-    }, [formConfig, referenceData]);
 
     const cleanup = useCallback(() => {
         if (pollingIntervalRef.current) {
@@ -174,17 +154,6 @@ export default function ManualDynamicFormHandler({
         startPolling();
     }, [transactionId]);
 
-    const handleCopy = useCallback(async () => {
-        if (!formServiceUrl) return;
-        try {
-            await navigator.clipboard.writeText(formServiceUrl);
-            setCopied(true);
-            setTimeout(() => setCopied(false), 2000);
-        } catch (e) {
-            console.error("Could not copy URL:", e);
-        }
-    }, [formServiceUrl]);
-
     const handleResume = useCallback(
         (e: React.MouseEvent) => {
             e.preventDefault();
@@ -198,38 +167,13 @@ export default function ManualDynamicFormHandler({
 
     return (
         <div className="p-6 bg-white rounded-lg shadow-md">
-            <h2 className="text-xl font-semibold mb-4">Complete Verification Form</h2>
+            <h2 className="text-xl font-semibold mb-4">Waiting for Verification Callback</h2>
 
             {(status === "waiting" || status === "timeout" || status === "error") && (
-                <div>
-                    <p className="text-gray-600 mb-3">
-                        Copy the link below and open it in a <strong>new tab</strong> to complete
-                        the verification journey. This page will detect completion automatically.
-                    </p>
-                    {formServiceUrl ? (
-                        <div className="flex gap-2 mb-4">
-                            <input
-                                type="text"
-                                readOnly
-                                value={formServiceUrl}
-                                onFocus={(e) => e.target.select()}
-                                className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-700 bg-gray-50"
-                            />
-                            <button
-                                type="button"
-                                onClick={handleCopy}
-                                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 whitespace-nowrap"
-                            >
-                                {copied ? "Copied!" : "Copy URL"}
-                            </button>
-                        </div>
-                    ) : (
-                        <p className="text-red-600 text-sm mb-4">
-                            Form URL not found in reference data. Make sure the previous step
-                            completed successfully.
-                        </p>
-                    )}
-                </div>
+                <p className="text-gray-600 mb-3">
+                    Complete the verification journey in the form you opened from the on_select
+                    payload. This step finishes automatically when the callback is received.
+                </p>
             )}
 
             {status === "waiting" && (
