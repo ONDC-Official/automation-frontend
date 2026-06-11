@@ -7,6 +7,12 @@ import logger from '@ondc/automation-logger';
 const FORM_COMPLETED_PREFIX = 'form_completed';
 const LATEST_FORM_PREFIX = 'latest_form';
 
+// After the first successful read, completion keys are re-armed with this TTL
+// instead of being deleted, so every session polling the same transaction
+// (buyer AND seller workbench sessions) can observe the completion before it
+// self-cleans.
+const CONSUMED_TTL_SECONDS = 60;
+
 /**
  * Check if form callback has been received
  * Polled by the frontend after user submits form in popup
@@ -43,8 +49,12 @@ export const checkFormCompletion: RequestHandler = async (req: Request, res: Res
       form_id = latestFormId;
     }
 
-    const completionKey = `${FORM_COMPLETED_PREFIX}:${transaction_id}:${form_id}`;
-    const completionData = await RedisService.getKey(completionKey);
+     await RedisService.setKey(
+        `${LATEST_FORM_PREFIX}:${transaction_id}`,
+        String(form_id),
+        CONSUMED_TTL_SECONDS
+      );
+      await RedisService.setKey(completionKey, completionData, CONSUMED_TTL_SECONDS);
 
     if (completionData) {
       const data = JSON.parse(completionData);
