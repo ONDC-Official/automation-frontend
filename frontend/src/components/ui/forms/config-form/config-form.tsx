@@ -26,6 +26,7 @@ import HotelSelect from "@/components/ui/forms/custom-forms/hotel-select";
 import TRV12busSeatSelection from "../custom-forms/trv-seat-count";
 import FinvuRedirectForm from "../custom-forms/finvu-redirect-form";
 import DynamicFormHandler from "../custom-forms/dynamic-form-handler";
+import ManualDynamicFormHandler from "../custom-forms/manual-dynamic-form-handler";
 import { SessionContext } from "../../../../context/context";
 import IntercitySelect from "../custom-forms/intercity-select";
 import HotelSelectProvider from "../custom-forms/hotel-slect-provider";
@@ -91,6 +92,7 @@ export interface FormFieldConfigType {
         | "HTML_FORM_MULTI"
         | "FINVU_REDIRECT"
         | "DYNAMIC_FORM"
+        | "MANUAL_DYNAMIC_FORM"
         | "fis13_select"
         | "trv13_select_provider"
         | "trv10_201_select"
@@ -207,6 +209,27 @@ export default function FormConfig({
             isNoFieldVisible = true;
         }
     });
+
+    // Check for MANUAL_DYNAMIC_FORM type (e.g. LAMF single_redirection): the
+    // buyer copies the form URL and opens it manually — no open button/popup.
+    if (formConfig.find((field) => field.type === "MANUAL_DYNAMIC_FORM")) {
+        let transactionId: string | undefined = undefined;
+        if (flowId && sessionData && sessionData.flowMap) {
+            transactionId = sessionData.flowMap[flowId] || undefined;
+        }
+
+        const manualFormField = formConfig.find((field) => field.type === "MANUAL_DYNAMIC_FORM");
+
+        return (
+            <ManualDynamicFormHandler
+                submitEvent={submitEvent}
+                referenceData={referenceData}
+                sessionId={sessionId}
+                transactionId={transactionId || ""}
+                formConfig={manualFormField}
+            />
+        );
+    }
 
     // Check for DYNAMIC_FORM type
     if (formConfig.find((field) => field.type === "DYNAMIC_FORM")) {
