@@ -36,12 +36,14 @@ export interface OpenApiMeta {
     version?: string;
     description?: string;
 }
-
+//---------------
+//---------------
 // ---------------------------------------------------------------------------
-// Hardcoded synchronous (ACK/NACK) response schemas — edit these freely.
-// Picked per endpoint by the major version found in its example payloads.
+// Hardcoded synchronous (ACK/NACK) response schemas — edit these freely. ____|
+// Picked per endpoint by the major version found in its example payloads.    |
 // ---------------------------------------------------------------------------
-
+// --------------
+// --------------
 const ACK_RESPONSE_V2: JsonSchemaObject = {
     type: "object",
     properties: {
@@ -404,7 +406,6 @@ export function getResponseSchemaForVersion(majorVersion?: string): JsonSchemaOb
 // ---------------------------------------------------------------------------
 // OpenAPI assembly
 // ---------------------------------------------------------------------------
-
 function buildPostOperation(entry: ApiSchemaEntry) {
     return {
         post: {

@@ -70,6 +70,23 @@ export async function fetchAllYamlFiles(branch: string): Promise<GitHubFile[]> {
     return perFolder.flat();
 }
 
+/**
+ * Fetches the raw `config/validations/index.yaml` for a branch.
+ * Returns the YAML string, or null if the branch has no validations file.
+ */
+export async function fetchValidations(branch: string): Promise<string | null> {
+    const meta = await githubFetch<GitHubContent | { message: string }>(
+        `${GITHUB_API}/contents/config/validations/index.yaml?ref=${encodeURIComponent(branch)}`
+    ).catch((e: Error) => {
+        // a missing validations file shouldn't break schema generation
+        if (e.message.includes("not found")) return null;
+        throw e;
+    });
+    const downloadUrl = (meta as GitHubContent | null)?.download_url;
+    if (!downloadUrl) return null;
+    return fetchRawYaml(downloadUrl);
+}
+
 export async function fetchRawYaml(downloadUrl: string): Promise<string> {
     const response = await fetch(downloadUrl);
     if (!response.ok) {

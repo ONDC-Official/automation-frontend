@@ -7,6 +7,7 @@ import {
     fetchBranches,
     fetchAllYamlFiles,
     fetchAllRawFiles,
+    fetchValidations,
     matchDomainToBranch,
     GitHubFile,
 } from "@pages/protocol-playground/utils/fetch-github";
@@ -37,6 +38,7 @@ export const SchemaGeneratorModal = ({
     const [error, setError] = useState<string | null>(null);
 
     const [openApiDoc, setOpenApiDoc] = useState<OpenApiDocument | null>(null);
+    const [validationsYaml, setValidationsYaml] = useState<string | null>(null);
     const [outputFormat, setOutputFormat] = useState<"yaml" | "json">("yaml");
 
     // Fetch branches when modal opens
@@ -61,6 +63,7 @@ export const SchemaGeneratorModal = ({
         if (!selectedBranch) return;
         setFiles([]);
         setOpenApiDoc(null);
+        setValidationsYaml(null);
         setLoadingFiles(true);
         setError(null);
         fetchAllYamlFiles(selectedBranch)
@@ -74,6 +77,7 @@ export const SchemaGeneratorModal = ({
         setSelectedBranch("");
         setFiles([]);
         setOpenApiDoc(null);
+        setValidationsYaml(null);
         setError(null);
         onClose();
     };
@@ -83,9 +87,14 @@ export const SchemaGeneratorModal = ({
         setGenerating(true);
         setError(null);
         setOpenApiDoc(null);
+        setValidationsYaml(null);
         try {
-            const fetched = await fetchAllRawFiles(files);
-            setOpenApiDoc(generateSchemasFromFiles(fetched));
+            const [fetched, validations] = await Promise.all([
+                fetchAllRawFiles(files),
+                fetchValidations(selectedBranch),
+            ]);
+            setValidationsYaml(validations);
+            setOpenApiDoc(generateSchemasFromFiles(fetched, validations));
         } catch (e) {
             setError(e instanceof Error ? e.message : "Failed to generate schemas");
         } finally {
@@ -179,6 +188,11 @@ export const SchemaGeneratorModal = ({
                             <label className="text-sm font-semibold text-gray-600">
                                 Generated OpenAPI ({Object.keys(openApiDoc.paths).length} paths) ·
                                 read-only
+                                <span className="ml-2 font-normal text-gray-400">
+                                    {validationsYaml
+                                        ? "· enriched with validation paths"
+                                        : "· no validations on this branch"}
+                                </span>
                             </label>
                             <div className="flex items-center rounded-lg border border-gray-200 p-0.5 bg-gray-50">
                                 {(["yaml", "json"] as const).map((fmt) => (
