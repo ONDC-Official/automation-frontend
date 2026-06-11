@@ -390,8 +390,6 @@ export default function SessionDataTab() {
     const saveData = groupSteps.find((s) => s.action_id === selectedCall)?.mock.saveData || {};
     const saveDataLength = Object.keys(saveData).length;
 
-    // const activeApi =
-
     if (!playgroundConfig) {
         return <div className="p-4 text-red-400">No configuration found.</div>;
     }
