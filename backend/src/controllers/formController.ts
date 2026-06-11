@@ -49,12 +49,8 @@ export const checkFormCompletion: RequestHandler = async (req: Request, res: Res
       form_id = latestFormId;
     }
 
-     await RedisService.setKey(
-        `${LATEST_FORM_PREFIX}:${transaction_id}`,
-        String(form_id),
-        CONSUMED_TTL_SECONDS
-      );
-      await RedisService.setKey(completionKey, completionData, CONSUMED_TTL_SECONDS);
+    const completionKey = `${FORM_COMPLETED_PREFIX}:${transaction_id}:${form_id}`;
+    const completionData = await RedisService.getKey(completionKey);
 
     if (completionData) {
       const data = JSON.parse(completionData);
@@ -64,12 +60,17 @@ export const checkFormCompletion: RequestHandler = async (req: Request, res: Res
         timestamp: data.timestamp
       });
 
-      // Consume the completion so the next form's polling starts clean —
-      // without this, a transaction with multiple forms sees the previous
-      // form's completion instantly on its first poll. Note this means a
-      // completed:true response is delivered to exactly one poll request.
-      await RedisService.deleteKey(`${LATEST_FORM_PREFIX}:${transaction_id}`);
-      await RedisService.deleteKey(completionKey);
+      // Re-arm both keys with a short TTL instead of deleting them: the buyer
+      // and seller workbench sessions poll this endpoint with the same
+      // transaction_id, and each must observe the completion. Multi-form
+      // transactions still start clean because DynamicFormHandler calls
+      // POST /form/reset-completion before it begins polling.
+      await RedisService.setKey(
+        `${LATEST_FORM_PREFIX}:${transaction_id}`,
+        String(form_id),
+        CONSUMED_TTL_SECONDS
+      );
+      await RedisService.setKey(completionKey, completionData, CONSUMED_TTL_SECONDS);
 
       res.json({
         completed: true,
