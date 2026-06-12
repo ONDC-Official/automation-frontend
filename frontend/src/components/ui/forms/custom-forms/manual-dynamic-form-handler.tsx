@@ -122,26 +122,12 @@ export default function ManualDynamicFormHandler({
         checkCompletionRef.current = checkCompletion;
     }, [checkCompletion]);
 
-    const startPolling = useCallback(async () => {
+    const startPolling = useCallback(() => {
         if (isPollingRef.current || !transactionId) return;
         isPollingRef.current = true;
         pollCountRef.current = 0;
         setPollDisplay(0);
         setStatus("waiting");
-
-        // Clear any leftover completion from a previous form in this transaction
-        // so polling only reacts to THIS form's callback. Non-fatal on failure.
-        try {
-            await axios.post(`${import.meta.env.VITE_BACKEND_URL}/form/reset-completion`, null, {
-                params: { transaction_id: transactionId },
-                timeout: 5000,
-            });
-        } catch (resetError) {
-            console.warn(
-                "⚠️ [ManualDynamicForm] Could not reset completion state (continuing):",
-                resetError
-            );
-        }
 
         checkCompletionRef.current();
         pollingIntervalRef.current = setInterval(() => {
