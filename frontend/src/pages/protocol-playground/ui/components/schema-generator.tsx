@@ -190,7 +190,7 @@ export const SchemaGeneratorModal = ({
                                 read-only
                                 <span className="ml-2 font-normal text-gray-400">
                                     {validationsYaml
-                                        ? "· enriched with validation paths"
+                                        ? "· validations fetched"
                                         : "· no validations on this branch"}
                                 </span>
                             </label>
