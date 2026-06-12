@@ -32,7 +32,7 @@
         "axios": "^1.13.2",
         "genson-js": "^0.0.8",
         "highlight.js": "^11.11.1",
-        "json-to-yaml-ref": "^1.0.4",
+        "json-to-yaml-ref": "^1.0.5",
         "jsonpath": "^1.1.1",
         "jsonpath-plus": "^10.3.0",
         "leaflet": "^1.9.4",
