@@ -86,6 +86,7 @@ export function generateSchemasFromFiles(
     const pathsByApi = extractValidationPaths(validationsYaml);
 
     const entries: ApiSchemaEntry[] = [];
+    const covered = new Set<string>();
     for (const [api, { payloads, majorVersion }] of byApi) {
         if (payloads.length === 0) continue;
         const requestSchema = createCompoundSchema(payloads, { noRequired: true });
@@ -94,7 +95,19 @@ export function generateSchemasFromFiles(
             enrichSchemaWithPaths(requestSchema as JsonSchemaObject, validationPaths);
         }
         entries.push({ api, requestSchema, majorVersion });
+        covered.add(api);
     }
+
+    // Apis found only in the validations (no example payloads in any flow file)
+    // still get a path — their request schema is built purely from the JSON
+    // paths their validation tests reference.
+    for (const [api, validationPaths] of Object.entries(pathsByApi)) {
+        if (covered.has(api) || validationPaths.length === 0) continue;
+        const requestSchema: JsonSchemaObject = { type: "object", properties: {} };
+        enrichSchemaWithPaths(requestSchema, validationPaths);
+        entries.push({ api, requestSchema });
+    }
+
     entries.sort((a, b) => a.api.localeCompare(b.api));
 
     return buildOpenApiDocument(entries);
