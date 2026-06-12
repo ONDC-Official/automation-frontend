@@ -36,9 +36,11 @@ export default function DisplayFlow({
     // When the auto-opened input form belongs to an extra step, its trigger key is held here so
     // submission routes through triggerExtra (sends `trigger_extra`) instead of proceedFlow.
     const [activeInputExtraKey, setActiveInputExtraKey] = useState<string | undefined>(undefined);
-    // Signature of the step whose form is currently open, and of the last step we submitted.
-    // After a successful submit the backend may keep reporting that step as INPUT-REQUIRED for a
-    // few polls; we suppress re-opening it until the target becomes a different step (or none).
+    // `signature|status` of the step whose form is currently open, and of the last step we
+    // submitted. After a successful submit the backend may keep reporting that step in the same
+    // status for a few polls; we suppress re-opening it until the target changes — a different
+    // step, none, or the SAME step in a new status (e.g. a MANUAL_DYNAMIC_FORM step moving from
+    // INPUT-REQUIRED to WAITING-SUBMISSION must re-open so completion polling starts).
     const activeInputSigRef = useRef<string | undefined>(undefined);
     const submittedInputSigRef = useRef<string | undefined>(undefined);
 
@@ -78,8 +80,14 @@ export default function DisplayFlow({
 
     useEffect(() => {
         // Sequence steps (skip first — that's the flow's initial trigger) take priority over extras.
+        // MANUAL_DYNAMIC_FORM steps also auto-open on the counterparty side (WAITING-SUBMISSION):
+        // both sessions poll the same completion callback, and each clears its own step.
         const seqStep = mappedFlow?.sequence?.filter(
-            (s, index) => s.status === "INPUT-REQUIRED" && index !== 0
+            (s, index) =>
+                (s.status === "INPUT-REQUIRED" ||
+                    (s.status === "WAITING-SUBMISSION" &&
+                        s.input?.some((f) => f.type === "MANUAL_DYNAMIC_FORM"))) &&
+                index !== 0
         )?.[0];
         const extraStep = mappedFlow?.extraSteps?.find((s) => s.status === "INPUT-REQUIRED");
         const target = seqStep ?? extraStep;
@@ -98,8 +106,9 @@ export default function DisplayFlow({
         // actionId as the trigger key. Undefined => sequence step => proceedFlow.
         const extraKey = !seqStep && extraStep ? extraStep.actionId : undefined;
 
-        const sig = target ? stepSignature(target) : undefined;
-        // Same step we just submitted is still lagging on the backend — don't re-open it.
+        const sig = target ? `${stepSignature(target)}|${target.status}` : undefined;
+        // Same step in the same status we just submitted is still lagging on the backend —
+        // don't re-open it. A status change on the same step is a genuinely new target.
         if (sig && sig === submittedInputSigRef.current) return;
         // Target moved on (different step or none) — drop the suppression and proceed.
         submittedInputSigRef.current = undefined;
