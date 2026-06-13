@@ -82,7 +82,7 @@ export const MappingsSection: React.FC<MappingsSectionProps> = ({
             : DOMAIN_OPTIONS;
 
     const selectClasses =
-        "mt-1 block w-full pl-3 pr-10 py-2 bg-white border text-base border-gray-300 focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm rounded-md";
+        "mt-1 block w-full pl-3 pr-10 py-2 bg-white border text-base border-gray-300 focus:outline-hidden focus:ring-sky-500 focus:border-sky-500 sm:text-sm rounded-md";
 
     const renderEditForm = (mapping: Mapping) => (
         <div className="p-4 border rounded-lg bg-gray-50 space-y-4">
@@ -211,7 +211,7 @@ export const MappingsSection: React.FC<MappingsSectionProps> = ({
     );
 
     return (
-        <div className="bg-white shadow-sm rounded-xl p-6 sm:p-8">
+        <div className="bg-white shadow-xs rounded-xl p-6 sm:p-8">
             <h2 className="text-xl font-bold text-gray-900">Domain Mappings</h2>
             <p className="mt-1 text-sm text-gray-600">Link domains to your URIs and locations.</p>
 
@@ -228,7 +228,7 @@ export const MappingsSection: React.FC<MappingsSectionProps> = ({
                     >
                         <button
                             onClick={handleAddNew}
-                            className="w-full sm:w-auto flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-sky-600 hover:bg-sky-700"
+                            className="w-full sm:w-auto flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-xs text-white bg-sky-600 hover:bg-sky-700"
                         >
                             + Add Mapping
                         </button>
@@ -278,7 +278,7 @@ export const MappingsSection: React.FC<MappingsSectionProps> = ({
                                 </div>
                             </div>
                             {isExpanded && (
-                                <div className="px-5 py-4 bg-gray-50 border border-gray-100 rounded-b-lg shadow-sm text-sm text-gray-800 space-y-2 flex flex-col items-start">
+                                <div className="px-5 py-4 bg-gray-50 border border-gray-100 rounded-b-lg shadow-xs text-sm text-gray-800 space-y-2 flex flex-col items-start">
                                     <div>
                                         <span className="font-semibold text-gray-900">URI:</span>{" "}
                                         {m.uri}

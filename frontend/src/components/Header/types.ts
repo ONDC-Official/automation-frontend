@@ -1,29 +1,22 @@
-import { GAEvent } from "@utils/analytics";
+import { IGAEvent } from "@/types/analytics";
+import { ReactNode } from "react";
+import { IUser } from "@/types/user";
 
-export interface SubMenuItem {
+export interface IUserProfileMenu {
+    user: IUser;
+    onLogout: () => void;
+}
+
+export interface INavigationMenuNavLink {
+    to: string;
+    children: ReactNode;
+    onClick?: () => void;
+    closeDrawer?: boolean;
+}
+
+export interface INavLink {
     label: string;
-    href: string;
-}
-
-export interface NavLink {
-    label: string;
-    href: string;
-    selected: boolean;
-    subMenu?: SubMenuItem[];
-    analytics?: GAEvent;
-}
-
-export interface HeaderProps {
-    onSupportClick: () => void;
-}
-
-export interface UserDetails {
-    githubId: string;
-    participantId: string;
-    avatarUrl?: string;
-    username?: string;
-}
-
-export interface UserIconProps {
-    user: UserDetails;
+    href?: string;
+    subMenu?: { label: string; href: string }[];
+    analytics?: IGAEvent;
 }

@@ -16,7 +16,7 @@ const RunMetrics: React.FC<RunMetricsProps> = ({ data }) => {
 
     return (
         <div className="mt-6 rounded-2xl border border-sky-100 bg-white overflow-hidden">
-            <div className="px-5 py-4 bg-gradient-to-r from-sky-600 to-sky-500 flex items-center justify-between">
+            <div className="px-5 py-4 bg-linear-to-r from-sky-600 to-sky-500 flex items-center justify-between">
                 <div>
                     <h2 className="font-semibold text-white text-base leading-tight">
                         Run Metrics

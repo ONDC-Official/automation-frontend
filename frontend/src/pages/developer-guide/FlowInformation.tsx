@@ -340,7 +340,7 @@ const FlowInformation: FC<FlowInformationProps> = ({
                                                             Number(e.target.value)
                                                         )
                                                     }
-                                                    className="w-full pl-4 pr-9 py-2 rounded-lg text-sm border border-slate-200 bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-400/40 focus:border-sky-300 appearance-none shadow-sm"
+                                                    className="w-full pl-4 pr-9 py-2 rounded-lg text-sm border border-slate-200 bg-white text-slate-800 focus:outline-hidden focus:ring-2 focus:ring-sky-400/40 focus:border-sky-300 appearance-none shadow-xs"
                                                 >
                                                     {examples.map((ex, i) => (
                                                         <option key={i} value={i}>
@@ -366,7 +366,7 @@ const FlowInformation: FC<FlowInformationProps> = ({
                                             </div>
                                         </div>
                                     )}
-                                    <div className="w-full h-[700px] min-h-0 rounded-2xl overflow-hidden border border-slate-200 shadow-sm bg-white">
+                                    <div className="w-full h-[700px] min-h-0 rounded-2xl overflow-hidden border border-slate-200 shadow-xs bg-white">
                                         {showPreviewDetails ? (
                                             <FlowActionDetails
                                                 exampleValue={examplePayload as object}

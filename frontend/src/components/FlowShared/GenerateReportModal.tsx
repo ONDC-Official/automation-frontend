@@ -178,7 +178,7 @@ const GenerateReportModal = ({
                 <h2 className="text-xl font-semibold text-gray-900 mb-6">Generate Report</h2>
 
                 {completedReportableFlows.length > 0 ? (
-                    <div className="rounded-lg bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 p-5 mb-6 shadow-sm">
+                    <div className="rounded-lg bg-linear-to-br from-green-50 to-emerald-50 border border-green-200 p-5 mb-6 shadow-xs">
                         <div className="flex items-start gap-3">
                             <div className="shrink-0 mt-0.5">
                                 <div className="rounded-full bg-green-100 p-1.5">
@@ -198,9 +198,9 @@ const GenerateReportModal = ({
                                     {completedReportableFlows.map((flow) => (
                                         <div
                                             key={flow.id}
-                                            className="flex items-start gap-3 px-3 py-2.5 bg-white rounded-md border border-green-100 hover:border-green-200 hover:shadow-sm transition-all duration-150"
+                                            className="flex items-start gap-3 px-3 py-2.5 bg-white rounded-md border border-green-100 hover:border-green-200 hover:shadow-xs transition-all duration-150"
                                         >
-                                            <span className="text-sm font-medium text-gray-800 break-words min-w-0 flex-1">
+                                            <span className="text-sm font-medium text-gray-800 wrap-break-word min-w-0 flex-1">
                                                 {flow.title || flow.id}
                                             </span>
                                         </div>
@@ -210,7 +210,7 @@ const GenerateReportModal = ({
                         </div>
                     </div>
                 ) : (
-                    <div className="rounded-lg bg-gradient-to-br from-red-50 to-red-10 border border-red-200 p-5 mb-6 shadow-sm">
+                    <div className="rounded-lg bg-linear-to-br from-red-50 to-red-10 border border-red-200 p-5 mb-6 shadow-xs">
                         <div className="flex items-start gap-3">
                             <div className="shrink-0 mt-0.5">
                                 <div className="rounded-full bg-red-100 p-1.5">

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { CSSProperties, useEffect, useMemo, useRef, useState } from "react";
 import {
     FaCheckCircle,
     FaChevronDown,
@@ -139,7 +139,7 @@ export function ToolCallCard({ message }: ToolCallCardProps) {
                         <div className="text-[11px] uppercase tracking-wide text-gray-500 mb-1">
                             Arguments
                         </div>
-                        <pre className="font-mono text-[11px] whitespace-pre-wrap break-words bg-gray-50 border border-gray-200 rounded p-2">
+                        <pre className="font-mono text-[11px] whitespace-pre-wrap wrap-break-word bg-gray-50 border border-gray-200 rounded p-2">
                             {args}
                         </pre>
                     </div>
@@ -155,7 +155,7 @@ export function ToolCallCard({ message }: ToolCallCardProps) {
                             <div className="text-[11px] uppercase tracking-wide text-red-600 mb-1">
                                 Error
                             </div>
-                            <pre className="font-mono text-[11px] whitespace-pre-wrap break-words bg-red-50 border border-red-200 rounded p-2 text-red-800">
+                            <pre className="font-mono text-[11px] whitespace-pre-wrap wrap-break-word bg-red-50 border border-red-200 rounded p-2 text-red-800">
                                 {message.errorText ?? "(no message)"}
                             </pre>
                         </div>
@@ -179,7 +179,7 @@ export function ToolCallCard({ message }: ToolCallCardProps) {
                                                     .join("  ·  ")}
                                             </div>
                                         )}
-                                    <pre className="font-mono text-[11px] whitespace-pre-wrap break-words bg-gray-900 text-gray-100 border border-gray-800 rounded p-2 max-h-96 overflow-auto">
+                                    <pre className="font-mono text-[11px] whitespace-pre-wrap wrap-break-word bg-gray-900 text-gray-100 border border-gray-800 rounded p-2 max-h-96 overflow-auto">
                                         {codeContent.code}
                                     </pre>
                                 </div>
@@ -189,13 +189,13 @@ export function ToolCallCard({ message }: ToolCallCardProps) {
                                 <div className="bg-white border border-gray-200 rounded p-2 overflow-auto max-h-96">
                                     <JsonView
                                         value={parsedResult as object}
-                                        style={githubLightTheme}
+                                        style={githubLightTheme as CSSProperties}
                                         collapsed={2}
                                         displayDataTypes={false}
                                     />
                                 </div>
                             ) : (
-                                <pre className="font-mono text-[11px] whitespace-pre-wrap break-words bg-gray-50 border border-gray-200 rounded p-2 max-h-96 overflow-auto">
+                                <pre className="font-mono text-[11px] whitespace-pre-wrap wrap-break-word bg-gray-50 border border-gray-200 rounded p-2 max-h-96 overflow-auto">
                                     {message.resultText}
                                 </pre>
                             )}

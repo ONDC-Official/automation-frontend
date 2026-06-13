@@ -95,7 +95,7 @@ export function AISettingsPanel({ onClose }: AISettingsPanelProps) {
                     value={endpoint}
                     onChange={(e) => setEndpoint(e.target.value)}
                     placeholder={DEFAULT_AI_ENDPOINT}
-                    className="border border-gray-300 bg-white rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
+                    className="border border-gray-300 bg-white rounded px-3 py-2 text-sm focus:outline-hidden focus:ring-2 focus:ring-sky-500"
                 />
                 <span className="text-xs text-gray-500">
                     OpenAI-compatible base URL.{" "}
@@ -113,7 +113,7 @@ export function AISettingsPanel({ onClose }: AISettingsPanelProps) {
                             <select
                                 value={model}
                                 onChange={(e) => setModel(e.target.value)}
-                                className="w-full appearance-none border border-gray-300 bg-white rounded px-3 py-2 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
+                                className="w-full appearance-none border border-gray-300 bg-white rounded px-3 py-2 pr-8 text-sm focus:outline-hidden focus:ring-2 focus:ring-sky-500"
                             >
                                 {availableModels.map((m) => (
                                     <option key={m} value={m}>
@@ -128,7 +128,7 @@ export function AISettingsPanel({ onClose }: AISettingsPanelProps) {
                             value={model}
                             onChange={(e) => setModel(e.target.value)}
                             placeholder={DEFAULT_AI_MODEL}
-                            className="flex-1 border border-gray-300 bg-white rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
+                            className="flex-1 border border-gray-300 bg-white rounded px-3 py-2 text-sm focus:outline-hidden focus:ring-2 focus:ring-sky-500"
                         />
                     )}
                     <button

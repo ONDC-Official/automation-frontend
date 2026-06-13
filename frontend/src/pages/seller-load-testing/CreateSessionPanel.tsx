@@ -10,7 +10,7 @@ export const CreateSessionPanel = ({
     isLoading,
 }: CreateSessionPanelProps) => (
     <div className="rounded-2xl border border-sky-100 bg-white overflow-hidden">
-        <div className="px-5 py-4 bg-gradient-to-r from-sky-600 to-sky-500">
+        <div className="px-5 py-4 bg-linear-to-r from-sky-600 to-sky-500">
             <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center">

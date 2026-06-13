@@ -8,7 +8,7 @@ const DeveloperGuideOverview: FC = () => {
 
     return (
         <div className="min-h-full">
-            <header className="border-b border-sky-100 bg-gradient-to-br from-sky-50 via-white to-slate-50">
+            <header className="border-b border-sky-100 bg-linear-to-br from-sky-50 via-white to-slate-50">
                 <div className="px-6 md:px-10 py-10 md:py-12 max-w-3xl mt-[18px]">
                     <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-sky-100 text-sky-700 rounded-full text-xs font-semibold uppercase tracking-widest mb-5 border border-sky-200">
                         <FiCode size={11} aria-hidden />
@@ -27,7 +27,7 @@ const DeveloperGuideOverview: FC = () => {
 
             <div className="px-6 md:px-10 py-10 md:py-12">
                 <div className="flex items-center gap-3 mb-6">
-                    <div className="w-8 h-8 rounded-lg bg-sky-100 border border-sky-200 flex items-center justify-center flex-shrink-0">
+                    <div className="w-8 h-8 rounded-lg bg-sky-100 border border-sky-200 flex items-center justify-center shrink-0">
                         <FiBookOpen size={15} className="text-sky-600" aria-hidden />
                     </div>
                     <div>

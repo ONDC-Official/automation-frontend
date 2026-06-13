@@ -5,6 +5,7 @@ import { AddActionForm, DeleteConfirmationForm, EditActionForm } from "../ui/fro
 import { getFormValues } from "../utils/form-helper";
 import { StepGroup, getGroupSteps } from "../utils/step-group";
 import { MockPlaygroundConfigType } from "@ondc/automation-mock-runner";
+import type { JSX } from "react";
 
 interface ActionFormData {
     api?: string;
@@ -158,9 +159,7 @@ export const useModalHandlers = ({
         if (!currentAction) return;
 
         const getPreviousSteps = () => {
-            const currentIndex = steps.findIndex(
-                (step: StepConfig) => step.action_id === actionId
-            );
+            const currentIndex = steps.findIndex((step: StepConfig) => step.action_id === actionId);
             return steps.slice(0, currentIndex);
         };
 

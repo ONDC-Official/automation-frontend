@@ -113,7 +113,7 @@ export const ActionIdsButtons = ({
     }));
 
     return (
-        <div className="h-16 flex items-center px-4 bg-gradient-to-b from-gray-50 to-white border-b border-gray-200 overflow-x-auto">
+        <div className="h-16 flex items-center px-4 bg-linear-to-b from-gray-50 to-white border-b border-gray-200 overflow-x-auto">
             <div className="flex items-center gap-0 min-w-max">
                 {actionData.map((action, index) => {
                     const isActive = activeApi === action.id;
@@ -130,7 +130,7 @@ export const ActionIdsButtons = ({
 								`}
                             >
                                 {/* Step Circle */}
-                                <div className="relative flex-shrink-0">
+                                <div className="relative shrink-0">
                                     <div
                                         className={`
 											w-8 h-8 rounded-full flex items-center justify-center
@@ -145,7 +145,7 @@ export const ActionIdsButtons = ({
 										`}
                                     >
                                         {isCompleted ? (
-                                            <FiCheck className="w-4 h-4 stroke-[3]" />
+                                            <FiCheck className="w-4 h-4 stroke-3" />
                                         ) : (
                                             action.stepNumber
                                         )}
@@ -219,7 +219,7 @@ export const ActionIdsButtons = ({
 							hover:bg-sky-600 active:scale-95
 							transition-all duration-200 
 							font-semibold text-sm
-							shadow-sm hover:shadow-md
+							shadow-xs hover:shadow-md
 						"
                     >
                         <IoMdAdd size={18} />

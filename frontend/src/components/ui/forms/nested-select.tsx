@@ -194,7 +194,7 @@ const ItemCustomisationSelector = ({
                         return (
                             <div
                                 key={index}
-                                className="relative border p-4 rounded bg-white shadow space-y-4"
+                                className="relative border p-4 rounded bg-white shadow-sm space-y-4"
                             >
                                 {items.length > minItems && index >= minItems && (
                                     <div className="absolute top-[-10px] right-[-10px] bg-white">

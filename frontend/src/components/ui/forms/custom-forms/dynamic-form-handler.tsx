@@ -1,8 +1,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import axios from "axios";
 import { SubmitEventParams } from "../../../../types/flow-types";
-
-import jsonpath from "jsonpath";
+import { queryJsonPath } from "../../../../utils/jsonpath-query";
 import { FormFieldConfigType } from "../config-form/config-form";
 
 // ── Polling constants ──────────────────────────────────────────────────────────
@@ -55,7 +54,7 @@ export default function DynamicFormHandler({
 
         try {
             const url =
-                jsonpath.query({ reference_data: referenceData }, formConfig.reference)[0] || "";
+                queryJsonPath({ reference_data: referenceData }, formConfig.reference)[0] || "";
 
             return url as string;
         } catch (error) {

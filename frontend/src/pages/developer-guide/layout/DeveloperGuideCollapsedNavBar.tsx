@@ -20,7 +20,7 @@ const DeveloperGuideCollapsedNavBar: FC<DeveloperGuideCollapsedNavBarProps> = ({
 
     return (
         <div
-            className={`sticky top-0 z-30 flex items-center gap-3 h-14 min-h-14 px-4 md:px-6 border-b border-slate-200 bg-white shadow-sm ${className} mt-4`}
+            className={`sticky top-0 z-30 flex items-center gap-3 h-14 min-h-14 px-4 md:px-6 border-b border-slate-200 bg-white shadow-xs ${className} mt-4`}
         >
             <DeveloperGuideNavBackButton />
             {children ??

@@ -123,7 +123,7 @@ const ChangeRow: FC<{ entry: ChangeEntry }> = ({ entry }) => {
                 }`}
             >
                 {/* kind chip */}
-                <span className={`mt-0.5 flex-shrink-0 inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold border ${cfg.bg} ${cfg.color} ${cfg.border}`}>
+                <span className={`mt-0.5 shrink-0 inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold border ${cfg.bg} ${cfg.color} ${cfg.border}`}>
                     <Icon size={9} />
                     {cfg.label}
                 </span>
@@ -138,7 +138,7 @@ const ChangeRow: FC<{ entry: ChangeEntry }> = ({ entry }) => {
                 </div>
 
                 {hasDiff && (
-                    <span className="flex-shrink-0 mt-1 text-slate-400">
+                    <span className="shrink-0 mt-1 text-slate-400">
                         {open ? <FiChevronDown size={14} /> : <FiChevronRight size={14} />}
                     </span>
                 )}
@@ -249,7 +249,7 @@ const ChangelogView: FC<ChangelogViewProps> = ({ changelogs }) => {
                             )}
                         </div>
 
-                        <span className="flex-shrink-0 text-xs font-semibold text-slate-600 bg-slate-100 border border-slate-200 rounded-lg px-3 py-1.5">
+                        <span className="shrink-0 text-xs font-semibold text-slate-600 bg-slate-100 border border-slate-200 rounded-lg px-3 py-1.5">
                             {log.totalChanges} changes total
                         </span>
                     </div>
@@ -260,7 +260,7 @@ const ChangelogView: FC<ChangelogViewProps> = ({ changelogs }) => {
                             {log.summary.sections.map((sec) => (
                                 <span
                                     key={sec.section}
-                                    className="text-xs text-slate-600 bg-white border border-slate-200 shadow-sm rounded-lg px-3 py-1.5"
+                                    className="text-xs text-slate-600 bg-white border border-slate-200 shadow-xs rounded-lg px-3 py-1.5"
                                 >
                                     {sec.label}{" "}
                                     <strong className="text-slate-800">{sec.count}</strong>

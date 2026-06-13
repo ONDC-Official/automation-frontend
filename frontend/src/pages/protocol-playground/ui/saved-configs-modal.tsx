@@ -82,7 +82,7 @@ const FlowRow: React.FC<FlowRowProps> = ({ config, onLoad, onDelete }) => {
             <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                 <button
                     onClick={() => onLoad(config)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 bg-sky-500 hover:bg-sky-600 text-white text-xs font-medium rounded-md transition-colors shadow-sm"
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-sky-500 hover:bg-sky-600 text-white text-xs font-medium rounded-md transition-colors shadow-xs"
                     title="Load configuration"
                 >
                     Load
@@ -185,7 +185,7 @@ const DomainFolder: React.FC<DomainFolderProps> = ({
     const isOpen = openDomains.has(node.domain);
 
     return (
-        <div className="rounded-xl border border-gray-100 bg-white shadow-sm overflow-hidden">
+        <div className="rounded-xl border border-gray-100 bg-white shadow-xs overflow-hidden">
             {/* Domain header */}
             <button
                 onClick={() => onToggleDomain(node.domain)}
@@ -349,7 +349,7 @@ export const SavedConfigsModal: React.FC<SavedConfigsModalProps> = ({
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs">
             <div className="relative w-full max-w-2xl mx-4 bg-white rounded-2xl shadow-2xl flex flex-col max-h-[80vh] overflow-hidden">
                 {/* ── Header ── */}
                 <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
@@ -382,7 +382,7 @@ export const SavedConfigsModal: React.FC<SavedConfigsModalProps> = ({
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                             placeholder="Filter by domain, version, or flow…"
-                            className="w-full text-sm px-3 py-2 rounded-lg border border-gray-200 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-sky-300 focus:border-sky-400 placeholder:text-gray-400 transition"
+                            className="w-full text-sm px-3 py-2 rounded-lg border border-gray-200 bg-gray-50 focus:outline-hidden focus:ring-2 focus:ring-sky-300 focus:border-sky-400 placeholder:text-gray-400 transition"
                         />
                     </div>
                 )}

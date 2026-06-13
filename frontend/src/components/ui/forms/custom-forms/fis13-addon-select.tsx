@@ -67,7 +67,7 @@ export default function FIS13AddonSelect({
 
     return (
         <div className="max-w-2xl mx-auto">
-            <div className="space-y-4 bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
+            <div className="space-y-4 bg-white border border-gray-200 rounded-xl p-6 shadow-xs">
                 <label className="mb-1 font-semibold block text-gray-700">
                     Select Add-ons (Optional)
                 </label>
@@ -136,7 +136,7 @@ export default function FIS13AddonSelect({
                                                     )
                                                 }
                                                 onClick={(e) => e.stopPropagation()}
-                                                className="w-16 border rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                className="w-16 border rounded px-2 py-1 text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500"
                                             />
                                             <span className="text-xs text-gray-400">
                                                 (max: {maxCount})

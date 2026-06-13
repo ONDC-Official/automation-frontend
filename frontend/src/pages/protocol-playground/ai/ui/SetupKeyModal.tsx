@@ -64,7 +64,7 @@ export function SetupKeyModal({ isOpen, onClose, onSuccess }: SetupKeyModalProps
         <Popup isOpen={isOpen} onClose={onClose}>
             <form onSubmit={handleSubmit} className="flex flex-col gap-4 pr-8">
                 <div className="flex items-start gap-3">
-                    <span className="inline-flex items-center justify-center h-9 w-9 rounded-md bg-gradient-to-br from-sky-500 to-indigo-600 text-white shadow-sm shrink-0">
+                    <span className="inline-flex items-center justify-center h-9 w-9 rounded-md bg-linear-to-br from-sky-500 to-indigo-600 text-white shadow-xs shrink-0">
                         <PiShieldStarBold className="h-5 w-5" />
                     </span>
                     <div>
@@ -85,7 +85,7 @@ export function SetupKeyModal({ isOpen, onClose, onSuccess }: SetupKeyModalProps
                         spellCheck={false}
                         value={apiKey}
                         onChange={(e) => setApiKey(e.target.value)}
-                        className="border border-gray-300 bg-white rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
+                        className="border border-gray-300 bg-white rounded px-3 py-2 text-sm focus:outline-hidden focus:ring-2 focus:ring-sky-500"
                         placeholder="sk-..."
                     />
                 </label>
@@ -96,7 +96,7 @@ export function SetupKeyModal({ isOpen, onClose, onSuccess }: SetupKeyModalProps
                         autoComplete="new-password"
                         value={passphrase}
                         onChange={(e) => setPassphrase(e.target.value)}
-                        className="border border-gray-300 bg-white rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
+                        className="border border-gray-300 bg-white rounded px-3 py-2 text-sm focus:outline-hidden focus:ring-2 focus:ring-sky-500"
                         placeholder="at least 8 characters"
                     />
                 </label>
@@ -107,7 +107,7 @@ export function SetupKeyModal({ isOpen, onClose, onSuccess }: SetupKeyModalProps
                         autoComplete="new-password"
                         value={confirm}
                         onChange={(e) => setConfirm(e.target.value)}
-                        className="border border-gray-300 bg-white rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
+                        className="border border-gray-300 bg-white rounded px-3 py-2 text-sm focus:outline-hidden focus:ring-2 focus:ring-sky-500"
                     />
                 </label>
                 {error && <p className="text-sm text-red-600">{error}</p>}

@@ -133,7 +133,7 @@ const FlowActionDetails: FC<FlowActionDetailsProps> = ({
     );
 
     const root = (
-        <div className="flex flex-col h-full rounded-xl border border-slate-200 bg-white overflow-hidden shadow-sm">
+        <div className="flex flex-col h-full rounded-xl border border-slate-200 bg-white overflow-hidden shadow-xs">
             <div className="flex-1 flex min-h-0">
                 <div className="w-full flex flex-col min-w-0 border-r border-slate-200">
                     <div className="flex-1 min-h-0 overflow-auto p-4 relative group">
@@ -205,11 +205,11 @@ const FlowActionDetails: FC<FlowActionDetailsProps> = ({
     if (expanded) {
         return (
             <div className="fixed inset-0 z-50 bg-slate-100 flex flex-col">
-                <div className="flex justify-end gap-2 px-4 py-2.5 border-b border-slate-200 bg-white shadow-sm">
+                <div className="flex justify-end gap-2 px-4 py-2.5 border-b border-slate-200 bg-white shadow-xs">
                     <button
                         type="button"
                         onClick={() => setExpanded(false)}
-                        className="px-4 py-2 text-sm font-medium text-slate-700 bg-slate-200 rounded-lg hover:bg-slate-300 transition-colors focus:outline-none focus:ring-2 focus:ring-sky-400 focus:ring-offset-2"
+                        className="px-4 py-2 text-sm font-medium text-slate-700 bg-slate-200 rounded-lg hover:bg-slate-300 transition-colors focus:outline-hidden focus:ring-2 focus:ring-sky-400 focus:ring-offset-2"
                     >
                         Exit fullscreen
                     </button>

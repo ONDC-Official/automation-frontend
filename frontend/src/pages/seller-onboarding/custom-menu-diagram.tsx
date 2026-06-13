@@ -141,7 +141,7 @@ const CustomMenuDiagram: React.FC = () => {
                 </div>
 
                 {/* Key Points */}
-                <Card className="mt-6 bg-gradient-to-r from-blue-50 to-purple-50">
+                <Card className="mt-6 bg-linear-to-r from-blue-50 to-purple-50">
                     <h4 className="font-semibold mb-2">Key Points:</h4>
                     <ul className="space-y-2 text-sm">
                         <li className="flex items-start">

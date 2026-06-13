@@ -21,7 +21,7 @@ const ViewOnlyPlaygroundPage = () => {
 
     if (!config) {
         return (
-            <div className="min-h-screen bg-gradient-to-b from-white via-sky-50/30 to-white flex items-center justify-center p-8">
+            <div className="min-h-screen bg-linear-to-b from-white via-sky-50/30 to-white flex items-center justify-center p-8">
                 <div className="text-center">
                     <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-100 rounded-2xl mb-4">
                         <FiPackage className="w-8 h-8 text-gray-400" />
@@ -38,9 +38,9 @@ const ViewOnlyPlaygroundPage = () => {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-white via-sky-50/30 to-white">
+        <div className="min-h-screen bg-linear-to-b from-white via-sky-50/30 to-white">
             {/* Header */}
-            <header className="bg-white border-b border-gray-200 sticky top-0 z-10 shadow-sm">
+            <header className="bg-white border-b border-gray-200 sticky top-0 z-10 shadow-xs">
                 <div className="max-w-7xl mx-auto px-6 py-4">
                     <div className="flex items-center justify-center gap-3">
                         <div className="flex items-center justify-center w-10 h-10 bg-sky-500 rounded-xl shadow-lg shadow-sky-500/20">

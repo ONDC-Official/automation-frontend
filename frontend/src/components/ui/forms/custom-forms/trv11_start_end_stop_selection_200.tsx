@@ -186,7 +186,7 @@ export default function Metro200StartEndStopSelection({ submitEvent }: IMetroEnd
     };
 
     const inputStyle =
-        "border rounded p-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white";
+        "border rounded p-2 w-full focus:outline-hidden focus:ring-2 focus:ring-blue-500 bg-white";
     const labelStyle = "mb-1 font-semibold";
     const fieldWrapperStyle = "flex flex-col mb-2";
 
@@ -217,7 +217,7 @@ export default function Metro200StartEndStopSelection({ submitEvent }: IMetroEnd
                         </button>
                     </div>
                     <textarea
-                        className="w-full h-32 p-3 border border-blue-300 rounded-lg text-xs font-mono bg-white focus:ring-2 focus:ring-blue-400 outline-none"
+                        className="w-full h-32 p-3 border border-blue-300 rounded-lg text-xs font-mono bg-white focus:ring-2 focus:ring-blue-400 outline-hidden"
                         placeholder="Paste master on_search JSON here..."
                         value={jsonPayload}
                         onChange={(e) => setJsonPayload(e.target.value)}
@@ -241,7 +241,7 @@ export default function Metro200StartEndStopSelection({ submitEvent }: IMetroEnd
                     </div>
                 </div>
             ) : (
-                <div className="flex items-center justify-between border border-blue-100 bg-blue-50/40 p-3 rounded-xl shadow-sm mb-4">
+                <div className="flex items-center justify-between border border-blue-100 bg-blue-50/40 p-3 rounded-xl shadow-xs mb-4">
                     <span className="text-sm font-semibold text-blue-900">
                         Paste on_search payload (optional)
                     </span>
@@ -270,7 +270,7 @@ export default function Metro200StartEndStopSelection({ submitEvent }: IMetroEnd
                 </div>
             )}
 
-            <div className="border border-gray-200 bg-white p-4 rounded-xl shadow-sm space-y-4">
+            <div className="border border-gray-200 bg-white p-4 rounded-xl shadow-xs space-y-4">
                 {/* City Code Input */}
                 <div className={fieldWrapperStyle}>
                     <label className={labelStyle}>

@@ -1,18 +1,51 @@
-import { GAEvent } from "../../utils/analytics";
+import { FC, SVGProps } from "react";
 
-export interface Feature {
+export interface IQuickStep {
+    number: string;
+    title: string;
+    subtitle: string;
+    href: string;
+    external?: boolean;
+}
+
+export interface IPathLink {
+    label: string;
+    href: string;
+    external?: boolean;
+}
+
+export interface IPathCard {
+    label: string;
     title: string;
     subtitle: string;
     description: string;
-    path: string;
-    icon: JSX.Element;
-    analytics?: GAEvent;
+    links: IPathLink[];
 }
 
-export type DomainItem = {
-    id?: string; // ideally unique from your data source
-    key: string; // display label, may repeat!
-    version: { key: string; usecase: string[] }[];
-};
+export interface IUsageStat {
+    value: string;
+    title: string;
+    subtitle: string;
+}
 
-export type DomainResponse = { domain: DomainItem[] };
+export interface IUsageSectionProps {
+    eyebrow: string;
+    title: string;
+    description: string;
+    stats: IUsageStat[];
+}
+
+export interface ISupportCard {
+    title: string;
+    description: string;
+    linkLabel: string;
+    href: string;
+    Icon: FC<SVGProps<SVGSVGElement>>;
+    external?: boolean;
+}
+
+export interface ISupportInfoItem {
+    label: string;
+    title: string;
+    subtitle: string;
+}

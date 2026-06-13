@@ -261,7 +261,7 @@ export default function SearchAccidentalFis13({
                         <button
                             type="button"
                             onClick={() => setIsPayloadEditorActive(true)}
-                            className="flex items-center gap-2 py-2.5 px-5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all font-medium shadow-sm"
+                            className="flex items-center gap-2 py-2.5 px-5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all font-medium shadow-xs"
                         >
                             <FaRegPaste size={18} />
                             <span>Paste Payload</span>

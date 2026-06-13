@@ -115,7 +115,7 @@ export default function FIS12Select({
     };
 
     return (
-        <div className="p-4 space-y-6 bg-white rounded-lg shadow-sm border border-gray-100">
+        <div className="p-4 space-y-6 bg-white rounded-lg shadow-xs border border-gray-100">
             <div className="flex justify-between items-center bg-gray-50 p-4 rounded-lg">
                 <div>
                     <p className="text-sm text-gray-500">
@@ -125,7 +125,7 @@ export default function FIS12Select({
                 <button
                     type="button"
                     onClick={() => setIsPayloadEditorActive(true)}
-                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-all font-medium shadow-sm"
+                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-all font-medium shadow-xs"
                 >
                     <FaRegPaste size={16} />
                     {extractedProviders.length > 0 ? "Edit Payload" : "Paste Payload"}
@@ -147,7 +147,7 @@ export default function FIS12Select({
                                 Provider
                             </label>
                             <select
-                                className="w-full border border-blue-200 rounded-md p-2 focus:ring-2 focus:ring-blue-500 outline-none bg-white font-medium"
+                                className="w-full border border-blue-200 rounded-md p-2 focus:ring-2 focus:ring-blue-500 outline-hidden bg-white font-medium"
                                 onChange={(e) => {
                                     const provider = extractedProviders.find(
                                         (p) => p.id === e.target.value
@@ -175,7 +175,7 @@ export default function FIS12Select({
                                         Select Item
                                     </label>
                                     <select
-                                        className="w-full border border-gray-200 rounded-md p-2 focus:ring-2 focus:ring-blue-500 outline-none bg-white font-medium"
+                                        className="w-full border border-gray-200 rounded-md p-2 focus:ring-2 focus:ring-blue-500 outline-hidden bg-white font-medium"
                                         onChange={(e) => {
                                             const item = selectedProvider.items?.find(
                                                 (i) => i.id === e.target.value

@@ -178,7 +178,7 @@ export default function InsuranceSelect({
                     <button
                         type="button"
                         onClick={() => setIsPayloadEditorActive(true)}
-                        className="p-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 shadow-sm"
+                        className="p-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 shadow-xs"
                     >
                         <FaRegPaste size={18} />
                         <span className="text-sm font-medium">Paste on_search Payload</span>
@@ -200,7 +200,7 @@ export default function InsuranceSelect({
             {catalog && (
                 <form
                     onSubmit={handleSubmit(onSubmit)}
-                    className="space-y-6 bg-white border border-gray-200 rounded-xl p-6 shadow-sm"
+                    className="space-y-6 bg-white border border-gray-200 rounded-xl p-6 shadow-xs"
                 >
                     {/* Provider Info */}
                     <div className="bg-blue-50 p-3 rounded-lg border border-blue-100">
@@ -342,7 +342,7 @@ export default function InsuranceSelect({
                                                             )
                                                         }
                                                         onClick={(e) => e.stopPropagation()}
-                                                        className="w-16 border rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                        className="w-16 border rounded px-2 py-1 text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500"
                                                     />
                                                     <span className="text-xs text-gray-400">
                                                         (max: {maxCount})

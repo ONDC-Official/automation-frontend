@@ -2,7 +2,7 @@ import React from "react";
 
 const ToolsHero: React.FC = () => {
     return (
-        <section className="relative h-60 rounded-md flex flex-col justify-center items-center py-6 px-4 bg-gradient-to-r from-sky-900 via-sky-700 to-sky-600 text-white animate-gradient-bg overflow-hidden">
+        <section className="relative h-60 rounded-md flex flex-col justify-center items-center py-6 px-4 bg-linear-to-r from-sky-900 via-sky-700 to-sky-600 text-white animate-gradient-bg overflow-hidden">
             <div className="absolute inset-0 pointer-events-none grid grid-cols-6 gap-2">
                 {[...Array(30)].map((_, index) => (
                     <div

@@ -38,7 +38,7 @@ const RawTableCard: FC<{ row: RawTableRow }> = ({ row }) => {
     const hasErrorCode = row.errorCode.trim() !== "";
 
     return (
-        <div className="rounded-xl border border-sky-100 bg-white shadow-sm overflow-hidden">
+        <div className="rounded-xl border border-sky-100 bg-white shadow-xs overflow-hidden">
             {/* Header */}
             <div className="flex items-start justify-between gap-2 px-4 py-2.5 bg-sky-50/60 border-b border-sky-100">
                 <div className="flex flex-col gap-0.5 min-w-0">
@@ -140,7 +140,7 @@ const ValidationsSection: FC<ValidationsSectionProps> = ({ rawTableRows, selecte
                         placeholder="Filter rules by name, path or description…"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full px-3 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500/30 focus:border-sky-400 transition-shadow"
+                        className="w-full px-3 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-slate-800 placeholder-slate-400 focus:outline-hidden focus:ring-2 focus:ring-sky-500/30 focus:border-sky-400 transition-shadow"
                         aria-label="Filter validation rules"
                     />
                     {searchQuery.trim() && (

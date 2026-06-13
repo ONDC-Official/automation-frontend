@@ -100,7 +100,7 @@ export function ExecutionResults({ results }: ExecutionResultsProps) {
                 return (
                     <div
                         key={index}
-                        className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden"
+                        className="bg-white rounded-lg border border-gray-200 shadow-xs overflow-hidden"
                     >
                         {/* Header */}
                         <div
@@ -109,9 +109,9 @@ export function ExecutionResults({ results }: ExecutionResultsProps) {
                         >
                             <div className="flex items-center gap-3">
                                 {result.success ? (
-                                    <IoCheckmarkCircle className="text-green-500 text-xl flex-shrink-0" />
+                                    <IoCheckmarkCircle className="text-green-500 text-xl shrink-0" />
                                 ) : (
-                                    <IoCloseCircle className="text-red-500 text-xl flex-shrink-0" />
+                                    <IoCloseCircle className="text-red-500 text-xl shrink-0" />
                                 )}
                                 <div>
                                     <div className="flex items-center gap-2">
@@ -172,7 +172,7 @@ export function ExecutionResults({ results }: ExecutionResultsProps) {
                                         </button>
                                         {sections.result && (
                                             <div className="bg-gray-900 p-3 max-h-96 overflow-auto">
-                                                <pre className="text-xs text-green-400 font-mono whitespace-pre-wrap break-words">
+                                                <pre className="text-xs text-green-400 font-mono whitespace-pre-wrap wrap-break-word">
                                                     {JSON.stringify(result.result, null, 2)}
                                                 </pre>
                                             </div>
@@ -206,7 +206,7 @@ export function ExecutionResults({ results }: ExecutionResultsProps) {
                                                         <span className="text-red-400 font-semibold">
                                                             Message:
                                                         </span>
-                                                        <p className="text-red-300 mt-1 font-mono break-words">
+                                                        <p className="text-red-300 mt-1 font-mono wrap-break-word">
                                                             {result.error.message}
                                                         </p>
                                                     </div>
@@ -215,7 +215,7 @@ export function ExecutionResults({ results }: ExecutionResultsProps) {
                                                             <span className="text-red-400 font-semibold">
                                                                 Stack Trace:
                                                             </span>
-                                                            <pre className="text-gray-400 mt-1 font-mono whitespace-pre-wrap break-words text-xs">
+                                                            <pre className="text-gray-400 mt-1 font-mono whitespace-pre-wrap wrap-break-word text-xs">
                                                                 {result.error.stack}
                                                             </pre>
                                                         </div>
@@ -253,10 +253,10 @@ export function ExecutionResults({ results }: ExecutionResultsProps) {
                                                             key={logIndex}
                                                             className="flex items-start gap-2 text-xs font-mono"
                                                         >
-                                                            <span className="text-gray-500 flex-shrink-0">
+                                                            <span className="text-gray-500 shrink-0">
                                                                 {formatLogTimestamp(log.timestamp)}
                                                             </span>
-                                                            <span className="flex-shrink-0 mt-0.5">
+                                                            <span className="shrink-0 mt-0.5">
                                                                 {getLogIcon(log.type)}
                                                             </span>
                                                             <span
@@ -309,7 +309,7 @@ export function ExecutionResults({ results }: ExecutionResultsProps) {
                                                                         key={i}
                                                                         className="text-xs text-red-600 flex items-start gap-1.5"
                                                                     >
-                                                                        <IoCloseCircle className="flex-shrink-0 mt-0.5" />
+                                                                        <IoCloseCircle className="shrink-0 mt-0.5" />
                                                                         <span>{error}</span>
                                                                     </li>
                                                                 )
@@ -329,7 +329,7 @@ export function ExecutionResults({ results }: ExecutionResultsProps) {
                                                                         key={i}
                                                                         className="text-xs text-yellow-600 flex items-start gap-1.5"
                                                                     >
-                                                                        <IoWarning className="flex-shrink-0 mt-0.5" />
+                                                                        <IoWarning className="shrink-0 mt-0.5" />
                                                                         <span>{warning}</span>
                                                                     </li>
                                                                 )

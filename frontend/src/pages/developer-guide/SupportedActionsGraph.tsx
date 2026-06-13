@@ -770,19 +770,19 @@ const SupportedActionsGraph: FC<SupportedActionsGraphProps> = ({ supportedAction
 
     return (
         <GraphCtx.Provider value={ctxValue}>
-            <div className="w-full rounded-2xl border border-slate-200 overflow-hidden shadow-sm bg-white">
+            <div className="w-full rounded-2xl border border-slate-200 overflow-hidden shadow-xs bg-white">
                 {/* ── Legend bar ──────────────────────────────────────── */}
-                <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 px-4 py-2.5 border-b border-slate-100 bg-gradient-to-r from-slate-50/80 to-white text-xs text-slate-600">
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 px-4 py-2.5 border-b border-slate-100 bg-linear-to-r from-slate-50/80 to-white text-xs text-slate-600">
                     <span className="flex items-center gap-1.5">
-                        <span className="w-2.5 h-2.5 rounded-sm bg-emerald-400 inline-block" />
+                        <span className="w-2.5 h-2.5 rounded-xs bg-emerald-400 inline-block" />
                         <span className="font-medium text-slate-700">Entry</span>
                     </span>
                     <span className="flex items-center gap-1.5">
-                        <span className="w-2.5 h-2.5 rounded-sm bg-sky-300 inline-block" />
+                        <span className="w-2.5 h-2.5 rounded-xs bg-sky-300 inline-block" />
                         <span className="font-medium text-slate-700">Request</span>
                     </span>
                     <span className="flex items-center gap-1.5">
-                        <span className="w-2.5 h-2.5 rounded-sm bg-indigo-400 inline-block" />
+                        <span className="w-2.5 h-2.5 rounded-xs bg-indigo-400 inline-block" />
                         <span className="font-medium text-slate-700">Response</span>
                     </span>
                     <span className="h-3.5 w-px bg-slate-200 mx-0.5 hidden sm:block" />

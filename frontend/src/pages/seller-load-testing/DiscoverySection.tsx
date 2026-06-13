@@ -27,7 +27,7 @@ const DiscoverySection: React.FC<DiscoverySectionProps> = ({
 
     return (
         <div className="mt-6 rounded-2xl border border-sky-100 bg-white overflow-hidden">
-            <div className="px-5 py-4 bg-gradient-to-r from-sky-600 to-sky-500 flex items-center justify-between">
+            <div className="px-5 py-4 bg-linear-to-r from-sky-600 to-sky-500 flex items-center justify-between">
                 <div>
                     <h2 className="font-semibold text-white text-base leading-tight">Discovery</h2>
                     <p className="text-sky-200 text-xs mt-0.5">
@@ -70,7 +70,7 @@ const DiscoverySection: React.FC<DiscoverySectionProps> = ({
                         <textarea
                             value={editedJson}
                             onChange={(e) => handleEditedJsonChange(e.target.value)}
-                            className="w-full h-80 bg-gray-900 text-green-400 font-mono text-xs p-4 focus:outline-none resize-none"
+                            className="w-full h-80 bg-gray-900 text-green-400 font-mono text-xs p-4 focus:outline-hidden resize-none"
                             spellCheck={false}
                         />
                     </div>

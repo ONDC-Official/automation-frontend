@@ -33,7 +33,7 @@ function DiffViewer({ rows }: { rows: DiffRow[] }) {
             {rows.map((row, idx) => (
                 <div
                     key={idx}
-                    className={`flex items-start gap-2 px-2 py-[1px] ${TONE_BY_OP[row.op]}`}
+                    className={`flex items-start gap-2 px-2 py-px ${TONE_BY_OP[row.op]}`}
                 >
                     <span className="w-7 text-right text-gray-400 select-none shrink-0">
                         {row.oldNum ?? ""}
@@ -42,7 +42,7 @@ function DiffViewer({ rows }: { rows: DiffRow[] }) {
                         {row.newNum ?? ""}
                     </span>
                     <span className="w-3 select-none shrink-0">{SIGN_BY_OP[row.op]}</span>
-                    <pre className="whitespace-pre-wrap break-words flex-1 m-0">
+                    <pre className="whitespace-pre-wrap wrap-break-word flex-1 m-0">
                         {row.text || " "}
                     </pre>
                 </div>
@@ -95,7 +95,7 @@ export function ProposeEditModal() {
         <Popup isOpen={true} onClose={close}>
             <div className="flex flex-col gap-3 text-sm">
                 <div className="flex items-center gap-2 pr-12">
-                    <span className="inline-flex items-center justify-center h-7 w-7 rounded-md bg-gradient-to-br from-amber-400 to-amber-600 text-white shrink-0">
+                    <span className="inline-flex items-center justify-center h-7 w-7 rounded-md bg-linear-to-br from-amber-400 to-amber-600 text-white shrink-0">
                         <PiShieldStarBold className="h-4 w-4" />
                     </span>
                     <div className="flex flex-col leading-tight min-w-0">

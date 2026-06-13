@@ -25,7 +25,7 @@ export const RawConfigEditorModal = ({
     };
 
     return (
-        <div className="fixed inset-0 z-[60] bg-black/70">
+        <div className="fixed inset-0 z-60 bg-black/70">
             <div className="h-full w-full bg-white flex flex-col">
                 <div className="flex items-center justify-between px-4 py-3 border-b">
                     <h2 className="text-lg font-semibold">Edit Raw Configuration JSON</h2>

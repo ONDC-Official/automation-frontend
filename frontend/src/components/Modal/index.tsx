@@ -14,11 +14,11 @@ const Modal = ({ isOpen, onClose, children, className = "", fullWidth = false }:
 
     return (
         <div
-            className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 backdrop-blur-sm z-50"
+            className="fixed inset-0 flex items-center justify-center bg-black/40 backdrop-blur-xs z-50"
             onClick={onClose} // Close modal when clicking outside the content
         >
             <div
-                className={`bg-white rounded-lg shadow-lg p-6 w-full ${
+                className={`bg-surface-elevated text-text-primary rounded-lg shadow-lg p-6 w-full ${
                     fullWidth ? "max-w-[96vw]" : "max-w-md"
                 } ${className}`}
                 onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside content

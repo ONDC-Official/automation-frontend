@@ -17,7 +17,7 @@ const ActionOverview: FC<ActionOverviewProps> = ({ step, actionId }) => {
     const isResponse = !!step.responseFor;
 
     return (
-        <div className="rounded-2xl border border-slate-200 bg-white overflow-hidden shadow-sm">
+        <div className="rounded-2xl border border-slate-200 bg-white overflow-hidden shadow-xs">
             {/* Header strip */}
             <div className="flex items-center gap-3 px-6 py-4 bg-sky-50 border-slate-100">
                 <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-sky-100 text-sky-600 shrink-0">

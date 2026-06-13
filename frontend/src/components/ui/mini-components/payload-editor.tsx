@@ -55,8 +55,8 @@ const PayloadEditor = ({ onAdd, onClose }: PayloadEditorProps) => {
     }
 
     return ReactDOM.createPortal(
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-            <div className="bg-[#f7f7f7] bg-white rounded-2xl shadow-lg p-6 w-full max-w-3xl">
+        <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
+            <div className="bg-n-0 rounded-2xl shadow-lg p-6 w-full max-w-3xl">
                 {/* Back button above */}
                 {onClose && (
                     <button

@@ -1,5 +1,5 @@
 import { useContext, useState } from "react";
-import jsonpath from "jsonpath";
+import { queryJsonPath } from "../../../utils/jsonpath-query";
 import { inputClass } from "../../../components/ui/forms/inputClass";
 // import { MockPlaygroundConfigType } from "../mock-engine/types";
 import { FaExclamationTriangle, FaPlus } from "react-icons/fa";
@@ -319,7 +319,7 @@ export default function SessionDataTab() {
 
         try {
             if (!finalPath.startsWith("EVAL#"))
-                jsonpath.query(payloadFromTranscationHistory(selectedCall), finalPath);
+                queryJsonPath(payloadFromTranscationHistory(selectedCall), finalPath);
         } catch (err) {
             setError("Invalid JSONPath format");
             console.error("❌ JSONPath validation failed:", err);
@@ -429,7 +429,7 @@ export default function SessionDataTab() {
             {isViewActive && (
                 <JsonPathOutputPopup
                     jsonPath={viewPath}
-                    output={jsonpath.query(payloadFromTranscationHistory(selectedCall), viewPath)}
+                    output={queryJsonPath(payloadFromTranscationHistory(selectedCall), viewPath)}
                     onClose={() => setIsViewActive(false)}
                 />
             )}
@@ -496,7 +496,7 @@ export default function SessionDataTab() {
                                     value={alias}
                                     onChange={(e) => setAlias(e.target.value)}
                                     placeholder="Enter alias (e.g. userInfo)"
-                                    className="px-3 py-2 rounded bg-gray-900 text-white border border-gray-700 focus:border-sky-500 outline-none"
+                                    className="px-3 py-2 rounded bg-gray-900 text-white border border-gray-700 focus:border-sky-500 outline-hidden"
                                 />
                                 :
                                 <input
@@ -504,7 +504,7 @@ export default function SessionDataTab() {
                                     value={path}
                                     onChange={(e) => setPath(e.target.value)}
                                     placeholder="Enter JSON path (e.g. $.context.city)"
-                                    className="px-3 w-full py-2 rounded bg-gray-900 text-white border border-gray-700 focus:border-sky-500 outline-none"
+                                    className="px-3 w-full py-2 rounded bg-gray-900 text-white border border-gray-700 focus:border-sky-500 outline-hidden"
                                 />
                             </div>
                             {error && <p className="text-red-400 text-sm">{error}</p>}

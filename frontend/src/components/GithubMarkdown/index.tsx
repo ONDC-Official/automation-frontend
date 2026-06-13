@@ -46,7 +46,7 @@ const PreBlock: FC<{ children?: React.ReactNode }> = ({ children }) => {
     };
 
     return (
-        <div className="relative my-4 rounded-lg overflow-hidden border border-slate-700 shadow-sm">
+        <div className="relative my-4 rounded-lg overflow-hidden border border-slate-700 shadow-xs">
             <div className="flex items-center justify-between bg-[#161b22] px-4 py-1.5 border-b border-slate-700">
                 <span className="text-[11px] font-mono text-slate-400 tracking-wider">
                     {lang || "text"}

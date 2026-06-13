@@ -15,7 +15,7 @@ const PreorderLoadTest: React.FC<PreorderLoadTestProps> = ({
     return (
         <>
             <div className="mt-6 rounded-2xl border border-sky-100 bg-white overflow-hidden">
-                <div className="px-5 py-4 bg-gradient-to-r from-sky-600 to-sky-500 flex items-center justify-between">
+                <div className="px-5 py-4 bg-linear-to-r from-sky-600 to-sky-500 flex items-center justify-between">
                     <div>
                         <h2 className="font-semibold text-white text-base leading-tight">
                             Preorder Load Test
@@ -38,7 +38,7 @@ const PreorderLoadTest: React.FC<PreorderLoadTestProps> = ({
                                 min={1}
                                 value={rps}
                                 onChange={(e) => setRps(Number(e.target.value))}
-                                className="w-20 border border-gray-900 rounded-md px-3 py-2 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-sky-500"
+                                className="w-20 border border-gray-900 rounded-md px-3 py-2 text-sm bg-gray-50 focus:outline-hidden focus:ring-2 focus:ring-sky-500"
                             />
                         </div>
                         <div className="flex flex-col gap-1">
@@ -50,7 +50,7 @@ const PreorderLoadTest: React.FC<PreorderLoadTestProps> = ({
                                 min={1}
                                 value={duration}
                                 onChange={(e) => setDuration(Number(e.target.value))}
-                                className="w-20 border border-gray-900 rounded-md px-3 py-2 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-sky-500"
+                                className="w-20 border border-gray-900 rounded-md px-3 py-2 text-sm bg-gray-50 focus:outline-hidden focus:ring-2 focus:ring-sky-500"
                             />
                         </div>
                         <div className={!discoveryComplete ? "opacity-40 cursor-not-allowed" : ""}>

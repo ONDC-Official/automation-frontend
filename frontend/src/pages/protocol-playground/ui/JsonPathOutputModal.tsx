@@ -42,21 +42,21 @@ const JsonPathOutputPopup: React.FC<JsonPathOutputPopupProps> = ({ jsonPath, out
     return (
         <div
             className={`absolute inset-0 flex items-center justify-center z-50 transition-all duration-300 ${
-                isVisible ? "bg-black/50 backdrop-blur-sm" : "bg-transparent"
+                isVisible ? "bg-black/50 backdrop-blur-xs" : "bg-transparent"
             }`}
             onClick={handleClose}
         >
             <div
-                className={`relative bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-2xl shadow-2xl w-[85%] h-[75%] border border-gray-600/50 overflow-hidden transform transition-all duration-300 ease-out ${
+                className={`relative bg-linear-to-br from-gray-900 via-gray-800 to-gray-900 rounded-2xl shadow-2xl w-[85%] h-[75%] border border-gray-600/50 overflow-hidden transform transition-all duration-300 ease-out ${
                     isVisible ? "scale-100 opacity-100" : "scale-95 opacity-0"
                 }`}
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Animated gradient border */}
-                <div className="absolute inset-0 bg-gradient-to-r from-sky-500/20 via-blue-500/20 to-purple-500/20 rounded-2xl blur-sm -z-10"></div>
+                <div className="absolute inset-0 bg-linear-to-r from-sky-500/20 via-blue-500/20 to-purple-500/20 rounded-2xl blur-xs -z-10"></div>
 
                 {/* Header */}
-                <div className="flex items-center justify-between px-4 py-2 border-b border-gray-700/50 bg-gradient-to-r from-gray-900/90 to-gray-800/90 backdrop-blur-sm">
+                <div className="flex items-center justify-between px-4 py-2 border-b border-gray-700/50 bg-linear-to-r from-gray-900/90 to-gray-800/90 backdrop-blur-xs">
                     <div className="flex items-center gap-2">
                         <div className="p-1 bg-sky-500/10 rounded-lg border border-sky-500/20">
                             <MdCode className="text-sky-400 text-lg" />
@@ -110,7 +110,7 @@ const JsonPathOutputPopup: React.FC<JsonPathOutputPopupProps> = ({ jsonPath, out
                 {/* Monaco JSON Viewer */}
                 <div className="h-full relative">
                     {/* Loading shimmer effect */}
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-gray-700/10 to-transparent animate-pulse opacity-20"></div>
+                    <div className="absolute inset-0 bg-linear-to-r from-transparent via-gray-700/10 to-transparent animate-pulse opacity-20"></div>
 
                     <Editor
                         height="calc(100% - 73px)"
@@ -132,7 +132,7 @@ const JsonPathOutputPopup: React.FC<JsonPathOutputPopupProps> = ({ jsonPath, out
                     />
 
                     {/* Bottom gradient overlay for better visual separation */}
-                    <div className="absolute bottom-0 left-0 right-0 h-4 bg-gradient-to-t from-gray-900/20 to-transparent pointer-events-none"></div>
+                    <div className="absolute bottom-0 left-0 right-0 h-4 bg-linear-to-t from-gray-900/20 to-transparent pointer-events-none"></div>
                 </div>
             </div>
         </div>

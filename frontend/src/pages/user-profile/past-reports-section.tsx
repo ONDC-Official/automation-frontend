@@ -197,7 +197,7 @@ export default function PastReportsSection() {
                         return (
                             <div
                                 key={report.test_id}
-                                className="flex items-center gap-4 bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md hover:border-gray-300 transition-all duration-200 px-4 py-3.5"
+                                className="flex items-center gap-4 bg-white rounded-xl border border-gray-200 shadow-xs hover:shadow-md hover:border-gray-300 transition-all duration-200 px-4 py-3.5"
                             >
                                 {/* Left: doc icon + truncated id + passed badge + date */}
                                 <div className="flex items-center gap-3 min-w-0 flex-1">

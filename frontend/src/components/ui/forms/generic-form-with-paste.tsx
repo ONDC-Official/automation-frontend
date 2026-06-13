@@ -142,7 +142,7 @@ const GenericFormWithPaste = ({
                         </div>
                         <select
                             {...register("item_id", { required: true })}
-                            className="p-2 rounded bg-transparent border outline-none focus:border-blue-500 w-full"
+                            className="p-2 rounded bg-transparent border outline-hidden focus:border-blue-500 w-full"
                         >
                             <option value="">Select an item</option>
                             {availableItems.map((item) => (
@@ -169,7 +169,7 @@ const GenericFormWithPaste = ({
                         </div>
                         <select
                             {...register("add_on_id")}
-                            className="p-2 rounded bg-transparent border outline-none focus:border-blue-500 w-full"
+                            className="p-2 rounded bg-transparent border outline-hidden focus:border-blue-500 w-full"
                         >
                             <option value="">No add-on (optional)</option>
                             {availableAddons.map((addon) => (
@@ -183,7 +183,11 @@ const GenericFormWithPaste = ({
             }
 
             // For other fields, pass register, errors, setValue as usual
-            return React.cloneElement(child as React.ReactElement, { register, errors, setValue });
+            return React.cloneElement(child as React.ReactElement<Record<string, unknown>>, {
+                register,
+                errors,
+                setValue,
+            });
         });
     };
 

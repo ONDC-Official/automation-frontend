@@ -6,9 +6,9 @@ import FormSelect from "@components/ui/forms/form-select";
 
 import { UserContext } from "@context/userContext";
 import { trackEvent } from "@utils/analytics";
-import { Domain, DomainVersion } from "@/pages/schema-validation/types";
+import { IDomain, IDomainVersion } from "@/pages/schema-validation/types";
 
-type DomainVersionWithUsecase = DomainVersion & {
+type IDomainVersionWithUsecase = IDomainVersion & {
     usecase: string[];
 };
 
@@ -26,15 +26,15 @@ export interface InitialFormProps {
     formData: react.MutableRefObject<FlowTestingFormData>;
     onSubmitHandler: (data: FlowTestingFormData) => Promise<void>;
     dynamicList: {
-        domain: Domain[];
-        version: DomainVersionWithUsecase[];
+        domain: IDomain[];
+        version: IDomainVersionWithUsecase[];
         usecase: string[];
     };
     dynamicValue: FlowTestingFormData;
     setDynamicList: react.Dispatch<
         react.SetStateAction<{
-            domain: Domain[];
-            version: DomainVersionWithUsecase[];
+            domain: IDomain[];
+            version: IDomainVersionWithUsecase[];
             usecase: string[];
         }>
     >;
@@ -88,10 +88,10 @@ export default function InitialFlowForm({
                             usecaseId: "",
                         }));
                         setDynamicList((prev) => {
-                            let filteredVersion: DomainVersionWithUsecase[] = [];
-                            prev.domain.forEach((item: Domain) => {
+                            let filteredVersion: IDomainVersionWithUsecase[] = [];
+                            prev.domain.forEach((item: IDomain) => {
                                 if (item.key === domain) {
-                                    filteredVersion = item.version as DomainVersionWithUsecase[];
+                                    filteredVersion = item.version as IDomainVersionWithUsecase[];
                                 }
                             });
                             return {
@@ -109,7 +109,7 @@ export default function InitialFlowForm({
                     label="Select Version"
                     name="version"
                     required={true}
-                    options={dynamicList?.version?.map((val: DomainVersion) => val.key) || []}
+                    options={dynamicList?.version?.map((val: IDomainVersion) => val.key) || []}
                     currentValue={dynamicValue.version}
                     setSelectedValue={(data: string) => {
                         formData.current = { ...formData.current, version: data };
@@ -120,7 +120,7 @@ export default function InitialFlowForm({
                         }));
                         setDynamicList((prev) => {
                             let filteredUsecase: string[] = [];
-                            prev.version.forEach((item: DomainVersionWithUsecase) => {
+                            prev.version.forEach((item: IDomainVersionWithUsecase) => {
                                 if (item.key === data) {
                                     filteredUsecase = item.usecase;
                                 }
@@ -209,7 +209,7 @@ export default function InitialFlowForm({
             <FormSelect
                 name="domain"
                 label="Select Domain"
-                options={dynamicList.domain.map((val: Domain) => val.key)}
+                options={dynamicList.domain.map((val: IDomain) => val.key)}
                 currentValue={dynamicValue.domain}
                 setSelectedValue={(data: string) => {
                     trackEvent({
@@ -225,10 +225,10 @@ export default function InitialFlowForm({
                         usecaseId: "",
                     }));
                     setDynamicList((prev) => {
-                        let filteredVersion: DomainVersionWithUsecase[] = [];
-                        prev.domain.forEach((item: Domain) => {
+                        let filteredVersion: IDomainVersionWithUsecase[] = [];
+                        prev.domain.forEach((item: IDomain) => {
                             if (item.key === data) {
-                                filteredVersion = item.version as DomainVersionWithUsecase[];
+                                filteredVersion = item.version as IDomainVersionWithUsecase[];
                             }
                         });
                         return {
@@ -246,7 +246,7 @@ export default function InitialFlowForm({
                 label="Select Version"
                 name="version"
                 required={true}
-                options={dynamicList?.version?.map((val: DomainVersion) => val.key) || []}
+                options={dynamicList?.version?.map((val: IDomainVersion) => val.key) || []}
                 currentValue={dynamicValue.version}
                 setSelectedValue={(data: string) => {
                     trackEvent({
@@ -262,7 +262,7 @@ export default function InitialFlowForm({
                     }));
                     setDynamicList((prev) => {
                         let filteredUsecase: string[] = [];
-                        prev.version.forEach((item: DomainVersionWithUsecase) => {
+                        prev.version.forEach((item: IDomainVersionWithUsecase) => {
                             if (item.key === data) {
                                 filteredUsecase = item.usecase;
                             }

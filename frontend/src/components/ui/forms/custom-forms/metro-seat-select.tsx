@@ -164,10 +164,6 @@ export default function Metro210Select({ submitEvent }: IMetro210SelectProps) {
             })),
         };
 
-        console.log("=== METRO SELECT PAYLOAD SENT TO BACKEND ===");
-        console.log(JSON.stringify(finalPayload, null, 2));
-        console.log("=============================================");
-
         await submitEvent({
             jsonPath: {},
             formData: {

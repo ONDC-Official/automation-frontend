@@ -234,14 +234,14 @@ export default function SelectMutualFundFIS14({
 
     /* ── styles ── */
     const inp =
-        "w-full border border-gray-300 rounded-md p-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white disabled:bg-gray-100 disabled:text-gray-400";
+        "w-full border border-gray-300 rounded-md p-2 text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500 bg-white disabled:bg-gray-100 disabled:text-gray-400";
     const lbl = "block text-xs font-semibold text-gray-600 mb-1";
     const errCls = "text-red-500 text-xs mt-1";
     const section = "p-4 bg-gray-50 border border-gray-200 rounded-lg space-y-3";
     const sectionTitle = "text-xs font-bold text-gray-700 uppercase tracking-wide";
 
     return (
-        <div className="p-4 space-y-4 bg-white rounded-lg shadow-sm border border-gray-100">
+        <div className="p-4 space-y-4 bg-white rounded-lg shadow-xs border border-gray-100">
             {/* ── Header ── */}
             <div
                 className={`flex justify-between items-center p-3 rounded-lg border transition-all ${

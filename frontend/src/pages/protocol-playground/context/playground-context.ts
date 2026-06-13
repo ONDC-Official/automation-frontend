@@ -1,4 +1,4 @@
-import { Context, createContext } from "react";
+import { Context, createContext, type JSX } from "react";
 import { ExecutionResult, MockPlaygroundConfigType } from "@ondc/automation-mock-runner";
 
 type Meta = MockPlaygroundConfigType["meta"];
@@ -33,11 +33,7 @@ export interface PlaygroundContextProps {
         newPayload: TransactionPayload,
         savedInfo?: TransactionSavedInfo
     ) => void;
-    appendExtraStepRun: (
-        actionId: string,
-        action: string,
-        newPayload: TransactionPayload
-    ) => void;
+    appendExtraStepRun: (actionId: string, action: string, newPayload: TransactionPayload) => void;
     updateHelperLib: (newCode: string) => void;
     resetTransactionHistory: (actionId?: string) => void;
     updateConfigMeta: (patch: Partial<Meta>) => void;

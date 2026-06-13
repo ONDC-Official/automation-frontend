@@ -1,5 +1,5 @@
-import { useMemo, useState } from "react";
-import jsonpath from "jsonpath";
+import { useMemo, useState, type JSX } from "react";
+import { queryJsonPath } from "../../../../utils/jsonpath-query";
 import { AxiosResponse } from "axios";
 
 import { SubmitEventParams } from "@/types/flow-types";
@@ -74,14 +74,21 @@ export default function ProtocolHTMLFormMulti({
     referenceData,
     HtmlFormConfigInFlow,
 }: Props) {
-    const formHtml = useMemo<string>(
-        () =>
-            jsonpath.query(
-                { reference_data: referenceData },
-                HtmlFormConfigInFlow.reference || ""
-            )[0] || "",
-        [referenceData, HtmlFormConfigInFlow.reference]
-    );
+    // const formHtml = useMemo<string>(
+    //     () =>
+    //         jsonpath.query(
+    //             { reference_data: referenceData },
+    //             HtmlFormConfigInFlow.reference || ""
+    //         )[0] || "",
+    //     [referenceData, HtmlFormConfigInFlow.reference]
+    // );
+    const formHtml = useMemo<string>(() => {
+        const value = queryJsonPath(
+            { reference_data: referenceData },
+            HtmlFormConfigInFlow.reference || ""
+        )[0];
+        return typeof value === "string" ? value : "";
+    }, [referenceData, HtmlFormConfigInFlow.reference]);
 
     const parsed = useMemo<ParsedForm>(() => parseFormHtml(formHtml), [formHtml]);
 
@@ -196,10 +203,12 @@ export default function ProtocolHTMLFormMulti({
             )) as AxiosResponse<unknown, unknown>;
 
             // Parse response for submission_id
-            const ct =
+            const rawCt =
                 typeof res.headers === "object"
-                    ? res.headers["content-type"] || res.headers["Content-Type"] || ""
-                    : "";
+                    ? (res.headers["content-type"] ?? res.headers["Content-Type"])
+                    : undefined;
+            const ct =
+                typeof rawCt === "string" ? rawCt : Array.isArray(rawCt) ? (rawCt[0] ?? "") : "";
             let data: {
                 submission_id?: string;
                 data?: { submission_id?: string };
@@ -274,7 +283,7 @@ export default function ProtocolHTMLFormMulti({
                         max={tf.max as number}
                         step={tf.step as number}
                         pattern={tf.pattern}
-                        className={`w-full rounded-md border bg-gray-50 px-3 py-2 focus:outline-none focus:ring-2 ${
+                        className={`w-full rounded-md border bg-gray-50 px-3 py-2 focus:outline-hidden focus:ring-2 ${
                             hasError
                                 ? "border-red-500 focus:ring-red-500"
                                 : "border-gray-300 focus:ring-blue-500"
@@ -295,7 +304,7 @@ export default function ProtocolHTMLFormMulti({
                         rows={ta.rows ?? 4}
                         required={f.required}
                         disabled={f.disabled}
-                        className={`w-full rounded-md bg-gray-50 border px-3 py-2 focus:outline-none focus:ring-2 ${
+                        className={`w-full rounded-md bg-gray-50 border px-3 py-2 focus:outline-hidden focus:ring-2 ${
                             hasError
                                 ? "border-red-500 focus:ring-red-500"
                                 : "border-gray-300 focus:ring-blue-500"
@@ -328,7 +337,7 @@ export default function ProtocolHTMLFormMulti({
                         multiple={!!sel.multiple}
                         required={f.required}
                         disabled={f.disabled}
-                        className={`w-full rounded-md border bg-gray-50 px-3 py-2 focus:outline-none focus:ring-2 ${
+                        className={`w-full rounded-md border bg-gray-50 px-3 py-2 focus:outline-hidden focus:ring-2 ${
                             hasError
                                 ? "border-red-500 focus:ring-red-500"
                                 : "border-gray-300 focus:ring-blue-500"
@@ -535,7 +544,7 @@ export default function ProtocolHTMLFormMulti({
                     type="button"
                     onClick={handleSubmit}
                     disabled={isSubmitting}
-                    className={`px-4 py-2 rounded text-white disabled:opacity-60 flex-shrink-0 ${
+                    className={`px-4 py-2 rounded text-white disabled:opacity-60 shrink-0 ${
                         totalErrors > 0
                             ? "bg-red-600 hover:bg-red-700"
                             : "bg-blue-600 hover:bg-blue-700"
@@ -549,13 +558,13 @@ export default function ProtocolHTMLFormMulti({
                 </button>
 
                 {parsed.action && (
-                    <span className="text-xs text-gray-500 break-words">
+                    <span className="text-xs text-gray-500 wrap-break-word">
                         POST to <code className="break-all">{parsed.action}</code>
                     </span>
                 )}
             </div>
 
-            <div className="text-sm text-gray-700 break-words">
+            <div className="text-sm text-gray-700 wrap-break-word">
                 {submissionId && (
                     <span className="text-green-700">
                         Received submission_id: <code className="break-all">{submissionId}</code>
@@ -563,7 +572,9 @@ export default function ProtocolHTMLFormMulti({
                 )}
                 {error && (
                     <div className="p-3 bg-red-50 border border-red-200 rounded-md">
-                        <span className="text-red-600 break-words font-medium">Error: {error}</span>
+                        <span className="text-red-600 wrap-break-word font-medium">
+                            Error: {error}
+                        </span>
                     </div>
                 )}
             </div>

@@ -78,7 +78,7 @@ const StarterPage = () => {
     }
 
     return (
-        <div className="min-h-screen h-full bg-gradient-to-b from-white via-sky-50/30 to-white flex flex-col items-center justify-center px-8 py-16">
+        <div className="min-h-screen h-full bg-linear-to-b from-white via-sky-50/30 to-white flex flex-col items-center justify-center px-8 py-16">
             {/* Subtle background decoration */}
             <div className="absolute inset-0 overflow-hidden pointer-events-none">
                 <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-sky-100/40 rounded-full blur-3xl transform translate-x-1/3 -translate-y-1/3"></div>
@@ -177,7 +177,7 @@ const StarterPage = () => {
                                             }));
                                         }
                                     }}
-                                    className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent transition-all duration-200 text-gray-900 text-sm"
+                                    className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-sky-500 focus:border-transparent transition-all duration-200 text-gray-900 text-sm"
                                 >
                                     <option value="">Select a domain...</option>
                                     {dynamicList.domain.map((item: DomainItem) => (
@@ -192,7 +192,7 @@ const StarterPage = () => {
                                     value={domain}
                                     onChange={(e) => setDomain(e.target.value)}
                                     placeholder="e.g., mobility, logistics, retail"
-                                    className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent transition-all duration-200 text-gray-900 placeholder-gray-400 text-sm"
+                                    className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-sky-500 focus:border-transparent transition-all duration-200 text-gray-900 placeholder-gray-400 text-sm"
                                 />
                             )}
                         </div>
@@ -217,7 +217,7 @@ const StarterPage = () => {
                                             }));
                                         }
                                     }}
-                                    className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent transition-all duration-200 text-gray-900 text-sm"
+                                    className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-sky-500 focus:border-transparent transition-all duration-200 text-gray-900 text-sm"
                                 >
                                     <option value="">Select a version...</option>
                                     {dynamicList.version.map((item: VersionItem) => (
@@ -232,7 +232,7 @@ const StarterPage = () => {
                                     value={version}
                                     onChange={(e) => setVersion(e.target.value)}
                                     placeholder="e.g., 2.0.1, 1.5.3"
-                                    className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent transition-all duration-200 text-gray-900 placeholder-gray-400 text-sm"
+                                    className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-sky-500 focus:border-transparent transition-all duration-200 text-gray-900 placeholder-gray-400 text-sm"
                                 />
                             )}
                         </div>
@@ -247,7 +247,7 @@ const StarterPage = () => {
                                 value={flowId}
                                 onChange={(e) => setFlowId(e.target.value)}
                                 placeholder="Enter unique flow identifier"
-                                className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent transition-all duration-200 text-gray-900 placeholder-gray-400 text-sm"
+                                className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-sky-500 focus:border-transparent transition-all duration-200 text-gray-900 placeholder-gray-400 text-sm"
                             />
                         </div>
 
@@ -266,7 +266,7 @@ const StarterPage = () => {
                                         value={useCaseId}
                                         onChange={(e) => setUseCaseId(e.target.value)}
                                         placeholder="e.g. UCS-001"
-                                        className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent transition-all duration-200 text-gray-900 placeholder-gray-400 text-sm"
+                                        className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-sky-500 focus:border-transparent transition-all duration-200 text-gray-900 placeholder-gray-400 text-sm"
                                     />
                                 </div>
                                 <div>
@@ -278,7 +278,7 @@ const StarterPage = () => {
                                         value={description}
                                         onChange={(e) => setDescription(e.target.value)}
                                         placeholder="What does this flow test?"
-                                        className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent transition-all duration-200 text-gray-900 placeholder-gray-400 text-sm resize-none"
+                                        className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-sky-500 focus:border-transparent transition-all duration-200 text-gray-900 placeholder-gray-400 text-sm resize-none"
                                     />
                                 </div>
                             </div>

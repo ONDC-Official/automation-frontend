@@ -114,7 +114,7 @@ const CircularProgress: React.FC<Props> = ({
     if (!isActive) return null;
 
     return (
-        <div className="flex items-center justify-center p-2 ml-2 rounded-md transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 text-sky-700 ease-in">
+        <div className="flex items-center justify-center p-2 ml-2 rounded-md transition-transform transform hover:scale-105 focus:outline-hidden focus:ring-2 focus:ring-offset-2 text-sky-700 ease-in">
             <svg width={sqSize} height={sqSize}>
                 <circle
                     cx={sqSize / 2}

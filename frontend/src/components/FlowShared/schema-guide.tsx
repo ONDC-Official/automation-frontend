@@ -2,8 +2,8 @@ import { availableDomains } from "@/constants/common";
 
 export function SchemaGuide() {
     return (
-        <div className="w-full h-full flex flex-col bg-white border border-sky-100 shadow-sm">
-            <div className="bg-gradient-to-r from-sky-50 to-sky-100/50 px-6 py-4 border-b border-sky-100">
+        <div className="w-full h-full flex flex-col bg-white border border-sky-100 shadow-xs">
+            <div className="bg-linear-to-r from-sky-50 to-sky-100/50 px-6 py-4 border-b border-sky-100">
                 <h3 className="text-xl font-bold text-gray-900">How to use</h3>
                 {/* <p className="text-sm text-sky-700 mt-1">How to use</p> */}
             </div>
@@ -12,7 +12,7 @@ export function SchemaGuide() {
                 {/* Step 1: Available Domains */}
                 <div className="space-y-3">
                     <div className="flex items-start space-x-3">
-                        <div className="w-7 h-7 bg-gradient-to-br from-sky-100 to-sky-200 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <div className="w-7 h-7 bg-linear-to-br from-sky-100 to-sky-200 flex items-center justify-center shrink-0 mt-0.5">
                             <span className="text-sky-700 text-sm font-bold">1</span>
                         </div>
                         <div className="flex-1">
@@ -38,7 +38,7 @@ export function SchemaGuide() {
                 {/* Step 2: Paste/Upload Payload */}
                 <div className="space-y-3">
                     <div className="flex items-start space-x-3">
-                        <div className="w-7 h-7 bg-gradient-to-br from-sky-100 to-sky-200 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <div className="w-7 h-7 bg-linear-to-br from-sky-100 to-sky-200 flex items-center justify-center shrink-0 mt-0.5">
                             <span className="text-sky-700 text-sm font-bold">2</span>
                         </div>
                         <div className="flex-1">
@@ -117,7 +117,7 @@ export function SchemaGuide() {
                 {/* Step 3: Domain and Version */}
                 <div className="space-y-3">
                     <div className="flex items-start space-x-3">
-                        <div className="w-7 h-7 bg-gradient-to-br from-sky-100 to-sky-200 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <div className="w-7 h-7 bg-linear-to-br from-sky-100 to-sky-200 flex items-center justify-center shrink-0 mt-0.5">
                             <span className="text-sky-700 text-sm font-bold">3</span>
                         </div>
                         <div className="flex-1">
@@ -133,7 +133,7 @@ export function SchemaGuide() {
                 {/* Step 4: Click Validate */}
                 <div className="space-y-3">
                     <div className="flex items-start space-x-3">
-                        <div className="w-7 h-7 bg-gradient-to-br from-sky-100 to-sky-200 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <div className="w-7 h-7 bg-linear-to-br from-sky-100 to-sky-200 flex items-center justify-center shrink-0 mt-0.5">
                             <span className="text-sky-700 text-sm font-bold">4</span>
                         </div>
                         <div className="flex-1">
@@ -148,7 +148,7 @@ export function SchemaGuide() {
                 {/* Step 5: Error Display */}
                 <div className="space-y-3">
                     <div className="flex items-start space-x-3">
-                        <div className="w-7 h-7 bg-gradient-to-br from-sky-100 to-sky-200 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <div className="w-7 h-7 bg-linear-to-br from-sky-100 to-sky-200 flex items-center justify-center shrink-0 mt-0.5">
                             <span className="text-sky-700 text-sm font-bold">5</span>
                         </div>
                         <div className="flex-1">
@@ -201,7 +201,7 @@ export function SchemaGuide() {
                 {/* Step 6: Resolve Errors */}
                 <div className="space-y-3">
                     <div className="flex items-start space-x-3">
-                        <div className="w-7 h-7 bg-gradient-to-br from-sky-100 to-sky-200 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <div className="w-7 h-7 bg-linear-to-br from-sky-100 to-sky-200 flex items-center justify-center shrink-0 mt-0.5">
                             <span className="text-sky-700 text-sm font-bold">6</span>
                         </div>
                         <div className="flex-1">
@@ -217,7 +217,7 @@ export function SchemaGuide() {
                 {/* Step 7: Success Display */}
                 <div className="space-y-3">
                     <div className="flex items-start space-x-3">
-                        <div className="w-7 h-7 bg-gradient-to-br from-sky-100 to-sky-200 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <div className="w-7 h-7 bg-linear-to-br from-sky-100 to-sky-200 flex items-center justify-center shrink-0 mt-0.5">
                             <span className="text-sky-700 text-sm font-bold">7</span>
                         </div>
                         <div className="flex-1">

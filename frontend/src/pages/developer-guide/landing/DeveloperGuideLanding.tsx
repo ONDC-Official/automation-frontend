@@ -85,7 +85,7 @@ const DeveloperGuideLanding: FC = () => {
     return (
         <div className="min-h-screen bg-white">
             {/* Hero */}
-            <div className="bg-gradient-to-br from-sky-50 via-white to-slate-50 border-b border-sky-100">
+            <div className="bg-linear-to-br from-sky-50 via-white to-slate-50 border-b border-sky-100">
                 <div className="container mx-auto px-6 py-16">
                     <div className="max-w-2xl">
                         <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-sky-100 text-sky-700 rounded-full text-xs font-semibold uppercase tracking-widest mb-6 border border-sky-200">
@@ -108,7 +108,7 @@ const DeveloperGuideLanding: FC = () => {
                 {/* ONDC Guides */}
                 <section>
                     <div className="flex items-center gap-3 mb-7">
-                        <div className="w-8 h-8 rounded-lg bg-sky-100 border border-sky-200 flex items-center justify-center flex-shrink-0">
+                        <div className="w-8 h-8 rounded-lg bg-sky-100 border border-sky-200 flex items-center justify-center shrink-0">
                             <FiCode size={15} className="text-sky-600" />
                         </div>
                         <div>
@@ -132,7 +132,7 @@ const DeveloperGuideLanding: FC = () => {
                 {(docsLoading || docs.length > 0) && (
                     <section>
                         <div className="flex items-center gap-3 mb-7">
-                            <div className="w-8 h-8 rounded-lg bg-sky-100 border border-sky-200 flex items-center justify-center flex-shrink-0">
+                            <div className="w-8 h-8 rounded-lg bg-sky-100 border border-sky-200 flex items-center justify-center shrink-0">
                                 <FiFileText size={15} className="text-sky-600" />
                             </div>
                             <div>
@@ -156,9 +156,9 @@ const DeveloperGuideLanding: FC = () => {
                                           onClick={() =>
                                               navigate(getDeveloperGuideDocPath(doc.slug))
                                           }
-                                          className="group text-left rounded-lg border border-gray-200 shadow-sm bg-white p-5 hover:border-sky-300 hover:shadow-md transition-all duration-150 flex flex-col gap-3"
+                                          className="group text-left rounded-lg border border-gray-200 shadow-xs bg-white p-5 hover:border-sky-300 hover:shadow-md transition-all duration-150 flex flex-col gap-3"
                                       >
-                                          <div className="w-9 h-9 rounded-lg bg-sky-50 border border-sky-100 flex items-center justify-center flex-shrink-0">
+                                          <div className="w-9 h-9 rounded-lg bg-sky-50 border border-sky-100 flex items-center justify-center shrink-0">
                                               <FiFileText size={17} className="text-sky-600" />
                                           </div>
                                           <div className="flex-1">
@@ -187,7 +187,7 @@ const DeveloperGuideLanding: FC = () => {
                 <section>
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-7">
                         <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-lg bg-sky-100 border border-sky-200 flex items-center justify-center flex-shrink-0">
+                            <div className="w-8 h-8 rounded-lg bg-sky-100 border border-sky-200 flex items-center justify-center shrink-0">
                                 <FiLayers size={15} className="text-sky-600" />
                             </div>
                             <div>
@@ -209,7 +209,7 @@ const DeveloperGuideLanding: FC = () => {
                                 placeholder="Search domains..."
                                 value={domainSearch}
                                 onChange={(e) => setDomainSearch(e.target.value)}
-                                className="w-full sm:w-64 pl-10 pr-4 py-2.5 text-sm bg-white border border-slate-500 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 placeholder-slate-400 text-slate-800 font-medium shadow-sm transition-all duration-150"
+                                className="w-full sm:w-64 pl-10 pr-4 py-2.5 text-sm bg-white border border-slate-500 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-sky-200 focus:border-sky-400 placeholder-slate-400 text-slate-800 font-medium shadow-xs transition-all duration-150"
                             />
                         </div>
                     </div>

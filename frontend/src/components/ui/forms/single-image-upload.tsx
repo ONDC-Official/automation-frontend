@@ -216,7 +216,7 @@ const SingleImageUpload: React.FC<SingleImageUploadProps> = ({
 
                 {selectedFile && !uploadedUrl && (
                     <div className="flex items-center space-x-2 p-2 bg-green-50 rounded-md border border-green-200">
-                        <div className="w-2 h-2 bg-green-500 rounded-full flex-shrink-0"></div>
+                        <div className="w-2 h-2 bg-green-500 rounded-full shrink-0"></div>
                         <p className="text-sm text-green-700 font-medium truncate">
                             {selectedFile.name} ready for upload
                         </p>
@@ -259,9 +259,9 @@ const SingleImageUpload: React.FC<SingleImageUploadProps> = ({
                 )}
 
                 {(filePreview || uploadedUrl) && (
-                    <div className="flex items-center space-x-4 p-3 bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg border-2 border-gray-200 shadow-sm">
+                    <div className="flex items-center space-x-4 p-3 bg-linear-to-br from-gray-50 to-gray-100 rounded-lg border-2 border-gray-200 shadow-xs">
                         <div
-                            className={`${getPreviewSize()} bg-white rounded-lg border-2 border-gray-300 p-1 shadow-sm flex-shrink-0`}
+                            className={`${getPreviewSize()} bg-white rounded-lg border-2 border-gray-300 p-1 shadow-xs shrink-0`}
                         >
                             <img
                                 src={filePreview || uploadedUrl}

@@ -1,20 +1,23 @@
+import { ConfigProvider } from "antd";
 import { useEffect, useState, useCallback } from "react";
-import { useLocation } from "react-router-dom";
-import { UserDetails } from "@components/Header";
+import { BrowserRouter, useLocation, useNavigate } from "react-router-dom";
 import { UserContext } from "@context/userContext";
-// import { getGithubAvatarUrl } from "@utils/regsitry-utils";
 import { SubscriberData } from "@components/registry-components/registry-types";
-// import * as api from "@utils/registry-apis";
 import { SessionProvider } from "@context/context";
+import { GuideProvider } from "@context/guideContext";
+import { ThemeContextProvider } from "@/context/theme/themeContextProvider";
 import { trackPageView } from "@utils/analytics";
 import { AuthService } from "@services/authService";
 import { authTokenManager, sessionIdSupport } from "@utils/localStorageManager";
 import Layout from "@components/Layout";
+import { IUser } from "@/types/user";
+import { ROUTES } from "@/constants/routes";
 
-function App() {
+const Wrapper = () => {
     const location = useLocation();
+    const navigate = useNavigate();
 
-    const [user, setUser] = useState<UserDetails | undefined>(undefined);
+    const [user, setUser] = useState<IUser | undefined>(undefined);
     const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
     const [subscriberData, setSubscriberData] = useState<SubscriberData>({
         keys: [],
@@ -40,6 +43,8 @@ function App() {
             return;
         }
 
+        // AuthService.exchangeCodeAndPersistToken(codeFromQuery);
+
         const exchangeCodeAndPersistToken = async () => {
             const token = await AuthService.exchangeCodeForToken(codeFromQuery);
 
@@ -50,57 +55,22 @@ function App() {
             authTokenManager.set(token);
 
             await refreshUser();
+
+            const nextParams = new URLSearchParams(location.search);
+            nextParams.delete("code");
+
+            navigate(ROUTES.HOME, { replace: true });
         };
 
         exchangeCodeAndPersistToken();
     }, [location.pathname, location.search]);
 
-    // const fetchUserLookUp = useCallback(
-    //     async (tempUser?: UserDetails): Promise<SubscriberData | null> => {
-    //         const userToLookup = tempUser ?? user;
-
-    //         if (!userToLookup) {
-    //             return null;
-    //         }
-
-    //         try {
-    //             const data = await api.getSubscriberDetails(userToLookup);
-    //             setSubscriberData(data);
-    //             return data;
-    //         } catch (error) {
-    //             console.error("Error fetching subscriber details:", error);
-    //             return null;
-    //         }
-    //     },
-    //     [user]
-    // );
-
-    // Fetch subscriber details when user or pathname changes
-    // useEffect(() => {
-    //     if (user) {
-    //         fetchUserLookUp();
-    //     }
-    // }, [location.pathname, user, fetchUserLookUp]);
-
     const refreshUser = useCallback(async (): Promise<void> => {
-        try {
-            const response = await AuthService.getCurrentUser();
-
-            if (response?.ok && response.user) {
-                // const avatarUrl = await getGithubAvatarUrl(response.user.githubId);
-                // const userWithAvatar: UserDetails = {
-                //     ...response.user,
-                //     avatarUrl: avatarUrl,
-                // };
-                // setUser(userWithAvatar);
-                setUser(response.user);
-                setIsLoggedIn(true);
-            } else {
-                setUser(undefined);
-                setIsLoggedIn(false);
-            }
-        } catch (error) {
-            console.error("Error fetching user:", error);
+        const user = await AuthService.refreshUser();
+        if (user) {
+            setUser(user);
+            setIsLoggedIn(true);
+        } else {
             setUser(undefined);
             setIsLoggedIn(false);
         }
@@ -125,6 +95,20 @@ function App() {
             </SessionProvider>
         </UserContext.Provider>
     );
-}
+};
+
+const App = () => {
+    return (
+        <ThemeContextProvider>
+            <ConfigProvider>
+                <BrowserRouter>
+                    <GuideProvider>
+                        <Wrapper />
+                    </GuideProvider>
+                </BrowserRouter>
+            </ConfigProvider>
+        </ThemeContextProvider>
+    );
+};
 
 export default App;

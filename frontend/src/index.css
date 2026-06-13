@@ -1,51 +1,99 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tw-animate-css";
+@import "./styles/tokens.css";
+@import "./styles/typography.css";
+@import "tailwindcss";
+
+@theme {
+    --animate-accordion-down: accordion-down 0.2s ease-out;
+    --animate-accordion-up: accordion-up 0.2s ease-out;
+
+    @keyframes accordion-down {
+        from {
+            height: 0;
+        }
+        to {
+            height: var(--radix-accordion-content-height);
+        }
+    }
+
+    @keyframes accordion-up {
+        from {
+            height: var(--radix-accordion-content-height);
+        }
+        to {
+            height: 0;
+        }
+    }
+
+    --animate-slow-pulse: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    --animate-spin-slow: spin 1.5s linear infinite;
+    --animate-spin-progress: spin-progress linear forwards;
+
+    @keyframes spin-progress {
+        0% {
+            transform: rotate(0deg);
+        }
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+
+    --default-ring-width: 3px;
+    --default-ring-color: var(--color-brand-normal);
+
+}
+
+@layer base {
+    input:-webkit-autofill {
+        transition: background-color 5000s ease-in-out 0s;
+        -webkit-text-fill-color: var(--text-primary) !important;
+    }
+
+    *,
+    ::after,
+    ::before,
+    ::backdrop,
+    ::file-selector-button {
+        border-color: var(--border-default, currentColor);
+    }
+
+    button:not(:disabled),
+    [role="button"]:not(:disabled) {
+        cursor: pointer;
+    }
+
+    html {
+        overflow-x: clip;
+    }
+
+    body {
+        font-family: var(--font-family-default);
+        min-height: 100svh;
+        background-color: var(--surface-page);
+        color: var(--text-primary);
+        font-size: var(--text-body-1-size);
+        line-height: var(--text-body-1-leading);
+        font-weight: 400;
+        font-synthesis: none;
+        text-rendering: optimizeLegibility;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+
+    code,
+    pre {
+        font-family: var(--font-family-code);
+    }
+}
 
 :root {
-    /* font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;  */
     --font-family-default: "Inter", sans-serif;
     --font-family-code: "Fira Code", monospace;
-    line-height: 1.45;
-    font-weight: 400;
-
-    color-scheme: light dark;
-    color: rgba(7, 7, 7, 0.87);
-    background-color: #f2f2f2;
-
-    font-synthesis: none;
-    text-rendering: optimizeLegibility;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-}
-
-html,
-body {
-    overflow-x: hidden;
-}
-
-body {
-    font-family: var(--font-family-default);
-    min-height: 100vh;
-    min-width: 100vw;
-    background-color: #f2f2f2;
-    /* background-image: radial-gradient(
-		circle,
-		rgba(0, 0, 0, 0.083) 1px,
-		transparent 1px
-	); */
-    background-size: 20px 20px; /* Adjust the dot spacing */
-    background-position: center;
-}
-
-code,
-pre {
-    font-family: var(--font-family-code);
 }
 
 /* Ant Design Select custom styling */
 .antd-select .ant-select-selector {
-    border-color: #d1d5db !important;
+    border-color: var(--border-default) !important;
     border-radius: 0.375rem !important;
     padding: 0.375rem 0.75rem !important;
     min-height: 2.5rem !important;
@@ -53,13 +101,13 @@ pre {
 }
 
 .antd-select .ant-select-selector:hover {
-    border-color: #9ca3af !important;
+    border-color: var(--color-n-60) !important;
     background-color: transparent !important;
 }
 
 .antd-select.ant-select-focused .ant-select-selector {
-    border-color: #3b82f6 !important;
-    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5) !important;
+    border-color: var(--color-brand-normal) !important;
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-brand-normal) 50%, transparent) !important;
     background-color: transparent !important;
 }
 
@@ -68,95 +116,113 @@ pre {
 }
 
 .antd-select .ant-select-selection-item {
-    background-color: #dbeafe !important;
-    border-color: #3b82f6 !important;
-    color: #1e40af !important;
+    background-color: var(--color-brand-light) !important;
+    border-color: var(--color-brand-normal) !important;
+    color: var(--color-brand-dark) !important;
 }
 
 .antd-select .ant-select-selection-item-remove {
-    color: #1e40af !important;
+    color: var(--color-brand-dark) !important;
 }
 
 .antd-select .ant-select-selection-item-remove:hover {
-    color: #1e3a8a !important;
+    color: var(--color-brand-darker) !important;
 }
 
 /* Ant Design Input custom styling */
 .antd-input {
     background-color: transparent !important;
-    border-color: #d1d5db !important;
+    border-color: var(--border-default) !important;
     border-radius: 0.375rem !important;
     padding: 0.375rem 0.75rem !important;
     min-height: 2.5rem !important;
 }
 
 .antd-input:hover {
-    border-color: #9ca3af !important;
+    border-color: var(--color-n-60) !important;
     background-color: transparent !important;
 }
 
 .antd-input:focus,
 .antd-input.ant-input-focused {
-    border-color: #3b82f6 !important;
-    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5) !important;
+    border-color: var(--color-brand-normal) !important;
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-brand-normal) 50%, transparent) !important;
     background-color: transparent !important;
 }
 
 .antd-input.ant-input-disabled {
     background-color: transparent !important;
-    color: #6b7280 !important;
+    color: var(--text-secondary) !important;
 }
 
-/* Ant Design TextArea custom styling */
-.antd-input.ant-input {
-    background-color: transparent !important;
-}
-
-.antd-input textarea.ant-input {
-    background-color: transparent !important;
-}
-
-/* Ant Design Password Input custom styling */
-.antd-input.ant-input-password {
-    background-color: transparent !important;
-}
-
+.antd-input.ant-input,
+.antd-input textarea.ant-input,
+.antd-input.ant-input-password,
 .antd-input.ant-input-password .ant-input {
     background-color: transparent !important;
 }
 
-/* ── Global Scrollbar – Sky Blue Professional Theme ── */
+/* ── Global Scrollbar ── */
 ::-webkit-scrollbar {
     width: 6px;
     height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-    background: #e0f2fe; /* sky-100 */
-    border-radius: 9999px;
+    background: var(--color-n-20);
+    border-radius: 0;
 }
 
 ::-webkit-scrollbar-thumb {
-    background: #0ea5e9; /* sky-500 */
-    border-radius: 9999px;
-    border: 1px solid #bae6fd; /* sky-200 */
+    background: var(--color-n-50);
+    border-radius: 0;
     transition: background 0.2s ease;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: #0284c7; /* sky-600 */
+    background: var(--color-n-70);
 }
 
 ::-webkit-scrollbar-thumb:active {
-    background: #0369a1; /* sky-700 */
+    background: var(--color-n-80);
 }
 
 ::-webkit-scrollbar-corner {
-    background: #e0f2fe;
+    background: var(--color-n-20);
 }
 
-/* Firefox */
+.dark ::-webkit-scrollbar-track {
+    background: var(--color-n-700);
+}
+
+.dark ::-webkit-scrollbar-thumb {
+    background: var(--color-n-400);
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-n-300);
+}
+
+.dark ::-webkit-scrollbar-corner {
+    background: var(--color-n-700);
+}
+
 * {
     scrollbar-width: thin;
-    scrollbar-color: #0ea5e9 #e0f2fe;
+    scrollbar-color: var(--color-n-50) var(--color-n-20);
+}
+
+.dark * {
+    scrollbar-color: var(--color-n-400) var(--color-n-700);
+}
+
+/* Monaco schema validation error highlights — unlayered so they beat Tailwind resets */
+.monaco-editor .lines-content .cdr.schema-validation-error-line {
+    background-color: rgba(222, 53, 11, 0.12) !important;
+}
+
+.monaco-editor .view-line span.schema-validation-error-inline,
+.monaco-editor .view-line .schema-validation-error-inline,
+.monaco-editor .mtkz.schema-validation-error-inline {
+    background-color: rgba(222, 53, 11, 0.12) !important;
 }

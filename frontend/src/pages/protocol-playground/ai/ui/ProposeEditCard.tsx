@@ -58,7 +58,7 @@ function DiffViewer({ rows }: { rows: DiffRow[] }) {
             {rows.map((row, idx) => (
                 <div
                     key={idx}
-                    className={`flex items-start gap-2 px-2 py-[1px] ${TONE_BY_OP[row.op]}`}
+                    className={`flex items-start gap-2 px-2 py-px ${TONE_BY_OP[row.op]}`}
                 >
                     <span className="w-7 text-right text-gray-400 select-none shrink-0">
                         {row.oldNum ?? ""}
@@ -67,7 +67,7 @@ function DiffViewer({ rows }: { rows: DiffRow[] }) {
                         {row.newNum ?? ""}
                     </span>
                     <span className="w-3 select-none shrink-0">{SIGN_BY_OP[row.op]}</span>
-                    <pre className="whitespace-pre-wrap break-words flex-1 m-0">
+                    <pre className="whitespace-pre-wrap wrap-break-word flex-1 m-0">
                         {row.text || " "}
                     </pre>
                 </div>
@@ -172,7 +172,7 @@ export function ProposeEditCard({ message }: ProposeEditCardProps) {
                     )}
 
                     {isError && (
-                        <pre className="font-mono text-[11px] whitespace-pre-wrap break-words bg-red-50 border border-red-200 rounded p-2 text-red-800">
+                        <pre className="font-mono text-[11px] whitespace-pre-wrap wrap-break-word bg-red-50 border border-red-200 rounded p-2 text-red-800">
                             {message.errorText ?? "(no message)"}
                         </pre>
                     )}
