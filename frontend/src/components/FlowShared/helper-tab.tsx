@@ -271,7 +271,7 @@ export default function FlowHelperTab({
                                         className="w-full px-2.5 py-2 flex items-center justify-between hover:bg-gray-50"
                                     >
                                         <div className="flex items-center gap-2">
-                                            <div className="flex-shrink-0">{item.icon}</div>
+                                            <div className="shrink-0">{item.icon}</div>
                                             <span className="text-sm font-medium text-gray-900 flex items-center gap-1.5">
                                                 {item.title}
                                                 {item.warning && (
@@ -280,7 +280,7 @@ export default function FlowHelperTab({
                                             </span>
                                         </div>
                                         <IoChevronDown
-                                            className={`w-4 h-4 text-gray-500 transition-transform flex-shrink-0 ${
+                                            className={`w-4 h-4 text-gray-500 transition-transform shrink-0 ${
                                                 isOpen ? "rotate-180" : ""
                                             }`}
                                         />
@@ -315,7 +315,7 @@ export default function FlowHelperTab({
                                             {item.question}
                                         </span>
                                         <IoChevronDown
-                                            className={`w-4 h-4 text-gray-500 transition-transform flex-shrink-0 ${
+                                            className={`w-4 h-4 text-gray-500 transition-transform shrink-0 ${
                                                 isOpen ? "rotate-180" : ""
                                             }`}
                                         />

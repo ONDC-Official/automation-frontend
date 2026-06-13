@@ -2,7 +2,7 @@ import { FC, RefObject } from "react";
 import { ChatMessage } from "./types";
 
 interface ChatMessagesProps {
-    chatBoxRef: RefObject<HTMLDivElement>;
+    chatBoxRef: RefObject<HTMLDivElement | null>;
     messages: ChatMessage[];
     isStreaming: boolean;
     onToggleThinking: (messageId: string) => void;
@@ -109,7 +109,7 @@ const ChatMessages: FC<ChatMessagesProps> = ({
                     </div>
 
                     <div
-                        className={`max-w-[88%] rounded-2xl border p-4 text-sm shadow-sm ${
+                        className={`max-w-[88%] rounded-2xl border p-4 text-sm shadow-xs ${
                             isUser
                                 ? "rounded-tr-none border-blue-500 bg-blue-600 text-white"
                                 : "rounded-tl-none border-slate-200 bg-white text-slate-700"

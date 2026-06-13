@@ -86,7 +86,7 @@ const DeveloperGuideDocContent: FC = () => {
                 {!usesSidebarSections && (
                     <TableOfContents
                         content={content}
-                        className="hidden xl:block w-56 flex-shrink-0 self-start sticky overflow-y-auto"
+                        className="hidden xl:block w-56 shrink-0 self-start sticky overflow-y-auto"
                         style={{
                             top: TOC_TOP,
                             maxHeight: `calc(100vh - ${TOC_TOP}px)`,

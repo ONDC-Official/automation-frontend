@@ -1,69 +1,62 @@
-import { useState } from "react";
-import { HeaderProps } from "./types";
-import { Logo } from "./Logo";
-import { MobileMenuButton } from "./MobileMenuButton";
-import { NavigationLinks } from "./NavigationLinks";
-import { UserProfileSection } from "./UserProfileSection";
-import { useHeaderLinks } from "./hooks/useHeaderLinks";
-import { useDropdown } from "./hooks/useDropdown";
-import { useUserDetails } from "./hooks/useUserDetails";
-import { useHeaderHandlers } from "./hooks/useHeaderHandlers";
+import { Button } from "@/components/shadcn/button";
+import { Drawer, DrawerContent, DrawerTitle, DrawerTrigger } from "@/components/shadcn/drawer";
+import { Logo } from "@components/Header/Logo";
+import { NavigationMenuSection } from "@/components/Header/NavigationMenuSection";
+import { ThemeToggle } from "@components/Header/ThemeToggle";
+import { UserProfileSection } from "@components/Header/UserProfileSection";
+import { mobileDrawerNavClassName } from "@/components/Header/constants";
+import { Bars3Icon } from "@heroicons/react/20/solid";
 
-const Header = ({ onSupportClick }: HeaderProps) => {
-    const [isOpen, setIsOpen] = useState(false);
-    const links = useHeaderLinks();
-    const { openDropdown, setOpenDropdown, dropdownRef } = useDropdown();
-    const userDetails = useUserDetails();
+const Header = () => (
+    <header className="fixed inset-x-0 top-0 z-50 w-full">
+        <div className="border-b border-n-30 bg-n-0 dark:border-border-default dark:bg-black">
+            <nav className="relative mx-auto flex h-16 max-w-7xl items-center px-15 xl:px-0">
+                <Logo />
 
-    const {
-        handleLoginClick,
-        handleLinkClick,
-        handleSubMenuClick,
-        handleMouseEnter,
-        handleMouseLeave,
-    } = useHeaderHandlers({
-        userDetails,
-        isOpen,
-        openDropdown,
-        setOpenDropdown,
-        setIsOpen,
-        onSupportClick,
-    });
+                <div
+                    className="mx-5 hidden h-8 w-px shrink-0 bg-n-30 dark:bg-border-default lg:block"
+                    aria-hidden="true"
+                />
 
-    const env = import.meta.env.VITE_ENVIRONMENT;
-    const isDev = env && env === "development";
-
-    return (
-        <header className="fixed top-0 left-0 right-0 z-50">
-            <div className="h-0.5 bg-gradient-to-r from-sky-400 via-sky-500 to-sky-600" />
-            {isDev && (
-                <div className="bg-amber-400 text-amber-900 text-xs font-semibold text-center py-0.5 tracking-wide uppercase">
-                    {env} environment — not a production release
+                <div className="hidden min-w-0 flex-1 lg:flex">
+                    <NavigationMenuSection />
                 </div>
-            )}
-            <div className="bg-white/95 backdrop-blur-md border-b border-gray-100 shadow-[0_2px_20px_rgba(0,0,0,0.06)] max-h-20">
-                <nav className="container mx-auto flex items-center justify-between px-6 h-20">
-                    <Logo />
 
-                    <MobileMenuButton isOpen={isOpen} onToggle={() => setIsOpen(!isOpen)} />
+                <div className="ml-auto flex shrink-0 items-center gap-2 lg:gap-3">
+                    <Drawer direction="left">
+                        <DrawerTrigger asChild>
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                className="lg:hidden"
+                                aria-label="Open navigation menu"
+                            >
+                                <Bars3Icon className="size-5" />
+                            </Button>
+                        </DrawerTrigger>
+                        <DrawerContent className="flex w-full flex-col sm:max-w-xs">
+                            <DrawerTitle className="sr-only">Navigation</DrawerTitle>
+                            <div className={mobileDrawerNavClassName}>
+                                <NavigationMenuSection inDrawer />
+                            </div>
+                            <div className="mt-auto flex items-center gap-3 border-t border-n-30 p-4 pt-6 dark:border-border-default">
+                                <div className="min-w-0 flex-1 [&_button]:w-full">
+                                    <UserProfileSection />
+                                </div>
+                                <ThemeToggle />
+                            </div>
+                        </DrawerContent>
+                    </Drawer>
 
-                    <NavigationLinks
-                        links={links}
-                        isOpen={isOpen}
-                        openDropdown={openDropdown}
-                        dropdownRef={dropdownRef}
-                        onLinkClick={handleLinkClick}
-                        onSubMenuClick={handleSubMenuClick}
-                        onMouseEnter={handleMouseEnter}
-                        onMouseLeave={handleMouseLeave}
-                    />
-
-                    <UserProfileSection userDetails={userDetails} onLoginClick={handleLoginClick} />
-                </nav>
-            </div>
-        </header>
-    );
-};
+                    <div className="hidden items-center gap-2 lg:flex lg:gap-3">
+                        <UserProfileSection />
+                        <ThemeToggle />
+                    </div>
+                </div>
+            </nav>
+        </div>
+    </header>
+);
 
 export default Header;
-export type { UserDetails } from "./types";

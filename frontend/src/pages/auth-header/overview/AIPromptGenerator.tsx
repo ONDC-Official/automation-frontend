@@ -11,7 +11,7 @@ const AIPromptGenerator: FC = () => {
     }, [copyToClipboard]);
 
     return (
-        <div className="bg-gradient-to-r from-violet-50 to-purple-50 border border-violet-200 rounded-xl p-6">
+        <div className="bg-linear-to-r from-violet-50 to-purple-50 border border-violet-200 rounded-xl p-6">
             <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
                     <div className="w-12 h-12 bg-violet-100 rounded-xl flex items-center justify-center">

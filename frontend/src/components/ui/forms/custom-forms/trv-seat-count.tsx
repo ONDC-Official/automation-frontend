@@ -193,7 +193,7 @@ export default function TRV12busSeatSelection({
     });
 
     const inputStyle =
-        "border rounded p-2 flex-1 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white";
+        "border rounded p-2 flex-1 focus:outline-hidden focus:ring-2 focus:ring-blue-500 bg-white";
     const labelStyle = "mb-1 font-semibold";
     const fieldWrapperStyle = "flex flex-col mb-2";
 

@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef } from "react";
 import axios from "axios";
-import { Domain } from "@/pages/schema-validation/types";
-import { DomainVersion } from "@/pages/schema-validation/types";
+import { IDomain } from "@/pages/schema-validation/types";
+import { IDomainVersion } from "@/pages/schema-validation/types";
 
-export type DomainVersionWithUsecase = DomainVersion & {
+export type IDomainVersionWithUsecase = IDomainVersion & {
     usecase: string[];
 };
 
@@ -17,8 +17,8 @@ export interface FormData {
 }
 
 export interface DynamicList {
-    domain: Domain[];
-    version: DomainVersionWithUsecase[];
+    domain: IDomain[];
+    version: IDomainVersionWithUsecase[];
     usecase: string[];
 }
 

@@ -30,7 +30,7 @@ export function ChatMessageList({ messages, isStreaming }: ChatMessageListProps)
     if (messages.length === 0) {
         return (
             <div className="flex-1 flex flex-col items-center justify-center text-center gap-2 text-sm text-gray-500 border border-dashed border-gray-300 rounded p-4">
-                <span className="inline-flex items-center justify-center h-10 w-10 rounded-full bg-gradient-to-br from-sky-500 to-indigo-600 text-white shadow">
+                <span className="inline-flex items-center justify-center h-10 w-10 rounded-full bg-linear-to-br from-sky-500 to-indigo-600 text-white shadow-sm">
                     <PiShieldStarBold className="h-5 w-5" />
                 </span>
                 <div className="font-semibold tracking-wide uppercase text-gray-700 text-xs">
@@ -56,7 +56,7 @@ export function ChatMessageList({ messages, isStreaming }: ChatMessageListProps)
                             key={m.id}
                             className="rounded-lg px-3 py-2 text-sm border bg-sky-50 border-sky-200 self-end max-w-[85%]"
                         >
-                            <div className="whitespace-pre-wrap break-words">
+                            <div className="whitespace-pre-wrap wrap-break-word">
                                 {m.content}
                             </div>
                         </div>
@@ -105,7 +105,7 @@ export function ChatMessageList({ messages, isStreaming }: ChatMessageListProps)
 
                 return (
                     <div key={m.id} className="self-start max-w-[95%] flex gap-2">
-                        <span className="inline-flex items-center justify-center h-6 w-6 rounded-md bg-gradient-to-br from-sky-500 to-indigo-600 text-white shrink-0 mt-0.5">
+                        <span className="inline-flex items-center justify-center h-6 w-6 rounded-md bg-linear-to-br from-sky-500 to-indigo-600 text-white shrink-0 mt-0.5">
                             <PiShieldStarBold className="h-3.5 w-3.5" />
                         </span>
                         <div className="rounded-lg px-3 py-2 text-sm border bg-white border-gray-200 flex-1 min-w-0">

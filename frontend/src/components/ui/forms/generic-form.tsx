@@ -54,7 +54,11 @@ const GenericForm = <T extends FieldValues = FieldValues>({
             className={className}
         >
             {React.Children.map(children, (child) =>
-                React.cloneElement(child as React.ReactElement, { register, errors, setValue })
+                React.cloneElement(child as React.ReactElement<Record<string, unknown>>, {
+                    register,
+                    errors,
+                    setValue,
+                })
             )}
             <div className={submitAlign === "right" ? "flex justify-end" : undefined}>
                 <LoadingButton type="submit" buttonText="Submit" isLoading={isLoading} />

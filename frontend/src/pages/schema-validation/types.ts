@@ -1,31 +1,33 @@
-/**
- * Type definitions for Schema Validation page
- */
+export type IEditorRange = {
+    startLineNumber: number;
+    startColumn: number;
+    endLineNumber: number;
+    endColumn: number;
+};
 
-/**
- * Structure of a domain version entry
- */
-export interface DomainVersion {
+export interface IDomainVersion {
     key: string;
 }
+
+export type MonacoModule = typeof import("monaco-editor");
 
 /**
  * Structure of a domain entry
  */
-export interface Domain {
+export interface IDomain {
     key: string;
-    version: DomainVersion[];
+    version: IDomainVersion[];
 }
 
 /**
  * Active domain configuration structure
  */
-export type ActiveDomainConfig = Record<string, Domain[]>;
+export type IActiveDomainConfig = Record<string, IDomain[]>;
 
 /**
  * Payload context structure
  */
-export interface PayloadContext {
+export interface IPayloadContext {
     action?: string;
     domain?: string;
     version?: string;
@@ -35,15 +37,15 @@ export interface PayloadContext {
 /**
  * Parsed payload structure
  */
-export interface ParsedPayload {
-    context?: PayloadContext;
+export interface IParsedPayload {
+    context?: IPayloadContext;
     [key: string]: unknown;
 }
 
 /**
  * Validation response structure
  */
-export interface ValidationResponse {
+export interface IValidationResponse {
     error?: {
         message?: string;
     };
@@ -53,42 +55,64 @@ export interface ValidationResponse {
 /**
  * Monaco Editor instance type
  */
-export type MonacoEditor = {
+export type IMonacoEditor = {
     getDomNode: () => HTMLElement | null;
 };
 
 /**
  * Return type for the useSchemaValidation hook
  */
-export interface UseSchemaValidationReturn {
+export interface IUseSchemaValidationReturn {
     payload: string;
     isLoading: boolean;
-    mdData: string;
+    validationErrors: IParsedValidationError[];
     isSuccessResponse: boolean;
-    isValidationOpen: boolean;
-    isGuideOpen: boolean;
-    activeDomain: ActiveDomainConfig;
+    isValidationVisible: boolean;
+    isErrorsExpanded: boolean;
+    activeDomain: IActiveDomainConfig;
     handlePayloadChange: (value: string | undefined) => void;
     verifyRequest: () => Promise<void>;
-    handleEditorMount: (editor: unknown) => void;
+    handleEditorMount: (editor: unknown, monaco: unknown) => void;
+    expandValidationErrors: () => void;
+    collapseValidationErrors: () => void;
+}
+
+export interface ISchemaGuideStepDefinition {
+    key: string;
+    label: string;
+    description?: string;
+    descriptionType?: "text" | "code";
 }
 
 /**
- * Props for ValidationResults component
+ * Structured validation error parsed from API markdown responses.
  */
-export interface ValidationResultsProps {
-    /** Whether the panel is visible */
+export interface IParsedValidationError {
+    /** Validation rule code, e.g. PAYMENT_REQUIRED_TYPE */
+    code: string;
+    /** JSON path associated with the error */
+    path: string;
+    /** Human-readable error message */
+    message: string;
+    /** Optional property key for schema errors such as additionalProperties */
+    propertyKey?: string;
+}
+
+export interface IValidationErrorsPanelProps {
+    /** Whether validation has been run at least once */
     isVisible: boolean;
-    /** Whether validation was successful */
+    /** Whether the payload passed validation */
     isSuccess: boolean;
-    /** Markdown content to display */
-    markdownData: string;
+    /** Parsed validation errors */
+    errors: IParsedValidationError[];
+    /** Whether the full error list is expanded */
+    isExpanded: boolean;
+    /** Expands the error panel to show all errors */
+    onExpand: () => void;
+    /** Collapses the expanded error panel */
+    onCollapse: () => void;
 }
 
-/**
- * Props for InstructionsPanel component
- */
-export interface InstructionsPanelProps {
-    /** Whether the panel is visible */
-    isVisible: boolean;
+export interface IErrorItemProps {
+    error: IParsedValidationError;
 }

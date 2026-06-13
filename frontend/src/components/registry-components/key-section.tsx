@@ -43,11 +43,11 @@ export const KeysSection: React.FC<KeysSectionProps> = ({ keys, onAddKey, onDele
     };
 
     const inputClasses =
-        "mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm";
+        "mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-xs focus:outline-hidden focus:ring-sky-500 focus:border-sky-500 sm:text-sm";
     const labelClasses = "block text-sm font-medium text-gray-700";
 
     return (
-        <div className="bg-white shadow-sm rounded-xl p-6 sm:p-8">
+        <div className="bg-white shadow-xs rounded-xl p-6 sm:p-8">
             <h2 className="text-xl font-bold text-gray-900">Signing & Encryption Keys</h2>
             <p className="mt-1 text-sm text-gray-600">Manage public keys for your application.</p>
 
@@ -98,7 +98,7 @@ export const KeysSection: React.FC<KeysSectionProps> = ({ keys, onAddKey, onDele
                                 <input
                                     type="text"
                                     placeholder="unique-key-id"
-                                    className="cursor-not-allowed mt-1 block w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm"
+                                    className="cursor-not-allowed mt-1 block w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-md shadow-xs focus:outline-hidden focus:ring-sky-500 focus:border-sky-500 sm:text-sm"
                                     value={new Date().toISOString()}
                                     disabled
                                 />
@@ -108,7 +108,7 @@ export const KeysSection: React.FC<KeysSectionProps> = ({ keys, onAddKey, onDele
                                 <input
                                     type="text"
                                     placeholder="unique-key-id"
-                                    className="cursor-not-allowed mt-1 block w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm"
+                                    className="cursor-not-allowed mt-1 block w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-md shadow-xs focus:outline-hidden focus:ring-sky-500 focus:border-sky-500 sm:text-sm"
                                     value={new Date(
                                         new Date().setFullYear(new Date().getFullYear() + 1)
                                     ).toISOString()}
@@ -153,7 +153,7 @@ export const KeysSection: React.FC<KeysSectionProps> = ({ keys, onAddKey, onDele
                     >
                         <button
                             onClick={() => setIsAdding(true)}
-                            className="w-full sm:w-auto flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-sky-600 hover:bg-sky-700"
+                            className="w-full sm:w-auto flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-xs text-white bg-sky-600 hover:bg-sky-700"
                         >
                             + Add Key
                         </button>
@@ -200,7 +200,7 @@ export const KeysSection: React.FC<KeysSectionProps> = ({ keys, onAddKey, onDele
                                     Public Signing Key
                                 </span>
                                 <textarea
-                                    className="w-full mt-1 p-2 bg-gray-50 border border-gray-200 rounded-md shadow-sm text-sm text-gray-800"
+                                    className="w-full mt-1 p-2 bg-gray-50 border border-gray-200 rounded-md shadow-xs text-sm text-gray-800"
                                     value={key.signing_pub}
                                     readOnly
                                 />
@@ -208,7 +208,7 @@ export const KeysSection: React.FC<KeysSectionProps> = ({ keys, onAddKey, onDele
                                     Public Encryption Key
                                 </span>
                                 <textarea
-                                    className="w-full mt-1 p-2 bg-gray-50 border border-gray-200 rounded-md shadow-sm text-sm text-gray-800"
+                                    className="w-full mt-1 p-2 bg-gray-50 border border-gray-200 rounded-md shadow-xs text-sm text-gray-800"
                                     value={key.encryption_pub}
                                     readOnly
                                 />

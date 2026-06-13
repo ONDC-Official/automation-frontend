@@ -67,7 +67,7 @@ const FetchForm: FC<FetchFormProps> = ({
                 <button
                     onClick={onFetch}
                     disabled={isLoading}
-                    className="w-full bg-gradient-to-r from-sky-500 to-blue-500 text-white py-2 px-4 rounded-lg font-medium hover:from-sky-600 hover:to-blue-600 focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full bg-linear-to-r from-sky-500 to-blue-500 text-white py-2 px-4 rounded-lg font-medium hover:from-sky-600 hover:to-blue-600 focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                     {isLoading ? (
                         <span className="flex items-center justify-center">

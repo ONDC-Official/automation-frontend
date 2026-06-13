@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, type JSX } from "react";
 import Tippy from "@tippyjs/react";
 // import "tippy.js/dist/tippy.css";
 import "tippy.js/animations/perspective-subtle.css";
@@ -111,8 +111,8 @@ const renderValue = (
     if (selected.status) {
         rowBg =
             selected.type === SelectedType.SaveData
-                ? "bg-sky-100 ring-1 ring-sky-400 shadow-sm"
-                : "bg-slate-100 ring-1 ring-slate-300 shadow-sm";
+                ? "bg-sky-100 ring-1 ring-sky-400 shadow-xs"
+                : "bg-slate-100 ring-1 ring-slate-300 shadow-xs";
     }
 
     return (
@@ -123,7 +123,7 @@ const renderValue = (
             delay={[300, 0]}
             placement="top"
             arrow={false}
-            className="max-w-xs break-words whitespace-normal"
+            className="max-w-xs wrap-break-word whitespace-normal"
             interactive={true}
             animation="perspective-subtle"
         >
@@ -141,7 +141,7 @@ const renderValue = (
                 </span>
                 <button
                     onClick={handleCopy}
-                    className="opacity-0 group-hover/value:opacity-60 hover:!opacity-100 transition-opacity text-slate-400 hover:text-sky-600 flex-shrink-0"
+                    className="opacity-0 group-hover/value:opacity-60 hover:opacity-100! transition-opacity text-slate-400 hover:text-sky-600 shrink-0"
                     title="Copy value"
                 >
                     <CopyIcon />
@@ -201,12 +201,12 @@ const renderJson = ({
 
                 // Key highlight
                 let keyClass =
-                    "font-mono text-[12px] leading-[1.35] transition-colors duration-100 select-none flex-shrink-0 ";
+                    "font-mono text-[12px] leading-[1.35] transition-colors duration-100 select-none shrink-0 ";
                 if (isKeySelected.status) {
                     keyClass +=
                         isKeySelected.type === SelectedType.SaveData
-                            ? "bg-sky-100 text-sky-700 rounded px-1 ring-1 ring-sky-400 shadow-sm"
-                            : "bg-slate-100 text-slate-700 rounded px-1 ring-1 ring-slate-300 shadow-sm";
+                            ? "bg-sky-100 text-sky-700 rounded px-1 ring-1 ring-sky-400 shadow-xs"
+                            : "bg-slate-100 text-slate-700 rounded px-1 ring-1 ring-slate-300 shadow-xs";
                 } else {
                     keyClass +=
                         isObject || isArray
@@ -221,18 +221,18 @@ const renderJson = ({
                         className="whitespace-nowrap"
                     >
                         {/* Row */}
-                        <div className="group inline-flex items-start hover:bg-sky-100/60 -mx-[2px] px-[2px] rounded w-full min-w-0 transition-colors duration-75">
+                        <div className="group inline-flex items-start hover:bg-sky-100/60 mx-[-2px] px-[2px] rounded w-full min-w-0 transition-colors duration-75">
                             {/* Collapse toggle / spacer */}
                             {isObject || isArray ? (
                                 <button
                                     onClick={() => toggleCollapse(newPath)}
-                                    className="text-slate-400 hover:text-sky-600 mr-1 mt-[3px] transition-colors flex-shrink-0"
+                                    className="text-slate-400 hover:text-sky-600 mr-1 mt-[3px] transition-colors shrink-0"
                                     aria-label={isCollapsed ? "Expand" : "Collapse"}
                                 >
                                     {isCollapsed ? <ChevronRight /> : <ChevronDown />}
                                 </button>
                             ) : (
-                                <span className="w-3 mr-1 flex-shrink-0 inline-block" />
+                                <span className="w-3 mr-1 shrink-0 inline-block" />
                             )}
 
                             {/* Key */}
@@ -243,7 +243,7 @@ const renderJson = ({
                                     arrow={false}
                                     disabled={!isObject && !isArray}
                                     placement="top"
-                                    className="max-w-xs break-words whitespace-normal"
+                                    className="max-w-xs wrap-break-word whitespace-normal"
                                     interactive={true}
                                     animation="perspective-subtle"
                                 >
@@ -255,7 +255,7 @@ const renderJson = ({
                                     </span>
                                 </Tippy>
 
-                                <span className="text-slate-400 font-mono text-[12px] leading-[1.35] flex-shrink-0 mx-[1px]">
+                                <span className="text-slate-400 font-mono text-[12px] leading-[1.35] shrink-0 mx-px">
                                     :
                                 </span>
 
@@ -500,14 +500,14 @@ const JsonViewer: React.FC<JsonViewerProps> = ({
 
     // ── Toolbar button styles ──────────────────────────────────────────────────
     const btnBase =
-        "px-2.5 py-1 text-[11px] font-medium rounded-lg transition-all duration-100 whitespace-nowrap select-none shadow-sm";
+        "px-2.5 py-1 text-[11px] font-medium rounded-lg transition-all duration-100 whitespace-nowrap select-none shadow-xs";
     const btnGhost = `${btnBase} text-slate-600 bg-white hover:bg-sky-50 border border-slate-200 hover:border-sky-300 hover:text-sky-700`;
     const btnPrimary = `${btnBase} text-white bg-sky-500 hover:bg-sky-600 border border-sky-500 hover:border-sky-600 flex items-center gap-1.5`;
 
     return (
         <div className="font-mono text-sm h-full flex flex-col bg-sky-50/60 text-slate-700">
             {/* ── Toolbar ─────────────────────────────────────────────────── */}
-            <div className="flex items-center gap-1.5 mb-0 px-3 py-1.5 flex-shrink-0 border-b border-sky-200 bg-white/80 backdrop-blur-sm">
+            <div className="flex items-center gap-1.5 mb-0 px-3 py-1.5 shrink-0 border-b border-sky-200 bg-white/80 backdrop-blur-xs">
                 {/* Search */}
                 <div className="relative flex-1">
                     <svg
@@ -528,7 +528,7 @@ const JsonViewer: React.FC<JsonViewerProps> = ({
                         placeholder="Search keys or values…"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full bg-white border border-slate-200 rounded-lg pl-8 pr-3 py-1.5 text-[12px] font-mono text-slate-700 placeholder-slate-400 outline-none focus:ring-2 focus:ring-sky-400/50 focus:border-sky-400 transition-all shadow-sm"
+                        className="w-full bg-white border border-slate-200 rounded-lg pl-8 pr-3 py-1.5 text-[12px] font-mono text-slate-700 placeholder-slate-400 outline-hidden focus:ring-2 focus:ring-sky-400/50 focus:border-sky-400 transition-all shadow-xs"
                     />
                 </div>
 

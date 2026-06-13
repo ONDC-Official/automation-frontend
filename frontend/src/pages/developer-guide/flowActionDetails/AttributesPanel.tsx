@@ -28,7 +28,7 @@ const AttributesPanel: FC<AttributesPanelProps> = ({
 }) => {
     if (!attributes) {
         return (
-            <div className="h-full flex flex-col rounded-xl border border-sky-100 bg-white overflow-hidden shadow-sm">
+            <div className="h-full flex flex-col rounded-xl border border-sky-100 bg-white overflow-hidden shadow-xs">
                 <div className="flex-1 flex flex-col items-center justify-center gap-3 p-8 text-center">
                     <div className="w-10 h-10 rounded-full bg-sky-50 border border-sky-100 flex items-center justify-center text-sky-400 text-lg">
                         &#x276F;
@@ -43,7 +43,7 @@ const AttributesPanel: FC<AttributesPanelProps> = ({
     }
 
     return (
-        <div className="h-full flex flex-col rounded-xl border border-sky-100 bg-white overflow-hidden shadow-sm">
+        <div className="h-full flex flex-col rounded-xl border border-sky-100 bg-white overflow-hidden shadow-xs">
             <div className="flex-1 overflow-auto p-4 text-sm">
                 {attributes.kind === "attribute" && <AttributeSection attrs={attributes} />}
                 {attributes.kind === "enum" && <EnumSection attrs={attributes} />}

@@ -314,7 +314,7 @@ export default function FinvuRedirectForm({
                     <button
                         type="button"
                         onClick={handleStartVerification}
-                        className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors focus:outline-hidden focus:ring-2 focus:ring-blue-500"
                     >
                         Start Account Aggregator Verification
                     </button>
@@ -337,7 +337,7 @@ export default function FinvuRedirectForm({
                     <button
                         type="button"
                         onClick={handleReopenFinvu}
-                        className="text-blue-600 hover:text-blue-800 underline focus:outline-none"
+                        className="text-blue-600 hover:text-blue-800 underline focus:outline-hidden"
                     >
                         Reopen Finvu Tab
                     </button>
@@ -360,7 +360,7 @@ export default function FinvuRedirectForm({
                     <button
                         type="button"
                         onClick={handleRetry}
-                        className="bg-blue-600 text-white py-2 px-6 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="bg-blue-600 text-white py-2 px-6 rounded-lg hover:bg-blue-700 focus:outline-hidden focus:ring-2 focus:ring-blue-500"
                     >
                         Try Again
                     </button>

@@ -50,7 +50,7 @@ export const FlowInfoModal = ({ isOpen, meta, onSave, onClose }: FlowInfoModalPr
     };
 
     return (
-        <div className="fixed inset-0 z-[60] bg-black/50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-60 bg-black/50 flex items-center justify-center p-4">
             <div className="bg-white rounded-2xl shadow-2xl max-w-full flex flex-col">
                 {/* Header */}
                 <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
@@ -98,7 +98,7 @@ export const FlowInfoModal = ({ isOpen, meta, onSave, onClose }: FlowInfoModalPr
                                     value={description}
                                     onChange={(e) => setDescription(e.target.value)}
                                     placeholder="What does this flow test?"
-                                    className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-xl text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent resize-none transition-all"
+                                    className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-xl text-sm text-gray-900 placeholder-gray-400 focus:outline-hidden focus:ring-2 focus:ring-sky-500 focus:border-transparent resize-none transition-all"
                                 />
                             </div>
 
@@ -111,7 +111,7 @@ export const FlowInfoModal = ({ isOpen, meta, onSave, onClose }: FlowInfoModalPr
                                     value={useCaseId}
                                     onChange={(e) => setUseCaseId(e.target.value)}
                                     placeholder="e.g. UCS-001"
-                                    className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-xl text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent transition-all"
+                                    className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-xl text-sm text-gray-900 placeholder-gray-400 focus:outline-hidden focus:ring-2 focus:ring-sky-500 focus:border-transparent transition-all"
                                 />
                             </div>
 
@@ -124,7 +124,7 @@ export const FlowInfoModal = ({ isOpen, meta, onSave, onClose }: FlowInfoModalPr
                                     value={flowName}
                                     onChange={(e) => setFlowName(e.target.value)}
                                     placeholder="Human-readable name for this flow"
-                                    className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-xl text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent transition-all"
+                                    className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-xl text-sm text-gray-900 placeholder-gray-400 focus:outline-hidden focus:ring-2 focus:ring-sky-500 focus:border-transparent transition-all"
                                 />
                             </div>
                         </div>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { CSSProperties, useState } from "react";
 import JsonView from "@uiw/react-json-view";
 import { githubDarkTheme } from "@uiw/react-json-view/githubDark";
 import { HiSearch, HiX } from "react-icons/hi";
@@ -65,7 +65,7 @@ export default function SearchableJsonView({
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
                     placeholder={placeholder}
-                    className="w-full pl-9 pr-9 py-2 text-sm bg-white text-black shadow-sm rounded-md focus:outline-none focus:ring-1 placeholder-gray-500"
+                    className="w-full pl-9 pr-9 py-2 text-sm bg-white text-black shadow-xs rounded-md focus:outline-hidden focus:ring-1 placeholder-gray-500"
                 />
                 {query && (
                     <button
@@ -80,7 +80,7 @@ export default function SearchableJsonView({
             </div>
             <JsonView
                 value={filterJsonBySearch(value, query) as object}
-                style={githubDarkTheme}
+                style={githubDarkTheme as CSSProperties}
                 className="rounded-md"
                 displayDataTypes={false}
             />

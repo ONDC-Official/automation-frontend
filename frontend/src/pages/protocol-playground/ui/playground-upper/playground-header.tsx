@@ -76,7 +76,7 @@ const FileMenu = ({
         <div ref={ref} className="relative">
             <button
                 onClick={() => setOpen((v) => !v)}
-                className="flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium text-sky-700 bg-sky-100 hover:bg-sky-200 transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-400 focus:ring-offset-1"
+                className="flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium text-sky-700 bg-sky-100 hover:bg-sky-200 transition-colors shadow-xs focus:outline-hidden focus:ring-2 focus:ring-sky-400 focus:ring-offset-1"
             >
                 <FaDownload size={13} />
                 File
@@ -161,7 +161,7 @@ const StepGroupSelector = ({
         type="button"
         onClick={() => onStepGroupChange(stepGroup === "main" ? "extra" : "main")}
         title="Click to switch step group"
-        className="px-2.5 py-1.5 rounded-md text-sm font-medium text-sky-700 bg-sky-100 hover:bg-sky-200 transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-400 focus:ring-offset-1 cursor-pointer"
+        className="px-2.5 py-1.5 rounded-md text-sm font-medium text-sky-700 bg-sky-100 hover:bg-sky-200 transition-colors shadow-xs focus:outline-hidden focus:ring-2 focus:ring-sky-400 focus:ring-offset-1 cursor-pointer"
     >
         {stepGroup === "main" ? `Main Steps (${mainStepCount})` : `Extra Steps (${extraStepCount})`}
     </button>
@@ -192,7 +192,7 @@ export const PlaygroundHeader = ({
     isFullscreen,
     onToggleFullscreen,
 }: PlaygroundHeaderProps) => (
-    <div className="h-14 flex items-center justify-between px-4 bg-gradient-to-r from-white to-sky-50 border-b border-sky-100 shadow-sm gap-4">
+    <div className="h-14 flex items-center justify-between px-4 bg-linear-to-r from-white to-sky-50 border-b border-sky-100 shadow-xs gap-4">
         {/* Left — nav + title + meta */}
         <div className="flex items-center gap-2 min-w-0">
             <IconButton
@@ -210,7 +210,7 @@ export const PlaygroundHeader = ({
 
             <div className="w-px h-6 bg-gray-200 mx-1" />
 
-            <span className="text-md font-bold bg-gradient-to-r from-sky-600 to-sky-500 bg-clip-text text-transparent tracking-tight whitespace-nowrap">
+            <span className="text-md font-bold bg-linear-to-r from-sky-600 to-sky-500 bg-clip-text text-transparent tracking-tight whitespace-nowrap">
                 PLAYGROUND
             </span>
 
@@ -239,14 +239,14 @@ export const PlaygroundHeader = ({
                 <button
                     onClick={onEditMeta}
                     title="Edit flow info"
-                    className="p-2.5 rounded-lg bg-white shadow-sm text-black hover:bg-sky-100 hover:text-sky-600 transition-colors"
+                    className="p-2.5 rounded-lg bg-white shadow-xs text-black hover:bg-sky-100 hover:text-sky-600 transition-colors"
                 >
                     <FaPencilAlt size={14} />
                 </button>
                 <button
                     onClick={onViewTrace}
                     title="View execution trace"
-                    className="p-2.5 rounded-lg bg-white shadow-sm text-black hover:bg-sky-100 hover:text-sky-600 transition-colors"
+                    className="p-2.5 rounded-lg bg-white shadow-xs text-black hover:bg-sky-100 hover:text-sky-600 transition-colors"
                 >
                     <FaRegEye size={14} />
                 </button>

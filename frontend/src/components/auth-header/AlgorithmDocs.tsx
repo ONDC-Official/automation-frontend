@@ -79,7 +79,7 @@ const AlgorithmDocs: React.FC = () => {
     return (
         <div className="space-y-8">
             {/* Overview */}
-            <div className="bg-gradient-to-r from-sky-50 to-blue-50 border border-sky-200 rounded-xl p-6">
+            <div className="bg-linear-to-r from-sky-50 to-blue-50 border border-sky-200 rounded-xl p-6">
                 <h2 className="text-2xl font-bold text-gray-900 mb-3">ONDC Authorization Header</h2>
                 <p className="text-gray-700 leading-relaxed">
                     ONDC uses a cryptographic signature scheme to authenticate API requests between
@@ -281,7 +281,7 @@ signature="{base64_signature}"`}
             </div>
 
             {/* AI Prompt Generator */}
-            <div className="bg-gradient-to-r from-violet-50 to-purple-50 border border-violet-200 rounded-xl p-6">
+            <div className="bg-linear-to-r from-violet-50 to-purple-50 border border-violet-200 rounded-xl p-6">
                 <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-3">
                         <div className="w-12 h-12 bg-violet-100 rounded-xl flex items-center justify-center">

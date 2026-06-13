@@ -290,7 +290,7 @@ const CommentsPanel: FC<CommentsPanelProps> = ({ selectedPath, actionApi, useCas
     const hasSelection = selectedPath != null;
 
     return (
-        <div className="h-full flex flex-col rounded-xl border border-slate-200 bg-white overflow-hidden shadow-sm">
+        <div className="h-full flex flex-col rounded-xl border border-slate-200 bg-white overflow-hidden shadow-xs">
             <div className="px-5 py-4 border-b border-slate-200 bg-slate-50/70 shrink-0">
                 <h3 className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-0">
                     Comments
@@ -325,7 +325,7 @@ const CommentsPanel: FC<CommentsPanelProps> = ({ selectedPath, actionApi, useCas
                             </div>
                         )}
                         {hasSelection && isLoggedIn && (
-                            <div className="shrink-0 mb-4 p-4 rounded-2xl bg-white border border-slate-200/80 shadow-sm">
+                            <div className="shrink-0 mb-4 p-4 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
                                 <textarea
                                     value={newCommentText}
                                     onChange={(e) => setNewCommentText(e.target.value)}
@@ -338,7 +338,7 @@ const CommentsPanel: FC<CommentsPanelProps> = ({ selectedPath, actionApi, useCas
                                         type="button"
                                         onClick={addComment}
                                         disabled={!newCommentText.trim()}
-                                        className="px-4 py-2 text-sm font-medium text-white bg-sky-500 rounded-xl hover:bg-sky-600 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-sm"
+                                        className="px-4 py-2 text-sm font-medium text-white bg-sky-500 rounded-xl hover:bg-sky-600 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-xs"
                                     >
                                         Post
                                     </button>
@@ -391,7 +391,7 @@ const CommentsPanel: FC<CommentsPanelProps> = ({ selectedPath, actionApi, useCas
                                                 .map((thread) => (
                                                     <div
                                                         key={thread.id}
-                                                        className={`p-4 rounded-2xl border shadow-sm transition-all ${
+                                                        className={`p-4 rounded-2xl border shadow-xs transition-all ${
                                                             thread.resolved
                                                                 ? "bg-slate-50/80 border-slate-100"
                                                                 : "bg-white border-slate-200/80"
@@ -575,7 +575,7 @@ const CommentsPanel: FC<CommentsPanelProps> = ({ selectedPath, actionApi, useCas
                                     {filteredThreads.map((thread) => (
                                         <div
                                             key={thread.id}
-                                            className={`p-4 rounded-2xl border shadow-sm transition-all ${
+                                            className={`p-4 rounded-2xl border shadow-xs transition-all ${
                                                 thread.resolved
                                                     ? "bg-slate-50/80 border-slate-100"
                                                     : "bg-white border-slate-200/80"

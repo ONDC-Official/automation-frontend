@@ -78,7 +78,7 @@ export const CodeStatistics = ({ statistics, validation }: CodeStatisticsProps) 
             {hasErrors && (
                 <div className="bg-red-50 border border-red-200 rounded-lg p-2">
                     <div className="flex items-start gap-2">
-                        <FiAlertCircle size={16} className="text-red-600 mt-0.5 flex-shrink-0" />
+                        <FiAlertCircle size={16} className="text-red-600 mt-0.5 shrink-0" />
                         <div className="flex-1 min-w-0">
                             <h4 className="text-xs font-semibold text-red-900 mb-1">
                                 Validation Errors
@@ -99,10 +99,7 @@ export const CodeStatistics = ({ statistics, validation }: CodeStatisticsProps) 
             {hasWarnings && !hasErrors && (
                 <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-2">
                     <div className="flex items-start gap-2">
-                        <FiAlertTriangle
-                            size={16}
-                            className="text-yellow-600 mt-0.5 flex-shrink-0"
-                        />
+                        <FiAlertTriangle size={16} className="text-yellow-600 mt-0.5 shrink-0" />
                         <div className="flex-1 min-w-0">
                             <h4 className="text-xs font-semibold text-yellow-900 mb-1">Warnings</h4>
                             <ul className="text-xs text-yellow-800 space-y-0.5">

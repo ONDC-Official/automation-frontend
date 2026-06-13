@@ -16,7 +16,7 @@ interface EditorSectionProps {
 const EditorSection: FC<EditorSectionProps> = ({ title, decodedCode }) => {
     return (
         <div className="w-full flex flex-col gap-4">
-            <div className="rounded-xl border border-slate-200 overflow-hidden shadow-sm bg-white">
+            <div className="rounded-xl border border-slate-200 overflow-hidden shadow-xs bg-white">
                 <div className="px-4 py-2 border-b border-slate-100 bg-slate-50/60">
                     <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
                         {title}

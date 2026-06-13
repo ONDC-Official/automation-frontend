@@ -1,7 +1,7 @@
 import { developerGuideApiClient } from "./apiClient";
-import { UserDetails } from "@components/Header";
 import { API_ROUTES } from "./apiRoutes";
 import { authTokenManager } from "@utils/localStorageManager";
+import { IUser } from "@/types/user";
 
 /**
  * Authentication service for handling auth-related API calls
@@ -26,16 +26,44 @@ export class AuthService {
     }
 
     /**
+     * Exchange OAuth code for application token and persist it
+     */
+    static async exchangeCodeAndPersistToken(code: string): Promise<void> {
+        const token = await AuthService.exchangeCodeForToken(code);
+
+        if (!token) {
+            return;
+        }
+
+        authTokenManager.set(token);
+        await AuthService.refreshUser();
+    }
+
+    /**
+     * Fetch the current user and return them if the session is valid.
+     * Returns null when unauthenticated or on error.
+     */
+    static async refreshUser(): Promise<IUser | null> {
+        try {
+            const response = await AuthService.getCurrentUser();
+
+            if (response?.ok && response.user) {
+                return response.user;
+            }
+
+            return null;
+        } catch (error) {
+            console.error("Error fetching user:", error);
+            return null;
+        }
+    }
+
+    /**
      * Get current user information
      */
-    static async getCurrentUser(): Promise<{ ok: boolean; user: UserDetails } | null> {
+    static async getCurrentUser(): Promise<{ ok: boolean; user: IUser } | null> {
         try {
-            // const response = await apiClient.get<{ ok: boolean; user: UserDetails }>(
-            //     API_ROUTES.AUTH.ME
-            // );
-            // return response.data;
-
-            const response = await developerGuideApiClient.get<{ ok: boolean; user: UserDetails }>(
+            const response = await developerGuideApiClient.get<{ ok: boolean; user: IUser }>(
                 API_ROUTES.AUTH.ME
             );
 
@@ -47,13 +75,8 @@ export class AuthService {
         }
     }
 
-    /**
-     * Logout user
-     */
     static async logout(): Promise<void> {
         try {
-            // await apiClient.post(API_ROUTES.AUTH.LOGOUT, {}, { withCredentials: true });
-            // await developerGuideApiClient.get(API_ROUTES.AUTH.LOGOUT, {});
             authTokenManager.remove();
         } catch (error) {
             console.error("Error during logout:", error);

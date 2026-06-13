@@ -1,5 +1,5 @@
 import { ReactNode, useEffect, useRef, cloneElement, isValidElement, ReactElement } from "react";
-import { GuideStepsEnums, useGuide } from "./../../context/guideContext";
+import { GuideStepsEnums, useGuide } from "../../context/guideContext";
 interface GuideOverlayProps {
     currentStep: GuideStepsEnums;
     children: ReactNode;
@@ -63,25 +63,26 @@ export default function GuideOverlay({
         }
     };
 
-    const childWithClickHandler = isValidElement(children)
-        ? cloneElement(children as ReactElement<InteractiveElementProps>, {
-              onClick: (...args: unknown[]) => {
-                  if (children.props.onClick) {
-                      children.props.onClick?.(...args);
-                  }
+    const childElement = isValidElement(children)
+        ? (children as ReactElement<InteractiveElementProps>)
+        : null;
 
+    const childWithClickHandler = childElement
+        ? cloneElement(childElement, {
+              onClick: (...args: unknown[]) => {
+                  childElement.props.onClick?.(...args);
                   handleNextStep();
               },
           })
         : children;
 
     if (currentStep !== guideStep || guideStep === GuideStepsEnums.Skip) {
-        return <div>{children}</div>;
+        return <div className="contents">{children}</div>;
     }
 
     return (
         <div>
-            <div ref={containerRef} className={`relative z-[52]`}>
+            <div ref={containerRef} className={`relative z-52`}>
                 {childWithClickHandler}
                 <div
                     style={{
@@ -111,7 +112,7 @@ export default function GuideOverlay({
                     </div>
                 </div>
             </div>
-            <div className="fixed inset-0 bg-black bg-opacity-50 z-[51] backdrop-blur-sm"></div>
+            <div className="fixed inset-0 bg-black/50 z-51 backdrop-blur-xs"></div>
         </div>
     );
 }

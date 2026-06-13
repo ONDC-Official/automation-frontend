@@ -1,4 +1,4 @@
-import React from "react";
+import React, { type JSX } from "react";
 
 interface HeadingProps {
     as?: keyof JSX.IntrinsicElements; // For dynamic heading tags like h1, h2, h3
@@ -19,7 +19,7 @@ const Heading: React.FC<HeadingProps> = ({
 }) => {
     return (
         <Tag
-            className={`text-transparent bg-gradient-to-r ${gradientFrom} ${gradientTo} bg-clip-text ${size} ${className}`}
+            className={`text-transparent bg-linear-to-r ${gradientFrom} ${gradientTo} bg-clip-text ${size} ${className}`}
             style={{
                 fontWeight: 1000, // Ensure ultra-bold weight
             }}

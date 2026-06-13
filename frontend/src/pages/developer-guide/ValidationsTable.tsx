@@ -81,7 +81,7 @@ const ValidationsTable: FC<ValidationsTableProps> = ({ validations }) => {
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                             placeholder="Search tests, groups, descriptions…"
-                            className="w-full rounded-lg border border-slate-200 bg-white pl-9 pr-3 py-2 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500/30 focus:border-sky-400"
+                            className="w-full rounded-lg border border-slate-200 bg-white pl-9 pr-3 py-2 text-xs text-slate-800 placeholder-slate-400 focus:outline-hidden focus:ring-2 focus:ring-sky-500/30 focus:border-sky-400"
                         />
                         <svg
                             className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400"
@@ -100,7 +100,7 @@ const ValidationsTable: FC<ValidationsTableProps> = ({ validations }) => {
                 </div>
             </div>
 
-            <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+            <div className="rounded-2xl border border-slate-200 bg-white shadow-xs overflow-hidden">
                 <div className="max-h-[700px] overflow-auto">
                     <table className="min-w-full table-fixed text-left text-xs">
                         <thead className="bg-slate-50/90 backdrop-blur sticky top-0 z-10 border-b border-slate-200">
@@ -145,10 +145,10 @@ const ValidationsTable: FC<ValidationsTableProps> = ({ validations }) => {
                                                   : "bg-slate-50/40 hover:bg-slate-100/80"
                                         }
                                     >
-                                        <td className="px-3 py-2 align-top text-[11px] text-slate-500 max-w-[200px] whitespace-pre-wrap break-words">
+                                        <td className="px-3 py-2 align-top text-[11px] text-slate-500 max-w-[200px] whitespace-pre-wrap wrap-break-word">
                                             {index + 1}
                                         </td>
-                                        <td className="px-3 py-2 align-top text-[11px] max-w-[200px] whitespace-pre-wrap break-words">
+                                        <td className="px-3 py-2 align-top text-[11px] max-w-[200px] whitespace-pre-wrap wrap-break-word">
                                             {isEmpty(row.rowType) ? (
                                                 <span className="text-slate-300">
                                                     {EMPTY_PLACEHOLDER}
@@ -165,7 +165,7 @@ const ValidationsTable: FC<ValidationsTableProps> = ({ validations }) => {
                                                 </span>
                                             )}
                                         </td>
-                                        <td className="px-3 py-2 align-top text-xs font-semibold text-slate-800 whitespace-pre-wrap break-words max-w-[200px]">
+                                        <td className="px-3 py-2 align-top text-xs font-semibold text-slate-800 whitespace-pre-wrap wrap-break-word max-w-[200px]">
                                             {isEmpty(row.name) ? (
                                                 <span className="text-slate-300">
                                                     {EMPTY_PLACEHOLDER}
@@ -174,7 +174,7 @@ const ValidationsTable: FC<ValidationsTableProps> = ({ validations }) => {
                                                 renderWithBold(row.name)
                                             )}
                                         </td>
-                                        <td className="px-3 py-2 align-top text-xs text-slate-600 whitespace-pre-wrap break-words max-w-[200px]">
+                                        <td className="px-3 py-2 align-top text-xs text-slate-600 whitespace-pre-wrap wrap-break-word max-w-[200px]">
                                             {isEmpty(row.group) ? (
                                                 <span className="text-slate-300">
                                                     {EMPTY_PLACEHOLDER}
@@ -183,7 +183,7 @@ const ValidationsTable: FC<ValidationsTableProps> = ({ validations }) => {
                                                 row.group
                                             )}
                                         </td>
-                                        <td className="px-3 py-2 align-top text-xs text-slate-600 whitespace-pre-wrap break-words max-w-[200px]">
+                                        <td className="px-3 py-2 align-top text-xs text-slate-600 whitespace-pre-wrap wrap-break-word max-w-[200px]">
                                             {isEmpty(row.scope) ? (
                                                 <span className="text-slate-300">
                                                     {EMPTY_PLACEHOLDER}
@@ -192,7 +192,7 @@ const ValidationsTable: FC<ValidationsTableProps> = ({ validations }) => {
                                                 row.scope
                                             )}
                                         </td>
-                                        <td className="px-3 py-2 align-top text-xs text-slate-700 whitespace-pre-wrap break-words leading-relaxed w-[300px] max-w-[300px]">
+                                        <td className="px-3 py-2 align-top text-xs text-slate-700 whitespace-pre-wrap wrap-break-word leading-relaxed w-[300px] max-w-[300px]">
                                             {isEmpty(row.description) ? (
                                                 <span className="text-slate-300">
                                                     {EMPTY_PLACEHOLDER}
@@ -201,7 +201,7 @@ const ValidationsTable: FC<ValidationsTableProps> = ({ validations }) => {
                                                 row.description
                                             )}
                                         </td>
-                                        <td className="px-3 py-2 align-top text-xs text-slate-500 whitespace-pre-wrap break-words leading-relaxed max-w-[200px]">
+                                        <td className="px-3 py-2 align-top text-xs text-slate-500 whitespace-pre-wrap wrap-break-word leading-relaxed max-w-[200px]">
                                             {isEmpty(row.skipIf) ? (
                                                 <span className="text-slate-300">
                                                     {EMPTY_PLACEHOLDER}
@@ -210,7 +210,7 @@ const ValidationsTable: FC<ValidationsTableProps> = ({ validations }) => {
                                                 row.skipIf
                                             )}
                                         </td>
-                                        <td className="px-3 py-2 align-top text-xs max-w-[200px] whitespace-pre-wrap break-words">
+                                        <td className="px-3 py-2 align-top text-xs max-w-[200px] whitespace-pre-wrap wrap-break-word">
                                             {isEmpty(row.errorCode) ? (
                                                 <span className="text-slate-300 font-mono">
                                                     {EMPTY_PLACEHOLDER}

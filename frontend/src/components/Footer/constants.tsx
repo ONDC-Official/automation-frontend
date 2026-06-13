@@ -1,7 +1,8 @@
-import { BsGithub, BsLinkedin } from "react-icons/bs";
-import { FooterLinks, SocialLink } from "./types";
+import { IFooterLinks, ISocialLink } from "@/components/Footer/types";
+import GitHubIcon from "@/assets/svgs/GitHubIcon";
+import LinkedInIcon from "@/assets/svgs/LinkedInIcon";
 
-export const footerLinks: FooterLinks = {
+export const footerLinks: IFooterLinks = {
     company: [
         {
             name: "About ONDC",
@@ -40,17 +41,24 @@ export const footerLinks: FooterLinks = {
     ],
 };
 
-export const socialLinks: SocialLink[] = [
+export const footerLinkColumns: { title: string; key: keyof IFooterLinks }[] = [
+    { title: "Company", key: "company" },
+    { title: "Developers", key: "developers" },
+    { title: "Support", key: "support" },
+    { title: "Quick Links", key: "quickLinks" },
+];
+
+export const socialLinks: ISocialLink[] = [
     {
         name: "LinkedIn",
         href: "https://in.linkedin.com/company/open-network-for-digital-commerce",
-        icon: <BsLinkedin />,
+        icon: <LinkedInIcon />,
         analytics: { category: "FOOTER", action: "Clicked on 'LinkedIn'" },
     },
     {
         name: "GitHub",
         href: "https://github.com/ONDC-Official",
-        icon: <BsGithub />,
+        icon: <GitHubIcon />,
         analytics: { category: "FOOTER", action: "Clicked on 'GitHub'" },
     },
 ];

@@ -55,7 +55,7 @@ const FlowDetailsAndSummary: FC<FlowDetailsAndSummaryProps> = ({ flow }) => {
                             .map((detail, index) => (
                                 <div
                                     key={index}
-                                    className="rounded-xl border border-slate-200 bg-white overflow-hidden shadow-sm"
+                                    className="rounded-xl border border-slate-200 bg-white overflow-hidden shadow-xs"
                                 >
                                     <div className="px-6 py-4 bg-slate-50/50 border-b border-slate-100">
                                         <p className="text-sm text-slate-700 leading-relaxed">

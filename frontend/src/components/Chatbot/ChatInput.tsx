@@ -24,7 +24,7 @@ const ChatInput: FC<ChatInputProps> = ({
 }) => (
     <div className="border-t border-slate-200 bg-white p-3">
         <div className="relative">
-            <div className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-white p-2 shadow-sm">
+            <div className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-white p-2 shadow-xs">
                 {isStreaming && (
                     <div className="pointer-events-none absolute right-14 top-1/2 -translate-y-1/2">
                         <div
@@ -40,7 +40,7 @@ const ChatInput: FC<ChatInputProps> = ({
                     onKeyDown={onInputKeyDown}
                     placeholder={isStreaming ? "Streaming response..." : "Type your ONDC query..."}
                     disabled={isStreaming}
-                    className={`flex-1 bg-transparent py-2 text-sm text-slate-700 placeholder-slate-400 outline-none disabled:cursor-not-allowed disabled:opacity-70 px-2`}
+                    className={`flex-1 bg-transparent py-2 text-sm text-slate-700 placeholder-slate-400 outline-hidden disabled:cursor-not-allowed disabled:opacity-70 px-2`}
                 />
                 {showStop ? (
                     <button

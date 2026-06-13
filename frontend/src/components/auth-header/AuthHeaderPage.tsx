@@ -14,7 +14,7 @@ const AuthHeaderPage: React.FC = () => {
     ];
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
+        <div className="min-h-screen bg-linear-to-b from-gray-50 to-white">
             <div className="max-w-7xl mx-auto px-6 py-8">
                 {/* Header */}
                 <div className="mb-8">

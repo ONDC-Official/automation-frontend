@@ -46,7 +46,7 @@ export function ReportPage({
                 <div className="flex flex-row gap-2 justify-center items-center">
                     <button
                         onClick={() => setStep((s: number) => s - 1)}
-                        className="p-2 rounded-full border border-sky-500 hover:bg-blue-100 text-sky-500 hover:text-blue-600 transition-all duration-300 shadow-sm"
+                        className="p-2 rounded-full border border-sky-500 hover:bg-blue-100 text-sky-500 hover:text-blue-600 transition-all duration-300 shadow-xs"
                     >
                         <IoMdArrowRoundBack size={12} />
                     </button>

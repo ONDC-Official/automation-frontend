@@ -211,7 +211,7 @@ const TimeInput: React.FC<TimeInputProps> = ({
                                     type="button"
                                     className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                                         currentFormat === "12h"
-                                            ? "bg-white text-sky-600 shadow-sm"
+                                            ? "bg-white text-sky-600 shadow-xs"
                                             : "text-gray-600 hover:text-gray-800"
                                     }`}
                                     onClick={() => handleFormatChange("12h")}
@@ -222,7 +222,7 @@ const TimeInput: React.FC<TimeInputProps> = ({
                                     type="button"
                                     className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                                         currentFormat === "24h"
-                                            ? "bg-white text-sky-600 shadow-sm"
+                                            ? "bg-white text-sky-600 shadow-xs"
                                             : "text-gray-600 hover:text-gray-800"
                                     }`}
                                     onClick={() => handleFormatChange("24h")}

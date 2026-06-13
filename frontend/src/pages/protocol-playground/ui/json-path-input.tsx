@@ -42,7 +42,7 @@ const JsonPathInput = ({
                         value={newAlias}
                         onChange={(e) => setNewAlisa(e.target.value)}
                         placeholder="Enter alias (e.g. userInfo)"
-                        className="px-3 py-2 rounded bg-gray-900 text-white border border-gray-700 focus:border-sky-500 outline-none"
+                        className="px-3 py-2 rounded bg-gray-900 text-white border border-gray-700 focus:border-sky-500 outline-hidden"
                     />
                     :
                     <input
@@ -50,7 +50,7 @@ const JsonPathInput = ({
                         value={newPath}
                         onChange={(e) => setNewPath(e.target.value)}
                         placeholder="Enter JSON path (e.g. $.context.city)"
-                        className="px-3 w-full py-2 rounded bg-gray-900 text-white border border-gray-700 focus:border-sky-500 outline-none"
+                        className="px-3 w-full py-2 rounded bg-gray-900 text-white border border-gray-700 focus:border-sky-500 outline-hidden"
                     />
                 </div>
                 {error && <p className="text-red-400 text-sm">{error}</p>}

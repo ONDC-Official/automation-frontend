@@ -1,13 +1,13 @@
 import { FC } from "react";
-import { useFormFieldData, type DomainVersionWithUsecase } from "@/hooks/useFormFieldData";
-import type { Domain, DomainVersion } from "@/pages/schema-validation/types";
+import { useFormFieldData, type IDomainVersionWithUsecase } from "@/hooks/useFormFieldData";
+import type { IDomain, IDomainVersion } from "@/pages/schema-validation/types";
 
 interface DeveloperGuideHeaderFiltersProps {
     onSubmit: (data: { domain: string; version: string; useCase: string }) => Promise<void>;
 }
 
 const selectClass =
-    "h-9 w-[120px] min-w-[120px] max-w-[120px] md:w-[140px] md:min-w-[140px] md:max-w-[140px] lg:w-[160px] lg:min-w-[160px] lg:max-w-[160px] rounded-lg border border-sky-100 bg-white px-3 text-xs text-gray-800 focus:outline-none focus:ring-2 focus:ring-sky-500/30 focus:border-sky-400 truncate";
+    "h-9 w-[120px] min-w-[120px] max-w-[120px] md:w-[140px] md:min-w-[140px] md:max-w-[140px] lg:w-[160px] lg:min-w-[160px] lg:max-w-[160px] rounded-lg border border-sky-100 bg-white px-3 text-xs text-gray-800 focus:outline-hidden focus:ring-2 focus:ring-sky-500/30 focus:border-sky-400 truncate";
 
 const pillClass = "flex items-center gap-2";
 
@@ -32,10 +32,10 @@ const DeveloperGuideHeaderFilters: FC<DeveloperGuideHeaderFiltersProps> = ({ onS
                             usecaseId: "",
                         }));
                         setDynamicList((prev) => {
-                            let filteredVersion: DomainVersionWithUsecase[] = [];
-                            prev.domain.forEach((item: Domain) => {
+                            let filteredVersion: IDomainVersionWithUsecase[] = [];
+                            prev.domain.forEach((item: IDomain) => {
                                 if (item.key === value) {
-                                    filteredVersion = item.version as DomainVersionWithUsecase[];
+                                    filteredVersion = item.version as IDomainVersionWithUsecase[];
                                 }
                             });
                             return { ...prev, version: filteredVersion, usecase: [] };
@@ -45,7 +45,7 @@ const DeveloperGuideHeaderFilters: FC<DeveloperGuideHeaderFiltersProps> = ({ onS
                     <option value="" disabled>
                         Select
                     </option>
-                    {dynamicList.domain.map((d: Domain) => (
+                    {dynamicList.domain.map((d: IDomain) => (
                         <option key={d.key} value={d.key}>
                             {d.key}
                         </option>
@@ -69,7 +69,7 @@ const DeveloperGuideHeaderFilters: FC<DeveloperGuideHeaderFiltersProps> = ({ onS
                         }));
                         setDynamicList((prev) => {
                             let filteredUsecase: string[] = [];
-                            prev.version.forEach((item: DomainVersionWithUsecase) => {
+                            prev.version.forEach((item: IDomainVersionWithUsecase) => {
                                 if (item.key === value) {
                                     filteredUsecase = item.usecase;
                                 }
@@ -81,7 +81,7 @@ const DeveloperGuideHeaderFilters: FC<DeveloperGuideHeaderFiltersProps> = ({ onS
                     <option value="" disabled>
                         Select
                     </option>
-                    {(dynamicList.version?.map((v: DomainVersion) => v.key) || []).map((key) => (
+                    {(dynamicList.version?.map((v: IDomainVersion) => v.key) || []).map((key) => (
                         <option key={key} value={key}>
                             {key}
                         </option>

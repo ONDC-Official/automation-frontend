@@ -291,7 +291,7 @@ const MultiImageUpload: React.FC<MultiImageUploadProps> = ({
 
                 {selectedFiles.length > 0 && (
                     <div className="flex items-center space-x-2 p-2 bg-green-50 rounded-md border border-green-200">
-                        <div className="w-2 h-2 bg-green-500 rounded-full flex-shrink-0"></div>
+                        <div className="w-2 h-2 bg-green-500 rounded-full shrink-0"></div>
                         <p className="text-sm text-green-700 font-medium">
                             {selectedFiles.length} image(s) ready for upload
                         </p>
@@ -346,7 +346,7 @@ const MultiImageUpload: React.FC<MultiImageUploadProps> = ({
                 )}
 
                 {(filePreviews.length > 0 || uploadedUrls.length > 0) && (
-                    <div className="p-4 bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg border-2 border-gray-200 shadow-sm">
+                    <div className="p-4 bg-linear-to-br from-gray-50 to-gray-100 rounded-lg border-2 border-gray-200 shadow-xs">
                         <h4 className="text-sm font-semibold text-gray-900 mb-3">
                             Images Preview ({filePreviews.length + uploadedUrls.length} total)
                         </h4>
@@ -354,7 +354,7 @@ const MultiImageUpload: React.FC<MultiImageUploadProps> = ({
                             {filePreviews.map((preview, index) => (
                                 <div key={`preview-${index}`} className="relative group">
                                     <div
-                                        className={`${getPreviewSize()} bg-white rounded-lg border-2 border-gray-300 p-1 shadow-sm`}
+                                        className={`${getPreviewSize()} bg-white rounded-lg border-2 border-gray-300 p-1 shadow-xs`}
                                     >
                                         <img
                                             src={preview}
@@ -362,7 +362,7 @@ const MultiImageUpload: React.FC<MultiImageUploadProps> = ({
                                             className="w-full h-full object-contain rounded"
                                         />
                                     </div>
-                                    <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-75 text-white text-xs p-1 rounded-b truncate">
+                                    <div className="absolute bottom-0 left-0 right-0 bg-black/75 text-white text-xs p-1 rounded-b truncate">
                                         {selectedFiles[index]?.name}
                                     </div>
                                     <button
@@ -377,7 +377,7 @@ const MultiImageUpload: React.FC<MultiImageUploadProps> = ({
                             {uploadedUrls.map((url, index) => (
                                 <div key={`uploaded-${index}`} className="relative group">
                                     <div
-                                        className={`${getPreviewSize()} bg-white rounded-lg border-2 border-green-300 p-1 shadow-sm`}
+                                        className={`${getPreviewSize()} bg-white rounded-lg border-2 border-green-300 p-1 shadow-xs`}
                                     >
                                         <img
                                             src={url}

@@ -7,11 +7,11 @@ const LoginForm: FC<LoginFormProps> = ({
     onCredentialsChange,
     onLogin,
 }) => (
-    <div className="min-h-screen bg-gradient-to-br from-sky-50 via-white to-blue-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-linear-to-br from-sky-50 via-white to-blue-50 flex items-center justify-center p-4">
         <div className="w-full max-w-md">
             {/* Header */}
             <div className="text-center mb-8">
-                <h1 className="text-3xl font-bold bg-gradient-to-r from-sky-600 to-blue-600 bg-clip-text text-transparent mb-2">
+                <h1 className="text-3xl font-bold bg-linear-to-r from-sky-600 to-blue-600 bg-clip-text text-transparent mb-2">
                     Back Office Portal
                 </h1>
                 <p className="text-sky-600 text-sm">
@@ -21,7 +21,7 @@ const LoginForm: FC<LoginFormProps> = ({
 
             {/* Login Form */}
             <div className="bg-white rounded-2xl shadow-xl border border-sky-100 overflow-hidden">
-                <div className="bg-gradient-to-r from-sky-500 to-blue-500 p-6">
+                <div className="bg-linear-to-r from-sky-500 to-blue-500 p-6">
                     <h2 className="text-xl font-semibold text-white text-center">
                         Administrator Login
                     </h2>
@@ -63,7 +63,7 @@ const LoginForm: FC<LoginFormProps> = ({
                     <button
                         type="submit"
                         disabled={isLoading}
-                        className="w-full bg-gradient-to-r from-sky-500 to-blue-500 text-white py-3 px-4 rounded-lg font-medium hover:from-sky-600 hover:to-blue-600 focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-full bg-linear-to-r from-sky-500 to-blue-500 text-white py-3 px-4 rounded-lg font-medium hover:from-sky-600 hover:to-blue-600 focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         {isLoading ? (
                             <span className="flex items-center justify-center">

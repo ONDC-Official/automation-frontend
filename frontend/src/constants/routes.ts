@@ -3,7 +3,7 @@
  * All route paths should be defined here and used throughout the project
  */
 export const ROUTES = {
-    HOME: "/home",
+    HOME: "/",
     SCHEMA: "/schema-validation",
     SCENARIO: "/scenario",
     FLOW_TESTING: "/flow-testing",
@@ -17,6 +17,7 @@ export const ROUTES = {
     ROOT: "/",
     AUTH_HEADER: "/auth-header",
     FRAMEWORK_HEALTH: "/framework-health",
+    SUPPORT: "/support",
     DEVELOPER_GUIDE: "/developer-guide",
     DEVELOPER_GUIDE_GETTING_STARTED: "/developer-guide/getting-started",
     DEVELOPER_GUIDE_GENERAL: "/developer-guide/general",

@@ -64,13 +64,13 @@ function MessageBlock({ node, paired }: { node: TraceNode; paired: boolean }) {
                 className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-sky-50/50 transition-colors"
             >
                 {/* Sequence */}
-                <span className="flex-shrink-0 w-6 h-6 rounded-full bg-slate-100 text-slate-500 text-xs font-semibold flex items-center justify-center">
+                <span className="shrink-0 w-6 h-6 rounded-full bg-slate-100 text-slate-500 text-xs font-semibold flex items-center justify-center">
                     {node.seq}
                 </span>
 
                 {/* Owner */}
                 <span
-                    className={`flex-shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wide ring-1 ring-inset ${s.badge}`}
+                    className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wide ring-1 ring-inset ${s.badge}`}
                 >
                     {owner ?? "—"}
                 </span>
@@ -91,7 +91,7 @@ function MessageBlock({ node, paired }: { node: TraceNode; paired: boolean }) {
                 {ctx.message_id && (
                     <span
                         title={`message_id: ${ctx.message_id}`}
-                        className={`flex-shrink-0 px-2 py-0.5 rounded-full text-[10px] font-mono ${
+                        className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-mono ${
                             paired ? "bg-indigo-100 text-indigo-700" : "bg-slate-100 text-slate-500"
                         }`}
                     >
@@ -100,9 +100,9 @@ function MessageBlock({ node, paired }: { node: TraceNode; paired: boolean }) {
                 )}
 
                 {open ? (
-                    <IoChevronDown className="flex-shrink-0 text-sky-400" />
+                    <IoChevronDown className="shrink-0 text-sky-400" />
                 ) : (
-                    <IoChevronForward className="flex-shrink-0 text-sky-300" />
+                    <IoChevronForward className="shrink-0 text-sky-300" />
                 )}
             </button>
 
@@ -171,7 +171,7 @@ export default function TraceView({ config }: { config: MockPlaygroundConfigType
     return (
         <div className="w-full -m-4">
             {/* Header */}
-            <div className="bg-gradient-to-r from-sky-50 to-white border-b border-sky-100 px-5 py-4 pr-16">
+            <div className="bg-linear-to-r from-sky-50 to-white border-b border-sky-100 px-5 py-4 pr-16">
                 <div className="flex items-center gap-2 mb-2">
                     <IoGitNetworkOutline className="text-sky-500 text-2xl" />
                     <h2 className="text-lg font-bold text-gray-900">Execution Trace</h2>
@@ -202,7 +202,7 @@ export default function TraceView({ config }: { config: MockPlaygroundConfigType
                         {rows.map((row, i) => (
                             <div
                                 key={i}
-                                className="rounded-xl border border-sky-100 bg-white shadow-sm overflow-hidden divide-y divide-sky-50"
+                                className="rounded-xl border border-sky-100 bg-white shadow-xs overflow-hidden divide-y divide-sky-50"
                             >
                                 {row.request && (
                                     <MessageBlock node={row.request} paired={!!row.response} />

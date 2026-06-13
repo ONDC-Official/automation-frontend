@@ -49,7 +49,7 @@ const StepCard = ({ index, actionId, api, owner, description, onChange }: StepCa
             className={`group bg-white rounded-lg border transition-all duration-150 ${
                 isEditing
                     ? "border-sky-300 shadow-md ring-2 ring-sky-100"
-                    : "border-gray-200 shadow-sm hover:border-sky-200 hover:shadow"
+                    : "border-gray-200 shadow-xs hover:border-sky-200 hover:shadow-sm"
             }`}
         >
             {/* Metadata row */}
@@ -101,7 +101,7 @@ const StepCard = ({ index, actionId, api, owner, description, onChange }: StepCa
                         onChange={(e) => onChange(e.target.value)}
                         onInput={handleInput}
                         onBlur={() => setIsEditing(false)}
-                        className="w-full text-sm text-gray-700 placeholder-gray-300 bg-transparent border-0 outline-none resize-none leading-relaxed min-h-[40px]"
+                        className="w-full text-sm text-gray-700 placeholder-gray-300 bg-transparent border-0 outline-hidden resize-none leading-relaxed min-h-[40px]"
                     />
                 ) : description ? (
                     <p className="text-sm text-gray-600 leading-relaxed line-clamp-2">
@@ -149,7 +149,7 @@ export const ExportReviewModal = ({
 
     return (
         <div
-            className="fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm flex items-center justify-center p-4"
+            className="fixed inset-0 z-60 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4"
             onClick={onCancel}
         >
             <div
@@ -230,7 +230,7 @@ export const ExportReviewModal = ({
                         <button
                             onClick={() => onConfirm(descriptions)}
                             disabled={isDownloading}
-                            className="flex items-center gap-2 px-5 py-2 text-sm rounded-xl bg-sky-600 text-white hover:bg-sky-700 font-medium transition-colors disabled:opacity-60 disabled:cursor-not-allowed shadow-sm"
+                            className="flex items-center gap-2 px-5 py-2 text-sm rounded-xl bg-sky-600 text-white hover:bg-sky-700 font-medium transition-colors disabled:opacity-60 disabled:cursor-not-allowed shadow-xs"
                         >
                             {isDownloading ? (
                                 <>

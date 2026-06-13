@@ -62,7 +62,7 @@ const DomainFamilyAccordion: FC<{
         <section
             className={`bg-white rounded-2xl border overflow-hidden transition-shadow duration-200 ${
                 enabled
-                    ? "border-sky-200 shadow-sm hover:shadow-md hover:shadow-sky-100/50"
+                    ? "border-sky-200 shadow-xs hover:shadow-md hover:shadow-sky-100/50"
                     : "border-slate-200 opacity-60"
             }`}
             style={{
@@ -165,7 +165,7 @@ const DomainFamilyAccordion: FC<{
                                     onClick={() => clickable && onUseCaseClick(dom, verKey, label)}
                                     className={`group/chip relative inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border transition-colors duration-150 ${
                                         clickable
-                                            ? "bg-white text-sky-700 border-sky-200 hover:bg-sky-50 hover:border-sky-300 hover:shadow-sm cursor-pointer shadow-sm pr-7"
+                                            ? "bg-white text-sky-700 border-sky-200 hover:bg-sky-50 hover:border-sky-300 hover:shadow-xs cursor-pointer shadow-xs pr-7"
                                             : "bg-slate-50 text-slate-400 border-slate-100 cursor-not-allowed"
                                     }`}
                                 >
@@ -233,7 +233,7 @@ const DomainCardsSection: FC<DomainCardsSectionProps> = ({
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
-                    className="flex-shrink-0"
+                    className="shrink-0"
                     aria-hidden
                 >
                     <path
@@ -251,7 +251,7 @@ const DomainCardsSection: FC<DomainCardsSectionProps> = ({
     if (domainFamilies.length === 0) {
         return (
             <div className="flex flex-col items-center justify-center py-20 text-center">
-                <div className="w-14 h-14 bg-sky-50 border border-sky-100 rounded-2xl flex items-center justify-center mb-4 shadow-sm">
+                <div className="w-14 h-14 bg-sky-50 border border-sky-100 rounded-2xl flex items-center justify-center mb-4 shadow-xs">
                     <svg
                         width="22"
                         height="22"

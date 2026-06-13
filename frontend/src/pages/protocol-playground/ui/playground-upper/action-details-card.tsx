@@ -62,8 +62,8 @@ const ActionDetailsCard = ({
             default:
                 "bg-white hover:bg-gray-50 text-gray-700 border-gray-200 hover:border-gray-300",
             primary:
-                "bg-sky-500 hover:bg-sky-600 text-white border-sky-500 hover:border-sky-600 shadow-sm",
-            danger: "bg-red-500 hover:bg-red-600 text-white border-red-500 hover:border-red-600 shadow-sm",
+                "bg-sky-500 hover:bg-sky-600 text-white border-sky-500 hover:border-sky-600 shadow-xs",
+            danger: "bg-red-500 hover:bg-red-600 text-white border-red-500 hover:border-red-600 shadow-xs",
         };
 
         return (
@@ -90,9 +90,9 @@ const ActionDetailsCard = ({
         <div className="w-[340px] bg-white rounded-2xl border-2 border-gray-100 shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
             {/* Header with colored accent */}
             <div className="relative">
-                <div className="h-1 bg-gradient-to-r from-sky-400 via-sky-500 to-sky-600" />
+                <div className="h-1 bg-linear-to-r from-sky-400 via-sky-500 to-sky-600" />
 
-                <div className="px-2 py-2 bg-gradient-to-b from-sky-50 to-white">
+                <div className="px-2 py-2 bg-linear-to-b from-sky-50 to-white">
                     <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center gap-2">
                             <span

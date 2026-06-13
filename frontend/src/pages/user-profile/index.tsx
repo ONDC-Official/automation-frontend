@@ -65,12 +65,12 @@ const UserProfile = () => {
     };
 
     return (
-        <div className="font-sans flex min-h-screen px-2 pt-4 pb-2 gap-3 max-w-screen-2xl mx-auto w-full">
+        <div className="font-sans flex min-h-screen px-2 pt-4 pb-2 gap-3 max-w-(--breakpoint-2xl) mx-auto w-full">
             {/* Left sidebar nav */}
             <aside className="w-80 shrink-0">
                 <div className="sticky top-4 h-[calc(100vh-2rem)] bg-white rounded-2xl shadow-lg flex flex-col overflow-hidden border border-gray-100">
                     {/* Sidebar header */}
-                    <div className="px-6 py-8 bg-gradient-to-br from-sky-400 to-sky-600 text-center">
+                    <div className="px-6 py-8 bg-linear-to-br from-sky-400 to-sky-600 text-center">
                         <div className="mb-4 flex justify-center">
                             {userDetails?.avatarUrl ? (
                                 <img
@@ -149,7 +149,7 @@ const UserProfile = () => {
             <div className="bg-white shadow-xl rounded-2xl p-8 sm:p-10 flex-1 text-center min-w-0">
                 <div
                     id="profile-section"
-                    className="bg-gray-100 p-2 rounded-md shadow-sm mb-2 items-start scroll-mt-24"
+                    className="bg-gray-100 p-2 rounded-md shadow-xs mb-2 items-start scroll-mt-24"
                 >
                     <h1 className="text-3xl font-bold text-gray-900 mb-4 mt-4">User Profile</h1>
                     <div className="max-w-4xl mx-auto p-6 bg-white rounded-xl">

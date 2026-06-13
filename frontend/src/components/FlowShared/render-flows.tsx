@@ -23,7 +23,7 @@ import {
     HiEye,
     HiOutlineQuestionMarkCircle,
 } from "react-icons/hi";
-import jp from "jsonpath";
+import { queryJsonPath } from "../../utils/jsonpath-query";
 import FlowHelperTab from "@components/FlowShared/helper-tab";
 import { GetRequestEndpoint } from "@components/FlowShared/guides";
 import { BiSend, BiServer } from "react-icons/bi";
@@ -100,7 +100,7 @@ function extractMetadataValues(
     metadataFields.forEach((meta) => {
         try {
             const payloadData = Array.isArray(payload) ? payload[0] : payload;
-            const result = jp.query(payloadData, meta.path);
+            const result = queryJsonPath(payloadData, meta.path);
 
             const value = result.length > 0 ? result[0] : null;
 
@@ -517,7 +517,7 @@ function RenderFlows({
                                             <div className="flex justify-end">
                                                 {newSession && (
                                                     <button
-                                                        className="bg-sky-600 text-white text-sm flex px-2 py-2 rounded hover:bg-sky-700 shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                                        className="bg-sky-600 text-white text-sm flex px-2 py-2 rounded hover:bg-sky-700 shadow-xs transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                                         onClick={async () => {
                                                             setSessionId("");
                                                             newSession();
@@ -530,7 +530,7 @@ function RenderFlows({
                                             </div>
                                             <div className="flex justify-end">
                                                 <button
-                                                    className="bg-sky-600 text-white text-sm flex px-2 py-2 rounded hover:bg-sky-700 shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                                    className="bg-sky-600 text-white text-sm flex px-2 py-2 rounded hover:bg-sky-700 shadow-xs transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                                     onClick={async () => {
                                                         trackEvent({
                                                             category: "SCENARIO_TESTING-FLOWS",
@@ -546,7 +546,7 @@ function RenderFlows({
                                             </div>
                                             <div className="flex justify-end">
                                                 <button
-                                                    className="bg-sky-600 text-white text-sm flex px-2 py-2 rounded hover:bg-sky-700 shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                                    className="bg-sky-600 text-white text-sm flex px-2 py-2 rounded hover:bg-sky-700 shadow-xs transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                                     onClick={async () => {
                                                         const response = await getReport(sessionId);
                                                         try {
@@ -573,7 +573,7 @@ function RenderFlows({
                                             <div className="flex justify-end">
                                                 {newSession && (
                                                     <button
-                                                        className="bg-sky-600 text-white text-sm flex px-2 py-2 rounded hover:bg-sky-700 shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                                        className="bg-sky-600 text-white text-sm flex px-2 py-2 rounded hover:bg-sky-700 shadow-xs transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                                         onClick={() => {
                                                             setIsGuideOpen(true);
                                                         }}
@@ -642,7 +642,7 @@ function RenderFlows({
                             </div>
                         </div>
                     ) : (
-                        <div className="bg-white rounded-lg shadow-sm border border-sky-100 p-6">
+                        <div className="bg-white rounded-lg shadow-xs border border-sky-100 p-6">
                             <style>
                                 {`
 									@keyframes shimmer {
@@ -781,7 +781,7 @@ function RenderFlows({
                                                                     <td className="py-2 px-3 text-gray-400">
                                                                         {key}
                                                                     </td>
-                                                                    <td className="py-2 px-3 text-gray-200 whitespace-pre-wrap break-words">
+                                                                    <td className="py-2 px-3 text-gray-200 whitespace-pre-wrap wrap-break-word">
                                                                         {typeof data.value ===
                                                                             "object" &&
                                                                         data.value !== null

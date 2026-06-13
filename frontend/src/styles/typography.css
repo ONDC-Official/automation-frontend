@@ -1,0 +1,95 @@
+@theme {
+    /* Headings — size / line-height (px at 16px root) */
+    --text-h1-size: 3rem; /* 48px */
+    --text-h1-leading: 3.5rem; /* 56px */
+    --text-h2-size: 2.5rem; /* 40px */
+    --text-h2-leading: 3rem; /* 48px */
+    --text-h3-size: 2rem; /* 32px */
+    --text-h3-leading: 2.5rem; /* 40px */
+    --text-h4-size: 1.5rem; /* 24px */
+    --text-h4-leading: 2rem; /* 32px */
+    --text-h5-size: 1.25rem; /* 20px */
+    --text-h5-leading: 1.75rem; /* 28px */
+    --text-h6-size: 1.125rem; /* 18px */
+    --text-h6-leading: 1.625rem; /* 26px */
+
+    /* Body */
+    --text-body-1-size: 1rem; /* 16px */
+    --text-body-1-leading: 1.5rem; /* 24px */
+    --text-body-2-size: 0.875rem; /* 14px */
+    --text-body-2-leading: 1.25rem; /* 20px */
+
+    /* Captions */
+    --text-caption-1-size: 0.75rem; /* 12px */
+    --text-caption-1-leading: 1rem; /* 16px */
+    --text-caption-2-size: 0.625rem; /* 10px */
+    --text-caption-2-leading: 0.75rem; /* 12px */
+
+    /* Font weights */
+    --font-weight-regular: 400;
+    --font-weight-medium: 500;
+    --font-weight-semibold: 600;
+    --font-weight-bold: 700;
+
+    --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+    --font-mono: "Fira Code", ui-monospace, monospace;
+}
+
+@utility text-h1 {
+    font-size: var(--text-h1-size);
+    line-height: var(--text-h1-leading);
+}
+
+@utility text-h2 {
+    font-size: var(--text-h2-size);
+    line-height: var(--text-h2-leading);
+}
+
+@utility text-h3 {
+    font-size: var(--text-h3-size);
+    line-height: var(--text-h3-leading);
+}
+
+@utility text-h4 {
+    font-size: var(--text-h4-size);
+    line-height: var(--text-h4-leading);
+}
+
+@utility text-h5 {
+    font-size: var(--text-h5-size);
+    line-height: var(--text-h5-leading);
+}
+
+@utility text-h6 {
+    font-size: var(--text-h6-size);
+    line-height: var(--text-h6-leading);
+}
+
+@utility text-body-1 {
+    font-size: var(--text-body-1-size);
+    line-height: var(--text-body-1-leading);
+}
+
+@utility text-body-2 {
+    font-size: var(--text-body-2-size);
+    line-height: var(--text-body-2-leading);
+}
+
+@utility text-caption-1 {
+    font-size: var(--text-caption-1-size);
+    line-height: var(--text-caption-1-leading);
+}
+
+@utility text-caption {
+    font-size: var(--text-caption-1-size);
+    line-height: var(--text-caption-1-leading);
+}
+
+@utility text-caption-2 {
+    font-size: var(--text-caption-2-size);
+    line-height: var(--text-caption-2-leading);
+}
+
+@utility font-regular {
+    font-weight: var(--font-weight-regular);
+}

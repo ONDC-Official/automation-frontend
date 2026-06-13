@@ -42,7 +42,7 @@ const DeveloperGuideDomainsContent: FC = () => {
 
     return (
         <div className="min-h-full">
-            <header className="border-b border-sky-100 bg-gradient-to-br from-sky-50 via-white to-slate-50">
+            <header className="border-b border-sky-100 bg-linear-to-br from-sky-50 via-white to-slate-50">
                 <div className="px-6 md:px-10 py-10 md:py-12 max-w-3xl mt-[18px]">
                     <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-sky-100 text-sky-700 rounded-full text-xs font-semibold uppercase tracking-widest mb-5 border border-sky-200">
                         <FiCode size={11} aria-hidden />
@@ -61,7 +61,7 @@ const DeveloperGuideDomainsContent: FC = () => {
             <div className="px-6 md:px-10 py-10 md:py-12">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                     <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-sky-100 border border-sky-200 flex items-center justify-center flex-shrink-0">
+                        <div className="w-8 h-8 rounded-lg bg-sky-100 border border-sky-200 flex items-center justify-center shrink-0">
                             <FiLayers size={15} className="text-sky-600" aria-hidden />
                         </div>
                         <div>
@@ -83,7 +83,7 @@ const DeveloperGuideDomainsContent: FC = () => {
                             placeholder="Search domains..."
                             value={domainSearch}
                             onChange={(e) => setDomainSearch(e.target.value)}
-                            className="w-full sm:w-64 pl-10 pr-3.5 py-2.5 text-sm bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-100 focus:border-sky-300 placeholder-slate-400 text-slate-800 shadow-sm"
+                            className="w-full sm:w-64 pl-10 pr-3.5 py-2.5 text-sm bg-white border border-slate-200 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-sky-100 focus:border-sky-300 placeholder-slate-400 text-slate-800 shadow-xs"
                         />
                     </div>
                 </div>

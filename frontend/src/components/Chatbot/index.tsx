@@ -403,7 +403,7 @@ const Chatbot: FC<ChatbotProps> = ({ domain, version, flowId, actionId, actionAp
 
     const renderChatbotPanel = (fullscreenVariant: boolean) => (
         <div
-            className={`flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm ${
+            className={`flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xs ${
                 fullscreenVariant
                     ? "h-full w-full rounded-none border-none shadow-2xl"
                     : "h-[min(760px,88vh)]"
@@ -451,7 +451,7 @@ const Chatbot: FC<ChatbotProps> = ({ domain, version, flowId, actionId, actionAp
                 <div
                     role="presentation"
                     onClick={closeFullscreen}
-                    className={`fixed inset-0 z-[90] transition-opacity duration-300 ease-out ${
+                    className={`fixed inset-0 z-90 transition-opacity duration-300 ease-out ${
                         isFullscreen ? "bg-slate-900/40 opacity-100" : "bg-slate-900/0 opacity-0"
                     }`}
                 >

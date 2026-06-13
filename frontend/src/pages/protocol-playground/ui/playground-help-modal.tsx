@@ -134,7 +134,7 @@ export const PlaygroundHelpModal = ({ isOpen, onClose }: PlaygroundHelpModalProp
     };
 
     return (
-        <div className="fixed inset-0 z-[60] bg-black/60 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-60 bg-black/60 flex items-center justify-center p-4">
             <div className="bg-white rounded-2xl shadow-2xl flex flex-col w-full max-w-5xl h-[88vh] overflow-hidden">
                 {/* Header */}
                 <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 shrink-0">
@@ -170,7 +170,7 @@ export const PlaygroundHelpModal = ({ isOpen, onClose }: PlaygroundHelpModalProp
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
                                     placeholder="Search…"
-                                    className="flex-1 text-xs bg-transparent outline-none text-gray-700 placeholder-gray-400"
+                                    className="flex-1 text-xs bg-transparent outline-hidden text-gray-700 placeholder-gray-400"
                                 />
                                 {searchQuery && (
                                     <button

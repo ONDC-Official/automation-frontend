@@ -102,7 +102,7 @@ const DomainModal: FC<{ domain: DomainResult; onClose: () => void }> = ({ domain
     return (
         /* Backdrop */
         <div
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs"
             onClick={onClose}
         >
             {/* Panel — stop propagation so clicking inside doesn't close */}
@@ -198,7 +198,7 @@ const DomainBox: FC<{ domain: DomainResult; onOpen: () => void }> = ({ domain, o
     return (
         <button
             onClick={onOpen}
-            className={`w-full text-left rounded-xl border-2 ${borderColor} bg-white shadow-sm ${headerBg} transition-all hover:shadow-md active:scale-[0.98] px-4 py-3`}
+            className={`w-full text-left rounded-xl border-2 ${borderColor} bg-white shadow-xs ${headerBg} transition-all hover:shadow-md active:scale-[0.98] px-4 py-3`}
         >
             <div className="flex items-start justify-between gap-2">
                 <div className="flex items-center gap-2 min-w-0">
@@ -269,19 +269,19 @@ const HealthReport: FC<Props> = ({ report, lastChecked }) => {
         <div className="space-y-6">
             {/* Summary strip */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                <div className="bg-white border border-sky-100 rounded-xl p-4 text-center shadow-sm">
+                <div className="bg-white border border-sky-100 rounded-xl p-4 text-center shadow-xs">
                     <p className="text-2xl font-bold text-gray-800">{summary.totalChecked}</p>
                     <p className="text-xs text-gray-500 mt-1">Total Checked</p>
                 </div>
-                <div className="bg-white border border-emerald-200 rounded-xl p-4 text-center shadow-sm">
+                <div className="bg-white border border-emerald-200 rounded-xl p-4 text-center shadow-xs">
                     <p className="text-2xl font-bold text-emerald-600">{summary.totalHealthy}</p>
                     <p className="text-xs text-emerald-600 mt-1">Healthy</p>
                 </div>
-                <div className="bg-white border border-red-200 rounded-xl p-4 text-center shadow-sm">
+                <div className="bg-white border border-red-200 rounded-xl p-4 text-center shadow-xs">
                     <p className="text-2xl font-bold text-red-600">{summary.totalUnhealthy}</p>
                     <p className="text-xs text-red-500 mt-1">Unhealthy</p>
                 </div>
-                <div className="bg-white border border-sky-100 rounded-xl p-4 text-center shadow-sm">
+                <div className="bg-white border border-sky-100 rounded-xl p-4 text-center shadow-xs">
                     <p
                         className={`text-2xl font-bold ${healthPct === 100 ? "text-emerald-600" : healthPct >= 50 ? "text-yellow-600" : "text-red-600"}`}
                     >

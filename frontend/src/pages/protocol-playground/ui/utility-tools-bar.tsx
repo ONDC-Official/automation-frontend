@@ -10,7 +10,7 @@ const UtilityToolsBar = () => {
     return (
         <>
             <div className="w-full max-w-lg mt-4">
-                <div className="bg-white/70 backdrop-blur-sm rounded-2xl border border-gray-100 shadow-sm px-4 py-3 flex items-center gap-3">
+                <div className="bg-white/70 backdrop-blur-xs rounded-2xl border border-gray-100 shadow-xs px-4 py-3 flex items-center gap-3">
                     <span className="text-xs font-medium text-gray-400 uppercase tracking-wide mr-1">
                         Tools
                     </span>
