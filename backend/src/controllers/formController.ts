@@ -5,13 +5,36 @@ import logger from '@ondc/automation-logger';
 // Key prefixes form a cross-service contract with the api-service GET /callback
 // (which writes form_completed and reads redirection_url) — keep in sync.
 //
-//   form_completed:{session_id}      -> completion payload   (written by callback)
-//   redirection_url:{subscriberUrl}  -> full workbench URL    (written here)
+//   form_completed:{session_id}       -> completion payload   (written by callback)
+//   redirection_url:{subscriberPath}  -> full workbench URL    (written here)
 //
-// Everything is session/subscriber-scoped — no transaction_id or form_id.
+// The redirection key is the subscriber URL *pathname* (e.g.
+// /api-service/ONDC:FIS12/2.3.0/buyer), NOT the full URL — so the callback can
+// derive the same key from its own request path alone, independent of host,
+// scheme and the reverse proxy (nginx). The callback parses sessionId out of the
+// stored workbench URL to write form_completed:{session_id}.
 const FORM_COMPLETED_PREFIX = 'form_completed';
 const REDIRECTION_URL_PREFIX = 'redirection_url';
 const REDIRECTION_URL_TTL_SECONDS = 3600;
+const API_SERVICE_ANCHOR = '/api-service/';
+
+// Normalize a subscriber URL to the path key both sides agree on: the pathname
+// from "/api-service/" onward, without a trailing slash. Must stay byte-identical
+// to the api-service callback's derivation.
+function subscriberPathKey(subscriberUrl: string): string | null {
+  let pathname: string;
+  try {
+    pathname = new URL(subscriberUrl).pathname;
+  } catch {
+    return null;
+  }
+  const i = pathname.indexOf(API_SERVICE_ANCHOR);
+  if (i >= 0) {
+    pathname = pathname.slice(i);
+  }
+  pathname = pathname.replace(/\/+$/, '');
+  return pathname || null;
+}
 
 // After the first successful read, the completion key is re-armed with this TTL
 // instead of being deleted, so a slightly-later poll on the same session can
@@ -77,10 +100,10 @@ export const checkFormCompletion: RequestHandler = async (req: Request, res: Res
 
 /**
  * Save the workbench tab URL to redirect back to after the form callback.
- * Keyed by the subscriberUrl embedded in the workbench URL, because the
- * api-service GET /callback has no session_id — it derives its own subscriberUrl
- * (from {subscriberUrl}/callback), looks this up, and parses sessionId out of
- * the stored URL.
+ * Keyed by the subscriber URL *pathname* embedded in the workbench URL, because
+ * the api-service GET /callback has no session_id — it derives the same path key
+ * from its own request path (nginx-independent), looks this up, and parses
+ * sessionId out of the stored URL.
  * POST /form/save-redirection   body: { redirection_url }
  */
 export const saveRedirectionUrl: RequestHandler = async (req: Request, res: Response) => {
@@ -105,8 +128,9 @@ export const saveRedirectionUrl: RequestHandler = async (req: Request, res: Resp
       return;
     }
 
-    // The workbench URL carries both ids as query params; subscriberUrl is the
-    // Redis key, sessionId is what the callback parses out at read time.
+    // The workbench URL carries both ids as query params; the subscriberUrl's
+    // pathname is the Redis key, sessionId is what the callback parses out at
+    // read time.
     const subscriberUrl = parsed.searchParams.get('subscriberUrl');
     const sessionId = parsed.searchParams.get('sessionId');
     if (!subscriberUrl || !sessionId) {
@@ -116,12 +140,20 @@ export const saveRedirectionUrl: RequestHandler = async (req: Request, res: Resp
       return;
     }
 
+    const subscriberPath = subscriberPathKey(subscriberUrl);
+    if (!subscriberPath) {
+      res.status(400).json({
+        error: 'subscriberUrl must be a valid URL containing an /api-service/ path'
+      });
+      return;
+    }
+
     await RedisService.setKey(
-      `${REDIRECTION_URL_PREFIX}:${subscriberUrl}`,
+      `${REDIRECTION_URL_PREFIX}:${subscriberPath}`,
       redirection_url,
       REDIRECTION_URL_TTL_SECONDS
     );
-    logger.info('Redirection URL saved', { subscriberUrl, sessionId });
+    logger.info('Redirection URL saved', { subscriberPath, sessionId });
 
     res.json({ saved: true });
   } catch (error: any) {
