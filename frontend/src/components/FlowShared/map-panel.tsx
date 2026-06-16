@@ -5,9 +5,11 @@ import {
     Marker,
     Popup,
     Polyline,
+    Polygon,
     useMap,
     useMapEvents,
 } from "react-leaflet";
+import { INDIA_RINGS } from "@components/FlowShared/india-boundary";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { getRoute } from "@utils/request-utils";
@@ -32,6 +34,30 @@ import {
  */
 
 const toGpsString = (ll: LatLng): string => `${ll[0]}, ${ll[1]}`;
+
+// Restrict the map to India (SW + NE corners, with a small margin) so it never shows the
+// whole repeating world. Panning is locked to this box and you can't zoom out past it.
+const INDIA_BOUNDS = L.latLngBounds([6.0, 67.0], [37.6, 98.0]);
+
+// World rectangle (lat,lng) used as the OUTER ring of the mask; the India rings are the holes,
+// so everything outside India's border is filled solid and only India shows.
+const WORLD_RING: [number, number][] = [
+    [-89, -179],
+    [89, -179],
+    [89, 179],
+    [-89, 179],
+];
+
+/** Solid-grey mask covering everything outside India's border (India rings = holes). */
+function IndiaMask() {
+    return (
+        <Polygon
+            positions={[WORLD_RING, ...INDIA_RINGS]}
+            pathOptions={{ stroke: false, fillColor: "#e5e7eb", fillOpacity: 1 }}
+            interactive={false}
+        />
+    );
+}
 
 export interface MapPanelProps {
     pickupGps?: string;
@@ -318,13 +344,20 @@ export default function MapPanel({
                     ref={mapRef}
                     center={initialCenter}
                     zoom={13}
+                    minZoom={4}
+                    maxBounds={INDIA_BOUNDS}
+                    maxBoundsViscosity={1.0}
                     style={{ height: "100%", width: "100%" }}
                     scrollWheelZoom
                 >
                     <TileLayer
                         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
                         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                        noWrap
+                        bounds={INDIA_BOUNDS}
                     />
+                    {/* Hide everything outside India's border (grey mask; India = holes). */}
+                    <IndiaMask />
                     <FitOnce points={fitPoints} fitKey={fitKey} />
                     <PlaceDriverOnClick
                         enabled={canDrag && !driver}
