@@ -18,11 +18,15 @@ interface Category {
 interface Item {
     id: string;
     tags: Tag[];
+    category_id?: string;
+    category_ids?: string[];
 }
 
 interface BPPProvider {
+    id: string;
     categories: Category[];
     items: Item[];
+    locations?: unknown[];
 }
 
 interface Catalog {
@@ -56,8 +60,11 @@ const parseRET11Items = (
     >;
     cutomistionToGroupMapping: Record<string, string>;
 } => {
-    const catagories = payload.message.catalog["bpp/providers"][0].categories;
-    const items = payload.message.catalog["bpp/providers"][0].items;
+    const provider = payload.message.catalog["bpp/providers"]?.[0];
+    if (!provider) return { itemList: {}, catagoriesList: {}, cutomistionToGroupMapping: {} };
+
+    const catagories = provider.categories || [];
+    const items = provider.items || [];
 
     const catagoriesList: Record<
         string,
@@ -67,10 +74,13 @@ const parseRET11Items = (
     const cutomistionToGroupMapping: Record<string, string> = {};
 
     catagories.forEach((item) => {
-        item.tags.forEach((tag) => {
+        item.tags?.forEach((tag) => {
             if (tag.code === "type") {
                 tag.list.forEach((val) => {
-                    if (val.code === "type" && val.value === "custom_group") {
+                    if (
+                        val.code === "type" &&
+                        (val.value === "custom_group" || val.value === "custom_menu")
+                    ) {
                         catagoriesList[item.id] = { child: [] };
                     }
                 });
@@ -82,21 +92,19 @@ const parseRET11Items = (
         let parent = "";
         let child: string[] = [];
         let isCusomistaion = false;
-        let isItem = false;
         let customGroup = "";
-        item.tags.forEach((tag) => {
+
+        // Try to get customGroup from category_ids if present (format category_id:rank or just category_id)
+        if (item.category_ids && item.category_ids.length > 0) {
+            const firstCatId = item.category_ids[0];
+            customGroup = firstCatId.split(":")[0];
+        }
+
+        item.tags?.forEach((tag) => {
             if (tag.code === "type") {
                 tag.list.forEach((val) => {
                     if (val.code === "type" && val.value === "customization") {
                         isCusomistaion = true;
-                    }
-                });
-            }
-
-            if (tag.code === "type") {
-                tag.list.forEach((val) => {
-                    if (val.code === "type" && val.value === "item") {
-                        isItem = true;
                     }
                 });
             }
@@ -125,6 +133,7 @@ const parseRET11Items = (
 
         if (isCusomistaion) {
             catagoriesList[`${parent}`] = {
+                ...catagoriesList[`${parent}`],
                 items: {
                     ...catagoriesList[`${parent}`]?.items,
                     [`${item.id}`]: { child: child },
@@ -132,9 +141,8 @@ const parseRET11Items = (
             };
 
             cutomistionToGroupMapping[item.id] = parent;
-        }
-
-        if (isItem) {
+        } else {
+            // Default to being an item if it's not a customization
             itemList[`${item.id}`] = customGroup;
         }
     });
