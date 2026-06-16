@@ -36,6 +36,15 @@ function subscriberPathKey(subscriberUrl: string): string | null {
   return pathname || null;
 }
 
+// We always receive the seller's redirection URL, but the form callback arrives
+// at the buyer's subscriber path. So the key is stored under the buyer path while
+// the stored value (the seller's workbench URL) is left exactly as received.
+function sellerToBuyerPath(path: string): string {
+  return path.endsWith('/seller')
+    ? path.slice(0, -'/seller'.length) + '/buyer'
+    : path;
+}
+
 // After the first successful read, the completion key is re-armed with this TTL
 // instead of being deleted, so a slightly-later poll on the same session can
 // still observe the completion before it self-cleans.
@@ -148,12 +157,16 @@ export const saveRedirectionUrl: RequestHandler = async (req: Request, res: Resp
       return;
     }
 
+    // Store under the buyer path (the callback hits the buyer side); the
+    // redirection_url value itself is left untouched.
+    const keyPath = sellerToBuyerPath(subscriberPath);
+
     await RedisService.setKey(
-      `${REDIRECTION_URL_PREFIX}:${subscriberPath}`,
+      `${REDIRECTION_URL_PREFIX}:${keyPath}`,
       redirection_url,
       REDIRECTION_URL_TTL_SECONDS
     );
-    logger.info('Redirection URL saved', { subscriberPath, sessionId });
+    logger.info('Redirection URL saved', { subscriberPath, keyPath, sessionId });
 
     res.json({ saved: true });
   } catch (error: any) {
