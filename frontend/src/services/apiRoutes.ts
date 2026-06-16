@@ -53,6 +53,14 @@ export const API_ROUTES = {
         BASE: "/logs",
     },
 
+    // Form callback routes (cross-service contract with api-service GET /callback,
+    // which writes form_completed:{session_id})
+    FORM: {
+        CHECK_COMPLETION: "/form/check-completion",
+        RESET_COMPLETION: "/form/reset-completion",
+        SAVE_REDIRECTION: "/form/save-redirection",
+    },
+
     // API routes (external services)
     API: {
         SESSIONS_FLOWS: (sessionId: string) => `/api/sessions/flows/${sessionId}`,
