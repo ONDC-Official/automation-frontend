@@ -188,6 +188,22 @@ export default function DisplayFlow({
         submittedInputSigRef.current = undefined;
         activeInputSigRef.current = sig;
 
+        // LAMF single-redirection: the BAP side does not wait on the form callback
+        // (completion is keyed by the BPP session, which BAP can't observe). Auto-
+        // proceed past the MANUAL_DYNAMIC_FORM step immediately instead of opening
+        // the polling popup. BPP is unaffected and still drives real completion.
+        if (
+            isLamfRedirectionFlow &&
+            sessionData?.npType === "BAP" &&
+            seqStep?.input?.some((f) => f.type === "MANUAL_DYNAMIC_FORM")
+        ) {
+            if (sessionData?.activeFlow !== flowId) return;
+            submittedInputSigRef.current = sig; // proceed once per status (guards double-fire across polls)
+            const submission_id = crypto.randomUUID();
+            handleFormSubmit({ jsonPath: { submission_id }, formData: { submission_id } });
+            return;
+        }
+
         if (conf?.length === 0) {
             if (sessionData?.activeFlow !== flowId) return;
             setActiveInputExtraKey(extraKey);
