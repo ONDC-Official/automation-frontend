@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import axios from "axios";
-import { SubmitEventParams } from "../../../../types/flow-types";
-import { FormFieldConfigType } from "../config-form/config-form";
+import { SubmitEventParams } from "@/types/flow-types";
+import { FormFieldConfigType } from "@components/ui/forms/config-form/config-form";
+import { useSession } from "@context/context";
+import { FormService } from "@services/formService";
 
 // ── Polling constants ──────────────────────────────────────────────────────────
 const POLL_INTERVAL_MS = 2_000; // 2 seconds between each poll
@@ -24,10 +25,11 @@ interface ManualDynamicFormHandlerProps {
  * for the form's callback: polling starts automatically on mount, and the flow
  * proceeds once the form's final step fires the callback.
  */
-export default function ManualDynamicFormHandler({
-    submitEvent,
-    transactionId,
-}: ManualDynamicFormHandlerProps) {
+export default function ManualDynamicFormHandler({ submitEvent }: ManualDynamicFormHandlerProps) {
+    // Completion is keyed by session_id (api-service GET /callback writes
+    // form_completed:{session_id}). Read it from context, not props.
+    const { sessionId } = useSession();
+
     const [status, setStatus] = useState<"waiting" | "completed" | "error" | "timeout">("waiting");
     const [errorMessage, setErrorMessage] = useState<string>("");
 
@@ -53,11 +55,11 @@ export default function ManualDynamicFormHandler({
         };
     }, [cleanup]);
 
-    // Polls GET /form/check-completion?transaction_id=X — the backend resolves
-    // which form completed via the latest_form:{txn} Redis pointer.
+    // Polls GET /form/check-completion?session_id=X — the backend reads
+    // form_completed:{session_id} written by the api-service GET /callback.
     const checkCompletion = useCallback(async () => {
         if (hasCompletedRef.current) return;
-        if (!transactionId) return;
+        if (!sessionId) return;
 
         pollCountRef.current += 1;
         setPollDisplay(pollCountRef.current);
@@ -69,39 +71,25 @@ export default function ManualDynamicFormHandler({
         }
 
         try {
-            const response = await axios.get(
-                `${import.meta.env.VITE_BACKEND_URL}/form/check-completion`,
-                {
-                    params: { transaction_id: transactionId },
-                    timeout: 5000,
-                }
-            );
+            const data = await FormService.checkCompletion(sessionId);
 
-            const { completed, success, form_id } = response.data ?? {};
+            const { completed, success } = data ?? {};
 
-            // success is a boolean from the new api-service; tolerate the legacy
-            // string form from older callback writers.
-            if (
-                completed === true &&
-                (success === true || success === "true") &&
-                !hasCompletedRef.current
-            ) {
+            if (completed === true && success === true && !hasCompletedRef.current) {
                 console.warn("✅ [ManualDynamicForm] Form completed!", {
-                    transactionId,
-                    form_id,
+                    sessionId,
                     poll: pollCountRef.current,
                 });
                 hasCompletedRef.current = true;
                 cleanup();
 
                 // Proceed the flow — temporary submission_id satisfies the mock
-                // service's json_path_changes requirement; form_id is passed
-                // through for the mock's saveData config.
+                // service's json_path_changes requirement.
                 try {
                     const submission_id = crypto.randomUUID();
                     await submitEvent({
                         jsonPath: { submission_id },
-                        formData: { submission_id, ...(form_id ? { form_id } : {}) },
+                        formData: { submission_id },
                     });
                     setStatus("completed");
                 } catch (error) {
@@ -115,7 +103,7 @@ export default function ManualDynamicFormHandler({
             const err = error as { message?: string };
             console.error("[ManualDynamicForm] Error checking completion:", err.message);
         }
-    }, [transactionId, submitEvent, cleanup]);
+    }, [sessionId, submitEvent, cleanup]);
 
     const checkCompletionRef = useRef(checkCompletion);
     useEffect(() => {
@@ -123,22 +111,31 @@ export default function ManualDynamicFormHandler({
     }, [checkCompletion]);
 
     const startPolling = useCallback(() => {
-        if (isPollingRef.current || !transactionId) return;
+        if (isPollingRef.current || !sessionId) return;
         isPollingRef.current = true;
         pollCountRef.current = 0;
         setPollDisplay(0);
         setStatus("waiting");
 
+        // Clear any leftover completion from an earlier run on this session so
+        // polling only reacts to THIS form's callback. Non-fatal.
+        FormService.resetCompletion(sessionId).catch((resetError) => {
+            console.warn(
+                "⚠️ [ManualDynamicForm] Could not reset completion state (continuing):",
+                resetError
+            );
+        });
+
         checkCompletionRef.current();
         pollingIntervalRef.current = setInterval(() => {
             checkCompletionRef.current();
         }, POLL_INTERVAL_MS);
-    }, [transactionId]);
+    }, [sessionId]);
 
     // Polling starts automatically — there is no open button in this UX.
     useEffect(() => {
         startPolling();
-    }, [transactionId]);
+    }, [sessionId]);
 
     const handleResume = useCallback(
         (e: React.MouseEvent) => {

@@ -3,10 +3,10 @@ import { RedisService } from 'ondc-automation-cache-lib';
 import logger from '@ondc/automation-logger';
 
 // Key prefixes form a cross-service contract with the api-service GET /callback
-// (which writes form_completed and reads redirection_url) — keep in sync.
+// (the Go workbench-callback-redirect plugin) — keep in sync.
 //
-//   form_completed:{session_id}       -> completion payload   (written by callback)
-//   redirection_url:{subscriberPath}  -> full workbench URL    (written here)
+//   form_completed:{session_id}      -> completion payload (written by the callback)
+//   redirection_url:{subscriberPath} -> full workbench URL (written here)
 //
 // The redirection key is the subscriber URL *pathname* (e.g.
 // /api-service/ONDC:FIS12/2.3.0/buyer), NOT the full URL — so the callback can
@@ -17,6 +17,11 @@ const FORM_COMPLETED_PREFIX = 'form_completed';
 const REDIRECTION_URL_PREFIX = 'redirection_url';
 const REDIRECTION_URL_TTL_SECONDS = 3600;
 const API_SERVICE_ANCHOR = '/api-service/';
+
+// After the first successful read, the completion key is re-armed with this TTL
+// instead of being deleted, so a slightly-later poll on the same session can
+// still observe the completion before it self-cleans.
+const CONSUMED_TTL_SECONDS = 60;
 
 // Normalize a subscriber URL to the path key both sides agree on: the pathname
 // from "/api-service/" onward, without a trailing slash. Must stay byte-identical
@@ -44,11 +49,6 @@ function sellerToBuyerPath(path: string): string {
     ? path.slice(0, -'/seller'.length) + '/buyer'
     : path;
 }
-
-// After the first successful read, the completion key is re-armed with this TTL
-// instead of being deleted, so a slightly-later poll on the same session can
-// still observe the completion before it self-cleans.
-const CONSUMED_TTL_SECONDS = 60;
 
 /**
  * Check if the form callback has been received for a session.
@@ -108,12 +108,44 @@ export const checkFormCompletion: RequestHandler = async (req: Request, res: Res
 };
 
 /**
+ * Clear any leftover form completion for a session.
+ * Called by the frontend BEFORE it starts polling, so a stale completion from
+ * an earlier run on the same session cannot satisfy the new poll.
+ * POST /form/reset-completion?session_id=X
+ */
+export const resetFormCompletion: RequestHandler = async (req: Request, res: Response) => {
+  try {
+    const { session_id } = req.query;
+
+    if (!session_id) {
+      res.status(400).json({ error: 'session_id is required' });
+      return;
+    }
+
+    await RedisService.deleteKey(`${FORM_COMPLETED_PREFIX}:${session_id}`);
+    logger.info('Form completion state reset', { session_id });
+
+    res.json({ reset: true });
+
+  } catch (error: any) {
+    logger.error('Error resetting form completion', error);
+    res.status(500).json({
+      error: 'Failed to reset completion',
+      message: error.message
+    });
+  }
+};
+
+/**
  * Save the workbench tab URL to redirect back to after the form callback.
  * Keyed by the subscriber URL *pathname* embedded in the workbench URL, because
  * the api-service GET /callback has no session_id — it derives the same path key
  * from its own request path (nginx-independent), looks this up, and parses
  * sessionId out of the stored URL.
  * POST /form/save-redirection   body: { redirection_url }
+ *
+ * The frontend sends its current page URL verbatim; it already carries
+ * subscriberUrl and sessionId as query params.
  */
 export const saveRedirectionUrl: RequestHandler = async (req: Request, res: Response) => {
   try {
@@ -172,34 +204,5 @@ export const saveRedirectionUrl: RequestHandler = async (req: Request, res: Resp
   } catch (error: any) {
     logger.error('Error saving redirection url', error);
     res.status(500).json({ error: 'Failed to save redirection url', message: error.message });
-  }
-};
-
-/**
- * Clear any leftover form completion for a session.
- * Called by the frontend BEFORE it starts polling, so a stale completion from
- * an earlier run on the same session cannot satisfy the new poll.
- * POST /form/reset-completion?session_id=X
- */
-export const resetFormCompletion: RequestHandler = async (req: Request, res: Response) => {
-  try {
-    const { session_id } = req.query;
-
-    if (!session_id) {
-      res.status(400).json({ error: 'session_id is required' });
-      return;
-    }
-
-    await RedisService.deleteKey(`${FORM_COMPLETED_PREFIX}:${session_id}`);
-    logger.info('Form completion state reset', { session_id });
-
-    res.json({ reset: true });
-
-  } catch (error: any) {
-    logger.error('Error resetting form completion', error);
-    res.status(500).json({
-      error: 'Failed to reset completion',
-      message: error.message
-    });
   }
 };
