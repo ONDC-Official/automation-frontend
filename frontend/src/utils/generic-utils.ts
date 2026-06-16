@@ -76,7 +76,7 @@ const parseRET11Items = (
     catagories.forEach((item) => {
         item.tags?.forEach((tag) => {
             if (tag.code === "type") {
-                tag.list.forEach((val) => {
+                tag.list?.forEach((val) => {
                     if (
                         val.code === "type" &&
                         (val.value === "custom_group" || val.value === "custom_menu")
@@ -102,7 +102,7 @@ const parseRET11Items = (
 
         item.tags?.forEach((tag) => {
             if (tag.code === "type") {
-                tag.list.forEach((val) => {
+                tag.list?.forEach((val) => {
                     if (val.code === "type" && val.value === "customization") {
                         isCusomistaion = true;
                     }
@@ -110,21 +110,21 @@ const parseRET11Items = (
             }
 
             if (tag.code === "custom_group") {
-                const idItem = tag.list.find((listItem) => listItem.code === "id");
+                const idItem = tag.list?.find((listItem) => listItem.code === "id");
                 if (idItem) {
                     customGroup = idItem.value;
                 }
             }
 
             if (tag.code === "parent") {
-                const idItem = tag.list.find((listItem) => listItem.code === "id");
+                const idItem = tag.list?.find((listItem) => listItem.code === "id");
                 if (idItem) {
                     parent = idItem.value;
                 }
             }
 
             if (tag.code === "child") {
-                const idItem = tag.list.filter((listItem) => listItem.code === "id");
+                const idItem = tag.list?.filter((listItem) => listItem.code === "id");
                 if (idItem) {
                     child = idItem.map((listItem) => listItem.value);
                 }
