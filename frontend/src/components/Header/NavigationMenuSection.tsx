@@ -1,12 +1,9 @@
 import {
     NavigationMenu,
-    NavigationMenuContent,
-    NavigationMenuItem,
     NavigationMenuList,
-    NavigationMenuTrigger,
-} from "@/components/shadcn/navigation-menu";
+} from "@/components/Shadcn/NavigationMenu/navigation-menu";
 import { navLinks } from "@components/Header/constants";
-import { NavigationMenuNavLink } from "@components/Header/NavigationMenuNavLink";
+import { NavigationMenuNavItem } from "@components/Header/NavigationMenuNavItem";
 import { trackEvent } from "@utils/analytics";
 import { INavLink } from "@components/Header/types";
 
@@ -20,34 +17,14 @@ export const NavigationMenuSection = ({ inDrawer = false }: { inDrawer?: boolean
     return (
         <NavigationMenu viewport={false} className="max-w-none flex-1 justify-start">
             <NavigationMenuList className="justify-start gap-1">
-                {navLinks.map((link) => {
-                    return link.subMenu ? (
-                        <NavigationMenuItem key={link.label}>
-                            <NavigationMenuTrigger>{link.label}</NavigationMenuTrigger>
-                            <NavigationMenuContent>
-                                {link.subMenu.map((subItem) => (
-                                    <NavigationMenuNavLink
-                                        key={subItem.href}
-                                        to={subItem.href}
-                                        closeDrawer={inDrawer}
-                                    >
-                                        {subItem.label}
-                                    </NavigationMenuNavLink>
-                                ))}
-                            </NavigationMenuContent>
-                        </NavigationMenuItem>
-                    ) : (
-                        <NavigationMenuItem key={link.label}>
-                            <NavigationMenuNavLink
-                                to={link.href ?? ""}
-                                onClick={() => onNavClick(link)}
-                                closeDrawer={inDrawer}
-                            >
-                                {link.label}
-                            </NavigationMenuNavLink>
-                        </NavigationMenuItem>
-                    );
-                })}
+                {navLinks.map((link) => (
+                    <NavigationMenuNavItem
+                        key={link.label}
+                        link={link}
+                        inDrawer={inDrawer}
+                        onNavClick={onNavClick}
+                    />
+                ))}
             </NavigationMenuList>
         </NavigationMenu>
     );

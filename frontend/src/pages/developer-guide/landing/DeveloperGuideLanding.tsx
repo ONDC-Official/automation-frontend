@@ -6,7 +6,7 @@ import { fetchDocList } from "@services/developerDocsApi";
 import { ROUTES, getDeveloperGuideUseCasePath, getDeveloperGuideDocPath } from "@constants/routes";
 import type { BuildEntry, DocMeta } from "../types";
 import { isDomainEnabled } from "../utils";
-import Loader from "@components/ui/mini-components/loader";
+import { Spinner } from "@/components/Shadcn/Spinner/spinner";
 import RecommendedSection from "./RecommendedSection";
 import DomainCardsSection from "./DomainCardsSection";
 
@@ -77,7 +77,7 @@ const DeveloperGuideLanding: FC = () => {
     if (isLoading) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-white">
-                <Loader />
+                <Spinner className="size-8 text-brand-normal" />
             </div>
         );
     }

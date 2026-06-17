@@ -4,12 +4,11 @@
 
 import { useState, useEffect, useLayoutEffect, useCallback, useRef } from "react";
 import axios from "axios";
-import { toast } from "react-toastify";
 import type { editor as MonacoEditor } from "monaco-editor";
-import type { MonacoModule } from "@pages/schema-validation/types";
+import type { MonacoModule, IParsedValidationError } from "@pages/schema-validation/types";
 import { trackEvent } from "@utils/analytics";
 import { fetchFormFieldData } from "@utils/request-utils";
-import { PAYLOAD_STORAGE_KEY, TOAST_MESSAGES } from "@pages/schema-validation/constants";
+import { PAYLOAD_STORAGE_KEY } from "@pages/schema-validation/constants";
 import {
     parsePayload,
     validateAction,
@@ -20,6 +19,7 @@ import {
     clearEditorErrorDecorations,
 } from "@pages/schema-validation/utils/editorErrorDecorations";
 import { parseValidationErrors } from "@pages/schema-validation/utils/parseValidationErrors";
+import { buildValidationError } from "@pages/schema-validation/utils/validationErrors";
 import type {
     IUseSchemaValidationReturn,
     IActiveDomainConfig,
@@ -114,6 +114,31 @@ export const useSchemaValidation = (): IUseSchemaValidationReturn => {
     }, []);
 
     /**
+     * Shows validation errors in the panel and applies editor highlights.
+     */
+    const showValidationErrors = useCallback(
+        (errors: IParsedValidationError[]) => {
+            setValidationErrors(errors);
+            setIsValidationVisible(true);
+            setIsSuccessResponse(false);
+            setIsErrorsExpanded(false);
+
+            const editor = editorRef.current;
+            const monaco = monacoRef.current;
+
+            if (editor && monaco) {
+                applyEditorErrorDecorations(
+                    editor,
+                    monaco,
+                    editor.getModel()?.getValue() ?? payload,
+                    errors
+                );
+            }
+        },
+        [payload]
+    );
+
+    /**
      * Validates the payload against the schema
      */
     const verifyRequest = useCallback(async () => {
@@ -122,17 +147,24 @@ export const useSchemaValidation = (): IUseSchemaValidationReturn => {
             action: "Clicked validate",
         });
 
-        const parsedPayload = parsePayload(payload);
-        if (!parsedPayload) {
+        const parsedPayloadResult = parsePayload(payload);
+        if (!parsedPayloadResult.ok) {
+            showValidationErrors(parsedPayloadResult.errors);
             return;
         }
 
-        const action = validateAction(parsedPayload);
-        if (!action) {
+        const actionResult = validateAction(parsedPayloadResult.value);
+        if (!actionResult.ok) {
+            showValidationErrors(actionResult.errors);
             return;
         }
 
-        if (!validateDomainAndVersion(activeDomain, parsedPayload.context || {})) {
+        const domainResult = validateDomainAndVersion(
+            activeDomain,
+            parsedPayloadResult.value.context || {}
+        );
+        if (!domainResult.ok) {
+            showValidationErrors(domainResult.errors);
             return;
         }
 
@@ -147,38 +179,25 @@ export const useSchemaValidation = (): IUseSchemaValidationReturn => {
         try {
             setIsLoading(true);
             const response = await axios.post<IValidationResponse>(
-                `${import.meta.env.VITE_BACKEND_URL}/flow/validate/${action}`,
-                parsedPayload
+                `${import.meta.env.VITE_BACKEND_URL}/flow/validate/${actionResult.value}`,
+                parsedPayloadResult.value
             );
 
             setIsValidationVisible(true);
 
             if (response.data?.error?.message) {
-                const parsedErrors = parseValidationErrors(response.data.error.message);
-                setValidationErrors(parsedErrors);
-                setIsSuccessResponse(false);
-
-                const editor = editorRef.current;
-                const monaco = monacoRef.current;
-                if (editor && monaco) {
-                    applyEditorErrorDecorations(
-                        editor,
-                        monaco,
-                        editor.getModel()?.getValue() ?? payload,
-                        parsedErrors
-                    );
-                }
+                showValidationErrors(parseValidationErrors(response.data.error.message));
             } else {
                 setValidationErrors([]);
                 setIsSuccessResponse(true);
             }
         } catch (error) {
             console.error("Validation error:", error);
-            toast.error(TOAST_MESSAGES.VALIDATION_ERROR);
+            showValidationErrors([buildValidationError("VALIDATION_ERROR")]);
         } finally {
             setIsLoading(false);
         }
-    }, [payload, activeDomain]);
+    }, [payload, activeDomain, showValidationErrors]);
 
     /**
      * Handles Monaco editor mount event to track paste events

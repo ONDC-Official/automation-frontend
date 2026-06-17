@@ -4,6 +4,7 @@
 @import "tailwindcss";
 
 @theme {
+    --breakpoint-nav: 1260px;
     --animate-accordion-down: accordion-down 0.2s ease-out;
     --animate-accordion-up: accordion-up 0.2s ease-out;
 
@@ -40,7 +41,6 @@
 
     --default-ring-width: 3px;
     --default-ring-color: var(--color-brand-normal);
-
 }
 
 @layer base {
@@ -214,6 +214,19 @@
 
 .dark * {
     scrollbar-color: var(--color-n-400) var(--color-n-700);
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+    animation-duration: 0.25s;
+    animation-timing-function: ease-in-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    ::view-transition-old(root),
+    ::view-transition-new(root) {
+        animation: none;
+    }
 }
 
 /* Monaco schema validation error highlights — unlayered so they beat Tailwind resets */

@@ -3,11 +3,11 @@ import { useSearchParams } from "react-router-dom";
 import axios, { AxiosResponse, AxiosError } from "axios";
 import { toast } from "react-toastify";
 import RenderFlows from "@components/FlowShared/render-flows";
-import CardComponent from "@/components/ui/Card";
-import Accordion from "@/components/Accordion";
+import Card from "@/components/Shadcn/Card";
+import Accordion from "@/components/Shadcn/Accordion";
 import { ReportPage } from "@components/FlowShared/report";
 import { GetRequestEndpoint } from "@components/FlowShared/guides";
-import NotFound from "@components/ui/not-found";
+import NotFound from "@/components/NotFound";
 import { useSession } from "@context/context";
 import { putCacheData } from "@utils/request-utils";
 import { trackEvent } from "@utils/analytics";
@@ -24,6 +24,7 @@ import { SCENARIO_GUIDE_STEPS } from "@/pages/scenario/constants";
 import { IScenarioFormData, ISessionResponse, ISavedPrefAPI } from "@/pages/scenario/types";
 import { openSessionInNewTab } from "@/pages/scenario/helpers";
 import NewSessionForm from "@/pages/scenario/NewSessionForm";
+import { Spinner } from "@/components/Shadcn/Spinner/spinner";
 
 export default function FlowContent() {
     const {
@@ -218,14 +219,14 @@ export default function FlowContent() {
                         <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(280px,2fr)_minmax(0,3fr)]">
                             <Accordion title="Scenario Testing" steps={SCENARIO_GUIDE_STEPS} />
 
-                            <CardComponent
+                            <Card
                                 title="Create a new Session"
                                 description="Fill the details to begin flow testing."
                             >
                                 {isInitializing ? (
-                                    <p className="py-6 text-center text-sm text-n-300">
-                                        Loading...
-                                    </p>
+                                    <div className="flex items-center justify-center">
+                                        <Spinner />
+                                    </div>
                                 ) : (
                                     <NewSessionForm
                                         domains={domains}
@@ -235,7 +236,7 @@ export default function FlowContent() {
                                         onSubmit={onSubmitHandler}
                                     />
                                 )}
-                            </CardComponent>
+                            </Card>
                         </div>
 
                         <PreviousSessionsPanel
@@ -252,7 +253,7 @@ export default function FlowContent() {
                     </div>
                 );
             case 1:
-                if (!flows) return <h1>Loading...</h1>;
+                if (!flows) return <Spinner />;
                 return (
                     <RenderFlows
                         flows={flows}
@@ -262,7 +263,7 @@ export default function FlowContent() {
                     />
                 );
             case 2:
-                if (!session) return <h1>Loading...</h1>;
+                if (!session) return <Spinner />;
                 return <ReportPage sessionId={session} report={report} setStep={setFlowStepNum} />;
             default:
                 return <NotFound />;

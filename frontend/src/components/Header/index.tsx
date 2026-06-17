@@ -1,5 +1,10 @@
-import { Button } from "@/components/shadcn/button";
-import { Drawer, DrawerContent, DrawerTitle, DrawerTrigger } from "@/components/shadcn/drawer";
+import { Button } from "@/components/Shadcn/Button/button";
+import {
+    Drawer,
+    DrawerContent,
+    DrawerTitle,
+    DrawerTrigger,
+} from "@/components/Shadcn/Drawer/drawer";
 import { Logo } from "@components/Header/Logo";
 import { NavigationMenuSection } from "@/components/Header/NavigationMenuSection";
 import { ThemeToggle } from "@components/Header/ThemeToggle";
@@ -13,23 +18,20 @@ const Header = () => (
             <nav className="relative mx-auto flex h-16 max-w-7xl items-center px-15 xl:px-0">
                 <Logo />
 
-                <div
-                    className="mx-5 hidden h-8 w-px shrink-0 bg-n-30 dark:bg-border-default lg:block"
-                    aria-hidden="true"
-                />
+                <div className="mx-5 hidden h-8 w-px shrink-0 bg-n-30 dark:bg-border-default nav:block" />
 
-                <div className="hidden min-w-0 flex-1 lg:flex">
+                <div className="hidden min-w-0 flex-1 nav:flex">
                     <NavigationMenuSection />
                 </div>
 
-                <div className="ml-auto flex shrink-0 items-center gap-2 lg:gap-3">
+                <div className="ml-auto flex shrink-0 items-center gap-2 nav:gap-3">
                     <Drawer direction="left">
                         <DrawerTrigger asChild>
                             <Button
                                 type="button"
                                 variant="ghost"
                                 size="icon"
-                                className="lg:hidden"
+                                className="nav:hidden"
                                 aria-label="Open navigation menu"
                             >
                                 <Bars3Icon className="size-5" />
@@ -41,15 +43,15 @@ const Header = () => (
                                 <NavigationMenuSection inDrawer />
                             </div>
                             <div className="mt-auto flex items-center gap-3 border-t border-n-30 p-4 pt-6 dark:border-border-default">
-                                <div className="min-w-0 flex-1 [&_button]:w-full">
-                                    <UserProfileSection />
+                                <div className="min-w-0 flex-1">
+                                    <UserProfileSection inDrawer />
                                 </div>
                                 <ThemeToggle />
                             </div>
                         </DrawerContent>
                     </Drawer>
 
-                    <div className="hidden items-center gap-2 lg:flex lg:gap-3">
+                    <div className="hidden items-center gap-2 nav:flex nav:gap-3">
                         <UserProfileSection />
                         <ThemeToggle />
                     </div>

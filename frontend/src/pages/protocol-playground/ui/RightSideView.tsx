@@ -1,17 +1,24 @@
-import { Editor, OnMount } from "@monaco-editor/react";
 import { editor, Position } from "monaco-editor";
-import { PLAYGROUND_RIGHT_TABS, PlaygroundRightTabType } from "../types";
+import { PLAYGROUND_RIGHT_TABS, PlaygroundRightTabType } from "@pages/protocol-playground/types";
 import { useContext, useEffect, useRef, useState } from "react";
-import { PlaygroundContext } from "../context/playground-context";
-import SessionDataTab from "./session-data-tab";
-import { ExecutionResults } from "./extras/terminal";
-import OutputPayloadViewer from "./extras/output-payload-viewer";
-import { editorUtils } from "../utils/editor-utils";
-import { mockRunnerExtensions } from "../utils/mock-runner-extentions";
-import CommonLibView from "./playground-upper/common-lib-view";
-import { AIChatPanel } from "../ai/ui/AIChatPanel";
-import { getFullSession, getSessionUpToActionId } from "../utils/transaction-view";
-// import { AIChatPanel } from "../ai/ui/AIChatPanel";
+import { PlaygroundContext } from "@pages/protocol-playground/context/playground-context";
+import SessionDataTab from "@pages/protocol-playground/ui/session-data-tab";
+import { ExecutionResults } from "@pages/protocol-playground/ui/extras/terminal";
+import OutputPayloadViewer from "@pages/protocol-playground/ui/extras/output-payload-viewer";
+import { editorUtils } from "@pages/protocol-playground/utils/editor-utils";
+import { mockRunnerExtensions } from "@pages/protocol-playground/utils/mock-runner-extentions";
+import CommonLibView from "@pages/protocol-playground/ui/playground-upper/common-lib-view";
+import { AIChatPanel } from "@pages/protocol-playground/ai/ui/AIChatPanel";
+import {
+    getFullSession,
+    getSessionUpToActionId,
+} from "@pages/protocol-playground/utils/transaction-view";
+import { CodeEditor } from "@/components/PayloadEditor";
+import { FlowTabs, TabsContent } from "@/components/Shadcn/Tabs";
+import { Spinner } from "@/components/Shadcn/Spinner/spinner";
+import { PLAYGROUND_EDITOR_OPTIONS } from "@pages/protocol-playground/constants";
+import { cn } from "@/lib/utils";
+import type { OnMount } from "@monaco-editor/react";
 
 interface SavedMetadata {
     [key: string]: {
@@ -24,59 +31,63 @@ interface WindowWithMonaco extends Window {
     __jsonHoverProviderDisposable?: { dispose: () => void };
 }
 
-export function RightSideView(props: {
+export const RightSideView = (props: {
     width: string;
     activeRightTab: PlaygroundRightTabType;
     setActiveRightTab: (tab: PlaygroundRightTabType) => void;
     activeApi: string | undefined;
-}) {
+}) => {
     const { width, activeRightTab, setActiveRightTab } = props;
+    const tabOptions = PLAYGROUND_RIGHT_TABS.map((tab) => ({ key: tab.id, label: tab.label }));
 
     return (
         <div
-            className={`border rounded-md ${width} flex flex-col overflow-hidden transition-all duration-500 ease-in-out`}
+            className={cn(
+                "flex min-h-0 flex-1 flex-col self-stretch overflow-hidden bg-transparent transition-all duration-500 ease-in-out dark:border-border-default",
+                width
+            )}
         >
-            <div className="flex border-b bg-gray-50 items-center h-8">
+            <FlowTabs
+                variant="default"
+                options={tabOptions}
+                value={activeRightTab}
+                onValueChange={(value) => setActiveRightTab(value as PlaygroundRightTabType)}
+                className="flex h-full min-h-0 flex-1 flex-col [&_[data-slot=tabs-content][data-state=active]]:flex [&_[data-slot=tabs-content][data-state=active]]:min-h-0 [&_[data-slot=tabs-content][data-state=active]]:flex-1"
+            >
                 {PLAYGROUND_RIGHT_TABS.map((tab) => (
-                    <button
+                    <TabsContent
                         key={tab.id}
-                        onClick={() => setActiveRightTab(tab.id)}
-                        className={`px-4 py-2 font-medium transition-colors ${
-                            activeRightTab === tab.id
-                                ? "bg-white border-b-2 border-sky-500 text-sky-600"
-                                : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
-                        }`}
+                        value={tab.id}
+                        className="mt-0 flex min-h-0 flex-1 flex-col overflow-hidden data-[state=inactive]:hidden"
                     >
-                        {tab.label}
-                    </button>
+                        <GetRightSideContent tabId={tab.id} actionId={props.activeApi} />
+                    </TabsContent>
                 ))}
-            </div>
-            <div className="flex-1 p-4 overflow-auto max-h-[82vh]">
-                <GetRightSideContent tabId={activeRightTab} actionId={props.activeApi} />
-            </div>
+            </FlowTabs>
         </div>
     );
-}
+};
 
-function GetRightSideContent({ tabId, actionId }: { tabId: string; actionId: string | undefined }) {
+const GetRightSideContent = ({
+    tabId,
+    actionId,
+}: {
+    tabId: string;
+    actionId: string | undefined;
+}) => {
     const playgroundContext = useContext(PlaygroundContext);
     const [sessionData, setSessionData] = useState<string>("{}");
     const [isSessionLoading, setIsSessionLoading] = useState(false);
-    // const [savedMeta, setSaveMeta] = useState<SavedMetadata>({});
-    const savedMetaRef = useRef<SavedMetadata>({}); // Add this ref
+    const savedMetaRef = useRef<SavedMetadata>({});
 
     useEffect(() => {
-        // Session data only drives the "session" tab — skip work otherwise.
         if (tabId !== "session") return;
         let cancelled = false;
-        // Use the same `actionId` everywhere (prop is the single source of truth).
         savedMetaRef.current = mockRunnerExtensions.getSaveDataMeta(
             actionId,
             playgroundContext.config
         );
 
-        // Guard against out-of-order async resolution: only the latest run
-        // (matching the current config/actionId/stepGroup) may set state.
         setIsSessionLoading(true);
         getSessionData().then((data) => {
             if (cancelled) return;
@@ -86,13 +97,8 @@ function GetRightSideContent({ tabId, actionId }: { tabId: string; actionId: str
         return () => {
             cancelled = true;
         };
-        // Recompute whenever any input to the session changes, or we (re-)enter
-        // the tab. exhaustive-deps is disabled project-wide; deps are explicit.
     }, [tabId, actionId, playgroundContext.config, playgroundContext.stepGroup]);
 
-    // Extra steps record one transaction_history entry per run, in execution
-    // order. Collect every run for this action so the viewer can page through
-    // them and we can show the latest.
     const payloadRuns = (playgroundContext.config?.transaction_history ?? [])
         .filter((f) => f.action_id === actionId)
         .map((e) => e.payload);
@@ -111,12 +117,6 @@ function GetRightSideContent({ tabId, actionId }: { tabId: string; actionId: str
                 );
             }
 
-            // Match how each group is actually generated:
-            //  - Main steps run once, in order, against the session UP TO that
-            //    step (MockRunner.runGeneratePayload) -> getSessionUpToActionId.
-            //  - Extra steps run multiple times, in any order, and are generated
-            //    against the WHOLE accumulated session (executeExtraStep ->
-            //    getFullSession), so the preview must be the full session.
             const sessionData =
                 playgroundContext.stepGroup === "extra"
                     ? await getFullSession(playgroundContext.config)
@@ -138,7 +138,6 @@ function GetRightSideContent({ tabId, actionId }: { tabId: string; actionId: str
             try {
                 return JSON.stringify(errorInfo, null, 2);
             } catch (newError: unknown) {
-                // Fallback if even error serialization fails
                 console.error("Error serializing data:", newError);
                 return JSON.stringify(
                     {
@@ -153,9 +152,8 @@ function GetRightSideContent({ tabId, actionId }: { tabId: string; actionId: str
         }
     };
 
-    const handleOnMount: OnMount = (editor, monaco) => {
-        const modelUri = editor.getModel()?.uri.toString();
-        // check if hover provider is already registered
+    const handleOnMount: OnMount = (monacoEditor, monaco) => {
+        const modelUri = monacoEditor.getModel()?.uri.toString();
         const windowWithMonaco = window as WindowWithMonaco;
         if (windowWithMonaco.__jsonHoverProviderDisposable) {
             windowWithMonaco.__jsonHoverProviderDisposable.dispose();
@@ -177,7 +175,6 @@ function GetRightSideContent({ tabId, actionId }: { tabId: string; actionId: str
                         position.column
                     );
                     const firstKey = jsonPath.split(".")[1].split("[")[0];
-                    // Use ref instead of state
                     const currentSavedMeta = savedMetaRef.current;
                     if (!currentSavedMeta || !firstKey || !(firstKey in currentSavedMeta)) {
                         return null;
@@ -203,45 +200,36 @@ function GetRightSideContent({ tabId, actionId }: { tabId: string; actionId: str
             },
         });
 
-        // Save the disposable globally (or in React ref)
         windowWithMonaco.__jsonHoverProviderDisposable = disposable;
     };
 
     switch (tabId) {
         case "session":
             return (
-                <div className="relative h-full">
-                    <Editor
-                        // Stable key: never remount on actionId/group change. The
-                        // async session result flows in purely via the controlled
-                        // `value`, so it can't be lost to a remount-with-stale-value.
-                        key="session-data-editor"
-                        theme="dark-skyblue"
-                        onMount={handleOnMount}
-                        height="100%"
-                        language="json"
+                <div className="relative flex min-h-0 flex-1 flex-col self-stretch overflow-hidden mt-2">
+                    <CodeEditor
+                        editorKey="session-data-editor"
                         value={sessionData}
+                        language="json"
+                        readOnly
+                        onMount={handleOnMount}
+                        className="h-full w-full border rounded-lg"
                         options={{
-                            padding: { top: 16, bottom: 16 },
-                            fontSize: 16,
-                            lineNumbers: "on",
-                            scrollBeyondLastLine: true,
-                            automaticLayout: true,
+                            ...PLAYGROUND_EDITOR_OPTIONS,
                             formatOnPaste: true,
                             formatOnType: true,
-                            readOnly: true,
                         }}
                     />
-                    {isSessionLoading && (
-                        <div className="absolute inset-0 flex items-center justify-center bg-[#0b1220]/40 backdrop-blur-[1px] pointer-events-none">
-                            <div className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-white/90 shadow-xs">
-                                <div className="w-3.5 h-3.5 border-2 border-sky-500 border-t-transparent rounded-full animate-spin" />
-                                <span className="text-xs font-medium text-gray-700">
+                    {isSessionLoading ? (
+                        <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-surface-elevated/80 backdrop-blur-[1px]">
+                            <div className="flex items-center gap-2 rounded-md bg-surface-page px-3 py-1.5 shadow-xs dark:bg-surface-muted">
+                                <Spinner className="size-3.5 text-brand-normal" />
+                                <span className="text-xs font-medium text-text-primary">
                                     Computing session…
                                 </span>
                             </div>
                         </div>
-                    )}
+                    ) : null}
                 </div>
             );
         case "transaction":
@@ -261,5 +249,5 @@ function GetRightSideContent({ tabId, actionId }: { tabId: string; actionId: str
         case "ai_chat":
             return <AIChatPanel actionId={actionId} />;
     }
-    return <></>;
-}
+    return null;
+};

@@ -1,18 +1,18 @@
-import { toast } from "react-toastify";
 import { IEditorRange } from "@/pages/schema-validation/types";
 import type {
     IParsedValidationError,
     IParsedPayload,
     IActiveDomainConfig,
     IPayloadContext,
+    IValidationResult,
 } from "@/pages/schema-validation/types";
 import {
     MARKDOWN_BLOCK_REGEX,
     LIST_ITEM_REGEX,
     AJV_AT_PATH_REGEX,
     ADDITIONAL_PROPERTY_REGEX,
-    TOAST_MESSAGES,
 } from "@/pages/schema-validation/constants";
+import { buildValidationError } from "@/pages/schema-validation/utils/validationErrors";
 
 /**
  * Escapes a string for safe use inside a RegExp.
@@ -308,28 +308,33 @@ export function parsePlainValidationErrors(message: string): IParsedValidationEr
  * Parses a JSON payload string and validates its structure
  *
  * @param payload - The JSON string to parse
- * @returns The parsed payload object, or null if parsing fails
- * @throws Shows toast error if payload is invalid or is an array
+ * @returns Parsed payload or client validation errors
  */
-export const parsePayload = (payload: string): IParsedPayload | null => {
+export const parsePayload = (payload: string): IValidationResult<IParsedPayload> => {
     if (payload === "") {
-        toast.warn(TOAST_MESSAGES.EMPTY_PAYLOAD);
-        return null;
+        return {
+            ok: false,
+            errors: [buildValidationError("EMPTY_PAYLOAD")],
+        };
     }
 
     try {
         const parsedPayload = JSON.parse(payload) as IParsedPayload;
 
         if (Array.isArray(parsedPayload)) {
-            toast.warn(TOAST_MESSAGES.ARRAY_NOT_SUPPORTED);
-            return null;
+            return {
+                ok: false,
+                errors: [buildValidationError("ARRAY_NOT_SUPPORTED")],
+            };
         }
 
-        return parsedPayload;
+        return { ok: true, value: parsedPayload };
     } catch (error) {
         console.error("Error while parsing payload:", error);
-        toast.error(TOAST_MESSAGES.INVALID_PAYLOAD);
-        return null;
+        return {
+            ok: false,
+            errors: [buildValidationError("INVALID_PAYLOAD")],
+        };
     }
 };
 
@@ -337,17 +342,19 @@ export const parsePayload = (payload: string): IParsedPayload | null => {
  * Validates that the payload contains a required action in its context
  *
  * @param parsedPayload - The parsed payload object
- * @returns The action string if valid, null otherwise
+ * @returns Action string or client validation errors
  */
-export const validateAction = (parsedPayload: IParsedPayload): string | null => {
+export const validateAction = (parsedPayload: IParsedPayload): IValidationResult<string> => {
     const action = parsedPayload?.context?.action;
 
     if (!action) {
-        toast.warn(TOAST_MESSAGES.MISSING_ACTION);
-        return null;
+        return {
+            ok: false,
+            errors: [buildValidationError("MISSING_ACTION")],
+        };
     }
 
-    return action;
+    return { ok: true, value: action };
 };
 
 /**
@@ -386,21 +393,24 @@ export const isDomainActive = (
 };
 
 /**
- * Validates domain and version are active, shows toast if not
+ * Validates domain and version are active
  *
  * @param activeDomain - The active domain configuration
  * @param context - The payload context containing domain and version information
- * @returns True if domain and version are active, false otherwise
+ * @returns Success or client validation errors
  */
 export const validateDomainAndVersion = (
     activeDomain: IActiveDomainConfig,
     context: IPayloadContext
-): boolean => {
+): IValidationResult<true> => {
     const isValid = isDomainActive(activeDomain, context);
 
     if (!isValid) {
-        toast.warn(TOAST_MESSAGES.DOMAIN_NOT_ACTIVE);
+        return {
+            ok: false,
+            errors: [buildValidationError("DOMAIN_NOT_ACTIVE")],
+        };
     }
 
-    return isValid;
+    return { ok: true, value: true };
 };

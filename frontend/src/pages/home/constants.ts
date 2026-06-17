@@ -1,11 +1,6 @@
 import { ROUTES, getDeveloperGuideDocPath } from "@constants/routes";
-import {
-    IQuickStep,
-    IPathCard,
-    IUsageSectionProps,
-    ISupportCard,
-    ISupportInfoItem,
-} from "@pages/home/types";
+import { IQuickStep, IPathCard, ISupportCard, ISupportInfoItem } from "@pages/home/types";
+import { IStatLayoutProps } from "@/components/StatLayout/types";
 import GitHubIcon from "@/assets/svgs/GitHubIcon";
 import LiveStatusIcon from "@/assets/svgs/LiveStatusIcon";
 import SmartPhoneGraphIcon from "@/assets/svgs/SmartPhoneGraphIcon";
@@ -99,8 +94,8 @@ export const pathCards: IPathCard[] = [
     },
 ];
 
-export const usageSectionContent: IUsageSectionProps = {
-    eyebrow: "// USAGE",
+export const usageSectionContent: IStatLayoutProps = {
+    label: "// USAGE",
     title: "Trusted by integrators across the network.",
     description: "Live numbers from the ONDC Workbench platform.",
     stats: [

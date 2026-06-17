@@ -1,6 +1,6 @@
 import { FC } from "react";
 
-import AccordionDataComponent from "@/components/Accordion";
+import AccordionDataComponent from "@/components/Shadcn/Accordion";
 import { SCHEMA_GUIDE_STEPS } from "@pages/schema-validation/constants";
 
 /**

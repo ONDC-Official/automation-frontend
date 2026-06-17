@@ -1,7 +1,7 @@
-import { Button } from "@/components/shadcn/button";
-import { FieldGroup } from "@/components/shadcn/field";
-import { SelectField } from "@/components/ui/SelectField";
-import { TextField } from "@/components/ui/TextField";
+import { Button } from "@/components/Shadcn/Button/button";
+import { FieldGroup } from "@/components/Shadcn/TextField/field";
+import { ComboBox } from "@/components/Shadcn/ComboBox";
+import { TextField } from "@/components/Shadcn/TextField";
 import { DomainVersionUsecaseFields } from "@/pages/scenario/DomainVersionUsecaseFields";
 import { trackSchemaValidationForm } from "@/pages/scenario/helpers";
 import { SessionFormActions } from "@/pages/scenario/SessionFormActions";
@@ -45,7 +45,7 @@ export const ManualSessionForm = ({
             <FieldGroup>
                 {isLoggedIn ? (
                     <>
-                        <SelectField
+                        <ComboBox
                             control={control}
                             name="config"
                             label="Select Configured Domain"
@@ -77,7 +77,10 @@ export const ManualSessionForm = ({
                                     message: "URL must start with http:// or https://",
                                 },
                                 onChange: (e) =>
-                                    trackSchemaValidationForm("Added subscriber url", e.target.value),
+                                    trackSchemaValidationForm(
+                                        "Added subscriber url",
+                                        e.target.value
+                                    ),
                             })}
                         />
                         <DomainVersionUsecaseFields
@@ -90,7 +93,7 @@ export const ManualSessionForm = ({
                             onDomainChange={onDomainChange}
                             onVersionChange={onVersionChange}
                         />
-                        <SelectField
+                        <ComboBox
                             control={control}
                             name="npType"
                             label="Select App Type"
@@ -101,7 +104,7 @@ export const ManualSessionForm = ({
                                 trackSchemaValidationForm("Added np type", value)
                             }
                         />
-                        <SelectField
+                        <ComboBox
                             control={control}
                             name="env"
                             label="Select Environment"

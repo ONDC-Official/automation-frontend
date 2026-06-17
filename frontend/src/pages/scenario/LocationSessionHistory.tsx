@@ -1,10 +1,10 @@
 import { useState, useMemo, useRef, useEffect } from "react";
 import { LocalSessionHistoryCard } from "@/pages/scenario/LocalSessionHistoryCard";
-import { Pagination } from "@components/Pagination";
+import { Pagination } from "@/components/Shadcn/Pagination";
 import { LS_KEY, SESSIONS_PER_PAGE } from "@/pages/scenario/constants";
 import { ILocationSessionHistoryProps } from "@/pages/scenario/types";
-import { Button } from "@/components/shadcn/button";
-import { SearchField } from "@/components/ui/SearchField";
+import { Button } from "@/components/Shadcn/Button/button";
+import { SearchField } from "@/components/Shadcn/SearchField";
 
 export const LocationSessionHistory = ({
     sessions,
@@ -59,11 +59,13 @@ export const LocationSessionHistory = ({
     };
 
     return (
-        <div className="overflow-hidden rounded-2xl border border-n-30 bg-white">
-            <h3 className="px-5 pt-5 text-lg font-semibold text-n-800">Local Session History</h3>
+        <div className="overflow-hidden rounded-2xl border border-n-30 bg-n-0 dark:border-border-default dark:bg-surface-elevated">
+            <h3 className="px-5 pt-5 text-lg font-semibold text-n-800 dark:text-n-0">
+                Local Session History
+            </h3>
 
-            <div className="mx-5 mt-4 flex flex-col gap-3 rounded-xl bg-brand-light px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
-                <p className="text-sm text-n-500">
+            <div className="mx-5 mt-4 flex flex-col gap-3 rounded-xl bg-brand-light px-4 py-3 dark:bg-surface-muted sm:flex-row sm:items-center sm:justify-between">
+                <p className="text-sm text-n-500 font-semibold dark:text-n-60">
                     {sessions.length} saved · {filtered.length} shown
                 </p>
 
@@ -74,13 +76,13 @@ export const LocationSessionHistory = ({
                         <Button
                             type="button"
                             onClick={() => setShowDeleteConfirm((v) => !v)}
-                            className="w-full rounded-lg bg-brand-normal px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-brand-normal-hover sm:w-auto"
+                            className="w-full rounded-lg bg-brand-normal px-4 py-2 text-sm font-medium text-n-0 transition-colors hover:bg-brand-normal-hover sm:w-auto"
                         >
                             Clear all
                         </Button>
                         {showDeleteConfirm && (
-                            <div className="absolute right-0 top-full z-50 mt-2 w-56 rounded-xl border border-n-30 bg-white p-4 shadow-lg">
-                                <p className="mb-3 text-xs font-medium text-n-500">
+                            <div className="absolute right-0 top-full z-50 mt-2 w-56 rounded-xl border border-n-30 bg-n-0 p-4 shadow-lg dark:border-border-default dark:bg-surface-elevated">
+                                <p className="mb-3 text-xs font-medium text-n-500 dark:text-n-60">
                                     This will permanently delete all {sessions.length} saved
                                     sessions.
                                 </p>
@@ -88,14 +90,14 @@ export const LocationSessionHistory = ({
                                     <Button
                                         type="button"
                                         onClick={handleDeleteAll}
-                                        className="flex-1 rounded-lg bg-error-500 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-error-800"
+                                        className="flex-1 rounded-lg bg-error-500 py-1.5 text-xs font-semibold text-n-0 transition-colors hover:bg-error-800"
                                     >
                                         Delete all
                                     </Button>
                                     <Button
                                         type="button"
                                         onClick={() => setShowDeleteConfirm(false)}
-                                        className="flex-1 rounded-lg bg-n-20 py-1.5 text-xs font-medium text-n-300 transition-colors hover:bg-n-30"
+                                        className="flex-1 rounded-lg bg-n-20 py-1.5 text-xs font-medium text-n-300 transition-colors hover:bg-n-30 dark:bg-n-700 dark:text-n-60 dark:hover:bg-n-600"
                                     >
                                         Cancel
                                     </Button>
@@ -108,22 +110,26 @@ export const LocationSessionHistory = ({
 
             {sessions.length === 0 ? (
                 <div className="flex flex-col items-center justify-center px-4 py-12 text-center">
-                    <p className="text-sm font-medium text-n-300">No sessions yet</p>
-                    <p className="mt-1 text-xs text-n-100">
+                    <p className="text-sm font-medium text-n-300 dark:text-n-60">No sessions yet</p>
+                    <p className="mt-1 text-xs text-n-100 dark:text-n-80">
                         Sessions will appear here after you run flow tests
                     </p>
                 </div>
             ) : filtered.length === 0 ? (
                 <div className="flex flex-col items-center justify-center px-4 py-10 text-center">
-                    <p className="text-sm font-medium text-n-300">No results found</p>
-                    <p className="mt-1 text-xs text-n-100">Try a different search term</p>
+                    <p className="text-sm font-medium text-n-300 dark:text-n-60">
+                        No results found
+                    </p>
+                    <p className="mt-1 text-xs text-n-100 dark:text-n-80">
+                        Try a different search term
+                    </p>
                 </div>
             ) : (
                 <>
                     <div className="grid grid-cols-1 gap-3 p-5 sm:grid-cols-2">
-                        {paginated.map((session, index) => (
+                        {paginated.map((session) => (
                             <LocalSessionHistoryCard
-                                key={`${session.sessionId}-${index}`}
+                                key={session.sessionId}
                                 sessionId={session.sessionId}
                                 subscriberUrl={session.subscriberUrl}
                                 role={session.role ?? "Unknown"}

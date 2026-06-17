@@ -1,12 +1,12 @@
 import { FC } from "react";
-import SectionEyebrow from "@components/SectionEyebrow";
+import SectionLabel from "@/components/SectionLabel";
 import { supportChannelCards } from "@pages/support/constants";
 import SupportChannelCard from "@/pages/support/SupportCard";
 
 const SupportChannelsSection: FC = () => (
     <section className="bg-n-10 py-16 lg:py-20 dark:bg-surface-page">
         <div className="max-w-7xl mx-auto px-15 lg:px-0">
-            <SectionEyebrow label="// SUPPORT CHANNELS" />
+            <SectionLabel label="// SUPPORT CHANNELS" />
             <h2 className="text-h3 font-bold text-n-800 dark:text-n-0 mb-3">
                 Choose how you want help.
             </h2>

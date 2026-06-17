@@ -1,39 +1,34 @@
 import { useContext, useEffect, useMemo, useState } from "react";
-import { FaPlay, FaUndo } from "react-icons/fa";
 import { toast } from "react-toastify";
+import { PlayIcon, ArrowUturnLeftIcon } from "@heroicons/react/24/outline";
 
 import Popup from "@components/ui/pop-up/pop-up";
+import { Button } from "@/components/Shadcn/Button/button";
+import {
+    Combobox,
+    ComboboxContent,
+    ComboboxEmpty,
+    ComboboxInput,
+    ComboboxItem,
+    ComboboxList,
+} from "@/components/Shadcn/ComboBox/combobox";
 import { PlaygroundContext } from "@pages/protocol-playground/context/playground-context";
-
 import type { ToolMessage } from "../../hooks/use-chat-session";
 import { usePendingApprovals } from "../../hooks/use-pending-approvals";
 import { createReadToolRegistry } from "../../tools/registry";
 import type { ToolContext } from "../../tools/types";
 import { InspectorMessageList } from "./InspectorMessageList";
-
-interface ToolInspectorModalProps {
-    isOpen: boolean;
-    onClose: () => void;
-}
+import type {
+    IJsonSchemaParameters,
+    IToolInspectorModalProps,
+} from "@pages/protocol-playground/ai/ui/inspector/types";
 
 function makeId(): string {
     return `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
-interface JsonSchemaProperty {
-    type?: string | string[];
-    enum?: unknown[];
-    default?: unknown;
-}
-
-interface JsonSchemaParameters {
-    type?: string;
-    properties?: Record<string, JsonSchemaProperty>;
-    required?: string[];
-}
-
 function stubFromSchema(parameters: unknown): string {
-    const params = parameters as JsonSchemaParameters | undefined;
+    const params = parameters as IJsonSchemaParameters | undefined;
     const props = params?.properties;
     if (!props || typeof props !== "object") return "{}";
     const stub: Record<string, unknown> = {};
@@ -71,7 +66,7 @@ function stubFromSchema(parameters: unknown): string {
     return JSON.stringify(stub, null, 2);
 }
 
-export function ToolInspectorModal({ isOpen, onClose }: ToolInspectorModalProps) {
+export const ToolInspectorModal = ({ isOpen, onClose }: IToolInspectorModalProps) => {
     const playground = useContext(PlaygroundContext);
     const approvals = usePendingApprovals();
     const registry = useMemo(() => createReadToolRegistry(), []);
@@ -165,20 +160,26 @@ export function ToolInspectorModal({ isOpen, onClose }: ToolInspectorModalProps)
                 </p>
 
                 <div className="flex flex-col gap-1">
-                    <label className="text-[11px] uppercase tracking-wide text-gray-500">
+                    <label className="text-[11px] uppercase tracking-wide text-text-secondary">
                         Tool
                     </label>
-                    <select
-                        value={selectedTool}
-                        onChange={(e) => setSelectedTool(e.target.value)}
-                        className="border border-gray-300 rounded px-2 py-1.5 text-sm bg-white"
+                    <Combobox
+                        items={toolDefs.map((t) => t.function.name)}
+                        value={selectedTool || null}
+                        onValueChange={(value) => setSelectedTool(value ?? "")}
                     >
-                        {toolDefs.map((t) => (
-                            <option key={t.function.name} value={t.function.name}>
-                                {t.function.name}
-                            </option>
-                        ))}
-                    </select>
+                        <ComboboxInput placeholder="Select a tool..." className="w-full" />
+                        <ComboboxContent>
+                            <ComboboxEmpty>No tools found.</ComboboxEmpty>
+                            <ComboboxList>
+                                {(item) => (
+                                    <ComboboxItem key={item} value={item}>
+                                        {item}
+                                    </ComboboxItem>
+                                )}
+                            </ComboboxList>
+                        </ComboboxContent>
+                    </Combobox>
                 </div>
 
                 {currentTool && (
@@ -189,13 +190,15 @@ export function ToolInspectorModal({ isOpen, onClose }: ToolInspectorModalProps)
 
                 {currentTool && (
                     <div>
-                        <button
+                        <Button
                             type="button"
+                            variant="link"
+                            size="xs"
                             onClick={() => setShowSchema((v) => !v)}
-                            className="text-[11px] text-sky-700 hover:underline"
+                            className="h-auto p-0 text-[11px]"
                         >
                             {showSchema ? "Hide" : "Show"} parameter schema
-                        </button>
+                        </Button>
                         {showSchema && (
                             <pre className="font-mono text-[10px] whitespace-pre-wrap wrap-break-word bg-gray-50 border border-gray-200 rounded p-2 mt-1 max-h-40 overflow-auto">
                                 {JSON.stringify(currentTool.function.parameters, null, 2)}
@@ -209,14 +212,16 @@ export function ToolInspectorModal({ isOpen, onClose }: ToolInspectorModalProps)
                         <label className="text-[11px] uppercase tracking-wide text-gray-500">
                             Args (JSON)
                         </label>
-                        <button
+                        <Button
                             type="button"
+                            variant="ghost"
+                            size="xs"
                             onClick={resetStub}
-                            className="text-[11px] text-gray-600 hover:text-gray-900 inline-flex items-center gap-1"
                             title="Regenerate stub args from schema"
+                            className="h-auto gap-1 p-0 text-[11px]"
                         >
-                            <FaUndo className="h-2.5 w-2.5" /> Reset stub
-                        </button>
+                            <ArrowUturnLeftIcon className="size-2.5" /> Reset stub
+                        </Button>
                     </div>
                     <textarea
                         value={argsJson}
@@ -228,23 +233,25 @@ export function ToolInspectorModal({ isOpen, onClose }: ToolInspectorModalProps)
                 </div>
 
                 <div className="flex items-center gap-2">
-                    <button
+                    <Button
                         type="button"
+                        size="sm"
                         onClick={run}
                         disabled={isRunning || !selectedTool}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm rounded bg-sky-600 text-white hover:bg-sky-700 disabled:opacity-50"
+                        isLoading={isRunning}
                     >
-                        <FaPlay className="h-3 w-3" />
+                        {!isRunning && <PlayIcon className="size-3" />}
                         {isRunning ? "Running…" : "Run"}
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                         type="button"
+                        variant="outline"
+                        size="sm"
                         onClick={clearHistory}
                         disabled={messages.length === 0}
-                        className="px-3 py-1.5 text-sm rounded border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50"
                     >
                         Clear results
-                    </button>
+                    </Button>
                 </div>
 
                 <div className="border-t border-gray-200 pt-2">
@@ -256,4 +263,4 @@ export function ToolInspectorModal({ isOpen, onClose }: ToolInspectorModalProps)
             </div>
         </Popup>
     );
-}
+};

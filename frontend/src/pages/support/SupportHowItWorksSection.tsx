@@ -1,12 +1,12 @@
 import { FC } from "react";
-import { Card, CardContent } from "@/components/shadcn/card";
-import SectionEyebrow from "@components/SectionEyebrow";
+import { Card, CardContent } from "@/components/Shadcn/Card/card";
+import SectionLabel from "@/components/SectionLabel";
 import { supportHowItWorksSteps } from "@pages/support/constants";
 
 const SupportHowItWorksSection: FC = () => (
     <section className="bg-n-0 py-16 lg:py-20 dark:bg-surface-page">
         <div className="max-w-7xl mx-auto px-15 lg:px-0">
-            <SectionEyebrow label="// HOW IT WORKS" />
+            <SectionLabel label="// HOW IT WORKS" />
             <h2 className="text-h3 font-bold text-n-800 dark:text-n-0 mb-10">
                 Getting help is simple.
             </h2>

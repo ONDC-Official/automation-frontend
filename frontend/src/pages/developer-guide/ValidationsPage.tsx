@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import { fetchValidationTable } from "@services/developerGuideSpecApi";
 import type { ValidationTableAction } from "./types";
 import ValidationsTable from "./ValidationsTable";
-import Loader from "@components/ui/mini-components/loader";
+import { Spinner } from "@/components/Shadcn/Spinner/spinner";
 import { SegmentedTabs, type TabItem } from "@components/ui/SegmentedTabs";
 
 const ValidationsPage: FC = () => {
@@ -93,8 +93,8 @@ const ValidationsPage: FC = () => {
 
             <div className="grow px-6 py-6">
                 {loading && (
-                    <div className="h-[60vh]">
-                        <Loader />
+                    <div className="flex h-[60vh] items-center justify-center">
+                        <Spinner className="size-8 text-brand-normal" />
                     </div>
                 )}
                 {!loading && error && (

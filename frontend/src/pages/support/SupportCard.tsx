@@ -1,6 +1,12 @@
 import { FC } from "react";
-import { Button } from "@/components/shadcn/button";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/shadcn/card";
+import { Button } from "@/components/Shadcn/Button/button";
+import {
+    Card,
+    CardContent,
+    CardFooter,
+    CardHeader,
+    CardTitle,
+} from "@/components/Shadcn/Card/card";
 import type { ISupportChannelCard } from "@pages/support/types";
 import { ArrowRightIcon } from "@heroicons/react/20/solid";
 
