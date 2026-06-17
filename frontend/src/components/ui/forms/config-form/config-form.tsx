@@ -315,7 +315,7 @@ export default function FormConfig({
     }
 
     if (formConfig.find((field) => field.type === "fis13_select")) {
-        return <FIS13ItemSelection submitEvent={submitEvent} />;
+        return <FIS13ItemSelection submitEvent={submitEvent} referenceData={referenceData} />;
     }
 
     if (formConfig.find((field) => field.type === "trv12_bus_seat_selection")) {
