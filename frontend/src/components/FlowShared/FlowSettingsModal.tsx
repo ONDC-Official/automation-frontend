@@ -2,7 +2,7 @@ import { CollapsibleSection } from "@/components/FlowShared/ui/CollapsibleSectio
 import { FlowFiltersPanel } from "@/components/FlowShared/filter-flows";
 import { FlowSettingsPanel, type FilteredDifficultyCache } from "@/components/ui/difficulty-cards";
 import { Button } from "@/components/Shadcn/Button/button";
-import { ScreenLoader } from "@/components/Shadcn/ScreenLoader";
+import SpinnerDialog from "@/components/Shadcn/SpinnerDialog";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 
 export type SettingsDraft = {
@@ -35,7 +35,7 @@ export const FlowSettingsModal = ({
 
     return (
         <>
-            {isSaving && <ScreenLoader />}
+            {isSaving && <SpinnerDialog />}
             <div
                 className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-xs"
                 onClick={onClose}

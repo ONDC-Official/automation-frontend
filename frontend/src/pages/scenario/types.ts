@@ -47,7 +47,7 @@ export type IManualSessionFormProps = {
     watch: UseFormWatch<INewSessionFormValues>;
     versionOptions: string[];
     usecaseOptions: string[];
-    configOptions: string[];
+    // configOptions: string[];
     onFormSubmit: (data: INewSessionFormValues) => Promise<void>;
     onBackToSavedConfigs: () => void;
     onDomainChange: (domain: string) => void;

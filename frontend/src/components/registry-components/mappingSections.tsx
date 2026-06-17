@@ -3,8 +3,6 @@ import type { Mapping } from "./registry-types";
 import { v4 as uuidv4 } from "uuid";
 import { TrashIcon } from "./key-section";
 import axios from "axios";
-import GuideOverlay from "../ui/GuideOverlay";
-import { GuideStepsEnums } from "../../context/guideContext";
 
 const DOMAIN_OPTIONS = ["ONDC:TRV10", "ONDC:RET10", "ONDC:LOG10"];
 
@@ -87,13 +85,7 @@ export const MappingsSection: React.FC<MappingsSectionProps> = ({
     const renderEditForm = (mapping: Mapping) => (
         <div className="p-4 border rounded-lg bg-gray-50 space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <GuideOverlay
-                    currentStep={GuideStepsEnums.Reg7}
-                    instruction={"Step 7: Add domain"}
-                    handleGoClick={() => {}}
-                    left={0}
-                    top={65}
-                >
+                <div>
                     <label className="block text-sm font-medium text-gray-700">Domain</label>
                     <select
                         className={selectClasses}
@@ -104,14 +96,8 @@ export const MappingsSection: React.FC<MappingsSectionProps> = ({
                             <option key={optionKey}>{optionKey}</option>
                         ))}
                     </select>
-                </GuideOverlay>
-                <GuideOverlay
-                    currentStep={GuideStepsEnums.Reg8}
-                    instruction={"Step 8: Select Type"}
-                    handleGoClick={() => {}}
-                    left={0}
-                    top={65}
-                >
+                </div>
+                <div>
                     <label className="block text-sm font-medium text-gray-700">Type</label>
                     <select
                         className={selectClasses}
@@ -122,14 +108,9 @@ export const MappingsSection: React.FC<MappingsSectionProps> = ({
                             <option key={o}>{o}</option>
                         ))}
                     </select>
-                </GuideOverlay>
-                <GuideOverlay
-                    currentStep={GuideStepsEnums.Reg9}
-                    instruction={"Step 9: Select Uri"}
-                    handleGoClick={() => {}}
-                    left={0}
-                    top={65}
-                >
+                </div>
+
+                <div>
                     <label className="block text-sm font-medium text-gray-700">URI</label>
                     <input
                         type="text"
@@ -138,14 +119,9 @@ export const MappingsSection: React.FC<MappingsSectionProps> = ({
                         value={mapping.uri}
                         onChange={(e) => setEditingMapping({ ...mapping, uri: e.target.value })}
                     />
-                </GuideOverlay>
-                <GuideOverlay
-                    currentStep={GuideStepsEnums.Reg10}
-                    instruction={"Step 10: Select Country"}
-                    handleGoClick={() => {}}
-                    left={0}
-                    top={65}
-                >
+                </div>
+
+                <div>
                     <label className="block text-sm font-medium text-gray-700">Country</label>
                     <input
                         type="text"
@@ -159,14 +135,9 @@ export const MappingsSection: React.FC<MappingsSectionProps> = ({
                             })
                         }
                     />
-                </GuideOverlay>
-                <GuideOverlay
-                    currentStep={GuideStepsEnums.Reg11}
-                    instruction={"Step 11: Select City"}
-                    handleGoClick={() => {}}
-                    left={0}
-                    top={65}
-                >
+                </div>
+
+                <div>
                     <label className="block text-sm font-medium text-gray-700">
                         City (Comma Separated) eg: std:011, std:080 or *
                     </label>
@@ -183,7 +154,7 @@ export const MappingsSection: React.FC<MappingsSectionProps> = ({
                             });
                         }}
                     />
-                </GuideOverlay>
+                </div>
             </div>
             <div className="flex justify-end space-x-3">
                 <button
@@ -192,20 +163,13 @@ export const MappingsSection: React.FC<MappingsSectionProps> = ({
                 >
                     Cancel
                 </button>
-                <GuideOverlay
-                    currentStep={GuideStepsEnums.Reg12}
-                    instruction={"Step 12: Save Domain"}
-                    handleGoClick={handleSave}
-                    left={0}
-                    top={65}
+
+                <button
+                    onClick={handleSave}
+                    className="px-4 py-1.5 text-sm font-medium rounded-md text-white bg-sky-600 hover:bg-sky-700"
                 >
-                    <button
-                        onClick={handleSave}
-                        className="px-4 py-1.5 text-sm font-medium rounded-md text-white bg-sky-600 hover:bg-sky-700"
-                    >
-                        Save Mapping
-                    </button>
-                </GuideOverlay>
+                    Save Mapping
+                </button>
             </div>
         </div>
     );
@@ -219,20 +183,12 @@ export const MappingsSection: React.FC<MappingsSectionProps> = ({
                 {editingMapping ? (
                     renderEditForm(editingMapping)
                 ) : (
-                    <GuideOverlay
-                        currentStep={GuideStepsEnums.Reg6}
-                        instruction={"Step 6: Add domain mappings"}
-                        handleGoClick={handleAddNew}
-                        left={0}
-                        top={45}
+                    <button
+                        onClick={handleAddNew}
+                        className="w-full sm:w-auto flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-xs text-white bg-sky-600 hover:bg-sky-700"
                     >
-                        <button
-                            onClick={handleAddNew}
-                            className="w-full sm:w-auto flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-xs text-white bg-sky-600 hover:bg-sky-700"
-                        >
-                            + Add Mapping
-                        </button>
-                    </GuideOverlay>
+                        + Add Mapping
+                    </button>
                 )}
             </div>
 

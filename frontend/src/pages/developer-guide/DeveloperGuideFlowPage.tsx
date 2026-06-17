@@ -12,7 +12,7 @@ import {
 } from "react-icons/fi";
 import FlowsAccordion from "./FlowsAccordion";
 import FlowInformation from "./FlowInformation";
-import { Spinner } from "@/components/Shadcn/Spinner/spinner";
+import Spinner from "@/components/Shadcn/Spinner";
 import { fetchBuilds, fetchSpec, fetchDocs, fetchChangelog } from "@services/developerGuideSpecApi";
 import { getActionId, getUsecaseLabelFromBuilds } from "./utils";
 import { ROUTES } from "@constants/routes";

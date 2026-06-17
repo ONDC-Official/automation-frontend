@@ -8,7 +8,7 @@ import { useConfigOperations } from "@pages/protocol-playground/hooks/use-config
 import { PlaygroundHeader } from "@pages/protocol-playground/ui/playground-upper/playground-header";
 import { useModalHandlers } from "@pages/protocol-playground/hooks/use-modal";
 import { usePlaygroundActions } from "@pages/protocol-playground/hooks/use-playground-actions";
-import { ScreenLoader } from "@/components/Shadcn/ScreenLoader";
+import SpinnerDialog from "@/components/Shadcn/SpinnerDialog";
 import { ActionTimeline } from "@pages/protocol-playground/ui/playground-upper/merged-sequcence";
 import TraceView from "@pages/protocol-playground/ui/extras/trace-view";
 import ViewOnlyPlaygroundPage from "@pages/protocol-playground/view-only-page";
@@ -222,7 +222,7 @@ const PlaygroundPage = () => {
                 <Popup isOpen={popupOpen} onClose={closeModal}>
                     {popupContent}
                 </Popup>
-                {playgroundContext.loading && <ScreenLoader />}
+                {playgroundContext.loading && <SpinnerDialog />}
             </div>
         );
     }
@@ -318,7 +318,7 @@ const PlaygroundPage = () => {
                         <TraceView config={playgroundContext.config} />
                     </Popup>
                 )}
-                {playgroundContext.loading && <ScreenLoader />}
+                {playgroundContext.loading && <SpinnerDialog />}
                 <PlaygroundHelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
                 {playgroundContext.config && (
                     <FlowInfoModal

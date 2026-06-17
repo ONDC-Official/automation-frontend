@@ -1,10 +1,7 @@
 import react from "react";
-
 import GenericForm from "@components/ui/forms/generic-form";
 import { FormInput } from "@components/ui/forms/form-input";
 import FormSelect from "@components/ui/forms/form-select";
-
-import { UserContext } from "@context/userContext";
 import { trackEvent } from "@utils/analytics";
 import { IDomain, IDomainVersion } from "@/pages/schema-validation/types";
 
@@ -49,133 +46,133 @@ export default function InitialFlowForm({
     setDynamicList,
     setDyanmicValue,
 }: InitialFormProps) {
-    const user = react.useContext(UserContext);
+    // const user = react.useContext(AuthContext);
 
-    if (user.userDetails?.participantId && user.subscriberData) {
-        const onSubmit = async (data: FlowTestingFormData) => {
-            const [domain, type, uri] = data?.config?.split(" - ") || [];
-            data.npType = type;
-            data.domain = domain;
-            data.subscriberUrl = uri;
-            data.env = "LOGGED-IN";
-            await onSubmitHandler(data);
-        };
+    // if (user.user?.participantId && user.subscriberData) {
+    //     const onSubmit = async (data: FlowTestingFormData) => {
+    //         const [domain, type, uri] = data?.config?.split(" - ") || [];
+    //         data.npType = type;
+    //         data.domain = domain;
+    //         data.subscriberUrl = uri;
+    //         data.env = "LOGGED-IN";
+    //         await onSubmitHandler(data);
+    //     };
 
-        const configOptions = user.subscriberData.mappings.map(
-            (mapping) => `${mapping.domain} - ${mapping.type} - ${mapping.uri}`
-        );
+    //     const configOptions = user.subscriberData.mappings.map(
+    //         (mapping) => `${mapping.domain} - ${mapping.type} - ${mapping.uri}`
+    //     );
 
-        return (
-            <GenericForm defaultValues={formData.current} onSubmit={onSubmit} submitAlign="right">
-                <FormSelect
-                    name="config"
-                    label="Select Configured Domain"
-                    options={configOptions}
-                    currentValue={""}
-                    setSelectedValue={(data: string) => {
-                        // const [domain, type, uri] = data.split(" - ");
-                        const [domain] = data.split(" - ");
+    //     return (
+    //         <GenericForm defaultValues={formData.current} onSubmit={onSubmit} submitAlign="right">
+    //             <FormSelect
+    //                 name="config"
+    //                 label="Select Configured Domain"
+    //                 options={configOptions}
+    //                 currentValue={""}
+    //                 setSelectedValue={(data: string) => {
+    //                     // const [domain, type, uri] = data.split(" - ");
+    //                     const [domain] = data.split(" - ");
 
-                        formData.current = {
-                            ...formData.current,
-                            domain: domain,
-                            config: data,
-                        };
-                        setDyanmicValue((prev) => ({
-                            ...prev,
-                            domain: domain,
-                            version: "",
-                            usecaseId: "",
-                        }));
-                        setDynamicList((prev) => {
-                            let filteredVersion: IDomainVersionWithUsecase[] = [];
-                            prev.domain.forEach((item: IDomain) => {
-                                if (item.key === domain) {
-                                    filteredVersion = item.version as IDomainVersionWithUsecase[];
-                                }
-                            });
-                            return {
-                                ...prev,
-                                version: filteredVersion,
-                                usecase: [],
-                            };
-                        });
-                    }}
-                    nonSelectedValue
-                    required
-                />
-                {/* {dynamicList.version?.length ? ( */}
-                <FormSelect
-                    label="Select Version"
-                    name="version"
-                    required={true}
-                    options={dynamicList?.version?.map((val: IDomainVersion) => val.key) || []}
-                    currentValue={dynamicValue.version}
-                    setSelectedValue={(data: string) => {
-                        formData.current = { ...formData.current, version: data };
-                        setDyanmicValue((prev) => ({
-                            ...prev,
-                            version: data,
-                            usecaseId: "",
-                        }));
-                        setDynamicList((prev) => {
-                            let filteredUsecase: string[] = [];
-                            prev.version.forEach((item: IDomainVersionWithUsecase) => {
-                                if (item.key === data) {
-                                    filteredUsecase = item.usecase;
-                                }
-                            });
-                            return {
-                                ...prev,
-                                usecase: filteredUsecase,
-                            };
-                        });
-                    }}
-                    nonSelectedValue
-                />
-                {/* ) : (
-					<></>
-				)} */}
-                {/* {dynamicList.usecase?.length ? ( */}
-                <FormSelect
-                    label="Enter Usecase"
-                    name="usecaseId"
-                    required={true}
-                    options={dynamicList?.usecase || []}
-                    currentValue={dynamicValue.usecaseId}
-                    setSelectedValue={(data: string) => {
-                        formData.current = {
-                            ...formData.current,
-                            usecaseId: data,
-                        };
-                        setDyanmicValue((prev) => ({
-                            ...prev,
-                            usecaseId: data,
-                        }));
-                    }}
-                    nonSelectedValue
-                />
-                {/* ) : (
-					<></>
-				)} */}
-                {/* <FormSelect
-					name="npType"
-					label="Select Type"
-					options={["BAP", "BPP"]}
-					setSelectedValue={(data: "BAP" | "BPP") => {
-						setDyanmicValue((prev) => {
-							return {
-								...prev,
-								npType: data,
-							};
-						});
-						formData.current = { ...formData.current, npType: data };
-					}}
-					required
-				/> */}
-            </GenericForm>
-        );
-    }
+    //                     formData.current = {
+    //                         ...formData.current,
+    //                         domain: domain,
+    //                         config: data,
+    //                     };
+    //                     setDyanmicValue((prev) => ({
+    //                         ...prev,
+    //                         domain: domain,
+    //                         version: "",
+    //                         usecaseId: "",
+    //                     }));
+    //                     setDynamicList((prev) => {
+    //                         let filteredVersion: IDomainVersionWithUsecase[] = [];
+    //                         prev.domain.forEach((item: IDomain) => {
+    //                             if (item.key === domain) {
+    //                                 filteredVersion = item.version as IDomainVersionWithUsecase[];
+    //                             }
+    //                         });
+    //                         return {
+    //                             ...prev,
+    //                             version: filteredVersion,
+    //                             usecase: [],
+    //                         };
+    //                     });
+    //                 }}
+    //                 nonSelectedValue
+    //                 required
+    //             />
+    //             {/* {dynamicList.version?.length ? ( */}
+    //             <FormSelect
+    //                 label="Select Version"
+    //                 name="version"
+    //                 required={true}
+    //                 options={dynamicList?.version?.map((val: IDomainVersion) => val.key) || []}
+    //                 currentValue={dynamicValue.version}
+    //                 setSelectedValue={(data: string) => {
+    //                     formData.current = { ...formData.current, version: data };
+    //                     setDyanmicValue((prev) => ({
+    //                         ...prev,
+    //                         version: data,
+    //                         usecaseId: "",
+    //                     }));
+    //                     setDynamicList((prev) => {
+    //                         let filteredUsecase: string[] = [];
+    //                         prev.version.forEach((item: IDomainVersionWithUsecase) => {
+    //                             if (item.key === data) {
+    //                                 filteredUsecase = item.usecase;
+    //                             }
+    //                         });
+    //                         return {
+    //                             ...prev,
+    //                             usecase: filteredUsecase,
+    //                         };
+    //                     });
+    //                 }}
+    //                 nonSelectedValue
+    //             />
+    //             {/* ) : (
+    // 				<></>
+    // 			)} */}
+    //             {/* {dynamicList.usecase?.length ? ( */}
+    //             <FormSelect
+    //                 label="Enter Usecase"
+    //                 name="usecaseId"
+    //                 required={true}
+    //                 options={dynamicList?.usecase || []}
+    //                 currentValue={dynamicValue.usecaseId}
+    //                 setSelectedValue={(data: string) => {
+    //                     formData.current = {
+    //                         ...formData.current,
+    //                         usecaseId: data,
+    //                     };
+    //                     setDyanmicValue((prev) => ({
+    //                         ...prev,
+    //                         usecaseId: data,
+    //                     }));
+    //                 }}
+    //                 nonSelectedValue
+    //             />
+    //             {/* ) : (
+    // 				<></>
+    // 			)} */}
+    //             {/* <FormSelect
+    // 				name="npType"
+    // 				label="Select Type"
+    // 				options={["BAP", "BPP"]}
+    // 				setSelectedValue={(data: "BAP" | "BPP") => {
+    // 					setDyanmicValue((prev) => {
+    // 						return {
+    // 							...prev,
+    // 							npType: data,
+    // 						};
+    // 					});
+    // 					formData.current = { ...formData.current, npType: data };
+    // 				}}
+    // 				required
+    // 			/> */}
+    //         </GenericForm>
+    //     );
+    // }
 
     return (
         <GenericForm

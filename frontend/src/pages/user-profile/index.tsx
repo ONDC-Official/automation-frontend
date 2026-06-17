@@ -1,7 +1,7 @@
 import { useContext, useEffect } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
-import { Spinner } from "@/components/Shadcn/Spinner/spinner";
-import { UserContext } from "@context/userContext";
+import Spinner from "@/components/Shadcn/Spinner";
+import { AuthContext } from "@/context/authContext";
 import { ROUTES } from "@constants/routes";
 import { apiClient } from "@services/apiClient";
 import { API_ROUTES } from "@services/apiRoutes";
@@ -10,20 +10,20 @@ import { ProfileSidebar } from "@pages/user-profile/ProfileSidebar";
 import { ProfileShellContext } from "@pages/user-profile/ProfileShellContext";
 
 const UserProfile = () => {
-    const { isAuthLoading, userDetails } = useContext(UserContext);
+    const { isAuthLoading, user } = useContext(AuthContext);
     const navigate = useNavigate();
     const [counts, setCounts] = useProfileCounts();
 
     useEffect(() => {
-        if (isAuthLoading || userDetails) {
+        if (isAuthLoading || user) {
             return;
         }
 
         navigate(ROUTES.HOME);
-    }, [isAuthLoading, navigate, userDetails]);
+    }, [isAuthLoading, navigate, user]);
 
     useEffect(() => {
-        const username = userDetails?.username;
+        const username = user?.username;
         if (!username) return;
 
         const loadCounts = async () => {
@@ -47,7 +47,7 @@ const UserProfile = () => {
         };
 
         loadCounts();
-    }, [userDetails?.username]);
+    }, [user?.username]);
 
     if (isAuthLoading) {
         return (
@@ -57,7 +57,7 @@ const UserProfile = () => {
         );
     }
 
-    if (!userDetails) {
+    if (!user) {
         return null;
     }
 
@@ -65,8 +65,8 @@ const UserProfile = () => {
         <ProfileShellContext.Provider value={{ counts, setCounts }}>
             <div className="flex min-h-[calc(100vh-4rem)] bg-surface-muted">
                 <ProfileSidebar
-                    username={userDetails.username}
-                    avatarUrl={userDetails.avatarUrl}
+                    username={user.username}
+                    avatarUrl={user.avatarUrl}
                     counts={counts}
                 />
                 <main className="flex-1 min-w-0 min-h-[calc(100vh-4rem)] bg-surface-elevated">
