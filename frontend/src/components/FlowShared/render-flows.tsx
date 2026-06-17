@@ -12,7 +12,7 @@ import { SessionCache } from "@/types/session-types";
 import { getCompletePayload, getReport, putCacheData } from "@utils/request-utils";
 import { Accordion } from "@components/FlowShared/complete-flow";
 import { useSession } from "@context/context";
-import { Spinner } from "@/components/Shadcn/Spinner/spinner";
+import Spinner from "@/components/Shadcn/Spinner";
 import SearchableJsonView from "@components/FlowShared/searchable-json-view";
 import { FlowTabs, TabsContent } from "@/components/Shadcn/Tabs";
 import { SessionContext } from "@context/context";
@@ -776,8 +776,8 @@ function RenderFlows({
                                             </div>
                                         ) : (
                                             <div className="flex items-center justify-center py-16">
-                                            <Spinner className="size-8 text-brand-normal" />
-                                        </div>
+                                                <Spinner className="size-8 text-brand-normal" />
+                                            </div>
                                         )}
                                     </TabsContent>
                                 ) : null}

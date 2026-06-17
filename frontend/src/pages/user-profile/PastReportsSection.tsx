@@ -1,12 +1,12 @@
 import { useContext, useEffect, useState } from "react";
 import { toast } from "react-toastify";
 
-import { UserContext } from "@context/userContext";
+import { AuthContext } from "@/context/authContext";
 import { apiClient } from "@services/apiClient";
 import { API_ROUTES } from "@services/apiRoutes";
 import { getReport } from "@utils/request-utils";
 import { openReportInNewTab } from "@utils/generic-utils";
-import { Spinner } from "@/components/Shadcn/Spinner/spinner";
+import Spinner from "@/components/Shadcn/Spinner";
 import { PastReportCard } from "@pages/user-profile/components/PastReportCard";
 import { ProfilePageHeader } from "@pages/user-profile/ProfilePageHeader";
 import { useProfileShell } from "@pages/user-profile/ProfileShellContext";
@@ -15,17 +15,17 @@ import { PROFILE_PAGE_COPY } from "@pages/user-profile/constants";
 import type { IPastReport } from "@pages/user-profile/types";
 
 export const PastReportsSection = () => {
-    const { userDetails } = useContext(UserContext);
+    const { user } = useContext(AuthContext);
     const { setCounts } = useProfileShell();
     const [reports, setReports] = useState<IPastReport[]>([]);
     const [loading, setLoading] = useState(false);
     const [viewingId, setViewingId] = useState<string | null>(null);
 
     useEffect(() => {
-        if (!userDetails?.username) return;
+        if (!user?.username) return;
         setLoading(true);
         apiClient
-            .get<IPastReport[]>(API_ROUTES.USER.PAST_REPORTS(userDetails.username))
+            .get<IPastReport[]>(API_ROUTES.USER.PAST_REPORTS(user.username))
             .then((res) => {
                 const data = Array.isArray(res.data) ? res.data : [];
                 setReports(data);
@@ -42,7 +42,7 @@ export const PastReportsSection = () => {
                 }
             })
             .finally(() => setLoading(false));
-    }, [userDetails?.username, setCounts]);
+    }, [user?.username, setCounts]);
 
     const handleViewReport = async (testId: string) => {
         setViewingId(testId);
@@ -77,9 +77,7 @@ export const PastReportsSection = () => {
             ) : reports.length === 0 ? (
                 <div className="text-center py-16 text-text-secondary">
                     <p className="text-body-2 font-semibold">No reports yet.</p>
-                    <p className="text-caption-1 mt-1">
-                        Completed test reports will appear here.
-                    </p>
+                    <p className="text-caption-1 mt-1">Completed test reports will appear here.</p>
                 </div>
             ) : (
                 <div>

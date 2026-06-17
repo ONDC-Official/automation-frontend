@@ -5,7 +5,7 @@ import { githubDarkTheme } from "@uiw/react-json-view/githubDark";
 import type { OpenAPISpecification } from "../types";
 import SchemaTree from "./SchemaTree";
 import { getRequestSchema, deepResolveSchema } from "./specUtils";
-import { Spinner } from "@/components/Shadcn/Spinner/spinner";
+import Spinner from "@/components/Shadcn/Spinner";
 
 interface RequestTabProps {
     spec: OpenAPISpecification;

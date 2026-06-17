@@ -7,7 +7,7 @@ import { fetchBuilds } from "@services/developerGuideSpecApi";
 import { fetchDocContent, fetchDocList } from "@services/developerDocsApi";
 import type { BuildEntry, DocMeta } from "../types";
 import { isDomainEnabled } from "../utils";
-import { Spinner } from "@/components/Shadcn/Spinner/spinner";
+import Spinner from "@/components/Shadcn/Spinner";
 import { buildNavTree } from "./buildNavTree";
 import { DOCS_WITH_SIDEBAR_SECTIONS } from "./docsWithSidebarSections";
 import { filterNavTree } from "./filterNavTree";
