@@ -4,7 +4,7 @@ import { FaRegPaste } from "react-icons/fa6";
 import { toast } from "react-toastify";
 import PayloadEditor from "@/components/ui/mini-components/payload-editor";
 import { Button } from "@/components/Shadcn/Button/button";
-import { ScreenLoader } from "@/components/Shadcn/ScreenLoader";
+import SpinnerDialog from "@/components/Shadcn/SpinnerDialog";
 import { ICatalogItem, IGenericFormWithPasteProps } from "@/components/ui/forms/generic-form.types";
 
 const GenericFormWithPaste = ({
@@ -194,7 +194,7 @@ const GenericFormWithPaste = ({
 
     return (
         <div>
-            {isLoading && <ScreenLoader />}
+            {isLoading && <SpinnerDialog />}
             {enablePaste && (
                 <>
                     {isPayloadEditorActive && (

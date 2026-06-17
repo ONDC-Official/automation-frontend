@@ -8,8 +8,8 @@ import { getTransactionData } from "@utils/request-utils";
 import Modal from "@components/Modal";
 import { CheckCircleIcon, ExclamationCircleIcon } from "@heroicons/react/20/solid";
 import { Button } from "@/components/Shadcn/Button/button";
-import { ScreenLoader } from "@/components/Shadcn/ScreenLoader";
-import { UserContext } from "@context/userContext";
+import SpinnerDialog from "@/components/Shadcn/SpinnerDialog";
+import { AuthContext } from "@/context/authContext";
 
 type ReportRequestBody = Record<string, string[]>;
 
@@ -51,7 +51,7 @@ const GenerateReportModal = ({
     startPolling: () => void;
     setGotReport: (gotReport: boolean) => void;
 }) => {
-    const { userDetails } = useContext(UserContext);
+    const { user } = useContext(AuthContext);
     const [loading, setLoading] = useState(false);
 
     const generateReport = async () => {
@@ -100,8 +100,8 @@ const GenerateReportModal = ({
             }
 
             const params: Record<string, string> = { sessionId };
-            if (userDetails?.username) {
-                params.user_id = userDetails.username;
+            if (user?.username) {
+                params.user_id = user.username;
             }
 
             axios
@@ -175,7 +175,7 @@ const GenerateReportModal = ({
 
     return (
         <>
-            {loading && <ScreenLoader />}
+            {loading && <SpinnerDialog />}
             <Modal isOpen={open} onClose={onClose} className="max-w-xl">
                 <div className="w-full">
                     <h2 className="text-xl font-semibold text-gray-900 mb-6">Generate Report</h2>

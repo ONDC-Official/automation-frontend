@@ -1,29 +1,15 @@
+import { useEffect } from "react";
+import { BrowserRouter, useLocation } from "react-router-dom";
 import { ConfigProvider } from "antd";
-import { useEffect, useState, useCallback } from "react";
-import { BrowserRouter, useLocation, useNavigate } from "react-router-dom";
-import { UserContext } from "@context/userContext";
-import { SubscriberData } from "@components/registry-components/registry-types";
+import { AuthProvider } from "@/context/authContext";
 import { SessionProvider } from "@context/context";
-import { GuideProvider } from "@context/guideContext";
 import { ThemeContextProvider } from "@/context/theme/themeContextProvider";
 import { trackPageView } from "@utils/analytics";
-import { AuthService } from "@services/authService";
-import { authTokenManager, sessionIdSupport } from "@utils/localStorageManager";
+import { sessionIdSupport } from "@utils/localStorageManager";
 import Layout from "@components/Layout";
-import { IUser } from "@/types/user";
-import { ROUTES } from "@/constants/routes";
 
 const Wrapper = () => {
     const location = useLocation();
-    const navigate = useNavigate();
-
-    const [user, setUser] = useState<IUser | undefined>(undefined);
-    const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
-    const [isAuthLoading, setIsAuthLoading] = useState<boolean>(true);
-    const [subscriberData, setSubscriberData] = useState<SubscriberData>({
-        keys: [],
-        mappings: [],
-    });
 
     // Clean up invalid sessionIdForSupport from localStorage
     useEffect(() => {
@@ -35,84 +21,23 @@ const Wrapper = () => {
         trackPageView(location.pathname + location.search);
     }, [location.pathname, location.search]);
 
-    const refreshUser = useCallback(async (): Promise<void> => {
-        setIsAuthLoading(true);
-
-        try {
-            const user = await AuthService.refreshUser();
-            if (user) {
-                setUser(user);
-                setIsLoggedIn(true);
-            } else {
-                setUser(undefined);
-                setIsLoggedIn(false);
-            }
-        } finally {
-            setIsAuthLoading(false);
-        }
-    }, []);
-
-    // Exchange OAuth code from query params for auth token
-    useEffect(() => {
-        const queryParams = new URLSearchParams(location.search);
-        const codeFromQuery = queryParams.get("code");
-
-        if (!codeFromQuery) {
-            return;
-        }
-
-        const exchangeCodeAndPersistToken = async () => {
-            const token = await AuthService.exchangeCodeForToken(codeFromQuery);
-
-            if (!token) {
-                return;
-            }
-
-            authTokenManager.set(token);
-            await refreshUser();
-
-            const nextParams = new URLSearchParams(location.search);
-            nextParams.delete("code");
-            navigate(ROUTES.HOME, { replace: true });
-        };
-
-        exchangeCodeAndPersistToken();
-    }, [location.search, navigate, refreshUser]);
-
-    useEffect(() => {
-        refreshUser();
-    }, [refreshUser]);
-
     return (
-        <UserContext.Provider
-            value={{
-                isLoggedIn: isLoggedIn,
-                isAuthLoading: isAuthLoading,
-                userDetails: user,
-                refreshUser: refreshUser,
-                subscriberData: subscriberData,
-                setSubscriberData: setSubscriberData,
-            }}
-        >
+        <AuthProvider>
             <SessionProvider>
                 <Layout />
             </SessionProvider>
-        </UserContext.Provider>
+        </AuthProvider>
     );
 };
 
-const App = () => {
-    return (
-        <ThemeContextProvider>
-            <ConfigProvider>
-                <BrowserRouter>
-                    <GuideProvider>
-                        <Wrapper />
-                    </GuideProvider>
-                </BrowserRouter>
-            </ConfigProvider>
-        </ThemeContextProvider>
-    );
-};
+const App = () => (
+    <ThemeContextProvider>
+        <ConfigProvider>
+            <BrowserRouter>
+                <Wrapper />
+            </BrowserRouter>
+        </ConfigProvider>
+    </ThemeContextProvider>
+);
 
 export default App;

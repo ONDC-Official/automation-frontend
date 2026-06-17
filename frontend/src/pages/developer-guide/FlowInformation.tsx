@@ -7,7 +7,7 @@ import { getActionId } from "./utils";
 import FlowDetailsAndSummary from "./FlowDetailsAndSummary";
 import ActionOverview from "./ActionOverview";
 import { FlowActionDetails } from "./flowActionDetails";
-import { Spinner } from "@/components/Shadcn/Spinner/spinner";
+import Spinner from "@/components/Shadcn/Spinner";
 import ValidationsTable from "./ValidationsTable";
 import Chatbot from "@components/Chatbot";
 import { RequestTab, ResponseTab } from "./RequestResponseTabs";

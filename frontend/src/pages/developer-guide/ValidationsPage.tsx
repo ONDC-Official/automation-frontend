@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import { fetchValidationTable } from "@services/developerGuideSpecApi";
 import type { ValidationTableAction } from "./types";
 import ValidationsTable from "./ValidationsTable";
-import { Spinner } from "@/components/Shadcn/Spinner/spinner";
+import Spinner from "@/components/Shadcn/Spinner";
 import { SegmentedTabs, type TabItem } from "@components/ui/SegmentedTabs";
 
 const ValidationsPage: FC = () => {

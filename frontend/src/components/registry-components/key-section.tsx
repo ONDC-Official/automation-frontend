@@ -1,8 +1,6 @@
 import React, { useState } from "react";
 import type { Key } from "./registry-types";
 import DownloadKeysButton from "./download-keys-button";
-import { GuideStepsEnums } from "../../context/guideContext";
-import GuideOverlay from "../ui/GuideOverlay";
 
 interface KeysSectionProps {
     keys: Key[];
@@ -56,22 +54,16 @@ export const KeysSection: React.FC<KeysSectionProps> = ({ keys, onAddKey, onDele
                 {isAdding ? (
                     <div className="p-4 border rounded-lg bg-gray-50 space-y-4">
                         <h3 className="font-medium">Add New Key</h3>
-                        <GuideOverlay
-                            currentStep={GuideStepsEnums.Reg3}
-                            left={0}
-                            top={66}
-                            instruction="Step 2(a): Add ukid"
-                            handleGoClick={() => {}}
-                        >
-                            <label className={labelClasses}>UK ID</label>
-                            <input
-                                type="text"
-                                placeholder="unique-key-id"
-                                className={inputClasses}
-                                value={newKey.uk_id}
-                                onChange={(e) => setNewKey({ ...newKey, uk_id: e.target.value })}
-                            />
-                        </GuideOverlay>
+
+                        <label className={labelClasses}>UK ID</label>
+                        <input
+                            type="text"
+                            placeholder="unique-key-id"
+                            className={inputClasses}
+                            value={newKey.uk_id}
+                            onChange={(e) => setNewKey({ ...newKey, uk_id: e.target.value })}
+                        />
+
                         <div>
                             <label className={labelClasses}>Signing Public Key</label>
                             <textarea
@@ -123,20 +115,14 @@ export const KeysSection: React.FC<KeysSectionProps> = ({ keys, onAddKey, onDele
                             >
                                 Cancel
                             </button>
-                            <GuideOverlay
-                                currentStep={GuideStepsEnums.Reg5}
-                                left={0}
-                                top={40}
-                                instruction="Step 2(c): Save Keys"
-                                handleGoClick={handleAdd}
+
+                            <button
+                                onClick={handleAdd}
+                                className="px-4 py-1.5 text-sm font-medium rounded-md text-white bg-sky-600 hover:bg-sky-700"
                             >
-                                <button
-                                    onClick={handleAdd}
-                                    className="px-4 py-1.5 text-sm font-medium rounded-md text-white bg-sky-600 hover:bg-sky-700"
-                                >
-                                    Add Key
-                                </button>
-                            </GuideOverlay>
+                                Add Key
+                            </button>
+
                             <DownloadKeysButton
                                 onDownload={async (p, e) => {
                                     setNewKey({ ...newKey, signing_pub: p, encryption_pub: e });
@@ -145,19 +131,12 @@ export const KeysSection: React.FC<KeysSectionProps> = ({ keys, onAddKey, onDele
                         </div>
                     </div>
                 ) : (
-                    <GuideOverlay
-                        currentStep={GuideStepsEnums.Reg2}
-                        top={45}
-                        instruction="Step 2: Add signing keys"
-                        handleGoClick={() => setIsAdding(true)}
+                    <button
+                        onClick={() => setIsAdding(true)}
+                        className="w-full sm:w-auto flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-xs text-white bg-sky-600 hover:bg-sky-700"
                     >
-                        <button
-                            onClick={() => setIsAdding(true)}
-                            className="w-full sm:w-auto flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-xs text-white bg-sky-600 hover:bg-sky-700"
-                        >
-                            + Add Key
-                        </button>
-                    </GuideOverlay>
+                        + Add Key
+                    </button>
                 )}
             </div>
 
