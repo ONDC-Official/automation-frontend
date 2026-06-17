@@ -1,10 +1,10 @@
 import { useCallback, useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { UserContext } from "@context/userContext";
+import { AuthContext } from "@/context/authContext";
 import { AuthService } from "@services/authService";
 import { ROUTES } from "@constants/routes";
 import { Button } from "@/components/Shadcn/Button/button";
-import { Spinner } from "@/components/Shadcn/Spinner/spinner";
+import Spinner from "@/components/Shadcn/Spinner";
 import GitHubIcon from "@/assets/svgs/GitHubIcon";
 import { UserProfileMenu } from "@/components/Header/UserProfileMenu";
 import { trackEvent } from "@/utils/analytics";
@@ -12,21 +12,21 @@ import { cn } from "@/lib/utils";
 
 export const UserProfileSection = ({ inDrawer = false }: { inDrawer?: boolean }) => {
     const navigate = useNavigate();
-    const { userDetails, refreshUser } = useContext(UserContext);
+    const { user, getUser } = useContext(AuthContext);
     const [isLoading, setIsLoading] = useState(false);
 
     const handleLogin = useCallback(() => {
         trackEvent({
             category: "NAV",
-            action: userDetails ? "Clicked on profile" : "Clicked on Login",
-            label: userDetails ? "PROFILE" : "LOGIN",
+            action: user ? "Clicked on profile" : "Clicked on Login",
+            label: user ? "PROFILE" : "LOGIN",
         });
 
         setIsLoading(true);
         const backendUrl = import.meta.env.VITE_DEVELOPER_GUIDE_BACKEND_URL;
         const authUrl = `${backendUrl}/login`;
         window.location.href = authUrl;
-    }, [userDetails]);
+    }, [user]);
 
     const handleLogout = useCallback(async () => {
         try {
@@ -35,35 +35,35 @@ export const UserProfileSection = ({ inDrawer = false }: { inDrawer?: boolean })
             console.error("Logout failed:", error);
         } finally {
             try {
-                await refreshUser();
+                await getUser();
             } catch (refreshError) {
                 console.error("Failed to refresh user after logout:", refreshError);
             }
             navigate(ROUTES.HOME);
         }
-    }, [navigate, refreshUser]);
+    }, [navigate, getUser]);
 
     return (
         <div
             className={cn(
                 "relative flex items-center",
-                inDrawer && !userDetails ? "w-full" : "shrink-0",
-                inDrawer && userDetails ? "min-w-0" : null
+                inDrawer && !user ? "w-full" : "shrink-0",
+                inDrawer && user ? "min-w-0" : null
             )}
         >
-            {userDetails ? (
+            {user ? (
                 <span
                     className={cn(
                         "mr-3 text-sm font-semibold text-n-500 dark:text-n-0",
                         inDrawer && "min-w-0 truncate"
                     )}
                 >
-                    {userDetails.username}
+                    {user.username}
                 </span>
             ) : null}
 
-            {userDetails ? (
-                <UserProfileMenu user={userDetails} onLogout={handleLogout} />
+            {user ? (
+                <UserProfileMenu user={user} onLogout={handleLogout} />
             ) : (
                 <Button
                     type="button"

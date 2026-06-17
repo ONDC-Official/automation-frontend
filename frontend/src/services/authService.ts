@@ -18,6 +18,10 @@ export class AuthService {
 
             const token = response?.data?.token;
 
+            if (token) {
+                authTokenManager.set(token);
+            }
+
             return token || null;
         } catch (error) {
             console.error("Error exchanging auth code:", error);
@@ -26,26 +30,12 @@ export class AuthService {
     }
 
     /**
-     * Exchange OAuth code for application token and persist it
-     */
-    static async exchangeCodeAndPersistToken(code: string): Promise<void> {
-        const token = await AuthService.exchangeCodeForToken(code);
-
-        if (!token) {
-            return;
-        }
-
-        authTokenManager.set(token);
-        await AuthService.refreshUser();
-    }
-
-    /**
      * Fetch the current user and return them if the session is valid.
      * Returns null when unauthenticated or on error.
      */
-    static async refreshUser(): Promise<IUser | null> {
+    static async getUser(): Promise<IUser | null> {
         try {
-            const response = await AuthService.getCurrentUser();
+            const response = await AuthService.fetchUser();
 
             if (response?.ok && response.user) {
                 return response.user;
@@ -61,7 +51,7 @@ export class AuthService {
     /**
      * Get current user information
      */
-    static async getCurrentUser(): Promise<{ ok: boolean; user: IUser } | null> {
+    static async fetchUser(): Promise<{ ok: boolean; user: IUser } | null> {
         try {
             const response = await developerGuideApiClient.get<{ ok: boolean; user: IUser }>(
                 API_ROUTES.AUTH.ME

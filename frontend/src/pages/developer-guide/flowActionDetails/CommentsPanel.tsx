@@ -1,8 +1,8 @@
 import { FC, useState, useCallback, useEffect, useContext } from "react";
 import * as commentsApi from "@services/developerGuideCommentsApi";
 import type { CommentResponse } from "@services/developerGuideCommentsApi";
-import { Spinner } from "@/components/Shadcn/Spinner/spinner";
-import { UserContext } from "@context/userContext";
+import Spinner from "@/components/Shadcn/Spinner";
+import { AuthContext } from "@/context/authContext";
 
 export interface CommentReply {
     id: string;
@@ -67,7 +67,7 @@ interface CommentsPanelProps {
 }
 
 const CommentsPanel: FC<CommentsPanelProps> = ({ selectedPath, actionApi, useCaseId, flowId }) => {
-    const { isLoggedIn } = useContext(UserContext);
+    const { user } = useContext(AuthContext);
     const useApi = Boolean(flowId && useCaseId);
     const [threads, setThreads] = useState<CommentThread[]>([]);
     const [loading, setLoading] = useState(false);
@@ -75,6 +75,7 @@ const CommentsPanel: FC<CommentsPanelProps> = ({ selectedPath, actionApi, useCas
     const [newCommentText, setNewCommentText] = useState("");
     const [replyTextByThreadId, setReplyTextByThreadId] = useState<Record<string, string>>({});
     const [replyingToId, setReplyingToId] = useState<string | null>(null);
+    const isLoggedIn = Boolean(user);
 
     const fetchComments = useCallback(
         async (showLoader = true) => {

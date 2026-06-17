@@ -1,4 +1,4 @@
-import { Spinner } from "@/components/Shadcn/Spinner/spinner";
+import Spinner from "@/components/Shadcn/Spinner";
 import { PROFILE_PAGE_COPY } from "@pages/user-profile/constants";
 import { NewConfigForm } from "@pages/user-profile/NewConfigForm";
 import { ProfilePageHeader } from "@pages/user-profile/ProfilePageHeader";

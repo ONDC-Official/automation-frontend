@@ -1,7 +1,5 @@
 import { toast } from "react-toastify";
-import { GuideStepsEnums } from "../../context/guideContext";
 import { generateKeys } from "../../utils/regsitry-utils";
-import GuideOverlay from "../ui/GuideOverlay";
 
 interface DownloadKeysButtonProps {
     onDownload: (signingPublicKey: string, encryptionPublicKey: string) => Promise<void>;
@@ -32,20 +30,12 @@ export default function DownloadKeysButton({ onDownload }: DownloadKeysButtonPro
     };
 
     return (
-        <GuideOverlay
-            currentStep={GuideStepsEnums.Reg4}
-            left={0}
-            top={45}
-            instruction=" Step 2(b): Generate Keys"
-            handleGoClick={handleDownload}
+        <button
+            type="button"
+            onClick={handleDownload}
+            className="px-4 py-2 bg-black text-white hover:bg-slate-700 rounded-md"
         >
-            <button
-                type="button"
-                onClick={handleDownload}
-                className="px-4 py-2 bg-black text-white hover:bg-slate-700 rounded-md"
-            >
-                Generate & Download New Keys
-            </button>
-        </GuideOverlay>
+            Generate & Download New Keys
+        </button>
     );
 }

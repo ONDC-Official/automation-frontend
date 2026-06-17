@@ -1,6 +1,6 @@
 import { useContext, useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
-import { UserContext } from "@context/userContext";
+import { AuthContext } from "@/context/authContext";
 import { DEFAULT_VALUES } from "@/pages/scenario/constants";
 import {
     IDomainVersionWithUsecase,
@@ -15,7 +15,7 @@ export function useNewSessionForm({
     initialSavedConfigKey = "",
     onSubmit,
 }: INewSessionFormProps) {
-    const { userDetails, subscriberData } = useContext(UserContext);
+    const { user } = useContext(AuthContext);
 
     const savedConfigKeys = Object.keys(savedPreferences);
     const hasSavedPrefs = savedConfigKeys.length > 0;
@@ -26,7 +26,7 @@ export function useNewSessionForm({
         initialSavedConfigKey ? (savedPreferences[initialSavedConfigKey]?.usecaseId ?? "") : ""
     );
 
-    const isLoggedIn = !!(userDetails?.participantId && subscriberData);
+    const isLoggedIn = !!user?.githubId;
 
     const {
         control,
@@ -42,7 +42,9 @@ export function useNewSessionForm({
 
     const versionOptions = useMemo(() => {
         const domain = domains.find((d) => d.key === watchedDomain);
-        return (domain?.version as IDomainVersionWithUsecase[] | undefined)?.map((v) => v.key) ?? [];
+        return (
+            (domain?.version as IDomainVersionWithUsecase[] | undefined)?.map((v) => v.key) ?? []
+        );
     }, [domains, watchedDomain]);
 
     const usecaseOptions = useMemo(() => {
@@ -52,13 +54,13 @@ export function useNewSessionForm({
         return version?.usecase ?? [];
     }, [domains, watchedDomain, watchedVersion]);
 
-    const configOptions = useMemo(
-        () =>
-            subscriberData?.mappings?.map(
-                (mapping) => `${mapping.domain} - ${mapping.type} - ${mapping.uri}`
-            ) ?? [],
-        [subscriberData]
-    );
+    // const configOptions = useMemo(
+    //     () =>
+    //         subscriberData?.mappings?.map(
+    //             (mapping) => `${mapping.domain} - ${mapping.type} - ${mapping.uri}`
+    //         ) ?? [],
+    //     [subscriberData]
+    // );
 
     useEffect(() => {
         if (initialSavedConfigKey && savedPreferences[initialSavedConfigKey]) {
@@ -150,7 +152,7 @@ export function useNewSessionForm({
             watch,
             versionOptions,
             usecaseOptions,
-            configOptions,
+            // configOptions,
             onFormSubmit: handleFormSubmit,
             onBackToSavedConfigs: () => setShowManualForm(false),
             onDomainChange: handleDomainChange,

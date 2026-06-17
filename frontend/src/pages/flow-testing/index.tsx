@@ -3,7 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import { DocumentTextIcon, ExclamationTriangleIcon } from "@heroicons/react/24/outline";
 import RenderFlows from "@components/FlowShared/render-flows";
-import { Spinner } from "@/components/Shadcn/Spinner/spinner";
+import Spinner from "@/components/Shadcn/Spinner";
 import { apiClient } from "@services/apiClient";
 import { API_ROUTES } from "@services/apiRoutes";
 import { Flow } from "@/types/flow-types";

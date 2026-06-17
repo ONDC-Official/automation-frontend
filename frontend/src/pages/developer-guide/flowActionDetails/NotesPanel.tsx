@@ -1,8 +1,8 @@
 import { FC, useState, useCallback, useEffect, useContext } from "react";
 import * as notesApi from "@services/developerGuideNotesApi";
 import type { NoteResponse } from "@services/developerGuideNotesApi";
-import { Spinner } from "@/components/Shadcn/Spinner/spinner";
-import { UserContext } from "@context/userContext";
+import Spinner from "@/components/Shadcn/Spinner";
+import { AuthContext } from "@/context/authContext";
 
 export interface Note {
     id: string;
@@ -59,7 +59,7 @@ interface NotesPanelProps {
 }
 
 const NotesPanel: FC<NotesPanelProps> = ({ selectedPath, actionApi, useCaseId, flowId }) => {
-    const { isLoggedIn } = useContext(UserContext);
+    const { user } = useContext(AuthContext);
     const useApi = Boolean(flowId && useCaseId);
     const [notesByPath, setNotesByPath] = useState<NotesByPath>({});
     const [loading, setLoading] = useState(false);
@@ -68,6 +68,7 @@ const NotesPanel: FC<NotesPanelProps> = ({ selectedPath, actionApi, useCaseId, f
     const [isCreating, setIsCreating] = useState(false);
     const [formTitle, setFormTitle] = useState("");
     const [formContent, setFormContent] = useState("");
+    const isLoggedIn = Boolean(user);
 
     const showForm = isCreating || editingId !== null;
     const hasPath = selectedPath != null;

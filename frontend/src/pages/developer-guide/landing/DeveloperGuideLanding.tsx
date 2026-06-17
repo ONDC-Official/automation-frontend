@@ -6,7 +6,7 @@ import { fetchDocList } from "@services/developerDocsApi";
 import { ROUTES, getDeveloperGuideUseCasePath, getDeveloperGuideDocPath } from "@constants/routes";
 import type { BuildEntry, DocMeta } from "../types";
 import { isDomainEnabled } from "../utils";
-import { Spinner } from "@/components/Shadcn/Spinner/spinner";
+import Spinner from "@/components/Shadcn/Spinner";
 import RecommendedSection from "./RecommendedSection";
 import DomainCardsSection from "./DomainCardsSection";
 

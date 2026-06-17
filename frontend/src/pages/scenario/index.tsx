@@ -19,12 +19,12 @@ import { PreviousSessionsPanel } from "@/pages/scenario/PreviousSessionPanel";
 import { IPreviousSessionItem } from "@/pages/scenario/types";
 import { apiClient } from "@services/apiClient";
 import { API_ROUTES } from "@services/apiRoutes";
-import { UserContext } from "@context/userContext";
+import { AuthContext } from "@/context/authContext";
 import { SCENARIO_GUIDE_STEPS } from "@/pages/scenario/constants";
 import { IScenarioFormData, ISessionResponse, ISavedPrefAPI } from "@/pages/scenario/types";
 import { openSessionInNewTab } from "@/pages/scenario/helpers";
 import NewSessionForm from "@/pages/scenario/NewSessionForm";
-import { Spinner } from "@/components/Shadcn/Spinner/spinner";
+import Spinner from "@/components/Shadcn/Spinner";
 
 export default function FlowContent() {
     const {
@@ -41,7 +41,7 @@ export default function FlowContent() {
     const [isFormSubmitted, setIsFormSubmitted] = useState(false);
     const [domains, setDomains] = useState<IDomain[]>([]);
     const { sessionId: contextSessionId } = useSession();
-    const { userDetails } = useContext(UserContext);
+    const { user } = useContext(AuthContext);
     const [searchParams] = useSearchParams();
 
     const [existingSessions, setExistingSessions] = useState<IPreviousSessionItem[]>([]);
@@ -60,7 +60,7 @@ export default function FlowContent() {
                 `${import.meta.env.VITE_BACKEND_URL}/sessions`,
                 {
                     ...data,
-                    userId: userDetails?.username,
+                    userId: user?.username,
                     difficulty_cache: {
                         stopAfterFirstNack: true,
                         timeValidations: true,

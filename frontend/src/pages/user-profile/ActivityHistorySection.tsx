@@ -2,7 +2,7 @@ import { useContext, useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 
-import { UserContext } from "@context/userContext";
+import { AuthContext } from "@/context/authContext";
 import { apiClient } from "@services/apiClient";
 import { API_ROUTES } from "@services/apiRoutes";
 import { getSessions, getReport, getSubscriberUrls } from "@utils/request-utils";
@@ -10,7 +10,7 @@ import { openReportInNewTab } from "@utils/generic-utils";
 import { IDomain } from "@pages/schema-validation/types";
 import { Button } from "@/components/Shadcn/Button/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/Shadcn/Card/card";
-import { Spinner } from "@/components/Shadcn/Spinner/spinner";
+import Spinner from "@/components/Shadcn/Spinner";
 import { Input } from "@/components/Shadcn/TextField/input";
 import { cn } from "@/lib/utils";
 import { ActivityHistoryAccordion } from "@pages/user-profile/components/ActivityHistoryAccordion";
@@ -22,7 +22,7 @@ import { PROFILE_PAGE_COPY } from "@pages/user-profile/constants";
 import type { Session } from "@pages/user-profile/types";
 
 export const ActivityHistorySection = () => {
-    const { userDetails } = useContext(UserContext);
+    const { user } = useContext(AuthContext);
     const { setCounts } = useProfileShell();
     const [subscriberId, setSubscriberId] = useState("");
     const [subscriberOptions, setSubscriberOptions] = useState<string[]>([]);
@@ -42,7 +42,7 @@ export const ActivityHistorySection = () => {
     const domainItems = domains.map((d) => d.key);
     const versionItems = versionOptions.map((v) => v.key);
     const npTypeItems = ["BAP", "BPP"];
-    const isLoggedIn = Boolean(userDetails);
+    const isLoggedIn = Boolean(user);
     const subscriberFieldClassName =
         "flex-1 min-w-48 w-full rounded-xl border-border-default bg-surface-elevated text-body-2 text-text-primary";
 
@@ -55,10 +55,10 @@ export const ActivityHistorySection = () => {
 
     useEffect(() => {
         const fetchSubscribers = async () => {
-            if (!userDetails?.username) return;
+            if (!user?.username) return;
             setLoadingSubscribers(true);
             try {
-                const urls = await getSubscriberUrls(userDetails?.username);
+                const urls = await getSubscriberUrls(user?.username);
                 setSubscriberOptions(urls);
             } catch {
                 setSubscriberOptions([]);
@@ -78,7 +78,7 @@ export const ActivityHistorySection = () => {
         };
         fetchSubscribers();
         fetchDomains();
-    }, [userDetails?.username]);
+    }, [user?.username]);
 
     const handleDomainChange = (domain: string) => {
         setSelectedDomain(domain);
