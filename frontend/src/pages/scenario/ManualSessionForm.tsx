@@ -10,7 +10,6 @@ import { IManualSessionFormProps } from "@/pages/scenario/types";
 export const ManualSessionForm = ({
     domains,
     hasSavedPrefs,
-    isLoggedIn,
     isSubmitting,
     control,
     register,
