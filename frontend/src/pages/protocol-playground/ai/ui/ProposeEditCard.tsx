@@ -1,11 +1,7 @@
 import { useContext, useMemo, useState } from "react";
-import {
-    FaCheckCircle,
-    FaExclamationCircle,
-    FaTimes,
-} from "react-icons/fa";
+import { FaCheckCircle, FaExclamationCircle, FaTimes } from "react-icons/fa";
 import { PiShieldStarBold } from "react-icons/pi";
-import MockRunner from "@ondc/automation-mock-runner";
+import { MockRunner } from "@ondc/automation-mock-runner";
 
 import { PlaygroundContext } from "@pages/protocol-playground/context/playground-context";
 
@@ -48,9 +44,7 @@ const SIGN_BY_OP: Record<DiffRow["op"], string> = {
 function DiffViewer({ rows }: { rows: DiffRow[] }) {
     if (rows.length === 0) {
         return (
-            <div className="text-[11px] italic text-gray-500 px-2 py-1">
-                no changes detected
-            </div>
+            <div className="text-[11px] italic text-gray-500 px-2 py-1">no changes detected</div>
         );
     }
     return (
@@ -166,9 +160,7 @@ export function ProposeEditCard({ message }: ProposeEditCardProps) {
             {expanded && (
                 <div className="px-3 py-2 border-t border-black/10 bg-white flex flex-col gap-2">
                     {args.rationale && (
-                        <div className="text-[12px] text-gray-800 italic">
-                            {args.rationale}
-                        </div>
+                        <div className="text-[12px] text-gray-800 italic">{args.rationale}</div>
                     )}
 
                     {isError && (

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { parse as yamlParse } from "yaml";
-import MockRunner, { MockPlaygroundConfigType } from "@ondc/automation-mock-runner";
+import { MockRunner, MockPlaygroundConfigType } from "@ondc/automation-mock-runner";
 
 import { Button } from "@/components/Shadcn/Button/button";
 import {
@@ -161,7 +161,9 @@ export const GitHubImportModal = ({
                         options={folders}
                         disabled={!selectedBranch || loadingFolders || folders.length === 0}
                         loading={loadingFolders}
-                        placeholder={selectedBranch ? "Select a flow folder" : "Select domain first"}
+                        placeholder={
+                            selectedBranch ? "Select a flow folder" : "Select domain first"
+                        }
                         onChange={(v) => setSelectedFolder(v)}
                     />
 

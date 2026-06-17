@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { toast } from "react-toastify";
-import MockRunner, {
+import {
+    MockRunner,
     ExecutionResult,
     MockPlaygroundConfigType,
 } from "@ondc/automation-mock-runner";

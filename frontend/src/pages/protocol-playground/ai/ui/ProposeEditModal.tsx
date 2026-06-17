@@ -1,7 +1,7 @@
 import { useContext, useMemo } from "react";
 import { FaCheck, FaTimes } from "react-icons/fa";
 import { PiShieldStarBold } from "react-icons/pi";
-import MockRunner from "@ondc/automation-mock-runner";
+import { MockRunner } from "@ondc/automation-mock-runner";
 
 import Popup from "@components/ui/pop-up/pop-up";
 import { PlaygroundContext } from "@pages/protocol-playground/context/playground-context";
@@ -23,9 +23,7 @@ const SIGN_BY_OP: Record<DiffRow["op"], string> = {
 function DiffViewer({ rows }: { rows: DiffRow[] }) {
     if (rows.length === 0) {
         return (
-            <div className="text-[11px] italic text-gray-500 px-2 py-1">
-                no changes detected
-            </div>
+            <div className="text-[11px] italic text-gray-500 px-2 py-1">no changes detected</div>
         );
     }
     return (
@@ -65,9 +63,7 @@ export function ProposeEditModal() {
 
     const oldCode = useMemo(() => {
         if (!current?.payload || !playground.config) return "";
-        const step = playground.config.steps.find(
-            (s) => s.action_id === current.payload!.step_id
-        );
+        const step = playground.config.steps.find((s) => s.action_id === current.payload!.step_id);
         if (!step) return "";
         const raw = step.mock[current.payload.file];
         if (!raw) return "";
