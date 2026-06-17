@@ -138,7 +138,8 @@ router.get("/geocode", async (req, res) => {
 			return;
 		}
 		const resp = await axios.get(`${NOMINATIM_BASE}/search`, {
-			params: { q, format: "json", limit: 6, addressdetails: 0 },
+			// Restrict search results to India only — the picker cannot find places outside India.
+			params: { q, format: "json", limit: 6, addressdetails: 0, countrycodes: "in" },
 			headers: { "User-Agent": "ondc-automation-ride-map/1.0" },
 		});
 		const results = (resp.data ?? []).map((r: any) => ({

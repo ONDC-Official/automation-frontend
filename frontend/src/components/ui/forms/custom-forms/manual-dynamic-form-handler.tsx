@@ -117,15 +117,9 @@ export default function ManualDynamicFormHandler({ submitEvent }: ManualDynamicF
         setPollDisplay(0);
         setStatus("waiting");
 
-        // Clear any leftover completion from an earlier run on this session so
-        // polling only reacts to THIS form's callback. Non-fatal.
-        FormService.resetCompletion(sessionId).catch((resetError) => {
-            console.warn(
-                "⚠️ [ManualDynamicForm] Could not reset completion state (continuing):",
-                resetError
-            );
-        });
-
+        // No reset here: for LAMF the launch popup's "Open Form" button already
+        // cleared stale completion, and this flow has a single form — so resetting
+        // again at poll time is redundant.
         checkCompletionRef.current();
         pollingIntervalRef.current = setInterval(() => {
             checkCompletionRef.current();
