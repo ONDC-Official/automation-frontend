@@ -1,9 +1,17 @@
-import { useCallback, useEffect, useMemo, useState, createContext, type ReactNode } from "react";
+import {
+    useCallback,
+    useEffect,
+    useMemo,
+    useRef,
+    useState,
+    createContext,
+    type ReactNode,
+} from "react";
 import {
     ThemePreference,
     ResolvedTheme,
     ThemeContextValue,
-} from "@/context/theme/themeContextType";
+} from "@/context/theme/themeContextTypes";
 import { applyThemeToDocument, resolveTheme } from "@/context/theme/themeUtils";
 
 export const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
@@ -17,10 +25,12 @@ export const ThemeContextProvider = ({ children }: { children: ReactNode }) => {
     });
 
     const resolvedTheme = useMemo(() => resolveTheme(preference), [preference]);
+    const isInitialMount = useRef(true);
 
     useEffect(() => {
-        applyThemeToDocument(resolvedTheme);
-    }, [preference, resolvedTheme]);
+        applyThemeToDocument(resolvedTheme, { animate: !isInitialMount.current });
+        isInitialMount.current = false;
+    }, [resolvedTheme]);
 
     const setPreference = useCallback((next: ThemePreference) => {
         setPreferenceState(next);

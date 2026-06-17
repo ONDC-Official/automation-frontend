@@ -1,76 +1,72 @@
-import React, { useContext, useState, useEffect, useMemo } from "react";
-import { PlaygroundContext } from "../context/playground-context";
-import { SavedConfigMetadata } from "../utils/config-storage";
+import { useContext, useState, useEffect, useMemo } from "react";
 import {
-    FiX,
-    FiTrash2,
-    FiArrowRight,
-    FiClock,
-    FiGithub,
-    FiChevronRight,
-    FiChevronDown,
-    FiFolder,
-    FiFile,
-    FiInbox,
-    FiFolderPlus,
-} from "react-icons/fi";
+    ArrowRightIcon,
+    ChevronDownIcon,
+    ChevronRightIcon,
+    ClockIcon,
+    DocumentIcon,
+    FolderIcon,
+    FolderPlusIcon,
+    InboxIcon,
+    TrashIcon,
+} from "@heroicons/react/24/outline";
 
-interface SavedConfigsModalProps {
-    isOpen: boolean;
-    onClose: () => void;
-    onConfigSelected: (domain: string, version: string, flowId: string) => void;
-}
+import { Button } from "@/components/Shadcn/Button/button";
+import { Input } from "@/components/Shadcn/TextField/input";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/Shadcn/Dialog/dialog";
+import GitHubIcon from "@/assets/svgs/GitHubIcon";
+import { cn } from "@/lib/utils";
+import { PlaygroundContext } from "@pages/protocol-playground/context/playground-context";
+import { SavedConfigMetadata } from "@pages/protocol-playground/utils/config-storage";
+import type {
+    IDomainFolderProps,
+    IFlowRowProps,
+    ISavedConfigsModalProps,
+    IVersionFolderProps,
+    DomainNode,
+} from "@pages/protocol-playground/ui/types";
 
-// ─── Types for grouped structure ────────────────────────────────────────────
+const toggleSetItem = (prev: Set<string>, key: string) => {
+    const next = new Set(prev);
+    if (next.has(key)) {
+        next.delete(key);
+    } else {
+        next.add(key);
+    }
+    return next;
+};
 
-interface FlowNode {
-    config: SavedConfigMetadata;
-}
-
-interface VersionNode {
-    version: string;
-    flows: FlowNode[];
-}
-
-interface DomainNode {
-    domain: string;
-    versions: VersionNode[];
-    totalConfigs: number;
-}
-
-// ─── Sub-components ─────────────────────────────────────────────────────────
-
-interface FlowRowProps {
-    config: SavedConfigMetadata;
-    onLoad: (config: SavedConfigMetadata) => void;
-    onDelete: (config: SavedConfigMetadata) => void;
-}
-
-const FlowRow: React.FC<FlowRowProps> = ({ config, onLoad, onDelete }) => {
+const FlowRow = ({ config, onLoad, onDelete }: IFlowRowProps) => {
     const isGist = config.configId.startsWith("gist_");
 
     return (
-        <div className="group flex items-center gap-2 pl-4 pr-2 py-2 rounded-lg hover:bg-sky-50 transition-colors border border-transparent hover:border-sky-100">
-            {/* Connector line visual */}
-            <div className="flex items-center gap-2 shrink-0 text-gray-300">
-                <span className="w-4 h-px bg-gray-200" />
-                <FiFile className="w-3.5 h-3.5 text-sky-400 shrink-0" />
+        <div className="group flex items-center gap-2 rounded-lg border border-transparent py-2 pr-2 pl-4 transition-colors hover:border-brand-light-active hover:bg-brand-light dark:hover:border-border-default dark:hover:bg-surface-muted">
+            <div className="flex shrink-0 items-center gap-2 text-text-secondary">
+                <span className="h-px w-4 bg-border-default" />
+                <DocumentIcon className="size-3.5 shrink-0 text-brand-normal" />
             </div>
 
-            {/* Flow label */}
-            <div className="flex items-center gap-2 flex-1 min-w-0">
-                <span className="text-sm font-medium text-gray-700 truncate">{config.flowId}</span>
+            <div className="flex min-w-0 flex-1 items-center gap-2">
+                <span className="truncate text-sm font-medium text-text-primary">
+                    {config.flowId}
+                </span>
                 {isGist && (
-                    <span className="shrink-0 inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-medium bg-purple-50 text-purple-600 border border-purple-100">
-                        <FiGithub className="w-2.5 h-2.5" />
+                    <span className="inline-flex shrink-0 items-center gap-1 rounded border border-border-default bg-surface-muted px-1.5 py-0.5 text-xs font-medium text-text-secondary">
+                        <GitHubIcon className="size-2.5" />
                         Gist
                     </span>
                 )}
             </div>
 
-            {/* Date */}
-            <div className="flex items-center gap-1 text-xs text-gray-400 shrink-0 mr-2">
-                <FiClock className="w-3 h-3" />
+            <div className="mr-2 flex shrink-0 items-center gap-1 text-xs text-text-secondary">
+                <ClockIcon className="size-3" />
                 {new Date(config.savedAt).toLocaleDateString("en-US", {
                     month: "short",
                     day: "numeric",
@@ -78,77 +74,64 @@ const FlowRow: React.FC<FlowRowProps> = ({ config, onLoad, onDelete }) => {
                 })}
             </div>
 
-            {/* Actions — visible on hover */}
-            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                <button
-                    onClick={() => onLoad(config)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 bg-sky-500 hover:bg-sky-600 text-white text-xs font-medium rounded-md transition-colors shadow-xs"
-                    title="Load configuration"
-                >
+            <div className="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+                <Button size="xs" onClick={() => onLoad(config)} title="Load configuration">
                     Load
-                    <FiArrowRight className="w-3 h-3" />
-                </button>
-                <button
+                    <ArrowRightIcon className="size-3" />
+                </Button>
+                <Button
+                    size="icon-xs"
+                    variant="ghost"
                     onClick={() => onDelete(config)}
-                    className="p-1.5 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-md transition-colors"
                     title="Delete configuration"
+                    className="text-text-secondary hover:bg-error-50 hover:text-error-500"
                 >
-                    <FiTrash2 className="w-3.5 h-3.5" />
-                </button>
+                    <TrashIcon className="size-3.5" />
+                </Button>
             </div>
         </div>
     );
 };
 
-interface VersionFolderProps {
-    node: VersionNode;
-    domainKey: string;
-    openVersions: Set<string>;
-    onToggle: (key: string) => void;
-    onLoad: (config: SavedConfigMetadata) => void;
-    onDelete: (config: SavedConfigMetadata) => void;
-}
-
-const VersionFolder: React.FC<VersionFolderProps> = ({
+const VersionFolder = ({
     node,
     domainKey,
     openVersions,
     onToggle,
     onLoad,
     onDelete,
-}) => {
+}: IVersionFolderProps) => {
     const key = `${domainKey}::${node.version}`;
     const isOpen = openVersions.has(key);
 
     return (
         <div>
-            {/* Version row */}
             <button
+                type="button"
                 onClick={() => onToggle(key)}
-                className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-gray-50 transition-colors group"
+                className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 transition-colors hover:bg-surface-muted"
             >
-                <div className="flex items-center gap-1.5 text-gray-400">
-                    <span className="w-4 h-px bg-gray-200" />
+                <div className="flex items-center gap-1.5 text-text-secondary">
+                    <span className="h-px w-4 bg-border-default" />
                     {isOpen ? (
-                        <FiChevronDown className="w-3.5 h-3.5 text-gray-400" />
+                        <ChevronDownIcon className="size-3.5" />
                     ) : (
-                        <FiChevronRight className="w-3.5 h-3.5 text-gray-400" />
+                        <ChevronRightIcon className="size-3.5" />
                     )}
                 </div>
                 {isOpen ? (
-                    <FiFolderPlus className="w-4 h-4 text-amber-400 shrink-0" />
+                    <FolderPlusIcon className="size-4 shrink-0 text-alert-500" />
                 ) : (
-                    <FiFolder className="w-4 h-4 text-amber-400 shrink-0" />
+                    <FolderIcon className="size-4 shrink-0 text-alert-500" />
                 )}
-                <span className="text-sm font-semibold text-gray-600">v{node.version}</span>
-                <span className="ml-auto text-xs text-gray-400 font-normal">
+                <span className="text-sm font-semibold text-text-secondary">v{node.version}</span>
+                <span className="ml-auto text-xs font-normal text-text-secondary">
                     {node.flows.length} flow{node.flows.length !== 1 ? "s" : ""}
                 </span>
             </button>
 
-            {/* Flows */}
             {isOpen && (
-                <div className="ml-8 mt-0.5 space-y-0.5 border-l border-gray-100 pl-2">
+                <div className="mt-0.5 ml-8 space-y-0.5 border-l border-border-default pl-2">
                     {node.flows.map((f) => (
                         <FlowRow
                             key={f.config.configId}
@@ -163,17 +146,7 @@ const VersionFolder: React.FC<VersionFolderProps> = ({
     );
 };
 
-interface DomainFolderProps {
-    node: DomainNode;
-    openDomains: Set<string>;
-    openVersions: Set<string>;
-    onToggleDomain: (domain: string) => void;
-    onToggleVersion: (key: string) => void;
-    onLoad: (config: SavedConfigMetadata) => void;
-    onDelete: (config: SavedConfigMetadata) => void;
-}
-
-const DomainFolder: React.FC<DomainFolderProps> = ({
+const DomainFolder = ({
     node,
     openDomains,
     openVersions,
@@ -181,40 +154,39 @@ const DomainFolder: React.FC<DomainFolderProps> = ({
     onToggleVersion,
     onLoad,
     onDelete,
-}) => {
+}: IDomainFolderProps) => {
     const isOpen = openDomains.has(node.domain);
 
     return (
-        <div className="rounded-xl border border-gray-100 bg-white shadow-xs overflow-hidden">
-            {/* Domain header */}
+        <div className="overflow-hidden rounded-xl border border-n-30 bg-surface-elevated shadow-sm dark:border-border-default">
             <button
+                type="button"
                 onClick={() => onToggleDomain(node.domain)}
-                className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors"
+                className="flex w-full items-center gap-3 px-4 py-3 transition-colors hover:bg-surface-muted"
             >
                 {isOpen ? (
-                    <FiChevronDown className="w-4 h-4 text-gray-400 shrink-0" />
+                    <ChevronDownIcon className="size-4 shrink-0 text-text-secondary" />
                 ) : (
-                    <FiChevronRight className="w-4 h-4 text-gray-400 shrink-0" />
+                    <ChevronRightIcon className="size-4 shrink-0 text-text-secondary" />
                 )}
                 {isOpen ? (
-                    <FiFolderPlus className="w-5 h-5 text-sky-500 shrink-0" />
+                    <FolderPlusIcon className="size-5 shrink-0 text-brand-normal" />
                 ) : (
-                    <FiFolder className="w-5 h-5 text-sky-400 shrink-0" />
+                    <FolderIcon className="size-5 shrink-0 text-brand-normal" />
                 )}
-                <span className="font-semibold text-gray-800 text-sm">{node.domain}</span>
+                <span className="text-sm font-semibold text-text-primary">{node.domain}</span>
                 <div className="ml-auto flex items-center gap-2">
-                    <span className="text-xs px-2 py-0.5 rounded-full bg-sky-50 text-sky-600 font-medium border border-sky-100">
+                    <span className="rounded-full border border-brand-light-active bg-brand-light px-2 py-0.5 text-xs font-medium text-brand-normal dark:border-border-default dark:bg-surface-muted dark:text-text-secondary">
                         {node.versions.length} version{node.versions.length !== 1 ? "s" : ""}
                     </span>
-                    <span className="text-xs px-2 py-0.5 rounded-full bg-gray-50 text-gray-500 font-medium border border-gray-100">
+                    <span className="rounded-full border border-border-default bg-surface-muted px-2 py-0.5 text-xs font-medium text-text-secondary">
                         {node.totalConfigs} config{node.totalConfigs !== 1 ? "s" : ""}
                     </span>
                 </div>
             </button>
 
-            {/* Versions */}
             {isOpen && (
-                <div className="px-3 pb-3 pt-1 space-y-0.5 border-t border-gray-50 bg-gray-50/40">
+                <div className="space-y-0.5 border-t border-border-default bg-surface-muted/40 px-3 pt-1 pb-3">
                     {node.versions.map((v) => (
                         <VersionFolder
                             key={v.version}
@@ -232,13 +204,11 @@ const DomainFolder: React.FC<DomainFolderProps> = ({
     );
 };
 
-// ─── Main Modal ──────────────────────────────────────────────────────────────
-
-export const SavedConfigsModal: React.FC<SavedConfigsModalProps> = ({
+export const SavedConfigsModal = ({
     isOpen,
     onClose,
     onConfigSelected,
-}) => {
+}: ISavedConfigsModalProps) => {
     const { getSavedConfigs, loadSavedConfig, deleteSavedConfig } = useContext(PlaygroundContext);
 
     const [savedConfigs, setSavedConfigs] = useState<SavedConfigMetadata[]>([]);
@@ -251,7 +221,6 @@ export const SavedConfigsModal: React.FC<SavedConfigsModalProps> = ({
             const configs = getSavedConfigs();
             setSavedConfigs(configs);
 
-            // Auto-expand if only one domain
             const domains = [...new Set(configs.map((c) => c.domain))];
             if (domains.length === 1) {
                 setOpenDomains(new Set(domains));
@@ -259,7 +228,6 @@ export const SavedConfigsModal: React.FC<SavedConfigsModalProps> = ({
         }
     }, [isOpen, getSavedConfigs]);
 
-    // Build tree, filtered by search
     const tree = useMemo<DomainNode[]>(() => {
         const q = search.toLowerCase().trim();
         const filtered = q
@@ -280,7 +248,7 @@ export const SavedConfigsModal: React.FC<SavedConfigsModalProps> = ({
         }
 
         return [...domainMap.entries()].map(([domain, verMap]) => {
-            const versions: VersionNode[] = [...verMap.entries()].map(([version, cfgs]) => ({
+            const versions = [...verMap.entries()].map(([version, cfgs]) => ({
                 version,
                 flows: cfgs
                     .sort((a, b) => new Date(b.savedAt).getTime() - new Date(a.savedAt).getTime())
@@ -295,7 +263,6 @@ export const SavedConfigsModal: React.FC<SavedConfigsModalProps> = ({
         });
     }, [savedConfigs, search]);
 
-    // Auto-expand matching folders when searching
     useEffect(() => {
         if (search.trim()) {
             const allDomains = new Set(tree.map((d) => d.domain));
@@ -308,27 +275,11 @@ export const SavedConfigsModal: React.FC<SavedConfigsModalProps> = ({
     }, [search, tree]);
 
     const toggleDomain = (domain: string) => {
-        setOpenDomains((prev) => {
-            const next = new Set(prev);
-            if (next.has(domain)) {
-                next.delete(domain);
-            } else {
-                next.add(domain);
-            }
-            return next;
-        });
+        setOpenDomains((prev) => toggleSetItem(prev, domain));
     };
 
     const toggleVersion = (key: string) => {
-        setOpenVersions((prev) => {
-            const next = new Set(prev);
-            if (next.has(key)) {
-                next.delete(key);
-            } else {
-                next.add(key);
-            }
-            return next;
-        });
+        setOpenVersions((prev) => toggleSetItem(prev, key));
     };
 
     const handleLoad = (config: SavedConfigMetadata) => {
@@ -346,58 +297,43 @@ export const SavedConfigsModal: React.FC<SavedConfigsModalProps> = ({
         }
     };
 
-    if (!isOpen) return null;
+    const domainCount = useMemo(
+        () => new Set(savedConfigs.map((c) => c.domain)).size,
+        [savedConfigs]
+    );
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs">
-            <div className="relative w-full max-w-2xl mx-4 bg-white rounded-2xl shadow-2xl flex flex-col max-h-[80vh] overflow-hidden">
-                {/* ── Header ── */}
-                <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-                    <div>
-                        <h2 className="text-base font-semibold text-gray-900">
-                            Saved Configurations
-                        </h2>
-                        <p className="text-xs text-gray-400 mt-0.5">
-                            {savedConfigs.length} configuration
-                            {savedConfigs.length !== 1 ? "s" : ""} across{" "}
-                            {[...new Set(savedConfigs.map((c) => c.domain))].length} domain
-                            {[...new Set(savedConfigs.map((c) => c.domain))].length !== 1
-                                ? "s"
-                                : ""}
-                        </p>
-                    </div>
-                    <button
-                        onClick={onClose}
-                        className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
-                    >
-                        <FiX className="w-4 h-4" />
-                    </button>
-                </div>
+        <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+            <DialogContent className="flex max-h-[80vh] w-full max-w-2xl flex-col gap-0 overflow-hidden p-0">
+                <DialogHeader className="border-b border-border-default px-6 py-4">
+                    <DialogTitle>Saved Configurations</DialogTitle>
+                    <DialogDescription>
+                        {savedConfigs.length} configuration{savedConfigs.length !== 1 ? "s" : ""}{" "}
+                        across {domainCount} domain{domainCount !== 1 ? "s" : ""}
+                    </DialogDescription>
+                </DialogHeader>
 
-                {/* ── Search ── */}
                 {savedConfigs.length > 0 && (
-                    <div className="px-6 py-3 border-b border-gray-50">
-                        <input
+                    <div className="border-b border-border-default px-6 py-3">
+                        <Input
                             type="text"
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                             placeholder="Filter by domain, version, or flow…"
-                            className="w-full text-sm px-3 py-2 rounded-lg border border-gray-200 bg-gray-50 focus:outline-hidden focus:ring-2 focus:ring-sky-300 focus:border-sky-400 placeholder:text-gray-400 transition"
                         />
                     </div>
                 )}
 
-                {/* ── Tree body ── */}
-                <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
+                <div className="flex-1 space-y-3 overflow-y-auto px-4 py-4">
                     {tree.length === 0 ? (
                         <div className="flex flex-col items-center justify-center py-16 text-center">
-                            <div className="w-14 h-14 rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-center mb-4">
-                                <FiInbox className="w-6 h-6 text-gray-300" />
+                            <div className="mb-4 flex size-14 items-center justify-center rounded-2xl border border-border-default bg-surface-muted">
+                                <InboxIcon className="size-6 text-text-secondary" />
                             </div>
-                            <p className="text-sm font-medium text-gray-500">
+                            <p className="text-sm font-medium text-text-secondary">
                                 {search ? "No matching configurations" : "No saved configurations"}
                             </p>
-                            <p className="text-xs text-gray-400 mt-1 max-w-xs">
+                            <p className="mt-1 max-w-xs text-xs text-text-secondary">
                                 {search
                                     ? "Try a different search term"
                                     : "Save a configuration from the playground to access it here"}
@@ -419,16 +355,14 @@ export const SavedConfigsModal: React.FC<SavedConfigsModalProps> = ({
                     )}
                 </div>
 
-                {/* ── Footer ── */}
-                <div className="px-6 py-3 border-t border-gray-100 flex justify-end bg-gray-50/60">
-                    <button
-                        onClick={onClose}
-                        className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors font-medium"
-                    >
+                <DialogFooter
+                    className={cn("border-t border-border-default bg-surface-muted/60 px-6 py-3")}
+                >
+                    <Button variant="ghost" onClick={onClose}>
                         Close
-                    </button>
-                </div>
-            </div>
-        </div>
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
     );
 };

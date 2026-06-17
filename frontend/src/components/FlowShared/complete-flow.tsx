@@ -1,15 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { toast } from "react-toastify";
 import { v4 as uuidv4 } from "uuid";
-import { FaRegStopCircle } from "react-icons/fa";
-import { IoPlay } from "react-icons/io5";
-import { AiOutlineDelete } from "react-icons/ai";
-import { IoMdDownload } from "react-icons/io";
-import { FcWorkflow } from "react-icons/fc";
-
-import { Flow, SubmitEventParams } from "@/types/flow-types";
+import { SubmitEventParams } from "@/types/flow-types";
 import { SessionCache } from "@/types/session-types";
-import IconButton from "@components/ui/mini-components/icon-button";
+import { FlowActionButton } from "@components/FlowShared/ui/FlowActionButton";
+import { Progress } from "@/components/Shadcn/Progress/progress";
 import {
     clearFlowData,
     deleteExpectation,
@@ -29,18 +24,9 @@ import Popup from "@components/ui/pop-up/pop-up";
 import FormConfig, { FormConfigType } from "@components/ui/forms/config-form/config-form";
 import { trackEvent } from "@utils/analytics";
 import { generatePlaygroundConfigFromFlowConfig } from "@ondc/automation-mock-runner";
-
-interface AccordionProps {
-    flow: Flow;
-    activeFlow: string | null;
-    setActiveFlow: (flowId: string | null) => void;
-    sessionCache?: SessionCache | null;
-    sessionId: string;
-    setSideView: React.Dispatch<unknown>;
-    subUrl: string;
-    onFlowStop: () => void;
-    onFlowClear: () => void;
-}
+import { cn } from "@/lib/utils";
+import { ChevronDownIcon } from "@heroicons/react/24/outline";
+import { IAccordionProps } from "@components/FlowShared/types";
 
 export function Accordion({
     flow,
@@ -51,7 +37,7 @@ export function Accordion({
     subUrl,
     onFlowStop,
     onFlowClear,
-}: AccordionProps) {
+}: IAccordionProps) {
     const [inputPopUp, setInputPopUp] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
     const [mappedFlow, setMappedFlow] = useState<FlowMap>({
@@ -170,7 +156,7 @@ export function Accordion({
 
     if (!sessionCache) {
         return (
-            <div className="bg-white rounded-md shadow-xs border border-sky-100 p-5 mb-4">
+            <div className="mb-3 w-full rounded-xl border border-n-30 bg-surface-elevated p-5 shadow-xs dark:border-border-default">
                 <style>
                     {`
 						@keyframes shimmer {
@@ -178,26 +164,24 @@ export function Accordion({
 							100% { background-position: calc(200px + 100%) 0; }
 						}
 						.skeleton {
-							background: linear-gradient(90deg, #e0f2fe 25%, #b3e5fc 50%, #e0f2fe 75%);
+							background: linear-gradient(90deg, var(--color-brand-light) 25%, var(--color-brand-light-active) 50%, var(--color-brand-light) 75%);
 							background-size: 200px 100%;
 							animation: shimmer 1.5s infinite;
 						}
 					`}
                 </style>
-                <div className="space-y-4">
-                    {/* Header skeleton */}
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-3">
-                            <div className="w-6 h-6 rounded skeleton"></div>
-                            <div className="space-y-2">
-                                <div className="h-4 w-32 rounded skeleton"></div>
-                                <div className="h-3 w-24 rounded skeleton"></div>
-                            </div>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                            <div className="w-8 h-8 rounded-md skeleton"></div>
-                            <div className="w-8 h-8 rounded-md skeleton"></div>
-                            <div className="w-8 h-8 rounded-md skeleton"></div>
+                <div className="space-y-3">
+                    <div className="flex items-center justify-between gap-3">
+                        <div className="h-5 w-56 rounded skeleton" />
+                        <div className="size-5 rounded skeleton" />
+                    </div>
+                    <div className="h-1.5 w-full rounded-full skeleton" />
+                    <div className="flex items-center justify-between gap-3">
+                        <div className="h-4 w-40 rounded skeleton" />
+                        <div className="flex items-center gap-2">
+                            <div className="size-10 rounded-full skeleton" />
+                            <div className="size-10 rounded-full skeleton" />
+                            <div className="size-10 rounded-full skeleton" />
                         </div>
                     </div>
                 </div>
@@ -275,17 +259,11 @@ export function Accordion({
 
     function AccordionButtons() {
         return (
-            <div className="flex items-center">
-                <div className="flex items-center justify-center p-2 ml-2 rounded-md shadow-xs bg-sky-50 transition-transform transform hover:scale-105 focus:outline-hidden focus:ring-2 focus:ring-offset-2 text-sky-600 ease-in">
-                    <div className="flex items-center gap-2 text-sm font-bold text-sky-700">
-                        {getPercent(mappedFlow).toFixed(0)}%
-                    </div>
-                </div>
-                {!activeFlow && (
-                    <IconButton
-                        icon={<IoPlay className=" text-md" />}
+            <div className="flex items-center gap-2">
+                {!activeFlow ? (
+                    <FlowActionButton
                         label="Start flow"
-                        color="sky"
+                        variant="play"
                         onClick={async (e) => {
                             addFlowToSessionInDB(sessionId, {
                                 id: flow.id,
@@ -299,18 +277,17 @@ export function Accordion({
                             await startFlow();
                         }}
                     />
-                )}
-                {activeFlow === flow.id && (
-                    <IconButton
-                        icon={<FaRegStopCircle className=" text-xl" />}
+                ) : null}
+                {activeFlow === flow.id ? (
+                    <FlowActionButton
                         label="Stop flow"
-                        color="red"
+                        variant="stop"
                         onClick={async (e) => {
                             trackEvent({
                                 category: "SCENARIO_TESTING-FLOWS",
                                 action: `Stopped a flow: ${flow.id}`,
                             });
-                            e.stopPropagation(); // Prevent accordion toggle
+                            e.stopPropagation();
                             setActiveFlow(null);
                             setIsOpen(false);
                             await deleteExpectation(sessionId, subUrl);
@@ -318,12 +295,11 @@ export function Accordion({
                             onFlowStop();
                         }}
                     />
-                )}
-                {!activeFlow && (
-                    <IconButton
-                        icon={<AiOutlineDelete className=" text-md" />}
+                ) : null}
+                {!activeFlow ? (
+                    <FlowActionButton
                         label="Clear flow data"
-                        color="orange"
+                        variant="delete"
                         onClick={async (e) => {
                             trackEvent({
                                 category: "SCENARIO_TESTING-FLOWS",
@@ -342,12 +318,11 @@ export function Accordion({
                             onFlowClear();
                         }}
                     />
-                )}
-                {mappedFlow?.sequence && mappedFlow?.sequence?.length > 0 && (
-                    <IconButton
-                        icon={<IoMdDownload className=" text-md" />}
+                ) : null}
+                {mappedFlow?.sequence && mappedFlow?.sequence?.length > 0 ? (
+                    <FlowActionButton
                         label="Download Logs"
-                        color="green"
+                        variant="download"
                         onClick={async (e) => {
                             trackEvent({
                                 category: "SCENARIO_TESTING-FLOWS",
@@ -357,7 +332,7 @@ export function Accordion({
                             handleDownload();
                         }}
                     />
-                )}
+                ) : null}
                 <CircularProgress
                     key={flow.id}
                     sqSize={24}
@@ -404,47 +379,57 @@ export function Accordion({
         }
     }
 
-    const bg = activeFlow === flow.id ? "bg-blue-50" : "bg-white";
+    const isActiveFlow = activeFlow === flow.id;
+    const flowPercent = getPercent(mappedFlow);
+    const flowTitle = flow.title || flow.id.split("_").join(" ");
+
     return (
-        <div className="rounded-md mb-4 w-full ml-1">
+        <div className="mb-3 w-full">
             <div
-                className={`${bg} border rounded-md shadow-xs hover:bg-sky-100 cursor-pointer transition-colors px-5 py-3`}
-                onClick={async () => await onAccordionClick()}
-                aria-expanded={isOpen}
-                aria-controls={`accordion-content-${flow.id}`}
+                className={cn(
+                    "overflow-hidden rounded-xl border border-n-30 shadow-xs dark:border-border-default",
+                    isActiveFlow ? "bg-brand-light/40 dark:bg-brand-dark/20" : "bg-surface-elevated"
+                )}
             >
-                {/* Top Row: Title + Button */}
-                <div className="flex items-center justify-between">
-                    {/* Text Block */}
-                    <div>
-                        <div className="flex items-center gap-2 text-base font-bold text-sky-700">
-                            <FcWorkflow onClick={playgroundClick} className="text-lg" />
-                            {flow.id.split("_").join(" ")}
-                        </div>
-                        <h2 className="text-black font-medium">{flow?.title}</h2>
+                <div
+                    className="cursor-pointer px-5 py-4"
+                    onClick={async () => await onAccordionClick()}
+                    aria-expanded={isOpen}
+                    aria-controls={`accordion-content-${flow.id}`}
+                >
+                    <div className="flex items-center justify-between gap-3">
+                        <h2
+                            className="min-w-0 truncate text-body-1 font-semibold text-text-primary"
+                            onClick={playgroundClick}
+                        >
+                            {flowTitle}
+                        </h2>
+                        <ChevronDownIcon
+                            className={cn(
+                                "size-5 shrink-0 text-text-secondary transition-transform duration-300",
+                                isOpen && "rotate-180"
+                            )}
+                        />
                     </div>
-                    {/* Accordion Button */}
-                    <AccordionButtons />
+
+                    <div className="mt-3 flex justify-between items-end gap-4">
+                        <div className="max-w-3xs flex-1 ">
+                            <FlowProgress percent={flowPercent} description={flow.description} />
+                        </div>
+                        <div className="shrink-0" onClick={(e) => e.stopPropagation()}>
+                            <AccordionButtons />
+                        </div>
+                    </div>
                 </div>
 
-                {/* Progress Bar below */}
-                <div className="mt-2">
-                    <ProgressBar percent={getPercent(mappedFlow)} />
-                </div>
-            </div>
-
-            {/* Accordion content with drop animation */}
-            <div
-                ref={contentRef}
-                id={`accordion-content-${flow.id}`}
-                className="overflow-hidden transition-all duration-300 ease-in-out"
-                style={{ maxHeight: `${maxHeight}` }}
-            >
-                <div className="px-4 py-5 bg-white">
-                    <p className="text-gray-700 mb-6">{flow.description}</p>
-
-                    <div className="space-y-4 relative">
-                        {<DisplayFlow mappedFlow={mappedFlow} flowId={flow.id} />}
+                <div
+                    ref={contentRef}
+                    id={`accordion-content-${flow.id}`}
+                    className="overflow-hidden transition-all duration-300 ease-in-out"
+                    style={{ maxHeight }}
+                >
+                    <div className="border-t border-n-30 px-5 pb-5 pt-4 dark:border-border-default">
+                        <DisplayFlow mappedFlow={mappedFlow} flowId={flow.id} />
                     </div>
                 </div>
             </div>
@@ -470,19 +455,22 @@ async function canStartFlow(sessionData: SessionCache, mappedFlow: FlowMap) {
     return true;
 }
 
-function ProgressBar({ percent }: { percent: number }) {
-    return (
-        <div className="w-full bg-gray-200 rounded-full h-2">
-            <div
-                className="h-2 rounded-full transition-width duration-300"
-                style={{
-                    width: `${percent}%`,
-                    backgroundImage: "linear-gradient(to right, #38bdf8, #0369a1)", // Gradient from sky-500 to sky-700
-                }}
-            ></div>
+const FlowProgress = ({ percent, description }: { percent: number; description: string }) => (
+    <>
+        <Progress
+            value={percent}
+            className="h-1.5 w-full bg-n-30 **:data-[slot=progress-indicator]:bg-brand-normal dark:bg-surface-muted"
+        />
+        <div className="mt-2 flex items-center justify-between gap-3">
+            <span className="min-w-0 truncate text-body-2 font-regular text-text-secondary">
+                {description}
+            </span>
+            <span className="shrink-0 text-body-2 font-bold text-brand-normal">
+                {percent.toFixed(0)}%
+            </span>
         </div>
-    );
-}
+    </>
+);
 
 function getPercent(mappedFlow: FlowMap) {
     const totalSteps = mappedFlow.sequence.length;

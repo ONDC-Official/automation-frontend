@@ -1,21 +1,35 @@
 import { useEffect, useRef, useState } from "react";
 import { Editor } from "@monaco-editor/react";
-import axios from "axios";
 import { parse as yamlParse, stringify as yamlStringify } from "yaml";
 import { generatePlaygroundConfigFromFlowConfigWithMeta } from "@ondc/automation-mock-runner";
+import {
+    ArrowLeftIcon,
+    ArrowRightIcon,
+    ArrowsRightLeftIcon,
+    CheckIcon,
+    ClipboardDocumentIcon,
+} from "@heroicons/react/24/outline";
 
-interface VersionItem {
-    key: string;
-}
-
-interface DomainItem {
-    key: string;
-    version?: VersionItem[];
-}
+import { Button } from "@/components/Shadcn/Button/button";
+import { Input } from "@/components/Shadcn/TextField/input";
+import { Dialog, DialogContent, DialogTitle } from "@/components/Shadcn/Dialog/dialog";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/Shadcn/Select/select";
+import { cn } from "@/lib/utils";
+import { useAppliedTheme } from "@/context/theme/useAppliedTheme";
+import { apiClient } from "@services/apiClient";
+import { API_ROUTES } from "@services/apiRoutes";
+import type { IScenarioDomainItem } from "@pages/protocol-playground/ui/starter/types";
+import type { IFlowConverterModalProps } from "@pages/protocol-playground/ui/types";
 
 interface DynamicList {
-    domain: DomainItem[];
-    version: VersionItem[];
+    domain: IScenarioDomainItem[];
+    version: { key: string }[];
 }
 
 type InputFormat = "json" | "yaml";
@@ -40,12 +54,7 @@ function serializeOutput(value: unknown, format: InputFormat): string {
     return yamlStringify(value);
 }
 
-type FlowConverterModalProps = {
-    isOpen: boolean;
-    onClose: () => void;
-};
-
-function CopyButton({ getValue }: { getValue: () => string }) {
+const CopyButton = ({ getValue }: { getValue: () => string }) => {
     const [copied, setCopied] = useState(false);
 
     const handleCopy = async () => {
@@ -57,54 +66,33 @@ function CopyButton({ getValue }: { getValue: () => string }) {
     };
 
     return (
-        <button
+        <Button
+            type="button"
+            size="xs"
+            variant="outline"
             onClick={handleCopy}
-            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium transition-all duration-200 ${
-                copied
-                    ? "bg-emerald-100 text-emerald-700 border border-emerald-200"
-                    : "bg-white text-gray-500 hover:text-sky-700 hover:bg-sky-50 border border-gray-200 hover:border-sky-200"
-            }`}
+            className={cn(
+                copied &&
+                    "border-success-200 bg-success-50 text-success-500 hover:bg-success-50 hover:text-success-500"
+            )}
         >
             {copied ? (
                 <>
-                    <svg
-                        className="w-3.5 h-3.5"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                    >
-                        <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M5 13l4 4L19 7"
-                        />
-                    </svg>
+                    <CheckIcon className="size-3.5" />
                     Copied
                 </>
             ) : (
                 <>
-                    <svg
-                        className="w-3.5 h-3.5"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                    >
-                        <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
-                        />
-                    </svg>
+                    <ClipboardDocumentIcon className="size-3.5" />
                     Copy
                 </>
             )}
-        </button>
+        </Button>
     );
-}
+};
 
-export const FlowConverterModal = ({ isOpen, onClose }: FlowConverterModalProps) => {
+export const FlowConverterModal = ({ isOpen, onClose }: IFlowConverterModalProps) => {
+    const appliedTheme = useAppliedTheme();
     const [domain, setDomain] = useState("");
     const [version, setVersion] = useState("");
     const [usecase, setUsecase] = useState("");
@@ -123,13 +111,14 @@ export const FlowConverterModal = ({ isOpen, onClose }: FlowConverterModalProps)
         if (!isOpen) return;
         const fetchFormData = async () => {
             try {
-                const response = await axios.get(
-                    `${import.meta.env.VITE_BACKEND_URL}/config/senarioFormData`
-                );
+                const response = await apiClient.get<{
+                    domain?: IScenarioDomainItem[];
+                    version?: { key: string }[];
+                }>(API_ROUTES.CONFIG.SCENARIO_FORM_DATA);
                 setDynamicList((prev) => ({
                     ...prev,
-                    domain: response.data.domain || [],
-                    version: response.data.version || [],
+                    domain: response.data.domain ?? [],
+                    version: response.data.version ?? [],
                 }));
             } catch (e) {
                 console.error("error while fetching form field data", e);
@@ -137,8 +126,6 @@ export const FlowConverterModal = ({ isOpen, onClose }: FlowConverterModalProps)
         };
         fetchFormData();
     }, [isOpen]);
-
-    if (!isOpen) return null;
 
     const handleInputChange = (v: string | undefined) => {
         const val = v || "";
@@ -185,8 +172,8 @@ export const FlowConverterModal = ({ isOpen, onClose }: FlowConverterModalProps)
                 });
             }
 
-            const output = results.length === 1 ? results[0] : results;
-            setOutputValue(serializeOutput(output, format));
+            const result = results.length === 1 ? results[0] : results;
+            setOutputValue(serializeOutput(result, format));
         } catch (e) {
             setError(e instanceof Error ? e.message : "Conversion failed");
         } finally {
@@ -194,276 +181,217 @@ export const FlowConverterModal = ({ isOpen, onClose }: FlowConverterModalProps)
         }
     };
 
-    const selectClass =
-        "px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-800 focus:outline-hidden focus:ring-2 focus:ring-sky-400 focus:border-transparent transition-all duration-200";
-
     const editorLang = detectedFormat === "yaml" ? "yaml" : "json";
+    const editorTheme = appliedTheme === "dark" ? "vs-dark" : "vs";
     const formatBadge =
         detectedFormat === "yaml"
-            ? "bg-amber-50 text-amber-600 border-amber-200"
-            : "bg-sky-50 text-sky-600 border-sky-200";
+            ? "bg-alert-50 text-alert-500 border-alert-200"
+            : "bg-brand-light text-brand-normal border-brand-light-active";
 
     return (
-        <div className="fixed inset-0 z-60 bg-white flex flex-col mt-20">
-            {/* Header */}
-            <div className="flex items-center justify-between px-5 py-3 bg-white border-b border-gray-200 shrink-0">
-                {/* Left: back + title */}
-                <div className="flex items-center gap-3">
-                    <button
-                        onClick={onClose}
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:text-sky-700 hover:bg-sky-50 border border-gray-200 hover:border-sky-200 transition-all duration-200"
-                    >
-                        <svg
-                            className="w-4 h-4"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                        >
-                            <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M15 19l-7-7 7-7"
-                            />
-                        </svg>
-                        Back
-                    </button>
-                    <div className="w-px h-5 bg-gray-200" />
-                    <div className="flex items-center gap-2">
-                        <div className="flex items-center justify-center w-7 h-7 bg-sky-100 rounded-lg">
-                            <svg
-                                className="w-3.5 h-3.5 text-sky-600"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                            >
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"
-                                />
-                            </svg>
-                        </div>
-                        <h2 className="text-sm font-semibold text-gray-900">Flow Converter</h2>
-                    </div>
-                    {inputValue.trim() && (
-                        <span
-                            className={`text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full border ${formatBadge}`}
-                        >
-                            {detectedFormat}
-                        </span>
-                    )}
-                </div>
+        <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+            <DialogContent
+                showCloseButton={false}
+                className="top-0 left-0 flex h-screen w-screen max-w-none translate-x-0 translate-y-0 flex-col gap-0 rounded-none border-0 p-0"
+            >
+                <DialogTitle className="sr-only">Flow Converter</DialogTitle>
 
-                {/* Center: Domain + Version */}
-                <div className="flex items-center gap-3">
-                    {dynamicList.domain.length > 0 ? (
-                        <select
-                            value={domain}
-                            onChange={(e) => {
-                                setDomain(e.target.value);
-                                const selected = dynamicList.domain.find(
-                                    (d) => d.key === e.target.value
-                                );
-                                if (selected) {
-                                    setDynamicList((prev) => ({
-                                        ...prev,
-                                        version: selected.version || [],
-                                    }));
-                                }
-                                setVersion("");
-                            }}
-                            className={selectClass}
-                        >
-                            <option value="">Select domain...</option>
-                            {dynamicList.domain.map((d) => (
-                                <option key={d.key} value={d.key}>
-                                    {d.key}
-                                </option>
-                            ))}
-                        </select>
-                    ) : (
-                        <input
-                            type="text"
-                            value={domain}
-                            onChange={(e) => setDomain(e.target.value)}
-                            placeholder="Domain"
-                            className={selectClass + " placeholder-gray-400 w-36"}
-                        />
-                    )}
-
-                    {dynamicList.version.length > 0 ? (
-                        <select
-                            value={version}
-                            onChange={(e) => setVersion(e.target.value)}
-                            className={selectClass}
-                        >
-                            <option value="">Select version...</option>
-                            {dynamicList.version.map((v) => (
-                                <option key={v.key} value={v.key}>
-                                    {v.key}
-                                </option>
-                            ))}
-                        </select>
-                    ) : (
-                        <input
-                            type="text"
-                            value={version}
-                            onChange={(e) => setVersion(e.target.value)}
-                            placeholder="Version"
-                            className={selectClass + " placeholder-gray-400 w-32"}
-                        />
-                    )}
-
-                    <div className="w-px h-5 bg-gray-200" />
-
-                    <input
-                        type="text"
-                        value={usecase}
-                        onChange={(e) => setUsecase(e.target.value)}
-                        placeholder="Use Case ID"
-                        className={selectClass + " placeholder-gray-400 w-36"}
-                    />
-                </div>
-            </div>
-
-            {/* Error banner */}
-            {error && (
-                <div className="mx-5 mt-3 shrink-0 rounded-lg border border-red-200 bg-red-50 text-red-700 px-4 py-2.5 text-sm flex items-start gap-2">
-                    <svg
-                        className="w-4 h-4 mt-0.5 shrink-0"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                    >
-                        <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                        />
-                    </svg>
-                    <span>{error}</span>
-                </div>
-            )}
-
-            {/* Editors */}
-            <div className="flex flex-1 overflow-hidden">
-                {/* Input panel */}
-                <div className="flex-1 flex flex-col overflow-hidden">
-                    <div className="px-4 py-2 bg-gray-50 border-b border-gray-200 shrink-0 flex items-center justify-between">
+                <div className="flex shrink-0 items-center justify-between border-b border-border-default bg-surface-elevated px-5 py-3">
+                    <div className="flex items-center gap-3">
+                        <Button variant="outline" size="sm" onClick={onClose}>
+                            <ArrowLeftIcon className="size-4" />
+                            Back
+                        </Button>
+                        <div className="h-5 w-px bg-border-default" />
                         <div className="flex items-center gap-2">
-                            <span className="w-2 h-2 rounded-full bg-sky-400 inline-block" />
-                            <span className="text-xs font-semibold text-gray-600 uppercase tracking-wide">
-                                Input
-                            </span>
-                            <span className="text-xs text-gray-400">
-                                Flow Config · JSON or YAML · single or array
-                            </span>
+                            <div className="flex size-7 items-center justify-center rounded-lg bg-brand-light dark:bg-surface-muted">
+                                <ArrowsRightLeftIcon className="size-3.5 text-brand-normal" />
+                            </div>
+                            <h2 className="text-sm font-semibold text-text-primary">
+                                Flow Converter
+                            </h2>
                         </div>
-                        <CopyButton getValue={() => inputRef.current} />
-                    </div>
-                    <div className="flex-1 overflow-hidden">
-                        <Editor
-                            theme="vs"
-                            height="100%"
-                            language={editorLang}
-                            value={inputValue}
-                            onChange={handleInputChange}
-                            options={{
-                                fontSize: 13,
-                                lineNumbers: "on",
-                                automaticLayout: true,
-                                formatOnPaste: true,
-                                minimap: { enabled: false },
-                                scrollBeyondLastLine: true,
-                                padding: { top: 12 },
-                            }}
-                        />
-                    </div>
-                </div>
-
-                {/* Center column */}
-                <div className="w-16 flex flex-col items-center justify-center bg-gray-50 border-x border-gray-200 shrink-0 gap-4">
-                    <button
-                        onClick={handleConvert}
-                        disabled={isConverting || !inputValue.trim() || !domain || !version}
-                        className="flex flex-col items-center gap-2 p-3 rounded-xl bg-sky-500 hover:bg-sky-600 active:bg-sky-700 disabled:bg-gray-200 disabled:cursor-not-allowed text-white disabled:text-gray-400 transition-all duration-200 shadow-xs shadow-sky-200 hover:shadow-md hover:shadow-sky-300 disabled:shadow-none group w-11"
-                        title={!domain || !version ? "Select domain and version first" : "Convert"}
-                    >
-                        {isConverting ? (
-                            <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
-                                <circle
-                                    className="opacity-25"
-                                    cx="12"
-                                    cy="12"
-                                    r="10"
-                                    stroke="currentColor"
-                                    strokeWidth="4"
-                                />
-                                <path
-                                    className="opacity-75"
-                                    fill="currentColor"
-                                    d="M4 12a8 8 0 018-8v8H4z"
-                                />
-                            </svg>
-                        ) : (
-                            <svg
-                                className="w-5 h-5 group-hover:translate-x-0.5 transition-transform duration-150"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
+                        {inputValue.trim() && (
+                            <span
+                                className={cn(
+                                    "rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider",
+                                    formatBadge
+                                )}
                             >
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2.5}
-                                    d="M13 7l5 5m0 0l-5 5m5-5H6"
-                                />
-                            </svg>
+                                {detectedFormat}
+                            </span>
                         )}
-                    </button>
-                    <div className="flex flex-col items-center gap-0.5">
-                        <div className="w-1 h-1 rounded-full bg-gray-300" />
-                        <div className="w-1 h-1 rounded-full bg-gray-300" />
-                        <div className="w-1 h-1 rounded-full bg-gray-300" />
                     </div>
-                </div>
 
-                {/* Output panel */}
-                <div className="flex-1 flex flex-col overflow-hidden">
-                    <div className="px-4 py-2 bg-gray-50 border-b border-gray-200 shrink-0 flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                            <span className="w-2 h-2 rounded-full bg-emerald-400 inline-block" />
-                            <span className="text-xs font-semibold text-gray-600 uppercase tracking-wide">
-                                Output
-                            </span>
-                            <span className="text-xs text-gray-400">
-                                Playground Config · read-only
-                            </span>
-                        </div>
-                        <CopyButton getValue={() => outputRef.current} />
-                    </div>
-                    <div className="flex-1 overflow-hidden">
-                        <Editor
-                            theme="vs"
-                            height="100%"
-                            language={editorLang}
-                            value={outputValue}
-                            options={{
-                                fontSize: 13,
-                                lineNumbers: "on",
-                                automaticLayout: true,
-                                readOnly: true,
-                                minimap: { enabled: false },
-                                scrollBeyondLastLine: true,
-                                padding: { top: 12 },
-                            }}
+                    <div className="flex items-center gap-3">
+                        {dynamicList.domain.length > 0 ? (
+                            <Select
+                                value={domain}
+                                onValueChange={(value) => {
+                                    setDomain(value);
+                                    const selected = dynamicList.domain.find(
+                                        (d) => d.key === value
+                                    );
+                                    if (selected) {
+                                        setDynamicList((prev) => ({
+                                            ...prev,
+                                            version: selected.version || [],
+                                        }));
+                                    }
+                                    setVersion("");
+                                }}
+                            >
+                                <SelectTrigger size="sm" className="w-40">
+                                    <SelectValue placeholder="Select domain..." />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {dynamicList.domain.map((d) => (
+                                        <SelectItem key={d.key} value={d.key}>
+                                            {d.key}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        ) : (
+                            <Input
+                                type="text"
+                                value={domain}
+                                onChange={(e) => setDomain(e.target.value)}
+                                placeholder="Domain"
+                                className="w-36"
+                            />
+                        )}
+
+                        {dynamicList.version.length > 0 ? (
+                            <Select value={version} onValueChange={setVersion}>
+                                <SelectTrigger size="sm" className="w-32">
+                                    <SelectValue placeholder="Select version..." />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {dynamicList.version.map((v) => (
+                                        <SelectItem key={v.key} value={v.key}>
+                                            {v.key}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        ) : (
+                            <Input
+                                type="text"
+                                value={version}
+                                onChange={(e) => setVersion(e.target.value)}
+                                placeholder="Version"
+                                className="w-32"
+                            />
+                        )}
+
+                        <div className="h-5 w-px bg-border-default" />
+
+                        <Input
+                            type="text"
+                            value={usecase}
+                            onChange={(e) => setUsecase(e.target.value)}
+                            placeholder="Use Case ID"
+                            className="w-36"
                         />
                     </div>
                 </div>
-            </div>
-        </div>
+
+                {error && (
+                    <div className="mx-5 mt-3 flex shrink-0 items-start gap-2 rounded-lg border border-error-500/40 bg-error-50 px-4 py-2.5 text-sm text-error-500">
+                        <span>{error}</span>
+                    </div>
+                )}
+
+                <div className="flex flex-1 overflow-hidden">
+                    <div className="flex flex-1 flex-col overflow-hidden">
+                        <div className="flex shrink-0 items-center justify-between border-b border-border-default bg-surface-muted px-4 py-2">
+                            <div className="flex items-center gap-2">
+                                <span className="inline-block size-2 rounded-full bg-brand-normal" />
+                                <span className="text-xs font-semibold uppercase tracking-wide text-text-secondary">
+                                    Input
+                                </span>
+                                <span className="text-xs text-text-secondary">
+                                    Flow Config · JSON or YAML · single or array
+                                </span>
+                            </div>
+                            <CopyButton getValue={() => inputRef.current} />
+                        </div>
+                        <div className="flex-1 overflow-hidden">
+                            <Editor
+                                theme={editorTheme}
+                                height="100%"
+                                language={editorLang}
+                                value={inputValue}
+                                onChange={handleInputChange}
+                                options={{
+                                    fontSize: 13,
+                                    lineNumbers: "on",
+                                    automaticLayout: true,
+                                    formatOnPaste: true,
+                                    minimap: { enabled: false },
+                                    scrollBeyondLastLine: true,
+                                    padding: { top: 12 },
+                                }}
+                            />
+                        </div>
+                    </div>
+
+                    <div className="flex w-16 shrink-0 flex-col items-center justify-center gap-4 border-x border-border-default bg-surface-muted">
+                        <Button
+                            size="icon"
+                            onClick={handleConvert}
+                            isLoading={isConverting}
+                            disabled={isConverting || !inputValue.trim() || !domain || !version}
+                            title={
+                                !domain || !version
+                                    ? "Select domain and version first"
+                                    : "Convert"
+                            }
+                            className="rounded-xl"
+                        >
+                            {!isConverting && <ArrowRightIcon className="size-5" />}
+                        </Button>
+                        <div className="flex flex-col items-center gap-0.5">
+                            <div className="size-1 rounded-full bg-border-default" />
+                            <div className="size-1 rounded-full bg-border-default" />
+                            <div className="size-1 rounded-full bg-border-default" />
+                        </div>
+                    </div>
+
+                    <div className="flex flex-1 flex-col overflow-hidden">
+                        <div className="flex shrink-0 items-center justify-between border-b border-border-default bg-surface-muted px-4 py-2">
+                            <div className="flex items-center gap-2">
+                                <span className="inline-block size-2 rounded-full bg-success-500" />
+                                <span className="text-xs font-semibold uppercase tracking-wide text-text-secondary">
+                                    Output
+                                </span>
+                                <span className="text-xs text-text-secondary">
+                                    Playground Config · read-only
+                                </span>
+                            </div>
+                            <CopyButton getValue={() => outputRef.current} />
+                        </div>
+                        <div className="flex-1 overflow-hidden">
+                            <Editor
+                                theme={editorTheme}
+                                height="100%"
+                                language={editorLang}
+                                value={outputValue}
+                                options={{
+                                    fontSize: 13,
+                                    lineNumbers: "on",
+                                    automaticLayout: true,
+                                    readOnly: true,
+                                    minimap: { enabled: false },
+                                    scrollBeyondLastLine: true,
+                                    padding: { top: 12 },
+                                }}
+                            />
+                        </div>
+                    </div>
+                </div>
+            </DialogContent>
+        </Dialog>
     );
 };

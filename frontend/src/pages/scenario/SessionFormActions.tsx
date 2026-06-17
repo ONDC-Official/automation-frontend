@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { Button } from "@/components/shadcn/button";
+import { Button } from "@/components/Shadcn/Button/button";
 import { ROUTES } from "@constants/routes";
 import { ISessionFormActionsProps } from "@/pages/scenario/types";
 
@@ -22,7 +22,11 @@ export const SessionFormActions = ({
             >
                 {isSubmitting ? "Creating..." : "Submit"}
             </Button>
-            <Button type="button" variant="outline" onClick={() => navigate(ROUTES.HISTORY)}>
+            <Button
+                type="button"
+                variant="outline"
+                onClick={() => navigate(ROUTES.PROFILE_HISTORY)}
+            >
                 Past Report
             </Button>
             {extraActions}

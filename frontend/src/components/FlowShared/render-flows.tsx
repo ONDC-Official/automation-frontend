@@ -2,35 +2,38 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Flow, MetadataField } from "@/types/flow-types";
 import { ROUTES } from "@constants/routes";
-import InfoCard from "@components/ui/info-card";
-import DifficultyCards from "@components/ui/difficulty-cards";
+import { buildDifficultyState } from "@components/ui/difficulty-cards";
+import { InfoSection } from "@components/FlowShared/ui/InfoSection";
+import { EndpointsSection } from "@components/FlowShared/ui/EndpointsSection";
+import { CollapsibleSection } from "@components/FlowShared/ui/CollapsibleSection";
 import axios, { AxiosResponse } from "axios";
 import { toast } from "react-toastify";
 import { SessionCache } from "@/types/session-types";
-import { getCompletePayload, getReport } from "@utils/request-utils";
+import { getCompletePayload, getReport, putCacheData } from "@utils/request-utils";
 import { Accordion } from "@components/FlowShared/complete-flow";
 import { useSession } from "@context/context";
-import Loader from "@components/ui/mini-components/loader";
+import { Spinner } from "@/components/Shadcn/Spinner/spinner";
 import SearchableJsonView from "@components/FlowShared/searchable-json-view";
-import Tabs from "@components/ui/mini-components/tabs";
+import { FlowTabs, TabsContent } from "@/components/Shadcn/Tabs";
 import { SessionContext } from "@context/context";
 import CircularProgress from "@components/ui/circular-cooldown";
 import Modal from "@components/Modal";
 import GuideModal from "@components/FlowShared/flow-guide";
 import {
-    HiOutlineDocumentReport,
-    HiOutlinePlusCircle,
-    HiEye,
-    HiOutlineQuestionMarkCircle,
-} from "react-icons/hi";
+    DocumentTextIcon,
+    EyeIcon,
+    PlusCircleIcon,
+    QuestionMarkCircleIcon,
+} from "@heroicons/react/24/outline";
+import { Cog6ToothIcon } from "@heroicons/react/24/solid";
 import { queryJsonPath } from "../../utils/jsonpath-query";
 import FlowHelperTab from "@components/FlowShared/helper-tab";
 import { GetRequestEndpoint } from "@components/FlowShared/guides";
-import { BiSend, BiServer } from "react-icons/bi";
+import { Button } from "@/components/Shadcn/Button/button";
 import { trackEvent } from "@utils/analytics";
-import FilterFlowsMenu from "@components/FlowShared/filter-flows";
 import { openReportInNewTab } from "@utils/generic-utils";
 import GenerateReportModal from "@components/FlowShared/GenerateReportModal";
+import { FlowSettingsModal, type SettingsDraft } from "@components/FlowShared/FlowSettingsModal";
 import RideMapTab from "@components/FlowShared/ride-map-tab";
 import { isRideMapEnabled } from "@components/FlowShared/ride-map-utils";
 
@@ -174,6 +177,9 @@ function RenderFlows({
     const [selectedTags, setSelectedTags] = useState<string[]>([]);
     const [activeCallClickedToggle, setActiveCallClickedToggle] = useState<boolean>(false);
     const [isReportDialogOpen, setIsReportDialogOpen] = useState<boolean>(false);
+    const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+    const [settingsDraft, setSettingsDraft] = useState<SettingsDraft | null>(null);
+    const [isSettingsSaving, setIsSettingsSaving] = useState(false);
     // Frontend-only UI prefs (persisted in localStorage; NOT saved to the backend session).
     // Auto-scroll defaults on; experimental mode defaults off.
     const [autoScrollEnabled, setAutoScrollEnabled] = useState<boolean>(() => {
@@ -427,6 +433,45 @@ function RenderFlows({
         fetchSessionData();
     };
 
+    const openSettings = () => {
+        setSettingsDraft({
+            autoScrollEnabled,
+            experimentalMode,
+            sessionDifficulty: buildDifficultyState(difficultyCache),
+            selectedTags: [...selectedTags],
+        });
+        setIsSettingsOpen(true);
+    };
+
+    const closeSettings = () => {
+        setIsSettingsOpen(false);
+        setSettingsDraft(null);
+    };
+
+    const handleSettingsSave = async () => {
+        if (!settingsDraft) return;
+
+        setIsSettingsSaving(true);
+        try {
+            const sessionDifficulty = {
+                ...difficultyCache,
+                ...settingsDraft.sessionDifficulty,
+            };
+            await putCacheData({ sessionDifficulty }, sessionId);
+
+            setAutoScrollEnabled(settingsDraft.autoScrollEnabled);
+            setExperimentalMode(settingsDraft.experimentalMode);
+            setSelectedTags(settingsDraft.selectedTags);
+            setDifficultyCache(sessionDifficulty);
+            closeSettings();
+        } catch (e) {
+            console.error("error while sending response", e);
+            toast.error("Error while updating setting difficulty");
+        } finally {
+            setIsSettingsSaving(false);
+        }
+    };
+
     return (
         <SessionContext.Provider
             value={{
@@ -467,22 +512,30 @@ function RenderFlows({
                     setIsErrorModalOpen(false);
                 }}
             >
-                <h1 className="text-lg font-semibold text-gray-800">Alert</h1>
-                <p className="text-sm text-gray-600">Sesson has expired.</p>
-                <p className="text-sm text-gray-600">Check support to raise a query.</p>
+                <h1 className="text-lg font-semibold text-text-primary">Alert</h1>
+                <p className="text-sm text-text-secondary">Sesson has expired.</p>
+                <p className="text-sm text-text-secondary">Check support to raise a query.</p>
             </Modal>
             <GuideModal
                 isOpen={isGuideOpen}
                 onClose={() => setIsGuideOpen(false)}
                 domain={cacheSessionData?.domain}
             />
+            <FlowSettingsModal
+                isOpen={isSettingsOpen}
+                onClose={closeSettings}
+                draft={settingsDraft}
+                onDraftChange={setSettingsDraft}
+                onSave={handleSettingsSave}
+                flowTags={flowTags}
+                isSaving={isSettingsSaving}
+            />
 
-            <div className="w-full min-h-screen flex flex-col flex-1">
-                <div className="space-y-2 pt-4 pr-4 pl-4">
+            <div className="flex min-h-screen w-full flex-1 flex-col bg-surface-page">
+                <div className="space-y-3 py-6 px-15 xl:px-0">
                     {cacheSessionData ? (
-                        <div className="flex gap-2 flex-col">
-                            <InfoCard
-                                title="Info"
+                        <div className="flex flex-col gap-3">
+                            <InfoSection
                                 data={{
                                     sessionId: sessionId,
                                     subscriberUrl: subUrl,
@@ -493,156 +546,106 @@ function RenderFlows({
                                     env: cacheSessionData.env,
                                     use_case: cacheSessionData.usecaseId,
                                 }}
-                                children={
-                                    <div className="w-full flex justify-between">
-                                        <CircularProgress
-                                            duration={5}
-                                            id="flow-cool-down"
-                                            loop={true}
-                                            onComplete={async () => {
-                                                if (apiCallFailCount.current < 5) {
-                                                    fetchSessionData();
-                                                } else if (
-                                                    apiCallFailCount.current >= 5 &&
-                                                    !isErrorModalOpen
-                                                ) {
-                                                    setIsErrorModalOpen(true);
+                                pollingIndicator={
+                                    <CircularProgress
+                                        duration={5}
+                                        id="flow-cool-down"
+                                        loop={true}
+                                        onComplete={async () => {
+                                            if (apiCallFailCount.current < 5) {
+                                                fetchSessionData();
+                                            } else if (
+                                                apiCallFailCount.current >= 5 &&
+                                                !isErrorModalOpen
+                                            ) {
+                                                setIsErrorModalOpen(true);
+                                            }
+                                        }}
+                                        sqSize={16}
+                                        strokeWidth={2}
+                                    />
+                                }
+                                headerActions={
+                                    <div className="flex flex-wrap items-center justify-end gap-2">
+                                        <Button
+                                            size="sm"
+                                            variant="secondary"
+                                            className="rounded-full"
+                                            onClick={openSettings}
+                                        >
+                                            <Cog6ToothIcon className="size-4 text-brand-normal" />
+                                        </Button>
+                                        {newSession ? (
+                                            <Button
+                                                size="sm"
+                                                onClick={async () => {
+                                                    setSessionId("");
+                                                    newSession();
+                                                }}
+                                            >
+                                                <PlusCircleIcon className="size-4" />
+                                                New Session
+                                            </Button>
+                                        ) : null}
+                                        <Button
+                                            size="sm"
+                                            onClick={async () => {
+                                                trackEvent({
+                                                    category: "SCENARIO_TESTING-FLOWS",
+                                                    action: "Generate report",
+                                                });
+                                                setIsReportDialogOpen(true);
+                                            }}
+                                            disabled={!isFlowStopped}
+                                        >
+                                            <DocumentTextIcon className="size-4" />
+                                            Generate Report
+                                        </Button>
+                                        <Button
+                                            size="sm"
+                                            onClick={async () => {
+                                                const response = await getReport(sessionId);
+                                                try {
+                                                    const decodedHtml = response.data;
+                                                    openReportInNewTab(decodedHtml, sessionId);
+                                                } catch (error) {
+                                                    console.error(
+                                                        "Failed to decode or open Base64 HTML:",
+                                                        error
+                                                    );
                                                 }
                                             }}
-                                            // invisible={true}
-                                            sqSize={16}
-                                            strokeWidth={2}
-                                        />
-                                        <div className="flex justify-end gap-2 items-center">
-                                            <div className="flex justify-end">
-                                                {newSession && (
-                                                    <button
-                                                        className="bg-sky-600 text-white text-sm flex px-2 py-2 rounded hover:bg-sky-700 shadow-xs transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                                                        onClick={async () => {
-                                                            setSessionId("");
-                                                            newSession();
-                                                        }}
-                                                    >
-                                                        <HiOutlinePlusCircle className="text-lg m2-1" />
-                                                        New Session
-                                                    </button>
-                                                )}
-                                            </div>
-                                            <div className="flex justify-end">
-                                                <button
-                                                    className="bg-sky-600 text-white text-sm flex px-2 py-2 rounded hover:bg-sky-700 shadow-xs transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                                                    onClick={async () => {
-                                                        trackEvent({
-                                                            category: "SCENARIO_TESTING-FLOWS",
-                                                            action: "Generate report",
-                                                        });
-                                                        setIsReportDialogOpen(true);
-                                                    }}
-                                                    disabled={!isFlowStopped}
-                                                >
-                                                    <HiOutlineDocumentReport className="text-lg m2-1" />
-                                                    Generate Report
-                                                </button>
-                                            </div>
-                                            <div className="flex justify-end">
-                                                <button
-                                                    className="bg-sky-600 text-white text-sm flex px-2 py-2 rounded hover:bg-sky-700 shadow-xs transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                                                    onClick={async () => {
-                                                        const response = await getReport(sessionId);
-                                                        try {
-                                                            // Decode Base64 → HTML string
-                                                            const decodedHtml = response.data;
-
-                                                            openReportInNewTab(
-                                                                decodedHtml,
-                                                                sessionId
-                                                            );
-                                                        } catch (error) {
-                                                            console.error(
-                                                                "Failed to decode or open Base64 HTML:",
-                                                                error
-                                                            );
-                                                        }
-                                                    }}
-                                                    disabled={!gotReport}
-                                                >
-                                                    <HiEye className="text-lg m2-1" />
-                                                    View Report
-                                                </button>
-                                            </div>
-                                            <div className="flex justify-end">
-                                                {newSession && (
-                                                    <button
-                                                        className="bg-sky-600 text-white text-sm flex px-2 py-2 rounded hover:bg-sky-700 shadow-xs transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                                                        onClick={() => {
-                                                            setIsGuideOpen(true);
-                                                        }}
-                                                    >
-                                                        <HiOutlineQuestionMarkCircle className="text-lg m2-1" />
-                                                        Guide
-                                                    </button>
-                                                )}
-                                            </div>
-                                        </div>
+                                            disabled={!gotReport}
+                                        >
+                                            <EyeIcon className="size-4" />
+                                            View Report
+                                        </Button>
+                                        {newSession ? (
+                                            <Button
+                                                size="sm"
+                                                variant="outline"
+                                                onClick={() => setIsGuideOpen(true)}
+                                            >
+                                                <QuestionMarkCircleIcon className="size-4" />
+                                                Guide
+                                            </Button>
+                                        ) : null}
                                     </div>
                                 }
                             />
-                            <DifficultyCards
-                                difficulty_cache={difficultyCache}
-                                sessionId={sessionId}
-                            />
-                            <div className="bg-gray-50 rounded-lg border border-sky-200 p-4">
-                                <h2 className="text-base font-semibold text-sky-700 mb-3 flex items-center gap-2">
-                                    <div className="w-1 h-5 bg-sky-700 rounded-full"></div>
-                                    Endpoints
-                                </h2>
-
-                                <div className="space-y-3">
-                                    {/* Send endpoint */}
-                                    <div className="flex items-start gap-3">
-                                        <div className="mt-0.5">
-                                            <BiSend className="w-4 h-4 text-sky-600" />
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                            <p className="text-xs font-medium text-gray-600 mb-1">
-                                                Send your calls to:
-                                            </p>
-                                            <code className="block px-3 py-2 bg-white border border-sky-200 rounded text-xs text-sky-700 font-mono break-all">
-                                                {GetRequestEndpoint(
-                                                    cacheSessionData.domain,
-                                                    cacheSessionData.version,
-                                                    cacheSessionData.npType
-                                                )}
-                                                /
-                                                <span className="text-amber-600">
-                                                    &lt;action&gt;
-                                                </span>
-                                            </code>
-                                        </div>
-                                    </div>
-
-                                    {/* Receive endpoint */}
-                                    <div className="flex items-start gap-3">
-                                        <div className="mt-0.5">
-                                            <BiServer className="w-4 h-4 text-sky-600" />
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                            <p className="text-xs font-medium text-gray-600 mb-1">
-                                                You will receive calls at:
-                                            </p>
-                                            <code className="block px-3 py-2 bg-white border border-sky-200 rounded text-xs text-sky-700 font-mono break-all">
-                                                {subUrl}/
-                                                <span className="text-amber-600">
-                                                    &lt;action&gt;
-                                                </span>
-                                            </code>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                            <CollapsibleSection title="Endpoints" defaultOpen>
+                                <EndpointsSection
+                                    sendUrl={`${GetRequestEndpoint(
+                                        cacheSessionData.domain,
+                                        cacheSessionData.version,
+                                        cacheSessionData.npType
+                                    )}/<action>`}
+                                    receiveUrl={`${subUrl}/<action>`}
+                                />
+                            </CollapsibleSection>
                         </div>
                     ) : (
-                        <div className="bg-white rounded-lg shadow-xs border border-sky-100 p-6">
+                        <div className="rounded-xl border border-n-30 bg-surface-elevated p-6 shadow-xs dark:border-border-default">
                             <style>
                                 {`
 									@keyframes shimmer {
@@ -650,22 +653,21 @@ function RenderFlows({
 										100% { background-position: calc(200px + 100%) 0; }
 									}
 									.skeleton {
-										background: linear-gradient(90deg, #e0f2fe 25%, #b3e5fc 50%, #e0f2fe 75%);
+										background: linear-gradient(90deg, var(--color-brand-light) 25%, var(--color-brand-light-active) 50%, var(--color-brand-light) 75%);
 										background-size: 200px 100%;
 										animation: shimmer 1.5s infinite;
 									}
 								`}
                             </style>
                             <div className="space-y-4">
-                                {/* Content skeleton */}
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-2">
-                                        <div className="h-3 rounded skeleton"></div>
-                                        <div className="h-3 rounded w-4/5 skeleton"></div>
+                                        <div className="skeleton h-3 rounded"></div>
+                                        <div className="skeleton h-3 w-4/5 rounded"></div>
                                     </div>
                                     <div className="space-y-2">
-                                        <div className="h-3 rounded skeleton"></div>
-                                        <div className="h-3 rounded w-3/5 skeleton"></div>
+                                        <div className="skeleton h-3 rounded"></div>
+                                        <div className="skeleton h-3 w-3/5 rounded"></div>
                                     </div>
                                 </div>
                             </div>
@@ -673,68 +675,37 @@ function RenderFlows({
                     )}
                 </div>
 
-                {/* Main Content Area */}
-                <div className="flex flex-1 w-full">
-                    {/* Left Column - Main Content */}
-                    <div className="w-full sm:w-[60%] overflow-y-auto p-4">
-                        <FilterFlowsMenu
-                            flowTags={flowTags}
-                            setSelectedTags={setSelectedTags}
-                            selectedTags={selectedTags}
-                        />
-                        <div className="mb-8 bg-gray-100 p-4 rounded-md border flex-1">
-                            {filteredFlows.map((flow: Flow) => (
-                                <Accordion
-                                    key={flow.id}
-                                    flow={flow}
-                                    activeFlow={activeFlow}
-                                    sessionId={sessionId}
-                                    setActiveFlow={setActiveFlow}
-                                    sessionCache={cacheSessionData}
-                                    setSideView={setSideView as unknown as React.Dispatch<unknown>}
-                                    subUrl={subUrl}
-                                    onFlowStop={() => setIsFlowStopped(true)}
-                                    onFlowClear={() => handleClearFlow()}
-                                />
-                            ))}
-                        </div>
+                <div className="grid flex-1 grid-cols-1 gap-4 px-15 xl:px-0 pb-4 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
+                    <div className="min-w-0 flex flex-col gap-3 overflow-y-auto">
+                        {filteredFlows.map((flow: Flow) => (
+                            <Accordion
+                                key={flow.id}
+                                flow={flow}
+                                activeFlow={activeFlow}
+                                sessionId={sessionId}
+                                setActiveFlow={setActiveFlow}
+                                sessionCache={cacheSessionData}
+                                setSideView={setSideView as unknown as React.Dispatch<unknown>}
+                                subUrl={subUrl}
+                                onFlowStop={() => setIsFlowStopped(true)}
+                                onFlowClear={() => handleClearFlow()}
+                            />
+                        ))}
                     </div>
 
-                    {/* Right Column - Sticky Request & Response */}
-                    <div className="w-full sm:w-[45%] p-2">
-                        {/* Sticky Container */}
-                        <div className=" bg-gray-100 rounded-md border sticky top-20">
-                            {/* <h2 className="m-1 text-lg font-semibold">Request & Response</h2> */}
-                            <Tabs
-                                className="mt-4 ml-2"
+                    <div className="min-w-0 lg:sticky lg:top-20 lg:self-start">
+                        <div>
+                            <FlowTabs
                                 options={[
                                     { key: "Request", label: "Request" },
                                     { key: "Response", label: "Response" },
-                                    // {
-                                    //     key: "Metadata",
-                                    //     label: (
-                                    //         <div className="flex items-center gap-1.5">
-                                    //             <span>Metadata</span>
-                                    //             <span
-                                    //                 className="inline-flex items-center px-1 py-0.5 min-w-[2rem] justify-center rounded-full text-[10px] font-medium bg-gradient-to-r from-yellow-50 to-yellow-100 text-yellow-700 border border-yellow-300 shadow-sm"
-                                    //                 role="status"
-                                    //                 aria-label="Beta release"
-                                    //             >
-                                    //                 Beta
-                                    //             </span>
-                                    //         </div>
-                                    //     ),
-                                    // },
-                                    {
-                                        key: "Guide",
-                                        label: "Guide",
-                                    },
-                                    // Application (ride map) tab only for the map-enabled domain.
+                                    { key: "Guide", label: "Guide" },
                                     ...(mapEnabled
                                         ? [{ key: "Application", label: "Application" }]
                                         : []),
                                 ]}
-                                onSelectOption={(value: string) => {
+                                value={selectedTab}
+                                onValueChange={(value) =>
                                     setSelectedTab(
                                         value as
                                             | "Request"
@@ -742,99 +713,75 @@ function RenderFlows({
                                             | "Metadata"
                                             | "Guide"
                                             | "Application"
-                                    );
-                                }}
-                                defaultTab="Request"
-                                activeKey={selectedTab}
-                            />
-
-                            <div className="p-2">
-                                {cacheSessionData ? (
-                                    <div
-                                        className="rounded-md overflow-auto"
-                                        style={{ maxHeight: "600px" }} // Adjust maxHeight as needed
-                                    >
-                                        {selectedTab === "Metadata" ? (
-                                            <div className="bg-gray-800 rounded-lg p-4">
-                                                {Object.keys(metadata).length > 0 ? (
-                                                    <table className="w-full text-sm border-collapse">
-                                                        <thead>
-                                                            <tr className="border-b border-gray-700">
-                                                                <th className="text-left py-2 px-3 text-gray-300 font-medium">
-                                                                    Field Name
-                                                                </th>
-                                                                <th className="text-left py-2 px-3 text-gray-300 font-medium">
-                                                                    Value
-                                                                </th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                            {(
-                                                                Object.entries(metadata) as Array<
-                                                                    [string, ExtractedMetadataValue]
-                                                                >
-                                                            ).map(([key, data], index) => (
-                                                                <tr
-                                                                    key={index}
-                                                                    className="border-b border-gray-700 hover:bg-gray-700/50 transition-colors"
-                                                                >
-                                                                    <td className="py-2 px-3 text-gray-400">
-                                                                        {key}
-                                                                    </td>
-                                                                    <td className="py-2 px-3 text-gray-200 whitespace-pre-wrap wrap-break-word">
-                                                                        {typeof data.value ===
-                                                                            "object" &&
-                                                                        data.value !== null
-                                                                            ? JSON.stringify(
-                                                                                  data.value,
-                                                                                  null,
-                                                                                  2
-                                                                              )
-                                                                            : String(data.value)}
-                                                                    </td>
-                                                                </tr>
-                                                            ))}
-                                                        </tbody>
-                                                    </table>
-                                                ) : (
-                                                    <div className="text-center py-8">
-                                                        <p className="text-gray-400 mb-3">
-                                                            No metadata available
-                                                        </p>
-                                                    </div>
-                                                )}
+                                    )
+                                }
+                            >
+                                <TabsContent value="Request" className="pb-4 pt-3">
+                                    {cacheSessionData ? (
+                                        <div
+                                            className="overflow-auto"
+                                            style={{ maxHeight: "600px" }}
+                                        >
+                                            <SearchableJsonView value={requestData} />
+                                        </div>
+                                    ) : (
+                                        <div className="flex items-center justify-center py-16">
+                                            <Spinner className="size-8 text-brand-normal" />
+                                        </div>
+                                    )}
+                                </TabsContent>
+                                <TabsContent value="Response" className="pb-4 pt-3">
+                                    {cacheSessionData ? (
+                                        <div
+                                            className="overflow-auto"
+                                            style={{ maxHeight: "600px" }}
+                                        >
+                                            <SearchableJsonView value={responseData} />
+                                        </div>
+                                    ) : (
+                                        <div className="flex items-center justify-center py-16">
+                                            <Spinner className="size-8 text-brand-normal" />
+                                        </div>
+                                    )}
+                                </TabsContent>
+                                <TabsContent value="Guide" className="pb-4 pt-3">
+                                    {cacheSessionData ? (
+                                        <div
+                                            className="overflow-auto rounded-lg border border-n-40 bg-surface-elevated p-3 dark:border-border-default dark:bg-surface-muted"
+                                            style={{ maxHeight: "600px" }}
+                                        >
+                                            <FlowHelperTab
+                                                domain={cacheSessionData?.domain}
+                                                version={cacheSessionData?.version}
+                                                npType={cacheSessionData?.npType}
+                                            />
+                                        </div>
+                                    ) : (
+                                        <div className="flex items-center justify-center py-16">
+                                            <Spinner className="size-8 text-brand-normal" />
+                                        </div>
+                                    )}
+                                </TabsContent>
+                                {mapEnabled ? (
+                                    <TabsContent value="Application" className="px-4 pb-4 pt-3">
+                                        {cacheSessionData ? (
+                                            <div
+                                                className="overflow-auto rounded-lg border border-n-40 bg-surface-elevated p-3 dark:border-border-default dark:bg-surface-muted"
+                                                style={{ maxHeight: "600px" }}
+                                            >
+                                                <RideMapTab
+                                                    key={activeFlow ?? "none"}
+                                                    flowId={activeFlow}
+                                                />
                                             </div>
-                                        ) : selectedTab === "Application" && mapEnabled ? (
-                                            // key={activeFlow} → remount on flow switch so the map
-                                            // fully resets (no stale driver/route/state carryover).
-                                            <RideMapTab
-                                                key={activeFlow ?? "none"}
-                                                flowId={activeFlow}
-                                            />
                                         ) : (
-                                            <SearchableJsonView
-                                                value={
-                                                    selectedTab === "Request"
-                                                        ? requestData
-                                                        : selectedTab === "Response"
-                                                          ? responseData
-                                                          : {}
-                                                }
-                                            />
+                                            <div className="flex items-center justify-center py-16">
+                                            <Spinner className="size-8 text-brand-normal" />
+                                        </div>
                                         )}
-                                    </div>
-                                ) : (
-                                    <Loader />
-                                )}
-                                {selectedTab === "Guide" && (
-                                    <FlowHelperTab
-                                        domain={cacheSessionData?.domain}
-                                        version={cacheSessionData?.version}
-                                        npType={cacheSessionData?.npType}
-                                    />
-                                )}
-                            </div>
-                            {/* helper guide section */}
+                                    </TabsContent>
+                                ) : null}
+                            </FlowTabs>
                         </div>
                     </div>
                 </div>

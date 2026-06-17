@@ -7,7 +7,7 @@ import { getActionId } from "./utils";
 import FlowDetailsAndSummary from "./FlowDetailsAndSummary";
 import ActionOverview from "./ActionOverview";
 import { FlowActionDetails } from "./flowActionDetails";
-import Loader from "@components/ui/mini-components/loader";
+import { Spinner } from "@/components/Shadcn/Spinner/spinner";
 import ValidationsTable from "./ValidationsTable";
 import Chatbot from "@components/Chatbot";
 import { RequestTab, ResponseTab } from "./RequestResponseTabs";
@@ -379,7 +379,7 @@ const FlowInformation: FC<FlowInformationProps> = ({
                                             />
                                         ) : (
                                             <div className="h-full w-full flex items-center justify-center">
-                                                <Loader />
+                                                <Spinner className="size-8 text-brand-normal" />
                                             </div>
                                         )}
                                     </div>

@@ -85,6 +85,13 @@ export interface ISchemaGuideStepDefinition {
 }
 
 /**
+ * Result of a client-side validation step before the API call.
+ */
+export type IValidationResult<T> =
+    | { ok: true; value: T }
+    | { ok: false; errors: IParsedValidationError[] };
+
+/**
  * Structured validation error parsed from API markdown responses.
  */
 export interface IParsedValidationError {
@@ -96,23 +103,4 @@ export interface IParsedValidationError {
     message: string;
     /** Optional property key for schema errors such as additionalProperties */
     propertyKey?: string;
-}
-
-export interface IValidationErrorsPanelProps {
-    /** Whether validation has been run at least once */
-    isVisible: boolean;
-    /** Whether the payload passed validation */
-    isSuccess: boolean;
-    /** Parsed validation errors */
-    errors: IParsedValidationError[];
-    /** Whether the full error list is expanded */
-    isExpanded: boolean;
-    /** Expands the error panel to show all errors */
-    onExpand: () => void;
-    /** Collapses the expanded error panel */
-    onCollapse: () => void;
-}
-
-export interface IErrorItemProps {
-    error: IParsedValidationError;
 }

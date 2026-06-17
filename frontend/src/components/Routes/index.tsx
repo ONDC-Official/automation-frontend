@@ -3,11 +3,14 @@ import SchemaValidationPage from "@pages/schema-validation";
 import SellerOnboarding from "@pages/seller-onboarding";
 import ToolsPage from "@pages/tools";
 import UserProfile from "@pages/user-profile";
-import ProtocolPlayGround from "@pages/protocol-playground";
+import ConfigsSection from "@pages/user-profile/ConfigsSection";
+import PastReportsSection from "@pages/user-profile/PastReportsSection";
+import ActivityHistorySection from "@pages/user-profile/ActivityHistorySection";
 import HistoryPage from "@pages/history";
+import ProtocolPlayGround from "@pages/protocol-playground";
 import DBBackOffice from "@pages/db-back-office";
 import FlowTestingWrapper from "@pages/flow-testing";
-import NotFoundPage from "@components/ui/not-found";
+import NotFoundPage from "@/components/NotFound";
 import ScenarioPage from "@pages/scenario";
 import HomePage from "@pages/home";
 import SupportPage from "@pages/support";
@@ -42,7 +45,11 @@ const Routes = () => (
         <Route path={ROUTES.SCENARIO} element={<ScenarioPage />} />
         {/* ROUTES.FLOW_TESTING is for Flow testing through URL parameters not via scenario testing page */}
         <Route path={ROUTES.FLOW_TESTING} element={<FlowTestingWrapper />} />
-        <Route path={ROUTES.PROFILE} element={<UserProfile />} />
+        <Route path={ROUTES.PROFILE} element={<UserProfile />}>
+            <Route index element={<ConfigsSection />} />
+            <Route path="past-reports" element={<PastReportsSection />} />
+            <Route path="history" element={<ActivityHistorySection />} />
+        </Route>
         <Route path={ROUTES.TOOLS} element={<ToolsPage />} />
         <Route path={ROUTES.SELLER_ONBOARDING} element={<SellerOnboarding />} />
         <Route path={ROUTES.PLAYGROUND} element={<ProtocolPlayGround />} />

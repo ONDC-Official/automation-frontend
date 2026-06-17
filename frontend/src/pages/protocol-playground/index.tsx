@@ -28,20 +28,24 @@ import { validateConfigGroups } from "@pages/protocol-playground/utils/step-grou
 import { encodeBase64 } from "@pages/protocol-playground/utils/base64";
 
 const Body = ({ workbenchFlow }: { workbenchFlow: ReturnType<typeof useWorkbenchFlows> }) => {
-    switch (workbenchFlow.flowStepNum) {
-        case 0:
-            return <GetPlaygroundComponent />;
-        case 1:
-            return (
-                <RenderFlows
-                    flows={workbenchFlow.flows}
-                    subUrl={workbenchFlow.subscriberUrl}
-                    sessionId={workbenchFlow.session}
-                />
-            );
-        default:
-            return null;
-    }
+    const content = (() => {
+        switch (workbenchFlow.flowStepNum) {
+            case 0:
+                return <GetPlaygroundComponent />;
+            case 1:
+                return (
+                    <RenderFlows
+                        flows={workbenchFlow.flows}
+                        subUrl={workbenchFlow.subscriberUrl}
+                        sessionId={workbenchFlow.session}
+                    />
+                );
+            default:
+                return null;
+        }
+    })();
+
+    return <div className="flex min-h-0 flex-1 flex-col">{content}</div>;
 };
 
 const ProtocolPlayGround = () => {
@@ -328,7 +332,7 @@ const ProtocolPlayGround = () => {
                 loadConfigFromGist,
             }}
         >
-            <div className="mt-4 w-full min-h-screen flex flex-1 flex-col">
+            <div className="flex h-full min-h-0 w-full max-w-7xl flex-1 flex-col px-15 xl:px-0 mx-auto">
                 <Body workbenchFlow={workbenchFlow} />
             </div>
         </PlaygroundContext.Provider>

@@ -1,7 +1,12 @@
-import { CSSProperties, useState } from "react";
+import { CSSProperties, useMemo, useState } from "react";
 import JsonView from "@uiw/react-json-view";
 import { githubDarkTheme } from "@uiw/react-json-view/githubDark";
-import { HiSearch, HiX } from "react-icons/hi";
+import { githubLightTheme } from "@uiw/react-json-view/githubLight";
+import { XMarkIcon } from "@heroicons/react/24/outline";
+import SearchField from "@/components/Shadcn/SearchField";
+import { Button } from "@/components/Shadcn/Button/button";
+import { useAppliedTheme } from "@/context/theme/useAppliedTheme";
+import { cn } from "@/lib/utils";
 
 function filterJsonBySearch(data: unknown, query: string): unknown {
     if (!query) return data;
@@ -52,36 +57,50 @@ interface SearchableJsonViewProps {
 
 export default function SearchableJsonView({
     value,
-    placeholder = "Search JSON (keys or values)...",
+    placeholder = "Search",
 }: SearchableJsonViewProps) {
     const [query, setQuery] = useState<string>("");
+    const appliedTheme = useAppliedTheme();
+
+    const jsonTheme = useMemo(
+        () => (appliedTheme === "dark" ? githubDarkTheme : githubLightTheme),
+        [appliedTheme]
+    );
+
+    const filteredValue = useMemo(
+        () => filterJsonBySearch(value, query) as object,
+        [value, query]
+    );
 
     return (
-        <div className="space-y-2">
+        <div className="space-y-3">
             <div className="relative">
-                <HiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
-                <input
-                    type="text"
+                <SearchField
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
                     placeholder={placeholder}
-                    className="w-full pl-9 pr-9 py-2 text-sm bg-white text-black shadow-xs rounded-md focus:outline-hidden focus:ring-1 placeholder-gray-500"
+                    containerClassName="w-full"
                 />
-                {query && (
-                    <button
+                {query ? (
+                    <Button
                         type="button"
-                        onClick={() => setQuery("")}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-200"
+                        variant="ghost"
+                        size="icon-xs"
                         aria-label="Clear search"
+                        onClick={() => setQuery("")}
+                        className="absolute right-1 top-1/2 -translate-y-1/2 text-text-secondary hover:text-text-primary"
                     >
-                        <HiX className="w-4 h-4" />
-                    </button>
-                )}
+                        <XMarkIcon className="size-4" />
+                    </Button>
+                ) : null}
             </div>
             <JsonView
-                value={filterJsonBySearch(value, query) as object}
-                style={githubDarkTheme as CSSProperties}
-                className="rounded-md"
+                value={filteredValue}
+                style={jsonTheme as CSSProperties}
+                className={cn(
+                    "min-h-[320px] rounded-lg border border-n-40 bg-surface-elevated p-3",
+                    "dark:border-border-default dark:bg-surface-muted"
+                )}
                 displayDataTypes={false}
             />
         </div>

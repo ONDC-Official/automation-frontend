@@ -5,7 +5,7 @@ import { githubDarkTheme } from "@uiw/react-json-view/githubDark";
 import type { OpenAPISpecification } from "../types";
 import SchemaTree from "./SchemaTree";
 import { getRequestSchema, deepResolveSchema } from "./specUtils";
-import Loader from "@components/ui/mini-components/loader";
+import { Spinner } from "@/components/Shadcn/Spinner/spinner";
 
 interface RequestTabProps {
     spec: OpenAPISpecification;
@@ -83,7 +83,7 @@ const RequestTab: FC<RequestTabProps> = ({ spec, api }) => {
                             <div className="overflow-auto max-h-[600px] p-4">
                                 {!schemaReady ? (
                                     <div className="flex items-center justify-center h-40">
-                                        <Loader />
+                                        <Spinner className="size-8 text-brand-normal" />
                                     </div>
                                 ) : (
                                     <SchemaTree
@@ -99,7 +99,7 @@ const RequestTab: FC<RequestTabProps> = ({ spec, api }) => {
                             <div className="overflow-auto max-h-[600px] p-4 text-xs">
                                 {!rawReady ? (
                                     <div className="flex items-center justify-center h-40">
-                                        <Loader />
+                                        <Spinner className="size-8 text-brand-normal" />
                                     </div>
                                 ) : deepSchema ? (
                                     <JsonView

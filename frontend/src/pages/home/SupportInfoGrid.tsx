@@ -1,5 +1,5 @@
 import { FC } from "react";
-import { Card, CardContent } from "@/components/shadcn/card";
+import { Card, CardContent } from "@/components/Shadcn/Card/card";
 import { supportInfoItems } from "@/pages/home/constants";
 import SupportInfoItem from "@/pages/home/SupportInfoItem";
 

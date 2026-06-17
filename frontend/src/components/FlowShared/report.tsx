@@ -1,5 +1,4 @@
 import { toast } from "react-toastify";
-import Heading from "@components/ui/mini-components/ondc-gradient-text";
 import axios from "axios";
 import { useEffect, useRef, useState } from "react";
 import InfoCard from "@components/ui/info-card";
@@ -50,7 +49,9 @@ export function ReportPage({
                     >
                         <IoMdArrowRoundBack size={12} />
                     </button>
-                    <Heading>Report</Heading>
+                    <h2 className="text-h5 font-bold text-brand-primary dark:text-neutral-900">
+                        Report
+                    </h2>
                 </div>
 
                 <button

@@ -1,0 +1,2 @@
+export const navButtonClass =
+    "size-9 shrink-0 rounded-lg border border-n-40 bg-n-0 text-n-800 shadow-none hover:bg-n-10 disabled:cursor-not-allowed disabled:text-n-100 disabled:hover:bg-n-0 dark:border-n-0 dark:bg-surface-muted dark:text-n-0 dark:hover:bg-n-700 dark:disabled:text-n-0/40 dark:disabled:hover:bg-surface-muted [&_svg]:text-n-800 [&_svg]:disabled:text-n-100 dark:[&_svg]:text-n-0 dark:[&_svg]:disabled:text-n-0/40";
