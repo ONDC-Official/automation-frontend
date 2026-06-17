@@ -8,7 +8,7 @@ import { useConfigOperations } from "@pages/protocol-playground/hooks/use-config
 import { PlaygroundHeader } from "@pages/protocol-playground/ui/playground-upper/playground-header";
 import { useModalHandlers } from "@pages/protocol-playground/hooks/use-modal";
 import { usePlaygroundActions } from "@pages/protocol-playground/hooks/use-playground-actions";
-import FullPageLoader from "@components/ui/mini-components/fullpage-loader";
+import { ScreenLoader } from "@/components/Shadcn/ScreenLoader";
 import { ActionTimeline } from "@pages/protocol-playground/ui/playground-upper/merged-sequcence";
 import TraceView from "@pages/protocol-playground/ui/extras/trace-view";
 import ViewOnlyPlaygroundPage from "@pages/protocol-playground/view-only-page";
@@ -118,6 +118,7 @@ const PlaygroundPage = () => {
         null
     );
     const [isExportDownloading, setIsExportDownloading] = useState(false);
+    const [isTimelineOpen, setIsTimelineOpen] = useState(true);
 
     const isWideRight = activeRightTab === "transaction";
     const leftPanelWidth = isWideRight ? "w-[30%]" : "w-1/2";
@@ -221,23 +222,30 @@ const PlaygroundPage = () => {
                 <Popup isOpen={popupOpen} onClose={closeModal}>
                     {popupContent}
                 </Popup>
-                {playgroundContext.loading && <FullPageLoader />}
+                {playgroundContext.loading && <ScreenLoader />}
             </div>
         );
     }
 
     return (
         <AIProvider>
-            <div ref={containerRef} className="w-full h-screen min-h-screen flex flex-col bg-white">
-                <div>
+            <div
+                ref={containerRef}
+                className="flex h-[calc(100svh-4rem)] min-h-0 w-full flex-col overflow-hidden bg-surface-page"
+            >
+                <div className="shrink-0">
                     <PlaygroundHeader
                         domain={playgroundContext.config?.meta.domain || "N/A"}
                         version={playgroundContext.config?.meta.version || "N/A"}
                         flowId={playgroundContext.config?.meta.flowId || "N/A"}
+                        useCaseId={playgroundContext.config?.meta.use_case_id}
                         stepGroup={stepGroup}
                         onStepGroupChange={handleStepGroupChange}
                         mainStepCount={playgroundContext.config?.steps.length || 0}
                         extraStepCount={playgroundContext.config?.extra_steps?.steps.length || 0}
+                        hasSteps={groupSteps.length > 0}
+                        isTimelineOpen={isTimelineOpen}
+                        onToggleTimeline={() => setIsTimelineOpen((open) => !open)}
                         onExport={exportConfig}
                         onImport={importConfig}
                         onImportFromGitHub={handleImportFromGitHub}
@@ -258,23 +266,26 @@ const PlaygroundPage = () => {
                         onEditMeta={() => setIsFlowInfoOpen(true)}
                         onViewTrace={() => setIsTraceOpen(true)}
                         onEditRaw={openRawEditor}
+                        onAddAction={modalHandlers.showAddAction}
                         isFullscreen={isFullscreen}
                         onToggleFullscreen={toggleFullscreen}
                     />
-                    <ActionTimeline
-                        steps={groupSteps}
-                        transactionHistory={playgroundContext.config?.transaction_history || []}
-                        activeApi={activeApi}
-                        onApiSelect={setActiveApi}
-                        onAddAction={modalHandlers.showAddAction}
-                        onEditAction={modalHandlers.showEditAction}
-                        onDeleteAction={modalHandlers.deleteAction}
-                        onAddBefore={modalHandlers.addActionBefore}
-                        onAddAfter={modalHandlers.addActionAfter}
-                    />
+                    {isTimelineOpen ? (
+                        <ActionTimeline
+                            steps={groupSteps}
+                            transactionHistory={playgroundContext.config?.transaction_history || []}
+                            activeApi={activeApi}
+                            onApiSelect={setActiveApi}
+                            onAddAction={modalHandlers.showAddAction}
+                            onEditAction={modalHandlers.showEditAction}
+                            onDeleteAction={modalHandlers.deleteAction}
+                            onAddBefore={modalHandlers.addActionBefore}
+                            onAddAfter={modalHandlers.addActionAfter}
+                        />
+                    ) : null}
                 </div>
                 <div
-                    className={`flex gap-4 mt-1 ${isFullscreen ? "flex-1 overflow-hidden" : "h-full max-h-[82vh]"}`}
+                    className={`flex min-h-0 flex-1 items-stretch gap-4 px-15 xl:px-0 pb-4 pt-2 ${isFullscreen ? "overflow-hidden" : ""}`}
                 >
                     <LeftSideView width={leftPanelWidth} activeApi={activeApi} />
                     <RightSideView
@@ -307,7 +318,7 @@ const PlaygroundPage = () => {
                         <TraceView config={playgroundContext.config} />
                     </Popup>
                 )}
-                {playgroundContext.loading && <FullPageLoader />}
+                {playgroundContext.loading && <ScreenLoader />}
                 <PlaygroundHelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
                 {playgroundContext.config && (
                     <FlowInfoModal

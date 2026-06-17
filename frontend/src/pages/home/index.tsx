@@ -1,6 +1,6 @@
 import { FC } from "react";
 import HeroSection from "@/components/HeroLayout";
-import UsageSection from "@/components/BannerStatLayout";
+import StatLayout from "@/components/StatLayout";
 import IntialStepsSection from "@/pages/home/InitialStepsSection";
 import PickYourPath from "@pages/home/PickYourPath";
 import SupportSection from "@pages/home/SupportSection";
@@ -14,7 +14,7 @@ const HomePage: FC = () => (
         </HeroSection>
         <IntialStepsSection />
         <PickYourPath />
-        <UsageSection {...usageSectionContent} />
+        <StatLayout {...usageSectionContent} />
         <SupportSection />
     </>
 );

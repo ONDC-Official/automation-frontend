@@ -1,5 +1,5 @@
-import { Button } from "@/components/shadcn/button";
-import { FieldGroup } from "@/components/shadcn/field";
+import { Button } from "@/components/Shadcn/Button/button";
+import { FieldGroup } from "@/components/Shadcn/TextField/field";
 import { NATIVE_SELECT_CLASS } from "@/pages/scenario/helpers";
 import { SessionFormActions } from "@/pages/scenario/SessionFormActions";
 import { ISavedConfigPanelProps } from "@/pages/scenario/types";

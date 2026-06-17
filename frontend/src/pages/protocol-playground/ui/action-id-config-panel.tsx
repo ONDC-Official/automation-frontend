@@ -2,7 +2,8 @@ import { useContext } from "react";
 import { PlaygroundContext } from "../context/playground-context";
 import { MdEdit } from "react-icons/md";
 import { TbColumnInsertLeft, TbColumnInsertRight } from "react-icons/tb";
-import IconButton from "../../../components/ui/mini-components/icon-button";
+import { Button } from "@/components/Shadcn/Button";
+import { cn } from "@/lib/utils";
 import { IoMdTrash } from "react-icons/io";
 import { RxReset } from "react-icons/rx";
 import { HiOutlineInformationCircle } from "react-icons/hi2";
@@ -35,10 +36,9 @@ export function ActionIdConfigurationPanel({
         );
     }
 
-    const actionConfig = getGroupSteps(
-        playgroundContext.config,
-        playgroundContext.stepGroup
-    ).find((step) => step.action_id === actionId);
+    const actionConfig = getGroupSteps(playgroundContext.config, playgroundContext.stepGroup).find(
+        (step) => step.action_id === actionId
+    );
 
     if (!actionConfig) {
         return (
@@ -165,54 +165,58 @@ export function ActionIdConfigurationPanel({
             {/* Right side - Action Buttons */}
             <div className="flex items-center gap-1 shrink-0">
                 <Tippy content={<span className="text-xs">Reset</span>} delay={500}>
-                    <div>
-                        <IconButton
-                            icon={<RxReset size={15} />}
-                            onClick={() => playgroundContext.resetTransactionHistory(actionId)}
-                            color="gray"
-                            label=""
-                        />
-                    </div>
+                    <Button
+                        variant="ghost"
+                        size="icon-sm"
+                        iconSize="sm"
+                        icon={<RxReset />}
+                        aria-label="Reset"
+                        onClick={() => playgroundContext.resetTransactionHistory(actionId)}
+                    />
                 </Tippy>
                 <Tippy content={<span className="text-xs">Insert Before</span>} delay={500}>
-                    <div>
-                        <IconButton
-                            icon={<TbColumnInsertLeft size={15} />}
-                            onClick={onAddBeforeClick}
-                            color="gray"
-                            label=""
-                        />
-                    </div>
+                    <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon-sm"
+                        iconSize="sm"
+                        icon={<TbColumnInsertLeft />}
+                        aria-label="Insert Before"
+                        onClick={onAddBeforeClick}
+                    />
                 </Tippy>
                 <Tippy content={<span className="text-xs">Insert After</span>} delay={500}>
-                    <div>
-                        <IconButton
-                            icon={<TbColumnInsertRight size={15} />}
-                            onClick={onAddAfterClick}
-                            color="gray"
-                            label=""
-                        />
-                    </div>
+                    <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon-sm"
+                        iconSize="sm"
+                        icon={<TbColumnInsertRight />}
+                        aria-label="Insert After"
+                        onClick={onAddAfterClick}
+                    />
                 </Tippy>
                 <Tippy content={<span className="text-xs">Edit</span>} delay={500}>
-                    <div>
-                        <IconButton
-                            icon={<MdEdit size={15} />}
-                            onClick={onEditActionClick}
-                            color="sky"
-                            label=""
-                        />
-                    </div>
+                    <Button
+                        variant="ghost"
+                        size="icon-sm"
+                        iconSize="sm"
+                        icon={<MdEdit />}
+                        aria-label="Edit"
+                        onClick={onEditActionClick}
+                        className={cn("text-brand-normal hover:bg-brand-light")}
+                    />
                 </Tippy>
                 <Tippy content={<span className="text-xs">Delete</span>} delay={500}>
-                    <div>
-                        <IconButton
-                            icon={<IoMdTrash size={15} />}
-                            onClick={onDeleteClick}
-                            color="red"
-                            label=""
-                        />
-                    </div>
+                    <Button
+                        variant="ghost"
+                        size="icon-sm"
+                        iconSize="sm"
+                        icon={<IoMdTrash />}
+                        aria-label="Delete"
+                        onClick={onDeleteClick}
+                        className={cn("text-destructive hover:bg-destructive/10")}
+                    />
                 </Tippy>
             </div>
         </div>

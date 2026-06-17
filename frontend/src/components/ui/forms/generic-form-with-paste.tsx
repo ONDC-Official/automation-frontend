@@ -3,8 +3,9 @@ import { useForm } from "react-hook-form";
 import { FaRegPaste } from "react-icons/fa6";
 import { toast } from "react-toastify";
 import PayloadEditor from "@/components/ui/mini-components/payload-editor";
-import LoadingButton from "./loading-button";
-import { ICatalogItem, IGenericFormWithPasteProps } from "./generic-form.types";
+import { Button } from "@/components/Shadcn/Button/button";
+import { ScreenLoader } from "@/components/Shadcn/ScreenLoader";
+import { ICatalogItem, IGenericFormWithPasteProps } from "@/components/ui/forms/generic-form.types";
 
 const GenericFormWithPaste = ({
     defaultValues,
@@ -193,6 +194,7 @@ const GenericFormWithPaste = ({
 
     return (
         <div>
+            {isLoading && <ScreenLoader />}
             {enablePaste && (
                 <>
                     {isPayloadEditorActive && (
@@ -201,20 +203,22 @@ const GenericFormWithPaste = ({
                     {errorWhilePaste && (
                         <p className="text-red-500 text-sm italic mb-2">{errorWhilePaste}</p>
                     )}
-                    <button
-                        type="button"
+                    <Button
+                        variant="outline"
                         onClick={() => setIsPayloadEditorActive(true)}
                         className="p-2 border rounded-full hover:bg-gray-100 mb-3 flex items-center gap-2"
                         title="Paste on_search payload to auto-populate fields"
                     >
                         <FaRegPaste size={14} />
                         <span className="text-sm">Paste on_search</span>
-                    </button>
+                    </Button>
                 </>
             )}
             <form onSubmit={handleSubmit(handleSubmitForm)} className={className}>
                 {renderChildren()}
-                <LoadingButton type="submit" buttonText="Submit" isLoading={isLoading} />
+                <Button type="submit" variant="default" isLoading={isLoading}>
+                    Submit
+                </Button>
             </form>
         </div>
     );

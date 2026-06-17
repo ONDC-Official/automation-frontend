@@ -84,7 +84,7 @@ export function ExecutionResults({ results }: ExecutionResultsProps) {
 
     if (results.length === 0) {
         return (
-            <div className="bg-gray-900 rounded-lg p-8 text-center border border-gray-800">
+            <div className="bg-gray-900 p-8 text-center border border-gray-800 rounded-lg mt-2">
                 <IoTerminal className="text-gray-600 text-4xl mx-auto mb-3" />
                 <p className="text-gray-400 text-sm">No execution results yet</p>
             </div>
@@ -92,7 +92,7 @@ export function ExecutionResults({ results }: ExecutionResultsProps) {
     }
 
     return (
-        <div className="space-y-3 overflow-auto h-full">
+        <div className="space-y-3 overflow-auto h-full border rounded-lg mt-2">
             {results.map((result, index) => {
                 const isExpanded = expandedIndex === index;
                 const sections = expandedSections[index] || {};

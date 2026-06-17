@@ -1,7 +1,7 @@
 import { FC, useState, useCallback, useEffect, useContext } from "react";
 import * as notesApi from "@services/developerGuideNotesApi";
 import type { NoteResponse } from "@services/developerGuideNotesApi";
-import Loader from "@/components/ui/mini-components/loader";
+import { Spinner } from "@/components/Shadcn/Spinner/spinner";
 import { UserContext } from "@context/userContext";
 
 export interface Note {
@@ -260,8 +260,8 @@ const NotesPanel: FC<NotesPanelProps> = ({ selectedPath, actionApi, useCaseId, f
                 )}
 
                 {loading ? (
-                    <div className="h-full shrink-0 mb-3 px-3 py-2 rounded-xl bg-slate-100 text-slate-600 text-sm">
-                        <Loader />
+                    <div className="mb-3 flex h-full shrink-0 items-center justify-center rounded-xl bg-slate-100 px-3 py-2 text-sm text-slate-600">
+                        <Spinner className="size-6 text-brand-normal" />
                     </div>
                 ) : (
                     <>

@@ -12,7 +12,7 @@ import {
 } from "react-icons/fi";
 import FlowsAccordion from "./FlowsAccordion";
 import FlowInformation from "./FlowInformation";
-import Loader from "@components/ui/mini-components/loader";
+import { Spinner } from "@/components/Shadcn/Spinner/spinner";
 import { fetchBuilds, fetchSpec, fetchDocs, fetchChangelog } from "@services/developerGuideSpecApi";
 import { getActionId, getUsecaseLabelFromBuilds } from "./utils";
 import { ROUTES } from "@constants/routes";
@@ -271,7 +271,7 @@ const DeveloperGuideFlowPage: FC = () => {
                     inShell ? "min-h-[40vh]" : "min-h-screen"
                 }`}
             >
-                <Loader />
+                <Spinner className="size-8 text-brand-normal" />
             </div>
         );
     }
@@ -490,7 +490,7 @@ const DeveloperGuideFlowPage: FC = () => {
                         {activeView === "changelog" &&
                             (changelogLoading ? (
                                 <div className="flex items-center justify-center py-16">
-                                    <Loader />
+                                    <Spinner className="size-8 text-brand-normal" />
                                 </div>
                             ) : (
                                 <ChangelogView changelogs={lazyChangelog || []} />

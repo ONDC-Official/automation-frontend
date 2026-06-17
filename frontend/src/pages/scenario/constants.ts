@@ -1,4 +1,4 @@
-import type { IAccordionStep } from "@/components/Accordion/types";
+import type { IAccordionStep } from "@/components/Shadcn/Accordion/types";
 import { INewSessionFormValues } from "@/pages/scenario/types";
 
 const workbenchBaseUrl = import.meta.env.VITE_BASE_URL;

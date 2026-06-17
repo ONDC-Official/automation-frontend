@@ -1,15 +1,18 @@
-import FullPageLoader from "../mini-components/fullpage-loader";
+//TODO: Remove this component when seller onboarding revamp and refactor is complete
+import { Button } from "@/components/Shadcn/Button/button";
+import { Spinner } from "@/components/Shadcn/Spinner/spinner";
 
-const baseButtonClass = `
-  flex items-center justify-center px-4 py-2 text-white font-semibold 
-  transition-all duration-300 rounded focus:outline-hidden focus:ring-2 focus:ring-opacity-50
-  font-bold
-`.trim();
+interface ILoadingButtonProps {
+    type?: "submit" | "reset" | "button";
+    buttonText: string;
+    disabled?: boolean;
+    isLoading?: boolean;
+    onClick?: () => void;
+    loadingText?: string;
+}
 
-const defaultButtonClass = `
-  w-auto bg-sky-600 hover:bg-sky-700
-  focus:ring-blue-300
-`.trim();
+const buttonClass =
+    "flex items-center justify-center gap-2 px-4 py-2 font-bold text-white rounded transition-all duration-300 w-auto bg-sky-600 hover:bg-sky-700 focus:outline-hidden focus:ring-2 focus:ring-blue-300 focus:ring-opacity-50";
 
 const LoadingButton = ({
     type = "submit",
@@ -18,35 +21,23 @@ const LoadingButton = ({
     isLoading = false,
     onClick,
     loadingText = "Loading...",
-}: {
-    type?: "submit" | "reset" | "button";
-    buttonText: string;
-    disabled?: boolean;
-    isLoading?: boolean;
-    onClick?: () => void;
-    loadingText?: string;
-}) => {
-    if (onClick) {
-        return (
-            <button
-                type={type}
-                disabled={disabled || isLoading}
-                className={buttonClass}
-                onClick={onClick}
-            >
-                {isLoading ? loadingText : buttonText}
-                {isLoading && <FullPageLoader />}
-            </button>
-        );
-    }
+}: ILoadingButtonProps) => (
+    <Button
+        type={type}
+        disabled={disabled || isLoading}
+        className={buttonClass}
+        onClick={onClick}
+    >
+        {isLoading ? (
+            <>
+                <Spinner className="size-4" />
+                {loadingText}
+            </>
+        ) : (
+            buttonText
+        )}
+    </Button>
+);
 
-    return (
-        <button type={type} disabled={disabled || isLoading} className={buttonClass}>
-            {buttonText}
-            {isLoading && <FullPageLoader />}
-        </button>
-    );
-};
-export const buttonClass = `${baseButtonClass} ${defaultButtonClass}`;
-
+export { buttonClass };
 export default LoadingButton;

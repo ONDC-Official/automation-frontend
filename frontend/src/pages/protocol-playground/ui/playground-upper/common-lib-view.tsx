@@ -1,8 +1,8 @@
 import { useContext, useEffect, useRef } from "react";
-import { PlaygroundContext } from "../../context/playground-context";
-import { Editor, Monaco } from "@monaco-editor/react";
-import { DarkSkyBlueTheme } from "../editor-themes";
-import { decodeBase64 } from "../../utils/base64";
+import { PlaygroundContext } from "@pages/protocol-playground/context/playground-context";
+import { decodeBase64 } from "@pages/protocol-playground/utils/base64";
+import { CodeEditor } from "@/components/PayloadEditor";
+import { PLAYGROUND_EDITOR_OPTIONS } from "@pages/protocol-playground/constants";
 
 export default function CommonLibView() {
     const playgroundContext = useContext(PlaygroundContext);
@@ -35,42 +35,32 @@ export default function CommonLibView() {
         }, 150);
     };
 
-    useEffect(() => {
-        return () => {
+    useEffect(
+        () => () => {
             if (pendingRef.current.timer !== null) {
                 window.clearTimeout(pendingRef.current.timer);
                 pendingRef.current.flush?.();
                 pendingRef.current.timer = null;
                 pendingRef.current.flush = null;
             }
-        };
-    }, []);
-    const handleEditorWillMount = (monaco: Monaco) => {
-        monaco.editor.defineTheme("dark-skyblue", DarkSkyBlueTheme);
-    };
+        },
+        []
+    );
 
     return (
-        <>
-            <div className="flex-1 p-2 overflow-hidden h-full">
-                <Editor
-                    key={`common-helper`}
-                    theme="dark-skyblue"
-                    beforeMount={handleEditorWillMount}
-                    height="100%"
-                    language={"javascript"}
-                    value={getEditorContent()}
-                    onChange={handleEditorChange}
-                    options={{
-                        padding: { top: 16, bottom: 16 },
-                        fontSize: 16,
-                        lineNumbers: "on",
-                        scrollBeyondLastLine: true,
-                        automaticLayout: true,
-                        formatOnPaste: true,
-                        formatOnType: true,
-                    }}
-                />
-            </div>
-        </>
+        <div className="flex h-full min-h-0 flex-1 flex-col self-stretch overflow-hidden border rounded-lg mt-2">
+            <CodeEditor
+                editorKey="common-helper"
+                language="javascript"
+                defaultValue={getEditorContent()}
+                onChange={handleEditorChange}
+                className="h-full w-full"
+                options={{
+                    ...PLAYGROUND_EDITOR_OPTIONS,
+                    formatOnPaste: true,
+                    formatOnType: true,
+                }}
+            />
+        </div>
     );
 }

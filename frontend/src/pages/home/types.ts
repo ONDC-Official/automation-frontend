@@ -22,19 +22,6 @@ export interface IPathCard {
     links: IPathLink[];
 }
 
-export interface IUsageStat {
-    value: string;
-    title: string;
-    subtitle: string;
-}
-
-export interface IUsageSectionProps {
-    eyebrow: string;
-    title: string;
-    description: string;
-    stats: IUsageStat[];
-}
-
 export interface ISupportCard {
     title: string;
     description: string;

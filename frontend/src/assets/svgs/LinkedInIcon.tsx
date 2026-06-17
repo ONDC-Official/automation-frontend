@@ -1,7 +1,7 @@
 import { SVGProps } from "react";
 
-const LinkedInIcon = (props: SVGProps<SVGSVGElement>) => (
-    <svg xmlns="http://www.w3.org/2000/svg" width={24} height={24} fill="none" {...props}>
+const LinkedInIcon = (rest: SVGProps<SVGSVGElement>) => (
+    <svg xmlns="http://www.w3.org/2000/svg" width={24} height={24} fill="none" {...rest}>
         <g clipPath="url(#a)">
             <path
                 fill="#B2B7BF"

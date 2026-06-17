@@ -1,14 +1,14 @@
 import { useContext } from "react";
 import Tippy from "@tippyjs/react";
 import { MockPlaygroundConfigType, TransactionHistoryItem } from "@ondc/automation-mock-runner";
-import { FaExchangeAlt, FaLongArrowAltRight } from "react-icons/fa";
-import { IoMdAdd } from "react-icons/io";
-import { FiCheck } from "react-icons/fi";
+import { ArrowsRightLeftIcon, ArrowRightIcon, CheckIcon } from "@heroicons/react/24/solid";
+import { cn } from "@/lib/utils";
 
 import { PlaygroundContext } from "@pages/protocol-playground/context/playground-context";
 import ActionDetailsCard from "@pages/protocol-playground/ui/playground-upper/action-details-card";
 
 import "tippy.js/animations/shift-away-subtle.css";
+import { Button } from "@/components/Shadcn/Button/button";
 
 interface ActionTimelineProps {
     steps: MockPlaygroundConfigType["steps"];
@@ -36,7 +36,6 @@ export const ActionTimeline = ({
     const playgroundContext = useContext(PlaygroundContext);
 
     const actionData = steps.map((step, index) => {
-        // Extra steps record one history entry per run, in execution order.
         const runs = transactionHistory.filter((th) => th.action_id === step.action_id);
         const runCount = runs.length;
         return {
@@ -50,149 +49,135 @@ export const ActionTimeline = ({
     });
 
     return (
-        <div className="h-16 flex items-center px-6 bg-linear-to-b from-gray-50 to-white border-b border-gray-200 overflow-x-auto">
-            <div className="flex items-center gap-0 min-w-max">
-                {actionData.map((action, index) => {
-                    const isActive = activeApi === action.id;
-                    const isCompleted = action.completed;
+        <div className="flex h-16 shrink-0 items-center overflow-x-auto border border-border-default rounded-xl bg-surface-elevated px-6 dark:border-border-default">
+            <div className="flex min-w-max items-center gap-0">
+                {actionData.length === 0 ? (
+                    <button
+                        type="button"
+                        onClick={onAddAction}
+                        className="text-body-2 font-medium text-text-secondary transition-colors hover:text-brand-normal"
+                    >
+                        No steps yet — use &quot;Add First Action&quot; in the toolbar
+                    </button>
+                ) : (
+                    actionData.map((action, index) => {
+                        const isActive = activeApi === action.id;
+                        const isCompleted = action.completed;
 
-                    let nextAction: (typeof actionData)[0] | null = null;
-                    if (index + 1 < actionData.length) {
-                        nextAction = actionData[index + 1];
-                    }
-                    const isPair = nextAction && nextAction.responseFor === action.id;
+                        let nextAction: (typeof actionData)[0] | null = null;
+                        if (index + 1 < actionData.length) {
+                            nextAction = actionData[index + 1];
+                        }
+                        const isPair = nextAction && nextAction.responseFor === action.id;
 
-                    return (
-                        <div key={action.id} className="flex items-center">
-                            {/* Action Step with Hover Card */}
-                            <Tippy
-                                content={
-                                    <ActionDetailsCard
-                                        action={action}
-                                        onAddAfter={onAddAfter}
-                                        onAddBefore={onAddBefore}
-                                        onEditAction={onEditAction}
-                                        onDeleteAction={onDeleteAction}
-                                        playgroundContext={playgroundContext}
-                                    />
-                                }
-                                interactive={true}
-                                animation="shift-away-subtle"
-                                placement="bottom"
-                                arrow={false}
-                                offset={[0, 12]}
-                                maxWidth="none"
-                                appendTo={() =>
-                                    (document.fullscreenElement as Element) ?? document.body
-                                }
-                            >
-                                <button
-                                    onClick={() => onApiSelect(action.id)}
-                                    className={`
-										group relative flex items-center gap-3 px-2 py-2 transition-all duration-200
-										${isActive ? "scale-105" : "hover:scale-102"}
-									`}
+                        return (
+                            <div key={action.id} className="flex items-center">
+                                <Tippy
+                                    content={
+                                        <ActionDetailsCard
+                                            action={action}
+                                            onAddAfter={onAddAfter}
+                                            onAddBefore={onAddBefore}
+                                            onEditAction={onEditAction}
+                                            onDeleteAction={onDeleteAction}
+                                            playgroundContext={playgroundContext}
+                                        />
+                                    }
+                                    interactive={true}
+                                    animation="shift-away-subtle"
+                                    placement="bottom"
+                                    arrow={false}
+                                    offset={[0, 12]}
+                                    maxWidth="none"
+                                    appendTo={() =>
+                                        (document.fullscreenElement as Element) ?? document.body
+                                    }
                                 >
-                                    {/* Step Circle */}
-                                    <div className="relative shrink-0">
-                                        <div
-                                            className={`
-												w-8 h-8 rounded-full flex items-center justify-center
-												font-semibold text-sm transition-all duration-200
-												${
+                                    <Button
+                                        variant="ghost"
+                                        size="lg"
+                                        onClick={() => onApiSelect(action.id)}
+                                        className={cn(
+                                            "group relative flex items-center gap-3 px-2 py-2 transition-all duration-200",
+                                            isActive ? "scale-105" : "hover:scale-[1.02]"
+                                        )}
+                                    >
+                                        <div className="relative shrink-0">
+                                            <div
+                                                className={cn(
+                                                    "flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold transition-all duration-200",
                                                     isCompleted
-                                                        ? "bg-blue-500 text-white ring-4 ring-blue-100"
+                                                        ? "bg-brand-normal text-n-0 ring-4 ring-brand-light dark:ring-brand-dark/30"
                                                         : isActive
-                                                          ? "bg-sky-500 text-white ring-4 ring-sky-100"
-                                                          : "bg-white text-gray-600 border-2 border-gray-300 group-hover:border-sky-400 group-hover:text-sky-600"
-                                                }
-											`}
-                                        >
-                                            {isCompleted ? (
-                                                <FiCheck className="w-4 h-4 stroke-3" />
-                                            ) : (
-                                                action.stepNumber
-                                            )}
+                                                          ? "bg-brand-normal text-n-0 ring-4 ring-brand-light-active dark:ring-brand-dark/30"
+                                                          : "border-2 border-border-default bg-surface-page text-text-secondary group-hover:border-brand-normal group-hover:text-brand-normal"
+                                                )}
+                                            >
+                                                {isCompleted ? (
+                                                    <CheckIcon className="size-4" />
+                                                ) : (
+                                                    action.stepNumber
+                                                )}
+                                            </div>
+
+                                            {isActive && !isCompleted ? (
+                                                <span className="absolute inset-0 animate-ping rounded-full bg-brand-normal opacity-20" />
+                                            ) : null}
+
+                                            {action.runCount > 1 ? (
+                                                <span className="absolute -top-1.5 -right-1.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-alert-500 px-1 text-[10px] leading-none font-bold text-n-0 ring-2 ring-surface-page">
+                                                    ×{action.runCount}
+                                                </span>
+                                            ) : null}
                                         </div>
 
-                                        {/* Active Pulse Effect */}
-                                        {isActive && !isCompleted && (
-                                            <span className="absolute inset-0 rounded-full bg-sky-400 animate-ping opacity-20"></span>
-                                        )}
-
-                                        {/* Run-count badge (extra steps run multiple times) */}
-                                        {action.runCount > 1 && (
-                                            <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 flex items-center justify-center rounded-full bg-amber-500 text-white text-[10px] font-bold leading-none ring-2 ring-white">
-                                                ×{action.runCount}
-                                            </span>
-                                        )}
-                                    </div>
-
-                                    {/* Action Label */}
-                                    <div className="flex flex-col items-start">
-                                        <span
-                                            className={`
-												text-sm font-semibold transition-colors
-												${
+                                        <div className="flex flex-col items-start">
+                                            <span
+                                                className={cn(
+                                                    "text-sm font-semibold transition-colors",
                                                     isCompleted
-                                                        ? "text-sky-950"
+                                                        ? "text-text-primary"
                                                         : isActive
-                                                          ? "text-sky-900"
-                                                          : "text-gray-700 group-hover:text-gray-900"
-                                                }
-											`}
-                                        >
-                                            {action.id}
-                                        </span>
+                                                          ? "text-brand-normal"
+                                                          : "text-text-secondary group-hover:text-text-primary"
+                                                )}
+                                            >
+                                                {action.id}
+                                            </span>
+                                        </div>
+
+                                        {isActive ? (
+                                            <div className="pointer-events-none absolute inset-0 rounded-lg border-2 border-brand-normal" />
+                                        ) : null}
+                                    </Button>
+                                </Tippy>
+
+                                {index !== actionData.length - 1 ? (
+                                    <div className="flex w-10 items-center justify-center">
+                                        {isPair ? (
+                                            <ArrowsRightLeftIcon
+                                                className={cn(
+                                                    "size-[18px] transition-all duration-300",
+                                                    action.completed
+                                                        ? "text-brand-normal"
+                                                        : "text-n-60 dark:text-text-secondary"
+                                                )}
+                                            />
+                                        ) : (
+                                            <ArrowRightIcon
+                                                className={cn(
+                                                    "size-[18px] transition-all duration-300",
+                                                    action.completed
+                                                        ? "text-brand-normal"
+                                                        : "text-n-60 dark:text-text-secondary"
+                                                )}
+                                            />
+                                        )}
                                     </div>
-
-                                    {/* Active Border Indicator */}
-                                    {isActive && (
-                                        <div className="absolute inset-0 rounded-lg border-2 border-sky-400 pointer-events-none"></div>
-                                    )}
-                                </button>
-                            </Tippy>
-
-                            {index !== actionData.length - 1 && (
-                                <div className="flex items-center justify-center w-10">
-                                    {isPair ? (
-                                        <FaExchangeAlt
-                                            size={18}
-                                            className={`transition-all duration-300 ${
-                                                action.completed ? "text-blue-500" : "text-gray-400"
-                                            }`}
-                                        />
-                                    ) : (
-                                        <FaLongArrowAltRight
-                                            size={18}
-                                            className={`transition-all duration-300 ${
-                                                action.completed ? "text-blue-500" : "text-gray-400"
-                                            }`}
-                                        />
-                                    )}
-                                </div>
-                            )}
-                        </div>
-                    );
-                })}
-
-                {/* Add Action Button */}
-                {actionData.length === 0 && (
-                    <button
-                        onClick={onAddAction}
-                        className="
-							flex items-center gap-2 px-5 py-2.5 
-							bg-linear-to-r from-sky-500 to-sky-600 text-white rounded-lg 
-							hover:from-sky-600 hover:to-sky-700 active:scale-95
-							transition-all duration-200 
-							font-semibold text-sm
-							shadow-md hover:shadow-lg
-							backdrop-blur-xs
-						"
-                    >
-                        <IoMdAdd size={18} />
-                        <span>Add First Action</span>
-                    </button>
+                                ) : null}
+                            </div>
+                        );
+                    })
                 )}
             </div>
         </div>
