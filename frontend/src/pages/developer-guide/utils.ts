@@ -1,4 +1,4 @@
-import MockRunner from "@ondc/automation-mock-runner";
+import { MockRunner } from "@ondc/automation-mock-runner";
 import type { FlowStep, BuildEntry, DocMeta } from "./types";
 
 /**

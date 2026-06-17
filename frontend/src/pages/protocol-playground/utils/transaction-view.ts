@@ -1,4 +1,4 @@
-import MockRunner, { MockPlaygroundConfigType } from "@ondc/automation-mock-runner";
+import { MockRunner, MockPlaygroundConfigType } from "@ondc/automation-mock-runner";
 import { getGroupSteps } from "./step-group";
 
 type PlaygroundActionStep = MockPlaygroundConfigType["steps"][number];
