@@ -115,6 +115,20 @@ export default function FIS13ItemSelection({
         if (selectedAddons.length > 0) {
             formData.addon_ids = selectedAddons.map((s) => s.id).join(",");
             formData.addon_quantities = selectedAddons.map((s) => s.quantity).join(",");
+
+            // Forward the full add-on details (incl. price) from the pasted catalog so the
+            // generator computes the correct price instead of defaulting to 0. This is the
+            // generator's preferred source (`selected_add_on_details`).
+            const addonDetails = selectedAddons
+                .map((s) => availableAddons.find((a) => a.id === s.id))
+                .filter((a): a is ExtractedAddon => Boolean(a))
+                .map((a) => ({
+                    id: a.id,
+                    descriptor: a.descriptor,
+                    price: a.price,
+                    quantity: a.quantity,
+                }));
+            formData.selected_add_on_details = JSON.stringify(addonDetails);
         }
 
         await submitEvent({
