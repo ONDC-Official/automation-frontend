@@ -1,7 +1,7 @@
 import { useContext } from "react";
 import { PlaygroundContext } from "../context/playground-context";
 import { toast } from "react-toastify";
-import MockRunner from "@ondc/automation-mock-runner";
+import { MockRunner } from "@ondc/automation-mock-runner";
 import { getGroupSteps, setGroupSteps } from "../utils/step-group";
 import { validateConfigGroups } from "../utils/step-group-rules";
 // import { getDefaultStep } from "../mock-engine";

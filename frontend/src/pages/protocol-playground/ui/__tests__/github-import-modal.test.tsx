@@ -3,7 +3,7 @@ import { render, screen, waitFor, fireEvent } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { GitHubImportModal } from "../github-import-modal";
 import * as fetchGithubModule from "@pages/protocol-playground/utils/fetch-github";
-import MockRunner from "@ondc/automation-mock-runner";
+import { MockRunner } from "@ondc/automation-mock-runner";
 import { parse as yamlParse } from "yaml";
 
 // ─── module mocks ─────────────────────────────────────────────────────────────

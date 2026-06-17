@@ -12,7 +12,7 @@ import { ScreenLoader } from "@/components/Shadcn/ScreenLoader";
 import { ActionTimeline } from "@pages/protocol-playground/ui/playground-upper/merged-sequcence";
 import TraceView from "@pages/protocol-playground/ui/extras/trace-view";
 import ViewOnlyPlaygroundPage from "@pages/protocol-playground/view-only-page";
-import MockRunner, { MockPlaygroundConfigType } from "@ondc/automation-mock-runner";
+import { MockRunner, MockPlaygroundConfigType } from "@ondc/automation-mock-runner";
 import { toast } from "react-toastify";
 import { RawConfigEditorModal } from "@pages/protocol-playground/ui/raw-config-editor-modal";
 import { PlaygroundHelpModal } from "@pages/protocol-playground/ui/playground-help-modal";

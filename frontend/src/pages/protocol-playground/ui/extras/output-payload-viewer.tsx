@@ -3,7 +3,8 @@ import JsonView from "@uiw/react-json-view";
 import { toast } from "react-toastify";
 import Markdown from "react-markdown";
 import axios from "axios";
-import MockRunner, {
+import {
+    MockRunner,
     ExecutionResult,
     MockPlaygroundConfigType,
 } from "@ondc/automation-mock-runner";

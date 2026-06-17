@@ -1,4 +1,5 @@
-import MockRunner, {
+import {
+    MockRunner,
     ExecutionResult,
     MockPlaygroundConfigType,
     PlaygroundActionStep,
@@ -76,9 +77,7 @@ export function buildRuntimeContext(snapshot: RuntimeSnapshot): string {
 
     const meta = config.meta;
     const stepsSummary = config.steps.map(summarizeStep).join("\n");
-    const activeStep = activeApi
-        ? config.steps.find((s) => s.action_id === activeApi)
-        : undefined;
+    const activeStep = activeApi ? config.steps.find((s) => s.action_id === activeApi) : undefined;
 
     const helperLib = safeDecode(config.helperLib);
     const recentTerminal = terminalTail.slice(-CONTEXT_TRUNCATION.terminalTailCount);
