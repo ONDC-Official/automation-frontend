@@ -6,6 +6,8 @@ import { FormFieldConfigType } from "@components/ui/forms/config-form/config-for
 interface FormLaunchPopupProps {
     formConfig: FormFieldConfigType;
     referenceData?: Record<string, unknown>;
+    /** BPP session id — used to clear any stale completion before the form runs. */
+    sessionId: string;
     /** Called after the form tab is opened so the parent can dismiss this popup. */
     onLaunched: () => void;
 }
@@ -23,6 +25,7 @@ interface FormLaunchPopupProps {
 export default function FormLaunchPopup({
     formConfig,
     referenceData,
+    sessionId,
     onLaunched,
 }: FormLaunchPopupProps) {
     // Resolve the form URL from reference data (same mechanism as DYNAMIC_FORM).
@@ -63,7 +66,13 @@ export default function FormLaunchPopup({
             console.warn("⚠️ [FormLaunch] Could not save redirection URL (continuing):", saveError);
         });
 
-        // 3. Dismiss this popup.
+        // 3. Clear any stale completion for this session before the form runs, so
+        //    polling only reacts to THIS form's callback. Non-fatal.
+        FormService.resetCompletion(sessionId).catch((resetError) => {
+            console.warn("⚠️ [FormLaunch] Could not reset completion (continuing):", resetError);
+        });
+
+        // 4. Dismiss this popup.
         onLaunched();
     };
 
