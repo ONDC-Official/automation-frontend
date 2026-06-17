@@ -19,6 +19,7 @@ const Wrapper = () => {
 
     const [user, setUser] = useState<IUser | undefined>(undefined);
     const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
+    const [isAuthLoading, setIsAuthLoading] = useState<boolean>(true);
     const [subscriberData, setSubscriberData] = useState<SubscriberData>({
         keys: [],
         mappings: [],
@@ -34,6 +35,23 @@ const Wrapper = () => {
         trackPageView(location.pathname + location.search);
     }, [location.pathname, location.search]);
 
+    const refreshUser = useCallback(async (): Promise<void> => {
+        setIsAuthLoading(true);
+
+        try {
+            const user = await AuthService.refreshUser();
+            if (user) {
+                setUser(user);
+                setIsLoggedIn(true);
+            } else {
+                setUser(undefined);
+                setIsLoggedIn(false);
+            }
+        } finally {
+            setIsAuthLoading(false);
+        }
+    }, []);
+
     // Exchange OAuth code from query params for auth token
     useEffect(() => {
         const queryParams = new URLSearchParams(location.search);
@@ -43,8 +61,6 @@ const Wrapper = () => {
             return;
         }
 
-        // AuthService.exchangeCodeAndPersistToken(codeFromQuery);
-
         const exchangeCodeAndPersistToken = async () => {
             const token = await AuthService.exchangeCodeForToken(codeFromQuery);
 
@@ -53,28 +69,15 @@ const Wrapper = () => {
             }
 
             authTokenManager.set(token);
-
             await refreshUser();
 
             const nextParams = new URLSearchParams(location.search);
             nextParams.delete("code");
-
             navigate(ROUTES.HOME, { replace: true });
         };
 
         exchangeCodeAndPersistToken();
-    }, [location.pathname, location.search]);
-
-    const refreshUser = useCallback(async (): Promise<void> => {
-        const user = await AuthService.refreshUser();
-        if (user) {
-            setUser(user);
-            setIsLoggedIn(true);
-        } else {
-            setUser(undefined);
-            setIsLoggedIn(false);
-        }
-    }, []);
+    }, [location.search, navigate, refreshUser]);
 
     useEffect(() => {
         refreshUser();
@@ -84,6 +87,7 @@ const Wrapper = () => {
         <UserContext.Provider
             value={{
                 isLoggedIn: isLoggedIn,
+                isAuthLoading: isAuthLoading,
                 userDetails: user,
                 refreshUser: refreshUser,
                 subscriberData: subscriberData,

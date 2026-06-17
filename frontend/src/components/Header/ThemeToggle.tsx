@@ -1,10 +1,11 @@
-import { MoonIcon, SunIcon } from "@heroicons/react/20/solid";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/shadcn/button";
+import { Button } from "@/components/Shadcn/Button/button";
 import { useTheme } from "@/context/theme/themeContext";
+import { MoonIcon, SunIcon } from "@heroicons/react/20/solid";
 
 export const ThemeToggle = () => {
     const { isDark, toggleTheme } = useTheme();
+    const Icon = isDark ? SunIcon : MoonIcon;
 
     return (
         <Button
@@ -14,14 +15,10 @@ export const ThemeToggle = () => {
             onClick={toggleTheme}
             className={cn(
                 "rounded-full border p-0 shadow-none hover:opacity-80",
-                isDark ? "border-border-default bg-surface-elevated" : "border-n-30 bg-n-0"
+                "dark:border-border-default dark:bg-surface-elevated"
             )}
         >
-            {isDark ? (
-                <SunIcon className="size-4 text-brand-normal" />
-            ) : (
-                <MoonIcon className="size-4 text-brand-normal" />
-            )}
+            <Icon className="size-4 text-brand-normal" />
         </Button>
     );
 };

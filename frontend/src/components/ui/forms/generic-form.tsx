@@ -1,15 +1,15 @@
-import React, { useEffect, useRef, useState } from "react";
+import { Children, cloneElement, useEffect, useRef, useState, type ReactElement } from "react";
 import { DefaultValues, FieldValues, useForm } from "react-hook-form";
-import LoadingButton from "./loading-button";
+import { Button } from "@/components/Shadcn/Button/button";
 
-type GenericFormProps<T extends FieldValues> = {
+interface IGenericFormProps<T extends FieldValues> {
     defaultValues?: DefaultValues<T>;
     children: React.ReactNode;
     onSubmit: (data: T) => Promise<void>;
     className?: string;
     triggerSubmit?: boolean;
     submitAlign?: "left" | "right";
-};
+}
 
 const GenericForm = <T extends FieldValues = FieldValues>({
     defaultValues,
@@ -18,7 +18,7 @@ const GenericForm = <T extends FieldValues = FieldValues>({
     className,
     triggerSubmit = false,
     submitAlign = "left",
-}: GenericFormProps<T>) => {
+}: IGenericFormProps<T>) => {
     const {
         register,
         handleSubmit,
@@ -26,12 +26,10 @@ const GenericForm = <T extends FieldValues = FieldValues>({
         setValue,
     } = useForm({ defaultValues });
     const isRequestTriggered = useRef(false);
-
     const [isLoading, setIsLoading] = useState(false);
 
     const handleSubmitForm = async (data: T) => {
         setIsLoading(true);
-
         try {
             await onSubmit(data);
         } catch (error: unknown) {
@@ -41,27 +39,28 @@ const GenericForm = <T extends FieldValues = FieldValues>({
         }
     };
 
+    const submit = handleSubmit(handleSubmitForm);
+
     useEffect(() => {
         if (triggerSubmit && !isRequestTriggered.current) {
             isRequestTriggered.current = true;
-            handleSubmit(handleSubmitForm)();
+            submit();
         }
-    }, []);
+    }, [triggerSubmit, submit]);
 
     return (
-        <form
-            onSubmit={handleSubmit(handleSubmitForm)} // Use handleSubmit to manage form submission
-            className={className}
-        >
-            {React.Children.map(children, (child) =>
-                React.cloneElement(child as React.ReactElement<Record<string, unknown>>, {
+        <form onSubmit={submit} className={className}>
+            {Children.map(children, (child) =>
+                cloneElement(child as ReactElement<Record<string, unknown>>, {
                     register,
                     errors,
                     setValue,
                 })
             )}
             <div className={submitAlign === "right" ? "flex justify-end" : undefined}>
-                <LoadingButton type="submit" buttonText="Submit" isLoading={isLoading} />
+                <Button type="submit" isLoading={isLoading} variant="default">
+                    Submit
+                </Button>
             </div>
         </form>
     );

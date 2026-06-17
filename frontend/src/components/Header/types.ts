@@ -20,3 +20,9 @@ export interface INavLink {
     subMenu?: { label: string; href: string }[];
     analytics?: IGAEvent;
 }
+
+export interface INavigationMenuNavItem {
+    link: INavLink;
+    inDrawer?: boolean;
+    onNavClick: (link: INavLink) => void;
+}

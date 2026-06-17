@@ -1,72 +1,65 @@
 /** Payload Editor Component **/
-import { FC } from "react";
-import Editor from "@monaco-editor/react";
-import { PayloadEditorProps } from "./types";
-import { EDITOR_CONFIG } from "./constants";
+import { cn } from "@/lib/utils";
+import { IPayloadEditorProps } from "@/components/PayloadEditor/types";
+import { CodeEditor } from "@/components/PayloadEditor/CodeEditor";
+import ValidationErrorsPanel from "@/components/PayloadEditor/ValidationErrorsPanel";
 
-const PayloadEditor: FC<PayloadEditorProps> = ({
+const PayloadEditor = ({
     payload,
     onPayloadChange,
     onEditorMount,
-    footer,
-    isFooterExpanded = false,
-}) => (
-    <div
-        className={`flex-1 min-h-0 flex flex-col overflow-hidden ${
-            isFooterExpanded ? "bg-red-50" : "bg-n-0"
-        }`}
-    >
-        <div
-            className={`relative overflow-hidden transition-all duration-300 ease-out ${
-                isFooterExpanded ? "bg-red-50" : "bg-n-0"
-            } ${
-                isFooterExpanded
-                    ? "max-h-0 min-h-0 flex-none opacity-0 pointer-events-none"
-                    : "flex-1 min-h-0 h-full"
-            }`}
-        >
-            <Editor
-                theme={EDITOR_CONFIG.theme}
-                height="100%"
-                defaultLanguage={EDITOR_CONFIG.language}
-                value={payload}
-                onChange={onPayloadChange}
-                onMount={onEditorMount}
-                options={{
-                    minimap: { enabled: false },
-                    padding: EDITOR_CONFIG.padding,
-                    fontSize: EDITOR_CONFIG.fontSize,
-                    fontFamily: EDITOR_CONFIG.fontFamily,
-                    lineNumbers: "on",
-                    scrollBeyondLastLine: false,
-                    automaticLayout: true,
-                    wordWrap: "on",
-                    formatOnPaste: true,
-                    formatOnType: true,
-                    renderValidationDecorations: "on",
-                    scrollbar: {
-                        vertical: "visible",
-                        horizontal: "visible",
-                        useShadows: false,
-                        verticalHasArrows: false,
-                        horizontalHasArrows: false,
-                    },
-                }}
-            />
-        </div>
+    validationErrors,
+    isValidationVisible,
+    isSuccessResponse,
+    isErrorsExpanded,
+    onExpandValidationErrors,
+    onCollapseValidationErrors,
+}: IPayloadEditorProps) => {
+    const isValidationPanelExpanded = isErrorsExpanded && isValidationVisible && !isSuccessResponse;
 
-        {footer && (
+    return (
+        <div
+            className={cn(
+                "flex min-h-0 flex-1 flex-col overflow-hidden",
+                isValidationPanelExpanded && "bg-red-50 dark:bg-error-500/10"
+            )}
+        >
             <div
-                className={
-                    isFooterExpanded
-                        ? "flex-1 min-h-0 flex flex-col overflow-hidden h-full bg-red-50"
-                        : "shrink-0"
-                }
+                className={cn(
+                    "relative flex flex-col overflow-hidden transition-all duration-300 ease-out",
+                    isValidationPanelExpanded
+                        ? "pointer-events-none max-h-0 min-h-0 flex-none opacity-0"
+                        : "h-full min-h-0 flex-1"
+                )}
             >
-                {footer}
+                <CodeEditor
+                    value={payload}
+                    onChange={onPayloadChange}
+                    onMount={onEditorMount}
+                    className="h-full w-full"
+                    options={{ renderValidationDecorations: "on" }}
+                />
             </div>
-        )}
-    </div>
-);
+
+            <div
+                className={cn(
+                    isValidationPanelExpanded
+                        ? "flex h-full min-h-0 flex-1 flex-col overflow-hidden bg-red-50 dark:bg-error-500/10"
+                        : "shrink-0"
+                )}
+            >
+                <ValidationErrorsPanel
+                    isVisible={isValidationVisible}
+                    isSuccess={isSuccessResponse}
+                    errors={validationErrors}
+                    isExpanded={isErrorsExpanded}
+                    onExpand={onExpandValidationErrors}
+                    onCollapse={onCollapseValidationErrors}
+                />
+            </div>
+        </div>
+    );
+};
 
 export default PayloadEditor;
+export { CodeEditor } from "@/components/PayloadEditor/CodeEditor";

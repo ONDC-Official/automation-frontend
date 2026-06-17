@@ -1,15 +1,13 @@
 import { trackEvent } from "@utils/analytics";
+import { ROUTES } from "@constants/routes";
 
 export function openSessionInNewTab(sessionId: string, subscriberUrl: string, role: string) {
-    const currentUrl = window.location.origin;
-    const newTabUrl = `${currentUrl}/flow-testing?sessionId=${sessionId}&subscriberUrl=${encodeURIComponent(subscriberUrl)}&role=${role}`;
-    window.open(newTabUrl, "_blank");
-}
-
-export function truncateId(id: string, len = 28): string {
-    if (!id) return "—";
-    if (id.length <= len) return id;
-    return `${id.slice(0, len / 2)}…${id.slice(-len / 2)}`;
+    const params = new URLSearchParams({
+        sessionId,
+        subscriberUrl,
+        role,
+    });
+    window.open(`${window.location.origin}${ROUTES.FLOW_TESTING}?${params}`, "_blank");
 }
 
 export function trackSchemaValidationForm(action: string, label: string) {

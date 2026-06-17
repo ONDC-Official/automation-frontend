@@ -2,6 +2,7 @@ import { ReactNode } from "react";
 import {
     Control,
     FieldErrors,
+    FieldValues,
     UseFormHandleSubmit,
     UseFormRegister,
     UseFormWatch,
@@ -111,8 +112,16 @@ export type ILocationSessionHistoryProps = {
     sessionsPerPage?: number;
 };
 
-export type IDomainVersionUsecaseFieldsProps = {
-    control: Control<INewSessionFormValues>;
+export type IDomainVersionUsecaseFields = Pick<
+    IScenarioFormData,
+    "domain" | "version" | "usecaseId"
+> &
+    FieldValues;
+
+export type IDomainVersionUsecaseFieldsProps<
+    T extends IDomainVersionUsecaseFields = INewSessionFormValues,
+> = {
+    control: Control<T>;
     versionOptions: string[];
     usecaseOptions: string[];
     watchedDomain: string;

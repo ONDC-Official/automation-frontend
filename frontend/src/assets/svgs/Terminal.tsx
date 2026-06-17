@@ -1,10 +1,10 @@
 import { SVGProps, useId } from "react";
 
-const Terminal = ({ ...props }: SVGProps<SVGSVGElement>) => {
+const Terminal = ({ ...rest }: SVGProps<SVGSVGElement>) => {
     const clipId = useId();
 
     return (
-        <svg xmlns="http://www.w3.org/2000/svg" width={520} height={257} fill="none" {...props}>
+        <svg xmlns="http://www.w3.org/2000/svg" width={520} height={257} fill="none" {...rest}>
             <g clipPath={`url(#${clipId})`}>
                 <rect width={520} height={296} fill="var(--terminal-chrome)" rx={14} />
                 <path fill="var(--terminal-chrome)" fillOpacity={0.03} d="M0 0h520v39H0z" />

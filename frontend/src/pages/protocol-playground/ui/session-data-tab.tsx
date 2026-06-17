@@ -395,7 +395,7 @@ export default function SessionDataTab() {
     }
 
     return (
-        <div className="relative flex flex-col gap-4 h-full p-4">
+        <div className="relative flex flex-col gap-4 h-full p-4 border rounded-lg mt-2">
             {/* Alert at the top */}
             {showAlert && (
                 <div className="absolute bottom-20 right-8 w-full max-w-md z-50 flex items-start gap-4 p-4 rounded-lg bg-red-50 border border-red-300 shadow-lg">
@@ -601,7 +601,7 @@ export default function SessionDataTab() {
                     )}
 
                     {savedInfoLength > 0 && (
-                        <div className="mt-6 flex flex row gap-4">
+                        <div className="mt-6 flex row gap-4">
                             <button
                                 onClick={handleSave}
                                 className="w-full px-4 py-2 bg-emerald-500/20 text-emerald-400 rounded hover:bg-emerald-500/30 transition-colors"

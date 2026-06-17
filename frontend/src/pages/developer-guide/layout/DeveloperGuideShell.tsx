@@ -7,7 +7,7 @@ import { fetchBuilds } from "@services/developerGuideSpecApi";
 import { fetchDocContent, fetchDocList } from "@services/developerDocsApi";
 import type { BuildEntry, DocMeta } from "../types";
 import { isDomainEnabled } from "../utils";
-import Loader from "@components/ui/mini-components/loader";
+import { Spinner } from "@/components/Shadcn/Spinner/spinner";
 import { buildNavTree } from "./buildNavTree";
 import { DOCS_WITH_SIDEBAR_SECTIONS } from "./docsWithSidebarSections";
 import { filterNavTree } from "./filterNavTree";
@@ -110,7 +110,7 @@ const DeveloperGuideShell: FC = () => {
     if (isLoading) {
         return (
             <div className="min-h-[calc(100vh-84px)] flex items-center justify-center bg-white">
-                <Loader />
+                <Spinner className="size-8 text-brand-normal" />
             </div>
         );
     }

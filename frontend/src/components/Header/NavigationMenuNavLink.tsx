@@ -1,6 +1,6 @@
 import { NavLink } from "react-router-dom";
-import { DrawerClose } from "@/components/shadcn/drawer";
-import { NavigationMenuLink } from "@/components/shadcn/navigation-menu";
+import { DrawerClose } from "@/components/Shadcn/Drawer/drawer";
+import { NavigationMenuLink } from "@/components/Shadcn/NavigationMenu/navigation-menu";
 import { INavigationMenuNavLink } from "@components/Header/types";
 
 export const NavigationMenuNavLink = ({

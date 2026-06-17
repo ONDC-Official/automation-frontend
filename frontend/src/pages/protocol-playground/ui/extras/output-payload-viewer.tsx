@@ -469,7 +469,7 @@ export default function OutputPayloadViewer({
 
     if (!payload || !actionId) {
         return (
-            <div className="h-full flex items-center justify-center bg-gray-50 rounded-lg border border-gray-200">
+            <div className="h-full flex items-center justify-center bg-gray-50 rounded-lg border border-gray-200 mt-2">
                 <div className="text-center p-8">
                     <IoDocumentText className="text-gray-400 text-5xl mx-auto mb-3" />
                     <p className="text-gray-500 text-sm font-medium">No payload available</p>
@@ -482,7 +482,7 @@ export default function OutputPayloadViewer({
     }
 
     return (
-        <div className="h-full flex flex-col bg-white rounded-lg border border-gray-200 shadow-xs overflow-hidden">
+        <div className="h-full flex flex-col bg-white rounded-lg border mt-2 border-gray-200 shadow-xs overflow-hidden">
             {/* Validate Requirements Modal */}
             <ValidateRequirementsModal
                 isOpen={reqsModalOpen}

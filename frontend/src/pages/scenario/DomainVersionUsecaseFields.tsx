@@ -1,8 +1,14 @@
-import { SelectField } from "@/components/ui/SelectField";
+import { ComboBox } from "@/components/Shadcn/ComboBox";
 import { trackSchemaValidationForm } from "@/pages/scenario/helpers";
-import { IDomainVersionUsecaseFieldsProps } from "@/pages/scenario/types";
+import {
+    IDomainVersionUsecaseFields,
+    IDomainVersionUsecaseFieldsProps,
+} from "@/pages/scenario/types";
+import { FieldPath } from "react-hook-form";
 
-export const DomainVersionUsecaseFields = ({
+export const DomainVersionUsecaseFields = <
+    T extends IDomainVersionUsecaseFields = IDomainVersionUsecaseFields,
+>({
     control,
     versionOptions,
     usecaseOptions,
@@ -11,12 +17,12 @@ export const DomainVersionUsecaseFields = ({
     onDomainChange,
     onVersionChange,
     domainOptions,
-}: IDomainVersionUsecaseFieldsProps) => (
+}: IDomainVersionUsecaseFieldsProps<T>) => (
     <>
         {domainOptions && (
-            <SelectField
+            <ComboBox
                 control={control}
-                name="domain"
+                name={"domain" as FieldPath<T>}
                 label="Select Domain"
                 options={domainOptions}
                 placeholder="Select domain"
@@ -24,9 +30,9 @@ export const DomainVersionUsecaseFields = ({
                 onValueChange={onDomainChange}
             />
         )}
-        <SelectField
+        <ComboBox
             control={control}
-            name="version"
+            name={"version" as FieldPath<T>}
             label="Select Version"
             options={versionOptions}
             placeholder="Select version"
@@ -34,9 +40,9 @@ export const DomainVersionUsecaseFields = ({
             disabled={!watchedDomain}
             onValueChange={onVersionChange}
         />
-        <SelectField
+        <ComboBox
             control={control}
-            name="usecaseId"
+            name={"usecaseId" as FieldPath<T>}
             label="Select Usecase"
             options={usecaseOptions}
             placeholder="Select usecase"

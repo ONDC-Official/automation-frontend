@@ -1,180 +1,54 @@
-import { useState, useRef, useEffect } from "react";
-import IconButton from "../../../../components/ui/mini-components/icon-button";
+import { Button } from "@/components/Shadcn/Button/button";
+import { Badge } from "@/components/Shadcn/Badge/badge";
 import {
-    FaArrowLeft,
-    FaQuestionCircle,
-    FaChevronDown,
-    FaDownload,
-    FaUpload,
-    FaPencilAlt,
-    FaEdit,
-    FaGithub,
-    FaRegEye,
-} from "react-icons/fa";
-import { GrRedo } from "react-icons/gr";
-import { IoMdSkipForward, IoMdTrash } from "react-icons/io";
-import { TbAutomaticGearboxFilled, TbDatabaseExport, TbRepeat } from "react-icons/tb";
-import { MdFullscreen, MdFullscreenExit } from "react-icons/md";
-import { StepGroup } from "@pages/protocol-playground/utils/step-group";
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/components/Shadcn/DropDownMenu/dropdown-menu";
+import { cn } from "@/lib/utils";
+import {
+    ArrowDownTrayIcon,
+    ArrowLeftIcon,
+    ArrowUpTrayIcon,
+    Cog6ToothIcon,
+    DocumentTextIcon,
+    PencilSquareIcon,
+    PlusIcon,
+    QuestionMarkCircleIcon,
+    ServerStackIcon,
+} from "@heroicons/react/24/outline";
+import { PlaygroundActionButton } from "@pages/protocol-playground/ui/playground-upper/PlaygroundActionButton";
+import type {
+    IMetaBadgeProps,
+    IPlaygroundToolbarProps,
+} from "@pages/protocol-playground/ui/playground-upper/types";
 
-interface PlaygroundHeaderProps {
-    domain?: string;
-    version?: string;
-    flowId?: string;
-    stepGroup: StepGroup;
-    onStepGroupChange: (group: StepGroup) => void;
-    mainStepCount: number;
-    extraStepCount: number;
-    onExport: () => void;
-    onExportForDeployment: () => void;
-    onImport: () => void;
-    onImportFromGitHub: () => void;
-    onClear: () => void;
-    onRun: () => void;
-    onRunCurrent: () => void;
-    onRetrigger: () => void;
-    onCreateFlowSession: () => void;
-    onBack: () => void;
-    onHelp: () => void;
-    onEditMeta: () => void;
-    onViewTrace: () => void;
-    onEditRaw: () => void;
-    isFullscreen?: boolean;
-    onToggleFullscreen?: () => void;
-}
-
-const FileMenu = ({
-    onExport,
-    onImport,
-    onImportFromGitHub,
-    onExportForDeployment,
-    onEditRaw,
-}: {
-    onExport: () => void;
-    onImport: () => void;
-    onImportFromGitHub: () => void;
-    onExportForDeployment: () => void;
-    onEditRaw: () => void;
-}) => {
-    const [open, setOpen] = useState(false);
-    const ref = useRef<HTMLDivElement>(null);
-
-    useEffect(() => {
-        const handler = (e: MouseEvent) => {
-            if (ref.current && !ref.current.contains(e.target as Node)) {
-                setOpen(false);
-            }
-        };
-        document.addEventListener("mousedown", handler);
-        return () => document.removeEventListener("mousedown", handler);
-    }, []);
-
-    const item =
-        "flex items-center gap-2.5 w-full px-4 py-2.5 text-sm text-gray-700 hover:bg-sky-50 hover:text-sky-700 transition-colors text-left";
-
-    return (
-        <div ref={ref} className="relative">
-            <button
-                onClick={() => setOpen((v) => !v)}
-                className="flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium text-sky-700 bg-sky-100 hover:bg-sky-200 transition-colors shadow-xs focus:outline-hidden focus:ring-2 focus:ring-sky-400 focus:ring-offset-1"
-            >
-                <FaDownload size={13} />
-                File
-                <FaChevronDown
-                    size={10}
-                    className={`transition-transform ${open ? "rotate-180" : ""}`}
-                />
-            </button>
-
-            {open && (
-                <div className="absolute right-0 top-full mt-1.5 w-52 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden z-50 py-1">
-                    <button
-                        className={item}
-                        onClick={() => {
-                            onExport();
-                            setOpen(false);
-                        }}
-                    >
-                        <FaDownload size={13} className="text-sky-500 shrink-0" />
-                        Download(NOT for deployment)
-                    </button>
-                    <button
-                        className={item}
-                        onClick={() => {
-                            onImport();
-                            setOpen(false);
-                        }}
-                    >
-                        <FaUpload size={13} className="text-sky-500 shrink-0" />
-                        Upload JSON
-                    </button>
-                    <button
-                        className={item}
-                        onClick={() => {
-                            onImportFromGitHub();
-                            setOpen(false);
-                        }}
-                    >
-                        <FaGithub size={13} className="text-gray-700 shrink-0" />
-                        Import from GitHub
-                    </button>
-                    <div className="my-1 border-t border-gray-100" />
-                    <button
-                        className={item}
-                        onClick={() => {
-                            onExportForDeployment();
-                            setOpen(false);
-                        }}
-                    >
-                        <TbDatabaseExport size={14} className="text-emerald-500 shrink-0" />
-                        Export Deployment YAML
-                    </button>
-                    <div className="my-1 border-t border-gray-100" />
-                    <button
-                        className={item}
-                        onClick={() => {
-                            onEditRaw();
-                            setOpen(false);
-                        }}
-                    >
-                        <FaEdit size={13} className="text-gray-500 shrink-0" />
-                        Edit Raw Config
-                    </button>
-                </div>
-            )}
-        </div>
-    );
-};
-
-const StepGroupSelector = ({
-    stepGroup,
-    onStepGroupChange,
-    mainStepCount,
-    extraStepCount,
-}: {
-    stepGroup: StepGroup;
-    onStepGroupChange: (group: StepGroup) => void;
-    mainStepCount: number;
-    extraStepCount: number;
-}) => (
-    <button
-        type="button"
-        onClick={() => onStepGroupChange(stepGroup === "main" ? "extra" : "main")}
-        title="Click to switch step group"
-        className="px-2.5 py-1.5 rounded-md text-sm font-medium text-sky-700 bg-sky-100 hover:bg-sky-200 transition-colors shadow-xs focus:outline-hidden focus:ring-2 focus:ring-sky-400 focus:ring-offset-1 cursor-pointer"
+const MetaBadge = ({ value, className }: IMetaBadgeProps) => (
+    <Badge
+        variant="outline"
+        className={cn(
+            "rounded-lg border-brand-light-active bg-brand-light px-3 py-1.5 text-body-2 font-medium text-text-primary dark:border-border-default dark:bg-surface-muted",
+            className
+        )}
     >
-        {stepGroup === "main" ? `Main Steps (${mainStepCount})` : `Extra Steps (${extraStepCount})`}
-    </button>
+        {value}
+    </Badge>
 );
 
 export const PlaygroundHeader = ({
     domain,
     version,
     flowId,
+    useCaseId,
     stepGroup,
     onStepGroupChange,
     mainStepCount,
     extraStepCount,
+    hasSteps,
+    isTimelineOpen,
+    onToggleTimeline,
     onExport,
     onExportForDeployment,
     onImport,
@@ -189,137 +63,131 @@ export const PlaygroundHeader = ({
     onEditMeta,
     onViewTrace,
     onEditRaw,
+    onAddAction,
     isFullscreen,
     onToggleFullscreen,
-}: PlaygroundHeaderProps) => (
-    <div className="h-14 flex items-center justify-between px-4 bg-linear-to-r from-white to-sky-50 border-b border-sky-100 shadow-xs gap-4">
-        {/* Left — nav + title + meta */}
-        <div className="flex items-center gap-2 min-w-0">
-            <IconButton
-                icon={<FaArrowLeft size={14} />}
-                label="Back to Starter"
+}: IPlaygroundToolbarProps) => (
+    <div className="flex min-h-14 shrink-0 flex-wrap items-center justify-between gap-x-3 gap-y-2 rounded-xl border border-n-30 bg-surface-elevated my-6 py-4 px-4 dark:border-border-default">
+        <div className="flex shrink-0 items-center gap-2">
+            <Button
+                variant="outline"
+                size="sm"
                 onClick={onBack}
-                color="gray"
-            />
-            <IconButton
-                icon={<FaQuestionCircle size={14} />}
-                label="How to use the Playground"
-                onClick={onHelp}
-                color="sky"
-            />
-
-            <div className="w-px h-6 bg-gray-200 mx-1" />
-
-            <span className="text-md font-bold bg-linear-to-r from-sky-600 to-sky-500 bg-clip-text text-transparent tracking-tight whitespace-nowrap">
+                title="Back to starter"
+                className="rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-normal/50"
+            >
+                <ArrowLeftIcon className="size-4" />
+            </Button>
+            <span className="whitespace-nowrap text-body-1 font-bold uppercase tracking-wide text-brand-normal">
                 PLAYGROUND
             </span>
+        </div>
+        <div className="flex min-w-0 flex-1 flex-nowrap items-center gap-2 overflow-x-auto *:shrink-0">
+            <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => onStepGroupChange(stepGroup === "main" ? "extra" : "main")}
+                title="Click to switch step group"
+                className="rounded-lg focus-visible:outline-none hover:bg-transparent"
+            >
+                <MetaBadge
+                    value={
+                        stepGroup === "main"
+                            ? `Main Steps (${mainStepCount})`
+                            : `Extra Steps (${extraStepCount})`
+                    }
+                />
+            </Button>
 
-            <div className="w-px h-6 bg-gray-200 mx-1" />
-
-            <StepGroupSelector
-                stepGroup={stepGroup}
-                onStepGroupChange={onStepGroupChange}
-                mainStepCount={mainStepCount}
-                extraStepCount={extraStepCount}
-            />
-
-            <div className="w-px h-6 bg-gray-200 mx-1" />
-
-            {/* Meta badges + edit */}
-            <div className="hidden md:flex items-center gap-2 text-md">
-                <span className="px-2.5 py-1 bg-white text-md rounded-lg border border-sky-100 text-gray-700 font-medium truncate">
-                    {domain}
-                </span>
-                <span className="px-2.5 py-1 bg-white text-md rounded-lg border border-sky-100 text-gray-700 font-medium">
-                    {version}
-                </span>
-                <span className="px-2.5 py-1 bg-white text-md rounded-lg border border-sky-100 text-gray-700 font-medium truncate max-w-md">
-                    {flowId}
-                </span>
-                <button
-                    onClick={onEditMeta}
-                    title="Edit flow info"
-                    className="p-2.5 rounded-lg bg-white shadow-xs text-black hover:bg-sky-100 hover:text-sky-600 transition-colors"
-                >
-                    <FaPencilAlt size={14} />
-                </button>
-                <button
-                    onClick={onViewTrace}
-                    title="View execution trace"
-                    className="p-2.5 rounded-lg bg-white shadow-xs text-black hover:bg-sky-100 hover:text-sky-600 transition-colors"
-                >
-                    <FaRegEye size={14} />
-                </button>
-            </div>
+            {domain ? <MetaBadge value={domain} className="max-w-40 truncate" /> : null}
+            {version ? <MetaBadge value={version} className="max-w-40 truncate" /> : null}
+            {flowId ? <MetaBadge value={flowId} className="max-w-48 truncate" /> : null}
+            {useCaseId ? <MetaBadge value={useCaseId} className="max-w-40 truncate" /> : null}
         </div>
 
-        {/* Right — actions */}
-        <div className="flex items-center gap-1.5 shrink-0">
-            <FileMenu
-                onExport={onExport}
-                onImport={onImport}
-                onImportFromGitHub={onImportFromGitHub}
-                onExportForDeployment={onExportForDeployment}
-                onEditRaw={onEditRaw}
+        <div className="flex shrink-0 flex-wrap items-center justify-end gap-1.5">
+            <PlaygroundActionButton label="Run next step" variant="play" onClick={onRun} />
+            <PlaygroundActionButton
+                label="View execution trace"
+                variant="view"
+                onClick={onViewTrace}
             />
-
-            <IconButton
-                icon={<IoMdTrash size={15} />}
-                label="Clear all"
-                onClick={onClear}
-                color="red"
+            <PlaygroundActionButton
+                label="Toggle steps timeline"
+                variant="steps"
+                onClick={onToggleTimeline}
+                active={isTimelineOpen}
             />
-
-            <div className="w-px h-6 bg-gray-200 mx-0.5" />
-
-            <IconButton
-                icon={<TbAutomaticGearboxFilled size={15} />}
-                label="Create live session"
-                onClick={onCreateFlowSession}
-                color="sky"
-            />
-
-            <div className="w-px h-6 bg-gray-200 mx-0.5" />
-
-            <IconButton
-                icon={<GrRedo size={15} />}
+            <PlaygroundActionButton
                 label="Run up to current step"
+                variant="refresh"
                 onClick={onRunCurrent}
-                color="green"
             />
-            <IconButton
-                icon={<IoMdSkipForward size={17} />}
-                label="Run next step"
-                onClick={onRun}
-                color="orange"
-            />
-
-            {stepGroup === "extra" && (
-                <IconButton
-                    icon={<TbRepeat size={16} />}
+            <PlaygroundActionButton label="Clear all" variant="delete" onClick={onClear} />
+            {stepGroup === "extra" ? (
+                <PlaygroundActionButton
                     label="Retrigger selected extra step"
+                    variant="retrigger"
                     onClick={onRetrigger}
-                    color="sky"
                 />
-            )}
+            ) : null}
+            {onToggleFullscreen ? (
+                <PlaygroundActionButton
+                    label={isFullscreen ? "Exit full screen" : "Full screen"}
+                    variant="expand"
+                    onClick={onToggleFullscreen}
+                />
+            ) : null}
 
-            {onToggleFullscreen && (
-                <>
-                    <div className="w-px h-6 bg-gray-200 mx-0.5" />
-                    <IconButton
-                        icon={
-                            isFullscreen ? (
-                                <MdFullscreenExit size={18} />
-                            ) : (
-                                <MdFullscreen size={18} />
-                            )
-                        }
-                        label={isFullscreen ? "Exit full screen" : "Full screen"}
-                        onClick={onToggleFullscreen}
-                        color="gray"
-                    />
-                </>
-            )}
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm" className="ml-1">
+                        <PencilSquareIcon className="size-4" />
+                        Edit
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                    <DropdownMenuItem onClick={onEditMeta}>
+                        <PencilSquareIcon className="size-4" />
+                        Edit flow info
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={onExport}>
+                        <ArrowDownTrayIcon className="size-4" />
+                        Download (not for deployment)
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={onImport}>
+                        <ArrowUpTrayIcon className="size-4" />
+                        Upload JSON
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={onImportFromGitHub}>
+                        <ServerStackIcon className="size-4" />
+                        Import from GitHub
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={onExportForDeployment}>
+                        <DocumentTextIcon className="size-4" />
+                        Export deployment YAML
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={onEditRaw}>
+                        <DocumentTextIcon className="size-4" />
+                        Edit raw config
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={onCreateFlowSession}>
+                        <Cog6ToothIcon className="size-4" />
+                        Create live session
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={onHelp}>
+                        <QuestionMarkCircleIcon className="size-4" />
+                        How to use the Playground
+                    </DropdownMenuItem>
+                </DropdownMenuContent>
+            </DropdownMenu>
+
+            <Button variant="outline" size="sm" onClick={onAddAction} className="ml-1">
+                <PlusIcon className="size-4" />
+                {hasSteps ? "Add Action" : "Add First Action"}
+            </Button>
         </div>
     </div>
 );
