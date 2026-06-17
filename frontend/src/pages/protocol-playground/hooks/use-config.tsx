@@ -4,7 +4,7 @@ import { toast } from "react-toastify";
 import JsonSchemaForm from "../ui/extras/rsjf-form";
 import { isRideMapEnabled } from "@components/FlowShared/ride-map-utils";
 import { calcCurrentIndex } from "../mock-engine";
-import MockRunner, { MockPlaygroundConfigType } from "@ondc/automation-mock-runner";
+import { MockRunner, MockPlaygroundConfigType } from "@ondc/automation-mock-runner";
 import { createFlowSessionWithPlayground } from "../utils/request-utils";
 import { GetRequestEndpoint } from "@components/FlowShared/guides";
 import MockDynamicForm from "../ui/components/mock-dynamic-form";
