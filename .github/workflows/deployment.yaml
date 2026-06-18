@@ -128,7 +128,7 @@ jobs:
           EOF
 
   deploy-main:
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main-org'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -145,7 +145,7 @@ jobs:
           echo "Removing existing repository directory if exists"
           rm -rf \$REPO_DIR
           echo "Cloning repository from main branch"
-          git clone --single-branch --branch main https://github.com/ONDC-Official/automation-frontend.git \$REPO_DIR
+          git clone --single-branch --branch main-org https://github.com/ONDC-Official/automation-frontend.git \$REPO_DIR
           EOF
       - name: Install Docker Compose (if not installed)
         run: |
