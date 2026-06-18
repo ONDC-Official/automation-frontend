@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React from "react";
 import { toast } from "react-toastify";
 import { Button, Card, Tabs, Typography } from "antd";
 import { CopyOutlined, DownloadOutlined, CheckCircleOutlined } from "@ant-design/icons";
+import { useClipboard } from "@hooks/useClipboard";
 
 const { Title, Text } = Typography;
 const { TabPane } = Tabs;
@@ -19,25 +20,16 @@ const OnboardingSuccessPayload: React.FC<OnboardingSuccessPayloadProps> = ({
     onBack,
     payloadType = "single-domain",
 }) => {
-    const [copiedSection, setCopiedSection] = useState<string | null>(null);
+    const { copyToClipboard } = useClipboard();
 
-    // Check if we have multi-domain payloads
+    const handleCopy = (text: string) => {
+        void copyToClipboard(text);
+    };
+
     const isMultiDomain =
         payloadType === "multi-domain" &&
         typeof onSearchPayload === "object" &&
         !Array.isArray(onSearchPayload);
-
-    const handleCopy = async (text: string, section: string) => {
-        try {
-            await navigator.clipboard.writeText(text);
-            setCopiedSection(section);
-            toast.success(`${section} copied to clipboard!`);
-            setTimeout(() => setCopiedSection(null), 3000);
-        } catch (err: unknown) {
-            console.error("Failed to copy to clipboard", err);
-            toast.error("Failed to copy to clipboard");
-        }
-    };
 
     const handleDownload = (data: Record<string, unknown>, filename: string) => {
         const jsonString = JSON.stringify(data, null, 2);
@@ -91,14 +83,11 @@ const OnboardingSuccessPayload: React.FC<OnboardingSuccessPayloadProps> = ({
                                                         handleCopy(
                                                             formatJson(
                                                                 payload as Record<string, unknown>
-                                                            ),
-                                                            `${domain} Payload`
+                                                            )
                                                         )
                                                     }
                                                 >
-                                                    {copiedSection === `${domain} Payload`
-                                                        ? "Copied!"
-                                                        : "Copy"}
+                                                    Copy
                                                 </Button>
                                                 <Button
                                                     icon={<DownloadOutlined />}
@@ -142,15 +131,10 @@ const OnboardingSuccessPayload: React.FC<OnboardingSuccessPayloadProps> = ({
                                             <Button
                                                 icon={<CopyOutlined />}
                                                 onClick={() =>
-                                                    handleCopy(
-                                                        formatJson(onSearchPayload),
-                                                        "On Search Payload"
-                                                    )
+                                                    handleCopy(formatJson(onSearchPayload))
                                                 }
                                             >
-                                                {copiedSection === "On Search Payload"
-                                                    ? "Copied!"
-                                                    : "Copy"}
+                                                Copy
                                             </Button>
                                             <Button
                                                 icon={<DownloadOutlined />}
@@ -196,14 +180,11 @@ const OnboardingSuccessPayload: React.FC<OnboardingSuccessPayloadProps> = ({
                                                 handleCopy(
                                                     formatJson(
                                                         submittedData as Record<string, unknown>
-                                                    ),
-                                                    "Submitted Data"
+                                                    )
                                                 )
                                             }
                                         >
-                                            {copiedSection === "Submitted Data"
-                                                ? "Copied!"
-                                                : "Copy"}
+                                            Copy
                                         </Button>
                                         <Button
                                             icon={<DownloadOutlined />}

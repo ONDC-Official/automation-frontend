@@ -12,7 +12,6 @@ export const STARTER_FORM_DEFAULTS = {
     domain: "",
     version: "",
     flowId: "",
-    usecase: "",
     useCaseId: "",
     description: "",
 };

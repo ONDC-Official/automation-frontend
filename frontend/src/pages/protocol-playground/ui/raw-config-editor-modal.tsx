@@ -1,14 +1,17 @@
 import { Editor, Monaco } from "@monaco-editor/react";
+import { Button } from "@/components/Shadcn/Button/button";
+import { Dialog, DialogContent, DialogTitle } from "@/components/Shadcn/Dialog/dialog";
 import { DarkSkyBlueTheme } from "@pages/protocol-playground/ui/editor-themes";
+import { DocumentTextIcon } from "@heroicons/react/24/outline";
 
-type RawConfigEditorModalProps = {
+interface IRawConfigEditorModalProps {
     isOpen: boolean;
     value: string;
     error: string | null;
     onChange: (value: string) => void;
     onSave: () => void;
     onClose: () => void;
-};
+}
 
 export const RawConfigEditorModal = ({
     isOpen,
@@ -17,39 +20,45 @@ export const RawConfigEditorModal = ({
     onChange,
     onSave,
     onClose,
-}: RawConfigEditorModalProps) => {
-    if (!isOpen) return null;
-
+}: IRawConfigEditorModalProps) => {
     const handleEditorWillMount = (monaco: Monaco) => {
         monaco.editor.defineTheme("dark-skyblue", DarkSkyBlueTheme);
     };
 
     return (
-        <div className="fixed inset-0 z-60 bg-black/70">
-            <div className="h-full w-full bg-white flex flex-col">
-                <div className="flex items-center justify-between px-4 py-3 border-b">
-                    <h2 className="text-lg font-semibold">Edit Raw Configuration JSON</h2>
+        <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+            <DialogContent
+                showCloseButton={false}
+                className="top-0 left-0 flex h-screen w-screen max-w-none translate-x-0 translate-y-0 flex-col gap-0 rounded-none border-0 p-0"
+            >
+                <DialogTitle className="sr-only">Edit Raw Configuration JSON</DialogTitle>
+
+                <div className="flex shrink-0 items-center justify-between border-b border-border-default bg-surface-elevated px-5 py-3">
+                    <div className="flex items-center gap-2.5">
+                        <div className="flex size-7 items-center justify-center rounded-lg bg-brand-light dark:bg-surface-muted">
+                            <DocumentTextIcon className="size-3.5 text-brand-normal" />
+                        </div>
+                        <h2 className="text-sm font-semibold text-text-primary">
+                            Edit Raw Configuration JSON
+                        </h2>
+                    </div>
                     <div className="flex gap-2">
-                        <button
-                            onClick={onClose}
-                            className="px-4 py-2 text-sm rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50"
-                        >
+                        <Button variant="outline" size="sm" onClick={onClose}>
                             Close
-                        </button>
-                        <button
-                            onClick={onSave}
-                            className="px-4 py-2 text-sm rounded-md bg-sky-600 text-white hover:bg-sky-700"
-                        >
+                        </Button>
+                        <Button size="sm" onClick={onSave}>
                             Save
-                        </button>
+                        </Button>
                     </div>
                 </div>
-                {error && (
-                    <div className="mx-4 mt-3 rounded-md border border-red-200 bg-red-50 text-red-700 px-3 py-2 text-sm">
+
+                {error ? (
+                    <div className="mx-4 mt-3 rounded-lg border border-error-500/40 bg-error-50 px-3 py-2 text-sm text-error-500">
                         {error}
                     </div>
-                )}
-                <div className="flex-1 p-4 pt-3 overflow-hidden">
+                ) : null}
+
+                <div className="flex-1 overflow-hidden p-4 pt-3">
                     <Editor
                         theme="dark-skyblue"
                         beforeMount={handleEditorWillMount}
@@ -68,7 +77,7 @@ export const RawConfigEditorModal = ({
                         }}
                     />
                 </div>
-            </div>
-        </div>
+            </DialogContent>
+        </Dialog>
     );
 };

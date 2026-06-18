@@ -1,7 +1,5 @@
-import { useState } from "react";
-import { toast } from "react-toastify";
+import { useClipboard } from "@hooks/useClipboard";
 import { ClipboardDocumentIcon } from "@heroicons/react/24/outline";
-
 import { Button } from "@/components/Shadcn/Button/button";
 import { RadialProgressChart } from "@/components/Shadcn/Chart";
 import { cn } from "@/lib/utils";
@@ -24,22 +22,15 @@ export const PastReportCard = ({
     onView,
     flowDescription,
 }: IPastReportCardProps) => {
-    const [copied, setCopied] = useState(false);
+    const { copyToClipboard } = useClipboard();
     const meta = getPastReportMeta(report);
     const { overallPct, mandatoryPct, optionalPct } = getPastReportPcts(report);
     const title = getPastReportTitle(report);
     const lastRunText = formatLastRunText(report.updatedAt ?? report.createdAt, overallPct);
 
-    const handleCopy = async () => {
+    const handleCopy = () => {
         if (!meta.subscriberUrl) return;
-        try {
-            await navigator.clipboard.writeText(meta.subscriberUrl);
-            setCopied(true);
-            toast.success("URL copied");
-            setTimeout(() => setCopied(false), 2000);
-        } catch {
-            toast.error("Failed to copy URL");
-        }
+        copyToClipboard(meta.subscriberUrl);
     };
 
     const hasBadges = meta.domain || meta.env || meta.version || meta.npType;
@@ -77,10 +68,7 @@ export const PastReportCard = ({
                             variant="ghost"
                             size="xs"
                             onClick={handleCopy}
-                            className={cn(
-                                "shrink-0 transition-colors text-brand-normal",
-                                copied && "text-success-500"
-                            )}
+                            className="shrink-0 transition-colors text-brand-normal"
                         >
                             <ClipboardDocumentIcon className="size-4 text-brand-normal hover:text-brand-light" />
                         </Button>

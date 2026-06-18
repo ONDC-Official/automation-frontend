@@ -8,7 +8,6 @@ export type CodeEditorProps = {
     language: string;
     selectedLang: LanguageKey;
     functionType: FunctionType;
-    copied: boolean;
     onCopy: () => void;
 };
 

@@ -8,7 +8,7 @@ import {
     useRef,
     useState,
 } from "react";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 
 // Auto-reject if the user never responds. Without this, an ignored approval
 // modal blocks the tool's await forever, which freezes the agent loop and
@@ -39,10 +39,7 @@ interface ApprovalEntry {
 interface PendingApprovalsContextProps {
     isPending: (toolCallId: string) => boolean;
     pending: PendingApproval[];
-    request: (
-        toolCallId: string,
-        payload?: ProposeEditPayload
-    ) => Promise<ApprovalOutcome>;
+    request: (toolCallId: string, payload?: ProposeEditPayload) => Promise<ApprovalOutcome>;
     resolve: (toolCallId: string, applied: boolean) => void;
     cancelAll: (applied?: boolean) => void;
 }
@@ -78,17 +75,14 @@ export function PendingApprovalsProvider({ children }: { children: ReactNode }) 
     }, []);
 
     const request = useCallback(
-        (
-            toolCallId: string,
-            payload?: ProposeEditPayload
-        ): Promise<ApprovalOutcome> => {
+        (toolCallId: string, payload?: ProposeEditPayload): Promise<ApprovalOutcome> => {
             return new Promise<ApprovalOutcome>((resolve) => {
                 entriesRef.current.set(toolCallId, { resolve, payload });
                 setPending((prev) => [...prev, { toolCallId, payload }]);
                 setTimeout(() => {
                     if (!entriesRef.current.has(toolCallId)) return;
                     finish(toolCallId, false);
-                    toast.warn("Approval timed out — proposed edit auto-rejected.");
+                    toast.warning("Approval timed out — proposed edit auto-rejected.");
                 }, APPROVAL_TIMEOUT_MS);
             });
         },

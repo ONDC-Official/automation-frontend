@@ -1,5 +1,5 @@
 import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 
 import { PlaygroundContext } from "@pages/protocol-playground/context/playground-context";
 import { getKey, onLock } from "@utils/secure-key-store";

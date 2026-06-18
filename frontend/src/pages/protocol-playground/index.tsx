@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 import {
     MockRunner,
     ExecutionResult,
@@ -8,6 +8,7 @@ import {
 import { PlaygroundContext } from "@pages/protocol-playground/context/playground-context";
 import GetPlaygroundComponent from "@pages/protocol-playground/starter-page";
 import { usePlaygroundModals } from "@pages/protocol-playground/hooks/use-playground-modal";
+import { PlaygroundModal } from "@pages/protocol-playground/ui/playground-modal";
 import { useWorkbenchFlows } from "@hooks/useWorkbenchFlow";
 import RenderFlows from "@components/FlowShared/render-flows";
 import {
@@ -301,6 +302,8 @@ const ProtocolPlayGround = () => {
     }, [playgroundState, autoSaveConfig]);
 
     const workbenchFlow = useWorkbenchFlows();
+    const { popupOpen, popupContent, modalClassName, openModal, closeModal } =
+        usePlaygroundModals();
 
     return (
         <PlaygroundContext.Provider
@@ -318,7 +321,7 @@ const ProtocolPlayGround = () => {
                 setStepGroup,
                 activeTerminalData,
                 setActiveTerminalData,
-                useModal: usePlaygroundModals(),
+                useModal: { openModal, closeModal },
                 updateHelperLib,
                 updateTransactionHistory,
                 appendExtraStepRun,
@@ -336,6 +339,9 @@ const ProtocolPlayGround = () => {
             <div className="flex h-full min-h-0 w-full max-w-7xl flex-1 flex-col px-15 xl:px-0 mx-auto">
                 <Body workbenchFlow={workbenchFlow} />
             </div>
+            <PlaygroundModal isOpen={popupOpen} onClose={closeModal} className={modalClassName}>
+                {popupContent}
+            </PlaygroundModal>
         </PlaygroundContext.Provider>
     );
 };

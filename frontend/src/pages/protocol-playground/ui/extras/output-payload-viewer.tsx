@@ -1,6 +1,6 @@
 import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import JsonView from "@uiw/react-json-view";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 import Markdown from "react-markdown";
 import axios from "axios";
 import {
@@ -364,7 +364,7 @@ export default function OutputPayloadViewer({
 
     const verifyRequestL0 = async () => {
         if (payload === "") {
-            toast.warn("Add payload for the request");
+            toast.warning("Add payload for the request");
             return;
         }
 
@@ -373,7 +373,7 @@ export default function OutputPayloadViewer({
 
         try {
             if (Array.isArray(parsedPayload)) {
-                toast.warn("Array of payloads not supported");
+                toast.warning("Array of payloads not supported");
                 return;
             }
         } catch (e) {
@@ -387,7 +387,7 @@ export default function OutputPayloadViewer({
         const action = payloadWithContext?.context?.action;
 
         if (!action) {
-            toast.warn("action missing from context");
+            toast.warning("action missing from context");
 
             return;
         }
@@ -413,7 +413,7 @@ export default function OutputPayloadViewer({
         });
 
         if (!isDomainActive) {
-            toast.warn(
+            toast.warning(
                 "Domain or version not yet active. To check the list of active domain visit home page."
             );
             return;

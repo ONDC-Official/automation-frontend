@@ -1,6 +1,3 @@
-import { useState } from "react";
-import { toast } from "react-toastify";
-
 import { Button } from "@/components/Shadcn/Button/button";
 import { cn } from "@/lib/utils";
 import { TagBadge } from "@pages/user-profile/components/TagBadge";
@@ -9,6 +6,7 @@ import { formatEnvLabel } from "@pages/user-profile/utils/formatEnvLabel";
 import type { IConfigCardProps } from "@pages/user-profile/types";
 import { PencilIcon, TrashIcon } from "@heroicons/react/24/solid";
 import { ClipboardDocumentIcon } from "@heroicons/react/24/outline";
+import { useClipboard } from "@hooks/useClipboard";
 
 export const ConfigCard = ({
     configKey,
@@ -19,19 +17,8 @@ export const ConfigCard = ({
     onDelete,
     onLaunch,
 }: IConfigCardProps) => {
-    const [copied, setCopied] = useState(false);
+    const { copyToClipboard } = useClipboard();
     const displayTitle = CONFIG_DISPLAY_NAME_MAP[configKey] ?? configKey;
-
-    const handleCopy = async () => {
-        try {
-            await navigator.clipboard.writeText(config.subscriberUrl);
-            setCopied(true);
-            toast.success("URL copied");
-            setTimeout(() => setCopied(false), 2000);
-        } catch {
-            toast.error("Failed to copy URL");
-        }
-    };
 
     return (
         <div
@@ -86,11 +73,8 @@ export const ConfigCard = ({
                 <Button
                     variant="ghost"
                     size="xs"
-                    onClick={handleCopy}
-                    className={cn(
-                        "shrink-0 transition-colors text-brand-normal",
-                        copied && "text-success-500"
-                    )}
+                    onClick={() => void copyToClipboard(config.subscriberUrl)}
+                    className="shrink-0 transition-colors text-brand-normal"
                 >
                     <ClipboardDocumentIcon className="size-4 text-brand-normal hover:text-brand-light" />
                 </Button>
@@ -104,7 +88,7 @@ export const ConfigCard = ({
             </div>
 
             <div className="mt-4 flex items-center">
-                <Button type="button" size="sm" onClick={() => onLaunch(configKey)}>
+                <Button size="sm" onClick={() => onLaunch(configKey)}>
                     Launch Test
                 </Button>
             </div>

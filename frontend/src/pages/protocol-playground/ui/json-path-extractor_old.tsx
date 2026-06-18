@@ -5,7 +5,8 @@ import "tippy.js/animations/perspective-subtle.css";
 
 import { SelectedType } from "./session-data-tab";
 import { useLocation } from "react-router-dom";
-import { FiMaximize2, FiMinimize2 } from "react-icons/fi";
+import { ArrowsPointingInIcon, ArrowsPointingOutIcon } from "@heroicons/react/24/outline";
+import { useClipboard } from "@hooks/useClipboard";
 
 type JsonPrimitive = string | number | boolean | null;
 type JsonArray = JsonValue[];
@@ -47,23 +48,28 @@ const getTypeBadge = (value: JsonValue) => {
     return typeof value;
 };
 
-const renderValue = (
-    value: JsonValue,
-    path: string,
-    key: string,
-    isSelected: (path: string) => { status: boolean; type: SelectedType | null },
-    handleKeyClick: (path: string, key: string, e: React.MouseEvent) => void
-) => {
-    const isPrimitive = typeof value !== "object" || value === null || value === undefined;
-    const selected = isSelected(path);
+interface IPrimitiveValueProps {
+    value: JsonValue;
+    path: string;
+    keyName: string;
+    isSelected: (path: string) => { status: boolean; type: SelectedType | null };
+    handleKeyClick: (path: string, key: string, e: React.MouseEvent) => void;
+}
 
-    if (!isPrimitive) return null;
+const PrimitiveValue = ({
+    value,
+    path,
+    keyName,
+    isSelected,
+    handleKeyClick,
+}: IPrimitiveValueProps) => {
+    const { copyToClipboard } = useClipboard();
+    const selected = isSelected(path);
 
     let className =
         "group/value relative cursor-pointer  py-0.5 rounded transition-all duration-150 inline-flex items-center gap-1.5 ";
     let valueColor = "text-gray-300";
 
-    // Color by type
     if (typeof value === "string") valueColor = "text-emerald-400";
     else if (typeof value === "number") valueColor = "text-amber-400";
     else if (typeof value === "boolean") valueColor = "text-purple-400";
@@ -81,7 +87,7 @@ const renderValue = (
 
     const handleCopy = (e: React.MouseEvent) => {
         e.stopPropagation();
-        navigator.clipboard.writeText(JSON.stringify(value));
+        void copyToClipboard(JSON.stringify(value));
     };
 
     const stringValue = JSON.stringify(value);
@@ -108,7 +114,7 @@ const renderValue = (
             interactive={true}
             animation="perspective-subtle"
         >
-            <span onClick={(e) => handleKeyClick(path, key, e)} className={className}>
+            <span onClick={(e) => handleKeyClick(path, keyName, e)} className={className}>
                 <span className={`${valueColor} truncate max-w-md inline-block`}>
                     {isTruncated ? stringValue.slice(0, 100) + "..." : stringValue}
                 </span>
@@ -124,6 +130,28 @@ const renderValue = (
                 </button>
             </span>
         </Tippy>
+    );
+};
+
+const renderValue = (
+    value: JsonValue,
+    path: string,
+    key: string,
+    isSelected: (path: string) => { status: boolean; type: SelectedType | null },
+    handleKeyClick: (path: string, key: string, e: React.MouseEvent) => void
+) => {
+    const isPrimitive = typeof value !== "object" || value === null || value === undefined;
+
+    if (!isPrimitive) return null;
+
+    return (
+        <PrimitiveValue
+            value={value}
+            path={path}
+            keyName={key}
+            isSelected={isSelected}
+            handleKeyClick={handleKeyClick}
+        />
     );
 };
 
@@ -230,9 +258,7 @@ const renderJson = ({
                                     </span>
                                 </Tippy>
 
-                                <span className="text-gray-600 font-mono text-sm shrink-0">
-                                    :
-                                </span>
+                                <span className="text-gray-600 font-mono text-sm shrink-0">:</span>
 
                                 <div className="inline-flex items-baseline gap-2 min-w-0">
                                     {isObject && (
@@ -539,9 +565,9 @@ const JsonViewerDark: React.FC<JsonViewerProps> = ({
                             title={isExpanded ? "Exit fullscreen" : "Fullscreen"}
                         >
                             {isExpanded ? (
-                                <FiMinimize2 className="w-4 h-4" />
+                                <ArrowsPointingInIcon className="size-4" />
                             ) : (
-                                <FiMaximize2 className="w-4 h-4" />
+                                <ArrowsPointingOutIcon className="size-4" />
                             )}
                         </button>
                     </>
