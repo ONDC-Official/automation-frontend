@@ -35,7 +35,7 @@ export const DEFAULT_HOTEL_FORM_DATA: IHotelFormData = {
 
 // Shared style constants
 export const HOTEL_FORM_STYLES = {
-    inputStyle: "w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500",
+    inputStyle: "w-full p-2 border rounded focus:outline-hidden focus:ring-2 focus:ring-blue-500",
     labelStyle: "block text-sm font-medium text-gray-700 mb-1",
     fieldWrapperStyle: "mb-4",
     sectionStyle: "border p-4 rounded-lg bg-gray-50 mb-4",

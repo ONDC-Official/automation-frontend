@@ -22,7 +22,7 @@ const MdFileRender: FC<MdFileRenderProps> = ({
     hideTitleBlock = false,
 }) => {
     return (
-        <section className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <section className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
             {!hideTitleBlock && (
                 <div className="px-6 md:px-8 pt-6 pb-4 border-b border-slate-100 bg-slate-50">
                     <h1 className="text-2xl font-bold text-slate-900 tracking-tight">{title}</h1>
@@ -31,7 +31,7 @@ const MdFileRender: FC<MdFileRenderProps> = ({
             )}
             <div className="flex gap-0">
                 {showTableOfContents && (
-                    <div className="hidden lg:block w-56 flex-shrink-0 border-r border-slate-100 px-3 py-5">
+                    <div className="hidden lg:block w-56 shrink-0 border-r border-slate-100 px-3 py-5">
                         <TableOfContents
                             content={mdData}
                             className="sticky"

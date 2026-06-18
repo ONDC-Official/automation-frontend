@@ -128,7 +128,7 @@ const DifficultyCards = ({ difficulty_cache, sessionId }: IProps) => {
         }
     };
     return (
-        <div className="w-full rounded-lg border border-gray-200 bg-gray-100 p-4 shadow-sm">
+        <div className="w-full rounded-lg border border-gray-200 bg-gray-100 p-4 shadow-xs">
             {/* Header / disclosure toggle */}
             <button
                 type="button"
@@ -232,7 +232,7 @@ function SettingRow({
     info?: string;
 }) {
     return (
-        <div className="inline-flex items-center gap-2 rounded-md border border-gray-200 bg-white px-2.5 py-1.5 shadow-sm">
+        <div className="inline-flex items-center gap-2 rounded-md border border-gray-200 bg-white px-2.5 py-1.5 shadow-xs">
             <span className="whitespace-nowrap text-sm font-medium text-sky-700">{label}</span>
 
             <span className="shrink-0">{children}</span>

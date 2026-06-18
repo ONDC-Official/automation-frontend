@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type JSX } from "react";
 
 // hooks/usePlaygroundModals.ts
 export const usePlaygroundModals = () => {

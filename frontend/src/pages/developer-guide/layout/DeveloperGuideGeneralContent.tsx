@@ -13,7 +13,7 @@ const DeveloperGuideGeneralContent: FC = () => {
 
     return (
         <div className="min-h-full">
-            <header className="border-b border-sky-100 bg-gradient-to-br from-sky-50 via-white to-slate-50">
+            <header className="border-b border-sky-100 bg-linear-to-br from-sky-50 via-white to-slate-50">
                 <div className="px-6 md:px-10 py-10 md:py-12 max-w-3xl mt-[18px]">
                     <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-sky-100 text-sky-700 rounded-full text-xs font-semibold uppercase tracking-widest mb-5 border border-sky-200">
                         <FiLayers size={11} aria-hidden />

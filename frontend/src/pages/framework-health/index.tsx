@@ -60,12 +60,12 @@ const FrameworkHealthPage: FC = () => {
     ];
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-sky-50 via-white to-blue-50">
+        <div className="min-h-screen bg-linear-to-br from-sky-50 via-white to-blue-50">
             {/* Header */}
-            <div className="border-b border-sky-100 bg-white/80 backdrop-blur-sm sticky top-0 z-10">
+            <div className="border-b border-sky-100 bg-white/80 backdrop-blur-xs sticky top-0 z-10">
                 <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-sky-500 to-blue-600 flex items-center justify-center shrink-0">
+                        <div className="w-8 h-8 rounded-lg bg-linear-to-br from-sky-500 to-blue-600 flex items-center justify-center shrink-0">
                             <svg
                                 className="w-4 h-4 text-white"
                                 fill="none"
@@ -107,7 +107,7 @@ const FrameworkHealthPage: FC = () => {
             <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10">
                 {/* Page intro */}
                 <div>
-                    <h1 className="text-3xl font-bold bg-gradient-to-r from-sky-600 to-blue-600 bg-clip-text text-transparent">
+                    <h1 className="text-3xl font-bold bg-linear-to-r from-sky-600 to-blue-600 bg-clip-text text-transparent">
                         Health Dashboard
                     </h1>
                     <p className="text-gray-500 mt-1 text-sm">
@@ -121,10 +121,10 @@ const FrameworkHealthPage: FC = () => {
                     {testCards.map((card) => (
                         <div
                             key={card.id}
-                            className="bg-white border border-sky-100 rounded-2xl p-5 flex flex-col gap-4 hover:border-sky-300 hover:shadow-md transition-all shadow-sm"
+                            className="bg-white border border-sky-100 rounded-2xl p-5 flex flex-col gap-4 hover:border-sky-300 hover:shadow-md transition-all shadow-xs"
                         >
                             <div className="flex items-start justify-between gap-3">
-                                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-sky-500/10 to-blue-500/10 border border-sky-200 flex items-center justify-center text-sky-600 shrink-0">
+                                <div className="w-10 h-10 rounded-xl bg-linear-to-br from-sky-500/10 to-blue-500/10 border border-sky-200 flex items-center justify-center text-sky-600 shrink-0">
                                     {card.icon}
                                 </div>
                                 {report && card.id === "api-service" && (
@@ -152,7 +152,7 @@ const FrameworkHealthPage: FC = () => {
                             <button
                                 onClick={card.action}
                                 disabled={card.isRunning}
-                                className="w-full py-2.5 px-4 rounded-lg bg-gradient-to-r from-sky-500 to-blue-500 hover:from-sky-600 hover:to-blue-600 text-white text-sm font-medium transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                className="w-full py-2.5 px-4 rounded-lg bg-linear-to-r from-sky-500 to-blue-500 hover:from-sky-600 hover:to-blue-600 text-white text-sm font-medium transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                             >
                                 {card.isRunning ? (
                                     <>
@@ -209,7 +209,7 @@ const FrameworkHealthPage: FC = () => {
 
                 {/* Running notice */}
                 {isRunning && (
-                    <div className="bg-white border border-sky-200 rounded-2xl p-6 flex items-center gap-4 shadow-sm">
+                    <div className="bg-white border border-sky-200 rounded-2xl p-6 flex items-center gap-4 shadow-xs">
                         <div className="relative shrink-0">
                             <div className="w-10 h-10 rounded-full border-2 border-sky-500 border-t-transparent animate-spin" />
                         </div>

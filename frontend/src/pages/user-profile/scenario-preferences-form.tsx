@@ -12,9 +12,9 @@ import FormSelect from "@components/ui/forms/form-select";
 import LoadingButton from "@components/ui/forms/loading-button";
 import { apiClient } from "@services/apiClient";
 import { API_ROUTES } from "@services/apiRoutes";
-import { Domain, DomainVersion } from "@/pages/schema-validation/types";
+import { IDomain, IDomainVersion } from "@/pages/schema-validation/types";
 
-type DomainVersionWithUsecase = DomainVersion & {
+type IDomainVersionWithUsecase = IDomainVersion & {
     usecase: string[];
 };
 
@@ -88,8 +88,8 @@ export default function ScenarioPreferencesForm({ externalOpenTrigger = 0 }: Pro
     const setValue = setFieldValue as unknown as (name: string, value: unknown) => void;
 
     const [dynamicList, setDynamicList] = useState<{
-        domain: Domain[];
-        version: DomainVersionWithUsecase[];
+        domain: IDomain[];
+        version: IDomainVersionWithUsecase[];
         usecase: string[];
     }>({ domain: [], version: [], usecase: [] });
 
@@ -100,7 +100,7 @@ export default function ScenarioPreferencesForm({ externalOpenTrigger = 0 }: Pro
     const [editingKey, setEditingKey] = useState<string | null>(null);
     const [isFormOpen, setIsFormOpen] = useState(false);
 
-    const allDomainsRef = useRef<Domain[]>([]);
+    const allDomainsRef = useRef<IDomain[]>([]);
 
     useEffect(() => {
         Promise.all([fetchDomainData(), fetchSavedPreferences()]).finally(() =>
@@ -114,10 +114,10 @@ export default function ScenarioPreferencesForm({ externalOpenTrigger = 0 }: Pro
 
     const fetchDomainData = async () => {
         try {
-            const response = await apiClient.get<{ domain: Domain[] }>(
+            const response = await apiClient.get<{ domain: IDomain[] }>(
                 API_ROUTES.CONFIG.SCENARIO_FORM_DATA
             );
-            const domains: Domain[] = response.data.domain || [];
+            const domains: IDomain[] = response.data.domain || [];
             allDomainsRef.current = domains;
             setDynamicList((prev) => ({ ...prev, domain: domains }));
         } catch (e) {
@@ -156,7 +156,7 @@ export default function ScenarioPreferencesForm({ externalOpenTrigger = 0 }: Pro
             env: config.env,
         });
         const match = allDomainsRef.current.find((d) => d.key === config.domain);
-        const versions = (match?.version as DomainVersionWithUsecase[]) || [];
+        const versions = (match?.version as IDomainVersionWithUsecase[]) || [];
         const versionMatch = versions.find((v) => v.key === config.version);
         setDynamicList((prev) => ({
             ...prev,
@@ -266,7 +266,7 @@ export default function ScenarioPreferencesForm({ externalOpenTrigger = 0 }: Pro
     };
 
     return (
-        <div className="bg-gray-100 p-2 rounded-md shadow-sm mt-4">
+        <div className="bg-gray-100 p-2 rounded-md shadow-xs mt-4">
             <h2 className="text-xl font-bold text-gray-900 mb-1 mt-2">
                 Scenario Testing Preferences
             </h2>
@@ -371,7 +371,7 @@ export default function ScenarioPreferencesForm({ externalOpenTrigger = 0 }: Pro
                                             setDynamicList((prev) => ({
                                                 ...prev,
                                                 version:
-                                                    (match?.version as DomainVersionWithUsecase[]) ||
+                                                    (match?.version as IDomainVersionWithUsecase[]) ||
                                                     [],
                                                 usecase: [],
                                             }));

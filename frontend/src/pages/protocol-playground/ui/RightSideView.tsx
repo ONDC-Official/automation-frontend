@@ -234,7 +234,7 @@ function GetRightSideContent({ tabId, actionId }: { tabId: string; actionId: str
                     />
                     {isSessionLoading && (
                         <div className="absolute inset-0 flex items-center justify-center bg-[#0b1220]/40 backdrop-blur-[1px] pointer-events-none">
-                            <div className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-white/90 shadow-sm">
+                            <div className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-white/90 shadow-xs">
                                 <div className="w-3.5 h-3.5 border-2 border-sky-500 border-t-transparent rounded-full animate-spin" />
                                 <span className="text-xs font-medium text-gray-700">
                                     Computing session…

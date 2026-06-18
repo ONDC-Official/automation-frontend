@@ -26,7 +26,7 @@ const ErrorCodesTable: FC<ErrorCodesTableProps> = ({ errorCodes }) => {
             {/* Header */}
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-rose-50 border border-rose-100 shadow-sm flex-shrink-0">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-rose-50 border border-rose-100 shadow-xs shrink-0">
                         <svg
                             className="h-5 w-5 text-rose-500"
                             fill="none"
@@ -76,7 +76,7 @@ const ErrorCodesTable: FC<ErrorCodesTableProps> = ({ errorCodes }) => {
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                         placeholder="Search by code, event, or description…"
-                        className="w-full rounded-xl border border-slate-200 bg-white pl-10 pr-10 py-2.5 text-sm text-slate-800 placeholder-slate-400 shadow-sm transition focus:outline-none focus:ring-2 focus:ring-rose-400/30 focus:border-rose-400"
+                        className="w-full rounded-xl border border-slate-200 bg-white pl-10 pr-10 py-2.5 text-sm text-slate-800 placeholder-slate-400 shadow-xs transition focus:outline-hidden focus:ring-2 focus:ring-rose-400/30 focus:border-rose-400"
                     />
                     <svg
                         className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400"
@@ -142,18 +142,18 @@ const ErrorCodesTable: FC<ErrorCodesTableProps> = ({ errorCodes }) => {
                                     className="group transition-colors hover:bg-rose-50/40"
                                 >
                                     <td className="px-5 py-4 align-top">
-                                        <span className="inline-flex items-center rounded-lg px-2.5 py-1 bg-rose-50 text-rose-700 border border-rose-200 font-mono text-xs font-semibold tracking-tight shadow-sm">
+                                        <span className="inline-flex items-center rounded-lg px-2.5 py-1 bg-rose-50 text-rose-700 border border-rose-200 font-mono text-xs font-semibold tracking-tight shadow-xs">
                                             {row.code}
                                         </span>
                                     </td>
-                                    <td className="px-5 py-4 align-top text-sm font-semibold text-slate-800 whitespace-pre-wrap break-words leading-snug">
+                                    <td className="px-5 py-4 align-top text-sm font-semibold text-slate-800 whitespace-pre-wrap wrap-break-word leading-snug">
                                         {row.Event}
                                     </td>
-                                    <td className="px-5 py-4 align-top text-sm text-slate-600 whitespace-pre-wrap break-words leading-relaxed">
+                                    <td className="px-5 py-4 align-top text-sm text-slate-600 whitespace-pre-wrap wrap-break-word leading-relaxed">
                                         {row.Description}
                                     </td>
                                     <td className="px-5 py-4 align-top">
-                                        <span className="inline-flex items-center rounded-lg px-2.5 py-1 bg-sky-50 text-sky-700 border border-sky-200 text-xs font-semibold shadow-sm">
+                                        <span className="inline-flex items-center rounded-lg px-2.5 py-1 bg-sky-50 text-sky-700 border border-sky-200 text-xs font-semibold shadow-xs">
                                             {row.From}
                                         </span>
                                     </td>

@@ -216,7 +216,7 @@ const NavGroupItem: FC<{
     }, [hasActiveChild, headerActive, searchQuery, isDeveloperGuideLanding, depth, node.id]);
     const headerClass =
         depth === 0
-            ? "text-[11px] uppercase tracking-[0.1em] font-semibold"
+            ? "text-[11px] uppercase tracking-widest font-semibold"
             : "text-[13px] font-semibold";
 
     return (
@@ -266,7 +266,7 @@ const NavGroupItem: FC<{
                     onClick={() => setOpen((prev) => !prev)}
                     className={`flex items-center gap-2 w-full text-left py-2 pr-3 rounded-lg transition-colors ${
                         depth === 0
-                            ? "text-[11px] uppercase tracking-[0.1em] font-semibold text-slate-500 hover:text-slate-700"
+                            ? "text-[11px] uppercase tracking-widest font-semibold text-slate-500 hover:text-slate-700"
                             : "text-[13px] font-semibold text-slate-800 hover:bg-white/80"
                     }`}
                     style={{ paddingLeft }}

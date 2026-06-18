@@ -38,7 +38,7 @@ const DocsViewer: FC<DocsViewerProps> = ({ docs }) => {
                             onClick={() => setActiveSlug(slug)}
                             className={`px-3 py-1.5 rounded-md text-xs font-medium whitespace-nowrap transition-all ${
                                 activeSlug === slug
-                                    ? "bg-white text-slate-800 shadow-sm"
+                                    ? "bg-white text-slate-800 shadow-xs"
                                     : "text-slate-500 hover:text-slate-700"
                             }`}
                         >
@@ -49,9 +49,9 @@ const DocsViewer: FC<DocsViewerProps> = ({ docs }) => {
             )}
 
             {/* Content area split: TOC left + scrollable content right */}
-            <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden flex h-[700px]">
+            <div className="rounded-2xl border border-slate-200 bg-white shadow-xs overflow-hidden flex h-[700px]">
                 {/* TOC sidebar — scrolls within its own column */}
-                <div className="w-52 flex-shrink-0 border-r border-slate-200 overflow-y-auto bg-slate-50/50 p-3">
+                <div className="w-52 shrink-0 border-r border-slate-200 overflow-y-auto bg-slate-50/50 p-3">
                     <TableOfContents content={content} />
                 </div>
 

@@ -357,9 +357,9 @@ const SchemaTree: FC<SchemaTreeProps> = ({ schema, spec, showRequiredColumn = tr
 
     return (
         <TreeContext.Provider value={ctxValue}>
-            <div className="rounded-lg border border-sky-200/80 bg-white overflow-hidden shadow-sm">
+            <div className="rounded-lg border border-sky-200/80 bg-white overflow-hidden shadow-xs">
                 {/* Toolbar */}
-                <div className="flex items-center justify-between px-3 py-2 border-b border-sky-100 bg-gradient-to-r from-sky-50/80 to-white">
+                <div className="flex items-center justify-between px-3 py-2 border-b border-sky-100 bg-linear-to-r from-sky-50/80 to-white">
                     <span className="text-[11px] text-slate-500 font-mono">
                         {entries.length} top-level{" "}
                         {entries.length === 1 ? "property" : "properties"}
@@ -394,7 +394,7 @@ const SchemaTree: FC<SchemaTreeProps> = ({ schema, spec, showRequiredColumn = tr
                             {showRequiredColumn && <col className="w-[80px]" />}
                             <col />
                         </colgroup>
-                        <thead className="sticky top-0 z-10 bg-white/95 backdrop-blur-sm">
+                        <thead className="sticky top-0 z-10 bg-white/95 backdrop-blur-xs">
                             <tr className="border-b-2 border-sky-200/80">
                                 <th className="py-2 px-3 text-left text-[10px] font-semibold text-sky-700 uppercase tracking-wider">
                                     Property

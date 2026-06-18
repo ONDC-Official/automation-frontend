@@ -277,7 +277,7 @@ export default function AirlineSeatSelect({
             <div className="p-4">
                 <h3 className="text-lg font-bold mb-4">Paste On_Select Payload to select seats</h3>
                 <textarea
-                    className="w-full h-64 p-4 border-2 border-gray-300 rounded mb-4 font-mono text-sm bg-gray-900 text-green-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                    className="w-full h-64 p-4 border-2 border-gray-300 rounded mb-4 font-mono text-sm bg-gray-900 text-green-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-hidden"
                     placeholder="Paste JSON payload here..."
                     value={jsonPayload}
                     onChange={(e) => setJsonPayload(e.target.value)}
@@ -359,23 +359,23 @@ export default function AirlineSeatSelect({
                     {/* Structure Container */}
                     <div className="relative py-12 px-24 flex justify-center">
                         {/* Left Wing */}
-                        <div className="absolute top-1/3 left-0 w-32 h-44 bg-gray-200 border-2 border-gray-300 transform -skew-y-[20deg] rounded-l-full shadow-lg z-0 origin-right translate-x-16 translate-y-16">
-                            <div className="absolute bottom-[-15px] left-1/3 w-10 h-16 bg-gray-400 rounded-full border border-gray-500 shadow-xl bg-gradient-to-r from-gray-300 to-gray-500"></div>
+                        <div className="absolute top-1/3 left-0 w-32 h-44 bg-gray-200 border-2 border-gray-300 transform skew-y-[-20deg] rounded-l-full shadow-lg z-0 origin-right translate-x-16 translate-y-16">
+                            <div className="absolute bottom-[-15px] left-1/3 w-10 h-16 bg-gray-400 rounded-full border border-gray-500 shadow-xl bg-linear-to-r from-gray-300 to-gray-500"></div>
                         </div>
 
                         {/* Right Wing */}
-                        <div className="absolute top-1/3 right-0 w-32 h-44 bg-gray-200 border-2 border-gray-300 transform skew-y-[20deg] rounded-r-full shadow-lg z-0 origin-left -translate-x-16 translate-y-16">
-                            <div className="absolute bottom-[-15px] right-1/3 w-10 h-16 bg-gray-400 rounded-full border border-gray-500 shadow-xl bg-gradient-to-l from-gray-300 to-gray-500"></div>
+                        <div className="absolute top-1/3 right-0 w-32 h-44 bg-gray-200 border-2 border-gray-300 transform skew-y-20 rounded-r-full shadow-lg z-0 origin-left -translate-x-16 translate-y-16">
+                            <div className="absolute bottom-[-15px] right-1/3 w-10 h-16 bg-gray-400 rounded-full border border-gray-500 shadow-xl bg-linear-to-l from-gray-300 to-gray-500"></div>
                         </div>
 
                         {/* Tail Stabilizers */}
-                        <div className="absolute bottom-0 left-[15%] w-24 h-24 bg-gray-200 border-2 border-gray-300 transform -skew-y-[20deg] rounded-tl-full shadow-md z-0"></div>
-                        <div className="absolute bottom-0 right-[15%] w-24 h-24 bg-gray-200 border-2 border-gray-300 transform skew-y-[20deg] rounded-tr-full shadow-md z-0"></div>
+                        <div className="absolute bottom-0 left-[15%] w-24 h-24 bg-gray-200 border-2 border-gray-300 transform skew-y-[-20deg] rounded-tl-full shadow-md z-0"></div>
+                        <div className="absolute bottom-0 right-[15%] w-24 h-24 bg-gray-200 border-2 border-gray-300 transform skew-y-20 rounded-tr-full shadow-md z-0"></div>
 
                         {/* Fuselage */}
                         <div className="relative z-10 bg-white border-4 border-gray-300 rounded-t-[50%] rounded-b-[4rem] shadow-2xl p-8 pb-20 min-w-max text-center overflow-hidden">
                             {/* Cockpit */}
-                            <div className="absolute top-10 left-1/2 transform -translate-x-1/2 w-48 h-24 bg-gradient-to-b from-slate-700 to-slate-900 rounded-t-[40%] rounded-b-[3rem] border-b-4 border-slate-500 opacity-90 shadow-inner z-20 overflow-hidden">
+                            <div className="absolute top-10 left-1/2 transform -translate-x-1/2 w-48 h-24 bg-linear-to-b from-slate-700 to-slate-900 rounded-t-[40%] rounded-b-[3rem] border-b-4 border-slate-500 opacity-90 shadow-inner z-20 overflow-hidden">
                                 <div className="absolute top-3 left-6 w-16 h-8 bg-white opacity-10 rounded-full transform -rotate-12 blur-md"></div>
                             </div>
 
@@ -538,7 +538,7 @@ export default function AirlineSeatSelect({
                                       : !isEligible
                                         ? "bg-gray-100 text-gray-300 border-gray-200 cursor-not-allowed opacity-50" // Not eligible for this user
                                         : isAvailable
-                                          ? "bg-white border-blue-500 text-blue-800 hover:bg-blue-50 shadow-sm"
+                                          ? "bg-white border-blue-500 text-blue-800 hover:bg-blue-50 shadow-xs"
                                           : "bg-gray-300 text-gray-500 border-gray-300 cursor-not-allowed"
                             }
                           `}

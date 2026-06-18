@@ -195,7 +195,7 @@ export const FlowConverterModal = ({ isOpen, onClose }: FlowConverterModalProps)
     };
 
     const selectClass =
-        "px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-sky-400 focus:border-transparent transition-all duration-200";
+        "px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-800 focus:outline-hidden focus:ring-2 focus:ring-sky-400 focus:border-transparent transition-all duration-200";
 
     const editorLang = detectedFormat === "yaml" ? "yaml" : "json";
     const formatBadge =
@@ -204,7 +204,7 @@ export const FlowConverterModal = ({ isOpen, onClose }: FlowConverterModalProps)
             : "bg-sky-50 text-sky-600 border-sky-200";
 
     return (
-        <div className="fixed inset-0 z-[60] bg-white flex flex-col mt-20">
+        <div className="fixed inset-0 z-60 bg-white flex flex-col mt-20">
             {/* Header */}
             <div className="flex items-center justify-between px-5 py-3 bg-white border-b border-gray-200 shrink-0">
                 {/* Left: back + title */}
@@ -389,7 +389,7 @@ export const FlowConverterModal = ({ isOpen, onClose }: FlowConverterModalProps)
                     <button
                         onClick={handleConvert}
                         disabled={isConverting || !inputValue.trim() || !domain || !version}
-                        className="flex flex-col items-center gap-2 p-3 rounded-xl bg-sky-500 hover:bg-sky-600 active:bg-sky-700 disabled:bg-gray-200 disabled:cursor-not-allowed text-white disabled:text-gray-400 transition-all duration-200 shadow-sm shadow-sky-200 hover:shadow-md hover:shadow-sky-300 disabled:shadow-none group w-11"
+                        className="flex flex-col items-center gap-2 p-3 rounded-xl bg-sky-500 hover:bg-sky-600 active:bg-sky-700 disabled:bg-gray-200 disabled:cursor-not-allowed text-white disabled:text-gray-400 transition-all duration-200 shadow-xs shadow-sky-200 hover:shadow-md hover:shadow-sky-300 disabled:shadow-none group w-11"
                         title={!domain || !version ? "Select domain and version first" : "Convert"}
                     >
                         {isConverting ? (

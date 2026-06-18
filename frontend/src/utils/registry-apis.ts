@@ -1,7 +1,7 @@
 import axios from "axios";
 import { toast } from "react-toastify";
 import { SubscriberData } from "@components/registry-components/registry-types";
-import { UserDetails } from "@components/Header";
+import { IUser } from "@/types/user";
 
 export const post = async (participantId: string, subscriberData: SubscriberData) => {
     try {
@@ -26,7 +26,7 @@ export const post = async (participantId: string, subscriberData: SubscriberData
     }
 };
 
-export const patch = async (data: unknown, user?: UserDetails) => {
+export const patch = async (data: unknown, user?: IUser) => {
     try {
         const participantId = user?.participantId;
         if (!participantId) {
@@ -54,7 +54,7 @@ export const patch = async (data: unknown, user?: UserDetails) => {
     }
 };
 
-export const delSubscriberDetails = async (deleteData: unknown, user?: UserDetails) => {
+export const delSubscriberDetails = async (deleteData: unknown, user?: IUser) => {
     try {
         const participantId = user?.participantId;
         if (!participantId) {
@@ -80,9 +80,7 @@ export const delSubscriberDetails = async (deleteData: unknown, user?: UserDetai
     }
 };
 
-export const getSubscriberDetails = async (
-    user: UserDetails | undefined
-): Promise<SubscriberData> => {
+export const getSubscriberDetails = async (user: IUser | undefined): Promise<SubscriberData> => {
     try {
         const participantId = user?.participantId;
         if (!participantId) {

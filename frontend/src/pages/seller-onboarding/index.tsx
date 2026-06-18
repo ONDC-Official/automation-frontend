@@ -431,9 +431,9 @@ const SellerOnboarding = () => {
 
     return (
         <div className="min-h-screen bg-gray-50">
-            <div className="bg-white shadow-sm border-b">
+            <div className="bg-white shadow-xs border-b">
                 <div className="container mx-auto px-6 py-6">
-                    <h1 className="text-3xl font-bold text-transparent bg-gradient-to-r from-sky-600 to-sky-400 bg-clip-text">
+                    <h1 className="text-3xl font-bold text-transparent bg-linear-to-r from-sky-600 to-sky-400 bg-clip-text">
                         Seller Onboarding
                     </h1>
                     <p className="text-gray-600 mt-2">

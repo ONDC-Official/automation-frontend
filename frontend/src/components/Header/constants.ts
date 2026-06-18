@@ -1,33 +1,29 @@
 import { ROUTES } from "@constants/routes";
-import { NavLink } from "./types";
+import { INavLink } from "@components/Header/types";
+import { cn } from "@/lib/utils";
 
-const developerGuideLink: NavLink = {
-    label: "Developer Guide",
-    href: ROUTES.DEVELOPER_GUIDE,
-    selected: true,
-    analytics: {
-        category: "NAV",
-        action: "Clicked in developer guide",
-        label: "DEVELOPER_GUIDE",
-    },
-};
-
-export const navLinks: NavLink[] = [
+export const navLinks: INavLink[] = [
     {
         label: "Home",
         href: ROUTES.HOME,
-        selected: true,
         analytics: {
             category: "NAV",
             action: "Clicked on home",
             label: "HOME",
         },
     },
-    ...(import.meta.env.VITE_ENVIRONMENT === "development" ? [developerGuideLink] : []),
+    {
+        label: "Developer Guide",
+        href: ROUTES.DEVELOPER_GUIDE,
+        analytics: {
+            category: "NAV",
+            action: "Clicked in developer guide",
+            label: "DEVELOPER_GUIDE",
+        },
+    },
     {
         label: "Schema Validation",
         href: ROUTES.SCHEMA,
-        selected: false,
         analytics: {
             category: "NAV",
             action: "Clicked in schema validation",
@@ -37,31 +33,27 @@ export const navLinks: NavLink[] = [
     {
         label: "Scenario Testing",
         href: ROUTES.SCENARIO,
-        selected: false,
         analytics: {
             category: "NAV",
             action: "Clicked in scenario testing",
             label: "SCENARIO_TESTING",
         },
     },
-    // {
-    //     label: "Tools",
-    //     href: ROUTES.TOOLS,
-    //     selected: false,
-    //     subMenu: [
-    //         { label: "Seller Onboarding", href: ROUTES.SELLER_ONBOARDING },
-    //         { label: "Auth Header Tool", href: ROUTES.AUTH_HEADER },
-    //     ],
-    //     analytics: {
-    //         category: "NAV",
-    //         action: "Clicked in tools",
-    //         label: "TOOLS",
-    //     },
-    // },
+    {
+        label: "Tools & SDK",
+        subMenu: [
+            { label: "Seller Onboarding", href: ROUTES.SELLER_ONBOARDING },
+            { label: "Protocol Playground", href: ROUTES.PLAYGROUND },
+        ],
+        analytics: {
+            category: "NAV",
+            action: "Clicked in tools",
+            label: "TOOLS",
+        },
+    },
     {
         label: "Support",
-        href: "",
-        selected: false,
+        href: ROUTES.SUPPORT,
         analytics: {
             category: "NAV",
             action: "Clicked in support",
@@ -69,3 +61,14 @@ export const navLinks: NavLink[] = [
         },
     },
 ];
+
+export const mobileDrawerNavClassName = cn(
+    "flex flex-col p-4 pt-6",
+    "[&_[data-slot=navigation-menu]]:w-full [&_[data-slot=navigation-menu]]:max-w-none [&_[data-slot=navigation-menu]]:flex-col [&_[data-slot=navigation-menu]]:items-stretch [&_[data-slot=navigation-menu]]:justify-start",
+    "[&_[data-slot=navigation-menu-list]]:w-full [&_[data-slot=navigation-menu-list]]:flex-col [&_[data-slot=navigation-menu-list]]:items-stretch [&_[data-slot=navigation-menu-list]]:justify-start [&_[data-slot=navigation-menu-list]]:gap-0",
+    "[&_[data-slot=navigation-menu-item]]:w-full",
+    "[&_[data-slot=navigation-menu-trigger]]:w-full [&_[data-slot=navigation-menu-trigger]]:justify-start [&_[data-slot=navigation-menu-trigger]]:px-4 [&_[data-slot=navigation-menu-trigger]]:py-3",
+    "[&_[data-slot=navigation-menu-content]]:static [&_[data-slot=navigation-menu-content]]:w-full [&_[data-slot=navigation-menu-content]]:border-0 [&_[data-slot=navigation-menu-content]]:bg-transparent [&_[data-slot=navigation-menu-content]]:p-0 [&_[data-slot=navigation-menu-content]]:pl-4 [&_[data-slot=navigation-menu-content]]:shadow-none",
+    "[&_[data-slot=navigation-menu-content][data-state=open]]:visible [&_[data-slot=navigation-menu-content][data-state=open]]:h-auto [&_[data-slot=navigation-menu-content][data-state=open]]:opacity-100",
+    "[&_[data-slot=navigation-menu-link]]:w-full [&_[data-slot=navigation-menu-link]]:justify-start [&_[data-slot=navigation-menu-link]]:px-4 [&_[data-slot=navigation-menu-link]]:py-3"
+);

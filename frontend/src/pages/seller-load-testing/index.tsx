@@ -34,7 +34,7 @@ const SellerLoadTesting = () => {
         <PageLayout>
             <SellerLoadTestingHeader />
             <div className="flex flex-1 w-full">
-                <div className="w-full p-2 rounded-sm border bg-white">
+                <div className="w-full p-2 rounded-xs border bg-white">
                     {!sessionData ? (
                         <CreateSessionPanel
                             handleSubmit={handleSubmit}
@@ -61,14 +61,14 @@ const SellerLoadTesting = () => {
 
 const PageLayout = ({ children }: { children: React.ReactNode }) => (
     <div className="min-h-screen bg-gray-50">
-        <div className="bg-white shadow-sm border-b">
+        <div className="bg-white shadow-xs border-b">
             <div className="container mx-auto px-6 py-6">{children}</div>
         </div>
     </div>
 );
 
 const SellerLoadTestingHeader = () => (
-    <h1 className="text-3xl font-bold text-transparent bg-gradient-to-r from-sky-600 to-sky-400 bg-clip-text">
+    <h1 className="text-3xl font-bold text-transparent bg-linear-to-r from-sky-600 to-sky-400 bg-clip-text">
         Seller Load Testing
     </h1>
 );

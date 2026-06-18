@@ -7,7 +7,7 @@ const DeveloperGuideGettingStarted = () => {
     const navigate = useNavigate();
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-sky-50/30">
+        <div className="min-h-screen bg-linear-to-b from-slate-50 via-white to-sky-50/30">
             <main className="container mx-auto py-8 space-y-6">
                 <div className="flex items-center justify-start mb-2">
                     <button

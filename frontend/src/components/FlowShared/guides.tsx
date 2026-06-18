@@ -148,8 +148,9 @@ export function FormGuide() {
 
                 <p className="text-gray-600 mb-6 leading-relaxed">
                     After completing your test flows, you can generate a detailed compliance report
-                    summarizing the results of all executed scenarios. The report captures request/response
-                    payloads, validation outcomes, and flow-level pass/fail status for each tested scenario.
+                    summarizing the results of all executed scenarios. The report captures
+                    request/response payloads, validation outcomes, and flow-level pass/fail status
+                    for each tested scenario.
                 </p>
 
                 {/* Generate Report */}
@@ -157,17 +158,17 @@ export function FormGuide() {
                     <div className="space-y-2">
                         <StepHeader step={1} title="Generate Report:" />
                         <p className="text-gray-600 pl-10">
-                            Click the <b>Generate Report</b> button (top-right of the session page) to
-                            compile and generate the compliance report for the current session. This will
-                            process all completed flows and produce a structured report.
+                            Click the <b>Generate Report</b> button (top-right of the session page)
+                            to compile and generate the compliance report for the current session.
+                            This will process all completed flows and produce a structured report.
                         </p>
                     </div>
 
                     <div className="space-y-2">
                         <StepHeader step={2} title="View Report:" />
                         <p className="text-gray-600 pl-10">
-                            Once the report is generated, click the <b>View Report</b> button to open the
-                            full report. The report includes:
+                            Once the report is generated, click the <b>View Report</b> button to
+                            open the full report. The report includes:
                         </p>
                         <ul className="list-disc list-inside text-gray-600 pl-10 space-y-1 text-sm">
                             <li>Session metadata (Session ID, Domain, Version, Environment)</li>
@@ -180,7 +181,8 @@ export function FormGuide() {
                     <div className="space-y-2">
                         <StepHeader step={3} title="Download / Share Report:" />
                         <p className="text-gray-600 pl-10">
-                            You can download the report by clicking on the download button in the top-right corner of the session page.
+                            You can download the report by clicking on the download button in the
+                            top-right corner of the session page.
                         </p>
                     </div>
                 </div>
@@ -188,9 +190,10 @@ export function FormGuide() {
                 {/* Note */}
                 <div className="bg-blue-50 border border-blue-200 rounded p-4 text-sm text-blue-800">
                     <p>
-                        <span className="font-semibold">NOTE:</span> The <b>Generate Report</b> button
-                        is available only after at least one flow has been executed in the session.
-                        Make sure to complete your desired test flows before generating the report.
+                        <span className="font-semibold">NOTE:</span> The <b>Generate Report</b>{" "}
+                        button is available only after at least one flow has been executed in the
+                        session. Make sure to complete your desired test flows before generating the
+                        report.
                     </p>
                 </div>
             </div>
@@ -201,7 +204,7 @@ export function FormGuide() {
 function StepHeader({ step, title }: { step: number; title: string }) {
     return (
         <div className="flex items-start space-x-3">
-            <div className="w-7 h-7 bg-gradient-to-br from-sky-100 to-sky-200 flex items-center justify-center flex-shrink-0 mt-0.5">
+            <div className="w-7 h-7 bg-linear-to-br from-sky-100 to-sky-200 flex items-center justify-center shrink-0 mt-0.5">
                 <span className="text-sky-700 text-sm font-bold">{step}</span>
             </div>
             <h4 className="text-gray-800 font-semibold">{title}</h4>

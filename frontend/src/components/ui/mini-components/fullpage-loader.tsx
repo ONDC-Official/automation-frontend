@@ -1,7 +1,7 @@
 export default function FullPageLoader() {
     return (
         <div
-            className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center"
+            className="fixed inset-0 bg-gray-600/50 flex justify-center items-center"
             style={{ transition: "opacity 0.1s ease-in-out", zIndex: 9999 }}
         >
             <div className="animate-slow-pulse">

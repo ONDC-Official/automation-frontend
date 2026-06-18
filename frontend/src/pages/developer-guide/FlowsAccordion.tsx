@@ -168,7 +168,7 @@ const FlowsAccordion: FC<FlowsAccordionProps> = ({
                 disabled={isTransitioning}
                 className={`w-full flex-1 min-w-0 text-left px-3 py-2.5 rounded-lg border text-sm transition-all duration-200 ${
                     isSelected || isTransitioning
-                        ? "bg-sky-50 border-sky-300 text-sky-900 shadow-sm ring-1 ring-sky-200/60 font-medium"
+                        ? "bg-sky-50 border-sky-300 text-sky-900 shadow-xs ring-1 ring-sky-200/60 font-medium"
                         : "bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100 hover:border-slate-300"
                 }`}
             >
@@ -224,7 +224,7 @@ const FlowsAccordion: FC<FlowsAccordionProps> = ({
                         <button
                             onClick={() => toggleFlow(flowIndex)}
                             type="button"
-                            className="w-full text-left flex items-center justify-between p-4 cursor-pointer bg-gradient-to-r from-sky-50 to-sky-100/50 hover:from-sky-100 hover:to-sky-100 transition-colors duration-200 focus:outline-none"
+                            className="w-full text-left flex items-center justify-between p-4 cursor-pointer bg-linear-to-r from-sky-50 to-sky-100/50 hover:from-sky-100 hover:to-sky-100 transition-colors duration-200 focus:outline-hidden"
                             aria-expanded={isOpen}
                         >
                             <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -232,7 +232,7 @@ const FlowsAccordion: FC<FlowsAccordionProps> = ({
                                     <FcWorkflow className="w-5 h-5" />
                                 </span>
                                 <div className="flex-1 min-w-0">
-                                    <span className="font-semibold text-gray-900 text-sm break-words block">
+                                    <span className="font-semibold text-gray-900 text-sm wrap-break-word block">
                                         {flowName}
                                     </span>
                                     {flow.tags.length > 0 && (
@@ -249,7 +249,7 @@ const FlowsAccordion: FC<FlowsAccordionProps> = ({
                                     )}
                                 </div>
                             </div>
-                            <div className="w-8 h-8 rounded-full bg-white/80 flex items-center justify-center shadow-sm pointer-events-none shrink-0 ml-3">
+                            <div className="w-8 h-8 rounded-full bg-white/80 flex items-center justify-center shadow-xs pointer-events-none shrink-0 ml-3">
                                 <FaChevronDown
                                     className={`w-3 h-3 text-sky-600 transition-transform duration-300 ${isOpen ? "rotate-180" : ""}`}
                                 />

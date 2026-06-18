@@ -1,10 +1,10 @@
 import { Context, createContext } from "react";
-import { UserDetails } from "@components/Header";
 import { SubscriberData } from "../components/registry-components/registry-types";
+import { IUser } from "@/types/user";
 
 interface UserContextProps {
     isLoggedIn: boolean;
-    userDetails?: UserDetails;
+    userDetails?: IUser;
     refreshUser: () => Promise<void>;
     subscriberData: SubscriberData;
     setSubscriberData: React.Dispatch<React.SetStateAction<SubscriberData>>;

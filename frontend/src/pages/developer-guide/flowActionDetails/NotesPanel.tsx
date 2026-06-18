@@ -232,7 +232,7 @@ const NotesPanel: FC<NotesPanelProps> = ({ selectedPath, actionApi, useCaseId, f
 
     if (!isLoggedIn) {
         return (
-            <div className="h-full flex flex-col rounded-xl border border-slate-200 bg-white overflow-hidden shadow-sm">
+            <div className="h-full flex flex-col rounded-xl border border-slate-200 bg-white overflow-hidden shadow-xs">
                 <div className="px-5 py-4 border-b border-slate-200 bg-slate-50/70 shrink-0">
                     <h3 className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-0">
                         Notes
@@ -246,7 +246,7 @@ const NotesPanel: FC<NotesPanelProps> = ({ selectedPath, actionApi, useCaseId, f
     }
 
     return (
-        <div className="h-full flex flex-col rounded-xl border border-slate-200 bg-white overflow-hidden shadow-sm">
+        <div className="h-full flex flex-col rounded-xl border border-slate-200 bg-white overflow-hidden shadow-xs">
             <div className="px-5 py-4 border-b border-slate-200 bg-slate-50/70 shrink-0">
                 <h3 className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-0">
                     Notes
@@ -302,7 +302,7 @@ const NotesPanel: FC<NotesPanelProps> = ({ selectedPath, actionApi, useCaseId, f
 
                         {/* Add / Edit form — floating card (create only when logged in) */}
                         {showForm && (isLoggedIn || editingId !== null) && (
-                            <div className="shrink-0 mb-4 p-4 rounded-2xl bg-white border border-slate-200/80 shadow-sm">
+                            <div className="shrink-0 mb-4 p-4 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
                                 <input
                                     type="text"
                                     value={formTitle}
@@ -321,7 +321,7 @@ const NotesPanel: FC<NotesPanelProps> = ({ selectedPath, actionApi, useCaseId, f
                                     <button
                                         type="button"
                                         onClick={saveNote}
-                                        className="px-4 py-2 text-sm font-medium text-white bg-amber-500 rounded-xl hover:bg-amber-600 shadow-sm transition-colors"
+                                        className="px-4 py-2 text-sm font-medium text-white bg-amber-500 rounded-xl hover:bg-amber-600 shadow-xs transition-colors"
                                     >
                                         {editingId ? "Save" : "Add"}
                                     </button>
@@ -392,7 +392,7 @@ const NotesPanel: FC<NotesPanelProps> = ({ selectedPath, actionApi, useCaseId, f
                                                             editingId !== note.id && (
                                                                 <div
                                                                     key={note.id}
-                                                                    className="p-4 rounded-2xl border shadow-sm bg-white border-slate-200/80 hover:shadow-md transition-all"
+                                                                    className="p-4 rounded-2xl border shadow-xs bg-white border-slate-200/80 hover:shadow-md transition-all"
                                                                 >
                                                                     <div className="flex items-start justify-between gap-2">
                                                                         <div className="min-w-0 flex-1">
@@ -476,7 +476,7 @@ const NotesPanel: FC<NotesPanelProps> = ({ selectedPath, actionApi, useCaseId, f
                                             editingId !== note.id && (
                                                 <div
                                                     key={note.id}
-                                                    className="p-4 rounded-2xl border shadow-sm bg-white border-slate-200/80 hover:shadow-md transition-all"
+                                                    className="p-4 rounded-2xl border shadow-xs bg-white border-slate-200/80 hover:shadow-md transition-all"
                                                 >
                                                     <div className="flex items-start justify-between gap-2">
                                                         <div className="min-w-0 flex-1">

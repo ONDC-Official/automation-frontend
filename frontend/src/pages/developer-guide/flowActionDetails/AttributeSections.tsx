@@ -18,7 +18,7 @@ export const LabelBadge: FC<{ children: ReactNode }> = ({ children }) => (
 );
 
 export const ValueBadge: FC<{ children: ReactNode }> = ({ children }) => (
-    <span className="inline-flex items-center px-2.5 py-1 rounded-md bg-sky-50 text-sky-800 font-mono text-[11px] break-all border border-sky-200 shadow-sm">
+    <span className="inline-flex items-center px-2.5 py-1 rounded-md bg-sky-50 text-sky-800 font-mono text-[11px] break-all border border-sky-200 shadow-xs">
         {children}
     </span>
 );
@@ -90,7 +90,7 @@ const TagGroupItem: FC<{ field: TagField }> = ({ field }) => {
     const nestedCount = hasList ? countNestedItems(field.list!) : 0;
 
     return (
-        <div className="rounded-lg border border-sky-100 overflow-hidden bg-white shadow-sm">
+        <div className="rounded-lg border border-sky-100 overflow-hidden bg-white shadow-xs">
             <button
                 type="button"
                 onClick={() => hasList && setExpanded((e) => !e)}
@@ -139,7 +139,7 @@ export const AttributeSection: FC<{ attrs: AttributeDetails }> = ({ attrs }) => 
     <div className="space-y-5">
         <section>
             <SectionHeader>Details</SectionHeader>
-            <div className="rounded-xl border border-sky-100 shadow-sm overflow-hidden">
+            <div className="rounded-xl border border-sky-100 shadow-xs overflow-hidden">
                 <div className="px-4 py-3 border-b border-sky-100 flex flex-col gap-1.5">
                     <LabelBadge>JSON Path</LabelBadge>
                     <div className="overflow-x-auto">
@@ -164,14 +164,14 @@ export const AttributeSection: FC<{ attrs: AttributeDetails }> = ({ attrs }) => 
         </section>
         <section>
             <SectionHeader>Description</SectionHeader>
-            <p className="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap rounded-xl bg-white border border-slate-200 shadow-sm p-4">
+            <p className="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap rounded-xl bg-white border border-slate-200 shadow-xs p-4">
                 {safeDescription(attrs._description?.info ?? attrs.description)}
             </p>
         </section>
         {attrs.enumrefs && attrs.enumrefs.length > 0 && (
             <section>
                 <SectionHeader>Enum References</SectionHeader>
-                <ul className="space-y-2 text-sm rounded-xl bg-white border border-slate-200 shadow-sm p-4">
+                <ul className="space-y-2 text-sm rounded-xl bg-white border border-slate-200 shadow-xs p-4">
                     {attrs.enumrefs.map((ref, i) => (
                         <li key={i} className="flex items-start gap-1.5">
                             <span className="text-sky-300 mt-0.5">↗</span>
@@ -195,7 +195,7 @@ export const EnumSection: FC<{ attrs: EnumDetails }> = ({ attrs }) => (
     <div className="space-y-5">
         <section>
             <SectionHeader>Details</SectionHeader>
-            <div className="rounded-xl border border-sky-100 shadow-sm overflow-hidden">
+            <div className="rounded-xl border border-sky-100 shadow-xs overflow-hidden">
                 <div className="px-4 py-3 border-b border-sky-100 bg-sky-50/60 flex flex-col gap-1.5">
                     <LabelBadge>JSON Path</LabelBadge>
                     <div className="overflow-x-auto">
@@ -221,7 +221,7 @@ export const EnumSection: FC<{ attrs: EnumDetails }> = ({ attrs }) => (
         {attrs.description != null && attrs.description !== "—" && (
             <section>
                 <SectionHeader>Description</SectionHeader>
-                <p className="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap rounded-xl bg-white border border-slate-200 shadow-sm p-4">
+                <p className="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap rounded-xl bg-white border border-slate-200 shadow-xs p-4">
                     {safeDescription(attrs.description)}
                 </p>
             </section>
@@ -229,7 +229,7 @@ export const EnumSection: FC<{ attrs: EnumDetails }> = ({ attrs }) => (
         {attrs.enumrefs && attrs.enumrefs.length > 0 && (
             <section>
                 <SectionHeader>Enum References</SectionHeader>
-                <ul className="space-y-2 text-sm rounded-xl bg-white border border-slate-200 shadow-sm p-4">
+                <ul className="space-y-2 text-sm rounded-xl bg-white border border-slate-200 shadow-xs p-4">
                     {attrs.enumrefs.map((ref, i) => (
                         <li key={i} className="flex items-start gap-1.5">
                             <span className="text-sky-300 mt-0.5">↗</span>
@@ -249,7 +249,7 @@ export const EnumSection: FC<{ attrs: EnumDetails }> = ({ attrs }) => (
         {attrs.enumOptions && attrs.enumOptions.length > 0 && (
             <section>
                 <SectionHeader>Possible Values</SectionHeader>
-                <ul className="rounded-xl bg-white border border-sky-100 shadow-sm divide-y divide-sky-50">
+                <ul className="rounded-xl bg-white border border-sky-100 shadow-xs divide-y divide-sky-50">
                     {attrs.enumOptions.map((o, i) => (
                         <li key={i} className="flex items-start gap-3 px-4 py-2.5">
                             <ValueBadge>{o.code}</ValueBadge>
@@ -274,7 +274,7 @@ export const TagSection: FC<{ attrs: TagDetails }> = ({ attrs }) => {
         <div className="space-y-5">
             <section>
                 <SectionHeader>Details</SectionHeader>
-                <div className="rounded-xl border border-sky-100 shadow-sm overflow-hidden">
+                <div className="rounded-xl border border-sky-100 shadow-xs overflow-hidden">
                     <div className="px-4 py-3 border-b border-sky-100 bg-sky-50/60 flex flex-col gap-1.5">
                         <LabelBadge>JSON Path</LabelBadge>
                         <div className="overflow-x-auto">
@@ -300,7 +300,7 @@ export const TagSection: FC<{ attrs: TagDetails }> = ({ attrs }) => {
             {description != null && description !== "—" && (
                 <section>
                     <SectionHeader>Description</SectionHeader>
-                    <p className="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap rounded-xl bg-white border border-slate-200 shadow-sm p-4">
+                    <p className="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap rounded-xl bg-white border border-slate-200 shadow-xs p-4">
                         {safeDescription(description)}
                     </p>
                 </section>

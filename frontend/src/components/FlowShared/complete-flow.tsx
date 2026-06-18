@@ -170,7 +170,7 @@ export function Accordion({
 
     if (!sessionCache) {
         return (
-            <div className="bg-white rounded-md shadow-sm border border-sky-100 p-5 mb-4">
+            <div className="bg-white rounded-md shadow-xs border border-sky-100 p-5 mb-4">
                 <style>
                     {`
 						@keyframes shimmer {
@@ -276,7 +276,7 @@ export function Accordion({
     function AccordionButtons() {
         return (
             <div className="flex items-center">
-                <div className="flex items-center justify-center p-2 ml-2 rounded-md shadow-sm bg-sky-50 transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 text-sky-600 ease-in">
+                <div className="flex items-center justify-center p-2 ml-2 rounded-md shadow-xs bg-sky-50 transition-transform transform hover:scale-105 focus:outline-hidden focus:ring-2 focus:ring-offset-2 text-sky-600 ease-in">
                     <div className="flex items-center gap-2 text-sm font-bold text-sky-700">
                         {getPercent(mappedFlow).toFixed(0)}%
                     </div>
@@ -408,7 +408,7 @@ export function Accordion({
     return (
         <div className="rounded-md mb-4 w-full ml-1">
             <div
-                className={`${bg} border rounded-md shadow-sm hover:bg-sky-100 cursor-pointer transition-colors px-5 py-3`}
+                className={`${bg} border rounded-md shadow-xs hover:bg-sky-100 cursor-pointer transition-colors px-5 py-3`}
                 onClick={async () => await onAccordionClick()}
                 aria-expanded={isOpen}
                 aria-controls={`accordion-content-${flow.id}`}

@@ -6,7 +6,7 @@ interface HeaderProps {
 }
 
 const Header: FC<HeaderProps> = ({ tabs }) => (
-    <header className="border-b border-sky-100 bg-gradient-to-br from-sky-50 via-white to-slate-50">
+    <header className="border-b border-sky-100 bg-linear-to-br from-sky-50 via-white to-slate-50">
         <div className="px-6 md:px-10 py-10 md:py-12 mt-[18px]">
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8 lg:gap-10">
                 <div className="max-w-3xl flex-1 min-w-0">

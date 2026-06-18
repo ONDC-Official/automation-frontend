@@ -26,7 +26,7 @@ export function AIChatPanel({ actionId: _actionId }: AIChatPanelProps) {
         <div className="flex flex-col gap-3 h-full min-h-0">
             <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-2 min-w-0">
-                    <span className="inline-flex items-center justify-center h-7 w-7 rounded-md bg-gradient-to-br from-sky-500 to-indigo-600 text-white shadow-sm shrink-0">
+                    <span className="inline-flex items-center justify-center h-7 w-7 rounded-md bg-linear-to-br from-sky-500 to-indigo-600 text-white shadow-xs shrink-0">
                         <PiShieldStarBold className="h-4 w-4" />
                     </span>
                     <div className="flex flex-col leading-tight min-w-0">

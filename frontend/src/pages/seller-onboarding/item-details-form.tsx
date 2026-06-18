@@ -3203,7 +3203,7 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                                             {itemVariants[index].map((variant, vIdx) => (
                                                 <div
                                                     key={vIdx}
-                                                    className="p-3 border border-gray-200 rounded-lg bg-white shadow-sm hover:shadow-md transition-shadow"
+                                                    className="p-3 border border-gray-200 rounded-lg bg-white shadow-xs hover:shadow-md transition-shadow"
                                                 >
                                                     <div className="flex justify-between items-start">
                                                         <div className="flex-1">

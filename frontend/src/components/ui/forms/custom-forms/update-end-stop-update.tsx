@@ -122,7 +122,7 @@ export default function Metro210EndStopUpdate({ submitEvent }: IMetroEndStopProp
             <div className="p-4">
                 <h3 className="text-lg font-bold mb-4">Paste the master on_search Payload</h3>
                 <textarea
-                    className="w-full h-64 p-4 border-2 border-gray-300 rounded mb-4 font-mono text-sm bg-gray-900 text-green-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                    className="w-full h-64 p-4 border-2 border-gray-300 rounded mb-4 font-mono text-sm bg-gray-900 text-green-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-hidden"
                     placeholder="Paste on_search JSON payload here..."
                     value={jsonPayload}
                     onChange={(e) => setJsonPayload(e.target.value)}
@@ -154,7 +154,7 @@ export default function Metro210EndStopUpdate({ submitEvent }: IMetroEndStopProp
                     value={selectedStopId}
                     onChange={(e) => setSelectedStopId(e.target.value)}
                     required
-                    className="w-full p-3 border-2 border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white"
+                    className="w-full p-3 border-2 border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-hidden bg-white"
                 >
                     <option value="">-- Select a station --</option>
                     {stops.map((stop) => (

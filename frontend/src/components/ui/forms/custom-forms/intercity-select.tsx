@@ -103,7 +103,7 @@ export default function IntercitySelect({
     };
 
     const inputStyle =
-        "border rounded p-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white";
+        "border rounded p-2 w-full focus:outline-hidden focus:ring-2 focus:ring-blue-500 bg-white";
     const labelStyle = "mb-1 font-semibold text-sm";
     const fieldWrapperStyle = "flex flex-col mb-2";
 

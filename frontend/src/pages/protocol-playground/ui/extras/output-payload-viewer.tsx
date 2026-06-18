@@ -30,17 +30,17 @@ import {
 import { PlaygroundContext } from "@pages/protocol-playground/context/playground-context";
 import { buildLinearConfig } from "@pages/protocol-playground/utils/transaction-view";
 import {
-    ActiveDomainConfig,
-    Domain,
-    DomainVersion,
-    ParsedPayload,
+    IActiveDomainConfig,
+    IDomain,
+    IDomainVersion,
+    IParsedPayload,
 } from "@pages/schema-validation/types";
 
 /**
  * Type for ONDC protocol payload
  * Can be an empty string or a parsed payload object with context
  */
-type ProtocolPayload = "" | ParsedPayload | Record<string, unknown>;
+type ProtocolPayload = "" | IParsedPayload | Record<string, unknown>;
 
 // ─── Validate Requirements Modal ──────────────────────────────────────────────
 
@@ -152,7 +152,7 @@ function ValidateRequirementsModal({
                 style={{ width: "min(820px, 95vw)", maxHeight: "90vh" }}
             >
                 {/* Modal Header */}
-                <div className="flex items-center justify-between px-6 py-4 bg-gradient-to-r from-indigo-600 to-sky-500">
+                <div className="flex items-center justify-between px-6 py-4 bg-linear-to-r from-indigo-600 to-sky-500">
                     <div className="flex items-center gap-3">
                         <IoPencil className="text-white text-xl" />
                         <div>
@@ -286,7 +286,7 @@ function ValidateRequirementsModal({
                     <button
                         onClick={handleValidate}
                         disabled={validating || loadingSession}
-                        className="flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-semibold text-white bg-gradient-to-r from-indigo-600 to-sky-500 hover:from-indigo-700 hover:to-sky-600 disabled:opacity-60 disabled:cursor-not-allowed transition shadow-sm"
+                        className="flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-semibold text-white bg-linear-to-r from-indigo-600 to-sky-500 hover:from-indigo-700 hover:to-sky-600 disabled:opacity-60 disabled:cursor-not-allowed transition shadow-xs"
                     >
                         {validating ? (
                             <>
@@ -328,7 +328,7 @@ export default function OutputPayloadViewer({
     const runIndex = hasRuns ? Math.min(selectedRun, runs.length - 1) : 0;
     // The payload shown / validated is the selected run (or the single payload).
     const payload = hasRuns ? (runs[runIndex] ?? propPayload) : propPayload;
-    const [activeDomain, setActiveDomain] = useState<ActiveDomainConfig>({});
+    const [activeDomain, setActiveDomain] = useState<IActiveDomainConfig>({});
     const [mdData, setMdData] = useState("");
     const [loading, setIsLoading] = useState(false);
     const [validationSuccess, setValidationSuccess] = useState<boolean | null>(null);
@@ -356,7 +356,7 @@ export default function OutputPayloadViewer({
     useEffect(() => {
         const getFormFields = async () => {
             const data = await fetchFormFieldData();
-            setActiveDomain(data as ActiveDomainConfig);
+            setActiveDomain(data as IActiveDomainConfig);
         };
         getFormFields();
     }, []);
@@ -368,7 +368,7 @@ export default function OutputPayloadViewer({
         }
 
         // After empty string check, payload is ParsedPayload | Record<string, unknown>
-        const parsedPayload = payload as ParsedPayload | Record<string, unknown>;
+        const parsedPayload = payload as IParsedPayload | Record<string, unknown>;
 
         try {
             if (Array.isArray(parsedPayload)) {
@@ -382,7 +382,7 @@ export default function OutputPayloadViewer({
         }
 
         // Type guard: check if payload has context property
-        const payloadWithContext = parsedPayload as ParsedPayload;
+        const payloadWithContext = parsedPayload as IParsedPayload;
         const action = payloadWithContext?.context?.action;
 
         if (!action) {
@@ -393,12 +393,12 @@ export default function OutputPayloadViewer({
 
         let isDomainActive = false;
 
-        Object.entries(activeDomain).forEach((data: [string, Domain[]]) => {
+        Object.entries(activeDomain).forEach((data: [string, IDomain[]]) => {
             const [_key, domains] = data;
 
-            domains.forEach((domain: Domain) => {
+            domains.forEach((domain: IDomain) => {
                 if (domain.key === payloadWithContext?.context?.domain) {
-                    domain.version.forEach((ver: DomainVersion) => {
+                    domain.version.forEach((ver: IDomainVersion) => {
                         if (
                             ver.key ===
                             (payloadWithContext?.context?.version ||
@@ -482,7 +482,7 @@ export default function OutputPayloadViewer({
     }
 
     return (
-        <div className="h-full flex flex-col bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+        <div className="h-full flex flex-col bg-white rounded-lg border border-gray-200 shadow-xs overflow-hidden">
             {/* Validate Requirements Modal */}
             <ValidateRequirementsModal
                 isOpen={reqsModalOpen}
@@ -496,7 +496,7 @@ export default function OutputPayloadViewer({
                 }}
             />
             {/* Header */}
-            <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-sky-50 to-white border-b border-sky-100">
+            <div className="flex items-center justify-between px-4 py-3 bg-linear-to-r from-sky-50 to-white border-b border-sky-100">
                 <div className="flex items-center gap-2">
                     <IoTerminal className="text-sky-500 text-xl" />
                     <h3 className="text-base font-semibold text-gray-900">Output Payload</h3>
@@ -505,7 +505,7 @@ export default function OutputPayloadViewer({
                     <button
                         onClick={verifyRequestL0}
                         disabled={loading}
-                        className="flex items-center gap-1.5 px-3 py-1.5 bg-sky-500 text-white text-xs font-semibold rounded-md hover:bg-sky-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition shadow-sm"
+                        className="flex items-center gap-1.5 px-3 py-1.5 bg-sky-500 text-white text-xs font-semibold rounded-md hover:bg-sky-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition shadow-xs"
                     >
                         {loading ? (
                             <>
@@ -520,7 +520,7 @@ export default function OutputPayloadViewer({
                         )}
                     </button>
                     <button
-                        className="flex items-center gap-1.5 px-3 py-1.5 bg-sky-500 text-white text-xs font-semibold rounded-md hover:bg-sky-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition shadow-sm"
+                        className="flex items-center gap-1.5 px-3 py-1.5 bg-sky-500 text-white text-xs font-semibold rounded-md hover:bg-sky-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition shadow-xs"
                         onClick={verifyRequestL2}
                     >
                         {loading ? (
@@ -537,7 +537,7 @@ export default function OutputPayloadViewer({
                     </button>
 
                     <button
-                        className="flex items-center gap-1.5 px-3 py-1.5 bg-sky-500 text-white text-xs font-semibold rounded-md hover:bg-sky-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition shadow-sm"
+                        className="flex items-center gap-1.5 px-3 py-1.5 bg-sky-500 text-white text-xs font-semibold rounded-md hover:bg-sky-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition shadow-xs"
                         onClick={verifyRequestMeetReqs}
                     >
                         {loading ? (
@@ -590,7 +590,7 @@ export default function OutputPayloadViewer({
                                             onClick={() => setSelectedRun(i)}
                                             className={`px-2.5 py-1 rounded-md text-xs font-semibold transition ${
                                                 i === runIndex
-                                                    ? "bg-sky-500 text-white shadow-sm"
+                                                    ? "bg-sky-500 text-white shadow-xs"
                                                     : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                                             }`}
                                         >

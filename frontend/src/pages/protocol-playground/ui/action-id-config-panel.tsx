@@ -78,7 +78,7 @@ export function ActionIdConfigurationPanel({
             {/* Properties Grid */}
             <div className="space-y-2.5 mb-3">
                 <div className="flex items-start">
-                    <span className="text-xs font-medium text-gray-500 w-24 flex-shrink-0 pt-0.5">
+                    <span className="text-xs font-medium text-gray-500 w-24 shrink-0 pt-0.5">
                         Owner
                     </span>
                     <span
@@ -89,7 +89,7 @@ export function ActionIdConfigurationPanel({
                 </div>
 
                 <div className="flex items-start">
-                    <span className="text-xs font-medium text-gray-500 w-24 flex-shrink-0 pt-0.5">
+                    <span className="text-xs font-medium text-gray-500 w-24 shrink-0 pt-0.5">
                         Unsolicited
                     </span>
                     <span
@@ -101,7 +101,7 @@ export function ActionIdConfigurationPanel({
 
                 {actionConfig.responseFor && actionConfig.responseFor !== "NONE" && (
                     <div className="flex items-start">
-                        <span className="text-xs font-medium text-gray-500 w-24 flex-shrink-0 pt-0.5">
+                        <span className="text-xs font-medium text-gray-500 w-24 shrink-0 pt-0.5">
                             Response For
                         </span>
                         <span className="text-sm font-medium text-indigo-700 font-mono">
@@ -163,7 +163,7 @@ export function ActionIdConfigurationPanel({
             </div>
 
             {/* Right side - Action Buttons */}
-            <div className="flex items-center gap-1 flex-shrink-0">
+            <div className="flex items-center gap-1 shrink-0">
                 <Tippy content={<span className="text-xs">Reset</span>} delay={500}>
                     <div>
                         <IconButton

@@ -18,7 +18,7 @@ const IconButton: React.FC<IconButtonProps> = ({
     overwriteClassName = undefined,
 }) => {
     const baseClasses =
-        "flex items-center justify-center p-2 ml-2 rounded-md shadow-sm transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2";
+        "flex items-center justify-center p-2 ml-2 rounded-md shadow-xs transition-transform transform hover:scale-105 focus:outline-hidden focus:ring-2 focus:ring-offset-2";
 
     const colors = {
         blue: "text-blue-600 bg-blue-100 hover:bg-blue-200 focus:ring-blue-400",

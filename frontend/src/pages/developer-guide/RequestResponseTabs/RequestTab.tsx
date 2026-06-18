@@ -1,4 +1,4 @@
-import { FC, useEffect, useMemo, useState } from "react";
+import { CSSProperties, FC, useEffect, useMemo, useState } from "react";
 import { FiCode, FiList } from "react-icons/fi";
 import JsonView from "@uiw/react-json-view";
 import { githubDarkTheme } from "@uiw/react-json-view/githubDark";
@@ -55,7 +55,7 @@ const RequestTab: FC<RequestTabProps> = ({ spec, api }) => {
                             onClick={() => setView("schema")}
                             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
                                 view === "schema"
-                                    ? "bg-white text-slate-800 shadow-sm"
+                                    ? "bg-white text-slate-800 shadow-xs"
                                     : "text-slate-500 hover:text-slate-700"
                             }`}
                         >
@@ -67,7 +67,7 @@ const RequestTab: FC<RequestTabProps> = ({ spec, api }) => {
                             onClick={() => setView("raw")}
                             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
                                 view === "raw"
-                                    ? "bg-white text-slate-800 shadow-sm"
+                                    ? "bg-white text-slate-800 shadow-xs"
                                     : "text-slate-500 hover:text-slate-700"
                             }`}
                         >
@@ -104,7 +104,7 @@ const RequestTab: FC<RequestTabProps> = ({ spec, api }) => {
                                 ) : deepSchema ? (
                                     <JsonView
                                         value={deepSchema}
-                                        style={githubDarkTheme}
+                                        style={githubDarkTheme as CSSProperties}
                                         displayDataTypes={false}
                                         shortenTextAfterLength={120}
                                     />

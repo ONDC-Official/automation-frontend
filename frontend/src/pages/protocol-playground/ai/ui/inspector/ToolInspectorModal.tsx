@@ -197,7 +197,7 @@ export function ToolInspectorModal({ isOpen, onClose }: ToolInspectorModalProps)
                             {showSchema ? "Hide" : "Show"} parameter schema
                         </button>
                         {showSchema && (
-                            <pre className="font-mono text-[10px] whitespace-pre-wrap break-words bg-gray-50 border border-gray-200 rounded p-2 mt-1 max-h-40 overflow-auto">
+                            <pre className="font-mono text-[10px] whitespace-pre-wrap wrap-break-word bg-gray-50 border border-gray-200 rounded p-2 mt-1 max-h-40 overflow-auto">
                                 {JSON.stringify(currentTool.function.parameters, null, 2)}
                             </pre>
                         )}

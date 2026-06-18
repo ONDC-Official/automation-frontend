@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, type JSX } from "react";
 import Tippy from "@tippyjs/react";
 // import "tippy.js/dist/tippy.css";
 import "tippy.js/animations/perspective-subtle.css";
@@ -90,7 +90,7 @@ const renderValue = (
     return (
         <Tippy
             content={
-                <div className="text-xs p-2 rounded-sm bg-slate-900 border border-sky-400">
+                <div className="text-xs p-2 rounded-xs bg-slate-900 border border-sky-400">
                     <div className="font-semibold text-sky-300 mb-1">Path:</div>
                     <div className="text-gray-300 font-mono">{path}</div>
                     {isTruncated && (
@@ -104,7 +104,7 @@ const renderValue = (
             delay={[250, 0]}
             placement="top"
             arrow={true}
-            className="max-w-xs break-words whitespace-normal"
+            className="max-w-xs wrap-break-word whitespace-normal"
             interactive={true}
             animation="perspective-subtle"
         >
@@ -112,12 +112,12 @@ const renderValue = (
                 <span className={`${valueColor} truncate max-w-md inline-block`}>
                     {isTruncated ? stringValue.slice(0, 100) + "..." : stringValue}
                 </span>
-                <span className="text-xs text-gray-500 font-mono flex-shrink-0">
+                <span className="text-xs text-gray-500 font-mono shrink-0">
                     {getTypeBadge(value)}
                 </span>
                 <button
                     onClick={handleCopy}
-                    className="opacity-0 group-hover/value:opacity-100 transition-opacity text-gray-400 hover:text-gray-200 flex-shrink-0"
+                    className="opacity-0 group-hover/value:opacity-100 transition-opacity text-gray-400 hover:text-gray-200 shrink-0"
                     title="Copy value"
                 >
                     <CopyIcon />
@@ -185,7 +185,7 @@ const renderJson = ({
                             {(isObject || isArray) && (
                                 <button
                                     onClick={() => toggleCollapse(newPath)}
-                                    className="text-gray-500 hover:text-gray-300 mr-1.5 mt-1.5 transition-colors flex-shrink-0"
+                                    className="text-gray-500 hover:text-gray-300 mr-1.5 mt-1.5 transition-colors shrink-0"
                                     aria-label={isCollapsed ? "Expand" : "Collapse"}
                                 >
                                     {isCollapsed ? <ChevronRight /> : <ChevronDown />}
@@ -195,7 +195,7 @@ const renderJson = ({
                             <div className="inline-flex items-baseline gap-2 min-w-0">
                                 <Tippy
                                     content={
-                                        <div className="text-xs p-2 rounded-sm bg-slate-900 border border-sky-400">
+                                        <div className="text-xs p-2 rounded-xs bg-slate-900 border border-sky-400">
                                             <div className="font-semibold text-sky-300 mb-1">
                                                 Path:
                                             </div>
@@ -206,13 +206,13 @@ const renderJson = ({
                                     arrow={true}
                                     disabled={!isObject && !isArray}
                                     placement="top"
-                                    className="max-w-xs break-words whitespace-normal"
+                                    className="max-w-xs wrap-break-word whitespace-normal"
                                     interactive={true}
                                     animation="perspective-subtle"
                                 >
                                     <span
                                         onClick={(e) => handleKeyClick(newPath, key, e)}
-                                        className={`font-mono text-sm select-none transition-all duration-150 flex-shrink-0 inline-block ${
+                                        className={`font-mono text-sm select-none transition-all duration-150 shrink-0 inline-block ${
                                             isObject || isArray
                                                 ? "cursor-pointer"
                                                 : "cursor-default"
@@ -230,13 +230,13 @@ const renderJson = ({
                                     </span>
                                 </Tippy>
 
-                                <span className="text-gray-600 font-mono text-sm flex-shrink-0">
+                                <span className="text-gray-600 font-mono text-sm shrink-0">
                                     :
                                 </span>
 
                                 <div className="inline-flex items-baseline gap-2 min-w-0">
                                     {isObject && (
-                                        <span className="text-gray-500 font-mono text-sm flex-shrink-0">
+                                        <span className="text-gray-500 font-mono text-sm shrink-0">
                                             {"{"}
                                             {isCollapsed && (
                                                 <>
@@ -252,7 +252,7 @@ const renderJson = ({
                                         </span>
                                     )}
                                     {isArray && (
-                                        <span className="text-gray-500 font-mono text-sm flex-shrink-0">
+                                        <span className="text-gray-500 font-mono text-sm shrink-0">
                                             {"["}
                                             {isCollapsed && (
                                                 <>
@@ -480,13 +480,13 @@ const JsonViewerDark: React.FC<JsonViewerProps> = ({
     return (
         <div className="font-mono text-sm h-full flex flex-col">
             {/* Toolbar */}
-            <div className="flex items-center gap-2 mb-3 pb-3 border-b border-gray-700/50 flex-shrink-0">
+            <div className="flex items-center gap-2 mb-3 pb-3 border-b border-gray-700/50 shrink-0">
                 <input
                     type="text"
                     placeholder="Search keys or values..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="flex-1 bg-gray-800 border border-gray-700 rounded px-3 py-1.5 text-sm text-gray-200 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-sky-500/50"
+                    className="flex-1 bg-gray-800 border border-gray-700 rounded px-3 py-1.5 text-sm text-gray-200 placeholder-gray-500 focus:outline-hidden focus:ring-2 focus:ring-sky-500/50"
                 />
                 <button
                     onClick={expandAll}
@@ -535,7 +535,7 @@ const JsonViewerDark: React.FC<JsonViewerProps> = ({
                         <button
                             type="button"
                             onClick={isExpanded ? onCollapse : onExpand}
-                            className="p-2 rounded-lg text-slate-500 hover:bg-slate-200 hover:text-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-sky-400 focus:ring-offset-1"
+                            className="p-2 rounded-lg text-slate-500 hover:bg-slate-200 hover:text-slate-700 transition-colors focus:outline-hidden focus:ring-2 focus:ring-sky-400 focus:ring-offset-1"
                             title={isExpanded ? "Exit fullscreen" : "Fullscreen"}
                         >
                             {isExpanded ? (

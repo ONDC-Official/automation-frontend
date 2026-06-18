@@ -86,7 +86,7 @@ export default function Popup({
 
     return ReactDOM.createPortal(
         <div
-            className={`fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 transition-opacity duration-300 p-4 ${
+            className={`fixed inset-0 flex items-center justify-center bg-black/50 z-50 transition-opacity duration-300 p-4 ${
                 isShown ? "opacity-100" : "opacity-0"
             }`}
             onClick={() => {

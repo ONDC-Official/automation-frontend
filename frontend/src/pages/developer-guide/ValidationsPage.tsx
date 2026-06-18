@@ -74,14 +74,14 @@ const ValidationsPage: FC = () => {
                         <span className="text-slate-300">·</span>
                         <span className="font-mono text-sm text-slate-800 truncate">{domain}</span>
                         {version && (
-                            <span className="flex-shrink-0 inline-flex items-center px-2.5 py-1 rounded-full bg-sky-50 border border-sky-200 text-sky-700 text-xs font-mono font-semibold">
+                            <span className="shrink-0 inline-flex items-center px-2.5 py-1 rounded-full bg-sky-50 border border-sky-200 text-sky-700 text-xs font-mono font-semibold">
                                 v{version}
                             </span>
                         )}
                     </div>
                 </div>
                 {tabs.length > 0 && (
-                    <div className="px-6 pt-3 pb-2 bg-white shadow-sm overflow-x-auto">
+                    <div className="px-6 pt-3 pb-2 bg-white shadow-xs overflow-x-auto">
                         <SegmentedTabs
                             tabs={tabs}
                             active={selectedAction}
@@ -91,7 +91,7 @@ const ValidationsPage: FC = () => {
                 )}
             </header>
 
-            <div className="flex-grow px-6 py-6">
+            <div className="grow px-6 py-6">
                 {loading && (
                     <div className="h-[60vh]">
                         <Loader />

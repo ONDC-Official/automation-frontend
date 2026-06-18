@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import jsonpath from "jsonpath";
+import { useEffect, useMemo, useRef, useState, type JSX } from "react";
+import { queryJsonPath } from "../../../../utils/jsonpath-query";
 import { AxiosResponse } from "axios";
 
 import { SubmitEventParams } from "@/types/flow-types";
@@ -339,12 +339,11 @@ export default function ProtocolHTMLForm({
 
     // Replace with server value
     const formHtml = useMemo<string>(() => {
-        return (
-            jsonpath.query(
-                { reference_data: referenceData },
-                HtmlFormConfigInFlow.reference || ""
-            )[0] || ""
-        );
+        const value = queryJsonPath(
+            { reference_data: referenceData },
+            HtmlFormConfigInFlow.reference || ""
+        )[0];
+        return typeof value === "string" ? value : "";
     }, [referenceData, HtmlFormConfigInFlow.reference]);
 
     // Parse once per formHtml
@@ -577,10 +576,12 @@ export default function ProtocolHTMLForm({
                 )) as AxiosResponse<unknown, unknown>;
             }
             // Parse response
-            const ct =
+            const rawCt =
                 typeof res.headers === "object"
-                    ? res.headers["content-type"] || res.headers["Content-Type"] || ""
-                    : "";
+                    ? (res.headers["content-type"] ?? res.headers["Content-Type"])
+                    : undefined;
+            const ct =
+                typeof rawCt === "string" ? rawCt : Array.isArray(rawCt) ? (rawCt[0] ?? "") : "";
             let data: {
                 submission_id?: string;
                 data?: { submission_id?: string };
@@ -700,7 +701,7 @@ export default function ProtocolHTMLForm({
                         max={tf.max as number}
                         step={tf.step as number}
                         pattern={tf.pattern}
-                        className={`w-full rounded-md border bg-gray-50 px-3 py-2 focus:outline-none focus:ring-2 ${
+                        className={`w-full rounded-md border bg-gray-50 px-3 py-2 focus:outline-hidden focus:ring-2 ${
                             hasError
                                 ? "border-red-500 focus:ring-red-500"
                                 : "border-gray-300 focus:ring-blue-500"
@@ -721,7 +722,7 @@ export default function ProtocolHTMLForm({
                         rows={ta.rows ?? 4}
                         required={f.required}
                         disabled={f.disabled}
-                        className={`w-full rounded-md bg-gray-50 border px-3 py-2 focus:outline-none focus:ring-2 ${
+                        className={`w-full rounded-md bg-gray-50 border px-3 py-2 focus:outline-hidden focus:ring-2 ${
                             hasError
                                 ? "border-red-500 focus:ring-red-500"
                                 : "border-gray-300 focus:ring-blue-500"
@@ -754,7 +755,7 @@ export default function ProtocolHTMLForm({
                         multiple={!!sel.multiple}
                         required={f.required}
                         disabled={f.disabled}
-                        className={`w-full rounded-md border bg-gray-50 px-3 py-2 focus:outline-none focus:ring-2 ${
+                        className={`w-full rounded-md border bg-gray-50 px-3 py-2 focus:outline-hidden focus:ring-2 ${
                             hasError
                                 ? "border-red-500 focus:ring-red-500"
                                 : "border-gray-300 focus:ring-blue-500"
@@ -919,7 +920,7 @@ export default function ProtocolHTMLForm({
                         type="button"
                         onClick={handleSubmit}
                         disabled={isSubmitting}
-                        className={`px-4 py-2 rounded text-white disabled:opacity-60 flex-shrink-0 ${
+                        className={`px-4 py-2 rounded text-white disabled:opacity-60 shrink-0 ${
                             Object.keys(fieldErrors).length > 0
                                 ? "bg-red-600 hover:bg-red-700"
                                 : "bg-blue-600 hover:bg-blue-700"
@@ -933,13 +934,13 @@ export default function ProtocolHTMLForm({
                     </button>
 
                     {parsed.action && (
-                        <span className="text-xs text-gray-500 break-words">
+                        <span className="text-xs text-gray-500 wrap-break-word">
                             POST to <code className="break-all">{parsed.action}</code>
                         </span>
                     )}
                 </div>
 
-                <div className="mt-3 text-sm text-gray-700 break-words">
+                <div className="mt-3 text-sm text-gray-700 wrap-break-word">
                     {submissionId && (
                         <span className="text-green-700">
                             Received submission_id:{" "}
@@ -948,7 +949,7 @@ export default function ProtocolHTMLForm({
                     )}
                     {error && (
                         <div className="p-3 bg-red-50 border border-red-200 rounded-md">
-                            <span className="text-red-600 break-words font-medium">
+                            <span className="text-red-600 wrap-break-word font-medium">
                                 Error: {error}
                             </span>
                         </div>

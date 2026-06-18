@@ -9,7 +9,7 @@ interface InfoCardProps {
 
 const InfoCard: React.FC<InfoCardProps> = ({ title, data, children }) => {
     return (
-        // <div className="w-full rounded-lg shadow-sm bg-gray-50 border border-gray-200 p-4">
+        // <div className="w-full rounded-lg shadow-xs bg-gray-50 border border-gray-200 p-4">
         <div className="w-full bg-gray-100 backdrop-blur-md rounded-md border border-gray-200 p-4">
             <div className="mb-4">
                 <div className="flex items-center gap-1 text-sky-700 font-bold text-xl">
@@ -25,7 +25,7 @@ const InfoCard: React.FC<InfoCardProps> = ({ title, data, children }) => {
                         // This now correctly says:
                         // - Be full-width by default (for mobile).
                         // - Switch to auto-width at the 'sm' breakpoint and up.
-                        className="flex items-center justify-between bg-white rounded-md shadow-sm p-2 w-full sm:w-auto"
+                        className="flex items-center justify-between bg-white rounded-md shadow-xs p-2 w-full sm:w-auto"
                     >
                         <span className="text-sm font-extrabold text-sky-700 whitespace-nowrap">
                             {key}

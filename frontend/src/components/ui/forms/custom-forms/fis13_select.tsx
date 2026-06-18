@@ -222,7 +222,7 @@ export default function FIS13ItemSelection({
     };
 
     const inputStyle =
-        "border rounded p-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white";
+        "border rounded p-2 w-full focus:outline-hidden focus:ring-2 focus:ring-blue-500 bg-white";
     const labelStyle = "mb-1 font-semibold block text-gray-700";
 
     return (
@@ -234,7 +234,7 @@ export default function FIS13ItemSelection({
                     <button
                         type="button"
                         onClick={() => setIsPayloadEditorActive(true)}
-                        className="p-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 shadow-sm"
+                        className="p-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 shadow-xs"
                         title="Paste Payload"
                     >
                         <FaRegPaste size={18} />
@@ -257,7 +257,7 @@ export default function FIS13ItemSelection({
 
             <form
                 onSubmit={handleSubmit(onSubmit)}
-                className="space-y-6 bg-white border border-gray-200 rounded-xl p-6 shadow-sm"
+                className="space-y-6 bg-white border border-gray-200 rounded-xl p-6 shadow-xs"
             >
                 {/* ---------- Items ---------- */}
                 <div className="space-y-4">
@@ -326,7 +326,7 @@ export default function FIS13ItemSelection({
                                             e.stopPropagation();
                                             toggleItemSelection(item);
                                         }}
-                                        className="hover:text-blue-900 focus:outline-none"
+                                        className="hover:text-blue-900 focus:outline-hidden"
                                     >
                                         <FaTrash size={12} />
                                     </button>

@@ -1,55 +1,84 @@
 import { FC } from "react";
 import { useSchemaValidation } from "@pages/schema-validation/hooks/useSchemaValidation";
-import InstructionsPanel from "@pages/schema-validation/InstructionsPanel";
-import ValidationResults from "@pages/schema-validation/ValidationResults";
-import EmptyState from "@components/EmptyState";
-import PayloadEditor from "@components/PayloadEditor";
-import { schemaValidationStyles } from "@pages/schema-validation/styles";
+import SchemaGuideAccordion from "@pages/schema-validation/SchemaGuideAccordion";
+import ValidationErrorsPanel from "@pages/schema-validation/ValidationErrorsPanel";
+import PayloadEditor from "@/components/PayloadEditor";
+import { Button } from "@/components/shadcn/button";
 
+/**
+ * Schema validation page with guide accordion and Monaco payload editor.
+ */
 const SchemaValidation: FC = () => {
     const {
         payload,
         isLoading,
-        mdData,
+        validationErrors,
         isSuccessResponse,
-        isValidationOpen,
-        isGuideOpen,
+        isValidationVisible,
+        isErrorsExpanded,
         handlePayloadChange,
         verifyRequest,
         handleEditorMount,
+        expandValidationErrors,
+        collapseValidationErrors,
     } = useSchemaValidation();
 
     return (
-        <div className="h-screen bg-gradient-to-b from-gray-50 to-white flex flex-col">
-            <div className="flex-1 flex overflow-hidden">
-                <PayloadEditor
-                    payload={payload}
-                    isLoading={isLoading}
-                    onPayloadChange={handlePayloadChange}
-                    onEditorMount={handleEditorMount}
-                    onValidate={verifyRequest}
-                    title="Beckn JSON Payload"
-                    message="Paste your JSON payload below for validation"
-                />
+        <div className="min-h-[calc(100vh-4rem)] bg-n-0">
+            <div className="max-w-7xl mx-auto px-6 py-6 lg:h-[calc(100vh-4rem)]">
+                <div className="grid grid-cols-1 lg:grid-cols-[minmax(280px,2fr)_minmax(0,3fr)] gap-6 lg:h-full">
+                    <div className="lg:min-h-0 lg:h-full">
+                        <SchemaGuideAccordion />
+                    </div>
 
-                {/* Right Panel - Instructions & Results */}
-                <div className="w-2/5 flex flex-col p-6 space-y-4 overflow-hidden min-w-0">
-                    <InstructionsPanel isVisible={isGuideOpen && !isValidationOpen} />
-                    <ValidationResults
-                        isVisible={isValidationOpen}
-                        isSuccess={isSuccessResponse}
-                        markdownData={mdData}
-                    />
-                    {!isGuideOpen && !isValidationOpen && (
-                        <EmptyState
-                            title="Ready to Validate"
-                            message="Enter your JSON payload and click validate to see results here."
-                        />
-                    )}
+                    <div className="h-[clamp(380px,55vh,560px)] lg:min-h-0 lg:h-full">
+                        <div className="h-full flex flex-col min-w-0">
+                            <div className="h-full bg-brand-light border border-n-30 rounded-2xl flex flex-col overflow-hidden min-h-0">
+                                <div className="px-6 py-5 border-b border-n-30 flex items-start justify-between gap-4 shrink-0">
+                                    <div className="min-w-0">
+                                        <h2 className="text-h5 font-bold text-n-800">
+                                            JSON Payload
+                                        </h2>
+                                        <p className="text-body-2 text-brand-normal mt-1">
+                                            Paste your JSON payload below for validation
+                                        </p>
+                                    </div>
+
+                                    <Button
+                                        type="button"
+                                        onClick={verifyRequest}
+                                        disabled={isLoading || payload === ""}
+                                        className="shrink-0"
+                                    >
+                                        {isLoading ? "Validating..." : "Validate"}
+                                    </Button>
+                                </div>
+
+                                <PayloadEditor
+                                    payload={payload}
+                                    onPayloadChange={handlePayloadChange}
+                                    onEditorMount={handleEditorMount}
+                                    isFooterExpanded={
+                                        isErrorsExpanded &&
+                                        isValidationVisible &&
+                                        !isSuccessResponse
+                                    }
+                                    footer={
+                                        <ValidationErrorsPanel
+                                            isVisible={isValidationVisible}
+                                            isSuccess={isSuccessResponse}
+                                            errors={validationErrors}
+                                            isExpanded={isErrorsExpanded}
+                                            onExpand={expandValidationErrors}
+                                            onCollapse={collapseValidationErrors}
+                                        />
+                                    }
+                                />
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-
-            <style>{schemaValidationStyles}</style>
         </div>
     );
 };

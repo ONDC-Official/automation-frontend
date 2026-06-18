@@ -22,7 +22,7 @@ import { API_ROUTES } from "@services/apiRoutes";
 import { Session, FlowSummaryEntry } from "@pages/history/types";
 import { SessionCache } from "@/types/session-types";
 import { Flow } from "@/types/flow-types";
-import { Domain } from "@/pages/schema-validation/types";
+import { IDomain } from "@/pages/schema-validation/types";
 import { ROUTES } from "@constants/routes";
 import { UserContext } from "@context/userContext";
 import CustomTooltip from "@components/ui/mini-components/tooltip";
@@ -281,7 +281,7 @@ const SessionCard: FC<SessionCardProps> = ({
                 onClick={handleExpand}
             >
                 {/* Icon */}
-                <div className="w-10 h-10 flex-shrink-0 flex items-center justify-center bg-sky-50 border border-sky-200 rounded-xl">
+                <div className="w-10 h-10 shrink-0 flex items-center justify-center bg-sky-50 border border-sky-200 rounded-xl">
                     <LuFileText className="text-sky-600 w-5 h-5" />
                 </div>
 
@@ -301,7 +301,7 @@ const SessionCard: FC<SessionCardProps> = ({
                 </div>
 
                 {/* Circular progress rings */}
-                <div className="hidden md:flex items-center gap-5 flex-shrink-0">
+                <div className="hidden md:flex items-center gap-5 shrink-0">
                     <CircleProgress
                         done={rep.completed}
                         total={rep.total}
@@ -325,7 +325,7 @@ const SessionCard: FC<SessionCardProps> = ({
                 </div>
 
                 {/* Action buttons */}
-                <div className="flex items-center gap-2 flex-shrink-0 ml-2">
+                <div className="flex items-center gap-2 shrink-0 ml-2">
                     {(() => {
                         const resumeButton = (
                             <button
@@ -489,7 +489,7 @@ const HistoryPage: FC = () => {
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
     const [npType, setNpType] = useState("BAP");
-    const [domains, setDomains] = useState<Domain[]>([]);
+    const [domains, setDomains] = useState<IDomain[]>([]);
     const [selectedDomain, setSelectedDomain] = useState("");
     const [selectedVersion, setSelectedVersion] = useState("");
     const [sessions, setSessions] = useState<Session[]>([]);
@@ -514,7 +514,7 @@ const HistoryPage: FC = () => {
         };
         const fetchDomains = async () => {
             try {
-                const res = await apiClient.get<{ domain: Domain[] }>(
+                const res = await apiClient.get<{ domain: IDomain[] }>(
                     API_ROUTES.CONFIG.SCENARIO_FORM_DATA
                 );
                 setDomains(res.data.domain ?? []);
@@ -602,7 +602,7 @@ const HistoryPage: FC = () => {
             </p>
 
             {/* Search card */}
-            <div className="bg-white border border-slate-200 rounded-2xl p-6 mb-8 shadow-sm">
+            <div className="bg-white border border-slate-200 rounded-2xl p-6 mb-8 shadow-xs">
                 <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">
                     Enter Subscriber Details
                 </p>
@@ -616,10 +616,10 @@ const HistoryPage: FC = () => {
                             {loadingSubscribers ? (
                                 <LuLoader
                                     size={13}
-                                    className="animate-spin text-slate-400 mr-2 flex-shrink-0"
+                                    className="animate-spin text-slate-400 mr-2 shrink-0"
                                 />
                             ) : (
-                                <LuSearch size={13} className="text-slate-400 mr-2 flex-shrink-0" />
+                                <LuSearch size={13} className="text-slate-400 mr-2 shrink-0" />
                             )}
                             <input
                                 type="text"
@@ -699,7 +699,7 @@ const HistoryPage: FC = () => {
                     <select
                         value={npType}
                         onChange={(e) => setNpType(e.target.value)}
-                        className="min-w-32 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-700 focus:outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-100 focus:bg-white transition-all cursor-pointer"
+                        className="min-w-32 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-700 focus:outline-hidden focus:border-sky-400 focus:ring-2 focus:ring-sky-100 focus:bg-white transition-all cursor-pointer"
                     >
                         <option value="BAP">BAP</option>
                         <option value="BPP">BPP</option>

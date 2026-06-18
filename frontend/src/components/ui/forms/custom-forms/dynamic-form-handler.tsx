@@ -1,9 +1,8 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
-import { SubmitEventParams } from "@/types/flow-types";
-import { queryJsonPath } from "@utils/jsonpath-query";
-import { FormFieldConfigType } from "@components/ui/forms/config-form/config-form";
-import { useSession } from "@context/context";
-import { FormService } from "@services/formService";
+import axios from "axios";
+import { SubmitEventParams } from "../../../../types/flow-types";
+import { queryJsonPath } from "../../../../utils/jsonpath-query";
+import { FormFieldConfigType } from "../config-form/config-form";
 
 // ── Polling constants ──────────────────────────────────────────────────────────
 const POLL_INTERVAL_MS = 2_000; // 2 seconds between each poll
@@ -22,13 +21,9 @@ interface DynamicFormHandlerProps {
 export default function DynamicFormHandler({
     submitEvent,
     referenceData,
+    transactionId,
     formConfig,
 }: DynamicFormHandlerProps) {
-    // The form completion contract is keyed by session_id (the api-service GET
-    // /callback writes form_completed:{session_id}). Read it from context rather
-    // than prop-drilling — it is the same value config-form passes down.
-    const { sessionId } = useSession();
-
     const [status, setStatus] = useState<"idle" | "waiting" | "completed" | "error" | "timeout">(
         "idle"
     );
@@ -85,17 +80,17 @@ export default function DynamicFormHandler({
         };
     }, [cleanup]);
 
-    // Check completion function - polls GET /form/check-completion?session_id=X
-    // The backend reads form_completed:{session_id} (written by the api-service
-    // GET /callback) and reports whether the form finished.
+    // Check completion function - polls GET /form/check-completion?transaction_id=X
+    // The backend resolves which form completed via the latest_form:{txn} Redis
+    // pointer and echoes form_id in the response.
     // This is ONLY used by DYNAMIC_FORM type — does not affect HTML_FORM or any other form type.
     const checkCompletion = useCallback(async () => {
         if (hasCompletedRef.current) return;
 
         // ── Guard 1: identifiers ─────────────────────────────────────────────
-        if (!sessionId) {
-            console.warn("⚠️ [DynamicForm] Cannot poll: sessionId missing", {
-                sessionId,
+        if (!transactionId) {
+            console.warn("⚠️ [DynamicForm] Cannot poll: transactionId missing", {
+                transactionId,
             });
             return;
         }
@@ -119,24 +114,40 @@ export default function DynamicFormHandler({
         console.warn(
             `🔄 [DynamicForm] Poll #${pollCountRef.current}/${MAX_POLLS} | ` +
                 `elapsed: ${elapsedSec}s | ` +
-                `sessionId: "${sessionId}"`
+                `transactionId: "${transactionId}"`
         );
 
         try {
-            // GET /form/check-completion?session_id={sessionId}
-            // Backend reads form_completed:{session_id}.
-            // Response: { completed: boolean, success: boolean, message: string, timestamp: string }
-            const data = await FormService.checkCompletion(sessionId);
+            // GET /form/check-completion?transaction_id={transactionId}
+            // Backend resolves form_id via latest_form:{txn} and reads
+            // form_completed:{txn}:{form_id}.
+            // Response: { completed: boolean, form_id: string, success: boolean, message: string, timestamp: string }
+            const response = await axios.get(
+                `${import.meta.env.VITE_BACKEND_URL}/form/check-completion`,
+                {
+                    params: {
+                        transaction_id: transactionId,
+                    },
+                    timeout: 5000,
+                }
+            );
 
-            const { completed, success } = data ?? {};
+            const { completed, success, form_id } = response.data ?? {};
 
-            if (completed === true && success === true && !hasCompletedRef.current) {
+            // success is a boolean from the new api-service; tolerate the legacy
+            // string form from older callback writers.
+            if (
+                completed === true &&
+                (success === true || success === "true") &&
+                !hasCompletedRef.current
+            ) {
                 console.warn("✅ [DynamicForm] Form completed!", {
-                    sessionId,
+                    transactionId,
+                    form_id,
                     poll: pollCountRef.current,
                     elapsedSec,
-                    message: data.message,
-                    timestamp: data.timestamp,
+                    message: response.data.message,
+                    timestamp: response.data.timestamp,
                 });
 
                 hasCompletedRef.current = true;
@@ -157,12 +168,14 @@ export default function DynamicFormHandler({
                 // the mock service's json_path_changes requirement.
                 // TODO: replace with actual submission_id from /form/check-completion
                 // once the backend returns it from the Redis form_completed key.
+                // form_id (resolved by the backend from Redis) is passed through so
+                // the mock service's saveData config can persist it in reference_data.
                 try {
                     const submission_id = crypto.randomUUID();
                     console.warn("⚠️ [DynamicForm] Using temporary submission_id:", submission_id);
                     await submitEvent({
                         jsonPath: { submission_id },
-                        formData: { submission_id },
+                        formData: { submission_id, ...(form_id ? { form_id } : {}) },
                     });
                     setStatus("completed"); // BUG FIX: was never set — "completed" UI was dead code
                     // Parent (mapped-flow) will close the popup modal after submitEvent
@@ -178,7 +191,7 @@ export default function DynamicFormHandler({
             const err = error as { message?: string };
             console.error("Error checking completion:", err.message);
         }
-    }, [sessionId, submitEvent, cleanup]);
+    }, [transactionId, submitEvent, cleanup]);
     // NOTE: pollCountRef & pollDisplay are intentionally NOT in deps — they are refs/
     // updated imperatively. This prevents checkCompletion from being recreated on
     // every tick, which was the root cause of the stale-closure bug.
@@ -205,7 +218,11 @@ export default function DynamicFormHandler({
         console.warn("🔄 [DynamicForm] Starting polling:");
         console.warn(`   ➤ interval      : ${POLL_INTERVAL_MS}ms`);
         console.warn(`   ➤ max duration  : ${MAX_POLL_DURATION_MS / 1000}s (${MAX_POLLS} polls)`);
-        console.warn("   ➤ sessionId     :", sessionId || "(empty — check session)");
+        console.warn("   ➤ transactionId :", transactionId || "(empty — check flowMap)");
+        console.warn(
+            "   ➤ endpoint      :",
+            `${import.meta.env.VITE_BACKEND_URL}/form/check-completion`
+        );
 
         // Poll immediately first time
         checkCompletion();
@@ -214,7 +231,7 @@ export default function DynamicFormHandler({
         pollingIntervalRef.current = setInterval(() => {
             checkCompletionRef.current();
         }, POLL_INTERVAL_MS);
-    }, [sessionId, checkCompletion]);
+    }, [transactionId, checkCompletion]);
 
     // Handle start form - NO navigation/refresh
     const handleOpenForm = useCallback(
@@ -294,8 +311,8 @@ export default function DynamicFormHandler({
                 // Mark flow as active in localStorage (prevents accidental navigation)
                 localStorage.setItem("dynamic_form_flow_active", "true");
 
-                if (!sessionId) {
-                    throw new Error("Session ID is missing! Cannot track form completion.");
+                if (!transactionId) {
+                    throw new Error("Transaction ID is missing! Cannot create form URL.");
                 }
 
                 if (!formServiceUrl) {
@@ -304,24 +321,15 @@ export default function DynamicFormHandler({
                     );
                 }
 
-                // Store the current workbench URL so the api-service callback can
-                // redirect the user back here and resolve the session. Sent
-                // verbatim — it already carries subscriberUrl + sessionId params.
-                // Non-fatal: completion polling still runs if this hiccups.
-                try {
-                    await FormService.saveRedirection(window.location.href);
-                } catch (saveError) {
-                    console.warn(
-                        "⚠️ [DynamicForm] Could not save redirection URL (continuing):",
-                        saveError
-                    );
-                }
-
-                // Clear any leftover completion from a previous run on this
-                // session so polling only reacts to THIS form's callback.
+                // Clear any leftover completion from a previous form in this
+                // transaction so polling only reacts to THIS form's callback.
                 // Non-fatal: a failure here just falls back to today's behavior.
                 try {
-                    await FormService.resetCompletion(sessionId);
+                    await axios.post(
+                        `${import.meta.env.VITE_BACKEND_URL}/form/reset-completion`,
+                        null,
+                        { params: { transaction_id: transactionId }, timeout: 5000 }
+                    );
                 } catch (resetError) {
                     console.warn(
                         "⚠️ [DynamicForm] Could not reset completion state (continuing):",
@@ -362,7 +370,7 @@ export default function DynamicFormHandler({
                 cleanup();
             }
         },
-        [sessionId, formServiceUrl, startPolling, cleanup]
+        [transactionId, formServiceUrl, startPolling, cleanup]
     );
 
     // Handle reopen - NO navigation

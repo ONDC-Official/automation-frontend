@@ -1,22 +1,29 @@
 import { ReactNode } from "react";
-import { GAEvent } from "@utils/analytics";
+import { IGAEvent } from "@/types/analytics";
 
-export interface FooterLink {
+export type FooterLinkColumnProps = {
+    title: string;
+    links: IFooterLink[];
+};
+
+export type IFooterLinkItemProps = {
+    link: IFooterLink;
+};
+export interface IFooterLink {
     name: string;
     href: string;
-    analytics: GAEvent;
+    analytics: IGAEvent;
 }
-
-export interface SocialLink {
+export interface ISocialLink {
     name: string;
     href: string;
     icon: ReactNode;
-    analytics: GAEvent;
+    analytics: IGAEvent;
 }
 
-export interface FooterLinks {
-    company: FooterLink[];
-    developers: FooterLink[];
-    support: FooterLink[];
-    quickLinks: FooterLink[];
+export interface IFooterLinks {
+    company: IFooterLink[];
+    developers: IFooterLink[];
+    support: IFooterLink[];
+    quickLinks: IFooterLink[];
 }

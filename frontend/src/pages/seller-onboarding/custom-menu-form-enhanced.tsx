@@ -657,7 +657,7 @@ const CustomMenuFormEnhanced = ({
                         {/* Optional Step Notice */}
                         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
                             <div className="flex items-start">
-                                <div className="flex-shrink-0">
+                                <div className="shrink-0">
                                     <svg
                                         className="h-5 w-5 text-blue-400"
                                         viewBox="0 0 20 20"

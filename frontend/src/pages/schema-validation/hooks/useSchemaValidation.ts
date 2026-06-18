@@ -2,25 +2,28 @@
  * Custom hook for managing schema validation state and operations
  */
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useLayoutEffect, useCallback, useRef } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
+import type { editor as MonacoEditor } from "monaco-editor";
+import type { MonacoModule } from "@pages/schema-validation/types";
 import { trackEvent } from "@utils/analytics";
 import { fetchFormFieldData } from "@utils/request-utils";
-import {
-    PAYLOAD_STORAGE_KEY,
-    SUCCESS_MESSAGE,
-    TOAST_MESSAGES,
-} from "@pages/schema-validation/constants";
+import { PAYLOAD_STORAGE_KEY, TOAST_MESSAGES } from "@pages/schema-validation/constants";
 import {
     parsePayload,
     validateAction,
     validateDomainAndVersion,
-} from "@pages/schema-validation/utils";
+} from "@pages/schema-validation/utils/helpers";
+import {
+    applyEditorErrorDecorations,
+    clearEditorErrorDecorations,
+} from "@pages/schema-validation/utils/editorErrorDecorations";
+import { parseValidationErrors } from "@pages/schema-validation/utils/parseValidationErrors";
 import type {
-    UseSchemaValidationReturn,
-    ActiveDomainConfig,
-    ValidationResponse,
+    IUseSchemaValidationReturn,
+    IActiveDomainConfig,
+    IValidationResponse,
 } from "@pages/schema-validation/types";
 
 /**
@@ -28,14 +31,19 @@ import type {
  *
  * @returns Object containing state and handler functions for schema validation
  */
-export const useSchemaValidation = (): UseSchemaValidationReturn => {
+export const useSchemaValidation = (): IUseSchemaValidationReturn => {
     const [payload, setPayload] = useState<string>("");
     const [isLoading, setIsLoading] = useState<boolean>(false);
-    const [mdData, setMdData] = useState<string>("");
-    const [isSuccessResponse, setIsSuccessResponse] = useState<boolean>(true);
-    const [isValidationOpen, setIsValidationOpen] = useState<boolean>(false);
-    const [isGuideOpen, setIsGuideOpen] = useState<boolean>(true);
-    const [activeDomain, setActiveDomain] = useState<ActiveDomainConfig>({});
+    const [validationErrors, setValidationErrors] = useState<
+        ReturnType<typeof parseValidationErrors>
+    >([]);
+    const [isSuccessResponse, setIsSuccessResponse] = useState<boolean>(false);
+    const [isValidationVisible, setIsValidationVisible] = useState<boolean>(false);
+    const [isErrorsExpanded, setIsErrorsExpanded] = useState<boolean>(false);
+    const [activeDomain, setActiveDomain] = useState<IActiveDomainConfig>({});
+
+    const editorRef = useRef<MonacoEditor.IStandaloneCodeEditor | null>(null);
+    const monacoRef = useRef<MonacoModule | null>(null);
 
     /**
      * Load payload from localStorage on component mount
@@ -53,7 +61,7 @@ export const useSchemaValidation = (): UseSchemaValidationReturn => {
     const getFormFields = useCallback(async () => {
         try {
             const data = await fetchFormFieldData();
-            setActiveDomain((data as ActiveDomainConfig) || {});
+            setActiveDomain((data as IActiveDomainConfig) || {});
         } catch (error) {
             console.error("Error fetching form fields:", error);
             setActiveDomain({});
@@ -66,6 +74,33 @@ export const useSchemaValidation = (): UseSchemaValidationReturn => {
     useEffect(() => {
         getFormFields();
     }, [getFormFields]);
+
+    /**
+     * Clears editor decorations whenever the payload changes.
+     */
+    useEffect(() => {
+        if (editorRef.current && monacoRef.current) {
+            clearEditorErrorDecorations(editorRef.current, monacoRef.current);
+        }
+        setIsValidationVisible(false);
+        setIsErrorsExpanded(false);
+        setValidationErrors([]);
+    }, [payload]);
+
+    /**
+     * Applies Monaco error highlights after validation errors are available.
+     */
+    useLayoutEffect(() => {
+        const editor = editorRef.current;
+        const monaco = monacoRef.current;
+
+        if (!editor || !monaco || isSuccessResponse || validationErrors.length === 0) {
+            return;
+        }
+
+        const source = editor.getModel()?.getValue() ?? "";
+        applyEditorErrorDecorations(editor, monaco, source, validationErrors);
+    }, [validationErrors, isSuccessResponse]);
 
     /**
      * Handles payload changes and persists to localStorage
@@ -87,42 +122,54 @@ export const useSchemaValidation = (): UseSchemaValidationReturn => {
             action: "Clicked validate",
         });
 
-        // Parse and validate payload
         const parsedPayload = parsePayload(payload);
         if (!parsedPayload) {
             return;
         }
 
-        // Validate action exists
         const action = validateAction(parsedPayload);
         if (!action) {
             return;
         }
 
-        // Validate domain and version are active
         if (!validateDomainAndVersion(activeDomain, parsedPayload.context || {})) {
             return;
         }
 
-        // Reset state
-        setMdData("");
-        setIsValidationOpen(false);
+        setValidationErrors([]);
+        setIsValidationVisible(false);
+        setIsErrorsExpanded(false);
+
+        if (editorRef.current && monacoRef.current) {
+            clearEditorErrorDecorations(editorRef.current, monacoRef.current);
+        }
 
         try {
             setIsLoading(true);
-            const response = await axios.post<ValidationResponse>(
+            const response = await axios.post<IValidationResponse>(
                 `${import.meta.env.VITE_BACKEND_URL}/flow/validate/${action}`,
                 parsedPayload
             );
 
-            setIsValidationOpen(true);
-            setIsGuideOpen(false);
+            setIsValidationVisible(true);
 
             if (response.data?.error?.message) {
-                setMdData(response.data.error.message);
+                const parsedErrors = parseValidationErrors(response.data.error.message);
+                setValidationErrors(parsedErrors);
                 setIsSuccessResponse(false);
+
+                const editor = editorRef.current;
+                const monaco = monacoRef.current;
+                if (editor && monaco) {
+                    applyEditorErrorDecorations(
+                        editor,
+                        monaco,
+                        editor.getModel()?.getValue() ?? payload,
+                        parsedErrors
+                    );
+                }
             } else {
-                setMdData(SUCCESS_MESSAGE);
+                setValidationErrors([]);
                 setIsSuccessResponse(true);
             }
         } catch (error) {
@@ -137,11 +184,13 @@ export const useSchemaValidation = (): UseSchemaValidationReturn => {
      * Handles Monaco editor mount event to track paste events
      *
      * @param editor - The Monaco editor instance
+     * @param monaco - Monaco module reference
      */
-    const handleEditorMount = useCallback((editor: unknown) => {
-        const monacoEditor = editor as { getDomNode: () => HTMLElement | null };
-        const editorDomNode = monacoEditor.getDomNode();
+    const handleEditorMount = useCallback((editor: unknown, monaco: unknown) => {
+        editorRef.current = editor as MonacoEditor.IStandaloneCodeEditor;
+        monacoRef.current = monaco as MonacoModule;
 
+        const editorDomNode = editorRef.current.getDomNode();
         if (editorDomNode) {
             editorDomNode.addEventListener("paste", () => {
                 trackEvent({
@@ -152,16 +201,32 @@ export const useSchemaValidation = (): UseSchemaValidationReturn => {
         }
     }, []);
 
+    /**
+     * Expands the validation error panel to show all errors.
+     */
+    const expandValidationErrors = useCallback(() => {
+        setIsErrorsExpanded(true);
+    }, []);
+
+    /**
+     * Collapses the expanded validation error panel.
+     */
+    const collapseValidationErrors = useCallback(() => {
+        setIsErrorsExpanded(false);
+    }, []);
+
     return {
         payload,
         isLoading,
-        mdData,
+        validationErrors,
         isSuccessResponse,
-        isValidationOpen,
-        isGuideOpen,
+        isValidationVisible,
+        isErrorsExpanded,
         activeDomain,
         handlePayloadChange,
         verifyRequest,
         handleEditorMount,
+        expandValidationErrors,
+        collapseValidationErrors,
     };
 };

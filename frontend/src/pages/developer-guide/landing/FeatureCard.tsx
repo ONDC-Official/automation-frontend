@@ -32,14 +32,14 @@ export default function FeatureCard({
             onKeyDown={handleKeyDown}
         >
             {/* Top accent bar */}
-            <div className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-sky-400 to-sky-300 rounded-t-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+            <div className="absolute inset-x-0 top-0 h-[3px] bg-linear-to-r from-sky-400 to-sky-300 rounded-t-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
 
             <div className="flex items-start justify-between">
-                <div className="w-11 h-11 bg-sky-50 group-hover:bg-sky-100 rounded-xl flex items-center justify-center transition-colors duration-200 border border-sky-100 flex-shrink-0">
+                <div className="w-11 h-11 bg-sky-50 group-hover:bg-sky-100 rounded-xl flex items-center justify-center transition-colors duration-200 border border-sky-100 shrink-0">
                     {icon}
                 </div>
                 <FiArrowRight
-                    className="text-gray-300 group-hover:text-sky-500 group-hover:translate-x-0.5 transition-all duration-200 mt-1 flex-shrink-0"
+                    className="text-gray-300 group-hover:text-sky-500 group-hover:translate-x-0.5 transition-all duration-200 mt-1 shrink-0"
                     size={16}
                 />
             </div>

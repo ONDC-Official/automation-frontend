@@ -54,7 +54,7 @@ type ItemCustomisationSelectorProps = {
 };
 
 const inputStyle =
-    "border rounded p-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white";
+    "border rounded p-2 w-full focus:outline-hidden focus:ring-2 focus:ring-blue-500 bg-white";
 const labelStyle = "mb-1 font-semibold";
 const fieldWrapperStyle = "flex flex-col mb-2";
 
@@ -266,7 +266,7 @@ const ItemCustomisationSelectorRET11 = ({
                             return (
                                 <div
                                     key={index}
-                                    className="relative border p-4 rounded bg-white shadow space-y-4"
+                                    className="relative border p-4 rounded bg-white shadow-sm space-y-4"
                                 >
                                     {index !== 0 && (
                                         <div className="absolute top-[-10px] right-[-10px] bg-white">

@@ -305,7 +305,7 @@ const DeveloperGuideFlowPage: FC = () => {
             }`}
         >
             <header
-                className={`z-20 bg-white/90 backdrop-blur-md border-b border-gray-200 shadow-sm py-4 ${
+                className={`z-20 bg-white/90 backdrop-blur-md border-b border-gray-200 shadow-xs py-4 ${
                     inShell ? "sticky top-0" : "sticky top-0"
                 }`}
             >
@@ -316,7 +316,7 @@ const DeveloperGuideFlowPage: FC = () => {
                             <button
                                 type="button"
                                 onClick={handleBack}
-                                className="flex items-center gap-1.5 text-gray-500 hover:text-sky-600 transition-colors duration-150 group flex-shrink-0"
+                                className="flex items-center gap-1.5 text-gray-500 hover:text-sky-600 transition-colors duration-150 group shrink-0"
                             >
                                 <FiArrowLeft
                                     size={15}
@@ -330,7 +330,7 @@ const DeveloperGuideFlowPage: FC = () => {
                         {(inShell || usecaseLabel) && (
                             <>
                                 {!inShell && usecaseLabel && (
-                                    <FiChevronRight size={15} className="flex-shrink-0" />
+                                    <FiChevronRight size={15} className="shrink-0" />
                                 )}
                                 <span className="font-semibold text-gray-800 truncate">
                                     {domainKey}
@@ -339,7 +339,7 @@ const DeveloperGuideFlowPage: FC = () => {
                                     <>
                                         <FiChevronRight
                                             size={15}
-                                            className="flex-shrink-0 hidden sm:block"
+                                            className="shrink-0 hidden sm:block"
                                         />
                                         <span className="font-semibold text-gray-800 truncate">
                                             v{versionKey}
@@ -350,7 +350,7 @@ const DeveloperGuideFlowPage: FC = () => {
                                     <>
                                         <FiChevronRight
                                             size={15}
-                                            className="flex-shrink-0 hidden sm:block"
+                                            className="shrink-0 hidden sm:block"
                                         />
                                         <span className="font-semibold text-gray-800 truncate">
                                             {usecaseLabel}
@@ -392,11 +392,11 @@ const DeveloperGuideFlowPage: FC = () => {
                 </div>
             </header>
 
-            <div className="flex-grow flex items-start gap-0 relative">
+            <div className="grow flex items-start gap-0 relative">
                 {activeView === "flows" ? (
                     <>
                         <div
-                            className={`sticky top-24 self-start flex-shrink-0 overflow-hidden transition-all duration-300 ease-in-out ${
+                            className={`sticky top-24 self-start shrink-0 overflow-hidden transition-all duration-300 ease-in-out ${
                                 sidebarOpen ? "w-[380px]" : "w-0"
                             }`}
                         >
@@ -419,13 +419,13 @@ const DeveloperGuideFlowPage: FC = () => {
                             </aside>
                         </div>
 
-                        <div className="sticky top-[10rem] self-start flex-shrink-0 flex items-start pt-4 z-10">
+                        <div className="sticky top-40 self-start shrink-0 flex items-start pt-4 z-10">
                             <button
                                 onClick={() => setSidebarOpen((prev) => !prev)}
                                 title={sidebarOpen ? "Collapse sidebar" : "Expand sidebar"}
                                 className={`group flex items-center justify-center h-12 transition-all duration-200 active:scale-95 ${
                                     sidebarOpen
-                                        ? "w-5 -ml-px rounded-r-lg border-l-0 bg-white border border-gray-200 shadow-sm hover:bg-sky-50 hover:border-sky-300"
+                                        ? "w-5 -ml-px rounded-r-lg border-l-0 bg-white border border-gray-200 shadow-xs hover:bg-sky-50 hover:border-sky-300"
                                         : "w-8 rounded-lg bg-sky-500 border border-sky-600 shadow-[0_4px_12px_-2px_rgba(2,132,199,0.5)] hover:bg-sky-600 hover:-translate-y-0.5"
                                 }`}
                             >
