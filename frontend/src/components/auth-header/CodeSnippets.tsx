@@ -1,21 +1,20 @@
 import React, { useState } from "react";
 import { codeSnippets, LanguageKey } from "./code-snippets";
-import { FaCopy, FaCheck } from "react-icons/fa";
+import { ClipboardDocumentIcon } from "@heroicons/react/24/outline";
 import Editor from "@monaco-editor/react";
+import { useClipboard } from "@hooks/useClipboard";
 
 const CodeSnippets: React.FC = () => {
     const [selectedLang, setSelectedLang] = useState<LanguageKey>("python");
     const [showGenerate, setShowGenerate] = useState(true);
-    const [copied, setCopied] = useState(false);
+    const { copyToClipboard } = useClipboard();
 
     const languages = Object.keys(codeSnippets) as LanguageKey[];
     const currentSnippet = codeSnippets[selectedLang];
     const currentCode = showGenerate ? currentSnippet.generate : currentSnippet.verify;
 
-    const handleCopy = async () => {
-        await navigator.clipboard.writeText(currentCode);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
+    const handleCopy = () => {
+        void copyToClipboard(currentCode);
     };
 
     return (
@@ -71,17 +70,8 @@ const CodeSnippets: React.FC = () => {
                         onClick={handleCopy}
                         className="flex items-center gap-2 px-3 py-1 bg-gray-700 hover:bg-gray-600 rounded text-gray-300 text-sm transition-colors"
                     >
-                        {copied ? (
-                            <>
-                                <FaCheck className="text-green-400" />
-                                Copied!
-                            </>
-                        ) : (
-                            <>
-                                <FaCopy />
-                                Copy Code
-                            </>
-                        )}
+                        <ClipboardDocumentIcon className="size-4" />
+                        Copy Code
                     </button>
                 </div>
                 <Editor

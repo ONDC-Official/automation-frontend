@@ -1,6 +1,8 @@
 import { InfoPill } from "@/components/FlowShared/ui/InfoPill";
 import type { InfoSectionProps } from "@/components/FlowShared/ui/types";
 
+const COPYABLE_KEYS = new Set(["sessionId", "subscriberUrl"]);
+
 const INFO_LABELS: Record<string, string> = {
     sessionId: "Session ID",
     subscriberUrl: "Subscriber URL",
@@ -26,7 +28,12 @@ export const InfoSection = ({ data, headerActions, pollingIndicator }: InfoSecti
         <div className="px-4 pb-4 pt-3">
             <div className="flex flex-wrap gap-2">
                 {Object.entries(data).map(([key, value]) => (
-                    <InfoPill key={key} label={INFO_LABELS[key] ?? key} value={value} />
+                    <InfoPill
+                        key={key}
+                        label={INFO_LABELS[key] ?? key}
+                        value={value}
+                        copyable={COPYABLE_KEYS.has(key)}
+                    />
                 ))}
             </div>
         </div>

@@ -1,16 +1,25 @@
 import { useEffect, useRef, useState } from "react";
-import { FaTimes, FaSpinner, FaPencilAlt, FaCheck } from "react-icons/fa";
-import { TbDatabaseExport } from "react-icons/tb";
 import { MockPlaygroundConfigType } from "@ondc/automation-mock-runner";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/Shadcn/Dialog/dialog";
+import { cn } from "@/lib/utils";
+import { ArrowDownTrayIcon, CheckIcon, PencilIcon } from "@heroicons/react/24/outline";
+import { Button } from "@/components/Shadcn/Button/button";
 
-interface ExportReviewModalProps {
+interface IExportReviewModalProps {
     config: MockPlaygroundConfigType | null;
     onConfirm: (overrides: Record<string, string>) => void;
     onCancel: () => void;
     isDownloading?: boolean;
 }
 
-interface StepCardProps {
+interface IStepCardProps {
     index: number;
     actionId: string;
     api: string;
@@ -19,7 +28,7 @@ interface StepCardProps {
     onChange: (value: string) => void;
 }
 
-const StepCard = ({ index, actionId, api, owner, description, onChange }: StepCardProps) => {
+const StepCard = ({ index, actionId, api, owner, description, onChange }: IStepCardProps) => {
     const [isEditing, setIsEditing] = useState(false);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -41,58 +50,65 @@ const StepCard = ({ index, actionId, api, owner, description, onChange }: StepCa
 
     const ownerColor =
         owner === "BPP"
-            ? "bg-violet-50 text-violet-600 border-violet-100"
-            : "bg-sky-50 text-sky-600 border-sky-100";
+            ? "border-brand-light-active bg-brand-light text-brand-normal dark:bg-surface-muted"
+            : "border-success-200 bg-success-50 text-success-800 dark:bg-success-800/20 dark:text-success-500";
 
     return (
         <div
-            className={`group bg-white rounded-lg border transition-all duration-150 ${
+            className={cn(
+                "group rounded-lg border bg-surface-elevated transition-all duration-150",
                 isEditing
-                    ? "border-sky-300 shadow-md ring-2 ring-sky-100"
-                    : "border-gray-200 shadow-xs hover:border-sky-200 hover:shadow-sm"
-            }`}
+                    ? "border-brand-normal shadow-md ring-2 ring-brand-normal/20"
+                    : "border-border-default shadow-xs hover:border-brand-light-active hover:shadow-sm"
+            )}
         >
-            {/* Metadata row */}
-            <div className="flex items-center gap-2 px-4 pt-3.5 pb-2.5 border-b border-gray-50">
-                <span className="shrink-0 w-6 h-6 rounded-full bg-sky-500 text-white text-[11px] font-bold flex items-center justify-center">
+            <div className="flex items-center gap-2 border-b border-border-default px-4 pt-3.5 pb-2.5">
+                <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-brand-normal text-[11px] font-bold text-n-0">
                     {index + 1}
                 </span>
-                <span className="px-2 py-0.5 rounded-md text-[11px] font-mono font-semibold bg-sky-50 text-sky-700 border border-sky-100 shrink-0">
+                <span className="shrink-0 rounded-md border border-brand-light-active bg-brand-light px-2 py-0.5 font-mono text-[11px] font-semibold text-brand-normal dark:bg-surface-muted">
                     {api}
                 </span>
                 {owner && (
                     <span
-                        className={`px-2 py-0.5 rounded-md text-[11px] font-semibold border shrink-0 ${ownerColor}`}
+                        className={cn(
+                            "shrink-0 rounded-md border px-2 py-0.5 text-[11px] font-semibold",
+                            ownerColor
+                        )}
                     >
                         {owner}
                     </span>
                 )}
-                <span className="text-[11px] font-mono text-gray-600 truncate flex-1 min-w-0">
+                <span className="min-w-0 flex-1 truncate font-mono text-[11px] text-text-secondary">
                     {actionId}
                 </span>
                 {isEditing ? (
-                    <button
+                    <Button
+                        size="xs"
                         onMouseDown={(e) => {
                             e.preventDefault();
                             setIsEditing(false);
                         }}
-                        className="shrink-0 flex items-center gap-1 px-2 py-0.5 rounded-md bg-sky-500 text-white text-[11px] font-medium hover:bg-sky-600 transition-colors"
                     >
-                        <FaCheck size={9} />
+                        <CheckIcon className="size-3" />
                         Done
-                    </button>
+                    </Button>
                 ) : (
-                    <button
+                    <Button
                         onClick={() => setIsEditing(true)}
-                        className="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded-md text-gray-400 hover:text-sky-500 hover:bg-sky-50"
+                        className="shrink-0 rounded-md p-1 text-text-secondary opacity-0 transition-opacity group-hover:opacity-100 hover:bg-brand-light hover:text-brand-normal dark:hover:bg-surface-muted"
                     >
-                        <FaPencilAlt size={11} />
-                    </button>
+                        <PencilIcon className="size-3.5" />
+                    </Button>
                 )}
             </div>
 
-            {/* Description area */}
-            <div className="px-4 py-3 cursor-text" onClick={() => !isEditing && setIsEditing(true)}>
+            <div
+                className="cursor-text px-4 py-3"
+                onClick={() => !isEditing && setIsEditing(true)}
+                onKeyDown={() => undefined}
+                role="presentation"
+            >
                 {isEditing ? (
                     <textarea
                         ref={textareaRef}
@@ -101,14 +117,14 @@ const StepCard = ({ index, actionId, api, owner, description, onChange }: StepCa
                         onChange={(e) => onChange(e.target.value)}
                         onInput={handleInput}
                         onBlur={() => setIsEditing(false)}
-                        className="w-full text-sm text-gray-700 placeholder-gray-300 bg-transparent border-0 outline-hidden resize-none leading-relaxed min-h-[40px]"
+                        className="min-h-[40px] w-full resize-none border-0 bg-transparent text-sm leading-relaxed text-text-primary outline-none placeholder:text-text-secondary"
                     />
                 ) : description ? (
-                    <p className="text-sm text-gray-600 leading-relaxed line-clamp-2">
+                    <p className="line-clamp-2 text-sm leading-relaxed text-text-secondary">
                         {description}
                     </p>
                 ) : (
-                    <p className="text-sm text-gray-300 italic leading-relaxed">
+                    <p className="text-sm leading-relaxed text-text-secondary italic">
                         Click to add a description…
                     </p>
                 )}
@@ -122,7 +138,7 @@ export const ExportReviewModal = ({
     onConfirm,
     onCancel,
     isDownloading = false,
-}: ExportReviewModalProps) => {
+}: IExportReviewModalProps) => {
     const [descriptions, setDescriptions] = useState<Record<string, string>>({});
 
     useEffect(() => {
@@ -134,62 +150,34 @@ export const ExportReviewModal = ({
         setDescriptions(initial);
     }, [config]);
 
-    useEffect(() => {
-        const handler = (e: KeyboardEvent) => {
-            if (e.key === "Escape") onCancel();
-        };
-        document.addEventListener("keydown", handler);
-        return () => document.removeEventListener("keydown", handler);
-    }, [onCancel]);
-
-    if (!config) return null;
-
-    const stepCount = config.steps.length;
+    const stepCount = config?.steps.length ?? 0;
     const filledCount = Object.values(descriptions).filter((d) => d.trim().length > 0).length;
 
     return (
-        <div
-            className="fixed inset-0 z-60 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4"
-            onClick={onCancel}
-        >
-            <div
-                className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[88vh] flex flex-col"
-                onClick={(e) => e.stopPropagation()}
-            >
-                {/* Header */}
-                <div className="flex items-center justify-between px-6 py-5 shrink-0">
-                    <div className="flex items-center gap-3.5">
-                        <div className="w-9 h-9 rounded-xl bg-sky-50 border border-sky-100 flex items-center justify-center shrink-0">
-                            <TbDatabaseExport size={18} className="text-sky-600" />
-                        </div>
-                        <div>
-                            <h2 className="text-[15px] font-semibold text-gray-900 leading-tight">
-                                Review Step Descriptions
-                            </h2>
-                            <p className="text-xs text-gray-400 mt-0.5">
-                                Descriptions are embedded in the deployment YAML as documentation
-                            </p>
-                        </div>
+        <Dialog open={!!config} onOpenChange={(open) => !open && onCancel()}>
+            <DialogContent className="flex max-h-[88vh] max-w-2xl flex-col gap-0 overflow-hidden p-0">
+                <DialogHeader className="flex flex-row items-start gap-3.5 border-b border-border-default px-6 py-5">
+                    <div className="flex size-9 shrink-0 items-center justify-center rounded-xl border border-brand-light-active bg-brand-light dark:bg-surface-muted">
+                        <ArrowDownTrayIcon className="size-[18px] text-brand-normal" />
                     </div>
-                    <button
-                        onClick={onCancel}
-                        className="w-7 h-7 flex items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors"
-                    >
-                        <FaTimes size={13} />
-                    </button>
-                </div>
+                    <div className="min-w-0">
+                        <DialogTitle>Review Step Descriptions</DialogTitle>
+                        <DialogDescription className="mt-0.5">
+                            Descriptions are embedded in the deployment YAML as documentation
+                        </DialogDescription>
+                    </div>
+                </DialogHeader>
 
-                {/* Divider + progress info */}
-                <div className="px-6 pb-3 shrink-0">
-                    <div className="flex items-center justify-between mb-2">
-                        <span className="text-xs text-gray-400">
+                <div className="shrink-0 px-6 pb-3">
+                    <div className="mb-2 flex items-center justify-between">
+                        <span className="text-xs text-text-secondary">
                             {filledCount} of {stepCount} steps have descriptions
                         </span>
-                        <span className="text-xs text-gray-400">click any step to edit</span>
+                        <span className="text-xs text-text-secondary">click any step to edit</span>
                     </div>
-                    <div className="h-1 bg-gray-100 rounded-full overflow-hidden">
+                    <div className="h-1 overflow-hidden rounded-full bg-surface-muted">
                         <div
-                            className="h-full bg-sky-400 rounded-full transition-all duration-300"
+                            className="h-full rounded-full bg-brand-normal transition-all duration-300"
                             style={{
                                 width: `${stepCount > 0 ? (filledCount / stepCount) * 100 : 0}%`,
                             }}
@@ -197,9 +185,8 @@ export const ExportReviewModal = ({
                     </div>
                 </div>
 
-                {/* Body */}
-                <div className="flex-1 overflow-y-auto px-6 pb-4 space-y-2">
-                    {config.steps.map((step, index) => (
+                <div className="flex-1 space-y-2 overflow-y-auto px-6 pb-4">
+                    {config?.steps.map((step, index) => (
                         <StepCard
                             key={step.action_id}
                             index={index}
@@ -214,39 +201,25 @@ export const ExportReviewModal = ({
                     ))}
                 </div>
 
-                {/* Footer */}
-                <div className="flex items-center justify-between px-6 py-4 border-t border-gray-100 shrink-0">
-                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-sky-50 text-sky-600 text-xs font-medium border border-sky-100">
+                <DialogFooter className="shrink-0 border-t border-border-default bg-surface-muted px-6 py-4 sm:justify-between">
+                    <span className="inline-flex items-center gap-1.5 rounded-lg border border-brand-light-active bg-brand-light px-2.5 py-1 text-xs font-medium text-brand-normal dark:bg-surface-elevated">
                         {stepCount} {stepCount === 1 ? "step" : "steps"}
                     </span>
                     <div className="flex items-center gap-2">
-                        <button
-                            onClick={onCancel}
-                            disabled={isDownloading}
-                            className="px-4 py-2 text-sm rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors disabled:opacity-50"
-                        >
+                        <Button variant="outline" onClick={onCancel} disabled={isDownloading}>
                             Cancel
-                        </button>
-                        <button
+                        </Button>
+                        <Button
                             onClick={() => onConfirm(descriptions)}
                             disabled={isDownloading}
-                            className="flex items-center gap-2 px-5 py-2 text-sm rounded-xl bg-sky-600 text-white hover:bg-sky-700 font-medium transition-colors disabled:opacity-60 disabled:cursor-not-allowed shadow-xs"
+                            isLoading={isDownloading}
                         >
-                            {isDownloading ? (
-                                <>
-                                    <FaSpinner size={12} className="animate-spin" />
-                                    Downloading…
-                                </>
-                            ) : (
-                                <>
-                                    <TbDatabaseExport size={14} />
-                                    Confirm &amp; Download
-                                </>
-                            )}
-                        </button>
+                            <ArrowDownTrayIcon className="size-4" />
+                            {isDownloading ? "Downloading…" : "Confirm & Download"}
+                        </Button>
                     </div>
-                </div>
-            </div>
-        </div>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
     );
 };

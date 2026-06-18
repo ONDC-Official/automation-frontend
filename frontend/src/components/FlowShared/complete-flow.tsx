@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { toast } from "react-toastify";
 import { v4 as uuidv4 } from "uuid";
 import { SubmitEventParams } from "@/types/flow-types";
@@ -399,7 +399,7 @@ export function Accordion({
                 >
                     <div className="flex items-center justify-between gap-3">
                         <h2
-                            className="min-w-0 truncate text-body-1 font-semibold text-text-primary"
+                            className="min-w-0 flex-1 wrap-break-word text-body-1 font-semibold text-text-primary"
                             onClick={playgroundClick}
                         >
                             {flowTitle}
@@ -412,13 +412,16 @@ export function Accordion({
                         />
                     </div>
 
-                    <div className="mt-3 flex justify-between items-end gap-4">
-                        <div className="max-w-3xs flex-1 ">
-                            <FlowProgress percent={flowPercent} description={flow.description} />
-                        </div>
-                        <div className="shrink-0" onClick={(e) => e.stopPropagation()}>
-                            <AccordionButtons />
-                        </div>
+                    <div className="mt-3">
+                        <FlowProgress
+                            percent={flowPercent}
+                            description={flow.description}
+                            actions={
+                                <div onClick={(e) => e.stopPropagation()}>
+                                    <AccordionButtons />
+                                </div>
+                            }
+                        />
                     </div>
                 </div>
 
@@ -455,21 +458,32 @@ async function canStartFlow(sessionData: SessionCache, mappedFlow: FlowMap) {
     return true;
 }
 
-const FlowProgress = ({ percent, description }: { percent: number; description: string }) => (
-    <>
-        <Progress
-            value={percent}
-            className="h-1.5 w-full bg-n-30 **:data-[slot=progress-indicator]:bg-brand-normal dark:bg-surface-muted"
-        />
-        <div className="mt-2 flex items-center justify-between gap-3">
-            <span className="min-w-0 truncate text-body-2 font-regular text-text-secondary">
-                {description}
-            </span>
-            <span className="shrink-0 text-body-2 font-bold text-brand-normal">
-                {percent.toFixed(0)}%
-            </span>
+const FlowProgress = ({
+    percent,
+    description,
+    actions,
+}: {
+    percent: number;
+    description: string;
+    actions?: ReactNode;
+}) => (
+    <div className="flex items-center justify-between gap-4">
+        <div className="flex min-w-0 flex-1 flex-col gap-2">
+            <Progress
+                value={percent}
+                className="h-1.5 w-full bg-n-30 **:data-[slot=progress-indicator]:bg-brand-normal dark:bg-surface-muted"
+            />
+            <div className="flex min-w-0 items-center gap-3">
+                <span className="line-clamp-2 min-w-0 flex-1 wrap-break-word text-body-2 font-regular text-text-secondary">
+                    {description}
+                </span>
+                <span className="shrink-0 text-body-2 font-bold text-brand-normal">
+                    {percent.toFixed(0)}%
+                </span>
+            </div>
         </div>
-    </>
+        {actions ? <div className="flex shrink-0 items-center">{actions}</div> : null}
+    </div>
 );
 
 function getPercent(mappedFlow: FlowMap) {

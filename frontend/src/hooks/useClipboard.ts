@@ -1,24 +1,21 @@
-import { useState, useCallback } from "react";
+import { useCallback } from "react";
+import { toast } from "sonner";
 
-const COPY_SUCCESS_DURATION = 2000;
-
-/**
- * Hook to copy text to the clipboard and expose a transient "copied" flag.
- * Sets copied true on success for a short duration so UIs can show feedback.
- */
+const COPY_SUCCESS_MESSAGE = "Copied to clipboard";
+const COPY_ERROR_MESSAGE = "Failed to copy to clipboard";
 
 export const useClipboard = () => {
-    const [copied, setCopied] = useState(false);
-
-    const copyToClipboard = useCallback(async (text: string) => {
+    const copyToClipboard = useCallback(async (text: string): Promise<boolean> => {
         try {
             await navigator.clipboard.writeText(text);
-            setCopied(true);
-            setTimeout(() => setCopied(false), COPY_SUCCESS_DURATION);
+            toast.success(COPY_SUCCESS_MESSAGE);
+            return true;
         } catch (error) {
             console.error("Failed to copy text to clipboard:", error);
+            toast.error(COPY_ERROR_MESSAGE);
+            return false;
         }
     }, []);
 
-    return { copied, copyToClipboard };
+    return { copyToClipboard };
 };

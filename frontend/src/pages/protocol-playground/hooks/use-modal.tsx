@@ -1,8 +1,12 @@
 // hooks/useModalHandlers.ts
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 
-import { AddActionForm, DeleteConfirmationForm, EditActionForm } from "../ui/from-contents";
-import { getFormValues } from "../utils/form-helper";
+import {
+    AddActionForm,
+    DeleteConfirmationForm,
+    EditActionForm,
+    type IEditActionFormData,
+} from "@pages/protocol-playground/ui/from-contents";
 import { StepGroup, getGroupSteps } from "../utils/step-group";
 import { MockPlaygroundConfigType } from "@ondc/automation-mock-runner";
 import type { JSX } from "react";
@@ -37,7 +41,7 @@ interface MockConfig {
 interface ModalHandlersProps {
     activeApi: string | undefined;
     setActiveApi: (api: string | undefined) => void;
-    openModal: (content: JSX.Element) => void;
+    openModal: (content: JSX.Element, options?: { className?: string }) => void;
     closeModal: () => void;
     addAction: (
         api: string,
@@ -71,13 +75,17 @@ export const useModalHandlers = ({
         ) as unknown as StepConfig[];
 
     const showAddAction = (insertIndex?: number, title = "Add Action") => {
-        const handleSubmit = () => {
-            const { stepType, api, form, actionId } = getFormValues({
-                stepType: "stepTypeInput",
-                api: "apiAddNameInput",
-                form: "formAddNameInput",
-                actionId: "actionAddIdInput",
-            });
+        const handleSubmit = ({
+            stepType,
+            api,
+            form,
+            actionId,
+        }: {
+            stepType: "action" | "form";
+            api: string;
+            form: string;
+            actionId: string;
+        }) => {
             if (stepType === "form") {
                 if (!addAction(form, actionId, insertIndex, stepType)) return;
                 setActiveApi(actionId);
@@ -163,22 +171,13 @@ export const useModalHandlers = ({
             return steps.slice(0, currentIndex);
         };
 
-        const handleUpdate = () => {
-            const formData = getFormValues({
-                api: "editApiNameInput",
-                actionId: "editActionIdInput",
-                owner: "editOwnerInput",
-                unsolicited: "editUnsolicitedInput",
-                responseFor: "editResponseForInput",
-                description: "editDescriptionInput",
-            });
-
+        const handleUpdate = (formData: IEditActionFormData) => {
             if (!formData.api || !formData.actionId) {
                 toast.error("API Name and Action ID are required");
                 return;
             }
 
-            const success = updateAction(actionId, formData);
+            const success = updateAction(actionId, formData as ActionFormData);
 
             if (success) {
                 setActiveApi(formData.actionId);
@@ -195,7 +194,8 @@ export const useModalHandlers = ({
                 previousSteps={getPreviousSteps() as never}
                 onUpdate={handleUpdate}
                 onCancel={closeModal}
-            />
+            />,
+            { className: "max-w-2xl" }
         );
     };
 

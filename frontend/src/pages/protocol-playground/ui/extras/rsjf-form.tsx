@@ -16,6 +16,8 @@ import { GrAdd } from "react-icons/gr";
 import { MdDeleteOutline } from "react-icons/md";
 import GpsWidget from "@components/ui/forms/custom-forms/GpsMapPicker";
 
+const PLAYGROUND_RJSF_FORM_ID = "playground-rjsf-form";
+
 const WIDGETS: RegistryWidgetsType = { gps: GpsWidget };
 
 /** A schema property is a GPS coordinate if it maps to a *.location.gps payload field
@@ -144,6 +146,7 @@ function CustomArrayFieldTemplate(props: ArrayFieldTemplateProps) {
     );
 }
 
+export { PLAYGROUND_RJSF_FORM_ID };
 export default function JsonSchemaForm({
     schema,
     formData,
@@ -174,6 +177,7 @@ export default function JsonSchemaForm({
         <div className="rjsf-custom-form">
             {title && <h2 className="form-title">{title}</h2>}
             <Form
+                id={PLAYGROUND_RJSF_FORM_ID}
                 schema={schema}
                 uiSchema={uiSchema}
                 widgets={WIDGETS}

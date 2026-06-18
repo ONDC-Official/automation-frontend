@@ -1,13 +1,19 @@
-import { useMemo, useState } from "react";
+import { CSSProperties, useMemo, useState } from "react";
 import JsonView from "@uiw/react-json-view";
-import { FaExchangeAlt } from "react-icons/fa";
+import { githubDarkTheme } from "@uiw/react-json-view/githubDark";
+import { githubLightTheme } from "@uiw/react-json-view/githubLight";
 import {
-    IoChevronDown,
-    IoChevronForward,
-    IoGitNetworkOutline,
-    IoTimeOutline,
-} from "react-icons/io5";
+    ArrowsRightLeftIcon,
+    ChevronDownIcon,
+    ChevronRightIcon,
+    ClockIcon,
+    ShareIcon,
+} from "@heroicons/react/24/outline";
 import { MockPlaygroundConfigType } from "@ondc/automation-mock-runner";
+
+import { useAppliedTheme } from "@/context/theme/useAppliedTheme";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/Shadcn/Button";
 
 type Step = MockPlaygroundConfigType["steps"][number];
 type HistoryEntry = MockPlaygroundConfigType["transaction_history"][number];
@@ -15,11 +21,9 @@ type HistoryEntry = MockPlaygroundConfigType["transaction_history"][number];
 interface TraceNode {
     entry: HistoryEntry;
     def?: Step;
-    seq: number; // 1-based execution order
+    seq: number;
 }
 
-// A row is either a request paired with its response (same message_id +
-// responseFor mapping), or a single unpaired message.
 interface TraceRow {
     request?: TraceNode;
     response?: TraceNode;
@@ -42,80 +46,93 @@ function contextOf(payload: unknown): PayloadContext {
 
 const shortId = (id?: string) => (id && id.length > 10 ? `${id.slice(0, 8)}…` : id);
 
-// Owner-driven accent palette — BAP (sky) vs BPP (violet).
 function ownerStyles(owner?: string) {
     if (owner === "BPP") {
-        return { badge: "bg-violet-100 text-violet-700 ring-violet-200" };
+        return "bg-violet-100 text-violet-700 ring-violet-200 dark:bg-violet-500/15 dark:text-violet-300 dark:ring-violet-500/30";
     }
-    return { badge: "bg-sky-100 text-sky-700 ring-sky-200" };
+    return "bg-sky-100 text-sky-700 ring-sky-200 dark:bg-sky-500/15 dark:text-sky-300 dark:ring-sky-500/30";
 }
 
-function MessageBlock({ node, paired }: { node: TraceNode; paired: boolean }) {
+function MessageBlock({
+    node,
+    paired,
+    jsonTheme,
+}: {
+    node: TraceNode;
+    paired: boolean;
+    jsonTheme: CSSProperties;
+}) {
     const [open, setOpen] = useState(false);
     const ctx = contextOf(node.entry.payload);
     const owner = node.def?.owner;
     const action = node.entry.action || node.def?.api || ctx.action || node.entry.action_id;
-    const s = ownerStyles(owner);
 
     return (
         <div>
-            <button
+            <Button
                 onClick={() => setOpen((v) => !v)}
-                className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-sky-50/50 transition-colors"
+                className="flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-brand-light dark:hover:bg-surface-muted"
             >
-                {/* Sequence */}
-                <span className="shrink-0 w-6 h-6 rounded-full bg-slate-100 text-slate-500 text-xs font-semibold flex items-center justify-center">
+                <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-surface-muted text-xs font-semibold text-text-secondary">
                     {node.seq}
                 </span>
 
-                {/* Owner */}
                 <span
-                    className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wide ring-1 ring-inset ${s.badge}`}
+                    className={cn(
+                        "shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold tracking-wide ring-1 ring-inset",
+                        ownerStyles(owner)
+                    )}
                 >
                     {owner ?? "—"}
                 </span>
 
-                {/* Action + id */}
                 <div className="min-w-0 flex-1">
-                    <div className="font-mono text-sm font-semibold text-gray-900 truncate">
+                    <div className="truncate font-mono text-sm font-semibold text-text-primary">
                         {action}
                     </div>
                     {node.entry.action_id !== action && (
-                        <div className="font-mono text-xs text-gray-400 truncate">
+                        <div className="truncate font-mono text-xs text-text-secondary">
                             {node.entry.action_id}
                         </div>
                     )}
                 </div>
 
-                {/* message_id — highlighted within a pair to show the link */}
                 {ctx.message_id && (
                     <span
                         title={`message_id: ${ctx.message_id}`}
-                        className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-mono ${
-                            paired ? "bg-indigo-100 text-indigo-700" : "bg-slate-100 text-slate-500"
-                        }`}
+                        className={cn(
+                            "shrink-0 rounded-full px-2 py-0.5 font-mono text-[10px]",
+                            paired
+                                ? "bg-indigo-100 text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-300"
+                                : "bg-surface-muted text-text-secondary"
+                        )}
                     >
                         msg {shortId(ctx.message_id)}
                     </span>
                 )}
 
                 {open ? (
-                    <IoChevronDown className="shrink-0 text-sky-400" />
+                    <ChevronDownIcon className="size-4 shrink-0 text-brand-normal" />
                 ) : (
-                    <IoChevronForward className="shrink-0 text-sky-300" />
+                    <ChevronRightIcon className="size-4 shrink-0 text-text-secondary" />
                 )}
-            </button>
+            </Button>
 
             {open && (
                 <div className="px-4 pb-3">
                     {ctx.timestamp && (
-                        <div className="flex items-center gap-1.5 text-xs text-gray-400 mb-2 font-mono">
-                            <IoTimeOutline size={13} />
+                        <div className="mb-2 flex items-center gap-1.5 font-mono text-xs text-text-secondary">
+                            <ClockIcon className="size-3.5 shrink-0 text-text-secondary" />
                             {ctx.timestamp}
                         </div>
                     )}
-                    <div className="rounded-lg border border-sky-100 bg-sky-50/30 p-2 overflow-hidden">
-                        <JsonView value={node.entry.payload as object} collapsed={2} />
+                    <div className="overflow-hidden rounded-lg border border-border-default bg-surface-muted p-2">
+                        <JsonView
+                            value={node.entry.payload as object}
+                            collapsed={2}
+                            style={jsonTheme}
+                            displayDataTypes={false}
+                        />
                     </div>
                 </div>
             )}
@@ -124,6 +141,12 @@ function MessageBlock({ node, paired }: { node: TraceNode; paired: boolean }) {
 }
 
 export default function TraceView({ config }: { config: MockPlaygroundConfigType }) {
+    const appliedTheme = useAppliedTheme();
+    const jsonTheme = useMemo(
+        () => (appliedTheme === "dark" ? githubDarkTheme : githubLightTheme),
+        [appliedTheme]
+    );
+
     const rows = useMemo<TraceRow[]>(() => {
         const defMap = new Map<string, Step>();
         [...config.steps, ...(config.extra_steps?.steps ?? [])].forEach((s) =>
@@ -166,63 +189,61 @@ export default function TraceView({ config }: { config: MockPlaygroundConfigType
     }, [config]);
 
     const metaChip =
-        "px-2 py-0.5 rounded-md bg-white border border-sky-100 text-sky-700 font-medium";
+        "rounded-md border border-brand-light-active bg-brand-light px-2 py-0.5 text-xs font-medium text-brand-normal dark:border-border-default dark:bg-surface-muted dark:text-text-secondary";
 
     return (
-        <div className="w-full -m-4">
-            {/* Header */}
-            <div className="bg-linear-to-r from-sky-50 to-white border-b border-sky-100 px-5 py-4 pr-16">
-                <div className="flex items-center gap-2 mb-2">
-                    <IoGitNetworkOutline className="text-sky-500 text-2xl" />
-                    <h2 className="text-lg font-bold text-gray-900">Execution Trace</h2>
-                </div>
-                <div className="flex flex-wrap items-center gap-1.5 text-xs">
-                    <span className={metaChip}>{config.meta.domain}</span>
-                    <span className={metaChip}>{config.meta.version}</span>
-                    <span className={metaChip}>{config.meta.flowId}</span>
-                    <span className="text-gray-400 ml-1">
-                        {config.transaction_history.length} message
-                        {config.transaction_history.length === 1 ? "" : "s"}
-                    </span>
-                </div>
+        <div className="w-full">
+            <div className="mb-4 flex flex-wrap items-center gap-1.5 text-xs">
+                <span className={metaChip}>{config.meta.domain}</span>
+                <span className={metaChip}>{config.meta.version}</span>
+                <span className={metaChip}>{config.meta.flowId}</span>
+                <span className="ml-1 text-text-secondary">
+                    {config.transaction_history.length} message
+                    {config.transaction_history.length === 1 ? "" : "s"}
+                </span>
             </div>
 
-            {/* Body */}
-            <div className="p-5">
-                {rows.length === 0 ? (
-                    <div className="text-center py-16">
-                        <IoGitNetworkOutline className="text-sky-200 text-5xl mx-auto mb-3" />
-                        <p className="text-gray-500 text-sm font-medium">No execution yet</p>
-                        <p className="text-gray-400 text-xs mt-1">
-                            Run some steps to see the flow trace.
-                        </p>
-                    </div>
-                ) : (
-                    <div className="space-y-3">
-                        {rows.map((row, i) => (
-                            <div
-                                key={i}
-                                className="rounded-xl border border-sky-100 bg-white shadow-xs overflow-hidden divide-y divide-sky-50"
-                            >
-                                {row.request && (
-                                    <MessageBlock node={row.request} paired={!!row.response} />
-                                )}
-                                {row.request && row.response && (
-                                    <div className="flex items-center justify-center gap-2 bg-indigo-50/60 py-1">
-                                        <FaExchangeAlt className="text-indigo-400" size={11} />
-                                        <span className="text-[10px] font-semibold text-indigo-500 uppercase tracking-wide">
-                                            paired · same message_id
-                                        </span>
-                                    </div>
-                                )}
-                                {row.response && (
-                                    <MessageBlock node={row.response} paired={!!row.request} />
-                                )}
-                            </div>
-                        ))}
-                    </div>
-                )}
-            </div>
+            {rows.length === 0 ? (
+                <div className="py-16 text-center">
+                    <ShareIcon className="mx-auto mb-3 size-12 text-brand-light-active dark:text-border-default" />
+                    <p className="text-sm font-medium text-text-secondary">No execution yet</p>
+                    <p className="mt-1 text-xs text-text-secondary/80">
+                        Run some steps to see the flow trace.
+                    </p>
+                </div>
+            ) : (
+                <div className="space-y-3">
+                    {rows.map((row, i) => (
+                        <div
+                            key={i}
+                            className="divide-y divide-border-default overflow-hidden rounded-xl border border-border-default bg-surface-elevated shadow-xs"
+                        >
+                            {row.request && (
+                                <MessageBlock
+                                    node={row.request}
+                                    paired={!!row.response}
+                                    jsonTheme={jsonTheme as CSSProperties}
+                                />
+                            )}
+                            {row.request && row.response && (
+                                <div className="flex items-center justify-center gap-2 border-y border-border-default bg-brand-light/60 py-1.5 dark:bg-surface-muted">
+                                    <ArrowsRightLeftIcon className="size-[11px] shrink-0 text-brand-normal" />
+                                    <span className="text-[10px] font-semibold uppercase tracking-wide text-text-secondary">
+                                        paired · same message_id
+                                    </span>
+                                </div>
+                            )}
+                            {row.response && (
+                                <MessageBlock
+                                    node={row.response}
+                                    paired={!!row.request}
+                                    jsonTheme={jsonTheme as CSSProperties}
+                                />
+                            )}
+                        </div>
+                    ))}
+                </div>
+            )}
         </div>
     );
 }

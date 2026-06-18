@@ -1,124 +1,171 @@
-// ===== FORM COMPONENTS =====
-// Extracted form components for better code organization and reusability
-
-import { PlaygroundActionStep } from "@ondc/automation-mock-runner";
-import { inputClass } from "../../../components/ui/forms/inputClass";
-
-import { ONDC_ACTION_LIST, ONDC_FORM_LIST } from "../types";
-
 import { useContext, useState } from "react";
-import { PlaygroundContext } from "../context/playground-context";
+import { PlaygroundActionStep } from "@ondc/automation-mock-runner";
 
-export const AddActionForm = ({
-    title,
-    onSubmit,
-    onCancel,
-}: {
+import { Button } from "@/components/Shadcn/Button/button";
+import {
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/Shadcn/Dialog/dialog";
+import { Textarea } from "@/components/Shadcn/ComboBox/textarea";
+import { Label } from "@/components/Shadcn/Label/label";
+import { TextField } from "@/components/Shadcn/TextField";
+import { cn } from "@/lib/utils";
+import { ONDC_ACTION_LIST, ONDC_FORM_LIST } from "@pages/protocol-playground/types";
+import { PlaygroundContext } from "@pages/protocol-playground/context/playground-context";
+
+const selectClass = cn(
+    "h-9 w-full min-w-0 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs outline-none",
+    "focus-visible:border-ring focus-visible:ring focus-visible:ring-ring/50 dark:bg-input/30"
+);
+
+export interface IAddActionFormData {
+    stepType: "action" | "form";
+    api: string;
+    form: string;
+    actionId: string;
+}
+
+interface IAddActionFormProps {
     title: string;
-    onSubmit: () => void;
+    onSubmit: (data: IAddActionFormData) => void;
     onCancel: () => void;
-}) => {
+}
+
+export const AddActionForm = ({ title, onSubmit, onCancel }: IAddActionFormProps) => {
     const { stepGroup } = useContext(PlaygroundContext);
-    // Form steps are only allowed in the main group — extra steps run multiple
-    // times and forms aren't supported there.
     const allowForm = stepGroup !== "extra";
     const [stepType, setStepType] = useState<"action" | "form">("action");
+    const [api, setApi] = useState<string>(ONDC_ACTION_LIST[0]);
+    const [form, setForm] = useState<string>(ONDC_FORM_LIST[0]);
+    const [actionId, setActionId] = useState("");
 
     return (
-        <div>
-            <h2>{title}</h2>
-            <div className="flex flex-col gap-2 mt-2">
-                {/* Step type selector — only when forms are allowed */}
-                {allowForm && (
-                    <select
-                        id="stepTypeInput"
-                        className={inputClass}
-                        value={stepType}
-                        onChange={(e) => setStepType(e.target.value as "action" | "form")}
-                    >
-                        <option value="action">API</option>
-                        <option value="form">FORM</option>
-                    </select>
+        <>
+            <DialogHeader className="border-b border-border-default px-6 py-4">
+                <DialogTitle>{title}</DialogTitle>
+                <DialogDescription>Add a new API step or form step to the flow.</DialogDescription>
+            </DialogHeader>
+
+            <div className="flex flex-col gap-4 px-6 py-5">
+                {allowForm ? (
+                    <div className="space-y-1.5">
+                        <Label htmlFor="step-type">Step Type</Label>
+                        <select
+                            id="step-type"
+                            className={selectClass}
+                            value={stepType}
+                            onChange={(e) => setStepType(e.target.value as "action" | "form")}
+                        >
+                            <option value="action">API</option>
+                            <option value="form">FORM</option>
+                        </select>
+                    </div>
+                ) : null}
+
+                {stepType === "action" ? (
+                    <div className="space-y-1.5">
+                        <Label htmlFor="api-name">API</Label>
+                        <select
+                            id="api-name"
+                            className={selectClass}
+                            value={api}
+                            onChange={(e) => setApi(e.target.value)}
+                        >
+                            {ONDC_ACTION_LIST.map((action) => (
+                                <option key={action} value={action}>
+                                    {action}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                ) : (
+                    <div className="space-y-1.5">
+                        <Label htmlFor="form-name">Form</Label>
+                        <select
+                            id="form-name"
+                            className={selectClass}
+                            value={form}
+                            onChange={(e) => setForm(e.target.value)}
+                        >
+                            {ONDC_FORM_LIST.map((formName) => (
+                                <option key={formName} value={formName}>
+                                    {formName}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
                 )}
 
-                {/* API select */}
-                {stepType === "action" && (
-                    <select id="apiAddNameInput" className={inputClass}>
-                        {ONDC_ACTION_LIST.map((action) => (
-                            <option key={action} value={action}>
-                                {action}
-                            </option>
-                        ))}
-                    </select>
-                )}
-
-                {/* Form select */}
-                {stepType === "form" && (
-                    <select id="formAddNameInput" className={inputClass}>
-                        {ONDC_FORM_LIST.map((form) => (
-                            <option key={form} value={form}>
-                                {form}
-                            </option>
-                        ))}
-                    </select>
-                )}
-
-                <input
+                <TextField
+                    id="step-id"
+                    label="Step ID"
                     type="text"
                     placeholder="step id"
-                    id="actionAddIdInput"
-                    className={inputClass}
+                    value={actionId}
+                    onChange={(e) => setActionId(e.target.value)}
                 />
-
-                <div className="flex gap-2 mt-2">
-                    <button
-                        className="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500"
-                        onClick={onCancel}
-                    >
-                        Cancel
-                    </button>
-                    <button
-                        className="px-4 py-2 bg-sky-700 text-white rounded hover:bg-sky-800"
-                        onClick={onSubmit}
-                    >
-                        Submit
-                    </button>
-                </div>
             </div>
-        </div>
+
+            <DialogFooter className="border-t border-border-default bg-surface-muted px-6 py-4">
+                <Button variant="outline" onClick={onCancel}>
+                    Cancel
+                </Button>
+                <Button onClick={() => onSubmit({ stepType, api, form, actionId })}>Submit</Button>
+            </DialogFooter>
+        </>
     );
 };
+
+interface IDeleteConfirmationFormProps {
+    title: string;
+    description: string;
+    onConfirm: () => void;
+    onCancel: () => void;
+}
 
 export const DeleteConfirmationForm = ({
     title,
     description,
     onConfirm,
     onCancel,
-}: {
-    title: string;
-    description: string;
-    onConfirm: () => void;
-    onCancel: () => void;
-}) => (
-    <div>
-        <h2>{title}</h2>
-        <p>{description || "Are you sure you want to delete ? This action cannot be undone."}</p>
-        <div className="mt-4 flex justify-end gap-2">
-            <button
-                className="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500"
-                onClick={onCancel}
-            >
+}: IDeleteConfirmationFormProps) => (
+    <>
+        <DialogHeader className="border-b border-border-default px-6 py-4">
+            <DialogTitle>{title}</DialogTitle>
+            <DialogDescription>
+                {description || "Are you sure you want to delete? This action cannot be undone."}
+            </DialogDescription>
+        </DialogHeader>
+
+        <DialogFooter className="border-t border-border-default bg-surface-muted px-6 py-4">
+            <Button variant="outline" onClick={onCancel}>
                 Cancel
-            </button>
-            <button
-                className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
-                onClick={onConfirm}
-            >
+            </Button>
+            <Button variant="destructive" onClick={onConfirm}>
                 Delete
-            </button>
-        </div>
-    </div>
+            </Button>
+        </DialogFooter>
+    </>
 );
+
+export interface IEditActionFormData {
+    api: string;
+    actionId: string;
+    owner: string;
+    unsolicited: string;
+    responseFor: string;
+    description: string;
+}
+
+interface IEditActionFormProps {
+    currentAction: PlaygroundActionStep;
+    activeActionId: string;
+    previousSteps: PlaygroundActionStep[];
+    onUpdate: (data: IEditActionFormData) => void;
+    onCancel: () => void;
+}
 
 export const EditActionForm = ({
     currentAction,
@@ -126,115 +173,114 @@ export const EditActionForm = ({
     previousSteps,
     onUpdate,
     onCancel,
-}: {
-    currentAction: PlaygroundActionStep;
-    activeActionId: string;
-    previousSteps: PlaygroundActionStep[];
-    onUpdate: () => void;
-    onCancel: () => void;
-}) => (
-    <div className="w-full">
-        <h2 className="text-lg font-bold mb-4">Edit Action Configuration</h2>
-        <div className="grid grid-cols-2 gap-3">
-            {/* API Name */}
-            <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">API Name:</label>
-                <select
-                    id="editApiNameInput"
-                    className={inputClass}
-                    defaultValue={currentAction.api}
-                >
-                    {ONDC_ACTION_LIST.map((action) => (
-                        <option key={action} value={action}>
-                            {action}
-                        </option>
-                    ))}
-                </select>
-            </div>
+}: IEditActionFormProps) => {
+    const [api, setApi] = useState<string>(currentAction.api);
+    const [actionId, setActionId] = useState(activeActionId);
+    const [owner, setOwner] = useState<string>(currentAction.owner ?? "BAP");
+    const [unsolicited, setUnsolicited] = useState(currentAction.unsolicited ? "yes" : "no");
+    const [responseFor, setResponseFor] = useState(currentAction.responseFor ?? "");
+    const [description, setDescription] = useState(currentAction.description ?? "");
 
-            {/* Action ID */}
-            <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Action ID:</label>
-                <input
+    return (
+        <>
+            <DialogHeader className="border-b border-border-default px-6 py-4">
+                <DialogTitle>Edit Action Configuration</DialogTitle>
+                <DialogDescription>Update the selected step&apos;s metadata.</DialogDescription>
+            </DialogHeader>
+
+            <div className="grid grid-cols-1 gap-4 px-6 py-5 sm:grid-cols-2">
+                <div className="space-y-1.5">
+                    <Label htmlFor="edit-api">API Name</Label>
+                    <select
+                        id="edit-api"
+                        className={selectClass}
+                        value={api}
+                        onChange={(e) => setApi(e.target.value)}
+                    >
+                        {ONDC_ACTION_LIST.map((action) => (
+                            <option key={action} value={action}>
+                                {action}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+
+                <TextField
+                    id="edit-action-id"
+                    label="Action ID"
                     type="text"
                     placeholder="Action ID"
-                    id="editActionIdInput"
-                    className={inputClass}
-                    defaultValue={activeActionId}
+                    value={actionId}
+                    onChange={(e) => setActionId(e.target.value)}
                 />
+
+                <div className="space-y-1.5">
+                    <Label htmlFor="edit-owner">Owner</Label>
+                    <select
+                        id="edit-owner"
+                        className={selectClass}
+                        value={owner}
+                        onChange={(e) => setOwner(e.target.value)}
+                    >
+                        <option value="BAP">BAP</option>
+                        <option value="BPP">BPP</option>
+                    </select>
+                </div>
+
+                <div className="space-y-1.5">
+                    <Label htmlFor="edit-unsolicited">Unsolicited</Label>
+                    <select
+                        id="edit-unsolicited"
+                        className={selectClass}
+                        value={unsolicited}
+                        onChange={(e) => setUnsolicited(e.target.value)}
+                    >
+                        <option value="yes">Yes</option>
+                        <option value="no">No</option>
+                    </select>
+                </div>
+
+                <div className="col-span-full space-y-1.5">
+                    <Label htmlFor="edit-response-for">Response For</Label>
+                    <select
+                        id="edit-response-for"
+                        className={selectClass}
+                        value={responseFor}
+                        onChange={(e) => setResponseFor(e.target.value)}
+                    >
+                        <option value="">None</option>
+                        {previousSteps.map((step) => (
+                            <option key={step.action_id} value={step.action_id}>
+                                {step.action_id} ({step.api})
+                            </option>
+                        ))}
+                    </select>
+                </div>
+
+                <div className="col-span-full space-y-1.5">
+                    <Label htmlFor="edit-description">Description</Label>
+                    <Textarea
+                        id="edit-description"
+                        placeholder="Add a description..."
+                        rows={3}
+                        value={description}
+                        onChange={(e) => setDescription(e.target.value)}
+                    />
+                </div>
             </div>
 
-            {/* Owner */}
-            <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Owner:</label>
-                <select
-                    id="editOwnerInput"
-                    className={inputClass}
-                    defaultValue={currentAction.owner}
+            <DialogFooter className="border-t border-border-default bg-surface-muted px-6 py-4">
+                <Button variant="outline" onClick={onCancel}>
+                    Cancel
+                </Button>
+                <Button
+                    onClick={() =>
+                        onUpdate({ api, actionId, owner, unsolicited, responseFor, description })
+                    }
                 >
-                    <option value="BAP">BAP</option>
-                    <option value="BPP">BPP</option>
-                </select>
-            </div>
-
-            {/* Unsolicited */}
-            <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Unsolicited:</label>
-                <select
-                    id="editUnsolicitedInput"
-                    className={inputClass}
-                    defaultValue={currentAction.unsolicited ? "yes" : "no"}
-                >
-                    <option value="yes">Yes</option>
-                    <option value="no">No</option>
-                </select>
-            </div>
-
-            {/* Response For */}
-            <div className="col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Response For:
-                </label>
-                <select
-                    id="editResponseForInput"
-                    className={inputClass}
-                    defaultValue={currentAction.responseFor || ""}
-                >
-                    <option value="">None</option>
-                    {previousSteps.map((step) => (
-                        <option key={step.action_id} value={step.action_id}>
-                            {step.action_id} ({step.api})
-                        </option>
-                    ))}
-                </select>
-            </div>
-
-            {/* Description */}
-            <div className="col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Description:</label>
-                <textarea
-                    placeholder="Add a description..."
-                    id="editDescriptionInput"
-                    className={`${inputClass} h-20 resize-none`}
-                    defaultValue={currentAction.description || ""}
-                />
-            </div>
-        </div>
-
-        {/* Buttons */}
-        <div className="flex gap-2 mt-4 justify-end">
-            <button
-                className="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500"
-                onClick={onCancel}
-            >
-                Cancel
-            </button>
-            <button
-                className="px-4 py-2 bg-sky-700 text-white rounded hover:bg-sky-800"
-                onClick={onUpdate}
-            >
-                Update Action
-            </button>
-        </div>
-    </div>
-);
+                    Update Action
+                </Button>
+            </DialogFooter>
+        </>
+    );
+};

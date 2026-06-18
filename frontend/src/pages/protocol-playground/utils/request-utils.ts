@@ -4,7 +4,7 @@ import {
     createOptimizedMockConfig,
 } from "@ondc/automation-mock-runner";
 import axios from "axios";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 import { SessionCache } from "@/types/session-types";
 
 export async function createFlowSessionWithPlayground(

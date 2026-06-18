@@ -6,7 +6,6 @@ import {
     ArrowLeftIcon,
     ArrowRightIcon,
     ArrowsRightLeftIcon,
-    CheckIcon,
     ClipboardDocumentIcon,
 } from "@heroicons/react/24/outline";
 
@@ -22,6 +21,7 @@ import {
 } from "@/components/Shadcn/Select/select";
 import { cn } from "@/lib/utils";
 import { useAppliedTheme } from "@/context/theme/useAppliedTheme";
+import { useClipboard } from "@hooks/useClipboard";
 import { apiClient } from "@services/apiClient";
 import { API_ROUTES } from "@services/apiRoutes";
 import type { IScenarioDomainItem } from "@pages/protocol-playground/ui/starter/types";
@@ -55,38 +55,18 @@ function serializeOutput(value: unknown, format: InputFormat): string {
 }
 
 const CopyButton = ({ getValue }: { getValue: () => string }) => {
-    const [copied, setCopied] = useState(false);
+    const { copyToClipboard } = useClipboard();
 
     const handleCopy = async () => {
         const text = getValue();
         if (!text.trim()) return;
-        await navigator.clipboard.writeText(text);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
+        await copyToClipboard(text);
     };
 
     return (
-        <Button
-            type="button"
-            size="xs"
-            variant="outline"
-            onClick={handleCopy}
-            className={cn(
-                copied &&
-                    "border-success-200 bg-success-50 text-success-500 hover:bg-success-50 hover:text-success-500"
-            )}
-        >
-            {copied ? (
-                <>
-                    <CheckIcon className="size-3.5" />
-                    Copied
-                </>
-            ) : (
-                <>
-                    <ClipboardDocumentIcon className="size-3.5" />
-                    Copy
-                </>
-            )}
+        <Button size="xs" variant="outline" onClick={handleCopy}>
+            <ClipboardDocumentIcon className="size-3.5" />
+            Copy
         </Button>
     );
 };
@@ -344,9 +324,7 @@ export const FlowConverterModal = ({ isOpen, onClose }: IFlowConverterModalProps
                             isLoading={isConverting}
                             disabled={isConverting || !inputValue.trim() || !domain || !version}
                             title={
-                                !domain || !version
-                                    ? "Select domain and version first"
-                                    : "Convert"
+                                !domain || !version ? "Select domain and version first" : "Convert"
                             }
                             className="rounded-xl"
                         >

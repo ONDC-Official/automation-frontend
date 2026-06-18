@@ -14,7 +14,11 @@ import { FlowConverterModal } from "@pages/protocol-playground/ui/components/flo
 import { SchemaGeneratorModal } from "@pages/protocol-playground/ui/components/schema-generator";
 import { FlowFields } from "@pages/protocol-playground/ui/starter/flow-fields";
 import { useScenarioFormData } from "@pages/protocol-playground/ui/starter/use-scenario-form-data";
-import { STARTER_FORM_DEFAULTS, STARTER_TABS, type StarterModalKey } from "@pages/protocol-playground/ui/starter/constants";
+import {
+    STARTER_FORM_DEFAULTS,
+    STARTER_TABS,
+    type StarterModalKey,
+} from "@pages/protocol-playground/ui/starter/constants";
 import type {
     IStarterFormValues,
     StarterTabKey,
@@ -31,25 +35,17 @@ export const StarterScreen = () => {
     const version = watch("version");
     const flowId = watch("flowId");
 
-    const { domainOptions, versionOptions, usecaseOptions } = useScenarioFormData(domain, version);
+    const { domainOptions, versionOptions } = useScenarioFormData(domain);
 
     const [activeModal, setActiveModal] = useState<StarterModalKey | null>(null);
 
     const canContinue = !!domain && !!version && !!flowId;
     const closeModal = () => setActiveModal(null);
 
-    const onSubmit = ({
-        domain,
-        version,
-        flowId,
-        usecase,
-        useCaseId,
-        description,
-    }: IStarterFormValues) => {
+    const onSubmit = ({ domain, version, flowId, useCaseId, description }: IStarterFormValues) => {
         if (!domain || !version || !flowId) return;
         const initial = createInitialMockConfig(domain, version, flowId);
-        const resolvedUseCaseId = useCaseId.trim() || usecase.trim();
-        if (resolvedUseCaseId) initial.meta.use_case_id = resolvedUseCaseId;
+        if (useCaseId.trim()) initial.meta.use_case_id = useCaseId.trim();
         if (description.trim()) initial.meta.description = description.trim();
         setCurrentConfig(initial);
     };
@@ -76,7 +72,7 @@ export const StarterScreen = () => {
                     </header>
 
                     <div className="mt-5 flex flex-wrap items-center gap-3">
-                        <Button type="button" onClick={() => setActiveModal("savedConfigs")}>
+                        <Button onClick={() => setActiveModal("savedConfigs")}>
                             <FolderOpenIcon className="size-4" />
                             Load Saved
                         </Button>
@@ -106,12 +102,7 @@ export const StarterScreen = () => {
                             control={control}
                             domainOptions={domainOptions}
                             versionOptions={versionOptions}
-                            usecaseOptions={usecaseOptions}
-                            onDomainChange={() => {
-                                setValue("version", "");
-                                setValue("usecase", "");
-                            }}
-                            onVersionChange={() => setValue("usecase", "")}
+                            onDomainChange={() => setValue("version", "")}
                         />
 
                         <Button
@@ -144,10 +135,7 @@ export const StarterScreen = () => {
                 onImport={(config) => setCurrentConfig(config)}
             />
 
-            <FlowConverterModal
-                isOpen={activeModal === "flowConverter"}
-                onClose={closeModal}
-            />
+            <FlowConverterModal isOpen={activeModal === "flowConverter"} onClose={closeModal} />
 
             <SchemaGeneratorModal
                 isOpen={activeModal === "schemaGenerator"}

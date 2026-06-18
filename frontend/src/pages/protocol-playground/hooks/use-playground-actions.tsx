@@ -1,6 +1,6 @@
 import { useContext } from "react";
 import { PlaygroundContext } from "../context/playground-context";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 import { MockRunner } from "@ondc/automation-mock-runner";
 import { getGroupSteps, setGroupSteps } from "../utils/step-group";
 import { validateConfigGroups } from "../utils/step-group-rules";

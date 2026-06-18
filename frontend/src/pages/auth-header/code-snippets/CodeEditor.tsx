@@ -1,8 +1,8 @@
 import { FC } from "react";
-import { FaCopy, FaCheck } from "react-icons/fa";
 import Editor from "@monaco-editor/react";
 import { codeSnippets } from "@pages/auth-header/code-snippets/data";
 import { CodeEditorProps } from "@pages/auth-header/code-snippets/types";
+import { ClipboardDocumentIcon } from "@heroicons/react/24/outline";
 
 const EDITOR_HEIGHT = "500px";
 const EDITOR_OPTIONS = {
@@ -20,7 +20,6 @@ const CodeEditor: FC<CodeEditorProps> = ({
     language,
     selectedLang,
     functionType,
-    copied,
     onCopy,
 }) => {
     const functionLabel = functionType === "generate" ? "Generate" : "Verify";
@@ -33,19 +32,10 @@ const CodeEditor: FC<CodeEditorProps> = ({
                 <button
                     onClick={onCopy}
                     className="flex items-center gap-2 px-3 py-1 bg-gray-700 hover:bg-gray-600 rounded text-gray-300 text-sm transition-colors"
-                    aria-label={copied ? "Code copied to clipboard" : "Copy code to clipboard"}
+                    aria-label="Copy code to clipboard"
                 >
-                    {copied ? (
-                        <>
-                            <FaCheck className="text-green-400" aria-hidden="true" />
-                            Copied!
-                        </>
-                    ) : (
-                        <>
-                            <FaCopy aria-hidden="true" />
-                            Copy Code
-                        </>
-                    )}
+                    <ClipboardDocumentIcon className="size-4" />
+                    Copy Code
                 </button>
             </div>
             <Editor

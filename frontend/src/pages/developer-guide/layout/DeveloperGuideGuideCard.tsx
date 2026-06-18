@@ -1,4 +1,5 @@
 import { FC, ReactNode } from "react";
+import { Button } from "@/components/Shadcn/Button";
 import { FiArrowRight } from "react-icons/fi";
 
 export interface DeveloperGuideGuideCardProps {
@@ -63,9 +64,9 @@ const DeveloperGuideGuideCard: FC<DeveloperGuideGuideCardProps> = ({
 
     if (isInteractive) {
         return (
-            <button type="button" onClick={onClick} className={`${className} text-left w-full`}>
+            <Button onClick={onClick} className={`${className} text-left w-full`}>
                 {content}
-            </button>
+            </Button>
         );
     }
 

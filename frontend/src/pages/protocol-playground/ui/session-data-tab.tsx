@@ -490,7 +490,7 @@ export default function SessionDataTab() {
 
                     {showInput && (
                         <div className="bg-gray-800 mt-4 p-4 rounded-lg border border-sky-500/30">
-                            <div className="flex flex-row gap-2 items-center">
+                            <div className="flex flex-col gap-2 items-center">
                                 <input
                                     type="text"
                                     value={alias}

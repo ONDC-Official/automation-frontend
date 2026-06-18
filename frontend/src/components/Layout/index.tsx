@@ -1,5 +1,5 @@
 import { ToastContainer } from "react-toastify";
-
+import { Toaster } from "@/components/Shadcn/Toaster";
 import Header from "@components/Header";
 import Footer from "@components/Footer";
 import Routes from "@components/Routes";
@@ -14,6 +14,7 @@ const Layout = () => (
 
         <Footer />
 
+        <Toaster />
         <ToastContainer
             position="bottom-right"
             autoClose={3000}
