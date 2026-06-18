@@ -5,7 +5,7 @@ on:
   push:
     branches:
       - "release-staging"
-      # - "main"
+      - "main-org"
 
 jobs:
   deploy-staging:
