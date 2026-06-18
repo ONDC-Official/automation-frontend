@@ -1,4 +1,4 @@
-import { type FC, useState } from "react";
+import { type FC } from "react";
 import React from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -6,6 +6,7 @@ import rehypeHighlight from "rehype-highlight";
 import rehypeSlug from "rehype-slug";
 import rehypeAutolinkHeadings from "rehype-autolink-headings";
 import type { Components } from "react-markdown";
+import { useClipboard } from "@hooks/useClipboard";
 import "highlight.js/styles/github-dark.css";
 
 interface GithubMarkdownProps {
@@ -34,15 +35,12 @@ function extractLang(node: React.ReactNode): string {
 }
 
 const PreBlock: FC<{ children?: React.ReactNode }> = ({ children }) => {
-    const [copied, setCopied] = useState(false);
+    const { copyToClipboard } = useClipboard();
     const lang = extractLang(children);
     const text = extractText(children).replace(/\n$/, "");
 
     const handleCopy = () => {
-        navigator.clipboard.writeText(text).then(() => {
-            setCopied(true);
-            setTimeout(() => setCopied(false), 2000);
-        });
+        void copyToClipboard(text);
     };
 
     return (
@@ -56,7 +54,7 @@ const PreBlock: FC<{ children?: React.ReactNode }> = ({ children }) => {
                     onClick={handleCopy}
                     className="text-[11px] text-slate-400 hover:text-white transition-colors px-2 py-0.5 rounded hover:bg-slate-700"
                 >
-                    {copied ? "Copied!" : "Copy"}
+                    Copy
                 </button>
             </div>
             <pre className="overflow-x-auto bg-[#0d1117] px-4 py-4 m-0 text-sm leading-relaxed whitespace-pre">

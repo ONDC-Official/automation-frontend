@@ -6,9 +6,9 @@ import type { IScenarioDomainItem } from "@pages/protocol-playground/ui/starter/
 
 /**
  * Loads the scenario form data once and derives the cascading
- * domain → version → usecase option lists from the current selection.
+ * domain → version option lists from the current selection.
  */
-export const useScenarioFormData = (domain: string, version: string) => {
+export const useScenarioFormData = (domain: string) => {
     const [domains, setDomains] = useState<IScenarioDomainItem[]>([]);
 
     useEffect(() => {
@@ -27,11 +27,9 @@ export const useScenarioFormData = (domain: string, version: string) => {
 
     return useMemo(() => {
         const versions = domains.find((item) => item.key === domain)?.version ?? [];
-        const usecases = versions.find((item) => item.key === version)?.usecase ?? [];
         return {
             domainOptions: domains.map((item) => item.key),
             versionOptions: versions.map((item) => item.key),
-            usecaseOptions: usecases.map((item) => item.key),
         };
-    }, [domains, domain, version]);
+    }, [domains, domain]);
 };

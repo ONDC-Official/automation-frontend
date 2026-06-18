@@ -17,7 +17,7 @@ const CodeSnippets: FC = () => {
         currentCode,
     } = useCodeSnippet();
 
-    const { copied, copyToClipboard } = useClipboard();
+    const { copyToClipboard } = useClipboard();
 
     const handleCopy = useCallback(() => {
         copyToClipboard(currentCode);
@@ -38,7 +38,6 @@ const CodeSnippets: FC = () => {
                 language={currentSnippet.language}
                 selectedLang={selectedLang}
                 functionType={functionType}
-                copied={copied}
                 onCopy={handleCopy}
             />
 

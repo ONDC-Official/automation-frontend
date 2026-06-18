@@ -106,7 +106,7 @@ export const NewConfigForm = ({
                         Past Report
                     </Button>
                     {editingKey ? (
-                        <Button type="button" variant="ghost" onClick={onCancelEdit}>
+                        <Button variant="ghost" onClick={onCancelEdit}>
                             Cancel
                         </Button>
                     ) : null}

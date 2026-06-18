@@ -5,7 +5,8 @@ import "tippy.js/animations/perspective-subtle.css";
 
 import { SelectedType } from "./session-data-tab";
 import { useLocation } from "react-router-dom";
-import { FiMaximize2, FiMinimize2 } from "react-icons/fi";
+import { ArrowsPointingInIcon, ArrowsPointingOutIcon } from "@heroicons/react/24/outline";
+import { useClipboard } from "@hooks/useClipboard";
 
 type JsonPrimitive = string | number | boolean | null;
 type JsonArray = JsonValue[];
@@ -84,18 +85,23 @@ function getValueColor(value: JsonValue): string {
     return "#475569"; // slate-600
 }
 
-const renderValue = (
-    value: JsonValue,
-    path: string,
-    key: string,
-    isSelected: (path: string) => { status: boolean; type: SelectedType | null },
-    handleKeyClick: (path: string, key: string, e: React.MouseEvent) => void
-) => {
-    const isPrimitive = typeof value !== "object" || value === null || value === undefined;
+interface IPrimitiveValueProps {
+    value: JsonValue;
+    path: string;
+    keyName: string;
+    isSelected: (path: string) => { status: boolean; type: SelectedType | null };
+    handleKeyClick: (path: string, key: string, e: React.MouseEvent) => void;
+}
+
+const PrimitiveValue = ({
+    value,
+    path,
+    keyName,
+    isSelected,
+    handleKeyClick,
+}: IPrimitiveValueProps) => {
+    const { copyToClipboard } = useClipboard();
     const selected = isSelected(path);
-
-    if (!isPrimitive) return null;
-
     const stringValue = JSON.stringify(value);
     const isTruncated = stringValue.length > 100;
     const displayValue = isTruncated ? stringValue.slice(0, 100) + "…" : stringValue;
@@ -103,10 +109,9 @@ const renderValue = (
 
     const handleCopy = (e: React.MouseEvent) => {
         e.stopPropagation();
-        navigator.clipboard.writeText(JSON.stringify(value));
+        void copyToClipboard(JSON.stringify(value));
     };
 
-    // Selection highlight
     let rowBg = "";
     if (selected.status) {
         rowBg =
@@ -128,7 +133,7 @@ const renderValue = (
             animation="perspective-subtle"
         >
             <span
-                onClick={(e) => handleKeyClick(path, key, e)}
+                onClick={(e) => handleKeyClick(path, keyName, e)}
                 className={`group/value inline-flex items-center gap-1 cursor-pointer rounded px-0.5 transition-colors duration-100 ${
                     selected.status ? rowBg : "hover:bg-sky-100/60 hover:ring-1 hover:ring-sky-200"
                 }`}
@@ -148,6 +153,28 @@ const renderValue = (
                 </button>
             </span>
         </Tippy>
+    );
+};
+
+const renderValue = (
+    value: JsonValue,
+    path: string,
+    key: string,
+    isSelected: (path: string) => { status: boolean; type: SelectedType | null },
+    handleKeyClick: (path: string, key: string, e: React.MouseEvent) => void
+) => {
+    const isPrimitive = typeof value !== "object" || value === null || value === undefined;
+
+    if (!isPrimitive) return null;
+
+    return (
+        <PrimitiveValue
+            value={value}
+            path={path}
+            keyName={key}
+            isSelected={isSelected}
+            handleKeyClick={handleKeyClick}
+        />
     );
 };
 
@@ -579,9 +606,9 @@ const JsonViewer: React.FC<JsonViewerProps> = ({
                             style={{ padding: "5px 7px" }}
                         >
                             {isExpanded ? (
-                                <FiMinimize2 className="w-3.5 h-3.5" />
+                                <ArrowsPointingInIcon className="size-3.5" />
                             ) : (
-                                <FiMaximize2 className="w-3.5 h-3.5" />
+                                <ArrowsPointingOutIcon className="size-3.5" />
                             )}
                         </button>
                     </>

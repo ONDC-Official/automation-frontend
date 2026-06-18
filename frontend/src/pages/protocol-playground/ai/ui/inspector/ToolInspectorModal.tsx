@@ -1,5 +1,5 @@
 import { useContext, useEffect, useMemo, useState } from "react";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 import { PlayIcon, ArrowUturnLeftIcon } from "@heroicons/react/24/outline";
 
 import Popup from "@components/ui/pop-up/pop-up";

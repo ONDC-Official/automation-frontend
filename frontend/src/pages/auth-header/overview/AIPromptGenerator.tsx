@@ -1,10 +1,10 @@
 import { FC, useCallback } from "react";
-import { FaRobot, FaCopy, FaCheck } from "react-icons/fa";
+import { ClipboardDocumentIcon, SparklesIcon } from "@heroicons/react/24/outline";
 import { AI_PROMPT } from "@pages/auth-header/overview/data";
 import { useClipboard } from "@hooks/useClipboard";
 
 const AIPromptGenerator: FC = () => {
-    const { copied, copyToClipboard } = useClipboard();
+    const { copyToClipboard } = useClipboard();
 
     const handleCopy = useCallback(() => {
         copyToClipboard(AI_PROMPT);
@@ -15,7 +15,7 @@ const AIPromptGenerator: FC = () => {
             <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
                     <div className="w-12 h-12 bg-violet-100 rounded-xl flex items-center justify-center">
-                        <FaRobot className="text-violet-600 text-xl" />
+                        <SparklesIcon className="h-5 w-5 text-violet-600" />
                     </div>
                     <div>
                         <h3 className="text-xl font-bold text-gray-900">
@@ -32,17 +32,8 @@ const AIPromptGenerator: FC = () => {
                     type="button"
                     aria-label="Copy AI prompt to clipboard"
                 >
-                    {copied ? (
-                        <>
-                            <FaCheck />
-                            Copied!
-                        </>
-                    ) : (
-                        <>
-                            <FaCopy />
-                            Copy Prompt
-                        </>
-                    )}
+                    <ClipboardDocumentIcon className="h-5 w-5" />
+                    Copy Prompt
                 </button>
             </div>
 

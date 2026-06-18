@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { Editor, Monaco } from "@monaco-editor/react";
-import { MdClose, MdContentCopy, MdCode } from "react-icons/md";
-import { IoCheckmarkCircle } from "react-icons/io5";
-import { DarkSkyBlueTheme } from "./editor-themes";
+import { ClipboardDocumentIcon, CodeBracketIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import { useClipboard } from "@hooks/useClipboard";
+import { DarkSkyBlueTheme } from "@pages/protocol-playground/ui/editor-themes";
 
 interface JsonPathOutputPopupProps {
     jsonPath: string;
@@ -12,7 +12,7 @@ interface JsonPathOutputPopupProps {
 
 const JsonPathOutputPopup: React.FC<JsonPathOutputPopupProps> = ({ jsonPath, output, onClose }) => {
     const [isVisible, setIsVisible] = useState(false);
-    const [copied, setCopied] = useState(false);
+    const { copyToClipboard } = useClipboard();
 
     useEffect(() => {
         // Trigger entrance animation
@@ -25,14 +25,8 @@ const JsonPathOutputPopup: React.FC<JsonPathOutputPopupProps> = ({ jsonPath, out
         setTimeout(onClose, 200);
     };
 
-    const handleCopy = async () => {
-        try {
-            await navigator.clipboard.writeText(JSON.stringify(output, null, 2));
-            setCopied(true);
-            setTimeout(() => setCopied(false), 2000);
-        } catch (error) {
-            console.error("Failed to copy:", error);
-        }
+    const handleCopy = () => {
+        void copyToClipboard(JSON.stringify(output, null, 2));
     };
 
     const handleEditorWillMount = (monaco: Monaco) => {
@@ -59,7 +53,7 @@ const JsonPathOutputPopup: React.FC<JsonPathOutputPopupProps> = ({ jsonPath, out
                 <div className="flex items-center justify-between px-4 py-2 border-b border-gray-700/50 bg-linear-to-r from-gray-900/90 to-gray-800/90 backdrop-blur-xs">
                     <div className="flex items-center gap-2">
                         <div className="p-1 bg-sky-500/10 rounded-lg border border-sky-500/20">
-                            <MdCode className="text-sky-400 text-lg" />
+                            <CodeBracketIcon className="size-5 text-sky-400" />
                         </div>
                         <div>
                             <h2 className="text-base font-semibold text-white flex items-center gap-2">
@@ -77,24 +71,11 @@ const JsonPathOutputPopup: React.FC<JsonPathOutputPopupProps> = ({ jsonPath, out
                     <div className="flex items-center gap-2">
                         <button
                             onClick={handleCopy}
-                            className={`flex items-center gap-2 px-3 py-2 rounded-lg font-medium text-sm transition-all duration-200 ${
-                                copied
-                                    ? "bg-green-500/20 text-green-300 border border-green-500/30"
-                                    : "bg-gray-700/50 text-gray-300 border border-gray-600/50 hover:bg-gray-600/50 hover:border-gray-500/50 hover:text-white"
-                            }`}
+                            className="flex items-center gap-2 px-3 py-2 rounded-lg font-medium text-sm transition-all duration-200 bg-gray-700/50 text-gray-300 border border-gray-600/50 hover:bg-gray-600/50 hover:border-gray-500/50 hover:text-white"
                             title="Copy JSON"
                         >
-                            {copied ? (
-                                <>
-                                    <IoCheckmarkCircle className="text-base" />
-                                    <span>Copied!</span>
-                                </>
-                            ) : (
-                                <>
-                                    <MdContentCopy className="text-base" />
-                                    <span>Copy</span>
-                                </>
-                            )}
+                            <ClipboardDocumentIcon className="size-4" />
+                            <span>Copy</span>
                         </button>
 
                         <button
@@ -102,7 +83,7 @@ const JsonPathOutputPopup: React.FC<JsonPathOutputPopupProps> = ({ jsonPath, out
                             className="p-2 text-gray-400 hover:text-white hover:bg-red-500/20 hover:border-red-500/30 rounded-lg transition-all duration-200 border border-gray-600/50"
                             title="Close (ESC)"
                         >
-                            <MdClose size={20} />
+                            <XMarkIcon className="size-5" />
                         </button>
                     </div>
                 </div>

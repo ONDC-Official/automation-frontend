@@ -39,9 +39,7 @@ export interface PlaygroundContextProps {
     updateConfigMeta: (patch: Partial<Meta>) => void;
 
     useModal: {
-        popupOpen: boolean;
-        popupContent: JSX.Element | null;
-        openModal: (content: JSX.Element) => void;
+        openModal: (content: JSX.Element, options?: { className?: string }) => void;
         closeModal: () => void;
     };
     loading: boolean;

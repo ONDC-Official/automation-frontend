@@ -1,6 +1,6 @@
 import { FormEvent, useEffect, useState } from "react";
 import { PiShieldStarBold } from "react-icons/pi";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 
 import Popup from "@components/ui/pop-up/pop-up";
 import { setupKey } from "@utils/secure-key-store";
@@ -72,8 +72,8 @@ export function SetupKeyModal({ isOpen, onClose, onSuccess }: SetupKeyModalProps
                             Set up Protocol Guardian
                         </h2>
                         <p className="text-sm text-gray-600 mt-1">
-                            Paste your OpenAI-compatible API key. It is encrypted in your
-                            browser with your passphrase and never sent to any backend.
+                            Paste your OpenAI-compatible API key. It is encrypted in your browser
+                            with your passphrase and never sent to any backend.
                         </p>
                     </div>
                 </div>

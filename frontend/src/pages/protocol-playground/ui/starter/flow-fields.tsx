@@ -2,7 +2,10 @@ import { Controller, type Control, type FieldPath } from "react-hook-form";
 
 import { ComboBox } from "@/components/Shadcn/ComboBox";
 import { TextField } from "@/components/Shadcn/TextField";
-import type { IFlowFieldsProps, IStarterFormValues } from "@pages/protocol-playground/ui/starter/types";
+import type {
+    IFlowFieldsProps,
+    IStarterFormValues,
+} from "@pages/protocol-playground/ui/starter/types";
 
 interface IControlledTextFieldProps {
     control: Control<IStarterFormValues>;
@@ -42,6 +45,7 @@ interface IOptionOrTextFieldProps {
     options: string[];
     comboPlaceholder: string;
     textPlaceholder: string;
+    required?: boolean;
     onValueChange?: () => void;
 }
 
@@ -52,6 +56,7 @@ const OptionOrTextField = ({
     options,
     comboPlaceholder,
     textPlaceholder,
+    required,
     onValueChange,
 }: IOptionOrTextFieldProps) =>
     options.length > 0 ? (
@@ -61,6 +66,7 @@ const OptionOrTextField = ({
             label={label}
             options={options}
             placeholder={comboPlaceholder}
+            required={required}
             onValueChange={onValueChange}
         />
     ) : (
@@ -69,6 +75,7 @@ const OptionOrTextField = ({
             name={name}
             label={label}
             placeholder={textPlaceholder}
+            required={required}
         />
     );
 
@@ -76,9 +83,7 @@ export const FlowFields = ({
     control,
     domainOptions,
     versionOptions,
-    usecaseOptions,
     onDomainChange,
-    onVersionChange,
 }: IFlowFieldsProps) => (
     <div className="flex flex-col gap-5">
         <OptionOrTextField
@@ -88,6 +93,7 @@ export const FlowFields = ({
             options={domainOptions}
             comboPlaceholder="Select a domain..."
             textPlaceholder="e.g., mobility, logistics, retail"
+            required
             onValueChange={onDomainChange}
         />
 
@@ -98,7 +104,7 @@ export const FlowFields = ({
             options={versionOptions}
             comboPlaceholder="Select a version..."
             textPlaceholder="e.g., 2.0.1, 1.5.3"
-            onValueChange={onVersionChange}
+            required
         />
 
         <ControlledTextField
@@ -106,15 +112,7 @@ export const FlowFields = ({
             name="flowId"
             label="Flow ID"
             placeholder="Enter unique flow identifier"
-        />
-
-        <OptionOrTextField
-            control={control}
-            name="usecase"
-            label="Select Usecase"
-            options={usecaseOptions}
-            comboPlaceholder="Select a usecase..."
-            textPlaceholder="Enter usecase identifier"
+            required
         />
 
         <ControlledTextField

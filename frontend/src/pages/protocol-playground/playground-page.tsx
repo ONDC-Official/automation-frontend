@@ -1,6 +1,7 @@
 import { useContext, useEffect, useRef, useState } from "react";
 import { PlaygroundContext } from "@pages/protocol-playground/context/playground-context";
-import Popup from "@components/ui/pop-up/pop-up";
+import { PlaygroundModal } from "@pages/protocol-playground/ui/playground-modal";
+import { DialogDescription, DialogHeader, DialogTitle } from "@/components/Shadcn/Dialog/dialog";
 import { PlaygroundRightTabType } from "@pages/protocol-playground/types";
 import { LeftSideView } from "@pages/protocol-playground/ui/LeftSideView";
 import { RightSideView } from "@pages/protocol-playground/ui/RightSideView";
@@ -13,12 +14,14 @@ import { ActionTimeline } from "@pages/protocol-playground/ui/playground-upper/m
 import TraceView from "@pages/protocol-playground/ui/extras/trace-view";
 import ViewOnlyPlaygroundPage from "@pages/protocol-playground/view-only-page";
 import { MockRunner, MockPlaygroundConfigType } from "@ondc/automation-mock-runner";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 import { RawConfigEditorModal } from "@pages/protocol-playground/ui/raw-config-editor-modal";
 import { PlaygroundHelpModal } from "@pages/protocol-playground/ui/playground-help-modal";
 import { FlowInfoModal } from "@pages/protocol-playground/ui/flow-info-modal";
 import { ExportReviewModal } from "@pages/protocol-playground/ui/export-review-modal";
 import { GitHubImportModal } from "@pages/protocol-playground/ui/github-import-modal";
+import { ReplaceFlowConfirmModal } from "@pages/protocol-playground/ui/replace-flow-confirm-modal";
+import { CreateFlowSessionModal } from "@pages/protocol-playground/ui/create-flow-session-modal";
 import { AIProvider } from "@pages/protocol-playground/ai/context/ai-provider";
 import { StepGroup, getGroupSteps } from "@pages/protocol-playground/utils/step-group";
 import { validateConfigGroups } from "@pages/protocol-playground/utils/step-group-rules";
@@ -43,7 +46,7 @@ const PlaygroundPage = () => {
         runConfig,
         runCurrentConfig,
         retriggerSelectedExtraStep,
-        createFlowSession,
+        submitCreateFlowSession,
         runAllStepsForExport,
         finalizeExportForDeployment,
     } = useConfigOperations();
@@ -52,7 +55,7 @@ const PlaygroundPage = () => {
         playgroundContext.setCurrentConfig(undefined);
     };
     const { addAction, deleteAction, updateAction } = usePlaygroundActions();
-    const { popupOpen, openModal, closeModal, popupContent } = playgroundContext.useModal;
+    const { openModal, closeModal } = playgroundContext.useModal;
     const modalHandlers = useModalHandlers({
         activeApi,
         setActiveApi,
@@ -71,39 +74,7 @@ const PlaygroundPage = () => {
             setIsGitHubImportOpen(true);
             return;
         }
-        const { domain, version, flowId } = playgroundContext.config.meta;
-        openModal(
-            <div className="bg-white rounded-xl shadow-xl p-6 max-w-sm w-full mx-4">
-                <h3 className="text-base font-semibold text-gray-800 mb-1">
-                    Replace Current Flow?
-                </h3>
-                <p className="text-sm text-gray-500 mb-1">You already have a flow loaded:</p>
-                <p className="text-sm font-mono text-sky-700 mb-1">{flowId}</p>
-                <p className="text-xs text-gray-400 mb-4">
-                    {domain} &middot; v{version}
-                </p>
-                <p className="text-sm text-gray-600 mb-5">
-                    Importing from GitHub will replace it. Any unsaved changes will be lost.
-                </p>
-                <div className="flex justify-end gap-2">
-                    <button
-                        onClick={closeModal}
-                        className="px-4 py-2 text-sm rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 transition-colors"
-                    >
-                        Cancel
-                    </button>
-                    <button
-                        onClick={() => {
-                            closeModal();
-                            setIsGitHubImportOpen(true);
-                        }}
-                        className="px-4 py-2 text-sm rounded-lg bg-sky-600 text-white hover:bg-sky-700 transition-colors"
-                    >
-                        Continue
-                    </button>
-                </div>
-            </div>
-        );
+        setIsReplaceFlowConfirmOpen(true);
     };
 
     const [activeRightTab, setActiveRightTab] = useState<PlaygroundRightTabType>("session");
@@ -114,6 +85,8 @@ const PlaygroundPage = () => {
     const [isFlowInfoOpen, setIsFlowInfoOpen] = useState(false);
     const [isTraceOpen, setIsTraceOpen] = useState(false);
     const [isGitHubImportOpen, setIsGitHubImportOpen] = useState(false);
+    const [isReplaceFlowConfirmOpen, setIsReplaceFlowConfirmOpen] = useState(false);
+    const [isCreateFlowSessionOpen, setIsCreateFlowSessionOpen] = useState(false);
     const [exportReviewConfig, setExportReviewConfig] = useState<MockPlaygroundConfigType | null>(
         null
     );
@@ -218,11 +191,15 @@ const PlaygroundPage = () => {
     if (!devMode) {
         return (
             <div>
-                <ViewOnlyPlaygroundPage />;
-                <Popup isOpen={popupOpen} onClose={closeModal}>
-                    {popupContent}
-                </Popup>
+                <ViewOnlyPlaygroundPage
+                    onCreateFlowSession={() => setIsCreateFlowSessionOpen(true)}
+                />
                 {playgroundContext.loading && <SpinnerDialog />}
+                <CreateFlowSessionModal
+                    isOpen={isCreateFlowSessionOpen}
+                    onClose={() => setIsCreateFlowSessionOpen(false)}
+                    onSubmit={submitCreateFlowSession}
+                />
             </div>
         );
     }
@@ -253,7 +230,7 @@ const PlaygroundPage = () => {
                         onRun={async () => {
                             await runConfig(stepGroup === "extra");
                         }}
-                        onCreateFlowSession={createFlowSession}
+                        onCreateFlowSession={() => setIsCreateFlowSessionOpen(true)}
                         onExportForDeployment={handleExportForDeployment}
                         onRunCurrent={async () => {
                             await runCurrentConfig(stepGroup === "extra");
@@ -306,18 +283,23 @@ const PlaygroundPage = () => {
                     onSave={handleSaveRawConfig}
                     onClose={closeRawEditor}
                 />
-                <Popup isOpen={popupOpen} onClose={closeModal}>
-                    {popupContent}
-                </Popup>
-                {playgroundContext.config && (
-                    <Popup
+                {playgroundContext.config ? (
+                    <PlaygroundModal
                         isOpen={isTraceOpen}
                         onClose={() => setIsTraceOpen(false)}
-                        widthClass="max-w-2xl md:max-w-3xl lg:max-w-5xl"
+                        className="max-w-5xl"
                     >
-                        <TraceView config={playgroundContext.config} />
-                    </Popup>
-                )}
+                        <DialogHeader className="border-b border-border-default px-6 py-4">
+                            <DialogTitle>Execution Trace</DialogTitle>
+                            <DialogDescription>
+                                View the transaction history for this flow.
+                            </DialogDescription>
+                        </DialogHeader>
+                        <div className="max-h-[75vh] overflow-y-auto px-6 py-5">
+                            <TraceView config={playgroundContext.config} />
+                        </div>
+                    </PlaygroundModal>
+                ) : null}
                 {playgroundContext.loading && <SpinnerDialog />}
                 <PlaygroundHelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
                 {playgroundContext.config && (
@@ -347,6 +329,24 @@ const PlaygroundPage = () => {
                         playgroundContext.setCurrentConfig(config);
                         toast.success("Flow imported from GitHub successfully");
                     }}
+                />
+                {playgroundContext.config ? (
+                    <ReplaceFlowConfirmModal
+                        isOpen={isReplaceFlowConfirmOpen}
+                        flowId={playgroundContext.config.meta.flowId}
+                        domain={playgroundContext.config.meta.domain}
+                        version={playgroundContext.config.meta.version}
+                        onCancel={() => setIsReplaceFlowConfirmOpen(false)}
+                        onConfirm={() => {
+                            setIsReplaceFlowConfirmOpen(false);
+                            setIsGitHubImportOpen(true);
+                        }}
+                    />
+                ) : null}
+                <CreateFlowSessionModal
+                    isOpen={isCreateFlowSessionOpen}
+                    onClose={() => setIsCreateFlowSessionOpen(false)}
+                    onSubmit={submitCreateFlowSession}
                 />
             </div>
         </AIProvider>

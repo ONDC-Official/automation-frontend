@@ -1,5 +1,5 @@
 import { useContext, useState } from "react";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 import { ArrowPathIcon } from "@heroicons/react/24/outline";
 
 import { Button } from "@/components/Shadcn/Button/button";
@@ -177,11 +177,7 @@ export const AISettingsPanel = ({ onClose }: IAISettingsPanelProps) => {
                 <label htmlFor="ai-inline" className="cursor-pointer font-medium">
                     Enable inline autocomplete in JS editors
                 </label>
-                <Switch
-                    id="ai-inline"
-                    checked={inlineEnabled}
-                    onCheckedChange={setInlineEnabled}
-                />
+                <Switch id="ai-inline" checked={inlineEnabled} onCheckedChange={setInlineEnabled} />
             </div>
 
             <div className="flex items-start justify-between gap-3 text-sm text-text-secondary">
@@ -198,7 +194,7 @@ export const AISettingsPanel = ({ onClose }: IAISettingsPanelProps) => {
             </div>
 
             <div className="flex flex-wrap gap-2 pt-2 border-t border-border-default">
-                <Button type="button" size="sm" onClick={save}>
+                <Button size="sm" onClick={save}>
                     Save settings
                 </Button>
                 <Button

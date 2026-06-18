@@ -1,13 +1,6 @@
-import React, { useState } from "react";
-import {
-    FaHashtag,
-    FaKey,
-    FaFileCode,
-    FaArrowRight,
-    FaRobot,
-    FaCopy,
-    FaCheck,
-} from "react-icons/fa";
+import React from "react";
+import { FaHashtag, FaKey, FaFileCode, FaArrowRight, FaRobot, FaCopy } from "react-icons/fa";
+import { useClipboard } from "@hooks/useClipboard";
 
 const AI_PROMPT = `Generate two functions for ONDC authorization header creation and verification in [YOUR_LANGUAGE/FRAMEWORK].
 
@@ -68,12 +61,10 @@ const AI_PROMPT = `Generate two functions for ONDC authorization header creation
 Please provide complete, production-ready code with error handling.`;
 
 const AlgorithmDocs: React.FC = () => {
-    const [copied, setCopied] = useState(false);
+    const { copyToClipboard } = useClipboard();
 
-    const handleCopy = async () => {
-        await navigator.clipboard.writeText(AI_PROMPT);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
+    const handleCopy = () => {
+        void copyToClipboard(AI_PROMPT);
     };
 
     return (
@@ -300,17 +291,8 @@ signature="{base64_signature}"`}
                         onClick={handleCopy}
                         className="flex items-center gap-2 px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white rounded-lg transition-colors"
                     >
-                        {copied ? (
-                            <>
-                                <FaCheck />
-                                Copied!
-                            </>
-                        ) : (
-                            <>
-                                <FaCopy />
-                                Copy Prompt
-                            </>
-                        )}
+                        <FaCopy />
+                        Copy Prompt
                     </button>
                 </div>
 

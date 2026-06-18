@@ -11,12 +11,10 @@ import {
 } from "react-icons/fi";
 
 import { PlaygroundContext } from "@pages/protocol-playground/context/playground-context";
-import { useConfigOperations } from "@pages/protocol-playground/hooks/use-config";
 
-const ViewOnlyPlaygroundPage = () => {
+const ViewOnlyPlaygroundPage = ({ onCreateFlowSession }: { onCreateFlowSession: () => void }) => {
     const playgroundContext = useContext(PlaygroundContext);
     const config = playgroundContext.config;
-    const { createFlowSession } = useConfigOperations();
     const [showJsonView, setShowJsonView] = useState(false);
 
     if (!config) {
@@ -119,7 +117,7 @@ const ViewOnlyPlaygroundPage = () => {
                 {/* Action Buttons */}
                 <div className="flex flex-col sm:flex-row gap-3 mb-6">
                     <button
-                        onClick={createFlowSession}
+                        onClick={onCreateFlowSession}
                         className="flex items-center justify-center gap-2 px-6 py-3 bg-sky-500 hover:bg-sky-600 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg shadow-sky-500/20 hover:shadow-xl hover:shadow-sky-500/30"
                     >
                         <FiPlay className="w-4 h-4" />

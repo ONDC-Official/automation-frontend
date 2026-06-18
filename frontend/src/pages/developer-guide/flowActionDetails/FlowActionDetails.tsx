@@ -2,6 +2,7 @@ import { FC, useState, useCallback, ComponentProps, MouseEvent, useMemo } from "
 import { useSearchParams } from "react-router-dom";
 import { FaCopy } from "react-icons/fa";
 import { FiList, FiMessageSquare, FiFileText } from "react-icons/fi";
+import { useClipboard } from "@hooks/useClipboard";
 import { SegmentedTabs, type TabItem } from "@components/ui/SegmentedTabs";
 import JsonViewer from "@pages/protocol-playground/ui/Json-path-extractor";
 import { SelectedType } from "@pages/protocol-playground/ui/session-data-tab";
@@ -65,6 +66,7 @@ const FlowActionDetails: FC<FlowActionDetailsProps> = ({
         () => searchParams.get("attr") ?? null
     );
     const [expanded, setExpanded] = useState(false);
+    const { copyToClipboard } = useClipboard();
 
     const setRightPanelTab = useCallback(
         (tab: RightPanelTab) => {
@@ -113,9 +115,13 @@ const FlowActionDetails: FC<FlowActionDetailsProps> = ({
     const apiForAttributes = stepApi ?? actionApi;
 
     const rawTableRows = useMemo(
-        () => validationTableData
-            ? getLeafRowsForApi(validationTableData as Record<string, RawTableAction>, apiForAttributes)
-            : [],
+        () =>
+            validationTableData
+                ? getLeafRowsForApi(
+                      validationTableData as Record<string, RawTableAction>,
+                      apiForAttributes
+                  )
+                : [],
         [validationTableData, apiForAttributes]
     );
 
@@ -148,9 +154,7 @@ const FlowActionDetails: FC<FlowActionDetailsProps> = ({
                         <button
                             type="button"
                             onClick={() =>
-                                void navigator.clipboard.writeText(
-                                    JSON.stringify(exampleValue, null, 2)
-                                )
+                                void copyToClipboard(JSON.stringify(exampleValue, null, 2))
                             }
                             className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white text-sm rounded-lg shadow-lg"
                         >

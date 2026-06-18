@@ -1,18 +1,21 @@
 import { useContext } from "react";
-import { PlaygroundContext } from "../context/playground-context";
-import { toast } from "react-toastify";
-import JsonSchemaForm from "../ui/extras/rsjf-form";
+import { PlaygroundContext } from "@pages/protocol-playground/context/playground-context";
+import { toast } from "sonner";
+import JsonSchemaForm, {
+    PLAYGROUND_RJSF_FORM_ID,
+} from "@pages/protocol-playground/ui/extras/rsjf-form";
 import { isRideMapEnabled } from "@components/FlowShared/ride-map-utils";
-import { calcCurrentIndex } from "../mock-engine";
+import { calcCurrentIndex } from "@pages/protocol-playground/mock-engine";
 import { MockRunner, MockPlaygroundConfigType } from "@ondc/automation-mock-runner";
-import { createFlowSessionWithPlayground } from "../utils/request-utils";
+import { createFlowSessionWithPlayground } from "@pages/protocol-playground/utils/request-utils";
 import { GetRequestEndpoint } from "@components/FlowShared/guides";
-import MockDynamicForm from "../ui/components/mock-dynamic-form";
+import MockDynamicForm from "@pages/protocol-playground/ui/components/mock-dynamic-form";
+import { PlaygroundSchemaFormShell } from "@pages/protocol-playground/ui/playground-schema-form-shell";
 import { v4 as uuidv4 } from "uuid";
 import { stringify as yamlStringify } from "yaml";
-import { configForGroup, getGroupSteps } from "../utils/step-group";
-import { validateConfigGroups } from "../utils/step-group-rules";
-import { getFullSession } from "../utils/transaction-view";
+import { configForGroup, getGroupSteps } from "@pages/protocol-playground/utils/step-group";
+import { validateConfigGroups } from "@pages/protocol-playground/utils/step-group-rules";
+import { getFullSession } from "@pages/protocol-playground/utils/transaction-view";
 
 type JsonSchema = Record<string, unknown>;
 type FormValues = Record<string, unknown>;
@@ -91,18 +94,24 @@ export const useConfigOperations = () => {
 
     const showFormModal = (schema: JsonSchema, onSubmit: (formData: FormValues) => void) => {
         modal.openModal(
-            <div className="p-1">
-                <h2 className="text-l font-semibold mb-1">Enter Input Data</h2>
+            <PlaygroundSchemaFormShell
+                title="Enter Input Data"
+                formId={PLAYGROUND_RJSF_FORM_ID}
+                onCancel={modal.closeModal}
+            >
                 <JsonSchemaForm
                     schema={schema}
-                    // formData={data.sessionData}
-                    onSubmit={onSubmit as (data: Record<string, unknown>) => Promise<void>}
+                    onSubmit={async (data) => {
+                        modal.closeModal();
+                        await onSubmit(data);
+                    }}
                     mapEnabled={isRideMapEnabled(
                         playgroundContext.config?.meta?.domain,
                         playgroundContext.config?.meta?.version
                     )}
                 />
-            </div>
+            </PlaygroundSchemaFormShell>,
+            { className: "max-w-xl" }
         );
         toast.success("Please fill in the form to continue");
     };
@@ -259,10 +268,10 @@ export const useConfigOperations = () => {
                     resolve({ success: true } as RunResult);
                 };
                 modal.openModal(
-                    <div className="p-1">
-                        <h2 className="text-l font-semibold mb-1">Fill the form</h2>
+                    <PlaygroundSchemaFormShell title="Fill the form">
                         <MockDynamicForm htmlForm={htmlForm} onSubmit={handleFormSubmit} />
-                    </div>
+                    </PlaygroundSchemaFormShell>,
+                    { className: "max-w-xl" }
                 );
                 toast.success("Please fill in the form to continue");
             });
@@ -351,61 +360,36 @@ export const useConfigOperations = () => {
         }
     };
 
-    const createFlowSession = () => {
-        async function handleFormSubmit(formData: FormValues) {
-            const data = formData as { subscriber_url?: string; role?: "BAP" | "BPP" };
-            if (data.subscriber_url === "testing") {
-                const subUrlBap = GetRequestEndpoint(
-                    playgroundContext.config?.meta.domain || "",
-                    playgroundContext.config?.meta.version || "",
-                    "BAP"
-                );
-                const subUrlBpp = GetRequestEndpoint(
-                    playgroundContext.config?.meta.domain || "",
-                    playgroundContext.config?.meta.version || "",
-                    "BPP"
-                );
-                await createAndOpenFlowSession(subUrlBap, "BPP");
-                await createAndOpenFlowSession(subUrlBpp, "BAP");
-                return;
-            }
-            // subcriber url is a valid url
-            const regex = /^(http|https):\/\/[^ "]+$/;
-            if (!data.subscriber_url || !regex.test(data.subscriber_url)) {
-                toast.error("Please enter a valid URL");
-                return;
-            }
-
-            await createAndOpenFlowSession(data.subscriber_url, data.role as "BAP" | "BPP");
+    const submitCreateFlowSession = async ({
+        subscriberUrl,
+        role,
+    }: {
+        subscriberUrl: string;
+        role: "BAP" | "BPP";
+    }) => {
+        if (subscriberUrl === "testing") {
+            const subUrlBap = GetRequestEndpoint(
+                playgroundContext.config?.meta.domain || "",
+                playgroundContext.config?.meta.version || "",
+                "BAP"
+            );
+            const subUrlBpp = GetRequestEndpoint(
+                playgroundContext.config?.meta.domain || "",
+                playgroundContext.config?.meta.version || "",
+                "BPP"
+            );
+            await createAndOpenFlowSession(subUrlBap, "BPP");
+            await createAndOpenFlowSession(subUrlBpp, "BAP");
+            return;
         }
 
-        modal.openModal(
-            <div>
-                <h2 className="text-l font-semibold mb-1">Create Live Flow Session</h2>
-                <p className="mb-2">Enter details to create a live session.</p>
-                <JsonSchemaForm
-                    schema={{
-                        type: "object",
-                        properties: {
-                            subscriber_url: {
-                                type: "string",
-                                // format: "uri",
-                                title: "Your Subscriber URL",
-                            },
-                            role: {
-                                type: "string",
-                                enum: ["BAP", "BPP"],
-                                default: "BAP",
-                                title: "Your Role",
-                            },
-                        },
-                        required: ["subscriber_url", "role"],
-                        additionalProperties: false,
-                    }}
-                    onSubmit={handleFormSubmit}
-                />
-            </div>
-        );
+        const regex = /^(http|https):\/\/[^ "]+$/;
+        if (!subscriberUrl || !regex.test(subscriberUrl)) {
+            toast.error("Please enter a valid URL");
+            return;
+        }
+
+        await createAndOpenFlowSession(subscriberUrl, role);
     };
 
     const runCurrentConfig = async (extraStep = false) => {
@@ -475,8 +459,7 @@ export const useConfigOperations = () => {
             }
             const htmlForm = MockRunner.decodeBase64(htmlForm64);
             modal.openModal(
-                <div className="p-1">
-                    <h2 className="text-l font-semibold mb-1">Fill the form</h2>
+                <PlaygroundSchemaFormShell title="Fill the form">
                     <MockDynamicForm
                         htmlForm={htmlForm}
                         onSubmit={async (formData: FormValues) => {
@@ -488,7 +471,8 @@ export const useConfigOperations = () => {
                             );
                         }}
                     />
-                </div>
+                </PlaygroundSchemaFormShell>,
+                { className: "max-w-xl" }
             );
             toast.success("Please fill in the form to continue");
             return;
@@ -580,7 +564,7 @@ export const useConfigOperations = () => {
         importConfig,
         clearConfig,
         runConfig,
-        createFlowSession,
+        submitCreateFlowSession,
         runCurrentConfig,
         retriggerSelectedExtraStep,
         exportConfigForDeployment,

@@ -11,6 +11,7 @@ export type CollapsibleSectionProps = {
 export type InfoPillProps = {
     label: string;
     value: string;
+    copyable?: boolean;
 };
 
 export type FlowActionButtonProps = {

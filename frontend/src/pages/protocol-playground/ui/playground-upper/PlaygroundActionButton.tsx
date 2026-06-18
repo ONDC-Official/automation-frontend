@@ -1,4 +1,5 @@
 import { Button } from "@/components/Shadcn/Button/button";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/Shadcn/Tooltip";
 import { cn } from "@/lib/utils";
 import type { IPlaygroundActionButtonProps } from "@pages/protocol-playground/ui/playground-upper/types";
 import { PLAYGROUND_ACTION_VARIANT_STYLES } from "@pages/protocol-playground/ui/playground-upper/constants";
@@ -30,12 +31,11 @@ export const PlaygroundActionButton = ({
 }: IPlaygroundActionButtonProps) => {
     const Icon = VARIANT_ICONS[variant];
 
-    return (
+    const button = (
         <Button
             variant="ghost"
             size="icon-lg"
             aria-label={label}
-            title={label}
             disabled={disabled}
             onClick={onClick}
             className={cn(
@@ -46,5 +46,14 @@ export const PlaygroundActionButton = ({
         >
             <Icon className="size-5" />
         </Button>
+    );
+
+    return (
+        <Tooltip>
+            <TooltipTrigger asChild>
+                {disabled ? <span className="inline-flex">{button}</span> : button}
+            </TooltipTrigger>
+            <TooltipContent side="bottom">{label}</TooltipContent>
+        </Tooltip>
     );
 };
