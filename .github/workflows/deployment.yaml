@@ -1,4 +1,4 @@
-name: Deploy Automation Frontend
+name: Deploy Automation Frontend to dev-automation.ondc.org
 
 on:
   workflow_dispatch:
