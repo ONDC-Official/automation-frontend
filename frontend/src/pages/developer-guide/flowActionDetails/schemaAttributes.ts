@@ -10,8 +10,7 @@ import type {
     ValidationRuleDisplay,
     EnumRef,
 } from "./types";
-
-const DASH = "—";
+import { DASH } from "./attributePanelUtils";
 
 function getAtPath(obj: unknown, path: string): unknown {
     if (!obj || typeof obj !== "object") return undefined;

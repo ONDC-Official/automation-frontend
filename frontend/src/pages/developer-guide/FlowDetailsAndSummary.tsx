@@ -1,5 +1,6 @@
 import { FC } from "react";
 import type { FlowEntry } from "./types";
+import GuideCard from "./shared/components/GuideCard";
 
 interface FlowDetailsAndSummaryProps {
     flow: FlowEntry;
@@ -30,7 +31,7 @@ const FlowDetailsAndSummary: FC<FlowDetailsAndSummaryProps> = ({ flow }) => {
                         {flow.tags.map((tag) => (
                             <span
                                 key={tag}
-                                className="inline-flex items-center rounded-full px-2.5 py-0.5 bg-sky-50 text-sky-700 border border-sky-200 text-xs font-medium"
+                                className="inline-flex items-center rounded-full px-3 py-1 bg-sky-50 text-sky-700 text-[11px] font-semibold leading-none"
                             >
                                 {tag}
                             </span>
@@ -53,16 +54,13 @@ const FlowDetailsAndSummary: FC<FlowDetailsAndSummaryProps> = ({ flow }) => {
                         {config.details
                             ?.filter((d) => d.description)
                             .map((detail, index) => (
-                                <div
-                                    key={index}
-                                    className="rounded-xl border border-slate-200 bg-white overflow-hidden shadow-xs"
-                                >
+                                <GuideCard key={index} border="slate" rounded="xl" layout="block">
                                     <div className="px-6 py-4 bg-slate-50/50 border-b border-slate-100">
                                         <p className="text-sm text-slate-700 leading-relaxed">
                                             {detail.description}
                                         </p>
                                     </div>
-                                </div>
+                                </GuideCard>
                             ))}
                     </div>
                 </section>

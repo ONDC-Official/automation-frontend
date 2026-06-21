@@ -20,7 +20,6 @@ import FrameworkHealthPage from "@pages/framework-health";
 import { ROUTES } from "@constants/routes";
 import DeveloperGuideFlowPage from "@/pages/developer-guide/DeveloperGuideFlowPage";
 import DeveloperGuideShell from "@/pages/developer-guide/layout/DeveloperGuideShell";
-import DeveloperGuideOverview from "@/pages/developer-guide/layout/DeveloperGuideOverview";
 import DeveloperGuideGettingStartedContent from "@/pages/developer-guide/layout/DeveloperGuideGettingStartedContent";
 import DeveloperGuideAuthToolsContent from "@/pages/developer-guide/layout/DeveloperGuideAuthToolsContent";
 import DeveloperGuideGeneralContent from "@/pages/developer-guide/layout/DeveloperGuideGeneralContent";
@@ -67,7 +66,15 @@ const Routes = () => (
                 </DeveloperGuideWrapper>
             }
         >
-            <Route index element={<DeveloperGuideOverview />} />
+            <Route
+                index
+                element={
+                    <Navigate
+                        to={`${ROUTES.DEVELOPER_GUIDE_GETTING_STARTED}#1-pick-a-use-case`}
+                        replace
+                    />
+                }
+            />
             <Route path="getting-started" element={<DeveloperGuideGettingStartedContent />} />
             <Route path="general" element={<DeveloperGuideGeneralContent />} />
             <Route path="domains" element={<DeveloperGuideDomainsContent />} />

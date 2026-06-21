@@ -1,22 +1,13 @@
-// ─── Raw Table type ───────────────────────────────────────────────────────────
+import type { RawTableRow, RawTableAction } from "./types";
 
-export interface RawTableRow {
-    rowType: "leaf" | "group";
-    name: string;
-    group: string;
-    scope: string;
-    description: string;
-    skipIf: string;
-    errorCode: string;
-    successCode: string;
-}
+export type { RawTableRow, RawTableAction };
 
-export interface RawTableAction {
-    action: string;
-    codeName: string;
-    numLeafTests: number;
-    generated: string;
-    rows: RawTableRow[];
+/** Sentinel used across attribute/enum/tag schemas for "no value". */
+export const DASH = "—";
+
+/** True when a description is present and isn't just the DASH sentinel. */
+export function hasDescription(s: string | null | undefined): s is string {
+    return s != null && s !== DASH;
 }
 
 // ─── HTML helpers ─────────────────────────────────────────────────────────────
@@ -132,6 +123,20 @@ export function pathMatches(extractedPath: string, selectedPath: string): boolea
     if (norm1.startsWith(norm2 + ".")) return true;
     if (extractedPath.includes("[?") && norm2.startsWith(norm1 + ".")) return true;
     return false;
+}
+
+/** Reads a dot-path (e.g. `$.foo.bar`) out of a plain object/value. */
+export function getValueAtPath(obj: unknown, path: string): unknown {
+    const parts = path
+        .replace(/^\$\.?/, "")
+        .split(".")
+        .filter(Boolean);
+    let cur: unknown = obj;
+    for (const p of parts) {
+        if (cur == null || typeof cur !== "object") return undefined;
+        cur = (cur as Record<string, unknown>)[p];
+    }
+    return cur;
 }
 
 /** Extract leaf rows for a given API from the raw table data object. */

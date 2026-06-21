@@ -4,6 +4,7 @@ import type { ActionAttributes, ValidationRuleDisplay } from "./types";
 import type { RawTableRow } from "./attributePanelUtils";
 import { AttributeSection, EnumSection, TagSection } from "./AttributeSections";
 import ValidationsSection from "./ValidationsSection";
+import GuideCard from "../shared/components/GuideCard";
 
 interface AttributesPanelProps {
     attributes: ActionAttributes | null;
@@ -28,9 +29,9 @@ const AttributesPanel: FC<AttributesPanelProps> = ({
 }) => {
     if (!attributes) {
         return (
-            <div className="h-full flex flex-col rounded-xl border border-sky-100 bg-white overflow-hidden shadow-xs">
+            <GuideCard border="sky" rounded="xl" layout="column">
                 <div className="flex-1 flex flex-col items-center justify-center gap-3 p-8 text-center">
-                    <div className="w-10 h-10 rounded-full bg-sky-50 border border-sky-100 flex items-center justify-center text-sky-400 text-lg">
+                    <div className="w-10 h-10 rounded-full bg-sky-50 dark:bg-sky-500/10 border border-sky-100 dark:border-sky-500/30 flex items-center justify-center text-sky-400 text-lg">
                         &#x276F;
                     </div>
                     <p className="text-slate-600 text-sm leading-relaxed max-w-[220px]">
@@ -38,12 +39,12 @@ const AttributesPanel: FC<AttributesPanelProps> = ({
                         validations.
                     </p>
                 </div>
-            </div>
+            </GuideCard>
         );
     }
 
     return (
-        <div className="h-full flex flex-col rounded-xl border border-sky-100 bg-white overflow-hidden shadow-xs">
+        <GuideCard border="sky" rounded="xl" layout="column">
             <div className="flex-1 overflow-auto p-4 text-sm">
                 {attributes.kind === "attribute" && <AttributeSection attrs={attributes} />}
                 {attributes.kind === "enum" && <EnumSection attrs={attributes} />}
@@ -53,7 +54,7 @@ const AttributesPanel: FC<AttributesPanelProps> = ({
                     selectedPath={attributes.jsonPath}
                 />
             </div>
-        </div>
+        </GuideCard>
     );
 };
 

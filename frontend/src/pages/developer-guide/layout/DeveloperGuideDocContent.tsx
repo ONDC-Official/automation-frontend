@@ -3,6 +3,7 @@ import { useLocation, useParams } from "react-router-dom";
 import { fetchDocContent } from "@services/developerDocsApi";
 import GithubMarkdown from "@components/GithubMarkdown";
 import TableOfContents from "@components/TableOfContents";
+import { scrollToSectionWithOffset } from "@components/TableOfContents/scrollToSection";
 import { stripMarkdownTableOfContents } from "@utils/markdownToc";
 import { docUsesSidebarSections } from "./docsWithSidebarSections";
 import { useDeveloperGuideShell } from "./DeveloperGuideShellContext";
@@ -36,9 +37,10 @@ const DeveloperGuideDocContent: FC = () => {
     useEffect(() => {
         if (!usesSidebarSections || !hash) return;
         const id = hash.slice(1);
-        requestAnimationFrame(() => {
-            document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+        const frame = requestAnimationFrame(() => {
+            scrollToSectionWithOffset(id, TOC_TOP);
         });
+        return () => cancelAnimationFrame(frame);
     }, [hash, usesSidebarSections]);
 
     const title = useMemo(() => {
@@ -91,6 +93,7 @@ const DeveloperGuideDocContent: FC = () => {
                             top: TOC_TOP,
                             maxHeight: `calc(100vh - ${TOC_TOP}px)`,
                         }}
+                        offset={TOC_TOP}
                     />
                 )}
                 <div className="flex-1 min-w-0 prose prose-slate max-w-none">

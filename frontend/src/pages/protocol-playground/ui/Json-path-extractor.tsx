@@ -41,18 +41,21 @@ const CopyIcon = () => (
 
 // ─── VS Code–style tooltip ─────────────────────────────────────────────────────
 
+/** Always-dark VS Code–style chip — deliberately uses literal colors instead of
+ * slate-* utilities so it stays dark regardless of the page theme (slate-* inverts
+ * under .dark, which would turn this into a light chip with light text). */
 const TooltipContent = ({ path, fullValue }: { path: string; fullValue?: string }) => (
-    <div className="text-xs p-2.5 rounded-lg bg-slate-800 border border-sky-400/50 shadow-xl">
+    <div className="text-xs p-2.5 rounded-lg bg-[#1e293b] border border-sky-400/50 shadow-xl">
         <div className="font-semibold text-sky-400 mb-1 uppercase tracking-widest text-[9px]">
             Path
         </div>
-        <div className="text-slate-300 font-mono break-all leading-relaxed">{path}</div>
+        <div className="text-[#cbd5e1] font-mono break-all leading-relaxed">{path}</div>
         {fullValue && (
             <>
                 <div className="font-semibold text-sky-400 mt-2 mb-1 uppercase tracking-widest text-[9px]">
                     Full Value
                 </div>
-                <div className="text-slate-300 font-mono break-all leading-relaxed">
+                <div className="text-[#cbd5e1] font-mono break-all leading-relaxed">
                     {fullValue}
                 </div>
             </>
@@ -116,7 +119,7 @@ const PrimitiveValue = ({
     if (selected.status) {
         rowBg =
             selected.type === SelectedType.SaveData
-                ? "bg-sky-100 ring-1 ring-sky-400 shadow-xs"
+                ? "bg-sky-100 dark:bg-sky-500/20 ring-1 ring-sky-400 shadow-xs"
                 : "bg-slate-100 ring-1 ring-slate-300 shadow-xs";
     }
 
@@ -135,7 +138,9 @@ const PrimitiveValue = ({
             <span
                 onClick={(e) => handleKeyClick(path, keyName, e)}
                 className={`group/value inline-flex items-center gap-1 cursor-pointer rounded px-0.5 transition-colors duration-100 ${
-                    selected.status ? rowBg : "hover:bg-sky-100/60 hover:ring-1 hover:ring-sky-200"
+                    selected.status
+                        ? rowBg
+                        : "hover:bg-sky-100/60 dark:hover:bg-sky-500/10 hover:ring-1 hover:ring-sky-200 dark:hover:ring-sky-500/30"
                 }`}
             >
                 <span
@@ -146,7 +151,7 @@ const PrimitiveValue = ({
                 </span>
                 <button
                     onClick={handleCopy}
-                    className="opacity-0 group-hover/value:opacity-60 hover:opacity-100! transition-opacity text-slate-400 hover:text-sky-600 shrink-0"
+                    className="opacity-0 group-hover/value:opacity-60 hover:opacity-100! transition-opacity text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 shrink-0"
                     title="Copy value"
                 >
                     <CopyIcon />
@@ -232,13 +237,13 @@ const renderJson = ({
                 if (isKeySelected.status) {
                     keyClass +=
                         isKeySelected.type === SelectedType.SaveData
-                            ? "bg-sky-100 text-sky-700 rounded px-1 ring-1 ring-sky-400 shadow-xs"
+                            ? "bg-sky-100 dark:bg-sky-500/20 text-sky-700 dark:text-sky-300 rounded px-1 ring-1 ring-sky-400 shadow-xs"
                             : "bg-slate-100 text-slate-700 rounded px-1 ring-1 ring-slate-300 shadow-xs";
                 } else {
                     keyClass +=
                         isObject || isArray
-                            ? "text-sky-600 font-semibold cursor-pointer hover:underline underline-offset-2"
-                            : "text-sky-600 font-semibold";
+                            ? "text-sky-600 dark:text-sky-400 font-semibold cursor-pointer hover:underline underline-offset-2"
+                            : "text-sky-600 dark:text-sky-400 font-semibold";
                 }
 
                 return (
@@ -248,12 +253,12 @@ const renderJson = ({
                         className="whitespace-nowrap"
                     >
                         {/* Row */}
-                        <div className="group inline-flex items-start hover:bg-sky-100/60 mx-[-2px] px-[2px] rounded w-full min-w-0 transition-colors duration-75">
+                        <div className="group inline-flex items-start hover:bg-sky-100/60 dark:hover:bg-sky-500/10 mx-[-2px] px-[2px] rounded w-full min-w-0 transition-colors duration-75">
                             {/* Collapse toggle / spacer */}
                             {isObject || isArray ? (
                                 <button
                                     onClick={() => toggleCollapse(newPath)}
-                                    className="text-slate-400 hover:text-sky-600 mr-1 mt-[3px] transition-colors shrink-0"
+                                    className="text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 mr-1 mt-[3px] transition-colors shrink-0"
                                     aria-label={isCollapsed ? "Expand" : "Collapse"}
                                 >
                                     {isCollapsed ? <ChevronRight /> : <ChevronDown />}
@@ -339,7 +344,7 @@ const renderJson = ({
                                         {/* Indent guide */}
                                         <div
                                             style={{ paddingLeft: `${INDENT - 1}px` }}
-                                            className="border-l border-sky-100"
+                                            className="border-l border-sky-100 dark:border-sky-500/20"
                                         >
                                             {renderJson({
                                                 obj: value as JsonObject,
@@ -366,7 +371,7 @@ const renderJson = ({
                                     <>
                                         <div
                                             style={{ paddingLeft: `${INDENT - 1}px` }}
-                                            className="border-l border-sky-100"
+                                            className="border-l border-sky-100 dark:border-sky-500/20"
                                         >
                                             {(value as JsonArray).map(
                                                 (item: JsonValue, index: number) => {
@@ -528,13 +533,13 @@ const JsonViewer: React.FC<JsonViewerProps> = ({
     // ── Toolbar button styles ──────────────────────────────────────────────────
     const btnBase =
         "px-2.5 py-1 text-[11px] font-medium rounded-lg transition-all duration-100 whitespace-nowrap select-none shadow-xs";
-    const btnGhost = `${btnBase} text-slate-600 bg-white hover:bg-sky-50 border border-slate-200 hover:border-sky-300 hover:text-sky-700`;
+    const btnGhost = `${btnBase} text-slate-600 bg-white dark:bg-surface-elevated hover:bg-sky-50 dark:hover:bg-sky-500/10 border border-slate-200 hover:border-sky-300 dark:hover:border-sky-500/40 hover:text-sky-700 dark:hover:text-sky-300`;
     const btnPrimary = `${btnBase} text-white bg-sky-500 hover:bg-sky-600 border border-sky-500 hover:border-sky-600 flex items-center gap-1.5`;
 
     return (
-        <div className="font-mono text-sm h-full flex flex-col bg-sky-50/60 text-slate-700">
+        <div className="font-mono text-sm h-full flex flex-col bg-sky-50/60 dark:bg-surface-elevated text-slate-700">
             {/* ── Toolbar ─────────────────────────────────────────────────── */}
-            <div className="flex items-center gap-1.5 mb-0 px-3 py-1.5 shrink-0 border-b border-sky-200 bg-white/80 backdrop-blur-xs">
+            <div className="flex items-center gap-1.5 mb-0 px-3 py-1.5 shrink-0 border-b border-sky-200 dark:border-sky-500/20 bg-white/80 dark:bg-surface-muted/80 backdrop-blur-xs">
                 {/* Search */}
                 <div className="relative flex-1">
                     <svg
@@ -555,7 +560,7 @@ const JsonViewer: React.FC<JsonViewerProps> = ({
                         placeholder="Search keys or values…"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full bg-white border border-slate-200 rounded-lg pl-8 pr-3 py-1.5 text-[12px] font-mono text-slate-700 placeholder-slate-400 outline-hidden focus:ring-2 focus:ring-sky-400/50 focus:border-sky-400 transition-all shadow-xs"
+                        className="w-full bg-white dark:bg-surface-elevated border border-slate-200 rounded-lg pl-8 pr-3 py-1.5 text-[12px] font-mono text-slate-700 placeholder-slate-400 outline-hidden focus:ring-2 focus:ring-sky-400/50 focus:border-sky-400 transition-all shadow-xs"
                     />
                 </div>
 

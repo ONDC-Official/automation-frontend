@@ -56,6 +56,11 @@ export function isDomainEnabled(domain: BuildEntry): boolean {
     return domain.version.some((v) => v.usecase.length > 0);
 }
 
+/** A use case is enabled whenever its parent domain is enabled. */
+export function isUseCaseEnabled(domain: BuildEntry, _usecaseLabel: string): boolean {
+    return isDomainEnabled(domain);
+}
+
 const PRIORITY_DOC_ORDER = ["about ondc", "registry gateway", "network observability", "faqs"];
 
 function normalizeDocKey(value: string): string {

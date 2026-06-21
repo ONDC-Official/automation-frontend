@@ -2,7 +2,11 @@ import { FC, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import gettingStartedContent from "../landing/getting-started.md?raw";
 import MdFileRender from "@components/MdFileRender";
+import { scrollToSectionWithOffset } from "@components/TableOfContents/scrollToSection";
 import { useDeveloperGuideShell } from "./DeveloperGuideShellContext";
+
+// Matches the sticky header offset used by the sibling doc content view (DeveloperGuideDocContent).
+const TOC_TOP = 100;
 
 const DeveloperGuideGettingStartedContent: FC = () => {
     const { hash } = useLocation();
@@ -11,9 +15,10 @@ const DeveloperGuideGettingStartedContent: FC = () => {
     useEffect(() => {
         if (!hash) return;
         const id = hash.slice(1);
-        requestAnimationFrame(() => {
-            document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+        const frame = requestAnimationFrame(() => {
+            scrollToSectionWithOffset(id, TOC_TOP);
         });
+        return () => cancelAnimationFrame(frame);
     }, [hash]);
 
     return (

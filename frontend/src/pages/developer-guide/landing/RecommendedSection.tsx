@@ -1,11 +1,7 @@
 import { FC } from "react";
 import FeatureCard from "./FeatureCard";
 import { recommendedCards, RECOMMENDED_CARD_IDS } from "./recommendedCards";
-
-export interface RecommendedSectionProps {
-    onGettingStartedClick: () => void;
-    onAuthToolsClick: () => void;
-}
+import type { RecommendedSectionProps } from "./types";
 
 const RecommendedSection: FC<RecommendedSectionProps> = ({
     onGettingStartedClick,

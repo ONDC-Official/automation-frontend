@@ -1,5 +1,6 @@
 import { type FC, useMemo, useState } from "react";
 import { extractMarkdownToc } from "@utils/markdownToc";
+import { scrollToSectionWithOffset } from "./scrollToSection";
 
 interface TableOfContentsProps {
     content: string;
@@ -7,9 +8,15 @@ interface TableOfContentsProps {
     className?: string;
     /** Inline style on the outer wrapper (e.g. { top: 128 } for sticky offset) */
     style?: React.CSSProperties;
+    /**
+     * Height (px) of any sticky header/breadcrumb the page content scrolls under.
+     * When set, clicking an entry scrolls just enough to clear that sticky area
+     * instead of pulling the section to the absolute top of the viewport.
+     */
+    offset?: number;
 }
 
-const TableOfContents: FC<TableOfContentsProps> = ({ content, className, style }) => {
+const TableOfContents: FC<TableOfContentsProps> = ({ content, className, style, offset = 0 }) => {
     const toc = useMemo(() => extractMarkdownToc(content), [content]);
     const [activeId, setActiveId] = useState("");
 
@@ -17,7 +24,11 @@ const TableOfContents: FC<TableOfContentsProps> = ({ content, className, style }
 
     const handleClick = (id: string) => {
         setActiveId(id);
-        document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+        if (offset > 0) {
+            scrollToSectionWithOffset(id, offset);
+        } else {
+            document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+        }
     };
 
     return (

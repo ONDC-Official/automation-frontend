@@ -20,7 +20,7 @@ export const recommendedCards: RecommendedCardConfig[] = [
         subtitle: "Start with a use case",
         description:
             "New to the developer guide? Walk through a real use case and explore all request/response flows step by step.",
-        icon: <FiBook className="text-sky-600" size={20} />,
+        icon: <FiBook className="text-sky-600 dark:text-sky-400" size={20} />,
     },
     {
         id: RECOMMENDED_CARD_IDS.AUTH_TOOLS,
@@ -28,6 +28,6 @@ export const recommendedCards: RecommendedCardConfig[] = [
         subtitle: "Generate & Verify ONDC Headers",
         description:
             "Generate and verify ONDC authorization headers using BLAKE-512 hashing and Ed25519 signing.",
-        icon: <FiKey className="text-sky-600" size={20} />,
+        icon: <FiKey className="text-sky-600 dark:text-sky-400" size={20} />,
     },
 ];

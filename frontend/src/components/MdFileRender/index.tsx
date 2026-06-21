@@ -36,6 +36,7 @@ const MdFileRender: FC<MdFileRenderProps> = ({
                             content={mdData}
                             className="sticky"
                             style={{ top: TOC_TOP }}
+                            offset={TOC_TOP}
                         />
                     </div>
                 )}

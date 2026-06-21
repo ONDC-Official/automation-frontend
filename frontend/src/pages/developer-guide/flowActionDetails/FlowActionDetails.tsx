@@ -3,7 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import { FaCopy } from "react-icons/fa";
 import { FiList, FiMessageSquare, FiFileText } from "react-icons/fi";
 import { useClipboard } from "@hooks/useClipboard";
-import { SegmentedTabs, type TabItem } from "@components/ui/SegmentedTabs";
+import GuideTabs, { type GuideTabItem } from "../shared/components/GuideTabs";
 import JsonViewer from "@pages/protocol-playground/ui/Json-path-extractor";
 import { SelectedType } from "@pages/protocol-playground/ui/session-data-tab";
 import type { OpenAPISpecification, ValidationTableAction } from "../types";
@@ -11,28 +11,17 @@ import { getActionAttributes, getValidationsForAction } from "./schemaAttributes
 import AttributesPanel from "./AttributesPanel";
 import CommentsPanel from "./CommentsPanel";
 import NotesPanel from "./NotesPanel";
-import { getLeafRowsForApi, type RawTableAction } from "./attributePanelUtils";
+import FlowVisualizationStrip from "./FlowVisualizationStrip";
+import { getLeafRowsForApi, getValueAtPath, type RawTableAction } from "./attributePanelUtils";
+import type { FlowStep } from "../types";
 
 type RightPanelTab = "attributes" | "comments" | "notes";
 
-const RIGHT_PANEL_TABS: TabItem<RightPanelTab>[] = [
-    { id: "attributes", label: "Attributes", icon: FiList },
+const RIGHT_PANEL_TABS: GuideTabItem<RightPanelTab>[] = [
+    { id: "attributes", label: "Details", icon: FiList },
     { id: "comments", label: "Comments", icon: FiMessageSquare },
     { id: "notes", label: "Notes", icon: FiFileText },
 ];
-
-function getValueAtPath(obj: unknown, path: string): unknown {
-    const parts = path
-        .replace(/^\$\.?/, "")
-        .split(".")
-        .filter(Boolean);
-    let cur: unknown = obj;
-    for (const p of parts) {
-        if (cur == null || typeof cur !== "object") return undefined;
-        cur = (cur as Record<string, unknown>)[p];
-    }
-    return cur;
-}
 
 interface FlowActionDetailsProps {
     exampleValue: object;
@@ -45,6 +34,10 @@ interface FlowActionDetailsProps {
     flowId?: string;
     /** Validation table data keyed by action name. Loaded lazily from API. */
     validationTableData?: Record<string, ValidationTableAction> | null;
+    /** Steps of the flow this action belongs to, for the step-diagram strip above the JSON viewer. */
+    flowSteps?: FlowStep[];
+    /** Switches the selected action — called when a step is clicked in the diagram strip. */
+    onSelectAction?: (actionId: string) => void;
 }
 
 const FlowActionDetails: FC<FlowActionDetailsProps> = ({
@@ -55,6 +48,8 @@ const FlowActionDetails: FC<FlowActionDetailsProps> = ({
     useCaseId,
     flowId,
     validationTableData,
+    flowSteps,
+    onSelectAction,
 }) => {
     const [searchParams, setSearchParams] = useSearchParams();
 
@@ -138,68 +133,80 @@ const FlowActionDetails: FC<FlowActionDetailsProps> = ({
         [spec, apiForAttributes, selectedPath]
     );
 
+    const visualizationStrip =
+        flowSteps && flowSteps.length > 0 && onSelectAction ? (
+            <FlowVisualizationStrip
+                steps={flowSteps}
+                selectedFlowAction={actionApi}
+                onSelectAction={onSelectAction}
+            />
+        ) : null;
+
     const root = (
-        <div className="flex flex-col h-full rounded-xl border border-slate-200 bg-white overflow-hidden shadow-xs">
-            <div className="flex-1 flex min-h-0">
-                <div className="w-full flex flex-col min-w-0 border-r border-slate-200">
-                    <div className="flex-1 min-h-0 overflow-auto p-4 relative group">
-                        <JsonViewer
-                            data={exampleValue as ComponentProps<typeof JsonViewer>["data"]}
-                            isSelected={isSelected}
-                            handleKeyClick={handleKeyClick}
-                            onExpand={() => setExpanded(true)}
-                            isExpanded={expanded}
-                            onCollapse={() => setExpanded(false)}
-                        />
-                        <button
-                            type="button"
-                            onClick={() =>
-                                void copyToClipboard(JSON.stringify(exampleValue, null, 2))
-                            }
-                            className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white text-sm rounded-lg shadow-lg"
-                        >
-                            <FaCopy className="w-4 h-4" />
-                            Copy
-                        </button>
-                    </div>
-                </div>
-                <div className="w-1/2 flex flex-col min-h-0 bg-slate-50/60 border-l border-slate-200">
-                    <div className="px-4 pt-3 pb-2 border-b border-slate-200 bg-white/80 shrink-0">
-                        <SegmentedTabs<RightPanelTab>
-                            tabs={RIGHT_PANEL_TABS}
-                            active={rightPanelTab}
-                            onChange={setRightPanelTab}
-                        />
-                    </div>
-                    <div className="flex-1 min-h-0 overflow-hidden p-4">
-                        {rightPanelTab === "attributes" && (
-                            <AttributesPanel
-                                attributes={attributes}
-                                validations={validations}
-                                rawTableRows={rawTableRows}
-                                spec={spec}
-                                actionApi={actionApi}
-                                stepApi={stepApi}
-                                useCaseId={useCaseId}
+        <div className="flex flex-col h-full gap-3">
+            {visualizationStrip}
+            <div className="flex-1 flex flex-col min-h-0 rounded-xl border border-slate-200 bg-white dark:bg-surface-elevated overflow-hidden shadow-xs">
+                <div className="flex-1 flex min-h-0">
+                    <div className="w-full flex flex-col min-w-0 border-r border-slate-200">
+                        <div className="flex-1 min-h-0 overflow-auto p-4 relative group">
+                            <JsonViewer
+                                data={exampleValue as ComponentProps<typeof JsonViewer>["data"]}
+                                isSelected={isSelected}
+                                handleKeyClick={handleKeyClick}
+                                onExpand={() => setExpanded(true)}
                                 isExpanded={expanded}
+                                onCollapse={() => setExpanded(false)}
                             />
-                        )}
-                        {rightPanelTab === "comments" && (
-                            <CommentsPanel
-                                selectedPath={selectedPath}
-                                actionApi={actionApi}
-                                useCaseId={useCaseId}
-                                flowId={flowId}
+                            <button
+                                type="button"
+                                onClick={() =>
+                                    void copyToClipboard(JSON.stringify(exampleValue, null, 2))
+                                }
+                                className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white text-sm rounded-lg shadow-lg"
+                            >
+                                <FaCopy className="w-4 h-4" />
+                                Copy
+                            </button>
+                        </div>
+                    </div>
+                    <div className="w-1/2 flex flex-col min-h-0 bg-slate-50/60 dark:bg-surface-muted/60 border-l border-slate-200">
+                        <div className="px-4 pt-3 pb-2 border-b border-slate-200 bg-white/80 dark:bg-surface-elevated/80 shrink-0">
+                            <GuideTabs<RightPanelTab>
+                                tabs={RIGHT_PANEL_TABS}
+                                active={rightPanelTab}
+                                onChange={setRightPanelTab}
                             />
-                        )}
-                        {rightPanelTab === "notes" && (
-                            <NotesPanel
-                                selectedPath={selectedPath}
-                                actionApi={actionApi}
-                                useCaseId={useCaseId}
-                                flowId={flowId}
-                            />
-                        )}
+                        </div>
+                        <div className="flex-1 min-h-0 overflow-hidden p-4">
+                            {rightPanelTab === "attributes" && (
+                                <AttributesPanel
+                                    attributes={attributes}
+                                    validations={validations}
+                                    rawTableRows={rawTableRows}
+                                    spec={spec}
+                                    actionApi={actionApi}
+                                    stepApi={stepApi}
+                                    useCaseId={useCaseId}
+                                    isExpanded={expanded}
+                                />
+                            )}
+                            {rightPanelTab === "comments" && (
+                                <CommentsPanel
+                                    selectedPath={selectedPath}
+                                    actionApi={actionApi}
+                                    useCaseId={useCaseId}
+                                    flowId={flowId}
+                                />
+                            )}
+                            {rightPanelTab === "notes" && (
+                                <NotesPanel
+                                    selectedPath={selectedPath}
+                                    actionApi={actionApi}
+                                    useCaseId={useCaseId}
+                                    flowId={flowId}
+                                />
+                            )}
+                        </div>
                     </div>
                 </div>
             </div>
@@ -208,12 +215,12 @@ const FlowActionDetails: FC<FlowActionDetailsProps> = ({
 
     if (expanded) {
         return (
-            <div className="fixed inset-0 z-50 bg-slate-100 flex flex-col">
-                <div className="flex justify-end gap-2 px-4 py-2.5 border-b border-slate-200 bg-white shadow-xs">
+            <div className="fixed inset-0 z-50 bg-slate-100 dark:bg-surface-page flex flex-col">
+                <div className="flex justify-end gap-2 px-4 py-2.5 border-b border-slate-200 bg-white dark:bg-surface-elevated shadow-xs">
                     <button
                         type="button"
                         onClick={() => setExpanded(false)}
-                        className="px-4 py-2 text-sm font-medium text-slate-700 bg-slate-200 rounded-lg hover:bg-slate-300 transition-colors focus:outline-hidden focus:ring-2 focus:ring-sky-400 focus:ring-offset-2"
+                        className="px-4 py-2 text-sm font-medium text-slate-700 bg-slate-200 dark:bg-surface-muted rounded-lg hover:bg-slate-300 dark:hover:bg-surface-elevated transition-colors focus:outline-hidden focus:ring-2 focus:ring-sky-400 focus:ring-offset-2"
                     >
                         Exit fullscreen
                     </button>

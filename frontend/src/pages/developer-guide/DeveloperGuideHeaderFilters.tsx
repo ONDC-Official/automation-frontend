@@ -7,7 +7,7 @@ interface DeveloperGuideHeaderFiltersProps {
 }
 
 const selectClass =
-    "h-9 w-[120px] min-w-[120px] max-w-[120px] md:w-[140px] md:min-w-[140px] md:max-w-[140px] lg:w-[160px] lg:min-w-[160px] lg:max-w-[160px] rounded-lg border border-sky-100 bg-white px-3 text-xs text-gray-800 focus:outline-hidden focus:ring-2 focus:ring-sky-500/30 focus:border-sky-400 truncate";
+    "h-9 w-[120px] min-w-[120px] max-w-[120px] md:w-[140px] md:min-w-[140px] md:max-w-[140px] lg:w-[160px] lg:min-w-[160px] lg:max-w-[160px] rounded-lg border border-sky-100 dark:border-sky-500/30 bg-white dark:bg-surface-elevated px-3 text-xs text-gray-800 focus:outline-hidden focus:ring-2 focus:ring-sky-500/30 focus:border-sky-400 truncate";
 
 const pillClass = "flex items-center gap-2";
 
@@ -15,32 +15,60 @@ const DeveloperGuideHeaderFilters: FC<DeveloperGuideHeaderFiltersProps> = ({ onS
     const { dynamicList, dynamicValue, formData, setDynamicList, setDyanmicValue } =
         useFormFieldData();
 
+    const handleDomainChange = (value: string) => {
+        formData.current = { ...formData.current, domain: value };
+        setDyanmicValue((prev) => ({
+            ...prev,
+            domain: value,
+            version: "",
+            usecaseId: "",
+        }));
+        setDynamicList((prev) => {
+            const domainEntry = prev.domain.find((item: IDomain) => item.key === value);
+            const filteredVersion = (domainEntry?.version as IDomainVersionWithUsecase[]) ?? [];
+            return { ...prev, version: filteredVersion, usecase: [] };
+        });
+    };
+
+    const handleVersionChange = (value: string) => {
+        formData.current = { ...formData.current, version: value };
+        setDyanmicValue((prev) => ({
+            ...prev,
+            version: value,
+            usecaseId: "",
+        }));
+        setDynamicList((prev) => {
+            const versionEntry = prev.version.find(
+                (item: IDomainVersionWithUsecase) => item.key === value
+            );
+            return { ...prev, usecase: versionEntry?.usecase ?? [] };
+        });
+    };
+
+    const handleUseCaseChange = async (value: string) => {
+        formData.current = { ...formData.current, usecaseId: value };
+        setDyanmicValue((prev) => ({ ...prev, usecaseId: value }));
+        await onSubmit({
+            domain: formData.current.domain,
+            version: formData.current.version,
+            useCase: value,
+        });
+    };
+
     return (
         <div className="hidden md:flex flex-wrap items-center gap-6 text-sm">
             <div className={pillClass}>
-                <span className="text-xs font-bold text-gray-700">Domain</span>
+                <label
+                    htmlFor="dev-guide-domain-select"
+                    className="text-xs font-bold text-gray-700"
+                >
+                    Domain
+                </label>
                 <select
+                    id="dev-guide-domain-select"
                     className={selectClass}
                     value={dynamicValue.domain}
-                    onChange={(e) => {
-                        const value = e.target.value;
-                        formData.current = { ...formData.current, domain: value };
-                        setDyanmicValue((prev) => ({
-                            ...prev,
-                            domain: value,
-                            version: "",
-                            usecaseId: "",
-                        }));
-                        setDynamicList((prev) => {
-                            let filteredVersion: IDomainVersionWithUsecase[] = [];
-                            prev.domain.forEach((item: IDomain) => {
-                                if (item.key === value) {
-                                    filteredVersion = item.version as IDomainVersionWithUsecase[];
-                                }
-                            });
-                            return { ...prev, version: filteredVersion, usecase: [] };
-                        });
-                    }}
+                    onChange={(e) => handleDomainChange(e.target.value)}
                 >
                     <option value="" disabled>
                         Select
@@ -54,29 +82,18 @@ const DeveloperGuideHeaderFilters: FC<DeveloperGuideHeaderFiltersProps> = ({ onS
             </div>
 
             <div className={pillClass}>
-                <span className="text-xs font-bold text-gray-700">Version</span>
+                <label
+                    htmlFor="dev-guide-version-select"
+                    className="text-xs font-bold text-gray-700"
+                >
+                    Version
+                </label>
                 <select
+                    id="dev-guide-version-select"
                     className={selectClass}
                     value={dynamicValue.version}
                     disabled={!dynamicValue.domain}
-                    onChange={(e) => {
-                        const value = e.target.value;
-                        formData.current = { ...formData.current, version: value };
-                        setDyanmicValue((prev) => ({
-                            ...prev,
-                            version: value,
-                            usecaseId: "",
-                        }));
-                        setDynamicList((prev) => {
-                            let filteredUsecase: string[] = [];
-                            prev.version.forEach((item: IDomainVersionWithUsecase) => {
-                                if (item.key === value) {
-                                    filteredUsecase = item.usecase;
-                                }
-                            });
-                            return { ...prev, usecase: filteredUsecase };
-                        });
-                    }}
+                    onChange={(e) => handleVersionChange(e.target.value)}
                 >
                     <option value="" disabled>
                         Select
@@ -90,21 +107,18 @@ const DeveloperGuideHeaderFilters: FC<DeveloperGuideHeaderFiltersProps> = ({ onS
             </div>
 
             <div className={pillClass}>
-                <span className="text-xs font-bold text-gray-700">Use Case</span>
+                <label
+                    htmlFor="dev-guide-usecase-select"
+                    className="text-xs font-bold text-gray-700"
+                >
+                    Use Case
+                </label>
                 <select
+                    id="dev-guide-usecase-select"
                     className={selectClass}
                     value={dynamicValue.usecaseId}
                     disabled={!dynamicValue.version}
-                    onChange={async (e) => {
-                        const value = e.target.value;
-                        formData.current = { ...formData.current, usecaseId: value };
-                        setDyanmicValue((prev) => ({ ...prev, usecaseId: value }));
-                        await onSubmit({
-                            domain: formData.current.domain,
-                            version: formData.current.version,
-                            useCase: value,
-                        });
-                    }}
+                    onChange={(e) => handleUseCaseChange(e.target.value)}
                 >
                     <option value="" disabled>
                         Select
