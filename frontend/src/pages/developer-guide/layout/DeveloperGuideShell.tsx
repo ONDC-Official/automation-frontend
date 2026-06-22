@@ -1,6 +1,7 @@
 import { FC, useCallback, useEffect, useMemo, useState } from "react";
-import { Outlet } from "react-router-dom";
-import { FiChevronLeft, FiSearch } from "react-icons/fi";
+import { Outlet, useLocation } from "react-router-dom";
+import { ArrowLeftIcon } from "@heroicons/react/24/outline";
+import { FiSearch } from "react-icons/fi";
 import DeveloperGuideCollapsedNavBar from "./DeveloperGuideCollapsedNavBar";
 import { fetchBuilds } from "@services/developerGuideSpecApi";
 import { fetchDocContent, fetchDocList } from "@services/developerDocsApi";
@@ -13,6 +14,8 @@ import { filterNavTree } from "./filterNavTree";
 import DeveloperGuideSidebar from "./DeveloperGuideSidebar";
 import { DeveloperGuideShellContext } from "./DeveloperGuideShellContext";
 import { NAV_STATUS_LABEL, NAV_STATUS_STYLES, type NavStatus } from "../shared/statusPlaceholders";
+import { ROUTES } from "@/constants/routes";
+import { Button } from "@/components/Shadcn/Button";
 
 const STATUS_LEGEND_ORDER: NavStatus[] = ["released", "drafted", "to-be-deprecated", "deprecated"];
 
@@ -36,6 +39,9 @@ const DeveloperGuideShellMain: FC = () => (
 );
 
 const DeveloperGuideShell: FC = () => {
+    const { pathname } = useLocation();
+    const isGettingStartedRoute = pathname === ROUTES.DEVELOPER_GUIDE_GETTING_STARTED;
+
     const [builds, setBuilds] = useState<BuildEntry[]>([]);
     const [docs, setDocs] = useState<DocMeta[]>([]);
     const [docMarkdownBySlug, setDocMarkdownBySlug] = useState<Record<string, string>>({});
@@ -138,6 +144,16 @@ const DeveloperGuideShell: FC = () => {
             }}
         >
             <div className="h-[calc(100vh-var(--app-header-height))] overflow-hidden bg-white dark:bg-surface-page flex flex-col">
+                <DeveloperGuideCollapsedNavBar />
+                {isGettingStartedRoute && (
+                    <div className="flex gap-2 px-6 py-3 bg-alert-50 items-center">
+                        <span className="text-alert-500 text-body-1 font-semibold">Tip: </span>
+                        <span className="text-body-2 font-regular text-n-300">
+                            Use Filter navigation in the sidebar to quickly find a domain, use case,
+                            or documentation page.
+                        </span>
+                    </div>
+                )}
                 <div className="flex flex-1 min-h-0 flex-col lg:flex-row overflow-hidden">
                     <aside
                         className={`shrink-0 border-b lg:border-b-0 bg-slate-100 dark:bg-surface-muted flex min-h-0 flex-col lg:h-full transition-[width] duration-300 ease-in-out overflow-hidden ${
@@ -146,7 +162,7 @@ const DeveloperGuideShell: FC = () => {
                                 : "hidden lg:block lg:w-0 lg:border-r-0"
                         }`}
                     >
-                        <div className="px-4 pt-6 pb-5">
+                        <div className="px-4 py-2 pb-5">
                             <div className="flex items-start justify-between gap-2 pt-4">
                                 <div className="min-w-0">
                                     <h1 className="text-base font-semibold tracking-tight text-slate-900">
@@ -156,15 +172,16 @@ const DeveloperGuideShell: FC = () => {
                                         ONDC integration reference
                                     </p>
                                 </div>
-                                <button
-                                    type="button"
+                                <Button
+                                    variant="outline"
+                                    size="xs"
                                     onClick={toggleNavSidebar}
-                                    className="hidden lg:flex items-center justify-center h-9 w-9 rounded-full border border-slate-200 bg-white dark:bg-surface-elevated text-sky-500 dark:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-500/10 hover:border-sky-200 dark:hover:border-sky-500/30 shadow-xs shrink-0"
+                                    className="text-brand-normal bg-brand-light hover:bg-brand-light-active hover:text-brand-normal-hover rounded-3xl w-12 h-7 border-n-40"
                                     aria-label="Collapse navigation"
                                     title="Collapse navigation"
                                 >
-                                    <FiChevronLeft size={16} />
-                                </button>
+                                    <ArrowLeftIcon className="size-4" aria-hidden />
+                                </Button>
                             </div>
                             <div className="relative mt-4">
                                 <FiSearch
@@ -196,7 +213,6 @@ const DeveloperGuideShell: FC = () => {
                     </aside>
 
                     <div className="relative flex flex-1 min-w-0 min-h-0 flex-col">
-                        <DeveloperGuideCollapsedNavBar />
                         <DeveloperGuideShellMain />
                     </div>
                 </div>
