@@ -1,5 +1,4 @@
 import { Button } from "@/components/Shadcn/Button/button";
-import { Badge } from "@/components/Shadcn/Badge/badge";
 import {
     Tooltip,
     TooltipContent,
@@ -13,7 +12,8 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/Shadcn/DropDownMenu/dropdown-menu";
-import { cn } from "@/lib/utils";
+import { PlaygroundActionButton } from "@pages/protocol-playground/ui/playground-upper/PlaygroundActionButton";
+import { MetaBadge } from "@pages/protocol-playground/ui/playground-upper/meta-badge";
 import {
     ArrowDownTrayIcon,
     ArrowLeftIcon,
@@ -25,38 +25,7 @@ import {
     QuestionMarkCircleIcon,
     ServerStackIcon,
 } from "@heroicons/react/24/outline";
-import { PlaygroundActionButton } from "@pages/protocol-playground/ui/playground-upper/PlaygroundActionButton";
-import type {
-    IMetaBadgeProps,
-    IPlaygroundToolbarProps,
-} from "@pages/protocol-playground/ui/playground-upper/types";
-
-const MetaBadge = ({ value, className, showTooltip = true }: IMetaBadgeProps) => {
-    const badge = (
-        <Badge
-            variant="outline"
-            className={cn(
-                "min-w-0 max-w-40 shrink rounded-lg border-brand-light-active bg-brand-light px-3 py-1.5 text-body-2 font-medium text-text-primary dark:border-border-default dark:bg-surface-muted",
-                className
-            )}
-        >
-            <span className="block truncate">{value}</span>
-        </Badge>
-    );
-
-    if (!showTooltip) {
-        return badge;
-    }
-
-    return (
-        <Tooltip>
-            <TooltipTrigger asChild>{badge}</TooltipTrigger>
-            <TooltipContent side="bottom" className="max-w-sm break-all">
-                {value}
-            </TooltipContent>
-        </Tooltip>
-    );
-};
+import type { IPlaygroundToolbarProps } from "@pages/protocol-playground/ui/playground-upper/types";
 
 export const PlaygroundHeader = ({
     domain,
@@ -110,22 +79,17 @@ export const PlaygroundHeader = ({
                     size="sm"
                     onClick={() => onStepGroupChange(stepGroup === "main" ? "extra" : "main")}
                     title="Click to switch step group"
-                    className="shrink-0 rounded-lg focus-visible:outline-none hover:bg-transparent"
+                    className="max-w-40 min-w-30 w-full shrink rounded-lg border-brand-light-active bg-brand-light p-2 text-body-2 font-medium text-text-primary dark:border-border-default dark:bg-surface-muted"
                 >
-                    <MetaBadge
-                        showTooltip={false}
-                        value={
-                            stepGroup === "main"
-                                ? `Main Steps (${mainStepCount})`
-                                : `Extra Steps (${extraStepCount})`
-                        }
-                    />
+                    {stepGroup === "main"
+                        ? `Main Steps (${mainStepCount})`
+                        : `Extra Steps (${extraStepCount})`}
                 </Button>
 
-                {domain ? <MetaBadge value={domain} className="max-w-30 w-full" /> : null}
-                {version ? <MetaBadge value={version} className="max-w-20 w-full" /> : null}
-                {flowId ? <MetaBadge value={flowId} className="max-w-40 w-full" /> : null}
-                {useCaseId ? <MetaBadge value={useCaseId} className="max-w-30 w-full" /> : null}
+                {domain && <MetaBadge value={domain} className="max-w-40 min-w-28 w-full" />}
+                {version && <MetaBadge value={version} className="max-w-16 min-w-10 w-full" />}
+                {flowId && <MetaBadge value={flowId} className="max-w-40 min-w-20 w-full" />}
+                {useCaseId && <MetaBadge value={useCaseId} className="max-w-30 min-w-20 w-full" />}
             </div>
 
             <div className="flex shrink-0 flex-wrap items-center justify-end gap-1.5">
@@ -147,20 +111,20 @@ export const PlaygroundHeader = ({
                     onClick={onRunCurrent}
                 />
                 <PlaygroundActionButton label="Clear all" variant="delete" onClick={onClear} />
-                {stepGroup === "extra" ? (
+                {stepGroup === "extra" && (
                     <PlaygroundActionButton
                         label="Retrigger selected extra step"
                         variant="retrigger"
                         onClick={onRetrigger}
                     />
-                ) : null}
-                {onToggleFullscreen ? (
+                )}
+                {onToggleFullscreen && (
                     <PlaygroundActionButton
                         label={isFullscreen ? "Exit full screen" : "Full screen"}
                         variant="expand"
                         onClick={onToggleFullscreen}
                     />
-                ) : null}
+                )}
 
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -200,10 +164,6 @@ export const PlaygroundHeader = ({
                             <Cog6ToothIcon className="size-4" />
                             Create live session
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={onHelp}>
-                            <QuestionMarkCircleIcon className="size-4" />
-                            How to use the Playground
-                        </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
 
@@ -211,6 +171,14 @@ export const PlaygroundHeader = ({
                     <PlusIcon className="size-4" />
                     {hasSteps ? "Add Action" : "Add First Action"}
                 </Button>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <Button variant="outline" size="sm" onClick={onHelp} className="ml-1">
+                            <QuestionMarkCircleIcon className="size-4" />
+                        </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom">How to use the Playground</TooltipContent>
+                </Tooltip>
             </div>
         </div>
     </TooltipProvider>

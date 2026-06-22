@@ -43,7 +43,7 @@ export const RightSideView = (props: {
     return (
         <div
             className={cn(
-                "flex min-h-0 flex-1 flex-col self-stretch overflow-hidden bg-transparent transition-all duration-500 ease-in-out dark:border-border-default",
+                "flex min-h-0 flex-col self-stretch overflow-hidden bg-transparent dark:border-border-default",
                 width
             )}
         >

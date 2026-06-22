@@ -1,21 +1,19 @@
 import { useContext, useState } from "react";
-import { queryJsonPath } from "../../../utils/jsonpath-query";
-import { inputClass } from "../../../components/ui/forms/inputClass";
+import { queryJsonPath } from "@/utils/jsonpath-query";
+import { inputClass } from "@components/ui/forms/inputClass";
 // import { MockPlaygroundConfigType } from "../mock-engine/types";
 import { FaExclamationTriangle, FaPlus } from "react-icons/fa";
-import { PlaygroundContext } from "../context/playground-context";
+import { PlaygroundContext } from "@/pages/protocol-playground/context/playground-context";
 import { useEffect } from "react";
-import JsonPathInput from "./json-path-input";
-import { handleAddParam } from "./json-path-input";
-import JsonPathOutputPopup from "./JsonPathOutputModal";
+import JsonPathInput from "@/pages/protocol-playground/ui/json-path-input.tsx";
+import { handleAddParam } from "@/pages/protocol-playground/ui/json-path-input";
+import JsonPathOutputPopup from "@/pages/protocol-playground/ui/JsonPathOutputModal";
 import { MockPlaygroundConfigType } from "@ondc/automation-mock-runner";
-import JsonViewerDark from "./json-path-extractor_old";
-import { getGroupSteps, setGroupSteps } from "../utils/step-group";
-
-export enum SelectedType {
-    SavedInfo = "saved_info",
-    SaveData = "saveData",
-}
+import JsonViewerDark from "@/pages/protocol-playground/ui/json-path-extractor_old";
+import { getGroupSteps, setGroupSteps } from "@/pages/protocol-playground/utils/step-group";
+import Input from "@/components/Shadcn/TextField/input";
+import { Button } from "@/components/Shadcn/Button";
+import { SelectedType } from "@pages/protocol-playground/ui/types";
 
 export default function SessionDataTab() {
     const [selectedCall, setSelectedCall] = useState("");
@@ -409,18 +407,18 @@ export default function SessionDataTab() {
                             the transaction history from the call and ahead.
                         </p>
                         <div className="flex gap-2">
-                            <button
+                            <Button
                                 onClick={handleContinue}
                                 className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
                             >
                                 Continue
-                            </button>
-                            <button
+                            </Button>
+                            <Button
                                 onClick={handleCancel}
                                 className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors"
                             >
                                 Cancel
-                            </button>
+                            </Button>
                         </div>
                     </div>
                 </div>
@@ -476,7 +474,7 @@ export default function SessionDataTab() {
                         <h2 className="text-xl mb-0 font-bold text-sky-400">
                             Save Data ({saveDataLength})
                         </h2>
-                        <button
+                        <Button
                             onClick={() => {
                                 setError("");
                                 setShowInput((prev) => !prev);
@@ -485,21 +483,21 @@ export default function SessionDataTab() {
                         >
                             <FaPlus className="text-sky-300" />
                             Add Manually
-                        </button>
+                        </Button>
                     </div>
 
                     {showInput && (
                         <div className="bg-gray-800 mt-4 p-4 rounded-lg border border-sky-500/30">
                             <div className="flex flex-col gap-2 items-center">
-                                <input
+                                <Input
                                     type="text"
                                     value={alias}
                                     onChange={(e) => setAlias(e.target.value)}
                                     placeholder="Enter alias (e.g. userInfo)"
-                                    className="px-3 py-2 rounded bg-gray-900 text-white border border-gray-700 focus:border-sky-500 outline-hidden"
+                                    className="px-3 w-full py-2 rounded bg-gray-900 text-white border border-gray-700 focus:border-sky-500 outline-hidden"
                                 />
                                 :
-                                <input
+                                <Input
                                     type="text"
                                     value={path}
                                     onChange={(e) => setPath(e.target.value)}
@@ -509,13 +507,13 @@ export default function SessionDataTab() {
                             </div>
                             {error && <p className="text-red-400 text-sm">{error}</p>}
                             <div className="flex gap-2 mt-2">
-                                <button
+                                <Button
                                     onClick={() => handleAdd({})}
                                     className="px-4 py-2 bg-sky-600 text-white rounded hover:bg-sky-700 transition-colors"
                                 >
                                     Save
-                                </button>
-                                <button
+                                </Button>
+                                <Button
                                     onClick={() => {
                                         setShowInput(false);
                                         setError("");
@@ -523,7 +521,7 @@ export default function SessionDataTab() {
                                     className="px-4 py-2 bg-gray-700 text-gray-300 rounded hover:bg-gray-600 transition-colors"
                                 >
                                     Cancel
-                                </button>
+                                </Button>
                             </div>
                         </div>
                     )}
@@ -602,12 +600,12 @@ export default function SessionDataTab() {
 
                     {savedInfoLength > 0 && (
                         <div className="mt-6 flex row gap-4">
-                            <button
+                            <Button
                                 onClick={handleSave}
                                 className="w-full px-4 py-2 bg-emerald-500/20 text-emerald-400 rounded hover:bg-emerald-500/30 transition-colors"
                             >
                                 Save
-                            </button>
+                            </Button>
                         </div>
                     )}
                 </div>

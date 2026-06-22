@@ -132,9 +132,9 @@ export const DeleteConfirmationForm = ({
     onCancel,
 }: IDeleteConfirmationFormProps) => (
     <>
-        <DialogHeader className="border-b border-border-default px-6 py-4">
+        <DialogHeader className="border-b border-border-default px-6 py-6">
             <DialogTitle>{title}</DialogTitle>
-            <DialogDescription>
+            <DialogDescription className="max-w-md py-2">
                 {description || "Are you sure you want to delete? This action cannot be undone."}
             </DialogDescription>
         </DialogHeader>

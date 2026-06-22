@@ -5,7 +5,7 @@ import { QuickStepBadge } from "@pages/home/QuickStepBadge";
 
 const IntialStepsSection: FC = () => (
     <section className="border-y border-n-30 bg-surface-page dark:border-border-default">
-        <div className="max-w-7xl mx-auto py-8 px-15 xl:px-0">
+        <div className="mx-auto py-8 px-20">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-10">
                 {quickSteps.map((step) => (
                     <div key={step.number} className="group relative flex items-start gap-3">

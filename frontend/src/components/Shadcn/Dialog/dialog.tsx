@@ -12,8 +12,15 @@ const DialogTrigger = ({ ...props }: React.ComponentProps<typeof DialogPrimitive
     <DialogPrimitive.Trigger data-slot="dialog-trigger" {...props} />
 );
 
-const DialogPortal = ({ ...props }: React.ComponentProps<typeof DialogPrimitive.Portal>) => (
-    <DialogPrimitive.Portal data-slot="dialog-portal" {...props} />
+const DialogPortal = ({
+    container,
+    ...props
+}: React.ComponentProps<typeof DialogPrimitive.Portal>) => (
+    <DialogPrimitive.Portal
+        data-slot="dialog-portal"
+        container={container ?? document.fullscreenElement ?? document.body}
+        {...props}
+    />
 );
 
 const DialogClose = ({ ...props }: React.ComponentProps<typeof DialogPrimitive.Close>) => (
@@ -38,11 +45,13 @@ const DialogContent = ({
     className,
     children,
     showCloseButton = true,
+    container,
     ...props
 }: React.ComponentProps<typeof DialogPrimitive.Content> & {
     showCloseButton?: boolean;
+    container?: HTMLElement;
 }) => (
-    <DialogPortal>
+    <DialogPortal container={container}>
         <DialogOverlay />
         <DialogPrimitive.Content
             data-slot="dialog-content"
@@ -77,10 +86,7 @@ const DialogHeader = ({ className, ...props }: React.ComponentProps<"div">) => (
 const DialogFooter = ({ className, ...props }: React.ComponentProps<"div">) => (
     <div
         data-slot="dialog-footer"
-        className={cn(
-            "flex flex-col-reverse gap-2 sm:flex-row sm:justify-end",
-            className
-        )}
+        className={cn("flex flex-col-reverse gap-2 sm:flex-row sm:justify-end", className)}
         {...props}
     />
 );

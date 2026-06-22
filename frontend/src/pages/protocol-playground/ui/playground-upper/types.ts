@@ -85,3 +85,35 @@ export interface IEditMenuItem {
     icon?: ReactNode;
     destructive?: boolean;
 }
+
+export interface IActionData {
+    id: string;
+    stepNumber?: number;
+    config: MockPlaygroundConfigType["steps"][number];
+    responseFor?: string | null;
+    completed: boolean;
+}
+
+export interface IActionDetailsCardProps {
+    action: IActionData;
+    onAddBefore?: (id: string) => void;
+    onAddAfter?: (id: string) => void;
+    onEditAction?: (id: string) => void;
+    onDeleteAction?: (id: string) => void;
+    playgroundContext?: PlaygroundContextProps;
+}
+
+export interface IDetailField {
+    label: string;
+    value: string;
+    toneClass: string;
+}
+
+export type ActionButtonVariant = "default" | "primary" | "danger";
+
+export interface IActionButtonProps {
+    icon: React.ReactNode;
+    label: string;
+    onClick: () => void;
+    variant?: ActionButtonVariant;
+}

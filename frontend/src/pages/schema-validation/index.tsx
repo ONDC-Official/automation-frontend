@@ -24,7 +24,7 @@ const SchemaValidation: FC = () => {
 
     return (
         <div className="min-h-[calc(100vh-4rem)] bg-surface-page">
-            <div className="max-w-7xl mx-auto px-15 xl:px-0 py-6 lg:h-[calc(100vh-4rem)]">
+            <div className="mx-auto px-20 py-6 lg:h-[calc(100vh-4rem)]">
                 <div className="grid grid-cols-1 lg:grid-cols-[minmax(280px,2fr)_minmax(0,3fr)] gap-6 lg:h-full">
                     <div className="lg:min-h-0 lg:h-full">
                         <SchemaGuideAccordion />

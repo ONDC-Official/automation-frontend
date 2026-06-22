@@ -56,3 +56,8 @@ export interface IDomainFolderProps {
     onLoad: (config: SavedConfigMetadata) => void;
     onDelete: (config: SavedConfigMetadata) => void;
 }
+
+export enum SelectedType {
+    SavedInfo = "saved_info",
+    SaveData = "saveData",
+}

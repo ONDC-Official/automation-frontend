@@ -271,7 +271,7 @@ export default function FlowContent() {
     };
     return (
         <div className="w-full">
-            <div className="mx-auto max-w-7xl py-6">
+            <div className="mx-auto px-20 py-6">
                 <Body />
             </div>
         </div>

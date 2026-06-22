@@ -5,6 +5,8 @@ import { DialogDescription, DialogHeader, DialogTitle } from "@/components/Shadc
 import { PlaygroundRightTabType } from "@pages/protocol-playground/types";
 import { LeftSideView } from "@pages/protocol-playground/ui/LeftSideView";
 import { RightSideView } from "@pages/protocol-playground/ui/RightSideView";
+import { ResizeDivider } from "@pages/protocol-playground/ui/resize-divider";
+import { useResizableSplit } from "@pages/protocol-playground/hooks/use-resizable-split";
 import { useConfigOperations } from "@pages/protocol-playground/hooks/use-config";
 import { PlaygroundHeader } from "@pages/protocol-playground/ui/playground-upper/playground-header";
 import { useModalHandlers } from "@pages/protocol-playground/hooks/use-modal";
@@ -94,8 +96,15 @@ const PlaygroundPage = () => {
     const [isTimelineOpen, setIsTimelineOpen] = useState(true);
 
     const isWideRight = activeRightTab === "transaction";
-    const leftPanelWidth = isWideRight ? "w-[30%]" : "w-1/2";
-    const rightPanelWidth = isWideRight ? "w-[70%]" : "w-1/2";
+    const {
+        containerRef: splitRef,
+        startDragging,
+        nudgeLeftPercent,
+    } = useResizableSplit({
+        defaultLeftPercent: isWideRight ? 30 : 50,
+    });
+    const leftPanelWidth = "shrink-0 basis-[var(--pg-left-width,50%)]";
+    const rightPanelWidth = "min-w-0 flex-1";
 
     const containerRef = useRef<HTMLDivElement>(null);
     const [isFullscreen, setIsFullscreen] = useState(false);
@@ -247,7 +256,7 @@ const PlaygroundPage = () => {
                         isFullscreen={isFullscreen}
                         onToggleFullscreen={toggleFullscreen}
                     />
-                    {isTimelineOpen ? (
+                    {isTimelineOpen && (
                         <ActionTimeline
                             steps={groupSteps}
                             transactionHistory={playgroundContext.config?.transaction_history || []}
@@ -259,12 +268,14 @@ const PlaygroundPage = () => {
                             onAddBefore={modalHandlers.addActionBefore}
                             onAddAfter={modalHandlers.addActionAfter}
                         />
-                    ) : null}
+                    )}
                 </div>
                 <div
-                    className={`flex min-h-0 flex-1 items-stretch gap-4 px-15 xl:px-0 pb-4 pt-2 ${isFullscreen ? "overflow-hidden" : ""}`}
+                    ref={splitRef}
+                    className={`flex min-h-0 flex-1 items-stretch px-15 xl:px-0 pb-4 pt-2 ${isFullscreen ? "overflow-hidden" : ""}`}
                 >
                     <LeftSideView width={leftPanelWidth} activeApi={activeApi} />
+                    <ResizeDivider onStartDragging={startDragging} onNudge={nudgeLeftPercent} />
                     <RightSideView
                         width={rightPanelWidth}
                         activeRightTab={activeRightTab}

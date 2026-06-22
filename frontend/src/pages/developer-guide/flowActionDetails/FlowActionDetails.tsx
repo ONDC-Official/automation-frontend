@@ -5,7 +5,7 @@ import { FiList, FiMessageSquare, FiFileText } from "react-icons/fi";
 import { useClipboard } from "@hooks/useClipboard";
 import GuideTabs, { type GuideTabItem } from "../shared/components/GuideTabs";
 import JsonViewer from "@pages/protocol-playground/ui/Json-path-extractor";
-import { SelectedType } from "@pages/protocol-playground/ui/session-data-tab";
+import { SelectedType } from "@pages/protocol-playground/ui/types";
 import type { OpenAPISpecification, ValidationTableAction } from "../types";
 import { getActionAttributes, getValidationsForAction } from "./schemaAttributes";
 import AttributesPanel from "./AttributesPanel";

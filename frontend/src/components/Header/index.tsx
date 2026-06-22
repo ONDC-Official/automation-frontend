@@ -15,7 +15,7 @@ import { Bars3Icon } from "@heroicons/react/20/solid";
 const Header = () => (
     <header className="fixed inset-x-0 top-0 z-50 w-full">
         <div className="border-b border-n-30 bg-n-0 dark:border-border-default dark:bg-black">
-            <nav className="relative mx-auto flex h-16 max-w-7xl items-center px-15 xl:px-0">
+            <nav className="relative mx-auto flex h-16 items-center px-20">
                 <Logo />
 
                 <div className="mx-5 hidden h-8 w-px shrink-0 bg-n-30 dark:bg-border-default nav:block" />

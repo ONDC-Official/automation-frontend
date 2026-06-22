@@ -3,7 +3,7 @@ import { supportInfoItems } from "@constants/support";
 
 const SupportInfoBar: FC = () => (
     <section className="bg-n-0 pb-16 lg:pb-20 dark:bg-surface-page">
-        <div className="max-w-7xl mx-auto px-15 lg:px-0">
+        <div className="mx-auto px-20">
             <div className="border-t border-n-30 pt-10 dark:border-n-600">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-10">
                     {supportInfoItems.map((item) => (

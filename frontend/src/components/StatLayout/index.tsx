@@ -4,7 +4,7 @@ import { IStatLayoutProps } from "@/components/StatLayout/types";
 
 const StatLayout: FC<IStatLayoutProps> = ({ label, title, description, stats }) => (
     <section className="text-n-0 py-16 lg:py-20 bg-brand-section">
-        <div className="max-w-7xl mx-auto px-15 xl:px-0">
+        <div className="mx-auto px-20">
             <div className="mb-10 lg:mb-12">
                 <SectionLabel label={label} className="text-brand-light" />
                 <h2 className="text-h3 lg:text-h3 font-bold text-n-0 mb-3">{title}</h2>

@@ -44,15 +44,15 @@ const PreBlock: FC<{ children?: React.ReactNode }> = ({ children }) => {
     };
 
     return (
-        <div className="relative my-4 rounded-lg overflow-hidden border border-[#334155] shadow-xs">
-            <div className="flex items-center justify-between bg-[#161b22] px-4 py-1.5 border-b border-[#334155]">
-                <span className="text-[11px] font-mono text-[#94a3b8] tracking-wider">
+        <div className="relative my-4 rounded-lg overflow-hidden border border-slate-700 shadow-xs">
+            <div className="flex items-center justify-between bg-[#161b22] px-4 py-1.5 border-b border-slate-700">
+                <span className="text-[11px] font-mono text-slate-400 tracking-wider">
                     {lang || "text"}
                 </span>
                 <button
                     type="button"
                     onClick={handleCopy}
-                    className="text-[11px] text-[#94a3b8] hover:text-white transition-colors px-2 py-0.5 rounded hover:bg-[#334155]"
+                    className="text-[11px] text-slate-400 hover:text-white transition-colors px-2 py-0.5 rounded hover:bg-slate-700"
                 >
                     Copy
                 </button>
@@ -73,7 +73,7 @@ const components: Components = {
         // Block code: has a language class OR content spans multiple lines (ASCII art, plain blocks)
         if (className || str.includes("\n")) {
             return (
-                <code className={`${className ?? ""} font-mono text-sm text-[#e2e8f0]`}>
+                <code className={`${className ?? ""} font-mono text-sm text-slate-200`}>
                     {children}
                 </code>
             );
@@ -158,7 +158,7 @@ const components: Components = {
                 href={href}
                 target={isExternal ? "_blank" : undefined}
                 rel={isExternal ? "noopener noreferrer" : undefined}
-                className="text-sky-600 dark:text-sky-400 hover:text-sky-800 dark:hover:text-sky-300 hover:underline underline-offset-2 transition-colors"
+                className="text-sky-600 hover:text-sky-800 hover:underline underline-offset-2 transition-colors"
             >
                 {children}
             </a>

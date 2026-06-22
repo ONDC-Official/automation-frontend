@@ -9,9 +9,14 @@ const DropdownMenu = ({ ...props }: React.ComponentProps<typeof DropdownMenuPrim
 );
 
 const DropdownMenuPortal = ({
+    container,
     ...props
 }: React.ComponentProps<typeof DropdownMenuPrimitive.Portal>) => (
-    <DropdownMenuPrimitive.Portal data-slot="dropdown-menu-portal" {...props} />
+    <DropdownMenuPrimitive.Portal
+        data-slot="dropdown-menu-portal"
+        container={container ?? document.fullscreenElement ?? document.body}
+        {...props}
+    />
 );
 
 const DropdownMenuTrigger = ({
@@ -23,9 +28,14 @@ const DropdownMenuTrigger = ({
 const DropdownMenuContent = ({
     className,
     sideOffset = 4,
+    container,
     ...props
-}: React.ComponentProps<typeof DropdownMenuPrimitive.Content>) => (
-    <DropdownMenuPrimitive.Portal>
+}: React.ComponentProps<typeof DropdownMenuPrimitive.Content> & {
+    container?: HTMLElement | null;
+}) => (
+    <DropdownMenuPrimitive.Portal
+        container={container ?? document.fullscreenElement ?? document.body}
+    >
         <DropdownMenuPrimitive.Content
             data-slot="dropdown-menu-content"
             sideOffset={sideOffset}

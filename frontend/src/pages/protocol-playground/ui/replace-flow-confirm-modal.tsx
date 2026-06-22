@@ -32,15 +32,14 @@ export const ReplaceFlowConfirmModal = ({
                 <div className="flex size-9 shrink-0 items-center justify-center rounded-xl border border-alert-200 bg-alert-50 dark:border-alert-500/30 dark:bg-alert-500/10">
                     <ExclamationTriangleIcon className="size-5 text-alert-500" />
                 </div>
-                <div className="min-w-0">
+                <div className="flex min-h-9 min-w-0 items-center">
                     <DialogTitle>Replace Current Flow?</DialogTitle>
-                    <DialogDescription className="mt-1">
-                        You already have a flow loaded. Importing from GitHub will replace it and
-                        any unsaved changes will be lost.
-                    </DialogDescription>
                 </div>
             </DialogHeader>
-
+            <DialogDescription className="mt-1 px-6 pt-2">
+                You already have a flow loaded. Importing from GitHub will replace it and any
+                unsaved changes will be lost.
+            </DialogDescription>
             <div className="px-6 py-4">
                 <p className="mb-1 font-mono text-sm font-medium text-brand-normal">{flowId}</p>
                 <p className="text-xs text-text-secondary">

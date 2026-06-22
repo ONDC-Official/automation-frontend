@@ -218,10 +218,6 @@
     --text-secondary: var(--color-n-500);
     --border-default: var(--color-n-40);
 
-    /* Fixed site header height (Header/index.tsx nav is h-16). Single source of
-       truth for layouts that need to size/offset themselves below the header. */
-    --app-header-height: 4rem;
-
     --radius: 0.5rem;
 
     /* shadcn semantic tokens */

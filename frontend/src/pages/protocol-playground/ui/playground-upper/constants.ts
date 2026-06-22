@@ -1,4 +1,7 @@
-import type { PlaygroundActionVariant } from "@pages/protocol-playground/ui/playground-upper/types";
+import type {
+    ActionButtonVariant,
+    PlaygroundActionVariant,
+} from "@pages/protocol-playground/ui/playground-upper/types";
 
 export const PLAYGROUND_ACTION_VARIANT_STYLES: Record<PlaygroundActionVariant, string> = {
     play: "bg-brand-light text-brand-normal hover:opacity-80 dark:bg-brand-dark/30 dark:text-brand-normal",
@@ -10,4 +13,21 @@ export const PLAYGROUND_ACTION_VARIANT_STYLES: Record<PlaygroundActionVariant, s
     expand: "bg-n-20 text-n-500 hover:opacity-80 dark:bg-n-800/50 dark:text-n-80",
     retrigger:
         "bg-brand-light text-brand-normal hover:opacity-80 dark:bg-brand-dark/30 dark:text-brand-normal",
+};
+
+export const METHOD = "POST";
+
+export const METHOD_STYLES: Record<string, string> = {
+    POST: "bg-brand-normal text-n-0",
+    GET: "bg-success-500 text-n-0",
+    PUT: "bg-alert-500 text-n-0",
+    DELETE: "bg-error-500 text-n-0",
+};
+
+export const ACTION_BUTTON_VARIANTS: Record<ActionButtonVariant, string> = {
+    default:
+        "border-border-default bg-surface-elevated text-text-primary hover:bg-surface-muted hover:border-n-50 dark:hover:border-border-default",
+    primary:
+        "border-brand-normal bg-brand-normal text-n-0 shadow-xs hover:bg-brand-normal-hover hover:border-brand-normal-hover",
+    danger: "border-error-500 bg-error-500 text-n-0 shadow-xs hover:bg-error-800 hover:border-error-800",
 };

@@ -1,12 +1,11 @@
 import { useContext, useRef, useState } from "react";
 import { MockPlaygroundConfigType, TransactionHistoryItem } from "@ondc/automation-mock-runner";
-import { ArrowsRightLeftIcon, ArrowRightIcon, CheckIcon } from "@heroicons/react/24/solid";
-import { cn } from "@/lib/utils";
-
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/Shadcn/Popover";
 import { Button } from "@/components/Shadcn/Button/button";
 import { PlaygroundContext } from "@pages/protocol-playground/context/playground-context";
 import ActionDetailsCard from "@pages/protocol-playground/ui/playground-upper/action-details-card";
+import { cn } from "@/lib/utils";
+import { ArrowsRightLeftIcon, ArrowRightIcon, CheckIcon } from "@heroicons/react/24/solid";
 
 interface ActionTimelineProps {
     steps: MockPlaygroundConfigType["steps"];

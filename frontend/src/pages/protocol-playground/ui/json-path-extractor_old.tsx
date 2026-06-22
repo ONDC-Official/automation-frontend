@@ -3,7 +3,7 @@ import Tippy from "@tippyjs/react";
 // import "tippy.js/dist/tippy.css";
 import "tippy.js/animations/perspective-subtle.css";
 
-import { SelectedType } from "./session-data-tab";
+import { SelectedType } from "@pages/protocol-playground/ui/types";
 import { useLocation } from "react-router-dom";
 import { ArrowsPointingInIcon, ArrowsPointingOutIcon } from "@heroicons/react/24/outline";
 import { useClipboard } from "@hooks/useClipboard";

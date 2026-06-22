@@ -336,7 +336,7 @@ const ProtocolPlayGround = () => {
                 loadConfigFromGist,
             }}
         >
-            <div className="flex h-full min-h-0 w-full max-w-7xl flex-1 flex-col px-15 xl:px-0 mx-auto">
+            <div className="flex h-full min-h-0 w-full flex-1 flex-col px-20 mx-auto">
                 <Body workbenchFlow={workbenchFlow} />
             </div>
             <PlaygroundModal isOpen={popupOpen} onClose={closeModal} className={modalClassName}>
