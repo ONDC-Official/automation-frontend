@@ -1,5 +1,5 @@
 import { type FC, type ReactNode } from "react";
-import GuideStickyHeader from "./GuideStickyHeader";
+import GuideHeader from "./GuideHeader";
 
 export interface GuidePageHeaderProps {
     /** Breadcrumb row content (nav with `>` separators). Omit when a page-level breadcrumb is shown elsewhere. */
@@ -26,7 +26,7 @@ const GuidePageHeader: FC<GuidePageHeaderProps> = ({
     tabs,
     className,
 }) => (
-    <GuideStickyHeader className={className}>
+    <GuideHeader className={className}>
         {breadcrumb && <div className="px-4 md:px-6 py-3 bg-slate-100">{breadcrumb}</div>}
 
         {title && (
@@ -41,7 +41,7 @@ const GuidePageHeader: FC<GuidePageHeaderProps> = ({
         )}
 
         {tabs && <div className="px-4 md:px-6">{tabs}</div>}
-    </GuideStickyHeader>
+    </GuideHeader>
 );
 
 export default GuidePageHeader;

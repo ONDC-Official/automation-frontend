@@ -1,7 +1,5 @@
 import { type FC, useState, useMemo } from "react";
 import GithubMarkdown from "@components/GithubMarkdown";
-import TableOfContents from "@components/TableOfContents";
-import GuideCard from "./shared/components/GuideCard";
 import GuideTabs from "./shared/components/GuideTabs";
 
 interface DocsViewerProps {
@@ -38,17 +36,12 @@ const DocsViewer: FC<DocsViewerProps> = ({ docs }) => {
             )}
 
             {/* Content area split: TOC left + scrollable content right */}
-            <GuideCard rounded="2xl" className="flex h-[700px]">
-                {/* TOC sidebar — scrolls within its own column */}
-                <div className="w-52 shrink-0 border-r border-slate-200 overflow-y-auto bg-slate-50/50 p-3">
-                    <TableOfContents content={content} />
-                </div>
-
+            <div>
                 {/* Markdown content — scrolls independently */}
                 <div className="flex-1 overflow-auto px-8 py-6">
                     <GithubMarkdown content={content} />
                 </div>
-            </GuideCard>
+            </div>
         </div>
     );
 };

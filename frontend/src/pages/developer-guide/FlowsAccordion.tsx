@@ -96,7 +96,6 @@ const FlowsAccordion: FC<FlowsAccordionProps> = ({
 
     const renderStepButton = (step: FlowStep, flowId: string, isSelected: boolean) => {
         const actionId = getActionId(step);
-        const showUnsolicited = step.unsolicited === true;
         const isTransitioning = transitioningAction === actionId;
 
         return (
@@ -104,7 +103,7 @@ const FlowsAccordion: FC<FlowsAccordionProps> = ({
                 key={actionId}
                 onClick={() => handleStepClick(flowId, actionId)}
                 disabled={isTransitioning}
-                className={`w-full flex-1 min-w-0 px-3 py-2.5 rounded-lg border text-left transition-all duration-200 ${
+                className={`w-full min-w-0 px-3 py-2.5 rounded-lg border text-left transition-all duration-200 ${
                     isSelected || isTransitioning
                         ? "border-sky-400 dark:border-sky-500 ring-2 ring-sky-100 dark:ring-sky-500/20 bg-white dark:bg-surface-elevated shadow-sm"
                         : "border-slate-200 bg-white dark:bg-surface-elevated hover:border-slate-300 hover:shadow-xs"
@@ -145,13 +144,6 @@ const FlowsAccordion: FC<FlowsAccordionProps> = ({
                         <InformationCircleIcon className="w-4 h-4" aria-hidden />
                     </div>
                 </div>
-                {showUnsolicited && (
-                    <div className="flex items-center gap-1.5 mt-2 flex-wrap">
-                        <span className="text-caption-2 font-semibold leading-none text-[#E6862E] bg-[#FCE8D7] rounded-full px-3 py-1">
-                            UNSOLICITED
-                        </span>
-                    </div>
-                )}
             </button>
         );
     };
@@ -227,7 +219,7 @@ const FlowsAccordion: FC<FlowsAccordionProps> = ({
                                                 return (
                                                     <div
                                                         key={itemIdx}
-                                                        className="col-span-2 flex items-center gap-3"
+                                                        className="col-span-2 grid grid-cols-[1fr_auto_1fr] gap-3 items-center"
                                                     >
                                                         {renderStepButton(
                                                             item.request,

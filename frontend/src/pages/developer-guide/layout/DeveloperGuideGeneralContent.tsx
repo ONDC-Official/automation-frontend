@@ -14,7 +14,7 @@ const DeveloperGuideGeneralContent: FC = () => {
     return (
         <div className="min-h-full">
             <header className="border-b border-sky-100 dark:border-sky-500/30 bg-linear-to-br from-sky-50 via-white to-slate-50 dark:from-sky-500/10 dark:via-surface-elevated dark:to-surface-elevated">
-                <div className="px-6 md:px-10 py-10 md:py-12 max-w-3xl mt-[18px]">
+                <div className="px-6 md:px-10 py-10 md:py-12 max-w-3xl">
                     <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-sky-100 dark:bg-sky-500/10 text-sky-700 dark:text-sky-300 rounded-full text-xs font-semibold uppercase tracking-widest mb-5 border border-sky-200 dark:border-sky-500/30">
                         <Square3Stack3DIcon className="w-2.75 h-2.75" aria-hidden />
                         General documentation

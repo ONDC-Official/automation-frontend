@@ -153,8 +153,9 @@ const DeveloperGuideShell: FC = () => {
                         </span>
                     </div>
                 )}
-                <div className="flex flex-1 min-h-0 flex-col lg:flex-row overflow-hidden">
+                <div className="flex flex-1 min-h-0 flex-col lg:flex-row">
                     <aside
+                        style={{ height: "calc(100vh - 108px)" }}
                         className={`shrink-0 border-b lg:border-b-0 bg-slate-100 dark:bg-surface-muted flex min-h-0 flex-col lg:h-full transition-[width] duration-300 ease-in-out overflow-hidden ${
                             navSidebarOpen
                                 ? "w-full lg:w-64 xl:w-72"
@@ -208,7 +209,10 @@ const DeveloperGuideShell: FC = () => {
                         </div>
                     </aside>
 
-                    <div className="relative flex flex-1 min-w-0 min-h-0 flex-col">
+                    <div
+                        className="relative flex flex-1 min-w-0 min-h-0 flex-col"
+                        style={{ height: "calc(100vh - 108px)" }}
+                    >
                         <DeveloperGuideShellMain />
                     </div>
                 </div>

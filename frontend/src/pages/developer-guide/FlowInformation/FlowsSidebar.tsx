@@ -28,7 +28,7 @@ const FlowsSidebar: FC<FlowsSidebarProps> = ({
                 sidebarOpen ? "w-130" : "w-0"
             }`}
         >
-            <aside className="w-130 h-[calc(100vh-6rem)] border-r border-slate-200 bg-white dark:bg-surface-elevated overflow-y-auto rounded-none shadow-[2px_0_10px_0_rgba(0,0,0,0.02)]">
+            <aside className="w-130 h-[calc(100vh-8rem)] border-r border-slate-200 bg-slate-100 rounded-xl dark:bg-surface-elevated overflow-y-auto  shadow-[2px_0_10px_0_rgba(0,0,0,0.02)]">
                 <div className="p-5">
                     <FlowsAccordion
                         flows={flows}
