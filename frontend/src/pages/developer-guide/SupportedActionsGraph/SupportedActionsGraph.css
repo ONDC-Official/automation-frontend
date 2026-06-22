@@ -1,0 +1,25 @@
+/* Dark-mode-aware overrides for the @xyflow/react chrome inside SupportedActionsGraph.
+   Scoped to .guide-actions-graph so it never leaks into other ReactFlow usages.
+   Reuses the app's existing CSS custom properties (tokens.css) — no new theme system. */
+
+.guide-actions-graph .react-flow__controls-button {
+    background: var(--surface-elevated);
+    border-bottom: 1px solid var(--border-default);
+    color: var(--text-primary);
+}
+
+.guide-actions-graph .react-flow__controls-button:hover {
+    background: var(--surface-muted);
+}
+
+.guide-actions-graph .react-flow__controls-button svg {
+    fill: var(--text-primary);
+}
+
+.guide-actions-graph .react-flow__minimap {
+    background: var(--surface-elevated);
+}
+
+.guide-actions-graph .react-flow__attribution {
+    background: transparent;
+}

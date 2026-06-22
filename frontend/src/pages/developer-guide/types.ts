@@ -116,10 +116,28 @@ export interface FlowStep {
         generate?: string;
         validate?: string;
         requirements?: string;
-        defaultPayload?: any;
+        defaultPayload?: unknown;
         [key: string]: unknown;
     };
 }
+
+/** A request/response pair of steps displayed together (e.g. search + on_search). */
+export interface StepPair {
+    type: "pair";
+    request: FlowStep;
+    response: FlowStep;
+    requestIdx: number;
+    responseIdx: number;
+}
+
+/** A single step displayed on its own (no matching pair found). */
+export interface StepSingle {
+    type: "single";
+    step: FlowStep;
+    stepIdx: number;
+}
+
+export type StepDisplayItem = StepPair | StepSingle;
 
 export interface FlowConfig {
     summary?: string;

@@ -1,4 +1,8 @@
 import type { OpenAPISpecification, OpenAPISchema } from "../types";
+import type { ResponseExample } from "./types";
+
+/** Response status codes checked, in priority order, when resolving a response schema/example. */
+const RESPONSE_STATUS_CODES = ["200", "201", "default"] as const;
 
 /**
  * Resolves a JSON Pointer / $ref string (e.g. "#/components/schemas/Foo"
@@ -155,7 +159,7 @@ export function getResponseSchema(spec: OpenAPISpecification, api: string): Open
     const responses = postOp.responses as Record<string, unknown>;
 
     // Prefer status 200 / 201 / default
-    for (const code of ["200", "201", "default"]) {
+    for (const code of RESPONSE_STATUS_CODES) {
         let responseObj = responses[code];
         if (!responseObj) continue;
 
@@ -188,10 +192,7 @@ export function getResponseSchema(spec: OpenAPISpecification, api: string): Open
  *  - responses[code].content[media].examples  (plural, named object)
  *  - responses[code].content[media].example   (singular value)
  */
-export function getResponseExamples(
-    spec: OpenAPISpecification,
-    api: string
-): Array<{ name: string; payload: unknown }> {
+export function getResponseExamples(spec: OpenAPISpecification, api: string): ResponseExample[] {
     const pathKey = api.startsWith("/") ? api : `/${api}`;
     const pathItem = spec.paths?.[pathKey];
     if (!pathItem) return [];
@@ -200,9 +201,9 @@ export function getResponseExamples(
     if (!postOp?.responses) return [];
 
     const responses = postOp.responses as Record<string, unknown>;
-    const results: Array<{ name: string; payload: unknown }> = [];
+    const results: ResponseExample[] = [];
 
-    for (const code of ["200", "201", "default"]) {
+    for (const code of RESPONSE_STATUS_CODES) {
         let responseObj = responses[code];
         if (!responseObj) continue;
 

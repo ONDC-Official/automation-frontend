@@ -1,3 +1,5 @@
+import type { ReactNode } from "react";
+
 export type NavNode =
     | {
           id: string;
@@ -31,4 +33,22 @@ export function isNavGroup(node: NavNode): node is Extract<NavNode, { type: "gro
 
 export function isNavLink(node: NavNode): node is Extract<NavNode, { type: "link" }> {
     return node.type === "link";
+}
+
+export interface DeveloperGuideSidebarProps {
+    nodes: NavNode[];
+    searchQuery: string;
+}
+
+export interface DeveloperGuideGuideCardProps {
+    title: string;
+    subtitle: string;
+    description: string;
+    icon: ReactNode;
+    onClick?: () => void;
+    className?: string;
+}
+
+export interface DeveloperGuideNavBackButtonProps {
+    className?: string;
 }

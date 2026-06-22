@@ -19,7 +19,7 @@ const DescriptionText: FC<{ text: string }> = ({ text }) => {
                 part.isPath ? (
                     <code
                         key={i}
-                        className="inline-flex items-center px-1.5 py-0.5 rounded bg-sky-50 text-sky-700 font-mono text-[11px] border border-sky-200 leading-normal"
+                        className="inline-flex items-center px-1.5 py-0.5 rounded bg-sky-50 dark:bg-sky-500/10 text-sky-700 dark:text-sky-300 font-mono text-[11px] border border-sky-200 dark:border-sky-500/30 leading-normal"
                     >
                         {part.text}
                     </code>
@@ -38,11 +38,11 @@ const RawTableCard: FC<{ row: RawTableRow }> = ({ row }) => {
     const hasErrorCode = row.errorCode.trim() !== "";
 
     return (
-        <div className="rounded-xl border border-sky-100 bg-white shadow-xs overflow-hidden">
+        <div className="rounded-xl border border-sky-100 dark:border-sky-500/30 bg-white dark:bg-surface-elevated shadow-xs overflow-hidden">
             {/* Header */}
-            <div className="flex items-start justify-between gap-2 px-4 py-2.5 bg-sky-50/60 border-b border-sky-100">
+            <div className="flex items-start justify-between gap-2 px-4 py-2.5 bg-sky-50/60 dark:bg-sky-500/10 border-b border-sky-100 dark:border-sky-500/30">
                 <div className="flex flex-col gap-0.5 min-w-0">
-                    <span className="font-mono text-xs font-bold text-sky-800 break-all">
+                    <span className="font-mono text-xs font-bold text-sky-800 dark:text-sky-300 break-all">
                         {row.name}
                     </span>
                     {row.group.trim() && (
@@ -52,7 +52,7 @@ const RawTableCard: FC<{ row: RawTableRow }> = ({ row }) => {
                     )}
                 </div>
                 {hasErrorCode && (
-                    <span className="shrink-0 inline-flex items-center px-2 py-0.5 rounded-md bg-rose-50 text-rose-600 border border-rose-200 text-[10px] font-semibold">
+                    <span className="shrink-0 inline-flex items-center px-2 py-0.5 rounded-md bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-300 border border-rose-200 dark:border-rose-500/30 text-[10px] font-semibold">
                         {row.errorCode}
                     </span>
                 )}
@@ -60,7 +60,7 @@ const RawTableCard: FC<{ row: RawTableRow }> = ({ row }) => {
             {/* Body */}
             <div className="px-4 py-3 space-y-3 text-sm">
                 <div className="space-y-1">
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-sky-500">
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-sky-500 dark:text-sky-400">
                         Rule
                     </span>
                     <p className="text-slate-700 leading-relaxed">
@@ -68,8 +68,8 @@ const RawTableCard: FC<{ row: RawTableRow }> = ({ row }) => {
                     </p>
                 </div>
                 {hasSkipIf && (
-                    <div className="space-y-1 pt-2 border-t border-sky-50">
-                        <span className="text-[10px] font-bold uppercase tracking-widest text-sky-500">
+                    <div className="space-y-1 pt-2 border-t border-sky-50 dark:border-sky-500/20">
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-sky-500 dark:text-sky-400">
                             Skip If
                         </span>
                         <p className="text-slate-500 leading-relaxed">
@@ -120,17 +120,17 @@ const ValidationsSection: FC<ValidationsSectionProps> = ({ rawTableRows, selecte
     return (
         <section className="pt-5">
             <div className="flex items-center gap-2 mb-3">
-                <h4 className="text-[10px] font-bold uppercase tracking-widest text-sky-600">
+                <h4 className="text-[10px] font-bold uppercase tracking-widest text-sky-600 dark:text-sky-400">
                     sync-validations
                 </h4>
-                <div className="flex-1 h-px bg-sky-100" />
+                <div className="flex-1 h-px bg-sky-100 dark:bg-sky-500/20" />
                 {matchingRows.length > 0 && (
-                    <span className="text-[10px] font-semibold text-sky-600 bg-sky-100 px-2 py-0.5 rounded-full">
+                    <span className="text-[10px] font-semibold text-sky-600 dark:text-sky-300 bg-sky-100 dark:bg-sky-500/10 px-2 py-0.5 rounded-full">
                         {matchingRows.length}
                     </span>
                 )}
             </div>
-            <p className="text-slate-500 text-xs leading-relaxed mb-4 bg-sky-50/60 border border-sky-100 rounded-lg px-3 py-2.5">
+            <p className="text-slate-500 text-xs leading-relaxed mb-4 bg-sky-50/60 dark:bg-sky-500/10 border border-sky-100 dark:border-sky-500/30 rounded-lg px-3 py-2.5">
                 {getValidationsIntroMessage()}
             </p>
             {matchingRows.length > 1 && (
@@ -140,7 +140,7 @@ const ValidationsSection: FC<ValidationsSectionProps> = ({ rawTableRows, selecte
                         placeholder="Filter rules by name, path or description…"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full px-3 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-slate-800 placeholder-slate-400 focus:outline-hidden focus:ring-2 focus:ring-sky-500/30 focus:border-sky-400 transition-shadow"
+                        className="w-full px-3 py-2.5 text-sm border border-slate-200 rounded-lg bg-white dark:bg-surface-elevated text-slate-800 placeholder-slate-400 focus:outline-hidden focus:ring-2 focus:ring-sky-500/30 focus:border-sky-400 transition-shadow"
                         aria-label="Filter validation rules"
                     />
                     {searchQuery.trim() && (

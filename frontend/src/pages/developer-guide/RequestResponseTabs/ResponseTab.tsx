@@ -1,9 +1,11 @@
-import { CSSProperties, FC, useEffect, useMemo, useState } from "react";
-import { FiCode, FiList } from "react-icons/fi";
+import { CSSProperties, FC, useMemo, useState } from "react";
 import JsonView from "@uiw/react-json-view";
 import { githubDarkTheme } from "@uiw/react-json-view/githubDark";
 import type { OpenAPISpecification } from "../types";
+import type { SchemaView } from "./types";
 import SchemaTree from "./SchemaTree";
+import SchemaViewToggle from "./SchemaViewToggle";
+import { useSchemaViewReadiness } from "./useSchemaViewReadiness";
 import { getResponseSchema, getResponseExamples, deepResolveSchema } from "./specUtils";
 import Spinner from "@/components/Shadcn/Spinner";
 
@@ -13,30 +15,10 @@ interface ResponseTabProps {
     api: string;
 }
 
-type View = "schema" | "raw";
-
 const ResponseTab: FC<ResponseTabProps> = ({ spec, api }) => {
-    const [view, setView] = useState<View>("schema");
+    const [view, setView] = useState<SchemaView>("schema");
     const [selectedExampleIndex, setSelectedExampleIndex] = useState(0);
-    const [rawReady, setRawReady] = useState(false);
-    const [schemaReady, setSchemaReady] = useState(false);
-
-    // Defer heavy renders so the browser paints the spinner first
-    useEffect(() => {
-        if (view === "raw") {
-            setRawReady(false);
-            const id = setTimeout(() => setRawReady(true), 0);
-            return () => clearTimeout(id);
-        } else {
-            setRawReady(false);
-        }
-    }, [view, api]);
-
-    useEffect(() => {
-        setSchemaReady(false);
-        const id = setTimeout(() => setSchemaReady(true), 0);
-        return () => clearTimeout(id);
-    }, [api]);
+    const { rawReady, schemaReady } = useSchemaViewReadiness(api, view);
 
     const schema = getResponseSchema(spec, api);
     const deepSchema = useMemo(
@@ -52,51 +34,18 @@ const ResponseTab: FC<ResponseTabProps> = ({ spec, api }) => {
             <div>
                 <div className="flex items-center justify-between mb-4">
                     <h4 className="text-sm font-semibold text-slate-700">Response Schema</h4>
-                    <div className="flex items-center gap-1 bg-slate-100 rounded-lg p-0.5">
-                        <button
-                            type="button"
-                            onClick={() => setView("schema")}
-                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
-                                view === "schema"
-                                    ? "bg-white text-slate-800 shadow-xs"
-                                    : "text-slate-500 hover:text-slate-700"
-                            }`}
-                        >
-                            <FiList className="w-3.5 h-3.5" />
-                            Schema
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => setView("raw")}
-                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
-                                view === "raw"
-                                    ? "bg-white text-slate-800 shadow-xs"
-                                    : "text-slate-500 hover:text-slate-700"
-                            }`}
-                        >
-                            <FiCode className="w-3.5 h-3.5" />
-                            Raw JSON
-                        </button>
-                    </div>
+                    <SchemaViewToggle view={view} onChange={setView} />
                 </div>
 
                 {schema ? (
                     view === "schema" ? (
-                        <div className="rounded-xl border border-slate-200 bg-white overflow-hidden">
-                            <div className="overflow-auto max-h-[600px] p-4">
-                                {!schemaReady ? (
-                                    <div className="flex items-center justify-center h-40">
-                                        <Spinner className="size-8 text-brand-normal" />
-                                    </div>
-                                ) : (
-                                    <SchemaTree
-                                        schema={schema}
-                                        spec={spec}
-                                        showRequiredColumn={true}
-                                    />
-                                )}
+                        !schemaReady ? (
+                            <div className="flex items-center justify-center h-40">
+                                <Spinner className="size-8 text-brand-normal" />
                             </div>
-                        </div>
+                        ) : (
+                            <SchemaTree schema={schema} spec={spec} showRequiredColumn={true} />
+                        )
                     ) : (
                         <div className="rounded-xl border border-slate-200 bg-slate-900 overflow-hidden">
                             <div className="overflow-auto max-h-[600px] p-4 text-xs">
@@ -146,7 +95,7 @@ const ResponseTab: FC<ResponseTabProps> = ({ spec, api }) => {
                                     onChange={(e) =>
                                         setSelectedExampleIndex(Number(e.target.value))
                                     }
-                                    className="pl-3 pr-8 py-1.5 rounded-lg text-sm border border-slate-200 bg-white text-slate-800 focus:outline-hidden focus:ring-2 focus:ring-sky-400/40 focus:border-sky-300 appearance-none shadow-xs"
+                                    className="pl-3 pr-8 py-1.5 rounded-lg text-sm border border-slate-200 bg-white dark:bg-surface-elevated text-slate-800 focus:outline-hidden focus:ring-2 focus:ring-sky-400/40 focus:border-sky-300 appearance-none shadow-xs"
                                 >
                                     {examples.map((ex, i) => (
                                         <option key={i} value={i}>
@@ -161,6 +110,7 @@ const ResponseTab: FC<ResponseTabProps> = ({ spec, api }) => {
                                         viewBox="0 0 24 24"
                                         stroke="currentColor"
                                         strokeWidth={2}
+                                        aria-hidden="true"
                                     >
                                         <path
                                             strokeLinecap="round"

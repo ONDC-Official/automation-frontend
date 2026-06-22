@@ -1,3 +1,24 @@
+// ─── Raw Table type (from raw_table.json) ─────────────────────────────────────
+
+export interface RawTableRow {
+    rowType: "leaf" | "group";
+    name: string;
+    group: string;
+    scope: string;
+    description: string;
+    skipIf: string;
+    errorCode: string;
+    successCode: string;
+}
+
+export interface RawTableAction {
+    action: string;
+    codeName: string;
+    numLeafTests: number;
+    generated: string;
+    rows: RawTableRow[];
+}
+
 export type AttributeKind = "attribute" | "enum" | "tag";
 
 export interface ActionAttributesBase {

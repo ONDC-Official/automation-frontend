@@ -2,28 +2,38 @@ import { FC, useCallback, useEffect, useMemo, useState } from "react";
 import { Outlet } from "react-router-dom";
 import { FiChevronLeft, FiSearch } from "react-icons/fi";
 import DeveloperGuideCollapsedNavBar from "./DeveloperGuideCollapsedNavBar";
-import { useDeveloperGuidePageTitle } from "./useDeveloperGuidePageTitle";
 import { fetchBuilds } from "@services/developerGuideSpecApi";
 import { fetchDocContent, fetchDocList } from "@services/developerDocsApi";
 import type { BuildEntry, DocMeta } from "../types";
-import { isDomainEnabled } from "../utils";
+import { isUseCaseEnabled } from "../utils";
 import Spinner from "@/components/Shadcn/Spinner";
 import { buildNavTree } from "./buildNavTree";
 import { DOCS_WITH_SIDEBAR_SECTIONS } from "./docsWithSidebarSections";
 import { filterNavTree } from "./filterNavTree";
 import DeveloperGuideSidebar from "./DeveloperGuideSidebar";
 import { DeveloperGuideShellContext } from "./DeveloperGuideShellContext";
+import { NAV_STATUS_LABEL, NAV_STATUS_STYLES, type NavStatus } from "../shared/statusPlaceholders";
 
-const DeveloperGuideShellMain: FC = () => {
-    const pageTitle = useDeveloperGuidePageTitle();
+const STATUS_LEGEND_ORDER: NavStatus[] = ["released", "drafted", "to-be-deprecated", "deprecated"];
 
-    return (
-        <main className="flex-1 min-w-0 overflow-y-auto h-full">
-            {pageTitle ? <DeveloperGuideCollapsedNavBar title={pageTitle} /> : null}
-            <Outlet />
-        </main>
-    );
-};
+const StatusLegend: FC = () => (
+    <div className="flex flex-wrap gap-1.5 mt-3" aria-label="Version status legend">
+        {STATUS_LEGEND_ORDER.map((status) => (
+            <span
+                key={status}
+                className={`rounded-full px-3 py-1 text-[11px] font-semibold leading-none ${NAV_STATUS_STYLES[status]}`}
+            >
+                {NAV_STATUS_LABEL[status]}
+            </span>
+        ))}
+    </div>
+);
+
+const DeveloperGuideShellMain: FC = () => (
+    <main className="flex-1 min-w-0 overflow-y-auto h-full">
+        <Outlet />
+    </main>
+);
 
 const DeveloperGuideShell: FC = () => {
     const [builds, setBuilds] = useState<BuildEntry[]>([]);
@@ -95,8 +105,6 @@ const DeveloperGuideShell: FC = () => {
         };
     }, []);
 
-    const isUseCaseEnabled = (dom: BuildEntry, _usecaseLabel: string) => isDomainEnabled(dom);
-
     const navTree = useMemo(
         () => buildNavTree(builds, docs, isUseCaseEnabled, docMarkdownBySlug),
         [builds, docs, docMarkdownBySlug]
@@ -109,7 +117,7 @@ const DeveloperGuideShell: FC = () => {
 
     if (isLoading) {
         return (
-            <div className="min-h-[calc(100vh-84px)] flex items-center justify-center bg-white">
+            <div className="min-h-[calc(100vh-var(--app-header-height))] flex items-center justify-center bg-white dark:bg-surface-page">
                 <Spinner className="size-8 text-brand-normal" />
             </div>
         );
@@ -122,22 +130,23 @@ const DeveloperGuideShell: FC = () => {
                 loadError,
                 docs,
                 builds,
+                navTree,
                 navSidebarOpen,
                 toggleNavSidebar,
                 openNavSidebar,
                 collapseNavSidebar,
             }}
         >
-            <div className="h-[calc(100vh-84px)] overflow-hidden bg-white">
-                <div className="flex h-full min-h-0 flex-col lg:flex-row">
+            <div className="h-[calc(100vh-var(--app-header-height))] overflow-hidden bg-white dark:bg-surface-page flex flex-col">
+                <div className="flex flex-1 min-h-0 flex-col lg:flex-row overflow-hidden">
                     <aside
-                        className={`shrink-0 border-b lg:border-b-0 lg:border-r border-slate-200 bg-slate-50/60 flex min-h-0 flex-col lg:h-full transition-[width] duration-300 ease-in-out overflow-hidden ${
+                        className={`shrink-0 border-b lg:border-b-0 bg-slate-100 dark:bg-surface-muted flex min-h-0 flex-col lg:h-full transition-[width] duration-300 ease-in-out overflow-hidden ${
                             navSidebarOpen
                                 ? "w-full lg:w-64 xl:w-72"
                                 : "hidden lg:block lg:w-0 lg:border-r-0"
                         }`}
                     >
-                        <div className="px-4 pt-6 pb-5 border-b border-slate-200 bg-white/95 backdrop-blur-xs">
+                        <div className="px-4 pt-6 pb-5">
                             <div className="flex items-start justify-between gap-2 pt-4">
                                 <div className="min-w-0">
                                     <h1 className="text-base font-semibold tracking-tight text-slate-900">
@@ -150,7 +159,7 @@ const DeveloperGuideShell: FC = () => {
                                 <button
                                     type="button"
                                     onClick={toggleNavSidebar}
-                                    className="hidden lg:flex p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 shrink-0"
+                                    className="hidden lg:flex items-center justify-center h-9 w-9 rounded-full border border-slate-200 bg-white dark:bg-surface-elevated text-sky-500 dark:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-500/10 hover:border-sky-200 dark:hover:border-sky-500/30 shadow-xs shrink-0"
                                     aria-label="Collapse navigation"
                                     title="Collapse navigation"
                                 >
@@ -164,16 +173,19 @@ const DeveloperGuideShell: FC = () => {
                                 />
                                 <input
                                     type="search"
-                                    placeholder="Filter navigation..."
+                                    placeholder="Search"
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="w-full pl-10 pr-3.5 py-2.5 text-sm bg-white border border-slate-200 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-sky-100 focus:border-sky-300 placeholder-slate-400 text-slate-800 shadow-xs"
+                                    className="w-full pl-10 pr-3.5 py-2.5 text-sm bg-white dark:bg-surface-elevated border border-slate-200 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-sky-100 dark:focus:ring-sky-500/20 focus:border-sky-300 placeholder-slate-400 text-slate-800 shadow-xs"
                                 />
                             </div>
+                            <StatusLegend />
                         </div>
                         <div className="flex-1 overflow-y-auto px-3 py-2 pb-8">
                             {loadError ? (
-                                <p className="px-2 py-4 text-sm text-red-600">{loadError}</p>
+                                <p className="px-2 py-4 text-sm text-red-600 dark:text-red-400">
+                                    {loadError}
+                                </p>
                             ) : (
                                 <DeveloperGuideSidebar
                                     nodes={filteredNavTree}
@@ -183,7 +195,8 @@ const DeveloperGuideShell: FC = () => {
                         </div>
                     </aside>
 
-                    <div className="relative flex flex-1 min-w-0 min-h-0">
+                    <div className="relative flex flex-1 min-w-0 min-h-0 flex-col">
+                        <DeveloperGuideCollapsedNavBar />
                         <DeveloperGuideShellMain />
                     </div>
                 </div>

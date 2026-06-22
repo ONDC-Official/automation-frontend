@@ -1,17 +1,10 @@
 import { FC, useId, useState } from "react";
 import { FiChevronDown } from "react-icons/fi";
+import { IconSearch } from "../shared/icons";
 import type { BuildEntry } from "../types";
 import type { DomainFamilyGroup } from "../domainGrouping";
 import { getDomainFamilyLabel, getDomainShortLabel, groupBuildsByFamily } from "../domainGrouping";
-
-export interface DomainCardsSectionProps {
-    domains?: BuildEntry[];
-    domainFamilies?: DomainFamilyGroup[];
-    error: string | null;
-    isDomainEnabled: (dom: BuildEntry) => boolean;
-    isUseCaseEnabled: (dom: BuildEntry, usecaseLabel: string) => boolean;
-    onUseCaseClick: (dom: BuildEntry, versionKey: string, usecaseLabel: string) => void;
-}
+import type { DomainCardsSectionProps } from "./types";
 
 interface UseCaseEntry {
     dom: BuildEntry;
@@ -60,9 +53,9 @@ const DomainFamilyAccordion: FC<{
 
     return (
         <section
-            className={`bg-white rounded-2xl border overflow-hidden transition-shadow duration-200 ${
+            className={`bg-white dark:bg-surface-elevated rounded-2xl border overflow-hidden transition-shadow duration-200 ${
                 enabled
-                    ? "border-sky-200 shadow-xs hover:shadow-md hover:shadow-sky-100/50"
+                    ? "border-sky-200 dark:border-sky-500/30 shadow-xs hover:shadow-md hover:shadow-sky-100/50 dark:hover:shadow-sky-500/10"
                     : "border-slate-200 opacity-60"
             }`}
             style={{
@@ -76,7 +69,7 @@ const DomainFamilyAccordion: FC<{
             <button
                 type="button"
                 className={`w-full flex items-center gap-4 px-5 py-4 text-left transition-colors ${
-                    enabled ? "hover:bg-sky-50/60" : "hover:bg-slate-50"
+                    enabled ? "hover:bg-sky-50/60 dark:hover:bg-sky-500/10" : "hover:bg-slate-50"
                 }`}
                 onClick={() => setOpen((v) => !v)}
                 aria-expanded={open}
@@ -85,7 +78,7 @@ const DomainFamilyAccordion: FC<{
                 <div
                     className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${
                         enabled
-                            ? "bg-sky-100 text-sky-600 border border-sky-200"
+                            ? "bg-sky-100 dark:bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-200 dark:border-sky-500/30"
                             : "bg-slate-100 text-slate-400 border border-slate-200"
                     }`}
                 >
@@ -115,7 +108,7 @@ const DomainFamilyAccordion: FC<{
                     </h3>
                     <p
                         className={`text-xs mt-0.5 font-medium truncate ${
-                            enabled ? "text-sky-600" : "text-slate-400"
+                            enabled ? "text-sky-600 dark:text-sky-400" : "text-slate-400"
                         }`}
                         title={domainLabels.join(", ")}
                     >
@@ -130,7 +123,7 @@ const DomainFamilyAccordion: FC<{
                 <span
                     className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 border ${
                         enabled
-                            ? "bg-sky-50 border-sky-200 text-sky-600"
+                            ? "bg-sky-50 dark:bg-sky-500/10 border-sky-200 dark:border-sky-500/30 text-sky-600 dark:text-sky-400"
                             : "bg-slate-100 border-slate-200 text-slate-400"
                     }`}
                 >
@@ -149,7 +142,7 @@ const DomainFamilyAccordion: FC<{
                 }`}
                 aria-hidden={!open}
             >
-                <div className="overflow-hidden border-t border-sky-100">
+                <div className="overflow-hidden border-t border-sky-100 dark:border-sky-500/30">
                     <div
                         className={`px-5 py-4 flex flex-wrap gap-2 transition-opacity duration-150 ${
                             open ? "opacity-100" : "opacity-0"
@@ -165,7 +158,7 @@ const DomainFamilyAccordion: FC<{
                                     onClick={() => clickable && onUseCaseClick(dom, verKey, label)}
                                     className={`group/chip relative inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border transition-colors duration-150 ${
                                         clickable
-                                            ? "bg-white text-sky-700 border-sky-200 hover:bg-sky-50 hover:border-sky-300 hover:shadow-xs cursor-pointer shadow-xs pr-7"
+                                            ? "bg-white dark:bg-surface-elevated text-sky-700 dark:text-sky-300 border-sky-200 dark:border-sky-500/30 hover:bg-sky-50 dark:hover:bg-sky-500/10 hover:border-sky-300 dark:hover:border-sky-500/50 hover:shadow-xs cursor-pointer shadow-xs pr-7"
                                             : "bg-slate-50 text-slate-400 border-slate-100 cursor-not-allowed"
                                     }`}
                                 >
@@ -174,7 +167,7 @@ const DomainFamilyAccordion: FC<{
                                         <span
                                             className={`font-mono text-[10px] px-1 py-0.5 rounded ${
                                                 clickable
-                                                    ? "bg-sky-50 text-sky-500"
+                                                    ? "bg-sky-50 dark:bg-sky-500/10 text-sky-500 dark:text-sky-400"
                                                     : "bg-slate-100 text-slate-300"
                                             }`}
                                         >
@@ -226,7 +219,7 @@ const DomainCardsSection: FC<DomainCardsSectionProps> = ({
 
     if (error) {
         return (
-            <div className="flex items-center gap-3 p-4 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700">
+            <div className="flex items-center gap-3 p-4 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/30 rounded-xl text-sm text-red-700 dark:text-red-300">
                 <svg
                     width="15"
                     height="15"
@@ -251,23 +244,8 @@ const DomainCardsSection: FC<DomainCardsSectionProps> = ({
     if (domainFamilies.length === 0) {
         return (
             <div className="flex flex-col items-center justify-center py-20 text-center">
-                <div className="w-14 h-14 bg-sky-50 border border-sky-100 rounded-2xl flex items-center justify-center mb-4 shadow-xs">
-                    <svg
-                        width="22"
-                        height="22"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                        className="text-sky-400"
-                        aria-hidden
-                    >
-                        <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={1.5}
-                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                        />
-                    </svg>
+                <div className="w-14 h-14 bg-sky-50 dark:bg-sky-500/10 border border-sky-100 dark:border-sky-500/30 rounded-2xl flex items-center justify-center mb-4 shadow-xs">
+                    <IconSearch size={22} strokeWidth={1.5} className="text-sky-400" aria-hidden />
                 </div>
                 <p className="text-slate-600 font-semibold text-sm">No domains found</p>
                 <p className="text-slate-400 text-xs mt-1">Try adjusting your search term</p>

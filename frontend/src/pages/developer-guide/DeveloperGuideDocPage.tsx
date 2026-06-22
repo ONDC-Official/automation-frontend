@@ -5,6 +5,7 @@ import { ROUTES } from "@constants/routes";
 import { fetchDocContent } from "@services/developerDocsApi";
 import GithubMarkdown from "@components/GithubMarkdown";
 import TableOfContents from "@components/TableOfContents";
+import GuideCard from "./shared/components/GuideCard";
 
 // Fixed site header is 86px (2px gradient bar + 84px nav).
 // Breadcrumb bar below it adds 44px → TOC sticks at 86+44=130px.
@@ -43,10 +44,10 @@ const DeveloperGuideDocPage = () => {
     }, [slug]);
 
     return (
-        <div className="min-h-screen bg-slate-50">
+        <div className="min-h-screen bg-slate-50 dark:bg-surface-page">
             {/* Breadcrumb — sticks just below the fixed site header */}
             <div
-                className="sticky z-40 bg-white border-b border-slate-200 shadow-xs mt-4"
+                className="sticky z-40 bg-white dark:bg-surface-elevated border-b border-slate-200 shadow-xs mt-4"
                 style={{ top: HEADER_HEIGHT }}
             >
                 <div className="container mx-auto px-6 h-11 flex items-center gap-2">
@@ -90,15 +91,16 @@ const DeveloperGuideDocPage = () => {
                                 top: TOC_TOP,
                                 maxHeight: `calc(100vh - ${TOC_TOP}px)`,
                             }}
+                            offset={TOC_TOP}
                         />
 
                         {/* Main content */}
                         <main className="flex-1 min-w-0">
-                            <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+                            <GuideCard rounded="2xl">
                                 <div className="px-8 py-2">
                                     <GithubMarkdown content={content} />
                                 </div>
-                            </div>
+                            </GuideCard>
                         </main>
                     </div>
                 </div>

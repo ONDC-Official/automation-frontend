@@ -1,8 +1,9 @@
 import { FC, useState, useEffect, useRef } from "react";
 import type { FlowEntry, FlowStep } from "./types";
 import { getActionId } from "./utils";
-import { FcWorkflow } from "react-icons/fc";
+import { buildStepDisplayItems } from "./FlowInformation/utils";
 import { FaChevronDown } from "react-icons/fa6";
+import { FiInfo, FiRepeat } from "react-icons/fi";
 
 interface FlowsAccordionProps {
     flows: FlowEntry[];
@@ -12,75 +13,7 @@ interface FlowsAccordionProps {
     setSelectedFlowAction: (action: string) => void;
 }
 
-type StepPair = {
-    type: "pair";
-    request: FlowStep;
-    response: FlowStep;
-    requestIdx: number;
-    responseIdx: number;
-};
-type StepSingle = { type: "single"; step: FlowStep; stepIdx: number };
-type StepDisplayItem = StepPair | StepSingle;
-
-function buildStepDisplayItems(steps: FlowStep[]): StepDisplayItem[] {
-    const displayed = new Set<number>();
-    const items: StepDisplayItem[] = [];
-    const actionIdToIdx = new Map<string, number>();
-
-    steps?.forEach((s, i) => {
-        const aid = getActionId(s);
-        actionIdToIdx.set(aid, i);
-    });
-
-    for (let i = 0; i < steps?.length; i++) {
-        if (displayed.has(i)) continue;
-        const step = steps[i];
-        const responseFor = step.responseFor;
-
-        if (responseFor) {
-            const requestIdx = actionIdToIdx.get(responseFor);
-            if (requestIdx != null && !displayed.has(requestIdx)) {
-                items.push({
-                    type: "pair",
-                    request: steps[requestIdx],
-                    response: step,
-                    requestIdx,
-                    responseIdx: i,
-                });
-                displayed.add(requestIdx);
-                displayed.add(i);
-                continue;
-            }
-        }
-
-        const actionId = getActionId(step);
-        const responderIdx = steps.findIndex((s) => s.responseFor === actionId);
-        if (responderIdx >= 0 && !displayed.has(responderIdx)) {
-            items.push({
-                type: "pair",
-                request: step,
-                response: steps[responderIdx],
-                requestIdx: i,
-                responseIdx: responderIdx,
-            });
-            displayed.add(i);
-            displayed.add(responderIdx);
-        } else {
-            items.push({ type: "single", step, stepIdx: i });
-            displayed.add(i);
-        }
-    }
-    return items;
-}
-
-const ArrowsIcon = () => (
-    <span
-        className="flex items-center justify-center w-8 h-8 rounded-md bg-slate-100 text-slate-500 shrink-0 text-sm font-medium"
-        aria-hidden
-    >
-        ↔
-    </span>
-);
+const ArrowsIcon = () => <FiRepeat className="w-4 h-4 text-slate-400 shrink-0" aria-hidden />;
 
 const FlowsAccordion: FC<FlowsAccordionProps> = ({
     flows,
@@ -121,10 +54,10 @@ const FlowsAccordion: FC<FlowsAccordionProps> = ({
 
     const toggleFlow = (index: number) => {
         if (openFlowIndex === index) {
+            // Collapsing the open card is purely visual — a flow/action must always
+            // stay selected so the Example Payload/Request/Response/Validations
+            // tabs above keep working.
             setOpenFlowIndex(null);
-            setSelectedFlow("");
-            setSelectedFlowAction("");
-            setTransitioningAction(null);
         } else {
             setOpenFlowIndex(index);
 
@@ -166,43 +99,51 @@ const FlowsAccordion: FC<FlowsAccordionProps> = ({
                 key={actionId}
                 onClick={() => handleStepClick(flowId, actionId)}
                 disabled={isTransitioning}
-                className={`w-full flex-1 min-w-0 text-left px-3 py-2.5 rounded-lg border text-sm transition-all duration-200 ${
+                className={`w-full flex-1 min-w-0 px-3 py-2.5 rounded-lg border text-left transition-all duration-200 ${
                     isSelected || isTransitioning
-                        ? "bg-sky-50 border-sky-300 text-sky-900 shadow-xs ring-1 ring-sky-200/60 font-medium"
-                        : "bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100 hover:border-slate-300"
+                        ? "border-sky-400 dark:border-sky-500 ring-2 ring-sky-100 dark:ring-sky-500/20 bg-white dark:bg-surface-elevated shadow-sm"
+                        : "border-slate-200 bg-white dark:bg-surface-elevated hover:border-slate-300 hover:shadow-xs"
                 }`}
             >
-                <div className="flex items-center justify-center gap-2">
-                    {isTransitioning && (
-                        <svg
-                            className="shrink-0 h-3.5 w-3.5 animate-spin text-sky-500"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                        >
-                            <circle
-                                className="opacity-25"
-                                cx="12"
-                                cy="12"
-                                r="10"
-                                stroke="currentColor"
-                                strokeWidth="4"
-                            />
-                            <path
-                                className="opacity-75"
-                                fill="currentColor"
-                                d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
-                            />
-                        </svg>
-                    )}
-                    <span className="text-sm font-medium truncate">
-                        {step.action_label ?? step.api}
+                <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2 min-w-0">
+                        {isTransitioning && (
+                            <svg
+                                className="shrink-0 h-3.5 w-3.5 animate-spin text-sky-500"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                            >
+                                <circle
+                                    className="opacity-25"
+                                    cx="12"
+                                    cy="12"
+                                    r="10"
+                                    stroke="currentColor"
+                                    strokeWidth="4"
+                                />
+                                <path
+                                    className="opacity-75"
+                                    fill="currentColor"
+                                    d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                                />
+                            </svg>
+                        )}
+                        <span className="text-sm font-medium text-slate-800 truncate">
+                            {step.action_label ?? step.api}
+                        </span>
+                    </div>
+                    <span className="shrink-0 inline-flex items-center gap-1 text-[11px] font-semibold leading-none text-sky-700 bg-sky-50 rounded-full px-3 py-1">
+                        Docs
+                        <FiInfo className="w-3 h-3" aria-hidden />
                     </span>
-                    {showUnsolicited && (
-                        <span className="shrink-0 text-[10px] font-semibold uppercase tracking-wide text-amber-600 bg-amber-50 border border-amber-200 rounded px-1.5 py-0.5">
+                </div>
+                {showUnsolicited && (
+                    <div className="flex items-center gap-1.5 mt-2 flex-wrap">
+                        <span className="text-[11px] font-semibold leading-none text-[#E6862E] bg-[#FCE8D7] rounded-full px-3 py-1">
                             unsolicited
                         </span>
-                    )}
-                </div>
+                    </div>
+                )}
             </button>
         );
     };
@@ -219,28 +160,30 @@ const FlowsAccordion: FC<FlowsAccordionProps> = ({
                 return (
                     <div
                         key={flowIndex}
-                        className="bg-white rounded-2xl shadow-lg shadow-sky-100/50 overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-sky-200/50 border border-sky-100"
+                        className="bg-white dark:bg-surface-elevated rounded-xl shadow-sm hover:shadow-md overflow-hidden transition-all duration-300 border border-slate-200"
                     >
                         <button
                             onClick={() => toggleFlow(flowIndex)}
                             type="button"
-                            className="w-full text-left flex items-center justify-between p-4 cursor-pointer bg-linear-to-r from-sky-50 to-sky-100/50 hover:from-sky-100 hover:to-sky-100 transition-colors duration-200 focus:outline-hidden"
+                            className="w-full text-left flex items-center justify-between p-4 cursor-pointer bg-white dark:bg-surface-elevated hover:bg-slate-50 dark:hover:bg-surface-muted transition-colors duration-200 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-sky-400/60"
                             aria-expanded={isOpen}
                         >
                             <div className="flex items-center gap-3 flex-1 min-w-0">
-                                <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-sky-50 text-sky-600 shrink-0">
-                                    <FcWorkflow className="w-5 h-5" />
-                                </span>
                                 <div className="flex-1 min-w-0">
                                     <span className="font-semibold text-gray-900 text-sm wrap-break-word block">
                                         {flowName}
                                     </span>
+                                    {flow.description && (
+                                        <p className="text-xs text-slate-500 mt-0.5 line-clamp-2">
+                                            {flow.description}
+                                        </p>
+                                    )}
                                     {flow.tags.length > 0 && (
                                         <div className="flex flex-wrap gap-1 mt-1">
                                             {flow.tags.map((tag) => (
                                                 <span
                                                     key={tag}
-                                                    className="text-[10px] font-medium text-sky-600 bg-sky-50 border border-sky-200 rounded px-1.5 py-0.5"
+                                                    className="text-[11px] font-semibold leading-none text-sky-700 bg-sky-50 rounded-full px-3 py-1"
                                                 >
                                                     {tag}
                                                 </span>
@@ -249,11 +192,9 @@ const FlowsAccordion: FC<FlowsAccordionProps> = ({
                                     )}
                                 </div>
                             </div>
-                            <div className="w-8 h-8 rounded-full bg-white/80 flex items-center justify-center shadow-xs pointer-events-none shrink-0 ml-3">
-                                <FaChevronDown
-                                    className={`w-3 h-3 text-sky-600 transition-transform duration-300 ${isOpen ? "rotate-180" : ""}`}
-                                />
-                            </div>
+                            <FaChevronDown
+                                className={`w-3.5 h-3.5 text-slate-400 shrink-0 ml-3 transition-transform duration-300 ${isOpen ? "rotate-180" : ""}`}
+                            />
                         </button>
 
                         <div
@@ -263,7 +204,7 @@ const FlowsAccordion: FC<FlowsAccordionProps> = ({
                         >
                             <div className="overflow-hidden">
                                 <div className="px-4 pb-4 pt-2 border-t border-slate-100 bg-slate-50/40 overflow-y-auto">
-                                    <div className="space-y-2.5 mt-2">
+                                    <div className="grid grid-cols-2 gap-2.5 mt-2">
                                         {displayItems.map((item, itemIdx) => {
                                             if (item.type === "pair") {
                                                 const reqActionId = getActionId(item.request);
@@ -278,7 +219,7 @@ const FlowsAccordion: FC<FlowsAccordionProps> = ({
                                                 return (
                                                     <div
                                                         key={itemIdx}
-                                                        className="flex items-center gap-3"
+                                                        className="col-span-2 flex items-center gap-3"
                                                     >
                                                         {renderStepButton(
                                                             item.request,

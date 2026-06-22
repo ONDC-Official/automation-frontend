@@ -172,13 +172,6 @@ export function buildNavTree(
     });
 
     const tree: NavNode[] = [
-        {
-            id: "overview",
-            label: "Introduction",
-            type: "link",
-            path: ROUTES.DEVELOPER_GUIDE,
-            searchText: "introduction overview developer guide",
-        },
         buildGettingStartedNav(),
         {
             id: "general-docs",
