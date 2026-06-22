@@ -1,6 +1,6 @@
 import { FC, useEffect, useMemo, useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
-import { FiChevronDown } from "react-icons/fi";
+import { ChevronDownIcon } from "@heroicons/react/24/outline";
 import { ROUTES } from "@constants/routes";
 import { useDeveloperGuideShell } from "./DeveloperGuideShellContext";
 import type { NavNode, DeveloperGuideSidebarProps } from "./navTypes";
@@ -136,7 +136,7 @@ const NavLinkItem: FC<{
                 {node.suffix && (
                     <span
                         title={NAV_STATUS_LABEL[getNavStatus(node.id)]}
-                        className={`font-mono text-caption-2-size font-semibold leading-none shrink-0 rounded-full px-1.5 py-px min-h-0 h-auto ${NAV_STATUS_STYLES[getNavStatus(node.id)]}`}
+                        className={`font-mono text-caption-2-size font-bold tracking-tighter leading-none shrink-0 rounded-full px-2.5 py-1 min-h-0 h-auto ${NAV_STATUS_STYLES[getNavStatus(node.id)]}`}
                     >
                         {node.suffix}
                     </span>
@@ -220,9 +220,8 @@ const NavGroupItem: FC<{
                             aria-expanded={open}
                             aria-label={open ? "Collapse section" : "Expand section"}
                         >
-                            <FiChevronDown
-                                size={14}
-                                className={`transition-transform duration-150 ${open ? "" : "-rotate-90"}`}
+                            <ChevronDownIcon
+                                className={`w-3.5 h-3.5 transition-transform duration-150 ${open ? "" : "-rotate-90"}`}
                             />
                         </button>
                     )}
@@ -257,9 +256,8 @@ const NavGroupItem: FC<{
                     style={{ paddingLeft }}
                 >
                     <TreeConnectors depth={depth} contentStart={paddingLeft} />
-                    <FiChevronDown
-                        size={14}
-                        className={`text-slate-400 shrink-0 transition-transform duration-150 ${open ? "" : "-rotate-90"}`}
+                    <ChevronDownIcon
+                        className={`w-3.5 h-3.5 text-slate-400 shrink-0 transition-transform duration-150 ${open ? "" : "-rotate-90"}`}
                     />
                     <span className="truncate">{node.label}</span>
                 </button>

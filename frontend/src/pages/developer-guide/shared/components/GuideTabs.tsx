@@ -33,7 +33,7 @@ function GuideTabs<T extends string = string>({
     return (
         <nav
             role="tablist"
-            className={cn("flex items-center gap-6 border-b border-slate-200", className)}
+            className={cn("flex items-center gap-6 border-b border-slate-200 pb-[2px]", className)}
         >
             {visible.map((tab) => {
                 const isActive = tab.id === active;
@@ -47,7 +47,7 @@ function GuideTabs<T extends string = string>({
                         aria-selected={isActive}
                         onClick={() => onChange(tab.id)}
                         className={cn(
-                            "relative flex items-center gap-1.5 pb-3 text-sm font-medium whitespace-nowrap transition-colors -mb-px border-b-2",
+                            "relative flex items-center gap-1.5 pb-2 text-body-1 font-medium whitespace-nowrap transition-colors -mb-px border-b-2",
                             isActive
                                 ? "text-sky-600 dark:text-sky-400 border-sky-500 dark:border-sky-400"
                                 : "text-slate-500 border-transparent hover:text-slate-700 hover:border-slate-300"

@@ -2,8 +2,11 @@ import { FC, useState, useEffect, useRef } from "react";
 import type { FlowEntry, FlowStep } from "./types";
 import { getActionId } from "./utils";
 import { buildStepDisplayItems } from "./FlowInformation/utils";
-import { FaChevronDown } from "react-icons/fa6";
-import { FiInfo, FiRepeat } from "react-icons/fi";
+import {
+    ChevronDownIcon,
+    InformationCircleIcon,
+    ArrowsRightLeftIcon,
+} from "@heroicons/react/24/outline";
 
 interface FlowsAccordionProps {
     flows: FlowEntry[];
@@ -13,7 +16,9 @@ interface FlowsAccordionProps {
     setSelectedFlowAction: (action: string) => void;
 }
 
-const ArrowsIcon = () => <FiRepeat className="w-4 h-4 text-slate-400 shrink-0" aria-hidden />;
+const ArrowsIcon = () => (
+    <ArrowsRightLeftIcon className="w-4 h-4 text-slate-400 shrink-0" aria-hidden />
+);
 
 const FlowsAccordion: FC<FlowsAccordionProps> = ({
     flows,
@@ -128,19 +133,22 @@ const FlowsAccordion: FC<FlowsAccordionProps> = ({
                                 />
                             </svg>
                         )}
-                        <span className="text-sm font-medium text-slate-800 truncate">
+                        <span className="text-body-2 font-medium text-slate-800 truncate">
                             {step.action_label ?? step.api}
                         </span>
                     </div>
-                    <span className="shrink-0 inline-flex items-center gap-1 text-[11px] font-semibold leading-none text-sky-700 bg-sky-50 rounded-full px-3 py-1">
-                        Docs
-                        <FiInfo className="w-3 h-3" aria-hidden />
-                    </span>
+                    <div className="flex items-center gap-1.5 shrink-0 text-sky-700">
+                        <span className="shrink-0 inline-flex items-center gap-1 text-[11px] font-semibold leading-non bg-sky-50 rounded-full px-3 py-1">
+                            Docs
+                        </span>
+
+                        <InformationCircleIcon className="w-4 h-4" aria-hidden />
+                    </div>
                 </div>
                 {showUnsolicited && (
                     <div className="flex items-center gap-1.5 mt-2 flex-wrap">
-                        <span className="text-[11px] font-semibold leading-none text-[#E6862E] bg-[#FCE8D7] rounded-full px-3 py-1">
-                            unsolicited
+                        <span className="text-caption-2 font-semibold leading-none text-[#E6862E] bg-[#FCE8D7] rounded-full px-3 py-1">
+                            UNSOLICITED
                         </span>
                     </div>
                 )}
@@ -170,15 +178,15 @@ const FlowsAccordion: FC<FlowsAccordionProps> = ({
                         >
                             <div className="flex items-center gap-3 flex-1 min-w-0">
                                 <div className="flex-1 min-w-0">
-                                    <span className="font-semibold text-gray-900 text-sm wrap-break-word block">
+                                    <span className="font-semibold text-gray-900 text-body-1 wrap-break-word block">
                                         {flowName}
                                     </span>
                                     {flow.description && (
-                                        <p className="text-xs text-slate-500 mt-0.5 line-clamp-2">
+                                        <p className="text-caption-2 text-slate-500 mt-0.5 line-clamp-2">
                                             {flow.description}
                                         </p>
                                     )}
-                                    {flow.tags.length > 0 && (
+                                    {/* {flow.tags.length > 0 && (
                                         <div className="flex flex-wrap gap-1 mt-1">
                                             {flow.tags.map((tag) => (
                                                 <span
@@ -189,10 +197,10 @@ const FlowsAccordion: FC<FlowsAccordionProps> = ({
                                                 </span>
                                             ))}
                                         </div>
-                                    )}
+                                    )} */}
                                 </div>
                             </div>
-                            <FaChevronDown
+                            <ChevronDownIcon
                                 className={`w-3.5 h-3.5 text-slate-400 shrink-0 ml-3 transition-transform duration-300 ${isOpen ? "rotate-180" : ""}`}
                             />
                         </button>

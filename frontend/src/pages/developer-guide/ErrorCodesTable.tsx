@@ -1,5 +1,5 @@
 import { type FC, useMemo, useState } from "react";
-import { FiSearch } from "react-icons/fi";
+import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import type { ErrorCodes } from "./types";
 import GuideSearchInput from "./shared/components/GuideSearchInput";
 import GuideTable, { type GuideTableColumn } from "./shared/components/GuideTable";
@@ -38,9 +38,9 @@ const ErrorCodesTable: FC<ErrorCodesTableProps> = ({ errorCodes }) => {
         {
             key: "code",
             header: "Code",
-            headerClassName: "w-28",
+            headerClassName: "w-28 text-body-1 tracking-normal capitalize",
             render: (row) => (
-                <span className="inline-flex items-center rounded-lg px-2.5 py-1 bg-rose-50 dark:bg-rose-500/10 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-500/30 font-mono text-xs font-semibold tracking-tight shadow-xs">
+                <span className="inline-flex items-center rounded-lg px-1 py-px bg-rose-50 dark:bg-rose-500/10 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-500/30 font-mono text-[13px] font-semibold tracking-tight shadow-xs">
                     {row.code}
                 </span>
             ),
@@ -48,16 +48,17 @@ const ErrorCodesTable: FC<ErrorCodesTableProps> = ({ errorCodes }) => {
         {
             key: "event",
             header: "Event",
+            headerClassName: "text-body-1 tracking-normal capitalize",
             cellClassName:
-                "text-sm font-semibold text-slate-800 whitespace-pre-wrap wrap-break-word leading-snug",
+                "text-body-1 text-slate-800 whitespace-pre-wrap wrap-break-word leading-snug",
             render: (row) => row.Event,
         },
         {
             key: "from",
             header: "From",
-            headerClassName: "w-40",
+            headerClassName: "w-40 text-body-1 tracking-normal capitalize",
             render: (row) => (
-                <span className="inline-flex items-center rounded-lg px-2.5 py-1 bg-sky-50 dark:bg-sky-500/10 text-sky-700 dark:text-sky-300 border border-sky-200 dark:border-sky-500/30 text-xs font-semibold shadow-xs">
+                <span className="inline-flex items-center rounded-lg px-1 py-px bg-sky-50 dark:bg-sky-500/10 text-sky-700 dark:text-sky-300 border border-sky-200 dark:border-sky-500/30 text-[13px] font-semibold shadow-xs">
                     {row.From}
                 </span>
             ),
@@ -74,17 +75,10 @@ const ErrorCodesTable: FC<ErrorCodesTableProps> = ({ errorCodes }) => {
                     "group transition-colors hover:bg-rose-50/40 dark:hover:bg-rose-500/10"
                 }
                 pagination={{ pageSize: PAGE_SIZE }}
-                toolbar={
-                    <GuideSearchInput
-                        value={search}
-                        onChange={setSearch}
-                        accent="rose"
-                        placeholder="Search by code, event, or description…"
-                    />
-                }
+                toolbar={<GuideSearchInput value={search} onChange={setSearch} accent="rose" />}
                 emptyState={
                     <EmptyState
-                        icon={FiSearch}
+                        icon={MagnifyingGlassIcon}
                         message="No error codes match your search."
                         hint="Try a different keyword or clear the filter."
                     />

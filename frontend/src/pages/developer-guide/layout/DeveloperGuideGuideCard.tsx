@@ -1,6 +1,6 @@
 import { FC } from "react";
 import { Button } from "@/components/Shadcn/Button";
-import { FiArrowRight } from "react-icons/fi";
+import { ArrowRightIcon } from "@heroicons/react/24/outline";
 import type { DeveloperGuideGuideCardProps } from "./navTypes";
 
 const DeveloperGuideGuideCard: FC<DeveloperGuideGuideCardProps> = ({
@@ -22,9 +22,8 @@ const DeveloperGuideGuideCard: FC<DeveloperGuideGuideCardProps> = ({
                     {icon}
                 </div>
                 {isInteractive && (
-                    <FiArrowRight
-                        className="text-slate-300 group-hover:text-sky-500 dark:group-hover:text-sky-400 group-hover:translate-x-0.5 transition-all duration-200 mt-1 shrink-0"
-                        size={16}
+                    <ArrowRightIcon
+                        className="w-4 h-4 text-slate-300 group-hover:text-sky-500 dark:group-hover:text-sky-400 group-hover:translate-x-0.5 transition-all duration-200 mt-1 shrink-0"
                         aria-hidden
                     />
                 )}

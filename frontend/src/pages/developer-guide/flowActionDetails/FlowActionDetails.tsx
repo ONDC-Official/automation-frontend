@@ -1,7 +1,11 @@
 import { FC, useState, useCallback, ComponentProps, MouseEvent, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
-import { FaCopy } from "react-icons/fa";
-import { FiList, FiMessageSquare, FiFileText } from "react-icons/fi";
+import {
+    DocumentDuplicateIcon,
+    ListBulletIcon,
+    ChatBubbleLeftIcon,
+    DocumentTextIcon,
+} from "@heroicons/react/24/outline";
 import { useClipboard } from "@hooks/useClipboard";
 import GuideTabs, { type GuideTabItem } from "../shared/components/GuideTabs";
 import JsonViewer from "@pages/protocol-playground/ui/Json-path-extractor";
@@ -18,9 +22,9 @@ import type { FlowStep } from "../types";
 type RightPanelTab = "attributes" | "comments" | "notes";
 
 const RIGHT_PANEL_TABS: GuideTabItem<RightPanelTab>[] = [
-    { id: "attributes", label: "Details", icon: FiList },
-    { id: "comments", label: "Comments", icon: FiMessageSquare },
-    { id: "notes", label: "Notes", icon: FiFileText },
+    { id: "attributes", label: "Details", icon: ListBulletIcon },
+    { id: "comments", label: "Comments", icon: ChatBubbleLeftIcon },
+    { id: "notes", label: "Notes", icon: DocumentTextIcon },
 ];
 
 interface FlowActionDetailsProps {
@@ -164,7 +168,7 @@ const FlowActionDetails: FC<FlowActionDetailsProps> = ({
                                 }
                                 className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white text-sm rounded-lg shadow-lg"
                             >
-                                <FaCopy className="w-4 h-4" />
+                                <DocumentDuplicateIcon className="w-4 h-4" />
                                 Copy
                             </button>
                         </div>

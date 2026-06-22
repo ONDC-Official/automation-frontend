@@ -31,7 +31,7 @@ const GuideSearchInput: FC<GuideSearchInputProps> = ({
     accent,
     className,
 }) => (
-    <div className={cn("relative w-full", className)}>
+    <div className={cn("relative w-1/5", className)}>
         <input
             type="text"
             value={value}

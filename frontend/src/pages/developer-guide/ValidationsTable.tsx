@@ -1,8 +1,12 @@
 import { type FC, type ReactNode, useCallback, useMemo, useState } from "react";
-import { FiChevronsDown, FiChevronsUp, FiDownload } from "react-icons/fi";
+import {
+    ChevronDoubleDownIcon,
+    ChevronDoubleUpIcon,
+    ArrowDownTrayIcon,
+} from "@heroicons/react/24/outline";
 import type { ValidationTableAction, ValidationTableRow } from "./types";
 import GuideTable, { type GuideTableColumn } from "./shared/components/GuideTable";
-import { EMPTY_PLACEHOLDER, emptyCell, isEmptyCell } from "./shared/components/tableCells";
+import { emptyCell, isEmptyCell } from "./shared/components/tableCells";
 
 // Re-export for backward compat
 export type ValidationTable = ValidationTableAction;
@@ -68,13 +72,13 @@ const ValidationsTable: FC<ValidationsTableProps> = ({ validations }) => {
             key: "rowType",
             header: "Type",
             headerClassName: "max-w-[200px]",
-            cellClassName: "text-[11px] max-w-[200px] whitespace-pre-wrap wrap-break-word",
+            cellClassName: "text-[13px] max-w-[200px] whitespace-pre-wrap wrap-break-word",
             render: (row) =>
                 isEmptyCell(row.rowType) ? (
                     emptyCell()
                 ) : (
                     <span
-                        className={`inline-flex items-center rounded-full px-2 py-0.5 border text-[10px] font-medium ${
+                        className={`inline-flex items-center rounded-md px-1 py-px border text-[13px] font-semibold capitalize ${
                             row.rowType === "group"
                                 ? "bg-sky-50 dark:bg-sky-500/10 text-sky-700 dark:text-sky-300 border-sky-100 dark:border-sky-500/30"
                                 : "bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-100 dark:border-emerald-500/30"
@@ -96,16 +100,14 @@ const ValidationsTable: FC<ValidationsTableProps> = ({ validations }) => {
             key: "group",
             header: "Group",
             headerClassName: "max-w-[200px]",
-            cellClassName:
-                "text-xs text-slate-600 whitespace-pre-wrap wrap-break-word max-w-[200px]",
+            cellClassName: "text-xs  whitespace-pre-wrap wrap-break-word max-w-[200px]",
             render: (row) => (isEmptyCell(row.group) ? emptyCell() : row.group),
         },
         {
             key: "scope",
             header: "Scope",
             headerClassName: "max-w-[200px]",
-            cellClassName:
-                "text-xs text-slate-600 whitespace-pre-wrap wrap-break-word max-w-[200px]",
+            cellClassName: "text-xs  whitespace-pre-wrap wrap-break-word max-w-[200px]",
             render: (row) => (isEmptyCell(row.scope) ? emptyCell() : row.scope),
         },
         {
@@ -113,30 +115,8 @@ const ValidationsTable: FC<ValidationsTableProps> = ({ validations }) => {
             header: "Description",
             headerClassName: "w-[300px] max-w-[300px]",
             cellClassName:
-                "text-xs text-slate-700 whitespace-pre-wrap wrap-break-word leading-relaxed w-[300px] max-w-[300px]",
+                "text-xs  whitespace-pre-wrap wrap-break-word leading-relaxed w-[300px] max-w-[300px]",
             render: (row) => (isEmptyCell(row.description) ? emptyCell() : row.description),
-        },
-        {
-            key: "skipIf",
-            header: "Skip If",
-            headerClassName: "max-w-[200px]",
-            cellClassName:
-                "text-xs text-slate-500 whitespace-pre-wrap wrap-break-word leading-relaxed max-w-[200px]",
-            render: (row) => (isEmptyCell(row.skipIf) ? emptyCell() : row.skipIf),
-        },
-        {
-            key: "errorCode",
-            header: "Error Code",
-            headerClassName: "max-w-[200px]",
-            cellClassName: "max-w-[200px] whitespace-pre-wrap wrap-break-word",
-            render: (row) =>
-                isEmptyCell(row.errorCode) ? (
-                    <span className="text-slate-300 font-mono">{EMPTY_PLACEHOLDER}</span>
-                ) : (
-                    <span className="inline-flex items-center rounded-full px-2 py-0.5 bg-rose-50 dark:bg-rose-500/10 text-rose-700 dark:text-rose-300 border border-rose-100 dark:border-rose-500/30 font-mono">
-                        {row.errorCode}
-                    </span>
-                ),
         },
     ];
 
@@ -158,9 +138,8 @@ const ValidationsTable: FC<ValidationsTableProps> = ({ validations }) => {
             pagination={{ pageSize: PAGE_SIZE }}
             toolbar={
                 <div className="flex items-center justify-between">
-                    <span className="text-[11px] text-slate-500 font-mono">
-                        Showing validation rules for{" "}
-                        <span className="text-slate-700">{validations.action}</span>.{" "}
+                    <span className="text-body-2 font-semibold font-mono tracking-normal">
+                        Showing validation rules for <span>{validations.action}</span>.{" "}
                         {visibleRows.length} of {validations.numLeafTests} leaf tests visible
                     </span>
                     <div className="flex gap-1.5">
@@ -170,9 +149,9 @@ const ValidationsTable: FC<ValidationsTableProps> = ({ validations }) => {
                             className="flex items-center gap-1 px-2 py-0.5 text-[11px] text-sky-600 dark:text-sky-300 hover:text-sky-800 dark:hover:text-sky-200 bg-white dark:bg-surface-elevated hover:bg-sky-100 dark:hover:bg-sky-500/20 rounded border border-sky-200/60 dark:border-sky-500/30 transition-colors"
                         >
                             {globalExpanded ? (
-                                <FiChevronsUp className="w-3 h-3" />
+                                <ChevronDoubleUpIcon className="w-3 h-3" />
                             ) : (
-                                <FiChevronsDown className="w-3 h-3" />
+                                <ChevronDoubleDownIcon className="w-3 h-3" />
                             )}
                             {globalExpanded ? "Collapse all" : "Expand all"}
                         </button>
@@ -181,7 +160,7 @@ const ValidationsTable: FC<ValidationsTableProps> = ({ validations }) => {
                             onClick={exportAll}
                             className="flex items-center gap-1 px-2 py-0.5 text-[11px] text-white bg-sky-500 hover:bg-sky-600 rounded border border-sky-500 transition-colors"
                         >
-                            <FiDownload className="w-3 h-3" />
+                            <ArrowDownTrayIcon className="w-3 h-3" />
                             Export All
                         </button>
                     </div>

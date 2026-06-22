@@ -1,6 +1,6 @@
 import { FC } from "react";
 import { Link } from "react-router-dom";
-import { FiChevronRight } from "react-icons/fi";
+import { ChevronRightIcon } from "@heroicons/react/24/outline";
 import DeveloperGuideNavBackButton from "./DeveloperGuideNavBackButton";
 import { useDeveloperGuideBreadcrumb } from "./useDeveloperGuideBreadcrumb";
 
@@ -22,7 +22,7 @@ const DeveloperGuideCollapsedNavBar: FC = () => {
                     return (
                         <span key={crumb.id} className="flex items-center gap-1.5 min-w-0">
                             {index > 0 && (
-                                <FiChevronRight size={13} className="shrink-0 text-slate-500" />
+                                <ChevronRightIcon className="w-3.25 h-3.25 shrink-0 text-slate-500" />
                             )}
                             {!isLast && crumb.path ? (
                                 <Link

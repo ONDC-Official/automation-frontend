@@ -1,5 +1,9 @@
 import { type FC, useCallback, useMemo, useState } from "react";
-import { FiChevronsDown, FiChevronsUp, FiDownload } from "react-icons/fi";
+import {
+    ChevronDoubleDownIcon,
+    ChevronDoubleUpIcon,
+    ArrowDownTrayIcon,
+} from "@heroicons/react/24/outline";
 import type { OpenAPISchema, OpenAPISpecification } from "../../types";
 import { resolveSchema } from "../specUtils";
 import GuideTable from "../../shared/components/GuideTable";
@@ -82,11 +86,9 @@ const SchemaTree: FC<SchemaTreeProps> = ({ schema, spec, showRequiredColumn = tr
             pagination={{ pageSize: PAGE_SIZE }}
             toolbar={
                 <div className="flex items-center justify-between">
-                    <span className="text-[11px] text-slate-500 font-mono">
+                    <span className="text-body-2 font-semibold font-mono tracking-normal">
                         {topLevelCount} top-level {topLevelCount === 1 ? "property" : "properties"}
-                        {totalProps > topLevelCount && (
-                            <span className="text-slate-400"> · {totalProps} total</span>
-                        )}
+                        {totalProps > topLevelCount && <span> · {totalProps} total</span>}
                     </span>
                     <div className="flex gap-1.5">
                         <button
@@ -95,9 +97,9 @@ const SchemaTree: FC<SchemaTreeProps> = ({ schema, spec, showRequiredColumn = tr
                             className="flex items-center gap-1 px-2 py-0.5 text-[11px] text-sky-600 dark:text-sky-300 hover:text-sky-800 dark:hover:text-sky-200 bg-white dark:bg-surface-elevated hover:bg-sky-100 dark:hover:bg-sky-500/20 rounded border border-sky-200/60 dark:border-sky-500/30 transition-colors"
                         >
                             {globalExpanded ? (
-                                <FiChevronsUp className="w-3 h-3" />
+                                <ChevronDoubleUpIcon className="w-3 h-3" />
                             ) : (
-                                <FiChevronsDown className="w-3 h-3" />
+                                <ChevronDoubleDownIcon className="w-3 h-3" />
                             )}
                             {globalExpanded ? "Collapse all" : "Expand all"}
                         </button>
@@ -106,7 +108,7 @@ const SchemaTree: FC<SchemaTreeProps> = ({ schema, spec, showRequiredColumn = tr
                             onClick={exportAll}
                             className="flex items-center gap-1 px-2 py-0.5 text-[11px] text-white bg-sky-500 hover:bg-sky-600 rounded border border-sky-500 transition-colors"
                         >
-                            <FiDownload className="w-3 h-3" />
+                            <ArrowDownTrayIcon className="w-3 h-3" />
                             Export All
                         </button>
                     </div>

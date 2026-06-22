@@ -1,7 +1,6 @@
 import { FC, useCallback, useEffect, useMemo, useState } from "react";
 import { Outlet, useLocation } from "react-router-dom";
-import { ArrowLeftIcon } from "@heroicons/react/24/outline";
-import { FiSearch } from "react-icons/fi";
+import { ArrowLeftIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import DeveloperGuideCollapsedNavBar from "./DeveloperGuideCollapsedNavBar";
 import { fetchBuilds } from "@services/developerGuideSpecApi";
 import { fetchDocContent, fetchDocList } from "@services/developerDocsApi";
@@ -24,7 +23,7 @@ const StatusLegend: FC = () => (
         {STATUS_LEGEND_ORDER.map((status) => (
             <span
                 key={status}
-                className={`rounded-full px-3 py-1 text-[11px] font-semibold leading-none ${NAV_STATUS_STYLES[status]}`}
+                className={`rounded-full px-2 py-1 text-caption-2-size font-semibold leading-none ${NAV_STATUS_STYLES[status]}`}
             >
                 {NAV_STATUS_LABEL[status]}
             </span>
@@ -184,10 +183,7 @@ const DeveloperGuideShell: FC = () => {
                                 </Button>
                             </div>
                             <div className="relative mt-4">
-                                <FiSearch
-                                    size={14}
-                                    className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
-                                />
+                                <MagnifyingGlassIcon className="w-3.5 h-3.5 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
                                 <input
                                     type="search"
                                     placeholder="Search"

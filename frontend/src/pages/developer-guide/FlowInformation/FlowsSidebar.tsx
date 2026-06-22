@@ -1,5 +1,5 @@
 import { type FC } from "react";
-import { FiChevronLeft } from "react-icons/fi";
+import { ChevronLeftIcon } from "@heroicons/react/24/outline";
 import FlowsAccordion from "../FlowsAccordion";
 import type { FlowEntry } from "../types";
 
@@ -51,9 +51,8 @@ const FlowsSidebar: FC<FlowsSidebarProps> = ({
                         : "w-8 rounded-lg bg-sky-500 border border-sky-600 shadow-[0_4px_12px_-2px_rgba(2,132,199,0.5)] hover:bg-sky-600 hover:-translate-y-0.5"
                 }`}
             >
-                <FiChevronLeft
-                    size={10}
-                    className={`transition-transform duration-300 ${
+                <ChevronLeftIcon
+                    className={`w-2.5 h-2.5 transition-transform duration-300 ${
                         sidebarOpen
                             ? "text-gray-400 group-hover:text-sky-500 dark:group-hover:text-sky-400"
                             : "text-white rotate-180"

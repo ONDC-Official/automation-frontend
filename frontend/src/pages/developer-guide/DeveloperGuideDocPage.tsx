@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { FiArrowLeft } from "react-icons/fi";
+import { ArrowLeftIcon } from "@heroicons/react/24/outline";
 import { ROUTES } from "@constants/routes";
 import { fetchDocContent } from "@services/developerDocsApi";
 import GithubMarkdown from "@components/GithubMarkdown";
@@ -56,7 +56,7 @@ const DeveloperGuideDocPage = () => {
                         onClick={() => navigate(ROUTES.DEVELOPER_GUIDE)}
                         className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-slate-800 transition-colors"
                     >
-                        <FiArrowLeft size={14} />
+                        <ArrowLeftIcon className="w-3.5 h-3.5" />
                         Developer Guide
                     </button>
                     <span className="text-slate-300 text-sm">/</span>

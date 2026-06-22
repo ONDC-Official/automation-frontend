@@ -1,5 +1,5 @@
 import { type FC } from "react";
-import { FiChevronLeft, FiChevronRight } from "react-icons/fi";
+import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
 import { cn } from "@/lib/utils";
 
 export interface GuideTablePaginationProps {
@@ -52,7 +52,7 @@ const GuideTablePagination: FC<GuideTablePaginationProps> = ({
                 className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white dark:bg-surface-elevated text-slate-500 hover:bg-slate-50 hover:text-slate-700 disabled:opacity-40 disabled:hover:bg-white dark:disabled:hover:bg-surface-elevated disabled:hover:text-slate-500 transition-colors"
                 aria-label="Previous page"
             >
-                <FiChevronLeft size={14} />
+                <ChevronLeftIcon className="size-4" />
             </button>
 
             {pageList.map((p, i) =>
@@ -85,7 +85,7 @@ const GuideTablePagination: FC<GuideTablePaginationProps> = ({
                 className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white dark:bg-surface-elevated text-slate-500 hover:bg-slate-50 hover:text-slate-700 disabled:opacity-40 disabled:hover:bg-white dark:disabled:hover:bg-surface-elevated disabled:hover:text-slate-500 transition-colors"
                 aria-label="Next page"
             >
-                <FiChevronRight size={14} />
+                <ChevronRightIcon className="size-4" />
             </button>
         </nav>
     );

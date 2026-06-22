@@ -1,5 +1,5 @@
 import { type FC } from "react";
-import { FiCode, FiList } from "react-icons/fi";
+import { CodeBracketIcon, ListBulletIcon } from "@heroicons/react/24/outline";
 import type { SchemaView } from "./types";
 
 interface SchemaViewToggleProps {
@@ -19,7 +19,7 @@ const SchemaViewToggle: FC<SchemaViewToggleProps> = ({ view, onChange }) => (
                     : "text-slate-500 hover:text-slate-700"
             }`}
         >
-            <FiList className="w-3.5 h-3.5" />
+            <ListBulletIcon className="w-3.5 h-3.5" />
             Schema
         </button>
         <button
@@ -31,7 +31,7 @@ const SchemaViewToggle: FC<SchemaViewToggleProps> = ({ view, onChange }) => (
                     : "text-slate-500 hover:text-slate-700"
             }`}
         >
-            <FiCode className="w-3.5 h-3.5" />
+            <CodeBracketIcon className="w-3.5 h-3.5" />
             Raw JSON
         </button>
     </div>

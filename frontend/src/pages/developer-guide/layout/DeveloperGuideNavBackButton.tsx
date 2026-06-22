@@ -1,5 +1,5 @@
 import { FC } from "react";
-import { FiArrowLeft } from "react-icons/fi";
+import { ArrowLeftIcon } from "@heroicons/react/24/outline";
 import { useDeveloperGuideShell } from "./DeveloperGuideShellContext";
 import type { DeveloperGuideNavBackButtonProps } from "./navTypes";
 
@@ -16,7 +16,7 @@ const DeveloperGuideNavBackButton: FC<DeveloperGuideNavBackButtonProps> = ({ cla
             aria-label="Open navigation"
             title="Open navigation"
         >
-            <FiArrowLeft size={16} aria-hidden />
+            <ArrowLeftIcon className="w-4 h-4" aria-hidden />
         </button>
     );
 };

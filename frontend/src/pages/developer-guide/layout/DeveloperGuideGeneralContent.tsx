@@ -1,6 +1,6 @@
 import { FC } from "react";
 import { useNavigate } from "react-router-dom";
-import { FiFileText, FiKey, FiLayers } from "react-icons/fi";
+import { DocumentTextIcon, KeyIcon, Square3Stack3DIcon } from "@heroicons/react/24/outline";
 import { ROUTES, getDeveloperGuideDocPath } from "@constants/routes";
 import { useDeveloperGuideShell } from "./DeveloperGuideShellContext";
 import DeveloperGuideGuideCard from "./DeveloperGuideGuideCard";
@@ -16,7 +16,7 @@ const DeveloperGuideGeneralContent: FC = () => {
             <header className="border-b border-sky-100 dark:border-sky-500/30 bg-linear-to-br from-sky-50 via-white to-slate-50 dark:from-sky-500/10 dark:via-surface-elevated dark:to-surface-elevated">
                 <div className="px-6 md:px-10 py-10 md:py-12 max-w-3xl mt-[18px]">
                     <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-sky-100 dark:bg-sky-500/10 text-sky-700 dark:text-sky-300 rounded-full text-xs font-semibold uppercase tracking-widest mb-5 border border-sky-200 dark:border-sky-500/30">
-                        <FiLayers size={11} aria-hidden />
+                        <Square3Stack3DIcon className="w-2.75 h-2.75" aria-hidden />
                         General documentation
                     </div>
                     <h1 className="text-3xl md:text-4xl font-bold text-slate-900 tracking-tight leading-tight mb-4">
@@ -42,7 +42,7 @@ const DeveloperGuideGeneralContent: FC = () => {
                                 "Read the guide for concepts, conventions, and integration details."
                             }
                             icon={
-                                <FiFileText size={20} className="text-sky-600 dark:text-sky-400" />
+                                <DocumentTextIcon className="w-5 h-5 text-sky-600 dark:text-sky-400" />
                             }
                             onClick={() => navigate(getDeveloperGuideDocPath(doc.slug))}
                         />
@@ -51,7 +51,7 @@ const DeveloperGuideGeneralContent: FC = () => {
                         title="Auth Tools"
                         subtitle="Authorization"
                         description="Generate and validate authorization headers using Blake2b and Ed25519 signing."
-                        icon={<FiKey size={20} className="text-sky-600 dark:text-sky-400" />}
+                        icon={<KeyIcon className="w-5 h-5 text-sky-600 dark:text-sky-400" />}
                         onClick={() => navigate(ROUTES.DEVELOPER_GUIDE_AUTH_TOOLS)}
                     />
                     {sortedDocs.slice(2).map((doc) => (
@@ -64,7 +64,7 @@ const DeveloperGuideGeneralContent: FC = () => {
                                 "Read the guide for concepts, conventions, and integration details."
                             }
                             icon={
-                                <FiFileText size={20} className="text-sky-600 dark:text-sky-400" />
+                                <DocumentTextIcon className="w-5 h-5 text-sky-600 dark:text-sky-400" />
                             }
                             onClick={() => navigate(getDeveloperGuideDocPath(doc.slug))}
                         />

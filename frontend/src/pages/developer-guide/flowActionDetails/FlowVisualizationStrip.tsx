@@ -1,5 +1,5 @@
 import { type FC } from "react";
-import { FiArrowRight } from "react-icons/fi";
+import { ArrowRightIcon } from "@heroicons/react/24/outline";
 import { buildStepDisplayItems } from "../FlowInformation/utils";
 import { getActionId } from "../utils";
 import type { FlowStep } from "../types";
@@ -54,7 +54,7 @@ const FlowVisualizationStrip: FC<FlowVisualizationStripProps> = ({
                                     isSelected={selectedFlowAction === requestId}
                                     onClick={() => onSelectAction(requestId)}
                                 />
-                                <FiArrowRight className="w-3.5 h-3.5 text-slate-300 shrink-0" />
+                                <ArrowRightIcon className="w-3.5 h-3.5 text-slate-300 shrink-0" />
                                 <StepChip
                                     step={item.response}
                                     isSelected={selectedFlowAction === responseId}
