@@ -9,7 +9,7 @@ import {
 } from "@pages/auth-header/overview/data";
 
 const cardShell =
-    "rounded-xl border border-n-40 bg-white p-6 dark:border-n-60 dark:bg-surface-elevated";
+    "rounded-xl border border-n-40 bg-white p-6 dark:border-border-default dark:bg-surface-elevated";
 
 const TestScenariosSection: FC = () => (
     <div className={cardShell}>
@@ -32,7 +32,7 @@ const TestScenariosSection: FC = () => (
             headers={["Signing Key", "Verification Key", "Result", "Reason / Language Support"]}
             rows={keyScenarios}
             note={
-                <div className="rounded-lg border border-n-40 bg-brand-light p-3 dark:border-n-60 dark:bg-brand-normal/10">
+                <div className="rounded-lg border border-n-40 bg-brand-light p-3 dark:border-border-default dark:bg-brand-normal/10">
                     <p className="text-body-2 text-n-300 dark:text-n-60">
                         <strong className="text-n-900 dark:text-n-0">
                             📌 Key Size by Language:

@@ -15,7 +15,7 @@ const Tabs = ({ tabs, activeTab, setActiveTab, layout = "default" }: TabsProps) 
             className={
                 isHero
                     ? "flex flex-row flex-nowrap gap-2"
-                    : "mb-6 flex gap-2 border-b border-n-40 pb-4 dark:border-n-60"
+                    : "mb-6 flex gap-2 border-b border-n-40 pb-4 dark:border-border-default"
             }
             role="tablist"
             aria-label="Auth header documentation tabs"
@@ -37,8 +37,8 @@ const Tabs = ({ tabs, activeTab, setActiveTab, layout = "default" }: TabsProps) 
                         activeTab === tab.id
                             ? "bg-brand-normal text-n-0 shadow-lg shadow-brand-normal/20"
                             : isHero
-                              ? "border border-n-40 bg-white text-n-300 hover:border-brand-normal/40 hover:bg-brand-light dark:border-n-60 dark:bg-surface-elevated dark:text-n-60 dark:hover:bg-brand-normal/10"
-                              : "border border-n-40 bg-white text-n-300 hover:bg-n-20 dark:border-n-60 dark:bg-surface-elevated dark:text-n-60 dark:hover:bg-surface-muted"
+                              ? "border border-n-40 bg-white text-n-300 hover:border-brand-normal/40 hover:bg-brand-light dark:border-border-default dark:bg-surface-elevated dark:text-n-60 dark:hover:bg-brand-normal/10"
+                              : "border border-n-40 bg-white text-n-300 hover:bg-n-20 dark:border-border-default dark:bg-surface-elevated dark:text-n-60 dark:hover:bg-surface-muted"
                     }`}
                 >
                     {tab.icon}

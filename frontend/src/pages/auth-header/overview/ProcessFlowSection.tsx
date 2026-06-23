@@ -3,7 +3,7 @@ import { ArrowRightIcon } from "@heroicons/react/24/outline";
 import { ProcessFlowSectionProps } from "@pages/auth-header/overview/types";
 
 const cardShell =
-    "rounded-xl border border-n-40 bg-white p-6 dark:border-n-60 dark:bg-surface-elevated";
+    "rounded-xl border border-n-40 bg-white p-6 dark:border-border-default dark:bg-surface-elevated";
 
 const ProcessFlowSection: FC<ProcessFlowSectionProps> = ({ title, steps }) => (
     <div className={cardShell}>

@@ -164,7 +164,7 @@ const DeveloperGuideShell: FC = () => {
                 )}
                 <div className="flex min-h-0 flex-1 flex-col overflow-hidden lg:flex-row">
                     <aside
-                        className={`shrink-0 border-b border-n-40 bg-slate-100 dark:bg-surface-muted lg:border-b-0 lg:border-r lg:border-n-40 flex min-h-0 flex-col overflow-hidden transition-[width] duration-300 ease-in-out lg:h-full lg:max-h-full ${
+                        className={`shrink-0 border-b border-n-40 bg-slate-100 dark:border-border-default dark:bg-surface-muted lg:border-b-0 lg:border-r lg:border-n-40 flex min-h-0 flex-col overflow-hidden transition-[width] duration-300 ease-in-out lg:h-full lg:max-h-full ${
                             navSidebarOpen
                                 ? "w-full lg:w-64 xl:w-72"
                                 : "hidden lg:block lg:w-0 lg:border-r-0"

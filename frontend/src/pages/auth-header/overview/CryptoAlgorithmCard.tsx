@@ -2,7 +2,7 @@ import { FC } from "react";
 import { CryptoAlgorithmCardProps } from "@pages/auth-header/overview/types";
 
 const cardShell =
-    "rounded-xl border border-n-40 bg-white p-6 dark:border-n-60 dark:bg-surface-elevated";
+    "rounded-xl border border-n-40 bg-white p-6 dark:border-border-default dark:bg-surface-elevated";
 
 const CryptoAlgorithmCard: FC<CryptoAlgorithmCardProps> = ({ algorithm }) => (
     <div className={cardShell}>

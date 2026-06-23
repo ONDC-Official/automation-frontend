@@ -1,6 +1,7 @@
 import { FC, useCallback } from "react";
 import { ClipboardDocumentIcon, SparklesIcon } from "@heroicons/react/24/outline";
 import { Button } from "@/components/Shadcn/Button";
+import CodeBlock from "@components/CodeBlock";
 import { AI_PROMPT } from "@pages/auth-header/overview/data";
 import { useClipboard } from "@hooks/useClipboard";
 
@@ -12,10 +13,10 @@ const AIPromptGenerator: FC = () => {
     }, [copyToClipboard]);
 
     return (
-        <div className="rounded-xl border border-n-40 bg-brand-light p-6 dark:border-n-60 dark:bg-brand-normal/10">
+        <div className="rounded-xl border border-n-40 bg-brand-light p-6 dark:border-border-default dark:bg-brand-normal/10">
             <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex items-center gap-3">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-n-40 bg-white dark:border-n-60 dark:bg-surface-elevated">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-n-40 bg-white dark:border-border-default dark:bg-surface-elevated">
                         <SparklesIcon className="h-5 w-5 text-brand-normal" aria-hidden />
                     </div>
                     <div>
@@ -38,13 +39,9 @@ const AIPromptGenerator: FC = () => {
                 </Button>
             </div>
 
-            <div className="max-h-80 overflow-y-auto rounded-lg bg-n-900 p-4 dark:bg-black">
-                <pre className="whitespace-pre-wrap font-mono text-body-2 text-n-60">
-                    {AI_PROMPT}
-                </pre>
-            </div>
+            <CodeBlock code={AI_PROMPT} language="Prompt" wrap maxHeightClass="max-h-80" />
 
-            <div className="mt-4 rounded-lg border border-n-40 bg-white p-3 dark:border-n-60 dark:bg-surface-elevated">
+            <div className="mt-4 rounded-lg border border-n-40 bg-white p-3 dark:border-border-default dark:bg-surface-elevated">
                 <p className="text-body-2 text-n-300 dark:text-n-60">
                     <strong className="text-n-900 dark:text-n-0">💡 Tip:</strong> Replace{" "}
                     <code className="rounded bg-n-20 px-1 text-n-900 dark:bg-surface-muted dark:text-n-0">

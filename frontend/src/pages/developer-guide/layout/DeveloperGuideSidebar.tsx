@@ -35,7 +35,7 @@ const groupDescentStyle = (depth: number) => {
 };
 
 const TREE_LINE_COLOR = "bg-n-40 dark:bg-n-60";
-const TREE_LINE_BORDER = "border-n-40 dark:border-n-60";
+const TREE_LINE_BORDER = "border-n-40 dark:border-border-default";
 
 const navTextDefault = "text-n-300 dark:text-n-60";
 const navTextSelected = "text-n-900 dark:text-n-0";

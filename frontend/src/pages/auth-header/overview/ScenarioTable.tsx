@@ -43,14 +43,14 @@ const ScenarioTable: FC<ScenarioTableProps> = ({ title, emoji, headers, rows, no
         <h4 className="mb-3 text-lg font-semibold text-n-900 dark:text-n-0">
             {emoji} {title}
         </h4>
-        <div className="overflow-x-auto rounded-lg border border-n-40 dark:border-n-60">
+        <div className="overflow-x-auto rounded-lg border border-n-40 dark:border-border-default">
             <table className="w-full border-collapse text-body-2">
                 <thead>
                     <tr className="bg-n-20 dark:bg-surface-muted">
                         {headers.map((header, index) => (
                             <th
                                 key={index}
-                                className="border border-n-40 px-4 py-2 text-left font-semibold text-n-900 dark:border-n-60 dark:text-n-0"
+                                className="border border-n-40 px-4 py-2 text-left font-semibold text-n-900 dark:border-border-default dark:text-n-0"
                             >
                                 {header}
                             </th>
@@ -66,7 +66,7 @@ const ScenarioTable: FC<ScenarioTableProps> = ({ title, emoji, headers, rows, no
                                 return (
                                     <td
                                         key={colIndex}
-                                        className={`border border-n-40 px-4 py-2 dark:border-n-60 ${getCellClassName(cellValue)}`}
+                                        className={`border border-n-40 px-4 py-2 dark:border-border-default ${getCellClassName(cellValue)}`}
                                     >
                                         {cellValue}
                                     </td>
