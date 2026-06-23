@@ -1,4 +1,4 @@
-import { type FC } from "react";
+import { type FC, useState, useEffect } from "react";
 import React from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -6,7 +6,12 @@ import rehypeHighlight from "rehype-highlight";
 import rehypeSlug from "rehype-slug";
 import rehypeAutolinkHeadings from "rehype-autolink-headings";
 import type { Components } from "react-markdown";
-import CodeBlock from "@components/CodeBlock";
+import { useClipboard } from "@hooks/useClipboard";
+import {
+    DocumentDuplicateIcon,
+    ArrowsPointingOutIcon,
+    ArrowsPointingInIcon,
+} from "@heroicons/react/24/outline";
 
 interface GithubMarkdownProps {
     content: string;
@@ -34,13 +39,89 @@ function extractLang(node: React.ReactNode): string {
 }
 
 const PreBlock: FC<{ children?: React.ReactNode }> = ({ children }) => {
+    const { copyToClipboard } = useClipboard();
+    const [isFullscreen, setIsFullscreen] = useState(false);
+
     const lang = extractLang(children);
     const text = extractText(children).replace(/\n$/, "");
 
+    const handleCopy = () => {
+        void copyToClipboard(text);
+    };
+
+    useEffect(() => {
+        if (!isFullscreen) return;
+
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === "Escape") {
+                setIsFullscreen(false);
+            }
+        };
+
+        document.addEventListener("keydown", handleKeyDown);
+
+        return () => {
+            document.removeEventListener("keydown", handleKeyDown);
+        };
+    }, [isFullscreen]);
+
     return (
-        <CodeBlock code={text} language={lang}>
-            {children}
-        </CodeBlock>
+        <>
+            {isFullscreen && (
+                <div
+                    className="fixed inset-0 z-40 bg-black/50"
+                    onClick={() => setIsFullscreen(false)}
+                />
+            )}
+
+            <div
+                className={
+                    isFullscreen
+                        ? "fixed inset-4 z-50 overflow-hidden rounded-lg border border-border bg-background shadow-xl"
+                        : "relative my-4 overflow-hidden rounded-lg"
+                }
+            >
+                <div className="flex items-center justify-between bg-brand-light px-4 py-1.5 dark:bg-muted">
+                    <span className="font-mono text-body-2 font-semibold tracking-wider text-foreground">
+                        {lang || "Text"}
+                    </span>
+
+                    <div className="flex items-center gap-2">
+                        <button
+                            type="button"
+                            onClick={handleCopy}
+                            className="flex items-center gap-1 rounded px-2 py-0.5 text-body-2 font-semibold text-foreground transition-colors hover:bg-slate-700 hover:text-white"
+                        >
+                            <DocumentDuplicateIcon className="h-4 w-4" />
+                            Copy
+                        </button>
+
+                        <button
+                            type="button"
+                            onClick={() => setIsFullscreen((v) => !v)}
+                            className="rounded p-1 text-foreground transition-colors hover:bg-slate-700 hover:text-white"
+                            aria-label={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
+                        >
+                            {isFullscreen ? (
+                                <ArrowsPointingInIcon className="h-4 w-4" />
+                            ) : (
+                                <ArrowsPointingOutIcon className="h-4 w-4" />
+                            )}
+                        </button>
+                    </div>
+                </div>
+
+                <pre
+                    className={
+                        isFullscreen
+                            ? "h-[calc(100vh-4rem)] overflow-auto bg-brand-light/30 px-4 py-4 text-sm leading-relaxed whitespace-pre text-foreground dark:bg-muted/70 [&_code]:text-inherit"
+                            : "m-0 overflow-x-auto bg-brand-light/30 px-4 py-4 text-sm leading-relaxed whitespace-pre text-foreground dark:bg-muted/70 [&_code]:text-inherit"
+                    }
+                >
+                    {children}
+                </pre>
+            </div>
+        </>
     );
 };
 
@@ -69,36 +150,32 @@ const components: Components = {
     },
     table({ children }) {
         return (
-            <div className="not-prose my-4 overflow-x-auto rounded-lg border border-n-40 bg-n-0 dark:border-dark-border dark:bg-surface-elevated">
-                <table className="min-w-full divide-y divide-n-40 text-sm dark:divide-dark-border">
-                    {children}
-                </table>
+            <div className="my-4 overflow-x-auto rounded-lg border border-slate-200">
+                <table className="min-w-full divide-y divide-slate-200 text-sm">{children}</table>
             </div>
         );
     },
     thead({ children }) {
-        return <thead className="bg-n-0 dark:bg-surface-elevated">{children}</thead>;
+        return <thead className="bg-slate-50">{children}</thead>;
     },
     th({ children }) {
         return (
-            <th className="px-4 py-2.5 text-left text-xs font-semibold tracking-wider text-n-500 border-b border-n-40 dark:text-n-60 dark:border-dark-border">
+            <th className="px-4 py-2.5 text-left text-xs font-semibold text-slate-600 tracking-wider border-b border-slate-200">
                 {children}
             </th>
         );
     },
     td({ children }) {
-        return (
-            <td className="px-4 py-2.5 text-n-700 border-b border-n-30 dark:text-n-0 dark:border-dark-border">
-                {children}
-            </td>
-        );
+        return <td className="px-4 py-2.5 text-slate-700 border-b border-slate-100">{children}</td>;
     },
     tr({ children }) {
-        return <tr className="bg-n-0 dark:bg-surface-elevated">{children}</tr>;
+        return (
+            <tr className="even:bg-slate-50 hover:bg-slate-100/60 transition-colors">{children}</tr>
+        );
     },
     blockquote({ children }) {
         return (
-            <blockquote className="my-4 pl-4 border-l-4 border-slate-300 bg-slate-50 py-3 pr-3 rounded-r-lg text-slate-600 dark:bg-n-200 italic">
+            <blockquote className="my-4 pl-4 border-l-4 border-slate-300 bg-slate-50 py-3 pr-3 rounded-r-lg text-slate-600 italic">
                 {children}
             </blockquote>
         );

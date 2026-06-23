@@ -17,7 +17,7 @@ export const SectionGroup: FC<{ section: ChangeSection }> = ({ section }) => {
         <div className="border border-slate-200 rounded-xl bg-white dark:bg-surface-elevated overflow-hidden">
             <Button
                 onClick={() => setCollapsed((v) => !v)}
-                className="w-full flex items-center justify-between px-4 py-3 bg-brand-normal/50 dark:bg-surface-muted/80 hover:bg-brand-normal/80 dark:hover:bg-surface-muted transition-colors text-left"
+                className="w-full flex items-center justify-between px-4 py-3 bg-brand-light dark:bg-brand-normal/10 hover:bg-brand-light-hover rounded-b-none dark:hover:bg-brand-normal/20 transition-colors text-left"
             >
                 <div className="flex items-center gap-3">
                     <span

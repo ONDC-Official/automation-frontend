@@ -1,28 +1,27 @@
 import { FC } from "react";
 import { Link } from "react-router-dom";
-import { ChevronRightIcon } from "@heroicons/react/24/outline";
-import DeveloperGuideNavBackButton from "./DeveloperGuideNavBackButton";
 import { useDeveloperGuideBreadcrumb } from "./useDeveloperGuideBreadcrumb";
 
-/** Persistent breadcrumb bar shown above the content area for every developer-guide page. */
+/** Breadcrumb bar above content — route trail with `>` separators (no sidebar toggle). */
 const DeveloperGuideCollapsedNavBar: FC = () => {
     const crumbs = useDeveloperGuideBreadcrumb();
 
     if (crumbs.length === 0) return null;
 
     return (
-        <div className="shrink-0 flex items-center gap-2 h-11 min-h-11 px-4 md:px-6 border-b border-slate-200 bg-slate-100 dark:bg-surface-muted shadow-xs">
-            <DeveloperGuideNavBackButton />
+        <div className="shrink-0 flex items-center h-11 min-h-11 px-4 md:px-6 border-b border-slate-200 bg-slate-100 dark:bg-surface-muted shadow-xs">
             <nav
-                className="flex items-center gap-1.5 text-sm min-w-0 overflow-hidden"
+                className="flex items-center gap-2 text-sm min-w-0 overflow-hidden"
                 aria-label="Breadcrumb"
             >
                 {crumbs.map((crumb, index) => {
                     const isLast = index === crumbs.length - 1;
                     return (
-                        <span key={crumb.id} className="flex items-center gap-1.5 min-w-0">
+                        <span key={crumb.id} className="flex items-center gap-2 min-w-0">
                             {index > 0 && (
-                                <ChevronRightIcon className="w-3.25 h-3.25 shrink-0 text-slate-500" />
+                                <span className="shrink-0 text-slate-400" aria-hidden>
+                                    &gt;
+                                </span>
                             )}
                             {!isLast && crumb.path ? (
                                 <Link

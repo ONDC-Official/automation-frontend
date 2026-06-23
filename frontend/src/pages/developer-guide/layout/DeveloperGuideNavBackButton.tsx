@@ -1,23 +1,31 @@
 import { FC } from "react";
-import { ArrowLeftIcon } from "@heroicons/react/24/outline";
+import { ArrowRightIcon } from "@heroicons/react/24/outline";
+import { Button } from "@/components/Shadcn/Button";
+import { cn } from "@/lib/utils";
 import { useDeveloperGuideShell } from "./DeveloperGuideShellContext";
 import type { DeveloperGuideNavBackButtonProps } from "./navTypes";
 
+/** Sidebar expand toggle — fixed on the left edge, below the breadcrumb bar. */
 const DeveloperGuideNavBackButton: FC<DeveloperGuideNavBackButtonProps> = ({ className = "" }) => {
     const { navSidebarOpen, openNavSidebar } = useDeveloperGuideShell();
 
     if (navSidebarOpen) return null;
 
     return (
-        <button
+        <Button
             type="button"
+            variant="outline"
+            size="xs"
             onClick={openNavSidebar}
-            className={`flex items-center justify-center h-9 w-9 rounded-lg text-gray-500 hover:text-sky-600 dark:hover:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-500/10 transition-colors shrink-0 ${className}`}
+            className={cn(
+                "h-7 w-12 shrink-0 rounded-3xl border-n-40 bg-brand-light text-brand-normal hover:bg-brand-light-active hover:text-brand-normal-hover",
+                className
+            )}
             aria-label="Open navigation"
             title="Open navigation"
         >
-            <ArrowLeftIcon className="w-4 h-4" aria-hidden />
-        </button>
+            <ArrowRightIcon className="size-4" aria-hidden />
+        </Button>
     );
 };
 

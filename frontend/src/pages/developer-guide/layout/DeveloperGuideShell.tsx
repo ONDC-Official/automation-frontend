@@ -2,6 +2,7 @@ import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import { ArrowLeftIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import DeveloperGuideCollapsedNavBar from "./DeveloperGuideCollapsedNavBar";
+import DeveloperGuideNavBackButton from "./DeveloperGuideNavBackButton";
 import { fetchBuilds } from "@services/developerGuideSpecApi";
 import { fetchDocContent, fetchDocList } from "@services/developerDocsApi";
 import type { BuildEntry, DocMeta } from "../types";
@@ -219,6 +220,11 @@ const DeveloperGuideShell: FC = () => {
 
                     <div className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
                         <DeveloperGuideCollapsedNavBar />
+                        {!navSidebarOpen && (
+                            <div className="absolute left-0 top-50 z-30">
+                                <DeveloperGuideNavBackButton className="rounded-l-none" />
+                            </div>
+                        )}
                         <DeveloperGuideShellMain />
                     </div>
                 </div>
