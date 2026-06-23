@@ -1,23 +1,21 @@
 import { FC } from "react";
 import { safeDescription, hasDescription } from "../attributePanelUtils";
 import type { EnumDetails } from "../types";
-import { SectionHeader, ValueBadge, DetailsCard } from "./atoms";
+import { SectionHeader, ValueBadge, DetailsList } from "./atoms";
 
 export const EnumSection: FC<{ attrs: EnumDetails }> = ({ attrs }) => (
     <div className="space-y-5">
-        <section>
-            <SectionHeader>Details</SectionHeader>
-            <DetailsCard
-                jsonPath={attrs.jsonPath}
-                owner={attrs.owner}
-                type={attrs.type}
-                headerShaded
-            />
-        </section>
+        <DetailsList
+            jsonPath={attrs.jsonPath}
+            required={attrs.required}
+            usage={attrs.usage}
+            owner={attrs.owner}
+            type={attrs.type}
+        />
         {hasDescription(attrs.description) && (
             <section>
                 <SectionHeader>Description</SectionHeader>
-                <p className="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap rounded-xl bg-white dark:bg-surface-elevated border border-slate-200 shadow-xs p-4">
+                <p className="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap">
                     {safeDescription(attrs.description)}
                 </p>
             </section>
@@ -25,7 +23,7 @@ export const EnumSection: FC<{ attrs: EnumDetails }> = ({ attrs }) => (
         {attrs.enumrefs && attrs.enumrefs.length > 0 && (
             <section>
                 <SectionHeader>Enum References</SectionHeader>
-                <ul className="space-y-2 text-sm rounded-xl bg-white dark:bg-surface-elevated border border-slate-200 shadow-xs p-4">
+                <ul className="space-y-1.5 text-sm">
                     {attrs.enumrefs.map((ref, i) => (
                         <li key={i} className="flex items-start gap-1.5">
                             <span className="text-sky-300 mt-0.5">↗</span>
@@ -45,12 +43,12 @@ export const EnumSection: FC<{ attrs: EnumDetails }> = ({ attrs }) => (
         {attrs.enumOptions && attrs.enumOptions.length > 0 && (
             <section>
                 <SectionHeader>Possible Values</SectionHeader>
-                <ul className="rounded-xl bg-white dark:bg-surface-elevated border border-sky-100 dark:border-sky-500/30 shadow-xs divide-y divide-sky-50 dark:divide-sky-500/20">
+                <ul className="space-y-1.5">
                     {attrs.enumOptions.map((o, i) => (
-                        <li key={i} className="flex items-start gap-3 px-4 py-2.5">
+                        <li key={i} className="flex items-start gap-2.5 text-sm">
                             <ValueBadge>{o.code}</ValueBadge>
                             {hasDescription(o.description) && (
-                                <span className="text-xs text-slate-500 leading-relaxed pt-1 flex-1">
+                                <span className="text-xs text-slate-500 leading-relaxed pt-0.5 flex-1">
                                     {safeDescription(o.description)}
                                 </span>
                             )}

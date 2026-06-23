@@ -34,6 +34,8 @@ export interface EnumRef {
 export interface AttributeDetails extends ActionAttributesBase {
     kind: "attribute";
     required: string;
+    /** Where/how this field is used, when available. No current data source populates this. */
+    usage?: string;
     owner: string;
     type: string;
     description: string;
@@ -55,6 +57,7 @@ export interface EnumDetails extends ActionAttributesBase {
     enumOptions?: EnumOption[];
     /** Attribute info from x-attributes (by useCaseId, shown alongside enum) */
     required?: string;
+    usage?: string;
     owner?: string;
     type?: string;
     description?: string;
@@ -78,6 +81,7 @@ export interface TagField {
 
 export interface AttributeInfo {
     required: string;
+    usage?: string;
     owner: string;
     type: string;
     description: string;

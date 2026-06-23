@@ -116,7 +116,7 @@ const PrimitiveValue = ({
     if (selected.status) {
         rowBg =
             selected.type === SelectedType.SaveData
-                ? "bg-sky-100 ring-1 ring-sky-400 shadow-xs"
+                ? "bg-sky-100 dark:bg-sky-500/15 ring-1 ring-sky-400 dark:ring-sky-400/60 shadow-xs"
                 : "bg-slate-100 ring-1 ring-slate-300 shadow-xs";
     }
 
@@ -135,7 +135,9 @@ const PrimitiveValue = ({
             <span
                 onClick={(e) => handleKeyClick(path, keyName, e)}
                 className={`group/value inline-flex items-center gap-1 cursor-pointer rounded px-0.5 transition-colors duration-100 ${
-                    selected.status ? rowBg : "hover:bg-sky-100/60 hover:ring-1 hover:ring-sky-200"
+                    selected.status
+                        ? rowBg
+                        : "hover:bg-sky-100/60 dark:hover:bg-sky-500/10 hover:ring-1 hover:ring-sky-200 dark:hover:ring-sky-500/30"
                 }`}
             >
                 <span
@@ -232,7 +234,7 @@ const renderJson = ({
                 if (isKeySelected.status) {
                     keyClass +=
                         isKeySelected.type === SelectedType.SaveData
-                            ? "bg-sky-100 text-sky-700 rounded px-1 ring-1 ring-sky-400 shadow-xs"
+                            ? "bg-sky-100 dark:bg-sky-500/15 text-sky-700 dark:text-sky-300 rounded px-1 ring-1 ring-sky-400 dark:ring-sky-400/60 shadow-xs"
                             : "bg-slate-100 text-slate-700 rounded px-1 ring-1 ring-slate-300 shadow-xs";
                 } else {
                     keyClass +=
@@ -248,12 +250,12 @@ const renderJson = ({
                         className="whitespace-nowrap"
                     >
                         {/* Row */}
-                        <div className="group inline-flex items-start hover:bg-sky-100/60 mx-[-2px] px-[2px] rounded w-full min-w-0 transition-colors duration-75">
+                        <div className="group inline-flex items-start hover:bg-sky-100/60 dark:hover:bg-sky-500/10 mx-[-2px] px-[2px] rounded w-full min-w-0 transition-colors duration-75">
                             {/* Collapse toggle / spacer */}
                             {isObject || isArray ? (
                                 <button
                                     onClick={() => toggleCollapse(newPath)}
-                                    className="text-slate-400 hover:text-sky-600 mr-1 mt-[3px] transition-colors shrink-0"
+                                    className="text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 mr-1 mt-[3px] transition-colors shrink-0"
                                     aria-label={isCollapsed ? "Expand" : "Collapse"}
                                 >
                                     {isCollapsed ? <ChevronRight /> : <ChevronDown />}
@@ -339,7 +341,7 @@ const renderJson = ({
                                         {/* Indent guide */}
                                         <div
                                             style={{ paddingLeft: `${INDENT - 1}px` }}
-                                            className="border-l border-sky-100"
+                                            className="border-l border-slate-100"
                                         >
                                             {renderJson({
                                                 obj: value as JsonObject,
@@ -366,7 +368,7 @@ const renderJson = ({
                                     <>
                                         <div
                                             style={{ paddingLeft: `${INDENT - 1}px` }}
-                                            className="border-l border-sky-100"
+                                            className="border-l border-slate-100"
                                         >
                                             {(value as JsonArray).map(
                                                 (item: JsonValue, index: number) => {
@@ -527,18 +529,19 @@ const JsonViewer: React.FC<JsonViewerProps> = ({
 
     // ── Toolbar button styles ──────────────────────────────────────────────────
     const btnBase =
-        "px-2.5 py-1 text-[11px] font-medium rounded-lg transition-all duration-100 whitespace-nowrap select-none shadow-xs";
-    const btnGhost = `${btnBase} text-slate-600 bg-white hover:bg-sky-50 border border-slate-200 hover:border-sky-300 hover:text-sky-700`;
-    const btnPrimary = `${btnBase} text-white bg-sky-500 hover:bg-sky-600 border border-sky-500 hover:border-sky-600 flex items-center gap-1.5`;
+        "h-8 px-3 text-xs font-medium rounded-lg transition-all duration-100 whitespace-nowrap select-none inline-flex items-center gap-1.5";
+    const btnGhost = `${btnBase} text-slate-600 bg-white dark:bg-surface-elevated hover:bg-sky-50 dark:hover:bg-sky-500/10 border border-slate-200 hover:border-sky-300 dark:hover:border-sky-500/40 hover:text-sky-700 dark:hover:text-sky-300`;
+    const btnIcon = `${btnBase} px-2 text-slate-500 bg-white dark:bg-surface-elevated hover:bg-sky-50 dark:hover:bg-sky-500/10 border border-slate-200 hover:border-sky-300 dark:hover:border-sky-500/40 hover:text-sky-700 dark:hover:text-sky-300`;
+    const btnPrimary = `${btnBase} text-white bg-sky-500 hover:bg-sky-600 border border-sky-500 hover:border-sky-600`;
 
     return (
-        <div className="font-mono text-sm h-full flex flex-col bg-sky-50/60 text-slate-700">
+        <div className="font-mono text-sm h-full flex flex-col bg-white dark:bg-surface-elevated text-slate-700">
             {/* ── Toolbar ─────────────────────────────────────────────────── */}
-            <div className="flex items-center gap-1.5 mb-0 px-3 py-1.5 shrink-0 border-b border-sky-200 bg-white/80 backdrop-blur-xs">
+            <div className="flex items-center gap-2.5 mb-0 px-4 py-2.5 shrink-0 border-b border-slate-200 bg-white/90 dark:bg-surface-elevated/90 backdrop-blur-xs">
                 {/* Search */}
-                <div className="relative flex-1">
+                <div className="relative flex-1 min-w-0">
                     <svg
-                        className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-400"
+                        className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400"
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"
@@ -555,19 +558,21 @@ const JsonViewer: React.FC<JsonViewerProps> = ({
                         placeholder="Search keys or values…"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full bg-white border border-slate-200 rounded-lg pl-8 pr-3 py-1.5 text-[12px] font-mono text-slate-700 placeholder-slate-400 outline-hidden focus:ring-2 focus:ring-sky-400/50 focus:border-sky-400 transition-all shadow-xs"
+                        className="w-full h-8 bg-white dark:bg-surface-muted border border-slate-200 rounded-lg pl-9 pr-3 text-[12px] font-mono text-slate-700 placeholder-slate-400 outline-hidden focus:ring-2 focus:ring-sky-400/50 focus:border-sky-400 transition-all"
                     />
                 </div>
 
-                <button onClick={expandAll} className={btnGhost}>
-                    Expand All
-                </button>
-                <button onClick={collapseAll} className={btnGhost}>
-                    Collapse All
-                </button>
+                <div className="flex items-center gap-1.5 shrink-0">
+                    <button onClick={expandAll} className={btnGhost}>
+                        Expand All
+                    </button>
+                    <button onClick={collapseAll} className={btnGhost}>
+                        Collapse All
+                    </button>
+                </div>
 
                 {isDeveloperGuide && (
-                    <>
+                    <div className="flex items-center gap-1.5 shrink-0 pl-2.5 border-l border-slate-200">
                         <button
                             onClick={() => {
                                 const blob = new Blob([JSON.stringify(data, null, 2)], {
@@ -583,7 +588,7 @@ const JsonViewer: React.FC<JsonViewerProps> = ({
                             className={btnPrimary}
                         >
                             <svg
-                                className="w-3 h-3"
+                                className="w-3.5 h-3.5"
                                 fill="none"
                                 viewBox="0 0 24 24"
                                 stroke="currentColor"
@@ -601,9 +606,8 @@ const JsonViewer: React.FC<JsonViewerProps> = ({
                         <button
                             type="button"
                             onClick={isExpanded ? onCollapse : onExpand}
-                            className={btnGhost}
+                            className={btnIcon}
                             title={isExpanded ? "Exit fullscreen" : "Fullscreen"}
-                            style={{ padding: "5px 7px" }}
                         >
                             {isExpanded ? (
                                 <ArrowsPointingInIcon className="size-3.5" />
@@ -611,12 +615,12 @@ const JsonViewer: React.FC<JsonViewerProps> = ({
                                 <ArrowsPointingOutIcon className="size-3.5" />
                             )}
                         </button>
-                    </>
+                    </div>
                 )}
             </div>
 
             {/* ── JSON Tree ───────────────────────────────────────────────── */}
-            <div className="overflow-auto flex-1 px-3 py-1.5">
+            <div className="overflow-auto flex-1 px-4 py-3">
                 <div className="inline-block min-w-full">
                     <span className="text-slate-500 font-mono text-[12px]">{"{"} </span>
                     {renderJson({

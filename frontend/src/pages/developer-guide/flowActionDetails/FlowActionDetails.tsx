@@ -5,8 +5,11 @@ import {
     ListBulletIcon,
     ChatBubbleLeftIcon,
     DocumentTextIcon,
+    ChevronDoubleRightIcon,
+    ChevronDoubleLeftIcon,
 } from "@heroicons/react/24/outline";
 import { useClipboard } from "@hooks/useClipboard";
+import { cn } from "@/lib/utils";
 import GuideTabs, { type GuideTabItem } from "../shared/components/GuideTabs";
 import JsonViewer from "@pages/protocol-playground/ui/Json-path-extractor";
 import { SelectedType } from "@pages/protocol-playground/ui/types";
@@ -15,9 +18,7 @@ import { getActionAttributes, getValidationsForAction } from "./schemaAttributes
 import AttributesPanel from "./AttributesPanel";
 import CommentsPanel from "./CommentsPanel";
 import NotesPanel from "./NotesPanel";
-import FlowVisualizationStrip from "./FlowVisualizationStrip";
 import { getLeafRowsForApi, getValueAtPath, type RawTableAction } from "./attributePanelUtils";
-import type { FlowStep } from "../types";
 
 type RightPanelTab = "attributes" | "comments" | "notes";
 
@@ -38,10 +39,6 @@ interface FlowActionDetailsProps {
     flowId?: string;
     /** Validation table data keyed by action name. Loaded lazily from API. */
     validationTableData?: Record<string, ValidationTableAction> | null;
-    /** Steps of the flow this action belongs to, for the step-diagram strip above the JSON viewer. */
-    flowSteps?: FlowStep[];
-    /** Switches the selected action — called when a step is clicked in the diagram strip. */
-    onSelectAction?: (actionId: string) => void;
 }
 
 const FlowActionDetails: FC<FlowActionDetailsProps> = ({
@@ -52,8 +49,6 @@ const FlowActionDetails: FC<FlowActionDetailsProps> = ({
     useCaseId,
     flowId,
     validationTableData,
-    flowSteps,
-    onSelectAction,
 }) => {
     const [searchParams, setSearchParams] = useSearchParams();
 
@@ -65,6 +60,7 @@ const FlowActionDetails: FC<FlowActionDetailsProps> = ({
         () => searchParams.get("attr") ?? null
     );
     const [expanded, setExpanded] = useState(false);
+    const [rightPanelOpen, setRightPanelOpen] = useState(true);
     const { copyToClipboard } = useClipboard();
 
     const setRightPanelTab = useCallback(
@@ -137,21 +133,16 @@ const FlowActionDetails: FC<FlowActionDetailsProps> = ({
         [spec, apiForAttributes, selectedPath]
     );
 
-    const visualizationStrip =
-        flowSteps && flowSteps.length > 0 && onSelectAction ? (
-            <FlowVisualizationStrip
-                steps={flowSteps}
-                selectedFlowAction={actionApi}
-                onSelectAction={onSelectAction}
-            />
-        ) : null;
-
     const root = (
         <div className="flex flex-col h-full gap-3">
-            {visualizationStrip}
             <div className="flex-1 flex flex-col min-h-0 rounded-xl border border-slate-200 bg-white dark:bg-surface-elevated overflow-hidden shadow-xs">
-                <div className="flex-1 flex min-h-0">
-                    <div className="w-full flex flex-col min-w-0 border-r border-slate-200">
+                <div className="flex-1 flex min-h-0 relative">
+                    <div
+                        className={cn(
+                            "flex flex-col min-w-0 border-r border-slate-200 transition-all duration-200",
+                            rightPanelOpen ? "w-3/5" : "w-full"
+                        )}
+                    >
                         <div className="flex-1 min-h-0 overflow-auto p-4 relative group">
                             <JsonViewer
                                 data={exampleValue as ComponentProps<typeof JsonViewer>["data"]}
@@ -173,8 +164,15 @@ const FlowActionDetails: FC<FlowActionDetailsProps> = ({
                             </button>
                         </div>
                     </div>
-                    <div className="w-1/2 flex flex-col min-h-0 bg-slate-50/60 dark:bg-surface-muted/60 border-l border-slate-200">
-                        <div className="px-4 pt-3 pb-2 border-b border-slate-200 bg-white/80 dark:bg-surface-elevated/80 shrink-0">
+                    <div
+                        className={cn(
+                            "flex flex-col min-h-0 bg-slate-50/60 dark:bg-surface-muted/60 border-l border-slate-200 transition-all duration-200",
+                            rightPanelOpen
+                                ? "w-2/5"
+                                : "w-0 overflow-hidden opacity-0 pointer-events-none border-l-0"
+                        )}
+                    >
+                        <div className="px-4 pt-3 pb-2 border-b border-slate-200 bg-white/90 dark:bg-surface-elevated/90 shrink-0">
                             <GuideTabs<RightPanelTab>
                                 tabs={RIGHT_PANEL_TABS}
                                 active={rightPanelTab}
@@ -212,6 +210,18 @@ const FlowActionDetails: FC<FlowActionDetailsProps> = ({
                             )}
                         </div>
                     </div>
+                    <button
+                        type="button"
+                        onClick={() => setRightPanelOpen((v) => !v)}
+                        title={rightPanelOpen ? "Collapse details panel" : "Expand details panel"}
+                        className="absolute top-3 right-3 z-10 flex items-center justify-center w-7 h-7 rounded-full bg-white dark:bg-surface-elevated border border-slate-200 shadow-xs text-slate-500 hover:text-sky-600 dark:hover:text-sky-300 hover:border-sky-300 dark:hover:border-sky-500/40 transition-colors"
+                    >
+                        {rightPanelOpen ? (
+                            <ChevronDoubleRightIcon className="w-3.5 h-3.5" />
+                        ) : (
+                            <ChevronDoubleLeftIcon className="w-3.5 h-3.5" />
+                        )}
+                    </button>
                 </div>
             </div>
         </div>

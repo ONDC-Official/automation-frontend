@@ -32,7 +32,6 @@ const FlowInformation: FC<FlowInformationProps> = ({
     const isEmpty = !selectedFlow;
     const {
         selectedFlowData,
-        steps,
         selectedStep,
         examples,
         examplePayload,
@@ -149,8 +148,6 @@ const FlowInformation: FC<FlowInformationProps> = ({
                                                             selectedFlowData?.flowId ?? selectedFlow
                                                         }
                                                         validationTableData={validationTable}
-                                                        flowSteps={steps}
-                                                        onSelectAction={setSelectedFlowAction}
                                                     />
                                                 ) : (
                                                     <div className="h-full w-full flex items-center justify-center">
