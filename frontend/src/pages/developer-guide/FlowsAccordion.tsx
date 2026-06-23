@@ -204,14 +204,16 @@ const FlowsAccordion: FC<FlowsAccordionProps> = ({
                         >
                             <div className="overflow-hidden">
                                 <div className="px-4 pb-4 pt-2 border-t border-slate-100 bg-slate-50/40 overflow-y-auto">
-                                    <div className="grid grid-cols-2 gap-2.5 mt-2">
+                                    <div className="flex flex-col gap-2.5 mt-2">
                                         {displayItems.map((item, itemIdx) => {
                                             if (item.type === "pair") {
                                                 const reqActionId = getActionId(item.request);
                                                 const resActionId = getActionId(item.response);
+
                                                 const isReqSelected =
                                                     isSelectedFlow &&
                                                     selectedFlowAction === reqActionId;
+
                                                 const isResSelected =
                                                     isSelectedFlow &&
                                                     selectedFlowAction === resActionId;
@@ -219,14 +221,16 @@ const FlowsAccordion: FC<FlowsAccordionProps> = ({
                                                 return (
                                                     <div
                                                         key={itemIdx}
-                                                        className="col-span-2 grid grid-cols-[1fr_auto_1fr] gap-3 items-center"
+                                                        className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] gap-3 items-center"
                                                     >
                                                         {renderStepButton(
                                                             item.request,
                                                             flowId,
                                                             isReqSelected
                                                         )}
+
                                                         <ArrowsIcon />
+
                                                         {renderStepButton(
                                                             item.response,
                                                             flowId,
@@ -235,12 +239,15 @@ const FlowsAccordion: FC<FlowsAccordionProps> = ({
                                                     </div>
                                                 );
                                             }
+
                                             const stepActionId = getActionId(item.step);
+
                                             const isSelected =
                                                 isSelectedFlow &&
                                                 selectedFlowAction === stepActionId;
+
                                             return (
-                                                <div key={itemIdx}>
+                                                <div key={itemIdx} className="w-full">
                                                     {renderStepButton(
                                                         item.step,
                                                         flowId,
