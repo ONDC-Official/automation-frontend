@@ -60,11 +60,9 @@ const parseRET11Items = (
     >;
     cutomistionToGroupMapping: Record<string, string>;
 } => {
-    const provider = payload.message.catalog["bpp/providers"]?.[0];
-    if (!provider) return { itemList: {}, catagoriesList: {}, cutomistionToGroupMapping: {} };
-
-    const catagories = provider.categories || [];
-    const items = provider.items || [];
+    const providers = payload.message.catalog["bpp/providers"];
+    if (!providers || providers.length === 0)
+        return { itemList: {}, catagoriesList: {}, cutomistionToGroupMapping: {} };
 
     const catagoriesList: Record<
         string,
@@ -73,78 +71,83 @@ const parseRET11Items = (
     const itemList: Record<string, string> = {};
     const cutomistionToGroupMapping: Record<string, string> = {};
 
-    catagories.forEach((item) => {
-        item.tags?.forEach((tag) => {
-            if (tag.code === "type") {
-                tag.list?.forEach((val) => {
-                    if (
-                        val.code === "type" &&
-                        (val.value === "custom_group" || val.value === "custom_menu")
-                    ) {
-                        catagoriesList[item.id] = { child: [] };
-                    }
-                });
-            }
-        });
-    });
+    providers.forEach((provider) => {
+        const catagories = provider.categories || [];
+        const items = provider.items || [];
 
-    items.forEach((item) => {
-        let parent = "";
-        let child: string[] = [];
-        let isCusomistaion = false;
-        let customGroup = "";
-
-        // Try to get customGroup from category_ids if present (format category_id:rank or just category_id)
-        if (item.category_ids && item.category_ids.length > 0) {
-            const firstCatId = item.category_ids[0];
-            customGroup = firstCatId.split(":")[0];
-        }
-
-        item.tags?.forEach((tag) => {
-            if (tag.code === "type") {
-                tag.list?.forEach((val) => {
-                    if (val.code === "type" && val.value === "customization") {
-                        isCusomistaion = true;
-                    }
-                });
-            }
-
-            if (tag.code === "custom_group") {
-                const idItem = tag.list?.find((listItem) => listItem.code === "id");
-                if (idItem) {
-                    customGroup = idItem.value;
+        catagories.forEach((item) => {
+            item.tags?.forEach((tag) => {
+                if (tag.code === "type") {
+                    tag.list?.forEach((val) => {
+                        if (
+                            val.code === "type" &&
+                            (val.value === "custom_group" || val.value === "custom_menu")
+                        ) {
+                            catagoriesList[item.id] = { child: [] };
+                        }
+                    });
                 }
-            }
-
-            if (tag.code === "parent") {
-                const idItem = tag.list?.find((listItem) => listItem.code === "id");
-                if (idItem) {
-                    parent = idItem.value;
-                }
-            }
-
-            if (tag.code === "child") {
-                const idItem = tag.list?.filter((listItem) => listItem.code === "id");
-                if (idItem) {
-                    child = idItem.map((listItem) => listItem.value);
-                }
-            }
+            });
         });
 
-        if (isCusomistaion) {
-            catagoriesList[`${parent}`] = {
-                ...catagoriesList[`${parent}`],
-                items: {
-                    ...catagoriesList[`${parent}`]?.items,
-                    [`${item.id}`]: { child: child },
-                },
-            };
+        items.forEach((item) => {
+            let parent = "";
+            let child: string[] = [];
+            let isCusomistaion = false;
+            let customGroup = "";
 
-            cutomistionToGroupMapping[item.id] = parent;
-        } else {
-            // Default to being an item if it's not a customization
-            itemList[`${item.id}`] = customGroup;
-        }
+            // Try to get customGroup from category_ids if present (format category_id:rank or just category_id)
+            if (item.category_ids && item.category_ids.length > 0) {
+                const firstCatId = item.category_ids[0];
+                customGroup = firstCatId.split(":")[0];
+            }
+
+            item.tags?.forEach((tag) => {
+                if (tag.code === "type") {
+                    tag.list?.forEach((val) => {
+                        if (val.code === "type" && val.value === "customization") {
+                            isCusomistaion = true;
+                        }
+                    });
+                }
+
+                if (tag.code === "custom_group") {
+                    const idItem = tag.list?.find((listItem) => listItem.code === "id");
+                    if (idItem) {
+                        customGroup = idItem.value;
+                    }
+                }
+
+                if (tag.code === "parent") {
+                    const idItem = tag.list?.find((listItem) => listItem.code === "id");
+                    if (idItem) {
+                        parent = idItem.value;
+                    }
+                }
+
+                if (tag.code === "child") {
+                    const idItem = tag.list?.filter((listItem) => listItem.code === "id");
+                    if (idItem) {
+                        child = idItem.map((listItem) => listItem.value);
+                    }
+                }
+            });
+
+            if (isCusomistaion) {
+                catagoriesList[`${parent}`] = {
+                    ...catagoriesList[`${parent}`],
+                    items: {
+                        ...catagoriesList[`${parent}`]?.items,
+                        [`${item.id}`]: { child: child },
+                    },
+                };
+
+                cutomistionToGroupMapping[item.id] = parent;
+            } else {
+                // Default to being an item if it's not a customization
+                itemList[`${item.id}`] = customGroup;
+            }
+        });
     });
 
     return { itemList, catagoriesList, cutomistionToGroupMapping };
