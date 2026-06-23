@@ -1,15 +1,9 @@
 import { FC, useState, useCallback, ComponentProps, MouseEvent, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
-import {
-    DocumentDuplicateIcon,
-    ListBulletIcon,
-    ChatBubbleLeftIcon,
-    DocumentTextIcon,
-    ChevronDoubleRightIcon,
-    ChevronDoubleLeftIcon,
-} from "@heroicons/react/24/outline";
+import { DocumentDuplicateIcon, ArrowRightIcon, ArrowLeftIcon } from "@heroicons/react/24/outline";
 import { useClipboard } from "@hooks/useClipboard";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/Shadcn/Button";
 import GuideTabs, { type GuideTabItem } from "../shared/components/GuideTabs";
 import JsonViewer from "@pages/protocol-playground/ui/Json-path-extractor";
 import { SelectedType } from "@pages/protocol-playground/ui/types";
@@ -23,9 +17,9 @@ import { getLeafRowsForApi, getValueAtPath, type RawTableAction } from "./attrib
 type RightPanelTab = "attributes" | "comments" | "notes";
 
 const RIGHT_PANEL_TABS: GuideTabItem<RightPanelTab>[] = [
-    { id: "attributes", label: "Details", icon: ListBulletIcon },
-    { id: "comments", label: "Comments", icon: ChatBubbleLeftIcon },
-    { id: "notes", label: "Notes", icon: DocumentTextIcon },
+    { id: "attributes", label: "Details" },
+    { id: "comments", label: "Comments" },
+    { id: "notes", label: "Notes" },
 ];
 
 interface FlowActionDetailsProps {
@@ -134,16 +128,16 @@ const FlowActionDetails: FC<FlowActionDetailsProps> = ({
     );
 
     const root = (
-        <div className="flex flex-col h-full gap-3">
-            <div className="flex-1 flex flex-col min-h-0 rounded-xl border border-slate-200 bg-white dark:bg-surface-elevated overflow-hidden shadow-xs">
+        <div className="flex flex-col h-full gap-3 ">
+            <div className="flex-1 flex flex-col min-h-0 bg-brand-light/30 dark:bg-surface-elevated overflow-hidden shadow-xs">
                 <div className="flex-1 flex min-h-0 relative">
                     <div
                         className={cn(
-                            "flex flex-col min-w-0 border-r border-slate-200 transition-all duration-200",
+                            "flex flex-col min-w-0 transition-all duration-200 relative",
                             rightPanelOpen ? "w-3/5" : "w-full"
                         )}
                     >
-                        <div className="flex-1 min-h-0 overflow-auto p-4 relative group">
+                        <div className="flex-1 min-h-0 overflow-auto p-4 pt-12 relative group">
                             <JsonViewer
                                 data={exampleValue as ComponentProps<typeof JsonViewer>["data"]}
                                 isSelected={isSelected}
@@ -163,6 +157,24 @@ const FlowActionDetails: FC<FlowActionDetailsProps> = ({
                                 Copy
                             </button>
                         </div>
+                        <Button
+                            variant="outline"
+                            size="xs"
+                            onClick={() => setRightPanelOpen((v) => !v)}
+                            title={
+                                rightPanelOpen ? "Collapse details panel" : "Expand details panel"
+                            }
+                            aria-label={
+                                rightPanelOpen ? "Collapse details panel" : "Expand details panel"
+                            }
+                            className="absolute top-3 right-3 z-10 text-brand-normal bg-brand-light hover:bg-brand-light-active hover:text-brand-normal-hover rounded-3xl w-12 h-7 border-n-40"
+                        >
+                            {rightPanelOpen ? (
+                                <ArrowRightIcon className="size-4" />
+                            ) : (
+                                <ArrowLeftIcon className="size-4" />
+                            )}
+                        </Button>
                     </div>
                     <div
                         className={cn(
@@ -172,14 +184,14 @@ const FlowActionDetails: FC<FlowActionDetailsProps> = ({
                                 : "w-0 overflow-hidden opacity-0 pointer-events-none border-l-0"
                         )}
                     >
-                        <div className="px-4 pt-3 pb-2 border-b border-slate-200 bg-white/90 dark:bg-surface-elevated/90 shrink-0">
+                        <div className="px-4 pt-3 pb-2 bg-white/90 dark:bg-surface-elevated/90 shrink-0">
                             <GuideTabs<RightPanelTab>
                                 tabs={RIGHT_PANEL_TABS}
                                 active={rightPanelTab}
                                 onChange={setRightPanelTab}
                             />
                         </div>
-                        <div className="flex-1 min-h-0 overflow-hidden p-4">
+                        <div className="flex-1 min-h-0 overflow-hidden">
                             {rightPanelTab === "attributes" && (
                                 <AttributesPanel
                                     attributes={attributes}
@@ -210,18 +222,6 @@ const FlowActionDetails: FC<FlowActionDetailsProps> = ({
                             )}
                         </div>
                     </div>
-                    <button
-                        type="button"
-                        onClick={() => setRightPanelOpen((v) => !v)}
-                        title={rightPanelOpen ? "Collapse details panel" : "Expand details panel"}
-                        className="absolute top-3 right-3 z-10 flex items-center justify-center w-7 h-7 rounded-full bg-white dark:bg-surface-elevated border border-slate-200 shadow-xs text-slate-500 hover:text-sky-600 dark:hover:text-sky-300 hover:border-sky-300 dark:hover:border-sky-500/40 transition-colors"
-                    >
-                        {rightPanelOpen ? (
-                            <ChevronDoubleRightIcon className="w-3.5 h-3.5" />
-                        ) : (
-                            <ChevronDoubleLeftIcon className="w-3.5 h-3.5" />
-                        )}
-                    </button>
                 </div>
             </div>
         </div>

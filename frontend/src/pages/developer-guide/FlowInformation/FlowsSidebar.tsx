@@ -24,11 +24,11 @@ const FlowsSidebar: FC<FlowsSidebarProps> = ({
 }) => (
     <>
         <div
-            className={`sticky top-24 self-start shrink-0 overflow-hidden transition-all duration-300 ease-in-out ${
+            className={`sticky top-0 self-start shrink-0 overflow-hidden transition-all duration-300 ease-in-out ${
                 sidebarOpen ? "w-130" : "w-0"
             }`}
         >
-            <aside className="w-130 h-[calc(100vh-8rem)] border-r border-slate-200 bg-slate-100 rounded-xl dark:bg-surface-elevated overflow-y-auto  shadow-[2px_0_10px_0_rgba(0,0,0,0.02)]">
+            <aside className="w-130 h-[calc(100vh-8rem)] border-r border-slate-200 rounded-xl dark:bg-surface-elevated overflow-y-auto  shadow-[2px_0_10px_0_rgba(0,0,0,0.02)]">
                 <div className="p-5">
                     <FlowsAccordion
                         flows={flows}
@@ -41,7 +41,7 @@ const FlowsSidebar: FC<FlowsSidebarProps> = ({
             </aside>
         </div>
 
-        <div className="sticky top-40 self-start shrink-0 flex items-start pt-4 z-10">
+        <div className="sticky top-0 self-start shrink-0 flex items-start pt-4 z-10">
             <button
                 onClick={onToggleSidebar}
                 title={sidebarOpen ? "Collapse sidebar" : "Expand sidebar"}

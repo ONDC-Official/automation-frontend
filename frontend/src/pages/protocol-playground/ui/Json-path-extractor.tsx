@@ -537,7 +537,7 @@ const JsonViewer: React.FC<JsonViewerProps> = ({
     return (
         <div className="font-mono text-sm h-full flex flex-col bg-white dark:bg-surface-elevated text-slate-700">
             {/* ── Toolbar ─────────────────────────────────────────────────── */}
-            <div className="flex items-center gap-2.5 mb-0 px-4 py-2.5 shrink-0 border-b border-slate-200 bg-white/90 dark:bg-surface-elevated/90 backdrop-blur-xs">
+            <div className="flex items-center gap-2.5 mb-0 px-4 py-2.5 shrink-0 border-b border-slate-200 bg-brand-light rounded-t-lg pt-2 dark:bg-surface-elevated/90 backdrop-blur-xs">
                 {/* Search */}
                 <div className="relative flex-1 min-w-0">
                     <svg

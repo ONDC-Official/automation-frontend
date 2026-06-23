@@ -5,10 +5,12 @@ import { cn } from "@/lib/utils";
 const guideCardVariants = cva("overflow-hidden bg-white dark:bg-surface-elevated shadow-xs", {
     variants: {
         border: {
+            none: "",
             slate: "border border-slate-200",
             sky: "border border-sky-100 dark:border-sky-500/30",
         },
         rounded: {
+            none: "rounded-none",
             lg: "rounded-lg",
             xl: "rounded-xl",
             "2xl": "rounded-2xl",
