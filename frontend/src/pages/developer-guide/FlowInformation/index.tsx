@@ -104,7 +104,7 @@ const FlowInformation: FC<FlowInformationProps> = ({
                     </div>
 
                     {hasTabs && (
-                        <div className="border-t border-slate-200 pt-8">
+                        <div className="border-t border-slate-200">
                             <DetailTabsHeader
                                 activeSection={activeSection}
                                 onChange={handleSectionChange}

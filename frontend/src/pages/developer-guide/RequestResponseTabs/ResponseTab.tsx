@@ -44,8 +44,8 @@ const ResponseTab: FC<ResponseTabProps> = ({ spec, api }) => {
         <div className="flex flex-col gap-8">
             {/* ── Schema section ── */}
             <div>
-                <div className="flex items-center justify-between mb-4">
-                    <h4 className="text-sm font-semibold text-foreground">Response Schema</h4>
+                <div className="flex items-center justify-between py-2">
+                    <h4 className="text-sm font-semibold text-slate-700">Response Schema</h4>
                     <SchemaViewToggle view={view} onChange={setView} />
                 </div>
 

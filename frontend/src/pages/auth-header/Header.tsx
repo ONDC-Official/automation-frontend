@@ -9,7 +9,7 @@ interface HeaderProps {
 
 const Header: FC<HeaderProps> = ({ tabs, embedded = false }) => (
     <header className="border-b border-n-40 bg-white dark:border-border-default dark:bg-surface-elevated">
-        <div className={`px-4 py-10 md:px-8 md:py-8 ${embedded ? "" : "mt-[18px]"}`}>
+        <div className={`px-10 py-10 md:px-12 md:py-12 ${embedded ? "" : "mt-[18px]"}`}>
             <div className="flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between lg:gap-10">
                 <div className="min-w-0 max-w-3xl flex-1">
                     <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-n-40 bg-brand-light px-3 py-1.5 text-caption-2-size font-semibold uppercase tracking-widest text-brand-normal dark:border-border-default dark:bg-brand-normal/10">

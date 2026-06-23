@@ -39,7 +39,7 @@ const DeveloperGuideGeneralContent: FC = () => {
     return (
         <div className="min-h-full bg-white dark:bg-surface-page">
             <header className="border-b border-n-40 bg-white dark:border-n-60 dark:bg-surface-elevated">
-                <div className="px-4 py-10 md:px-8 md:py-12">
+                <div className="px-10 py-10 md:px-12 md:py-12">
                     <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-n-40 bg-brand-light px-3 py-1.5 text-caption-2-size font-semibold uppercase tracking-widest text-brand-normal dark:border-n-60 dark:bg-brand-normal/10">
                         <Square3Stack3DIcon className="h-2.75 w-2.75" aria-hidden />
                         General documentation
@@ -54,7 +54,7 @@ const DeveloperGuideGeneralContent: FC = () => {
                 </div>
             </header>
 
-            <div className="px-4 py-10 md:px-8 md:py-12">
+            <div className="px-10 py-10 md:px-12 md:py-12">
                 <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-6 xl:grid-cols-3">
                     {guideCards.map((card) => (
                         <DeveloperGuideGuideCard

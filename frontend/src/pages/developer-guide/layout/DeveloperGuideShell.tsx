@@ -193,7 +193,7 @@ const DeveloperGuideShell: FC = () => {
                                 </Button>
                             </div>
                             <div className="relative mt-4">
-                                <MagnifyingGlassIcon className="w-3.5 h-3.5 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                                <MagnifyingGlassIcon className="w-3.5 h-3.5 absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-900 dark:text-neutral-400 pointer-events-none" />
                                 <Input
                                     type="search"
                                     placeholder="Search"

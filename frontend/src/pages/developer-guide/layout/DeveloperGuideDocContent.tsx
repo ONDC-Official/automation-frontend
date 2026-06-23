@@ -78,7 +78,7 @@ const DeveloperGuideDocContent: FC = () => {
     }
 
     return (
-        <div className="px-4 md:px-6 py-4 md:py-6">
+        <div className="px-8 md:px-12 py-4 md:py-6">
             {!navSidebarOpen ? null : (
                 <div>
                     <h1 className="text-2xl font-bold text-slate-900 tracking-tight">{title}</h1>

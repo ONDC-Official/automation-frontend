@@ -22,7 +22,7 @@ const DeveloperGuideGettingStartedContent: FC = () => {
     }, [hash]);
 
     return (
-        <div className="px-4 py-6 md:px-8 md:py-8">
+        <div className="px-6 py-6 md:px-12 md:py-8">
             <MdFileRender
                 variant="guide"
                 title="Getting Started"

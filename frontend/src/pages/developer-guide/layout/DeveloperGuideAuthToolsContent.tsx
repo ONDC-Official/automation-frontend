@@ -33,7 +33,7 @@ const DeveloperGuideAuthToolsContent: FC = () => {
                     />
                 }
             />
-            <div className="px-4 py-8 md:px-8">
+            <div className="px-10 py-10 md:px-12">
                 <Tab activeTab={activeTab} />
             </div>
         </div>
