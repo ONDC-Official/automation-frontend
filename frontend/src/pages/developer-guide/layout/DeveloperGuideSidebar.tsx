@@ -14,11 +14,25 @@ const TREE_ROW_GAP = 12;
 /** Matches `py-2` row padding — trunk anchors to the vertical center of each row. */
 const TREE_ROW_HALF_HEIGHT = 18;
 const TREE_ELBOW_RADIUS = 6;
+const CHEVRON_ICON_SIZE = 14;
+/** Equal clearance between tree lines and the chevron on the left and below. */
+const TREE_ICON_GAP = 4;
 
 const treeColumnX = (depth: number) => TREE_COLUMN_OFFSET + depth * TREE_INDENT_STEP;
 const rowInset = (depth: number) => 8 + depth * TREE_INDENT_STEP;
-/** Horizontal elbow stops at the indent guide — before chevron slot and label text. */
-const treeElbowEnd = (depth: number) => rowInset(depth);
+/** Horizontal elbow stops before the chevron slot with uniform spacing. */
+const treeElbowEnd = (depth: number) => rowInset(depth) - TREE_ICON_GAP;
+
+const chevronHalf = CHEVRON_ICON_SIZE / 2;
+/** Vertical descent from below the chevron down to the first child row center. */
+const groupDescentStyle = (depth: number) => {
+    const top = -(TREE_ROW_HALF_HEIGHT - chevronHalf - TREE_ICON_GAP + TREE_ROW_GAP);
+    return {
+        left: treeColumnX(depth + 1),
+        top,
+        height: TREE_ROW_HALF_HEIGHT - top,
+    };
+};
 
 const TREE_LINE_COLOR = "bg-n-40 dark:bg-n-60";
 const TREE_LINE_BORDER = "border-n-40 dark:border-n-60";
@@ -41,6 +55,43 @@ const ChevronSlot: FC<{ showChevron?: boolean; rotated?: boolean }> = ({
     ) : (
         <span className="w-3.5 h-3.5 shrink-0" aria-hidden />
     );
+
+/** Vertical stem from below an expanded group chevron to the first child row only. */
+const GroupDescentConnector: FC<{ depth: number }> = ({ depth }) => (
+    <span
+        aria-hidden="true"
+        className={`pointer-events-none absolute z-0 w-px ${TREE_LINE_COLOR}`}
+        style={groupDescentStyle(depth)}
+    />
+);
+
+/** Connects sibling rows at the same depth; skips through expanded child subtrees. */
+const InterSiblingTrunk: FC<{ depth: number; spansSubtree: boolean }> = ({
+    depth,
+    spansSubtree,
+}) => {
+    if (depth === 0) return null;
+
+    return (
+        <span
+            aria-hidden="true"
+            className={`pointer-events-none absolute z-0 w-px ${TREE_LINE_COLOR}`}
+            style={
+                spansSubtree
+                    ? {
+                          left: treeColumnX(depth),
+                          top: "100%",
+                          height: TREE_ROW_GAP,
+                      }
+                    : {
+                          left: treeColumnX(depth),
+                          top: TREE_ROW_HALF_HEIGHT,
+                          height: `calc(100% - ${TREE_ROW_HALF_HEIGHT}px + ${TREE_ROW_GAP}px)`,
+                      }
+            }
+        />
+    );
+};
 
 /** Elbow from the parent column to the row indent; last sibling gets a rounded end cap. */
 const TreeConnectors: FC<{
@@ -132,12 +183,13 @@ const NavLinkItem: FC<{
                         </span>
                     )}
                 </div>
+                {!isLastSibling && <InterSiblingTrunk depth={depth} spansSubtree={false} />}
             </div>
         );
     }
 
     return (
-        <div className={`relative w-full${depth === 0 ? " mb-3" : ""}`}>
+        <div className={`relative w-full min-w-0${depth === 0 ? " mb-3" : ""}`}>
             <TreeConnectors depth={depth} isLastSibling={isLastSibling} />
             <div
                 className="relative z-10 flex items-center w-full min-w-0"
@@ -166,6 +218,7 @@ const NavLinkItem: FC<{
                     )}
                 </NavLink>
             </div>
+            {!isLastSibling && <InterSiblingTrunk depth={depth} spansSubtree={false} />}
         </div>
     );
 };
@@ -234,7 +287,9 @@ const NavGroupItem: FC<{
     } ${mainSectionActive ? mainNodeSelectedBg : ""}`;
 
     return (
-        <div className={depth === 0 ? "mb-1 first:mt-0 not-first:mt-4" : ""}>
+        <div
+            className={`relative ${depth === 0 ? "mb-1 first:mt-0 not-first:mt-4" : "w-full min-w-0"}`}
+        >
             {node.path ? (
                 <div className="relative w-full min-w-0">
                     <TreeConnectors depth={depth} isLastSibling={isLastSibling} />
@@ -246,12 +301,12 @@ const NavGroupItem: FC<{
                             <button
                                 type="button"
                                 onClick={() => setOpen((prev) => !prev)}
-                                className="shrink-0 rounded p-0.5"
+                                className="flex h-3.5 w-3.5 shrink-0 items-center justify-center"
                                 aria-expanded={open}
                                 aria-label={open ? "Collapse section" : "Expand section"}
                             >
                                 <ChevronDownIcon
-                                    className={`w-3.5 h-3.5 transition-transform duration-150 ${open ? "" : "-rotate-90"}`}
+                                    className={`h-3.5 w-3.5 transition-transform duration-150 ${open ? "" : "-rotate-90"}`}
                                 />
                             </button>
                         ) : (
@@ -281,9 +336,11 @@ const NavGroupItem: FC<{
                         className={`relative z-10 ${rowShellClass} text-left`}
                         style={{ paddingLeft: inset }}
                     >
-                        <ChevronDownIcon
-                            className={`w-3.5 h-3.5 shrink-0 transition-transform duration-150 ${open ? "" : "-rotate-90"}`}
-                        />
+                        <span className="flex h-3.5 w-3.5 shrink-0 items-center justify-center">
+                            <ChevronDownIcon
+                                className={`h-3.5 w-3.5 transition-transform duration-150 ${open ? "" : "-rotate-90"}`}
+                            />
+                        </span>
                         <span className={`truncate py-2 pr-3 ${headerClass}`}>{node.label}</span>
                     </button>
                 </div>
@@ -303,17 +360,7 @@ const NavGroupItem: FC<{
                 <div
                     className={`relative ${depth === 0 ? "mt-3 mb-1 space-y-3" : "mt-3 space-y-3"}`}
                 >
-                    {node.children.length > 1 && (
-                        <span
-                            aria-hidden="true"
-                            className={`pointer-events-none absolute z-0 w-px ${TREE_LINE_COLOR}`}
-                            style={{
-                                left: treeColumnX(depth + 1),
-                                top: TREE_ROW_HALF_HEIGHT,
-                                bottom: TREE_ROW_HALF_HEIGHT,
-                            }}
-                        />
-                    )}
+                    {hasChildren && <GroupDescentConnector depth={depth} />}
                     {node.children.map((child, index) => (
                         <NavTreeItem
                             key={child.id}
@@ -324,6 +371,9 @@ const NavGroupItem: FC<{
                         />
                     ))}
                 </div>
+            )}
+            {!isLastSibling && (
+                <InterSiblingTrunk depth={depth} spansSubtree={open && hasChildren} />
             )}
         </div>
     );

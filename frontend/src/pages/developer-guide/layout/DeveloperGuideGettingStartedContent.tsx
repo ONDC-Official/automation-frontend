@@ -1,16 +1,16 @@
-import { FC, useEffect } from "react";
+import { FC, useEffect, useMemo } from "react";
 import { useLocation } from "react-router-dom";
 import gettingStartedContent from "../landing/getting-started.md?raw";
 import MdFileRender from "@components/MdFileRender";
 import { scrollToSectionWithOffset } from "@components/TableOfContents/scrollToSection";
-import { useDeveloperGuideShell } from "./DeveloperGuideShellContext";
 
 // Matches the sticky header offset used by the sibling doc content view (DeveloperGuideDocContent).
 const TOC_TOP = 100;
 
 const DeveloperGuideGettingStartedContent: FC = () => {
     const { hash } = useLocation();
-    const { navSidebarOpen } = useDeveloperGuideShell();
+
+    const mdData = useMemo(() => gettingStartedContent.replace(/^#\s+.+\n+/, ""), []);
 
     useEffect(() => {
         if (!hash) return;
@@ -22,13 +22,13 @@ const DeveloperGuideGettingStartedContent: FC = () => {
     }, [hash]);
 
     return (
-        <div className="px-4 md:px-8 py-6 md:py-8">
+        <div className="px-4 py-6 md:px-8 md:py-8">
             <MdFileRender
+                variant="guide"
                 title="Getting Started"
                 description="This section helps you quickly understand how to explore ONDC protocol flows, starting with the Unified Credit use case."
-                mdData={gettingStartedContent}
+                mdData={mdData}
                 showTableOfContents={false}
-                hideTitleBlock={!navSidebarOpen}
             />
         </div>
     );
