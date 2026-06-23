@@ -5,8 +5,11 @@ import "tippy.js/animations/perspective-subtle.css";
 
 import { SelectedType } from "@pages/protocol-playground/ui/types";
 import { useLocation } from "react-router-dom";
-import { ArrowsPointingInIcon, ArrowsPointingOutIcon } from "@heroicons/react/24/outline";
+import { ArrowDownTrayIcon } from "@heroicons/react/24/outline";
 import { useClipboard } from "@hooks/useClipboard";
+import FullScreenIcon from "@/assets/svgs/FullScreenIcon";
+import { Button } from "@/components/Shadcn/Button/button";
+import SearchField from "@/components/Shadcn/SearchField";
 
 type JsonPrimitive = string | number | boolean | null;
 type JsonArray = JsonValue[];
@@ -451,7 +454,6 @@ const JsonViewer: React.FC<JsonViewerProps> = ({
     handleKeyClick,
     onExpand,
     isExpanded,
-    onCollapse,
 }) => {
     const [collapsedPaths, setCollapsedPaths] = useState<Record<string, boolean>>({});
     const [searchTerm, setSearchTerm] = useState("");
@@ -527,94 +529,72 @@ const JsonViewer: React.FC<JsonViewerProps> = ({
         setCollapsedPaths(allPaths);
     };
 
-    // ── Toolbar button styles ──────────────────────────────────────────────────
-    const btnBase =
-        "h-8 px-3 text-xs font-medium rounded-lg transition-all duration-100 whitespace-nowrap select-none inline-flex items-center gap-1.5";
-    const btnGhost = `${btnBase} text-slate-600 bg-white dark:bg-surface-elevated hover:bg-sky-50 dark:hover:bg-sky-500/10 border border-slate-200 hover:border-sky-300 dark:hover:border-sky-500/40 hover:text-sky-700 dark:hover:text-sky-300`;
-    const btnIcon = `${btnBase} px-2 text-slate-500 bg-white dark:bg-surface-elevated hover:bg-sky-50 dark:hover:bg-sky-500/10 border border-slate-200 hover:border-sky-300 dark:hover:border-sky-500/40 hover:text-sky-700 dark:hover:text-sky-300`;
-    const btnPrimary = `${btnBase} text-white bg-sky-500 hover:bg-sky-600 border border-sky-500 hover:border-sky-600`;
-
     return (
         <div className="font-mono text-sm h-full flex flex-col bg-white dark:bg-surface-elevated text-slate-700">
             {/* ── Toolbar ─────────────────────────────────────────────────── */}
-            <div className="flex items-center gap-2.5 mb-0 px-4 py-2.5 shrink-0 border-b border-slate-200 bg-brand-light rounded-t-lg pt-2 dark:bg-surface-elevated/90 backdrop-blur-xs">
+            <div className="flex items-center gap-2 px-4 py-2.5 border-b border-slate-200 bg-brand-light rounded-t-lg dark:bg-surface-elevated/90 backdrop-blur-xs overflow-x-auto">
                 {/* Search */}
-                <div className="relative flex-1 min-w-0">
-                    <svg
-                        className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        strokeWidth={2}
-                    >
-                        <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"
-                        />
-                    </svg>
-                    <input
-                        type="text"
-                        placeholder="Search keys or values…"
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full h-8 bg-white dark:bg-surface-muted border border-slate-200 rounded-lg pl-9 pr-3 text-[12px] font-mono text-slate-700 placeholder-slate-400 outline-hidden focus:ring-2 focus:ring-sky-400/50 focus:border-sky-400 transition-all"
-                    />
-                </div>
+                <SearchField
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    containerClassName="w-44 shrink-0"
+                    className="h-8 text-[12px] font-mono"
+                />
 
-                <div className="flex items-center gap-1.5 shrink-0">
-                    <button onClick={expandAll} className={btnGhost}>
-                        Expand All
-                    </button>
-                    <button onClick={collapseAll} className={btnGhost}>
-                        Collapse All
-                    </button>
-                </div>
+                {/* Expand / Collapse */}
+                <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={expandAll}
+                    className="bg-white text-slate-700 border-slate-200 text-xs font-medium leading-4 hover:bg-slate-50 hover:text-slate-700 dark:bg-surface-elevated dark:text-n-20"
+                >
+                    Expand All
+                </Button>
 
+                <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={collapseAll}
+                    className="bg-white text-slate-700 border-slate-200 text-xs font-medium leading-4 hover:bg-slate-50 hover:text-slate-700 dark:bg-surface-elevated dark:text-n-20"
+                >
+                    Collapse All
+                </Button>
+
+                {/* Developer Actions */}
                 {isDeveloperGuide && (
-                    <div className="flex items-center gap-1.5 shrink-0 pl-2.5 border-l border-slate-200">
-                        <button
+                    <div className="flex items-center gap-1.5 shrink-0 pl-2 border-l border-slate-200">
+                        <Button
+                            size="sm"
                             onClick={() => {
                                 const blob = new Blob([JSON.stringify(data, null, 2)], {
                                     type: "application/json",
                                 });
+
                                 const url = URL.createObjectURL(blob);
+
                                 const a = document.createElement("a");
                                 a.href = url;
                                 a.download = "payload.json";
                                 a.click();
+
                                 URL.revokeObjectURL(url);
                             }}
-                            className={btnPrimary}
                         >
-                            <svg
-                                className="w-3.5 h-3.5"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                                strokeWidth={2}
-                            >
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
-                                />
-                            </svg>
+                            <ArrowDownTrayIcon className="size-3.5" />
                             Download
-                        </button>
+                        </Button>
 
-                        <button
-                            type="button"
-                            onClick={isExpanded ? onCollapse : onExpand}
-                            className={btnIcon}
-                            title={isExpanded ? "Exit fullscreen" : "Fullscreen"}
-                        >
-                            {isExpanded ? (
-                                <ArrowsPointingInIcon className="size-3.5" />
-                            ) : (
-                                <ArrowsPointingOutIcon className="size-3.5" />
-                            )}
-                        </button>
+                        {!isExpanded && (
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="icon-sm"
+                                onClick={onExpand}
+                                title="Fullscreen"
+                            >
+                                <FullScreenIcon />
+                            </Button>
+                        )}
                     </div>
                 )}
             </div>
