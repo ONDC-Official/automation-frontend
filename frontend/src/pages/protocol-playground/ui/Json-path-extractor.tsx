@@ -587,7 +587,7 @@ const JsonViewer: React.FC<JsonViewerProps> = ({
                         {!isExpanded && (
                             <Button
                                 type="button"
-                                variant="outline"
+                                variant="ghost"
                                 size="icon-sm"
                                 onClick={onExpand}
                                 title="Fullscreen"
