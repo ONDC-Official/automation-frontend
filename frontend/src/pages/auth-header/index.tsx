@@ -17,7 +17,7 @@ const AuthHeader = () => {
     );
 
     return (
-        <div className="min-h-screen bg-white">
+        <div className="min-h-screen bg-white dark:bg-surface-page">
             <Header
                 tabs={
                     <Tabs
@@ -28,7 +28,7 @@ const AuthHeader = () => {
                     />
                 }
             />
-            <div className="max-w-7xl mx-auto px-6 md:px-10 py-8">
+            <div className="mx-auto max-w-7xl px-4 py-8 md:px-8">
                 <Tab activeTab={activeTab} />
             </div>
         </div>

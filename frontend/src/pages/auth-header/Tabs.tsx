@@ -15,7 +15,7 @@ const Tabs = ({ tabs, activeTab, setActiveTab, layout = "default" }: TabsProps) 
             className={
                 isHero
                     ? "flex flex-row flex-nowrap gap-2"
-                    : "flex gap-2 mb-6 border-b border-gray-200 pb-4"
+                    : "mb-6 flex gap-2 border-b border-n-40 pb-4 dark:border-n-60"
             }
             role="tablist"
             aria-label="Auth header documentation tabs"
@@ -31,14 +31,14 @@ const Tabs = ({ tabs, activeTab, setActiveTab, layout = "default" }: TabsProps) 
                     onClick={() => setActiveTab(tab.id)}
                     className={`flex items-center justify-center gap-2 font-medium transition-all ${
                         isHero
-                            ? "px-5 py-3 rounded-xl text-sm whitespace-nowrap shrink-0"
-                            : "px-5 py-3 rounded-lg"
+                            ? "shrink-0 whitespace-nowrap rounded-xl px-5 py-3 text-sm"
+                            : "rounded-lg px-5 py-3"
                     } ${
                         activeTab === tab.id
-                            ? "bg-sky-600 text-white shadow-lg shadow-sky-200/80"
+                            ? "bg-brand-normal text-n-0 shadow-lg shadow-brand-normal/20"
                             : isHero
-                              ? "bg-white text-slate-700 hover:bg-sky-50 border border-slate-200 hover:border-sky-200"
-                              : "bg-white text-gray-700 hover:bg-gray-100 border border-gray-200"
+                              ? "border border-n-40 bg-white text-n-300 hover:border-brand-normal/40 hover:bg-brand-light dark:border-n-60 dark:bg-surface-elevated dark:text-n-60 dark:hover:bg-brand-normal/10"
+                              : "border border-n-40 bg-white text-n-300 hover:bg-n-20 dark:border-n-60 dark:bg-surface-elevated dark:text-n-60 dark:hover:bg-surface-muted"
                     }`}
                 >
                     {tab.icon}

@@ -21,8 +21,9 @@ const DeveloperGuideAuthToolsContent: FC = () => {
     );
 
     return (
-        <div className="min-h-full">
+        <div className="min-h-full bg-white dark:bg-surface-page">
             <Header
+                embedded
                 tabs={
                     <Tabs
                         tabs={tabs}
@@ -32,7 +33,7 @@ const DeveloperGuideAuthToolsContent: FC = () => {
                     />
                 }
             />
-            <div className="px-6 md:px-10 py-8">
+            <div className="px-4 py-8 md:px-8">
                 <Tab activeTab={activeTab} />
             </div>
         </div>

@@ -2,21 +2,69 @@ import { FaHashtag, FaKey } from "react-icons/fa";
 import { FlowStep, AlgorithmInfo, ScenarioRow } from "@pages/auth-header/overview/types";
 
 export const signingFlowSteps: FlowStep[] = [
-    { label: "JSON Payload", bgColor: "bg-sky-100", textColor: "text-sky-800" },
-    { label: "BLAKE2b-512 Hash", bgColor: "bg-amber-100", textColor: "text-amber-800" },
-    { label: "Create Signing String", bgColor: "bg-green-100", textColor: "text-green-800" },
-    { label: "Ed25519 Sign", bgColor: "bg-purple-100", textColor: "text-purple-800" },
-    { label: "Base64 Encode", bgColor: "bg-rose-100", textColor: "text-rose-800" },
-    { label: "Auth Header", bgColor: "bg-indigo-100", textColor: "text-indigo-800" },
+    {
+        label: "JSON Payload",
+        bgColor: "bg-brand-light dark:bg-brand-normal/15",
+        textColor: "text-brand-normal",
+    },
+    {
+        label: "BLAKE2b-512 Hash",
+        bgColor: "bg-alert-50 dark:bg-alert-500/15",
+        textColor: "text-alert-500",
+    },
+    {
+        label: "Create Signing String",
+        bgColor: "bg-success-50 dark:bg-success-500/15",
+        textColor: "text-success-500",
+    },
+    {
+        label: "Ed25519 Sign",
+        bgColor: "bg-brand-light dark:bg-brand-normal/20",
+        textColor: "text-n-700 dark:text-brand-normal",
+    },
+    {
+        label: "Base64 Encode",
+        bgColor: "bg-error-50 dark:bg-error-500/15",
+        textColor: "text-error-500",
+    },
+    {
+        label: "Auth Header",
+        bgColor: "bg-n-20 dark:bg-surface-muted",
+        textColor: "text-n-700 dark:text-n-0",
+    },
 ];
 
 export const verificationFlowSteps: FlowStep[] = [
-    { label: "Auth Header", bgColor: "bg-indigo-100", textColor: "text-indigo-800" },
-    { label: "Parse Header", bgColor: "bg-orange-100", textColor: "text-orange-800" },
-    { label: "Hash Payload", bgColor: "bg-amber-100", textColor: "text-amber-800" },
-    { label: "Reconstruct Signing String", bgColor: "bg-green-100", textColor: "text-green-800" },
-    { label: "Ed25519 Verify", bgColor: "bg-purple-100", textColor: "text-purple-800" },
-    { label: "✓ Valid / ✗ Invalid", bgColor: "bg-emerald-100", textColor: "text-emerald-800" },
+    {
+        label: "Auth Header",
+        bgColor: "bg-n-20 dark:bg-surface-muted",
+        textColor: "text-n-700 dark:text-n-0",
+    },
+    {
+        label: "Parse Header",
+        bgColor: "bg-alert-50 dark:bg-alert-500/15",
+        textColor: "text-alert-500",
+    },
+    {
+        label: "Hash Payload",
+        bgColor: "bg-alert-50 dark:bg-alert-500/15",
+        textColor: "text-alert-500",
+    },
+    {
+        label: "Reconstruct Signing String",
+        bgColor: "bg-success-50 dark:bg-success-500/15",
+        textColor: "text-success-500",
+    },
+    {
+        label: "Ed25519 Verify",
+        bgColor: "bg-brand-light dark:bg-brand-normal/20",
+        textColor: "text-n-700 dark:text-brand-normal",
+    },
+    {
+        label: "✓ Valid / ✗ Invalid",
+        bgColor: "bg-success-50 dark:bg-success-500/15",
+        textColor: "text-success-500",
+    },
 ];
 
 export const algorithmCards: AlgorithmInfo[] = [
@@ -25,8 +73,8 @@ export const algorithmCards: AlgorithmInfo[] = [
         description:
             "BLAKE2b is a cryptographic hash function faster than MD5 and SHA-1, while providing security comparable to SHA-3.",
         icon: <FaHashtag className="text-xl" />,
-        iconBgColor: "bg-amber-100",
-        iconTextColor: "text-amber-600",
+        iconBgColor: "bg-alert-50 dark:bg-alert-500/15",
+        iconTextColor: "text-alert-500",
         details: [
             { label: "Output size", value: "512 bits (64 bytes)" },
             { label: "Purpose", value: "Creates a fixed-size digest of the payload" },
@@ -42,8 +90,8 @@ export const algorithmCards: AlgorithmInfo[] = [
         description:
             "Ed25519 is an elliptic curve digital signature algorithm using Curve25519. It provides high security with small key sizes.",
         icon: <FaKey className="text-xl" />,
-        iconBgColor: "bg-purple-100",
-        iconTextColor: "text-purple-600",
+        iconBgColor: "bg-brand-light dark:bg-brand-normal/15",
+        iconTextColor: "text-brand-normal",
         details: [
             { label: "Private key", value: "32 bytes (seed) or 64 bytes (expanded)" },
             { label: "Public key", value: "32 bytes" },

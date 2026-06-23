@@ -1,14 +1,16 @@
 import { FC } from "react";
 import { FunctionToggleProps } from "@pages/auth-header/code-snippets/types";
 
+const inactiveClass =
+    "bg-n-20 text-n-300 hover:bg-n-30 dark:bg-surface-muted dark:text-n-60 dark:hover:bg-surface-elevated";
+
 const FunctionToggle: FC<FunctionToggleProps> = ({ functionType, onFunctionTypeChange }) => (
-    <div className="flex gap-2">
+    <div className="flex flex-wrap gap-2">
         <button
+            type="button"
             onClick={() => onFunctionTypeChange("generate")}
-            className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                functionType === "generate"
-                    ? "bg-green-600 text-white"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+            className={`rounded-lg px-4 py-2 font-medium transition-all ${
+                functionType === "generate" ? "bg-success-500 text-n-0" : inactiveClass
             }`}
             aria-pressed={functionType === "generate"}
             aria-label="Generate Header function"
@@ -16,11 +18,10 @@ const FunctionToggle: FC<FunctionToggleProps> = ({ functionType, onFunctionTypeC
             Generate Header
         </button>
         <button
+            type="button"
             onClick={() => onFunctionTypeChange("verify")}
-            className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                functionType === "verify"
-                    ? "bg-blue-600 text-white"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+            className={`rounded-lg px-4 py-2 font-medium transition-all ${
+                functionType === "verify" ? "bg-brand-normal text-n-0" : inactiveClass
             }`}
             aria-pressed={functionType === "verify"}
             aria-label="Verify Header function"

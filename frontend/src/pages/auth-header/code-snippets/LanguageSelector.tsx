@@ -11,11 +11,12 @@ const LanguageSelector: FC<LanguageSelectorProps> = ({
         {languages.map((lang) => (
             <button
                 key={lang}
+                type="button"
                 onClick={() => onLanguageChange(lang)}
-                className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                className={`rounded-lg px-4 py-2 font-medium transition-all ${
                     selectedLang === lang
-                        ? "bg-sky-600 text-white shadow-md"
-                        : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                        ? "bg-brand-normal text-n-0 shadow-md"
+                        : "bg-n-20 text-n-300 hover:bg-n-30 dark:bg-surface-muted dark:text-n-60 dark:hover:bg-surface-elevated"
                 }`}
                 aria-pressed={selectedLang === lang}
                 aria-label={`Select ${codeSnippets[lang].label} language`}

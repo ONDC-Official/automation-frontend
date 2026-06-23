@@ -1,47 +1,60 @@
 import { FC } from "react";
-import { FaFileCode } from "react-icons/fa";
+import { DocumentTextIcon } from "@heroicons/react/24/outline";
 import { SIGNING_STRING_FORMAT, AUTH_HEADER_FORMAT } from "@pages/auth-header/overview/data";
 
+const cardShell =
+    "rounded-xl border border-n-40 bg-white p-6 dark:border-n-60 dark:bg-surface-elevated";
+
 const HeaderFormatSection: FC = () => (
-    <div className="bg-white border border-gray-200 rounded-xl p-6">
-        <div className="flex items-center gap-3 mb-4">
-            <div className="w-12 h-12 bg-indigo-100 rounded-xl flex items-center justify-center">
-                <FaFileCode className="text-indigo-600 text-xl" />
+    <div className={cardShell}>
+        <div className="mb-4 flex items-center gap-3">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-n-40 bg-brand-light dark:border-n-60 dark:bg-brand-normal/10">
+                <DocumentTextIcon className="h-5 w-5 text-brand-normal" aria-hidden />
             </div>
-            <h3 className="text-xl font-bold text-gray-900">Header Format</h3>
+            <h3 className="text-xl font-bold text-n-900 dark:text-n-0">Header Format</h3>
         </div>
 
         <div className="space-y-4">
             <div>
-                <h4 className="font-semibold text-gray-800 mb-2">Signing String Structure:</h4>
-                <div className="bg-gray-900 rounded-lg p-4 overflow-x-auto">
-                    <pre className="text-green-400 text-sm font-mono">{SIGNING_STRING_FORMAT}</pre>
+                <h4 className="mb-2 font-semibold text-n-900 dark:text-n-0">
+                    Signing String Structure:
+                </h4>
+                <div className="overflow-x-auto rounded-lg bg-n-900 p-4 dark:bg-black">
+                    <pre className="font-mono text-body-2 text-success-500">
+                        {SIGNING_STRING_FORMAT}
+                    </pre>
                 </div>
             </div>
 
             <div>
-                <h4 className="font-semibold text-gray-800 mb-2">Authorization Header Format:</h4>
-                <div className="bg-gray-900 rounded-lg p-4 overflow-x-auto">
-                    <pre className="text-green-400 text-sm font-mono whitespace-pre-wrap">
+                <h4 className="mb-2 font-semibold text-n-900 dark:text-n-0">
+                    Authorization Header Format:
+                </h4>
+                <div className="overflow-x-auto rounded-lg bg-n-900 p-4 dark:bg-black">
+                    <pre className="whitespace-pre-wrap font-mono text-body-2 text-success-500">
                         {AUTH_HEADER_FORMAT}
                     </pre>
                 </div>
             </div>
 
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <h4 className="font-semibold text-blue-800 mb-2">Key Parameters:</h4>
-                <ul className="text-sm text-blue-900 space-y-1">
+            <div className="rounded-lg border border-n-40 bg-brand-light p-4 dark:border-n-60 dark:bg-brand-normal/10">
+                <h4 className="mb-2 font-semibold text-n-900 dark:text-n-0">Key Parameters:</h4>
+                <ul className="space-y-1 text-body-2 text-n-300 dark:text-n-60">
                     <li>
-                        <strong>keyId:</strong> Format is "subscriber_id|unique_key_id|ed25519"
+                        <strong className="text-n-900 dark:text-n-0">keyId:</strong> Format is
+                        "subscriber_id|unique_key_id|ed25519"
                     </li>
                     <li>
-                        <strong>created/expires:</strong> Unix timestamps for validity window
+                        <strong className="text-n-900 dark:text-n-0">created/expires:</strong> Unix
+                        timestamps for validity window
                     </li>
                     <li>
-                        <strong>ttl:</strong> Typically 3600 seconds (1 hour)
+                        <strong className="text-n-900 dark:text-n-0">ttl:</strong> Typically 3600
+                        seconds (1 hour)
                     </li>
                     <li>
-                        <strong>signature:</strong> Base64-encoded Ed25519 signature
+                        <strong className="text-n-900 dark:text-n-0">signature:</strong>{" "}
+                        Base64-encoded Ed25519 signature
                     </li>
                 </ul>
             </div>
