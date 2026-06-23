@@ -7,7 +7,6 @@ import rehypeSlug from "rehype-slug";
 import rehypeAutolinkHeadings from "rehype-autolink-headings";
 import type { Components } from "react-markdown";
 import { useClipboard } from "@hooks/useClipboard";
-import "highlight.js/styles/github-dark.css";
 import {
     DocumentDuplicateIcon,
     ArrowsPointingOutIcon,
@@ -132,17 +131,19 @@ const components: Components = {
     },
     code({ className, children }) {
         const str = String(children);
-        // Block code: has a language class OR content spans multiple lines (ASCII art, plain blocks)
+
+        // Block code
         if (className || str.includes("\n")) {
             return (
-                <code className={`${className ?? ""} font-mono text-sm text-slate-200`}>
+                <code className={`${className ?? ""} font-mono text-sm text-inherit`}>
                     {children}
                 </code>
             );
         }
+
         // Inline code
         return (
-            <code className="px-1.5 py-0.5 rounded text-[0.85em] font-mono bg-slate-100 text-slate-800 border border-slate-200">
+            <code className="rounded border border-border bg-muted px-1.5 py-0.5 font-mono text-[0.85em] text-foreground">
                 {children}
             </code>
         );
