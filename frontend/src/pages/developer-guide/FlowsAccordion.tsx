@@ -113,7 +113,7 @@ const FlowsAccordion: FC<FlowsAccordionProps> = ({
                     <div className="flex items-center gap-2 min-w-0">
                         {isTransitioning && (
                             <svg
-                                className="shrink-0 h-3.5 w-3.5 animate-spin text-sky-500"
+                                className="shrink-0 h-3.5 w-3.5 animate-spin text-sky-500 dark:text-sky-400"
                                 fill="none"
                                 viewBox="0 0 24 24"
                             >
@@ -136,8 +136,8 @@ const FlowsAccordion: FC<FlowsAccordionProps> = ({
                             {step.action_label ?? step.api}
                         </span>
                     </div>
-                    <div className="flex items-center gap-1.5 shrink-0 text-sky-700">
-                        <span className="shrink-0 inline-flex items-center gap-1 text-[11px] font-semibold leading-non bg-sky-50 rounded-full px-3 py-1">
+                    <div className="flex items-center gap-1.5 shrink-0 text-sky-700 dark:text-sky-300">
+                        <span className="shrink-0 inline-flex items-center gap-1 text-[11px] font-semibold leading-non bg-sky-50 dark:bg-sky-500/10 rounded-full px-3 py-1">
                             Docs
                         </span>
 

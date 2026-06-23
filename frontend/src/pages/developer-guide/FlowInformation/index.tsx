@@ -113,7 +113,7 @@ const FlowInformation: FC<FlowInformationProps> = ({
                                 hasXValidations={hasXValidations}
                             />
 
-                            <div className="flex items-stretch gap-0 mt-6 bg-slate-100 ">
+                            <div className="flex items-stretch gap-0 mt-6 bg-slate-100 dark:bg-surface-muted">
                                 {activeSection === "preview" && (
                                     <FlowsSidebar
                                         flows={flows}
