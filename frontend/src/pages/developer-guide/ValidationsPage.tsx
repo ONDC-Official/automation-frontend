@@ -5,7 +5,7 @@ import type { ValidationTableAction } from "./types";
 import ValidationsTable from "./ValidationsTable";
 import Spinner from "@/components/Shadcn/Spinner";
 import GuideTabs, { type GuideTabItem } from "./shared/components/GuideTabs";
-import GuideStickyHeader from "./shared/components/GuideStickyHeader";
+import GuideHeader from "./shared/components/GuideHeader";
 
 const ValidationsPage: FC = () => {
     const { domain: rawDomain, version: rawVersion } = useParams<{
@@ -66,7 +66,7 @@ const ValidationsPage: FC = () => {
 
     return (
         <div className="relative bg-white dark:bg-surface-page min-h-screen flex flex-col">
-            <GuideStickyHeader>
+            <GuideHeader>
                 <div className="px-6 h-14 flex items-center justify-between gap-4">
                     <div className="flex items-center gap-2 min-w-0">
                         <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
@@ -90,7 +90,7 @@ const ValidationsPage: FC = () => {
                         />
                     </div>
                 )}
-            </GuideStickyHeader>
+            </GuideHeader>
 
             <div className="grow px-6 py-6">
                 {loading && (

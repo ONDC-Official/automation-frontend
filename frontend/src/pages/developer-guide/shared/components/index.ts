@@ -1,7 +1,7 @@
 export { default as GuideCard } from "./GuideCard";
 export { default as GuideAsyncPanel } from "./GuideAsyncPanel";
 export { default as GuidePanel } from "./GuidePanel";
-export { default as GuideStickyHeader } from "./GuideStickyHeader";
+export { default as GuideHeader } from "./GuideHeader";
 export { default as GuideSearchInput } from "./GuideSearchInput";
 export { default as GuideTable } from "./GuideTable";
 export type { GuideTableColumn } from "./GuideTable";

@@ -32,7 +32,7 @@ function getPageTitle(
                 title: "Error Codes",
                 description:
                     errorCodesCount != null
-                        ? `${errorCodesCount} error code${errorCodesCount === 1 ? "" : "s"} for this use case.`
+                        ? `${errorCodesCount} error code${errorCodesCount === 1 ? "" : "s"}`
                         : "Error codes for this use case.",
             };
         case "supported-actions":

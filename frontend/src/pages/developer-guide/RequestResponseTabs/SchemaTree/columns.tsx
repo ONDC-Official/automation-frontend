@@ -1,4 +1,4 @@
-import { FiChevronDown, FiChevronRight } from "react-icons/fi";
+import { ChevronDownIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
 import type { GuideTableColumn } from "../../shared/components/GuideTable";
 import { emptyCell } from "../../shared/components/tableCells";
 import type { SchemaRow } from "./utils";
@@ -27,19 +27,17 @@ export function buildSchemaColumns(
                             className="shrink-0 text-slate-400 hover:text-slate-600 transition-colors"
                         >
                             {row.isExpanded ? (
-                                <FiChevronDown className="w-3.5 h-3.5" />
+                                <ChevronDownIcon className="w-3.5 h-3.5" />
                             ) : (
-                                <FiChevronRight className="w-3.5 h-3.5" />
+                                <ChevronRightIcon className="w-3.5 h-3.5" />
                             )}
                         </button>
                     ) : (
                         <span className="shrink-0 inline-block w-3.5" aria-hidden="true" />
                     )}
-                    <span className="font-mono text-xs font-semibold text-slate-800">
-                        {row.name}
-                    </span>
+                    <span className="font-mono text-body-1 text-slate-800">{row.name}</span>
                     {row.hasChildren && (
-                        <span className="ml-1 text-[10px] text-slate-400 font-mono">
+                        <span className="ml-1 text-caption-2-size text-slate-400 font-mono">
                             {`{${row.childCount}}`}
                         </span>
                     )}
@@ -53,7 +51,7 @@ export function buildSchemaColumns(
             cellClassName: "whitespace-nowrap",
             render: (row) => (
                 <span
-                    className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-mono font-medium ring-1 ${typeColor(row.resolved)}`}
+                    className={`inline-flex items-center px-1 py-px capitalize rounded text-[13px] font-mono font-medium ${typeColor(row.resolved)}`}
                 >
                     {getTypeLabel(row.resolved, row.resolvedItems)}
                 </span>
@@ -69,7 +67,7 @@ export function buildSchemaColumns(
             cellClassName: "whitespace-nowrap",
             render: (row) =>
                 row.required ? (
-                    <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-300 ring-1 ring-red-200 dark:ring-red-500/30">
+                    <span className="inline-flex items-center px-1 py-px capitalize rounded text-[13px]  font-mono font-semibold bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-300 ring-red-200 dark:ring-red-500/30">
                         Required
                     </span>
                 ) : (
@@ -81,7 +79,7 @@ export function buildSchemaColumns(
     columns.push({
         key: "description",
         header: "Description",
-        cellClassName: "text-xs text-slate-500 leading-relaxed",
+        cellClassName: "text-body-2 leading-relaxed",
         render: (row) => (
             <>
                 {row.resolved.description && (

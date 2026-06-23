@@ -1,4 +1,4 @@
-import { FC, useState, useMemo } from "react";
+import { FC, useMemo } from "react";
 import { getValidationsIntroMessage } from "../xValidationsReadme";
 import {
     type RawTableRow,
@@ -8,6 +8,7 @@ import {
     pathMatches,
     normalizePathForMatch,
 } from "./attributePanelUtils";
+import { SectionHeader, InlineCodeRef } from "./AttributeSections/atoms";
 
 // ─── Description renderer with inline highlighted JSON paths ─────────────────
 
@@ -17,12 +18,7 @@ const DescriptionText: FC<{ text: string }> = ({ text }) => {
         <>
             {parts.map((part, i) =>
                 part.isPath ? (
-                    <code
-                        key={i}
-                        className="inline-flex items-center px-1.5 py-0.5 rounded bg-sky-50 dark:bg-sky-500/10 text-sky-700 dark:text-sky-300 font-mono text-[11px] border border-sky-200 dark:border-sky-500/30 leading-normal"
-                    >
-                        {part.text}
-                    </code>
+                    <InlineCodeRef key={i}>{part.text}</InlineCodeRef>
                 ) : (
                     <span key={i}>{safeDescription(part.text)}</span>
                 )
@@ -31,53 +27,45 @@ const DescriptionText: FC<{ text: string }> = ({ text }) => {
     );
 };
 
-// ─── Single validation-rule card ─────────────────────────────────────────────
+// ─── Single validation group: name + breadcrumb, rules listed underneath ─────
 
-const RawTableCard: FC<{ row: RawTableRow }> = ({ row }) => {
+const ValidationGroupItem: FC<{ row: RawTableRow }> = ({ row }) => {
     const hasSkipIf = row.skipIf.trim() !== "";
     const hasErrorCode = row.errorCode.trim() !== "";
 
     return (
-        <div className="rounded-xl border border-sky-100 dark:border-sky-500/30 bg-white dark:bg-surface-elevated shadow-xs overflow-hidden">
-            {/* Header */}
-            <div className="flex items-start justify-between gap-2 px-4 py-2.5 bg-sky-50/60 dark:bg-sky-500/10 border-b border-sky-100 dark:border-sky-500/30">
+        <div className="space-y-2.5 border-l-2 border-sky-100 dark:border-sky-500/20 pl-3">
+            <div className="flex items-start justify-between gap-2">
                 <div className="flex flex-col gap-0.5 min-w-0">
-                    <span className="font-mono text-xs font-bold text-sky-800 dark:text-sky-300 break-all">
+                    <span className="font-mono text-xs font-bold text-sky-700 dark:text-sky-300 break-all">
                         {row.name}
                     </span>
                     {row.group.trim() && (
-                        <span className="text-[10px] text-slate-600 truncate" title={row.group}>
+                        <span className="text-[11px] text-slate-400 truncate" title={row.group}>
                             {row.group}
                         </span>
                     )}
                 </div>
                 {hasErrorCode && (
-                    <span className="shrink-0 inline-flex items-center px-2 py-0.5 rounded-md bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-300 border border-rose-200 dark:border-rose-500/30 text-[10px] font-semibold">
+                    <span className="shrink-0 text-[10px] font-semibold text-rose-500 dark:text-rose-400">
                         {row.errorCode}
                     </span>
                 )}
             </div>
-            {/* Body */}
-            <div className="px-4 py-3 space-y-3 text-sm">
-                <div className="space-y-1">
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-sky-500 dark:text-sky-400">
-                        Rule
-                    </span>
-                    <p className="text-slate-700 leading-relaxed">
-                        <DescriptionText text={row.description} />
+            <div className="space-y-1.5">
+                <SectionHeader>Rules</SectionHeader>
+                <p className="text-sm text-slate-700 leading-relaxed">
+                    <DescriptionText text={row.description} />
+                </p>
+            </div>
+            {hasSkipIf && (
+                <div className="space-y-1.5">
+                    <SectionHeader>Skip If</SectionHeader>
+                    <p className="text-slate-500 text-sm leading-relaxed">
+                        <DescriptionText text={row.skipIf} />
                     </p>
                 </div>
-                {hasSkipIf && (
-                    <div className="space-y-1 pt-2 border-t border-sky-50 dark:border-sky-500/20">
-                        <span className="text-[10px] font-bold uppercase tracking-widest text-sky-500 dark:text-sky-400">
-                            Skip If
-                        </span>
-                        <p className="text-slate-500 leading-relaxed">
-                            <DescriptionText text={row.skipIf} />
-                        </p>
-                    </div>
-                )}
-            </div>
+            )}
         </div>
     );
 };
@@ -92,8 +80,6 @@ interface ValidationsSectionProps {
 }
 
 const ValidationsSection: FC<ValidationsSectionProps> = ({ rawTableRows, selectedPath }) => {
-    const [searchQuery, setSearchQuery] = useState("");
-
     const matchingRows = useMemo((): RawTableRow[] => {
         if (!selectedPath) return [];
         const normSelected = normalizePathForMatch(selectedPath.trim());
@@ -104,65 +90,21 @@ const ValidationsSection: FC<ValidationsSectionProps> = ({ rawTableRows, selecte
         });
     }, [rawTableRows, selectedPath]);
 
-    const filteredRows = useMemo((): RawTableRow[] => {
-        const q = searchQuery.trim().toLowerCase();
-        if (!q) return matchingRows;
-        return matchingRows.filter(
-            (row) =>
-                row.name.toLowerCase().includes(q) ||
-                row.description.toLowerCase().includes(q) ||
-                row.group.toLowerCase().includes(q)
-        );
-    }, [matchingRows, searchQuery]);
-
     if (rawTableRows.length === 0) return null;
 
     return (
         <section className="pt-5">
-            <div className="flex items-center gap-2 mb-3">
-                <h4 className="text-[10px] font-bold uppercase tracking-widest text-sky-600 dark:text-sky-400">
-                    sync-validations
-                </h4>
-                <div className="flex-1 h-px bg-sky-100 dark:bg-sky-500/20" />
-                {matchingRows.length > 0 && (
-                    <span className="text-[10px] font-semibold text-sky-600 dark:text-sky-300 bg-sky-100 dark:bg-sky-500/10 px-2 py-0.5 rounded-full">
-                        {matchingRows.length}
-                    </span>
-                )}
-            </div>
-            <p className="text-slate-500 text-xs leading-relaxed mb-4 bg-sky-50/60 dark:bg-sky-500/10 border border-sky-100 dark:border-sky-500/30 rounded-lg px-3 py-2.5">
+            <SectionHeader>Sync-validations</SectionHeader>
+            <p className="text-slate-500 text-xs leading-relaxed mb-4">
                 {getValidationsIntroMessage()}
             </p>
-            {matchingRows.length > 1 && (
-                <div className="mb-4">
-                    <input
-                        type="search"
-                        placeholder="Filter rules by name, path or description…"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full px-3 py-2.5 text-sm border border-slate-200 rounded-lg bg-white dark:bg-surface-elevated text-slate-800 placeholder-slate-400 focus:outline-hidden focus:ring-2 focus:ring-sky-500/30 focus:border-sky-400 transition-shadow"
-                        aria-label="Filter validation rules"
-                    />
-                    {searchQuery.trim() && (
-                        <p className="text-slate-400 text-xs mt-2">
-                            {filteredRows.length === 0
-                                ? "No rules match your search."
-                                : `Showing ${filteredRows.length} of ${matchingRows.length} rules`}
-                        </p>
-                    )}
-                </div>
-            )}
-            <div className="space-y-3">
+            <div className="space-y-5">
                 {matchingRows.length === 0 ? (
-                    <p className="text-slate-400 text-sm py-8 text-center rounded-xl bg-slate-50 border border-slate-200">
+                    <p className="text-slate-400 text-sm py-6">
                         No validation rules found for this field.
                     </p>
-                ) : filteredRows.length === 0 && searchQuery.trim() ? (
-                    <p className="text-slate-400 text-sm py-8 text-center rounded-xl bg-slate-50 border border-slate-200">
-                        No rules match &quot;{searchQuery.trim()}&quot;.
-                    </p>
                 ) : (
-                    filteredRows.map((row) => <RawTableCard key={row.name} row={row} />)
+                    matchingRows.map((row) => <ValidationGroupItem key={row.name} row={row} />)
                 )}
             </div>
         </section>

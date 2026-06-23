@@ -1,6 +1,10 @@
 import { FC, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { FiCode, FiLayers, FiSearch } from "react-icons/fi";
+import {
+    CodeBracketIcon,
+    Square3Stack3DIcon,
+    MagnifyingGlassIcon,
+} from "@heroicons/react/24/outline";
 import { getDeveloperGuideUseCasePath } from "@constants/routes";
 import type { BuildEntry } from "../types";
 import { groupBuildsByFamily } from "../domainGrouping";
@@ -41,9 +45,9 @@ const DeveloperGuideDomainsContent: FC = () => {
     return (
         <div className="min-h-full">
             <header className="border-b border-sky-100 dark:border-sky-500/30 bg-linear-to-br from-sky-50 via-white to-slate-50 dark:from-sky-500/10 dark:via-surface-elevated dark:to-surface-elevated">
-                <div className="px-6 md:px-10 py-10 md:py-12 max-w-3xl mt-[18px]">
+                <div className="px-10 md:px-12 py-10 md:py-12 max-w-3xl">
                     <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-sky-100 dark:bg-sky-500/10 text-sky-700 dark:text-sky-300 rounded-full text-xs font-semibold uppercase tracking-widest mb-5 border border-sky-200 dark:border-sky-500/30">
-                        <FiCode size={11} aria-hidden />
+                        <CodeBracketIcon className="w-2.75 h-2.75" aria-hidden />
                         API reference
                     </div>
                     <h1 className="text-3xl md:text-4xl font-bold text-slate-900 tracking-tight leading-tight mb-4">
@@ -56,13 +60,12 @@ const DeveloperGuideDomainsContent: FC = () => {
                 </div>
             </header>
 
-            <div className="px-6 md:px-10 py-10 md:py-12">
+            <div className="px-10 md:px-12 py-10 md:py-12">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                     <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-lg bg-sky-100 dark:bg-sky-500/10 border border-sky-200 dark:border-sky-500/30 flex items-center justify-center shrink-0">
-                            <FiLayers
-                                size={15}
-                                className="text-sky-600 dark:text-sky-400"
+                            <Square3Stack3DIcon
+                                className="w-3.75 h-3.75 text-sky-600 dark:text-sky-400"
                                 aria-hidden
                             />
                         </div>
@@ -76,10 +79,7 @@ const DeveloperGuideDomainsContent: FC = () => {
                         </div>
                     </div>
                     <div className="relative">
-                        <FiSearch
-                            size={14}
-                            className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
-                        />
+                        <MagnifyingGlassIcon className="w-3.5 h-3.5 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
                         <input
                             type="search"
                             placeholder="Search domains..."

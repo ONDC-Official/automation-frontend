@@ -1,7 +1,8 @@
-import { FC, useCallback, useEffect, useMemo, useState } from "react";
-import { Outlet } from "react-router-dom";
-import { FiChevronLeft, FiSearch } from "react-icons/fi";
+import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Outlet, useLocation } from "react-router-dom";
+import { ArrowLeftIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import DeveloperGuideCollapsedNavBar from "./DeveloperGuideCollapsedNavBar";
+import DeveloperGuideNavBackButton from "./DeveloperGuideNavBackButton";
 import { fetchBuilds } from "@services/developerGuideSpecApi";
 import { fetchDocContent, fetchDocList } from "@services/developerDocsApi";
 import type { BuildEntry, DocMeta } from "../types";
@@ -13,6 +14,9 @@ import { filterNavTree } from "./filterNavTree";
 import DeveloperGuideSidebar from "./DeveloperGuideSidebar";
 import { DeveloperGuideShellContext } from "./DeveloperGuideShellContext";
 import { NAV_STATUS_LABEL, NAV_STATUS_STYLES, type NavStatus } from "../shared/statusPlaceholders";
+import { ROUTES } from "@/constants/routes";
+import { Button } from "@/components/Shadcn/Button";
+import Input from "@/components/Shadcn/TextField/input";
 
 const STATUS_LEGEND_ORDER: NavStatus[] = ["released", "drafted", "to-be-deprecated", "deprecated"];
 
@@ -21,7 +25,7 @@ const StatusLegend: FC = () => (
         {STATUS_LEGEND_ORDER.map((status) => (
             <span
                 key={status}
-                className={`rounded-full px-3 py-1 text-[11px] font-semibold leading-none ${NAV_STATUS_STYLES[status]}`}
+                className={`rounded-full px-2 py-2 text-caption-2-size font-semibold leading-none ${NAV_STATUS_STYLES[status]}`}
             >
                 {NAV_STATUS_LABEL[status]}
             </span>
@@ -29,13 +33,25 @@ const StatusLegend: FC = () => (
     </div>
 );
 
-const DeveloperGuideShellMain: FC = () => (
-    <main className="flex-1 min-w-0 overflow-y-auto h-full">
-        <Outlet />
-    </main>
-);
+const DeveloperGuideShellMain: FC = () => {
+    const { pathname } = useLocation();
+    const mainRef = useRef<HTMLElement>(null);
+
+    useEffect(() => {
+        mainRef.current?.scrollTo({ top: 0, left: 0 });
+    }, [pathname]);
+
+    return (
+        <main ref={mainRef} className="flex-1 min-w-0 min-h-0 overflow-y-auto overscroll-contain">
+            <Outlet />
+        </main>
+    );
+};
 
 const DeveloperGuideShell: FC = () => {
+    const { pathname } = useLocation();
+    const isGettingStartedRoute = pathname === ROUTES.DEVELOPER_GUIDE_GETTING_STARTED;
+
     const [builds, setBuilds] = useState<BuildEntry[]>([]);
     const [docs, setDocs] = useState<DocMeta[]>([]);
     const [docMarkdownBySlug, setDocMarkdownBySlug] = useState<Record<string, string>>({});
@@ -117,7 +133,7 @@ const DeveloperGuideShell: FC = () => {
 
     if (isLoading) {
         return (
-            <div className="min-h-[calc(100vh-var(--app-header-height))] flex items-center justify-center bg-white dark:bg-surface-page">
+            <div className="min-h-[calc(100svh-4rem)] flex items-center justify-center bg-white dark:bg-surface-page">
                 <Spinner className="size-8 text-brand-normal" />
             </div>
         );
@@ -137,16 +153,25 @@ const DeveloperGuideShell: FC = () => {
                 collapseNavSidebar,
             }}
         >
-            <div className="h-[calc(100vh-var(--app-header-height))] overflow-hidden bg-white dark:bg-surface-page flex flex-col">
-                <div className="flex flex-1 min-h-0 flex-col lg:flex-row overflow-hidden">
+            <div className="flex h-[calc(100svh-4rem)] min-h-0 flex-col overflow-hidden bg-white dark:bg-surface-page">
+                {isGettingStartedRoute && (
+                    <div className="shrink-0 flex gap-2 px-6 py-3 bg-alert-50 items-center">
+                        <span className="text-alert-500 text-body-1 font-semibold">Tip: </span>
+                        <span className="text-body-2 font-regular text-n-300">
+                            Use Filter navigation in the sidebar to quickly find a domain, use case,
+                            or documentation page.
+                        </span>
+                    </div>
+                )}
+                <div className="flex min-h-0 flex-1 flex-col overflow-hidden lg:flex-row">
                     <aside
-                        className={`shrink-0 border-b lg:border-b-0 bg-slate-100 dark:bg-surface-muted flex min-h-0 flex-col lg:h-full transition-[width] duration-300 ease-in-out overflow-hidden ${
+                        className={`shrink-0 border-b border-n-40 bg-slate-100 dark:border-border-default dark:bg-surface-muted lg:border-b-0 lg:border-r lg:border-n-40 flex min-h-0 flex-col overflow-hidden transition-[width] duration-300 ease-in-out lg:h-full lg:max-h-full ${
                             navSidebarOpen
                                 ? "w-full lg:w-64 xl:w-72"
                                 : "hidden lg:block lg:w-0 lg:border-r-0"
                         }`}
                     >
-                        <div className="px-4 pt-6 pb-5">
+                        <div className="shrink-0 px-4 py-2 pb-5">
                             <div className="flex items-start justify-between gap-2 pt-4">
                                 <div className="min-w-0">
                                     <h1 className="text-base font-semibold tracking-tight text-slate-900">
@@ -156,22 +181,20 @@ const DeveloperGuideShell: FC = () => {
                                         ONDC integration reference
                                     </p>
                                 </div>
-                                <button
-                                    type="button"
+                                <Button
+                                    variant="outline"
+                                    size="xs"
                                     onClick={toggleNavSidebar}
-                                    className="hidden lg:flex items-center justify-center h-9 w-9 rounded-full border border-slate-200 bg-white dark:bg-surface-elevated text-sky-500 dark:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-500/10 hover:border-sky-200 dark:hover:border-sky-500/30 shadow-xs shrink-0"
+                                    className="text-brand-normal bg-brand-light hover:bg-brand-light-active hover:text-brand-normal-hover rounded-3xl w-12 h-7 border-n-40"
                                     aria-label="Collapse navigation"
                                     title="Collapse navigation"
                                 >
-                                    <FiChevronLeft size={16} />
-                                </button>
+                                    <ArrowLeftIcon className="size-4" aria-hidden />
+                                </Button>
                             </div>
                             <div className="relative mt-4">
-                                <FiSearch
-                                    size={14}
-                                    className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
-                                />
-                                <input
+                                <MagnifyingGlassIcon className="w-3.5 h-3.5 absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-900 dark:text-neutral-400 pointer-events-none" />
+                                <Input
                                     type="search"
                                     placeholder="Search"
                                     value={searchQuery}
@@ -181,7 +204,7 @@ const DeveloperGuideShell: FC = () => {
                             </div>
                             <StatusLegend />
                         </div>
-                        <div className="flex-1 overflow-y-auto px-3 py-2 pb-8">
+                        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 py-2 pb-8">
                             {loadError ? (
                                 <p className="px-2 py-4 text-sm text-red-600 dark:text-red-400">
                                     {loadError}
@@ -195,8 +218,13 @@ const DeveloperGuideShell: FC = () => {
                         </div>
                     </aside>
 
-                    <div className="relative flex flex-1 min-w-0 min-h-0 flex-col">
+                    <div className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
                         <DeveloperGuideCollapsedNavBar />
+                        {!navSidebarOpen && (
+                            <div className="absolute left-0 top-50 z-30">
+                                <DeveloperGuideNavBackButton className="rounded-l-none" />
+                            </div>
+                        )}
                         <DeveloperGuideShellMain />
                     </div>
                 </div>

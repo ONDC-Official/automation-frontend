@@ -1,5 +1,5 @@
 import { FC, useId, useState } from "react";
-import { FiChevronDown } from "react-icons/fi";
+import { ChevronDownIcon } from "@heroicons/react/24/outline";
 import { IconSearch } from "../shared/icons";
 import type { BuildEntry } from "../types";
 import type { DomainFamilyGroup } from "../domainGrouping";
@@ -127,9 +127,8 @@ const DomainFamilyAccordion: FC<{
                             : "bg-slate-100 border-slate-200 text-slate-400"
                     }`}
                 >
-                    <FiChevronDown
-                        size={16}
-                        className={`transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+                    <ChevronDownIcon
+                        className={`w-4 h-4 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
                         aria-hidden
                     />
                 </span>
@@ -245,7 +244,7 @@ const DomainCardsSection: FC<DomainCardsSectionProps> = ({
         return (
             <div className="flex flex-col items-center justify-center py-20 text-center">
                 <div className="w-14 h-14 bg-sky-50 dark:bg-sky-500/10 border border-sky-100 dark:border-sky-500/30 rounded-2xl flex items-center justify-center mb-4 shadow-xs">
-                    <IconSearch size={22} strokeWidth={1.5} className="text-sky-400" aria-hidden />
+                    <IconSearch className="w-5.5 h-5.5 text-sky-400" aria-hidden />
                 </div>
                 <p className="text-slate-600 font-semibold text-sm">No domains found</p>
                 <p className="text-slate-400 text-xs mt-1">Try adjusting your search term</p>

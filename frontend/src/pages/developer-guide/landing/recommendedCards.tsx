@@ -1,4 +1,4 @@
-import { FiBook, FiKey } from "react-icons/fi";
+import { BookOpenIcon, KeyIcon } from "@heroicons/react/24/outline";
 
 export const RECOMMENDED_CARD_IDS = {
     GETTING_STARTED: "getting-started",
@@ -20,7 +20,7 @@ export const recommendedCards: RecommendedCardConfig[] = [
         subtitle: "Start with a use case",
         description:
             "New to the developer guide? Walk through a real use case and explore all request/response flows step by step.",
-        icon: <FiBook className="text-sky-600 dark:text-sky-400" size={20} />,
+        icon: <BookOpenIcon className="w-5 h-5 text-sky-600 dark:text-sky-400" />,
     },
     {
         id: RECOMMENDED_CARD_IDS.AUTH_TOOLS,
@@ -28,6 +28,6 @@ export const recommendedCards: RecommendedCardConfig[] = [
         subtitle: "Generate & Verify ONDC Headers",
         description:
             "Generate and verify ONDC authorization headers using BLAKE-512 hashing and Ed25519 signing.",
-        icon: <FiKey className="text-sky-600 dark:text-sky-400" size={20} />,
+        icon: <KeyIcon className="w-5 h-5 text-sky-600 dark:text-sky-400" />,
     },
 ];

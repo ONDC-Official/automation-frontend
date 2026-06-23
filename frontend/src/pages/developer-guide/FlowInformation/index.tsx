@@ -32,7 +32,6 @@ const FlowInformation: FC<FlowInformationProps> = ({
     const isEmpty = !selectedFlow;
     const {
         selectedFlowData,
-        steps,
         selectedStep,
         examples,
         examplePayload,
@@ -105,7 +104,7 @@ const FlowInformation: FC<FlowInformationProps> = ({
                     </div>
 
                     {hasTabs && (
-                        <div className="border-t border-slate-200 pt-8">
+                        <div className="border-t border-slate-200 dark:border-border-default">
                             <DetailTabsHeader
                                 activeSection={activeSection}
                                 onChange={handleSectionChange}
@@ -114,7 +113,7 @@ const FlowInformation: FC<FlowInformationProps> = ({
                                 hasXValidations={hasXValidations}
                             />
 
-                            <div className="flex items-start gap-0 mt-6">
+                            <div className="flex items-stretch gap-0 mt-6 bg-slate-100 dark:bg-surface-muted">
                                 {activeSection === "preview" && (
                                     <FlowsSidebar
                                         flows={flows}
@@ -127,7 +126,7 @@ const FlowInformation: FC<FlowInformationProps> = ({
                                     />
                                 )}
 
-                                <div className="flex-1 min-w-0 px-4">
+                                <div className="flex-1 min-w-0 px-4 relative">
                                     {activeSection === "preview" && hasExampleObject && (
                                         <div className="flex flex-col gap-4">
                                             {examples.length > 1 && (
@@ -137,7 +136,7 @@ const FlowInformation: FC<FlowInformationProps> = ({
                                                     onChange={setSelectedExampleIndex}
                                                 />
                                             )}
-                                            <div className="w-full h-[700px] min-h-0 rounded-2xl overflow-hidden border border-slate-200 shadow-xs bg-white dark:bg-surface-elevated">
+                                            <div className="w-full min-h-0 overflow-hidden shadow-xs bg-white dark:bg-surface-elevated">
                                                 {showPreviewDetails ? (
                                                     <FlowActionDetails
                                                         exampleValue={examplePayload as object}
@@ -149,11 +148,9 @@ const FlowInformation: FC<FlowInformationProps> = ({
                                                             selectedFlowData?.flowId ?? selectedFlow
                                                         }
                                                         validationTableData={validationTable}
-                                                        flowSteps={steps}
-                                                        onSelectAction={setSelectedFlowAction}
                                                     />
                                                 ) : (
-                                                    <div className="h-full w-full flex items-center justify-center">
+                                                    <div className="absolute top-0 bottom-0 left-0 right-0  flex items-center justify-center">
                                                         <Spinner className="size-8 text-brand-normal" />
                                                     </div>
                                                 )}

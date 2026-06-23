@@ -80,13 +80,13 @@ function GuideTable<T>({
     return (
         <div
             className={cn(
-                "border border-slate-200 bg-white dark:bg-surface-elevated overflow-hidden",
+                "border border-slate-200 bg-white dark:bg-surface-elevated overflow-hidden px-5 py-4",
                 rounded === "2xl" ? "rounded-2xl" : "rounded-xl",
                 shadow === "md" ? "shadow-md" : "shadow-xs"
             )}
         >
             {toolbar && (
-                <div className="bg-sky-50/60 dark:bg-sky-500/10 border-b border-slate-200 px-4 py-3">
+                <div className="bg-sky-50/60 dark:bg-sky-500/10 border-b border-slate-200 px-4 py-3  rounded-t-lg mb-4">
                     {toolbar}
                 </div>
             )}

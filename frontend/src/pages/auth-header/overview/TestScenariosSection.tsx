@@ -8,10 +8,13 @@ import {
     commonIssues,
 } from "@pages/auth-header/overview/data";
 
+const cardShell =
+    "rounded-xl border border-n-40 bg-white p-6 dark:border-border-default dark:bg-surface-elevated";
+
 const TestScenariosSection: FC = () => (
-    <div className="bg-white border border-gray-200 rounded-xl p-6">
-        <h3 className="text-xl font-bold text-gray-900 mb-4">Test Scenarios & FAQs</h3>
-        <p className="text-gray-600 mb-6">
+    <div className={cardShell}>
+        <h3 className="mb-4 text-xl font-bold text-n-900 dark:text-n-0">Test Scenarios & FAQs</h3>
+        <p className="mb-6 text-body-2 text-n-300 dark:text-n-60">
             Common scenarios and their expected outcomes when signing and verifying ONDC
             authorization headers.
         </p>
@@ -29,9 +32,11 @@ const TestScenariosSection: FC = () => (
             headers={["Signing Key", "Verification Key", "Result", "Reason / Language Support"]}
             rows={keyScenarios}
             note={
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                    <p className="text-sm text-blue-800">
-                        <strong>📌 Key Size by Language:</strong>
+                <div className="rounded-lg border border-n-40 bg-brand-light p-3 dark:border-border-default dark:bg-brand-normal/10">
+                    <p className="text-body-2 text-n-300 dark:text-n-60">
+                        <strong className="text-n-900 dark:text-n-0">
+                            📌 Key Size by Language:
+                        </strong>
                         <br />• <strong>32-byte (seed):</strong> Go, Rust, Java (BouncyCastle)
                         <br />• <strong>64-byte (expanded):</strong> Python (PyNaCl), Node.js
                         (libsodium), PHP (sodium)
@@ -56,12 +61,15 @@ const TestScenariosSection: FC = () => (
             rows={payloadModificationScenarios}
         />
 
-        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-            <h4 className="font-semibold text-amber-800 mb-3">⚠️ Common Implementation Issues</h4>
-            <ul className="text-sm text-amber-900 space-y-2">
+        <div className="rounded-lg border border-alert-200 bg-alert-50 p-4 dark:border-alert-500/30 dark:bg-alert-500/10">
+            <h4 className="mb-3 font-semibold text-n-900 dark:text-n-0">
+                ⚠️ Common Implementation Issues
+            </h4>
+            <ul className="space-y-2 text-body-2 text-n-300 dark:text-n-60">
                 {commonIssues.map((item, index) => (
                     <li key={index}>
-                        <strong>Issue:</strong> {item.issue} → <strong>Solution:</strong>{" "}
+                        <strong className="text-n-900 dark:text-n-0">Issue:</strong> {item.issue} →{" "}
+                        <strong className="text-n-900 dark:text-n-0">Solution:</strong>{" "}
                         {item.solution}
                     </li>
                 ))}

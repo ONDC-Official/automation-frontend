@@ -3,7 +3,7 @@ import Tippy from "@tippyjs/react";
 import type { FlowStep } from "./types";
 import "tippy.js/animations/perspective-subtle.css";
 
-import { FaSquareArrowUpRight } from "react-icons/fa6";
+import { ArrowTopRightOnSquareIcon } from "@heroicons/react/24/outline";
 import GuideCard from "./shared/components/GuideCard";
 
 interface ActionOverviewProps {
@@ -20,7 +20,7 @@ const ActionOverview: FC<ActionOverviewProps> = ({ step, actionId }) => {
             {/* Header strip */}
             <div className="flex items-center gap-3 px-6 py-4 bg-sky-50 dark:bg-sky-500/10 border-slate-100">
                 <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-sky-100 dark:bg-sky-500/20 text-sky-600 dark:text-sky-400 shrink-0">
-                    <FaSquareArrowUpRight className="w-4 h-4" />
+                    <ArrowTopRightOnSquareIcon className="w-4 h-4" />
                 </span>
                 <div className="flex-1 min-w-0">
                     <p className="text-[10px] font-semibold text-sky-500 dark:text-sky-400 uppercase tracking-widest mb-0.5">

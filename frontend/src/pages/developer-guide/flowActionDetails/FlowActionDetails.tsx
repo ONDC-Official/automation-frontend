@@ -1,8 +1,9 @@
 import { FC, useState, useCallback, ComponentProps, MouseEvent, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
-import { FaCopy } from "react-icons/fa";
-import { FiList, FiMessageSquare, FiFileText } from "react-icons/fi";
+import { DocumentDuplicateIcon, ArrowRightIcon, ArrowLeftIcon } from "@heroicons/react/24/outline";
 import { useClipboard } from "@hooks/useClipboard";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/Shadcn/Button";
 import GuideTabs, { type GuideTabItem } from "../shared/components/GuideTabs";
 import JsonViewer from "@pages/protocol-playground/ui/Json-path-extractor";
 import { SelectedType } from "@pages/protocol-playground/ui/types";
@@ -11,16 +12,14 @@ import { getActionAttributes, getValidationsForAction } from "./schemaAttributes
 import AttributesPanel from "./AttributesPanel";
 import CommentsPanel from "./CommentsPanel";
 import NotesPanel from "./NotesPanel";
-import FlowVisualizationStrip from "./FlowVisualizationStrip";
 import { getLeafRowsForApi, getValueAtPath, type RawTableAction } from "./attributePanelUtils";
-import type { FlowStep } from "../types";
 
 type RightPanelTab = "attributes" | "comments" | "notes";
 
 const RIGHT_PANEL_TABS: GuideTabItem<RightPanelTab>[] = [
-    { id: "attributes", label: "Details", icon: FiList },
-    { id: "comments", label: "Comments", icon: FiMessageSquare },
-    { id: "notes", label: "Notes", icon: FiFileText },
+    { id: "attributes", label: "Details" },
+    { id: "comments", label: "Comments" },
+    { id: "notes", label: "Notes" },
 ];
 
 interface FlowActionDetailsProps {
@@ -34,10 +33,6 @@ interface FlowActionDetailsProps {
     flowId?: string;
     /** Validation table data keyed by action name. Loaded lazily from API. */
     validationTableData?: Record<string, ValidationTableAction> | null;
-    /** Steps of the flow this action belongs to, for the step-diagram strip above the JSON viewer. */
-    flowSteps?: FlowStep[];
-    /** Switches the selected action — called when a step is clicked in the diagram strip. */
-    onSelectAction?: (actionId: string) => void;
 }
 
 const FlowActionDetails: FC<FlowActionDetailsProps> = ({
@@ -48,8 +43,6 @@ const FlowActionDetails: FC<FlowActionDetailsProps> = ({
     useCaseId,
     flowId,
     validationTableData,
-    flowSteps,
-    onSelectAction,
 }) => {
     const [searchParams, setSearchParams] = useSearchParams();
 
@@ -61,6 +54,7 @@ const FlowActionDetails: FC<FlowActionDetailsProps> = ({
         () => searchParams.get("attr") ?? null
     );
     const [expanded, setExpanded] = useState(false);
+    const [rightPanelOpen, setRightPanelOpen] = useState(true);
     const { copyToClipboard } = useClipboard();
 
     const setRightPanelTab = useCallback(
@@ -133,22 +127,17 @@ const FlowActionDetails: FC<FlowActionDetailsProps> = ({
         [spec, apiForAttributes, selectedPath]
     );
 
-    const visualizationStrip =
-        flowSteps && flowSteps.length > 0 && onSelectAction ? (
-            <FlowVisualizationStrip
-                steps={flowSteps}
-                selectedFlowAction={actionApi}
-                onSelectAction={onSelectAction}
-            />
-        ) : null;
-
     const root = (
-        <div className="flex flex-col h-full gap-3">
-            {visualizationStrip}
-            <div className="flex-1 flex flex-col min-h-0 rounded-xl border border-slate-200 bg-white dark:bg-surface-elevated overflow-hidden shadow-xs">
-                <div className="flex-1 flex min-h-0">
-                    <div className="w-full flex flex-col min-w-0 border-r border-slate-200">
-                        <div className="flex-1 min-h-0 overflow-auto p-4 relative group">
+        <div className="flex flex-col h-full gap-3 ">
+            <div className="flex-1 flex flex-col min-h-0 bg-brand-light/30 dark:bg-surface-elevated overflow-hidden shadow-xs">
+                <div className="flex-1 flex min-h-0 relative">
+                    <div
+                        className={cn(
+                            "flex flex-col min-w-0 transition-all duration-200 relative",
+                            rightPanelOpen ? "w-3/5" : "w-full"
+                        )}
+                    >
+                        <div className="flex-1 min-h-0 overflow-auto p-4 pt-12 relative group">
                             <JsonViewer
                                 data={exampleValue as ComponentProps<typeof JsonViewer>["data"]}
                                 isSelected={isSelected}
@@ -164,20 +153,45 @@ const FlowActionDetails: FC<FlowActionDetailsProps> = ({
                                 }
                                 className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white text-sm rounded-lg shadow-lg"
                             >
-                                <FaCopy className="w-4 h-4" />
+                                <DocumentDuplicateIcon className="w-4 h-4" />
                                 Copy
                             </button>
                         </div>
+                        <Button
+                            variant="outline"
+                            size="xs"
+                            onClick={() => setRightPanelOpen((v) => !v)}
+                            title={
+                                rightPanelOpen ? "Collapse details panel" : "Expand details panel"
+                            }
+                            aria-label={
+                                rightPanelOpen ? "Collapse details panel" : "Expand details panel"
+                            }
+                            className="absolute top-3 right-3 z-10 text-brand-normal bg-brand-light hover:bg-brand-light-active hover:text-brand-normal-hover rounded-3xl w-12 h-7 border-n-40"
+                        >
+                            {rightPanelOpen ? (
+                                <ArrowRightIcon className="size-4" />
+                            ) : (
+                                <ArrowLeftIcon className="size-4" />
+                            )}
+                        </Button>
                     </div>
-                    <div className="w-1/2 flex flex-col min-h-0 bg-slate-50/60 dark:bg-surface-muted/60 border-l border-slate-200">
-                        <div className="px-4 pt-3 pb-2 border-b border-slate-200 bg-white/80 dark:bg-surface-elevated/80 shrink-0">
+                    <div
+                        className={cn(
+                            "flex flex-col min-h-0 bg-slate-50/60 dark:bg-surface-muted/60 border-l border-slate-200 transition-all duration-200",
+                            rightPanelOpen
+                                ? "w-2/5"
+                                : "w-0 overflow-hidden opacity-0 pointer-events-none border-l-0"
+                        )}
+                    >
+                        <div className="px-4 pt-3 pb-2 bg-white/90 dark:bg-surface-elevated/90 shrink-0">
                             <GuideTabs<RightPanelTab>
                                 tabs={RIGHT_PANEL_TABS}
                                 active={rightPanelTab}
                                 onChange={setRightPanelTab}
                             />
                         </div>
-                        <div className="flex-1 min-h-0 overflow-hidden p-4">
+                        <div className="flex-1 min-h-0 overflow-hidden">
                             {rightPanelTab === "attributes" && (
                                 <AttributesPanel
                                     attributes={attributes}

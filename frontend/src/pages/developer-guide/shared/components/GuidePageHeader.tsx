@@ -1,5 +1,6 @@
 import { type FC, type ReactNode } from "react";
-import GuideStickyHeader from "./GuideStickyHeader";
+import GuideHeader from "./GuideHeader";
+import { ExclamationTriangleIcon } from "@heroicons/react/24/solid";
 
 export interface GuidePageHeaderProps {
     /** Breadcrumb row content (nav with `>` separators). Omit when a page-level breadcrumb is shown elsewhere. */
@@ -26,22 +27,31 @@ const GuidePageHeader: FC<GuidePageHeaderProps> = ({
     tabs,
     className,
 }) => (
-    <GuideStickyHeader className={className}>
+    <GuideHeader className={className}>
         {breadcrumb && <div className="px-4 md:px-6 py-3 bg-slate-100">{breadcrumb}</div>}
 
         {title && (
-            <div className="px-4 md:px-6 pb-4 pt-4 lg:border-t">
-                <h1 className="text-2xl font-bold text-slate-900 leading-tight">{title}</h1>
+            <div className="px-4 md:px-12 pt-6 lg:border-t">
+                <h1 className="text-2xl font-bold text-slate-900 leading-tight">
+                    {title === "Error Codes" ? (
+                        <div className="flex items-center gap-2">
+                            <ExclamationTriangleIcon className="size-10 text-error-500 dark:text-error-500" />
+                            {title}
+                        </div>
+                    ) : (
+                        title
+                    )}
+                </h1>
                 {description && (
-                    <p className="mt-1.5 text-sm text-slate-500 leading-relaxed max-w-3xl">
+                    <div className="mt-1.5 pb-4 text-sm text-slate-500 border-b border-n-30 dark:border-border-default w-full leading-relaxed">
                         {description}
-                    </p>
+                    </div>
                 )}
             </div>
         )}
 
-        {tabs && <div className="px-4 md:px-6">{tabs}</div>}
-    </GuideStickyHeader>
+        {tabs && <div className="px-4 md:px-12">{tabs}</div>}
+    </GuideHeader>
 );
 
 export default GuidePageHeader;

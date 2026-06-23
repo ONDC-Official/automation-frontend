@@ -16,7 +16,7 @@ export const ChangeRow: FC<{ entry: ChangeEntry }> = ({ entry }) => {
                 <span
                     className={`mt-0.5 shrink-0 inline-flex items-center gap-1 px-3 py-1 rounded-full text-[11px] font-semibold leading-none ${cfg.bg} ${cfg.color}`}
                 >
-                    <Icon size={12} />
+                    <Icon className="w-3 h-3" />
                     {cfg.label}
                 </span>
 

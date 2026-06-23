@@ -3,72 +3,93 @@ import type { ChangeEntry } from "../types";
 import { IconChevronDown } from "../shared/icons";
 import { KIND_CONFIG } from "./kindConfig";
 import { DIFF_CHIP_CLASSES } from "./DiffViewer";
+import { Button } from "@/components/Shadcn/Button";
 
-const LABEL_COL = "w-20 shrink-0";
+const LABEL_COL = "w-28 shrink-0";
+const CHIP_WIDTH = "w-20";
 
-/** A single labelled row: a colored chip in a fixed-width column + dashed content. */
-const EntryDetailRow: FC<{ label: string; chipClass: string; children: ReactNode }> = ({
-    label,
-    chipClass,
-    children,
-}) => (
-    <div className="flex items-start gap-3">
-        <div className={`${LABEL_COL} flex items-start`}>
+const EntryDetailRow: FC<{
+    label: string;
+    chipClass: string;
+    children: ReactNode;
+}> = ({ label, chipClass, children }) => (
+    <div className="flex items-start gap-1">
+        <div className={`${LABEL_COL} flex items-center gap-3`}>
             <span
-                className={`inline-flex items-center px-3 py-1 rounded-full text-[11px] font-semibold leading-none ${chipClass}`}
+                className={`
+                    ${CHIP_WIDTH}
+                    inline-flex
+                    items-center
+                    justify-center
+                    px-3
+                    py-1
+                    font-mono
+                    rounded-sm
+                    text-[13px]
+                    font-semibold
+                    leading-none
+                    ${chipClass}
+                `}
             >
                 {label}
             </span>
+
+            <span className="font-mono text-neutral-600">-</span>
         </div>
-        <div className="flex-1 min-w-0 text-xs font-mono text-slate-600 leading-relaxed break-all">
+
+        <div className="flex-1 min-w-0 text-xs font-mono text-neutral-600 leading-relaxed break-all">
             {children}
         </div>
     </div>
 );
 
-/**
- * One change entry rendered as its own collapsible card — header bar shows the
- * entry's summary, body lists Modified/Before/After as dashed, labelled rows.
- */
 export const FlowEntryCard: FC<{ entry: ChangeEntry }> = ({ entry }) => {
     const [collapsed, setCollapsed] = useState(false);
+
     const cfg = KIND_CONFIG[entry.kind] ?? KIND_CONFIG.modified;
+
     const hasBefore = entry.before !== undefined && entry.before !== "";
     const hasAfter = entry.after !== undefined && entry.after !== "";
 
     return (
-        <div className="border border-slate-200 rounded-xl bg-white dark:bg-surface-elevated overflow-hidden">
-            <button
-                type="button"
+        <div
+            className={`rounded-xl bg-white dark:bg-surface-elevated overflow-hidden ${
+                collapsed ? "" : "rounded-b-none border-b"
+            }`}
+        >
+            <Button
                 onClick={() => setCollapsed((v) => !v)}
-                className="w-full flex items-center justify-between gap-3 px-4 py-3 bg-indigo-50/70 dark:bg-indigo-500/10 hover:bg-indigo-100/70 dark:hover:bg-indigo-500/20 transition-colors text-left"
+                className="w-full flex items-center justify-between gap-3 px-4 py-3 bg-brand-light dark:bg-brand-normal/10 hover:bg-brand-light-hover rounded-b-none dark:hover:bg-brand-normal/20 transition-colors text-left"
             >
-                <span className="text-sm font-semibold text-slate-800 truncate">
+                <span className="text-body-2 font-medium text-slate-800 truncate">
                     {entry.summary}
                 </span>
+
                 <span
-                    className={`shrink-0 transition-transform duration-200 text-slate-400 ${collapsed ? "-rotate-90" : ""}`}
+                    className={`shrink-0 transition-transform duration-200 text-slate-400 ${
+                        collapsed ? "-rotate-90" : ""
+                    }`}
                 >
-                    <IconChevronDown size={14} />
+                    <IconChevronDown className="w-3.5 h-3.5" />
                 </span>
-            </button>
+            </Button>
 
             {!collapsed && (
-                <div className="flex flex-col gap-2 p-4">
+                <div className="flex flex-col gap-2 py-4">
                     <EntryDetailRow label={cfg.label} chipClass={`${cfg.bg} ${cfg.color}`}>
-                        <div>- {entry.path}</div>
-                        <div className="text-slate-500 mt-0.5">{entry.summary}</div>
+                        <div>{entry.path}</div>
+                        <div className="mt-0.5">{entry.summary}</div>
                     </EntryDetailRow>
 
                     {hasBefore && (
                         <EntryDetailRow label="Before" chipClass={DIFF_CHIP_CLASSES.Before}>
-                            - {entry.before}
+                            {entry.before}
                         </EntryDetailRow>
                     )}
 
                     {hasAfter && (
                         <EntryDetailRow label="After" chipClass={DIFF_CHIP_CLASSES.After}>
-                            - {entry.after}
+                            {entry.after}
                         </EntryDetailRow>
                     )}
                 </div>

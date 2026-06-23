@@ -1,7 +1,7 @@
 import { FC } from "react";
 import { safeDescription, hasDescription } from "../attributePanelUtils";
 import type { TagDetails } from "../types";
-import { SectionHeader, DetailsCard } from "./atoms";
+import { SectionHeader, DetailsList } from "./atoms";
 import { TagGroupItem } from "./tagHelpers";
 
 export const TagSection: FC<{ attrs: TagDetails }> = ({ attrs }) => {
@@ -10,19 +10,17 @@ export const TagSection: FC<{ attrs: TagDetails }> = ({ attrs }) => {
 
     return (
         <div className="space-y-5">
-            <section>
-                <SectionHeader>Details</SectionHeader>
-                <DetailsCard
-                    jsonPath={attrs.jsonPath}
-                    owner={attrs.attributeInfo?.owner}
-                    type={attrs.attributeInfo?.type}
-                    headerShaded
-                />
-            </section>
+            <DetailsList
+                jsonPath={attrs.jsonPath}
+                required={attrs.attributeInfo?.required}
+                usage={attrs.attributeInfo?.usage}
+                owner={attrs.attributeInfo?.owner}
+                type={attrs.attributeInfo?.type}
+            />
             {hasDescription(description) && (
                 <section>
                     <SectionHeader>Description</SectionHeader>
-                    <p className="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap rounded-xl bg-white dark:bg-surface-elevated border border-slate-200 shadow-xs p-4">
+                    <p className="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap">
                         {safeDescription(description)}
                     </p>
                 </section>

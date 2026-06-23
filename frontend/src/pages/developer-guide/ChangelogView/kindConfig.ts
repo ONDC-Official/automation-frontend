@@ -1,5 +1,5 @@
 import type { FC } from "react";
-import { FiPlus, FiMinus } from "react-icons/fi";
+import { PlusIcon, MinusIcon } from "@heroicons/react/24/outline";
 import type { ChangeKind } from "../types";
 import { IconEdit } from "../shared/icons";
 
@@ -7,7 +7,7 @@ export const KIND_CONFIG: Record<
     ChangeKind,
     {
         label: string;
-        icon: FC<{ size?: number; className?: string }>;
+        icon: FC<{ className?: string }>;
         color: string;
         bg: string;
         border: string;
@@ -15,14 +15,14 @@ export const KIND_CONFIG: Record<
 > = {
     added: {
         label: "Added",
-        icon: FiPlus,
+        icon: PlusIcon,
         color: "text-[#3F7F3F]",
         bg: "bg-[#DDEBDD]",
         border: "",
     },
     removed: {
         label: "Removed",
-        icon: FiMinus,
+        icon: MinusIcon,
         color: "text-[#DC2626]",
         bg: "bg-[#FCE7EA]",
         border: "",

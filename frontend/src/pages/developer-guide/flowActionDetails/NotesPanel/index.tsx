@@ -10,6 +10,7 @@ import NoteForm from "./NoteForm";
 import NoteCard from "./NoteCard";
 import { apiNoteToNote, generateNoteId, groupNotesByPath } from "./utils";
 import type { Note, NotesPanelProps } from "./types";
+import { PencilSquareIcon } from "@heroicons/react/24/outline";
 
 const NotesPanel: FC<NotesPanelProps> = ({ selectedPath, actionApi, useCaseId, flowId }) => {
     const { user } = useContext(AuthContext);
@@ -146,8 +147,8 @@ const NotesPanel: FC<NotesPanelProps> = ({ selectedPath, actionApi, useCaseId, f
     if (!isLoggedIn) {
         return (
             <GuidePanel title="Notes">
-                <div className="h-full flex items-center justify-center">
-                    <p className="text-sm text-slate-500">Please login to view notes.</p>
+                <div className="h-full flex items-start justify-center">
+                    <EmptyState message="Please login to view notes." icon={PencilSquareIcon} />
                 </div>
             </GuidePanel>
         );

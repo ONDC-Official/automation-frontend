@@ -2,6 +2,7 @@ import { type FC, useState } from "react";
 import type { ChangeSection } from "../types";
 import { IconChevronDown } from "../shared/icons";
 import { ChangeRow } from "./ChangeRow";
+import { Button } from "@/components/Shadcn/Button";
 
 export const SectionGroup: FC<{ section: ChangeSection }> = ({ section }) => {
     const [collapsed, setCollapsed] = useState(false);
@@ -14,16 +15,15 @@ export const SectionGroup: FC<{ section: ChangeSection }> = ({ section }) => {
 
     return (
         <div className="border border-slate-200 rounded-xl bg-white dark:bg-surface-elevated overflow-hidden">
-            <button
-                type="button"
+            <Button
                 onClick={() => setCollapsed((v) => !v)}
-                className="w-full flex items-center justify-between px-4 py-3 bg-slate-50/80 dark:bg-surface-muted/80 hover:bg-slate-100/80 dark:hover:bg-surface-muted transition-colors text-left"
+                className="w-full flex items-center justify-between px-4 py-3 bg-brand-light dark:bg-brand-normal/10 hover:bg-brand-light-hover rounded-b-none dark:hover:bg-brand-normal/20 transition-colors text-left"
             >
                 <div className="flex items-center gap-3">
                     <span
                         className={`transition-transform duration-200 text-slate-400 ${collapsed ? "-rotate-90" : ""}`}
                     >
-                        <IconChevronDown size={14} />
+                        <IconChevronDown className="size-4" />
                     </span>
                     <span className="text-sm font-semibold text-slate-800">{section.label}</span>
                     <div className="flex items-center gap-1">
@@ -45,7 +45,7 @@ export const SectionGroup: FC<{ section: ChangeSection }> = ({ section }) => {
                     </div>
                 </div>
                 <span className="text-xs text-slate-400">{section.totalChanges} changes</span>
-            </button>
+            </Button>
 
             {!collapsed && (
                 <div className="divide-y divide-slate-100">

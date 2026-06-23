@@ -11,7 +11,7 @@ const ExampleSelector: FC<ExampleSelectorProps> = ({ examples, selectedIndex, on
     <div className="flex items-center gap-3">
         <label
             htmlFor="example-select"
-            className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider shrink-0"
+            className="text-caption-2-size font-semibold text-slate-500 uppercase tracking-wider shrink-0"
         >
             Example
         </label>

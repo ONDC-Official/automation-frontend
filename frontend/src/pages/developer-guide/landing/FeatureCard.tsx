@@ -1,4 +1,4 @@
-import { FiArrowRight } from "react-icons/fi";
+import { ArrowRightIcon } from "@heroicons/react/24/outline";
 import type { FeatureCardProps } from "./types";
 
 export default function FeatureCard({
@@ -30,10 +30,7 @@ export default function FeatureCard({
                 <div className="w-11 h-11 bg-sky-50 dark:bg-sky-500/10 group-hover:bg-sky-100 dark:group-hover:bg-sky-500/20 rounded-xl flex items-center justify-center transition-colors duration-200 border border-sky-100 dark:border-sky-500/30 shrink-0">
                     {icon}
                 </div>
-                <FiArrowRight
-                    className="text-gray-300 group-hover:text-sky-500 dark:group-hover:text-sky-400 group-hover:translate-x-0.5 transition-all duration-200 mt-1 shrink-0"
-                    size={16}
-                />
+                <ArrowRightIcon className="w-4 h-4 text-gray-300 group-hover:text-sky-500 dark:group-hover:text-sky-400 group-hover:translate-x-0.5 transition-all duration-200 mt-1 shrink-0" />
             </div>
 
             <div>

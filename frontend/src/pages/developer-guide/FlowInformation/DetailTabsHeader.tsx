@@ -1,5 +1,4 @@
 import { type FC } from "react";
-import { FiCode, FiShield, FiUpload, FiDownload } from "react-icons/fi";
 import GuideTabs, { type GuideTabItem } from "../shared/components/GuideTabs";
 import type { FlowInformationSection } from "./types";
 
@@ -26,20 +25,17 @@ const DetailTabsHeader: FC<DetailTabsHeaderProps> = ({
                 {
                     id: "preview",
                     label: "Example Payload",
-                    icon: FiCode,
                     visible: hasExampleObject,
                 },
-                { id: "request", label: "Request Schema", icon: FiUpload, visible: hasStep },
+                { id: "request", label: "Request Schema", visible: hasStep },
                 {
                     id: "response",
                     label: "Response Schema",
-                    icon: FiDownload,
                     visible: hasStep,
                 },
                 {
                     id: "x-validations",
                     label: "Validations",
-                    icon: FiShield,
                     visible: hasXValidations,
                 },
             ] satisfies GuideTabItem<FlowInformationSection>[]
