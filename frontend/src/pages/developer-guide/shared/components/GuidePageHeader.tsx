@@ -43,7 +43,7 @@ const GuidePageHeader: FC<GuidePageHeaderProps> = ({
                     )}
                 </h1>
                 {description && (
-                    <div className="mt-1.5 pb-4 text-sm text-slate-500 border-b border-n-30 dark:border-brand-normal/30 w-full leading-relaxed">
+                    <div className="mt-1.5 pb-4 text-sm text-slate-500 border-b border-n-30 dark:border-border-default w-full leading-relaxed">
                         {description}
                     </div>
                 )}
