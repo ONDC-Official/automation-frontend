@@ -211,7 +211,7 @@ const NavLinkItem: FC<{
                     {node.suffix && (
                         <span
                             title={NAV_STATUS_LABEL[getNavStatus(node.id)]}
-                            className={`font-mono text-caption-2-size font-bold tracking-tighter leading-none shrink-0 rounded-full px-2.5 py-1 min-h-0 h-auto ${NAV_STATUS_STYLES[getNavStatus(node.id)]}`}
+                            className={`text-caption-2-size font-bold tracking-tighter leading-none shrink-0 rounded-full px-2.5 py-2 min-h-0 h-auto ${NAV_STATUS_STYLES[getNavStatus(node.id)]}`}
                         >
                             {node.suffix}
                         </span>

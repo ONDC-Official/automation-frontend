@@ -77,7 +77,10 @@ const DrawerFooter = ({ className, ...props }: React.ComponentProps<"div">) => (
     />
 );
 
-const DrawerTitle = ({ className, ...props }: React.ComponentProps<typeof DrawerPrimitive.Title>) => (
+const DrawerTitle = ({
+    className,
+    ...props
+}: React.ComponentProps<typeof DrawerPrimitive.Title>) => (
     <DrawerPrimitive.Title
         data-slot="drawer-title"
         className={cn("font-semibold text-foreground", className)}

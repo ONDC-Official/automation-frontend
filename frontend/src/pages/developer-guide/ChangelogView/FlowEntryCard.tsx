@@ -3,6 +3,7 @@ import type { ChangeEntry } from "../types";
 import { IconChevronDown } from "../shared/icons";
 import { KIND_CONFIG } from "./kindConfig";
 import { DIFF_CHIP_CLASSES } from "./DiffViewer";
+import { Button } from "@/components/Shadcn/Button";
 
 const LABEL_COL = "w-28 shrink-0";
 const CHIP_WIDTH = "w-20";
@@ -22,6 +23,7 @@ const EntryDetailRow: FC<{
                     justify-center
                     px-3
                     py-1
+                    font-mono
                     rounded-sm
                     text-[13px]
                     font-semibold
@@ -32,10 +34,10 @@ const EntryDetailRow: FC<{
                 {label}
             </span>
 
-            <span className="font-mono text-slate-500">-</span>
+            <span className="font-mono text-neutral-600">-</span>
         </div>
 
-        <div className="flex-1 min-w-0 text-xs font-se font-mono text-slate-600 leading-relaxed break-all">
+        <div className="flex-1 min-w-0 text-xs font-mono text-neutral-600 leading-relaxed break-all">
             {children}
         </div>
     </div>
@@ -50,11 +52,14 @@ export const FlowEntryCard: FC<{ entry: ChangeEntry }> = ({ entry }) => {
     const hasAfter = entry.after !== undefined && entry.after !== "";
 
     return (
-        <div className="rounded-xl bg-white dark:bg-surface-elevated overflow-hidden">
-            <button
-                type="button"
+        <div
+            className={`rounded-xl bg-white dark:bg-surface-elevated overflow-hidden ${
+                collapsed ? "" : "rounded-b-none border-b"
+            }`}
+        >
+            <Button
                 onClick={() => setCollapsed((v) => !v)}
-                className="w-full flex items-center justify-between gap-3 px-4 py-3 bg-indigo-50/70 dark:bg-indigo-500/10 hover:bg-indigo-100/70 dark:hover:bg-indigo-500/20 transition-colors text-left"
+                className="w-full flex items-center justify-between gap-3 px-4 py-3 bg-brand-light dark:bg-brand-normal/10 hover:bg-brand-light-hover rounded-b-none dark:hover:bg-brand-normal/20 transition-colors text-left"
             >
                 <span className="text-body-2 font-medium text-slate-800 truncate">
                     {entry.summary}
@@ -67,13 +72,13 @@ export const FlowEntryCard: FC<{ entry: ChangeEntry }> = ({ entry }) => {
                 >
                     <IconChevronDown className="w-3.5 h-3.5" />
                 </span>
-            </button>
+            </Button>
 
             {!collapsed && (
-                <div className="flex flex-col gap-2 p-4">
+                <div className="flex flex-col gap-2 py-4">
                     <EntryDetailRow label={cfg.label} chipClass={`${cfg.bg} ${cfg.color}`}>
                         <div>{entry.path}</div>
-                        <div className="mt-0.5 text-slate-500">{entry.summary}</div>
+                        <div className="mt-0.5">{entry.summary}</div>
                     </EntryDetailRow>
 
                     {hasBefore && (

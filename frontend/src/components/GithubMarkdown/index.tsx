@@ -69,32 +69,36 @@ const components: Components = {
     },
     table({ children }) {
         return (
-            <div className="my-4 overflow-x-auto rounded-lg border border-slate-200">
-                <table className="min-w-full divide-y divide-slate-200 text-sm">{children}</table>
+            <div className="not-prose my-4 overflow-x-auto rounded-lg border border-n-40 bg-n-0 dark:border-dark-border dark:bg-surface-elevated">
+                <table className="min-w-full divide-y divide-n-40 text-sm dark:divide-dark-border">
+                    {children}
+                </table>
             </div>
         );
     },
     thead({ children }) {
-        return <thead className="bg-slate-50">{children}</thead>;
+        return <thead className="bg-n-0 dark:bg-surface-elevated">{children}</thead>;
     },
     th({ children }) {
         return (
-            <th className="px-4 py-2.5 text-left text-xs font-semibold text-slate-600 tracking-wider border-b border-slate-200">
+            <th className="px-4 py-2.5 text-left text-xs font-semibold tracking-wider text-n-500 border-b border-n-40 dark:text-n-60 dark:border-dark-border">
                 {children}
             </th>
         );
     },
     td({ children }) {
-        return <td className="px-4 py-2.5 text-slate-700 border-b border-slate-100">{children}</td>;
+        return (
+            <td className="px-4 py-2.5 text-n-700 border-b border-n-30 dark:text-n-0 dark:border-dark-border">
+                {children}
+            </td>
+        );
     },
     tr({ children }) {
-        return (
-            <tr className="even:bg-slate-50 hover:bg-slate-100/60 transition-colors">{children}</tr>
-        );
+        return <tr className="bg-n-0 dark:bg-surface-elevated">{children}</tr>;
     },
     blockquote({ children }) {
         return (
-            <blockquote className="my-4 pl-4 border-l-4 border-slate-300 bg-slate-50 py-3 pr-3 rounded-r-lg text-slate-600 italic">
+            <blockquote className="my-4 pl-4 border-l-4 border-slate-300 bg-slate-50 py-3 pr-3 rounded-r-lg text-slate-600 dark:bg-n-200 italic">
                 {children}
             </blockquote>
         );

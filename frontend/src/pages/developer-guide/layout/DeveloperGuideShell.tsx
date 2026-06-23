@@ -24,7 +24,7 @@ const StatusLegend: FC = () => (
         {STATUS_LEGEND_ORDER.map((status) => (
             <span
                 key={status}
-                className={`rounded-full px-2 py-1 text-caption-2-size font-semibold leading-none ${NAV_STATUS_STYLES[status]}`}
+                className={`rounded-full px-2 py-2 text-caption-2-size font-semibold leading-none ${NAV_STATUS_STYLES[status]}`}
             >
                 {NAV_STATUS_LABEL[status]}
             </span>

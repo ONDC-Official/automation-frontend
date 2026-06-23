@@ -31,7 +31,7 @@ const GuidePageHeader: FC<GuidePageHeaderProps> = ({
         {breadcrumb && <div className="px-4 md:px-6 py-3 bg-slate-100">{breadcrumb}</div>}
 
         {title && (
-            <div className="px-4 md:px-6 pb-4 pt-4 lg:border-t border-b border-n-30">
+            <div className="px-4 md:px-6 pt-4 lg:border-t">
                 <h1 className="text-2xl font-bold text-slate-900 leading-tight">
                     {title === "Error Codes" ? (
                         <div className="flex items-center gap-2">
@@ -43,7 +43,7 @@ const GuidePageHeader: FC<GuidePageHeaderProps> = ({
                     )}
                 </h1>
                 {description && (
-                    <div className="mt-1.5 pb-4 text-sm text-slate-500 border-b border-n-30 w-fullleading-relaxed max-w-3xl">
+                    <div className="mt-1.5 pb-4 text-sm text-slate-500 border-b border-n-30 dark:border-brand-normal/30 w-full leading-relaxed">
                         {description}
                     </div>
                 )}

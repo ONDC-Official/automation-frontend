@@ -1,3 +1,4 @@
+import { Button } from "@/components/Shadcn/Button";
 import { TabConfig, TabType } from "@pages/auth-header/types";
 
 interface TabsProps {
@@ -21,9 +22,8 @@ const Tabs = ({ tabs, activeTab, setActiveTab, layout = "default" }: TabsProps) 
             aria-label="Auth header documentation tabs"
         >
             {tabs.map((tab) => (
-                <button
+                <Button
                     key={tab.id}
-                    type="button"
                     role="tab"
                     aria-selected={activeTab === tab.id}
                     aria-controls={`tabpanel-${tab.id}`}
@@ -43,7 +43,7 @@ const Tabs = ({ tabs, activeTab, setActiveTab, layout = "default" }: TabsProps) 
                 >
                     {tab.icon}
                     {tab.label}
-                </button>
+                </Button>
             ))}
         </div>
     );

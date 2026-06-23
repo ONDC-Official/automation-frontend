@@ -75,7 +75,7 @@ const ErrorCodesTable: FC<ErrorCodesTableProps> = ({ errorCodes }) => {
                     "group transition-colors hover:bg-rose-50/40 dark:hover:bg-rose-500/10"
                 }
                 pagination={{ pageSize: PAGE_SIZE }}
-                toolbar={<GuideSearchInput value={search} onChange={setSearch} accent="rose" />}
+                toolbar={<GuideSearchInput value={search} onChange={setSearch} />}
                 emptyState={
                     <EmptyState
                         icon={MagnifyingGlassIcon}

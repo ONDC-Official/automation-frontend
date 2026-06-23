@@ -8,7 +8,7 @@ import {
 import type { PaginationProps } from "@/components/Shadcn/Pagination/types";
 import { getPageNumbers } from "@/components/Shadcn/Pagination/helpers";
 import { navButtonClass } from "@/components/Shadcn/Pagination/constants";
-import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
+import { ArrowLeftIcon, ArrowRightIcon } from "@heroicons/react/24/outline";
 
 export const Pagination = ({
     currentPage,
@@ -27,7 +27,7 @@ export const Pagination = ({
                 onClick={() => onPageChange(currentPage - 1)}
                 className={navButtonClass}
             >
-                <ChevronLeftIcon className="size-4" aria-hidden />
+                <ArrowLeftIcon className="size-4" aria-hidden />
             </PaginationLink>
 
             <PaginationContent>
@@ -61,7 +61,7 @@ export const Pagination = ({
                 onClick={() => onPageChange(currentPage + 1)}
                 className={navButtonClass}
             >
-                <ChevronRightIcon className="size-4" aria-hidden />
+                <ArrowRightIcon className="size-4" aria-hidden />
             </PaginationLink>
         </PaginationRoot>
     );

@@ -38,7 +38,7 @@ const DocsViewer: FC<DocsViewerProps> = ({ docs }) => {
             {/* Content area split: TOC left + scrollable content right */}
             <div>
                 {/* Markdown content — scrolls independently */}
-                <div className="flex-1 overflow-auto px-8 py-6">
+                <div className="flex-1 overflow-auto py-6">
                     <GithubMarkdown content={content} />
                 </div>
             </div>
