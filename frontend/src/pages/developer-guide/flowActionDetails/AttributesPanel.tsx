@@ -5,6 +5,8 @@ import type { RawTableRow } from "./attributePanelUtils";
 import { AttributeSection, EnumSection, TagSection } from "./AttributeSections";
 import ValidationsSection from "./ValidationsSection";
 import GuideCard from "../shared/components/GuideCard";
+import { EmptyState } from "../shared/components/states";
+import { IconAttribute } from "../shared/icons";
 
 interface AttributesPanelProps {
     attributes: ActionAttributes | null;
@@ -30,14 +32,11 @@ const AttributesPanel: FC<AttributesPanelProps> = ({
     if (!attributes) {
         return (
             <GuideCard border="none" rounded="none" layout="column">
-                <div className="flex-1 flex flex-col items-center justify-center gap-3 p-8 text-center">
-                    <div className="w-10 h-10 bg-sky-50 dark:bg-sky-500/10 border border-sky-100 dark:border-sky-500/30 flex items-center justify-center text-sky-400 text-lg">
-                        &#x276F;
-                    </div>
-                    <p className="text-slate-600 text-sm leading-relaxed max-w-55">
-                        Click a key in the JSON tree to view its schema, attributes, and
-                        validations.
-                    </p>
+                <div className="flex-1 flex items-start justify-center">
+                    <EmptyState
+                        message="Select a key in the JSON tree to view its attributes."
+                        icon={IconAttribute}
+                    />
                 </div>
             </GuideCard>
         );

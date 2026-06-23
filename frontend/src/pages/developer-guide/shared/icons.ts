@@ -4,6 +4,7 @@ export {
     PlusIcon as IconAdd,
     ChatBubbleLeftIcon as IconComment,
     DocumentTextIcon as IconNote,
+    CodeBracketIcon as IconAttribute,
     MagnifyingGlassIcon as IconSearch,
     XMarkIcon as IconClear,
     InboxIcon as IconEmpty,
