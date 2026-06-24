@@ -1,4 +1,4 @@
-import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { FC, useCallback, useEffect, useMemo, useState } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import { ArrowLeftIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import DeveloperGuideCollapsedNavBar from "./DeveloperGuideCollapsedNavBar";
@@ -14,14 +14,13 @@ import { filterNavTree } from "./filterNavTree";
 import DeveloperGuideSidebar from "./DeveloperGuideSidebar";
 import { DeveloperGuideShellContext } from "./DeveloperGuideShellContext";
 import { NAV_STATUS_LABEL, NAV_STATUS_STYLES, type NavStatus } from "../shared/statusPlaceholders";
-import { ROUTES } from "@/constants/routes";
 import { Button } from "@/components/Shadcn/Button";
 import Input from "@/components/Shadcn/TextField/input";
 
 const STATUS_LEGEND_ORDER: NavStatus[] = ["released", "drafted", "to-be-deprecated", "deprecated"];
 
 const StatusLegend: FC = () => (
-    <div className="flex flex-wrap gap-1.5 mt-3" aria-label="Version status legend">
+    <div className="flex flex-wrap gap-1.5 mt-2" aria-label="Version status legend">
         {STATUS_LEGEND_ORDER.map((status) => (
             <span
                 key={status}
@@ -35,23 +34,19 @@ const StatusLegend: FC = () => (
 
 const DeveloperGuideShellMain: FC = () => {
     const { pathname } = useLocation();
-    const mainRef = useRef<HTMLElement>(null);
 
     useEffect(() => {
-        mainRef.current?.scrollTo({ top: 0, left: 0 });
+        window.scrollTo({ top: 0, left: 0 });
     }, [pathname]);
 
     return (
-        <main ref={mainRef} className="flex-1 min-w-0 min-h-0 overflow-y-auto overscroll-contain">
+        <main className="flex-1 min-w-0">
             <Outlet />
         </main>
     );
 };
 
 const DeveloperGuideShell: FC = () => {
-    const { pathname } = useLocation();
-    const isGettingStartedRoute = pathname === ROUTES.DEVELOPER_GUIDE_GETTING_STARTED;
-
     const [builds, setBuilds] = useState<BuildEntry[]>([]);
     const [docs, setDocs] = useState<DocMeta[]>([]);
     const [docMarkdownBySlug, setDocMarkdownBySlug] = useState<Record<string, string>>({});
@@ -153,26 +148,17 @@ const DeveloperGuideShell: FC = () => {
                 collapseNavSidebar,
             }}
         >
-            <div className="flex h-[calc(100svh-4rem)] min-h-0 flex-col overflow-hidden bg-white dark:bg-surface-page">
-                {isGettingStartedRoute && (
-                    <div className="shrink-0 flex gap-2 px-6 py-3 bg-alert-50 items-center">
-                        <span className="text-alert-500 text-body-1 font-semibold">Tip: </span>
-                        <span className="text-body-2 font-regular text-n-300">
-                            Use Filter navigation in the sidebar to quickly find a domain, use case,
-                            or documentation page.
-                        </span>
-                    </div>
-                )}
-                <div className="flex min-h-0 flex-1 flex-col overflow-hidden lg:flex-row">
+            <div className="flex min-h-[calc(100svh-4rem)] flex-col bg-white dark:bg-surface-page">
+                <div className="flex flex-1 flex-col lg:flex-row lg:items-start">
                     <aside
-                        className={`shrink-0 border-b border-n-40 bg-slate-100 dark:border-border-default dark:bg-surface-muted lg:border-b-0 lg:border-r lg:border-n-40 flex min-h-0 flex-col overflow-hidden transition-[width] duration-300 ease-in-out lg:h-full lg:max-h-full ${
+                        className={`shrink-0 border-b border-n-40 bg-slate-100 dark:border-border-default dark:bg-surface-muted lg:border-b-0 lg:border-r lg:border-n-40 flex flex-col overflow-hidden transition-[width] duration-300 ease-in-out lg:sticky lg:top-16 lg:h-[calc(100svh-4rem)] ${
                             navSidebarOpen
-                                ? "w-full lg:w-64 xl:w-72"
+                                ? "w-full lg:w-auto lg:min-w-48 lg:max-w-72"
                                 : "hidden lg:block lg:w-0 lg:border-r-0"
                         }`}
                     >
-                        <div className="shrink-0 px-4 py-2 pb-5">
-                            <div className="flex items-start justify-between gap-2 pt-4">
+                        <div className="shrink-0 px-4 pt-3 pb-0">
+                            <div className="flex items-start justify-between gap-2">
                                 <div className="min-w-0">
                                     <h1 className="text-base font-semibold tracking-tight text-slate-900">
                                         Developer Guide
@@ -192,7 +178,7 @@ const DeveloperGuideShell: FC = () => {
                                     <ArrowLeftIcon className="size-4" aria-hidden />
                                 </Button>
                             </div>
-                            <div className="relative mt-4">
+                            <div className="relative mt-3">
                                 <MagnifyingGlassIcon className="w-3.5 h-3.5 absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-900 dark:text-neutral-400 pointer-events-none" />
                                 <Input
                                     type="search"
@@ -204,7 +190,7 @@ const DeveloperGuideShell: FC = () => {
                             </div>
                             <StatusLegend />
                         </div>
-                        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 py-2 pb-8">
+                        <div className="min-h-0 flex-1 overflow-y-auto px-4 pt-1 pb-10 scrollbar-none">
                             {loadError ? (
                                 <p className="px-2 py-4 text-sm text-red-600 dark:text-red-400">
                                     {loadError}
@@ -218,7 +204,7 @@ const DeveloperGuideShell: FC = () => {
                         </div>
                     </aside>
 
-                    <div className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+                    <div className="relative flex min-w-0 flex-1 flex-col">
                         <DeveloperGuideCollapsedNavBar />
                         {!navSidebarOpen && (
                             <div className="absolute left-0 top-50 z-30">

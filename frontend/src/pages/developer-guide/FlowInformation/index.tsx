@@ -1,7 +1,6 @@
 import { type FC, useCallback, useState } from "react";
 import FlowDetailsAndSummary from "../FlowDetailsAndSummary";
 import FlowContextStrip from "./FlowContextStrip";
-import ActionOverview from "../ActionOverview";
 import { FlowActionDetails } from "../flowActionDetails";
 import Spinner from "@/components/Shadcn/Spinner";
 import ValidationsTable from "../ValidationsTable";
@@ -13,6 +12,7 @@ import { useValidationTable } from "./useValidationTable";
 import { useSelectedFlowStep } from "./useSelectedFlowStep";
 import FlowsSidebar from "./FlowsSidebar";
 import type { FlowInformationProps } from "./types";
+import { ChevronLeftIcon } from "@heroicons/react/24/outline";
 
 const FlowInformation: FC<FlowInformationProps> = ({
     data,
@@ -88,7 +88,7 @@ const FlowInformation: FC<FlowInformationProps> = ({
     const hasSelectedAction = !!(selectedFlowAction && selectedStep);
 
     return (
-        <div className="px-8 py-8 space-y-0 w-full">
+        <div className="mt-4 space-y-0 w-full">
             {selectedFlowData && !hasSelectedAction && (
                 <div className="mb-6">
                     <FlowDetailsAndSummary flow={selectedFlowData} />
@@ -99,9 +99,9 @@ const FlowInformation: FC<FlowInformationProps> = ({
 
             {selectedFlowAction && selectedStep && (
                 <>
-                    <div className="mb-10">
+                    {/* <div className="mb-10">
                         <ActionOverview step={selectedStep} actionId={selectedFlowAction} />
-                    </div>
+                    </div> */}
 
                     {hasTabs && (
                         <div className="border-t border-slate-200 dark:border-border-default">
@@ -113,7 +113,7 @@ const FlowInformation: FC<FlowInformationProps> = ({
                                 hasXValidations={hasXValidations}
                             />
 
-                            <div className="flex items-stretch gap-0 mt-6 bg-slate-100 dark:bg-surface-muted">
+                            <div className="relative flex items-stretch gap-0 mt-4 mb-4 h-[calc(100vh-10rem)]">
                                 {activeSection === "preview" && (
                                     <FlowsSidebar
                                         flows={flows}
@@ -122,13 +122,28 @@ const FlowInformation: FC<FlowInformationProps> = ({
                                         selectedFlowAction={selectedFlowAction}
                                         setSelectedFlowAction={setSelectedFlowAction}
                                         sidebarOpen={sidebarOpen}
-                                        onToggleSidebar={() => setSidebarOpen((prev) => !prev)}
                                     />
                                 )}
 
-                                <div className="flex-1 min-w-0 px-4 relative">
+                                {activeSection === "preview" && (
+                                    <button
+                                        onClick={() => setSidebarOpen((prev) => !prev)}
+                                        title={sidebarOpen ? "Collapse sidebar" : "Expand sidebar"}
+                                        className={`absolute top-4 z-20 -translate-x-1/2 flex items-center justify-center w-5 h-9 rounded-full bg-white dark:bg-surface-elevated border border-slate-200 dark:border-border-default shadow-sm hover:bg-slate-50 dark:hover:bg-surface-muted transition-[left] duration-300 ease-in-out ${
+                                            sidebarOpen ? "left-96" : "left-0"
+                                        }`}
+                                    >
+                                        <ChevronLeftIcon
+                                            className={`w-3 h-3 text-slate-400 transition-transform duration-300 ease-in-out ${
+                                                sidebarOpen ? "" : "rotate-180"
+                                            }`}
+                                        />
+                                    </button>
+                                )}
+
+                                <div className="flex-1 min-w-0 min-h-0 flex flex-col px-4">
                                     {activeSection === "preview" && hasExampleObject && (
-                                        <div className="flex flex-col gap-4">
+                                        <div className="flex-1 min-h-0 flex flex-col gap-3">
                                             {examples.length > 1 && (
                                                 <ExampleSelector
                                                     examples={examples}
@@ -136,7 +151,7 @@ const FlowInformation: FC<FlowInformationProps> = ({
                                                     onChange={setSelectedExampleIndex}
                                                 />
                                             )}
-                                            <div className="w-full min-h-0 overflow-hidden shadow-xs bg-white dark:bg-surface-elevated">
+                                            <div className="flex-1 min-h-0">
                                                 {showPreviewDetails ? (
                                                     <FlowActionDetails
                                                         exampleValue={examplePayload as object}
@@ -150,7 +165,7 @@ const FlowInformation: FC<FlowInformationProps> = ({
                                                         validationTableData={validationTable}
                                                     />
                                                 ) : (
-                                                    <div className="absolute top-0 bottom-0 left-0 right-0  flex items-center justify-center">
+                                                    <div className="h-full flex items-center justify-center">
                                                         <Spinner className="size-8 text-brand-normal" />
                                                     </div>
                                                 )}

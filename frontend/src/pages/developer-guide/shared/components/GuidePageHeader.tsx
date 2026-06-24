@@ -1,6 +1,5 @@
 import { type FC, type ReactNode } from "react";
 import GuideHeader from "./GuideHeader";
-import { ExclamationTriangleIcon } from "@heroicons/react/24/solid";
 
 export interface GuidePageHeaderProps {
     /** Breadcrumb row content (nav with `>` separators). Omit when a page-level breadcrumb is shown elsewhere. */
@@ -22,15 +21,15 @@ export interface GuidePageHeaderProps {
  */
 const GuidePageHeader: FC<GuidePageHeaderProps> = ({
     breadcrumb,
-    title,
-    description,
+    // title,
+    // description,
     tabs,
     className,
 }) => (
     <GuideHeader className={className}>
         {breadcrumb && <div className="px-4 md:px-6 py-3 bg-slate-100">{breadcrumb}</div>}
 
-        {title && (
+        {/* {title && (
             <div className="px-4 md:px-12 pt-6 lg:border-t">
                 <h1 className="text-2xl font-bold text-slate-900 leading-tight">
                     {title === "Error Codes" ? (
@@ -48,9 +47,9 @@ const GuidePageHeader: FC<GuidePageHeaderProps> = ({
                     </div>
                 )}
             </div>
-        )}
+        )} */}
 
-        {tabs && <div className="px-4 md:px-12">{tabs}</div>}
+        {tabs && <div className="px-4">{tabs}</div>}
     </GuideHeader>
 );
 

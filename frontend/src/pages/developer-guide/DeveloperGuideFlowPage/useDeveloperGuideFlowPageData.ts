@@ -25,7 +25,7 @@ export function useDeveloperGuideFlowPageData() {
     const versionKey = versionParam != null ? decodeURIComponent(versionParam) : "";
     const slug = useCaseSlug ? decodeURIComponent(useCaseSlug) : "";
     const routeKey = `${domainKey}|${versionKey}|${slug}`;
-    const prevRouteKeyRef = useRef<string | null>(null);
+    const prevRouteKeyRef = useRef<string>(routeKey);
 
     const { activeView, handleViewChange } = useTopLevelView();
     const specDataState = useSpecData(domainKey, versionKey, slug);

@@ -5,7 +5,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
  * so a loader can paint before the heavy content underneath it mounts.
  */
 export function useDeferredReveal() {
-    const [visible, setVisible] = useState(false);
+    const [visible, setVisible] = useState(true);
     const rafRef = useRef<number | null>(null);
 
     const schedule = useCallback(() => {

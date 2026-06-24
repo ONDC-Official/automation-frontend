@@ -7,6 +7,12 @@ import {
     InformationCircleIcon,
     ArrowsRightLeftIcon,
 } from "@heroicons/react/24/outline";
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/components/Shadcn/Tooltip";
 
 interface FlowsAccordionProps {
     flows: FlowEntry[];
@@ -109,8 +115,8 @@ const FlowsAccordion: FC<FlowsAccordionProps> = ({
                         : "border-slate-200 bg-white dark:bg-surface-elevated hover:border-slate-300 hover:shadow-xs"
                 }`}
             >
-                <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-2 min-w-0">
+                <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-start gap-2 min-w-0">
                         {isTransitioning && (
                             <svg
                                 className="shrink-0 h-3.5 w-3.5 animate-spin text-sky-500 dark:text-sky-400"
@@ -132,16 +138,30 @@ const FlowsAccordion: FC<FlowsAccordionProps> = ({
                                 />
                             </svg>
                         )}
-                        <span className="text-body-2 font-medium text-slate-800 truncate">
+                        <span className="text-body-2 font-medium text-slate-800 wrap-break-word min-w-0">
                             {step.action_label ?? step.api}
                         </span>
                     </div>
                     <div className="flex items-center gap-1.5 shrink-0 text-sky-700 dark:text-sky-300">
-                        <span className="shrink-0 inline-flex items-center gap-1 text-[11px] font-semibold leading-non bg-sky-50 dark:bg-sky-500/10 rounded-full px-3 py-1">
+                        {/* <span className="shrink-0 inline-flex items-center gap-1 text-[11px] font-semibold leading-non bg-sky-50 dark:bg-sky-500/10 rounded-full px-3 py-1">
                             Docs
-                        </span>
+                        </span> */}
 
-                        <InformationCircleIcon className="w-4 h-4" aria-hidden />
+                        <TooltipProvider>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <span
+                                        onClick={(e) => e.stopPropagation()}
+                                        className="inline-flex"
+                                    >
+                                        <InformationCircleIcon className="w-4 h-4" aria-hidden />
+                                    </span>
+                                </TooltipTrigger>
+                                {step.description && (
+                                    <TooltipContent>{step.description}</TooltipContent>
+                                )}
+                            </Tooltip>
+                        </TooltipProvider>
                     </div>
                 </div>
             </button>
@@ -174,7 +194,9 @@ const FlowsAccordion: FC<FlowsAccordionProps> = ({
                                         {flowName}
                                     </span>
                                     {flow.description && (
-                                        <p className="text-caption-2 text-slate-500 mt-0.5 line-clamp-2">
+                                        <p
+                                            className={`text-[12px] leading-4 text-slate-500 mt-0.5 ${isOpen ? "" : "line-clamp-2"}`}
+                                        >
                                             {flow.description}
                                         </p>
                                     )}

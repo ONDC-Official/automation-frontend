@@ -5,12 +5,11 @@ const COPYABLE_KEYS = new Set(["sessionId", "subscriberUrl"]);
 
 const INFO_LABELS: Record<string, string> = {
     sessionId: "Session ID",
-    subscriberUrl: "Subscriber URL",
     subscriberType: "Subscriber Type",
     domain: "Domain",
     version: "Version",
-    env: "Environment",
     use_case: "Use Case",
+    env: "Environment",
     activeFlow: "ActiveFlow",
 };
 
@@ -27,14 +26,18 @@ export const InfoSection = ({ data, headerActions, pollingIndicator }: InfoSecti
         </div>
         <div className="px-4 pb-4 pt-3">
             <div className="flex flex-wrap gap-2">
-                {Object.entries(data).map(([key, value]) => (
-                    <InfoPill
-                        key={key}
-                        label={INFO_LABELS[key] ?? key}
-                        value={value}
-                        copyable={COPYABLE_KEYS.has(key)}
-                    />
-                ))}
+                {Object.keys(INFO_LABELS).map((key) => {
+                    const value = data[key];
+
+                    return (
+                        <InfoPill
+                            key={key}
+                            label={INFO_LABELS[key]}
+                            value={value}
+                            copyable={COPYABLE_KEYS.has(key)}
+                        />
+                    );
+                })}
             </div>
         </div>
     </div>

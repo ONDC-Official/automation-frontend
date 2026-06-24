@@ -600,7 +600,7 @@ const JsonViewer: React.FC<JsonViewerProps> = ({
             </div>
 
             {/* ── JSON Tree ───────────────────────────────────────────────── */}
-            <div className="overflow-auto flex-1 px-4 py-3">
+            <div className="overflow-auto flex-1 px-1 py-1">
                 <div className="inline-block min-w-full">
                     <span className="text-slate-500 font-mono text-[12px]">{"{"} </span>
                     {renderJson({

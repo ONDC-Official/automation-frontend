@@ -49,7 +49,6 @@ export function useFlowDetailSection({
             isFirstActionEffect.current = false;
             if (urlTab && validSections.includes(urlTab)) {
                 setActiveSection(urlTab);
-                if (urlTab === "preview") scheduleShowDetails();
                 return;
             }
         }

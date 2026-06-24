@@ -35,7 +35,7 @@ const GuideTabs = <T extends string = string>({
             onValueChange={(value) => onChange(value as T)}
             className={cn("w-full gap-0", className)}
         >
-            <TabsList variant="line" className="w-full justify-start px-2 py-3 gap-6">
+            <TabsList variant="line" className="w-full justify-start gap-6">
                 {visible.map((tab) => {
                     const Icon = tab.icon;
 
@@ -43,7 +43,7 @@ const GuideTabs = <T extends string = string>({
                         <TabsTrigger
                             key={tab.id}
                             value={tab.id}
-                            className="flex-none px-0 py-2.5 text-body-1 font-medium"
+                            className="flex-none px-0 pt-2.5 pb-1 text-body-2 font-medium"
                         >
                             {Icon && <Icon className="size-3.5 shrink-0" aria-hidden />}
                             {tab.label}
