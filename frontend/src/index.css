@@ -4,7 +4,7 @@
 @import "tailwindcss";
 
 @theme {
-    --breakpoint-nav: 1260px;
+    --breakpoint-nav: 1290px;
     --animate-accordion-down: accordion-down 0.2s ease-out;
     --animate-accordion-up: accordion-up 0.2s ease-out;
 
@@ -238,4 +238,22 @@
 .monaco-editor .view-line .schema-validation-error-inline,
 .monaco-editor .mtkz.schema-validation-error-inline {
     background-color: rgba(222, 53, 11, 0.12) !important;
+}
+
+/* Workaround for https://github.com/microsoft/monaco-editor/issues/5208 — find widget
+   tooltips stack label + keybinding vertically, overlap the trigger button, and flicker. */
+body:has(.monaco-editor .find-widget.visible) .workbench-hover-container {
+    pointer-events: none !important;
+}
+
+body:has(.monaco-editor .find-widget.visible) .workbench-hover-container,
+body:has(.monaco-editor .find-widget.visible) .workbench-hover-container .hover-row,
+body:has(.monaco-editor .find-widget.visible) .workbench-hover-container .hover-contents,
+body:has(.monaco-editor .find-widget.visible) .workbench-hover-container .action-container,
+body:has(.monaco-editor .find-widget.visible) .workbench-hover-container .actions-container {
+    display: flex !important;
+    flex-flow: row nowrap !important;
+    gap: 6px !important;
+    align-items: center !important;
+    white-space: nowrap !important;
 }
