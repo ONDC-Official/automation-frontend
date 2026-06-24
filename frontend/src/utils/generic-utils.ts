@@ -205,9 +205,29 @@ export const openReportInNewTab = (decodedHtml: string, sessionId: string) => {
             font-weight: 500;
             cursor: pointer;
             transition: background 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
           }
-          button:hover {
+          button:hover:not(:disabled) {
             background-color: #0284c7;
+          }
+          button:disabled {
+            background-color: #94a3b8;
+            cursor: not-allowed;
+          }
+          .loader {
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #fff;
+            border-radius: 50%;
+            width: 14px;
+            height: 14px;
+            animation: spin 1s linear infinite;
+            display: none;
+          }
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
           }
         </style>
       </head>
@@ -229,7 +249,10 @@ export const openReportInNewTab = (decodedHtml: string, sessionId: string) => {
               WORKBENCH
             </span>
           </div>
-          <button id="downloadPdfBtn">Download as PDF</button>
+          <button id="downloadPdfBtn">
+            <span id="btnText">Download as PDF</span>
+            <div id="btnLoader" class="loader"></div>
+          </button>
         </header>
         <iframe id="reportFrame"></iframe>
       </body>
@@ -245,14 +268,46 @@ export const openReportInNewTab = (decodedHtml: string, sessionId: string) => {
         const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
         if (!iframeDoc) return;
 
+        // Inject print optimization CSS to speed up browser's native PDF rendering engine
+        // by removing heavy rendering properties during the print phase.
+        const printOptimizationStyles = `
+            <style>
+              @media print {
+                * {
+                  box-shadow: none !important;
+                  text-shadow: none !important;
+                  transition: none !important;
+                  animation: none !important;
+                }
+              }
+            </style>
+        `;
+
         iframeDoc.open();
-        iframeDoc.write(decodedHtml);
+        iframeDoc.write(printOptimizationStyles + decodedHtml);
         iframeDoc.close();
 
-        // Step 4: Handle PDF download
-        const downloadBtn = newTab.document.getElementById("downloadPdfBtn");
+        // Step 4: Handle PDF download using native print
+        const downloadBtn = newTab.document.getElementById("downloadPdfBtn") as HTMLButtonElement;
+        const btnText = newTab.document.getElementById("btnText");
+        const btnLoader = newTab.document.getElementById("btnLoader");
+
         downloadBtn?.addEventListener("click", () => {
-            iframe.contentWindow?.print();
+            // Show loading UI so the user doesn't think it's frozen
+            if (downloadBtn) downloadBtn.disabled = true;
+            if (btnText) btnText.innerText = "Opening Print Dialog...";
+            if (btnLoader) btnLoader.style.display = "block";
+
+            // Use setTimeout to allow the browser to paint the loading UI
+            // before the print dialog completely blocks the thread
+            setTimeout(() => {
+                iframe.contentWindow?.print();
+
+                // Restore UI after print dialog closes
+                if (downloadBtn) downloadBtn.disabled = false;
+                if (btnText) btnText.innerText = "Download as PDF";
+                if (btnLoader) btnLoader.style.display = "none";
+            }, 100);
         });
     };
 };
