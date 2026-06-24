@@ -4,7 +4,7 @@ import { IoPlay } from "react-icons/io5";
 
 import { FlowMap, MappedStep } from "@/types/flow-state-type";
 import FormConfig, { FormConfigType } from "@components/ui/forms/config-form/config-form";
-import Popup from "@components/ui/pop-up/pop-up";
+import FormFlowDialog from "@/components/Shadcn/Dialog/form-flow-dialog";
 import CustomTooltip from "@components/ui/mini-components/tooltip";
 import { SequenceStep, SubmitEventParams } from "@/types/flow-types";
 import { proceedFlow, triggerExtra } from "@utils/request-utils";
@@ -328,24 +328,32 @@ export default function DisplayFlow({
                 </div>
             )}
             {inputPopUp && activeFormConfig && (
-                <Popup isOpen={inputPopUp} disableClose>
+                <FormFlowDialog open={inputPopUp} disableClose width="2xl">
                     <FormConfig
                         formConfig={activeFormConfig}
                         submitEvent={handleFormSubmit}
                         referenceData={mappedFlow.reference_data}
                         flowId={flowId}
                     />
-                </Popup>
+                </FormFlowDialog>
             )}
             {extraPopUp && extraFormConfig && (
-                <Popup isOpen={extraPopUp} onClose={closeExtraPopUp}>
+                <FormFlowDialog
+                    open={extraPopUp}
+                    width="xl"
+                    onOpenChange={(open) => {
+                        if (!open) {
+                            closeExtraPopUp();
+                        }
+                    }}
+                >
                     <FormConfig
                         formConfig={extraFormConfig}
                         submitEvent={handleExtraSubmit}
                         referenceData={mappedFlow.reference_data}
                         flowId={flowId}
                     />
-                </Popup>
+                </FormFlowDialog>
             )}
         </>
     );

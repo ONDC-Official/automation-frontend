@@ -10,7 +10,7 @@ import {
     DialogFooter,
     DialogHeader,
     DialogTitle,
-} from "@/components/Shadcn/Dialog/dialog";
+} from "@/components/Shadcn/Dialog";
 import GitHubIcon from "@/assets/svgs/GitHubIcon";
 import { cn } from "@/lib/utils";
 import {

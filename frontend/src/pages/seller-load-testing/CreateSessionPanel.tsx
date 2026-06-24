@@ -1,12 +1,11 @@
-import { FormInput } from "@/components/ui/forms/form-input";
+import TextField from "@/components/Shadcn/TextField";
 import LoadingButton from "@/components/ui/forms/loading-button";
 import type { CreateSessionPanelProps } from "@pages/seller-load-testing/types";
 
 export const CreateSessionPanel = ({
     handleSubmit,
     onSubmit,
-    register,
-    errors,
+    control,
     isLoading,
 }: CreateSessionPanelProps) => (
     <div className="rounded-2xl border border-sky-100 bg-white overflow-hidden">
@@ -38,74 +37,38 @@ export const CreateSessionPanel = ({
 
         <form onSubmit={handleSubmit(onSubmit)}>
             <div className="px-5 py-4 space-y-4">
-                <FormInput
-                    label="BPP ID"
+                <TextField
+                    control={control}
                     name="bppId"
-                    required={true}
+                    label="BPP ID"
+                    required
                     labelInfo="Enter your BPP ID"
-                    register={register}
-                    errors={errors}
-                    onValueChange={() => {}}
                 />
-                <FormInput
-                    label="BPP URI"
+                <TextField
+                    control={control}
                     name="bppUri"
-                    required={true}
+                    label="BPP URI"
+                    required
                     labelInfo="Enter your BPP URI"
-                    register={register}
-                    errors={errors}
                     validations={{
                         pattern: {
                             value: /^https?:\/\/.*/i,
                             message: "URL must start with http:// or https://",
                         },
                     }}
-                    onValueChange={() => {}}
                 />
 
                 <div className="[&_input]:text-gray-400 [&_input]:cursor-not-allowed">
-                    <FormInput
-                        label="Domain"
-                        name="domain"
-                        required={false}
-                        labelInfo=""
-                        register={register}
-                        errors={errors}
-                        disable={true}
-                    />
+                    <TextField control={control} name="domain" label="Domain" disable />
                 </div>
                 <div className="[&_input]:text-gray-400 [&_input]:cursor-not-allowed">
-                    <FormInput
-                        label="Version"
-                        name="version"
-                        required={false}
-                        labelInfo=""
-                        register={register}
-                        errors={errors}
-                        disable={true}
-                    />
+                    <TextField control={control} name="version" label="Version" disable />
                 </div>
                 <div className="[&_input]:text-gray-400 [&_input]:cursor-not-allowed">
-                    <FormInput
-                        label="Usecase"
-                        name="usecase"
-                        required={false}
-                        labelInfo=""
-                        register={register}
-                        errors={errors}
-                        disable={true}
-                    />
+                    <TextField control={control} name="usecase" label="Usecase" disable />
                 </div>
                 <div className="[&_input]:text-gray-400 [&_input]:cursor-not-allowed">
-                    <FormInput
-                        label="Environment"
-                        name="environment"
-                        required={false}
-                        labelInfo=""
-                        register={register}
-                        errors={errors}
-                        disable={true}
-                    />
+                    <TextField control={control} name="environment" label="Environment" disable />
                 </div>
                 <div className="flex justify-end">
                     <LoadingButton

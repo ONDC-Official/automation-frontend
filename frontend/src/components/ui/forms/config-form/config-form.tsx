@@ -1,8 +1,11 @@
 import { useContext } from "react";
 import { toast } from "react-toastify";
-import { FormInput } from "../form-input";
-import FormSelect from "../form-select";
-import CheckboxGroup, { CheckboxOption } from "../checkbox";
+import { DatePicker } from "@/components/Shadcn/DatePicker";
+import { DateTimePicker } from "@/components/Shadcn/DateTimePicker";
+import { CheckboxGroup, type ICheckboxOption } from "@/components/Shadcn/Checkbox";
+import { SelectField } from "@/components/Shadcn/Select";
+import TextField from "@/components/Shadcn/TextField";
+import { formatFormFieldForPayload } from "../utils/date-utils";
 import ItemCustomisationSelector from "../nested-select";
 import ItemCustomisationSelectorRET11 from "../ret11-nested-select";
 import GenericForm from "../generic-form";
@@ -122,7 +125,7 @@ export interface FormFieldConfigType {
     values?: string[];
     defaultValue?: string;
     input?: FormFieldConfigType[];
-    options?: CheckboxOption[];
+    options?: ICheckboxOption[];
     default?: string | string[] | number | boolean | null;
     display?: boolean;
     reference?: string;
@@ -166,30 +169,10 @@ export default function FormConfig({
             const fieldConfig = formConfig.find((field) => field.name === key);
             const payloadField = fieldConfig?.payloadField;
             if (payloadField) {
-                if (payloadField.includes("count") || payloadField.includes("quantity")) {
-                    formatedData[payloadField] = parseInt(data[key], 10) || 0;
-                }
-                // Convert datetime-local and date values to ISO 8601 format
-                else if (fieldConfig?.type === "datetime-local" || fieldConfig?.type === "date") {
-                    const dateValue = data[key];
-                    if (dateValue) {
-                        formatedData[payloadField] = new Date(dateValue).toISOString();
-                    } else {
-                        formatedData[payloadField] = dateValue;
-                    }
-                }
-                // Convert date to ISO 8601 format if payloadField contains 'timestamp' or 'time'
-                else if (payloadField.includes("timestamp") || payloadField.includes("time.")) {
-                    const dateValue = data[key];
-                    // Check if it's already in ISO format or just a date
-                    if (dateValue && !dateValue.includes("T")) {
-                        formatedData[payloadField] = `${dateValue}T00:00:00Z`;
-                    } else {
-                        formatedData[payloadField] = dateValue;
-                    }
-                } else {
-                    formatedData[payloadField] = data[key];
-                }
+                formatedData[payloadField] = formatFormFieldForPayload(data[key], {
+                    type: fieldConfig?.type,
+                    payloadField,
+                });
             }
         }
         await submitEvent({ jsonPath: formatedData, formData: formData });
@@ -492,7 +475,7 @@ export default function FormConfig({
     return (
         <FormComponent
             defaultValues={defaultValues as Record<string, string>}
-            className="h-[500px] overflow-scroll"
+            className="h-[500px] space-y-2 overflow-y-auto pr-1"
             onSubmit={onSubmit}
             triggerSubmit={!isNoFieldVisible}
             enablePaste={enablePaste}
@@ -506,45 +489,44 @@ export default function FormConfig({
                 switch (field.type) {
                     case "text":
                         return (
-                            <FormInput
+                            <TextField
+                                key={field.name}
                                 name={field.name}
                                 label={field.label}
                                 required={field.required !== false}
-                                // key={field.payloadField}
                             />
                         );
                     case "date":
                         return (
-                            <FormInput
+                            <DatePicker
+                                key={field.name}
                                 name={field.name}
                                 label={field.label}
                                 required={field.required !== false}
-                                type="date"
-                                // key={field.payloadField}
                             />
                         );
                     case "datetime-local":
                         return (
-                            <FormInput
+                            <DateTimePicker
+                                key={field.name}
                                 name={field.name}
                                 label={field.label}
                                 required={field.required !== false}
-                                type="datetime-local"
-                                // key={field.payloadField}
                             />
                         );
                     case "select":
                         return (
-                            <FormSelect
+                            <SelectField
+                                key={field.name}
                                 name={field.name}
                                 label={field.label}
                                 options={field.values || []}
-                                // key={field.payloadField}
                             />
                         );
                     case "checkbox":
                         return (
                             <CheckboxGroup
+                                key={field.name}
                                 options={field.options || []}
                                 label={field.label}
                                 name={field.name}

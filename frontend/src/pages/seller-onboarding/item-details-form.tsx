@@ -17,7 +17,7 @@ import { homeJSON } from "@constants/home";
 import { applianceData } from "@constants/appliances";
 import { getFnBAttributes } from "@constants/fnb";
 import { domainCategories } from "@constants/categories";
-import { LabelWithToolTip } from "@components/ui/forms/form-input";
+import { LabelWithToolTip } from "@/components/Shadcn/TextField";
 
 interface ItemDetailsFormProps {
     initialData: SellerOnboardingData;

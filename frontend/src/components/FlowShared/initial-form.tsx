@@ -1,7 +1,7 @@
 import react from "react";
 import GenericForm from "@components/ui/forms/generic-form";
-import { FormInput } from "@components/ui/forms/form-input";
-import FormSelect from "@components/ui/forms/form-select";
+import TextField from "@/components/Shadcn/TextField";
+import { SelectField } from "@/components/Shadcn/Select";
 import { trackEvent } from "@utils/analytics";
 import { IDomain, IDomainVersion } from "@/pages/schema-validation/types";
 
@@ -64,7 +64,7 @@ export default function InitialFlowForm({
 
     //     return (
     //         <GenericForm defaultValues={formData.current} onSubmit={onSubmit} submitAlign="right">
-    //             <FormSelect
+    //             <SelectField
     //                 name="config"
     //                 label="Select Configured Domain"
     //                 options={configOptions}
@@ -102,7 +102,7 @@ export default function InitialFlowForm({
     //                 required
     //             />
     //             {/* {dynamicList.version?.length ? ( */}
-    //             <FormSelect
+    //             <SelectField
     //                 label="Select Version"
     //                 name="version"
     //                 required={true}
@@ -134,7 +134,7 @@ export default function InitialFlowForm({
     // 				<></>
     // 			)} */}
     //             {/* {dynamicList.usecase?.length ? ( */}
-    //             <FormSelect
+    //             <SelectField
     //                 label="Enter Usecase"
     //                 name="usecaseId"
     //                 required={true}
@@ -180,7 +180,7 @@ export default function InitialFlowForm({
             onSubmit={onSubmitHandler}
             submitAlign="right"
         >
-            <FormInput
+            <TextField
                 label="Enter Subscriber Url"
                 name="subscriberUrl"
                 required={true}
@@ -203,7 +203,7 @@ export default function InitialFlowForm({
                     };
                 }}
             />
-            <FormSelect
+            <SelectField
                 name="domain"
                 label="Select Domain"
                 options={dynamicList.domain.map((val: IDomain) => val.key)}
@@ -239,7 +239,7 @@ export default function InitialFlowForm({
                 required
             />
             {/* {dynamicList.version?.length ? ( */}
-            <FormSelect
+            <SelectField
                 label="Select Version"
                 name="version"
                 required={true}
@@ -276,7 +276,7 @@ export default function InitialFlowForm({
 				<></>
 			)} */}
             {/* {dynamicList.usecase?.length ? ( */}
-            <FormSelect
+            <SelectField
                 label="Select Usecase"
                 name="usecaseId"
                 required={true}
@@ -302,7 +302,7 @@ export default function InitialFlowForm({
             {/* ) : (
 				<></>
 			)} */}
-            <FormSelect
+            <SelectField
                 name="npType"
                 label="Select App Type"
                 options={["BAP", "BPP"]}
@@ -323,7 +323,7 @@ export default function InitialFlowForm({
                 }}
                 required
             />
-            <FormSelect
+            <SelectField
                 name="env"
                 label="Select Environment"
                 options={["PRE-PRODUCTION"]}

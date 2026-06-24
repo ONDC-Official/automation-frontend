@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import { FaPlus } from "react-icons/fa6";
 import { FaMinus } from "react-icons/fa6";
 import { FaRegPaste } from "react-icons/fa6";
-import { inputClass } from "./inputClass";
-import { LabelWithToolTip } from "./form-input";
+import { LabelWithToolTip } from "@/components/Shadcn/TextField";
+import { SelectControl } from "@/components/Shadcn/Select";
 import { getItemsAndCustomistions } from "../../../utils/generic-utils";
 import PayloadEditor from "../mini-components/payload-editor";
 import { SubmitEventParams } from "@/types/flow-types";
@@ -281,21 +281,15 @@ const ItemCustomisationSelectorRET11 = ({
 
                                     <LabelWithToolTip labelInfo="" label={"Item"} />
 
-                                    <select
-                                        className={inputClass}
+                                    <SelectControl
                                         value={item.id}
-                                        onChange={(e) => handleItemChange(index, e.target.value)}
-                                    >
-                                        <option value="">Select Item</option>
-                                        {Object.entries(itemsList).map((key, index) => {
-                                            const [item, _] = key;
-                                            return (
-                                                <option key={index} value={item}>
-                                                    {item}
-                                                </option>
-                                            );
-                                        })}
-                                    </select>
+                                        onValueChange={(value) => handleItemChange(index, value)}
+                                        placeholder="Select Item"
+                                        options={Object.entries(itemsList).map(([itemId]) => ({
+                                            key: itemId,
+                                            value: itemId,
+                                        }))}
+                                    />
 
                                     {item.id && (
                                         <>
@@ -303,26 +297,23 @@ const ItemCustomisationSelectorRET11 = ({
                                                 labelInfo=""
                                                 label={"Customisation"}
                                             />
-                                            <div className="flex gap-2 ">
-                                                <select
-                                                    className={inputClass}
-                                                    value=""
-                                                    onChange={(e) =>
+                                            <div className="flex gap-2">
+                                                <SelectControl
+                                                    key={`customisation-${index}-${item.customisations.length}`}
+                                                    onValueChange={(value) =>
                                                         handleCustomisationChange(
                                                             index,
-                                                            e.target.value,
-                                                            groupMapping[e.target.value] ||
+                                                            value,
+                                                            groupMapping[value] ||
                                                                 itemsList[`${item?.id}`]
                                                         )
                                                     }
-                                                >
-                                                    <option value="">Select Customisation</option>
-                                                    {availableCustomisations.map((c: string) => (
-                                                        <option key={c} value={c}>
-                                                            {c}
-                                                        </option>
-                                                    ))}
-                                                </select>
+                                                    placeholder="Select Customisation"
+                                                    options={availableCustomisations.map((c) => ({
+                                                        key: c,
+                                                        value: c,
+                                                    }))}
+                                                />
                                             </div>
 
                                             <div className="flex flex-wrap gap-2 mt-2">

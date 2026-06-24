@@ -22,6 +22,7 @@ const GenericForm = <T extends FieldValues = FieldValues>({
     const {
         register,
         handleSubmit,
+        control,
         formState: { errors },
         setValue,
     } = useForm({ defaultValues });
@@ -53,6 +54,7 @@ const GenericForm = <T extends FieldValues = FieldValues>({
             {Children.map(children, (child) =>
                 cloneElement(child as ReactElement<Record<string, unknown>>, {
                     register,
+                    control,
                     errors,
                     setValue,
                 })

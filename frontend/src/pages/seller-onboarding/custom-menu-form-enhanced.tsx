@@ -13,7 +13,7 @@ import {
 import { Select, Button, Card, Modal, Checkbox, Tabs } from "antd";
 import { FaPlus, FaTrash, FaEdit, FaSitemap, FaClock } from "react-icons/fa";
 
-import { FormInput } from "@components/ui/forms/form-input";
+import TextField from "@/components/Shadcn/TextField";
 import LoadingButton from "@components/ui/forms/loading-button";
 import { SellerOnboardingData } from "@pages/seller-onboarding";
 import { weekDays } from "@constants/common";
@@ -457,21 +457,6 @@ const CustomMenuFormEnhanced = ({
         reset({ menu: menuData });
     }, [initialData, reset]);
 
-    // Helper function to get nested errors for field arrays
-    const createErrorsObject = (index: number) => {
-        const menuErrors = errors?.menu?.[index];
-        if (!menuErrors) return {};
-
-        const flatErrors: Record<string, string> = {};
-        Object.keys(menuErrors).forEach((key) => {
-            flatErrors[`menu.${index}.${key}`] = (menuErrors as Record<string, unknown>)[
-                key
-            ] as string;
-        });
-
-        return flatErrors;
-    };
-
     const addMenuItem = () => {
         append({
             name: "",
@@ -727,12 +712,11 @@ const CustomMenuFormEnhanced = ({
                                                 Basic Information
                                             </h5>
                                             <div className="grid md:grid-cols-1 gap-4">
-                                                <FormInput
+                                                <TextField
                                                     label="Menu Name"
                                                     placeholder="Enter Menu Name"
                                                     name={`menu.${index}.name`}
-                                                    register={register}
-                                                    errors={createErrorsObject(index)}
+                                                    control={control}
                                                     required="Menu name is required"
                                                     validations={{
                                                         minLength: {
@@ -745,12 +729,11 @@ const CustomMenuFormEnhanced = ({
                                             </div>
 
                                             <div className="grid md:grid-cols-2 gap-4">
-                                                <FormInput
+                                                <TextField
                                                     label="Short Description"
                                                     placeholder="Enter Short Description"
                                                     name={`menu.${index}.shortDescription`}
-                                                    register={register}
-                                                    errors={createErrorsObject(index)}
+                                                    control={control}
                                                     required="Short description is required"
                                                     validations={{
                                                         minLength: {
@@ -761,12 +744,11 @@ const CustomMenuFormEnhanced = ({
                                                     }}
                                                 />
 
-                                                <FormInput
+                                                <TextField
                                                     label="Long Description"
                                                     placeholder="Enter Long Description"
                                                     name={`menu.${index}.longDescription`}
-                                                    register={register}
-                                                    errors={createErrorsObject(index)}
+                                                    control={control}
                                                     required="Long description is required"
                                                     validations={{
                                                         minLength: {
@@ -896,14 +878,13 @@ const CustomMenuFormEnhanced = ({
                         </div> */}
 
                                                 <div className="mb-4 w-full">
-                                                    <FormInput
+                                                    <TextField
+                                                        control={control}
                                                         label="Display Rank"
                                                         name={`menu.${index}.rank`}
                                                         type="number"
                                                         min="1"
                                                         placeholder="e.g., 1"
-                                                        register={register}
-                                                        errors={createErrorsObject(index)}
                                                         required="Display rank is required"
                                                         validations={{
                                                             min: {

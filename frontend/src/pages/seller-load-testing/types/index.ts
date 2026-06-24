@@ -1,4 +1,4 @@
-import type { FieldErrors, UseFormHandleSubmit, UseFormRegister } from "react-hook-form";
+import type { Control, FieldErrors, UseFormHandleSubmit } from "react-hook-form";
 
 export interface FormValues {
     bppId: string;
@@ -30,7 +30,7 @@ export interface ActiveSessionPanelsProps {
 export interface CreateSessionPanelProps {
     handleSubmit: UseFormHandleSubmit<FormValues>;
     onSubmit: (data: FormValues) => Promise<void>;
-    register: UseFormRegister<FormValues>;
+    control: Control<FormValues>;
     errors: FieldErrors<FormValues>;
     isLoading: boolean;
 }

@@ -20,7 +20,7 @@ import { FlowMap } from "@/types/flow-state-type";
 import DisplayFlow from "@components/FlowShared/mapped-flow";
 import { getSequenceFromFlow } from "@utils/flow-utils";
 import CircularProgress from "@components/ui/circular-cooldown";
-import Popup from "@components/ui/pop-up/pop-up";
+import FormFlowDialog from "@/components/Shadcn/Dialog/form-flow-dialog";
 import FormConfig, { FormConfigType } from "@components/ui/forms/config-form/config-form";
 import { trackEvent } from "@utils/analytics";
 import { generatePlaygroundConfigFromFlowConfig } from "@ondc/automation-mock-runner";
@@ -437,14 +437,14 @@ export function Accordion({
                 </div>
             </div>
             {inputPopUp && activeFormConfig && (
-                <Popup isOpen={inputPopUp} disableClose>
+                <FormFlowDialog open={inputPopUp} disableClose width="2xl">
                     <FormConfig
                         formConfig={activeFormConfig}
                         submitEvent={handleFormForNewFlow}
                         referenceData={mappedFlow.reference_data}
                         flowId={flow.id}
                     />
-                </Popup>
+                </FormFlowDialog>
             )}
         </div>
     );

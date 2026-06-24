@@ -1,10 +1,11 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { useForm } from "react-hook-form";
-import { FaRegPaste } from "react-icons/fa6";
+import { ClipboardDocumentIcon } from "@heroicons/react/24/outline";
 import { toast } from "react-toastify";
 import PayloadEditor from "@/components/ui/mini-components/payload-editor";
 import { Button } from "@/components/Shadcn/Button/button";
 import SpinnerDialog from "@/components/Shadcn/SpinnerDialog";
+import { SelectField } from "@/components/Shadcn/Select";
 import { ICatalogItem, IGenericFormWithPasteProps } from "@/components/ui/forms/generic-form.types";
 
 const GenericFormWithPaste = ({
@@ -18,6 +19,7 @@ const GenericFormWithPaste = ({
     const {
         register,
         handleSubmit,
+        control,
         formState: { errors },
         setValue,
         watch,
@@ -134,58 +136,45 @@ const GenericFormWithPaste = ({
             // Replace item_id text input with dropdown when items are available
             if (fieldName === "item_id" && availableItems.length > 0) {
                 return (
-                    <div className="mb-2 w-full bg-gray-50 border rounded-md p-2 flex">
-                        <div className="flex justify-between w-full">
-                            <label className="text-sm font-medium text-gray-600 mb-2">
-                                {(childProps.label as string) || "Item ID"}{" "}
-                                <span className="text-red-500 ml-1">*</span>
-                            </label>
-                        </div>
-                        <select
-                            {...register("item_id", { required: true })}
-                            className="p-2 rounded bg-transparent border outline-hidden focus:border-blue-500 w-full"
-                        >
-                            <option value="">Select an item</option>
-                            {availableItems.map((item) => (
-                                <option key={item.id} value={item.id}>
-                                    {item.name} ({item.id})
-                                </option>
-                            ))}
-                        </select>
-                        {errors["item_id"] && (
-                            <p className="text-red-500 text-xs italic">Field required</p>
-                        )}
-                    </div>
+                    <SelectField
+                        name="item_id"
+                        label={(childProps.label as string) || "Item ID"}
+                        required
+                        nonSelectedValue
+                        options={availableItems.map((item) => ({
+                            key: `${item.name} (${item.id})`,
+                            value: item.id,
+                        }))}
+                        register={register}
+                        control={control}
+                        errors={errors}
+                        setValue={setValue}
+                    />
                 );
             }
 
-            // Replace add_on_id text input with dropdown when addons are available
             if (fieldName === "add_on_id" && availableAddons.length > 0) {
                 return (
-                    <div className="mb-2 w-full bg-gray-50 border rounded-md p-2 flex">
-                        <div className="flex justify-between w-full">
-                            <label className="text-sm font-medium text-gray-600 mb-2">
-                                {(childProps.label as string) || "Add-on ID"}
-                            </label>
-                        </div>
-                        <select
-                            {...register("add_on_id")}
-                            className="p-2 rounded bg-transparent border outline-hidden focus:border-blue-500 w-full"
-                        >
-                            <option value="">No add-on (optional)</option>
-                            {availableAddons.map((addon) => (
-                                <option key={addon.id} value={addon.id}>
-                                    {addon.name} ({addon.id})
-                                </option>
-                            ))}
-                        </select>
-                    </div>
+                    <SelectField
+                        name="add_on_id"
+                        label={(childProps.label as string) || "Add-on ID"}
+                        nonSelectedValue
+                        options={availableAddons.map((addon) => ({
+                            key: `${addon.name} (${addon.id})`,
+                            value: addon.id,
+                        }))}
+                        register={register}
+                        control={control}
+                        errors={errors}
+                        setValue={setValue}
+                        defaultValue=""
+                    />
                 );
             }
 
-            // For other fields, pass register, errors, setValue as usual
             return React.cloneElement(child as React.ReactElement<Record<string, unknown>>, {
                 register,
+                control,
                 errors,
                 setValue,
             });
@@ -201,15 +190,16 @@ const GenericFormWithPaste = ({
                         <PayloadEditor onAdd={handlePaste as (payload: unknown) => void} />
                     )}
                     {errorWhilePaste && (
-                        <p className="text-red-500 text-sm italic mb-2">{errorWhilePaste}</p>
+                        <p className="text-destructive text-sm mb-2">{errorWhilePaste}</p>
                     )}
                     <Button
+                        type="button"
                         variant="outline"
                         onClick={() => setIsPayloadEditorActive(true)}
-                        className="p-2 border rounded-full hover:bg-gray-100 mb-3 flex items-center gap-2"
+                        className="mb-3 flex items-center gap-2"
                         title="Paste on_search payload to auto-populate fields"
                     >
-                        <FaRegPaste size={14} />
+                        <ClipboardDocumentIcon className="size-4" />
                         <span className="text-sm">Paste on_search</span>
                     </Button>
                 </>
