@@ -97,10 +97,6 @@ const DifficultyCards = ({ difficulty_cache, sessionId }: IProps) => {
             delete newCache.stopAfterFirstNack;
         }
 
-        if (!("useGateway" in newCache)) {
-            newCache.useGateway = true;
-        }
-
         if (!("encryptionValidation" in newCache)) {
             newCache.encryptionValidation = false;
         }
