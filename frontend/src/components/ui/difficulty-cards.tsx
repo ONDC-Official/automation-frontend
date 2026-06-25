@@ -68,11 +68,11 @@ interface DifficultyCache {
 type FilteredDifficultyCache = Partial<
     Omit<
         DifficultyCache,
-        "stopAfterFirstNack" | "sensitiveTTL" | "useGateway" | "timeValidations" | "totalDifficulty"
+        "stopAfterFirstNack" | "sensitiveTTL" | "timeValidations" | "totalDifficulty"
     >
 >;
 
-const skipItems = ["stopAfterFirstNack", "sensitiveTTL", "useGateway", "timeValidations"];
+const skipItems = ["stopAfterFirstNack", "sensitiveTTL", "timeValidations"];
 
 interface IProps {
     difficulty_cache: DifficultyCache;
@@ -95,6 +95,10 @@ const DifficultyCards = ({ difficulty_cache, sessionId }: IProps) => {
         if (newCache.sensitiveTTL) delete newCache.sensitiveTTL;
         if (newCache.stopAfterFirstNack) {
             delete newCache.stopAfterFirstNack;
+        }
+
+        if (!("useGateway" in newCache)) {
+            newCache.useGateway = true;
         }
 
         if (!("encryptionValidation" in newCache)) {
