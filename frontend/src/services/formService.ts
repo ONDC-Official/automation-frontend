@@ -38,10 +38,16 @@ export class FormService {
      * POST /form/reset-completion?session_id=X
      */
     static async resetCompletion(sessionId: string): Promise<void> {
-        await apiClient.post(API_ROUTES.FORM.RESET_COMPLETION, null, {
-            params: { session_id: sessionId },
-            timeout: 5000,
-        });
+        // session_id goes as a query param; send an empty object as the body
+        // (sending null tripped the backend's JSON parsing).
+        await apiClient.post(
+            API_ROUTES.FORM.RESET_COMPLETION,
+            {},
+            {
+                params: { session_id: sessionId },
+                timeout: 5000,
+            }
+        );
     }
 
     /**
