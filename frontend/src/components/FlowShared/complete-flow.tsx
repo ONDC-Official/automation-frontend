@@ -474,7 +474,7 @@ const FlowProgress = ({
                 className="h-1.5 w-full bg-n-30 **:data-[slot=progress-indicator]:bg-brand-normal dark:bg-surface-muted"
             />
             <div className="flex min-w-0 items-center gap-3">
-                <span className="line-clamp-2 min-w-0 flex-1 wrap-break-word text-body-2 font-regular text-text-secondary">
+                <span className="min-w-0 flex-1 wrap-break-word text-body-2 font-regular text-text-secondary">
                     {description}
                 </span>
                 <span className="shrink-0 text-body-2 font-bold text-brand-normal">
