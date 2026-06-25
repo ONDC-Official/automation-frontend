@@ -18,11 +18,11 @@ export const InfoPill = ({ label, value, copyable }: InfoPillProps) => {
                 "dark:border-border-default dark:bg-surface-muted"
             )}
         >
-            <span className="shrink-0 text-body-2 font-bold text-brand-normal">
+            <span className="shrink-0 text-xs font-bold text-brand-normal">
                 {label}
-                <span className="text-body-2 font-medium text-text-primary">:</span>
+                <span className="text-xs font-medium text-text-primary">:</span>
             </span>
-            <span className="truncate text-body-2 font-bold text-text-primary">{value}</span>
+            <span className="truncate text-xs font-bold text-text-primary">{value}</span>
             {copyable ? (
                 <Button
                     variant="ghost"

@@ -1,10 +1,14 @@
 import { useEffect, useRef, useState } from "react";
 import { toast } from "react-toastify";
 import { IoPlay } from "react-icons/io5";
-
 import { FlowMap, MappedStep } from "@/types/flow-state-type";
-import FormConfig, { FormConfigType } from "@components/ui/forms/config-form/config-form";
 import FormFlowDialog from "@/components/Shadcn/Dialog/form-flow-dialog";
+import FormConfig, {
+    FormConfigType,
+    FormFieldConfigType,
+} from "@components/ui/forms/config-form/config-form";
+import FormLaunchPopup from "@components/ui/forms/custom-forms/form-launch-popup";
+import Popup from "@components/ui/pop-up/pop-up";
 import CustomTooltip from "@components/ui/mini-components/tooltip";
 import { SequenceStep, SubmitEventParams } from "@/types/flow-types";
 import { proceedFlow, triggerExtra } from "@utils/request-utils";
@@ -16,6 +20,12 @@ import {
     isTrackingActive,
     isRideMapEnabled,
 } from "@components/FlowShared/ride-map-utils";
+
+// LAMF single-redirection flow: its MANUAL_DYNAMIC_FORM form is launched from a
+// separate one-button popup as soon as the FIRST on_select completes (this flow
+// has a second on_select after on_status — that one must NOT trigger it). Scoped
+// strictly by flow id so no other flow's behavior changes.
+const LAMF_SINGLE_REDIRECTION_FLOW_ID = "lamf_credit_line_with_mfc_single_redirection";
 
 export default function DisplayFlow({
     mappedFlow,
@@ -44,6 +54,15 @@ export default function DisplayFlow({
     const activeInputSigRef = useRef<string | undefined>(undefined);
     const submittedInputSigRef = useRef<string | undefined>(undefined);
 
+    // LAMF single-redirection "launch" popup (separate from the polling popup): a
+    // one-button popup shown when the first on_select completes. It only opens the
+    // form URL + saves the redirection URL, then disappears. It does NOT poll.
+    const [launchPopUp, setLaunchPopUp] = useState(false);
+    const [launchFormConfig, setLaunchFormConfig] = useState<FormFieldConfigType | undefined>(
+        undefined
+    );
+    const launchHandledSigRef = useRef<string | undefined>(undefined);
+
     // User-initiated "extra trigger" popup — kept separate from the auto-open INPUT-REQUIRED popup.
     const [extraPopUp, setExtraPopUp] = useState(false);
     const [extraFormConfig, setExtraFormConfig] = useState<FormConfigType | undefined>(undefined);
@@ -51,6 +70,28 @@ export default function DisplayFlow({
     const [triggeringKey, setTriggeringKey] = useState<string | undefined>(undefined);
 
     const { sessionId, sessionData, activeFlowId, autoScrollEnabled } = useSession();
+
+    const isLamfRedirectionFlow = flowId === LAMF_SINGLE_REDIRECTION_FLOW_ID;
+
+    // Per-run key for the LAMF launch popup's "already handled" marker. Keyed on
+    // the transaction id so it resets only when the flow is cleared (new txn id),
+    // and persisted in localStorage so a page refresh does not re-show the popup.
+    const launchMarkerKey = () => {
+        const txnId = sessionData?.flowMap?.[flowId] ?? "";
+        return `lamf_launch_done:${flowId}:${txnId}`;
+    };
+
+    // Mark the launch as done (button clicked) and dismiss the popup. The marker
+    // persists across refreshes; it clears naturally when the flow is cleared.
+    const handleFormLaunched = () => {
+        try {
+            localStorage.setItem(launchMarkerKey(), "1");
+        } catch {
+            // localStorage unavailable — non-fatal, popup just won't persist.
+        }
+        setLaunchPopUp(false);
+        setLaunchFormConfig(undefined);
+    };
 
     // Auto-scroll bookkeeping: DOM node per step signature, previous poll's status map, and a guard
     // so we don't scroll on the initial mount (everything would look "new").
@@ -79,6 +120,47 @@ export default function DisplayFlow({
         isRideMapEnabled(sessionData?.domain, sessionData?.version) && isTrackingActive(mappedFlow);
 
     useEffect(() => {
+        // LAMF single-redirection: as soon as the FIRST on_select completes (this
+        // flow has a second on_select after on_status — that one must NOT trigger
+        // it), show the separate one-button "launch" popup. Only the BPP session
+        // shows it; it opens the form + saves the redirection URL, then disappears.
+        // The polling popup is untouched and still opens via the normal selection.
+        if (isLamfRedirectionFlow && sessionData?.npType === "BPP") {
+            const firstOnSelect = mappedFlow?.sequence
+                ?.filter((s) => s.actionType === "on_select")
+                ?.sort((a, b) => a.index - b.index)?.[0];
+            const formStep = mappedFlow?.sequence?.find((s) =>
+                s.input?.some((f) => f.type === "MANUAL_DYNAMIC_FORM")
+            );
+            const manualFormField = formStep?.input?.find((f) => f.type === "MANUAL_DYNAMIC_FORM");
+
+            // "Already handled" must survive a page refresh, so it is persisted in
+            // localStorage keyed by the per-run transaction id; it resets only when
+            // the flow is cleared, or once the form step itself is COMPLETE.
+            const markerKey = launchMarkerKey();
+            const alreadyDone = formStep?.status === "COMPLETE" || isLaunchDone(markerKey);
+
+            if (firstOnSelect?.status === "COMPLETE" && manualFormField && !alreadyDone) {
+                if (markerKey !== launchHandledSigRef.current) {
+                    launchHandledSigRef.current = markerKey;
+                    setLaunchFormConfig(manualFormField);
+                    setLaunchPopUp(true);
+                }
+            } else if (firstOnSelect && firstOnSelect.status !== "COMPLETE") {
+                // Flow was (re)started or hasn't reached the form point yet: re-arm
+                // so the popup shows again on the next completion. The per-run
+                // transaction id can be reused, so also clear the persisted marker.
+                // During a live run on_select stays COMPLETE, so this never runs
+                // mid-run — refresh-survival is preserved.
+                launchHandledSigRef.current = undefined;
+                try {
+                    localStorage.removeItem(markerKey);
+                } catch {
+                    // localStorage unavailable — non-fatal.
+                }
+            }
+        }
+
         // Sequence steps (skip first — that's the flow's initial trigger) take priority over extras.
         // MANUAL_DYNAMIC_FORM steps also auto-open on the counterparty side (WAITING-SUBMISSION):
         // both sessions poll the same completion callback, and each clears its own step.
@@ -113,6 +195,28 @@ export default function DisplayFlow({
         // Target moved on (different step or none) — drop the suppression and proceed.
         submittedInputSigRef.current = undefined;
         activeInputSigRef.current = sig;
+
+        // LAMF single-redirection: the BAP side does not wait on the form callback
+        // (completion is keyed by the BPP session, which BAP can't observe). Auto-
+        // proceed past the MANUAL_DYNAMIC_FORM step immediately instead of opening
+        // the polling popup. BPP is unaffected and still drives real completion.
+        if (
+            isLamfRedirectionFlow &&
+            sessionData?.npType === "BAP" &&
+            seqStep?.input?.some((f) => f.type === "MANUAL_DYNAMIC_FORM")
+        ) {
+            if (sessionData?.activeFlow !== flowId) return;
+            submittedInputSigRef.current = sig; // proceed once per status (guards double-fire across polls)
+            const submission_id = crypto.randomUUID();
+            const bapTxId = sessionData?.flowMap?.[flowId] ?? "";
+            // Raise the ordering flag once BAP's proceed resolves, so the waiting
+            // BPP form-step submit can then proceed (BAP-before-BPP at the form step).
+            void handleFormSubmit({
+                jsonPath: { submission_id },
+                formData: { submission_id },
+            }).then(() => markBapProceeded(bapTxId));
+            return;
+        }
 
         if (conf?.length === 0) {
             if (sessionData?.activeFlow !== flowId) return;
@@ -219,6 +323,17 @@ export default function DisplayFlow({
                 console.error("Transaction ID not found");
                 return;
             }
+            // LAMF ordering: the BPP *form step* must not proceed until BAP has
+            // proceeded it first. Scope strictly to the MANUAL_DYNAMIC_FORM submit
+            // (not every form in the flow), else other BPP forms would block too.
+            const isLamfManualFormSubmit =
+                isLamfRedirectionFlow &&
+                sessionData?.npType === "BPP" &&
+                activeFormConfig?.some((f) => f.type === "MANUAL_DYNAMIC_FORM");
+            if (isLamfManualFormSubmit) {
+                await waitForBapProceeded(txId);
+            }
+
             // Pass extraKey explicitly for the immediate auto-submit path (state not yet flushed);
             // popup submissions fall back to the stored key set when the form opened.
             const key = extraKey ?? activeInputExtraKey;
@@ -227,6 +342,7 @@ export default function DisplayFlow({
             } else {
                 await proceedFlow(sessionId, txId, formData.jsonPath, formData.formData);
             }
+
             // Remember what we submitted so the auto-open effect won't re-open it while the
             // backend still reports it as INPUT-REQUIRED on the next poll(s).
             submittedInputSigRef.current = activeInputSigRef.current;
@@ -337,6 +453,16 @@ export default function DisplayFlow({
                     />
                 </FormFlowDialog>
             )}
+            {launchPopUp && launchFormConfig && (
+                <Popup isOpen={launchPopUp} disableClose>
+                    <FormLaunchPopup
+                        formConfig={launchFormConfig}
+                        referenceData={mappedFlow.reference_data}
+                        sessionId={sessionId}
+                        onLaunched={handleFormLaunched}
+                    />
+                </Popup>
+            )}
             {extraPopUp && extraFormConfig && (
                 <FormFlowDialog
                     open={extraPopUp}
@@ -410,6 +536,61 @@ export type PairedStep = {
 // differ from each other by actionId.
 function stepSignature(step: MappedStep): string {
     return `${step.missedStep ? "m" : "s"}|${step.actionId}|${step.index}`;
+}
+
+// Whether the LAMF launch popup has already been handled this run (survives refresh).
+function isLaunchDone(markerKey: string): boolean {
+    try {
+        return localStorage.getItem(markerKey) === "1";
+    } catch {
+        return false;
+    }
+}
+
+// LAMF ordering (BAP must proceed the form step before BPP). BAP and BPP share the
+// transaction id and (same browser) localStorage, so BAP raises this per-run flag
+// when it proceeds and BPP waits for it. LAMF-only.
+const BAP_PROCEEDED_PREFIX = "lamf_bap_proceeded";
+
+function markBapProceeded(txId: string): void {
+    try {
+        localStorage.setItem(`${BAP_PROCEEDED_PREFIX}:${txId}`, "1");
+    } catch {
+        // localStorage unavailable — non-fatal.
+    }
+}
+
+// Resolve once BAP has proceeded (flag set), or after a safety timeout so BPP
+// never hangs forever if BAP never ran.
+function waitForBapProceeded(txId: string): Promise<void> {
+    const key = `${BAP_PROCEEDED_PREFIX}:${txId}`;
+    return new Promise((resolve) => {
+        const isSet = () => {
+            try {
+                return localStorage.getItem(key) === "1";
+            } catch {
+                return true; // can't read → don't block
+            }
+        };
+        if (isSet()) {
+            resolve();
+            return;
+        }
+        const start = Date.now();
+        const TIMEOUT_MS = 600_000;
+        const finish = () => {
+            clearInterval(iv);
+            window.removeEventListener("storage", onStorage);
+            resolve();
+        };
+        const onStorage = (e: StorageEvent) => {
+            if (e.key === key && e.newValue === "1") finish();
+        };
+        const iv = setInterval(() => {
+            if (isSet() || Date.now() - start > TIMEOUT_MS) finish();
+        }, 500);
+        window.addEventListener("storage", onStorage);
+    });
 }
 
 // Nearest actually-scrolling ancestor, or null when the window/document is the scroller.

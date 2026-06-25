@@ -10,9 +10,9 @@ import { getNavStatus, NAV_STATUS_LABEL, NAV_STATUS_STYLES } from "../shared/sta
 
 const TREE_INDENT_STEP = 20;
 const TREE_COLUMN_OFFSET = -4;
-const TREE_ROW_GAP = 12;
+const TREE_ROW_GAP = 0;
 /** Matches `py-2` row padding — trunk anchors to the vertical center of each row. */
-const TREE_ROW_HALF_HEIGHT = 18;
+const TREE_ROW_HALF_HEIGHT = 12;
 const TREE_ELBOW_RADIUS = 6;
 const CHEVRON_ICON_SIZE = 14;
 /** Equal clearance between tree lines and the chevron on the left and below. */
@@ -136,7 +136,7 @@ function nodeHasActiveDescendant(
 
 const linkClass = ({ isActive, depth }: { isActive: boolean; depth: number }) => {
     const base =
-        "flex flex-1 items-center gap-1 min-w-0 text-left py-2 pr-2 text-[13px] leading-snug transition-colors";
+        "flex flex-1 items-center gap-1 min-w-0 text-left py-1 pr-2 text-[13px] leading-snug transition-colors";
     const rounding = depth === 0 ? mainNodeShell : "rounded-lg";
 
     if (depth === 0) {
@@ -176,7 +176,7 @@ const NavLinkItem: FC<{
                     style={{ paddingLeft: inset }}
                 >
                     {reserveChevronSlot && <ChevronSlot />}
-                    <span className="truncate flex-1 min-w-0 py-2 pr-3">{node.label}</span>
+                    <span className="flex-1 min-w-0 py-1 pr-3">{node.label}</span>
                     {node.suffix && (
                         <span className="font-mono text-[11px] text-n-300 dark:text-n-60 shrink-0">
                             {node.suffix}
@@ -189,7 +189,7 @@ const NavLinkItem: FC<{
     }
 
     return (
-        <div className={`relative w-full min-w-0${depth === 0 ? " mb-3" : ""}`}>
+        <div className={`relative w-full min-w-0${depth === 0 ? " mb-1" : ""}`}>
             <TreeConnectors depth={depth} isLastSibling={isLastSibling} />
             <div
                 className="relative z-10 flex items-center w-full min-w-0"
@@ -207,7 +207,7 @@ const NavLinkItem: FC<{
                     }
                     title={linkTitle}
                 >
-                    <span className="truncate flex-1 min-w-0">{node.label}</span>
+                    <span className="flex-1 min-w-0">{node.label}</span>
                     {node.suffix && (
                         <span
                             title={NAV_STATUS_LABEL[getNavStatus(node.id)]}
@@ -288,7 +288,7 @@ const NavGroupItem: FC<{
 
     return (
         <div
-            className={`relative ${depth === 0 ? "mb-1 first:mt-0 not-first:mt-4" : "w-full min-w-0"}`}
+            className={`relative ${depth === 0 ? "mb-1 first:mt-0 not-first:mt-2" : "w-full min-w-0"}`}
         >
             {node.path ? (
                 <div className="relative w-full min-w-0">
@@ -317,13 +317,13 @@ const NavGroupItem: FC<{
                             end
                             className={() =>
                                 [
-                                    "group/header truncate flex-1 min-w-0 py-2 pr-3 text-left transition-colors rounded-md flex items-center gap-1",
+                                    "group/header flex-1 min-w-0 py-1 pr-3 text-left transition-colors rounded-md flex items-center gap-1",
                                     headerClass,
                                 ].join(" ")
                             }
                             title={node.label}
                         >
-                            <span className="truncate">{node.label}</span>
+                            <span>{node.label}</span>
                         </NavLink>
                     </div>
                 </div>
@@ -341,7 +341,7 @@ const NavGroupItem: FC<{
                                 className={`h-3.5 w-3.5 transition-transform duration-150 ${open ? "" : "-rotate-90"}`}
                             />
                         </span>
-                        <span className={`truncate py-2 pr-3 ${headerClass}`}>{node.label}</span>
+                        <span className={`py-1 pr-3 ${headerClass}`}>{node.label}</span>
                     </button>
                 </div>
             ) : (
@@ -352,14 +352,12 @@ const NavGroupItem: FC<{
                         style={{ paddingLeft: inset }}
                     >
                         {reserveChevronSlot && <ChevronSlot />}
-                        <span className={`truncate py-2 pr-3 ${headerClass}`}>{node.label}</span>
+                        <span className={`py-1 pr-3 ${headerClass}`}>{node.label}</span>
                     </div>
                 </div>
             )}
             {open && (
-                <div
-                    className={`relative ${depth === 0 ? "mt-3 mb-1 space-y-3" : "mt-3 space-y-3"}`}
-                >
+                <div className={`relative ${depth === 0 ? "mt-2 mb-1" : "mt-2"}`}>
                     {hasChildren && <GroupDescentConnector depth={depth} />}
                     {node.children.map((child, index) => (
                         <NavTreeItem

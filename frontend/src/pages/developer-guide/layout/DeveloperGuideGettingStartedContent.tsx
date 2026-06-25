@@ -22,7 +22,14 @@ const DeveloperGuideGettingStartedContent: FC = () => {
     }, [hash]);
 
     return (
-        <div className="px-6 py-6 md:px-12 md:py-8">
+        <div className="p-4">
+            <div className="shrink-0 flex gap-2 px-2 py-1 bg-alert-50 items-center mb-2">
+                <span className="text-alert-500 text-[12px] font-semibold">Tip: </span>
+                <span className="text-[12px] font-regular text-n-300">
+                    Use Filter navigation in the sidebar to quickly find a domain, use case, or
+                    documentation page.
+                </span>
+            </div>
             <MdFileRender
                 variant="guide"
                 title="Getting Started"

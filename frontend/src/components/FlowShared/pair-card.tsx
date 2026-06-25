@@ -165,30 +165,32 @@ function StepDisplay({ step, flowId }: { step: MappedStep; flowId: string }) {
                             {step.unsolicited ? (
                                 <Badge variant="secondary">unsolicited</Badge>
                             ) : null}
-                            <CustomTooltip content="Developer Guide">
-                                <Button
-                                    type="button"
-                                    variant="ghost"
-                                    size="xs"
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        if (!sessionData) return;
-                                        openDevGuide({
-                                            domain: sessionData.domain,
-                                            version: sessionData.version,
-                                            useCase: sessionData.usecaseId,
-                                            flowId,
-                                            actionId: step.actionId,
-                                        });
-                                    }}
-                                    className="h-auto rounded-md bg-brand-light px-2 py-0.5 text-caption-1 font-semibold text-brand-normal hover:bg-brand-light-hover dark:bg-brand-dark/30 dark:hover:bg-brand-dark/50"
-                                >
-                                    Docs
-                                </Button>
-                            </CustomTooltip>
-                            <CustomTooltip content="Step information">
-                                <InformationCircleIcon className="size-4 shrink-0 text-brand-normal" />
-                            </CustomTooltip>
+
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                size="xs"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    if (!sessionData) return;
+                                    openDevGuide({
+                                        domain: sessionData.domain,
+                                        version: sessionData.version,
+                                        useCase: sessionData.usecaseId,
+                                        flowId,
+                                        actionId: step.actionId,
+                                    });
+                                }}
+                                className="h-auto rounded-md bg-brand-light px-2 py-0.5 text-caption-1 font-semibold text-brand-normal hover:bg-brand-light-hover dark:bg-brand-dark/30 dark:hover:bg-brand-dark/50"
+                            >
+                                Docs
+                            </Button>
+
+                            {step.description ? (
+                                <CustomTooltip content={step.description}>
+                                    <InformationCircleIcon className="size-4 shrink-0 text-brand-normal" />
+                                </CustomTooltip>
+                            ) : null}
                         </div>
                     </div>
 
@@ -230,7 +232,8 @@ function StepDisplay({ step, flowId }: { step: MappedStep; flowId: string }) {
                         ) : null}
                         {apiCount > 0 ? (
                             <Badge className={getCountStyles(apiCount)}>
-                                <span className="font-normal text-text-secondary">×</span> {apiCount}
+                                <span className="font-normal text-text-secondary">×</span>{" "}
+                                {apiCount}
                             </Badge>
                         ) : null}
                         {step.payloads?.timestamp ? (
