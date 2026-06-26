@@ -63,6 +63,7 @@ jobs:
   build-backend:
     needs: version
     runs-on: ubuntu-latest
+    environment: ${{ needs.version.outputs.environment }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -178,6 +179,7 @@ jobs:
   update-iac:
     needs: [version, build-backend, build-frontend]
     runs-on: ubuntu-latest
+    environment: ${{ needs.version.outputs.environment }}
     steps:
       - name: Generate GitHub App token
         id: app-token
