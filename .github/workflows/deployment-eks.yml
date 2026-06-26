@@ -43,7 +43,7 @@ jobs:
 
           # Environment mapping: release-* -> staging, else -> dev
           if [[ "${{ github.ref_name }}" == release-* ]]; then
-            ENV=staging
+            ENV=staging-eks
             TARGET="k8/aws/helm/service-layer/values-staging.yaml"
           else
             ENV=dev
