@@ -23,7 +23,5 @@ export const supportInfoItems: SupportInfoItem[] = [
 ];
 
 export const COMMUNITY_CALL_URL = "#";
-export const ONE_ON_ONE_URL =
-    "mailto:techsupport@ondc.org?subject=%5BWorkbench%5D%201-on-1%20Session";
-export const TICKET_URL =
-    "https://github.com/ONDC-Official/automation-framework/issues/new";
+export const ONE_ON_ONE_URL = "mailto:team@ondc.org?subject=%5BWorkbench%5D%201-on-1%20Session";
+export const TICKET_URL = "https://github.com/ONDC-Official/automation-framework/issues/new";
