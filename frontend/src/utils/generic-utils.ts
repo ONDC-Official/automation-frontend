@@ -18,11 +18,15 @@ interface Category {
 interface Item {
     id: string;
     tags: Tag[];
+    category_id?: string;
+    category_ids?: string[];
 }
 
 interface BPPProvider {
+    id: string;
     categories: Category[];
     items: Item[];
+    locations?: unknown[];
 }
 
 interface Catalog {
@@ -56,8 +60,9 @@ const parseRET11Items = (
     >;
     cutomistionToGroupMapping: Record<string, string>;
 } => {
-    const catagories = payload.message.catalog["bpp/providers"][0].categories;
-    const items = payload.message.catalog["bpp/providers"][0].items;
+    const providers = payload.message.catalog["bpp/providers"];
+    if (!providers || providers.length === 0)
+        return { itemList: {}, catagoriesList: {}, cutomistionToGroupMapping: {} };
 
     const catagoriesList: Record<
         string,
@@ -66,77 +71,83 @@ const parseRET11Items = (
     const itemList: Record<string, string> = {};
     const cutomistionToGroupMapping: Record<string, string> = {};
 
-    catagories.forEach((item) => {
-        item.tags.forEach((tag) => {
-            if (tag.code === "type") {
-                tag.list.forEach((val) => {
-                    if (val.code === "type" && val.value === "custom_group") {
-                        catagoriesList[item.id] = { child: [] };
-                    }
-                });
-            }
-        });
-    });
+    providers.forEach((provider) => {
+        const catagories = provider.categories || [];
+        const items = provider.items || [];
 
-    items.forEach((item) => {
-        let parent = "";
-        let child: string[] = [];
-        let isCusomistaion = false;
-        let isItem = false;
-        let customGroup = "";
-        item.tags.forEach((tag) => {
-            if (tag.code === "type") {
-                tag.list.forEach((val) => {
-                    if (val.code === "type" && val.value === "customization") {
-                        isCusomistaion = true;
-                    }
-                });
-            }
-
-            if (tag.code === "type") {
-                tag.list.forEach((val) => {
-                    if (val.code === "type" && val.value === "item") {
-                        isItem = true;
-                    }
-                });
-            }
-
-            if (tag.code === "custom_group") {
-                const idItem = tag.list.find((listItem) => listItem.code === "id");
-                if (idItem) {
-                    customGroup = idItem.value;
+        catagories.forEach((item) => {
+            item.tags?.forEach((tag) => {
+                if (tag.code === "type") {
+                    tag.list?.forEach((val) => {
+                        if (
+                            val.code === "type" &&
+                            (val.value === "custom_group" || val.value === "custom_menu")
+                        ) {
+                            catagoriesList[item.id] = { child: [] };
+                        }
+                    });
                 }
-            }
-
-            if (tag.code === "parent") {
-                const idItem = tag.list.find((listItem) => listItem.code === "id");
-                if (idItem) {
-                    parent = idItem.value;
-                }
-            }
-
-            if (tag.code === "child") {
-                const idItem = tag.list.filter((listItem) => listItem.code === "id");
-                if (idItem) {
-                    child = idItem.map((listItem) => listItem.value);
-                }
-            }
+            });
         });
 
-        if (isCusomistaion) {
-            catagoriesList[`${parent}`] = {
-                items: {
-                    ...catagoriesList[`${parent}`]?.items,
-                    [`${item.id}`]: { child: child },
-                },
-            };
+        items.forEach((item) => {
+            let parent = "";
+            let child: string[] = [];
+            let isCusomistaion = false;
+            let customGroup = "";
 
-            cutomistionToGroupMapping[item.id] = parent;
-        }
+            // Try to get customGroup from category_ids if present (format category_id:rank or just category_id)
+            if (item.category_ids && item.category_ids.length > 0) {
+                const firstCatId = item.category_ids[0];
+                customGroup = firstCatId.split(":")[0];
+            }
 
-        if (isItem) {
-            itemList[`${item.id}`] = customGroup;
-        }
+            item.tags?.forEach((tag) => {
+                if (tag.code === "type") {
+                    tag.list?.forEach((val) => {
+                        if (val.code === "type" && val.value === "customization") {
+                            isCusomistaion = true;
+                        }
+                    });
+                }
+
+                if (tag.code === "custom_group") {
+                    const idItem = tag.list?.find((listItem) => listItem.code === "id");
+                    if (idItem) {
+                        customGroup = idItem.value;
+                    }
+                }
+
+                if (tag.code === "parent") {
+                    const idItem = tag.list?.find((listItem) => listItem.code === "id");
+                    if (idItem) {
+                        parent = idItem.value;
+                    }
+                }
+
+                if (tag.code === "child") {
+                    const idItem = tag.list?.filter((listItem) => listItem.code === "id");
+                    if (idItem) {
+                        child = idItem.map((listItem) => listItem.value);
+                    }
+                }
+            });
+
+            if (isCusomistaion) {
+                catagoriesList[`${parent}`] = {
+                    ...catagoriesList[`${parent}`],
+                    items: {
+                        ...catagoriesList[`${parent}`]?.items,
+                        [`${item.id}`]: { child: child },
+                    },
+                };
+
+                cutomistionToGroupMapping[item.id] = parent;
+            } else {
+                // Default to being an item if it's not a customization
+                itemList[`${item.id}`] = customGroup;
+            }
+        });
     });
 
     return { itemList, catagoriesList, cutomistionToGroupMapping };
@@ -194,9 +205,29 @@ export const openReportInNewTab = (decodedHtml: string, sessionId: string) => {
             font-weight: 500;
             cursor: pointer;
             transition: background 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
           }
-          button:hover {
+          button:hover:not(:disabled) {
             background-color: #0284c7;
+          }
+          button:disabled {
+            background-color: #94a3b8;
+            cursor: not-allowed;
+          }
+          .loader {
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #fff;
+            border-radius: 50%;
+            width: 14px;
+            height: 14px;
+            animation: spin 1s linear infinite;
+            display: none;
+          }
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
           }
         </style>
       </head>
@@ -218,7 +249,10 @@ export const openReportInNewTab = (decodedHtml: string, sessionId: string) => {
               WORKBENCH
             </span>
           </div>
-          <button id="downloadPdfBtn">Download as PDF</button>
+          <button id="downloadPdfBtn">
+            <span id="btnText">Download as PDF</span>
+            <div id="btnLoader" class="loader"></div>
+          </button>
         </header>
         <iframe id="reportFrame"></iframe>
       </body>
@@ -234,14 +268,46 @@ export const openReportInNewTab = (decodedHtml: string, sessionId: string) => {
         const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
         if (!iframeDoc) return;
 
+        // Inject print optimization CSS to speed up browser's native PDF rendering engine
+        // by removing heavy rendering properties during the print phase.
+        const printOptimizationStyles = `
+            <style>
+              @media print {
+                * {
+                  box-shadow: none !important;
+                  text-shadow: none !important;
+                  transition: none !important;
+                  animation: none !important;
+                }
+              }
+            </style>
+        `;
+
         iframeDoc.open();
-        iframeDoc.write(decodedHtml);
+        iframeDoc.write(printOptimizationStyles + decodedHtml);
         iframeDoc.close();
 
-        // Step 4: Handle PDF download
-        const downloadBtn = newTab.document.getElementById("downloadPdfBtn");
+        // Step 4: Handle PDF download using native print
+        const downloadBtn = newTab.document.getElementById("downloadPdfBtn") as HTMLButtonElement;
+        const btnText = newTab.document.getElementById("btnText");
+        const btnLoader = newTab.document.getElementById("btnLoader");
+
         downloadBtn?.addEventListener("click", () => {
-            iframe.contentWindow?.print();
+            // Show loading UI so the user doesn't think it's frozen
+            if (downloadBtn) downloadBtn.disabled = true;
+            if (btnText) btnText.innerText = "Opening Print Dialog...";
+            if (btnLoader) btnLoader.style.display = "block";
+
+            // Use setTimeout to allow the browser to paint the loading UI
+            // before the print dialog completely blocks the thread
+            setTimeout(() => {
+                iframe.contentWindow?.print();
+
+                // Restore UI after print dialog closes
+                if (downloadBtn) downloadBtn.disabled = false;
+                if (btnText) btnText.innerText = "Download as PDF";
+                if (btnLoader) btnLoader.style.display = "none";
+            }, 100);
         });
     };
 };
