@@ -5,6 +5,9 @@ on:
   push:
     branches:
       - main-tech
+      - draft-*
+      - release-staging
+      - release-*
 
 permissions:
   packages: write
@@ -38,10 +41,10 @@ jobs:
           # Short SHA for traceability
           SHORT_SHA=$(git rev-parse --short=7 HEAD)
 
-          # Environment mapping: release-staging -> prod, main -> dev
-          if [ "${{ github.ref_name }}" = "release-staging" ]; then
-            ENV=prod
-            TARGET="k8/aws/helm/service-layer/values-prod.yaml"
+          # Environment mapping: release-* -> staging, else -> dev
+          if [[ "${{ github.ref_name }}" == release-* ]]; then
+            ENV=staging
+            TARGET="k8/aws/helm/service-layer/values-staging.yaml"
           else
             ENV=dev
             TARGET="k8/aws/helm/service-layer/values.yaml"
@@ -88,7 +91,7 @@ jobs:
           images: ghcr.io/ondc-official/automation-frontend/backend
           tags: |
             ${{ needs.version.outputs.image_tag }}
-            ${{ github.ref_name == 'release-staging' && 'latest' || '' }}
+            ${{ startsWith(github.ref_name, 'release-') && 'latest' || '' }}
           labels: |
             org.opencontainers.image.revision=${{ github.sha }}
             org.opencontainers.image.source=${{ github.event.repository.html_url }}
@@ -144,7 +147,7 @@ jobs:
           images: ghcr.io/ondc-official/automation-frontend/frontend
           tags: |
             ${{ needs.version.outputs.image_tag }}
-            ${{ github.ref_name == 'release-staging' && 'latest' || '' }}
+            ${{ startsWith(github.ref_name, 'release-') && 'latest' || '' }}
           labels: |
             org.opencontainers.image.revision=${{ github.sha }}
             org.opencontainers.image.source=${{ github.event.repository.html_url }}
