@@ -49,6 +49,7 @@ import ReteB2BInitOffers from "../custom-forms/reteb2b-init-offers";
 import InitMetroTRV11 from "../custom-forms/init-metro-trv11";
 import SelectMutualFundFIS14 from "../custom-forms/mutual_fund_select";
 import SelectMutualFundRedemptionFIS14 from "../custom-forms/mutual_fund_redemption_select";
+import SelectMutualFundSIPFIS14 from "../custom-forms/mutual_fund_sip_select";
 import RetINVLInitOffers from "../custom-forms/retinvl-init-offers";
 import Metro210CommonItemFulfillmentSelection from "../custom-forms/trv11_210_common_item_fulfillment_select";
 import Metro200StartEndStopSelection from "../custom-forms/trv11_start_end_stop_selection_200";
@@ -104,6 +105,7 @@ export interface FormFieldConfigType {
         | "datetime-local"
         | "fis14_mutul_fund_select"
         | "fis14_mf_redemption_select"
+        | "fis14_mf_sip_select"
         | "insurance_select"
         | "datetime-local"
         | "trv11_210_common_item_fulfillment_select"
@@ -411,6 +413,9 @@ export default function FormConfig({
         return (
             <SelectMutualFundRedemptionFIS14 submitEvent={submitEvent} formConfig={formConfig} />
         );
+    }
+    if (formConfig.find((field) => field.type === "fis14_mf_sip_select")) {
+        return <SelectMutualFundSIPFIS14 submitEvent={submitEvent} formConfig={formConfig} />;
     }
 
     if (formConfig.find((field) => field.type === "trv11_210_common_item_fulfillment_select")) {
