@@ -9,7 +9,7 @@ services:
     ports:
       - "5300:5300"
     env_file:
-      - backend/.env
+      - backend/.env 
     restart: always
     networks:
       - automation-network
