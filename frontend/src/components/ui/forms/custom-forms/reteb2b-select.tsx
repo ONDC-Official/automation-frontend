@@ -81,6 +81,11 @@ type CatalogOffer = {
 
 type CatalogProvider = {
     id: string;
+    descriptor?: {
+        name?: string;
+        code?: string;
+        short_desc?: string;
+    };
     items: CatalogItem[];
     locations: CatalogLocation[];
     categories?: CatalogCategory[];
@@ -104,6 +109,8 @@ export default function ReteB2BSelect({
     const [catalogPayload, setCatalogPayload] = useState<OnSearchPayload | null>(null);
     const [isPayloadEditorActive, setIsPayloadEditorActive] = useState(false);
     const [isDataPasted, setIsDataPasted] = useState(false);
+    const [providerOptions, setProviderOptions] = useState<CatalogProvider[]>([]);
+    const [selectedProviderId, setSelectedProviderId] = useState<string | null>(null);
     const [itemOptions, setItemOptions] = useState<string[]>([]);
     const [, setLocationOptions] = useState<string[]>([]);
     const [fulfillmentOptions, setFulfillmentOptions] = useState<string[]>([]);
@@ -346,187 +353,165 @@ export default function ReteB2BSelect({
     const handlePaste = (data: unknown) => {
         try {
             const parsed = data as OnSearchPayload;
-
-            // STORE FULL CATALOG HERE (MAIN FIX)
             setCatalogPayload(parsed);
 
-            const providers = parsed.message.catalog["bpp/providers"];
+            const providers = parsed.message.catalog["bpp/providers"] || [];
+            setProviderOptions(providers);
+            setSelectedProviderId(null);
 
-            if (providers && providers.length > 0) {
-                let allItemOptions: string[] = [];
-                let allProvLocs: string[] = [];
-                let allOfferLocs: string[] = [];
-                let allFulfillmentOptions: string[] = [];
+            // Reset item/offer state so stale data from a previous paste is cleared
+            setItemOptions([]);
+            setLocationOptions([]);
+            setFulfillmentOptions([]);
+            setOffers([]);
+            setDynamicOfferRules({});
+            setItemPrices({});
+            setItemCategories({});
+            setItemNames({});
+            setItemLocations({});
+            setCategoryNames({});
 
-                const parsedPrices: Record<string, number> = {};
-                const parsedCategories: Record<string, string> = {};
-                const parsedItemNames: Record<string, string> = {};
-                const parsedItemLocations: Record<string, string[]> = {};
-                const parsedCategoryNames: Record<string, string> = {};
-
-                let collectedOffers: CatalogOffer[] = [];
-
-                providers.forEach((provider) => {
-                    allItemOptions = [
-                        ...allItemOptions,
-                        ...(provider.items?.map((i) => i.id) || []),
-                    ];
-
-                    allProvLocs = [
-                        ...allProvLocs,
-                        ...(provider.locations?.map((l: CatalogLocation) => l.id) || []),
-                    ];
-                    const offerLocs = (provider.offers || [])
-                        .flatMap((o: CatalogOffer) =>
-                            (Array.isArray(o.location_ids) ? o.location_ids : []).flatMap(
-                                (v: string | string[]) =>
-                                    typeof v === "string"
-                                        ? v.split(",").map((s: string) => s.trim())
-                                        : v
-                            )
-                        )
-                        .filter(Boolean);
-                    allOfferLocs = [...allOfferLocs, ...offerLocs];
-
-                    if (provider.fulfillments) {
-                        allFulfillmentOptions = [
-                            ...allFulfillmentOptions,
-                            ...provider.fulfillments.map((f) => f.id),
-                        ];
-                    }
-
-                    // Extract Item Prices, Names, and Categories Dynamically
-                    provider.items?.forEach((item: CatalogItem) => {
-                        parsedPrices[item.id] = parseFloat(item.price?.value || "0");
-                        parsedItemNames[item.id] = item.descriptor?.name || "";
-                        if (item.category_id) {
-                            parsedCategories[item.id] = item.category_id;
-                        } else if (item.category_ids && item.category_ids.length > 0) {
-                            parsedCategories[item.id] = item.category_ids[0];
-                        }
-
-                        let locs: string[] = [];
-                        if (item.location_id) locs.push(item.location_id);
-                        if (Array.isArray(item.location_ids))
-                            locs = [...locs, ...item.location_ids];
-                        parsedItemLocations[item.id] = Array.from(new Set(locs.filter(Boolean)));
-                    });
-
-                    provider.categories?.forEach((cat: CatalogCategory) => {
-                        parsedCategoryNames[cat.id] = cat.descriptor?.name || "";
-                    });
-
-                    collectedOffers = [...collectedOffers, ...(provider.offers || [])];
-                });
-
-                setItemOptions(allItemOptions);
-                setLocationOptions(Array.from(new Set([...allProvLocs, ...allOfferLocs])));
-                setFulfillmentOptions(allFulfillmentOptions);
-
-                setItemPrices(parsedPrices);
-                setItemCategories(parsedCategories);
-                setItemNames(parsedItemNames);
-                setItemLocations(parsedItemLocations);
-                setCategoryNames(parsedCategoryNames);
-
-                // Extract Offers and Build Rules Dynamically
-                const rules: Record<string, DynamicOfferRule> = {};
-
-                // Standardizing rules from payload tags (highly dynamic to adapt to different on_search structures)
-                collectedOffers.forEach((off: CatalogOffer) => {
-                    let minVal = 0;
-                    let isAdditive = true;
-                    // Provide defaults so even empty structures adapt gracefully
-                    const rawItemIds = Array.isArray(off.item_ids)
-                        ? off.item_ids
-                        : Array.isArray(off.items)
-                          ? off.items
-                          : [];
-                    let itemIds: string[] = rawItemIds
-                        .flatMap((v: string | string[]) =>
-                            typeof v === "string" ? v.split(",").map((s: string) => s.trim()) : v
-                        )
-                        .filter(Boolean);
-
-                    const categoryIds: string[] = (
-                        Array.isArray(off.category_ids) ? off.category_ids : []
-                    )
-                        .flatMap((v: string | string[]) =>
-                            typeof v === "string" ? v.split(",").map((s: string) => s.trim()) : v
-                        )
-                        .filter(Boolean);
-
-                    const locationIds: string[] = (
-                        Array.isArray(off.location_ids) ? off.location_ids : []
-                    )
-                        .flatMap((v: string | string[]) =>
-                            typeof v === "string" ? v.split(",").map((s: string) => s.trim()) : v
-                        )
-                        .filter(Boolean);
-
-                    let minItemCount = 0;
-                    let maxItemCount = 0;
-
-                    // Dynamically scrape all tags to find offer rules constraints
-                    off.tags?.forEach((tag: Tag & { descriptor?: { code?: string } }) => {
-                        const tCode = tag.code || tag.descriptor?.code;
-                        if (tCode === "rules" || tCode === "qualifier" || tCode === "meta") {
-                            tag.list?.forEach(
-                                (l: TargetListItem & { descriptor?: { code?: string } }) => {
-                                    const lCode = l.code || l.descriptor?.code;
-                                    if (lCode === "min_value") minVal = parseFloat(l.value || "0");
-                                    if (lCode === "item_count")
-                                        minItemCount = parseFloat(l.value || "0");
-                                    if (lCode === "item_count_upper")
-                                        maxItemCount = parseFloat(l.value || "0");
-                                    if (lCode === "additive") {
-                                        isAdditive = l.value === "true" || l.value === "yes";
-                                        // Make sure "false" or "no" results in false
-                                        if (l.value === "false" || l.value === "no")
-                                            isAdditive = false;
-                                    }
-                                    if (lCode === "item_ids") {
-                                        // In case itemIds are provided as a comma separated string within rules
-                                        if (l.value) {
-                                            itemIds = l.value
-                                                .split(",")
-                                                .map((s: string) => s.trim());
-                                        }
-                                    }
-                                }
-                            );
-                        }
-                        // Fallback: Check if there's an explicit item_ids tag group with a list of values
-                        if (tCode === "item_ids" && itemIds.length === 0) {
-                            if (tag.list) {
-                                itemIds = tag.list.map((l: TargetListItem) => l.value);
-                            }
-                        }
-                    });
-
-                    rules[off.id] = {
-                        id: off.id,
-                        itemIds: itemIds,
-                        categoryIds: categoryIds,
-                        locationIds: locationIds,
-                        minOrderValue: minVal,
-                        minItemCount,
-                        maxItemCount,
-                        isAdditive: isAdditive,
-                    };
-                });
-                setDynamicOfferRules(rules);
-
-                const uniqueOffers = Array.from(
-                    new Map(collectedOffers.map((o) => [o.id, o])).values()
-                );
-                setOffers(uniqueOffers);
-            }
             setIsDataPasted(true);
         } catch (err) {
             console.error("Invalid on_search payload", err);
         }
         setIsPayloadEditorActive(false);
+    };
+
+    const handleProviderSelect = (providerId: string) => {
+        const provider = providerOptions.find((p) => p.id === providerId);
+        if (!provider) return;
+
+        setSelectedProviderId(providerId);
+
+        const allItemOptions = provider.items?.map((i) => i.id) || [];
+
+        const allProvLocs = provider.locations?.map((l: CatalogLocation) => l.id) || [];
+        const offerLocs = (provider.offers || [])
+            .flatMap((o: CatalogOffer) =>
+                (Array.isArray(o.location_ids) ? o.location_ids : []).flatMap(
+                    (v: string | string[]) =>
+                        typeof v === "string" ? v.split(",").map((s: string) => s.trim()) : v
+                )
+            )
+            .filter(Boolean);
+
+        const allFulfillmentOptions = provider.fulfillments?.map((f) => f.id) || [];
+
+        const parsedPrices: Record<string, number> = {};
+        const parsedCategories: Record<string, string> = {};
+        const parsedItemNames: Record<string, string> = {};
+        const parsedItemLocations: Record<string, string[]> = {};
+        const parsedCategoryNames: Record<string, string> = {};
+
+        provider.items?.forEach((item: CatalogItem) => {
+            parsedPrices[item.id] = parseFloat(item.price?.value || "0");
+            parsedItemNames[item.id] = item.descriptor?.name || "";
+            if (item.category_id) {
+                parsedCategories[item.id] = item.category_id;
+            } else if (item.category_ids && item.category_ids.length > 0) {
+                parsedCategories[item.id] = item.category_ids[0];
+            }
+
+            let locs: string[] = [];
+            if (item.location_id) locs.push(item.location_id);
+            if (Array.isArray(item.location_ids)) locs = [...locs, ...item.location_ids];
+            parsedItemLocations[item.id] = Array.from(new Set(locs.filter(Boolean)));
+        });
+
+        provider.categories?.forEach((cat: CatalogCategory) => {
+            parsedCategoryNames[cat.id] = cat.descriptor?.name || "";
+        });
+
+        const collectedOffers = provider.offers || [];
+
+        setItemOptions(allItemOptions);
+        setLocationOptions(Array.from(new Set([...allProvLocs, ...offerLocs])));
+        setFulfillmentOptions(allFulfillmentOptions);
+        setItemPrices(parsedPrices);
+        setItemCategories(parsedCategories);
+        setItemNames(parsedItemNames);
+        setItemLocations(parsedItemLocations);
+        setCategoryNames(parsedCategoryNames);
+
+        const rules: Record<string, DynamicOfferRule> = {};
+        collectedOffers.forEach((off: CatalogOffer) => {
+            let minVal = 0;
+            let isAdditive = true;
+            const rawItemIds = Array.isArray(off.item_ids)
+                ? off.item_ids
+                : Array.isArray(off.items)
+                  ? off.items
+                  : [];
+            let itemIds: string[] = rawItemIds
+                .flatMap((v: string | string[]) =>
+                    typeof v === "string" ? v.split(",").map((s: string) => s.trim()) : v
+                )
+                .filter(Boolean);
+
+            const categoryIds: string[] = (Array.isArray(off.category_ids) ? off.category_ids : [])
+                .flatMap((v: string | string[]) =>
+                    typeof v === "string" ? v.split(",").map((s: string) => s.trim()) : v
+                )
+                .filter(Boolean);
+
+            const locationIds: string[] = (Array.isArray(off.location_ids) ? off.location_ids : [])
+                .flatMap((v: string | string[]) =>
+                    typeof v === "string" ? v.split(",").map((s: string) => s.trim()) : v
+                )
+                .filter(Boolean);
+
+            let minItemCount = 0;
+            let maxItemCount = 0;
+
+            off.tags?.forEach((tag: Tag & { descriptor?: { code?: string } }) => {
+                const tCode = tag.code || tag.descriptor?.code;
+                if (tCode === "rules" || tCode === "qualifier" || tCode === "meta") {
+                    tag.list?.forEach((l: TargetListItem & { descriptor?: { code?: string } }) => {
+                        const lCode = l.code || l.descriptor?.code;
+                        if (lCode === "min_value") minVal = parseFloat(l.value || "0");
+                        if (lCode === "item_count") minItemCount = parseFloat(l.value || "0");
+                        if (lCode === "item_count_upper") maxItemCount = parseFloat(l.value || "0");
+                        if (lCode === "additive") {
+                            isAdditive = l.value === "true" || l.value === "yes";
+                            if (l.value === "false" || l.value === "no") isAdditive = false;
+                        }
+                        if (lCode === "item_ids") {
+                            if (l.value) {
+                                itemIds = l.value.split(",").map((s: string) => s.trim());
+                            }
+                        }
+                    });
+                }
+                if (tCode === "item_ids" && itemIds.length === 0) {
+                    if (tag.list) {
+                        itemIds = tag.list.map((l: TargetListItem) => l.value);
+                    }
+                }
+            });
+
+            rules[off.id] = {
+                id: off.id,
+                itemIds,
+                categoryIds,
+                locationIds,
+                minOrderValue: minVal,
+                minItemCount,
+                maxItemCount,
+                isAdditive,
+            };
+        });
+
+        setDynamicOfferRules(rules);
+        const uniqueOffers = Array.from(new Map(collectedOffers.map((o) => [o.id, o])).values());
+        setOffers(uniqueOffers);
+
+        // Reset item selection and offers when provider changes
+        setForm((prev) => ({
+            ...prev,
+            items: [{ itemId: "", quantity: 1, location: "", fulfillment_id: "" }],
+            available_offers: [],
+        }));
     };
 
     const handleChange = (key: keyof RetailerCustomerInput, value: string) => {
@@ -579,6 +564,10 @@ export default function ReteB2BSelect({
     };
 
     const submit = async () => {
+        if (!selectedProviderId) {
+            alert("Please select a provider");
+            return;
+        }
         if (!form.city_code) {
             alert("City code is required");
             return;
@@ -601,11 +590,18 @@ export default function ReteB2BSelect({
             alert("Please paste on_search payload first");
             return;
         }
+
+        const selectedProvider = providerOptions.find((p) => p.id === selectedProviderId);
+
         await submitEvent({
             jsonPath: {},
             formData: {
                 ...form,
                 live_catalog: catalogPayload,
+                provider_id: selectedProviderId,
+                provider_name: selectedProvider?.descriptor?.name ?? "",
+                provider_code: selectedProvider?.descriptor?.code ?? "",
+                provider_short_desc: selectedProvider?.descriptor?.short_desc ?? "",
             } as unknown as Record<string, string>,
             catalog: catalogPayload,
         });
@@ -643,7 +639,6 @@ export default function ReteB2BSelect({
 
             {isDataPasted && (
                 <>
-                    {/* ... (Customer fields unchanged) ... */}
                     {label("Retailer Type", false)}
                     <select
                         value={form.type}
@@ -773,7 +768,25 @@ export default function ReteB2BSelect({
                         </button>
                     </div>
 
-                    {/* OFFERS SECTION - UPDATED WITH TOOLTIP/HINT */}
+                    {/* PROVIDER SECTION */}
+                    <div className="flex flex-col gap-2">
+                        {label("Select Provider", true)}
+                        <select
+                            value={selectedProviderId || ""}
+                            onChange={(e) => handleProviderSelect(e.target.value)}
+                            className={inputStyle}
+                        >
+                            <option value="">-- Select a provider --</option>
+                            {providerOptions.map((p) => (
+                                <option key={p.id} value={p.id}>
+                                    {p.id}
+                                    {p.descriptor?.name ? ` – ${p.descriptor.name}` : ""}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
+                    {/* OFFERS SECTION */}
                     <div>
                         <h3 className="font-bold">Available Offers</h3>
                         <div className="flex flex-col gap-1">
