@@ -6,8 +6,8 @@ import { FormFieldConfigType } from "@components/ui/forms/config-form/config-for
 interface FormLaunchPopupProps {
     formConfig: FormFieldConfigType;
     referenceData?: Record<string, unknown>;
-    /** BPP session id — used to clear any stale completion before the form runs. */
-    sessionId: string;
+    /** transaction id — keys the redirection pointer + clears stale completion. */
+    transactionId: string;
     /** Called after the form tab is opened so the parent can dismiss this popup. */
     onLaunched: () => void;
 }
@@ -18,14 +18,14 @@ interface FormLaunchPopupProps {
  * resolves the form URL from the on_select reference data and exposes a single
  * button that, on click:
  *   1. opens the form URL in a new tab, and
- *   2. saves the current workbench URL so the api-service callback can redirect
- *      the user back and resolve the session.
+ *   2. saves the current workbench URL (keyed by transaction_id) so the
+ *      api-service callback can look it up and redirect the user back.
  * Once launched it disappears (parent closes it via onLaunched).
  */
 export default function FormLaunchPopup({
     formConfig,
     referenceData,
-    sessionId,
+    transactionId,
     onLaunched,
 }: FormLaunchPopupProps) {
     // Resolve the form URL from reference data (same mechanism as DYNAMIC_FORM).
@@ -62,13 +62,13 @@ export default function FormLaunchPopup({
         // 2. Capture the current workbench URL and save it for the callback.
         //    Sent verbatim — it already carries subscriberUrl + sessionId params.
         //    Non-fatal: opening the form should not be blocked by this.
-        FormService.saveRedirection(window.location.href).catch((saveError) => {
+        FormService.saveRedirection(window.location.href, transactionId).catch((saveError) => {
             console.warn("⚠️ [FormLaunch] Could not save redirection URL (continuing):", saveError);
         });
 
-        // 3. Clear any stale completion for this session before the form runs, so
-        //    polling only reacts to THIS form's callback. Non-fatal.
-        FormService.resetCompletion(sessionId).catch((resetError) => {
+        // 3. Clear any stale completion for this transaction before the form runs,
+        //    so polling only reacts to THIS form's callback. Non-fatal.
+        FormService.resetCompletion(transactionId).catch((resetError) => {
             console.warn("⚠️ [FormLaunch] Could not reset completion (continuing):", resetError);
         });
 
