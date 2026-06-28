@@ -87,7 +87,7 @@ export const pathCards: IPathCard[] = [
             { label: "Read the FAQ", href: getDeveloperGuideDocPath("ondc-FAQs") },
             {
                 label: "Contact integration team",
-                href: "mailto:techsupport@ondc.org",
+                href: "mailto:team@ondc.org",
                 external: true,
             },
         ],
