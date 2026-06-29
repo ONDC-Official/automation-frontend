@@ -8,7 +8,7 @@ import {
     UseFormSetValue,
     FieldErrors,
 } from "react-hook-form";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 import { FaPlus, FaTrash, FaStore, FaClock } from "react-icons/fa";
 import { Input, Select, DatePicker, Tabs, DatePickerProps } from "antd";
 

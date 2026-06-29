@@ -1,9 +1,8 @@
-import { useMemo, useState } from "react";
+import { memo, useMemo, useState } from "react";
 import { format } from "date-fns";
 import { ChevronDownIcon } from "@heroicons/react/24/outline";
 import { Controller, type FieldValues } from "react-hook-form";
 
-import { Button } from "@/components/Shadcn/Button/button";
 import { Calendar } from "@/components/Shadcn/Calendar";
 import { Field, FieldError, FieldLabel } from "@/components/Shadcn/TextField/field";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/Shadcn/Popover";
@@ -12,7 +11,7 @@ import { cn } from "@/lib/utils";
 
 import type { IDatePickerProps } from "./types";
 
-const DatePickerControl = ({
+const DatePickerControl = memo(function DatePickerControl({
     value = "",
     onChange,
     label,
@@ -22,7 +21,7 @@ const DatePickerControl = ({
     error,
     placeholder = "Select date",
     className,
-}: Omit<IDatePickerProps, "name" | "register" | "control" | "errors" | "rules">) => {
+}: Omit<IDatePickerProps, "name" | "register" | "control" | "errors" | "rules">) {
     const [open, setOpen] = useState(false);
     const selectedDate = useMemo(() => parseDateOnly(value), [value]);
     const fieldId = id ?? (label ? label.toLowerCase().replace(/\s+/g, "-") : "date-picker");
@@ -42,20 +41,23 @@ const DatePickerControl = ({
             )}
             <Popover open={open} onOpenChange={setOpen}>
                 <PopoverTrigger asChild>
-                    <Button
+                    <button
                         type="button"
-                        variant="outline"
                         id={fieldId}
                         disabled={disabled}
                         data-empty={!selectedDate}
                         className={cn(
-                            "w-full justify-between font-normal data-[empty=true]:text-muted-foreground",
+                            "inline-flex h-9 w-full items-center justify-between rounded-md border border-input bg-transparent px-3 py-1 text-left text-sm font-normal shadow-xs transition-[color,box-shadow] outline-none",
+                            "focus-visible:border-ring focus-visible:ring focus-visible:ring-ring/50",
+                            "disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50",
+                            "dark:bg-input/30",
+                            selectedDate ? "text-foreground" : "text-muted-foreground",
                             error && "border-destructive"
                         )}
                     >
                         {selectedDate ? format(selectedDate, "PPP") : placeholder}
                         <ChevronDownIcon className="size-4 opacity-50" />
-                    </Button>
+                    </button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto overflow-hidden p-0" align="start">
                     <Calendar
@@ -70,7 +72,7 @@ const DatePickerControl = ({
             {error && <FieldError>{error}</FieldError>}
         </Field>
     );
-};
+});
 
 const DatePicker = <T extends FieldValues = FieldValues>({
     name,

@@ -1,43 +1,24 @@
 import { useEffect, useState } from "react";
-import { FaPlus } from "react-icons/fa6";
-import { FaMinus } from "react-icons/fa6";
-import { FaRegPaste } from "react-icons/fa6";
+import { MinusIcon, PlusIcon } from "@heroicons/react/24/outline";
+import { toast } from "sonner";
+
+import { Button } from "@/components/Shadcn/Button/button";
 import { LabelWithToolTip } from "@/components/Shadcn/TextField";
 import { SelectControl } from "@/components/Shadcn/Select";
-import { getItemsAndCustomistions } from "../../../utils/generic-utils";
-import PayloadEditor from "../mini-components/payload-editor";
+import PayloadEditor from "@/components/ui/mini-components/payload-editor";
+import FormDialogShell from "@/components/ui/forms/form-dialog-shell";
+import { PastePayloadButton } from "@/components/ui/forms/paste-payload-button";
+import { getItemsAndCustomistions } from "@/utils/generic-utils";
 import { SubmitEventParams } from "@/types/flow-types";
-import { CatalogLocation, validateFormDataRET11 } from "./custom-forms/ret10-grocery-select";
-import { toast } from "react-toastify";
-import { Controller, FieldPath, useForm } from "react-hook-form";
+import { SessionCache } from "@/types/session-types";
+import { cn } from "@/lib/utils";
 
-type OfferKey = `offers_${string}`;
-
-export type CatalogProvider = {
-    id: string;
-    locations: CatalogLocation[];
-};
-
-type OnSearchPayload = {
-    message: {
-        catalog: {
-            "bpp/providers": CatalogProvider[];
-        };
-    };
-};
-export interface SelectedItem {
+interface SelectedItem {
     id: string;
     customisations: string[];
     relation: Record<string, string>;
     lastCustomisation?: string[];
 }
-
-type FormValues = {
-    provider: string;
-    provider_location: string[];
-    location_gps: string;
-    location_pin_code: string;
-} & Partial<Record<OfferKey, boolean>>;
 
 type ItemList = Record<string, string>;
 type CategoryList = Record<
@@ -51,66 +32,43 @@ type ItemCustomisationSelectorProps = {
     label: string;
     setValue?: (name: string, value: SelectedItem[]) => void;
     submitEvent?: (data: SubmitEventParams) => Promise<void>;
+    sessionData?: SessionCache | null;
 };
 
-const inputStyle =
-    "border rounded p-2 w-full focus:outline-hidden focus:ring-2 focus:ring-blue-500 bg-white";
-const labelStyle = "mb-1 font-semibold";
-const fieldWrapperStyle = "flex flex-col mb-2";
-
-const ItemCustomisationSelectorRET11 = ({
-    // register,
+const RET11NestedSelect = ({
     name,
     label,
     setValue,
     submitEvent,
+    sessionData,
 }: ItemCustomisationSelectorProps) => {
-    const [items, setItems] = useState<SelectedItem[]>([
-        { id: "", customisations: [], relation: {} },
-    ]);
-
-    const { control, handleSubmit, watch, register } = useForm<FormValues>({
-        defaultValues: {
-            provider: "",
-            provider_location: [],
-            location_gps: "",
-            location_pin_code: "",
-        },
-    });
+    const minItems = sessionData?.activeFlow === "RTO_PLUS_PART_CANCELLATION" ? 2 : 1;
+    const [items, setItems] = useState<SelectedItem[]>(
+        Array.from({ length: minItems }, () => ({ id: "", customisations: [], relation: {} }))
+    );
 
     const [catalogData, setCatalogData] = useState<unknown | null>(null);
-    const [errroWhilePaste, setErrroWhilePaste] = useState("");
+    const [errorWhilePaste, setErrorWhilePaste] = useState("");
     const [itemsList, setItemsList] = useState<ItemList>({});
     const [categoryList, setCategoryList] = useState<CategoryList>({});
     const [groupMapping, setGroupMapping] = useState<CustomisationToGroupMapping>({});
     const [isPayloadEditorActive, setIsPayloadEditorActive] = useState(false);
-
-    const [providerOptions, setProviderOptions] = useState<string[]>([]);
-    const [providers, setProviders] = useState<CatalogProvider[]>([]);
-
-    const selectedProvider = watch("provider");
-
     const hasCatalogData = catalogData != null;
 
-    const onSubmit = async (data: FormValues) => {
-        const { valid, errors } = validateFormDataRET11(data, items);
-        if (!valid) {
-            toast.error(`Form validation failed: ${errors[0]}`);
-            return;
+    useEffect(() => {
+        if (items.length < minItems) {
+            const extra = Array.from({ length: minItems - items.length }, () => ({
+                id: "",
+                customisations: [],
+                relation: {},
+            }));
+            setItems((prev: SelectedItem[]) => [...prev, ...extra]);
         }
-
-        await submitEvent?.({
-            jsonPath: {},
-            formData: {
-                ...data,
-                items: items,
-            } as unknown as Record<string, string>,
-        });
-    };
+    }, [minItems, items.length]);
 
     useEffect(() => {
         setValue?.(name, items);
-    }, [items]);
+    }, [items, name, setValue]);
 
     const handleItemChange = (index: number, value: string) => {
         const updated = [...items];
@@ -137,6 +95,7 @@ const ItemCustomisationSelectorRET11 = ({
     };
 
     const removeItem = (index: number) => {
+        if (items.length <= minItems) return;
         setItems((prev) => prev.filter((_, i) => i !== index));
     };
 
@@ -153,87 +112,71 @@ const ItemCustomisationSelectorRET11 = ({
                 throw new Error("Providers not presnt");
             }
 
-            const providers = (parsedText as OnSearchPayload).message.catalog["bpp/providers"];
-            setProviders(providers);
-
-            const providerIDs = providers.map((p) => p.id);
-            setProviderOptions(providerIDs);
-
             setCatalogData(parsedText);
+            setErrorWhilePaste("");
             const response = getItemsAndCustomistions(payload);
             setItemsList(response?.itemList || {});
             setCategoryList(response?.catagoriesList || {});
             setGroupMapping(response?.cutomistionToGroupMapping || {});
+            toast.success("Catalog loaded");
         } catch (err: unknown) {
             const e = err as { message?: string };
-            setErrroWhilePaste(e.message || "Something went wrong");
+            setErrorWhilePaste(e.message || "Something went wrong");
+            toast.error(e.message || "Invalid payload structure");
             console.error("Error while handling paste: ", err);
         }
     };
 
-    const renderSelectOrInput = (name: string, options: string[], placeholder = "") => {
-        if (options.length === 0) {
-            return (
-                <input
-                    type="text"
-                    {...register(name as unknown as FieldPath<FormValues>)}
-                    placeholder={placeholder}
-                    className={inputStyle}
-                />
-            );
+    const handleSubmit = async () => {
+        const filledItems = items.filter((item: SelectedItem) => item.id !== "");
+        if (filledItems.length < minItems) {
+            toast.error(`At least ${minItems} items must be selected for this flow.`);
+            return;
         }
-        return (
-            <select {...register(name as unknown as FieldPath<FormValues>)} className={inputStyle}>
-                <option value="">Select...</option>
-                {options.map((option) => (
-                    <option key={option} value={option}>
-                        {option}
-                    </option>
-                ))}
-            </select>
-        );
+        await submitEvent?.({ jsonPath: {}, formData: items as unknown as Record<string, string> });
     };
 
+    const footer =
+        submitEvent && hasCatalogData ? (
+            <Button type="button" onClick={handleSubmit}>
+                Submit
+            </Button>
+        ) : null;
+
     return (
-        <div className="p-4 max-w-xl mx-auto space-y-4">
+        <>
             {isPayloadEditorActive && (
                 <PayloadEditor
                     onAdd={handlePaste}
                     onClose={() => setIsPayloadEditorActive(false)}
                 />
             )}
-            <div className="flex flex-direction-row gap-4">
-                <LabelWithToolTip labelInfo="" label={label} />
-                <>
-                    {errroWhilePaste && (
-                        <p className="text-red-500 text-sm italic mt-1 w-full">{errroWhilePaste}</p>
+
+            <FormDialogShell footer={footer}>
+                <div className="flex items-center justify-between gap-2">
+                    <LabelWithToolTip labelInfo="" label={label} />
+                    {hasCatalogData && (
+                        <Button
+                            type="button"
+                            variant="outline"
+                            size="icon"
+                            onClick={addItem}
+                            aria-label="Add item"
+                        >
+                            <PlusIcon className="size-4" />
+                        </Button>
                     )}
-                    <button
-                        type="button"
-                        onClick={() => setIsPayloadEditorActive(true)}
-                        className="p-2 border rounded-full hover:bg-gray-100"
-                    >
-                        <FaRegPaste size={14} />
-                    </button>
-                </>
+                </div>
 
-                {hasCatalogData && (
-                    <button
-                        type="button"
-                        onClick={addItem}
-                        className="p-2 border rounded-full hover:bg-gray-100"
-                    >
-                        <FaPlus size={14} />
-                    </button>
-                )}
-            </div>
+                {errorWhilePaste && <p className="text-sm text-destructive">{errorWhilePaste}</p>}
 
-            {hasCatalogData ? (
-                <>
-                    <form
-                        onSubmit={handleSubmit(onSubmit)}
-                        className="space-y-4 h-[500px] overflow-y-scroll p-4"
-                    >
+                <PastePayloadButton
+                    label={hasCatalogData ? "Edit on_search" : "Paste on_search"}
+                    onClick={() => setIsPayloadEditorActive(true)}
+                />
+
+                {hasCatalogData ? (
+                    <div className="space-y-4">
                         {items.map((item: SelectedItem, index: number) => {
                             let availableCustomisations: string[] = [];
 
@@ -246,40 +189,34 @@ const ItemCustomisationSelectorRET11 = ({
                                             ...customisationsObj,
                                             ...categoryList[lastCustom]?.items,
                                         };
-                                        return categoryList[lastCustom]?.items || {};
                                     });
                                 } else {
                                     customisationsObj =
                                         categoryList[itemsList[`${item?.id}`]]?.items || {};
                                 }
 
-                                const cutomistions = Object.entries(customisationsObj).map(
-                                    (item) => {
-                                        const [key, _] = item;
-                                        return key;
-                                    }
-                                );
-
-                                availableCustomisations = cutomistions;
+                                availableCustomisations = Object.keys(customisationsObj);
                             }
 
                             return (
                                 <div
                                     key={index}
-                                    className="relative border p-4 rounded bg-white shadow-sm space-y-4"
+                                    className="relative space-y-4 rounded-lg border border-border-default bg-surface-muted/20 p-4"
                                 >
-                                    {index !== 0 && (
-                                        <div className="absolute top-[-10px] right-[-10px] bg-white">
-                                            <button
-                                                onClick={() => removeItem(index)}
-                                                className=" p-2 border rounded-full hover:bg-gray-100"
-                                            >
-                                                <FaMinus size={14} />
-                                            </button>
-                                        </div>
+                                    {items.length > minItems && index >= minItems && (
+                                        <Button
+                                            type="button"
+                                            variant="ghost"
+                                            size="icon"
+                                            className="absolute -right-2 -top-2 size-8 bg-surface text-destructive hover:text-destructive"
+                                            onClick={() => removeItem(index)}
+                                            aria-label="Remove item"
+                                        >
+                                            <MinusIcon className="size-4" />
+                                        </Button>
                                     )}
 
-                                    <LabelWithToolTip labelInfo="" label={"Item"} />
+                                    <LabelWithToolTip labelInfo="" label="Item" />
 
                                     <SelectControl
                                         value={item.id}
@@ -293,34 +230,32 @@ const ItemCustomisationSelectorRET11 = ({
 
                                     {item.id && (
                                         <>
-                                            <LabelWithToolTip
-                                                labelInfo=""
-                                                label={"Customisation"}
+                                            <LabelWithToolTip labelInfo="" label="Customisation" />
+                                            <SelectControl
+                                                key={`customisation-${index}-${item.customisations.length}`}
+                                                onValueChange={(value) =>
+                                                    handleCustomisationChange(
+                                                        index,
+                                                        value,
+                                                        groupMapping[value] ||
+                                                            itemsList[`${item?.id}`]
+                                                    )
+                                                }
+                                                placeholder="Select Customisation"
+                                                options={availableCustomisations.map((c) => ({
+                                                    key: c,
+                                                    value: c,
+                                                }))}
                                             />
-                                            <div className="flex gap-2">
-                                                <SelectControl
-                                                    key={`customisation-${index}-${item.customisations.length}`}
-                                                    onValueChange={(value) =>
-                                                        handleCustomisationChange(
-                                                            index,
-                                                            value,
-                                                            groupMapping[value] ||
-                                                                itemsList[`${item?.id}`]
-                                                        )
-                                                    }
-                                                    placeholder="Select Customisation"
-                                                    options={availableCustomisations.map((c) => ({
-                                                        key: c,
-                                                        value: c,
-                                                    }))}
-                                                />
-                                            </div>
 
-                                            <div className="flex flex-wrap gap-2 mt-2">
+                                            <div className="mt-2 flex flex-wrap gap-2">
                                                 {item.customisations.map((c: string, i: number) => (
                                                     <span
                                                         key={i}
-                                                        className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-sm"
+                                                        className={cn(
+                                                            "rounded px-2 py-1 text-sm",
+                                                            "bg-surface-muted text-text-primary"
+                                                        )}
                                                     >
                                                         {c}
                                                     </span>
@@ -331,98 +266,16 @@ const ItemCustomisationSelectorRET11 = ({
                                 </div>
                             );
                         })}
-
-                        <div className={fieldWrapperStyle}>
-                            <label className={labelStyle}>Select Provider Id</label>
-                            {renderSelectOrInput("provider", providerOptions)}
-                        </div>
-
-                        <Controller
-                            name="provider_location"
-                            control={control}
-                            defaultValue={[]}
-                            render={({ field }) => {
-                                const provider = providers.find((p) => p.id === selectedProvider);
-                                const locations = provider?.locations || [];
-
-                                if (locations.length === 0) {
-                                    return (
-                                        <>
-                                            <label className={labelStyle}>
-                                                Provider Location Id:
-                                            </label>
-                                            <input
-                                                type="text"
-                                                {...register("provider_location")}
-                                                className={inputStyle}
-                                            />
-                                        </>
-                                    );
-                                }
-
-                                return (
-                                    <div className="flex flex-col gap-2">
-                                        {locations.map((loc: CatalogLocation) => (
-                                            <label
-                                                key={loc.id}
-                                                className="inline-flex gap-2 items-center"
-                                            >
-                                                <input
-                                                    type="checkbox"
-                                                    value={loc.id}
-                                                    checked={field.value.includes(loc.id)}
-                                                    onChange={() => field.onChange(loc.id)}
-                                                    className="accent-blue-600"
-                                                />
-                                                <span>{loc.id}</span>
-                                            </label>
-                                        ))}
-                                    </div>
-                                );
-                            }}
-                        />
-
-                        <div className={fieldWrapperStyle}>
-                            <label className={labelStyle}>Delivery Location GPS</label>
-                            <input {...register("location_gps")} className={inputStyle} />
-                        </div>
-
-                        <div className={fieldWrapperStyle}>
-                            <label className={labelStyle}>Delivery Pin Code</label>
-                            <input {...register("location_pin_code")} className={inputStyle} />
-                        </div>
-
-                        <button
-                            type="submit"
-                            className="w-full bg-blue-400 text-white py-2 rounded hover:bg-blue-700"
-                        >
-                            Submit
-                        </button>
-                    </form>
-
-                    {/* {submitEvent && (
-                        <button
-                            type="button"
-                            onClick={handleSubmit}
-                            className="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700"
-                        >
-                            Submit
-                        </button>
-                    )} */}
-                </>
-            ) : (
-                <div className="flex items-start gap-3 border-l-4 border-blue-500 bg-blue-50 p-3 rounded">
-                    <p className="text-sm text-blue-800 flex items-center gap-1">
-                        Paste <strong>on_search</strong> payload using the button
-                        <span className="p-2 border rounded-full hover:bg-gray-100">
-                            <FaRegPaste size={14} />
-                        </span>
-                        to select items
+                    </div>
+                ) : (
+                    <p className="rounded-md border border-border-default bg-surface-muted/30 p-3 text-sm text-text-secondary">
+                        Paste an <strong>on_search</strong> payload to load items and
+                        customisations.
                     </p>
-                </div>
-            )}
-        </div>
+                )}
+            </FormDialogShell>
+        </>
     );
 };
 
-export default ItemCustomisationSelectorRET11;
+export default RET11NestedSelect;

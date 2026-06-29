@@ -1,34 +1,25 @@
 import { useMemo } from "react";
-import { queryJsonPath } from "@utils/jsonpath-query";
-import { FormService } from "@services/formService";
-import { FormFieldConfigType } from "@components/ui/forms/config-form/config-form";
+import { ArrowTopRightOnSquareIcon } from "@heroicons/react/24/outline";
 
-interface FormLaunchPopupProps {
+import { Button } from "@/components/Shadcn/Button/button";
+import { FormFieldConfigType } from "@components/ui/forms/config-form/config-form";
+import FormDialogShell from "@/components/ui/forms/form-dialog-shell";
+import { FormService } from "@services/formService";
+import { queryJsonPath } from "@utils/jsonpath-query";
+
+interface IFormLaunchPopupProps {
     formConfig: FormFieldConfigType;
     referenceData?: Record<string, unknown>;
-    /** BPP session id — used to clear any stale completion before the form runs. */
     sessionId: string;
-    /** Called after the form tab is opened so the parent can dismiss this popup. */
     onLaunched: () => void;
 }
 
-/**
- * LAMF single-redirection "launch" popup. Shown when the first on_select
- * completes. It does NOT poll — that is the separate polling popup's job. It only
- * resolves the form URL from the on_select reference data and exposes a single
- * button that, on click:
- *   1. opens the form URL in a new tab, and
- *   2. saves the current workbench URL so the api-service callback can redirect
- *      the user back and resolve the session.
- * Once launched it disappears (parent closes it via onLaunched).
- */
 export default function FormLaunchPopup({
     formConfig,
     referenceData,
     sessionId,
     onLaunched,
-}: FormLaunchPopupProps) {
-    // Resolve the form URL from reference data (same mechanism as DYNAMIC_FORM).
+}: IFormLaunchPopupProps) {
     const formUrl = useMemo<string>(() => {
         if (!formConfig?.reference) {
             console.warn("⚠️ [FormLaunch] No reference field found in form config");
@@ -56,46 +47,37 @@ export default function FormLaunchPopup({
             return;
         }
 
-        // 1. Open the form in a new tab.
         window.open(formUrl, "_blank", "noopener,noreferrer");
 
-        // 2. Capture the current workbench URL and save it for the callback.
-        //    Sent verbatim — it already carries subscriberUrl + sessionId params.
-        //    Non-fatal: opening the form should not be blocked by this.
         FormService.saveRedirection(window.location.href).catch((saveError) => {
             console.warn("⚠️ [FormLaunch] Could not save redirection URL (continuing):", saveError);
         });
 
-        // 3. Clear any stale completion for this session before the form runs, so
-        //    polling only reacts to THIS form's callback. Non-fatal.
         FormService.resetCompletion(sessionId).catch((resetError) => {
             console.warn("⚠️ [FormLaunch] Could not reset completion (continuing):", resetError);
         });
 
-        // 4. Dismiss this popup.
         onLaunched();
     };
 
     return (
-        <div className="p-6 bg-white rounded-lg shadow-md">
-            <h2 className="text-xl font-semibold mb-4">Complete Form</h2>
-            <p className="text-gray-600 mb-4">
+        <FormDialogShell
+            footer={
+                <Button type="button" className="gap-2" onClick={handleLaunch} disabled={!formUrl}>
+                    <ArrowTopRightOnSquareIcon className="size-5" />
+                    Open Form
+                </Button>
+            }
+        >
+            <p className="text-sm text-muted-foreground">
                 Click the button below to open the form in a new tab. Complete it there — this step
                 continues automatically once the form is submitted.
             </p>
-            <button
-                type="button"
-                onClick={handleLaunch}
-                disabled={!formUrl}
-                className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-                Open Form
-            </button>
             {!formUrl && (
-                <p className="text-sm text-red-600 mt-3">
+                <p className="text-sm text-destructive">
                     Form URL is not available yet. Please wait for the on_select response.
                 </p>
             )}
-        </div>
+        </FormDialogShell>
     );
 }

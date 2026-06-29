@@ -1,9 +1,14 @@
-import { useMemo, useState, type JSX } from "react";
+import { useMemo, useState } from "react";
 import { queryJsonPath } from "../../../../utils/jsonpath-query";
 import { AxiosResponse } from "axios";
+import { PlusIcon, TrashIcon } from "@heroicons/react/24/outline";
 
+import { Button } from "@/components/Shadcn/Button/button";
+import FormDialogShell from "@/components/ui/forms/form-dialog-shell";
 import { SubmitEventParams } from "@/types/flow-types";
 import { FormFieldConfigType } from "../config-form/config-form";
+import ProtocolHtmlFieldRenderer from "./protocol-html-field-renderer";
+import { cn } from "@/lib/utils";
 import { htmlFormSubmit } from "@utils/request-utils";
 import {
     parseFormHtml,
@@ -16,8 +21,6 @@ import {
     CheckboxSingleField,
     CheckboxGroupField,
 } from "./protocol-html-form";
-
-// --- Helpers ----------------------------------------------------------------
 
 function createDefaultEntry(fields: AnyField[]): ValueState {
     const v: ValueState = {};
@@ -61,8 +64,6 @@ function createDefaultEntry(fields: AnyField[]): ValueState {
     return v;
 }
 
-// --- Component --------------------------------------------------------------
-
 type Props = {
     submitEvent: (data: SubmitEventParams) => Promise<void>;
     referenceData?: Record<string, unknown>;
@@ -74,14 +75,6 @@ export default function ProtocolHTMLFormMulti({
     referenceData,
     HtmlFormConfigInFlow,
 }: Props) {
-    // const formHtml = useMemo<string>(
-    //     () =>
-    //         jsonpath.query(
-    //             { reference_data: referenceData },
-    //             HtmlFormConfigInFlow.reference || ""
-    //         )[0] || "",
-    //     [referenceData, HtmlFormConfigInFlow.reference]
-    // );
     const formHtml = useMemo<string>(() => {
         const value = queryJsonPath(
             { reference_data: referenceData },
@@ -92,11 +85,9 @@ export default function ProtocolHTMLFormMulti({
 
     const parsed = useMemo<ParsedForm>(() => parseFormHtml(formHtml), [formHtml]);
 
-    // Separate hidden (form-level) from visible (per-entry) fields
     const hiddenFields = useMemo(() => parsed.fields.filter((f) => f.kind === "hidden"), [parsed]);
     const visibleFields = useMemo(() => parsed.fields.filter((f) => f.kind !== "hidden"), [parsed]);
 
-    // Multi-entry state
     const [entries, setEntries] = useState<ValueState[]>(() => [createDefaultEntry(visibleFields)]);
     const [fieldErrors, setFieldErrors] = useState<Record<string, string>[]>([{}]);
     const [submissionId, setSubmissionId] = useState<string | null>(null);
@@ -119,7 +110,6 @@ export default function ProtocolHTMLFormMulti({
                 i === entryIdx ? { ...entry, [name]: val as ValueState[string] } : entry
             )
         );
-        // Clear field error
         if (fieldErrors[entryIdx]?.[name]) {
             setFieldErrors((prev) =>
                 prev.map((errs, i) => {
@@ -132,7 +122,6 @@ export default function ProtocolHTMLFormMulti({
         }
     };
 
-    // Validate all entries
     const validateAll = (): boolean => {
         const allErrors: Record<string, string>[] = entries.map((entry) => {
             const errs: Record<string, string> = {};
@@ -165,7 +154,6 @@ export default function ProtocolHTMLFormMulti({
         return allErrors.every((errs) => Object.keys(errs).length === 0);
     };
 
-    // Submit all entries as arrays
     const handleSubmit = async () => {
         if (!validateAll()) {
             setError("Please fill in all required fields for every member");
@@ -176,15 +164,12 @@ export default function ProtocolHTMLFormMulti({
             setIsSubmitting(true);
             setError(null);
 
-            // Build array payload: each visible field maps to an array of values
             const arrayPayload: Record<string, unknown> = {};
 
-            // Hidden fields stay as single values (form-level metadata like formId)
             for (const f of hiddenFields) {
                 arrayPayload[f.name] = (f as { value: string }).value;
             }
 
-            // Visible fields become arrays
             for (const f of visibleFields) {
                 arrayPayload[f.name] = entries.map((entry) => {
                     const val = entry[f.name];
@@ -202,7 +187,6 @@ export default function ProtocolHTMLFormMulti({
                 arrayPayload
             )) as AxiosResponse<unknown, unknown>;
 
-            // Parse response for submission_id
             const rawCt =
                 typeof res.headers === "object"
                     ? (res.headers["content-type"] ?? res.headers["Content-Type"])
@@ -245,339 +229,122 @@ export default function ProtocolHTMLFormMulti({
         }
     };
 
-    // --- Render a single field for a given entry ---
-
-    const renderField = (f: AnyField, entryIdx: number) => {
-        if (f.kind === "hidden") return null;
-
-        const values = entries[entryIdx];
-        const errors = fieldErrors[entryIdx] || {};
-        const setField = (name: string, val: unknown) => setEntryField(entryIdx, name, val);
-
-        const labelEl = (children: JSX.Element) => (
-            <div className="block">
-                <label className="block text-sm font-medium text-gray-700">
-                    {f.label ?? f.name}
-                    <span className="text-red-600">{f.required ? " *" : ""}</span>
-                </label>
-                <div className="mt-1">{children}</div>
-                {errors[f.name] && <p className="mt-1 text-sm text-red-600">{errors[f.name]}</p>}
-            </div>
-        );
-
-        switch (f.kind) {
-            case "textlike": {
-                const v = (values[f.name] as string) ?? "";
-                const tf = f as TextLikeField;
-                const hasError = !!errors[f.name];
-                return labelEl(
-                    <input
-                        type={tf.inputType}
-                        name={f.name}
-                        value={v}
-                        onChange={(e) => setField(f.name, e.target.value)}
-                        placeholder={tf.placeholder}
-                        required={f.required}
-                        disabled={f.disabled}
-                        min={tf.min as number}
-                        max={tf.max as number}
-                        step={tf.step as number}
-                        pattern={tf.pattern}
-                        className={`w-full rounded-md border bg-gray-50 px-3 py-2 focus:outline-hidden focus:ring-2 ${
-                            hasError
-                                ? "border-red-500 focus:ring-red-500"
-                                : "border-gray-300 focus:ring-blue-500"
-                        }`}
-                    />
-                );
-            }
-            case "textarea": {
-                const v = (values[f.name] as string) ?? "";
-                const ta = f as { placeholder?: string; rows?: number };
-                const hasError = !!errors[f.name];
-                return labelEl(
-                    <textarea
-                        name={f.name}
-                        value={v}
-                        onChange={(e) => setField(f.name, e.target.value)}
-                        placeholder={ta.placeholder}
-                        rows={ta.rows ?? 4}
-                        required={f.required}
-                        disabled={f.disabled}
-                        className={`w-full rounded-md bg-gray-50 border px-3 py-2 focus:outline-hidden focus:ring-2 ${
-                            hasError
-                                ? "border-red-500 focus:ring-red-500"
-                                : "border-gray-300 focus:ring-blue-500"
-                        }`}
-                    />
-                );
-            }
-            case "select": {
-                const sel = f as SelectField;
-                const v = values[f.name];
-                const hasError = !!errors[f.name];
-                return labelEl(
-                    <select
-                        name={f.name}
-                        value={
-                            (sel.multiple ? ((v as string[]) ?? []) : ((v as string) ?? "")) as
-                                | string[]
-                                | string
-                        }
-                        onChange={(e) => {
-                            if (sel.multiple) {
-                                const opts = Array.from(e.currentTarget.selectedOptions).map(
-                                    (o) => o.value
-                                );
-                                setField(f.name, opts);
-                            } else {
-                                setField(f.name, e.currentTarget.value);
-                            }
-                        }}
-                        multiple={!!sel.multiple}
-                        required={f.required}
-                        disabled={f.disabled}
-                        className={`w-full rounded-md border bg-gray-50 px-3 py-2 focus:outline-hidden focus:ring-2 ${
-                            hasError
-                                ? "border-red-500 focus:ring-red-500"
-                                : "border-gray-300 focus:ring-blue-500"
-                        }`}
-                    >
-                        {!sel.multiple && <option value="">-- Select --</option>}
-                        {sel.options.map((o, i) => (
-                            <option key={i} value={o.value}>
-                                {o.label}
-                            </option>
-                        ))}
-                    </select>
-                );
-            }
-            case "radio-group": {
-                const rg = f as RadioGroupField;
-                const v = (values[f.name] as string) ?? "";
-                return (
-                    <div className="block">
-                        <fieldset className="space-y-2">
-                            <legend className="block text-sm font-medium text-gray-700">
-                                {f.label ?? f.name}
-                                <span className="text-red-600">{f.required ? " *" : ""}</span>
-                            </legend>
-                            {rg.options.map((opt, i) => (
-                                <label
-                                    key={i}
-                                    className="flex items-center gap-2 text-sm text-gray-800"
-                                >
-                                    <input
-                                        type="radio"
-                                        name={`${f.name}_${entryIdx}`}
-                                        value={opt.value}
-                                        checked={v === opt.value}
-                                        onChange={() => setField(f.name, opt.value)}
-                                        className="h-4 w-4"
-                                    />
-                                    <span>{opt.label ?? opt.value}</span>
-                                </label>
-                            ))}
-                        </fieldset>
-                        {errors[f.name] && (
-                            <p className="mt-1 text-sm text-red-600">{errors[f.name]}</p>
-                        )}
-                    </div>
-                );
-            }
-            case "checkbox-single": {
-                const checked = Boolean(values[f.name]);
-                return (
-                    <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
-                        <input
-                            type="checkbox"
-                            name={f.name}
-                            checked={checked}
-                            onChange={(e) => setField(f.name, e.target.checked)}
-                            className="h-4 w-4"
-                        />
-                        <span>
-                            {f.label ?? f.name}
-                            <span className="text-red-600">{f.required ? " *" : ""}</span>
-                        </span>
-                    </label>
-                );
-            }
-            case "checkbox-group": {
-                const cg = f as CheckboxGroupField;
-                const arr = (values[f.name] as string[]) ?? [];
-                const toggle = (val: string, on: boolean) => {
-                    if (on) setField(f.name, Array.from(new Set([...arr, val])));
-                    else
-                        setField(
-                            f.name,
-                            arr.filter((x) => x !== val)
-                        );
-                };
-                return (
-                    <div className="block">
-                        <fieldset className="space-y-2">
-                            <legend className="block text-sm font-medium text-gray-700">
-                                {f.label ?? f.name}
-                                <span className="text-red-600">{f.required ? " *" : ""}</span>
-                            </legend>
-                            {cg.options.map((opt, i) => {
-                                const on = arr.includes(opt.value);
-                                return (
-                                    <label
-                                        key={i}
-                                        className="flex items-center gap-2 text-sm text-gray-800"
-                                    >
-                                        <input
-                                            type="checkbox"
-                                            name={f.name}
-                                            checked={on}
-                                            onChange={(e) => toggle(opt.value, e.target.checked)}
-                                            className="h-4 w-4"
-                                        />
-                                        <span>{opt.label ?? opt.value}</span>
-                                    </label>
-                                );
-                            })}
-                        </fieldset>
-                        {errors[f.name] && (
-                            <p className="mt-1 text-sm text-red-600">{errors[f.name]}</p>
-                        )}
-                    </div>
-                );
-            }
-            case "file": {
-                const hasError = !!errors[f.name];
-                const fileField = f as { multiple?: boolean; accept?: string | null };
-                return labelEl(
-                    <input
-                        type="file"
-                        name={f.name}
-                        multiple={!!fileField.multiple}
-                        accept={fileField.accept ?? undefined}
-                        onChange={(e) => {
-                            const files = e.currentTarget.files;
-                            if (!files) return;
-                            if (fileField.multiple) setField(f.name, Array.from(files));
-                            else setField(f.name, files[0] ?? null);
-                        }}
-                        className={`block w-full text-sm text-gray-900 file:mr-4 file:rounded-md file:border-0 file:bg-gray-100 file:px-3 file:py-2 file:text-sm file:font-medium hover:file:bg-gray-200 ${
-                            hasError ? "border-red-500" : ""
-                        }`}
-                    />
-                );
-            }
-        }
-    };
-
-    // --- Total error count across all entries ---
     const totalErrors = fieldErrors.reduce((sum, errs) => sum + Object.keys(errs).length, 0);
 
     return (
-        <div className="space-y-6 max-h-full overflow-y-auto overflow-x-hidden">
-            {entries.map((_, entryIdx) => {
-                const entryErrors = fieldErrors[entryIdx] || {};
-                const entryErrorCount = Object.keys(entryErrors).length;
+        <FormDialogShell
+            onSubmit={(event) => {
+                event.preventDefault();
+                void handleSubmit();
+            }}
+            footer={
+                <>
+                    <Button type="button" variant="outline" className="gap-1" onClick={addEntry}>
+                        <PlusIcon className="size-4" />
+                        Add Family Member
+                    </Button>
+                    <Button type="submit" disabled={isSubmitting}>
+                        {isSubmitting
+                            ? "Submitting..."
+                            : totalErrors > 0
+                              ? `Fix ${totalErrors} Error${totalErrors > 1 ? "s" : ""}`
+                              : `Submit ${entries.length} Member${entries.length > 1 ? "s" : ""}`}
+                    </Button>
+                </>
+            }
+        >
+            <div className="space-y-4">
+                {entries.map((entry, entryIdx) => {
+                    const entryErrors = fieldErrors[entryIdx] || {};
+                    const entryErrorCount = Object.keys(entryErrors).length;
 
-                return (
-                    <div
-                        key={entryIdx}
-                        className={`rounded-lg border p-4 min-w-0 ${
-                            entryErrorCount > 0 ? "border-red-300" : "border-gray-200"
-                        }`}
-                    >
-                        <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-sm font-semibold text-gray-800">
-                                Member {entryIdx + 1}
-                            </h3>
-                            {entries.length > 1 && (
-                                <button
-                                    type="button"
-                                    onClick={() => removeEntry(entryIdx)}
-                                    className="text-sm text-red-600 hover:text-red-800 px-2 py-1 rounded hover:bg-red-50"
-                                >
-                                    Remove
-                                </button>
+                    return (
+                        <div
+                            key={entryIdx}
+                            className={cn(
+                                "min-w-0 rounded-lg border p-4",
+                                entryErrorCount > 0
+                                    ? "border-destructive/40"
+                                    : "border-border-default"
+                            )}
+                        >
+                            <div className="mb-4 flex items-center justify-between">
+                                <h3 className="text-sm font-semibold text-text-primary">
+                                    Member {entryIdx + 1}
+                                </h3>
+                                {entries.length > 1 && (
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="sm"
+                                        className="gap-1 text-destructive hover:text-destructive"
+                                        onClick={() => removeEntry(entryIdx)}
+                                    >
+                                        <TrashIcon className="size-4" />
+                                        Remove
+                                    </Button>
+                                )}
+                            </div>
+
+                            <div className="grid grid-cols-1 gap-4">
+                                {visibleFields.map((field, fieldIdx) => (
+                                    <div key={`${field.name}-${fieldIdx}`}>
+                                        <ProtocolHtmlFieldRenderer
+                                            field={field}
+                                            value={entry[field.name]}
+                                            onValueChange={(nextValue) =>
+                                                setEntryField(entryIdx, field.name, nextValue)
+                                            }
+                                            error={entryErrors[field.name]}
+                                            radioNameSuffix={`_${entryIdx}`}
+                                        />
+                                    </div>
+                                ))}
+                            </div>
+
+                            {entryErrorCount > 0 && (
+                                <div className="mt-3 rounded-md border border-destructive/30 bg-destructive/5 p-2">
+                                    <p className="text-xs text-destructive">
+                                        {entryErrorCount} required field
+                                        {entryErrorCount > 1 ? "s" : ""} missing
+                                    </p>
+                                </div>
                             )}
                         </div>
+                    );
+                })}
 
-                        <div className="grid grid-cols-1 gap-4">
-                            {visibleFields.map((f, fIdx) => (
-                                <div key={`${f.name}-${fIdx}`}>{renderField(f, entryIdx)}</div>
-                            ))}
-                        </div>
-
-                        {entryErrorCount > 0 && (
-                            <div className="mt-3 p-2 bg-red-50 border border-red-200 rounded-md">
-                                <p className="text-xs text-red-700">
-                                    {entryErrorCount} required field
-                                    {entryErrorCount > 1 ? "s" : ""} missing
-                                </p>
-                            </div>
-                        )}
+                {totalErrors > 0 && (
+                    <div className="rounded-md border border-destructive/30 bg-destructive/5 p-3">
+                        <p className="text-sm font-medium text-destructive">
+                            Please fill in all required fields across {entries.length} member
+                            {entries.length > 1 ? "s" : ""}
+                        </p>
                     </div>
-                );
-            })}
-
-            {/* Add member button */}
-            <button
-                type="button"
-                onClick={addEntry}
-                className="w-full rounded-lg border-2 border-dashed border-gray-300 py-3 text-sm font-medium text-gray-600 hover:border-blue-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
-            >
-                + Add Family Member
-            </button>
-
-            {/* Validation summary */}
-            {totalErrors > 0 && (
-                <div className="p-3 bg-red-50 border border-red-200 rounded-md">
-                    <p className="text-sm text-red-700 font-medium">
-                        Please fill in all required fields across {entries.length} member
-                        {entries.length > 1 ? "s" : ""}
-                    </p>
-                </div>
-            )}
-
-            {/* Submit */}
-            <div className="flex flex-wrap items-center gap-3">
-                <button
-                    type="button"
-                    onClick={handleSubmit}
-                    disabled={isSubmitting}
-                    className={`px-4 py-2 rounded text-white disabled:opacity-60 shrink-0 ${
-                        totalErrors > 0
-                            ? "bg-red-600 hover:bg-red-700"
-                            : "bg-blue-600 hover:bg-blue-700"
-                    }`}
-                >
-                    {isSubmitting
-                        ? "Submitting..."
-                        : totalErrors > 0
-                          ? `Fix ${totalErrors} Error${totalErrors > 1 ? "s" : ""}`
-                          : `Submit ${entries.length} Member${entries.length > 1 ? "s" : ""}`}
-                </button>
+                )}
 
                 {parsed.action && (
-                    <span className="text-xs text-gray-500 wrap-break-word">
+                    <p className="text-xs text-text-secondary wrap-break-word">
                         POST to <code className="break-all">{parsed.action}</code>
-                    </span>
+                    </p>
                 )}
-            </div>
 
-            <div className="text-sm text-gray-700 wrap-break-word">
-                {submissionId && (
-                    <span className="text-green-700">
-                        Received submission_id: <code className="break-all">{submissionId}</code>
-                    </span>
-                )}
-                {error && (
-                    <div className="p-3 bg-red-50 border border-red-200 rounded-md">
-                        <span className="text-red-600 wrap-break-word font-medium">
-                            Error: {error}
-                        </span>
-                    </div>
-                )}
+                <div className="text-sm text-text-secondary wrap-break-word">
+                    {submissionId && (
+                        <p className="text-success-600">
+                            Received submission_id:{" "}
+                            <code className="break-all">{submissionId}</code>
+                        </p>
+                    )}
+                    {error && (
+                        <div className="rounded-md border border-destructive/30 bg-destructive/5 p-3">
+                            <span className="font-medium text-destructive wrap-break-word">
+                                Error: {error}
+                            </span>
+                        </div>
+                    )}
+                </div>
             </div>
-        </div>
+        </FormDialogShell>
     );
 }

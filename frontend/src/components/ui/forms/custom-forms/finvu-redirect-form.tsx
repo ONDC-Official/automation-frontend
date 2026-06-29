@@ -1,8 +1,14 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { ArrowPathIcon, CheckCircleIcon, XCircleIcon } from "@heroicons/react/24/outline";
 import axios from "axios";
-import { SubmitEventParams } from "../../../../types/flow-types";
+import { toast } from "sonner";
 
-interface FinvuRedirectFormProps {
+import { Button } from "@/components/Shadcn/Button/button";
+import FormDialogShell from "@/components/ui/forms/form-dialog-shell";
+import { SubmitEventParams } from "@/types/flow-types";
+import { cn } from "@/lib/utils";
+
+interface IFinvuRedirectFormProps {
     submitEvent: (data: SubmitEventParams) => Promise<void>;
     referenceData?: Record<string, unknown>;
     sessionId: string;
@@ -14,19 +20,17 @@ export default function FinvuRedirectForm({
     referenceData,
     sessionId,
     transactionId,
-}: FinvuRedirectFormProps) {
+}: IFinvuRedirectFormProps) {
     const [status, setStatus] = useState<"idle" | "waiting" | "completed" | "error">("idle");
     const [finvuUrl, setFinvuUrl] = useState<string>("");
     const [errorMessage, setErrorMessage] = useState<string>("");
     const [pollCount, setPollCount] = useState<number>(0);
 
-    // Use refs to prevent page refresh
     const pollingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
     const finvuWindowRef = useRef<Window | null>(null);
     const isPollingRef = useRef<boolean>(false);
     const hasCompletedRef = useRef<boolean>(false);
 
-    // Cleanup function - prevents memory leaks and ensures no refresh
     const cleanup = useCallback(() => {
         if (pollingIntervalRef.current) {
             clearInterval(pollingIntervalRef.current);
@@ -36,14 +40,12 @@ export default function FinvuRedirectForm({
         localStorage.removeItem("finvu_flow_active");
     }, []);
 
-    // Cleanup on unmount
     useEffect(() => {
         return () => {
             cleanup();
         };
     }, [cleanup]);
 
-    // Check completion function - uses axios, NO page refresh
     const checkCompletion = useCallback(async () => {
         if (hasCompletedRef.current) return;
 
@@ -63,23 +65,17 @@ export default function FinvuRedirectForm({
 
             if (response.data.completed) {
                 hasCompletedRef.current = true;
-
-                // Stop polling immediately
                 cleanup();
-
-                // Update UI state (NO refresh)
                 setStatus("completed");
 
-                // Close Finvu tab if still open
                 if (finvuWindowRef.current && !finvuWindowRef.current.closed) {
                     try {
                         finvuWindowRef.current.close();
-                    } catch (e) {
-                        console.error("Could not close Finvu window:", e);
+                    } catch (error) {
+                        console.error("Could not close Finvu window:", error);
                     }
                 }
 
-                // Auto-submit to proceed with flow (NO refresh, just API call)
                 setTimeout(async () => {
                     try {
                         await submitEvent({
@@ -94,10 +90,11 @@ export default function FinvuRedirectForm({
                         });
                     } catch (error) {
                         console.error("Error submitting event:", error);
-                        setErrorMessage(
-                            "Verification complete but failed to proceed. Please try again."
-                        );
+                        const message =
+                            "Verification complete but failed to proceed. Please try again.";
+                        setErrorMessage(message);
                         setStatus("error");
+                        toast.error(message);
                     }
                 }, 1000);
             }
@@ -107,7 +104,6 @@ export default function FinvuRedirectForm({
         }
     }, [sessionId, transactionId, submitEvent, cleanup, pollCount]);
 
-    // Start polling function
     const startPolling = useCallback(() => {
         if (isPollingRef.current) {
             return;
@@ -115,36 +111,30 @@ export default function FinvuRedirectForm({
 
         isPollingRef.current = true;
         setPollCount(0);
-
-        // Poll immediately first time
         checkCompletion();
 
-        // Then poll every 2 seconds
         pollingIntervalRef.current = setInterval(() => {
             checkCompletion();
         }, 2000);
     }, [transactionId, checkCompletion]);
 
-    // Handle start verification - NO navigation/refresh
     const handleStartVerification = useCallback(
-        async (e: React.MouseEvent) => {
-            e.preventDefault();
-            e.stopPropagation();
+        async (event: React.MouseEvent) => {
+            event.preventDefault();
+            event.stopPropagation();
 
-            // CRITICAL: Open window IMMEDIATELY to preserve user gesture (before async calls)
-            // Otherwise popup blockers will prevent window.open after await
-            // NOTE: Removed 'noopener' so we can write to the document
             const finvuWindow = window.open("about:blank", "_blank", "width=800,height=600");
 
             if (!finvuWindow) {
+                const message = "Could not open Finvu window. Please allow popups for this site.";
                 setStatus("error");
-                setErrorMessage("Could not open Finvu window. Please allow popups for this site.");
+                setErrorMessage(message);
+                toast.error(message);
                 return;
             }
 
             finvuWindowRef.current = finvuWindow;
 
-            // Show loading message in the popup while we fetch the URL
             try {
                 finvuWindow.document.open();
                 finvuWindow.document.write(`
@@ -193,25 +183,18 @@ export default function FinvuRedirectForm({
                 finvuWindow.document.close();
             } catch (writeError) {
                 console.warn("Could not write loading content to popup:", writeError);
-                // Continue anyway - the navigation will still work
             }
 
             try {
                 setStatus("waiting");
                 setErrorMessage("");
                 setPollCount(0);
-
-                // Mark flow as active in localStorage (prevents accidental navigation)
                 localStorage.setItem("finvu_flow_active", "true");
-
-                // Build the callback URL (where Finvu redirects after completion)
-                //   const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
                 if (!transactionId) {
                     throw new Error("Transaction ID is missing! Cannot create Finvu callback URL.");
                 }
 
-                // Call backend proxy endpoint (which calls Finvu AA Service internally)
                 const response = await axios.post(
                     `${import.meta.env.VITE_BACKEND_URL}/finvu/verify-consent`,
                     {
@@ -219,7 +202,7 @@ export default function FinvuRedirectForm({
                         sessionId,
                     },
                     {
-                        timeout: 15000, // 15 second timeout for backend call
+                        timeout: 15000,
                     }
                 );
 
@@ -233,14 +216,12 @@ export default function FinvuRedirectForm({
 
                 setFinvuUrl(url);
 
-                // Navigate the already-opened window to the Finvu URL
                 if (finvuWindow && !finvuWindow.closed) {
                     finvuWindow.location.href = url;
                 } else {
                     throw new Error("Finvu window was closed before navigation");
                 }
 
-                // Start polling (background process, NO refresh)
                 startPolling();
             } catch (error: unknown) {
                 console.error("Error starting Finvu verification:", error);
@@ -249,16 +230,16 @@ export default function FinvuRedirectForm({
                     message?: string;
                     response?: { data?: { message?: string } };
                 };
-                setErrorMessage(
-                    err.response?.data?.message || err.message || "Failed to start verification"
-                );
+                const message =
+                    err.response?.data?.message || err.message || "Failed to start verification";
+                setErrorMessage(message);
+                toast.error(message);
 
-                // Close the popup if we failed to get the URL
                 if (finvuWindow && !finvuWindow.closed) {
                     try {
                         finvuWindow.close();
-                    } catch (e) {
-                        console.error("Could not close Finvu window:", e);
+                    } catch (closeError) {
+                        console.error("Could not close Finvu window:", closeError);
                     }
                 }
 
@@ -268,11 +249,10 @@ export default function FinvuRedirectForm({
         [sessionId, transactionId, referenceData, startPolling, cleanup]
     );
 
-    // Handle reopen - NO navigation
     const handleReopenFinvu = useCallback(
-        (e: React.MouseEvent) => {
-            e.preventDefault();
-            e.stopPropagation();
+        (event: React.MouseEvent) => {
+            event.preventDefault();
+            event.stopPropagation();
 
             if (finvuUrl) {
                 const finvuWindow = window.open(
@@ -286,11 +266,10 @@ export default function FinvuRedirectForm({
         [finvuUrl]
     );
 
-    // Handle retry - NO navigation
     const handleRetry = useCallback(
-        (e: React.MouseEvent) => {
-            e.preventDefault();
-            e.stopPropagation();
+        (event: React.MouseEvent) => {
+            event.preventDefault();
+            event.stopPropagation();
 
             cleanup();
             setStatus("idle");
@@ -301,71 +280,74 @@ export default function FinvuRedirectForm({
         [cleanup]
     );
 
+    const footer =
+        status === "idle" ? (
+            <Button type="button" onClick={handleStartVerification}>
+                Start Account Aggregator Verification
+            </Button>
+        ) : status === "error" ? (
+            <Button type="button" onClick={handleRetry}>
+                Try Again
+            </Button>
+        ) : null;
+
     return (
-        <div className="p-6 bg-white rounded-lg shadow-md">
-            <h2 className="text-xl font-semibold mb-4">Account Aggregator Verification</h2>
+        <FormDialogShell footer={footer}>
+            <h2 className="text-lg font-semibold text-text-primary">
+                Account Aggregator Verification
+            </h2>
 
             {status === "idle" && (
-                <div>
-                    <p className="text-gray-600 mb-4">
-                        Click the button below to verify your account with Finvu Account Aggregator.
-                        A new tab will open where you can complete the verification process.
-                    </p>
-                    <button
-                        type="button"
-                        onClick={handleStartVerification}
-                        className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors focus:outline-hidden focus:ring-2 focus:ring-blue-500"
-                    >
-                        Start Account Aggregator Verification
-                    </button>
-                </div>
+                <p className="text-sm text-text-secondary">
+                    Click the button below to verify your account with Finvu Account Aggregator. A
+                    new tab will open where you can complete the verification process.
+                </p>
             )}
 
             {status === "waiting" && (
-                <div className="text-center">
-                    <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
-                    <h3 className="text-lg font-medium mb-2">Waiting for Consent Approval</h3>
-                    <p className="text-gray-600 mb-4">
-                        Please complete the verification process in the Finvu tab that was opened.
-                    </p>
-                    <p className="text-sm text-gray-500 mb-2">
+                <div className="space-y-4 text-center">
+                    <ArrowPathIcon
+                        className="mx-auto size-12 animate-spin text-brand-normal"
+                        aria-hidden
+                    />
+                    <div>
+                        <h3 className="text-base font-medium text-text-primary">
+                            Waiting for Consent Approval
+                        </h3>
+                        <p className="mt-2 text-sm text-text-secondary">
+                            Please complete the verification process in the Finvu tab that was
+                            opened.
+                        </p>
+                    </div>
+                    <p className="text-sm text-text-secondary">
                         Checking automatically... (Poll #{pollCount})
                     </p>
-                    <p className="text-xs text-gray-400 mb-4">
+                    <p className="text-xs text-text-secondary">
                         This page will NOT refresh. Stay here while completing the verification.
                     </p>
-                    <button
-                        type="button"
-                        onClick={handleReopenFinvu}
-                        className="text-blue-600 hover:text-blue-800 underline focus:outline-hidden"
-                    >
+                    <Button type="button" variant="link" onClick={handleReopenFinvu}>
                         Reopen Finvu Tab
-                    </button>
+                    </Button>
                 </div>
             )}
 
             {status === "completed" && (
-                <div className="text-center text-green-600">
-                    <div className="text-5xl mb-4">✓</div>
-                    <h3 className="text-lg font-medium mb-2">Verification Completed!</h3>
-                    <p className="text-gray-600">Proceeding to next step...</p>
+                <div className="space-y-3 text-center">
+                    <CheckCircleIcon className="mx-auto size-12 text-success-600" aria-hidden />
+                    <h3 className="text-base font-medium text-text-primary">
+                        Verification Completed!
+                    </h3>
+                    <p className="text-sm text-text-secondary">Proceeding to next step...</p>
                 </div>
             )}
 
             {status === "error" && (
-                <div className="text-center">
-                    <div className="text-red-600 text-5xl mb-4">✕</div>
-                    <h3 className="text-lg font-medium text-red-600 mb-2">Error</h3>
-                    <p className="text-gray-600 mb-4">{errorMessage}</p>
-                    <button
-                        type="button"
-                        onClick={handleRetry}
-                        className="bg-blue-600 text-white py-2 px-6 rounded-lg hover:bg-blue-700 focus:outline-hidden focus:ring-2 focus:ring-blue-500"
-                    >
-                        Try Again
-                    </button>
+                <div className="space-y-3 text-center">
+                    <XCircleIcon className="mx-auto size-12 text-destructive" aria-hidden />
+                    <h3 className="text-base font-medium text-destructive">Error</h3>
+                    <p className={cn("text-sm text-text-secondary")}>{errorMessage}</p>
                 </div>
             )}
-        </div>
+        </FormDialogShell>
     );
 }

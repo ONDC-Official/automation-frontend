@@ -1,5 +1,5 @@
 import { InformationCircleIcon } from "@heroicons/react/24/outline";
-import CustomTooltip from "@components/ui/mini-components/tooltip";
+import { TooltipHint } from "@/components/Shadcn/Tooltip";
 import { Switch } from "@/components/Shadcn/Switch/switch";
 import { cn } from "@/lib/utils";
 import type { SwitchFieldGroupProps, SwitchFieldProps } from "@/components/Shadcn/Switch/types";
@@ -32,7 +32,7 @@ export const SwitchField = ({
                 disabled={disabled}
             />
             {info ? (
-                <CustomTooltip content={info}>
+                <TooltipHint content={info}>
                     <span
                         tabIndex={0}
                         aria-label={`Info: ${label}`}
@@ -40,7 +40,7 @@ export const SwitchField = ({
                     >
                         <InformationCircleIcon className="size-6 text-brand-normal" />
                     </span>
-                </CustomTooltip>
+                </TooltipHint>
             ) : null}
         </div>
     </div>

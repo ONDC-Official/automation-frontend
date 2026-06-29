@@ -4,6 +4,7 @@ import * as React from "react";
 import { Combobox as ComboboxPrimitive } from "@base-ui/react";
 import { CheckIcon, ChevronDownIcon, XCircleIcon } from "@heroicons/react/24/outline";
 
+import { FORM_FLOW_FLOATING_Z_INDEX } from "@/components/Shadcn/Dialog/form-flow-dialog-utils";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/Shadcn/Button/button";
 import {
@@ -103,7 +104,7 @@ const ComboboxContent = ({
                 align={align}
                 alignOffset={alignOffset}
                 anchor={anchor}
-                className="isolate z-50"
+                className={cn("isolate", FORM_FLOW_FLOATING_Z_INDEX)}
             >
                 <ComboboxPrimitive.Popup
                     data-slot="combobox-content"
@@ -248,7 +249,11 @@ const ComboboxChip = ({
     );
 };
 
-const ComboboxChipsInput = ({ className, children, ...props }: ComboboxPrimitive.Input.Props) => {
+const ComboboxChipsInput = ({
+    className,
+    children: _children,
+    ...props
+}: ComboboxPrimitive.Input.Props) => {
     return (
         <ComboboxPrimitive.Input
             data-slot="combobox-chip-input"

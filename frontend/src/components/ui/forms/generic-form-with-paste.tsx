@@ -1,11 +1,13 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { useForm } from "react-hook-form";
-import { ClipboardDocumentIcon } from "@heroicons/react/24/outline";
-import { toast } from "react-toastify";
-import PayloadEditor from "@/components/ui/mini-components/payload-editor";
+import { toast } from "sonner";
+
+import { ComboBox } from "@/components/Shadcn/ComboBox";
 import { Button } from "@/components/Shadcn/Button/button";
 import SpinnerDialog from "@/components/Shadcn/SpinnerDialog";
-import { SelectField } from "@/components/Shadcn/Select";
+import PayloadEditor from "@/components/ui/mini-components/payload-editor";
+import FormDialogShell from "@/components/ui/forms/form-dialog-shell";
+import { PastePayloadButton } from "@/components/ui/forms/paste-payload-button";
 import { ICatalogItem, IGenericFormWithPasteProps } from "@/components/ui/forms/generic-form.types";
 
 const GenericFormWithPaste = ({
@@ -31,7 +33,6 @@ const GenericFormWithPaste = ({
     const [errorWhilePaste, setErrorWhilePaste] = useState("");
     const [availableItems, setAvailableItems] = useState<ICatalogItem[]>([]);
 
-    // Watch selected item to get its addons
     const selectedItemId = watch("item_id") as string;
     const selectedItem = availableItems.find((item) => item.id === selectedItemId);
     const availableAddons = selectedItem?.addOns || [];
@@ -55,7 +56,6 @@ const GenericFormWithPaste = ({
                 throw new Error("No items found in catalog");
             }
 
-            // Extract items with their addons
             const catalogItems: ICatalogItem[] = items.map((item) => {
                 const descriptor = item.descriptor as Record<string, unknown> | undefined;
                 const addOns = (item.add_ons || []) as Record<string, unknown>[];
@@ -83,7 +83,6 @@ const GenericFormWithPaste = ({
 
             const firstItem = catalogItems[0];
 
-            // Set form values
             setValue("item_id", firstItem.id);
             setValue("quantity", "1");
             setValue("add_on_id", firstItem.addOns?.[0]?.id || "");
@@ -125,7 +124,6 @@ const GenericFormWithPaste = ({
         }
     }, [triggerSubmit, handleSubmit, handleSubmitForm]);
 
-    // Custom render function that adds dropdowns for item_id and add_on_id when data is available
     const renderChildren = () => {
         return React.Children.map(children, (child) => {
             if (!React.isValidElement(child)) return child;
@@ -133,41 +131,31 @@ const GenericFormWithPaste = ({
             const childProps = child.props as Record<string, unknown>;
             const fieldName = childProps.name as string;
 
-            // Replace item_id text input with dropdown when items are available
             if (fieldName === "item_id" && availableItems.length > 0) {
                 return (
-                    <SelectField
+                    <ComboBox
+                        control={control}
                         name="item_id"
                         label={(childProps.label as string) || "Item ID"}
                         required
-                        nonSelectedValue
                         options={availableItems.map((item) => ({
-                            key: `${item.name} (${item.id})`,
+                            label: `${item.name} (${item.id})`,
                             value: item.id,
                         }))}
-                        register={register}
-                        control={control}
-                        errors={errors}
-                        setValue={setValue}
                     />
                 );
             }
 
             if (fieldName === "add_on_id" && availableAddons.length > 0) {
                 return (
-                    <SelectField
+                    <ComboBox
+                        control={control}
                         name="add_on_id"
                         label={(childProps.label as string) || "Add-on ID"}
-                        nonSelectedValue
                         options={availableAddons.map((addon) => ({
-                            key: `${addon.name} (${addon.id})`,
+                            label: `${addon.name} (${addon.id})`,
                             value: addon.id,
                         }))}
-                        register={register}
-                        control={control}
-                        errors={errors}
-                        setValue={setValue}
-                        defaultValue=""
                     />
                 );
             }
@@ -182,35 +170,35 @@ const GenericFormWithPaste = ({
     };
 
     return (
-        <div>
+        <>
             {isLoading && <SpinnerDialog />}
-            {enablePaste && (
-                <>
-                    {isPayloadEditorActive && (
-                        <PayloadEditor onAdd={handlePaste as (payload: unknown) => void} />
-                    )}
-                    {errorWhilePaste && (
-                        <p className="text-destructive text-sm mb-2">{errorWhilePaste}</p>
-                    )}
-                    <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => setIsPayloadEditorActive(true)}
-                        className="mb-3 flex items-center gap-2"
-                        title="Paste on_search payload to auto-populate fields"
-                    >
-                        <ClipboardDocumentIcon className="size-4" />
-                        <span className="text-sm">Paste on_search</span>
+            <FormDialogShell
+                onSubmit={handleSubmit(handleSubmitForm)}
+                className={className}
+                footer={
+                    <Button type="submit" variant="default" isLoading={isLoading}>
+                        Submit
                     </Button>
-                </>
-            )}
-            <form onSubmit={handleSubmit(handleSubmitForm)} className={className}>
+                }
+            >
+                {enablePaste && (
+                    <>
+                        {isPayloadEditorActive && (
+                            <PayloadEditor onAdd={handlePaste as (payload: unknown) => void} />
+                        )}
+                        {errorWhilePaste && (
+                            <p className="text-sm text-destructive">{errorWhilePaste}</p>
+                        )}
+                        <PastePayloadButton
+                            onClick={() => setIsPayloadEditorActive(true)}
+                            className="mb-0"
+                            title="Paste on_search payload to auto-populate fields"
+                        />
+                    </>
+                )}
                 {renderChildren()}
-                <Button type="submit" variant="default" isLoading={isLoading}>
-                    Submit
-                </Button>
-            </form>
-        </div>
+            </FormDialogShell>
+        </>
     );
 };
 

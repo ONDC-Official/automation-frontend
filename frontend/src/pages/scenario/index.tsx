@@ -1,7 +1,7 @@
 import { useState, useEffect, useContext } from "react";
 import { useSearchParams } from "react-router-dom";
 import axios, { AxiosResponse, AxiosError } from "axios";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 import RenderFlows from "@components/FlowShared/render-flows";
 import Card from "@/components/Shadcn/Card";
 import Accordion from "@/components/Shadcn/Accordion";

@@ -8,6 +8,7 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/Shadcn/Dialog";
+import { isFormFlowPortaledOverlay } from "@/components/Shadcn/Dialog/form-flow-dialog-utils";
 import { useSession } from "@/context/context";
 import { cn } from "@/lib/utils";
 import { ArrowsPointingOutIcon, MinusIcon, XMarkIcon } from "@heroicons/react/24/outline";
@@ -44,6 +45,8 @@ const FormFlowDialog = ({
         () => document.fullscreenElement ?? document.body
     );
     const { activeCallClickedToggle } = useSession();
+    const hasTitle = Boolean(title);
+    const hasDescription = Boolean(description);
 
     useEffect(() => {
         if (open) {
@@ -148,13 +151,11 @@ const FormFlowDialog = ({
                     overlayClassName="hidden"
                     className={cn(
                         WIDTH_CLASSES[width],
-                        "z-60 max-h-[90vh] gap-0 overflow-hidden p-0",
+                        "z-60 flex max-h-[90vh] flex-col gap-0 overflow-hidden p-0",
                         isMinimized && "hidden"
                     )}
                     onInteractOutside={(event) => {
-                        if (
-                            (event.target as HTMLElement).closest('[data-slot="nested-flow-modal"]')
-                        ) {
+                        if (isFormFlowPortaledOverlay(event.target)) {
                             return;
                         }
                         if (disableClose || isMinimized) {
@@ -162,9 +163,15 @@ const FormFlowDialog = ({
                         }
                     }}
                     onPointerDownOutside={(event) => {
-                        if (
-                            (event.target as HTMLElement).closest('[data-slot="nested-flow-modal"]')
-                        ) {
+                        if (isFormFlowPortaledOverlay(event.target)) {
+                            return;
+                        }
+                        if (disableClose || isMinimized) {
+                            event.preventDefault();
+                        }
+                    }}
+                    onFocusOutside={(event) => {
+                        if (isFormFlowPortaledOverlay(event.target)) {
                             return;
                         }
                         if (disableClose || isMinimized) {
@@ -179,16 +186,14 @@ const FormFlowDialog = ({
                 >
                     <div
                         className={cn(
-                            "flex items-center border-b border-border-default",
-                            title || description
-                                ? "justify-between px-6 py-4"
-                                : "justify-end px-4 py-2"
+                            "flex shrink-0 items-center border-b border-border-default px-6 py-4",
+                            hasTitle || hasDescription ? "justify-between" : "justify-end"
                         )}
                     >
-                        {(title || description) && (
+                        {(hasTitle || hasDescription) && (
                             <DialogHeader className="gap-1 text-left">
-                                {title && <DialogTitle>{title}</DialogTitle>}
-                                {description && (
+                                {hasTitle && <DialogTitle>{title}</DialogTitle>}
+                                {hasDescription && (
                                     <DialogDescription>{description}</DialogDescription>
                                 )}
                             </DialogHeader>
@@ -208,22 +213,14 @@ const FormFlowDialog = ({
                                     size="icon-sm"
                                     aria-label="Close form"
                                     onClick={handleClose}
+                                    className="rounded-full bg-brand-normal/10 text-brand-normal hover:bg-brand-normal/20"
                                 >
                                     <XMarkIcon className="size-4" />
                                 </Button>
                             )}
                         </div>
                     </div>
-                    <div
-                        className={cn(
-                            "overflow-y-auto overflow-x-hidden px-6 py-4",
-                            title || description
-                                ? "max-h-[calc(90vh-4.5rem)]"
-                                : "max-h-[calc(90vh-3rem)]"
-                        )}
-                    >
-                        {children}
-                    </div>
+                    <div className="flex min-h-0 flex-1 flex-col overflow-hidden">{children}</div>
                 </DialogContent>
             </Dialog>
         </>

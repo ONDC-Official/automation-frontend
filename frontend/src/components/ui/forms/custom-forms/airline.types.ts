@@ -53,14 +53,6 @@ export const DEFAULT_SEAT_FORM_DATA: ISeatFormData = {
     seats: [{ seatNumber: "" }],
 };
 
-// Shared style constants
-export const FORM_STYLES = {
-    inputStyle:
-        "border rounded p-2 w-full focus:outline-hidden focus:ring-2 focus:ring-blue-500 bg-white",
-    labelStyle: "mb-1 font-semibold text-sm",
-    fieldWrapperStyle: "flex flex-col mb-2",
-} as const;
-
 // --- Payload Parsing Interfaces ---
 
 export interface IDescriptor {

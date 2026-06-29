@@ -33,6 +33,10 @@ interface SessionContextProps {
     setAutoScrollEnabled?: Dispatch<SetStateAction<boolean>>;
     experimentalMode?: boolean;
     setExperimentalMode?: Dispatch<SetStateAction<boolean>>;
+    /** True while any flow input form dialog is open — pauses flow polling to avoid remounting fields. */
+    isFlowFormDialogOpen?: boolean;
+    acquireFlowFormDialogLock?: () => void;
+    releaseFlowFormDialogLock?: () => void;
 }
 
 export const SessionContext = createContext<SessionContextProps | undefined>(undefined);

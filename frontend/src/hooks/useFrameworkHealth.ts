@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 import axios, { AxiosError } from "axios";
 import { apiClient, ApiError } from "@services/apiClient";
 import { API_ROUTES } from "@services/apiRoutes";
@@ -34,7 +34,7 @@ const SESSION_KEY = "framework_health_auth";
 
 export const useFrameworkHealth = () => {
     const [isAuthenticated, setIsAuthenticated] = useState<boolean>(
-        () => sessionStorage.getItem(SESSION_KEY) === "true",
+        () => sessionStorage.getItem(SESSION_KEY) === "true"
     );
     const [isAuthLoading, setIsAuthLoading] = useState(false);
     const [credentials, setCredentials] = useState({ username: "", password: "" });
@@ -54,7 +54,7 @@ export const useFrameworkHealth = () => {
                             username: credentials.username,
                             password: credentials.password,
                         },
-                    },
+                    }
                 );
                 if (response.data.authenticated) {
                     setIsAuthenticated(true);
@@ -67,13 +67,13 @@ export const useFrameworkHealth = () => {
                 toast.error(
                     (error as AxiosError<ApiError>).response?.data?.message ||
                         (error as Error).message ||
-                        "Login failed",
+                        "Login failed"
                 );
             } finally {
                 setIsAuthLoading(false);
             }
         },
-        [credentials],
+        [credentials]
     );
 
     const handleLogout = useCallback(() => {
@@ -94,7 +94,7 @@ export const useFrameworkHealth = () => {
                 {
                     timeout: 5 * 60 * 1000, // 5 minutes
                     withCredentials: true,
-                },
+                }
             );
             setReport(response.data);
             setLastChecked(new Date());

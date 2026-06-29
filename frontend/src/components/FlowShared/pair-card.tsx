@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 import { ArrowsRightLeftIcon, InformationCircleIcon } from "@heroicons/react/24/outline";
 
 import { PairedStep } from "@components/FlowShared/mapped-flow";
-import CustomTooltip from "@components/ui/mini-components/tooltip";
+import { TooltipHint } from "@/components/Shadcn/Tooltip";
 import FlippableWrapper from "@components/ui/flippable-div";
 import { Badge } from "@/components/Shadcn/Badge";
 import { Button } from "@/components/Shadcn/Button/button";
@@ -187,9 +187,16 @@ function StepDisplay({ step, flowId }: { step: MappedStep; flowId: string }) {
                             </Button>
 
                             {step.description ? (
-                                <CustomTooltip content={step.description}>
-                                    <InformationCircleIcon className="size-4 shrink-0 text-brand-normal" />
-                                </CustomTooltip>
+                                <TooltipHint content={step.description}>
+                                    <button
+                                        type="button"
+                                        tabIndex={-1}
+                                        aria-label="Step description"
+                                        className="shrink-0 text-brand-normal"
+                                    >
+                                        <InformationCircleIcon className="size-4" />
+                                    </button>
+                                </TooltipHint>
                             ) : null}
                         </div>
                     </div>
@@ -267,7 +274,7 @@ function AutoToggle({
     };
 
     return (
-        <CustomTooltip content="Toggle auto mode for this step">
+        <TooltipHint content="Toggle auto mode for this step">
             <div
                 className="flex items-center gap-1.5"
                 onPointerDown={stop}
@@ -284,7 +291,7 @@ function AutoToggle({
                     onCheckedChange={onToggle}
                 />
             </div>
-        </CustomTooltip>
+        </TooltipHint>
     );
 }
 

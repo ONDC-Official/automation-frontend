@@ -1,6 +1,6 @@
 import { useContext, useState } from "react";
 import axios, { AxiosResponse } from "axios";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 
 import { Flow } from "@/types/flow-types";
 import { ApiData, SessionCache } from "@/types/session-types";

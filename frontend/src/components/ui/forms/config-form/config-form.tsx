@@ -1,64 +1,65 @@
 import { useContext } from "react";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 import { DatePicker } from "@/components/Shadcn/DatePicker";
 import { DateTimePicker } from "@/components/Shadcn/DateTimePicker";
 import { CheckboxGroup, type ICheckboxOption } from "@/components/Shadcn/Checkbox";
-import { SelectField } from "@/components/Shadcn/Select";
+import { ComboBox } from "@/components/Shadcn/ComboBox";
 import TextField from "@/components/Shadcn/TextField";
 import { formatFormFieldForPayload } from "../utils/date-utils";
-import ItemCustomisationSelector from "../nested-select";
-import ItemCustomisationSelectorRET11 from "../ret11-nested-select";
+import { buildSchemaFormSubmit } from "../utils/schema-submit-utils";
+import RET11NestedSelect from "../ret11-nested-select";
+import RET11NestedSelectForm from "../ret11-nested-select-form";
 import GenericForm from "../generic-form";
 import GenericFormWithPaste from "../generic-form-with-paste";
 import { SubmitEventParams } from "../../../../types/flow-types";
-import Ret10GrocerySelect from "../custom-forms/ret10-grocery-select";
-import RetINVLInit from "../custom-forms/retinvl-init";
+import Ret10GrocerySelectForm from "../custom-forms/ret10-grocery-select-form";
+import RetINVLInitForm from "@/components/ui/forms/custom-forms/retinvl-init-form";
 import ProtocolHTMLForm from "../custom-forms/protocol-html-form";
 import ProtocolHTMLFormMulti from "../custom-forms/protocol-html-form-multi";
-import TRVSelect from "../custom-forms/trv-select";
-import TRV10Select from "../custom-forms/trv10-select";
-import TRV10ScheduleForm from "../custom-forms/trv10-schedule";
-import TRV10ScheduleRentalForm from "../custom-forms/trv10-scheduleRental";
-import TRV11Select from "../custom-forms/trv11-select";
-import TRV11PartialSelect from "../custom-forms/trv11-201-partial-select";
+import TRVSelectForm from "../custom-forms/trv-select-form";
+import TRV10SelectForm from "@/components/ui/forms/custom-forms/trv10-select-form";
+import TRV10ScheduleForm from "../custom-forms/trv10-schedule-form";
+import TRV10ScheduleRentalForm from "../custom-forms/trv10-schedule-rental-form";
+import TRV11SelectForm from "@/components/ui/forms/custom-forms/trv11-select-form";
+import TRV11PartialSelectForm from "../custom-forms/trv11-201-partial-select-form";
 import JsonSchemaForm from "../../../../pages/protocol-playground/ui/extras/rsjf-form";
 import { isRideMapEnabled } from "@components/FlowShared/ride-map-utils";
-import AirlineSelect from "@/components/ui/forms/custom-forms/airline-select";
-import AirlineSeatSelect from "@/components/ui/forms/custom-forms/airline-seat-select";
-import HotelSelect from "@/components/ui/forms/custom-forms/hotel-select";
-import TRV12busSeatSelection from "../custom-forms/trv-seat-count";
+import TRV12AirlineSelectForm from "@/components/ui/forms/custom-forms/trv12-airline-select-form";
+import TRV12AirlineSeatSelectForm from "@/components/ui/forms/custom-forms/trv12-airline-seat-select-form";
+import TRV13HotelSelectForm from "@/components/ui/forms/custom-forms/trv13-hotel-select-form";
+import TRV12BusSeatCountSelectionForm from "../custom-forms/trv12-seat-count-bus-selection-form";
 import FinvuRedirectForm from "../custom-forms/finvu-redirect-form";
-import DynamicFormHandler from "../custom-forms/dynamic-form-handler";
-import ManualDynamicFormHandler from "../custom-forms/manual-dynamic-form-handler";
+import DynamicFormHandler from "../handlers/dynamic-form-handler";
+import ManualDynamicFormHandler from "../handlers/manual-dynamic-form-handler";
 import { SessionContext } from "../../../../context/context";
-import IntercitySelect from "../custom-forms/intercity-select";
-import HotelSelectProvider from "../custom-forms/hotel-slect-provider";
-import FIS13ItemSelection from "../custom-forms/fis13_select";
-import RideHailingSelect from "../custom-forms/trv10-201-select";
-import SearchAccidentalFis13 from "../custom-forms/search-accidental-fis13";
-import SearchHospicashFis13 from "../custom-forms/search-hospicash-fis13";
-import SearchTransitFis13 from "../custom-forms/search-transit-fis13";
-import SearchDiscoverProductFis13 from "../custom-forms/search-discover-product-fis13";
-import Metro210Select from "../custom-forms/metro-seat-select";
-import Metro210EndStopUpdate from "../custom-forms/update-end-stop-update";
-import Metro210StartEndStopSelection from "../custom-forms/trv11_start_end_stop_selection";
-import FIS12Select from "../custom-forms/fis12-select";
-import FIS13AddonSelect from "../custom-forms/fis13-addon-select";
-import InsuranceSelect from "../custom-forms/insurance-select";
-import FIS12Search from "../custom-forms/fis12-search";
-import SelectMetroTRV11 from "../custom-forms/select-metro-trv11";
+import TRV12IntercitySelectForm from "../custom-forms/trv12-intercity-select-form";
+import TRV13HotelSelectProviderForm from "../custom-forms/trv13-hotel-select-provider";
+import FIS13ItemSelectionForm from "@/components/ui/forms/custom-forms/fis13-select-form";
+import TRV10RideHailingSelectForm from "../custom-forms/trv10-201-ride-hailing-select-form";
+import Fis13SearchAccidentalForm from "../custom-forms/fis13-search-accidental-form";
+import Fis13SearchHospicashForm from "../custom-forms/fis13-search-hospicash-form";
+import Fis13SearchTransitForm from "../custom-forms/fis13-search-transit-form";
+import Fis13SearchDiscoverProductForm from "@/components/ui/forms/custom-forms/fis13-search-discover-product-form";
+import Trv11210MetroSelectForm from "@/components/ui/forms/custom-forms/trv11-210-metro-seat-select-form";
+import Trv11Metro210EndStopUpdateForm from "../custom-forms/trv11-210-metro-end-stop-update-form";
+import Metro210StartEndStopSelection from "../custom-forms/trv11-210-start-end-stop-selection-form";
+import FIS12SelectForm from "../custom-forms/fis12-select-form";
+import FIS13AddonSelectForm from "../custom-forms/fis13-addon-select-form";
+import InsuranceSelectForm from "../custom-forms/insurance-select-form";
+import FIS12SearchForm from "../custom-forms/fis12-search-form";
+import TRV11SelectMetroForm from "../custom-forms/trv11-select-metro-form";
 import { RJSFSchema } from "@rjsf/utils";
-import RetINVLInitILBP from "../custom-forms/retinvl-ilbp";
-import ReteB2BSelect from "../custom-forms/reteb2b-select";
-import ReteB2BInitOffers from "../custom-forms/reteb2b-init-offers";
+import RetINVLInitILBPForm from "../custom-forms/retinvl-ilbp-form";
+import ReteB2BSelectForm from "../custom-forms/reteb2b-select-form";
+import ReteB2BInitOffersForm from "../custom-forms/reteb2b-init-offers-form";
 
-import InitMetroTRV11 from "../custom-forms/init-metro-trv11";
-import SelectMutualFundFIS14 from "../custom-forms/mutual_fund_select";
-import SelectMutualFundRedemptionFIS14 from "../custom-forms/mutual_fund_redemption_select";
-import SelectMutualFundSIPFIS14 from "../custom-forms/mutual_fund_sip_select";
-import RetINVLInitOffers from "../custom-forms/retinvl-init-offers";
-import Metro200StartEndStopSelection from "../custom-forms/trv11_start_end_stop_selection_200";
-import Metro210CommonItemFulfillmentSelection from "../custom-forms/trv11_210_common_item_fulfillment_select";
+import TRV11InitMetroForm from "../custom-forms/trv11-init-metro-form";
+import FIS14MutualFundSelectForm from "../custom-forms/fis14-mutual-fund-select-form";
+import FIS14MutualFundRedemptionSelectForm from "../custom-forms/fis14-mutual-fund-redemption-select-form";
+import FIS14MutualFundSIPSelectForm from "../custom-forms/fis14-mutual-fund-sip-select-form";
+import RetINVLInitOffersForm from "../custom-forms/retinvl-init-offers-form";
+import TRV11200MteroStartEndStopSelectionForm from "../custom-forms/trv11-200-start-end-stop-selection-form";
+import TRV11Metro210CommonItemFulfillmentSelectionForm from "../custom-forms/trv11-210-common-item-fulfillment-select-form";
 import ManualIdOverride from "../custom-forms/manual-id-override";
 
 export interface FormFieldConfigType {
@@ -117,7 +118,6 @@ export interface FormFieldConfigType {
         | "fis14_mf_redemption_select"
         | "fis14_mf_sip_select"
         | "insurance_select"
-        | "datetime-local"
         | "manual_id"
         | "trv11_210_common_item_fulfillment_select";
 
@@ -254,59 +254,52 @@ export default function FormConfig({
     }
 
     if (formConfig.find((field) => field.type === "ret10_grocery_select")) {
-        return <Ret10GrocerySelect submitEvent={submitEvent} />;
+        return <Ret10GrocerySelectForm submitEvent={submitEvent} />;
     }
 
     if (formConfig.find((field) => field.type === "retinvl_init")) {
-        return <RetINVLInit submitEvent={submitEvent} />;
+        return <RetINVLInitForm submitEvent={submitEvent} />;
     }
     if (formConfig.find((field) => field.type === "retinvl_init_offers")) {
-        return <RetINVLInitOffers submitEvent={submitEvent} />;
+        return <RetINVLInitOffersForm submitEvent={submitEvent} />;
     }
 
     if (formConfig.find((field) => field.type === "retinvl_init_ilbp")) {
-        return <RetINVLInitILBP submitEvent={submitEvent} />;
+        return <RetINVLInitILBPForm submitEvent={submitEvent} />;
     }
     if (formConfig.find((field) => field.type === "ret11_nestedSelect")) {
         const field = formConfig.find((field) => field.type === "ret11_nestedSelect")!;
         return (
-            <ItemCustomisationSelectorRET11
+            <RET11NestedSelectForm
                 name={field.name}
                 label={field.label}
                 submitEvent={submitEvent}
             />
         );
     }
-    if (formConfig.find((field) => field.type === "ret10_grocery_select")) {
-        return <Ret10GrocerySelect submitEvent={submitEvent} />;
-    }
 
     if (formConfig.find((field) => field.type === "reteb2b_select")) {
-        return <ReteB2BSelect submitEvent={submitEvent} />;
+        return <ReteB2BSelectForm submitEvent={submitEvent} />;
     }
 
     if (formConfig.find((field) => field.type === "reteb2b_init_offers")) {
-        return <ReteB2BInitOffers submitEvent={submitEvent} />;
-    }
-
-    if (formConfig.find((field) => field.type === "retinvl_init")) {
-        return <RetINVLInit submitEvent={submitEvent} />;
+        return <ReteB2BInitOffersForm submitEvent={submitEvent} />;
     }
 
     if (formConfig.find((field) => field.type === "insurance_select")) {
-        return <InsuranceSelect submitEvent={submitEvent} />;
+        return <InsuranceSelectForm submitEvent={submitEvent} />;
     }
 
     if (formConfig.find((field) => field.type === "fis13_select")) {
-        return <FIS13ItemSelection submitEvent={submitEvent} referenceData={referenceData} />;
+        return <FIS13ItemSelectionForm submitEvent={submitEvent} referenceData={referenceData} />;
     }
 
     if (formConfig.find((field) => field.type === "trv12_bus_seat_selection")) {
-        return <TRV12busSeatSelection submitEvent={submitEvent} />;
+        return <TRV12BusSeatCountSelectionForm submitEvent={submitEvent} />;
     }
 
     if (formConfig.find((field) => field.type === "airline_seat_select")) {
-        return <AirlineSeatSelect submitEvent={submitEvent} />;
+        return <TRV12AirlineSeatSelectForm submitEvent={submitEvent} />;
     }
     if (formConfig.find((field) => field.type === "HTML_FORM_MULTI")) {
         return ProtocolHTMLFormMulti({
@@ -329,7 +322,7 @@ export default function FormConfig({
 
     // Default: GenericForm
     if (formConfig.find((field) => field.type === "trv10_select")) {
-        return <TRV10Select submitEvent={submitEvent} />;
+        return <TRV10SelectForm submitEvent={submitEvent} />;
     }
 
     if (formConfig.find((field) => field.type === "trv10_schedule")) {
@@ -341,59 +334,59 @@ export default function FormConfig({
     }
 
     if (formConfig.find((field) => field.type === "trv_select")) {
-        return <TRVSelect submitEvent={submitEvent} flowId={flowId} />;
+        return <TRVSelectForm submitEvent={submitEvent} flowId={flowId} />;
     }
 
     if (formConfig.find((field) => field.type === "trv11_select")) {
-        return <TRV11Select submitEvent={submitEvent} />;
+        return <TRV11SelectForm submitEvent={submitEvent} />;
     }
 
     if (formConfig.find((field) => field.type === "trv11_201_partial_select")) {
-        return <TRV11PartialSelect submitEvent={submitEvent} />;
+        return <TRV11PartialSelectForm submitEvent={submitEvent} />;
     }
 
     if (formConfig.find((field) => field.type === "airline_select")) {
-        return <AirlineSelect submitEvent={submitEvent} />;
+        return <TRV12AirlineSelectForm submitEvent={submitEvent} />;
     }
 
     if (formConfig.find((field) => field.type === "intercity_select")) {
-        return <IntercitySelect submitEvent={submitEvent} />;
+        return <TRV12IntercitySelectForm submitEvent={submitEvent} />;
     }
 
     if (formConfig.find((field) => field.type === "hotel_select")) {
-        return <HotelSelect submitEvent={submitEvent} />;
+        return <TRV13HotelSelectForm submitEvent={submitEvent} />;
     }
 
     if (formConfig.find((field) => field.type === "trv13_select_provider")) {
-        return <HotelSelectProvider submitEvent={submitEvent} />;
+        return <TRV13HotelSelectProviderForm submitEvent={submitEvent} />;
     }
 
     if (formConfig.find((field) => field.type === "trv10_201_select")) {
-        return <RideHailingSelect submitEvent={submitEvent} />;
+        return <TRV10RideHailingSelectForm submitEvent={submitEvent} />;
     }
 
     if (formConfig.find((field) => field.type === "search_accidental_fis13")) {
-        return <SearchAccidentalFis13 submitEvent={submitEvent} />;
+        return <Fis13SearchAccidentalForm submitEvent={submitEvent} />;
     }
 
     if (formConfig.find((field) => field.type === "search_hospicash_fis13")) {
-        return <SearchHospicashFis13 submitEvent={submitEvent} />;
+        return <Fis13SearchHospicashForm submitEvent={submitEvent} />;
     }
 
     if (formConfig.find((field) => field.type === "search_transit_fis13")) {
-        return <SearchTransitFis13 submitEvent={submitEvent} />;
+        return <Fis13SearchTransitForm submitEvent={submitEvent} />;
     }
 
     if (formConfig.find((field) => field.type === "search_discover_product_fis13")) {
-        return <SearchDiscoverProductFis13 submitEvent={submitEvent} />;
+        return <Fis13SearchDiscoverProductForm submitEvent={submitEvent} />;
     }
 
     if (formConfig.find((field) => field.type === "trv11_210_select")) {
-        return <Metro210Select submitEvent={submitEvent} />;
+        return <Trv11210MetroSelectForm submitEvent={submitEvent} />;
     }
 
     if (formConfig.find((field) => field.type === "trv11_210_update_end_station")) {
-        return <Metro210EndStopUpdate submitEvent={submitEvent} />;
+        return <Trv11Metro210EndStopUpdateForm submitEvent={submitEvent} />;
     }
 
     if (formConfig.find((field) => field.type === "trv11_210_start_end_stop_selection")) {
@@ -401,41 +394,44 @@ export default function FormConfig({
     }
 
     if (formConfig.find((field) => field.type === "trv11_start_end_stop_selection_200")) {
-        return <Metro200StartEndStopSelection submitEvent={submitEvent} />;
+        return <TRV11200MteroStartEndStopSelectionForm submitEvent={submitEvent} />;
     }
 
     if (formConfig.find((field) => field.type === "fis12_select_pl")) {
-        return <FIS12Select submitEvent={submitEvent} />;
+        return <FIS12SelectForm submitEvent={submitEvent} />;
     }
 
     if (formConfig.find((field) => field.type === "fis13_addon_select")) {
-        return <FIS13AddonSelect submitEvent={submitEvent} referenceData={referenceData} />;
+        return <FIS13AddonSelectForm submitEvent={submitEvent} referenceData={referenceData} />;
     }
     if (formConfig.find((field) => field.type === "fis12_search_pl")) {
-        return <FIS12Search submitEvent={submitEvent} />;
+        return <FIS12SearchForm submitEvent={submitEvent} />;
     }
 
     if (formConfig.find((field) => field.type === "init_metro_trv11")) {
-        return <InitMetroTRV11 submitEvent={submitEvent} />;
+        return <TRV11InitMetroForm submitEvent={submitEvent} />;
     }
     if (formConfig.find((field) => field.type === "select_metro_trv11")) {
-        return <SelectMetroTRV11 submitEvent={submitEvent} />;
+        return <TRV11SelectMetroForm submitEvent={submitEvent} />;
     }
     if (formConfig.find((field) => field.type === "fis14_mutul_fund_select")) {
-        return <SelectMutualFundFIS14 submitEvent={submitEvent} formConfig={formConfig} />;
+        return <FIS14MutualFundSelectForm submitEvent={submitEvent} formConfig={formConfig} />;
     }
     if (formConfig.find((field) => field.type === "fis14_mf_redemption_select")) {
         return (
-            <SelectMutualFundRedemptionFIS14 submitEvent={submitEvent} formConfig={formConfig} />
+            <FIS14MutualFundRedemptionSelectForm
+                submitEvent={submitEvent}
+                formConfig={formConfig}
+            />
         );
     }
     if (formConfig.find((field) => field.type === "fis14_mf_sip_select")) {
-        return <SelectMutualFundSIPFIS14 submitEvent={submitEvent} formConfig={formConfig} />;
+        return <FIS14MutualFundSIPSelectForm submitEvent={submitEvent} formConfig={formConfig} />;
     }
 
     if (formConfig.find((field) => field.type === "trv11_210_common_item_fulfillment_select")) {
         return (
-            <Metro210CommonItemFulfillmentSelection
+            <TRV11Metro210CommonItemFulfillmentSelectionForm
                 key={flowId}
                 submitEvent={submitEvent}
                 flowId={flowId}
@@ -457,15 +453,27 @@ export default function FormConfig({
     }
 
     // NOTE: The JsonSchemaForm check must come after all other specific form type checks above.
-    // Check for schema form
     if (formConfig.find((f) => f.schema)) {
         const schemaField = formConfig.find((f) => f.schema);
-        return JsonSchemaForm({
-            schema: schemaField!.schema as RJSFSchema,
-            onSubmit: onSubmit as (data: Record<string, unknown>) => Promise<void>,
-            // GPS map-picker only for the ride-map domain (TRV10 2.1.0); other domains get plain inputs.
-            mapEnabled: isRideMapEnabled(sessionData?.domain, sessionData?.version),
-        });
+        const schema = schemaField!.schema as RJSFSchema;
+
+        const onSubmitSchema = async (data: Record<string, unknown>) => {
+            const { jsonPath, formData: schemaFormData } = buildSchemaFormSubmit(
+                schema,
+                data,
+                formConfig
+            );
+            await submitEvent({ jsonPath, formData: schemaFormData });
+        };
+
+        return (
+            <JsonSchemaForm
+                variant="flow"
+                schema={schema}
+                onSubmit={onSubmitSchema}
+                mapEnabled={isRideMapEnabled(sessionData?.domain, sessionData?.version)}
+            />
+        );
     }
 
     // Check if form has fields that can be populated from on_search (like item_id for TRV13)
@@ -475,7 +483,7 @@ export default function FormConfig({
     return (
         <FormComponent
             defaultValues={defaultValues as Record<string, string>}
-            className="h-[500px] space-y-2 overflow-y-auto pr-1"
+            className="space-y-2"
             onSubmit={onSubmit}
             triggerSubmit={!isNoFieldVisible}
             enablePaste={enablePaste}
@@ -516,11 +524,12 @@ export default function FormConfig({
                         );
                     case "select":
                         return (
-                            <SelectField
+                            <ComboBox
                                 key={field.name}
                                 name={field.name}
                                 label={field.label}
                                 options={field.values || []}
+                                required={field.required !== false}
                             />
                         );
                     case "checkbox":
@@ -535,7 +544,7 @@ export default function FormConfig({
                         );
                     case "nestedSelect":
                         return (
-                            <ItemCustomisationSelector
+                            <RET11NestedSelect
                                 label={field.label}
                                 name={field.name}
                                 sessionData={sessionData}

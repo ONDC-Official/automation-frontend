@@ -1,5 +1,5 @@
 import axios from "axios";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 import { SubscriberData } from "@components/registry-components/registry-types";
 import { IUser } from "@/types/user";
 

@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import Form from "@rjsf/core";
 import validator from "@rjsf/validator-ajv8";
 import {
@@ -11,12 +11,16 @@ import {
     GenericObjectType,
     RegistryWidgetsType,
 } from "@rjsf/utils";
-import "./rsjs.css";
-import { GrAdd } from "react-icons/gr";
-import { MdDeleteOutline } from "react-icons/md";
+import { PlusIcon, TrashIcon } from "@heroicons/react/24/outline";
+
+import { Button } from "@/components/Shadcn/Button/button";
+import FormDialogShell from "@/components/ui/forms/form-dialog-shell";
 import GpsWidget from "@components/ui/forms/custom-forms/GpsMapPicker";
 
+import "./rsjs.css";
+
 const PLAYGROUND_RJSF_FORM_ID = "playground-rjsf-form";
+export const FLOW_RJSF_FORM_ID = "flow-rjsf-form";
 
 const WIDGETS: RegistryWidgetsType = { gps: GpsWidget };
 
@@ -58,9 +62,10 @@ interface JsonSchemaFormProps {
     /** Route GPS fields to the Leaflet map-picker. Only enabled for the ride-map domain
      *  (TRV10 2.1.0); for every other domain GPS fields render as plain text inputs. */
     mapEnabled?: boolean;
+    /** `flow` wraps content in FormDialogShell and moves submit to the footer. */
+    variant?: "playground" | "flow";
 }
 
-// Custom Field Template with improved layout
 function CustomFieldTemplate(props: FieldTemplateProps) {
     const { id, label, required, description, errors, help, children, hidden, displayLabel } =
         props;
@@ -84,11 +89,8 @@ function CustomFieldTemplate(props: FieldTemplateProps) {
     );
 }
 
-// Custom Object Field Template with automatic grid layout
 function CustomObjectFieldTemplate(props: ObjectFieldTemplateProps) {
     const { title, description, properties } = props;
-
-    // Determine if this object should use grid layout
     const useGrid = properties.length > 1;
     const gridClass = useGrid ? "field-object" : "field-object single-field";
 
@@ -107,7 +109,6 @@ function CustomObjectFieldTemplate(props: ObjectFieldTemplateProps) {
     );
 }
 
-// Custom Array Field Template with improved styling
 function CustomArrayFieldTemplate(props: ArrayFieldTemplateProps) {
     const { title, items, canAdd, onAddClick } = props;
 
@@ -125,7 +126,7 @@ function CustomArrayFieldTemplate(props: ArrayFieldTemplateProps) {
                                 onClick={element.onDropIndexClick(element.index)}
                                 aria-label={`Remove item ${element.index + 1}`}
                             >
-                                <MdDeleteOutline size={16} />
+                                <TrashIcon className="size-4" />
                             </button>
                         )}
                     </div>
@@ -138,7 +139,7 @@ function CustomArrayFieldTemplate(props: ArrayFieldTemplateProps) {
                     onClick={onAddClick}
                     aria-label="Add new item"
                 >
-                    <GrAdd size={14} />
+                    <PlusIcon className="size-3.5" />
                     Add
                 </button>
             )}
@@ -154,46 +155,75 @@ export default function JsonSchemaForm({
     onChange,
     title,
     mapEnabled = false,
+    variant = "playground",
 }: JsonSchemaFormProps) {
-    const handleSubmit = ({ formData }: FormChangeEvent) => {
-        onSubmit(formData as Record<string, unknown>);
+    const [isLoading, setIsLoading] = useState(false);
+    const isFlowVariant = variant === "flow";
+    const formId = isFlowVariant ? FLOW_RJSF_FORM_ID : PLAYGROUND_RJSF_FORM_ID;
+
+    const handleSubmit = async ({ formData: nextFormData }: FormChangeEvent) => {
+        setIsLoading(true);
+        try {
+            await onSubmit(nextFormData as Record<string, unknown>);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
-    const handleChange = ({ formData }: FormChangeEvent) => {
-        onChange?.(formData as Record<string, unknown>);
+    const handleChange = ({ formData: nextFormData }: FormChangeEvent) => {
+        onChange?.(nextFormData as Record<string, unknown>);
     };
 
-    // Route GPS fields (e.g. start_gps / end_gps in the search form) to the map-picker widget —
-    // ONLY for the ride-map domain. Other domains get an empty uiSchema (plain inputs).
-    const uiSchema = useMemo(
-        () =>
-            mapEnabled
-                ? buildGpsUiSchema(schema)
-                : ({} as UiSchema<Record<string, unknown>, RJSFSchema, GenericObjectType>),
-        [schema, mapEnabled]
-    );
+    const uiSchema = useMemo(() => {
+        const gpsUi = mapEnabled
+            ? buildGpsUiSchema(schema)
+            : ({} as UiSchema<Record<string, unknown>, RJSFSchema, GenericObjectType>);
 
-    return (
-        <div className="rjsf-custom-form">
-            {title && <h2 className="form-title">{title}</h2>}
-            <Form
-                id={PLAYGROUND_RJSF_FORM_ID}
-                schema={schema}
-                uiSchema={uiSchema}
-                widgets={WIDGETS}
-                formData={formData}
-                validator={
-                    validator as ValidatorType<GenericObjectType, RJSFSchema, GenericObjectType>
-                }
-                onSubmit={handleSubmit}
-                onChange={handleChange}
-                templates={{
-                    FieldTemplate: CustomFieldTemplate,
-                    ObjectFieldTemplate: CustomObjectFieldTemplate,
-                    ArrayFieldTemplate: CustomArrayFieldTemplate,
-                }}
-                showErrorList={false}
-            />
+        return {
+            ...gpsUi,
+            ...(isFlowVariant ? { "ui:submitButtonOptions": { norender: true } } : {}),
+        } as UiSchema<Record<string, unknown>, RJSFSchema, GenericObjectType>;
+    }, [schema, mapEnabled, isFlowVariant]);
+
+    const formBody = (
+        <div className={isFlowVariant ? "flow-schema-form" : undefined}>
+            <div className="rjsf-custom-form">
+                {title && <h2 className="form-title">{title}</h2>}
+                <Form
+                    id={formId}
+                    schema={schema}
+                    uiSchema={uiSchema}
+                    widgets={WIDGETS}
+                    formData={formData}
+                    validator={
+                        validator as ValidatorType<GenericObjectType, RJSFSchema, GenericObjectType>
+                    }
+                    onSubmit={handleSubmit}
+                    onChange={handleChange}
+                    templates={{
+                        FieldTemplate: CustomFieldTemplate,
+                        ObjectFieldTemplate: CustomObjectFieldTemplate,
+                        ArrayFieldTemplate: CustomArrayFieldTemplate,
+                    }}
+                    showErrorList={false}
+                />
+            </div>
         </div>
     );
+
+    if (isFlowVariant) {
+        return (
+            <FormDialogShell
+                footer={
+                    <Button type="submit" form={formId} isLoading={isLoading}>
+                        Submit
+                    </Button>
+                }
+            >
+                {formBody}
+            </FormDialogShell>
+        );
+    }
+
+    return formBody;
 }

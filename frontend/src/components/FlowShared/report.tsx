@@ -1,4 +1,4 @@
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 import axios from "axios";
 import { useEffect, useRef, useState } from "react";
 import InfoCard from "@components/ui/info-card";
