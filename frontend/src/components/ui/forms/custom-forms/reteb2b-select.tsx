@@ -701,73 +701,7 @@ export default function ReteB2BSelect({
                         onChange={(e) => handleChange("state_code", e.target.value)}
                         className={inputStyle}
                     />
-                    {/* ITEMS SECTION */}
-                    <div>
-                        <h3 className="font-bold">Items</h3>
-                        {form.items.map((item, index) => (
-                            <div key={index} className="flex gap-2 mb-2 items-center">
-                                <select
-                                    value={item.itemId}
-                                    onChange={(e) =>
-                                        handleItemChange(index, "itemId", e.target.value)
-                                    }
-                                    className={inputStyle}
-                                >
-                                    <option value="">Item</option>
-                                    {itemOptions.map((id) => (
-                                        <option key={id}>{id}</option>
-                                    ))}
-                                </select>
-                                <input
-                                    min={1}
-                                    type="number"
-                                    value={item.quantity}
-                                    onChange={(e) =>
-                                        handleItemChange(index, "quantity", Number(e.target.value))
-                                    }
-                                    className={inputStyle}
-                                />
-                                <select
-                                    value={item.location}
-                                    onChange={(e) =>
-                                        handleItemChange(index, "location", e.target.value)
-                                    }
-                                    className={inputStyle}
-                                >
-                                    <option value="">Location</option>
-                                    {(item.itemId && itemLocations[item.itemId]
-                                        ? itemLocations[item.itemId]
-                                        : []
-                                    ).map((loc) => (
-                                        <option key={loc}>{loc}</option>
-                                    ))}
-                                </select>
-                                <select
-                                    value={item.fulfillment_id}
-                                    onChange={(e) =>
-                                        handleItemChange(index, "fulfillment_id", e.target.value)
-                                    }
-                                    className={inputStyle}
-                                >
-                                    <option value="">Fulfillment</option>
-                                    {fulfillmentOptions.map((f) => (
-                                        <option key={f}>{f}</option>
-                                    ))}
-                                </select>
-                                <button
-                                    onClick={() => removeItem(index)}
-                                    className="bg-red-500 text-white px-3 py-1 rounded text-sm"
-                                >
-                                    Remove
-                                </button>
-                            </div>
-                        ))}
-                        <button className="bg-gray-200 p-2 rounded" onClick={addItem}>
-                            Add Item
-                        </button>
-                    </div>
-
-                    {/* PROVIDER SECTION */}
+                    {/* PROVIDER SECTION — shown first so items/offers only appear after selection */}
                     <div className="flex flex-col gap-2">
                         {label("Select Provider", true)}
                         <select
@@ -785,42 +719,124 @@ export default function ReteB2BSelect({
                         </select>
                     </div>
 
-                    {/* OFFERS SECTION */}
-                    <div>
-                        <h3 className="font-bold">Available Offers</h3>
-                        <div className="flex flex-col gap-1">
-                            {offers.map((offer) => {
-                                const validationError = getOfferValidationMessage(offer.id);
-                                return (
-                                    <label
-                                        key={offer.id}
-                                        className={`flex items-center gap-2 p-1 rounded ${validationError ? "opacity-50 cursor-not-allowed" : "hover:bg-gray-100"}`}
-                                    >
-                                        <input
-                                            type="checkbox"
-                                            checked={
-                                                form.available_offers?.includes(offer.id) || false
+                    {selectedProviderId && (
+                        <>
+                            {/* ITEMS SECTION */}
+                            <div>
+                                <h3 className="font-bold">Items</h3>
+                                {form.items.map((item, index) => (
+                                    <div key={index} className="flex gap-2 mb-2 items-center">
+                                        <select
+                                            value={item.itemId}
+                                            onChange={(e) =>
+                                                handleItemChange(index, "itemId", e.target.value)
                                             }
-                                            onChange={() => toggleOffer(offer.id)}
-                                            title={validationError || "Apply this offer"}
+                                            className={inputStyle}
+                                        >
+                                            <option value="">Item</option>
+                                            {itemOptions.map((id) => (
+                                                <option key={id}>{id}</option>
+                                            ))}
+                                        </select>
+                                        <input
+                                            min={1}
+                                            type="number"
+                                            value={item.quantity}
+                                            onChange={(e) =>
+                                                handleItemChange(
+                                                    index,
+                                                    "quantity",
+                                                    Number(e.target.value)
+                                                )
+                                            }
+                                            className={inputStyle}
                                         />
-                                        <span className="text-sm">
-                                            {offer.id} ({offer.descriptor.code})
-                                            {validationError && (
-                                                <span className="ml-2 text-[10px] text-red-500 italic uppercase">
-                                                    [{validationError}]
-                                                </span>
-                                            )}
-                                        </span>
-                                    </label>
-                                );
-                            })}
-                        </div>
-                    </div>
+                                        <select
+                                            value={item.location}
+                                            onChange={(e) =>
+                                                handleItemChange(index, "location", e.target.value)
+                                            }
+                                            className={inputStyle}
+                                        >
+                                            <option value="">Location</option>
+                                            {(item.itemId && itemLocations[item.itemId]
+                                                ? itemLocations[item.itemId]
+                                                : []
+                                            ).map((loc) => (
+                                                <option key={loc}>{loc}</option>
+                                            ))}
+                                        </select>
+                                        <select
+                                            value={item.fulfillment_id}
+                                            onChange={(e) =>
+                                                handleItemChange(
+                                                    index,
+                                                    "fulfillment_id",
+                                                    e.target.value
+                                                )
+                                            }
+                                            className={inputStyle}
+                                        >
+                                            <option value="">Fulfillment</option>
+                                            {fulfillmentOptions.map((f) => (
+                                                <option key={f}>{f}</option>
+                                            ))}
+                                        </select>
+                                        <button
+                                            onClick={() => removeItem(index)}
+                                            className="bg-red-500 text-white px-3 py-1 rounded text-sm"
+                                        >
+                                            Remove
+                                        </button>
+                                    </div>
+                                ))}
+                                <button className="bg-gray-200 p-2 rounded" onClick={addItem}>
+                                    Add Item
+                                </button>
+                            </div>
 
-                    <button className="bg-blue-500 text-white p-2 rounded mt-4" onClick={submit}>
-                        Submit
-                    </button>
+                            {/* OFFERS SECTION */}
+                            <div>
+                                <h3 className="font-bold">Available Offers</h3>
+                                <div className="flex flex-col gap-1">
+                                    {offers.map((offer) => {
+                                        const validationError = getOfferValidationMessage(offer.id);
+                                        return (
+                                            <label
+                                                key={offer.id}
+                                                className={`flex items-center gap-2 p-1 rounded ${validationError ? "opacity-50 cursor-not-allowed" : "hover:bg-gray-100"}`}
+                                            >
+                                                <input
+                                                    type="checkbox"
+                                                    checked={
+                                                        form.available_offers?.includes(offer.id) ||
+                                                        false
+                                                    }
+                                                    onChange={() => toggleOffer(offer.id)}
+                                                    title={validationError || "Apply this offer"}
+                                                />
+                                                <span className="text-sm">
+                                                    {offer.id} ({offer.descriptor.code})
+                                                    {validationError && (
+                                                        <span className="ml-2 text-[10px] text-red-500 italic uppercase">
+                                                            [{validationError}]
+                                                        </span>
+                                                    )}
+                                                </span>
+                                            </label>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+
+                            <button
+                                className="bg-blue-500 text-white p-2 rounded mt-4"
+                                onClick={submit}
+                            >
+                                Submit
+                            </button>
+                        </>
+                    )}
                 </>
             )}
         </div>
