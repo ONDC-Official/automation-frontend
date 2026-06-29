@@ -28,6 +28,8 @@ interface ExtractedItem {
     descriptor?: {
         name?: string;
     };
+    // Categories the item belongs to, as listed in the on_search catalogue.
+    category_ids?: string[];
     add_ons: ExtractedAddon[];
 }
 
@@ -53,6 +55,7 @@ type OrderItem = {
     id: string;
     parent_item_id?: string;
     descriptor?: { name?: string };
+    category_ids?: string[];
     add_ons?: RawAddon[];
 };
 type CatalogItem = OrderItem;
@@ -105,11 +108,19 @@ export default function FIS13ItemSelection({
     const onSubmit = async (data: FormValues) => {
         const formData: Record<string, string> = {};
 
-        // Item selection
+        // Item selection (single item)
         formData.selected_item_ids = data.selectedItems.map((i) => i.id).join(",");
         formData.selected_parent_item_ids = data.selectedItems
             .map((i) => i.parent_item_id || "")
             .join(",");
+
+        // Category IDs of the selected item, taken from the on_search catalogue.
+        // Forwarded as a JSON array (consumed by the FIS13 select generator as
+        // `category_ids` → order.items[0].category_ids).
+        const selectedItem = data.selectedItems[0];
+        if (selectedItem?.category_ids?.length) {
+            formData.category_ids = JSON.stringify(selectedItem.category_ids);
+        }
 
         // Add-on selection (keys consumed by the FIS13 select generator)
         if (selectedAddons.length > 0) {
@@ -154,6 +165,7 @@ export default function FIS13ItemSelection({
                     id: item.id,
                     parent_item_id: item.parent_item_id || "",
                     descriptor: item.descriptor,
+                    category_ids: item.category_ids,
                     add_ons: (nested || []).map((addon) => ({
                         id: addon.id,
                         parent_item_id: item.id,
@@ -214,14 +226,10 @@ export default function FIS13ItemSelection({
     };
 
     const toggleItemSelection = (item: ExtractedItem) => {
-        const current = [...selectedItems];
-        const index = current.findIndex((i) => i.id === item.id);
-        if (index > -1) {
-            current.splice(index, 1);
-        } else {
-            current.push(item);
-        }
-        setValue("selectedItems", current);
+        // Single-select: clicking the selected item clears it; clicking another
+        // replaces the selection so only one item can ever be selected.
+        const isSelected = selectedItems.some((i) => i.id === item.id);
+        setValue("selectedItems", isSelected ? [] : [item]);
     };
 
     const toggleAddon = (addon: ExtractedAddon) => {
