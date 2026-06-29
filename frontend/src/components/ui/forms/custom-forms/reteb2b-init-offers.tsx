@@ -105,6 +105,10 @@ export default function ReteB2BInitOffers({
     submitEvent: (data: SubmitEventParams) => Promise<void>;
 }) {
     const { sessionData, activeFlowId } = useSession();
+    // Extract primitive values so fetchPayloadAndPopulate doesn't re-fire on every poll
+    // (sessionData is a new object reference each poll cycle in render-flows.tsx)
+    const transactionId = activeFlowId ? (sessionData?.flowMap[activeFlowId] ?? null) : null;
+    const subscriberUrl = sessionData?.subscriberUrl ?? null;
     const [isLoading, setIsLoading] = useState(false);
 
     const [catalogPayload, setCatalogPayload] = useState<OnSearchPayload | null>(null);
@@ -531,15 +535,10 @@ export default function ReteB2BInitOffers({
 
     const fetchPayloadAndPopulate = useCallback(async () => {
         try {
-            if (!sessionData || !activeFlowId) return;
-            const transactionId = sessionData.flowMap[activeFlowId];
-            if (!transactionId) return;
+            if (!transactionId || !subscriberUrl) return;
 
             setIsLoading(true);
-            const transactionData = await getTransactionData(
-                transactionId,
-                sessionData.subscriberUrl
-            );
+            const transactionData = await getTransactionData(transactionId, subscriberUrl);
             if (!transactionData) {
                 setIsLoading(false);
                 return;
@@ -573,7 +572,7 @@ export default function ReteB2BInitOffers({
             toast.error("Failed to fetch payload automatically.");
             setIsLoading(false);
         }
-    }, [sessionData, activeFlowId, processPayload]);
+    }, [transactionId, subscriberUrl, processPayload]);
 
     useEffect(() => {
         fetchPayloadAndPopulate();
