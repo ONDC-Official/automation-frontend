@@ -10,7 +10,6 @@ import { Button } from "@/components/Shadcn/Button/button";
 import FormDialogShell from "@/components/ui/forms/form-dialog-shell";
 import { SubmitEventParams } from "@/types/flow-types";
 import { FormFieldConfigType } from "@components/ui/forms/config-form/config-form";
-import { useSession } from "@context/context";
 import { FormService } from "@services/formService";
 import { cn } from "@/lib/utils";
 
@@ -33,8 +32,12 @@ interface ManualDynamicFormHandlerProps {
  * for the form's callback: polling starts automatically on mount, and the flow
  * proceeds once the form's final step fires the callback.
  */
-export default function ManualDynamicFormHandler({ submitEvent }: ManualDynamicFormHandlerProps) {
-    const { sessionId } = useSession();
+export default function ManualDynamicFormHandler({
+    submitEvent,
+    transactionId,
+}: ManualDynamicFormHandlerProps) {
+    // Completion is keyed by transaction_id (api-service GET /callback writes
+    // form_completed:{transaction_id}).
 
     const [status, setStatus] = useState<"waiting" | "completed" | "error" | "timeout">("waiting");
     const [errorMessage, setErrorMessage] = useState<string>("");
@@ -59,9 +62,11 @@ export default function ManualDynamicFormHandler({ submitEvent }: ManualDynamicF
         };
     }, [cleanup]);
 
+    // Polls GET /form/check-completion?transaction_id=X — the backend reads
+    // form_completed:{transaction_id} written by the api-service GET /callback.
     const checkCompletion = useCallback(async () => {
         if (hasCompletedRef.current) return;
-        if (!sessionId) return;
+        if (!transactionId) return;
 
         pollCountRef.current += 1;
         setPollDisplay(pollCountRef.current);
@@ -73,12 +78,13 @@ export default function ManualDynamicFormHandler({ submitEvent }: ManualDynamicF
         }
 
         try {
-            const data = await FormService.checkCompletion(sessionId);
+            const data = await FormService.checkCompletion(transactionId);
+
             const { completed, success } = data ?? {};
 
             if (completed === true && success === true && !hasCompletedRef.current) {
                 console.warn("✅ [ManualDynamicForm] Form completed!", {
-                    sessionId,
+                    transactionId,
                     poll: pollCountRef.current,
                 });
                 hasCompletedRef.current = true;
@@ -101,7 +107,7 @@ export default function ManualDynamicFormHandler({ submitEvent }: ManualDynamicF
             const err = error as { message?: string };
             console.error("[ManualDynamicForm] Error checking completion:", err.message);
         }
-    }, [sessionId, submitEvent, cleanup]);
+    }, [transactionId, submitEvent, cleanup]);
 
     const checkCompletionRef = useRef(checkCompletion);
     useEffect(() => {
@@ -109,7 +115,7 @@ export default function ManualDynamicFormHandler({ submitEvent }: ManualDynamicF
     }, [checkCompletion]);
 
     const startPolling = useCallback(() => {
-        if (isPollingRef.current || !sessionId) return;
+        if (isPollingRef.current || !transactionId) return;
         isPollingRef.current = true;
         pollCountRef.current = 0;
         setPollDisplay(0);
@@ -119,11 +125,11 @@ export default function ManualDynamicFormHandler({ submitEvent }: ManualDynamicF
         pollingIntervalRef.current = setInterval(() => {
             checkCompletionRef.current();
         }, POLL_INTERVAL_MS);
-    }, [sessionId]);
+    }, [transactionId]);
 
     useEffect(() => {
         startPolling();
-    }, [sessionId]);
+    }, [transactionId]);
 
     const handleResume = useCallback(
         (event: React.MouseEvent) => {

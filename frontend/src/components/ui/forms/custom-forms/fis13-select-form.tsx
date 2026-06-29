@@ -142,12 +142,31 @@ export default function FIS13ItemSelection({
                 };
             };
 
+            // Number of raw items seen in an on_search catalog (before filtering).
+            let catalogItemCount = 0;
+
             if (parsed?.message?.order?.items) {
                 results = parsed.message.order.items.map(mapItem);
+                // Handle on_search / catalog payload structure.
+                // Only surface items that carry a parent_item_id (i.e. selectable child
+                // items); skip parent/variant-group items that have no parent_item_id.
             } else if (parsed?.message?.catalog?.providers) {
                 parsed.message.catalog.providers.forEach((provider) => {
-                    provider.items?.forEach((item) => results.push(mapItem(item)));
+                    provider.items?.forEach((item) => {
+                        catalogItemCount++;
+                        if (item.parent_item_id) {
+                            results.push(mapItem(item));
+                        }
+                    });
                 });
+            }
+
+            if (results.length === 0 && catalogItemCount > 0) {
+                const msg = "No selectable items with a parent_item_id found.";
+                setErrorWhilePaste(msg);
+                toast.error(msg);
+                setIsPayloadEditorActive(false);
+                return;
             }
 
             if (results.length === 0) {

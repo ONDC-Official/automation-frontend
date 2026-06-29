@@ -220,25 +220,22 @@ export default function DisplayFlow({
         submittedInputSigRef.current = undefined;
         activeInputSigRef.current = sig;
 
-        // LAMF single-redirection: the BAP side does not wait on the form callback
-        // (completion is keyed by the BPP session, which BAP can't observe). Auto-
-        // proceed past the MANUAL_DYNAMIC_FORM step immediately instead of opening
-        // the polling popup. BPP is unaffected and still drives real completion.
+        // LAMF single-redirection: both BAP and BPP auto-proceed past the
+        // MANUAL_DYNAMIC_FORM step immediately (synthetic submission_id) instead of
+        // opening the polling popup — neither side blocks on the form callback to
+        // advance the flow. Scoped strictly to the MANUAL_DYNAMIC_FORM step, so no
+        // other step/form is affected; the BPP launch popup is unchanged.
         if (
             isLamfRedirectionFlow &&
-            sessionData?.npType === "BAP" &&
             seqStep?.input?.some((f) => f.type === "MANUAL_DYNAMIC_FORM")
         ) {
             if (sessionData?.activeFlow !== flowId) return;
             submittedInputSigRef.current = sig; // proceed once per status (guards double-fire across polls)
             const submission_id = crypto.randomUUID();
-            const bapTxId = sessionData?.flowMap?.[flowId] ?? "";
-            // Raise the ordering flag once BAP's proceed resolves, so the waiting
-            // BPP form-step submit can then proceed (BAP-before-BPP at the form step).
             void handleFormSubmit({
                 jsonPath: { submission_id },
                 formData: { submission_id },
-            }).then(() => markBapProceeded(bapTxId));
+            });
             return;
         }
 
@@ -349,17 +346,6 @@ export default function DisplayFlow({
                 console.error("Transaction ID not found");
                 return;
             }
-            // LAMF ordering: the BPP *form step* must not proceed until BAP has
-            // proceeded it first. Scope strictly to the MANUAL_DYNAMIC_FORM submit
-            // (not every form in the flow), else other BPP forms would block too.
-            const isLamfManualFormSubmit =
-                isLamfRedirectionFlow &&
-                sessionData?.npType === "BPP" &&
-                activeFormConfig?.some((f) => f.type === "MANUAL_DYNAMIC_FORM");
-            if (isLamfManualFormSubmit) {
-                await waitForBapProceeded(txId);
-            }
-
             // Pass extraKey explicitly for the immediate auto-submit path (state not yet flushed);
             // popup submissions fall back to the stored key set when the form opened.
             const key = extraKey ?? activeInputExtraKey;
@@ -525,7 +511,7 @@ export default function DisplayFlow({
                     <FormLaunchPopup
                         formConfig={launchFormConfig}
                         referenceData={mappedFlow.reference_data}
-                        sessionId={sessionId}
+                        transactionId={transactionId ?? ""}
                         onLaunched={handleFormLaunched}
                     />
                 </FormFlowDialog>
@@ -609,52 +595,6 @@ function isLaunchDone(markerKey: string): boolean {
     } catch {
         return false;
     }
-}
-
-// LAMF ordering (BAP must proceed the form step before BPP). BAP and BPP share the
-// transaction id and (same browser) localStorage, so BAP raises this per-run flag
-// when it proceeds and BPP waits for it. LAMF-only.
-const BAP_PROCEEDED_PREFIX = "lamf_bap_proceeded";
-
-function markBapProceeded(txId: string): void {
-    try {
-        localStorage.setItem(`${BAP_PROCEEDED_PREFIX}:${txId}`, "1");
-    } catch {
-        // localStorage unavailable — non-fatal.
-    }
-}
-
-// Resolve once BAP has proceeded (flag set), or after a safety timeout so BPP
-// never hangs forever if BAP never ran.
-function waitForBapProceeded(txId: string): Promise<void> {
-    const key = `${BAP_PROCEEDED_PREFIX}:${txId}`;
-    return new Promise((resolve) => {
-        const isSet = () => {
-            try {
-                return localStorage.getItem(key) === "1";
-            } catch {
-                return true; // can't read → don't block
-            }
-        };
-        if (isSet()) {
-            resolve();
-            return;
-        }
-        const start = Date.now();
-        const TIMEOUT_MS = 600_000;
-        const finish = () => {
-            clearInterval(iv);
-            window.removeEventListener("storage", onStorage);
-            resolve();
-        };
-        const onStorage = (e: StorageEvent) => {
-            if (e.key === key && e.newValue === "1") finish();
-        };
-        const iv = setInterval(() => {
-            if (isSet() || Date.now() - start > TIMEOUT_MS) finish();
-        }, 500);
-        window.addEventListener("storage", onStorage);
-    });
 }
 
 // Nearest actually-scrolling ancestor, or null when the window/document is the scroller.
