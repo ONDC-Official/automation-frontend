@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { v4 as uuidv4 } from "uuid";
 import { toast } from "react-toastify";
 import { IoPlay } from "react-icons/io5";
 
@@ -207,7 +208,7 @@ export default function DisplayFlow({
         ) {
             if (sessionData?.activeFlow !== flowId) return;
             submittedInputSigRef.current = sig; // proceed once per status (guards double-fire across polls)
-            const submission_id = crypto.randomUUID();
+            const submission_id = uuidv4();
             void handleFormSubmit({
                 jsonPath: { submission_id },
                 formData: { submission_id },

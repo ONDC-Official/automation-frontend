@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { v4 as uuidv4 } from "uuid";
 import { SubmitEventParams } from "@/types/flow-types";
 import { FormFieldConfigType } from "@components/ui/forms/config-form/config-form";
 import { useSession } from "@context/context";
@@ -86,7 +87,7 @@ export default function ManualDynamicFormHandler({ submitEvent }: ManualDynamicF
                 // Proceed the flow — temporary submission_id satisfies the mock
                 // service's json_path_changes requirement.
                 try {
-                    const submission_id = crypto.randomUUID();
+                    const submission_id = uuidv4();
                     await submitEvent({
                         jsonPath: { submission_id },
                         formData: { submission_id },

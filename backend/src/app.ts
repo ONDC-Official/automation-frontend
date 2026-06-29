@@ -48,6 +48,13 @@ app.use(
             "Authorization",
             "Cookie",
             "x-proxy-target",
+            // x-api-key is only sent by the browser in local / workbench-to-workbench dev,
+            // where the dev frontend bakes VITE_DB_SERVICE_API_KEY. In production the browser
+            // must not hold or send this key, and real BAP/BPP /callback redirects are
+            // top-level browser navigations (not CORS-preflighted XHR), so they are unaffected
+            // by this allow-list. Gate it behind the same dev flag as `origin` above so it is
+            // never allow-listed in prod.
+            ...(process.env.NODE_ENV === "development" ? ["x-api-key"] : []),
         ],
     }),
 );

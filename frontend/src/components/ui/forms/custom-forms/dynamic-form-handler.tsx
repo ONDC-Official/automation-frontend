@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { v4 as uuidv4 } from "uuid";
 import { SubmitEventParams } from "@/types/flow-types";
 import { queryJsonPath } from "@utils/jsonpath-query";
 import { FormFieldConfigType } from "@components/ui/forms/config-form/config-form";
@@ -158,7 +159,7 @@ export default function DynamicFormHandler({
                 // TODO: replace with actual submission_id from /form/check-completion
                 // once the backend returns it from the Redis form_completed key.
                 try {
-                    const submission_id = crypto.randomUUID();
+                    const submission_id = uuidv4();
                     console.warn("⚠️ [DynamicForm] Using temporary submission_id:", submission_id);
                     await submitEvent({
                         jsonPath: { submission_id },
