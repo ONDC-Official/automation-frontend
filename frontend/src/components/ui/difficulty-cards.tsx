@@ -61,14 +61,15 @@ export interface DifficultyCache {
 export type FilteredDifficultyCache = Partial<
     Omit<
         DifficultyCache,
-        "stopAfterFirstNack" | "sensitiveTTL" | "useGateway" | "timeValidations" | "totalDifficulty"
+        "stopAfterFirstNack" | "sensitiveTTL" | "timeValidations" | "totalDifficulty"
     >
 >;
 
-const skipItems = ["stopAfterFirstNack", "sensitiveTTL", "useGateway", "timeValidations"];
+const skipItems = ["stopAfterFirstNack", "sensitiveTTL", "timeValidations"];
 
 export const SESSION_VALIDATION_DEFAULTS: FilteredDifficultyCache = {
     protocolValidations: true,
+    useGateway: true,
     headerValidaton: true,
     useGzip: false,
     encryptionValidation: false,
@@ -82,7 +83,6 @@ export function buildDifficultyState(cache: Partial<DifficultyCache>): FilteredD
         totalDifficulty: _totalDifficulty,
         sensitiveTTL: _sensitiveTTL,
         stopAfterFirstNack: _stopAfterFirstNack,
-        useGateway: _useGateway,
         timeValidations: _timeValidations,
         ...displayed
     } = merged;
