@@ -11,12 +11,12 @@ const Support = () => {
                     For further technical assistance, dedicated technical support team is reachable
                     at the email ID: &nbsp;
                     <a
-                        href={`mailto:techsupport@ondc.org`}
+                        href={`mailto:team@ondc.org`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-blue-500 underline hover:text-blue-700"
                     >
-                        techsupport@ondc.org
+                        team@ondc.org
                     </a>
                 </p>
                 <p className="text-sm text-gray-600">
