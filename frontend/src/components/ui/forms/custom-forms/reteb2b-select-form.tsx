@@ -25,7 +25,7 @@ import {
     IReteB2BSelectFormProps,
     ITag,
     ITargetListItem,
-} from "../types/reteb2b-select-form-types";
+} from "@/components/ui/forms/types/reteb2b-select-form-types";
 
 const toComboOptions = (values: string[]) => values.map((value) => ({ value, label: value }));
 

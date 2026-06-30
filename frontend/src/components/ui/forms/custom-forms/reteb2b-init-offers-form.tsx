@@ -25,7 +25,7 @@ import {
     ITag,
     ITargetListItem,
     IOnSearchPayload,
-} from "../types/reteb2b-init-offers-form-types";
+} from "@/components/ui/forms/types/reteb2b-init-offers-form-types";
 
 const toComboOptions = (values: string[]) => values.map((value) => ({ value, label: value }));
 
