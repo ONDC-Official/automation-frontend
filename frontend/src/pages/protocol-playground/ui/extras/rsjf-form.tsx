@@ -15,7 +15,7 @@ import { PlusIcon, TrashIcon } from "@heroicons/react/24/outline";
 
 import { Button } from "@/components/Shadcn/Button/button";
 import FormDialogShell from "@/components/ui/forms/form-dialog-shell";
-import GpsWidget from "@components/ui/forms/custom-forms/GpsMapPicker";
+import GpsWidget from "@/components/ui/forms/GpsMapPicker";
 
 import "./rsjs.css";
 
