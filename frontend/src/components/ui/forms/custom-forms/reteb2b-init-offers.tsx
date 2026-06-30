@@ -79,6 +79,11 @@ type CatalogOffer = {
 
 type CatalogProvider = {
     id: string;
+    descriptor?: {
+        name?: string;
+        code?: string;
+        short_desc?: string;
+    };
     items: CatalogItem[];
     locations: CatalogLocation[];
     categories?: CatalogCategory[];
@@ -100,10 +105,16 @@ export default function ReteB2BInitOffers({
     submitEvent: (data: SubmitEventParams) => Promise<void>;
 }) {
     const { sessionData, activeFlowId } = useSession();
+    // Extract primitive values so fetchPayloadAndPopulate doesn't re-fire on every poll
+    // (sessionData is a new object reference each poll cycle in render-flows.tsx)
+    const transactionId = activeFlowId ? (sessionData?.flowMap[activeFlowId] ?? null) : null;
+    const subscriberUrl = sessionData?.subscriberUrl ?? null;
     const [isLoading, setIsLoading] = useState(false);
 
     const [catalogPayload, setCatalogPayload] = useState<OnSearchPayload | null>(null);
     const [isDataPasted, setIsDataPasted] = useState(false);
+    const [providerOptions, setProviderOptions] = useState<CatalogProvider[]>([]);
+    const [selectedProviderId, setSelectedProviderId] = useState<string | null>(null);
     const [itemOptions, setItemOptions] = useState<string[]>([]);
     const [, setLocationOptions] = useState<string[]>([]);
     const [fulfillmentOptions, setFulfillmentOptions] = useState<string[]>([]);
@@ -348,159 +359,22 @@ export default function ReteB2BInitOffers({
             const parsed = data as OnSearchPayload;
             setCatalogPayload(parsed);
 
-            const providers = parsed.message.catalog["bpp/providers"];
-            const provider = providers[0];
+            const providers = parsed.message.catalog["bpp/providers"] || [];
+            setProviderOptions(providers);
+            setSelectedProviderId(null);
 
-            if (provider) {
-                setItemOptions(provider.items?.map((i) => i.id) || []);
+            // Reset item/offer state so stale data from a previous load is cleared
+            setItemOptions([]);
+            setLocationOptions([]);
+            setFulfillmentOptions([]);
+            setOffers([]);
+            setDynamicOfferRules({});
+            setItemPrices({});
+            setItemCategories({});
+            setItemNames({});
+            setItemLocations({});
+            setCategoryNames({});
 
-                const provLocs = provider.locations?.map((l: CatalogLocation) => l.id) || [];
-                const offerLocs = (provider.offers || [])
-                    .flatMap((o: CatalogOffer) =>
-                        (Array.isArray(o.location_ids) ? o.location_ids : []).flatMap(
-                            (v: unknown) =>
-                                typeof v === "string"
-                                    ? v.split(",").map((s: string) => s.trim())
-                                    : (v as string)
-                        )
-                    )
-                    .filter(Boolean);
-                setLocationOptions(Array.from(new Set([...provLocs, ...offerLocs])));
-                if (provider.fulfillments) {
-                    setFulfillmentOptions(provider.fulfillments.map((f) => f.id));
-                }
-
-                // Extract Item Prices, Names, and Categories Dynamically
-                const parsedPrices: Record<string, number> = {};
-                const parsedCategories: Record<string, string> = {};
-                const parsedItemNames: Record<string, string> = {};
-                const parsedItemLocations: Record<string, string[]> = {};
-                provider.items?.forEach((item: CatalogItem) => {
-                    parsedPrices[item.id] = parseFloat(item.price?.value || "0");
-                    parsedItemNames[item.id] = item.descriptor?.name || "";
-                    if (item.category_id) {
-                        parsedCategories[item.id] = item.category_id;
-                    } else if (item.category_ids && item.category_ids.length > 0) {
-                        parsedCategories[item.id] = item.category_ids[0];
-                    }
-
-                    let locs: string[] = [];
-                    if (item.location_id) locs.push(item.location_id);
-                    if (Array.isArray(item.location_ids)) locs = [...locs, ...item.location_ids];
-                    parsedItemLocations[item.id] = Array.from(new Set(locs.filter(Boolean)));
-                });
-                setItemPrices(parsedPrices);
-                setItemCategories(parsedCategories);
-                setItemNames(parsedItemNames);
-                setItemLocations(parsedItemLocations);
-
-                const parsedCategoryNames: Record<string, string> = {};
-                provider.categories?.forEach((cat: CatalogCategory) => {
-                    parsedCategoryNames[cat.id] = cat.descriptor?.name || "";
-                });
-                setCategoryNames(parsedCategoryNames);
-
-                // Extract Offers and Build Rules Dynamically
-                const rules: Record<string, DynamicOfferRule> = {};
-                const collectedOffers: (CatalogOffer & { items?: unknown[] })[] =
-                    provider.offers || [];
-
-                // Standardizing rules from payload tags (highly dynamic to adapt to different on_search structures)
-                collectedOffers.forEach((off: CatalogOffer & { items?: unknown[] }) => {
-                    let minVal = 0;
-                    let isAdditive = true;
-                    // Provide defaults so even empty structures adapt gracefully
-                    const rawItemIds = Array.isArray(off.item_ids)
-                        ? off.item_ids
-                        : Array.isArray(off.items)
-                          ? off.items
-                          : [];
-                    let itemIds: string[] = rawItemIds
-                        .flatMap((v: unknown) =>
-                            typeof v === "string"
-                                ? v.split(",").map((s: string) => s.trim())
-                                : (v as string)
-                        )
-                        .filter(Boolean);
-
-                    const categoryIds: string[] = (
-                        Array.isArray(off.category_ids) ? off.category_ids : []
-                    )
-                        .flatMap((v: unknown) =>
-                            typeof v === "string"
-                                ? v.split(",").map((s: string) => s.trim())
-                                : (v as string)
-                        )
-                        .filter(Boolean);
-
-                    const locationIds: string[] = (
-                        Array.isArray(off.location_ids) ? off.location_ids : []
-                    )
-                        .flatMap((v: unknown) =>
-                            typeof v === "string"
-                                ? v.split(",").map((s: string) => s.trim())
-                                : (v as string)
-                        )
-                        .filter(Boolean);
-
-                    let minItemCount = 0;
-                    let maxItemCount = 0;
-
-                    // Dynamically scrape all tags to find offer rules constraints
-                    off.tags?.forEach((tag: Tag & { descriptor?: { code: string } }) => {
-                        const tCode = tag.code || tag.descriptor?.code;
-                        if (tCode === "rules" || tCode === "qualifier" || tCode === "meta") {
-                            tag.list?.forEach(
-                                (l: TargetListItem & { descriptor?: { code: string } }) => {
-                                    const lCode = l.code || l.descriptor?.code;
-                                    if (lCode === "min_value") minVal = parseFloat(l.value || "0");
-                                    if (lCode === "item_count")
-                                        minItemCount = parseFloat(l.value || "0");
-                                    if (lCode === "item_count_upper")
-                                        maxItemCount = parseFloat(l.value || "0");
-                                    if (lCode === "additive") {
-                                        isAdditive = l.value === "true" || l.value === "yes";
-                                        // Make sure "false" or "no" results in false
-                                        if (l.value === "false" || l.value === "no")
-                                            isAdditive = false;
-                                    }
-                                    if (lCode === "item_ids") {
-                                        // In case itemIds are provided as a comma separated string within rules
-                                        if (l.value) {
-                                            itemIds = l.value
-                                                .split(",")
-                                                .map((s: string) => s.trim());
-                                        }
-                                    }
-                                }
-                            );
-                        }
-                        // Fallback: Check if there's an explicit item_ids tag group with a list of values
-                        if (tCode === "item_ids" && itemIds.length === 0) {
-                            if (tag.list) {
-                                itemIds = tag.list.map((l: TargetListItem) => l.value);
-                            }
-                        }
-                    });
-
-                    rules[off.id] = {
-                        id: off.id,
-                        itemIds: itemIds,
-                        categoryIds: categoryIds,
-                        locationIds: locationIds,
-                        minOrderValue: minVal,
-                        minItemCount,
-                        maxItemCount,
-                        isAdditive: isAdditive,
-                    };
-                });
-                setDynamicOfferRules(rules);
-
-                const uniqueOffers = Array.from(
-                    new Map(collectedOffers.map((o) => [o.id, o])).values()
-                );
-                setOffers(uniqueOffers);
-            }
             setIsDataPasted(true);
         } catch (err) {
             toast.error("Invalid payload structure.");
@@ -508,17 +382,163 @@ export default function ReteB2BInitOffers({
         }
     }, []);
 
+    const handleProviderSelect = useCallback(
+        (providerId: string) => {
+            const provider = providerOptions.find((p) => p.id === providerId);
+            if (!provider) return;
+
+            setSelectedProviderId(providerId);
+
+            const allItemOptions = provider.items?.map((i) => i.id) || [];
+
+            const allProvLocs = provider.locations?.map((l: CatalogLocation) => l.id) || [];
+            const offerLocs = (provider.offers || [])
+                .flatMap((o: CatalogOffer) =>
+                    (Array.isArray(o.location_ids) ? o.location_ids : []).flatMap((v: unknown) =>
+                        typeof v === "string"
+                            ? v.split(",").map((s: string) => s.trim())
+                            : (v as string)
+                    )
+                )
+                .filter(Boolean);
+
+            const allFulfillmentOptions = provider.fulfillments?.map((f) => f.id) || [];
+
+            const parsedPrices: Record<string, number> = {};
+            const parsedCategories: Record<string, string> = {};
+            const parsedItemNames: Record<string, string> = {};
+            const parsedItemLocations: Record<string, string[]> = {};
+            const parsedCategoryNames: Record<string, string> = {};
+
+            provider.items?.forEach((item: CatalogItem) => {
+                parsedPrices[item.id] = parseFloat(item.price?.value || "0");
+                parsedItemNames[item.id] = item.descriptor?.name || "";
+                if (item.category_id) {
+                    parsedCategories[item.id] = item.category_id;
+                } else if (item.category_ids && item.category_ids.length > 0) {
+                    parsedCategories[item.id] = item.category_ids[0];
+                }
+
+                let locs: string[] = [];
+                if (item.location_id) locs.push(item.location_id);
+                if (Array.isArray(item.location_ids)) locs = [...locs, ...item.location_ids];
+                parsedItemLocations[item.id] = Array.from(new Set(locs.filter(Boolean)));
+            });
+
+            provider.categories?.forEach((cat: CatalogCategory) => {
+                parsedCategoryNames[cat.id] = cat.descriptor?.name || "";
+            });
+
+            const collectedOffers: (CatalogOffer & { items?: unknown[] })[] = provider.offers || [];
+
+            setItemOptions(allItemOptions);
+            setLocationOptions(Array.from(new Set([...allProvLocs, ...offerLocs])));
+            setFulfillmentOptions(allFulfillmentOptions);
+            setItemPrices(parsedPrices);
+            setItemCategories(parsedCategories);
+            setItemNames(parsedItemNames);
+            setItemLocations(parsedItemLocations);
+            setCategoryNames(parsedCategoryNames);
+
+            const rules: Record<string, DynamicOfferRule> = {};
+            collectedOffers.forEach((off: CatalogOffer & { items?: unknown[] }) => {
+                let minVal = 0;
+                let isAdditive = true;
+                const rawItemIds = Array.isArray(off.item_ids)
+                    ? off.item_ids
+                    : Array.isArray(off.items)
+                      ? off.items
+                      : [];
+                let itemIds: string[] = rawItemIds
+                    .flatMap((v: unknown) =>
+                        typeof v === "string"
+                            ? v.split(",").map((s: string) => s.trim())
+                            : (v as string)
+                    )
+                    .filter(Boolean);
+
+                const categoryIds: string[] = (
+                    Array.isArray(off.category_ids) ? off.category_ids : []
+                )
+                    .flatMap((v: unknown) =>
+                        typeof v === "string"
+                            ? v.split(",").map((s: string) => s.trim())
+                            : (v as string)
+                    )
+                    .filter(Boolean);
+
+                const locationIds: string[] = (
+                    Array.isArray(off.location_ids) ? off.location_ids : []
+                )
+                    .flatMap((v: unknown) =>
+                        typeof v === "string"
+                            ? v.split(",").map((s: string) => s.trim())
+                            : (v as string)
+                    )
+                    .filter(Boolean);
+
+                let minItemCount = 0;
+                let maxItemCount = 0;
+
+                off.tags?.forEach((tag: Tag & { descriptor?: { code: string } }) => {
+                    const tCode = tag.code || tag.descriptor?.code;
+                    if (tCode === "rules" || tCode === "qualifier" || tCode === "meta") {
+                        tag.list?.forEach(
+                            (l: TargetListItem & { descriptor?: { code: string } }) => {
+                                const lCode = l.code || l.descriptor?.code;
+                                if (lCode === "min_value") minVal = parseFloat(l.value || "0");
+                                if (lCode === "item_count")
+                                    minItemCount = parseFloat(l.value || "0");
+                                if (lCode === "item_count_upper")
+                                    maxItemCount = parseFloat(l.value || "0");
+                                if (lCode === "additive") {
+                                    isAdditive = l.value === "true" || l.value === "yes";
+                                    if (l.value === "false" || l.value === "no") isAdditive = false;
+                                }
+                                if (lCode === "item_ids" && l.value) {
+                                    itemIds = l.value.split(",").map((s: string) => s.trim());
+                                }
+                            }
+                        );
+                    }
+                    if (tCode === "item_ids" && itemIds.length === 0 && tag.list) {
+                        itemIds = tag.list.map((l: TargetListItem) => l.value);
+                    }
+                });
+
+                rules[off.id] = {
+                    id: off.id,
+                    itemIds,
+                    categoryIds,
+                    locationIds,
+                    minOrderValue: minVal,
+                    minItemCount,
+                    maxItemCount,
+                    isAdditive,
+                };
+            });
+
+            setDynamicOfferRules(rules);
+            const uniqueOffers = Array.from(
+                new Map(collectedOffers.map((o) => [o.id, o])).values()
+            );
+            setOffers(uniqueOffers);
+
+            setForm((prev) => ({
+                ...prev,
+                items: [{ itemId: "", quantity: 1, location: "", fulfillment_id: "" }],
+                available_offers: [],
+            }));
+        },
+        [providerOptions]
+    );
+
     const fetchPayloadAndPopulate = useCallback(async () => {
         try {
-            if (!sessionData || !activeFlowId) return;
-            const transactionId = sessionData.flowMap[activeFlowId];
-            if (!transactionId) return;
+            if (!transactionId || !subscriberUrl) return;
 
             setIsLoading(true);
-            const transactionData = await getTransactionData(
-                transactionId,
-                sessionData.subscriberUrl
-            );
+            const transactionData = await getTransactionData(transactionId, subscriberUrl);
             if (!transactionData) {
                 setIsLoading(false);
                 return;
@@ -552,7 +572,7 @@ export default function ReteB2BInitOffers({
             toast.error("Failed to fetch payload automatically.");
             setIsLoading(false);
         }
-    }, [sessionData, activeFlowId, processPayload]);
+    }, [transactionId, subscriberUrl, processPayload]);
 
     useEffect(() => {
         fetchPayloadAndPopulate();
@@ -608,6 +628,10 @@ export default function ReteB2BInitOffers({
     };
 
     const submit = async () => {
+        if (!selectedProviderId) {
+            alert("Please select a provider");
+            return;
+        }
         if (!form.city_code) {
             alert("City code is required");
             return;
@@ -630,11 +654,16 @@ export default function ReteB2BInitOffers({
             alert("Please paste on_search payload first");
             return;
         }
+        const selectedProvider = providerOptions.find((p) => p.id === selectedProviderId);
         await submitEvent({
             jsonPath: {},
             formData: {
                 ...form,
                 live_catalog: catalogPayload,
+                provider_id: selectedProviderId,
+                provider_name: selectedProvider?.descriptor?.name ?? "",
+                provider_code: selectedProvider?.descriptor?.code ?? "",
+                provider_short_desc: selectedProvider?.descriptor?.short_desc ?? "",
             } as unknown as Record<string, string>,
             catalog: catalogPayload,
         });
@@ -722,108 +751,142 @@ export default function ReteB2BInitOffers({
                         onChange={(e) => handleChange("state_code", e.target.value)}
                         className={inputStyle}
                     />
-                    {/* ITEMS SECTION */}
-                    <div>
-                        <h3 className="font-bold">Items</h3>
-                        {form.items.map((item, index) => (
-                            <div key={index} className="flex gap-2 mb-2 items-center">
-                                <select
-                                    value={item.itemId}
-                                    onChange={(e) =>
-                                        handleItemChange(index, "itemId", e.target.value)
-                                    }
-                                    className={inputStyle}
-                                >
-                                    <option value="">Item</option>
-                                    {itemOptions.map((id) => (
-                                        <option key={id}>{id}</option>
-                                    ))}
-                                </select>
-                                <input
-                                    min={1}
-                                    type="number"
-                                    value={item.quantity}
-                                    onChange={(e) =>
-                                        handleItemChange(index, "quantity", Number(e.target.value))
-                                    }
-                                    className={inputStyle}
-                                />
-                                <select
-                                    value={item.location}
-                                    onChange={(e) =>
-                                        handleItemChange(index, "location", e.target.value)
-                                    }
-                                    className={inputStyle}
-                                >
-                                    <option value="">Location</option>
-                                    {(item.itemId && itemLocations[item.itemId]
-                                        ? itemLocations[item.itemId]
-                                        : []
-                                    ).map((loc) => (
-                                        <option key={loc}>{loc}</option>
-                                    ))}
-                                </select>
-                                <select
-                                    value={item.fulfillment_id}
-                                    onChange={(e) =>
-                                        handleItemChange(index, "fulfillment_id", e.target.value)
-                                    }
-                                    className={inputStyle}
-                                >
-                                    <option value="">Fulfillment</option>
-                                    {fulfillmentOptions.map((f) => (
-                                        <option key={f}>{f}</option>
-                                    ))}
-                                </select>
-                                <button
-                                    onClick={() => removeItem(index)}
-                                    className="bg-red-500 text-white px-3 py-1 rounded text-sm"
-                                >
-                                    Remove
+                    {/* PROVIDER SECTION — shown first so items/offers only appear after selection */}
+                    <div className="flex flex-col gap-2">
+                        {label("Select Provider", true)}
+                        <select
+                            value={selectedProviderId || ""}
+                            onChange={(e) => handleProviderSelect(e.target.value)}
+                            className={inputStyle}
+                        >
+                            <option value="">-- Select a provider --</option>
+                            {providerOptions.map((p) => (
+                                <option key={p.id} value={p.id}>
+                                    {p.id}
+                                    {p.descriptor?.name ? ` – ${p.descriptor.name}` : ""}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
+                    {selectedProviderId && (
+                        <>
+                            {/* ITEMS SECTION */}
+                            <div>
+                                <h3 className="font-bold">Items</h3>
+                                {form.items.map((item, index) => (
+                                    <div key={index} className="flex gap-2 mb-2 items-center">
+                                        <select
+                                            value={item.itemId}
+                                            onChange={(e) =>
+                                                handleItemChange(index, "itemId", e.target.value)
+                                            }
+                                            className={inputStyle}
+                                        >
+                                            <option value="">Item</option>
+                                            {itemOptions.map((id) => (
+                                                <option key={id}>{id}</option>
+                                            ))}
+                                        </select>
+                                        <input
+                                            min={1}
+                                            type="number"
+                                            value={item.quantity}
+                                            onChange={(e) =>
+                                                handleItemChange(
+                                                    index,
+                                                    "quantity",
+                                                    Number(e.target.value)
+                                                )
+                                            }
+                                            className={inputStyle}
+                                        />
+                                        <select
+                                            value={item.location}
+                                            onChange={(e) =>
+                                                handleItemChange(index, "location", e.target.value)
+                                            }
+                                            className={inputStyle}
+                                        >
+                                            <option value="">Location</option>
+                                            {(item.itemId && itemLocations[item.itemId]
+                                                ? itemLocations[item.itemId]
+                                                : []
+                                            ).map((loc) => (
+                                                <option key={loc}>{loc}</option>
+                                            ))}
+                                        </select>
+                                        <select
+                                            value={item.fulfillment_id}
+                                            onChange={(e) =>
+                                                handleItemChange(
+                                                    index,
+                                                    "fulfillment_id",
+                                                    e.target.value
+                                                )
+                                            }
+                                            className={inputStyle}
+                                        >
+                                            <option value="">Fulfillment</option>
+                                            {fulfillmentOptions.map((f) => (
+                                                <option key={f}>{f}</option>
+                                            ))}
+                                        </select>
+                                        <button
+                                            onClick={() => removeItem(index)}
+                                            className="bg-red-500 text-white px-3 py-1 rounded text-sm"
+                                        >
+                                            Remove
+                                        </button>
+                                    </div>
+                                ))}
+                                <button className="bg-gray-200 p-2 rounded" onClick={addItem}>
+                                    Add Item
                                 </button>
                             </div>
-                        ))}
-                        <button className="bg-gray-200 p-2 rounded" onClick={addItem}>
-                            Add Item
-                        </button>
-                    </div>
 
-                    {/* OFFERS SECTION - UPDATED WITH TOOLTIP/HINT */}
-                    <div>
-                        <h3 className="font-bold">Available Offers</h3>
-                        <div className="flex flex-col gap-1">
-                            {offers.map((offer) => {
-                                const validationError = getOfferValidationMessage(offer.id);
-                                return (
-                                    <label
-                                        key={offer.id}
-                                        className={`flex items-center gap-2 p-1 rounded ${validationError ? "opacity-50 cursor-not-allowed" : "hover:bg-gray-100"}`}
-                                    >
-                                        <input
-                                            type="checkbox"
-                                            checked={
-                                                form.available_offers?.includes(offer.id) || false
-                                            }
-                                            onChange={() => toggleOffer(offer.id)}
-                                            title={validationError || "Apply this offer"}
-                                        />
-                                        <span className="text-sm">
-                                            {offer.id} ({offer.descriptor.code})
-                                            {validationError && (
-                                                <span className="ml-2 text-[10px] text-red-500 italic uppercase">
-                                                    [{validationError}]
+                            {/* OFFERS SECTION */}
+                            <div>
+                                <h3 className="font-bold">Available Offers</h3>
+                                <div className="flex flex-col gap-1">
+                                    {offers.map((offer) => {
+                                        const validationError = getOfferValidationMessage(offer.id);
+                                        return (
+                                            <label
+                                                key={offer.id}
+                                                className={`flex items-center gap-2 p-1 rounded ${validationError ? "opacity-50 cursor-not-allowed" : "hover:bg-gray-100"}`}
+                                            >
+                                                <input
+                                                    type="checkbox"
+                                                    checked={
+                                                        form.available_offers?.includes(offer.id) ||
+                                                        false
+                                                    }
+                                                    onChange={() => toggleOffer(offer.id)}
+                                                    title={validationError || "Apply this offer"}
+                                                />
+                                                <span className="text-sm">
+                                                    {offer.id} ({offer.descriptor.code})
+                                                    {validationError && (
+                                                        <span className="ml-2 text-[10px] text-red-500 italic uppercase">
+                                                            [{validationError}]
+                                                        </span>
+                                                    )}
                                                 </span>
-                                            )}
-                                        </span>
-                                    </label>
-                                );
-                            })}
-                        </div>
-                    </div>
+                                            </label>
+                                        );
+                                    })}
+                                </div>
+                            </div>
 
-                    <button className="bg-blue-500 text-white p-2 rounded mt-4" onClick={submit}>
-                        Submit
-                    </button>
+                            <button
+                                className="bg-blue-500 text-white p-2 rounded mt-4"
+                                onClick={submit}
+                            >
+                                Submit
+                            </button>
+                        </>
+                    )}
                 </>
             )}
         </div>

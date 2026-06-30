@@ -245,7 +245,6 @@ export default function FormConfig({
             <DynamicFormHandler
                 submitEvent={submitEvent}
                 referenceData={referenceData}
-                sessionId={sessionId}
                 transactionId={transactionId || ""}
                 formConfig={dynamicFormField}
             />

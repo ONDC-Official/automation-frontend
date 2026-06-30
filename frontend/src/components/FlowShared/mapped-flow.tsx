@@ -444,7 +444,7 @@ export default function DisplayFlow({
                     <FormLaunchPopup
                         formConfig={launchFormConfig}
                         referenceData={mappedFlow.reference_data}
-                        sessionId={sessionId}
+                        transactionId={transactionId ?? ""}
                         onLaunched={handleFormLaunched}
                     />
                 </Popup>
