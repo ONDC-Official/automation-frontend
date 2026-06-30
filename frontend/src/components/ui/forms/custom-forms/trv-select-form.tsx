@@ -9,7 +9,13 @@ import TextField from "@/components/Shadcn/TextField";
 import PayloadEditor from "@/components/ui/mini-components/payload-editor";
 import FormDialogShell from "@/components/ui/forms/form-dialog-shell";
 import { PastePayloadButton } from "@/components/ui/forms/paste-payload-button";
-import { SubmitEventParams } from "@/types/flow-types";
+import type {
+    IExtractedItem,
+    IFormValues,
+    IOnSearchPayload,
+    ICatalogFulfillment,
+    ITRVSelectFormProps,
+} from "../types/trv-select-form-types";
 
 const FLOWS_WITH_ADD_ITEM_BUTTON: string[] = [
     "purchase_journey_with_form_Multiple_Tickets",
@@ -17,64 +23,14 @@ const FLOWS_WITH_ADD_ITEM_BUTTON: string[] = [
     "user_cancellation_partial",
 ];
 
-type CatalogAddOn = { id: string };
-type CatalogItem = {
-    id: string;
-    parent_item_id?: string;
-    add_ons?: CatalogAddOn[];
-    fulfillment_ids?: string[];
-};
-type CatalogFulfillmentStop = {
-    type: string;
-    instructions?: Record<string, unknown>;
-    time?: Record<string, unknown>;
-};
-type CatalogFulfillment = {
-    id: string;
-    type?: string;
-    stops?: CatalogFulfillmentStop[];
-    agent?: Record<string, unknown>;
-    vehicle?: Record<string, unknown>;
-};
-type CatalogProvider = { id: string; items?: CatalogItem[]; fulfillments?: CatalogFulfillment[] };
-type OnSearchPayload = { message?: { catalog?: { providers?: CatalogProvider[] } } };
-
-interface IExtractedItem {
-    itemid: string;
-    parentItemId: string;
-    providerid: string;
-    addOns: string[];
-    fulfillmentIds: string[];
-}
-
-type FormItem = {
-    itemId: string;
-    count: number;
-    addOns: string[];
-    addOnsQuantity: number;
-    parentItemId?: string;
-};
-
-type FormValues = {
-    provider: string;
-    items: FormItem[];
-    fulfillmentId: string;
-};
-
-export default function TRVSelectForm({
-    submitEvent,
-    flowId,
-}: {
-    submitEvent: (data: SubmitEventParams) => Promise<void>;
-    flowId?: string;
-}) {
+export default function TRVSelectForm({ submitEvent, flowId }: ITRVSelectFormProps) {
     const [isPayloadEditorActive, setIsPayloadEditorActive] = useState(false);
     const [errorWhilePaste, setErrorWhilePaste] = useState("");
     const [itemOptions, setItemOptions] = useState<IExtractedItem[]>([]);
-    const [fulfillmentOptions, setFulfillmentOptions] = useState<CatalogFulfillment[]>([]);
+    const [fulfillmentOptions, setFulfillmentOptions] = useState<ICatalogFulfillment[]>([]);
     const [addOnPickerKeys, setAddOnPickerKeys] = useState<Record<number, number>>({});
 
-    const { control, handleSubmit, watch, setValue, getValues } = useForm<FormValues>({
+    const { control, handleSubmit, watch, setValue, getValues } = useForm<IFormValues>({
         defaultValues: {
             provider: "",
             items: [{ itemId: "", count: 1, addOns: [], addOnsQuantity: 1 }],
@@ -82,7 +38,7 @@ export default function TRVSelectForm({
         },
     });
 
-    const { fields, append, remove } = useFieldArray<FormValues, "items">({
+    const { fields, append, remove } = useFieldArray<IFormValues, "items">({
         control,
         name: "items",
     });
@@ -110,7 +66,7 @@ export default function TRVSelectForm({
         label: option.itemid,
     }));
 
-    const onSubmit = async (data: FormValues) => {
+    const onSubmit = async (data: IFormValues) => {
         const selectedFulfillment = fulfillmentOptions.find((f) => f.id === data.fulfillmentId);
         const output = {
             provider: data.provider,
@@ -133,12 +89,12 @@ export default function TRVSelectForm({
     const handlePaste = (payload: unknown) => {
         setErrorWhilePaste("");
         try {
-            const parsed = payload as OnSearchPayload;
+            const parsed = payload as IOnSearchPayload;
             if (!parsed?.message?.catalog?.providers) return;
 
             const providers = parsed.message.catalog.providers;
             const results: IExtractedItem[] = [];
-            const allFulfillments: CatalogFulfillment[] = [];
+            const allFulfillments: ICatalogFulfillment[] = [];
 
             providers.forEach((provider) => {
                 if (provider.fulfillments) {

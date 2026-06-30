@@ -10,61 +10,20 @@ import PayloadEditor from "@/components/ui/mini-components/payload-editor";
 import FormDialogShell from "@/components/ui/forms/form-dialog-shell";
 import { PastePayloadButton } from "@/components/ui/forms/paste-payload-button";
 import { toast } from "sonner";
-import { SubmitEventParams } from "@/types/flow-types";
 import { cn } from "@/lib/utils";
+import {
+    IExtractedAddon,
+    IExtractedItem,
+    ISelectedAddon,
+    IFormValues,
+    IRawAddon,
+    IOrderItem,
+    IPayload,
+    IFIS13SelectFormProps,
+    DEFAULT_FORM_VALUES,
+} from "../types/fis13-select-form-types";
 
-interface IExtractedAddon {
-    id: string;
-    parent_item_id: string;
-    descriptor?: { name?: string; code?: string };
-    price?: { currency?: string; value?: string };
-    quantity?: { available?: { count?: number }; maximum?: { count?: number } };
-}
-
-interface IExtractedItem {
-    id: string;
-    parent_item_id: string;
-    descriptor?: { name?: string };
-    add_ons: IExtractedAddon[];
-}
-
-interface ISelectedAddon {
-    id: string;
-    quantity: number;
-}
-
-type FormValues = {
-    selectedItems: IExtractedItem[];
-};
-
-type RawAddon = {
-    id: string;
-    descriptor?: { name?: string; code?: string };
-    price?: { currency?: string; value?: string };
-    quantity?: { available?: { count?: number }; maximum?: { count?: number } };
-};
-
-type OrderItem = {
-    id: string;
-    parent_item_id?: string;
-    descriptor?: { name?: string };
-    add_ons?: RawAddon[];
-};
-
-type Payload = {
-    message?: {
-        order?: { items?: OrderItem[] };
-        catalog?: { providers?: Array<{ items?: OrderItem[] }> };
-    };
-};
-
-export default function FIS13ItemSelection({
-    submitEvent,
-    referenceData,
-}: {
-    submitEvent: (data: SubmitEventParams) => Promise<void>;
-    referenceData?: Record<string, unknown>;
-}) {
+export default function FIS13ItemSelection({ submitEvent, referenceData }: IFIS13SelectFormProps) {
     const [isPayloadEditorActive, setIsPayloadEditorActive] = useState(false);
     const [errorWhilePaste, setErrorWhilePaste] = useState("");
     const [itemOptions, setItemOptions] = useState<IExtractedItem[]>([]);
@@ -72,8 +31,8 @@ export default function FIS13ItemSelection({
     const [manualItemId, setManualItemId] = useState("");
     const [manualParentItemId, setManualParentItemId] = useState("");
 
-    const { handleSubmit, watch, setValue } = useForm<FormValues>({
-        defaultValues: { selectedItems: [] },
+    const { handleSubmit, watch, setValue } = useForm<IFormValues>({
+        defaultValues: DEFAULT_FORM_VALUES,
     });
 
     const selectedItems = watch("selectedItems") ?? [];
@@ -93,7 +52,7 @@ export default function FIS13ItemSelection({
         setSelectedAddons((prev) => prev.filter((entry) => seenAddonIds.has(entry.id)));
     }, [selectedItems]);
 
-    const onSubmit = async (data: FormValues) => {
+    const onSubmit = async (data: IFormValues) => {
         const formData: Record<string, string> = {};
         formData.selected_item_ids = data.selectedItems.map((item) => item.id).join(",");
         formData.selected_parent_item_ids = data.selectedItems
@@ -122,10 +81,10 @@ export default function FIS13ItemSelection({
         setErrorWhilePaste("");
         try {
             let results: IExtractedItem[] = [];
-            const parsed = payload as Payload;
-            const fallbackAddons = (referenceData?.selected_add_ons ?? []) as RawAddon[];
+            const parsed = payload as IPayload;
+            const fallbackAddons = (referenceData?.selected_add_ons ?? []) as IRawAddon[];
 
-            const mapItem = (item: OrderItem): IExtractedItem => {
+            const mapItem = (item: IOrderItem): IExtractedItem => {
                 const nested =
                     item.add_ons && item.add_ons.length > 0 ? item.add_ons : fallbackAddons;
                 return {

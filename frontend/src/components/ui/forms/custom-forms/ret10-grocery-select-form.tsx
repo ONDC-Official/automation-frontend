@@ -12,68 +12,29 @@ import { Field, FieldLabel } from "@/components/Shadcn/TextField/field";
 import PayloadEditor from "@/components/ui/mini-components/payload-editor";
 import FormDialogShell from "@/components/ui/forms/form-dialog-shell";
 import { PastePayloadButton } from "@/components/ui/forms/paste-payload-button";
-import { SubmitEventParams } from "@/types/flow-types";
-import { SelectedItem } from "../ret11-nested-select-form";
-
-type OfferKey = `offers_${string}`;
-
-type CatalogItem = { id: string };
-export type CatalogLocation = { id: string };
-type CatalogOffer = { id: string };
-export type CatalogProvider = {
-    id: string;
-    items: CatalogItem[];
-    locations: CatalogLocation[];
-    offers?: CatalogOffer[];
-};
-
-type OnSearchPayload = {
-    message: {
-        catalog: {
-            "bpp/providers": CatalogProvider[];
-        };
-    };
-};
-
-type FormValues = {
-    city_code: string;
-    provider: string;
-    provider_location: string[];
-    location_gps: string;
-    location_pin_code: string;
-    items: {
-        itemId: string;
-        quantity: number;
-        location: string;
-    }[];
-} & Partial<Record<OfferKey, boolean>>;
+import {
+    IOfferKey,
+    ICatalogProvider,
+    IFormValues,
+    IFormData,
+    IFormDataRET11,
+    IOnSearchPayload,
+    IRet10GrocerySelectFormProps,
+    DEFAULT_FORM_VALUES,
+} from "../types/ret10-grocery-select-form-types";
 
 const toComboOptions = (values: string[]) => values.map((value) => ({ value, label: value }));
 
-export default function Ret10GrocerySelectForm({
-    submitEvent,
-}: {
-    submitEvent: (data: SubmitEventParams) => Promise<void>;
-}) {
+export default function Ret10GrocerySelectForm({ submitEvent }: IRet10GrocerySelectFormProps) {
     const [isPayloadEditorActive, setIsPayloadEditorActive] = useState(false);
     const [errorWhilePaste, setErrorWhilePaste] = useState("");
     const [isDataPasted, setIsDataPasted] = useState(false);
 
-    const { control, handleSubmit, watch } = useForm<FormValues>({
-        defaultValues: {
-            city_code: "",
-            provider: "",
-            provider_location: [],
-            location_gps: "",
-            location_pin_code: "",
-            items: [
-                { itemId: "", quantity: 1, location: "" },
-                { itemId: "", quantity: 1, location: "" },
-            ],
-        },
+    const { control, handleSubmit, watch } = useForm<IFormValues>({
+        defaultValues: DEFAULT_FORM_VALUES,
     });
 
-    const { fields, append, remove } = useFieldArray<FormValues, "items">({
+    const { fields, append, remove } = useFieldArray<IFormValues, "items">({
         control,
         name: "items",
     });
@@ -82,13 +43,13 @@ export default function Ret10GrocerySelectForm({
     const [itemOptions, setItemOptions] = useState<string[]>([]);
     const [locationOptions, setLocationOptions] = useState<string[]>([]);
     const [offerOptions, setOfferOptions] = useState<string[]>([]);
-    const [providers, setProviders] = useState<CatalogProvider[]>([]);
+    const [providers, setProviders] = useState<ICatalogProvider[]>([]);
 
     const selectedProvider = watch("provider");
     const providerLocations =
         providers.find((provider) => provider.id === selectedProvider)?.locations ?? [];
 
-    const onSubmit = async (data: FormValues) => {
+    const onSubmit = async (data: IFormValues) => {
         const { valid, errors } = validateFormData(data);
         if (!valid) {
             toast.error(`Form validation failed: ${errors[0]}`);
@@ -99,7 +60,7 @@ export default function Ret10GrocerySelectForm({
 
     const handlePaste = (data: unknown) => {
         try {
-            const catalogProviders = (data as OnSearchPayload).message.catalog["bpp/providers"];
+            const catalogProviders = (data as IOnSearchPayload).message.catalog["bpp/providers"];
             setProviders(catalogProviders);
 
             setProviderOptions(catalogProviders.map((provider) => provider.id));
@@ -220,7 +181,7 @@ export default function Ret10GrocerySelectForm({
                                 {offerOptions.map((offerId) => (
                                     <Controller
                                         key={offerId}
-                                        name={`offers_${offerId}` as OfferKey}
+                                        name={`offers_${offerId}` as IOfferKey}
                                         control={control}
                                         render={({ field }) => (
                                             <label className="flex cursor-pointer items-center gap-2">
@@ -329,27 +290,9 @@ export default function Ret10GrocerySelectForm({
     );
 }
 
-type FormData = {
-    city_code: string;
-    provider: string;
-    provider_location: string[];
-    location_gps: string;
-    location_pin_code: string;
-    items: {
-        itemId: string;
-        quantity: number;
-        location: string;
-    }[];
-} & Partial<Record<OfferKey, boolean>>;
+import { SelectedItem } from "./ret11-nested-select-form";
 
-type FormDataRET11 = {
-    provider: string;
-    provider_location: string[];
-    location_gps: string;
-    location_pin_code: string;
-} & Partial<Record<OfferKey, boolean>>;
-
-function validateFormData(data: FormData): {
+function validateFormData(data: IFormData): {
     valid: boolean;
     errors: string[];
 } {
@@ -395,7 +338,9 @@ function validateFormData(data: FormData): {
         errors.push("All selected items must be unique.");
     }
 
-    const offerKeys = Object.keys(data).filter((key): key is OfferKey => key.startsWith("offers_"));
+    const offerKeys = Object.keys(data).filter((key): key is IOfferKey =>
+        key.startsWith("offers_")
+    );
     const selectedOffers = offerKeys.filter((key) => Boolean(data[key]));
     if (selectedOffers.length > 1) {
         errors.push("Only one offer can be selected.");
@@ -408,7 +353,7 @@ function validateFormData(data: FormData): {
 }
 
 export function validateFormDataRET11(
-    data: FormDataRET11,
+    data: IFormDataRET11,
     items: SelectedItem[]
 ): {
     valid: boolean;

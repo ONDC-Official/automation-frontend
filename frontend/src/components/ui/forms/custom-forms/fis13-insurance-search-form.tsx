@@ -10,32 +10,14 @@ import PayloadEditor from "@/components/ui/mini-components/payload-editor";
 import FormDialogShell from "@/components/ui/forms/form-dialog-shell";
 import { PastePayloadButton } from "@/components/ui/forms/paste-payload-button";
 import { toast } from "sonner";
-import { SubmitEventParams } from "@/types/flow-types";
+import type {
+    IFis13ManualBapInput,
+    IDynamicInput,
+    IProvider,
+    IFIS13InsuranceSearchFormProps,
+} from "../types/fis13-insurance-search-form-types";
 
-export interface IFis13ManualBapInput {
-    code: string;
-    label: string;
-    type: string;
-}
-
-interface IDynamicInput {
-    descriptor: { code: string; short_desc?: string };
-    value: string;
-}
-
-type ICatalogItem = {
-    id: string;
-    tags?: Array<{
-        descriptor?: { code?: string };
-        list?: IDynamicInput[];
-    }>;
-};
-
-type IProvider = {
-    id: string;
-    tags?: unknown[];
-    items?: ICatalogItem[];
-};
+export type { IFis13ManualBapInput };
 
 const GENDER_OPTIONS = [
     { value: "Male", label: "Male" },
@@ -83,11 +65,7 @@ export const Fis13InsuranceSearchForm = ({
     submitEvent,
     manualBapInputs,
     pasteHint = "Please paste the on_search payload to load item options.",
-}: {
-    submitEvent: (data: SubmitEventParams) => Promise<void>;
-    manualBapInputs: IFis13ManualBapInput[];
-    pasteHint?: string;
-}) => {
+}: IFIS13InsuranceSearchFormProps) => {
     const [isPayloadEditorActive, setIsPayloadEditorActive] = useState(false);
     const [allProviders, setAllProviders] = useState<IProvider[]>([]);
     const [selectedProviderId, setSelectedProviderId] = useState("");

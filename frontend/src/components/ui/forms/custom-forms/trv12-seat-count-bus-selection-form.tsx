@@ -8,42 +8,17 @@ import { Button } from "@/components/Shadcn/Button/button";
 import PayloadEditor from "@/components/ui/mini-components/payload-editor";
 import FormDialogShell from "@/components/ui/forms/form-dialog-shell";
 import { PastePayloadButton } from "@/components/ui/forms/paste-payload-button";
-import { SubmitEventParams } from "@/types/flow-types";
-
-type FulfillmentTagListItem = {
-    descriptor: { code: string };
-    value: string;
-};
-
-type FulfillmentTag = {
-    descriptor: { code: string };
-    list: FulfillmentTagListItem[];
-};
-
-type Fulfillment = {
-    type?: string;
-    tags?: FulfillmentTag[];
-};
-
-type OnSelectPayload = {
-    message?: {
-        order?: {
-            fulfillments?: Fulfillment[];
-        };
-    };
-};
-
-type SeatSelectionFormValues = {
-    items: Array<{ seatNumber: string }>;
-};
+import type {
+    IOnSelectPayload,
+    ISeatSelectionFormValues,
+    ITRV12BusSeatCountSelectionFormProps,
+} from "../types/trv12-seat-count-bus-selection-form-types";
+import { DEFAULT_SEAT_SELECTION_FORM_VALUES } from "../types/trv12-seat-count-bus-selection-form-types";
 
 export default function TRV12BusSeatCountSelectionForm({
     submitEvent,
     payload,
-}: {
-    submitEvent: (data: SubmitEventParams) => Promise<void>;
-    payload?: OnSelectPayload;
-}) {
+}: ITRV12BusSeatCountSelectionFormProps) {
     const [allowedSeatsCount, setAllowedSeatsCount] = useState(0);
     const [availableSeats, setAvailableSeats] = useState<string[]>([]);
     const [isPayloadEditorActive, setIsPayloadEditorActive] = useState(false);
@@ -51,7 +26,7 @@ export default function TRV12BusSeatCountSelectionForm({
 
     const parseAndSetData = (data: unknown) => {
         try {
-            const parsed = data as OnSelectPayload;
+            const parsed = data as IOnSelectPayload;
             if (!parsed?.message?.order?.fulfillments) {
                 throw new Error("Invalid payload structure: missing fulfillments");
             }
@@ -97,23 +72,21 @@ export default function TRV12BusSeatCountSelectionForm({
         setIsPayloadEditorActive(false);
     };
 
-    const { control, handleSubmit } = useForm<SeatSelectionFormValues>({
-        defaultValues: {
-            items: [{ seatNumber: "" }],
-        },
+    const { control, handleSubmit } = useForm<ISeatSelectionFormValues>({
+        defaultValues: DEFAULT_SEAT_SELECTION_FORM_VALUES,
     });
 
-    const { fields, append, remove } = useFieldArray<SeatSelectionFormValues, "items">({
+    const { fields, append, remove } = useFieldArray<ISeatSelectionFormValues, "items">({
         control,
         name: "items",
     });
 
-    const watchedItems = useWatch<SeatSelectionFormValues, "items">({
+    const watchedItems = useWatch<ISeatSelectionFormValues, "items">({
         control,
         name: "items",
     });
 
-    const onSubmit = async (data: SeatSelectionFormValues) => {
+    const onSubmit = async (data: ISeatSelectionFormValues) => {
         const cleanedData = {
             items: data.items
                 .map((item) => ({

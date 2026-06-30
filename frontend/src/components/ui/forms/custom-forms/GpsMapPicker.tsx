@@ -92,7 +92,7 @@ export function SingleLocationPickerModal({
     // Popup (a transformed/overflow-hidden ancestor would otherwise cut off the search box and
     // the footer buttons). max-h + scroll keeps it within the viewport on short screens.
     return createPortal(
-        <div className="fixed inset-0 z-[2000] flex items-center justify-center bg-black/40 p-4">
+        <div className="fixed inset-0 z-2000 flex items-center justify-center bg-black/40 p-4">
             <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl flex flex-col max-h-[90vh] overflow-y-auto">
                 <div className="flex items-center justify-between px-4 py-3 border-b">
                     <h3 className="text-sm font-semibold text-gray-800">{title}</h3>

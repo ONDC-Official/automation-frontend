@@ -8,31 +8,15 @@ import TextField from "@/components/Shadcn/TextField";
 import PayloadEditor from "@/components/ui/mini-components/payload-editor";
 import FormDialogShell from "@/components/ui/forms/form-dialog-shell";
 import { PastePayloadButton } from "@/components/ui/forms/paste-payload-button";
-import { SubmitEventParams } from "@/types/flow-types";
+import {
+    IOrderFulfillment,
+    IOnConfirmPayload,
+    IFormValues,
+    ITRV11PartialSelectFormProps,
+    DEFAULT_FORM_VALUES,
+} from "../types/trv11-201-partial-select-form-types";
 
-interface IOrderFulfillment {
-    id: string;
-    type: string;
-}
-
-interface IOnConfirmPayload {
-    message?: {
-        order?: {
-            items?: unknown[];
-            fulfillments?: IOrderFulfillment[];
-        };
-    };
-}
-
-type FormValues = {
-    fulfillmentId: string;
-};
-
-export default function TRV11PartialSelectForm({
-    submitEvent,
-}: {
-    submitEvent: (data: SubmitEventParams) => Promise<void>;
-}) {
+export default function TRV11PartialSelectForm({ submitEvent }: ITRV11PartialSelectFormProps) {
     const [isPayloadEditorActive, setIsPayloadEditorActive] = useState(false);
     const [errorWhilePaste, setErrorWhilePaste] = useState("");
     const [fulfillmentOptions, setFulfillmentOptions] = useState<IOrderFulfillment[]>([]);
@@ -42,11 +26,11 @@ export default function TRV11PartialSelectForm({
         handleSubmit,
         setValue,
         formState: { errors },
-    } = useForm<FormValues>({
-        defaultValues: { fulfillmentId: "" },
+    } = useForm<IFormValues>({
+        defaultValues: DEFAULT_FORM_VALUES,
     });
 
-    const onSubmit = async (data: FormValues) => {
+    const onSubmit = async (data: IFormValues) => {
         if (!data.fulfillmentId) {
             toast.error("Please select a fulfillment.");
             return;

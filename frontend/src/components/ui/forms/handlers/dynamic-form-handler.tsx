@@ -10,7 +10,7 @@ import { Button } from "@/components/Shadcn/Button/button";
 import FormDialogShell from "@/components/ui/forms/form-dialog-shell";
 import { SubmitEventParams } from "@/types/flow-types";
 import { queryJsonPath } from "@utils/jsonpath-query";
-import { FormFieldConfigType } from "@components/ui/forms/config-form/config-form";
+import { FormFieldConfigType } from "@/components/ui/forms/config-form";
 import { FormService } from "@services/formService";
 import { cn } from "@/lib/utils";
 

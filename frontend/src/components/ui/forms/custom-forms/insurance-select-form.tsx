@@ -10,56 +10,18 @@ import { Field, FieldLabel } from "@/components/Shadcn/TextField/field";
 import PayloadEditor from "@/components/ui/mini-components/payload-editor";
 import FormDialogShell from "@/components/ui/forms/form-dialog-shell";
 import { PastePayloadButton } from "@/components/ui/forms/paste-payload-button";
-import { SubmitEventParams } from "@/types/flow-types";
 import { cn } from "@/lib/utils";
+import type {
+    ICatalogProvider,
+    IParsedCatalog,
+    ISelectedAddOn,
+    IFormValues,
+    ICatalogAddOn,
+    IInsuranceSelectFormProps,
+} from "../types/insurance-select-form-types";
+import { DEFAULT_FORM_VALUES } from "../types/insurance-select-form-types";
 
-interface ICatalogAddOn {
-    id: string;
-    descriptor?: { name?: string; code?: string };
-    price?: { value?: string; currency?: string };
-    quantity?: { available?: { count?: number }; maximum?: { count?: number } };
-}
-
-interface ICatalogItem {
-    id: string;
-    descriptor?: { name?: string; short_desc?: string };
-    category_ids?: string[];
-    add_ons?: ICatalogAddOn[];
-    parent_item_id?: string;
-}
-
-interface ICatalogFulfillment {
-    id: string;
-    type?: string;
-}
-
-interface ICatalogProvider {
-    id: string;
-    descriptor?: { name?: string };
-    items?: ICatalogItem[];
-    fulfillments?: ICatalogFulfillment[];
-}
-
-interface IParsedCatalog {
-    provider: ICatalogProvider;
-    items: ICatalogItem[];
-    fulfillmentId: string;
-}
-
-interface ISelectedAddOn {
-    id: string;
-    quantity: number;
-}
-
-type IFormValues = {
-    selectedItemIndex: number;
-};
-
-export default function InsuranceSelectForm({
-    submitEvent,
-}: {
-    submitEvent: (data: SubmitEventParams) => Promise<void>;
-}) {
+export default function InsuranceSelectForm({ submitEvent }: IInsuranceSelectFormProps) {
     const [isPayloadEditorActive, setIsPayloadEditorActive] = useState(false);
     const [errorWhilePaste, setErrorWhilePaste] = useState("");
     const [catalog, setCatalog] = useState<IParsedCatalog | null>(null);
@@ -67,7 +29,7 @@ export default function InsuranceSelectForm({
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const { handleSubmit, watch, setValue } = useForm<IFormValues>({
-        defaultValues: { selectedItemIndex: 0 },
+        defaultValues: DEFAULT_FORM_VALUES,
     });
 
     const selectedItemIndex = watch("selectedItemIndex");

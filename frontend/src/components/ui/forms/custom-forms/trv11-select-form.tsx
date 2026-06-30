@@ -9,43 +9,22 @@ import TextField from "@/components/Shadcn/TextField";
 import PayloadEditor from "@/components/ui/mini-components/payload-editor";
 import FormDialogShell from "@/components/ui/forms/form-dialog-shell";
 import { PastePayloadButton } from "@/components/ui/forms/paste-payload-button";
-import { SubmitEventParams } from "@/types/flow-types";
 import { cn } from "@/lib/utils";
+import type {
+    IExtractedItem,
+    IFormValues,
+    ICatalogFulfillment,
+    IOnSearchPayload,
+    ITRV11SelectFormProps,
+} from "../types/trv11-select-form-types";
 
-interface IExtractedItem {
-    itemid: string;
-    providerid: string;
-}
-
-type FormItem = {
-    itemId: string;
-    count: number;
-    addOns?: string[];
-    location?: string;
-};
-
-type FormValues = {
-    provider: string;
-    items: FormItem[];
-    fulfillment?: string;
-};
-
-type CatalogItem = { id: string };
-type CatalogFulfillment = { id: string; type?: string };
-type CatalogProvider = { id: string; fulfillments?: CatalogFulfillment[]; items?: CatalogItem[] };
-type OnSearchPayload = { message?: { catalog?: { providers?: CatalogProvider[] } } };
-
-export default function TRV11SelectForm({
-    submitEvent,
-}: {
-    submitEvent: (data: SubmitEventParams) => Promise<void>;
-}) {
+export default function TRV11SelectForm({ submitEvent }: ITRV11SelectFormProps) {
     const [isPayloadEditorActive, setIsPayloadEditorActive] = useState(false);
     const [errorWhilePaste, setErrorWhilePaste] = useState("");
     const [itemOptions, setItemOptions] = useState<IExtractedItem[]>([]);
-    const [fulfillmentOptions, setFulfillmentOptions] = useState<CatalogFulfillment[]>([]);
+    const [fulfillmentOptions, setFulfillmentOptions] = useState<ICatalogFulfillment[]>([]);
 
-    const { control, handleSubmit, register, setValue } = useForm<FormValues>({
+    const { control, handleSubmit, register, setValue } = useForm<IFormValues>({
         defaultValues: {
             provider: "",
             items: [{ itemId: "", count: 1, addOns: [] }],
@@ -53,26 +32,26 @@ export default function TRV11SelectForm({
         },
     });
 
-    const { fields, append, remove } = useFieldArray<FormValues, "items">({
+    const { fields, append, remove } = useFieldArray<IFormValues, "items">({
         control,
         name: "items",
     });
 
-    const onSubmit = async (data: FormValues) => {
+    const onSubmit = async (data: IFormValues) => {
         await submitEvent({ jsonPath: {}, formData: data as unknown as Record<string, string> });
     };
 
     const handlePaste = (payload: unknown) => {
         setErrorWhilePaste("");
         try {
-            const parsed = payload as OnSearchPayload;
+            const parsed = payload as IOnSearchPayload;
             if (!parsed?.message?.catalog?.providers) {
                 throw new Error("Invalid payload");
             }
 
             const providers = parsed.message.catalog.providers;
             const results: IExtractedItem[] = [];
-            const allFulfillments: CatalogFulfillment[] = [];
+            const allFulfillments: ICatalogFulfillment[] = [];
 
             providers.forEach((provider) => {
                 if (provider.fulfillments) {

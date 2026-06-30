@@ -9,7 +9,6 @@ import { Field, FieldLabel } from "@/components/Shadcn/TextField/field";
 import PayloadEditor from "@/components/ui/mini-components/payload-editor";
 import FormDialogShell from "@/components/ui/forms/form-dialog-shell";
 import { PastePayloadButton } from "@/components/ui/forms/paste-payload-button";
-import { SubmitEventParams } from "@/types/flow-types";
 import { cn } from "@/lib/utils";
 
 const toComboOptions = (values: string[]) => values.map((value) => ({ value, label: value }));
@@ -34,111 +33,28 @@ const FormField = ({
     </Field>
 );
 
-// interface dynamicOfferRule
-export interface DynamicOfferRule {
-    id: string;
-    itemIds: string[];
-    categoryIds: string[];
-    locationIds: string[];
-    minOrderValue?: number;
-    minItemCount?: number;
-    maxItemCount?: number;
-    isAdditive: boolean;
-}
+import type {
+    DynamicOfferRule,
+    IReteB2BItem,
+    IRetailerCustomerInput,
+    ITag,
+    ICatalogItemFull,
+    ICatalogLocation,
+    ICatalogCategory,
+    ITargetListItem,
+    ICatalogOffer,
+    IOnSearchPayload,
+    IReteB2BSelectFormProps,
+} from "../types/reteb2b-select-form-types";
 
-interface ReteB2BItem {
-    itemId: string;
-    quantity: number;
-    location: string;
-    fulfillment_id: string;
-}
-
-interface RetailerCustomerInput {
-    type: "new" | "existing";
-    customer_id?: string;
-    phone_number?: string;
-    email?: string;
-    tax_number?: string;
-    provider_tax_number?: string;
-    shop_name?: string;
-    address?: string;
-    city_code: string;
-    state_code?: string;
-    available_offers?: string[];
-    items: ReteB2BItem[];
-}
-
-type TargetListItem = {
-    code: string;
-    value: string;
-};
-
-type Tag = {
-    code: string;
-    list?: TargetListItem[];
-};
-
-type CatalogItem = {
-    id: string;
-    descriptor?: { name?: string };
-    category_id?: string;
-    category_ids?: string[];
-    price?: { value?: string };
-    tags?: Tag[];
-    location_id?: string;
-    location_ids?: string[];
-};
-
-type CatalogLocation = { id: string };
-type CatalogFulfillment = { id: string };
-
-type CatalogCategory = {
-    id: string;
-    descriptor?: { name?: string };
-};
-
-type CatalogOffer = {
-    id: string;
-    descriptor: {
-        code: string;
-        name?: string;
-    };
-    item_ids?: string[];
-    location_ids?: string[];
-    category_ids?: string[];
-    tags?: Tag[];
-    items?: string[];
-};
-
-type CatalogProvider = {
-    id: string;
-    items: CatalogItem[];
-    locations: CatalogLocation[];
-    categories?: CatalogCategory[];
-    fulfillments?: CatalogFulfillment[];
-    offers?: CatalogOffer[];
-};
-
-type OnSearchPayload = {
-    message: {
-        catalog: {
-            "bpp/providers": CatalogProvider[];
-        };
-    };
-};
-
-export default function ReteB2BSelectForm({
-    submitEvent,
-}: {
-    submitEvent: (data: SubmitEventParams) => Promise<void>;
-}) {
-    const [catalogPayload, setCatalogPayload] = useState<OnSearchPayload | null>(null);
+export default function ReteB2BSelectForm({ submitEvent }: IReteB2BSelectFormProps) {
+    const [catalogPayload, setCatalogPayload] = useState<IOnSearchPayload | null>(null);
     const [isPayloadEditorActive, setIsPayloadEditorActive] = useState(false);
     const [isDataPasted, setIsDataPasted] = useState(false);
     const [itemOptions, setItemOptions] = useState<string[]>([]);
     const [, setLocationOptions] = useState<string[]>([]);
     const [fulfillmentOptions, setFulfillmentOptions] = useState<string[]>([]);
-    const [offers, setOffers] = useState<CatalogOffer[]>([]);
+    const [offers, setOffers] = useState<ICatalogOffer[]>([]);
     const [dynamicOfferRules, setDynamicOfferRules] = useState<Record<string, DynamicOfferRule>>(
         {}
     );
@@ -148,7 +64,7 @@ export default function ReteB2BSelectForm({
     const [itemLocations, setItemLocations] = useState<Record<string, string[]>>({});
     const [categoryNames, setCategoryNames] = useState<Record<string, string>>({});
 
-    const [form, setForm] = useState<RetailerCustomerInput>({
+    const [form, setForm] = useState<IRetailerCustomerInput>({
         type: "new",
         city_code: "std:080",
         provider_tax_number: "ABCDE1234E",
@@ -376,7 +292,7 @@ export default function ReteB2BSelectForm({
 
     const handlePaste = (data: unknown) => {
         try {
-            const parsed = data as OnSearchPayload;
+            const parsed = data as IOnSearchPayload;
 
             // STORE FULL CATALOG HERE (MAIN FIX)
             setCatalogPayload(parsed);
@@ -395,7 +311,7 @@ export default function ReteB2BSelectForm({
                 const parsedItemLocations: Record<string, string[]> = {};
                 const parsedCategoryNames: Record<string, string> = {};
 
-                let collectedOffers: CatalogOffer[] = [];
+                let collectedOffers: ICatalogOffer[] = [];
 
                 providers.forEach((provider) => {
                     allItemOptions = [
@@ -405,10 +321,10 @@ export default function ReteB2BSelectForm({
 
                     allProvLocs = [
                         ...allProvLocs,
-                        ...(provider.locations?.map((l: CatalogLocation) => l.id) || []),
+                        ...(provider.locations?.map((l: ICatalogLocation) => l.id) || []),
                     ];
                     const offerLocs = (provider.offers || [])
-                        .flatMap((o: CatalogOffer) =>
+                        .flatMap((o: ICatalogOffer) =>
                             (Array.isArray(o.location_ids) ? o.location_ids : []).flatMap(
                                 (v: string | string[]) =>
                                     typeof v === "string"
@@ -427,7 +343,7 @@ export default function ReteB2BSelectForm({
                     }
 
                     // Extract Item Prices, Names, and Categories Dynamically
-                    provider.items?.forEach((item: CatalogItem) => {
+                    provider.items?.forEach((item: ICatalogItemFull) => {
                         parsedPrices[item.id] = parseFloat(item.price?.value || "0");
                         parsedItemNames[item.id] = item.descriptor?.name || "";
                         if (item.category_id) {
@@ -443,7 +359,7 @@ export default function ReteB2BSelectForm({
                         parsedItemLocations[item.id] = Array.from(new Set(locs.filter(Boolean)));
                     });
 
-                    provider.categories?.forEach((cat: CatalogCategory) => {
+                    provider.categories?.forEach((cat: ICatalogCategory) => {
                         parsedCategoryNames[cat.id] = cat.descriptor?.name || "";
                     });
 
@@ -464,7 +380,7 @@ export default function ReteB2BSelectForm({
                 const rules: Record<string, DynamicOfferRule> = {};
 
                 // Standardizing rules from payload tags (highly dynamic to adapt to different on_search structures)
-                collectedOffers.forEach((off: CatalogOffer) => {
+                collectedOffers.forEach((off: ICatalogOffer) => {
                     let minVal = 0;
                     let isAdditive = true;
                     // Provide defaults so even empty structures adapt gracefully
@@ -499,11 +415,11 @@ export default function ReteB2BSelectForm({
                     let maxItemCount = 0;
 
                     // Dynamically scrape all tags to find offer rules constraints
-                    off.tags?.forEach((tag: Tag & { descriptor?: { code?: string } }) => {
+                    off.tags?.forEach((tag: ITag & { descriptor?: { code?: string } }) => {
                         const tCode = tag.code || tag.descriptor?.code;
                         if (tCode === "rules" || tCode === "qualifier" || tCode === "meta") {
                             tag.list?.forEach(
-                                (l: TargetListItem & { descriptor?: { code?: string } }) => {
+                                (l: ITargetListItem & { descriptor?: { code?: string } }) => {
                                     const lCode = l.code || l.descriptor?.code;
                                     if (lCode === "min_value") minVal = parseFloat(l.value || "0");
                                     if (lCode === "item_count")
@@ -530,7 +446,7 @@ export default function ReteB2BSelectForm({
                         // Fallback: Check if there's an explicit item_ids tag group with a list of values
                         if (tCode === "item_ids" && itemIds.length === 0) {
                             if (tag.list) {
-                                itemIds = tag.list.map((l: TargetListItem) => l.value);
+                                itemIds = tag.list.map((l: ITargetListItem) => l.value);
                             }
                         }
                     });
@@ -560,11 +476,11 @@ export default function ReteB2BSelectForm({
         setIsPayloadEditorActive(false);
     };
 
-    const handleChange = (key: keyof RetailerCustomerInput, value: string) => {
+    const handleChange = (key: keyof IRetailerCustomerInput, value: string) => {
         setForm((prev) => ({ ...prev, [key]: value }));
     };
 
-    const handleItemChange = (index: number, key: keyof ReteB2BItem, value: string | number) => {
+    const handleItemChange = (index: number, key: keyof IReteB2BItem, value: string | number) => {
         const updatedItems = [...form.items];
         updatedItems[index] = { ...updatedItems[index], [key]: value };
 

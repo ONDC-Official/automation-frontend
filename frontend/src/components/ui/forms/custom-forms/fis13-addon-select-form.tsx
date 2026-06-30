@@ -6,37 +6,17 @@ import { Input } from "@/components/Shadcn/TextField/input";
 import { Field, FieldLabel } from "@/components/Shadcn/TextField/field";
 import FormDialogShell from "@/components/ui/forms/form-dialog-shell";
 import { toast } from "sonner";
-import { SubmitEventParams } from "@/types/flow-types";
 import { cn } from "@/lib/utils";
-
-interface IAddOn {
-    id: string;
-    descriptor?: {
-        name?: string;
-        code?: string;
-    };
-    price?: {
-        currency?: string;
-        value?: string;
-    };
-    quantity?: {
-        available?: { count?: number };
-        maximum?: { count?: number };
-    };
-}
-
-interface ISelectedAddOn {
-    id: string;
-    quantity: number;
-}
+import {
+    IAddOn,
+    ISelectedAddOn,
+    IFIS13AddonSelectFormProps,
+} from "../types/fis13-addon-select-form-types";
 
 export default function FIS13AddonSelectForm({
     submitEvent,
     referenceData,
-}: {
-    submitEvent: (data: SubmitEventParams) => Promise<void>;
-    referenceData?: Record<string, unknown>;
-}) {
+}: IFIS13AddonSelectFormProps) {
     const addOns = (referenceData?.selected_add_ons ?? []) as IAddOn[];
     const [selected, setSelected] = useState<ISelectedAddOn[]>([]);
     const [isSubmitting, setIsSubmitting] = useState(false);

@@ -11,7 +11,6 @@ import TextField from "@/components/Shadcn/TextField";
 import { Field, FieldLabel } from "@/components/Shadcn/TextField/field";
 import FormDialogShell from "@/components/ui/forms/form-dialog-shell";
 import { useSession } from "@/context/context";
-import { SubmitEventParams } from "@/types/flow-types";
 import { getCompletePayload, getTransactionData } from "@/utils/request-utils";
 
 const ORDER_TYPE_OPTIONS = [
@@ -21,113 +20,39 @@ const ORDER_TYPE_OPTIONS = [
 
 const toComboOptions = (values: string[]) => values.map((value) => ({ value, label: value }));
 
-type CatalogItem = { id: string };
-type TargetListItem = {
-    code: string;
-    value: string;
-};
-type Tag = {
-    code: string;
-    list?: TargetListItem[];
-};
+import {
+    DynamicOfferRule,
+    ICatalogLocation,
+    ICatalogItem,
+    ITargetListItem,
+    ICatalogProvider,
+    ICatalogOffer,
+    ITag,
+    IFormValues,
+    IOnSearchPayload,
+    IRetINVLInitOffersFormProps,
+    DEFAULT_FORM_VALUES,
+} from "../types/retinvl-init-offers-form-types";
 
-export interface DynamicOfferRule {
-    id: string;
-    itemIds: string[];
-    categoryIds: string[];
-    locationIds: string[];
-    minOrderValue?: number;
-    minItemCount?: number;
-    maxItemCount?: number;
-    isAdditive: boolean;
-}
-export type CatalogLocation = { id: string };
-type CatalogOffer = {
-    id: string;
-    descriptor: {
-        code: string;
-    };
-    item_ids?: string[];
-    location_ids?: string[];
-    category_ids?: string[];
-    tags?: Tag[];
-};
-export type CatalogProvider = {
-    id: string;
-    items: CatalogItem[];
-    locations: CatalogLocation[];
-    offers?: CatalogOffer[];
-};
-
-type OnSearchPayload = {
-    message: {
-        catalog: {
-            "bpp/providers": CatalogProvider[];
-        };
-    };
-};
-
-type FormValues = {
-    city_code: string;
-    provider: string;
-    provider_location: string[];
-    location_gps: string;
-    location_pin_code: string;
-    order_type: "ILBN" | "ILFP" | "ILBP";
-    items: {
-        itemId: string;
-        quantity: number;
-        location: string;
-        estimated_price: number;
-    }[];
-    available_offers: string[];
-};
-
-export default function RetINVLInitOffersForm({
-    submitEvent,
-}: {
-    submitEvent: (data: SubmitEventParams) => Promise<void>;
-}) {
+export default function RetINVLInitOffersForm({ submitEvent }: IRetINVLInitOffersFormProps) {
     const { sessionData, activeFlowId } = useSession();
     const [isLoading, setIsLoading] = useState(false);
     const [isDataPasted, setIsDataPasted] = useState(false);
 
-    const { control, handleSubmit, watch } = useForm<FormValues>({
-        defaultValues: {
-            city_code: "",
-            provider: "",
-            provider_location: [],
-            location_gps: "",
-            location_pin_code: "",
-            order_type: "ILBN",
-            items: [
-                {
-                    itemId: "",
-                    quantity: 1,
-                    location: "",
-                    estimated_price: 0,
-                },
-                {
-                    itemId: "",
-                    quantity: 1,
-                    location: "",
-                    estimated_price: 0,
-                },
-            ],
-            available_offers: [],
-        },
+    const { control, handleSubmit, watch } = useForm<IFormValues>({
+        defaultValues: DEFAULT_FORM_VALUES,
     });
 
     const { fields, append, remove } = useFieldArray({
         control,
         name: "items",
     });
-    const [catalogPayload, setCatalogPayload] = useState<OnSearchPayload | null>(null);
+    const [catalogPayload, setCatalogPayload] = useState<IOnSearchPayload | null>(null);
     const [providerOptions, setProviderOptions] = useState<string[]>([]);
     const [itemOptions, setItemOptions] = useState<string[]>([]);
     const [locationOptions, setLocationOptions] = useState<string[]>([]);
     const [offerOptions, setOfferOptions] = useState<string[]>([]);
-    const [providers, setProviders] = useState<CatalogProvider[]>([]);
+    const [providers, setProviders] = useState<ICatalogProvider[]>([]);
     const [dynamicOfferRules, setDynamicOfferRules] = useState<Record<string, DynamicOfferRule>>(
         {}
     );
@@ -240,7 +165,7 @@ export default function RetINVLInitOffersForm({
         ]
     );
 
-    const onSubmit = async (data: FormValues) => {
+    const onSubmit = async (data: IFormValues) => {
         const { valid, errors } = validateFormData(data);
         if (!valid) {
             toast.error(`Form validation failed: ${errors[0]}`);
@@ -262,8 +187,8 @@ export default function RetINVLInitOffersForm({
 
     const processPayload = useCallback((data: unknown) => {
         try {
-            const providers = (data as OnSearchPayload).message.catalog["bpp/providers"];
-            const parsed = data as OnSearchPayload;
+            const providers = (data as IOnSearchPayload).message.catalog["bpp/providers"];
+            const parsed = data as IOnSearchPayload;
             setProviders(providers);
             setCatalogPayload(parsed);
 
@@ -273,9 +198,9 @@ export default function RetINVLInitOffersForm({
             if (provider) {
                 setItemOptions(provider.items?.map((i) => i.id) || []);
 
-                const provLocs = provider.locations?.map((l: CatalogLocation) => l.id) || [];
+                const provLocs = provider.locations?.map((l: ICatalogLocation) => l.id) || [];
                 const offerLocs = (provider.offers || [])
-                    .flatMap((o: CatalogOffer) =>
+                    .flatMap((o: ICatalogOffer) =>
                         (Array.isArray(o.location_ids) ? o.location_ids : []).flatMap(
                             (v: unknown) =>
                                 typeof v === "string"
@@ -291,7 +216,7 @@ export default function RetINVLInitOffersForm({
                 const parsedItemLocations: Record<string, string[]> = {};
                 provider.items?.forEach(
                     (
-                        item: CatalogItem & {
+                        item: ICatalogItem & {
                             price?: { value?: string };
                             category_id?: string;
                             category_ids?: string[];
@@ -320,7 +245,7 @@ export default function RetINVLInitOffersForm({
 
                 const parsedCategoryNames: Record<string, string> = {};
                 (
-                    provider as CatalogProvider & {
+                    provider as ICatalogProvider & {
                         categories?: { id: string; descriptor?: { name?: string } }[];
                     }
                 ).categories?.forEach((cat) => {
@@ -329,7 +254,7 @@ export default function RetINVLInitOffersForm({
                 setCategoryNames(parsedCategoryNames);
 
                 const rules: Record<string, DynamicOfferRule> = {};
-                const collectedOffers: (CatalogOffer & { items?: string[] })[] =
+                const collectedOffers: (ICatalogOffer & { items?: string[] })[] =
                     provider.offers || [];
 
                 collectedOffers.forEach((off) => {
@@ -365,11 +290,11 @@ export default function RetINVLInitOffersForm({
                     let minItemCount = 0;
                     let maxItemCount = 0;
 
-                    off.tags?.forEach((tag: Tag & { descriptor?: { code?: string } }) => {
+                    off.tags?.forEach((tag: ITag & { descriptor?: { code?: string } }) => {
                         const tCode = tag.code || tag.descriptor?.code;
                         if (tCode === "rules" || tCode === "qualifier" || tCode === "meta") {
                             tag.list?.forEach(
-                                (l: TargetListItem & { descriptor?: { code?: string } }) => {
+                                (l: ITargetListItem & { descriptor?: { code?: string } }) => {
                                     const lCode = l.code || l.descriptor?.code;
                                     if (lCode === "min_value") minVal = parseFloat(l.value || "0");
                                     if (lCode === "item_count")
@@ -393,7 +318,7 @@ export default function RetINVLInitOffersForm({
                         }
                         if (tCode === "item_ids" && itemIds.length === 0) {
                             if (tag.list) {
-                                itemIds = tag.list.map((l: TargetListItem) => l.value);
+                                itemIds = tag.list.map((l: ITargetListItem) => l.value);
                             }
                         }
                     });
@@ -452,7 +377,7 @@ export default function RetINVLInitOffersForm({
             const latestOnSearch = onSearchActions[onSearchActions.length - 1];
             const payloadId = latestOnSearch.payloadId;
 
-            const completePayloads = await getCompletePayload<unknown, OnSearchPayload>([
+            const completePayloads = await getCompletePayload<unknown, IOnSearchPayload>([
                 payloadId,
             ]);
             if (!completePayloads || completePayloads.length === 0) {
@@ -711,7 +636,7 @@ export default function RetINVLInitOffersForm({
 
 // ================= VALIDATION =================
 
-function validateFormData(data: FormValues) {
+function validateFormData(data: IFormValues) {
     const errors: string[] = [];
 
     if (!data.order_type) errors.push("Order type required.");

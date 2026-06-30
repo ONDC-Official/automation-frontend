@@ -9,32 +9,19 @@ import { Field, FieldLabel } from "@/components/Shadcn/TextField/field";
 import PayloadEditor from "@/components/ui/mini-components/payload-editor";
 import FormDialogShell from "@/components/ui/forms/form-dialog-shell";
 import { PastePayloadButton } from "@/components/ui/forms/paste-payload-button";
-import { SubmitEventParams } from "@/types/flow-types";
 import { cn } from "@/lib/utils";
+import type {
+    IItem,
+    ISelectedItem,
+    ITrv11210MetroSelectFormProps,
+} from "../types/trv11-210-metro-seat-select-form-types";
+import { DEFAULT_SELECTED_ITEMS } from "../types/trv11-210-metro-seat-select-form-types";
 
-interface IItem {
-    id: string;
-    name: string;
-    maxQuantity: number;
-    minQuantity: number;
-}
-
-interface ISelectedItem {
-    itemId: string;
-    itemQuantity: string;
-}
-
-interface IMetro210SelectProps {
-    submitEvent: (data: SubmitEventParams) => Promise<void>;
-}
-
-export default function Trv11210MetroSelectForm({ submitEvent }: IMetro210SelectProps) {
+export default function Trv11210MetroSelectForm({ submitEvent }: ITrv11210MetroSelectFormProps) {
     const [isPayloadEditorActive, setIsPayloadEditorActive] = useState(false);
     const [errorWhilePaste, setErrorWhilePaste] = useState("");
     const [items, setItems] = useState<IItem[]>([]);
-    const [selectedItems, setSelectedItems] = useState<ISelectedItem[]>([
-        { itemId: "", itemQuantity: "" },
-    ]);
+    const [selectedItems, setSelectedItems] = useState<ISelectedItem[]>(DEFAULT_SELECTED_ITEMS);
 
     const selectedItemIds = selectedItems.map((item) => item.itemId).filter(Boolean);
 

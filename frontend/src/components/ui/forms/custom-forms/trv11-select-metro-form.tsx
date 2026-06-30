@@ -9,37 +9,13 @@ import TextField from "@/components/Shadcn/TextField";
 import PayloadEditor from "@/components/ui/mini-components/payload-editor";
 import FormDialogShell from "@/components/ui/forms/form-dialog-shell";
 import { PastePayloadButton } from "@/components/ui/forms/paste-payload-button";
-import { SubmitEventParams } from "@/types/flow-types";
-
-interface ICatalogItem {
-    id: string;
-    descriptor: { code: string; name: string };
-    price: { currency: string; value: string };
-    quantity: {
-        minimum: { count: number };
-        maximum: { count: number };
-    };
-}
-
-type FormItem = {
-    itemId: string;
-    count: number;
-};
-
-type FormValues = {
-    items: FormItem[];
-};
-
-type OnSearchPayload = {
-    message?: {
-        catalog?: {
-            providers?: Array<{
-                id: string;
-                items?: ICatalogItem[];
-            }>;
-        };
-    };
-};
+import type {
+    ICatalogItem,
+    IFormValues,
+    IOnSearchPayload,
+    ITRV11SelectMetroFormProps,
+} from "../types/trv11-select-metro-form-types";
+import { DEFAULT_FORM_VALUES } from "../types/trv11-select-metro-form-types";
 
 const getItemConstraints = (catalogItems: ICatalogItem[], itemId: string) => {
     const item = catalogItems.find((entry) => entry.id === itemId);
@@ -49,22 +25,16 @@ const getItemConstraints = (catalogItems: ICatalogItem[], itemId: string) => {
     };
 };
 
-export default function TRV11SelectMetroForm({
-    submitEvent,
-}: {
-    submitEvent: (data: SubmitEventParams) => Promise<void>;
-}) {
+export default function TRV11SelectMetroForm({ submitEvent }: ITRV11SelectMetroFormProps) {
     const [isPayloadEditorActive, setIsPayloadEditorActive] = useState(false);
     const [errorWhilePaste, setErrorWhilePaste] = useState("");
     const [catalogItems, setCatalogItems] = useState<ICatalogItem[]>([]);
 
-    const { control, handleSubmit } = useForm<FormValues>({
-        defaultValues: {
-            items: [{ itemId: "", count: 1 }],
-        },
+    const { control, handleSubmit } = useForm<IFormValues>({
+        defaultValues: DEFAULT_FORM_VALUES,
     });
 
-    const { fields, append, remove } = useFieldArray<FormValues, "items">({
+    const { fields, append, remove } = useFieldArray<IFormValues, "items">({
         control,
         name: "items",
     });
@@ -76,7 +46,7 @@ export default function TRV11SelectMetroForm({
         label: `${item.descriptor.name} (${item.id}) — ₹${item.price.value}`,
     }));
 
-    const onSubmit = async (data: FormValues) => {
+    const onSubmit = async (data: IFormValues) => {
         const validItems = data.items.filter((item) => item.itemId !== "");
         if (validItems.length === 0) {
             toast.error("Please select at least one item.");
@@ -102,7 +72,7 @@ export default function TRV11SelectMetroForm({
 
     const handlePaste = (payload: unknown) => {
         try {
-            const parsed = payload as OnSearchPayload;
+            const parsed = payload as IOnSearchPayload;
             if (!parsed?.message?.catalog?.providers) {
                 setErrorWhilePaste("Invalid payload: no providers found.");
                 toast.error("Invalid payload: no providers found.");

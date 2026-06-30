@@ -9,13 +9,15 @@ import TextField from "@/components/Shadcn/TextField";
 import PayloadEditor from "@/components/ui/mini-components/payload-editor";
 import FormDialogShell from "@/components/ui/forms/form-dialog-shell";
 import { PastePayloadButton } from "@/components/ui/forms/paste-payload-button";
-import { IFormData, ICatalogItem, IAirlineSelectProps, DEFAULT_FORM_DATA } from "./airline.types";
-
-type CatalogAddOn = { id: string; descriptor?: { name?: string } };
-type CatalogItem = { id: string; descriptor?: { name?: string }; add_ons?: CatalogAddOn[] };
-type CatalogFulfillment = { id: string };
-type CatalogProvider = { id: string; items?: CatalogItem[]; fulfillments?: CatalogFulfillment[] };
-type OnSearchPayload = { message?: { catalog?: { providers?: CatalogProvider[] } } };
+import {
+    IFormData,
+    ICatalogItem,
+    ICatalogAddOn,
+    ICatalogItemRaw,
+    IOnSearchPayload,
+    IAirlineSelectProps,
+    DEFAULT_FORM_DATA,
+} from "../types/trv12-airline-select-form-types";
 
 export default function TRV12AirlineSelectForm({
     submitEvent,
@@ -43,7 +45,7 @@ export default function TRV12AirlineSelectForm({
 
     const handlePaste = (payload: unknown) => {
         try {
-            const parsed = payload as OnSearchPayload;
+            const parsed = payload as IOnSearchPayload;
             if (!parsed?.message?.catalog?.providers) {
                 throw new Error("Invalid Schema");
             }
@@ -51,10 +53,10 @@ export default function TRV12AirlineSelectForm({
             const provider = parsed.message.catalog.providers[0];
 
             const catalogItems: ICatalogItem[] = (provider.items || []).map(
-                (item: CatalogItem) => ({
+                (item: ICatalogItemRaw) => ({
                     id: item.id,
                     name: item.descriptor?.name || item.id,
-                    addOns: (item.add_ons || []).map((addon: CatalogAddOn) => ({
+                    addOns: (item.add_ons || []).map((addon: ICatalogAddOn) => ({
                         id: addon.id,
                         name: addon.descriptor?.name || addon.id,
                     })),

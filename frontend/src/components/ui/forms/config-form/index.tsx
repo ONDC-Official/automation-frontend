@@ -2,140 +2,69 @@ import { useContext } from "react";
 import { toast } from "sonner";
 import { DatePicker } from "@/components/Shadcn/DatePicker";
 import { DateTimePicker } from "@/components/Shadcn/DateTimePicker";
-import { CheckboxGroup, type ICheckboxOption } from "@/components/Shadcn/Checkbox";
+import { CheckboxGroup } from "@/components/Shadcn/Checkbox";
 import { ComboBox } from "@/components/Shadcn/ComboBox";
 import TextField from "@/components/Shadcn/TextField";
-import { formatFormFieldForPayload } from "../utils/date-utils";
-import { buildSchemaFormSubmit } from "../utils/schema-submit-utils";
-import RET11NestedSelect from "../ret11-nested-select";
-import RET11NestedSelectForm from "../ret11-nested-select-form";
-import GenericForm from "../generic-form";
-import GenericFormWithPaste from "../generic-form-with-paste";
-import { SubmitEventParams } from "../../../../types/flow-types";
-import Ret10GrocerySelectForm from "../custom-forms/ret10-grocery-select-form";
+import { formatFormFieldForPayload } from "@/components/ui/forms/utils/date-utils";
+import { buildSchemaFormSubmit } from "@/components/ui/forms/utils/schema-submit-utils";
+import RET11NestedSelect from "@/components/ui/forms/ret11-nested-select";
+import RET11NestedSelectForm from "@/components/ui/forms/custom-forms/ret11-nested-select-form";
+import GenericForm from "@/components/ui/forms/generic-form";
+import GenericFormWithPaste from "@/components/ui/forms/generic-form-with-paste";
+import { SubmitEventParams } from "@/types/flow-types";
+import Ret10GrocerySelectForm from "@/components/ui/forms/custom-forms/ret10-grocery-select-form";
 import RetINVLInitForm from "@/components/ui/forms/custom-forms/retinvl-init-form";
-import ProtocolHTMLForm from "../custom-forms/protocol-html-form";
-import ProtocolHTMLFormMulti from "../custom-forms/protocol-html-form-multi";
-import TRVSelectForm from "../custom-forms/trv-select-form";
+import ProtocolHTMLForm from "@/components/ui/forms/custom-forms/protocol-html-form";
+import ProtocolHTMLFormMulti from "@/components/ui/forms/custom-forms/protocol-html-form-multi";
+import TRVSelectForm from "@/components/ui/forms/custom-forms/trv-select-form";
 import TRV10SelectForm from "@/components/ui/forms/custom-forms/trv10-select-form";
-import TRV10ScheduleForm from "../custom-forms/trv10-schedule-form";
-import TRV10ScheduleRentalForm from "../custom-forms/trv10-schedule-rental-form";
+import TRV10ScheduleForm from "@/components/ui/forms/custom-forms/trv10-schedule-form";
+import TRV10ScheduleRentalForm from "@/components/ui/forms/custom-forms/trv10-schedule-rental-form";
 import TRV11SelectForm from "@/components/ui/forms/custom-forms/trv11-select-form";
-import TRV11PartialSelectForm from "../custom-forms/trv11-201-partial-select-form";
-import JsonSchemaForm from "../../../../pages/protocol-playground/ui/extras/rsjf-form";
+import TRV11PartialSelectForm from "@/components/ui/forms/custom-forms/trv11-201-partial-select-form";
+import JsonSchemaForm from "@/pages/protocol-playground/ui/extras/rsjf-form";
 import { isRideMapEnabled } from "@components/FlowShared/ride-map-utils";
 import TRV12AirlineSelectForm from "@/components/ui/forms/custom-forms/trv12-airline-select-form";
 import TRV12AirlineSeatSelectForm from "@/components/ui/forms/custom-forms/trv12-airline-seat-select-form";
 import TRV13HotelSelectForm from "@/components/ui/forms/custom-forms/trv13-hotel-select-form";
-import TRV12BusSeatCountSelectionForm from "../custom-forms/trv12-seat-count-bus-selection-form";
-import FinvuRedirectForm from "../custom-forms/finvu-redirect-form";
-import DynamicFormHandler from "../handlers/dynamic-form-handler";
-import ManualDynamicFormHandler from "../handlers/manual-dynamic-form-handler";
-import { SessionContext } from "../../../../context/context";
-import TRV12IntercitySelectForm from "../custom-forms/trv12-intercity-select-form";
-import TRV13HotelSelectProviderForm from "../custom-forms/trv13-hotel-select-provider";
+import TRV12BusSeatCountSelectionForm from "@/components/ui/forms/custom-forms/trv12-seat-count-bus-selection-form";
+import FinvuRedirectForm from "@/components/ui/forms/custom-forms/finvu-redirect-form";
+import DynamicFormHandler from "@/components/ui/forms/handlers/dynamic-form-handler";
+import ManualDynamicFormHandler from "@/components/ui/forms/handlers/manual-dynamic-form-handler";
+import { SessionContext } from "@/context/context";
+import TRV12IntercitySelectForm from "@/components/ui/forms/custom-forms/trv12-intercity-select-form";
+import TRV13HotelSelectProviderForm from "@/components/ui/forms/custom-forms/trv13-hotel-select-provider";
 import FIS13ItemSelectionForm from "@/components/ui/forms/custom-forms/fis13-select-form";
-import TRV10RideHailingSelectForm from "../custom-forms/trv10-201-ride-hailing-select-form";
-import Fis13SearchAccidentalForm from "../custom-forms/fis13-search-accidental-form";
-import Fis13SearchHospicashForm from "../custom-forms/fis13-search-hospicash-form";
-import Fis13SearchTransitForm from "../custom-forms/fis13-search-transit-form";
+import TRV10RideHailingSelectForm from "@/components/ui/forms/custom-forms/trv10-201-ride-hailing-select-form";
+import Fis13SearchAccidentalForm from "@/components/ui/forms/custom-forms/fis13-search-accidental-form";
+import Fis13SearchHospicashForm from "@/components/ui/forms/custom-forms/fis13-search-hospicash-form";
+import Fis13SearchTransitForm from "@/components/ui/forms/custom-forms/fis13-search-transit-form";
 import Fis13SearchDiscoverProductForm from "@/components/ui/forms/custom-forms/fis13-search-discover-product-form";
 import Trv11210MetroSelectForm from "@/components/ui/forms/custom-forms/trv11-210-metro-seat-select-form";
-import Trv11Metro210EndStopUpdateForm from "../custom-forms/trv11-210-metro-end-stop-update-form";
-import Metro210StartEndStopSelection from "../custom-forms/trv11-210-start-end-stop-selection-form";
-import FIS12SelectForm from "../custom-forms/fis12-select-form";
-import FIS13AddonSelectForm from "../custom-forms/fis13-addon-select-form";
-import InsuranceSelectForm from "../custom-forms/insurance-select-form";
-import FIS12SearchForm from "../custom-forms/fis12-search-form";
-import TRV11SelectMetroForm from "../custom-forms/trv11-select-metro-form";
+import Trv11Metro210EndStopUpdateForm from "@/components/ui/forms/custom-forms/trv11-210-metro-end-stop-update-form";
+import Metro210StartEndStopSelection from "@/components/ui/forms/custom-forms/trv11-210-start-end-stop-selection-form";
+import FIS12SelectForm from "@/components/ui/forms/custom-forms/fis12-select-form";
+import FIS13AddonSelectForm from "@/components/ui/forms/custom-forms/fis13-addon-select-form";
+import InsuranceSelectForm from "@/components/ui/forms/custom-forms/insurance-select-form";
+import FIS12SearchForm from "@/components/ui/forms/custom-forms/fis12-search-form";
+import TRV11SelectMetroForm from "@/components/ui/forms/custom-forms/trv11-select-metro-form";
 import { RJSFSchema } from "@rjsf/utils";
-import RetINVLInitILBPForm from "../custom-forms/retinvl-ilbp-form";
-import ReteB2BSelectForm from "../custom-forms/reteb2b-select-form";
-import ReteB2BInitOffersForm from "../custom-forms/reteb2b-init-offers-form";
+import RetINVLInitILBPForm from "@/components/ui/forms/custom-forms/retinvl-ilbp-form";
+import ReteB2BSelectForm from "@/components/ui/forms/custom-forms/reteb2b-select-form";
+import ReteB2BInitOffersForm from "@/components/ui/forms/custom-forms/reteb2b-init-offers-form";
+import TRV11InitMetroForm from "@/components/ui/forms/custom-forms/trv11-init-metro-form";
+import FIS14MutualFundSelectForm from "@/components/ui/forms/custom-forms/fis14-mutual-fund-select-form";
+import FIS14MutualFundRedemptionSelectForm from "@/components/ui/forms/custom-forms/fis14-mutual-fund-redemption-select-form";
+import FIS14MutualFundSIPSelectForm from "@/components/ui/forms/custom-forms/fis14-mutual-fund-sip-select-form";
+import RetINVLInitOffersForm from "@/components/ui/forms/custom-forms/retinvl-init-offers-form";
+import TRV11200MteroStartEndStopSelectionForm from "@/components/ui/forms/custom-forms/trv11-200-start-end-stop-selection-form";
+import TRV11Metro210CommonItemFulfillmentSelectionForm from "@/components/ui/forms/custom-forms/trv11-210-common-item-fulfillment-select-form";
+import ManualIdOverride from "@/components/ui/forms/custom-forms/manual-id-override";
+import { FormConfigType, FormFieldConfigType } from "@/components/ui/forms/config-form/types";
 
-import TRV11InitMetroForm from "../custom-forms/trv11-init-metro-form";
-import FIS14MutualFundSelectForm from "../custom-forms/fis14-mutual-fund-select-form";
-import FIS14MutualFundRedemptionSelectForm from "../custom-forms/fis14-mutual-fund-redemption-select-form";
-import FIS14MutualFundSIPSelectForm from "../custom-forms/fis14-mutual-fund-sip-select-form";
-import RetINVLInitOffersForm from "../custom-forms/retinvl-init-offers-form";
-import TRV11200MteroStartEndStopSelectionForm from "../custom-forms/trv11-200-start-end-stop-selection-form";
-import TRV11Metro210CommonItemFulfillmentSelectionForm from "../custom-forms/trv11-210-common-item-fulfillment-select-form";
-import ManualIdOverride from "../custom-forms/manual-id-override";
+export type { FormConfigType, FormFieldConfigType } from "@/components/ui/forms/config-form/types";
 
-export interface FormFieldConfigType {
-    name: string;
-    label: string;
-    type:
-        | "text"
-        | "select"
-        | "textarea"
-        | "list"
-        | "date"
-        | "checkbox"
-        | "boolean"
-        | "trv12_bus_seat_selection"
-        | "airline_select"
-        | "intercity_select"
-        | "airline_seat_select"
-        | "ret10_grocery_select"
-        | "reteb2b_select"
-        | "reteb2b_init_offers"
-        | "ret11_nestedSelect"
-        | "retinvl_init"
-        | "retinvl_init_offers"
-        | "retinvl_init_ilbp"
-        | "nestedSelect"
-        | "trv_select"
-        | "trv10_select"
-        | "trv10_schedule"
-        | "trv10_schedule_rental"
-        | "trv11_select"
-        | "trv11_201_partial_select"
-        | "hotel_select"
-        | "HTML_FORM"
-        | "HTML_FORM_MULTI"
-        | "FINVU_REDIRECT"
-        | "DYNAMIC_FORM"
-        | "MANUAL_DYNAMIC_FORM"
-        | "fis13_select"
-        | "trv13_select_provider"
-        | "trv10_201_select"
-        | "search_accidental_fis13"
-        | "search_hospicash_fis13"
-        | "search_transit_fis13"
-        | "search_discover_product_fis13"
-        | "trv11_210_select"
-        | "trv11_210_update_end_station"
-        | "trv11_210_start_end_stop_selection"
-        | "trv11_start_end_stop_selection_200"
-        | "fis12_select_pl"
-        | "fis12_search_pl"
-        | "fis13_addon_select"
-        | "select_metro_trv11"
-        | "init_metro_trv11"
-        | "datetime-local"
-        | "fis14_mutul_fund_select"
-        | "fis14_mf_redemption_select"
-        | "fis14_mf_sip_select"
-        | "insurance_select"
-        | "manual_id"
-        | "trv11_210_common_item_fulfillment_select";
-
-    payloadField: string;
-    values?: string[];
-    defaultValue?: string;
-    input?: FormFieldConfigType[];
-    options?: ICheckboxOption[];
-    default?: string | string[] | number | boolean | null;
-    display?: boolean;
-    reference?: string;
-    schema?: RJSFSchema;
-    required?: boolean;
-}
-
-export type FormConfigType = FormFieldConfigType[];
-
-export default function FormConfig({
+export const FormConfig = ({
     formConfig,
     submitEvent,
     referenceData,
@@ -145,7 +74,7 @@ export default function FormConfig({
     submitEvent: (data: SubmitEventParams) => Promise<void>;
     referenceData?: Record<string, unknown>;
     flowId?: string;
-}) {
+}) => {
     const sessionContext = useContext(SessionContext);
     const sessionId = sessionContext?.sessionId || "";
     const sessionData = sessionContext?.sessionData;
@@ -555,4 +484,4 @@ export default function FormConfig({
             })}
         </FormComponent>
     );
-}
+};

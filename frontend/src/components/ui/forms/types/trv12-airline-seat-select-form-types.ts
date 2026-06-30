@@ -1,31 +1,5 @@
 import { SubmitEventParams } from "@/types/flow-types";
 
-// Airline Select interfaces
-export interface IFormItem {
-    itemId: string;
-    count: number;
-    addOnId: string;
-    addOnCount: number;
-}
-
-export interface IFormData {
-    provider: string;
-    fulfillment: string;
-    items: IFormItem[];
-}
-
-export interface ICatalogItem {
-    id: string;
-    name: string;
-    addOns: { id: string; name: string }[];
-}
-
-export interface IAirlineSelectProps {
-    submitEvent: (data: SubmitEventParams) => Promise<void>;
-    defaultValues?: IFormData;
-}
-
-// Airline Seat Select interfaces
 export interface ISeatFormData {
     seats: { seatNumber: string }[];
 }
@@ -35,25 +9,9 @@ export interface IAirlineSeatSelectProps {
     defaultValues?: ISeatFormData;
 }
 
-// Default values for components - used as fallback when no props provided
-export const DEFAULT_FORM_DATA: IFormData = {
-    provider: "",
-    fulfillment: "",
-    items: [
-        {
-            itemId: "",
-            count: 1,
-            addOnId: "",
-            addOnCount: 1,
-        },
-    ],
-};
-
 export const DEFAULT_SEAT_FORM_DATA: ISeatFormData = {
     seats: [{ seatNumber: "" }],
 };
-
-// --- Payload Parsing Interfaces ---
 
 export interface IDescriptor {
     code?: string;
@@ -74,15 +32,8 @@ export interface ITag {
 
 export interface IItem {
     id: string;
-    descriptor: {
-        name: string;
-        code: string;
-    };
-    quantity: {
-        selected: {
-            count: number;
-        };
-    };
+    descriptor: { name: string; code: string };
+    quantity: { selected: { count: number } };
     tags?: ITag[];
     category_ids?: string[];
     fulfillment_ids?: string[];
@@ -116,7 +67,6 @@ export interface ISelectPayload {
     message: IProtocolMessage;
 }
 
-// Seat Grid Structures
 export interface IVehicleGrid {
     xMax: number;
     yMax: number;
@@ -141,6 +91,6 @@ export interface IParsedFlightData {
     items: IItem[];
     fulfillmentId: string;
     grid: IVehicleGrid;
-    availableSeats: ISeatDetail[]; // Extracted from TICKET fulfillments
+    availableSeats: ISeatDetail[];
     providerId?: string;
 }

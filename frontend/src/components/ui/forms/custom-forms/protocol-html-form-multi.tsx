@@ -6,12 +6,12 @@ import { PlusIcon, TrashIcon } from "@heroicons/react/24/outline";
 import { Button } from "@/components/Shadcn/Button/button";
 import FormDialogShell from "@/components/ui/forms/form-dialog-shell";
 import { SubmitEventParams } from "@/types/flow-types";
-import { FormFieldConfigType } from "../config-form/config-form";
+import { FormFieldConfigType } from "@/components/ui/forms/config-form/types";
 import ProtocolHtmlFieldRenderer from "./protocol-html-field-renderer";
 import { cn } from "@/lib/utils";
 import { htmlFormSubmit } from "@utils/request-utils";
+import { parseFormHtml } from "./protocol-html-form";
 import {
-    parseFormHtml,
     ParsedForm,
     AnyField,
     ValueState,
@@ -20,7 +20,7 @@ import {
     RadioGroupField,
     CheckboxSingleField,
     CheckboxGroupField,
-} from "./protocol-html-form";
+} from "../types/protocol-html-form-types";
 
 function createDefaultEntry(fields: AnyField[]): ValueState {
     const v: ValueState = {};

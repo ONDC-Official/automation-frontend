@@ -1,6 +1,5 @@
 import { SubmitEventParams } from "@/types/flow-types";
 
-// Hotel Select interfaces
 export interface IHotelCatalogItem {
     id: string;
     name: string;
@@ -22,7 +21,6 @@ export interface IHotelSelectProps {
     submitEvent: (params: SubmitEventParams) => Promise<void>;
 }
 
-// Default values
 export const DEFAULT_HOTEL_FORM_DATA: IHotelFormData = {
     itemId: "",
     quantity: 1,

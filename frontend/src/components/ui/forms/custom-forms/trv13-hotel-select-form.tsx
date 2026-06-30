@@ -3,7 +3,7 @@ import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 
 import { ComboBoxControl } from "@/components/Shadcn/ComboBox";
-import { Button } from "@/components/Shadcn/Button/button";
+import { Button } from "@/components/Shadcn/Button";
 import TextField from "@/components/Shadcn/TextField";
 import PayloadEditor from "@/components/ui/mini-components/payload-editor";
 import FormDialogShell from "@/components/ui/forms/form-dialog-shell";
@@ -13,7 +13,7 @@ import {
     IHotelFormData,
     IHotelSelectProps,
     DEFAULT_HOTEL_FORM_DATA,
-} from "./hotel.types";
+} from "../types/trv13-hotel-select-form-types";
 import { cn } from "@/lib/utils";
 
 export default function TRV13HotelSelectForm({ submitEvent }: IHotelSelectProps) {

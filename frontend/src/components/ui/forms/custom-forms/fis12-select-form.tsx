@@ -8,61 +8,21 @@ import { Button } from "@/components/Shadcn/Button/button";
 import PayloadEditor from "@/components/ui/mini-components/payload-editor";
 import FormDialogShell from "@/components/ui/forms/form-dialog-shell";
 import { PastePayloadButton } from "@/components/ui/forms/paste-payload-button";
-import { SubmitEventParams } from "@/types/flow-types";
 import { cn } from "@/lib/utils";
+import {
+    IProvider,
+    IFormValues,
+    ICatalogPayload,
+    IFIS12SelectFormProps,
+    DEFAULT_FORM_VALUES,
+} from "../types/fis12-select-form-types";
 
-interface IDescriptor {
-    name?: string;
-    code?: string;
-    short_desc?: string;
-}
-
-interface IPrice {
-    currency: string;
-    value: string;
-}
-
-interface IItem {
-    id: string;
-    descriptor?: IDescriptor;
-    price?: IPrice;
-    parent_item_id?: string;
-    [key: string]: unknown;
-}
-
-interface IProvider {
-    id: string;
-    descriptor?: IDescriptor;
-    items?: IItem[];
-    [key: string]: unknown;
-}
-
-interface IFormValues {
-    providerId: string;
-    itemId: string;
-}
-
-interface ICatalogPayload {
-    message?: {
-        catalog?: {
-            providers?: IProvider[];
-        };
-    };
-}
-
-export default function FIS12SelectForm({
-    submitEvent,
-}: {
-    submitEvent: (data: SubmitEventParams) => Promise<void>;
-}) {
+export default function FIS12SelectForm({ submitEvent }: IFIS12SelectFormProps) {
     const [isPayloadEditorActive, setIsPayloadEditorActive] = useState(false);
     const [extractedProviders, setExtractedProviders] = useState<IProvider[]>([]);
 
     const { control, handleSubmit, setValue, watch } = useForm<IFormValues>({
-        defaultValues: {
-            providerId: "",
-            itemId: "",
-        },
+        defaultValues: DEFAULT_FORM_VALUES,
     });
 
     const providerId = watch("providerId");

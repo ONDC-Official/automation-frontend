@@ -9,57 +9,28 @@ import TextField from "@/components/Shadcn/TextField";
 import PayloadEditor from "@/components/ui/mini-components/payload-editor";
 import FormDialogShell from "@/components/ui/forms/form-dialog-shell";
 import { PastePayloadButton } from "@/components/ui/forms/paste-payload-button";
-import { SubmitEventParams } from "@/types/flow-types";
 import { cn } from "@/lib/utils";
+import type {
+    IFormValues,
+    IOnSearchPayload,
+    IExtractedItem,
+    ITRV10SelectFormProps,
+} from "../types/trv10-select-form-types";
 
-interface IAddOnInfo {
-    id: string;
-    maxQuantity: number;
-}
-
-interface IExtractedItem {
-    itemid: string;
-    providerid: string;
-    addOns: IAddOnInfo[];
-}
-
-type AddOnSelection = { id: string; quantity: number };
-
-type FormItem = {
-    itemId: string;
-    count: number;
-    addOns: AddOnSelection[];
-    providerid: string;
-};
-
-type FormValues = {
-    provider: string;
-    items: FormItem[];
-};
-
-type CatalogAddOn = { id: string; quantity?: { maximum?: { count?: number } } };
-type CatalogItem = { id: string; add_ons?: CatalogAddOn[] };
-type CatalogProvider = { id: string; items?: CatalogItem[] };
-type OnSearchPayload = { message?: { catalog?: { providers?: CatalogProvider[] } } };
-
-export default function TRV10SelectForm({
-    submitEvent,
-}: {
-    submitEvent: (data: SubmitEventParams) => Promise<void>;
-}) {
+export default function TRV10SelectForm({ submitEvent }: ITRV10SelectFormProps) {
     const [isPayloadEditorActive, setIsPayloadEditorActive] = useState(false);
     const [errorWhilePaste, setErrorWhilePaste] = useState("");
     const [itemOptions, setItemOptions] = useState<IExtractedItem[]>([]);
     const [addOnPickerKeys, setAddOnPickerKeys] = useState<Record<number, number>>({});
 
-    const { control, handleSubmit, watch, setValue, getValues } = useForm<FormValues>({
+    const { control, handleSubmit, watch, setValue, getValues } = useForm<IFormValues>({
         defaultValues: {
             provider: "",
             items: [{ itemId: "", count: 1, addOns: [], providerid: "" }],
         },
     });
 
-    const { fields, append, remove } = useFieldArray<FormValues, "items">({
+    const { fields, append, remove } = useFieldArray<IFormValues, "items">({
         control,
         name: "items",
     });
@@ -71,7 +42,7 @@ export default function TRV10SelectForm({
         label: option.itemid,
     }));
 
-    const onSubmit = async (data: FormValues) => {
+    const onSubmit = async (data: IFormValues) => {
         const formattedData = {
             ...data,
             items: data.items.map((item) => ({
@@ -90,7 +61,7 @@ export default function TRV10SelectForm({
 
     const handlePaste = (payload: unknown) => {
         try {
-            const parsed = payload as OnSearchPayload;
+            const parsed = payload as IOnSearchPayload;
             if (!parsed?.message?.catalog?.providers) return;
 
             const providers = parsed.message.catalog.providers;

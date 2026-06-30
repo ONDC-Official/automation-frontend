@@ -8,8 +8,14 @@ import { Button } from "@/components/Shadcn/Button/button";
 import PayloadEditor from "@/components/ui/mini-components/payload-editor";
 import FormDialogShell from "@/components/ui/forms/form-dialog-shell";
 import { PastePayloadButton } from "@/components/ui/forms/paste-payload-button";
-import { SubmitEventParams } from "@/types/flow-types";
 import { cn } from "@/lib/utils";
+import type {
+    IProvider,
+    IFormValues,
+    ICatalogPayload,
+    IFIS12SearchFormProps,
+} from "../types/fis12-search-form-types";
+import { DEFAULT_FORM_VALUES } from "../types/fis12-search-form-types";
 
 const uuidv4 = (): string =>
     "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (char) => {
@@ -18,75 +24,12 @@ const uuidv4 = (): string =>
         return value.toString(16);
     });
 
-interface IDescriptor {
-    name?: string;
-    code?: string;
-    short_desc?: string;
-    long_desc?: string;
-}
-
-interface IXInputForm {
-    id: string;
-    mime_type?: string;
-    url?: string;
-    multiple_sumbissions?: boolean;
-    resubmit?: boolean;
-}
-
-interface IXInputHead {
-    descriptor?: { name?: string };
-    headings?: string[];
-    index?: { cur: number; max: number; min: number };
-}
-
-interface IXInput {
-    form: IXInputForm;
-    head?: IXInputHead;
-    required?: boolean;
-}
-
-interface IItem {
-    id: string;
-    descriptor?: IDescriptor;
-    category_ids?: string[];
-    xinput?: IXInput;
-    [key: string]: unknown;
-}
-
-interface IProvider {
-    id: string;
-    descriptor?: IDescriptor & { images?: { url: string; size_type?: string }[] };
-    items?: IItem[];
-    categories?: { id: string; descriptor?: IDescriptor; parent_category_id?: string }[];
-    [key: string]: unknown;
-}
-
-interface IFormValues {
-    providerId: string;
-    itemId: string;
-}
-
-interface ICatalogPayload {
-    message?: {
-        catalog?: {
-            providers?: IProvider[];
-        };
-    };
-}
-
-export default function FIS12SearchForm({
-    submitEvent,
-}: {
-    submitEvent: (data: SubmitEventParams) => Promise<void>;
-}) {
+export default function FIS12SearchForm({ submitEvent }: IFIS12SearchFormProps) {
     const [isPayloadEditorActive, setIsPayloadEditorActive] = useState(false);
     const [extractedProviders, setExtractedProviders] = useState<IProvider[]>([]);
 
     const { control, handleSubmit, setValue, watch } = useForm<IFormValues>({
-        defaultValues: {
-            providerId: "",
-            itemId: "",
-        },
+        defaultValues: DEFAULT_FORM_VALUES,
     });
 
     const providerId = watch("providerId");

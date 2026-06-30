@@ -4,117 +4,24 @@ import { AxiosResponse } from "axios";
 
 import { Button } from "@/components/Shadcn/Button/button";
 import FormDialogShell from "@/components/ui/forms/form-dialog-shell";
-import { SubmitEventParams } from "@/types/flow-types";
-import { FormFieldConfigType } from "../config-form/config-form";
 import ProtocolHtmlFieldRenderer from "./protocol-html-field-renderer";
+import type {
+    BaseField,
+    TextLikeField,
+    TextareaField,
+    SelectField,
+    RadioGroupField,
+    CheckboxSingleField,
+    CheckboxGroupField,
+    FileField,
+    HiddenField,
+    AnyField,
+    ParsedForm,
+    ValueState,
+    IProtocolHtmlFormProps,
+} from "../types/protocol-html-form-types";
 
 import { htmlFormSubmit } from "@utils/request-utils";
-// --- Types -------------------------------------------------------------------
-
-type BaseField = {
-    kind:
-        | "textlike"
-        | "textarea"
-        | "select"
-        | "radio-group"
-        | "checkbox-single"
-        | "checkbox-group"
-        | "file"
-        | "hidden";
-    name: string;
-    label?: string;
-    required?: boolean;
-    disabled?: boolean;
-    id?: string | null;
-    // constraints
-    min?: string | number;
-    max?: string | number;
-    step?: string | number;
-    pattern?: string;
-};
-
-export type TextLikeField = BaseField & {
-    kind: "textlike";
-    inputType:
-        | "text"
-        | "password"
-        | "email"
-        | "number"
-        | "date"
-        | "datetime-local"
-        | "month"
-        | "time"
-        | "url"
-        | "tel"
-        | "search";
-    defaultValue?: string;
-    placeholder?: string;
-};
-
-export type TextareaField = BaseField & {
-    kind: "textarea";
-    defaultValue?: string;
-    placeholder?: string;
-    rows?: number;
-};
-
-type SelectOption = { value: string; label: string; selected?: boolean };
-export type SelectField = BaseField & {
-    kind: "select";
-    multiple?: boolean;
-    options: SelectOption[];
-};
-
-export type RadioGroupField = BaseField & {
-    kind: "radio-group";
-    options: { value: string; label?: string; checked?: boolean }[];
-};
-
-export type CheckboxSingleField = BaseField & {
-    kind: "checkbox-single";
-    valueAttr?: string; // default "on" if not present in HTML
-    checked?: boolean;
-};
-
-export type CheckboxGroupField = BaseField & {
-    kind: "checkbox-group";
-    options: { value: string; label?: string; checked?: boolean }[];
-};
-
-export type FileField = BaseField & {
-    kind: "file";
-    multiple?: boolean;
-    accept?: string | null;
-};
-
-export type HiddenField = BaseField & {
-    kind: "hidden";
-    value: string;
-};
-
-export type AnyField =
-    | TextLikeField
-    | TextareaField
-    | SelectField
-    | RadioGroupField
-    | CheckboxSingleField
-    | CheckboxGroupField
-    | FileField
-    | HiddenField;
-
-export type ParsedForm = {
-    method: string;
-    action: string;
-    enctype?: string | null;
-    fields: AnyField[];
-};
-
-// Value state type for the rebuilt React form
-export type ValueState = Record<
-    string,
-    string | string[] | boolean | File | File[] | null | undefined
->;
-
 // --- Helper: label resolution -------------------------------------------------
 
 function getLabelForInput(input: Element, formEl: HTMLFormElement): string | undefined {
@@ -325,19 +232,11 @@ export function parseFormHtml(formHtml: string): ParsedForm {
     return { method, action, enctype, fields };
 }
 
-// --- Component -------------------------------------------------------any--------
-
-type Props = {
-    submitEvent: (data: SubmitEventParams) => Promise<void>;
-    referenceData?: Record<string, unknown>;
-    HtmlFormConfigInFlow: FormFieldConfigType;
-};
-
 export default function ProtocolHTMLForm({
     submitEvent,
     referenceData,
     HtmlFormConfigInFlow,
-}: Props) {
+}: IProtocolHtmlFormProps) {
     const formHtml = useMemo<string>(() => {
         const value = queryJsonPath(
             { reference_data: referenceData },

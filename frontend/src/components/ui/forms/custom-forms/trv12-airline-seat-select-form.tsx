@@ -14,7 +14,7 @@ import {
     ITag,
     ISeatDetail,
     IItem,
-} from "./airline.types";
+} from "../types/trv12-airline-seat-select-form-types";
 
 export default function TRV12AirlineSeatSelectForm({ submitEvent }: IAirlineSeatSelectProps) {
     const [isPayloadEditorActive, setIsPayloadEditorActive] = useState(false);

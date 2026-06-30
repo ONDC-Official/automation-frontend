@@ -8,39 +8,21 @@ import TextField from "@/components/Shadcn/TextField";
 import PayloadEditor from "@/components/ui/mini-components/payload-editor";
 import FormDialogShell from "@/components/ui/forms/form-dialog-shell";
 import { PastePayloadButton } from "@/components/ui/forms/paste-payload-button";
-import { SubmitEventParams } from "@/types/flow-types";
 import { cn } from "@/lib/utils";
+import {
+    IHotelProvider,
+    IHotelProviderFormData,
+    IHotelProviderSelectProps,
+    DEFAULT_HOTEL_PROVIDER_FORM_DATA,
+} from "../types/trv13-hotel-select-provider-types";
 
-interface IHotelProvider {
-    id: string;
-    name: string;
-}
-
-interface IHotelFormData {
-    providerId: string;
-    providerName: string;
-    checkInDate: string;
-    checkOutDate: string;
-}
-
-interface IHotelSelectProps {
-    submitEvent: (params: SubmitEventParams) => Promise<void>;
-}
-
-const DEFAULT_HOTEL_FORM_DATA: IHotelFormData = {
-    providerId: "",
-    providerName: "",
-    checkInDate: "",
-    checkOutDate: "",
-};
-
-export default function TRV13HotelSelectProviderForm({ submitEvent }: IHotelSelectProps) {
+export default function TRV13HotelSelectProviderForm({ submitEvent }: IHotelProviderSelectProps) {
     const [isPayloadEditorActive, setIsPayloadEditorActive] = useState(false);
     const [errorWhilePaste, setErrorWhilePaste] = useState("");
     const [availableProviders, setAvailableProviders] = useState<IHotelProvider[]>([]);
 
-    const { control, handleSubmit, reset, setValue } = useForm<IHotelFormData>({
-        defaultValues: DEFAULT_HOTEL_FORM_DATA,
+    const { control, handleSubmit, reset, setValue } = useForm<IHotelProviderFormData>({
+        defaultValues: DEFAULT_HOTEL_PROVIDER_FORM_DATA,
     });
 
     const handlePaste = (payload: Record<string, unknown>) => {
@@ -84,7 +66,7 @@ export default function TRV13HotelSelectProviderForm({ submitEvent }: IHotelSele
         setIsPayloadEditorActive(false);
     };
 
-    const onSubmit = async (data: IHotelFormData) => {
+    const onSubmit = async (data: IHotelProviderFormData) => {
         const convertToISO = (dateString: string): string => {
             if (!dateString) return "";
             try {

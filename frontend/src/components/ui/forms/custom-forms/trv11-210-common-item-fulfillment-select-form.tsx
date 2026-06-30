@@ -10,57 +10,11 @@ import FormDialogShell from "@/components/ui/forms/form-dialog-shell";
 import { PastePayloadButton } from "@/components/ui/forms/paste-payload-button";
 import { SubmitEventParams } from "@/types/flow-types";
 import { cn } from "@/lib/utils";
-
-interface IItem {
-    id: string;
-    descriptor?: {
-        name?: string;
-        code?: string;
-    };
-    fulfillment_ids?: string[];
-    quantity?: {
-        minimum?: { count: number };
-        maximum?: { count: number };
-    };
-}
-
-interface IFulfillmentCred {
-    type: string;
-    id?: string;
-}
-
-interface IFulfillment {
-    id: string;
-    type: string;
-    customer?: {
-        person?: {
-            creds?: IFulfillmentCred[];
-        };
-    };
-}
-
-interface IProvider {
-    id: string;
-    descriptor?: {
-        name?: string;
-    };
-    items?: IItem[];
-    fulfillments?: IFulfillment[];
-}
-
-interface IOnSearchPayload {
-    context: Record<string, unknown>;
-    message: {
-        catalog: {
-            providers: IProvider[];
-        };
-    };
-}
-
-interface IMetroCommonItemFulfillmentProps {
-    submitEvent: (data: SubmitEventParams) => Promise<void>;
-    flowId?: string;
-}
+import type {
+    IOnSearchPayload,
+    IProvider,
+    ITRV11Metro210CommonItemFulfillmentSelectionFormProps,
+} from "../types/trv11-210-common-item-fulfillment-select-form-types";
 
 const METRO_UNLIMITED_PASS_FLOW = "METRO_UNLIMITED_PASS_FLOW";
 const METRO_CARD_PURCHASE = "METRO_CARD_PURCHASE";
@@ -81,7 +35,7 @@ const FULFILLMENT_TYPE_FILTER: Record<string, string> = {
 export default function TRV11Metro210CommonItemFulfillmentSelectionForm({
     submitEvent,
     flowId,
-}: IMetroCommonItemFulfillmentProps) {
+}: ITRV11Metro210CommonItemFulfillmentSelectionFormProps) {
     const [isPayloadEditorActive, setIsPayloadEditorActive] = useState(false);
     const [jsonPayload, setJsonPayload] = useState("");
     const [providers, setProviders] = useState<IProvider[]>([]);

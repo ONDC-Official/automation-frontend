@@ -8,47 +8,21 @@ import TextField from "@/components/Shadcn/TextField";
 import PayloadEditor from "@/components/ui/mini-components/payload-editor";
 import FormDialogShell from "@/components/ui/forms/form-dialog-shell";
 import { PastePayloadButton } from "@/components/ui/forms/paste-payload-button";
-import { SubmitEventParams } from "@/types/flow-types";
+import {
+    ICatalogItem,
+    IOnSearchPayload,
+    IFormData,
+    ITRV12IntercitySelectProps,
+    DEFAULT_FORM_DATA,
+} from "../types/trv12-intercity-select-form-types";
 
-interface ICatalogItem {
-    id: string;
-}
-
-interface IOnSearchPayload {
-    message?: {
-        catalog?: {
-            providers?: Array<{
-                id: string;
-                fulfillments?: Array<{ id: string }>;
-                items?: ICatalogItem[];
-            }>;
-        };
-    };
-}
-
-interface IFormData {
-    provider: string;
-    fulfillment: string;
-    itemId: string;
-    count: number;
-}
-
-export default function TRV12IntercitySelectForm({
-    submitEvent,
-}: {
-    submitEvent: (data: SubmitEventParams) => Promise<void>;
-}) {
+export default function TRV12IntercitySelectForm({ submitEvent }: ITRV12IntercitySelectProps) {
     const [isPayloadEditorActive, setIsPayloadEditorActive] = useState(false);
     const [errorWhilePaste, setErrorWhilePaste] = useState("");
     const [catalogItems, setCatalogItems] = useState<ICatalogItem[]>([]);
 
     const { control, handleSubmit, setValue } = useForm<IFormData>({
-        defaultValues: {
-            provider: "",
-            fulfillment: "",
-            itemId: "",
-            count: 1,
-        },
+        defaultValues: DEFAULT_FORM_DATA,
     });
 
     const handlePaste = (payload: unknown) => {

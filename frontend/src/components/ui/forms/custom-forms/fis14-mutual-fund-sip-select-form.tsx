@@ -10,88 +10,18 @@ import { Field, FieldLabel } from "@/components/Shadcn/TextField/field";
 import PayloadEditor from "@/components/ui/mini-components/payload-editor";
 import FormDialogShell from "@/components/ui/forms/form-dialog-shell";
 import { PastePayloadButton } from "@/components/ui/forms/paste-payload-button";
-import { SubmitEventParams } from "@/types/flow-types";
-import { FormFieldConfigType } from "../config-form/config-form";
 import { cn } from "@/lib/utils";
+import type {
+    IRawTag,
+    IOnSearchPayload,
+    IThresholdInfo,
+    IParsedProvider,
+    ICatalogData,
+    IFormValues,
+    IFIS14MutualFundSIPSelectFormProps,
+} from "../types/fis14-mutual-fund-sip-select-form-types";
 
-interface RawTag {
-    descriptor?: { name?: string; code?: string };
-    list?: { descriptor?: { name?: string; code?: string }; value?: string }[];
-}
-interface RawItem {
-    id: string;
-    descriptor?: { name?: string; code?: string };
-    parent_item_id?: string;
-    fulfillment_ids?: string[];
-    tags?: RawTag[];
-}
-interface RawFulfillment {
-    id: string;
-    type: string;
-    tags?: RawTag[];
-}
-interface RawProvider {
-    id: string;
-    descriptor?: { name?: string };
-    items?: RawItem[];
-    fulfillments?: RawFulfillment[];
-}
-interface OnSearchPayload {
-    context?: Record<string, unknown>;
-    message?: { catalog?: { providers?: RawProvider[] } };
-}
-
-interface ThresholdInfo {
-    frequency?: string;
-    frequencyDates?: string;
-    frequencyDayType?: string;
-    amountMin?: string;
-    amountMax?: string;
-    amountMultiples?: string;
-    installmentsMin?: string;
-    installmentsMax?: string;
-    cumulativeAmountMin?: string;
-}
-interface ParsedFulfillment {
-    id: string;
-    type: string;
-    thresholds: ThresholdInfo;
-}
-interface ParsedItem {
-    id: string;
-    name: string;
-    fulfillmentIds: string[];
-}
-interface ParsedProvider {
-    id: string;
-    name: string;
-    items: ParsedItem[];
-    fulfillments: ParsedFulfillment[];
-}
-interface CatalogData {
-    providers: ParsedProvider[];
-}
-
-interface AgentCred {
-    id: string;
-    type: string;
-}
-interface FormValues {
-    providerId: string;
-    itemId: string;
-    fulfillmentId: string;
-    amount: string;
-    installments: string;
-    startDate: string;
-    sipDay: string;
-    customerPersonId: string;
-    folioId: string;
-    agentPersonId: string;
-    agentCreds: AgentCred[];
-    staticTermsUrl: string;
-}
-
-function parseThresholds(tags?: RawTag[]): ThresholdInfo {
+function parseThresholds(tags?: IRawTag[]): IThresholdInfo {
     const thresholdTag = tags?.find((t) => t.descriptor?.code === "THRESHOLDS");
     if (!thresholdTag) return {};
     const get = (code: string) =>
@@ -128,13 +58,10 @@ function buildFrequency(
 export default function FIS14MutualFundSIPSelectForm({
     submitEvent,
     formConfig = [],
-}: {
-    submitEvent: (data: SubmitEventParams) => Promise<void>;
-    formConfig?: FormFieldConfigType[];
-}) {
+}: IFIS14MutualFundSIPSelectFormProps) {
     const extraFields = formConfig.filter((f) => f.type !== "fis14_mf_sip_select");
     const [isPayloadEditorActive, setIsPayloadEditorActive] = useState(false);
-    const [catalog, setCatalog] = useState<CatalogData | null>(null);
+    const [catalog, setCatalog] = useState<ICatalogData | null>(null);
     const [extraData, setExtraData] = useState<Record<string, string>>(
         Object.fromEntries(extraFields.map((f) => [f.name, String(f.default ?? "")]))
     );
@@ -146,7 +73,7 @@ export default function FIS14MutualFundSIPSelectForm({
         watch,
         setValue,
         formState: { errors },
-    } = useForm<FormValues>({
+    } = useForm<IFormValues>({
         defaultValues: {
             providerId: "",
             itemId: "",
@@ -203,11 +130,11 @@ export default function FIS14MutualFundSIPSelectForm({
 
     const handlePaste = (payload: unknown) => {
         try {
-            const raw = payload as OnSearchPayload;
+            const raw = payload as IOnSearchPayload;
             const rawProviders = raw?.message?.catalog?.providers;
             if (!rawProviders?.length) throw new Error("No providers");
 
-            const providers: ParsedProvider[] = rawProviders.map((p) => ({
+            const providers: IParsedProvider[] = rawProviders.map((p) => ({
                 id: p.id,
                 name: p.descriptor?.name ?? p.id,
                 items: (p.items ?? [])
@@ -234,7 +161,7 @@ export default function FIS14MutualFundSIPSelectForm({
         }
     };
 
-    const onSubmit = async (data: FormValues) => {
+    const onSubmit = async (data: IFormValues) => {
         if (!catalog) {
             toast.error("Paste an on_search payload first");
             return;

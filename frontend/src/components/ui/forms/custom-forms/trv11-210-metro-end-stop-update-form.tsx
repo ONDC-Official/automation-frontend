@@ -7,43 +7,15 @@ import PayloadEditor from "@/components/ui/mini-components/payload-editor";
 import FormDialogShell from "@/components/ui/forms/form-dialog-shell";
 import { PastePayloadButton } from "@/components/ui/forms/paste-payload-button";
 
-interface IStop {
-    id: string;
-    type: string;
-    location?: {
-        descriptor?: {
-            name?: string;
-            code?: string;
-        };
-        gps?: string;
-    };
-}
+import type {
+    IStop,
+    IOnSearchPayload,
+    ITrv11Metro210EndStopUpdateFormProps,
+} from "../types/trv11-210-metro-end-stop-update-form-types";
 
-interface IFulfillment {
-    id: string;
-    type: string;
-    stops?: IStop[];
-}
-
-interface IOnSearchPayload {
-    context: Record<string, unknown>;
-    message: {
-        catalog: {
-            providers: Array<{
-                fulfillments: IFulfillment[];
-            }>;
-        };
-    };
-}
-
-interface IMetroEndStopProps {
-    submitEvent: (data: {
-        jsonPath: Record<string, string | number>;
-        formData: Record<string, string>;
-    }) => Promise<void>;
-}
-
-export default function Trv11Metro210EndStopUpdateForm({ submitEvent }: IMetroEndStopProps) {
+export default function Trv11Metro210EndStopUpdateForm({
+    submitEvent,
+}: ITrv11Metro210EndStopUpdateFormProps) {
     const [isPayloadEditorActive, setIsPayloadEditorActive] = useState(false);
     const [stops, setStops] = useState<IStop[]>([]);
     const [selectedStopId, setSelectedStopId] = useState("");

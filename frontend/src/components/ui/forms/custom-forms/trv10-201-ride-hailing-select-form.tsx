@@ -8,51 +8,23 @@ import TextField from "@/components/Shadcn/TextField";
 import PayloadEditor from "@/components/ui/mini-components/payload-editor";
 import FormDialogShell from "@/components/ui/forms/form-dialog-shell";
 import { PastePayloadButton } from "@/components/ui/forms/paste-payload-button";
-import { SubmitEventParams } from "@/types/flow-types";
+import {
+    IFormData,
+    IProvider,
+    IOnSearchPayload,
+    ITRV10RideHailingSelectFormProps,
+    DEFAULT_FORM_DATA,
+} from "../types/trv10-201-ride-hailing-select-form-types";
 
-interface IFormData {
-    providerId: string;
-    itemId: string;
-    fulfillmentId: string;
-}
-
-interface IProvider {
-    id: string;
-    items: { id: string; name: string; fulfillment_ids: string[] }[];
-    fulfillments: { id: string }[];
-}
-
-interface IOnSearchPayload {
-    message?: {
-        catalog?: {
-            providers?: Array<{
-                id: string;
-                items?: Array<{
-                    id: string;
-                    descriptor?: { name?: string };
-                    fulfillment_ids?: string[];
-                }>;
-                fulfillments?: Array<{ id: string }>;
-            }>;
-        };
-    };
-}
-
-interface IRideHailingSelectProps {
-    submitEvent: (data: SubmitEventParams) => Promise<void>;
-}
-
-export default function TRV10RideHailingSelectForm({ submitEvent }: IRideHailingSelectProps) {
+export default function TRV10RideHailingSelectForm({
+    submitEvent,
+}: ITRV10RideHailingSelectFormProps) {
     const [isPayloadEditorActive, setIsPayloadEditorActive] = useState(false);
     const [errorWhilePaste, setErrorWhilePaste] = useState("");
     const [providers, setProviders] = useState<IProvider[]>([]);
 
     const { control, handleSubmit, setValue, watch } = useForm<IFormData>({
-        defaultValues: {
-            providerId: "",
-            itemId: "",
-            fulfillmentId: "",
-        },
+        defaultValues: DEFAULT_FORM_DATA,
     });
 
     const selectedProviderId = watch("providerId");

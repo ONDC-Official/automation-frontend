@@ -12,42 +12,14 @@ import { Field, FieldLabel } from "@/components/Shadcn/TextField/field";
 import PayloadEditor from "@/components/ui/mini-components/payload-editor";
 import FormDialogShell from "@/components/ui/forms/form-dialog-shell";
 import { PastePayloadButton } from "@/components/ui/forms/paste-payload-button";
-import { SubmitEventParams } from "@/types/flow-types";
-
-type OfferKey = `offers_${string}`;
-
-type CatalogItem = { id: string };
-export type CatalogLocation = { id: string };
-type CatalogOffer = { id: string };
-export type CatalogProvider = {
-    id: string;
-    items: CatalogItem[];
-    locations: CatalogLocation[];
-    offers?: CatalogOffer[];
-};
-
-type OnSearchPayload = {
-    message: {
-        catalog: {
-            "bpp/providers": CatalogProvider[];
-        };
-    };
-};
-
-type FormValues = {
-    city_code: string;
-    provider: string;
-    provider_location: string[];
-    location_gps: string;
-    location_pin_code: string;
-    order_type: "ILBN" | "ILFP" | "ILBP";
-    items: {
-        itemId: string;
-        quantity: number;
-        location: string;
-        estimated_price: number;
-    }[];
-} & Partial<Record<OfferKey, boolean>>;
+import {
+    IOfferKey,
+    ICatalogProvider,
+    IFormValues,
+    IOnSearchPayload,
+    IRetINVLInitFormProps,
+    DEFAULT_FORM_VALUES,
+} from "../types/retinvl-init-form-types";
 
 const ORDER_TYPE_OPTIONS = [
     { value: "ILBN", label: "ILBN" },
@@ -56,28 +28,13 @@ const ORDER_TYPE_OPTIONS = [
 
 const toComboOptions = (values: string[]) => values.map((value) => ({ value, label: value }));
 
-export default function RetINVLInitForm({
-    submitEvent,
-}: {
-    submitEvent: (data: SubmitEventParams) => Promise<void>;
-}) {
+export default function RetINVLInitForm({ submitEvent }: IRetINVLInitFormProps) {
     const [isPayloadEditorActive, setIsPayloadEditorActive] = useState(false);
     const [errorWhilePaste, setErrorWhilePaste] = useState("");
     const [isDataPasted, setIsDataPasted] = useState(false);
 
-    const { control, handleSubmit, watch } = useForm<FormValues>({
-        defaultValues: {
-            city_code: "",
-            provider: "",
-            provider_location: [],
-            location_gps: "",
-            location_pin_code: "",
-            order_type: "ILBN",
-            items: [
-                { itemId: "", quantity: 1, location: "", estimated_price: 0 },
-                { itemId: "", quantity: 1, location: "", estimated_price: 0 },
-            ],
-        },
+    const { control, handleSubmit, watch } = useForm<IFormValues>({
+        defaultValues: DEFAULT_FORM_VALUES,
     });
 
     const { fields, append, remove } = useFieldArray({
@@ -85,18 +42,18 @@ export default function RetINVLInitForm({
         name: "items",
     });
 
-    const [catalogPayload, setCatalogPayload] = useState<OnSearchPayload | null>(null);
+    const [catalogPayload, setCatalogPayload] = useState<IOnSearchPayload | null>(null);
     const [providerOptions, setProviderOptions] = useState<string[]>([]);
     const [itemOptions, setItemOptions] = useState<string[]>([]);
     const [locationOptions, setLocationOptions] = useState<string[]>([]);
     const [offerOptions, setOfferOptions] = useState<string[]>([]);
-    const [providers, setProviders] = useState<CatalogProvider[]>([]);
+    const [providers, setProviders] = useState<ICatalogProvider[]>([]);
 
     const selectedProvider = watch("provider");
     const providerLocations =
         providers.find((provider) => provider.id === selectedProvider)?.locations ?? [];
 
-    const onSubmit = async (data: FormValues) => {
+    const onSubmit = async (data: IFormValues) => {
         const { valid, errors } = validateFormData(data);
         if (!valid) {
             toast.error(`Form validation failed: ${errors[0]}`);
@@ -118,8 +75,8 @@ export default function RetINVLInitForm({
 
     const handlePaste = (data: unknown) => {
         try {
-            const catalogProviders = (data as OnSearchPayload).message.catalog["bpp/providers"];
-            const parsed = data as OnSearchPayload;
+            const catalogProviders = (data as IOnSearchPayload).message.catalog["bpp/providers"];
+            const parsed = data as IOnSearchPayload;
             setProviders(catalogProviders);
             setCatalogPayload(parsed);
             setProviderOptions(catalogProviders.map((provider) => provider.id));
@@ -240,7 +197,7 @@ export default function RetINVLInitForm({
                                 {offerOptions.map((offerId) => (
                                     <Controller
                                         key={offerId}
-                                        name={`offers_${offerId}` as OfferKey}
+                                        name={`offers_${offerId}` as IOfferKey}
                                         control={control}
                                         render={({ field }) => (
                                             <label className="flex cursor-pointer items-center gap-2">
@@ -365,7 +322,7 @@ export default function RetINVLInitForm({
     );
 }
 
-function validateFormData(data: FormValues) {
+function validateFormData(data: IFormValues) {
     const errors: string[] = [];
 
     if (!data.order_type) errors.push("Order type required.");

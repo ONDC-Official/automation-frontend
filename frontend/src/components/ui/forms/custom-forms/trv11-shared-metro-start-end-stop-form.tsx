@@ -10,48 +10,13 @@ import FormDialogShell from "@/components/ui/forms/form-dialog-shell";
 import { PastePayloadButton } from "@/components/ui/forms/paste-payload-button";
 import { cn } from "@/lib/utils";
 
-interface IStop {
-    id: string;
-    type: string;
-    location?: {
-        descriptor?: {
-            name?: string;
-            code?: string;
-        };
-        gps?: string;
-    };
-    instructions?: {
-        name?: string;
-        short_desc?: string;
-    };
-    parent_stop_id?: string;
-}
+import type {
+    IStop,
+    IOnSearchPayload,
+    IMetroStartEndStopFormProps,
+} from "../types/trv11-shared-metro-start-end-stop-form-types";
 
-interface IFulfillment {
-    id: string;
-    type: string;
-    stops?: IStop[];
-}
-
-interface IOnSearchPayload {
-    context: Record<string, unknown>;
-    message: {
-        catalog: {
-            providers: Array<{
-                fulfillments: IFulfillment[];
-            }>;
-        };
-    };
-}
-
-export interface IMetroStartEndStopFormProps {
-    submitEvent: (data: {
-        jsonPath: Record<string, string | number>;
-        formData: Record<string, string>;
-    }) => Promise<void>;
-    fulfillmentType: "TRIP" | "ROUTE";
-    showVehicleCategoryField: boolean;
-}
+export type { IMetroStartEndStopFormProps };
 
 const stopToOption = (stop: IStop) => {
     const code = stop.location?.descriptor?.code || stop.id;

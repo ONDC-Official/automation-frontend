@@ -15,7 +15,8 @@ import FormDialogShell from "@/components/ui/forms/form-dialog-shell";
 import { PastePayloadButton } from "@/components/ui/forms/paste-payload-button";
 import { getItemsAndCustomistions } from "@/utils/generic-utils";
 import { SubmitEventParams } from "@/types/flow-types";
-import { CatalogLocation, validateFormDataRET11 } from "./custom-forms/ret10-grocery-select-form";
+import { CatalogLocation } from "../types/ret10-grocery-select-form-types";
+import { validateFormDataRET11 } from "./ret10-grocery-select-form";
 import { cn } from "@/lib/utils";
 
 type OfferKey = `offers_${string}`;

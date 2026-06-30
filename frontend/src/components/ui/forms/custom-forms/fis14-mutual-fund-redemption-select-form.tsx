@@ -11,59 +11,16 @@ import { Input } from "@/components/Shadcn/TextField/input";
 import PayloadEditor from "@/components/ui/mini-components/payload-editor";
 import FormDialogShell from "@/components/ui/forms/form-dialog-shell";
 import { PastePayloadButton } from "@/components/ui/forms/paste-payload-button";
-import { SubmitEventParams } from "@/types/flow-types";
-import { FormFieldConfigType } from "../config-form/config-form";
 import { cn } from "@/lib/utils";
-
-interface RawItem {
-    id: string;
-    descriptor?: { name?: string; code?: string };
-    parent_item_id?: string;
-    fulfillment_ids?: string[];
-}
-interface RawFulfillment {
-    id: string;
-    type: string;
-}
-interface RawProvider {
-    id: string;
-    descriptor?: { name?: string };
-    items?: RawItem[];
-    fulfillments?: RawFulfillment[];
-}
-interface OnSearchPayload {
-    context?: Record<string, unknown>;
-    message?: { catalog?: { providers?: RawProvider[] } };
-}
-
-interface ParsedProvider {
-    id: string;
-    name: string;
-    items: { id: string; name: string; fulfillmentIds: string[] }[];
-    fulfillments: { id: string; type: string }[];
-}
-interface CatalogData {
-    providers: ParsedProvider[];
-    context: OnSearchPayload["context"];
-}
-
-type RedeemMode = "AMOUNT" | "MF_UNITS" | "REDEEM_ALL";
-
-interface AgentCred {
-    id: string;
-    type: string;
-}
-interface FormValues {
-    providerId: string;
-    itemId: string;
-    fulfillmentId: string;
-    redeemMode: RedeemMode;
-    itemValue: string;
-    customerPersonId: string;
-    folioId: string;
-    agentPersonId: string;
-    agentCreds: AgentCred[];
-}
+import type {
+    IOnSearchPayload,
+    IParsedProvider,
+    ICatalogData,
+    IRedeemMode,
+    IFormValues,
+    IFIS14MutualFundRedemptionSelectFormProps,
+} from "../types/fis14-mutual-fund-redemption-select-form-types";
+import { DEFAULT_FORM_VALUES } from "../types/fis14-mutual-fund-redemption-select-form-types";
 
 const sectionClassName =
     "space-y-3 rounded-lg border border-border-default bg-surface-muted/20 p-4";
@@ -71,13 +28,10 @@ const sectionClassName =
 export default function FIS14MutualFundRedemptionSelectForm({
     submitEvent,
     formConfig = [],
-}: {
-    submitEvent: (data: SubmitEventParams) => Promise<void>;
-    formConfig?: FormFieldConfigType[];
-}) {
+}: IFIS14MutualFundRedemptionSelectFormProps) {
     const extraFields = formConfig.filter((field) => field.type !== "fis14_mf_redemption_select");
     const [isPayloadEditorActive, setIsPayloadEditorActive] = useState(false);
-    const [catalog, setCatalog] = useState<CatalogData | null>(null);
+    const [catalog, setCatalog] = useState<ICatalogData | null>(null);
     const [extraData, setExtraData] = useState<Record<string, string>>(
         Object.fromEntries(extraFields.map((field) => [field.name, String(field.default ?? "")]))
     );
@@ -90,18 +44,8 @@ export default function FIS14MutualFundRedemptionSelectForm({
         watch,
         setValue,
         formState: { errors },
-    } = useForm<FormValues>({
-        defaultValues: {
-            providerId: "",
-            itemId: "",
-            fulfillmentId: "",
-            redeemMode: "AMOUNT",
-            itemValue: "",
-            customerPersonId: "",
-            folioId: "",
-            agentPersonId: "",
-            agentCreds: [{ id: "", type: "" }],
-        },
+    } = useForm<IFormValues>({
+        defaultValues: DEFAULT_FORM_VALUES,
     });
 
     const { fields, append, remove } = useFieldArray({ control, name: "agentCreds" });
@@ -129,11 +73,11 @@ export default function FIS14MutualFundRedemptionSelectForm({
 
     const handlePaste = (payload: unknown) => {
         try {
-            const raw = payload as OnSearchPayload;
+            const raw = payload as IOnSearchPayload;
             const rawProviders = raw?.message?.catalog?.providers;
             if (!rawProviders || rawProviders.length === 0) throw new Error("No providers found");
 
-            const providers: ParsedProvider[] = rawProviders.map((provider) => ({
+            const providers: IParsedProvider[] = rawProviders.map((provider) => ({
                 id: provider.id,
                 name: provider.descriptor?.name ?? provider.id,
                 items: (provider.items ?? []).map((item) => ({
@@ -159,7 +103,7 @@ export default function FIS14MutualFundRedemptionSelectForm({
         }
     };
 
-    const onSubmit = async (data: FormValues) => {
+    const onSubmit = async (data: IFormValues) => {
         if (!catalog) {
             toast.error("Please paste an on_search payload first");
             return;
@@ -389,7 +333,7 @@ export default function FIS14MutualFundRedemptionSelectForm({
                                     Redemption Mode
                                 </FieldLabel>
                                 <div className="flex flex-wrap gap-4">
-                                    {(["AMOUNT", "MF_UNITS", "REDEEM_ALL"] as RedeemMode[]).map(
+                                    {(["AMOUNT", "MF_UNITS", "REDEEM_ALL"] as IRedeemMode[]).map(
                                         (mode) => (
                                             <label
                                                 key={mode}

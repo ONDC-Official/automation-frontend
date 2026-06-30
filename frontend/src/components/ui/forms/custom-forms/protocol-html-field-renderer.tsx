@@ -14,7 +14,7 @@ import type {
     TextLikeField,
     TextareaField,
     ValueState,
-} from "./protocol-html-form";
+} from "../types/protocol-html-form-types";
 
 const nativeSelectClassName = cn(
     "flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-[color,box-shadow] outline-none",
