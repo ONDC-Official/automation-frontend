@@ -12,8 +12,6 @@ export const ManualSessionForm = ({
     hasSavedPrefs,
     isSubmitting,
     control,
-    register,
-    errors,
     handleSubmit,
     watch,
     versionOptions,
@@ -65,19 +63,20 @@ export const ManualSessionForm = ({
                 ) : ( */}
                 <>
                     <TextField
+                        control={control}
+                        name="subscriberUrl"
                         label="Enter Subscriber Url"
                         required
                         placeholder="https://example.com"
-                        error={errors.subscriberUrl?.message}
-                        {...register("subscriberUrl", {
-                            required: "Field required",
+                        rules={{
                             pattern: {
                                 value: /^https?:\/\/.*/i,
                                 message: "URL must start with http:// or https://",
                             },
-                            onChange: (e) =>
-                                trackSchemaValidationForm("Added subscriber url", e.target.value),
-                        })}
+                        }}
+                        onValueChange={(value) =>
+                            trackSchemaValidationForm("Added subscriber url", value)
+                        }
                     />
                     <DomainVersionUsecaseFields
                         control={control}

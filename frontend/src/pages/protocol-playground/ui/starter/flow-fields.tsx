@@ -1,11 +1,10 @@
-import { Controller, type Control, type FieldPath } from "react-hook-form";
-
 import { ComboBox } from "@/components/Shadcn/ComboBox";
 import { TextField } from "@/components/Shadcn/TextField";
 import type {
     IFlowFieldsProps,
     IStarterFormValues,
 } from "@pages/protocol-playground/ui/starter/types";
+import type { Control, FieldPath } from "react-hook-form";
 
 interface IControlledTextFieldProps {
     control: Control<IStarterFormValues>;
@@ -22,19 +21,12 @@ const ControlledTextField = ({
     placeholder,
     required,
 }: IControlledTextFieldProps) => (
-    <Controller
+    <TextField
         control={control}
         name={name}
-        rules={{ required: required ? "Field required" : false }}
-        render={({ field, fieldState }) => (
-            <TextField
-                label={label}
-                placeholder={placeholder}
-                required={required}
-                error={fieldState.error?.message}
-                {...field}
-            />
-        )}
+        label={label}
+        placeholder={placeholder}
+        required={required}
     />
 );
 

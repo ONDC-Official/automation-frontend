@@ -1,9 +1,13 @@
 import { useMemo } from "react";
-import { queryJsonPath } from "@utils/jsonpath-query";
-import { FormService } from "@services/formService";
-import { FormFieldConfigType } from "@components/ui/forms/config-form/config-form";
+import { ArrowTopRightOnSquareIcon } from "@heroicons/react/24/outline";
 
-interface FormLaunchPopupProps {
+import { Button } from "@/components/Shadcn/Button/button";
+import { FormFieldConfigType } from "@/components/ui/forms/config-form";
+import FormDialogShell from "@/components/ui/forms/form-dialog-shell";
+import { FormService } from "@services/formService";
+import { queryJsonPath } from "@utils/jsonpath-query";
+
+interface IFormLaunchPopupProps {
     formConfig: FormFieldConfigType;
     referenceData?: Record<string, unknown>;
     /** transaction id — keys the redirection pointer + clears stale completion. */
@@ -27,8 +31,7 @@ export default function FormLaunchPopup({
     referenceData,
     transactionId,
     onLaunched,
-}: FormLaunchPopupProps) {
-    // Resolve the form URL from reference data (same mechanism as DYNAMIC_FORM).
+}: IFormLaunchPopupProps) {
     const formUrl = useMemo<string>(() => {
         if (!formConfig?.reference) {
             console.warn("⚠️ [FormLaunch] No reference field found in form config");
@@ -56,7 +59,6 @@ export default function FormLaunchPopup({
             return;
         }
 
-        // 1. Open the form in a new tab.
         window.open(formUrl, "_blank", "noopener,noreferrer");
 
         // 2. Capture the current workbench URL and save it for the callback.
@@ -72,30 +74,27 @@ export default function FormLaunchPopup({
             console.warn("⚠️ [FormLaunch] Could not reset completion (continuing):", resetError);
         });
 
-        // 4. Dismiss this popup.
         onLaunched();
     };
 
     return (
-        <div className="p-6 bg-white rounded-lg shadow-md">
-            <h2 className="text-xl font-semibold mb-4">Complete Form</h2>
-            <p className="text-gray-600 mb-4">
+        <FormDialogShell
+            footer={
+                <Button type="button" className="gap-2" onClick={handleLaunch} disabled={!formUrl}>
+                    <ArrowTopRightOnSquareIcon className="size-5" />
+                    Open Form
+                </Button>
+            }
+        >
+            <p className="text-sm text-muted-foreground">
                 Click the button below to open the form in a new tab. Complete it there — this step
                 continues automatically once the form is submitted.
             </p>
-            <button
-                type="button"
-                onClick={handleLaunch}
-                disabled={!formUrl}
-                className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-                Open Form
-            </button>
             {!formUrl && (
-                <p className="text-sm text-red-600 mt-3">
+                <p className="text-sm text-destructive">
                     Form URL is not available yet. Please wait for the on_select response.
                 </p>
             )}
-        </div>
+        </FormDialogShell>
     );
 }

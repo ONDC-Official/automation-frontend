@@ -12,6 +12,10 @@
     display: none;
 }
 
+.flow-schema-form .rjsf-custom-form button[type="submit"] {
+    display: none;
+}
+
 /* Form groups */
 .rjsf-custom-form .form-group {
     margin-bottom: 1rem;

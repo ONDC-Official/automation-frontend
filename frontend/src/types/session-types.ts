@@ -1,4 +1,4 @@
-import { FormConfigType } from "@components/ui/forms/config-form/config-form";
+import { FormConfigType } from "@/components/ui/forms/config-form";
 import { Flow } from "./flow-types";
 
 export interface ApiResponseData {

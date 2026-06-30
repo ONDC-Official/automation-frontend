@@ -12,8 +12,8 @@ import type { INewConfigFormProps, ScenarioPreferences } from "@pages/user-profi
 
 export const NewConfigForm = ({
     control,
-    register,
-    errors,
+    register: _register,
+    errors: _errors,
     watch,
     handleSubmit,
     onSubmit,
@@ -42,30 +42,30 @@ export const NewConfigForm = ({
                 <FieldGroup>
                     {!editingKey ? (
                         <TextField
+                            control={control}
+                            name="configName"
                             label="Config Name"
                             required
                             placeholder="e.g. my-test-config"
-                            error={errors.configName?.message}
-                            {...register("configName", {
-                                required: "Required",
+                            rules={{
                                 validate: (value: string) =>
                                     !savedPrefs[value.trim()] ||
                                     "A configuration with this name already exists, choose a different name",
-                            })}
+                            }}
                         />
                     ) : null}
                     <TextField
+                        control={control}
+                        name="subscriberUrl"
                         label="Enter Subscriber Url"
                         required
                         placeholder="https://example.com"
-                        error={errors.subscriberUrl?.message}
-                        {...register("subscriberUrl", {
-                            required: "Required",
+                        rules={{
                             pattern: {
                                 value: /^https?:\/\/.*/i,
                                 message: "URL must start with http:// or https://",
                             },
-                        })}
+                        }}
                     />
                     <DomainVersionUsecaseFields<ScenarioPreferences>
                         control={control}

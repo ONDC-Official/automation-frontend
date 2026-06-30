@@ -1,5 +1,5 @@
-import { DynamicOfferRule } from "@/components/ui/forms/custom-forms/reteb2b-select";
-import { FormConfigType } from "../components/ui/forms/config-form/config-form";
+import { DynamicOfferRule } from "@/components/ui/forms/types/reteb2b-select-form-types";
+import { FormConfigType } from "@/components/ui/forms/config-form/types";
 
 // Define your data types
 export interface FetchFlowsResponse {
@@ -50,7 +50,7 @@ export interface SequenceStep {
 export type OnSearchPayload = {
     message: {
         catalog: {
-            "bpp/providers": any[];
+            "bpp/providers": unknown[];
         };
     };
 };

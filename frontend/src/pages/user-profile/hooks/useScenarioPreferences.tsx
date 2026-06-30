@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 import { Modal } from "antd";
 import { ExclamationTriangleIcon } from "@heroicons/react/24/outline";
 
@@ -229,8 +229,8 @@ export const useScenarioPreferences = () => {
             content: (
                 <span>
                     Are you sure you want to delete{" "}
-                    <span className="font-semibold text-text-primary">{configKey}</span>? This action
-                    cannot be undone.
+                    <span className="font-semibold text-text-primary">{configKey}</span>? This
+                    action cannot be undone.
                 </span>
             ),
             okText: "Delete",

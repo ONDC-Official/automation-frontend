@@ -1,7 +1,7 @@
 import { useContext, useEffect, useRef, useState } from "react";
 import { PlaygroundContext } from "@pages/protocol-playground/context/playground-context";
 import { PlaygroundModal } from "@pages/protocol-playground/ui/playground-modal";
-import { DialogDescription, DialogHeader, DialogTitle } from "@/components/Shadcn/Dialog/dialog";
+import { DialogDescription, DialogHeader, DialogTitle } from "@/components/Shadcn/Dialog";
 import { PlaygroundRightTabType } from "@pages/protocol-playground/types";
 import { LeftSideView } from "@pages/protocol-playground/ui/LeftSideView";
 import { RightSideView } from "@pages/protocol-playground/ui/RightSideView";

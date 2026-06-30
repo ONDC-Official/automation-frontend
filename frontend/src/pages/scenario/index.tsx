@@ -1,7 +1,7 @@
 import { useState, useEffect, useContext } from "react";
 import { useSearchParams } from "react-router-dom";
 import axios, { AxiosResponse, AxiosError } from "axios";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 import RenderFlows from "@components/FlowShared/render-flows";
 import Card from "@/components/Shadcn/Card";
 import Accordion from "@/components/Shadcn/Accordion";
@@ -170,7 +170,7 @@ export default function FlowContent() {
         }
         toast.info(
             "Tip: Allow pop-ups for this site in your browser settings, they are blocked by default and required for the new tabs to open.",
-            { position: "top-right", autoClose: false }
+            { position: "top-right", duration: Infinity }
         );
         Promise.all([fetchFormFieldData(), fetchAndApplyPreferences()]).finally(() =>
             setIsInitializing(false)

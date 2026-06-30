@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 
 import { apiClient, ApiError } from "@services/apiClient";
 import { API_ROUTES } from "@services/apiRoutes";

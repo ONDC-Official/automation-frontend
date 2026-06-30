@@ -1,10 +1,13 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { useForm } from "react-hook-form";
-import { FaRegPaste } from "react-icons/fa6";
-import { toast } from "react-toastify";
-import PayloadEditor from "@/components/ui/mini-components/payload-editor";
+import { toast } from "sonner";
+
+import { ComboBox } from "@/components/Shadcn/ComboBox";
 import { Button } from "@/components/Shadcn/Button/button";
 import SpinnerDialog from "@/components/Shadcn/SpinnerDialog";
+import PayloadEditor from "@/components/ui/mini-components/payload-editor";
+import FormDialogShell from "@/components/ui/forms/form-dialog-shell";
+import { PastePayloadButton } from "@/components/ui/forms/paste-payload-button";
 import { ICatalogItem, IGenericFormWithPasteProps } from "@/components/ui/forms/generic-form.types";
 
 const GenericFormWithPaste = ({
@@ -18,6 +21,7 @@ const GenericFormWithPaste = ({
     const {
         register,
         handleSubmit,
+        control,
         formState: { errors },
         setValue,
         watch,
@@ -29,7 +33,6 @@ const GenericFormWithPaste = ({
     const [errorWhilePaste, setErrorWhilePaste] = useState("");
     const [availableItems, setAvailableItems] = useState<ICatalogItem[]>([]);
 
-    // Watch selected item to get its addons
     const selectedItemId = watch("item_id") as string;
     const selectedItem = availableItems.find((item) => item.id === selectedItemId);
     const availableAddons = selectedItem?.addOns || [];
@@ -53,7 +56,6 @@ const GenericFormWithPaste = ({
                 throw new Error("No items found in catalog");
             }
 
-            // Extract items with their addons
             const catalogItems: ICatalogItem[] = items.map((item) => {
                 const descriptor = item.descriptor as Record<string, unknown> | undefined;
                 const addOns = (item.add_ons || []) as Record<string, unknown>[];
@@ -81,7 +83,6 @@ const GenericFormWithPaste = ({
 
             const firstItem = catalogItems[0];
 
-            // Set form values
             setValue("item_id", firstItem.id);
             setValue("quantity", "1");
             setValue("add_on_id", firstItem.addOns?.[0]?.id || "");
@@ -123,7 +124,6 @@ const GenericFormWithPaste = ({
         }
     }, [triggerSubmit, handleSubmit, handleSubmitForm]);
 
-    // Custom render function that adds dropdowns for item_id and add_on_id when data is available
     const renderChildren = () => {
         return React.Children.map(children, (child) => {
             if (!React.isValidElement(child)) return child;
@@ -131,61 +131,38 @@ const GenericFormWithPaste = ({
             const childProps = child.props as Record<string, unknown>;
             const fieldName = childProps.name as string;
 
-            // Replace item_id text input with dropdown when items are available
             if (fieldName === "item_id" && availableItems.length > 0) {
                 return (
-                    <div className="mb-2 w-full bg-gray-50 border rounded-md p-2 flex">
-                        <div className="flex justify-between w-full">
-                            <label className="text-sm font-medium text-gray-600 mb-2">
-                                {(childProps.label as string) || "Item ID"}{" "}
-                                <span className="text-red-500 ml-1">*</span>
-                            </label>
-                        </div>
-                        <select
-                            {...register("item_id", { required: true })}
-                            className="p-2 rounded bg-transparent border outline-hidden focus:border-blue-500 w-full"
-                        >
-                            <option value="">Select an item</option>
-                            {availableItems.map((item) => (
-                                <option key={item.id} value={item.id}>
-                                    {item.name} ({item.id})
-                                </option>
-                            ))}
-                        </select>
-                        {errors["item_id"] && (
-                            <p className="text-red-500 text-xs italic">Field required</p>
-                        )}
-                    </div>
+                    <ComboBox
+                        control={control}
+                        name="item_id"
+                        label={(childProps.label as string) || "Item ID"}
+                        required
+                        options={availableItems.map((item) => ({
+                            label: `${item.name} (${item.id})`,
+                            value: item.id,
+                        }))}
+                    />
                 );
             }
 
-            // Replace add_on_id text input with dropdown when addons are available
             if (fieldName === "add_on_id" && availableAddons.length > 0) {
                 return (
-                    <div className="mb-2 w-full bg-gray-50 border rounded-md p-2 flex">
-                        <div className="flex justify-between w-full">
-                            <label className="text-sm font-medium text-gray-600 mb-2">
-                                {(childProps.label as string) || "Add-on ID"}
-                            </label>
-                        </div>
-                        <select
-                            {...register("add_on_id")}
-                            className="p-2 rounded bg-transparent border outline-hidden focus:border-blue-500 w-full"
-                        >
-                            <option value="">No add-on (optional)</option>
-                            {availableAddons.map((addon) => (
-                                <option key={addon.id} value={addon.id}>
-                                    {addon.name} ({addon.id})
-                                </option>
-                            ))}
-                        </select>
-                    </div>
+                    <ComboBox
+                        control={control}
+                        name="add_on_id"
+                        label={(childProps.label as string) || "Add-on ID"}
+                        options={availableAddons.map((addon) => ({
+                            label: `${addon.name} (${addon.id})`,
+                            value: addon.id,
+                        }))}
+                    />
                 );
             }
 
-            // For other fields, pass register, errors, setValue as usual
             return React.cloneElement(child as React.ReactElement<Record<string, unknown>>, {
                 register,
+                control,
                 errors,
                 setValue,
             });
@@ -193,34 +170,35 @@ const GenericFormWithPaste = ({
     };
 
     return (
-        <div>
+        <>
             {isLoading && <SpinnerDialog />}
-            {enablePaste && (
-                <>
-                    {isPayloadEditorActive && (
-                        <PayloadEditor onAdd={handlePaste as (payload: unknown) => void} />
-                    )}
-                    {errorWhilePaste && (
-                        <p className="text-red-500 text-sm italic mb-2">{errorWhilePaste}</p>
-                    )}
-                    <Button
-                        variant="outline"
-                        onClick={() => setIsPayloadEditorActive(true)}
-                        className="p-2 border rounded-full hover:bg-gray-100 mb-3 flex items-center gap-2"
-                        title="Paste on_search payload to auto-populate fields"
-                    >
-                        <FaRegPaste size={14} />
-                        <span className="text-sm">Paste on_search</span>
+            <FormDialogShell
+                onSubmit={handleSubmit(handleSubmitForm)}
+                className={className}
+                footer={
+                    <Button type="submit" variant="default" isLoading={isLoading}>
+                        Submit
                     </Button>
-                </>
-            )}
-            <form onSubmit={handleSubmit(handleSubmitForm)} className={className}>
+                }
+            >
+                {enablePaste && (
+                    <>
+                        {isPayloadEditorActive && (
+                            <PayloadEditor onAdd={handlePaste as (payload: unknown) => void} />
+                        )}
+                        {errorWhilePaste && (
+                            <p className="text-sm text-destructive">{errorWhilePaste}</p>
+                        )}
+                        <PastePayloadButton
+                            onClick={() => setIsPayloadEditorActive(true)}
+                            className="mb-0"
+                            title="Paste on_search payload to auto-populate fields"
+                        />
+                    </>
+                )}
                 {renderChildren()}
-                <Button type="submit" variant="default" isLoading={isLoading}>
-                    Submit
-                </Button>
-            </form>
-        </div>
+            </FormDialogShell>
+        </>
     );
 };
 

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useForm, useFieldArray, Controller, Path } from "react-hook-form";
 import { ItemDetails, SellerOnboardingData } from "@pages/seller-onboarding";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 import { FaPlus, FaTrash, FaBox, FaEdit } from "react-icons/fa";
 import { Select, Input, Checkbox, Modal, Button, Form } from "antd";
 import LoadingButton from "@components/ui/forms/loading-button";
@@ -17,7 +17,7 @@ import { homeJSON } from "@constants/home";
 import { applianceData } from "@constants/appliances";
 import { getFnBAttributes } from "@constants/fnb";
 import { domainCategories } from "@constants/categories";
-import { LabelWithToolTip } from "@components/ui/forms/form-input";
+import { LabelWithToolTip } from "@/components/Shadcn/TextField";
 
 interface ItemDetailsFormProps {
     initialData: SellerOnboardingData;

@@ -1,5 +1,5 @@
 import React from "react";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 import { Button, Card, Tabs, Typography } from "antd";
 import { CopyOutlined, DownloadOutlined, CheckCircleOutlined } from "@ant-design/icons";
 import { useClipboard } from "@hooks/useClipboard";

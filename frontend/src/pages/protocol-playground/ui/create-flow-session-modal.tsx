@@ -17,7 +17,7 @@ import {
     DialogFooter,
     DialogHeader,
     DialogTitle,
-} from "@/components/Shadcn/Dialog/dialog";
+} from "@/components/Shadcn/Dialog";
 import { Field, FieldContent, FieldLabel } from "@/components/Shadcn/TextField/field";
 import { Input } from "@/components/Shadcn/TextField/input";
 

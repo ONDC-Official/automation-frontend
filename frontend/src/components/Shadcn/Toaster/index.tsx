@@ -7,7 +7,7 @@ export const Toaster = ({ ...props }: ToasterProps) => {
     return (
         <Sonner
             theme={resolvedTheme}
-            className="toaster group"
+            className="toaster group z-80"
             position="bottom-right"
             duration={3000}
             toastOptions={{

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 import { v4 as uuidv4 } from "uuid";
 import { SubmitEventParams } from "@/types/flow-types";
 import { SessionCache } from "@/types/session-types";
@@ -20,13 +20,15 @@ import { FlowMap } from "@/types/flow-state-type";
 import DisplayFlow from "@components/FlowShared/mapped-flow";
 import { getSequenceFromFlow } from "@utils/flow-utils";
 import CircularProgress from "@components/ui/circular-cooldown";
-import Popup from "@components/ui/pop-up/pop-up";
-import FormConfig, { FormConfigType } from "@components/ui/forms/config-form/config-form";
+import FormFlowDialog from "@/components/Shadcn/Dialog/form-flow-dialog";
+import { FormConfigType } from "@/components/ui/forms/config-form/types";
+import { FormConfig } from "@/components/ui/forms/config-form";
 import { trackEvent } from "@utils/analytics";
 import { generatePlaygroundConfigFromFlowConfig } from "@ondc/automation-mock-runner";
 import { cn } from "@/lib/utils";
 import { ChevronDownIcon } from "@heroicons/react/24/outline";
 import { IAccordionProps } from "@components/FlowShared/types";
+import { useSession } from "@context/context";
 
 export function Accordion({
     flow,
@@ -49,11 +51,20 @@ export function Accordion({
         missedSteps: [],
     });
     const [activeFormConfig, setActiveFormConfig] = useState<FormConfigType | null>(null);
+    const [activeFormTitle, setActiveFormTitle] = useState<string | undefined>(undefined);
     const contentRef = useRef<HTMLDivElement>(null);
     const [maxHeight, setMaxHeight] = useState("0px");
     const apiCallFailCount = useRef(0);
     const clickCountRef = useRef(0);
     const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const { isFlowFormDialogOpen, acquireFlowFormDialogLock, releaseFlowFormDialogLock } =
+        useSession();
+
+    useEffect(() => {
+        if (!inputPopUp) return;
+        acquireFlowFormDialogLock?.();
+        return () => releaseFlowFormDialogLock?.();
+    }, [inputPopUp, acquireFlowFormDialogLock, releaseFlowFormDialogLock]);
 
     useEffect(() => {
         const executedFlowId = Object.keys(
@@ -140,6 +151,7 @@ export function Accordion({
                 if (data?.inputs) {
                     toast.info("Inputs are required to start the flow");
                     setActiveFormConfig(data.inputs);
+                    setActiveFormTitle(flow.title ?? flow.id);
                     setInputPopUp(true);
                 }
                 // if (data.expectationAdded) {
@@ -344,7 +356,7 @@ export function Accordion({
                         }
                     }}
                     loop={true}
-                    isActive={activeFlow === flow.id}
+                    isActive={activeFlow === flow.id && !isFlowFormDialogOpen && !inputPopUp}
                     id="fetch-transaction-data"
                 />
             </div>
@@ -437,14 +449,14 @@ export function Accordion({
                 </div>
             </div>
             {inputPopUp && activeFormConfig && (
-                <Popup isOpen={inputPopUp} disableClose>
+                <FormFlowDialog open={inputPopUp} disableClose width="2xl" title={activeFormTitle}>
                     <FormConfig
                         formConfig={activeFormConfig}
                         submitEvent={handleFormForNewFlow}
                         referenceData={mappedFlow.reference_data}
                         flowId={flow.id}
                     />
-                </Popup>
+                </FormFlowDialog>
             )}
         </div>
     );
