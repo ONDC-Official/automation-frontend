@@ -168,6 +168,10 @@ export default function FlowContent() {
             valid.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
             setExistingSessions(valid);
         }
+        toast.info(
+            "Tip: Allow pop-ups for this site in your browser settings, they are blocked by default and required for the new tabs to open.",
+            { position: "top-right", autoClose: false }
+        );
         Promise.all([fetchFormFieldData(), fetchAndApplyPreferences()]).finally(() =>
             setIsInitializing(false)
         );
