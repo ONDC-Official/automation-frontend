@@ -12,6 +12,8 @@ export interface IExtractedItem {
     id: string;
     parent_item_id: string;
     descriptor?: { name?: string };
+    // Categories the item belongs to, as listed in the on_search catalogue.
+    category_ids?: string[];
     add_ons: IExtractedAddon[];
 }
 
@@ -35,6 +37,7 @@ export interface IOrderItem {
     id: string;
     parent_item_id?: string;
     descriptor?: { name?: string };
+    category_ids?: string[];
     add_ons?: IRawAddon[];
 }
 

@@ -55,6 +55,15 @@ export default function FIS13ItemSelection({ submitEvent, referenceData }: IFIS1
     const onSubmit = async (data: IFormValues) => {
         const formData: Record<string, string> = {};
         formData.selected_item_ids = data.selectedItems.map((item) => item.id).join(",");
+
+        // Category IDs of the selected item, taken from the on_search catalogue.
+        // Forwarded as a JSON array (consumed by the FIS13 select generator as
+        // `category_ids` → order.items[0].category_ids).
+        const selectedItem = data.selectedItems[0];
+        if (selectedItem?.category_ids?.length) {
+            formData.category_ids = JSON.stringify(selectedItem.category_ids);
+        }
+
         formData.selected_parent_item_ids = data.selectedItems
             .map((item) => item.parent_item_id || "")
             .join(",");
@@ -96,6 +105,7 @@ export default function FIS13ItemSelection({ submitEvent, referenceData }: IFIS1
                         parent_item_id: item.id,
                         descriptor: addon.descriptor,
                         price: addon.price,
+                        category_ids: item.category_ids,
                         quantity: addon.quantity,
                     })),
                 };
@@ -148,14 +158,10 @@ export default function FIS13ItemSelection({ submitEvent, referenceData }: IFIS1
     };
 
     const toggleItemSelection = (item: IExtractedItem) => {
-        const current = [...selectedItems];
-        const index = current.findIndex((entry) => entry.id === item.id);
-        if (index > -1) {
-            current.splice(index, 1);
-        } else {
-            current.push(item);
-        }
-        setValue("selectedItems", current);
+        // Single-select: clicking the selected item clears it; clicking another
+        // replaces the selection so only one item can ever be selected.
+        const isSelected = selectedItems.some((i) => i.id === item.id);
+        setValue("selectedItems", isSelected ? [] : [item]);
     };
 
     const toggleAddon = (addon: IExtractedAddon) => {
