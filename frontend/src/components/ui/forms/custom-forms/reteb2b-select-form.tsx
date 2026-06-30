@@ -1,5 +1,6 @@
-import { useCallback, useState } from "react";
+import { useCallback, useState, type ReactNode } from "react";
 import { PlusIcon, TrashIcon } from "@heroicons/react/24/outline";
+import { toast } from "sonner";
 
 import { ComboBoxControl } from "@/components/Shadcn/ComboBox";
 import { Button } from "@/components/Shadcn/Button/button";
@@ -11,17 +12,37 @@ import FormDialogShell from "@/components/ui/forms/form-dialog-shell";
 import { PastePayloadButton } from "@/components/ui/forms/paste-payload-button";
 import { cn } from "@/lib/utils";
 
+import {
+    DynamicOfferRule,
+    ICatalogCategory,
+    ICatalogItemFull,
+    ICatalogLocation,
+    ICatalogOffer,
+    ICatalogProvider,
+    IOnSearchPayload,
+    IReteB2BItem,
+    IRetailerCustomerInput,
+    IReteB2BSelectFormProps,
+    ITag,
+    ITargetListItem,
+} from "../types/reteb2b-select-form-types";
+
 const toComboOptions = (values: string[]) => values.map((value) => ({ value, label: value }));
+
+const RETAILER_TYPE_OPTIONS = [
+    { value: "new", label: "New Retailer" },
+    { value: "existing", label: "Existing Retailer" },
+];
 
 const FormField = ({
     label,
-    required = false,
+    required,
     children,
     className,
 }: {
     label: string;
     required?: boolean;
-    children: React.ReactNode;
+    children: ReactNode;
     className?: string;
 }) => (
     <Field className={cn("w-full", className)}>
@@ -33,24 +54,12 @@ const FormField = ({
     </Field>
 );
 
-import type {
-    DynamicOfferRule,
-    IReteB2BItem,
-    IRetailerCustomerInput,
-    ITag,
-    ICatalogItemFull,
-    ICatalogLocation,
-    ICatalogCategory,
-    ITargetListItem,
-    ICatalogOffer,
-    IOnSearchPayload,
-    IReteB2BSelectFormProps,
-} from "../types/reteb2b-select-form-types";
-
 export default function ReteB2BSelectForm({ submitEvent }: IReteB2BSelectFormProps) {
     const [catalogPayload, setCatalogPayload] = useState<IOnSearchPayload | null>(null);
     const [isPayloadEditorActive, setIsPayloadEditorActive] = useState(false);
     const [isDataPasted, setIsDataPasted] = useState(false);
+    const [providerOptions, setProviderOptions] = useState<ICatalogProvider[]>([]);
+    const [selectedProviderId, setSelectedProviderId] = useState<string | null>(null);
     const [itemOptions, setItemOptions] = useState<string[]>([]);
     const [, setLocationOptions] = useState<string[]>([]);
     const [fulfillmentOptions, setFulfillmentOptions] = useState<string[]>([]);
@@ -82,7 +91,6 @@ export default function ReteB2BSelectForm({ submitEvent }: IReteB2BSelectFormPro
         ],
     });
 
-    // --- Dynamic Validation Helper ---
     const isDynamicCategoryMatch = useCallback(
         (itemCatId: string, itemNameStr: string, ruleCategoryIds: string[]) => {
             if (ruleCategoryIds?.length === 0) return true;
@@ -121,7 +129,6 @@ export default function ReteB2BSelectForm({ submitEvent }: IReteB2BSelectFormPro
                     .split(/[\s,&]+/)
                     .filter((w) => w.length > 2 && !ignoreWords.includes(w));
 
-                // FMCG Aliasing to support specific brand matching via category definitions
                 if (
                     words2.some((w) =>
                         ["soft", "drink", "drinks", "beverage", "juice", "juices"].includes(w)
@@ -173,7 +180,6 @@ export default function ReteB2BSelectForm({ submitEvent }: IReteB2BSelectFormPro
             const rule = dynamicOfferRules[offerId];
             if (!rule) return null;
 
-            // 1. Item & Category Compatibility
             const hasItemRules = rule.itemIds && rule.itemIds.length > 0;
             const hasCategoryRules = rule.categoryIds && rule.categoryIds.length > 0;
             const hasLocationRules = rule.locationIds && rule.locationIds.length > 0;
@@ -182,15 +188,12 @@ export default function ReteB2BSelectForm({ submitEvent }: IReteB2BSelectFormPro
                 const hasCompatibleItem = form.items.some((item) => {
                     if (!item.itemId || item.quantity <= 0) return false;
 
-                    // Location Check
                     const itemLocation = item.location || itemLocations[item.itemId]?.[0] || "";
                     const locMatch =
                         hasLocationRules && itemLocation && rule.locationIds.includes(itemLocation);
 
-                    // Item Check
                     const itemMatch = hasItemRules && rule.itemIds.includes(item.itemId);
 
-                    // Category Check
                     const catId = itemCategories[item.itemId];
                     const itemName = itemNames[item.itemId] || "";
                     let catMatch = true;
@@ -198,7 +201,6 @@ export default function ReteB2BSelectForm({ submitEvent }: IReteB2BSelectFormPro
                         catMatch = isDynamicCategoryMatch(catId, itemName, rule.categoryIds);
                     }
 
-                    // Valid if ANY of the criteria match (Location OR Item OR Category)
                     return locMatch && itemMatch && catMatch;
                 });
 
@@ -216,7 +218,6 @@ export default function ReteB2BSelectForm({ submitEvent }: IReteB2BSelectFormPro
                 }
             }
 
-            // 2. Additivity
             const selected = form.available_offers || [];
             const otherSelected = selected.filter((id) => id !== offerId);
             if (otherSelected.length > 0) {
@@ -227,23 +228,18 @@ export default function ReteB2BSelectForm({ submitEvent }: IReteB2BSelectFormPro
                 if (hasNonAdditiveSelected) return "A non-combinable offer is already active.";
             }
 
-            // 3. Dynamic Qualifiers Calculation
-            // First determine the valid items that qualify for the offer's rules
             const qualifyingItems = form.items.filter((item) => {
                 const hasItemRules = rule.itemIds && rule.itemIds.length > 0;
                 const hasCategoryRules = rule.categoryIds && rule.categoryIds.length > 0;
                 const hasLocationRules = rule.locationIds && rule.locationIds.length > 0;
 
                 if (hasItemRules || hasCategoryRules || hasLocationRules) {
-                    // Location Check
                     const itemLocation = item.location || itemLocations[item.itemId]?.[0] || "";
                     const locMatch =
                         hasLocationRules && itemLocation && rule.locationIds.includes(itemLocation);
 
-                    // Item Check
                     const itemMatch = hasItemRules && rule.itemIds.includes(item.itemId);
 
-                    // Category Check
                     const catId = itemCategories[item.itemId];
                     const itemName = itemNames[item.itemId] || "";
                     let catMatch = true;
@@ -251,13 +247,11 @@ export default function ReteB2BSelectForm({ submitEvent }: IReteB2BSelectFormPro
                         catMatch = isDynamicCategoryMatch(catId, itemName, rule.categoryIds);
                     }
 
-                    // Valid if ANY of the criteria match (Location OR Item OR Category)
                     return locMatch && itemMatch && catMatch;
                 }
                 return true;
             });
 
-            // 3a. Min Order Value
             if (rule.minOrderValue && rule.minOrderValue > 0) {
                 const totalValue = qualifyingItems.reduce(
                     (sum, item) => sum + (itemPrices[item.itemId] || 0) * item.quantity,
@@ -267,7 +261,6 @@ export default function ReteB2BSelectForm({ submitEvent }: IReteB2BSelectFormPro
                     return `Min value ₹${rule.minOrderValue} required on valid items (Current: ₹${totalValue})`;
             }
 
-            // 3b. Item Count
             if (rule.minItemCount && rule.minItemCount > 0) {
                 const totalCount = qualifyingItems.reduce((sum, item) => sum + item.quantity, 0);
                 if (totalCount < rule.minItemCount)
@@ -293,187 +286,160 @@ export default function ReteB2BSelectForm({ submitEvent }: IReteB2BSelectFormPro
     const handlePaste = (data: unknown) => {
         try {
             const parsed = data as IOnSearchPayload;
-
-            // STORE FULL CATALOG HERE (MAIN FIX)
             setCatalogPayload(parsed);
 
-            const providers = parsed.message.catalog["bpp/providers"];
+            const providers = parsed.message.catalog["bpp/providers"] || [];
+            setProviderOptions(providers);
+            setSelectedProviderId(null);
 
-            if (providers && providers.length > 0) {
-                let allItemOptions: string[] = [];
-                let allProvLocs: string[] = [];
-                let allOfferLocs: string[] = [];
-                let allFulfillmentOptions: string[] = [];
+            setItemOptions([]);
+            setLocationOptions([]);
+            setFulfillmentOptions([]);
+            setOffers([]);
+            setDynamicOfferRules({});
+            setItemPrices({});
+            setItemCategories({});
+            setItemNames({});
+            setItemLocations({});
+            setCategoryNames({});
 
-                const parsedPrices: Record<string, number> = {};
-                const parsedCategories: Record<string, string> = {};
-                const parsedItemNames: Record<string, string> = {};
-                const parsedItemLocations: Record<string, string[]> = {};
-                const parsedCategoryNames: Record<string, string> = {};
-
-                let collectedOffers: ICatalogOffer[] = [];
-
-                providers.forEach((provider) => {
-                    allItemOptions = [
-                        ...allItemOptions,
-                        ...(provider.items?.map((i) => i.id) || []),
-                    ];
-
-                    allProvLocs = [
-                        ...allProvLocs,
-                        ...(provider.locations?.map((l: ICatalogLocation) => l.id) || []),
-                    ];
-                    const offerLocs = (provider.offers || [])
-                        .flatMap((o: ICatalogOffer) =>
-                            (Array.isArray(o.location_ids) ? o.location_ids : []).flatMap(
-                                (v: string | string[]) =>
-                                    typeof v === "string"
-                                        ? v.split(",").map((s: string) => s.trim())
-                                        : v
-                            )
-                        )
-                        .filter(Boolean);
-                    allOfferLocs = [...allOfferLocs, ...offerLocs];
-
-                    if (provider.fulfillments) {
-                        allFulfillmentOptions = [
-                            ...allFulfillmentOptions,
-                            ...provider.fulfillments.map((f) => f.id),
-                        ];
-                    }
-
-                    // Extract Item Prices, Names, and Categories Dynamically
-                    provider.items?.forEach((item: ICatalogItemFull) => {
-                        parsedPrices[item.id] = parseFloat(item.price?.value || "0");
-                        parsedItemNames[item.id] = item.descriptor?.name || "";
-                        if (item.category_id) {
-                            parsedCategories[item.id] = item.category_id;
-                        } else if (item.category_ids && item.category_ids.length > 0) {
-                            parsedCategories[item.id] = item.category_ids[0];
-                        }
-
-                        let locs: string[] = [];
-                        if (item.location_id) locs.push(item.location_id);
-                        if (Array.isArray(item.location_ids))
-                            locs = [...locs, ...item.location_ids];
-                        parsedItemLocations[item.id] = Array.from(new Set(locs.filter(Boolean)));
-                    });
-
-                    provider.categories?.forEach((cat: ICatalogCategory) => {
-                        parsedCategoryNames[cat.id] = cat.descriptor?.name || "";
-                    });
-
-                    collectedOffers = [...collectedOffers, ...(provider.offers || [])];
-                });
-
-                setItemOptions(allItemOptions);
-                setLocationOptions(Array.from(new Set([...allProvLocs, ...allOfferLocs])));
-                setFulfillmentOptions(allFulfillmentOptions);
-
-                setItemPrices(parsedPrices);
-                setItemCategories(parsedCategories);
-                setItemNames(parsedItemNames);
-                setItemLocations(parsedItemLocations);
-                setCategoryNames(parsedCategoryNames);
-
-                // Extract Offers and Build Rules Dynamically
-                const rules: Record<string, DynamicOfferRule> = {};
-
-                // Standardizing rules from payload tags (highly dynamic to adapt to different on_search structures)
-                collectedOffers.forEach((off: ICatalogOffer) => {
-                    let minVal = 0;
-                    let isAdditive = true;
-                    // Provide defaults so even empty structures adapt gracefully
-                    const rawItemIds = Array.isArray(off.item_ids)
-                        ? off.item_ids
-                        : Array.isArray(off.items)
-                          ? off.items
-                          : [];
-                    let itemIds: string[] = rawItemIds
-                        .flatMap((v: string | string[]) =>
-                            typeof v === "string" ? v.split(",").map((s: string) => s.trim()) : v
-                        )
-                        .filter(Boolean);
-
-                    const categoryIds: string[] = (
-                        Array.isArray(off.category_ids) ? off.category_ids : []
-                    )
-                        .flatMap((v: string | string[]) =>
-                            typeof v === "string" ? v.split(",").map((s: string) => s.trim()) : v
-                        )
-                        .filter(Boolean);
-
-                    const locationIds: string[] = (
-                        Array.isArray(off.location_ids) ? off.location_ids : []
-                    )
-                        .flatMap((v: string | string[]) =>
-                            typeof v === "string" ? v.split(",").map((s: string) => s.trim()) : v
-                        )
-                        .filter(Boolean);
-
-                    let minItemCount = 0;
-                    let maxItemCount = 0;
-
-                    // Dynamically scrape all tags to find offer rules constraints
-                    off.tags?.forEach((tag: ITag & { descriptor?: { code?: string } }) => {
-                        const tCode = tag.code || tag.descriptor?.code;
-                        if (tCode === "rules" || tCode === "qualifier" || tCode === "meta") {
-                            tag.list?.forEach(
-                                (l: ITargetListItem & { descriptor?: { code?: string } }) => {
-                                    const lCode = l.code || l.descriptor?.code;
-                                    if (lCode === "min_value") minVal = parseFloat(l.value || "0");
-                                    if (lCode === "item_count")
-                                        minItemCount = parseFloat(l.value || "0");
-                                    if (lCode === "item_count_upper")
-                                        maxItemCount = parseFloat(l.value || "0");
-                                    if (lCode === "additive") {
-                                        isAdditive = l.value === "true" || l.value === "yes";
-                                        // Make sure "false" or "no" results in false
-                                        if (l.value === "false" || l.value === "no")
-                                            isAdditive = false;
-                                    }
-                                    if (lCode === "item_ids") {
-                                        // In case itemIds are provided as a comma separated string within rules
-                                        if (l.value) {
-                                            itemIds = l.value
-                                                .split(",")
-                                                .map((s: string) => s.trim());
-                                        }
-                                    }
-                                }
-                            );
-                        }
-                        // Fallback: Check if there's an explicit item_ids tag group with a list of values
-                        if (tCode === "item_ids" && itemIds.length === 0) {
-                            if (tag.list) {
-                                itemIds = tag.list.map((l: ITargetListItem) => l.value);
-                            }
-                        }
-                    });
-
-                    rules[off.id] = {
-                        id: off.id,
-                        itemIds: itemIds,
-                        categoryIds: categoryIds,
-                        locationIds: locationIds,
-                        minOrderValue: minVal,
-                        minItemCount,
-                        maxItemCount,
-                        isAdditive: isAdditive,
-                    };
-                });
-                setDynamicOfferRules(rules);
-
-                const uniqueOffers = Array.from(
-                    new Map(collectedOffers.map((o) => [o.id, o])).values()
-                );
-                setOffers(uniqueOffers);
-            }
             setIsDataPasted(true);
         } catch (err) {
+            toast.error("Invalid on_search payload");
             console.error("Invalid on_search payload", err);
         }
         setIsPayloadEditorActive(false);
+    };
+
+    const handleProviderSelect = (providerId: string) => {
+        const provider = providerOptions.find((p) => p.id === providerId);
+        if (!provider) return;
+
+        setSelectedProviderId(providerId);
+
+        const allItemOptions = provider.items?.map((i) => i.id) || [];
+
+        const allProvLocs = provider.locations?.map((l: ICatalogLocation) => l.id) || [];
+        const offerLocs = (provider.offers || [])
+            .flatMap((o: ICatalogOffer) =>
+                (Array.isArray(o.location_ids) ? o.location_ids : []).flatMap(
+                    (v: string | string[]) =>
+                        typeof v === "string" ? v.split(",").map((s: string) => s.trim()) : v
+                )
+            )
+            .filter(Boolean);
+
+        const allFulfillmentOptions = provider.fulfillments?.map((f) => f.id) || [];
+
+        const parsedPrices: Record<string, number> = {};
+        const parsedCategories: Record<string, string> = {};
+        const parsedItemNames: Record<string, string> = {};
+        const parsedItemLocations: Record<string, string[]> = {};
+        const parsedCategoryNames: Record<string, string> = {};
+
+        provider.items?.forEach((item: ICatalogItemFull) => {
+            parsedPrices[item.id] = parseFloat(item.price?.value || "0");
+            parsedItemNames[item.id] = item.descriptor?.name || "";
+            if (item.category_id) {
+                parsedCategories[item.id] = item.category_id;
+            } else if (item.category_ids && item.category_ids.length > 0) {
+                parsedCategories[item.id] = item.category_ids[0];
+            }
+
+            let locs: string[] = [];
+            if (item.location_id) locs.push(item.location_id);
+            if (Array.isArray(item.location_ids)) locs = [...locs, ...item.location_ids];
+            parsedItemLocations[item.id] = Array.from(new Set(locs.filter(Boolean)));
+        });
+
+        provider.categories?.forEach((cat: ICatalogCategory) => {
+            parsedCategoryNames[cat.id] = cat.descriptor?.name || "";
+        });
+
+        const collectedOffers = provider.offers || [];
+
+        setItemOptions(allItemOptions);
+        setLocationOptions(Array.from(new Set([...allProvLocs, ...offerLocs])));
+        setFulfillmentOptions(allFulfillmentOptions);
+        setItemPrices(parsedPrices);
+        setItemCategories(parsedCategories);
+        setItemNames(parsedItemNames);
+        setItemLocations(parsedItemLocations);
+        setCategoryNames(parsedCategoryNames);
+
+        const rules: Record<string, DynamicOfferRule> = {};
+        collectedOffers.forEach((off: ICatalogOffer) => {
+            let minVal = 0;
+            let isAdditive = true;
+            const rawItemIds = Array.isArray(off.item_ids)
+                ? off.item_ids
+                : Array.isArray(off.items)
+                  ? off.items
+                  : [];
+            let itemIds: string[] = rawItemIds
+                .flatMap((v: string | string[]) =>
+                    typeof v === "string" ? v.split(",").map((s: string) => s.trim()) : v
+                )
+                .filter(Boolean);
+
+            const categoryIds: string[] = (Array.isArray(off.category_ids) ? off.category_ids : [])
+                .flatMap((v: string | string[]) =>
+                    typeof v === "string" ? v.split(",").map((s: string) => s.trim()) : v
+                )
+                .filter(Boolean);
+
+            const locationIds: string[] = (Array.isArray(off.location_ids) ? off.location_ids : [])
+                .flatMap((v: string | string[]) =>
+                    typeof v === "string" ? v.split(",").map((s: string) => s.trim()) : v
+                )
+                .filter(Boolean);
+
+            let minItemCount = 0;
+            let maxItemCount = 0;
+
+            off.tags?.forEach((tag: ITag) => {
+                const tCode = tag.code || tag.descriptor?.code;
+                if (tCode === "rules" || tCode === "qualifier" || tCode === "meta") {
+                    tag.list?.forEach((l: ITargetListItem) => {
+                        const lCode = l.code || l.descriptor?.code;
+                        if (lCode === "min_value") minVal = parseFloat(l.value || "0");
+                        if (lCode === "item_count") minItemCount = parseFloat(l.value || "0");
+                        if (lCode === "item_count_upper") maxItemCount = parseFloat(l.value || "0");
+                        if (lCode === "additive") {
+                            isAdditive = l.value === "true" || l.value === "yes";
+                            if (l.value === "false" || l.value === "no") isAdditive = false;
+                        }
+                        if (lCode === "item_ids" && l.value) {
+                            itemIds = l.value.split(",").map((s: string) => s.trim());
+                        }
+                    });
+                }
+                if (tCode === "item_ids" && itemIds.length === 0 && tag.list) {
+                    itemIds = tag.list.map((l: ITargetListItem) => l.value);
+                }
+            });
+
+            rules[off.id] = {
+                id: off.id,
+                itemIds,
+                categoryIds,
+                locationIds,
+                minOrderValue: minVal,
+                minItemCount,
+                maxItemCount,
+                isAdditive,
+            };
+        });
+
+        setDynamicOfferRules(rules);
+        const uniqueOffers = Array.from(new Map(collectedOffers.map((o) => [o.id, o])).values());
+        setOffers(uniqueOffers);
+
+        setForm((prev) => ({
+            ...prev,
+            items: [{ itemId: "", quantity: 1, location: "", fulfillment_id: "" }],
+            available_offers: [],
+        }));
     };
 
     const handleChange = (key: keyof IRetailerCustomerInput, value: string) => {
@@ -484,7 +450,6 @@ export default function ReteB2BSelectForm({ submitEvent }: IReteB2BSelectFormPro
         const updatedItems = [...form.items];
         updatedItems[index] = { ...updatedItems[index], [key]: value };
 
-        // Auto-populate location if itemId changes
         if (key === "itemId" && typeof value === "string" && value) {
             const autoLocations = itemLocations[value];
             if (autoLocations && autoLocations.length > 0) {
@@ -492,7 +457,6 @@ export default function ReteB2BSelectForm({ submitEvent }: IReteB2BSelectFormPro
             }
         }
 
-        // Reset offers if items change (to re-validate)
         setForm({ ...form, items: updatedItems, available_offers: [] });
     };
 
@@ -515,10 +479,9 @@ export default function ReteB2BSelectForm({ submitEvent }: IReteB2BSelectFormPro
         if (selected.includes(offerId)) {
             setForm({ ...form, available_offers: selected.filter((id) => id !== offerId) });
         } else {
-            // --- UPDATED: Add validation check before selecting ---
             const error = getOfferValidationMessage(offerId);
             if (error) {
-                alert(error);
+                toast.error(error);
                 return;
             }
             setForm({ ...form, available_offers: [...selected, offerId] });
@@ -526,8 +489,12 @@ export default function ReteB2BSelectForm({ submitEvent }: IReteB2BSelectFormPro
     };
 
     const submit = async () => {
+        if (!selectedProviderId) {
+            toast.error("Please select a provider");
+            return;
+        }
         if (!form.city_code) {
-            alert("City code is required");
+            toast.error("City code is required");
             return;
         }
         if (form.type === "new") {
@@ -540,23 +507,35 @@ export default function ReteB2BSelectForm({ submitEvent }: IReteB2BSelectFormPro
                 !form.shop_name ||
                 !form.address
             ) {
-                alert("All fields required for new retailer");
+                toast.error("All fields required for new retailer");
                 return;
             }
         }
         if (!catalogPayload) {
-            alert("Please paste on_search payload first");
+            toast.error("Please paste on_search payload first");
             return;
         }
+
+        const selectedProvider = providerOptions.find((p) => p.id === selectedProviderId);
+
         await submitEvent({
             jsonPath: {},
             formData: {
                 ...form,
                 live_catalog: catalogPayload,
+                provider_id: selectedProviderId,
+                provider_name: selectedProvider?.descriptor?.name ?? "",
+                provider_code: selectedProvider?.descriptor?.code ?? "",
+                provider_short_desc: selectedProvider?.descriptor?.short_desc ?? "",
             } as unknown as Record<string, string>,
             catalog: catalogPayload,
         });
     };
+
+    const providerComboOptions = providerOptions.map((p) => ({
+        value: p.id,
+        label: p.descriptor?.name ? `${p.id} – ${p.descriptor.name}` : p.id,
+    }));
 
     return (
         <>
@@ -585,190 +564,218 @@ export default function ReteB2BSelectForm({ submitEvent }: IReteB2BSelectFormPro
                     </p>
                 ) : (
                     <div className="space-y-4">
-                        <FormField label="Retailer Type">
-                            <ComboBoxControl
-                                value={form.type}
-                                onValueChange={(value) =>
-                                    handleChange("type", value as "new" | "existing")
-                                }
-                                options={[
-                                    { value: "new", label: "New Retailer" },
-                                    { value: "existing", label: "Existing Retailer" },
-                                ]}
-                            />
-                        </FormField>
+                        <ComboBoxControl
+                            label="Retailer Type"
+                            value={form.type}
+                            onValueChange={(value) => handleChange("type", value)}
+                            options={RETAILER_TYPE_OPTIONS}
+                        />
 
-                        <FormField label="Customer ID" required={form.type !== "new"}>
-                            <Input
-                                value={form.customer_id ?? ""}
-                                onChange={(event) =>
-                                    handleChange("customer_id", event.target.value)
-                                }
-                            />
-                        </FormField>
+                        {form.type !== "new" && (
+                            <FormField label="Customer ID" required>
+                                <Input
+                                    value={form.customer_id ?? ""}
+                                    onChange={(e) => handleChange("customer_id", e.target.value)}
+                                />
+                            </FormField>
+                        )}
 
                         <FormField label="City Code" required>
                             <Input
                                 value={form.city_code}
-                                onChange={(event) => handleChange("city_code", event.target.value)}
+                                onChange={(e) => handleChange("city_code", e.target.value)}
                             />
                         </FormField>
 
-                        <FormField label="Phone Number" required={form.type === "new"}>
-                            <Input
-                                value={form.phone_number ?? ""}
-                                onChange={(event) =>
-                                    handleChange("phone_number", event.target.value)
-                                }
-                            />
-                        </FormField>
-
-                        <FormField label="Email" required={form.type === "new"}>
-                            <Input
-                                value={form.email ?? ""}
-                                onChange={(event) => handleChange("email", event.target.value)}
-                            />
-                        </FormField>
-
-                        <FormField label="GST Number" required={form.type === "new"}>
-                            <Input
-                                value={form.tax_number ?? ""}
-                                onChange={(event) => handleChange("tax_number", event.target.value)}
-                            />
-                        </FormField>
-
-                        <FormField label="PAN Number" required={form.type === "new"}>
-                            <Input
-                                value={form.provider_tax_number ?? ""}
-                                onChange={(event) =>
-                                    handleChange("provider_tax_number", event.target.value)
-                                }
-                            />
-                        </FormField>
+                        {form.type === "new" && (
+                            <>
+                                <FormField label="Phone Number" required>
+                                    <Input
+                                        value={form.phone_number ?? ""}
+                                        onChange={(e) =>
+                                            handleChange("phone_number", e.target.value)
+                                        }
+                                    />
+                                </FormField>
+                                <FormField label="Email" required>
+                                    <Input
+                                        value={form.email ?? ""}
+                                        onChange={(e) => handleChange("email", e.target.value)}
+                                    />
+                                </FormField>
+                                <FormField label="GST Number" required>
+                                    <Input
+                                        value={form.tax_number ?? ""}
+                                        onChange={(e) => handleChange("tax_number", e.target.value)}
+                                    />
+                                </FormField>
+                                <FormField label="PAN Number" required>
+                                    <Input
+                                        value={form.provider_tax_number ?? ""}
+                                        onChange={(e) =>
+                                            handleChange("provider_tax_number", e.target.value)
+                                        }
+                                    />
+                                </FormField>
+                            </>
+                        )}
 
                         <FormField label="Shop Name" required>
                             <Input
                                 value={form.shop_name ?? ""}
-                                onChange={(event) => handleChange("shop_name", event.target.value)}
+                                onChange={(e) => handleChange("shop_name", e.target.value)}
                             />
                         </FormField>
 
                         <FormField label="Address" required>
                             <Input
                                 value={form.address ?? ""}
-                                onChange={(event) => handleChange("address", event.target.value)}
+                                onChange={(e) => handleChange("address", e.target.value)}
                             />
                         </FormField>
 
                         <FormField label="State Code" required>
                             <Input
                                 value={form.state_code ?? ""}
-                                onChange={(event) => handleChange("state_code", event.target.value)}
+                                onChange={(e) => handleChange("state_code", e.target.value)}
                             />
                         </FormField>
 
-                        <div className="space-y-3 rounded-lg border border-border-default p-3">
-                            <h3 className="text-sm font-semibold text-text-primary">Items</h3>
-                            {form.items.map((item, index) => (
-                                <div
-                                    key={index}
-                                    className="grid gap-2 rounded-md border border-border-default bg-surface-muted/40 p-3 md:grid-cols-2"
-                                >
-                                    <ComboBoxControl
-                                        label="Item"
-                                        value={item.itemId}
-                                        onValueChange={(value) =>
-                                            handleItemChange(index, "itemId", value)
-                                        }
-                                        options={toComboOptions(itemOptions)}
-                                        placeholder="Select item..."
-                                    />
-                                    <FormField label="Quantity">
-                                        <Input
-                                            type="number"
-                                            min={1}
-                                            value={item.quantity}
-                                            onChange={(event) =>
-                                                handleItemChange(
-                                                    index,
-                                                    "quantity",
-                                                    Number(event.target.value)
-                                                )
-                                            }
-                                        />
-                                    </FormField>
-                                    <ComboBoxControl
-                                        label="Location"
-                                        value={item.location}
-                                        onValueChange={(value) =>
-                                            handleItemChange(index, "location", value)
-                                        }
-                                        options={toComboOptions(
-                                            item.itemId && itemLocations[item.itemId]
-                                                ? itemLocations[item.itemId]
-                                                : []
-                                        )}
-                                        placeholder="Select location..."
-                                    />
-                                    <ComboBoxControl
-                                        label="Fulfillment"
-                                        value={item.fulfillment_id}
-                                        onValueChange={(value) =>
-                                            handleItemChange(index, "fulfillment_id", value)
-                                        }
-                                        options={toComboOptions(fulfillmentOptions)}
-                                        placeholder="Select fulfillment..."
-                                    />
+                        <ComboBoxControl
+                            label="Select Provider"
+                            required
+                            value={selectedProviderId ?? ""}
+                            onValueChange={handleProviderSelect}
+                            options={[
+                                { value: "", label: "-- Select a provider --" },
+                                ...providerComboOptions,
+                            ]}
+                            placeholder="Select a provider"
+                        />
+
+                        {selectedProviderId && (
+                            <>
+                                <div className="space-y-3">
+                                    <h3 className="font-semibold text-foreground">Items</h3>
+                                    {form.items.map((item, index) => (
+                                        <div
+                                            key={index}
+                                            className="flex flex-wrap items-end gap-2 rounded-lg border border-border-default p-3"
+                                        >
+                                            <ComboBoxControl
+                                                className="min-w-[140px] flex-1"
+                                                label="Item"
+                                                value={item.itemId}
+                                                onValueChange={(value) =>
+                                                    handleItemChange(index, "itemId", value)
+                                                }
+                                                options={toComboOptions(itemOptions)}
+                                                placeholder="Item"
+                                            />
+                                            <FormField label="Qty" className="w-20">
+                                                <Input
+                                                    type="number"
+                                                    min={1}
+                                                    value={item.quantity}
+                                                    onChange={(e) =>
+                                                        handleItemChange(
+                                                            index,
+                                                            "quantity",
+                                                            Number(e.target.value)
+                                                        )
+                                                    }
+                                                />
+                                            </FormField>
+                                            <ComboBoxControl
+                                                className="min-w-[120px] flex-1"
+                                                label="Location"
+                                                value={item.location}
+                                                onValueChange={(value) =>
+                                                    handleItemChange(index, "location", value)
+                                                }
+                                                options={toComboOptions(
+                                                    item.itemId && itemLocations[item.itemId]
+                                                        ? itemLocations[item.itemId]
+                                                        : []
+                                                )}
+                                                placeholder="Location"
+                                            />
+                                            <ComboBoxControl
+                                                className="min-w-[120px] flex-1"
+                                                label="Fulfillment"
+                                                value={item.fulfillment_id}
+                                                onValueChange={(value) =>
+                                                    handleItemChange(index, "fulfillment_id", value)
+                                                }
+                                                options={toComboOptions(fulfillmentOptions)}
+                                                placeholder="Fulfillment"
+                                            />
+                                            <Button
+                                                type="button"
+                                                variant="destructive"
+                                                size="sm"
+                                                onClick={() => removeItem(index)}
+                                                disabled={form.items.length === 1}
+                                            >
+                                                <TrashIcon className="size-4" />
+                                            </Button>
+                                        </div>
+                                    ))}
                                     <Button
                                         type="button"
                                         variant="outline"
-                                        size="sm"
-                                        className="text-destructive md:col-span-2"
-                                        onClick={() => removeItem(index)}
+                                        onClick={addItem}
+                                        disabled={form.items.length >= 5}
                                     >
-                                        <TrashIcon className="size-4" />
-                                        Remove
+                                        <PlusIcon className="size-4" />
+                                        Add Item
                                     </Button>
                                 </div>
-                            ))}
-                            <Button type="button" variant="outline" size="sm" onClick={addItem}>
-                                <PlusIcon className="size-4" />
-                                Add Item
-                            </Button>
-                        </div>
 
-                        <Field className="space-y-2 rounded-lg border border-border-default p-3">
-                            <FieldLabel className="font-semibold">Available Offers</FieldLabel>
-                            {offers.map((offer) => {
-                                const validationError = getOfferValidationMessage(offer.id);
-                                return (
-                                    <label
-                                        key={offer.id}
-                                        className={`flex items-start gap-2 rounded p-1 ${
-                                            validationError
-                                                ? "cursor-not-allowed opacity-50"
-                                                : "cursor-pointer hover:bg-surface-muted/50"
-                                        }`}
-                                    >
-                                        <Checkbox
-                                            checked={
-                                                form.available_offers?.includes(offer.id) || false
-                                            }
-                                            disabled={!!validationError}
-                                            onCheckedChange={() => toggleOffer(offer.id)}
-                                        />
-                                        <span className="text-sm text-foreground">
-                                            {offer.id} ({offer.descriptor.code})
-                                            {validationError && (
-                                                <span className="ml-2 text-[10px] text-destructive italic uppercase">
-                                                    [{validationError}]
-                                                </span>
-                                            )}
-                                        </span>
-                                    </label>
-                                );
-                            })}
-                        </Field>
+                                {offers.length > 0 && (
+                                    <Field className="space-y-2 rounded-lg border border-border-default p-3">
+                                        <FieldLabel className="font-semibold">
+                                            Available Offers
+                                        </FieldLabel>
+                                        {offers.map((offer) => {
+                                            const validationError = getOfferValidationMessage(
+                                                offer.id
+                                            );
+                                            const isChecked =
+                                                form.available_offers?.includes(offer.id) ?? false;
+
+                                            return (
+                                                <label
+                                                    key={offer.id}
+                                                    className={cn(
+                                                        "flex items-start gap-2 rounded p-1",
+                                                        validationError && !isChecked
+                                                            ? "cursor-not-allowed opacity-50"
+                                                            : "cursor-pointer hover:bg-surface-muted/50"
+                                                    )}
+                                                >
+                                                    <Checkbox
+                                                        checked={isChecked}
+                                                        disabled={!!validationError && !isChecked}
+                                                        onCheckedChange={() =>
+                                                            toggleOffer(offer.id)
+                                                        }
+                                                    />
+                                                    <span className="text-sm text-foreground">
+                                                        {offer.id} ({offer.descriptor.code})
+                                                        {validationError && (
+                                                            <span className="ml-2 text-[10px] text-destructive italic uppercase">
+                                                                [{validationError}]
+                                                            </span>
+                                                        )}
+                                                    </span>
+                                                </label>
+                                            );
+                                        })}
+                                    </Field>
+                                )}
+                            </>
+                        )}
                     </div>
                 )}
             </FormDialogShell>

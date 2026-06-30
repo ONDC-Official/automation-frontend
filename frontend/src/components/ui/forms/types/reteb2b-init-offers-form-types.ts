@@ -1,17 +1,15 @@
 import { SubmitEventParams } from "@/types/flow-types";
 
-export interface ICatalogItem {
-    id: string;
-}
-
 export interface ITargetListItem {
     code: string;
     value: string;
+    descriptor?: { code?: string };
 }
 
 export interface ITag {
     code: string;
     list?: ITargetListItem[];
+    descriptor?: { code?: string };
 }
 
 export interface IDynamicOfferRule {
@@ -37,15 +35,42 @@ export interface ICatalogOffer {
     id: string;
     descriptor: {
         code: string;
+        name?: string;
     };
     item_ids?: string[];
     location_ids?: string[];
     category_ids?: string[];
     tags?: ITag[];
+    items?: string[];
+}
+
+export interface ICatalogFulfillment {
+    id: string;
+}
+
+export interface ICatalogCategory {
+    id: string;
+    descriptor?: { name?: string };
+}
+
+export interface ICatalogItemFull {
+    id: string;
+    descriptor?: { name?: string };
+    category_id?: string;
+    category_ids?: string[];
+    price?: { value?: string };
+    tags?: ITag[];
+    location_id?: string;
+    location_ids?: string[];
 }
 
 export interface ICatalogProvider {
     id: string;
+    descriptor?: {
+        name?: string;
+        code?: string;
+        short_desc?: string;
+    };
     items: ICatalogItemFull[];
     locations: ICatalogLocation[];
     categories?: ICatalogCategory[];
@@ -54,11 +79,6 @@ export interface ICatalogProvider {
 }
 
 export type CatalogProvider = ICatalogProvider;
-
-export interface ITargetListItem {
-    code: string;
-    value: string;
-}
 
 export interface IOnSearchPayload {
     message: {
@@ -90,56 +110,6 @@ export interface IRetailerCustomerInput {
     items: IReteB2BItem[];
 }
 
-export interface ICatalogFulfillment {
-    id: string;
-}
-
-export interface ICatalogCategory {
-    id: string;
-    descriptor?: { name?: string };
-}
-
-export interface ICatalogItemFull {
-    id: string;
-    descriptor?: { name?: string };
-    category_id?: string;
-    category_ids?: string[];
-    price?: { value?: string };
-    tags?: ITag[];
-    location_id?: string;
-    location_ids?: string[];
-}
-
-export interface IFormValues {
-    city_code: string;
-    provider: string;
-    provider_location: string[];
-    location_gps: string;
-    location_pin_code: string;
-    order_type: "ILBN" | "ILFP" | "ILBP";
-    items: {
-        itemId: string;
-        quantity: number;
-        location: string;
-        estimated_price: number;
-    }[];
-    available_offers: string[];
-}
-
 export interface IReteB2BInitOffersFormProps {
     submitEvent: (data: SubmitEventParams) => Promise<void>;
 }
-
-export const DEFAULT_FORM_VALUES: IFormValues = {
-    city_code: "",
-    provider: "",
-    provider_location: [],
-    location_gps: "",
-    location_pin_code: "",
-    order_type: "ILBN",
-    items: [
-        { itemId: "", quantity: 1, location: "", estimated_price: 0 },
-        { itemId: "", quantity: 1, location: "", estimated_price: 0 },
-    ],
-    available_offers: [],
-};

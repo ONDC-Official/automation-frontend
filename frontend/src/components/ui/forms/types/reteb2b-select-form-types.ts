@@ -9,11 +9,13 @@ export type CatalogProvider = ICatalogProvider;
 export interface ITargetListItem {
     code: string;
     value: string;
+    descriptor?: { code?: string };
 }
 
 export interface ITag {
     code: string;
     list?: ITargetListItem[];
+    descriptor?: { code?: string };
 }
 
 export interface IDynamicOfferRule {
@@ -50,6 +52,11 @@ export interface ICatalogOffer {
 
 export interface ICatalogProvider {
     id: string;
+    descriptor?: {
+        name?: string;
+        code?: string;
+        short_desc?: string;
+    };
     items: ICatalogItemFull[];
     locations: ICatalogLocation[];
     categories?: ICatalogCategory[];
