@@ -21,7 +21,7 @@ import {
 // separate one-button popup as soon as the FIRST on_select completes (this flow
 // has a second on_select after on_status — that one must NOT trigger it). Scoped
 // strictly by flow id so no other flow's behavior changes.
-const LAMF_SINGLE_REDIRECTION_FLOW_ID = "lamf_credit_line_with_mfc_single_redirection";
+// const LAMF_SINGLE_REDIRECTION_FLOW_ID = "lamf_credit_line_with_mfc_single_redirection";
 
 export default function DisplayFlow({
     mappedFlow,
@@ -89,7 +89,7 @@ export default function DisplayFlow({
         return () => releaseFlowFormDialogLock?.();
     }, [isAnyFormDialogOpen, acquireFlowFormDialogLock, releaseFlowFormDialogLock]);
 
-    const isLamfRedirectionFlow = flowId === LAMF_SINGLE_REDIRECTION_FLOW_ID;
+    // const isLamfRedirectionFlow = flowId === LAMF_SINGLE_REDIRECTION_FLOW_ID;
 
     // Per-run key for the LAMF launch popup's "already handled" marker. Keyed on
     // the transaction id so it resets only when the flow is cleared (new txn id),
@@ -143,7 +143,10 @@ export default function DisplayFlow({
         // it), show the separate one-button "launch" popup. Only the BPP session
         // shows it; it opens the form + saves the redirection URL, then disappears.
         // The polling popup is untouched and still opens via the normal selection.
-        if (isLamfRedirectionFlow && sessionData?.npType === "BPP") {
+        if (
+            // isLamfRedirectionFlow &&
+            sessionData?.npType === "BPP"
+        ) {
             const firstOnSelect = mappedFlow?.sequence
                 ?.filter((s) => s.actionType === "on_select")
                 ?.sort((a, b) => a.index - b.index)?.[0];
@@ -223,7 +226,7 @@ export default function DisplayFlow({
         // advance the flow. Scoped strictly to the MANUAL_DYNAMIC_FORM step, so no
         // other step/form is affected; the BPP launch popup is unchanged.
         if (
-            isLamfRedirectionFlow &&
+            // isLamfRedirectionFlow &&
             seqStep?.input?.some((f) => f.type === "MANUAL_DYNAMIC_FORM")
         ) {
             if (sessionData?.activeFlow !== flowId) return;
