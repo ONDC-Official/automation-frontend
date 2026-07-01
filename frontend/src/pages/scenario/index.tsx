@@ -25,6 +25,7 @@ import { IScenarioFormData, ISessionResponse, ISavedPrefAPI } from "@/pages/scen
 import { openSessionInNewTab } from "@/pages/scenario/helpers";
 import NewSessionForm from "@/pages/scenario/NewSessionForm";
 import Spinner from "@/components/Shadcn/Spinner";
+import { ScenarioTipBanner } from "@/pages/scenario/ScenarioTipBanner";
 
 export default function FlowContent() {
     const {
@@ -168,10 +169,6 @@ export default function FlowContent() {
             valid.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
             setExistingSessions(valid);
         }
-        toast.info(
-            "Tip: Allow pop-ups for this site in your browser settings, they are blocked by default and required for the new tabs to open.",
-            { position: "top-right", duration: Infinity }
-        );
         Promise.all([fetchFormFieldData(), fetchAndApplyPreferences()]).finally(() =>
             setIsInitializing(false)
         );
@@ -275,6 +272,7 @@ export default function FlowContent() {
     };
     return (
         <div className="w-full">
+            <ScenarioTipBanner />
             <div className="mx-auto px-20 py-6">
                 <Body />
             </div>
