@@ -12,6 +12,7 @@ module.exports = {
         "^@hooks/(.*)$": "<rootDir>/src/hooks/$1",
         "^@context/(.*)$": "<rootDir>/src/context/$1",
         "^@services/(.*)$": "<rootDir>/src/services/$1",
+        "^@store/(.*)$": "<rootDir>/src/store/$1",
         "^@constants/(.*)$": "<rootDir>/src/constants/$1",
         "^@styles/(.*)$": "<rootDir>/src/styles/$1",
         "^@/(.*)$": "<rootDir>/src/$1",
