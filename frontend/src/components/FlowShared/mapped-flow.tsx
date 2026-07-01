@@ -129,8 +129,11 @@ export default function DisplayFlow({
 
     // --- Real-Time Ride Map Integration ------------------------------------
     // The map UI now lives in the right-panel "Application" tab (RideMapTab). Here we only need to
-    // know whether the tracking phase is active, to stop the flow engine auto-proceeding past
-    // on_confirm — the seller drives track/on_track/on_status manually from the map.
+    // know whether the tracking phase is active, to stop the flow engine auto-proceeding the ride
+    // states — the seller drives on_status/on_update manually from the map. Tracking activates only
+    // once the driver is assigned AND the initial location is shared (a track/on_track step is
+    // COMPLETE) — NOT at on_confirm, so pre-assignment steps (e.g. the unsolicited on_update driver
+    // assignment in "assign driver post on_confirm" flows) still auto-proceed normally.
     // IMPORTANT: this engine override must apply ONLY for the ride-map domain/version (TRV10 2.1.0).
     // For every other domain `trackingActive` stays false, so the normal auto-proceed behaviour of
     // track/on_track/on_status/on_update/status is fully preserved and their flows are unaffected.
@@ -195,16 +198,12 @@ export default function DisplayFlow({
         const extraStep = mappedFlow?.extraSteps?.find((s) => s.status === "INPUT-REQUIRED");
         const target = seqStep ?? extraStep;
         const conf = target?.input;
-        // Ride Map (Part A): once the ride is assigned (on_confirm complete), the tracking phase is
-        // fully manual — do NOT auto-open/auto-submit input for track/on_track/on_status/etc. The
-        // seller advances these via the map controls. EXCEPTION: `on_track_on_assign` shares the
-        // initial driver location and is seller-input-driven, so let its input form auto-open.
-        if (
-            trackingActive &&
-            isTrackingPhaseStep(target?.actionType) &&
-            target?.actionId !== "on_track_on_assign"
-        )
-            return;
+        // Ride Map (Part A): once the tracking phase is active (driver assigned + initial
+        // track/on_track complete), it is fully manual — do NOT auto-open/auto-submit input for
+        // track/on_track/on_status/etc. The seller advances these via the map controls.
+        // (Pre-tracking steps like the on_update driver assignment and on_track_on_assign are not
+        // suppressed — tracking only activates once they complete.)
+        if (trackingActive && isTrackingPhaseStep(target?.actionType)) return;
         // Extra steps must be advanced via triggerExtra (carries `trigger_extra`); use the step's
         // actionId as the trigger key. Undefined => sequence step => proceedFlow.
         const extraKey = !seqStep && extraStep ? extraStep.actionId : undefined;
@@ -257,8 +256,9 @@ export default function DisplayFlow({
     useEffect(() => {
         const latestSending = mappedFlow?.sequence.find((f) => f.status === "RESPONDING");
         const transactionId = sessionData?.flowMap[flowId];
-        // Ride Map (Part A): never auto-proceed tracking-phase steps after on_confirm — the seller
-        // drives them manually via the map.
+        // Ride Map (Part A): never auto-proceed tracking-phase steps once tracking is active
+        // (driver assigned + initial track/on_track complete) — the seller drives them manually
+        // via the map.
         if (trackingActive && isTrackingPhaseStep(latestSending?.actionType)) return;
         if (latestSending && latestSending.force_proceed && transactionId) {
             proceedFlow(sessionId, transactionId);

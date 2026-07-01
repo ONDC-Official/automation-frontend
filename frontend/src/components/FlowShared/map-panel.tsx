@@ -19,7 +19,6 @@ import {
     splitPathAt,
     RIDE_STATE_ORDER,
     RIDE_STATE_BUTTON_LABEL,
-    RIDE_CANCEL_STATE,
     type LatLng,
 } from "@components/FlowShared/ride-map-utils";
 
@@ -80,6 +79,8 @@ export interface MapPanelProps {
     currentState?: string;
     /** Fired when the controller clicks a ride-state button (passes the RIDE_* code). */
     onRideState?: (state: string) => void;
+    /** The RIDE_* states currently user-clickable (all other buttons render disabled). */
+    enabledStates?: string[];
     /** Changes when the pickup/drop change — re-fits the map to the fresh locations. */
     fitKey?: string;
 }
@@ -204,6 +205,7 @@ export default function MapPanel({
     progress = 0,
     currentState,
     onRideState,
+    enabledStates,
     fitKey,
 }: MapPanelProps) {
     const pickup = useMemo(() => parseGps(pickupGps), [pickupGps]);
@@ -298,33 +300,25 @@ export default function MapPanel({
                 <div className="flex flex-wrap gap-2">
                     {RIDE_STATE_ORDER.map((state) => {
                         const active = state === currentState;
+                        const enabled = enabledStates?.includes(state) ?? false;
                         return (
                             <button
                                 key={state}
                                 type="button"
-                                onClick={() => onRideState?.(state)}
+                                disabled={!enabled}
+                                onClick={() => enabled && onRideState?.(state)}
                                 className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
                                     active
                                         ? "border-sky-500 bg-sky-100 text-sky-800 font-semibold"
-                                        : "border-sky-300 bg-sky-50 text-sky-700 hover:bg-sky-100"
+                                        : enabled
+                                          ? "border-sky-300 bg-sky-50 text-sky-700 hover:bg-sky-100"
+                                          : "border-gray-200 bg-gray-50 text-gray-400 cursor-not-allowed"
                                 }`}
                             >
                                 {RIDE_STATE_BUTTON_LABEL[state]}
                             </button>
                         );
                     })}
-                    {/* Terminal cancel branch — distinct red styling. */}
-                    <button
-                        type="button"
-                        onClick={() => onRideState?.(RIDE_CANCEL_STATE)}
-                        className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
-                            currentState === RIDE_CANCEL_STATE
-                                ? "border-red-500 bg-red-100 text-red-800 font-semibold"
-                                : "border-red-300 bg-red-50 text-red-700 hover:bg-red-100"
-                        }`}
-                    >
-                        {RIDE_STATE_BUTTON_LABEL[RIDE_CANCEL_STATE]}
-                    </button>
                 </div>
             )}
 
