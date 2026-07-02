@@ -207,7 +207,7 @@ const DeveloperGuideShell: FC = () => {
                     <div className="relative flex min-w-0 flex-1 flex-col">
                         <DeveloperGuideCollapsedNavBar />
                         {!navSidebarOpen && (
-                            <div className="absolute left-0 top-50 z-30">
+                            <div className="absolute left-0 top-0 z-30 flex h-11 min-h-11 items-center">
                                 <DeveloperGuideNavBackButton className="rounded-l-none" />
                             </div>
                         )}

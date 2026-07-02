@@ -95,8 +95,6 @@ const FlowInformation: FC<FlowInformationProps> = ({
                 </div>
             )}
 
-            {hasSelectedAction && selectedFlowData && <FlowContextStrip flow={selectedFlowData} />}
-
             {selectedFlowAction && selectedStep && (
                 <>
                     {/* <div className="mb-10">
@@ -105,93 +103,100 @@ const FlowInformation: FC<FlowInformationProps> = ({
 
                     {hasTabs && (
                         <div className="border-t border-slate-200 dark:border-border-default">
-                            <DetailTabsHeader
-                                activeSection={activeSection}
-                                onChange={handleSectionChange}
-                                hasExampleObject={hasExampleObject}
-                                hasStep={!!selectedStep}
-                                hasXValidations={hasXValidations}
-                            />
-
                             <div className="relative flex items-stretch gap-0 mt-4 mb-4 h-[calc(100vh-10rem)]">
-                                {activeSection === "preview" && (
-                                    <FlowsSidebar
-                                        flows={flows}
-                                        selectedFlow={selectedFlow}
-                                        setSelectedFlow={setSelectedFlow}
-                                        selectedFlowAction={selectedFlowAction}
-                                        setSelectedFlowAction={setSelectedFlowAction}
-                                        sidebarOpen={sidebarOpen}
-                                    />
-                                )}
+                                {/* Left pane: flows accordion/sidebar — fixed across tab changes */}
+                                <FlowsSidebar
+                                    flows={flows}
+                                    selectedFlow={selectedFlow}
+                                    setSelectedFlow={setSelectedFlow}
+                                    selectedFlowAction={selectedFlowAction}
+                                    setSelectedFlowAction={setSelectedFlowAction}
+                                    sidebarOpen={sidebarOpen}
+                                />
 
-                                {activeSection === "preview" && (
-                                    <button
-                                        onClick={() => setSidebarOpen((prev) => !prev)}
-                                        title={sidebarOpen ? "Collapse sidebar" : "Expand sidebar"}
-                                        className={`absolute top-4 z-20 -translate-x-1/2 flex items-center justify-center w-5 h-9 rounded-full bg-white dark:bg-surface-elevated border border-slate-200 dark:border-border-default shadow-sm hover:bg-slate-50 dark:hover:bg-surface-muted transition-[left] duration-300 ease-in-out ${
-                                            sidebarOpen ? "left-96" : "left-0"
+                                <button
+                                    onClick={() => setSidebarOpen((prev) => !prev)}
+                                    title={sidebarOpen ? "Collapse sidebar" : "Expand sidebar"}
+                                    className={`absolute top-4 z-20 -translate-x-1/2 flex items-center justify-center w-5 h-9 rounded-full bg-white dark:bg-surface-elevated border border-slate-200 dark:border-border-default shadow-sm hover:bg-slate-50 dark:hover:bg-surface-muted transition-[left] duration-300 ease-in-out ${
+                                        sidebarOpen ? "left-96" : "left-0"
+                                    }`}
+                                >
+                                    <ChevronLeftIcon
+                                        className={`w-3 h-3 text-slate-400 transition-transform duration-300 ease-in-out ${
+                                            sidebarOpen ? "" : "rotate-180"
                                         }`}
-                                    >
-                                        <ChevronLeftIcon
-                                            className={`w-3 h-3 text-slate-400 transition-transform duration-300 ease-in-out ${
-                                                sidebarOpen ? "" : "rotate-180"
-                                            }`}
-                                        />
-                                    </button>
-                                )}
+                                    />
+                                </button>
 
+                                {/* Right pane: section tabs header + the content area that changes per tab */}
                                 <div className="flex-1 min-w-0 min-h-0 flex flex-col px-4">
-                                    {activeSection === "preview" && hasExampleObject && (
-                                        <div className="flex-1 min-h-0 flex flex-col gap-3">
-                                            {examples.length > 1 && (
-                                                <ExampleSelector
-                                                    examples={examples}
-                                                    selectedIndex={selectedExampleIndex}
-                                                    onChange={setSelectedExampleIndex}
+                                    {selectedFlowData && (
+                                        <FlowContextStrip flow={selectedFlowData} />
+                                    )}
+
+                                    <DetailTabsHeader
+                                        activeSection={activeSection}
+                                        onChange={handleSectionChange}
+                                        hasExampleObject={hasExampleObject}
+                                        hasStep={!!selectedStep}
+                                        hasXValidations={hasXValidations}
+                                    />
+
+                                    <div className="flex-1 min-h-0 flex flex-col mt-4">
+                                        {activeSection === "preview" && hasExampleObject && (
+                                            <div className="flex-1 min-h-0 flex flex-col gap-3">
+                                                {examples.length > 1 && (
+                                                    <ExampleSelector
+                                                        examples={examples}
+                                                        selectedIndex={selectedExampleIndex}
+                                                        onChange={setSelectedExampleIndex}
+                                                    />
+                                                )}
+                                                <div className="flex-1 min-h-0">
+                                                    {showPreviewDetails ? (
+                                                        <FlowActionDetails
+                                                            exampleValue={examplePayload as object}
+                                                            actionApi={selectedFlowAction}
+                                                            stepApi={selectedStep.api}
+                                                            spec={data}
+                                                            useCaseId={selectedFlowData?.usecase}
+                                                            flowId={
+                                                                selectedFlowData?.flowId ??
+                                                                selectedFlow
+                                                            }
+                                                            validationTableData={validationTable}
+                                                        />
+                                                    ) : (
+                                                        <div className="h-full flex items-center justify-center">
+                                                            <Spinner className="size-8 text-brand-normal" />
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {activeSection === "request" && selectedStep && (
+                                            <RequestTab
+                                                spec={data}
+                                                api={selectedStep.api ?? selectedFlowAction}
+                                            />
+                                        )}
+
+                                        {activeSection === "response" && selectedStep && (
+                                            <ResponseTab
+                                                spec={data}
+                                                api={selectedStep.api ?? selectedFlowAction}
+                                            />
+                                        )}
+
+                                        {activeSection === "x-validations" &&
+                                            hasXValidations &&
+                                            selectedValidations && (
+                                                <ValidationsTable
+                                                    validations={selectedValidations}
                                                 />
                                             )}
-                                            <div className="flex-1 min-h-0">
-                                                {showPreviewDetails ? (
-                                                    <FlowActionDetails
-                                                        exampleValue={examplePayload as object}
-                                                        actionApi={selectedFlowAction}
-                                                        stepApi={selectedStep.api}
-                                                        spec={data}
-                                                        useCaseId={selectedFlowData?.usecase}
-                                                        flowId={
-                                                            selectedFlowData?.flowId ?? selectedFlow
-                                                        }
-                                                        validationTableData={validationTable}
-                                                    />
-                                                ) : (
-                                                    <div className="h-full flex items-center justify-center">
-                                                        <Spinner className="size-8 text-brand-normal" />
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    {activeSection === "request" && selectedStep && (
-                                        <RequestTab
-                                            spec={data}
-                                            api={selectedStep.api ?? selectedFlowAction}
-                                        />
-                                    )}
-
-                                    {activeSection === "response" && selectedStep && (
-                                        <ResponseTab
-                                            spec={data}
-                                            api={selectedStep.api ?? selectedFlowAction}
-                                        />
-                                    )}
-
-                                    {activeSection === "x-validations" &&
-                                        hasXValidations &&
-                                        selectedValidations && (
-                                            <ValidationsTable validations={selectedValidations} />
-                                        )}
+                                    </div>
                                 </div>
                             </div>
                         </div>
