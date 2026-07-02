@@ -1,7 +1,7 @@
 import { combineReducers, configureStore } from "@reduxjs/toolkit";
-import devGuideApi from "@store/apis/devGuideApi";
-import loadTestApi from "@store/apis/loadTestApi";
-import mainApi from "@store/apis/mainApi";
+import devGuideApi from "@store/api/developerGuide/devGuideApi";
+import loadTestApi from "@store/api/loadTest/loadTestApi";
+import mainApi from "@store/api/main/mainApi";
 import authSlice from "@store/slices/authSlice";
 import sessionSlice from "@store/slices/sessionSlice";
 import themeSlice from "@store/slices/themeSlice";

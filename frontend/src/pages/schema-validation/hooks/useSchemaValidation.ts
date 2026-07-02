@@ -3,11 +3,10 @@
  */
 
 import { useState, useEffect, useLayoutEffect, useCallback, useRef } from "react";
-import axios from "axios";
 import type { editor as MonacoEditor } from "monaco-editor";
 import type { MonacoModule, IParsedValidationError } from "@pages/schema-validation/types";
 import { trackEvent } from "@utils/analytics";
-import { fetchFormFieldData } from "@utils/request-utils";
+import { useGetScenarioFormDataQuery, useValidateActionMutation } from "@store/api";
 import { PAYLOAD_STORAGE_KEY } from "@pages/schema-validation/constants";
 import {
     parsePayload,
@@ -23,7 +22,6 @@ import { buildValidationError } from "@pages/schema-validation/utils/validationE
 import type {
     IUseSchemaValidationReturn,
     IActiveDomainConfig,
-    IValidationResponse,
 } from "@pages/schema-validation/types";
 
 /**
@@ -38,6 +36,7 @@ export const useSchemaValidation = (): IUseSchemaValidationReturn => {
         ReturnType<typeof parseValidationErrors>
     >([]);
     const [isSuccessResponse, setIsSuccessResponse] = useState<boolean>(false);
+    const [triggerValidateAction] = useValidateActionMutation();
     const [isValidationVisible, setIsValidationVisible] = useState<boolean>(false);
     const [isErrorsExpanded, setIsErrorsExpanded] = useState<boolean>(false);
     const [activeDomain, setActiveDomain] = useState<IActiveDomainConfig>({});
@@ -58,22 +57,14 @@ export const useSchemaValidation = (): IUseSchemaValidationReturn => {
     /**
      * Fetch active domain configuration from the backend
      */
-    const getFormFields = useCallback(async () => {
-        try {
-            const data = await fetchFormFieldData();
-            setActiveDomain((data as IActiveDomainConfig) || {});
-        } catch (error) {
-            console.error("Error fetching form fields:", error);
-            setActiveDomain({});
-        }
-    }, []);
+    const { data: scenarioFormData } = useGetScenarioFormDataQuery();
 
     /**
-     * Load active domain configuration on mount
+     * Sync active domain configuration once it's loaded
      */
     useEffect(() => {
-        getFormFields();
-    }, [getFormFields]);
+        setActiveDomain((scenarioFormData as unknown as IActiveDomainConfig) || {});
+    }, [scenarioFormData]);
 
     /**
      * Clears editor decorations whenever the payload changes.
@@ -178,15 +169,15 @@ export const useSchemaValidation = (): IUseSchemaValidationReturn => {
 
         try {
             setIsLoading(true);
-            const response = await axios.post<IValidationResponse>(
-                `${import.meta.env.VITE_BACKEND_URL}/flow/validate/${actionResult.value}`,
-                parsedPayloadResult.value
-            );
+            const response = await triggerValidateAction({
+                action: actionResult.value,
+                payload: parsedPayloadResult.value,
+            }).unwrap();
 
             setIsValidationVisible(true);
 
-            if (response.data?.error?.message) {
-                showValidationErrors(parseValidationErrors(response.data.error.message));
+            if (response?.error?.message) {
+                showValidationErrors(parseValidationErrors(response.error.message));
             } else {
                 setValidationErrors([]);
                 setIsSuccessResponse(true);

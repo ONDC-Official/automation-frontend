@@ -9,7 +9,7 @@ import { SubmitEventParams } from "@/types/flow-types";
 import { FormFieldConfigType } from "@/components/ui/forms/config-form/types";
 import ProtocolHtmlFieldRenderer from "./protocol-html-field-renderer";
 import { cn } from "@/lib/utils";
-import { htmlFormSubmit } from "@utils/request-utils";
+import { useHtmlFormSubmitMutation } from "@store/api";
 import { parseFormHtml } from "./protocol-html-form";
 import {
     ParsedForm,
@@ -93,6 +93,7 @@ export default function ProtocolHTMLFormMulti({
     const [submissionId, setSubmissionId] = useState<string | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [htmlFormSubmitMutation] = useHtmlFormSubmitMutation();
 
     const addEntry = () => {
         setEntries((prev) => [...prev, createDefaultEntry(visibleFields)]);
@@ -182,10 +183,14 @@ export default function ProtocolHTMLFormMulti({
                 });
             }
 
-            const res = (await htmlFormSubmit(
-                parsed.action || window.location.href,
-                arrayPayload
-            )) as AxiosResponse<unknown, unknown>;
+            const submitData = await htmlFormSubmitMutation({
+                link: parsed.action || window.location.href,
+                data: arrayPayload,
+            }).unwrap();
+            const res = { data: submitData, headers: undefined } as unknown as AxiosResponse<
+                unknown,
+                unknown
+            >;
 
             const rawCt =
                 typeof res.headers === "object"

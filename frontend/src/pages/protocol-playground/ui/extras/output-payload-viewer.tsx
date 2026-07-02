@@ -12,7 +12,6 @@ import { githubDarkTheme } from "@uiw/react-json-view/githubDark";
 import { githubLightTheme } from "@uiw/react-json-view/githubLight";
 import { toast } from "sonner";
 import Markdown from "react-markdown";
-import axios from "axios";
 import {
     MockRunner,
     ExecutionResult,
@@ -20,7 +19,7 @@ import {
 } from "@ondc/automation-mock-runner";
 import { Editor } from "@monaco-editor/react";
 
-import { fetchFormFieldData } from "@utils/request-utils";
+import { useGetScenarioFormDataQuery, useValidateActionMutation } from "@store/api";
 
 import {
     IoCheckmarkCircle,
@@ -342,6 +341,7 @@ export default function OutputPayloadViewer({
     // The payload shown / validated is the selected run (or the single payload).
     const payload = hasRuns ? (runs[runIndex] ?? propPayload) : propPayload;
     const [activeDomain, setActiveDomain] = useState<IActiveDomainConfig>({});
+    const [validateAction] = useValidateActionMutation();
     const [mdData, setMdData] = useState("");
     const [loading, setIsLoading] = useState(false);
     const [validationSuccess, setValidationSuccess] = useState<boolean | null>(null);
@@ -371,13 +371,11 @@ export default function OutputPayloadViewer({
     // Track which button produced the current l2Result
     const [l2ResultSource, setL2ResultSource] = useState<"l2" | "requirements">("l2");
 
+    const { data: scenarioFormData } = useGetScenarioFormDataQuery();
+
     useEffect(() => {
-        const getFormFields = async () => {
-            const data = await fetchFormFieldData();
-            setActiveDomain(data as IActiveDomainConfig);
-        };
-        getFormFields();
-    }, []);
+        setActiveDomain(scenarioFormData as unknown as IActiveDomainConfig);
+    }, [scenarioFormData]);
 
     const verifyRequestL0 = async () => {
         if (payload === "") {
@@ -442,12 +440,9 @@ export default function OutputPayloadViewer({
 
         try {
             setIsLoading(true);
-            const response = await axios.post(
-                `${import.meta.env.VITE_BACKEND_URL}/flow/validate/${action}`,
-                parsedPayload
-            );
-            setMdData(response.data?.error?.message || "✓ Validation passed successfully");
-            setValidationSuccess(response.data?.error ? false : true);
+            const response = await validateAction({ action, payload: parsedPayload }).unwrap();
+            setMdData(response?.error?.message || "✓ Validation passed successfully");
+            setValidationSuccess(response?.error ? false : true);
         } catch (e) {
             console.error(">>>>>", e);
             toast.error("Something went wrong");

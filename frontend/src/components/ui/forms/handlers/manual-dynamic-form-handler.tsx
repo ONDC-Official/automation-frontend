@@ -10,7 +10,7 @@ import { Button } from "@/components/Shadcn/Button/button";
 import FormDialogShell from "@/components/ui/forms/form-dialog-shell";
 import { SubmitEventParams } from "@/types/flow-types";
 import { FormFieldConfigType } from "@/components/ui/forms/config-form";
-import { FormService } from "@services/formService";
+import { useLazyCheckCompletionQuery } from "@store/api";
 import { cn } from "@/lib/utils";
 
 const POLL_INTERVAL_MS = 2_000;
@@ -47,6 +47,7 @@ export default function ManualDynamicFormHandler({
     const isPollingRef = useRef<boolean>(false);
     const hasCompletedRef = useRef<boolean>(false);
     const pollCountRef = useRef<number>(0);
+    const [triggerCheckCompletion] = useLazyCheckCompletionQuery();
 
     const cleanup = useCallback(() => {
         if (pollingIntervalRef.current) {
@@ -78,9 +79,10 @@ export default function ManualDynamicFormHandler({
         }
 
         try {
-            const data = await FormService.checkCompletion(transactionId);
+            const result = await triggerCheckCompletion({ transactionId });
+            if (result.error) throw result.error;
 
-            const { completed, success } = data ?? {};
+            const { completed, success } = result.data ?? {};
 
             if (completed === true && success === true && !hasCompletedRef.current) {
                 console.warn("✅ [ManualDynamicForm] Form completed!", {

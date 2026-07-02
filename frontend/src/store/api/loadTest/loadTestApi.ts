@@ -1,11 +1,11 @@
-import { loadTestApiClient } from "@services/apiClient";
 import { createApi } from "@reduxjs/toolkit/query/react";
-import { axiosBaseQuery } from "@store/apis/axiosBaseQuery";
+import { loadTestApiClient } from "@services/apiClient";
+import { axiosBaseQuery } from "@store/api/shared/axiosBaseQuery";
 
 export const loadTestApi = createApi({
     reducerPath: "loadTestApi",
     baseQuery: axiosBaseQuery(loadTestApiClient.getInstance()),
-    tagTypes: [],
+    tagTypes: ["LoadTestSession", "LoadTestRun", "LoadTestDiscovery"],
     endpoints: () => ({}),
 });
 

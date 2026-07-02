@@ -7,7 +7,7 @@ import { FormConfig, FormConfigType, FormFieldConfigType } from "@/components/ui
 import FormLaunchPopup from "@components/ui/forms/custom-forms/form-launch-popup";
 import { TooltipHint } from "@/components/Shadcn/Tooltip";
 import { SequenceStep, SubmitEventParams } from "@/types/flow-types";
-import { proceedFlow, triggerExtra } from "@utils/request-utils";
+import { useProceedFlowMutation, useTriggerExtraMutation } from "@store/api";
 import { useSession } from "@context/context";
 
 import PairedCard from "@components/FlowShared/pair-card";
@@ -37,6 +37,8 @@ export default function DisplayFlow({
         missedSteps: [],
         reference_data: mappedFlow.reference_data,
     });
+    const [proceedFlow] = useProceedFlowMutation();
+    const [triggerExtra] = useTriggerExtraMutation();
     const [inputPopUp, setInputPopUp] = useState(false);
     const [activeFormConfig, setActiveFormConfig] = useState<FormConfigType | undefined>(undefined);
     const [activeFormTitle, setActiveFormTitle] = useState<string | undefined>(undefined);
@@ -258,7 +260,7 @@ export default function DisplayFlow({
         // drives them manually via the map.
         if (trackingActive && isTrackingPhaseStep(latestSending?.actionType)) return;
         if (latestSending && latestSending.force_proceed && transactionId) {
-            proceedFlow(sessionId, transactionId);
+            proceedFlow({ sessionId, transactionId });
         }
     }, [mappedFlow]);
 
@@ -347,9 +349,19 @@ export default function DisplayFlow({
             // popup submissions fall back to the stored key set when the form opened.
             const key = extraKey ?? activeInputExtraKey;
             if (key) {
-                await triggerExtra(sessionId, txId, key, formData.formData);
+                await triggerExtra({
+                    sessionId,
+                    transactionId: txId,
+                    triggerExtraKey: key,
+                    inputs: formData.formData,
+                }).unwrap();
             } else {
-                await proceedFlow(sessionId, txId, formData.jsonPath, formData.formData);
+                await proceedFlow({
+                    sessionId,
+                    transactionId: txId,
+                    jsonPathChanges: formData.jsonPath,
+                    inputs: formData.formData,
+                }).unwrap();
             }
 
             // Remember what we submitted so the auto-open effect won't re-open it while the
@@ -374,7 +386,12 @@ export default function DisplayFlow({
         }
         setTriggeringKey(key);
         try {
-            await triggerExtra(sessionId, transactionId, key, inputs);
+            await triggerExtra({
+                sessionId,
+                transactionId,
+                triggerExtraKey: key,
+                inputs,
+            }).unwrap();
             toast.success(`Triggered ${key}`);
         } catch (error) {
             toast.error("Error triggering extra step");

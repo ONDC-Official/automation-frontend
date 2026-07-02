@@ -1,7 +1,6 @@
 import { type FC, useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
-import { fetchValidationTable } from "@services/developerGuideSpecApi";
-import type { ValidationTableAction } from "./types";
+import { useGetValidationTableQuery } from "@store/api";
 import ValidationsTable from "./ValidationsTable";
 import Spinner from "@/components/Shadcn/Spinner";
 import GuideTabs, { type GuideTabItem } from "./shared/components/GuideTabs";
@@ -15,45 +14,32 @@ const ValidationsPage: FC = () => {
     const domain = rawDomain ? decodeURIComponent(rawDomain) : "";
     const version = rawVersion ? decodeURIComponent(rawVersion) : "";
 
-    const [table, setTable] = useState<Record<string, ValidationTableAction> | null>(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
     const [selectedAction, setSelectedAction] = useState<string>("");
-    const [reloadKey, setReloadKey] = useState(0);
+
+    const {
+        data: validationTableSection,
+        isFetching,
+        isError,
+        refetch,
+    } = useGetValidationTableQuery({ domain, version }, { skip: !domain || !version });
+
+    const table =
+        validationTableSection?.table && Object.keys(validationTableSection.table).length > 0
+            ? validationTableSection.table
+            : null;
+
+    const loading = Boolean(domain && version) && isFetching;
+    const error =
+        !domain || !version
+            ? "Missing domain or version in URL."
+            : isError
+              ? "Failed to load validations. Check domain/version and try again."
+              : null;
 
     useEffect(() => {
-        if (!domain || !version) {
-            setError("Missing domain or version in URL.");
-            setLoading(false);
-            return;
-        }
-        let cancelled = false;
-        setLoading(true);
-        setError(null);
-        fetchValidationTable(domain, version)
-            .then((result) => {
-                if (cancelled) return;
-                if (!result?.table || Object.keys(result.table).length === 0) {
-                    setTable(null);
-                    setSelectedAction("");
-                } else {
-                    setTable(result.table);
-                    const firstAction = Object.keys(result.table).sort()[0];
-                    setSelectedAction(firstAction);
-                }
-            })
-            .catch((err) => {
-                if (cancelled) return;
-                console.error("Failed to fetch validation table", err);
-                setError("Failed to load validations. Check domain/version and try again.");
-            })
-            .finally(() => {
-                if (!cancelled) setLoading(false);
-            });
-        return () => {
-            cancelled = true;
-        };
-    }, [domain, version, reloadKey]);
+        if (!domain || !version) return;
+        setSelectedAction(table ? Object.keys(table).sort()[0] : "");
+    }, [table, domain, version]);
 
     const sortedActions = useMemo(() => (table ? Object.keys(table).sort() : []), [table]);
 
@@ -103,7 +89,7 @@ const ValidationsPage: FC = () => {
                         <p className="text-sm text-slate-600">{error}</p>
                         <button
                             type="button"
-                            onClick={() => setReloadKey((k) => k + 1)}
+                            onClick={() => refetch()}
                             className="px-4 py-2 rounded-lg bg-sky-500 text-white hover:bg-sky-600 text-sm font-medium"
                         >
                             Retry

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Button, message } from "antd";
 import { UploadOutlined, DeleteOutlined } from "@ant-design/icons";
-import axios from "axios";
+import { useUploadImageMutation } from "@store/api";
 import { LabelWithToolTip } from "@/components/Shadcn/TextField";
 
 interface SingleImageUploadProps {
@@ -38,6 +38,7 @@ const SingleImageUpload: React.FC<SingleImageUploadProps> = ({
     const [uploadLoading, setUploadLoading] = useState<boolean>(false);
     const [urlInputValue, setUrlInputValue] = useState<string>("");
     const [inputMode, setInputMode] = useState<"upload" | "url">("upload");
+    const [uploadImage] = useUploadImageMutation();
 
     // Sync with external value changes
     useEffect(() => {
@@ -77,15 +78,10 @@ const SingleImageUpload: React.FC<SingleImageUploadProps> = ({
             formData.append("image", selectedFile);
             formData.append("folder", folder);
 
-            const baseURL = import.meta.env.VITE_BACKEND_URL || "http://localhost:4000";
-            const response = await axios.post(`${baseURL}/images/upload`, formData, {
-                headers: {
-                    "Content-Type": "multipart/form-data",
-                },
-            });
+            const response = await uploadImage(formData).unwrap();
 
-            if (response.data.success) {
-                const uploadedUrl = response.data.data.imageUrl || defaultImageUrl;
+            if (response.success) {
+                const uploadedUrl = response.data.imageUrl || defaultImageUrl;
                 setUploadedUrl(uploadedUrl);
                 setSelectedFile(null);
                 setFilePreview(null);
@@ -96,7 +92,7 @@ const SingleImageUpload: React.FC<SingleImageUploadProps> = ({
                 message.success("Image uploaded successfully!");
                 return uploadedUrl;
             } else {
-                throw new Error(response.data.message || "Upload failed");
+                throw new Error(response.message || "Upload failed");
             }
         } catch (error: unknown) {
             console.error("Error uploading image:", error);

@@ -6,10 +6,14 @@ import { buildDifficultyState } from "@components/ui/difficulty-cards";
 import { InfoSection } from "@components/FlowShared/ui/InfoSection";
 import { EndpointsSection } from "@components/FlowShared/ui/EndpointsSection";
 import { CollapsibleSection } from "@components/FlowShared/ui/CollapsibleSection";
-import axios, { AxiosResponse } from "axios";
 import { toast } from "sonner";
 import { SessionCache } from "@/types/session-types";
-import { getCompletePayload, getReport, putCacheData } from "@utils/request-utils";
+import {
+    useLazyGetCompletePayloadQuery,
+    useLazyGetReportQuery,
+    usePutCacheDataMutation,
+    useLazyGetSessionByIdQuery,
+} from "@store/api";
 import { Accordion } from "@components/FlowShared/complete-flow";
 import { useSession } from "@context/context";
 import Spinner from "@/components/Shadcn/Spinner";
@@ -166,6 +170,10 @@ function RenderFlows({
     const [metadata, setMetadata] = useState<Record<string, ExtractedMetadataValue>>({});
     const apiCallFailCount = useRef(0);
     const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
+    const [triggerGetCompletePayload] = useLazyGetCompletePayloadQuery();
+    const [triggerGetReport] = useLazyGetReportQuery();
+    const [putCacheData] = usePutCacheDataMutation();
+    const [triggerGetSessionById] = useLazyGetSessionByIdQuery();
     const [isGuideOpen, setIsGuideOpen] = useState(false);
     const navigate = useNavigate();
     const { setSessionId } = useSession();
@@ -240,7 +248,7 @@ function RenderFlows({
             if (stopped) return;
 
             try {
-                const result = await getReport(sessionId);
+                const result = await triggerGetReport({ sessionId }).unwrap();
 
                 if (result?.data) {
                     stopPolling();
@@ -290,7 +298,9 @@ function RenderFlows({
     const test = async () => {
         try {
             // ✅ Fetch payload
-            const data = await getCompletePayload([(sideView.payloadId as string) ?? ""]);
+            const data = await triggerGetCompletePayload({
+                payloadIds: [(sideView.payloadId as string) ?? ""],
+            }).unwrap();
 
             const requestPayload = (data?.[0]?.req ?? EMPTY_RECORD) as Record<string, unknown>;
             let responsePayload: Record<string, unknown> = {};
@@ -398,25 +408,22 @@ function RenderFlows({
     }, [flows, requestData, responseData]);
 
     function fetchSessionData() {
-        axios
-            .get(`${import.meta.env.VITE_BACKEND_URL}/sessions`, {
-                params: {
-                    session_id: sessionId,
-                },
-            })
-            .then((response: AxiosResponse<SessionCache>) => {
-                const filteredData = Object.entries(response.data)
+        triggerGetSessionById({ sessionId })
+            .unwrap()
+            .then((data) => {
+                const response = data as unknown as SessionCache;
+                const filteredData = Object.entries(response)
                     .filter(([_, value]) => typeof value === "string")
                     .reduce((acc: Record<string, unknown>, [key, value]) => {
                         acc[key] = value;
                         return acc;
                     }, {});
                 delete filteredData["active_session_id"];
-                setDifficultyCache(response.data.sessionDifficulty);
-                setCacheSessionData(response.data);
+                setDifficultyCache(response.sessionDifficulty);
+                setCacheSessionData(response);
 
                 if (cacheSessionData === null) {
-                    updateLocalStorageSession(response.data, sessionId);
+                    updateLocalStorageSession(response, sessionId);
                 }
                 apiCallFailCount.current = 0; // Reset fail count on successful fetch
             })
@@ -467,7 +474,7 @@ function RenderFlows({
                 ...difficultyCache,
                 ...settingsDraft.sessionDifficulty,
             };
-            await putCacheData({ sessionDifficulty }, sessionId);
+            await putCacheData({ data: { sessionDifficulty }, sessionId }).unwrap();
 
             setAutoScrollEnabled(settingsDraft.autoScrollEnabled);
             setExperimentalMode(settingsDraft.experimentalMode);
@@ -618,7 +625,9 @@ function RenderFlows({
                                         <Button
                                             size="sm"
                                             onClick={async () => {
-                                                const response = await getReport(sessionId);
+                                                const response = await triggerGetReport({
+                                                    sessionId,
+                                                }).unwrap();
                                                 try {
                                                     const decodedHtml = response.data;
                                                     openReportInNewTab(decodedHtml, sessionId);

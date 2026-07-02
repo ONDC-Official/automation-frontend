@@ -11,7 +11,11 @@ import FormDialogShell from "@/components/ui/forms/form-dialog-shell";
 import { SubmitEventParams } from "@/types/flow-types";
 import { queryJsonPath } from "@utils/jsonpath-query";
 import { FormFieldConfigType } from "@/components/ui/forms/config-form";
-import { FormService } from "@services/formService";
+import {
+    useLazyCheckCompletionQuery,
+    useResetCompletionMutation,
+    useSaveRedirectionMutation,
+} from "@store/api";
 import { cn } from "@/lib/utils";
 
 const POLL_INTERVAL_MS = 2_000;
@@ -47,6 +51,9 @@ export default function DynamicFormHandler({
     const hasCompletedRef = useRef<boolean>(false);
     const pollCountRef = useRef<number>(0);
     const pollStartTimeRef = useRef<number>(0);
+    const [triggerCheckCompletion] = useLazyCheckCompletionQuery();
+    const [resetCompletion] = useResetCompletionMutation();
+    const [saveRedirection] = useSaveRedirectionMutation();
 
     const formServiceUrl = useMemo<string>(() => {
         if (!formConfig || !formConfig.reference) {
@@ -118,7 +125,9 @@ export default function DynamicFormHandler({
             // GET /form/check-completion?transaction_id={transactionId}
             // Backend reads form_completed:{transaction_id}.
             // Response: { completed: boolean, success: boolean, message: string, timestamp: string }
-            const data = await FormService.checkCompletion(transactionId);
+            const result = await triggerCheckCompletion({ transactionId });
+            if (result.error) throw result.error;
+            const data = result.data;
 
             const { completed, success } = data ?? {};
 
@@ -127,8 +136,8 @@ export default function DynamicFormHandler({
                     transactionId,
                     poll: pollCountRef.current,
                     elapsedSec,
-                    message: data.message,
-                    timestamp: data.timestamp,
+                    message: data?.message,
+                    timestamp: data?.timestamp,
                 });
 
                 hasCompletedRef.current = true;
@@ -278,7 +287,10 @@ export default function DynamicFormHandler({
                 // api-service callback can look it up and redirect the user back here.
                 // Non-fatal: completion polling still runs if this hiccups.
                 try {
-                    await FormService.saveRedirection(window.location.href, transactionId);
+                    await saveRedirection({
+                        redirectionUrl: window.location.href,
+                        transactionId,
+                    }).unwrap();
                 } catch (saveError) {
                     console.warn(
                         "⚠️ [DynamicForm] Could not save redirection URL (continuing):",
@@ -287,7 +299,7 @@ export default function DynamicFormHandler({
                 }
 
                 try {
-                    await FormService.resetCompletion(transactionId);
+                    await resetCompletion({ transactionId }).unwrap();
                 } catch (resetError) {
                     console.warn(
                         "⚠️ [DynamicForm] Could not reset completion state (continuing):",

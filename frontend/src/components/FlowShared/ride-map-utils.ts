@@ -1,5 +1,6 @@
 import { FlowMap, MappedStep } from "@/types/flow-state-type";
-import { getCompletePayload } from "@utils/request-utils";
+import { store } from "@store/index";
+import { dbBackOfficeApi } from "@store/api";
 
 /**
  * Real-Time Ride Map Integration — payload derivation helpers.
@@ -632,7 +633,11 @@ async function fetchReq(
     if (!payloadId) return undefined;
     if (cache.has(payloadId)) return cache.get(payloadId);
     try {
-        const data = await getCompletePayload([payloadId]);
+        const data = await store
+            .dispatch(
+                dbBackOfficeApi.endpoints.getCompletePayload.initiate({ payloadIds: [payloadId] })
+            )
+            .unwrap();
         const req = data?.[0]?.req;
         cache.set(payloadId, req);
         return req;

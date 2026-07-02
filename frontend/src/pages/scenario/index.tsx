@@ -1,6 +1,5 @@
 import { useState, useEffect, useContext } from "react";
 import { useSearchParams } from "react-router-dom";
-import axios, { AxiosResponse, AxiosError } from "axios";
 import { toast } from "sonner";
 import RenderFlows from "@components/FlowShared/render-flows";
 import Card from "@/components/Shadcn/Card";
@@ -9,7 +8,6 @@ import { ReportPage } from "@components/FlowShared/report";
 import { GetRequestEndpoint } from "@components/FlowShared/guides";
 import NotFound from "@/components/NotFound";
 import { useSession } from "@context/context";
-import { putCacheData } from "@utils/request-utils";
 import { trackEvent } from "@utils/analytics";
 import { useWorkbenchFlows } from "@hooks/useWorkbenchFlow";
 import { IDomain } from "@/pages/schema-validation/types";
@@ -17,8 +15,13 @@ import { Flow } from "@/types/flow-types";
 import { sessionIdSupport } from "@/utils/localStorageManager";
 import { PreviousSessionsPanel } from "@/pages/scenario/PreviousSessionPanel";
 import { IPreviousSessionItem } from "@/pages/scenario/types";
-import { apiClient } from "@services/apiClient";
-import { API_ROUTES } from "@services/apiRoutes";
+import {
+    useLazyGetScenarioFormDataQuery,
+    useLazyGetScenarioPreferencesQuery,
+    useCreateSessionMutation,
+    usePutCacheDataMutation,
+    useLazyGetSessionByIdQuery,
+} from "@store/api";
 import { AuthContext } from "@/context/authContext";
 import { SCENARIO_GUIDE_STEPS } from "@/pages/scenario/constants";
 import { IScenarioFormData, ISessionResponse, ISavedPrefAPI } from "@/pages/scenario/types";
@@ -48,6 +51,11 @@ export default function FlowContent() {
     const [isInitializing, setIsInitializing] = useState(true);
     const [savedPreferences, setSavedPreferences] = useState<Record<string, IScenarioFormData>>({});
     const initialSavedConfigKey = searchParams.get("config") ?? "";
+    const [triggerGetScenarioFormData] = useLazyGetScenarioFormDataQuery();
+    const [triggerGetScenarioPreferences] = useLazyGetScenarioPreferencesQuery();
+    const [createSession] = useCreateSessionMutation();
+    const [putCacheData] = usePutCacheDataMutation();
+    const [triggerGetSessionById] = useLazyGetSessionByIdQuery();
 
     const createAndOpenSession = async (data: IScenarioFormData, newTab = true) => {
         try {
@@ -56,22 +64,19 @@ export default function FlowContent() {
                 subscriberUrl: data?.subscriberUrl?.replace(/\/+$/, ""),
             };
 
-            const response = await axios.post<{ sessionId: string }>(
-                `${import.meta.env.VITE_BACKEND_URL}/sessions`,
-                {
-                    ...data,
-                    userId: user?.username,
-                    difficulty_cache: {
-                        stopAfterFirstNack: true,
-                        timeValidations: true,
-                        protocolValidations: true,
-                        useGateway: true,
-                        headerValidaton: true,
-                    },
-                }
-            );
-            const sessionID = response.data.sessionId;
-            sessionIdSupport.setScenarioSession(response.data.sessionId);
+            const response = await createSession({
+                ...data,
+                userId: user?.username,
+                difficulty_cache: {
+                    stopAfterFirstNack: true,
+                    timeValidations: true,
+                    protocolValidations: true,
+                    useGateway: true,
+                    headerValidaton: true,
+                },
+            }).unwrap();
+            const sessionID = response.sessionId;
+            sessionIdSupport.setScenarioSession(response.sessionId);
             const currentUrl = window.location.origin;
             const newTabUrl = `${currentUrl}/flow-testing?sessionId=${sessionID}&subscriberUrl=${encodeURIComponent(data.subscriberUrl)}&role=${data.npType}`;
             if (newTab) {
@@ -118,10 +123,8 @@ export default function FlowContent() {
 
     const fetchFormFieldData = async (): Promise<IDomain[]> => {
         try {
-            const response = await apiClient.get<{ domain: IDomain[] }>(
-                API_ROUTES.CONFIG.SCENARIO_FORM_DATA
-            );
-            const fetchedDomains: IDomain[] = response.data.domain || [];
+            const result = await triggerGetScenarioFormData();
+            const fetchedDomains: IDomain[] = result.data?.domain || [];
             setDomains(fetchedDomains);
             return fetchedDomains;
         } catch (e) {
@@ -132,10 +135,8 @@ export default function FlowContent() {
 
     const fetchAndApplyPreferences = async (): Promise<Record<string, IScenarioFormData>> => {
         try {
-            const response = await apiClient.get<Record<string, ISavedPrefAPI>>(
-                API_ROUTES.USER.SCENARIO_PREFERENCES
-            );
-            const raw = response.data;
+            const result = await triggerGetScenarioPreferences();
+            const raw = result.data as Record<string, ISavedPrefAPI> | undefined;
             if (!raw) return {};
 
             const mapped: Record<string, IScenarioFormData> = {};
@@ -178,22 +179,19 @@ export default function FlowContent() {
     }, []);
 
     const fetchSessionData = (sessId: string) => {
-        axios
-            .get<ISessionResponse>(`${import.meta.env.VITE_BACKEND_URL}/sessions`, {
-                params: {
-                    session_id: sessId,
-                },
-            })
-            .then((response: AxiosResponse<ISessionResponse>) => {
-                if (response.data.flowConfigs) {
-                    setFlows(Object.values(response.data.flowConfigs) as Flow[]);
+        triggerGetSessionById({ sessionId: sessId })
+            .unwrap()
+            .then((data) => {
+                const response = data as unknown as ISessionResponse;
+                if (response.flowConfigs) {
+                    setFlows(Object.values(response.flowConfigs) as Flow[]);
                 }
-                setSubscriberUrl(response.data.subscriberUrl);
+                setSubscriberUrl(response.subscriberUrl);
                 setSession(sessId);
 
-                setFlowStepNum(response.data.activeStep);
+                setFlowStepNum(response.activeStep);
             })
-            .catch((e: AxiosError) => {
+            .catch((e: unknown) => {
                 console.error("Error while fetching session: ", e);
             });
     };
@@ -211,7 +209,7 @@ export default function FlowContent() {
 
     useEffect(() => {
         if (session) {
-            putCacheData({ activeStep: flowStepNum }, session);
+            putCacheData({ data: { activeStep: flowStepNum }, sessionId: session });
         }
     }, [flowStepNum, session]);
 

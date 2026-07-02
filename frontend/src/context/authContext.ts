@@ -9,7 +9,7 @@ import {
 } from "react";
 import { IUser } from "@/types/user";
 import { useLocation, useNavigate } from "react-router-dom";
-import { AuthService } from "@services/authService";
+import { useLazyGetMeQuery, useExchangeCodeMutation } from "@store/api";
 import { authTokenManager } from "@utils/localStorageManager";
 import { ROUTES } from "@/constants/routes";
 
@@ -26,6 +26,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const navigate = useNavigate();
     const [user, setUser] = useState<IUser | undefined>(undefined);
     const [isAuthLoading, setIsAuthLoading] = useState<boolean>(true);
+    const [triggerGetMe] = useLazyGetMeQuery();
+    const [exchangeCode] = useExchangeCodeMutation();
 
     const getUser = useCallback(async () => {
         if (!authTokenManager.get()) {
@@ -34,10 +36,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             return;
         }
 
-        const currentUser = await AuthService.getUser();
-        setUser(currentUser || undefined);
+        const result = await triggerGetMe();
+        const currentUser = result.data?.ok && result.data.user ? result.data.user : undefined;
+        setUser(currentUser);
         setIsAuthLoading(false);
-    }, []);
+    }, [triggerGetMe]);
 
     useEffect(() => {
         const queryParams = new URLSearchParams(location.search);
@@ -49,13 +52,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
         const exchangeCodeAndPersistToken = async () => {
             setIsAuthLoading(true);
-            await AuthService.exchangeCodeForToken(oauthCode);
+            await exchangeCode({ code: oauthCode });
             await getUser();
             navigate(ROUTES.HOME, { replace: true });
         };
 
         exchangeCodeAndPersistToken();
-    }, [location.search, navigate, getUser]);
+    }, [location.search, navigate, getUser, exchangeCode]);
 
     useEffect(() => {
         getUser();

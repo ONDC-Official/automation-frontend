@@ -12,7 +12,7 @@ import {
 import { INDIA_RINGS } from "@components/FlowShared/india-boundary";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { getRoute } from "@utils/request-utils";
+import { useLazyGetRouteQuery } from "@store/api";
 import {
     bearing,
     parseGps,
@@ -211,6 +211,7 @@ export default function MapPanel({
     const driver = useMemo(() => parseGps(driverGps), [driverGps]);
 
     const [fetchedRoute, setFetchedRoute] = useState<LatLng[]>([]);
+    const [triggerGetRoute] = useLazyGetRouteQuery();
     // Parent-supplied route wins (keeps animation/ETA/render on the same geometry).
     const route = routeProp?.length ? routeProp : fetchedRoute;
     const [covered, remaining] = useMemo(
@@ -241,8 +242,9 @@ export default function MapPanel({
             setFetchedRoute([]);
             return;
         }
-        getRoute(toGpsString(pickup), toGpsString(drop)).then((res) => {
+        triggerGetRoute({ from: toGpsString(pickup), to: toGpsString(drop) }).then((result) => {
             if (cancelled) return;
+            const res = result.data;
             setFetchedRoute(res?.geometry?.length ? res.geometry : [pickup, drop]);
         });
         return () => {

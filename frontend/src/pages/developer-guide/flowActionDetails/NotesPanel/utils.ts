@@ -1,8 +1,8 @@
-import type { NoteResponse } from "@services/developerGuideNotesApi";
+import type { INoteResponse } from "@store/api";
 import { generateLocalId } from "../../shared/utils/generateLocalId";
 import type { Note, NotesByPath } from "./types";
 
-export function apiNoteToNote(r: NoteResponse): Note {
+export function apiNoteToNote(r: INoteResponse): Note {
     const content = r.note ?? "";
     const firstLine = content.split("\n")[0]?.trim() || "";
     const title = firstLine.slice(0, 80) || "Untitled note";

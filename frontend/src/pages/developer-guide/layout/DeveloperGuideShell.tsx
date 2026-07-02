@@ -3,7 +3,7 @@ import { Outlet, useLocation } from "react-router-dom";
 import { ArrowLeftIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import DeveloperGuideCollapsedNavBar from "./DeveloperGuideCollapsedNavBar";
 import DeveloperGuideNavBackButton from "./DeveloperGuideNavBackButton";
-import { fetchBuilds } from "@services/developerGuideSpecApi";
+import { useLazyGetBuildsQuery } from "@store/api";
 import { fetchDocContent, fetchDocList } from "@services/developerDocsApi";
 import type { BuildEntry, DocMeta } from "../types";
 import { isUseCaseEnabled } from "../utils";
@@ -54,6 +54,7 @@ const DeveloperGuideShell: FC = () => {
     const [loadError, setLoadError] = useState<string | null>(null);
     const [searchQuery, setSearchQuery] = useState("");
     const [navSidebarOpen, setNavSidebarOpen] = useState(true);
+    const [triggerGetBuilds] = useLazyGetBuildsQuery();
 
     const toggleNavSidebar = useCallback(() => {
         setNavSidebarOpen((prev) => !prev);
@@ -73,10 +74,12 @@ const DeveloperGuideShell: FC = () => {
             setIsLoading(true);
             setLoadError(null);
             try {
-                const [buildsData, docsData] = await Promise.all([
-                    fetchBuilds(),
+                const [buildsResult, docsData] = await Promise.all([
+                    triggerGetBuilds(),
                     fetchDocList().catch(() => [] as DocMeta[]),
                 ]);
+                if (buildsResult.error) throw buildsResult.error;
+                const buildsData = buildsResult.data ?? [];
 
                 const sidebarDocSlugs = docsData
                     .map((d) => d.slug)

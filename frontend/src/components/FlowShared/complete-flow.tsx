@@ -6,16 +6,17 @@ import { SessionCache } from "@/types/session-types";
 import { FlowActionButton } from "@components/FlowShared/ui/FlowActionButton";
 import { Progress } from "@/components/Shadcn/Progress/progress";
 import {
-    clearFlowData,
-    deleteExpectation,
-    getCompletePayload,
-    getMappedFlow,
-    newFlow,
-    proceedFlow,
-    requestForFlowPermission,
-    putCacheData,
-    addFlowToSessionInDB,
-} from "@utils/request-utils";
+    useClearFlowDataMutation,
+    useDeleteExpectationMutation,
+    useLazyGetCompletePayloadQuery,
+    useLazyGetMappedFlowQuery,
+    useNewFlowMutation,
+    useProceedFlowMutation,
+    usePutCacheDataMutation,
+    useAddFlowToSessionInDBMutation,
+    sessionApi,
+} from "@store/api";
+import { store } from "@store/index";
 import { FlowMap } from "@/types/flow-state-type";
 import DisplayFlow from "@components/FlowShared/mapped-flow";
 import { getSequenceFromFlow } from "@utils/flow-utils";
@@ -59,6 +60,14 @@ export function Accordion({
     const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const { isFlowFormDialogOpen, acquireFlowFormDialogLock, releaseFlowFormDialogLock } =
         useSession();
+    const [clearFlowData] = useClearFlowDataMutation();
+    const [deleteExpectation] = useDeleteExpectationMutation();
+    const [triggerGetCompletePayload] = useLazyGetCompletePayloadQuery();
+    const [triggerGetMappedFlow] = useLazyGetMappedFlowQuery();
+    const [newFlow] = useNewFlowMutation();
+    const [proceedFlow] = useProceedFlowMutation();
+    const [putCacheData] = usePutCacheDataMutation();
+    const [addFlowToSessionInDB] = useAddFlowToSessionInDBMutation();
 
     useEffect(() => {
         if (!inputPopUp) return;
@@ -86,7 +95,10 @@ export function Accordion({
         const tx = sessionCache.flowMap?.[flow.id];
         if (tx) {
             try {
-                const txData = await getMappedFlow(tx, sessionId);
+                const txData = await triggerGetMappedFlow({
+                    transactionId: tx,
+                    sessionId,
+                }).unwrap();
                 for (let i = 0; i < txData.sequence.length; i++) {
                     const payloads = txData.sequence[i].payloads;
                     if (payloads) {
@@ -124,7 +136,13 @@ export function Accordion({
 
     async function handleFormForNewFlow(formData: SubmitEventParams) {
         try {
-            await newFlow(sessionId, flow.id, uuidv4(), formData.jsonPath, formData.formData);
+            await newFlow({
+                sessionId,
+                flowId: flow.id,
+                transactionId: uuidv4(),
+                jsonPathChanges: formData.jsonPath,
+                inputs: formData.formData,
+            });
             setInputPopUp(false);
             toast.success("Flow started successfully");
         } catch (e) {
@@ -144,10 +162,11 @@ export function Accordion({
             const given = sessionCache.flowMap[flow.id];
             if (given) {
                 toast.info("Resuming the flow!");
-                await proceedFlow(sessionId, given);
+                await proceedFlow({ sessionId, transactionId: given }).unwrap();
             } else {
                 const txId = uuidv4();
-                const data = await newFlow(sessionId, flow.id, txId);
+                const result = await newFlow({ sessionId, flowId: flow.id, transactionId: txId });
+                const data = result.data;
                 if (data?.inputs) {
                     toast.info("Inputs are required to start the flow");
                     setActiveFormConfig(data.inputs);
@@ -158,7 +177,7 @@ export function Accordion({
                 // 	toast.info("Expectation added successfully");
                 // }
             }
-            putCacheData({ activeFlow: flow.id }, sessionId);
+            putCacheData({ data: { activeFlow: flow.id }, sessionId });
             setIsOpen(true);
         } catch (e) {
             toast.error("Error while starting flow");
@@ -212,7 +231,9 @@ export function Accordion({
         if (!payload_ids) {
             return;
         }
-        const jsonData = (await getCompletePayload(payload_ids)) as {
+        const jsonData = (await triggerGetCompletePayload({
+            payloadIds: payload_ids,
+        }).unwrap()) as unknown as {
             req: {
                 context: {
                     domain: string;
@@ -253,7 +274,7 @@ export function Accordion({
             return;
         }
 
-        const jsonData = await getCompletePayload(payload_ids);
+        const jsonData = await triggerGetCompletePayload({ payloadIds: payload_ids }).unwrap();
         const jsonString = JSON.stringify(jsonData, null, 2);
         const blob = new Blob([jsonString], { type: "application/json" });
 
@@ -277,9 +298,12 @@ export function Accordion({
                         label="Start flow"
                         variant="play"
                         onClick={async (e) => {
-                            addFlowToSessionInDB(sessionId, {
-                                id: flow.id,
-                                status: "PENDING",
+                            addFlowToSessionInDB({
+                                sessionId,
+                                flow: {
+                                    id: flow.id,
+                                    status: "PENDING",
+                                },
                             });
                             trackEvent({
                                 category: "SCENARIO_TESTING-FLOWS",
@@ -302,8 +326,8 @@ export function Accordion({
                             e.stopPropagation();
                             setActiveFlow(null);
                             setIsOpen(false);
-                            await deleteExpectation(sessionId, subUrl);
-                            putCacheData({ activeFlow: "NONE" }, sessionId);
+                            await deleteExpectation({ sessionId, subscriberUrl: subUrl });
+                            putCacheData({ data: { activeFlow: "NONE" }, sessionId });
                             onFlowStop();
                         }}
                     />
@@ -326,7 +350,7 @@ export function Accordion({
                                 ),
                                 missedSteps: [],
                             });
-                            await clearFlowData(sessionId, flow.id);
+                            await clearFlowData({ sessionId, flowId: flow.id });
                             onFlowClear();
                         }}
                     />
@@ -465,7 +489,13 @@ export function Accordion({
 async function canStartFlow(sessionData: SessionCache, mappedFlow: FlowMap) {
     const action = mappedFlow.sequence[0].actionType;
     if (mappedFlow.sequence[0].expect && sessionData.npType === "BAP") {
-        return await requestForFlowPermission(action, sessionData.subscriberUrl);
+        const result = await store.dispatch(
+            sessionApi.endpoints.requestForFlowPermission.initiate({
+                action,
+                subscriberUrl: sessionData.subscriberUrl,
+            })
+        );
+        return result.data?.valid;
     }
     return true;
 }

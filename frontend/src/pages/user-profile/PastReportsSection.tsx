@@ -2,52 +2,40 @@ import { useContext, useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { AuthContext } from "@/context/authContext";
-import { apiClient } from "@services/apiClient";
-import { API_ROUTES } from "@services/apiRoutes";
-import { getReport } from "@utils/request-utils";
+import { useGetPastReportsQuery, useLazyGetReportQuery } from "@store/api";
 import { openReportInNewTab } from "@utils/generic-utils";
 import Spinner from "@/components/Shadcn/Spinner";
 import { PastReportCard } from "@pages/user-profile/components/PastReportCard";
 import { ProfilePageHeader } from "@pages/user-profile/ProfilePageHeader";
-import { useProfileShell } from "@pages/user-profile/ProfileShellContext";
 import { useReportFlowDescriptions } from "@pages/user-profile/hooks/useReportFlowDescriptions";
 import { PROFILE_PAGE_COPY } from "@pages/user-profile/constants";
-import type { IPastReport } from "@pages/user-profile/types";
 
 export const PastReportsSection = () => {
     const { user } = useContext(AuthContext);
-    const { setCounts } = useProfileShell();
-    const [reports, setReports] = useState<IPastReport[]>([]);
-    const [loading, setLoading] = useState(false);
     const [viewingId, setViewingId] = useState<string | null>(null);
 
+    const {
+        data,
+        isFetching: loading,
+        error,
+    } = useGetPastReportsQuery(user?.username ?? "", { skip: !user?.username });
+    const reports = data ?? [];
+    const [triggerGetReport] = useLazyGetReportQuery();
+
     useEffect(() => {
-        if (!user?.username) return;
-        setLoading(true);
-        apiClient
-            .get<IPastReport[]>(API_ROUTES.USER.PAST_REPORTS(user.username))
-            .then((res) => {
-                const data = Array.isArray(res.data) ? res.data : [];
-                setReports(data);
-                setCounts((prev) => ({ ...prev, pastReports: data.length }));
-            })
-            .catch((e) => {
-                const status = e?.response?.status;
-                if (status === 404 || status === 204) {
-                    setReports([]);
-                    setCounts((prev) => ({ ...prev, pastReports: 0 }));
-                } else {
-                    console.error("Error fetching past reports", e);
-                    toast.error("Failed to load past reports.");
-                }
-            })
-            .finally(() => setLoading(false));
-    }, [user?.username, setCounts]);
+        if (!error) return;
+        const status = (error as { status?: number })?.status;
+        if (status === 404 || status === 204) return;
+        console.error("Error fetching past reports", error);
+        toast.error("Failed to load past reports.");
+    }, [error]);
 
     const handleViewReport = async (testId: string) => {
         setViewingId(testId);
         try {
-            const report = await getReport(testId.replace(/^PW_/, ""));
+            const report = await triggerGetReport({
+                sessionId: testId.replace(/^PW_/, ""),
+            }).unwrap();
             if (report?.data) {
                 openReportInNewTab(report.data, testId);
             }

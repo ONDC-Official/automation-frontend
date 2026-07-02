@@ -1,5 +1,5 @@
 import React from "react";
-import axios from "axios";
+import { useCreateLoadTestSessionMutation, useDeleteLoadTestSessionMutation } from "@store/api";
 import { FormValues } from "./types";
 
 interface SessionData {
@@ -11,14 +11,9 @@ interface SessionData {
     status: string;
 }
 
-interface CreateSessionResponse {
-    id: string;
-    created_at: string;
-    expires_at: string;
-    status: string;
-}
-
 export const useSellerLoadTesting = () => {
+    const [createLoadTestSession] = useCreateLoadTestSessionMutation();
+    const [deleteLoadTestSession] = useDeleteLoadTestSessionMutation();
     const [isLoading, setIsLoading] = React.useState<boolean>(false);
     const [isDeleting, setIsDeleting] = React.useState<boolean>(false);
     const [sessionData, setSessionData] = React.useState<SessionData | null>(() => {
@@ -39,14 +34,10 @@ export const useSellerLoadTesting = () => {
     const onSubmit = async (data: FormValues) => {
         setIsLoading(true);
         try {
-            const response = await axios.post<CreateSessionResponse>(
-                `${import.meta.env.VITE_LOAD_TEST_BACKEND_URL}/sessions/`,
-                {
-                    bpp_id: data.bppId,
-                    bpp_uri: data.bppUri,
-                }
-            );
-            const result = response.data;
+            const result = await createLoadTestSession({
+                bppId: data.bppId,
+                bppUri: data.bppUri,
+            }).unwrap();
             saveSession({
                 sessionId: result.id,
                 bppId: data.bppId,
@@ -66,9 +57,7 @@ export const useSellerLoadTesting = () => {
         if (!sessionData) return;
         setIsDeleting(true);
         try {
-            await axios.delete(
-                `${import.meta.env.VITE_LOAD_TEST_BACKEND_URL}/sessions/${sessionData.sessionId}`
-            );
+            await deleteLoadTestSession(sessionData.sessionId).unwrap();
             saveSession(null);
         } catch (error) {
             console.error("Error deleting session:", error);

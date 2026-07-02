@@ -1,17 +1,12 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import type { Mapping } from "./registry-types";
 import { v4 as uuidv4 } from "uuid";
 import { TrashIcon } from "./key-section";
-import axios from "axios";
+import { useGetScenarioFormDataQuery } from "@store/api";
 
 const DOMAIN_OPTIONS = ["ONDC:TRV10", "ONDC:RET10", "ONDC:LOG10"];
 
 const TYPE_OPTIONS = ["BAP", "BPP"];
-
-type DynamicDomainOption = {
-    key: string;
-    value?: string;
-};
 
 interface MappingsSectionProps {
     mappings: Mapping[];
@@ -28,9 +23,8 @@ export const MappingsSection: React.FC<MappingsSectionProps> = ({
 }) => {
     const [editingMapping, setEditingMapping] = useState<Mapping | null>(null);
     const [expandedMappingId, setExpandedMappingId] = useState<string | null>(null);
-    const [dynamicList, setDynamicList] = useState<{ domain: DynamicDomainOption[] }>({
-        domain: [],
-    });
+    const { data: scenarioFormData } = useGetScenarioFormDataQuery();
+    const dynamicList = { domain: scenarioFormData?.domain ?? [] };
 
     const handleSave = async () => {
         if (!editingMapping) return;
@@ -52,23 +46,6 @@ export const MappingsSection: React.FC<MappingsSectionProps> = ({
             location_city: ["*"],
         });
     };
-
-    const fetchFormFieldData = async () => {
-        try {
-            const response = await axios.get(
-                `${import.meta.env.VITE_BACKEND_URL}/config/senarioFormData`
-            );
-            setDynamicList((prev) => {
-                return { ...prev, domain: response.data.domain || [] };
-            });
-        } catch (e) {
-            console.error("error while fetching form field data", e);
-        }
-    };
-
-    useEffect(() => {
-        fetchFormFieldData();
-    }, []);
 
     const toggleExpand = (id: string) => {
         setExpandedMappingId((prev) => (prev === id ? null : id));

@@ -4,7 +4,7 @@ import { ArrowTopRightOnSquareIcon } from "@heroicons/react/24/outline";
 import { Button } from "@/components/Shadcn/Button/button";
 import { FormFieldConfigType } from "@/components/ui/forms/config-form";
 import FormDialogShell from "@/components/ui/forms/form-dialog-shell";
-import { FormService } from "@services/formService";
+import { useResetCompletionMutation, useSaveRedirectionMutation } from "@store/api";
 import { queryJsonPath } from "@utils/jsonpath-query";
 
 interface IFormLaunchPopupProps {
@@ -32,6 +32,9 @@ export default function FormLaunchPopup({
     transactionId,
     onLaunched,
 }: IFormLaunchPopupProps) {
+    const [saveRedirection] = useSaveRedirectionMutation();
+    const [resetCompletion] = useResetCompletionMutation();
+
     const formUrl = useMemo<string>(() => {
         if (!formConfig?.reference) {
             console.warn("⚠️ [FormLaunch] No reference field found in form config");
@@ -64,15 +67,25 @@ export default function FormLaunchPopup({
         // 2. Capture the current workbench URL and save it for the callback.
         //    Sent verbatim — it already carries subscriberUrl + sessionId params.
         //    Non-fatal: opening the form should not be blocked by this.
-        FormService.saveRedirection(window.location.href, transactionId).catch((saveError) => {
-            console.warn("⚠️ [FormLaunch] Could not save redirection URL (continuing):", saveError);
-        });
+        saveRedirection({ redirectionUrl: window.location.href, transactionId })
+            .unwrap()
+            .catch((saveError) => {
+                console.warn(
+                    "⚠️ [FormLaunch] Could not save redirection URL (continuing):",
+                    saveError
+                );
+            });
 
         // 3. Clear any stale completion for this transaction before the form runs,
         //    so polling only reacts to THIS form's callback. Non-fatal.
-        FormService.resetCompletion(transactionId).catch((resetError) => {
-            console.warn("⚠️ [FormLaunch] Could not reset completion (continuing):", resetError);
-        });
+        resetCompletion({ transactionId })
+            .unwrap()
+            .catch((resetError) => {
+                console.warn(
+                    "⚠️ [FormLaunch] Could not reset completion (continuing):",
+                    resetError
+                );
+            });
 
         onLaunched();
     };
