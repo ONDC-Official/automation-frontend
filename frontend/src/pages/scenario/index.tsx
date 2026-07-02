@@ -20,13 +20,15 @@ import { IPreviousSessionItem } from "@/pages/scenario/types";
 import { apiClient } from "@services/apiClient";
 import { API_ROUTES } from "@services/apiRoutes";
 import { AuthContext } from "@/context/authContext";
-import { SCENARIO_GUIDE_STEPS } from "@/pages/scenario/constants";
 import { IScenarioFormData, ISessionResponse, ISavedPrefAPI } from "@/pages/scenario/types";
 import { openSessionInNewTab } from "@/pages/scenario/helpers";
 import NewSessionForm from "@/pages/scenario/NewSessionForm";
 import Spinner from "@/components/Shadcn/Spinner";
+import { Toaster } from "@/components/Shadcn/Toaster";
+import { SCENARIO_GUIDE_STEPS, SCENARIO_TIP_BANNER_MESSAGE } from "@/pages/scenario/constants";
+import { InformationCircleIcon } from "@heroicons/react/24/outline";
 
-export default function FlowContent() {
+const Scenario = () => {
     const {
         flowStepNum,
         setFlowStepNum,
@@ -168,10 +170,6 @@ export default function FlowContent() {
             valid.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
             setExistingSessions(valid);
         }
-        toast.info(
-            "Tip: Allow pop-ups for this site in your browser settings, they are blocked by default and required for the new tabs to open.",
-            { position: "top-right", duration: Infinity }
-        );
         Promise.all([fetchFormFieldData(), fetchAndApplyPreferences()]).finally(() =>
             setIsInitializing(false)
         );
@@ -275,9 +273,21 @@ export default function FlowContent() {
     };
     return (
         <div className="w-full">
+            <Toaster
+                position="top-right"
+                initialToastMessage={SCENARIO_TIP_BANNER_MESSAGE}
+                initialToastOptions={{
+                    duration: Infinity,
+                    closeButton: true,
+                    position: "top-right",
+                    icon: <InformationCircleIcon className="size-5 text-brand-normal" />,
+                }}
+            />
             <div className="mx-auto px-20 py-6">
                 <Body />
             </div>
         </div>
     );
-}
+};
+
+export default Scenario;
