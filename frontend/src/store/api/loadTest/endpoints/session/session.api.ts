@@ -6,6 +6,8 @@ import type { ICreateLoadTestSessionParams, ICreateLoadTestSessionResponse } fro
 // hook-name collision with main's session endpoints (spec §4.3) once those exist.
 export const loadTestSessionApi = loadTestApi.injectEndpoints({
     endpoints: (builder) => ({
+        // timeout: 0 on both preserves the old raw-axios calls' unlimited wait (no timeout was ever
+        // configured for the load-test client pre-migration).
         createLoadTestSession: builder.mutation<
             ICreateLoadTestSessionResponse,
             ICreateLoadTestSessionParams
@@ -14,6 +16,7 @@ export const loadTestSessionApi = loadTestApi.injectEndpoints({
                 url: API_ROUTES.LOAD_TEST.SESSIONS,
                 method: "POST",
                 data: { bpp_id: bppId, bpp_uri: bppUri },
+                timeout: 0,
             }),
             invalidatesTags: [{ type: "LoadTestSession", id: "LIST" }],
         }),
@@ -21,6 +24,7 @@ export const loadTestSessionApi = loadTestApi.injectEndpoints({
             query: (sessionId) => ({
                 url: API_ROUTES.LOAD_TEST.SESSION_BY_ID(sessionId),
                 method: "DELETE",
+                timeout: 0,
             }),
             invalidatesTags: [{ type: "LoadTestSession", id: "LIST" }],
         }),

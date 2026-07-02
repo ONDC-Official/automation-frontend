@@ -47,6 +47,7 @@ export const commentsApi = devGuideApi.injectEndpoints({
                 method: "PUT",
                 data: { resolved },
             }),
+            invalidatesTags: (_result, _err, { commentId }) => [{ type: "Comment", id: commentId }],
         }),
         getCommentById: builder.query<ICommentResponse, string>({
             query: (commentId) => ({ url: API_ROUTES.COMMENTS.BY_ID(commentId), method: "GET" }),
@@ -54,6 +55,7 @@ export const commentsApi = devGuideApi.injectEndpoints({
         }),
         deleteComment: builder.mutation<unknown, string>({
             query: (commentId) => ({ url: API_ROUTES.COMMENTS.BY_ID(commentId), method: "DELETE" }),
+            invalidatesTags: (_result, _err, commentId) => [{ type: "Comment", id: commentId }],
         }),
     }),
 });

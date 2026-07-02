@@ -358,7 +358,7 @@ export default function OutputPayloadViewer({
     const { data: scenarioFormData } = useGetScenarioFormDataQuery();
 
     useEffect(() => {
-        setActiveDomain(scenarioFormData as unknown as IActiveDomainConfig);
+        setActiveDomain((scenarioFormData as unknown as IActiveDomainConfig) || {});
     }, [scenarioFormData]);
 
     const verifyRequestL0 = async () => {

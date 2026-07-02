@@ -27,9 +27,11 @@ export const notesApi = devGuideApi.injectEndpoints({
                 method: "PUT",
                 data: payload,
             }),
+            invalidatesTags: (_result, _err, { noteId }) => [{ type: "Note", id: noteId }],
         }),
         deleteNote: builder.mutation<unknown, string>({
             query: (noteId) => ({ url: API_ROUTES.NOTES.BY_ID(noteId), method: "DELETE" }),
+            invalidatesTags: (_result, _err, noteId) => [{ type: "Note", id: noteId }],
         }),
     }),
 });
