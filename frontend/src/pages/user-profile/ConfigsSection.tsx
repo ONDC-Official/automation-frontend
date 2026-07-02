@@ -1,4 +1,7 @@
+import { ExclamationTriangleIcon } from "@heroicons/react/24/outline";
+
 import Spinner from "@/components/Shadcn/Spinner";
+import { ConfirmDialog } from "@/components/Shadcn/Dialog";
 import { PROFILE_PAGE_COPY } from "@pages/user-profile/constants";
 import { NewConfigForm } from "@pages/user-profile/NewConfigForm";
 import { ProfilePageHeader } from "@pages/user-profile/ProfilePageHeader";
@@ -25,6 +28,9 @@ export const ConfigsSection = () => {
         handleCancelEdit,
         onSubmit,
         confirmDelete,
+        pendingDeleteKey,
+        closeConfirmDelete,
+        confirmDeleteAction,
         handleLaunch,
     } = useScenarioPreferences();
 
@@ -71,6 +77,28 @@ export const ConfigsSection = () => {
                     />
                 </div>
             )}
+
+            <ConfirmDialog
+                open={!!pendingDeleteKey}
+                onOpenChange={(open) => !open && closeConfirmDelete()}
+                title={
+                    <span className="flex items-center gap-2">
+                        <ExclamationTriangleIcon className="size-5 text-error-500" />
+                        Delete configuration
+                    </span>
+                }
+                description={
+                    <>
+                        Are you sure you want to delete{" "}
+                        <span className="font-semibold text-text-primary">{pendingDeleteKey}</span>?
+                        This action cannot be undone.
+                    </>
+                }
+                confirmText="Delete"
+                cancelText="Cancel"
+                danger
+                onConfirm={confirmDeleteAction}
+            />
         </div>
     );
 };

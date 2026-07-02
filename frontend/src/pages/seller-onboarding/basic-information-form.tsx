@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { Select, message } from "antd";
+import { toast } from "sonner";
 
 import TextField, { LabelWithToolTip } from "@/components/Shadcn/TextField";
+import { ComboBoxMultiControl } from "@/components/Shadcn/ComboBox";
 import LoadingButton from "@components/ui/forms/loading-button";
 import { SellerOnboardingData } from "@pages/seller-onboarding";
 import { domainOptions } from "@constants/common.tsx";
@@ -103,12 +104,12 @@ const BasicInformationForm = ({ initialData, onNext }: BasicInformationFormProps
         }
 
         if (!symbolImage.imageUrl) {
-            message.error("Please upload a symbol image");
+            toast.error("Please upload a symbol image");
             return;
         }
 
         if (productImages.imageUrls.length === 0) {
-            message.error("Please upload at least one image");
+            toast.error("Please upload at least one image");
             return;
         }
 
@@ -127,25 +128,15 @@ const BasicInformationForm = ({ initialData, onNext }: BasicInformationFormProps
             {/* Domain Selection - Full Width */}
             <div className="mb-6">
                 <LabelWithToolTip labelInfo={""} label={"Domain"} required={true} />
-                <Select
-                    mode="multiple"
+                <ComboBoxMultiControl
                     placeholder="Select one or more domains"
                     value={getSelectValues()}
-                    onChange={handleDomainChange}
-                    style={{ width: "100%" }}
-                    size="large"
-                    allowClear
-                    showSearch
-                    filterOption={(input, option) =>
-                        (option?.label ?? "").toString().toLowerCase().includes(input.toLowerCase())
-                    }
-                >
-                    {domainOptions.map((option) => (
-                        <Select.Option key={option.value} value={option.value} label={option.key}>
-                            {option.key}
-                        </Select.Option>
-                    ))}
-                </Select>
+                    onValueChange={handleDomainChange}
+                    options={domainOptions.map((option) => ({
+                        label: option.key,
+                        value: option.value,
+                    }))}
+                />
                 {domainError && <p className="text-red-500 text-xs italic mt-1">{domainError}</p>}
             </div>
 

@@ -1,4 +1,3 @@
-import React from "react";
 import { render, screen, waitFor, fireEvent } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { GitHubImportModal } from "../github-import-modal";
@@ -24,12 +23,6 @@ jest.mock("@ondc/automation-mock-runner", () => ({
 
 jest.mock("yaml", () => ({
     parse: jest.fn(),
-}));
-
-jest.mock("@components/ui/pop-up/pop-up", () => ({
-    __esModule: true,
-    default: ({ children, isOpen }: { children: React.ReactNode; isOpen: boolean }) =>
-        isOpen ? <>{children}</> : null,
 }));
 
 // ─── typed aliases (safe: not used inside any factory above) ──────────────────

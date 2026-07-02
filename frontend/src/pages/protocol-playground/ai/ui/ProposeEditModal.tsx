@@ -3,7 +3,7 @@ import { FaCheck, FaTimes } from "react-icons/fa";
 import { PiShieldStarBold } from "react-icons/pi";
 import { MockRunner } from "@ondc/automation-mock-runner";
 
-import Popup from "@components/ui/pop-up/pop-up";
+import FormFlowDialog from "@/components/Shadcn/Dialog/form-flow-dialog";
 import { PlaygroundContext } from "@pages/protocol-playground/context/playground-context";
 
 import { usePendingApprovals } from "../hooks/use-pending-approvals";
@@ -88,9 +88,9 @@ export function ProposeEditModal() {
     };
 
     return (
-        <Popup isOpen={true} onClose={close}>
-            <div className="flex flex-col gap-3 text-sm">
-                <div className="flex items-center gap-2 pr-12">
+        <FormFlowDialog open onOpenChange={(open) => !open && close()} width="2xl">
+            <div className="flex flex-1 flex-col gap-3 overflow-y-auto p-6 text-sm">
+                <div className="flex items-center gap-2">
                     <span className="inline-flex items-center justify-center h-7 w-7 rounded-md bg-linear-to-br from-amber-400 to-amber-600 text-white shrink-0">
                         <PiShieldStarBold className="h-4 w-4" />
                     </span>
@@ -142,6 +142,6 @@ export function ProposeEditModal() {
                     </button>
                 </div>
             </div>
-        </Popup>
+        </FormFlowDialog>
     );
 }

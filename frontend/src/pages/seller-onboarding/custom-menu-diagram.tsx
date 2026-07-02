@@ -1,5 +1,6 @@
 import React from "react";
-import { Card, Tag } from "antd";
+
+import { Card, Tag } from "@/pages/seller-onboarding/components/LegacyCardTag";
 
 const CustomMenuDiagram: React.FC = () => {
     return (
@@ -63,7 +64,7 @@ const CustomMenuDiagram: React.FC = () => {
 
                     <div className="space-y-4">
                         {/* Main Item */}
-                        <Card size="small" className="border-orange-200">
+                        <Card small className="border-orange-200">
                             <div className="flex items-center justify-between mb-2">
                                 <span className="font-medium">Farmhouse Pizza</span>
                                 <div>
@@ -92,7 +93,7 @@ const CustomMenuDiagram: React.FC = () => {
                                 Customization Items:
                             </div>
 
-                            <Card size="small" className="border-purple-200 bg-purple-50">
+                            <Card small className="border-purple-200 bg-purple-50">
                                 <div className="flex items-center justify-between">
                                     <span className="text-sm">Small</span>
                                     <div>
@@ -107,7 +108,7 @@ const CustomMenuDiagram: React.FC = () => {
                                 </div>
                             </Card>
 
-                            <Card size="small" className="border-purple-200 bg-purple-50">
+                            <Card small className="border-purple-200 bg-purple-50">
                                 <div className="flex items-center justify-between">
                                     <span className="text-sm">Medium</span>
                                     <div>
@@ -122,7 +123,7 @@ const CustomMenuDiagram: React.FC = () => {
                                 </div>
                             </Card>
 
-                            <Card size="small" className="border-purple-200 bg-purple-50">
+                            <Card small className="border-purple-200 bg-purple-50">
                                 <div className="flex items-center justify-between">
                                     <span className="text-sm">New Hand Tossed</span>
                                     <div>

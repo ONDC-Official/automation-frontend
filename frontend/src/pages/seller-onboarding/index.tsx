@@ -3,7 +3,7 @@ import { toast } from "sonner";
 import { FaUser, FaBriefcase, FaUtensils, FaBox } from "react-icons/fa";
 import { useSellerOnSearchMutation } from "@store/api";
 
-import Stepper from "@components/ui/mini-components/stepper";
+import { Stepper } from "@/components/Shadcn/Stepper";
 import BasicInformationForm from "@pages/seller-onboarding/basic-information-form";
 import BusinessVerificationForm from "@pages/seller-onboarding/business-verification-form-multiple";
 import CustomMenuFormEnhanced from "@pages/seller-onboarding/custom-menu-form-enhanced";

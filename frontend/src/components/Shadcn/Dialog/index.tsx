@@ -127,3 +127,5 @@ export {
     DialogTitle,
     DialogTrigger,
 };
+
+export { ConfirmDialog, type IConfirmDialogProps } from "./confirm-dialog";

@@ -2,7 +2,7 @@ import { useContext, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { PlayIcon, ArrowUturnLeftIcon } from "@heroicons/react/24/outline";
 
-import Popup from "@components/ui/pop-up/pop-up";
+import FormFlowDialog from "@/components/Shadcn/Dialog/form-flow-dialog";
 import { Button } from "@/components/Shadcn/Button/button";
 import {
     Combobox,
@@ -146,9 +146,9 @@ export const ToolInspectorModal = ({ isOpen, onClose }: IToolInspectorModalProps
     const clearHistory = () => setMessages([]);
 
     return (
-        <Popup isOpen={isOpen} onClose={onClose}>
-            <div className="flex flex-col gap-3 text-xs">
-                <div className="flex items-center gap-2 pr-12">
+        <FormFlowDialog open={isOpen} onOpenChange={(open) => !open && onClose()} width="2xl">
+            <div className="flex flex-1 flex-col gap-3 overflow-y-auto p-6 text-xs">
+                <div className="flex items-center gap-2">
                     <span className="text-base font-semibold text-gray-900">🔧 Tool Inspector</span>
                     <span className="text-[10px] uppercase tracking-wide text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded">
                         dev
@@ -261,6 +261,6 @@ export const ToolInspectorModal = ({ isOpen, onClose }: IToolInspectorModalProps
                     <InspectorMessageList messages={messages} />
                 </div>
             </div>
-        </Popup>
+        </FormFlowDialog>
     );
 };

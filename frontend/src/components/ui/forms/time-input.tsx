@@ -1,6 +1,17 @@
 import React, { useState, useEffect } from "react";
-import { Input, Modal, Select, Button } from "antd";
 import { FaClock } from "react-icons/fa";
+
+import { Input } from "@/components/Shadcn/TextField/input";
+import { SelectControl } from "@/components/Shadcn/Select";
+import { Button } from "@/components/Shadcn/Button";
+import {
+    Dialog,
+    DialogContent,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/Shadcn/Dialog";
+import { cn } from "@/lib/utils";
 
 interface TimeInputProps {
     value?: string;
@@ -20,7 +31,6 @@ const TimeInput: React.FC<TimeInputProps> = ({
     value = "",
     onChange,
     placeholder,
-    size = "large",
     disabled = false,
     status,
     format = "24h",
@@ -155,20 +165,25 @@ const TimeInput: React.FC<TimeInputProps> = ({
             ? Array.from({ length: 12 }, (_, i) => {
                   const hour = i + 1;
                   return {
-                      label: hour.toString().padStart(2, "0"),
+                      key: hour.toString().padStart(2, "0"),
                       value: hour.toString().padStart(2, "0"),
                   };
               })
             : Array.from({ length: 24 }, (_, i) => ({
-                  label: i.toString().padStart(2, "0"),
+                  key: i.toString().padStart(2, "0"),
                   value: i.toString().padStart(2, "0"),
               }));
 
     // Generate minute options
     const minuteOptions = Array.from({ length: 60 }, (_, i) => ({
-        label: i.toString().padStart(2, "0"),
+        key: i.toString().padStart(2, "0"),
         value: i.toString().padStart(2, "0"),
     }));
+
+    const periodOptions = [
+        { key: "AM", value: "AM" },
+        { key: "PM", value: "PM" },
+    ];
 
     const displayPlaceholder =
         placeholder ||
@@ -176,140 +191,126 @@ const TimeInput: React.FC<TimeInputProps> = ({
 
     return (
         <>
-            <Input
-                value={formatDisplayValue(value)}
-                placeholder={displayPlaceholder}
-                size={size}
-                disabled={disabled}
-                status={status}
-                className={`cursor-pointer ${className}`}
-                readOnly
-                onClick={handleOpenModal}
-                suffix={<FaClock className="text-gray-400" />}
-            />
+            <div className="relative">
+                <Input
+                    value={formatDisplayValue(value)}
+                    placeholder={displayPlaceholder}
+                    disabled={disabled}
+                    aria-invalid={status === "error"}
+                    className={cn("cursor-pointer pr-9", className)}
+                    readOnly
+                    onClick={handleOpenModal}
+                />
+                <FaClock className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-gray-400" />
+            </div>
 
-            <Modal
-                title={`Select Time (${currentFormat === "12h" ? "12 Hour" : "24 Hour"} Format)`}
-                open={isModalOpen}
-                onCancel={handleCancel}
-                footer={[
-                    <Button key="cancel" onClick={handleCancel}>
-                        Cancel
-                    </Button>,
-                    <Button key="confirm" type="primary" onClick={handleConfirm}>
-                        Confirm
-                    </Button>,
-                ]}
-                width={450}
-            >
-                <div className="space-y-4 py-4">
-                    {/* Format Toggle */}
-                    {allowFormatToggle && (
-                        <div className="flex justify-center">
-                            <div className="bg-gray-100 rounded-lg p-1 flex">
-                                <button
-                                    type="button"
-                                    className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                                        currentFormat === "12h"
-                                            ? "bg-white text-sky-600 shadow-xs"
-                                            : "text-gray-600 hover:text-gray-800"
-                                    }`}
-                                    onClick={() => handleFormatChange("12h")}
-                                >
-                                    12 Hour
-                                </button>
-                                <button
-                                    type="button"
-                                    className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                                        currentFormat === "24h"
-                                            ? "bg-white text-sky-600 shadow-xs"
-                                            : "text-gray-600 hover:text-gray-800"
-                                    }`}
-                                    onClick={() => handleFormatChange("24h")}
-                                >
-                                    24 Hour
-                                </button>
-                            </div>
-                        </div>
-                    )}
-
-                    <div className="flex items-center gap-4 justify-center">
-                        {/* Hours */}
-                        <div className="flex flex-col items-center">
-                            <label className="text-sm font-medium text-gray-700 mb-2">Hours</label>
-                            <Select
-                                value={tempTime.hours}
-                                onChange={(value) =>
-                                    setTempTime((prev) => ({ ...prev, hours: value }))
-                                }
-                                style={{ width: 80 }}
-                                size="large"
-                                showSearch
-                            >
-                                {hourOptions.map((option) => (
-                                    <Select.Option key={option.value} value={option.value}>
-                                        {option.label}
-                                    </Select.Option>
-                                ))}
-                            </Select>
-                        </div>
-
-                        <div className="text-2xl font-bold text-gray-400 mt-6">:</div>
-
-                        {/* Minutes */}
-                        <div className="flex flex-col items-center">
-                            <label className="text-sm font-medium text-gray-700 mb-2">
-                                Minutes
-                            </label>
-                            <Select
-                                value={tempTime.minutes}
-                                onChange={(value) =>
-                                    setTempTime((prev) => ({ ...prev, minutes: value }))
-                                }
-                                style={{ width: 80 }}
-                                size="large"
-                                showSearch
-                            >
-                                {minuteOptions.map((option) => (
-                                    <Select.Option key={option.value} value={option.value}>
-                                        {option.label}
-                                    </Select.Option>
-                                ))}
-                            </Select>
-                        </div>
-
-                        {/* Period (AM/PM) for 12h format */}
-                        {currentFormat === "12h" && (
-                            <div className="flex flex-col items-center">
-                                <label className="text-sm font-medium text-gray-700 mb-2">
-                                    Period
-                                </label>
-                                <Select
-                                    value={tempTime.period}
-                                    onChange={(value) =>
-                                        setTempTime((prev) => ({ ...prev, period: value }))
-                                    }
-                                    style={{ width: 80 }}
-                                    size="large"
-                                >
-                                    <Select.Option value="AM">AM</Select.Option>
-                                    <Select.Option value="PM">PM</Select.Option>
-                                </Select>
+            <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+                <DialogContent className="max-w-[450px]">
+                    <DialogHeader>
+                        <DialogTitle>
+                            Select Time ({currentFormat === "12h" ? "12 Hour" : "24 Hour"} Format)
+                        </DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                        {/* Format Toggle */}
+                        {allowFormatToggle && (
+                            <div className="flex justify-center">
+                                <div className="bg-gray-100 rounded-lg p-1 flex">
+                                    <button
+                                        type="button"
+                                        className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                                            currentFormat === "12h"
+                                                ? "bg-white text-sky-600 shadow-xs"
+                                                : "text-gray-600 hover:text-gray-800"
+                                        }`}
+                                        onClick={() => handleFormatChange("12h")}
+                                    >
+                                        12 Hour
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                                            currentFormat === "24h"
+                                                ? "bg-white text-sky-600 shadow-xs"
+                                                : "text-gray-600 hover:text-gray-800"
+                                        }`}
+                                        onClick={() => handleFormatChange("24h")}
+                                    >
+                                        24 Hour
+                                    </button>
+                                </div>
                             </div>
                         )}
-                    </div>
 
-                    {/* Preview */}
-                    <div className="text-center pt-4 border-t">
-                        <div className="text-sm text-gray-600 mb-1">Preview:</div>
-                        <div className="text-lg font-semibold text-gray-800">
-                            {currentFormat === "12h"
-                                ? `${tempTime.hours}:${tempTime.minutes} ${tempTime.period}`
-                                : `${tempTime.hours}:${tempTime.minutes}`}
+                        <div className="flex items-center gap-4 justify-center">
+                            {/* Hours */}
+                            <div className="flex flex-col items-center">
+                                <label className="text-sm font-medium text-gray-700 mb-2">
+                                    Hours
+                                </label>
+                                <SelectControl
+                                    value={tempTime.hours}
+                                    onValueChange={(next) =>
+                                        setTempTime((prev) => ({ ...prev, hours: next }))
+                                    }
+                                    options={hourOptions}
+                                    className="w-20"
+                                />
+                            </div>
+
+                            <div className="text-2xl font-bold text-gray-400 mt-6">:</div>
+
+                            {/* Minutes */}
+                            <div className="flex flex-col items-center">
+                                <label className="text-sm font-medium text-gray-700 mb-2">
+                                    Minutes
+                                </label>
+                                <SelectControl
+                                    value={tempTime.minutes}
+                                    onValueChange={(next) =>
+                                        setTempTime((prev) => ({ ...prev, minutes: next }))
+                                    }
+                                    options={minuteOptions}
+                                    className="w-20"
+                                />
+                            </div>
+
+                            {/* Period (AM/PM) for 12h format */}
+                            {currentFormat === "12h" && (
+                                <div className="flex flex-col items-center">
+                                    <label className="text-sm font-medium text-gray-700 mb-2">
+                                        Period
+                                    </label>
+                                    <SelectControl
+                                        value={tempTime.period}
+                                        onValueChange={(next) =>
+                                            setTempTime((prev) => ({ ...prev, period: next }))
+                                        }
+                                        options={periodOptions}
+                                        className="w-20"
+                                    />
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Preview */}
+                        <div className="text-center pt-4 border-t">
+                            <div className="text-sm text-gray-600 mb-1">Preview:</div>
+                            <div className="text-lg font-semibold text-gray-800">
+                                {currentFormat === "12h"
+                                    ? `${tempTime.hours}:${tempTime.minutes} ${tempTime.period}`
+                                    : `${tempTime.hours}:${tempTime.minutes}`}
+                            </div>
                         </div>
                     </div>
-                </div>
-            </Modal>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={handleCancel}>
+                            Cancel
+                        </Button>
+                        <Button onClick={handleConfirm}>Confirm</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </>
     );
 };

@@ -10,9 +10,20 @@ import {
     UseFormRegister,
     FieldErrors,
 } from "react-hook-form";
-import { Select, Button, Card, Modal, Checkbox, Tabs } from "antd";
 import { FaPlus, FaTrash, FaEdit, FaSitemap, FaClock } from "react-icons/fa";
 
+import { SelectControl } from "@/components/Shadcn/Select";
+import { Button } from "@/components/Shadcn/Button";
+import { Checkbox } from "@/components/Shadcn/Checkbox";
+import {
+    Dialog,
+    DialogContent,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/Shadcn/Dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/Shadcn/Tabs";
+import { Card } from "@/pages/seller-onboarding/components/LegacyCardTag";
 import TextField from "@/components/Shadcn/TextField";
 import LoadingButton from "@components/ui/forms/loading-button";
 import { SellerOnboardingData } from "@pages/seller-onboarding";
@@ -172,20 +183,13 @@ const AvailabilityTimingsSection = ({
                                 rules={{ required: "Starting day is required" }}
                                 render={({ field, fieldState: { error } }) => (
                                     <>
-                                        <Select
-                                            {...field}
+                                        <SelectControl
+                                            value={field.value}
+                                            onValueChange={field.onChange}
+                                            options={weekDays}
                                             placeholder="Select starting day"
-                                            className="w-full"
-                                            size="large"
-                                            allowClear
-                                            status={error ? "error" : undefined}
-                                        >
-                                            {weekDays.map((day) => (
-                                                <Select.Option key={day.value} value={day.value}>
-                                                    {day.key}
-                                                </Select.Option>
-                                            ))}
-                                        </Select>
+                                            className={error ? "border-destructive" : undefined}
+                                        />
                                         {error && (
                                             <p className="text-red-500 text-xs italic mt-1">
                                                 {error.message}
@@ -206,20 +210,13 @@ const AvailabilityTimingsSection = ({
                                 rules={{ required: "Ending day is required" }}
                                 render={({ field, fieldState: { error } }) => (
                                     <>
-                                        <Select
-                                            {...field}
+                                        <SelectControl
+                                            value={field.value}
+                                            onValueChange={field.onChange}
+                                            options={weekDays}
                                             placeholder="Select ending day"
-                                            className="w-full"
-                                            size="large"
-                                            allowClear
-                                            status={error ? "error" : undefined}
-                                        >
-                                            {weekDays.map((day) => (
-                                                <Select.Option key={day.value} value={day.value}>
-                                                    {day.key}
-                                                </Select.Option>
-                                            ))}
-                                        </Select>
+                                            className={error ? "border-destructive" : undefined}
+                                        />
                                         {error && (
                                             <p className="text-red-500 text-xs italic mt-1">
                                                 {error.message}
@@ -633,8 +630,15 @@ const CustomMenuFormEnhanced = ({
 
     return (
         <>
-            <Tabs defaultActiveKey="1">
-                <Tabs.TabPane tab="Menu" key="1">
+            <Tabs defaultValue="1">
+                <TabsList variant="line" className="mb-4 border-b border-n-30">
+                    <TabsTrigger value="1">Menu</TabsTrigger>
+                    <TabsTrigger value="3">
+                        <FaSitemap className="inline mr-1" />
+                        Comprehensive View
+                    </TabsTrigger>
+                </TabsList>
+                <TabsContent value="1">
                     <form
                         onSubmit={handleSubmit(onSubmit as (data: unknown) => void)}
                         className="space-y-6"
@@ -921,8 +925,8 @@ const CustomMenuFormEnhanced = ({
                                                     Customizations & Add-ons
                                                 </h5>
                                                 <Button
-                                                    type="default"
-                                                    size="small"
+                                                    variant="outline"
+                                                    size="sm"
                                                     icon={<FaPlus />}
                                                     onClick={() =>
                                                         handleAddCustomizationGroup(index)
@@ -984,8 +988,8 @@ const CustomMenuFormEnhanced = ({
                                                             </div>
                                                             <div className="flex gap-2">
                                                                 <Button
-                                                                    type="link"
-                                                                    size="small"
+                                                                    variant="link"
+                                                                    size="sm"
                                                                     icon={<FaEdit />}
                                                                     onClick={() =>
                                                                         handleEditCustomizationGroup(
@@ -995,10 +999,10 @@ const CustomMenuFormEnhanced = ({
                                                                     }
                                                                 />
                                                                 <Button
-                                                                    type="link"
-                                                                    danger
-                                                                    size="small"
+                                                                    variant="link"
+                                                                    size="sm"
                                                                     icon={<FaTrash />}
+                                                                    className="text-destructive hover:text-destructive"
                                                                     onClick={() =>
                                                                         handleRemoveCustomizationGroup(
                                                                             index,
@@ -1050,55 +1054,9 @@ const CustomMenuFormEnhanced = ({
                             </div>
                         </div>
                     </form>
-                </Tabs.TabPane>
+                </TabsContent>
 
-                {/* <Tabs.TabPane 
-          tab={
-            <span>
-              <FaEye className="inline mr-1" />
-              Relationship View
-            </span>
-          } 
-          key="2"
-        >
-          <CustomMenuRelationshipView menuItems={watchMenu} />
-          
-          <div className="flex justify-between mt-8">
-            <button
-              type="button"
-              onClick={onPrevious}
-              className="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
-            >
-              Previous
-            </button>
-            <div className="flex gap-3">
-              <button
-                type="button"
-                onClick={handleSkip}
-                className="px-6 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors border border-gray-300"
-              >
-                Skip This Step
-              </button>
-              <button
-                type="button"
-                onClick={handleSubmit(onSubmit)}
-                className="px-6 py-2 bg-sky-600 text-white rounded-md hover:bg-sky-700 transition-colors"
-              >
-                {isFinalStep ? "Submit Application" : "Next Step"}
-              </button>
-            </div>
-          </div>
-        </Tabs.TabPane> */}
-
-                <Tabs.TabPane
-                    tab={
-                        <span>
-                            <FaSitemap className="inline mr-1" />
-                            Comprehensive View
-                        </span>
-                    }
-                    key="3"
-                >
+                <TabsContent value="3">
                     <CustomMenuComprehensiveView menuItems={watchMenu} />
 
                     <div className="flex justify-between mt-8">
@@ -1126,24 +1084,44 @@ const CustomMenuFormEnhanced = ({
                             </button>
                         </div>
                     </div>
-                </Tabs.TabPane>
+                </TabsContent>
             </Tabs>
 
             {/* Customization Group Modal */}
-            <Modal
-                title={editingGroup?.id ? "Edit Customization Group" : "Add Customization Group"}
+            <Dialog
                 open={showCustomizationModal !== null}
-                onOk={handleSaveCustomizationGroup}
-                onCancel={() => {
-                    setShowCustomizationModal(null);
-                    setEditingGroup(null);
+                onOpenChange={(open) => {
+                    if (!open) {
+                        setShowCustomizationModal(null);
+                        setEditingGroup(null);
+                    }
                 }}
-                width={700}
             >
-                {editingGroup && (
-                    <CustomizationGroupForm group={editingGroup} onChange={setEditingGroup} />
-                )}
-            </Modal>
+                <DialogContent className="max-w-[700px]">
+                    <DialogHeader>
+                        <DialogTitle>
+                            {editingGroup?.id
+                                ? "Edit Customization Group"
+                                : "Add Customization Group"}
+                        </DialogTitle>
+                    </DialogHeader>
+                    {editingGroup && (
+                        <CustomizationGroupForm group={editingGroup} onChange={setEditingGroup} />
+                    )}
+                    <DialogFooter>
+                        <Button
+                            variant="outline"
+                            onClick={() => {
+                                setShowCustomizationModal(null);
+                                setEditingGroup(null);
+                            }}
+                        >
+                            Cancel
+                        </Button>
+                        <Button onClick={handleSaveCustomizationGroup}>Save</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </>
     );
 };
@@ -1209,16 +1187,16 @@ const CustomizationGroupForm = ({
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                         Selection Type <span className="text-red-500">*</span>
                     </label>
-                    <Select
+                    <SelectControl
                         value={group.type}
-                        onChange={(value) => onChange({ ...group, type: value })}
-                        className="w-full"
-                    >
-                        <Select.Option value="single">Single Selection (Radio)</Select.Option>
-                        <Select.Option value="multiple">
-                            Multiple Selection (Checkbox)
-                        </Select.Option>
-                    </Select>
+                        onValueChange={(value) =>
+                            onChange({ ...group, type: value as CustomizationGroup["type"] })
+                        }
+                        options={[
+                            { key: "Single Selection (Radio)", value: "single" },
+                            { key: "Multiple Selection (Checkbox)", value: "multiple" },
+                        ]}
+                    />
                 </div>
 
                 <div>
@@ -1242,22 +1220,25 @@ const CustomizationGroupForm = ({
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                         Required?
                     </label>
-                    <Checkbox
-                        checked={group.required}
-                        onChange={(e) => {
-                            const isRequired = e.target.checked;
-                            // If required is checked and minQuantity is 0, set it to 1
-                            const updatedGroup = {
-                                ...group,
-                                required: isRequired,
-                                minQuantity:
-                                    isRequired && group.minQuantity === 0 ? 1 : group.minQuantity,
-                            };
-                            onChange(updatedGroup);
-                        }}
-                    >
+                    <label className="flex items-center gap-2 text-sm text-gray-700">
+                        <Checkbox
+                            checked={group.required}
+                            onCheckedChange={(checked) => {
+                                const isRequired = checked === true;
+                                // If required is checked and minQuantity is 0, set it to 1
+                                const updatedGroup = {
+                                    ...group,
+                                    required: isRequired,
+                                    minQuantity:
+                                        isRequired && group.minQuantity === 0
+                                            ? 1
+                                            : group.minQuantity,
+                                };
+                                onChange(updatedGroup);
+                            }}
+                        />
                         This customization is required
-                    </Checkbox>
+                    </label>
                 </div>
 
                 <div>
@@ -1305,8 +1286,8 @@ const CustomizationGroupForm = ({
                         Options <span className="text-red-500">*</span>
                     </label>
                     <Button
-                        type="link"
-                        size="small"
+                        variant="link"
+                        size="sm"
                         icon={<FaPlus />}
                         onClick={addCustomizationItem}
                     >
@@ -1348,26 +1329,26 @@ const CustomizationGroupForm = ({
                                 />
                             </div>
                             <div className="w-32">
-                                <Select
+                                <SelectControl
                                     value={item.vegNonVeg}
-                                    onChange={(value) =>
+                                    onValueChange={(value) =>
                                         updateCustomizationItem(index, {
                                             ...item,
                                             vegNonVeg: value,
                                         })
                                     }
-                                    className="w-full"
-                                >
-                                    <Select.Option value="veg">Veg</Select.Option>
-                                    <Select.Option value="non-veg">Non-Veg</Select.Option>
-                                    <Select.Option value="egg">Egg</Select.Option>
-                                </Select>
+                                    options={[
+                                        { key: "Veg", value: "veg" },
+                                        { key: "Non-Veg", value: "non-veg" },
+                                        { key: "Egg", value: "egg" },
+                                    ]}
+                                />
                             </div>
                             {group.items.length > 1 && (
                                 <Button
-                                    type="text"
-                                    danger
+                                    variant="ghost"
                                     icon={<FaTrash />}
+                                    className="text-destructive hover:text-destructive"
                                     onClick={() => removeCustomizationItem(index)}
                                 />
                             )}

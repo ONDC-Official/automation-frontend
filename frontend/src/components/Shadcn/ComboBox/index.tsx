@@ -82,6 +82,8 @@ export const ComboBox = <T extends FieldValues>({
 
 export { ComboBoxControl } from "@/components/Shadcn/ComboBox/combobox-control";
 export type { IComboBoxControlProps } from "@/components/Shadcn/ComboBox/combobox-control";
+export { ComboBoxMultiControl } from "@/components/Shadcn/ComboBox/combobox-multi-control";
+export type { IComboBoxMultiControlProps } from "@/components/Shadcn/ComboBox/combobox-multi-control";
 export type {
     ComboBoxOptionInput,
     IComboBoxOption,

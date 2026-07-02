@@ -11,7 +11,6 @@ export const ROUTES = {
     PROFILE: "/profile",
     PROFILE_PAST_REPORTS: "/profile/past-reports",
     PROFILE_HISTORY: "/profile/history",
-    TOOLS: "/tools",
     SELLER_ONBOARDING: "/seller-onboarding",
     PLAYGROUND: "/playground",
     HISTORY: "/history",

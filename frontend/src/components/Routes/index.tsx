@@ -1,7 +1,6 @@
 import { Navigate, Route, Routes as RouterRoutes } from "react-router-dom";
 import SchemaValidationPage from "@pages/schema-validation";
 import SellerOnboarding from "@pages/seller-onboarding";
-import ToolsPage from "@pages/tools";
 import UserProfile from "@pages/user-profile";
 import ConfigsSection from "@pages/user-profile/ConfigsSection";
 import PastReportsSection from "@pages/user-profile/PastReportsSection";
@@ -49,7 +48,6 @@ const Routes = () => (
             <Route path="past-reports" element={<PastReportsSection />} />
             <Route path="history" element={<ActivityHistorySection />} />
         </Route>
-        <Route path={ROUTES.TOOLS} element={<ToolsPage />} />
         <Route path={ROUTES.SELLER_ONBOARDING} element={<SellerOnboarding />} />
         <Route path={ROUTES.PLAYGROUND} element={<ProtocolPlayGround />} />
         <Route path={ROUTES.HISTORY} element={<HistoryPage />} />
