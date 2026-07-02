@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 import { getPayloadsBySessionId } from "@utils/request-utils";
 
 export const useSessionLogs = (sessionId: string) => {

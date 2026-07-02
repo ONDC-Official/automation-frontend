@@ -56,8 +56,6 @@ export const isRideMapEnabled = (domain?: string, version?: string): boolean =>
 export type RideDisplayKind =
     | "DRIVER_NOT_FOUND"
     | "AWAITING_DRIVER"
-    | "CANCELLED"
-    | "CANCELLING"
     | "COMPLETED"
     | "ACTIVE"
     | "AWAITING";
@@ -108,32 +106,12 @@ export function deriveRideDisplay(input: {
         };
     }
 
-    // 2) Cancelled (hard) — ride state or order status.
-    if (phase === "RIDE_CANCELLED" || status === "CANCELLED") {
-        return {
-            kind: "CANCELLED",
-            title: "Ride cancelled",
-            detail: "This ride was cancelled.",
-            showsControls: false,
-        };
-    }
-
-    // 3) Soft cancel requested (not yet final).
-    if (status === "SOFT_CANCEL") {
-        return {
-            kind: "CANCELLING",
-            title: "Cancellation in progress",
-            detail: "A cancellation has been requested for this ride.",
-            showsControls: false,
-        };
-    }
-
-    // 4) Completed — keyed off ride state (order.status stays ACTIVE) or an explicit COMPLETE.
+    // 2) Completed — keyed off ride state (order.status stays ACTIVE) or an explicit COMPLETE.
     if (phase === "RIDE_COMPLETED" || status === "COMPLETE" || status === "COMPLETED") {
         return { kind: "COMPLETED", title: "Ride completed", showsControls: false };
     }
 
-    // 5) Confirmed but driver not yet assigned (assignment happens later via on_update).
+    // 3) Confirmed but driver not yet assigned (assignment happens later via on_update).
     if (phase === "RIDE_CONFIRMED") {
         return {
             kind: "AWAITING_DRIVER",
@@ -143,12 +121,12 @@ export function deriveRideDisplay(input: {
         };
     }
 
-    // 6) Active ride (SOFT_UPDATE/UPDATED are transient → still active).
+    // 4) Active ride (SOFT_UPDATE/UPDATED are transient → still active).
     if (phase && RIDE_ACTIVE_STATES.has(phase)) {
         return { kind: "ACTIVE", title: "Ride in progress", showsControls: true };
     }
 
-    // 7) Nothing assigned yet (pre-confirm / awaiting).
+    // 5) Nothing assigned yet (pre-confirm / awaiting).
     return { kind: "AWAITING", title: "Awaiting ride", showsControls: false };
 }
 
@@ -159,14 +137,13 @@ const RIDE_PHASE_LABELS: Record<string, string> = {
     RIDE_STARTED: "Ride started",
     RIDE_ENDED: "Ride ended",
     RIDE_COMPLETED: "Ride completed (settled)",
-    RIDE_CANCELLED: "Cancelled",
 };
 
 export const phaseToLabel = (phase?: string): string | undefined =>
     phase ? (RIDE_PHASE_LABELS[phase] ?? phase) : undefined;
 
 export const isRideEnded = (phase?: string): boolean =>
-    phase === "RIDE_ENDED" || phase === "RIDE_COMPLETED" || phase === "RIDE_CANCELLED";
+    phase === "RIDE_ENDED" || phase === "RIDE_COMPLETED";
 
 // Ordered forward ride states the seller can advance through (RIDE_ASSIGNED is set by on_confirm).
 export const RIDE_STATE_ORDER = [
@@ -178,9 +155,6 @@ export const RIDE_STATE_ORDER = [
 ] as const;
 export type RideState = (typeof RIDE_STATE_ORDER)[number];
 
-// Terminal cancel branch — rendered as a separate control, not part of the forward progression.
-export const RIDE_CANCEL_STATE = "RIDE_CANCELLED";
-
 // Short labels for the state buttons.
 export const RIDE_STATE_BUTTON_LABEL: Record<string, string> = {
     RIDE_ENROUTE_PICKUP: "Enroute",
@@ -188,7 +162,6 @@ export const RIDE_STATE_BUTTON_LABEL: Record<string, string> = {
     RIDE_STARTED: "Started",
     RIDE_ENDED: "Ended",
     RIDE_COMPLETED: "Completed",
-    RIDE_CANCELLED: "Cancel",
 };
 
 // --- geometry helpers -------------------------------------------------------
@@ -236,6 +209,23 @@ export const RIDE_TIMELINE = [
     "RIDE_ENDED",
     "RIDE_COMPLETED",
 ] as const;
+/**
+ * Which state buttons the user may click right now. Only Enroute and Started are ever
+ * user-clickable, strictly in sequence and once each (success advances the phase, which
+ * permanently consumes the button); everything else is auto-fired. While a send is in
+ * flight, nothing is clickable.
+ */
+export function computeEnabledRideStates(phase: string | undefined, sending: boolean): string[] {
+    if (sending) return [];
+    // Unknown/pre-timeline phase = tracking just started → Enroute is the first available action.
+    const idx = phase ? RIDE_TIMELINE.indexOf(phase as (typeof RIDE_TIMELINE)[number]) : -1;
+    const enrouteIdx = RIDE_TIMELINE.indexOf("RIDE_ENROUTE_PICKUP");
+    const startedIdx = RIDE_TIMELINE.indexOf("RIDE_STARTED");
+    if (idx < enrouteIdx) return ["RIDE_ENROUTE_PICKUP"];
+    if (idx < startedIdx) return ["RIDE_STARTED"];
+    return [];
+}
+
 export const RIDE_TIMELINE_LABEL: Record<string, string> = {
     RIDE_ASSIGNED: "Assigned",
     RIDE_ENROUTE_PICKUP: "Enroute",
@@ -354,6 +344,20 @@ export function nextPendingRideState(mappedFlow: FlowMap): RideState | undefined
 }
 
 /**
+ * The actionId of the next not-yet-complete tracking-phase step (on_status/on_update) in the
+ * sequence — passed as `inputs.id` to the normal proceed API so the flow engine dispatches that
+ * step (manual steps require `inputs.id === actionId`).
+ */
+export function nextPendingTrackingActionId(mappedFlow: FlowMap): string | undefined {
+    const step = (mappedFlow.sequence ?? []).find(
+        (s) =>
+            (s.actionType === "on_status" || s.actionType === "on_update") &&
+            s.status !== "COMPLETE"
+    );
+    return step?.actionId;
+}
+
+/**
  * The current ride state — derived DETERMINISTICALLY from the latest COMPLETE on_status/on_confirm
  * step, so the map always mirrors what the flow has actually sent (no payload guessing).
  */
@@ -373,8 +377,12 @@ export const isTrackingPhaseStep = (actionType?: string): boolean =>
     !!actionType && TRACKING_PHASE_TYPES.has(actionType);
 
 /**
- * Synchronous "is the ride confirmed?" check — the ride map / tracking phase is active once a
- * confirm OR on_confirm is COMPLETE (from either side's recorded view).
+ * Synchronous "is the manual tracking phase active?" check. Tracking starts only once the driver
+ * is assigned AND the driver's initial location has been shared — i.e. a track/on_track step
+ * (e.g. on_track_on_assign) is COMPLETE (from either side's recorded view). NOT at on_confirm:
+ * pre-assignment steps (the unsolicited on_update driver assignment, the initial on_track) must
+ * keep the flow engine's normal auto-proceed behavior or flows that assign the driver post-confirm
+ * get stuck.
  */
 export function isTrackingActive(mappedFlow: FlowMap): boolean {
     const lists = [
@@ -385,8 +393,7 @@ export function isTrackingActive(mappedFlow: FlowMap): boolean {
     return lists.some((l) =>
         l.some(
             (s) =>
-                (s.actionType === "on_confirm" || s.actionType === "confirm") &&
-                s.status === "COMPLETE"
+                (s.actionType === "on_track" || s.actionType === "track") && s.status === "COMPLETE"
         )
     );
 }

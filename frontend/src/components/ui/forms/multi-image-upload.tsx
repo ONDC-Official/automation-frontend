@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Button, message } from "antd";
 import { UploadOutlined, DeleteOutlined } from "@ant-design/icons";
 import axios from "axios";
-import { LabelWithToolTip } from "./form-input";
+import { LabelWithToolTip } from "@/components/Shadcn/TextField";
 
 type UploadedImage = { imageUrl?: string };
 type UploadMultipleResponse = {

@@ -1,7 +1,7 @@
 import { useState, useEffect, useContext } from "react";
 import { useSearchParams } from "react-router-dom";
 import axios, { AxiosResponse, AxiosError } from "axios";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 import RenderFlows from "@components/FlowShared/render-flows";
 import Card from "@/components/Shadcn/Card";
 import Accordion from "@/components/Shadcn/Accordion";
@@ -20,13 +20,15 @@ import { IPreviousSessionItem } from "@/pages/scenario/types";
 import { apiClient } from "@services/apiClient";
 import { API_ROUTES } from "@services/apiRoutes";
 import { AuthContext } from "@/context/authContext";
-import { SCENARIO_GUIDE_STEPS } from "@/pages/scenario/constants";
 import { IScenarioFormData, ISessionResponse, ISavedPrefAPI } from "@/pages/scenario/types";
 import { openSessionInNewTab } from "@/pages/scenario/helpers";
 import NewSessionForm from "@/pages/scenario/NewSessionForm";
 import Spinner from "@/components/Shadcn/Spinner";
+import { SCENARIO_GUIDE_STEPS, SCENARIO_TIP_BANNER_MESSAGE } from "@/pages/scenario/constants";
+import { Button } from "@/components/Shadcn/Button";
+import { InformationCircleIcon, XMarkIcon } from "@heroicons/react/24/outline";
 
-export default function FlowContent() {
+const Scenario = () => {
     const {
         flowStepNum,
         setFlowStepNum,
@@ -168,10 +170,6 @@ export default function FlowContent() {
             valid.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
             setExistingSessions(valid);
         }
-        toast.info(
-            "Tip: Allow pop-ups for this site in your browser settings, they are blocked by default and required for the new tabs to open.",
-            { position: "top-right", autoClose: false }
-        );
         Promise.all([fetchFormFieldData(), fetchAndApplyPreferences()]).finally(() =>
             setIsInitializing(false)
         );
@@ -214,6 +212,39 @@ export default function FlowContent() {
             putCacheData({ activeStep: flowStepNum }, session);
         }
     }, [flowStepNum, session]);
+
+    useEffect(() => {
+        const id = setTimeout(() => {
+            toast(SCENARIO_TIP_BANNER_MESSAGE, {
+                duration: Infinity,
+                action: {
+                    label: (
+                        <Button
+                            variant="ghost"
+                            className="text-destructive"
+                            size="sm"
+                            icon={<XMarkIcon className="size-5 text-brand-normal" />}
+                        />
+                    ),
+                    onClick: () => {
+                        toast.dismiss();
+                    },
+                },
+                actionButtonStyle: {
+                    background: "transparent",
+                    boxShadow: "none",
+                    padding: 0,
+                },
+                style: { alignItems: "flex-start" },
+                position: "top-right",
+                icon: <InformationCircleIcon className="size-5 text-brand-normal" />,
+            });
+        }, 0);
+        return () => {
+            clearTimeout(id);
+            toast.dismiss();
+        };
+    }, []);
 
     const Body = () => {
         switch (flowStepNum) {
@@ -280,4 +311,6 @@ export default function FlowContent() {
             </div>
         </div>
     );
-}
+};
+
+export default Scenario;

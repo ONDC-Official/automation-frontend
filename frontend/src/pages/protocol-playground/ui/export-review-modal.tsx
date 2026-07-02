@@ -7,7 +7,7 @@ import {
     DialogFooter,
     DialogHeader,
     DialogTitle,
-} from "@/components/Shadcn/Dialog/dialog";
+} from "@/components/Shadcn/Dialog";
 import { cn } from "@/lib/utils";
 import { ArrowDownTrayIcon, CheckIcon, PencilIcon } from "@heroicons/react/24/outline";
 import { Button } from "@/components/Shadcn/Button/button";

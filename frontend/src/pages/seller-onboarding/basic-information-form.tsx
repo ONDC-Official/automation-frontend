@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { Select, message } from "antd";
 
-import { FormInput, LabelWithToolTip } from "@components/ui/forms/form-input";
+import TextField, { LabelWithToolTip } from "@/components/Shadcn/TextField";
 import LoadingButton from "@components/ui/forms/loading-button";
 import { SellerOnboardingData } from "@pages/seller-onboarding";
 import { domainOptions } from "@constants/common.tsx";
@@ -57,12 +57,7 @@ const BasicInformationForm = ({ initialData, onNext }: BasicInformationFormProps
         }
     };
 
-    const {
-        register,
-        handleSubmit,
-        formState: { errors },
-        reset,
-    } = useForm({
+    const { control, handleSubmit, reset } = useForm({
         defaultValues: {
             provider_name: initialData?.provider_name || "",
             long_desc: initialData?.long_desc || "",
@@ -169,13 +164,12 @@ const BasicInformationForm = ({ initialData, onNext }: BasicInformationFormProps
 
             {/* Form Fields Grid */}
             <div className="grid md:grid-cols-2 gap-6">
-                <FormInput
+                <TextField
+                    control={control}
                     label="Provider Name"
                     name="provider_name"
                     placeholder="Enter Provider Name"
                     type="text"
-                    register={register}
-                    errors={errors}
                     required="Provider Name is required"
                     validations={{
                         minLength: {
@@ -193,12 +187,11 @@ const BasicInformationForm = ({ initialData, onNext }: BasicInformationFormProps
                         // },
                     }}
                 />
-                <FormInput
+                <TextField
+                    control={control}
                     label="Long Description"
                     placeholder="Enter Long Description"
                     name="long_desc"
-                    register={register}
-                    errors={errors}
                     required="Long Description is required"
                     validations={{
                         minLength: {
@@ -212,12 +205,11 @@ const BasicInformationForm = ({ initialData, onNext }: BasicInformationFormProps
                     }}
                 />
 
-                <FormInput
+                <TextField
+                    control={control}
                     label="Short Description"
                     placeholder="Enter Short Description"
                     name="short_desc"
-                    register={register}
-                    errors={errors}
                     required="Short Description is required"
                     validations={{
                         minLength: {

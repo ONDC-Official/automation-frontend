@@ -3,7 +3,7 @@ import {
     DialogFooter,
     DialogHeader,
     DialogTitle,
-} from "@/components/Shadcn/Dialog/dialog";
+} from "@/components/Shadcn/Dialog";
 import { Button } from "@/components/Shadcn/Button/button";
 
 interface IPlaygroundSchemaFormShellProps {

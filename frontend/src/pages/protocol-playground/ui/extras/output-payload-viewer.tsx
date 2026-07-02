@@ -1,15 +1,4 @@
-import {
-    CSSProperties,
-    useCallback,
-    useContext,
-    useEffect,
-    useMemo,
-    useRef,
-    useState,
-} from "react";
-import JsonView from "@uiw/react-json-view";
-import { githubDarkTheme } from "@uiw/react-json-view/githubDark";
-import { githubLightTheme } from "@uiw/react-json-view/githubLight";
+import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import Markdown from "react-markdown";
 import axios from "axios";
@@ -38,8 +27,8 @@ import {
     IoRefresh,
 } from "react-icons/io5";
 
-import { useAppliedTheme } from "@/context/theme/useAppliedTheme";
 import { cn } from "@/lib/utils";
+import AppJsonViewer from "@/components/AppJsonViewer";
 import { PlaygroundContext } from "@pages/protocol-playground/context/playground-context";
 import { buildLinearConfig } from "@pages/protocol-playground/utils/transaction-view";
 import {
@@ -355,11 +344,6 @@ export default function OutputPayloadViewer({
     const [reqsModalOpen, setReqsModalOpen] = useState(false);
 
     const playgroundContext = useContext(PlaygroundContext);
-    const appliedTheme = useAppliedTheme();
-    const jsonTheme = useMemo(
-        () => (appliedTheme === "dark" ? githubDarkTheme : githubLightTheme),
-        [appliedTheme]
-    );
     const [l2Result, setL2Result] = useState<
         | {
               valid: boolean;
@@ -619,12 +603,7 @@ export default function OutputPayloadViewer({
                                 </div>
                             )}
                             <div className="overflow-hidden rounded-lg border border-border-default bg-surface-muted p-2">
-                                <JsonView
-                                    value={payload}
-                                    collapsed={1}
-                                    style={jsonTheme as CSSProperties}
-                                    displayDataTypes={false}
-                                />
+                                <AppJsonViewer value={payload} collapsed={1} />
                             </div>
                         </div>
                     )}

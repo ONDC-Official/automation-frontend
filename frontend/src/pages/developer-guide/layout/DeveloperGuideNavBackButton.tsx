@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 import { useDeveloperGuideShell } from "./DeveloperGuideShellContext";
 import type { DeveloperGuideNavBackButtonProps } from "./navTypes";
 
-/** Sidebar expand toggle — fixed on the left edge, below the breadcrumb bar. */
+/** Sidebar expand toggle — fixed on the left edge, aligned with the breadcrumb bar. */
 const DeveloperGuideNavBackButton: FC<DeveloperGuideNavBackButtonProps> = ({ className = "" }) => {
     const { navSidebarOpen, openNavSidebar } = useDeveloperGuideShell();
 

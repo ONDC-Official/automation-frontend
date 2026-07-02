@@ -11,7 +11,7 @@ import {
 
 import { Button } from "@/components/Shadcn/Button/button";
 import { Input } from "@/components/Shadcn/TextField/input";
-import { Dialog, DialogContent, DialogTitle } from "@/components/Shadcn/Dialog/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/Shadcn/Dialog";
 import {
     Select,
     SelectContent,

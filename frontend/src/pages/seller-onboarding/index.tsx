@@ -1,6 +1,6 @@
 import { useState } from "react";
 import axios, { AxiosError } from "axios";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 import { FaUser, FaBriefcase, FaUtensils, FaBox } from "react-icons/fa";
 
 import Stepper from "@components/ui/mini-components/stepper";

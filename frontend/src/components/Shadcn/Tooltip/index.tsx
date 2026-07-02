@@ -42,4 +42,21 @@ const TooltipContent = ({
     </TooltipPrimitive.Portal>
 );
 
-export { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider };
+type TooltipHintProps = {
+    content: string;
+    children: React.ReactElement;
+    side?: React.ComponentProps<typeof TooltipContent>["side"];
+};
+
+const TooltipHint = ({ content, children, side = "right" }: TooltipHintProps) => (
+    <TooltipProvider>
+        <Tooltip>
+            <TooltipTrigger asChild>{children}</TooltipTrigger>
+            <TooltipContent side={side} className="max-w-xs text-center font-semibold">
+                {content}
+            </TooltipContent>
+        </Tooltip>
+    </TooltipProvider>
+);
+
+export { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider, TooltipHint };

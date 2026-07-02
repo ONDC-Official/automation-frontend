@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Flow, MetadataField } from "@/types/flow-types";
 import { ROUTES } from "@constants/routes";
@@ -7,7 +7,7 @@ import { InfoSection } from "@components/FlowShared/ui/InfoSection";
 import { EndpointsSection } from "@components/FlowShared/ui/EndpointsSection";
 import { CollapsibleSection } from "@components/FlowShared/ui/CollapsibleSection";
 import axios, { AxiosResponse } from "axios";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 import { SessionCache } from "@/types/session-types";
 import { getCompletePayload, getReport, putCacheData } from "@utils/request-utils";
 import { Accordion } from "@components/FlowShared/complete-flow";
@@ -180,6 +180,16 @@ function RenderFlows({
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
     const [settingsDraft, setSettingsDraft] = useState<SettingsDraft | null>(null);
     const [isSettingsSaving, setIsSettingsSaving] = useState(false);
+    const [isFlowFormDialogOpen, setFlowFormDialogOpenCount] = useState(0);
+    const flowFormDialogOpen = isFlowFormDialogOpen > 0;
+
+    const acquireFlowFormDialogLock = useCallback(() => {
+        setFlowFormDialogOpenCount((count) => count + 1);
+    }, []);
+
+    const releaseFlowFormDialogLock = useCallback(() => {
+        setFlowFormDialogOpenCount((count) => Math.max(0, count - 1));
+    }, []);
     // Frontend-only UI prefs (persisted in localStorage; NOT saved to the backend session).
     // Auto-scroll defaults on; experimental mode defaults off.
     const [autoScrollEnabled, setAutoScrollEnabled] = useState<boolean>(() => {
@@ -503,6 +513,9 @@ function RenderFlows({
                 setAutoScrollEnabled: setAutoScrollEnabled,
                 experimentalMode: experimentalMode,
                 setExperimentalMode: setExperimentalMode,
+                isFlowFormDialogOpen: flowFormDialogOpen,
+                acquireFlowFormDialogLock,
+                releaseFlowFormDialogLock,
             }}
         >
             <Modal
@@ -551,6 +564,7 @@ function RenderFlows({
                                         duration={5}
                                         id="flow-cool-down"
                                         loop={true}
+                                        isActive={!flowFormDialogOpen}
                                         onComplete={async () => {
                                             if (apiCallFailCount.current < 5) {
                                                 fetchSessionData();

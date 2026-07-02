@@ -1,117 +1,27 @@
-import { useEffect, useMemo, useRef, useState, type JSX } from "react";
+import { useMemo, useState } from "react";
 import { queryJsonPath } from "../../../../utils/jsonpath-query";
 import { AxiosResponse } from "axios";
 
-import { SubmitEventParams } from "@/types/flow-types";
-import { FormFieldConfigType } from "../config-form/config-form";
+import { Button } from "@/components/Shadcn/Button/button";
+import FormDialogShell from "@/components/ui/forms/form-dialog-shell";
+import ProtocolHtmlFieldRenderer from "./protocol-html-field-renderer";
+import type {
+    BaseField,
+    TextLikeField,
+    TextareaField,
+    SelectField,
+    RadioGroupField,
+    CheckboxSingleField,
+    CheckboxGroupField,
+    FileField,
+    HiddenField,
+    AnyField,
+    ParsedForm,
+    ValueState,
+    IProtocolHtmlFormProps,
+} from "../types/protocol-html-form-types";
 
 import { htmlFormSubmit } from "@utils/request-utils";
-// --- Types -------------------------------------------------------------------
-
-type BaseField = {
-    kind:
-        | "textlike"
-        | "textarea"
-        | "select"
-        | "radio-group"
-        | "checkbox-single"
-        | "checkbox-group"
-        | "file"
-        | "hidden";
-    name: string;
-    label?: string;
-    required?: boolean;
-    disabled?: boolean;
-    id?: string | null;
-    // constraints
-    min?: string | number;
-    max?: string | number;
-    step?: string | number;
-    pattern?: string;
-};
-
-export type TextLikeField = BaseField & {
-    kind: "textlike";
-    inputType:
-        | "text"
-        | "password"
-        | "email"
-        | "number"
-        | "date"
-        | "datetime-local"
-        | "month"
-        | "time"
-        | "url"
-        | "tel"
-        | "search";
-    defaultValue?: string;
-    placeholder?: string;
-};
-
-type TextareaField = BaseField & {
-    kind: "textarea";
-    defaultValue?: string;
-    placeholder?: string;
-    rows?: number;
-};
-
-type SelectOption = { value: string; label: string; selected?: boolean };
-export type SelectField = BaseField & {
-    kind: "select";
-    multiple?: boolean;
-    options: SelectOption[];
-};
-
-export type RadioGroupField = BaseField & {
-    kind: "radio-group";
-    options: { value: string; label?: string; checked?: boolean }[];
-};
-
-export type CheckboxSingleField = BaseField & {
-    kind: "checkbox-single";
-    valueAttr?: string; // default "on" if not present in HTML
-    checked?: boolean;
-};
-
-export type CheckboxGroupField = BaseField & {
-    kind: "checkbox-group";
-    options: { value: string; label?: string; checked?: boolean }[];
-};
-
-type FileField = BaseField & {
-    kind: "file";
-    multiple?: boolean;
-    accept?: string | null;
-};
-
-export type HiddenField = BaseField & {
-    kind: "hidden";
-    value: string;
-};
-
-export type AnyField =
-    | TextLikeField
-    | TextareaField
-    | SelectField
-    | RadioGroupField
-    | CheckboxSingleField
-    | CheckboxGroupField
-    | FileField
-    | HiddenField;
-
-export type ParsedForm = {
-    method: string;
-    action: string;
-    enctype?: string | null;
-    fields: AnyField[];
-};
-
-// Value state type for the rebuilt React form
-export type ValueState = Record<
-    string,
-    string | string[] | boolean | File | File[] | null | undefined
->;
-
 // --- Helper: label resolution -------------------------------------------------
 
 function getLabelForInput(input: Element, formEl: HTMLFormElement): string | undefined {
@@ -322,22 +232,11 @@ export function parseFormHtml(formHtml: string): ParsedForm {
     return { method, action, enctype, fields };
 }
 
-// --- Component -------------------------------------------------------any--------
-
-type Props = {
-    submitEvent: (data: SubmitEventParams) => Promise<void>;
-    referenceData?: Record<string, unknown>;
-    HtmlFormConfigInFlow: FormFieldConfigType;
-};
-
 export default function ProtocolHTMLForm({
     submitEvent,
     referenceData,
     HtmlFormConfigInFlow,
-}: Props) {
-    const containerRef = useRef<HTMLDivElement | null>(null);
-
-    // Replace with server value
+}: IProtocolHtmlFormProps) {
     const formHtml = useMemo<string>(() => {
         const value = queryJsonPath(
             { reference_data: referenceData },
@@ -399,25 +298,6 @@ export default function ProtocolHTMLForm({
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
-
-    // Optional: show the raw mounted HTML (debug/inspection) — you can remove this block
-    useEffect(() => {
-        const host = containerRef.current;
-        if (!host) return;
-        host.innerHTML = "";
-        // Just show where the original 3P form is coming from (collapsed)
-        const details = document.createElement("details");
-        details.className = "text-xs text-gray-500";
-        const summary = document.createElement("summary");
-        summary.textContent = "Original embedded form (debug)";
-        details.appendChild(summary);
-        const pre = document.createElement("pre");
-        pre.textContent = formHtml;
-        pre.style.whiteSpace = "pre-wrap";
-        pre.style.wordBreak = "break-word";
-        details.appendChild(pre);
-        host.appendChild(details);
-    }, [formHtml]);
 
     // Change handlers
     const setField = (name: string, val: unknown) => {
@@ -662,300 +542,74 @@ export default function ProtocolHTMLForm({
         }
     };
 
-    // --- Render helpers --------------------------------------------------------
-
-    const renderField = (f: AnyField) => {
-        if (f.kind === "hidden") {
-            // Hidden: not rendered visually; included in payload
-            return null;
-        }
-
-        const labelEl = (children: JSX.Element) => (
-            <div className="block">
-                <label className="block text-sm font-medium text-gray-700">
-                    {f.label ?? f.name}
-                    <span className="text-red-600">{f.required ? " *" : ""}</span>
-                </label>
-                <div className="mt-1">{children}</div>
-                {fieldErrors[f.name] && (
-                    <p className="mt-1 text-sm text-red-600">{fieldErrors[f.name]}</p>
-                )}
-            </div>
-        );
-
-        switch (f.kind) {
-            case "textlike": {
-                const v = (values[f.name] as string) ?? "";
-                const tf = f as TextLikeField;
-                const hasError = !!fieldErrors[f.name];
-                return labelEl(
-                    <input
-                        type={tf.inputType}
-                        name={f.name}
-                        value={v}
-                        onChange={(e) => setField(f.name, e.target.value)}
-                        placeholder={tf.placeholder}
-                        required={f.required}
-                        disabled={f.disabled}
-                        min={tf.min as number}
-                        max={tf.max as number}
-                        step={tf.step as number}
-                        pattern={tf.pattern}
-                        className={`w-full rounded-md border bg-gray-50 px-3 py-2 focus:outline-hidden focus:ring-2 ${
-                            hasError
-                                ? "border-red-500 focus:ring-red-500"
-                                : "border-gray-300 focus:ring-blue-500"
-                        }`}
-                    />
-                );
-            }
-            case "textarea": {
-                const v = (values[f.name] as string) ?? "";
-                const ta = f as TextareaField;
-                const hasError = !!fieldErrors[f.name];
-                return labelEl(
-                    <textarea
-                        name={f.name}
-                        value={v}
-                        onChange={(e) => setField(f.name, e.target.value)}
-                        placeholder={ta.placeholder}
-                        rows={ta.rows ?? 4}
-                        required={f.required}
-                        disabled={f.disabled}
-                        className={`w-full rounded-md bg-gray-50 border px-3 py-2 focus:outline-hidden focus:ring-2 ${
-                            hasError
-                                ? "border-red-500 focus:ring-red-500"
-                                : "border-gray-300 focus:ring-blue-500"
-                        }`}
-                    />
-                );
-            }
-            case "select": {
-                const sel = f as SelectField;
-                const v = values[f.name];
-                const hasError = !!fieldErrors[f.name];
-                return labelEl(
-                    <select
-                        name={f.name}
-                        value={
-                            (sel.multiple ? ((v as string[]) ?? []) : ((v as string) ?? "")) as
-                                | string[]
-                                | string
-                        }
-                        onChange={(e) => {
-                            if (sel.multiple) {
-                                const opts = Array.from(e.currentTarget.selectedOptions).map(
-                                    (o) => o.value
-                                );
-                                setField(f.name, opts);
-                            } else {
-                                setField(f.name, e.currentTarget.value);
-                            }
-                        }}
-                        multiple={!!sel.multiple}
-                        required={f.required}
-                        disabled={f.disabled}
-                        className={`w-full rounded-md border bg-gray-50 px-3 py-2 focus:outline-hidden focus:ring-2 ${
-                            hasError
-                                ? "border-red-500 focus:ring-red-500"
-                                : "border-gray-300 focus:ring-blue-500"
-                        }`}
-                    >
-                        {!sel.multiple && <option value="">-- Select --</option>}
-                        {sel.options.map((o, i) => (
-                            <option key={i} value={o.value}>
-                                {o.label}
-                            </option>
-                        ))}
-                    </select>
-                );
-            }
-            case "radio-group": {
-                const rg = f as RadioGroupField;
-                const v = (values[f.name] as string) ?? "";
-                return (
-                    <div className="block">
-                        <fieldset className="space-y-2">
-                            <legend className="block text-sm font-medium text-gray-700">
-                                {f.label ?? f.name}
-                                <span className="text-red-600">{f.required ? " *" : ""}</span>
-                            </legend>
-                            {rg.options.map((opt, i) => (
-                                <label
-                                    key={i}
-                                    className="flex items-center gap-2 text-sm text-gray-800"
-                                >
-                                    <input
-                                        type="radio"
-                                        name={f.name}
-                                        value={opt.value}
-                                        checked={v === opt.value}
-                                        onChange={() => setField(f.name, opt.value)}
-                                        className="h-4 w-4"
-                                    />
-                                    <span>{opt.label ?? opt.value}</span>
-                                </label>
-                            ))}
-                        </fieldset>
-                        {fieldErrors[f.name] && (
-                            <p className="mt-1 text-sm text-red-600">{fieldErrors[f.name]}</p>
-                        )}
-                    </div>
-                );
-            }
-            case "checkbox-single": {
-                // const cs = f as CheckboxSingleField;
-                const checked = Boolean(values[f.name]);
-                return (
-                    <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
-                        <input
-                            type="checkbox"
-                            name={f.name}
-                            checked={checked}
-                            onChange={(e) => setField(f.name, e.target.checked)}
-                            className="h-4 w-4"
-                        />
-                        <span>
-                            {f.label ?? f.name}
-                            <span className="text-red-600">{f.required ? " *" : ""}</span>
-                        </span>
-                    </label>
-                );
-            }
-            case "checkbox-group": {
-                const cg = f as CheckboxGroupField;
-                const arr = (values[f.name] as string[]) ?? [];
-                const toggle = (val: string, on: boolean) => {
-                    if (on) setField(f.name, Array.from(new Set([...arr, val])));
-                    else
-                        setField(
-                            f.name,
-                            arr.filter((x) => x !== val)
-                        );
-                };
-                return (
-                    <div className="block">
-                        <fieldset className="space-y-2">
-                            <legend className="block text-sm font-medium text-gray-700">
-                                {f.label ?? f.name}
-                                <span className="text-red-600">{f.required ? " *" : ""}</span>
-                            </legend>
-                            {cg.options.map((opt, i) => {
-                                const on = arr.includes(opt.value);
-                                return (
-                                    <label
-                                        key={i}
-                                        className="flex items-center gap-2 text-sm text-gray-800"
-                                    >
-                                        <input
-                                            type="checkbox"
-                                            name={f.name}
-                                            checked={on}
-                                            onChange={(e) => toggle(opt.value, e.target.checked)}
-                                            className="h-4 w-4"
-                                        />
-                                        <span>{opt.label ?? opt.value}</span>
-                                    </label>
-                                );
-                            })}
-                        </fieldset>
-                        {fieldErrors[f.name] && (
-                            <p className="mt-1 text-sm text-red-600">{fieldErrors[f.name]}</p>
-                        )}
-                    </div>
-                );
-            }
-            case "file": {
-                const fileField = f as FileField;
-                const hasError = !!fieldErrors[f.name];
-                return labelEl(
-                    <input
-                        type="file"
-                        name={f.name}
-                        multiple={!!fileField.multiple}
-                        accept={fileField.accept ?? undefined}
-                        onChange={(e) => {
-                            const files = e.currentTarget.files;
-                            if (!files) return;
-                            if (fileField.multiple) setField(f.name, Array.from(files));
-                            else setField(f.name, files[0] ?? null);
-                        }}
-                        className={`block w-full text-sm text-gray-900 file:mr-4 file:rounded-md file:border-0 file:bg-gray-100 file:px-3 file:py-2 file:text-sm file:font-medium hover:file:bg-gray-200 ${
-                            hasError ? "border-red-500" : ""
-                        }`}
-                    />
-                );
-            }
-        }
-    };
+    const errorCount = Object.keys(fieldErrors).length;
 
     return (
-        <div className="space-y-6 max-h-full overflow-y-auto overflow-x-hidden">
-            {/* Debug: where the original form HTML came from */}
-            {/* <div ref={containerRef} className="overflow-auto" /> */}
-            {/* Recreated React form */}
-            <div className="rounded-lg border border-gray-200 p-4 min-w-0">
+        <FormDialogShell
+            onSubmit={(event) => {
+                event.preventDefault();
+                void handleSubmit();
+            }}
+            footer={
+                <Button type="submit" disabled={isSubmitting}>
+                    {isSubmitting
+                        ? "Submitting..."
+                        : errorCount > 0
+                          ? `Fix ${errorCount} Error${errorCount > 1 ? "s" : ""}`
+                          : "Submit"}
+                </Button>
+            }
+        >
+            <div className="space-y-4 rounded-lg border border-border-default p-4">
                 <div className="grid grid-cols-1 gap-4">
-                    {parsed.fields.map((f, idx) => (
-                        <div key={`${f.name}-${idx}`}>{renderField(f)}</div>
+                    {parsed.fields.map((field, index) => (
+                        <div key={`${field.name}-${index}`}>
+                            <ProtocolHtmlFieldRenderer
+                                field={field}
+                                value={values[field.name]}
+                                onValueChange={(nextValue) => setField(field.name, nextValue)}
+                                error={fieldErrors[field.name]}
+                            />
+                        </div>
                     ))}
                 </div>
-                {/* Validation Summary */}
-                {Object.keys(fieldErrors).length > 0 && (
-                    <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-md">
-                        <p className="text-sm text-red-700 font-medium">
-                            Please fill in {Object.keys(fieldErrors).length} required field
-                            {Object.keys(fieldErrors).length > 1 ? "s" : ""}:
+
+                {errorCount > 0 && (
+                    <div className="rounded-md border border-destructive/30 bg-destructive/5 p-3">
+                        <p className="text-sm font-medium text-destructive">
+                            Please fill in {errorCount} required field
+                            {errorCount > 1 ? "s" : ""}:
                         </p>
-                        <ul className="mt-1 text-sm text-red-600 list-disc list-inside">
-                            {Object.values(fieldErrors).map((error, index) => (
-                                <li key={index}>{error}</li>
+                        <ul className="mt-1 list-inside list-disc text-sm text-destructive">
+                            {Object.values(fieldErrors).map((fieldError, index) => (
+                                <li key={index}>{fieldError}</li>
                             ))}
                         </ul>
                     </div>
                 )}
 
-                <div className="mt-6 flex flex-wrap items-center gap-3">
-                    <button
-                        type="button"
-                        onClick={handleSubmit}
-                        disabled={isSubmitting}
-                        className={`px-4 py-2 rounded text-white disabled:opacity-60 shrink-0 ${
-                            Object.keys(fieldErrors).length > 0
-                                ? "bg-red-600 hover:bg-red-700"
-                                : "bg-blue-600 hover:bg-blue-700"
-                        }`}
-                    >
-                        {isSubmitting
-                            ? "Submitting..."
-                            : Object.keys(fieldErrors).length > 0
-                              ? `Fix ${Object.keys(fieldErrors).length} Error${Object.keys(fieldErrors).length > 1 ? "s" : ""}`
-                              : "Submit"}
-                    </button>
+                {parsed.action && (
+                    <p className="text-xs text-text-secondary wrap-break-word">
+                        POST to <code className="break-all">{parsed.action}</code>
+                    </p>
+                )}
 
-                    {parsed.action && (
-                        <span className="text-xs text-gray-500 wrap-break-word">
-                            POST to <code className="break-all">{parsed.action}</code>
-                        </span>
-                    )}
-                </div>
-
-                <div className="mt-3 text-sm text-gray-700 wrap-break-word">
+                <div className="space-y-2 text-sm wrap-break-word">
                     {submissionId && (
-                        <span className="text-green-700">
+                        <p className="text-success-600">
                             Received submission_id:{" "}
                             <code className="break-all">{submissionId}</code>
-                        </span>
+                        </p>
                     )}
                     {error && (
-                        <div className="p-3 bg-red-50 border border-red-200 rounded-md">
-                            <span className="text-red-600 wrap-break-word font-medium">
+                        <div className="rounded-md border border-destructive/30 bg-destructive/5 p-3">
+                            <span className="font-medium text-destructive wrap-break-word">
                                 Error: {error}
                             </span>
                         </div>
                     )}
                 </div>
             </div>
-        </div>
+        </FormDialogShell>
     );
 }

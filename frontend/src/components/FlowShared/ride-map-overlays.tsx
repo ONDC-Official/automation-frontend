@@ -33,11 +33,9 @@ const fmtTime = (iso?: string): string =>
 export function RideTimeline({
     currentState,
     times,
-    cancelled,
 }: {
     currentState?: string;
     times: Record<string, string>;
-    cancelled?: boolean;
 }) {
     const currentIdx = currentState
         ? RIDE_TIMELINE.indexOf(currentState as (typeof RIDE_TIMELINE)[number])
@@ -79,9 +77,6 @@ export function RideTimeline({
                     );
                 })}
             </div>
-            {cancelled && (
-                <div className="mt-1 text-xs font-semibold text-red-600">Ride cancelled</div>
-            )}
         </div>
     );
 }
@@ -182,8 +177,7 @@ export function RideInfoCard({
 
 /**
  * Read-only status panel for non-active outcomes derived from order.status + ride state:
- * driver not found, ride cancelled, cancellation in progress, or driver not assigned yet.
- * No map, no controls.
+ * driver not found or driver not assigned yet. No map, no controls.
  */
 export function RideStatusPanel({
     kind,
@@ -194,14 +188,11 @@ export function RideStatusPanel({
     title: string;
     detail?: string;
 }) {
-    const failure = kind === "DRIVER_NOT_FOUND" || kind === "CANCELLED";
-    const warn = kind === "CANCELLING";
-    const icon = failure ? "🚫" : warn ? "⚠️" : kind === "AWAITING_DRIVER" ? "⏳" : "ℹ️";
+    const failure = kind === "DRIVER_NOT_FOUND";
+    const icon = failure ? "🚫" : kind === "AWAITING_DRIVER" ? "⏳" : "ℹ️";
     const tone = failure
         ? { border: "border-red-200", bg: "bg-red-50", text: "text-red-700" }
-        : warn
-          ? { border: "border-amber-200", bg: "bg-amber-50", text: "text-amber-700" }
-          : { border: "border-sky-200", bg: "bg-sky-50", text: "text-sky-700" };
+        : { border: "border-sky-200", bg: "bg-sky-50", text: "text-sky-700" };
     return (
         <div className="p-4">
             <div
@@ -217,16 +208,14 @@ export function RideStatusPanel({
     );
 }
 
-/** ⑥ Trip summary shown when the ride is completed/cancelled. */
+/** ⑥ Trip summary shown when the ride is completed. */
 export function CompletionSummary({
-    cancelled,
     driver,
     vehicle,
     fare,
     distanceM,
     durationS,
 }: {
-    cancelled?: boolean;
     driver?: RideDriver;
     vehicle?: RideVehicle;
     fare?: RideFare;
@@ -238,17 +227,13 @@ export function CompletionSummary({
     return (
         <div className="rounded-lg border border-gray-200 bg-white p-4">
             <div className="mb-3 flex items-center gap-2">
-                <span className="text-lg">{cancelled ? "🚫" : "✅"}</span>
-                <h3
-                    className={`text-base font-semibold ${cancelled ? "text-red-700" : "text-emerald-700"}`}
-                >
-                    {cancelled ? "Ride Cancelled" : "Ride Completed"}
-                </h3>
+                <span className="text-lg">✅</span>
+                <h3 className="text-base font-semibold text-emerald-700">Ride Completed</h3>
             </div>
             <dl className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
                 {cost && (
                     <>
-                        <dt className="text-gray-500">Fare {cancelled ? "" : "(settled)"}</dt>
+                        <dt className="text-gray-500">Fare (settled)</dt>
                         <dd className="text-right font-semibold text-gray-800">{cost}</dd>
                     </>
                 )}
@@ -279,12 +264,8 @@ export function CompletionSummary({
                         <dd className="text-right text-gray-800">{veh}</dd>
                     </>
                 )}
-                {!cancelled && (
-                    <>
-                        <dt className="text-gray-500">Order status</dt>
-                        <dd className="text-right font-medium text-emerald-700">COMPLETE</dd>
-                    </>
-                )}
+                <dt className="text-gray-500">Order status</dt>
+                <dd className="text-right font-medium text-emerald-700">COMPLETE</dd>
             </dl>
         </div>
     );

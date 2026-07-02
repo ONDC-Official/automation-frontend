@@ -8,7 +8,7 @@ import {
     DialogFooter,
     DialogHeader,
     DialogTitle,
-} from "@/components/Shadcn/Dialog/dialog";
+} from "@/components/Shadcn/Dialog";
 import { TextField } from "@/components/Shadcn/TextField";
 import { Textarea } from "@/components/Shadcn/ComboBox/textarea";
 import { Label } from "@/components/Shadcn/Label/label";

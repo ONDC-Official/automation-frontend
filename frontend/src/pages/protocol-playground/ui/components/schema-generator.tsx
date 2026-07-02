@@ -10,7 +10,7 @@ import {
     DialogFooter,
     DialogHeader,
     DialogTitle,
-} from "@/components/Shadcn/Dialog/dialog";
+} from "@/components/Shadcn/Dialog";
 import { cn } from "@/lib/utils";
 import { useAppliedTheme } from "@/context/theme/useAppliedTheme";
 import { SelectBox } from "@pages/protocol-playground/ui/components/github-select";
@@ -152,7 +152,9 @@ export const SchemaGeneratorModal = ({
                             )}
                         </label>
                         {!selectedBranch ? (
-                            <p className="px-1 text-xs text-text-secondary">Select a domain first</p>
+                            <p className="px-1 text-xs text-text-secondary">
+                                Select a domain first
+                            </p>
                         ) : loadingFiles ? (
                             <p className="px-1 text-xs text-text-secondary">
                                 Loading files from all flow folders...

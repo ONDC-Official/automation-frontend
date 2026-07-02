@@ -1,15 +1,11 @@
-import { useEffect, useRef, useState } from "react";
-import { toast } from "react-toastify";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { toast } from "sonner";
 import { IoPlay } from "react-icons/io5";
-
 import { FlowMap, MappedStep } from "@/types/flow-state-type";
-import FormConfig, {
-    FormConfigType,
-    FormFieldConfigType,
-} from "@components/ui/forms/config-form/config-form";
+import FormFlowDialog from "@/components/Shadcn/Dialog/form-flow-dialog";
+import { FormConfig, FormConfigType, FormFieldConfigType } from "@/components/ui/forms/config-form";
 import FormLaunchPopup from "@components/ui/forms/custom-forms/form-launch-popup";
-import Popup from "@components/ui/pop-up/pop-up";
-import CustomTooltip from "@components/ui/mini-components/tooltip";
+import { TooltipHint } from "@/components/Shadcn/Tooltip";
 import { SequenceStep, SubmitEventParams } from "@/types/flow-types";
 import { proceedFlow, triggerExtra } from "@utils/request-utils";
 import { useSession } from "@context/context";
@@ -25,7 +21,7 @@ import {
 // separate one-button popup as soon as the FIRST on_select completes (this flow
 // has a second on_select after on_status — that one must NOT trigger it). Scoped
 // strictly by flow id so no other flow's behavior changes.
-const LAMF_SINGLE_REDIRECTION_FLOW_ID = "lamf_credit_line_with_mfc_single_redirection";
+// const LAMF_SINGLE_REDIRECTION_FLOW_ID = "lamf_credit_line_with_mfc_single_redirection";
 
 export default function DisplayFlow({
     mappedFlow,
@@ -43,6 +39,10 @@ export default function DisplayFlow({
     });
     const [inputPopUp, setInputPopUp] = useState(false);
     const [activeFormConfig, setActiveFormConfig] = useState<FormConfigType | undefined>(undefined);
+    const [activeFormTitle, setActiveFormTitle] = useState<string | undefined>(undefined);
+    const [activeReferenceData, setActiveReferenceData] = useState<
+        FlowMap["reference_data"] | undefined
+    >(undefined);
     // When the auto-opened input form belongs to an extra step, its trigger key is held here so
     // submission routes through triggerExtra (sends `trigger_extra`) instead of proceedFlow.
     const [activeInputExtraKey, setActiveInputExtraKey] = useState<string | undefined>(undefined);
@@ -66,12 +66,30 @@ export default function DisplayFlow({
     // User-initiated "extra trigger" popup — kept separate from the auto-open INPUT-REQUIRED popup.
     const [extraPopUp, setExtraPopUp] = useState(false);
     const [extraFormConfig, setExtraFormConfig] = useState<FormConfigType | undefined>(undefined);
+    const [extraReferenceData, setExtraReferenceData] = useState<
+        FlowMap["reference_data"] | undefined
+    >(undefined);
     const [activeExtraKey, setActiveExtraKey] = useState<string | undefined>(undefined);
     const [triggeringKey, setTriggeringKey] = useState<string | undefined>(undefined);
 
-    const { sessionId, sessionData, activeFlowId, autoScrollEnabled } = useSession();
+    const {
+        sessionId,
+        sessionData,
+        activeFlowId,
+        autoScrollEnabled,
+        acquireFlowFormDialogLock,
+        releaseFlowFormDialogLock,
+    } = useSession();
 
-    const isLamfRedirectionFlow = flowId === LAMF_SINGLE_REDIRECTION_FLOW_ID;
+    const isAnyFormDialogOpen = inputPopUp || extraPopUp || launchPopUp;
+
+    useEffect(() => {
+        if (!isAnyFormDialogOpen) return;
+        acquireFlowFormDialogLock?.();
+        return () => releaseFlowFormDialogLock?.();
+    }, [isAnyFormDialogOpen, acquireFlowFormDialogLock, releaseFlowFormDialogLock]);
+
+    // const isLamfRedirectionFlow = flowId === LAMF_SINGLE_REDIRECTION_FLOW_ID;
 
     // Per-run key for the LAMF launch popup's "already handled" marker. Keyed on
     // the transaction id so it resets only when the flow is cleared (new txn id),
@@ -111,8 +129,11 @@ export default function DisplayFlow({
 
     // --- Real-Time Ride Map Integration ------------------------------------
     // The map UI now lives in the right-panel "Application" tab (RideMapTab). Here we only need to
-    // know whether the tracking phase is active, to stop the flow engine auto-proceeding past
-    // on_confirm — the seller drives track/on_track/on_status manually from the map.
+    // know whether the tracking phase is active, to stop the flow engine auto-proceeding the ride
+    // states — the seller drives on_status/on_update manually from the map. Tracking activates only
+    // once the driver is assigned AND the initial location is shared (a track/on_track step is
+    // COMPLETE) — NOT at on_confirm, so pre-assignment steps (e.g. the unsolicited on_update driver
+    // assignment in "assign driver post on_confirm" flows) still auto-proceed normally.
     // IMPORTANT: this engine override must apply ONLY for the ride-map domain/version (TRV10 2.1.0).
     // For every other domain `trackingActive` stays false, so the normal auto-proceed behaviour of
     // track/on_track/on_status/on_update/status is fully preserved and their flows are unaffected.
@@ -125,7 +146,10 @@ export default function DisplayFlow({
         // it), show the separate one-button "launch" popup. Only the BPP session
         // shows it; it opens the form + saves the redirection URL, then disappears.
         // The polling popup is untouched and still opens via the normal selection.
-        if (isLamfRedirectionFlow && sessionData?.npType === "BPP") {
+        if (
+            // isLamfRedirectionFlow &&
+            sessionData?.npType === "BPP"
+        ) {
             const firstOnSelect = mappedFlow?.sequence
                 ?.filter((s) => s.actionType === "on_select")
                 ?.sort((a, b) => a.index - b.index)?.[0];
@@ -174,16 +198,12 @@ export default function DisplayFlow({
         const extraStep = mappedFlow?.extraSteps?.find((s) => s.status === "INPUT-REQUIRED");
         const target = seqStep ?? extraStep;
         const conf = target?.input;
-        // Ride Map (Part A): once the ride is assigned (on_confirm complete), the tracking phase is
-        // fully manual — do NOT auto-open/auto-submit input for track/on_track/on_status/etc. The
-        // seller advances these via the map controls. EXCEPTION: `on_track_on_assign` shares the
-        // initial driver location and is seller-input-driven, so let its input form auto-open.
-        if (
-            trackingActive &&
-            isTrackingPhaseStep(target?.actionType) &&
-            target?.actionId !== "on_track_on_assign"
-        )
-            return;
+        // Ride Map (Part A): once the tracking phase is active (driver assigned + initial
+        // track/on_track complete), it is fully manual — do NOT auto-open/auto-submit input for
+        // track/on_track/on_status/etc. The seller advances these via the map controls.
+        // (Pre-tracking steps like the on_update driver assignment and on_track_on_assign are not
+        // suppressed — tracking only activates once they complete.)
+        if (trackingActive && isTrackingPhaseStep(target?.actionType)) return;
         // Extra steps must be advanced via triggerExtra (carries `trigger_extra`); use the step's
         // actionId as the trigger key. Undefined => sequence step => proceedFlow.
         const extraKey = !seqStep && extraStep ? extraStep.actionId : undefined;
@@ -192,6 +212,9 @@ export default function DisplayFlow({
         // Same step in the same status we just submitted is still lagging on the backend —
         // don't re-open it. A status change on the same step is a genuinely new target.
         if (sig && sig === submittedInputSigRef.current) return;
+        // User is filling a form — polling must not refresh config/reference data (remounts native selects).
+        if (inputPopUp && sig && sig === activeInputSigRef.current) return;
+        if (extraPopUp || launchPopUp) return;
         // Target moved on (different step or none) — drop the suppression and proceed.
         submittedInputSigRef.current = undefined;
         activeInputSigRef.current = sig;
@@ -202,7 +225,7 @@ export default function DisplayFlow({
         // advance the flow. Scoped strictly to the MANUAL_DYNAMIC_FORM step, so no
         // other step/form is affected; the BPP launch popup is unchanged.
         if (
-            isLamfRedirectionFlow &&
+            // isLamfRedirectionFlow &&
             seqStep?.input?.some((f) => f.type === "MANUAL_DYNAMIC_FORM")
         ) {
             if (sessionData?.activeFlow !== flowId) return;
@@ -223,16 +246,19 @@ export default function DisplayFlow({
         }
         setActiveInputExtraKey(extraKey);
         setActiveFormConfig(conf);
+        setActiveFormTitle(target?.label);
         if (conf) {
+            setActiveReferenceData(mappedFlow.reference_data);
             setInputPopUp(true);
         }
-    }, [mappedFlow]);
+    }, [mappedFlow, inputPopUp, extraPopUp, launchPopUp]);
 
     useEffect(() => {
         const latestSending = mappedFlow?.sequence.find((f) => f.status === "RESPONDING");
         const transactionId = sessionData?.flowMap[flowId];
-        // Ride Map (Part A): never auto-proceed tracking-phase steps after on_confirm — the seller
-        // drives them manually via the map.
+        // Ride Map (Part A): never auto-proceed tracking-phase steps once tracking is active
+        // (driver assigned + initial track/on_track complete) — the seller drives them manually
+        // via the map.
         if (trackingActive && isTrackingPhaseStep(latestSending?.actionType)) return;
         if (latestSending && latestSending.force_proceed && transactionId) {
             proceedFlow(sessionId, transactionId);
@@ -334,6 +360,8 @@ export default function DisplayFlow({
             submittedInputSigRef.current = activeInputSigRef.current;
             setInputPopUp(false);
             setActiveFormConfig(undefined);
+            setActiveFormTitle(undefined);
+            setActiveReferenceData(undefined);
             setActiveInputExtraKey(undefined);
         } catch (error) {
             toast.error("Error submitting form ");
@@ -366,6 +394,7 @@ export default function DisplayFlow({
         }
         if (extra.input && extra.input.length > 0) {
             setExtraFormConfig(extra.input);
+            setExtraReferenceData(mappedFlow.reference_data);
             setActiveExtraKey(extra.key);
             setExtraPopUp(true);
             return;
@@ -376,6 +405,7 @@ export default function DisplayFlow({
     const closeExtraPopUp = () => {
         setExtraPopUp(false);
         setExtraFormConfig(undefined);
+        setExtraReferenceData(undefined);
         setActiveExtraKey(undefined);
     };
 
@@ -384,6 +414,48 @@ export default function DisplayFlow({
         await fireExtra(activeExtraKey, formData.formData);
         closeExtraPopUp();
     };
+
+    const handleFormSubmitRef = useRef(handleFormSubmit);
+    handleFormSubmitRef.current = handleFormSubmit;
+
+    const stableFormSubmit = useCallback(
+        (formData: SubmitEventParams) => handleFormSubmitRef.current(formData),
+        []
+    );
+
+    const handleExtraSubmitRef = useRef(handleExtraSubmit);
+    handleExtraSubmitRef.current = handleExtraSubmit;
+
+    const stableExtraSubmit = useCallback(
+        (formData: SubmitEventParams) => handleExtraSubmitRef.current(formData),
+        []
+    );
+
+    const inputFormContent = useMemo(() => {
+        if (!activeFormConfig) return null;
+
+        return (
+            <FormConfig
+                formConfig={activeFormConfig}
+                submitEvent={stableFormSubmit}
+                referenceData={activeReferenceData}
+                flowId={flowId}
+            />
+        );
+    }, [activeFormConfig, activeReferenceData, flowId, stableFormSubmit]);
+
+    const extraFormContent = useMemo(() => {
+        if (!extraFormConfig) return null;
+
+        return (
+            <FormConfig
+                formConfig={extraFormConfig}
+                submitEvent={stableExtraSubmit}
+                referenceData={extraReferenceData}
+                flowId={flowId}
+            />
+        );
+    }, [extraFormConfig, extraReferenceData, flowId, stableExtraSubmit]);
 
     return (
         <>
@@ -430,34 +502,32 @@ export default function DisplayFlow({
                 </div>
             )}
             {inputPopUp && activeFormConfig && (
-                <Popup isOpen={inputPopUp} disableClose>
-                    <FormConfig
-                        formConfig={activeFormConfig}
-                        submitEvent={handleFormSubmit}
-                        referenceData={mappedFlow.reference_data}
-                        flowId={flowId}
-                    />
-                </Popup>
+                <FormFlowDialog open={inputPopUp} disableClose width="2xl" title={activeFormTitle}>
+                    {inputFormContent}
+                </FormFlowDialog>
             )}
             {launchPopUp && launchFormConfig && (
-                <Popup isOpen={launchPopUp} disableClose>
+                <FormFlowDialog open={launchPopUp} disableClose width="md" title="Complete Form">
                     <FormLaunchPopup
                         formConfig={launchFormConfig}
                         referenceData={mappedFlow.reference_data}
                         transactionId={transactionId ?? ""}
                         onLaunched={handleFormLaunched}
                     />
-                </Popup>
+                </FormFlowDialog>
             )}
             {extraPopUp && extraFormConfig && (
-                <Popup isOpen={extraPopUp} onClose={closeExtraPopUp}>
-                    <FormConfig
-                        formConfig={extraFormConfig}
-                        submitEvent={handleExtraSubmit}
-                        referenceData={mappedFlow.reference_data}
-                        flowId={flowId}
-                    />
-                </Popup>
+                <FormFlowDialog
+                    open={extraPopUp}
+                    width="xl"
+                    onOpenChange={(open) => {
+                        if (!open) {
+                            closeExtraPopUp();
+                        }
+                    }}
+                >
+                    {extraFormContent}
+                </FormFlowDialog>
             )}
         </>
     );
@@ -480,26 +550,28 @@ function ExtraTriggerButton({
         ? "Start the flow to trigger this step"
         : (extra.description ?? `Trigger ${extra.key}`);
     return (
-        <CustomTooltip content={tooltip}>
-            <button
-                type="button"
-                disabled={disabled || loading}
-                onClick={onTrigger}
-                className="flex items-center gap-1.5 rounded-full border border-brand-light-active bg-brand-light px-3 py-1 text-sm font-semibold text-brand-normal transition-all duration-150 hover:bg-brand-light-hover active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 dark:border-border-default dark:bg-brand-dark/20 dark:hover:bg-brand-dark/30"
-            >
-                {loading ? (
-                    <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-sky-600 border-t-transparent" />
-                ) : (
-                    <IoPlay className="text-sm" />
-                )}
-                <span>{label}</span>
-                {hasInput && (
-                    <span className="rounded-full border border-brand-light-active bg-surface-elevated px-1.5 py-0.5 text-xs font-semibold uppercase tracking-wide text-brand-normal dark:border-border-default dark:bg-surface-muted">
-                        input
-                    </span>
-                )}
-            </button>
-        </CustomTooltip>
+        <TooltipHint content={tooltip}>
+            <span className="inline-flex">
+                <button
+                    type="button"
+                    disabled={disabled || loading}
+                    onClick={onTrigger}
+                    className="flex items-center gap-1.5 rounded-full border border-brand-light-active bg-brand-light px-3 py-1 text-sm font-semibold text-brand-normal transition-all duration-150 hover:bg-brand-light-hover active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 dark:border-border-default dark:bg-brand-dark/20 dark:hover:bg-brand-dark/30"
+                >
+                    {loading ? (
+                        <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-sky-600 border-t-transparent" />
+                    ) : (
+                        <IoPlay className="text-sm" />
+                    )}
+                    <span>{label}</span>
+                    {hasInput && (
+                        <span className="rounded-full border border-brand-light-active bg-surface-elevated px-1.5 py-0.5 text-xs font-semibold uppercase tracking-wide text-brand-normal dark:border-border-default dark:bg-surface-muted">
+                            input
+                        </span>
+                    )}
+                </button>
+            </span>
+        </TooltipHint>
     );
 }
 

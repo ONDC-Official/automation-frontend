@@ -7,7 +7,7 @@ import { FormValues } from "@pages/seller-load-testing/types";
 
 const SellerLoadTesting = () => {
     const {
-        register,
+        control,
         handleSubmit,
         formState: { errors },
     } = useForm<FormValues>({
@@ -39,7 +39,7 @@ const SellerLoadTesting = () => {
                         <CreateSessionPanel
                             handleSubmit={handleSubmit}
                             onSubmit={onSubmit}
-                            register={register}
+                            control={control}
                             errors={errors}
                             isLoading={isLoading}
                         />

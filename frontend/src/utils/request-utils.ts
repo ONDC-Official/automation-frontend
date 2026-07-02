@@ -1,9 +1,9 @@
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 import { apiClient } from "@services/apiClient";
 import { API_ROUTES } from "@services/apiRoutes";
 import { SessionCache, TransactionCache, FlowInDB } from "@/types/session-types";
 import { FlowMap } from "@/types/flow-state-type";
-import { FormConfigType } from "@components/ui/forms/config-form/config-form";
+import { FormConfigType } from "@/components/ui/forms/config-form";
 
 // Type definitions for API responses
 interface SessionsResponse {

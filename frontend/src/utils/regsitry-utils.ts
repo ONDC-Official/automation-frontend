@@ -1,5 +1,5 @@
 import axios from "axios";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 
 export async function getGithubAvatarUrl(userName: string) {
     try {

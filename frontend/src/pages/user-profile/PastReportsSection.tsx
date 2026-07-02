@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from "react";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 
 import { AuthContext } from "@/context/authContext";
 import { apiClient } from "@services/apiClient";
