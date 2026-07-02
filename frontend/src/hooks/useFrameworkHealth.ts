@@ -3,6 +3,11 @@ import { toast } from "sonner";
 import axios, { AxiosError } from "axios";
 import { apiClient, ApiError } from "@services/apiClient";
 import { API_ROUTES } from "@services/apiRoutes";
+import { useAppDispatch, useAppSelector } from "@store/hooks";
+import {
+    selectFrameworkHealthAuthenticated,
+    setFrameworkHealthAuthenticated,
+} from "@store/slices/frameworkHealthSlice";
 
 export interface VersionResult {
     version: string;
@@ -30,12 +35,9 @@ export interface HealthReportData {
     results: DomainResult[];
 }
 
-const SESSION_KEY = "framework_health_auth";
-
 export const useFrameworkHealth = () => {
-    const [isAuthenticated, setIsAuthenticated] = useState<boolean>(
-        () => sessionStorage.getItem(SESSION_KEY) === "true"
-    );
+    const dispatch = useAppDispatch();
+    const isAuthenticated = useAppSelector(selectFrameworkHealthAuthenticated);
     const [isAuthLoading, setIsAuthLoading] = useState(false);
     const [credentials, setCredentials] = useState({ username: "", password: "" });
     const [isRunning, setIsRunning] = useState(false);
@@ -57,8 +59,7 @@ export const useFrameworkHealth = () => {
                     }
                 );
                 if (response.data.authenticated) {
-                    setIsAuthenticated(true);
-                    sessionStorage.setItem(SESSION_KEY, "true");
+                    dispatch(setFrameworkHealthAuthenticated(true));
                     toast.success("Login successful!");
                 } else {
                     toast.error("Invalid credentials");
@@ -73,15 +74,14 @@ export const useFrameworkHealth = () => {
                 setIsAuthLoading(false);
             }
         },
-        [credentials]
+        [credentials, dispatch]
     );
 
     const handleLogout = useCallback(() => {
-        setIsAuthenticated(false);
-        sessionStorage.removeItem(SESSION_KEY);
+        dispatch(setFrameworkHealthAuthenticated(false));
         setReport(null);
         setCredentials({ username: "", password: "" });
-    }, []);
+    }, [dispatch]);
 
     const runApiServiceCheck = useCallback(async () => {
         setIsRunning(true);

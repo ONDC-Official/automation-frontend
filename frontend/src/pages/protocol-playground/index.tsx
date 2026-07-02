@@ -21,6 +21,9 @@ import {
 } from "@pages/protocol-playground/utils/config-storage";
 
 import { fetchGistData, getFirstGistFile } from "@pages/protocol-playground/utils/fetch-gist";
+import { useAppDispatch } from "@store/hooks";
+import { store } from "@store/index";
+import { setDraftConfig } from "@store/slices/playgroundConfigsSlice";
 import {
     StepGroup,
     getGroupSteps,
@@ -51,6 +54,7 @@ const Body = ({ workbenchFlow }: { workbenchFlow: ReturnType<typeof useWorkbench
 };
 
 const ProtocolPlayGround = () => {
+    const dispatch = useAppDispatch();
     const [playgroundState, setPlaygroundState] = useState<MockPlaygroundConfigType | undefined>(
         undefined
     );
@@ -72,12 +76,12 @@ const ProtocolPlayGround = () => {
 
     function setCurrentConfig(config: MockPlaygroundConfigType | undefined) {
         if (!config) {
-            localStorage.removeItem("playgroundConfig");
+            dispatch(setDraftConfig(null));
             setPlaygroundState(undefined);
             return;
         }
         setPlaygroundState(config);
-        localStorage.setItem("playgroundConfig", JSON.stringify(config));
+        dispatch(setDraftConfig(config));
 
         // Auto-save whenever config is set/updated
         autoSaveConfig(config);
@@ -281,15 +285,10 @@ const ProtocolPlayGround = () => {
             newUrl.searchParams.delete("gist");
             window.history.replaceState({}, "", newUrl.toString());
         } else {
-            // try to load from local storage only if no gist parameter
-            const savedConfig = localStorage.getItem("playgroundConfig");
+            // Restore the draft config from the persisted Redux store if present.
+            const savedConfig = store.getState().playgroundConfigs.draft;
             if (savedConfig) {
-                try {
-                    const parsedConfig = JSON.parse(savedConfig);
-                    setPlaygroundState(parsedConfig);
-                } catch (e) {
-                    console.error("Failed to parse saved config:", e);
-                }
+                setPlaygroundState(savedConfig);
             }
         }
     }, [loadConfigFromGist]);

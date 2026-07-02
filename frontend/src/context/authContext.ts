@@ -1,17 +1,16 @@
-import {
-    Context,
-    ReactNode,
-    createContext,
-    createElement,
-    useCallback,
-    useEffect,
-    useState,
-} from "react";
+import { Context, ReactNode, createContext, createElement, useCallback, useEffect } from "react";
 import { IUser } from "@/types/user";
 import { useLocation, useNavigate } from "react-router-dom";
 import { AuthService } from "@services/authService";
 import { authTokenManager } from "@utils/localStorageManager";
 import { ROUTES } from "@/constants/routes";
+import { useAppDispatch, useAppSelector } from "@store/hooks";
+import {
+    selectAuthUser,
+    selectIsAuthLoading,
+    setUser,
+    setAuthLoading,
+} from "@store/slices/authSlice";
 
 export interface IProps {
     isAuthLoading: boolean;
@@ -21,23 +20,29 @@ export interface IProps {
 
 export const AuthContext: Context<IProps> = createContext<IProps>({} as IProps);
 
+/**
+ * Thin shell over the Redux `auth` slice. `user`/`isAuthLoading` live in the store; the OAuth
+ * exchange and `AuthService.getUser()` effects (the API layer) are unchanged — only their result
+ * setters now dispatch to Redux instead of local useState.
+ */
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const location = useLocation();
     const navigate = useNavigate();
-    const [user, setUser] = useState<IUser | undefined>(undefined);
-    const [isAuthLoading, setIsAuthLoading] = useState<boolean>(true);
+    const dispatch = useAppDispatch();
+    const user = useAppSelector(selectAuthUser);
+    const isAuthLoading = useAppSelector(selectIsAuthLoading);
 
     const getUser = useCallback(async () => {
         if (!authTokenManager.get()) {
-            setUser(undefined);
-            setIsAuthLoading(false);
+            dispatch(setUser(undefined));
+            dispatch(setAuthLoading(false));
             return;
         }
 
         const currentUser = await AuthService.getUser();
-        setUser(currentUser || undefined);
-        setIsAuthLoading(false);
-    }, []);
+        dispatch(setUser(currentUser || undefined));
+        dispatch(setAuthLoading(false));
+    }, [dispatch]);
 
     useEffect(() => {
         const queryParams = new URLSearchParams(location.search);
@@ -48,14 +53,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
 
         const exchangeCodeAndPersistToken = async () => {
-            setIsAuthLoading(true);
+            dispatch(setAuthLoading(true));
             await AuthService.exchangeCodeForToken(oauthCode);
             await getUser();
             navigate(ROUTES.HOME, { replace: true });
         };
 
         exchangeCodeAndPersistToken();
-    }, [location.search, navigate, getUser]);
+    }, [location.search, navigate, getUser, dispatch]);
 
     useEffect(() => {
         getUser();

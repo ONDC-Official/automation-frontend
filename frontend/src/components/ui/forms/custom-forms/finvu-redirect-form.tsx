@@ -7,6 +7,8 @@ import { Button } from "@/components/Shadcn/Button/button";
 import FormDialogShell from "@/components/ui/forms/form-dialog-shell";
 import { SubmitEventParams } from "@/types/flow-types";
 import { cn } from "@/lib/utils";
+import { useAppDispatch } from "@store/hooks";
+import { setFinvuFlowActive } from "@store/slices/uiFlagsSlice";
 
 interface IFinvuRedirectFormProps {
     submitEvent: (data: SubmitEventParams) => Promise<void>;
@@ -30,6 +32,7 @@ export default function FinvuRedirectForm({
     const finvuWindowRef = useRef<Window | null>(null);
     const isPollingRef = useRef<boolean>(false);
     const hasCompletedRef = useRef<boolean>(false);
+    const dispatch = useAppDispatch();
 
     const cleanup = useCallback(() => {
         if (pollingIntervalRef.current) {
@@ -37,8 +40,8 @@ export default function FinvuRedirectForm({
             pollingIntervalRef.current = null;
         }
         isPollingRef.current = false;
-        localStorage.removeItem("finvu_flow_active");
-    }, []);
+        dispatch(setFinvuFlowActive(false));
+    }, [dispatch]);
 
     useEffect(() => {
         return () => {
@@ -189,7 +192,7 @@ export default function FinvuRedirectForm({
                 setStatus("waiting");
                 setErrorMessage("");
                 setPollCount(0);
-                localStorage.setItem("finvu_flow_active", "true");
+                dispatch(setFinvuFlowActive(true));
 
                 if (!transactionId) {
                     throw new Error("Transaction ID is missing! Cannot create Finvu callback URL.");

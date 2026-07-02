@@ -1,15 +1,14 @@
 import React from "react";
 import axios from "axios";
 import { FormValues } from "./types";
+import { useAppDispatch, useAppSelector } from "@store/hooks";
+import {
+    selectSellerSession,
+    setSellerSession,
+    type ISellerSessionData,
+} from "@store/slices/sellerLoadTestSlice";
 
-interface SessionData {
-    sessionId: string;
-    bppId: string;
-    bppUri: string;
-    createdAt: string;
-    expiresAt: string;
-    status: string;
-}
+type SessionData = ISellerSessionData;
 
 interface CreateSessionResponse {
     id: string;
@@ -19,21 +18,14 @@ interface CreateSessionResponse {
 }
 
 export const useSellerLoadTesting = () => {
+    const dispatch = useAppDispatch();
     const [isLoading, setIsLoading] = React.useState<boolean>(false);
     const [isDeleting, setIsDeleting] = React.useState<boolean>(false);
-    const [sessionData, setSessionData] = React.useState<SessionData | null>(() => {
-        const saved = localStorage.getItem("seller_session");
-        return saved ? JSON.parse(saved) : null;
-    });
+    const sessionData = useAppSelector(selectSellerSession);
     const [discoveryComplete, setDiscoveryComplete] = React.useState<boolean>(false);
 
     const saveSession = (data: SessionData | null) => {
-        if (data) {
-            localStorage.setItem("seller_session", JSON.stringify(data));
-        } else {
-            localStorage.removeItem("seller_session");
-        }
-        setSessionData(data);
+        dispatch(setSellerSession(data));
     };
 
     const onSubmit = async (data: FormValues) => {

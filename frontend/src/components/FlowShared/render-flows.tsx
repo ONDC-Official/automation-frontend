@@ -36,6 +36,17 @@ import GenerateReportModal from "@components/FlowShared/GenerateReportModal";
 import { FlowSettingsModal, type SettingsDraft } from "@components/FlowShared/FlowSettingsModal";
 import RideMapTab from "@components/FlowShared/ride-map-tab";
 import { isRideMapEnabled } from "@components/FlowShared/ride-map-utils";
+import { useAppDispatch, useAppSelector } from "@store/hooks";
+import {
+    acquireFlowFormDialogLock as acquireFlowFormDialogLockAction,
+    releaseFlowFormDialogLock as releaseFlowFormDialogLockAction,
+    setAutoScrollEnabled as setAutoScrollEnabledAction,
+    setExperimentalMode as setExperimentalModeAction,
+    selectIsFlowFormDialogOpen,
+} from "@store/slices/sessionSlice";
+import { upsertSession } from "@store/slices/sessionHistorySlice";
+import { store } from "@store/index";
+import { createDispatchSetter } from "@store/utils/createDispatchSetter";
 
 type ExtractedMetadataValue = { name?: string; value: unknown; errorMessage?: string };
 
@@ -168,6 +179,7 @@ function RenderFlows({
     const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
     const [isGuideOpen, setIsGuideOpen] = useState(false);
     const navigate = useNavigate();
+    const dispatch = useAppDispatch();
     const { setSessionId } = useSession();
     const pollingRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -180,46 +192,26 @@ function RenderFlows({
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
     const [settingsDraft, setSettingsDraft] = useState<SettingsDraft | null>(null);
     const [isSettingsSaving, setIsSettingsSaving] = useState(false);
-    const [isFlowFormDialogOpen, setFlowFormDialogOpenCount] = useState(0);
-    const flowFormDialogOpen = isFlowFormDialogOpen > 0;
+    // Flow-form dialog lock + frontend-only UI prefs now live in the Redux session slice
+    // (prefs persisted via redux-persist; NOT saved to the backend session).
+    const flowFormDialogOpen = useAppSelector(selectIsFlowFormDialogOpen);
 
     const acquireFlowFormDialogLock = useCallback(() => {
-        setFlowFormDialogOpenCount((count) => count + 1);
-    }, []);
+        dispatch(acquireFlowFormDialogLockAction());
+    }, [dispatch]);
 
     const releaseFlowFormDialogLock = useCallback(() => {
-        setFlowFormDialogOpenCount((count) => Math.max(0, count - 1));
-    }, []);
-    // Frontend-only UI prefs (persisted in localStorage; NOT saved to the backend session).
-    // Auto-scroll defaults on; experimental mode defaults off.
-    const [autoScrollEnabled, setAutoScrollEnabled] = useState<boolean>(() => {
-        try {
-            return localStorage.getItem("flow-auto-scroll-enabled") !== "false";
-        } catch {
-            return true;
-        }
-    });
-    useEffect(() => {
-        try {
-            localStorage.setItem("flow-auto-scroll-enabled", String(autoScrollEnabled));
-        } catch {
-            /* ignore storage failures */
-        }
-    }, [autoScrollEnabled]);
-    const [experimentalMode, setExperimentalMode] = useState<boolean>(() => {
-        try {
-            return localStorage.getItem("flow-experimental-mode") === "true";
-        } catch {
-            return false;
-        }
-    });
-    useEffect(() => {
-        try {
-            localStorage.setItem("flow-experimental-mode", String(experimentalMode));
-        } catch {
-            /* ignore storage failures */
-        }
-    }, [experimentalMode]);
+        dispatch(releaseFlowFormDialogLockAction());
+    }, [dispatch]);
+
+    const autoScrollEnabled = useAppSelector((state) => state.session.autoScrollEnabled);
+    const experimentalMode = useAppSelector((state) => state.session.experimentalMode);
+    const setAutoScrollEnabled = createDispatchSetter(autoScrollEnabled, (next) =>
+        dispatch(setAutoScrollEnabledAction(next))
+    );
+    const setExperimentalMode = createDispatchSetter(experimentalMode, (next) =>
+        dispatch(setExperimentalModeAction(next))
+    );
 
     const startPolling = () => {
         if (isPolling) return; // Prevent multiple starts
@@ -824,25 +816,13 @@ function updateLocalStorageSession(sessionData: SessionCache, sessionId: string)
         return;
     }
     const now = new Date();
-    const data = {
-        sessionId: sessionId,
-        subscriberUrl: sessionData.subscriberUrl,
-        role: sessionData.npType,
-        timestamp: now.toISOString(),
-        expiresAt: new Date(now.getTime() + 24 * 60 * 60 * 1000).toISOString(),
-    };
-    const currentData = JSON.parse(localStorage.getItem("flowTestingSessions") || "[]");
-    const existingIndex = currentData.findIndex(
-        (item: { sessionId: string }) => item.sessionId === sessionId
+    store.dispatch(
+        upsertSession({
+            sessionId: sessionId,
+            subscriberUrl: sessionData.subscriberUrl,
+            role: sessionData.npType,
+            timestamp: now.toISOString(),
+            expiresAt: new Date(now.getTime() + 24 * 60 * 60 * 1000).toISOString(),
+        })
     );
-    if (existingIndex !== -1) {
-        currentData[existingIndex] = {
-            ...data,
-            timestamp: currentData[existingIndex].timestamp,
-            expiresAt: currentData[existingIndex].expiresAt,
-        };
-    } else {
-        currentData.push(data);
-    }
-    localStorage.setItem("flowTestingSessions", JSON.stringify(currentData));
 }

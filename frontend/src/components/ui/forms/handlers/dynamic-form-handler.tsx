@@ -13,6 +13,8 @@ import { queryJsonPath } from "@utils/jsonpath-query";
 import { FormFieldConfigType } from "@/components/ui/forms/config-form";
 import { FormService } from "@services/formService";
 import { cn } from "@/lib/utils";
+import { useAppDispatch } from "@store/hooks";
+import { setDynamicFormFlowActive } from "@store/slices/uiFlagsSlice";
 
 const POLL_INTERVAL_MS = 2_000;
 const MAX_POLL_DURATION_MS = 600_000;
@@ -47,6 +49,7 @@ export default function DynamicFormHandler({
     const hasCompletedRef = useRef<boolean>(false);
     const pollCountRef = useRef<number>(0);
     const pollStartTimeRef = useRef<number>(0);
+    const dispatch = useAppDispatch();
 
     const formServiceUrl = useMemo<string>(() => {
         if (!formConfig || !formConfig.reference) {
@@ -70,8 +73,8 @@ export default function DynamicFormHandler({
             pollingIntervalRef.current = null;
         }
         isPollingRef.current = false;
-        localStorage.removeItem("dynamic_form_flow_active");
-    }, []);
+        dispatch(setDynamicFormFlowActive(false));
+    }, [dispatch]);
 
     useEffect(() => {
         return () => {
@@ -262,7 +265,7 @@ export default function DynamicFormHandler({
                 setErrorMessage("");
                 setPollDisplay(0);
 
-                localStorage.setItem("dynamic_form_flow_active", "true");
+                dispatch(setDynamicFormFlowActive(true));
 
                 if (!transactionId) {
                     throw new Error("Session ID is missing! Cannot track form completion.");

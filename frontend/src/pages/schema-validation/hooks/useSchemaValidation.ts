@@ -8,7 +8,8 @@ import type { editor as MonacoEditor } from "monaco-editor";
 import type { MonacoModule, IParsedValidationError } from "@pages/schema-validation/types";
 import { trackEvent } from "@utils/analytics";
 import { fetchFormFieldData } from "@utils/request-utils";
-import { PAYLOAD_STORAGE_KEY } from "@pages/schema-validation/constants";
+import { useAppDispatch, useAppSelector } from "@store/hooks";
+import { selectSchemaDraftPayload, setDraftPayload } from "@store/slices/schemaValidationSlice";
 import {
     parsePayload,
     validateAction,
@@ -32,7 +33,8 @@ import type {
  * @returns Object containing state and handler functions for schema validation
  */
 export const useSchemaValidation = (): IUseSchemaValidationReturn => {
-    const [payload, setPayload] = useState<string>("");
+    const dispatch = useAppDispatch();
+    const payload = useAppSelector(selectSchemaDraftPayload);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [validationErrors, setValidationErrors] = useState<
         ReturnType<typeof parseValidationErrors>
@@ -44,16 +46,6 @@ export const useSchemaValidation = (): IUseSchemaValidationReturn => {
 
     const editorRef = useRef<MonacoEditor.IStandaloneCodeEditor | null>(null);
     const monacoRef = useRef<MonacoModule | null>(null);
-
-    /**
-     * Load payload from localStorage on component mount
-     */
-    useEffect(() => {
-        const savedPayload = localStorage.getItem(PAYLOAD_STORAGE_KEY);
-        if (savedPayload) {
-            setPayload(savedPayload);
-        }
-    }, []);
 
     /**
      * Fetch active domain configuration from the backend
@@ -107,11 +99,13 @@ export const useSchemaValidation = (): IUseSchemaValidationReturn => {
      *
      * @param value - The new payload value from the editor
      */
-    const handlePayloadChange = useCallback((value: string | undefined) => {
-        const newPayload = value || "";
-        setPayload(newPayload);
-        localStorage.setItem(PAYLOAD_STORAGE_KEY, newPayload);
-    }, []);
+    const handlePayloadChange = useCallback(
+        (value: string | undefined) => {
+            const newPayload = value || "";
+            dispatch(setDraftPayload(newPayload));
+        },
+        [dispatch]
+    );
 
     /**
      * Shows validation errors in the panel and applies editor highlights.

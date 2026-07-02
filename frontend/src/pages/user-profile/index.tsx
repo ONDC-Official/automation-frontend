@@ -5,14 +5,13 @@ import { AuthContext } from "@/context/authContext";
 import { ROUTES } from "@constants/routes";
 import { apiClient } from "@services/apiClient";
 import { API_ROUTES } from "@services/apiRoutes";
-import { useProfileCounts } from "@hooks/useProfileCounts";
 import { ProfileSidebar } from "@pages/user-profile/ProfileSidebar";
-import { ProfileShellContext } from "@pages/user-profile/ProfileShellContext";
+import { ProfileShellContext, useProfileShell } from "@pages/user-profile/ProfileShellContext";
 
 const UserProfile = () => {
     const { isAuthLoading, user } = useContext(AuthContext);
     const navigate = useNavigate();
-    const [counts, setCounts] = useProfileCounts();
+    const { counts, setCounts } = useProfileShell();
 
     useEffect(() => {
         if (isAuthLoading || user) {

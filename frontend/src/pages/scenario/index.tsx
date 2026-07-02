@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect, useContext, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import axios, { AxiosResponse, AxiosError } from "axios";
 import { toast } from "sonner";
@@ -14,7 +14,13 @@ import { trackEvent } from "@utils/analytics";
 import { useWorkbenchFlows } from "@hooks/useWorkbenchFlow";
 import { IDomain } from "@/pages/schema-validation/types";
 import { Flow } from "@/types/flow-types";
-import { sessionIdSupport } from "@/utils/localStorageManager";
+import { useAppDispatch, useAppSelector } from "@store/hooks";
+import {
+    pruneExpiredSessions,
+    setSessions,
+    type IFlowTestingSessionEntry,
+} from "@store/slices/sessionHistorySlice";
+import { setScenarioSession } from "@store/slices/supportSessionSlice";
 import { PreviousSessionsPanel } from "@/pages/scenario/PreviousSessionPanel";
 import { IPreviousSessionItem } from "@/pages/scenario/types";
 import { apiClient } from "@services/apiClient";
@@ -45,8 +51,18 @@ const Scenario = () => {
     const { sessionId: contextSessionId } = useSession();
     const { user } = useContext(AuthContext);
     const [searchParams] = useSearchParams();
+    const dispatch = useAppDispatch();
 
-    const [existingSessions, setExistingSessions] = useState<IPreviousSessionItem[]>([]);
+    const storedSessions = useAppSelector((state) => state.sessionHistory.sessions);
+    const existingSessions = useMemo<IPreviousSessionItem[]>(
+        () =>
+            [...storedSessions].sort(
+                (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+            ),
+        [storedSessions]
+    );
+    const setExistingSessions = (sessions: IFlowTestingSessionEntry[]) =>
+        dispatch(setSessions(sessions));
     const [isInitializing, setIsInitializing] = useState(true);
     const [savedPreferences, setSavedPreferences] = useState<Record<string, IScenarioFormData>>({});
     const initialSavedConfigKey = searchParams.get("config") ?? "";
@@ -73,7 +89,7 @@ const Scenario = () => {
                 }
             );
             const sessionID = response.data.sessionId;
-            sessionIdSupport.setScenarioSession(response.data.sessionId);
+            dispatch(setScenarioSession(response.data.sessionId));
             const currentUrl = window.location.origin;
             const newTabUrl = `${currentUrl}/flow-testing?sessionId=${sessionID}&subscriberUrl=${encodeURIComponent(data.subscriberUrl)}&role=${data.npType}`;
             if (newTab) {
@@ -160,16 +176,7 @@ const Scenario = () => {
     };
 
     useEffect(() => {
-        const storedSessions = localStorage.getItem("flowTestingSessions");
-        if (storedSessions) {
-            const parsed = JSON.parse(storedSessions) as IPreviousSessionItem[];
-            const valid = parsed.filter((s) => Date.now() < new Date(s.expiresAt).getTime());
-            if (valid.length !== parsed.length) {
-                localStorage.setItem("flowTestingSessions", JSON.stringify(valid));
-            }
-            valid.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
-            setExistingSessions(valid);
-        }
+        dispatch(pruneExpiredSessions());
         Promise.all([fetchFormFieldData(), fetchAndApplyPreferences()]).finally(() =>
             setIsInitializing(false)
         );
