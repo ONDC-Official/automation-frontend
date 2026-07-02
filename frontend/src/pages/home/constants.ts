@@ -28,7 +28,7 @@ export const quickSteps: IQuickStep[] = [
         number: "04",
         title: "Go Live",
         subtitle: "Production ready",
-        href: "https://ondc.org/ondc-how-to-join/",
+        href: "https://portal.ondc.org/",
         external: true,
     },
 ];

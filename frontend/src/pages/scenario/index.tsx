@@ -1,5 +1,5 @@
 import { useState, useEffect, useContext } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import axios, { AxiosResponse, AxiosError } from "axios";
 import { toast } from "sonner";
 import RenderFlows from "@components/FlowShared/render-flows";
@@ -27,6 +27,7 @@ import Spinner from "@/components/Shadcn/Spinner";
 import { SCENARIO_GUIDE_STEPS, SCENARIO_TIP_BANNER_MESSAGE } from "@/pages/scenario/constants";
 import { Button } from "@/components/Shadcn/Button";
 import { InformationCircleIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import { ROUTES } from "@/constants/routes";
 
 const Scenario = () => {
     const {
@@ -44,6 +45,7 @@ const Scenario = () => {
     const [domains, setDomains] = useState<IDomain[]>([]);
     const { sessionId: contextSessionId } = useSession();
     const { user } = useContext(AuthContext);
+    const navigate = useNavigate();
     const [searchParams] = useSearchParams();
 
     const [existingSessions, setExistingSessions] = useState<IPreviousSessionItem[]>([]);
@@ -201,6 +203,16 @@ const Scenario = () => {
         setFlowStepNum(0);
     };
 
+    const handleCreateConfigClick = () => {
+        if (user) {
+            navigate(ROUTES.PROFILE);
+            return;
+        }
+
+        const backendUrl = import.meta.env.VITE_DEVELOPER_GUIDE_BACKEND_URL;
+        window.location.href = `${backendUrl}/login`;
+    };
+
     useEffect(() => {
         if (contextSessionId && !isFormSubmitted) {
             fetchSessionData(contextSessionId);
@@ -257,6 +269,17 @@ const Scenario = () => {
                             <Card
                                 title="Create a new Session"
                                 description="Fill the details to begin flow testing."
+                                headerAction={
+                                    !user ? (
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={handleCreateConfigClick}
+                                        >
+                                            Create config in profile
+                                        </Button>
+                                    ) : undefined
+                                }
                             >
                                 {isInitializing ? (
                                     <div className="flex items-center justify-center">
