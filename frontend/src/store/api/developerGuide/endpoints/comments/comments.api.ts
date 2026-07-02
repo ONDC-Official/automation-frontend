@@ -1,5 +1,6 @@
 import { API_ROUTES } from "@services/apiRoutes";
 import { devGuideApi } from "@store/api/developerGuide/devGuideApi";
+import { buildScopedListId, buildScopedListUrl } from "@store/api/shared/scopedListParams";
 import type {
     ICommentPayload,
     ICommentResponse,
@@ -7,19 +8,10 @@ import type {
     ICommentsListParams,
 } from "./types";
 
-// Same composite-key rationale as notes.ts — comments lists are scoped by
-// use_case_id+flow_id+action_id together, not a single field.
-const listId = (params: ICommentsListParams) =>
-    `LIST-${params.use_case_id ?? ""}-${params.flow_id ?? ""}-${params.action_id ?? ""}`;
+const listId = (params: ICommentsListParams) => buildScopedListId(params);
 
-const buildCommentsUrl = (params: ICommentsListParams) => {
-    const search = new URLSearchParams();
-    if (params.use_case_id) search.set("use_case_id", params.use_case_id);
-    if (params.flow_id) search.set("flow_id", params.flow_id);
-    if (params.action_id) search.set("action_id", params.action_id);
-    const query = search.toString();
-    return query ? `${API_ROUTES.COMMENTS.BASE}?${query}` : API_ROUTES.COMMENTS.BASE;
-};
+const buildCommentsUrl = (params: ICommentsListParams) =>
+    buildScopedListUrl(API_ROUTES.COMMENTS.BASE, params);
 
 export const commentsApi = devGuideApi.injectEndpoints({
     endpoints: (builder) => ({

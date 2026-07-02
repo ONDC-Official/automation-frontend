@@ -1,20 +1,12 @@
 import { API_ROUTES } from "@services/apiRoutes";
 import { devGuideApi } from "@store/api/developerGuide/devGuideApi";
+import { buildScopedListId, buildScopedListUrl } from "@store/api/shared/scopedListParams";
 import type { INotePayload, INoteResponse, INotesListParams } from "./types";
 
-// Notes/comments lists are scoped by the composite use_case_id+flow_id+action_id key, not by a
-// single field — a flat "LIST" id would invalidate every action's notes on any one action's change.
-const listId = (params: INotesListParams) =>
-    `LIST-${params.use_case_id ?? ""}-${params.flow_id ?? ""}-${params.action_id ?? ""}`;
+const listId = (params: INotesListParams) => buildScopedListId(params);
 
-const buildNotesUrl = (params: INotesListParams) => {
-    const search = new URLSearchParams();
-    if (params.use_case_id) search.set("use_case_id", params.use_case_id);
-    if (params.flow_id) search.set("flow_id", params.flow_id);
-    if (params.action_id) search.set("action_id", params.action_id);
-    const query = search.toString();
-    return query ? `${API_ROUTES.NOTES.BASE}?${query}` : API_ROUTES.NOTES.BASE;
-};
+const buildNotesUrl = (params: INotesListParams) =>
+    buildScopedListUrl(API_ROUTES.NOTES.BASE, params);
 
 export const notesApi = devGuideApi.injectEndpoints({
     endpoints: (builder) => ({

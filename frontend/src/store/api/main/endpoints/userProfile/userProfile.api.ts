@@ -1,5 +1,5 @@
 import { API_ROUTES } from "@services/apiRoutes";
-import type { IPastReport } from "@pages/user-profile/types";
+import type { IPastReport } from "@/types/apiShared/userProfile";
 import { mainApi } from "@store/api/main/mainApi";
 import type { IScenarioPreferenceAPI } from "./types";
 

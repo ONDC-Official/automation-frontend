@@ -18,7 +18,7 @@ export const sessionApi = mainApi.injectEndpoints({
             { sessionData: unknown; playgroundConfig: unknown }
         >({
             query: (data) => ({
-                url: "/sessions/playground",
+                url: API_ROUTES.SESSIONS.PLAYGROUND,
                 method: "POST",
                 data,
             }),

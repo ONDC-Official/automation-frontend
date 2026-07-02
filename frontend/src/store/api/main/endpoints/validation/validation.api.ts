@@ -1,7 +1,6 @@
 import { API_ROUTES } from "@services/apiRoutes";
-import type { IValidationResponse } from "@pages/schema-validation/types";
 import { mainApi } from "@store/api/main/mainApi";
-import type { IValidateActionParams } from "./types";
+import type { IValidationResponse, IValidateActionParams } from "./types";
 
 export const validationApi = mainApi.injectEndpoints({
     endpoints: (builder) => ({

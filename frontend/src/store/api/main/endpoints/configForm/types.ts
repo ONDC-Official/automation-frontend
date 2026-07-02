@@ -1,4 +1,4 @@
-import { IDomain } from "@pages/schema-validation/types";
+import type { IDomain } from "@/types/domain";
 import type { Flow } from "@/types/flow-types";
 
 export interface IScenarioFormDataResponse {

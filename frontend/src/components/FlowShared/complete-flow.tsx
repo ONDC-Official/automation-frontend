@@ -169,7 +169,7 @@ export function Accordion({
                 const data = result.data;
                 if (data?.inputs) {
                     toast.info("Inputs are required to start the flow");
-                    setActiveFormConfig(data.inputs);
+                    setActiveFormConfig(data.inputs as unknown as FormConfigType);
                     setActiveFormTitle(flow.title ?? flow.id);
                     setInputPopUp(true);
                 }

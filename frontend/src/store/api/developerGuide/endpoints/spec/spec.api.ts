@@ -6,8 +6,8 @@ import type {
     FlowEntry,
     ValidationTableSection,
     ChangelogEntry,
-} from "@pages/developer-guide/types";
-import { devGuideApi } from "@store/api/developerGuide/devGuideApi";
+} from "@/types/apiShared/developerGuide";
+import { mainApi } from "@store/api/main/mainApi";
 import type { IGetSpecParams } from "./types";
 
 const buildSpecQuery = ({ domain, version, ...options }: IGetSpecParams) => {
@@ -118,7 +118,7 @@ function asStringArray(v: unknown): string[] | undefined {
     return Array.isArray(v) ? v.filter((i): i is string => typeof i === "string") : undefined;
 }
 
-export const specApi = devGuideApi.injectEndpoints({
+export const specApi = mainApi.injectEndpoints({
     endpoints: (builder) => ({
         getBuilds: builder.query<BuildEntry[], void>({
             query: () => ({

@@ -1,5 +1,5 @@
 import { API_ROUTES } from "@services/apiRoutes";
-import type { SubscriberData } from "@components/registry-components/registry-types";
+import type { SubscriberData } from "@/types/apiShared/registry";
 import { mainApi } from "@store/api/main/mainApi";
 import type {
     ISubscribeSellerParams,

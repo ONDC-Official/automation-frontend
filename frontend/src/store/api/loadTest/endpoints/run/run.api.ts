@@ -1,7 +1,6 @@
 import { API_ROUTES } from "@services/apiRoutes";
-import type { PreorderResponse } from "@pages/seller-load-testing/types";
 import { loadTestApi } from "@store/api/loadTest/loadTestApi";
-import type { IStartPreorderRunParams, IRunStatusParams } from "./types";
+import type { PreorderResponse, IStartPreorderRunParams, IRunStatusParams } from "./types";
 
 export const loadTestRunApi = loadTestApi.injectEndpoints({
     endpoints: (builder) => ({

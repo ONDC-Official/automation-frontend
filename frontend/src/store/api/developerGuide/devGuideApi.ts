@@ -5,7 +5,7 @@ import { axiosBaseQuery } from "@store/api/shared/axiosBaseQuery";
 export const devGuideApi = createApi({
     reducerPath: "devGuideApi",
     baseQuery: axiosBaseQuery(developerGuideApiClient.getInstance()),
-    tagTypes: ["User", "Build", "Spec", "ValidationTable", "Changelog", "Docs", "Note", "Comment"],
+    tagTypes: ["User", "Note", "Comment"],
     endpoints: () => ({}),
 });
 

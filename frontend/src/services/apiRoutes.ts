@@ -28,6 +28,7 @@ export const API_ROUTES = {
         TRANSACTION: "/sessions/transaction",
         EXPECTATION: "/sessions/expectation",
         FLOW_PERMISSION: "/sessions/flowPermission",
+        PLAYGROUND: "/sessions/playground",
     },
 
     // Database routes

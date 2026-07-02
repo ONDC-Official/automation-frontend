@@ -1,6 +1,7 @@
 import { API_ROUTES } from "@services/apiRoutes";
-import type { DiscoveryResponse, PayloadResponse } from "@pages/seller-load-testing/types";
+import type { DiscoveryResponse } from "@/types/apiShared/loadTest";
 import { loadTestApi } from "@store/api/loadTest/loadTestApi";
+import type { PayloadResponse } from "./types";
 
 export const loadTestDiscoveryApi = loadTestApi.injectEndpoints({
     endpoints: (builder) => ({
