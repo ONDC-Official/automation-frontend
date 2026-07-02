@@ -1,6 +1,5 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import type { BuildEntry, DocMeta } from "@pages/developer-guide/types";
-import type { NavNode } from "@pages/developer-guide/layout/navTypes";
+import type { BuildEntry, DocMeta, NavNode } from "@/types/apiShared/developerGuide";
 
 export interface IDevGuideShellState {
     inShell: boolean;

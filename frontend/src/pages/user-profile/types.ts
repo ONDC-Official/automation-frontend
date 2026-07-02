@@ -7,6 +7,9 @@ import type {
 } from "react-hook-form";
 import type { IDomain } from "@pages/schema-validation/types";
 import type { IPastReport } from "@/types/apiShared/userProfile";
+import type { IProfileCounts } from "@store/slices/profileShellSlice";
+
+export type { IProfileCounts } from "@store/slices/profileShellSlice";
 
 export type ProfileCountKey = "configs" | "pastReports" | "history";
 
@@ -14,12 +17,6 @@ export interface IProfileNavItem {
     label: string;
     to: string;
     countKey: ProfileCountKey;
-}
-
-export interface IProfileCounts {
-    configs: number;
-    pastReports: number;
-    history: number;
 }
 
 export interface IProfileSidebarProps {

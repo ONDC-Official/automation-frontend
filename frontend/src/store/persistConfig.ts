@@ -4,7 +4,7 @@ import type { IAuthState } from "@store/slices/authSlice";
 import type { ISessionState } from "@store/slices/sessionSlice";
 import type { IFrameworkHealthState } from "@store/slices/frameworkHealthSlice";
 
-/** Persist only the auth token; user + loading flags stay ephemeral (refetched on boot). */
+/** Persist the auth token. `user`/`isAuthLoading` aren't store state at all — see authContext.ts. */
 export const authPersistConfig: PersistConfig<IAuthState> = {
     key: "auth",
     storage,
@@ -23,19 +23,3 @@ export const frameworkHealthPersistConfig: PersistConfig<IFrameworkHealthState> 
     key: "frameworkHealth",
     storage: sessionStorage,
 };
-
-/**
- * Slices persisted wholesale to localStorage. RTK Query API reducers and ephemeral slices
- * (devGuideShell server data, profileShell counts) are intentionally excluded.
- */
-export const PERSISTED_SLICE_KEYS = [
-    "theme",
-    "sessionHistory",
-    "supportSession",
-    "uiFlags",
-    "schemaValidation",
-    "sellerLoadTest",
-    "chatbot",
-    "cooldowns",
-    "ai",
-] as const;

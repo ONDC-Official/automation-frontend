@@ -1,16 +1,17 @@
-import { Context, ReactNode, createContext, createElement, useCallback, useEffect } from "react";
+import {
+    Context,
+    ReactNode,
+    createContext,
+    createElement,
+    useCallback,
+    useEffect,
+    useState,
+} from "react";
 import { IUser } from "@/types/user";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useLazyGetMeQuery, useExchangeCodeMutation } from "@store/api";
 import { authTokenManager } from "@utils/localStorageManager";
 import { ROUTES } from "@/constants/routes";
-import { useAppDispatch, useAppSelector } from "@store/hooks";
-import {
-    selectAuthUser,
-    selectIsAuthLoading,
-    setUser,
-    setAuthLoading,
-} from "@store/slices/authSlice";
 
 export interface IProps {
     isAuthLoading: boolean;
@@ -21,31 +22,32 @@ export interface IProps {
 export const AuthContext: Context<IProps> = createContext<IProps>({} as IProps);
 
 /**
- * Thin shell over the Redux `auth` slice. `user`/`isAuthLoading` live in the store; the OAuth
- * exchange and `AuthService.getUser()` effects (the API layer) are unchanged — only their result
- * setters now dispatch to Redux instead of local useState.
+ * `user`/`isAuthLoading` are kept as local state (not Redux) since they're just a synthesized view
+ * over the `getMe` RTK Query call — the query cache is already the source of truth via
+ * `useLazyGetMeQuery`, so mirroring its result into the store would duplicate it. Local state (not
+ * the query's own `result`) is still needed because `getUser()` must be able to reset `user` to
+ * `undefined` on missing/cleared token without re-querying.
  */
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const location = useLocation();
     const navigate = useNavigate();
-    const dispatch = useAppDispatch();
-    const user = useAppSelector(selectAuthUser);
-    const isAuthLoading = useAppSelector(selectIsAuthLoading);
+    const [user, setUser] = useState<IUser | undefined>(undefined);
+    const [isAuthLoading, setIsAuthLoading] = useState(true);
     const [triggerGetMe] = useLazyGetMeQuery();
     const [exchangeCode] = useExchangeCodeMutation();
 
     const getUser = useCallback(async () => {
         if (!authTokenManager.get()) {
-            dispatch(setUser(undefined));
-            dispatch(setAuthLoading(false));
+            setUser(undefined);
+            setIsAuthLoading(false);
             return;
         }
 
         const result = await triggerGetMe();
         const currentUser = result.data?.ok && result.data.user ? result.data.user : undefined;
-        dispatch(setUser(currentUser));
-        dispatch(setAuthLoading(false));
-    }, [dispatch, triggerGetMe]);
+        setUser(currentUser);
+        setIsAuthLoading(false);
+    }, [triggerGetMe]);
 
     useEffect(() => {
         const queryParams = new URLSearchParams(location.search);
@@ -56,14 +58,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
 
         const exchangeCodeAndPersistToken = async () => {
-            dispatch(setAuthLoading(true));
+            setIsAuthLoading(true);
             await exchangeCode({ code: oauthCode });
             await getUser();
             navigate(ROUTES.HOME, { replace: true });
         };
 
         exchangeCodeAndPersistToken();
-    }, [location.search, navigate, getUser, exchangeCode, dispatch]);
+    }, [location.search, navigate, getUser, exchangeCode]);
 
     useEffect(() => {
         getUser();

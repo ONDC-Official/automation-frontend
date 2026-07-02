@@ -6,15 +6,13 @@ import { setSupportSession } from "@store/slices/supportSessionSlice";
 import { setSellerSession, type ISellerSessionData } from "@store/slices/sellerLoadTestSlice";
 import { setDraftPayload } from "@store/slices/schemaValidationSlice";
 import { setMcpSessionId } from "@store/slices/chatbotSlice";
-import { setAiSettings } from "@store/slices/aiSlice";
+import { setAiSettings, DEFAULT_AI_SETTINGS, type AiSettings } from "@store/slices/aiSlice";
 import { setFrameworkHealthAuthenticated } from "@store/slices/frameworkHealthSlice";
 import {
     importConfigs,
     setDraftConfig,
     type SavedConfig,
 } from "@store/slices/playgroundConfigsSlice";
-import { DEFAULT_AI_SETTINGS } from "@pages/protocol-playground/ai/constants";
-import type { AiSettings } from "@pages/protocol-playground/ai/context/ai-context";
 import type { MockPlaygroundConfigType } from "@ondc/automation-mock-runner";
 
 const MIGRATION_FLAG = "redux-legacy-migrated-v1";

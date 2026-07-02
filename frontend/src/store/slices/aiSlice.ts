@@ -1,6 +1,18 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import { DEFAULT_AI_SETTINGS } from "@pages/protocol-playground/ai/constants";
-import type { AiSettings } from "@pages/protocol-playground/ai/context/ai-context";
+
+export type AiSettings = {
+    endpoint: string;
+    model: string;
+    inlineCompletionEnabled: boolean;
+    useProxy: boolean;
+};
+
+export const DEFAULT_AI_SETTINGS: AiSettings = {
+    endpoint: "https://api.openai.com",
+    model: "gpt-4o-mini",
+    inlineCompletionEnabled: true,
+    useProxy: false,
+};
 
 export interface IAiState {
     settings: AiSettings;

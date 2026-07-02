@@ -1,5 +1,10 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import type { IProfileCounts } from "@pages/user-profile/types";
+
+export interface IProfileCounts {
+    configs: number;
+    pastReports: number;
+    history: number;
+}
 
 export interface IProfileShellState {
     counts: IProfileCounts;
