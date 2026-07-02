@@ -247,11 +247,7 @@ const renderJson = ({
                 }
 
                 return (
-                    <div
-                        key={key}
-                        style={{ paddingLeft: `${indent}px` }}
-                        className="whitespace-nowrap"
-                    >
+                    <div key={key} className="whitespace-nowrap pl-4">
                         {/* Row */}
                         <div className="group inline-flex items-start hover:bg-sky-100/60 dark:hover:bg-sky-500/10 mx-[-2px] px-[2px] rounded w-full min-w-0 transition-colors duration-75">
                             {/* Collapse toggle / spacer */}

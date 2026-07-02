@@ -184,7 +184,7 @@ const components: Components = {
         return (
             <h1
                 id={id}
-                className="text-2xl font-bold text-slate-900 pb-4 border-b border-slate-200 scroll-mt-24"
+                className="text-2xl font-bold text-slate-900 pb-2 border-b border-slate-200 scroll-mt-24"
             >
                 {children}
             </h1>
@@ -194,7 +194,7 @@ const components: Components = {
         return (
             <h2
                 id={id}
-                className="text-xl font-semibold text-slate-800 pb-5 border-b border-slate-200 scroll-mt-24"
+                className="text-xl font-semibold text-slate-800 py-2 border-b border-slate-200 scroll-mt-24"
             >
                 {children}
             </h2>

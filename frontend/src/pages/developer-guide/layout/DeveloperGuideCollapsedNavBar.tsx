@@ -1,15 +1,21 @@
 import { FC } from "react";
 import { Link } from "react-router-dom";
 import { useDeveloperGuideBreadcrumb } from "./useDeveloperGuideBreadcrumb";
+import { useDeveloperGuideShell } from "./DeveloperGuideShellContext";
 
 /** Breadcrumb bar above content — route trail with `>` separators (no sidebar toggle). */
 const DeveloperGuideCollapsedNavBar: FC = () => {
     const crumbs = useDeveloperGuideBreadcrumb();
+    const { navSidebarOpen } = useDeveloperGuideShell();
 
     if (crumbs.length === 0) return null;
 
     return (
-        <div className="shrink-0 flex items-center h-11 min-h-11 px-4 border-b border-slate-200 bg-slate-100 dark:bg-surface-muted shadow-xs">
+        <div
+            className={`shrink-0 flex items-center h-11 min-h-11 pr-4 border-b border-slate-200 dark:border-border-default bg-slate-100 dark:bg-surface-muted shadow-xs ${
+                navSidebarOpen ? "pl-4" : "pl-16"
+            }`}
+        >
             <nav
                 className="flex items-center gap-2 text-sm min-w-0 overflow-hidden"
                 aria-label="Breadcrumb"
