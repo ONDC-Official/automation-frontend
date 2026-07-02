@@ -1,4 +1,4 @@
-import { RedisService } from "ondc-automation-cache-lib";
+import { RedisService } from "@ondc/ondc-automation-cache-lib";
 import { SessionCache, SubscriberCache } from "../interfaces/newSessionData";
 import { saveLog } from "../utils/console";
 import axios from "../utils/axios";

@@ -1,5 +1,5 @@
 import { Request, Response, RequestHandler } from 'express';
-import { RedisService } from 'ondc-automation-cache-lib';
+import { RedisService } from '@ondc/ondc-automation-cache-lib';
 import logger from '@ondc/automation-logger';
 
 // Key prefixes form a cross-service contract with the api-service GET /callback

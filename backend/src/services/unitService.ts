@@ -1,4 +1,4 @@
-import { RedisService } from "ondc-automation-cache-lib";
+import { RedisService } from "@ondc/ondc-automation-cache-lib";
 import { SessionCache } from "../interfaces/newSessionData";
 
 const SESSION_EXPIRY = 15 * 60; // 15 minutes

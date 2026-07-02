@@ -18,7 +18,7 @@
     "jsonwebtoken": "^9.0.2",
     "lodash": "^4.17.21",
     "multer": "^2.0.2",
-    "ondc-automation-cache-lib": "^2.0.0",
+    "@ondc/ondc-automation-cache-lib": "^2.1.0",
     "redis": "^4.7.0",
     "uuid": "^11.0.3",
     "winston": "^3.17.0"
