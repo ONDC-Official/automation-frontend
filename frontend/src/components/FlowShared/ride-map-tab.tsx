@@ -3,6 +3,7 @@ import { toast } from "sonner";
 import { FlowMap } from "@/types/flow-state-type";
 import { useSession } from "@context/context";
 import {
+    useProceedFlowMutation,
     useTriggerExtraMutation,
     useLazyGetMappedFlowQuery,
     useLazyGetRouteQuery,
@@ -14,6 +15,8 @@ import {
     currentRideState,
     isRideEnded,
     nextAutoState,
+    nextPendingTrackingActionId,
+    computeEnabledRideStates,
     phaseToLabel,
     pointAlong,
     progressAlong,
@@ -50,8 +53,11 @@ export default function RideMapTab({ flowId }: { flowId: string | null }) {
     const [localDriverGps, setLocalDriverGps] = useState<string | undefined>(undefined);
     const [localPhase, setLocalPhase] = useState<string | undefined>(undefined);
     const [trackingReset, setTrackingReset] = useState(false);
+    // True while a ride-state proceed is in flight — locks all state buttons (no double-fire).
+    const [sendingState, setSendingState] = useState(false);
     const autoStateFiredRef = useRef<Set<string>>(new Set());
     const payloadCacheRef = useRef<Map<string, unknown>>(new Map());
+    const [proceedFlow] = useProceedFlowMutation();
     const [triggerExtra] = useTriggerExtraMutation();
     const [triggerGetMappedFlow] = useLazyGetMappedFlowQuery();
     const [triggerGetRoute] = useLazyGetRouteQuery();
@@ -114,25 +120,31 @@ export default function RideMapTab({ flowId }: { flowId: string | null }) {
     }, [mappedFlow]);
 
     // `code` is the RIDE_* fulfillment-state code (the button values are the codes themselves).
-    // Returns true only when the on_status/on_update was actually dispatched to the buyer — callers
-    // gate the driver animation on this so movement never starts before the buyer is updated.
+    // Each state change advances the flow through the NORMAL proceed API: the next pending
+    // tracking-phase sequence step (on_status/on_update) is dispatched by passing its actionId as
+    // `inputs.id` — no trigger_extra. Returns true only when the step was actually dispatched to
+    // the buyer — callers gate the driver animation on this so movement never starts before the
+    // buyer is updated.
     const sendRideState = async (code: string): Promise<boolean> => {
         if (!transactionId || !sessionData) return false;
+        const actionId = nextPendingTrackingActionId(mappedFlow);
+        if (!actionId) {
+            toast.error("No pending ride-state step to proceed");
+            return false;
+        }
         const prevPhase = localPhase;
         setLocalPhase(code);
-        // RIDE_ENDED is delivered via on_update (per the contract); all other states via on_status.
-        const extraKey = code === "RIDE_ENDED" ? "on_update_state" : "on_status_state";
+        setSendingState(true);
         try {
-            const res = await triggerExtra({
+            const res = await proceedFlow({
                 sessionId,
                 transactionId,
-                triggerExtraKey: extraKey,
-                inputs: { code },
+                inputs: { id: actionId },
             }).unwrap();
             if (res?.success === false) {
                 setLocalPhase(prevPhase);
                 toast.error(res.message || "Ride state not dispatched");
-                console.warn("on_status_state trigger rejected:", res.message);
+                console.warn("ride-state proceed rejected:", res.message);
                 return false;
             }
             return true;
@@ -141,6 +153,8 @@ export default function RideMapTab({ flowId }: { flowId: string | null }) {
             toast.error("Failed to send ride state");
             console.error(e);
             return false;
+        } finally {
+            setSendingState(false);
         }
     };
 
@@ -249,14 +263,14 @@ export default function RideMapTab({ flowId }: { flowId: string | null }) {
         if (first) sendOnTrack(first); // initial location immediately
     };
 
-    // End the ride: on_update (RIDE_ENDED) then ONE unsolicited on_status marking the order
-    // completed (order.status = COMPLETE, state = RIDE_COMPLETED). Fires the completed step once.
+    // End the ride: proceed the RIDE_ENDED step, then the completion step (order.status =
+    // COMPLETE, state = RIDE_COMPLETED). Fires the completed step once.
     const completedFiredRef = useRef(false);
     const endRide = async () => {
-        await sendRideState("RIDE_ENDED"); // on_update
+        await sendRideState("RIDE_ENDED");
         if (!completedFiredRef.current) {
             completedFiredRef.current = true;
-            await sendRideState("RIDE_COMPLETED"); // on_status → order.status COMPLETE
+            await sendRideState("RIDE_COMPLETED");
         }
         autoRunRef.current = false;
         setAutoRunActive(false);
@@ -293,7 +307,7 @@ export default function RideMapTab({ flowId }: { flowId: string | null }) {
             endRide();
             return;
         }
-        // Arrived / Completed / Cancel — stop any movement and send the state.
+        // Arrived / Completed — stop any movement and send the state.
         stopAnimation();
         sendRideState(code);
     };
@@ -415,6 +429,9 @@ export default function RideMapTab({ flowId }: { flowId: string | null }) {
         };
     }, [rideMap.pickupGps, rideMap.dropGps]);
 
+    // Only Enroute → Started are user-clickable, in sequence, once each (locked while sending).
+    const enabledStates = computeEnabledRideStates(phase, sendingState);
+
     // Driver progress along the active segment (drives two-tone route + ETA panel).
     const progress = activeRoute
         ? progressAlong(activeRoute.geometry, parseGps(driverGpsForMap))
@@ -429,8 +446,7 @@ export default function RideMapTab({ flowId }: { flowId: string | null }) {
     }
 
     // State-based outcome (driven purely by order.status + ride state + error). Non-active terminal
-    // / failure outcomes get a read-only status panel — no map, no ride controls. The seller's live
-    // local phase takes precedence so map-driven cancels reflect immediately.
+    // / failure outcomes get a read-only status panel — no map, no ride controls.
     const display = deriveRideDisplay({
         phase,
         orderStatus: rideMap.orderStatus,
@@ -439,10 +455,7 @@ export default function RideMapTab({ flowId }: { flowId: string | null }) {
     if (
         rideMap.isTracking &&
         !trackingReset &&
-        (display.kind === "DRIVER_NOT_FOUND" ||
-            display.kind === "AWAITING_DRIVER" ||
-            display.kind === "CANCELLED" ||
-            display.kind === "CANCELLING")
+        (display.kind === "DRIVER_NOT_FOUND" || display.kind === "AWAITING_DRIVER")
     ) {
         return (
             <RideStatusPanel kind={display.kind} title={display.title} detail={display.detail} />
@@ -479,7 +492,7 @@ export default function RideMapTab({ flowId }: { flowId: string | null }) {
     }
 
     const showEta = !!activeRoute && (phase === "RIDE_ENROUTE_PICKUP" || phase === "RIDE_STARTED");
-    const finished = phase === "RIDE_COMPLETED" || phase === "RIDE_CANCELLED";
+    const finished = phase === "RIDE_COMPLETED";
 
     return (
         <div className="p-2 space-y-2">
@@ -527,11 +540,7 @@ export default function RideMapTab({ flowId }: { flowId: string | null }) {
             </div>
 
             {/* ① Status timeline */}
-            <RideTimeline
-                currentState={phase}
-                times={phaseTimes}
-                cancelled={phase === "RIDE_CANCELLED"}
-            />
+            <RideTimeline currentState={phase} times={phaseTimes} />
 
             {/* ②/⑤ Driver / vehicle / fare card */}
             <RideInfoCard driver={rideMap.driver} vehicle={rideMap.vehicle} fare={rideMap.fare} />
@@ -539,7 +548,6 @@ export default function RideMapTab({ flowId }: { flowId: string | null }) {
             {/* ⑥ Completion summary (replaces ETA once the ride finishes) */}
             {finished && (
                 <CompletionSummary
-                    cancelled={phase === "RIDE_CANCELLED"}
                     driver={rideMap.driver}
                     vehicle={rideMap.vehicle}
                     fare={rideMap.fare}
@@ -573,6 +581,7 @@ export default function RideMapTab({ flowId }: { flowId: string | null }) {
                 onReset={handleResetTracking}
                 currentState={phase}
                 onRideState={handleRideState}
+                enabledStates={enabledStates}
             />
         </div>
     );
