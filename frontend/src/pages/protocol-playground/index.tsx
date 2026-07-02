@@ -80,11 +80,22 @@ const ProtocolPlayGround = () => {
             setPlaygroundState(undefined);
             return;
         }
-        setPlaygroundState(config);
-        dispatch(setDraftConfig(config));
+        // `config` may come from anywhere — a freshly built object, the Redux-owned
+        // persisted draft, or a saved config read straight out of the `configs`
+        // slice via `loadConfig()` (config-storage.ts) — and anything sourced from
+        // Redux is Immer-frozen. `playgroundState` is mutated in place by the
+        // helpers below (resetTransactionHistory, updateTransactionHistory, etc.),
+        // so it must always be an independently mutable working copy regardless of
+        // where `config` came from. Clone unconditionally here rather than relying
+        // on every caller to hand in a fresh object.
+        const workingConfig = structuredClone(config);
+        setPlaygroundState(workingConfig);
+        // Dispatch a separate clone: the store must not share identity with
+        // `workingConfig` either, or freezing the store's copy would freeze it too.
+        dispatch(setDraftConfig(structuredClone(workingConfig)));
 
         // Auto-save whenever config is set/updated
-        autoSaveConfig(config);
+        autoSaveConfig(workingConfig);
     }
 
     const updateStepMock = (stepId: string, property: string, value: string) => {
@@ -286,9 +297,11 @@ const ProtocolPlayGround = () => {
             window.history.replaceState({}, "", newUrl.toString());
         } else {
             // Restore the draft config from the persisted Redux store if present.
+            // Clone it: the stored object is Immer-frozen, but playgroundState must
+            // stay a mutable object (mutated in place by the helpers below).
             const savedConfig = store.getState().playgroundConfigs.draft;
             if (savedConfig) {
-                setPlaygroundState(savedConfig);
+                setPlaygroundState(structuredClone(savedConfig));
             }
         }
     }, [loadConfigFromGist]);

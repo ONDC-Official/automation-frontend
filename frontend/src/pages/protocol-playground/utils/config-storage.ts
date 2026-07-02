@@ -81,7 +81,11 @@ export function saveConfig(
             flowId,
             configId,
             savedAt: new Date().toISOString(),
-            config,
+            // Clone: `config` is typically the caller's live, mutable working object
+            // (e.g. Playground's `playgroundState`). Dispatching it as-is would let
+            // Immer freeze that exact reference when the `configs` slice is produced,
+            // silently freezing the caller's object too.
+            config: structuredClone(config),
         };
 
         store.dispatch(upsertConfig(savedConfig));
@@ -110,7 +114,9 @@ export function saveGistConfig(gistUrl: string, config: MockPlaygroundConfigType
             flowId: config.meta.flowId,
             configId,
             savedAt: new Date().toISOString(),
-            config,
+            // Clone for the same reason as saveConfig(): don't let Immer freeze the
+            // caller's live object when it freezes the store's copy.
+            config: structuredClone(config),
         };
 
         store.dispatch(upsertConfig(savedConfig));
