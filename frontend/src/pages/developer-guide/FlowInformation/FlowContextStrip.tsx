@@ -10,7 +10,7 @@ const FlowContextStrip: FC<FlowContextStripProps> = ({ flow }) => {
     const flowName = flow.flowId.split("_").join(" ");
 
     return (
-        <div className="flex items-center gap-2 flex-wrap text-sm mb-4">
+        <div className="flex items-center gap-2 flex-wrap text-sm border-b border-slate-200 dark:border-border-default pb-4">
             <span className="font-semibold text-slate-800">{flowName}</span>
             {(flow.domain || flow.version) && (
                 <span className="text-slate-400">

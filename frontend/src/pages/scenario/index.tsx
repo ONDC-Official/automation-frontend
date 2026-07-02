@@ -24,9 +24,9 @@ import { IScenarioFormData, ISessionResponse, ISavedPrefAPI } from "@/pages/scen
 import { openSessionInNewTab } from "@/pages/scenario/helpers";
 import NewSessionForm from "@/pages/scenario/NewSessionForm";
 import Spinner from "@/components/Shadcn/Spinner";
-import { Toaster } from "@/components/Shadcn/Toaster";
 import { SCENARIO_GUIDE_STEPS, SCENARIO_TIP_BANNER_MESSAGE } from "@/pages/scenario/constants";
-import { InformationCircleIcon } from "@heroicons/react/24/outline";
+import { Button } from "@/components/Shadcn/Button";
+import { InformationCircleIcon, XMarkIcon } from "@heroicons/react/24/outline";
 
 const Scenario = () => {
     const {
@@ -213,6 +213,39 @@ const Scenario = () => {
         }
     }, [flowStepNum, session]);
 
+    useEffect(() => {
+        const id = setTimeout(() => {
+            toast(SCENARIO_TIP_BANNER_MESSAGE, {
+                duration: Infinity,
+                action: {
+                    label: (
+                        <Button
+                            variant="ghost"
+                            className="text-destructive"
+                            size="sm"
+                            icon={<XMarkIcon className="size-5 text-brand-normal" />}
+                        />
+                    ),
+                    onClick: () => {
+                        toast.dismiss();
+                    },
+                },
+                actionButtonStyle: {
+                    background: "transparent",
+                    boxShadow: "none",
+                    padding: 0,
+                },
+                style: { alignItems: "flex-start" },
+                position: "top-right",
+                icon: <InformationCircleIcon className="size-5 text-brand-normal" />,
+            });
+        }, 0);
+        return () => {
+            clearTimeout(id);
+            toast.dismiss();
+        };
+    }, []);
+
     const Body = () => {
         switch (flowStepNum) {
             case 0:
@@ -273,16 +306,6 @@ const Scenario = () => {
     };
     return (
         <div className="w-full">
-            <Toaster
-                position="top-right"
-                initialToastMessage={SCENARIO_TIP_BANNER_MESSAGE}
-                initialToastOptions={{
-                    duration: Infinity,
-                    closeButton: true,
-                    position: "top-right",
-                    icon: <InformationCircleIcon className="size-5 text-brand-normal" />,
-                }}
-            />
             <div className="mx-auto px-20 py-6">
                 <Body />
             </div>
