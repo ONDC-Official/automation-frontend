@@ -73,7 +73,7 @@ const DeveloperGuideFlowPage: FC = () => {
 
     return (
         <div
-            className={`relative bg-white dark:bg-surface-page flex flex-col ${inShell ? "min-h-0" : "min-h-screen top-4"}`}
+            className={`relative bg-white dark:bg-surface-page flex flex-col ${inShell ? "min-h-0" : "min-h-screen"}`}
         >
             <FlowPageHeader
                 activeView={activeView}
