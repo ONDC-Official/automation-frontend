@@ -13,6 +13,7 @@ import { useSelectedFlowStep } from "./useSelectedFlowStep";
 import FlowsSidebar from "./FlowsSidebar";
 import type { FlowInformationProps } from "./types";
 import { ChevronLeftIcon } from "@heroicons/react/24/outline";
+import { Button } from "@/components/Shadcn/Button";
 
 const FlowInformation: FC<FlowInformationProps> = ({
     data,
@@ -114,7 +115,9 @@ const FlowInformation: FC<FlowInformationProps> = ({
                                     sidebarOpen={sidebarOpen}
                                 />
 
-                                <button
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
                                     onClick={() => setSidebarOpen((prev) => !prev)}
                                     title={sidebarOpen ? "Collapse sidebar" : "Expand sidebar"}
                                     className={`absolute top-4 z-20 -translate-x-1/2 flex items-center justify-center w-5 h-9 rounded-full bg-white dark:bg-surface-elevated border border-slate-200 dark:border-border-default shadow-sm hover:bg-slate-50 dark:hover:bg-surface-muted transition-[left] duration-300 ease-in-out ${
@@ -126,7 +129,7 @@ const FlowInformation: FC<FlowInformationProps> = ({
                                             sidebarOpen ? "" : "rotate-180"
                                         }`}
                                     />
-                                </button>
+                                </Button>
 
                                 {/* Right pane: section tabs header + the content area that changes per tab */}
                                 <div className="flex-1 min-w-0 min-h-0 flex flex-col px-4">
