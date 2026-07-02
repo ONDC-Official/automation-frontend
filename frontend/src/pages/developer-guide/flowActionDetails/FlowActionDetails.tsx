@@ -12,6 +12,7 @@ import AttributesPanel from "./AttributesPanel";
 import CommentsPanel from "./CommentsPanel";
 import NotesPanel from "./NotesPanel";
 import { getLeafRowsForApi, getValueAtPath, type RawTableAction } from "./attributePanelUtils";
+import { Button } from "@/components/Shadcn/Button";
 
 type RightPanelTab = "attributes" | "comments" | "notes";
 
@@ -130,11 +131,12 @@ const FlowActionDetails: FC<FlowActionDetailsProps> = ({
         <div className="flex items-stretch h-full">
             {/* Section 2 — JSON viewer; toggle floats inside at top-right */}
             <div className="flex-1 min-w-0 flex flex-col min-h-0 overflow-hidden border border-slate-200 dark:border-border-default rounded-lg bg-white dark:bg-surface-elevated relative">
-                <button
+                <Button
+                    variant="ghost"
                     onClick={() => setRightPanelOpen((v) => !v)}
                     title={rightPanelOpen ? "Collapse details panel" : "Expand details panel"}
                     aria-label={rightPanelOpen ? "Collapse details panel" : "Expand details panel"}
-                    className="absolute top-3 right-3 z-10 flex items-center justify-center w-7 h-7 rounded-full bg-white dark:bg-surface-elevated border border-slate-200 dark:border-border-default shadow-sm hover:bg-slate-50 dark:hover:bg-surface-muted transition-colors"
+                    className="absolute top-5 right-3 z-10 flex items-center justify-center w-7 h-7 rounded-full bg-white dark:bg-surface-elevated border border-slate-200 dark:border-border-default shadow-sm hover:bg-slate-50 dark:hover:bg-surface-muted transition-colors"
                 >
                     <ChevronRightIcon
                         className={cn(
@@ -142,7 +144,7 @@ const FlowActionDetails: FC<FlowActionDetailsProps> = ({
                             rightPanelOpen ? "" : "rotate-180"
                         )}
                     />
-                </button>
+                </Button>
                 <div className="flex-1 min-h-0 overflow-auto p-2 relative group">
                     <JsonViewer
                         data={exampleValue as ComponentProps<typeof JsonViewer>["data"]}
@@ -152,14 +154,14 @@ const FlowActionDetails: FC<FlowActionDetailsProps> = ({
                         isExpanded={expanded}
                         onCollapse={() => setExpanded(false)}
                     />
-                    <button
-                        type="button"
+                    <Button
+                        variant="ghost"
                         onClick={() => void copyToClipboard(JSON.stringify(exampleValue, null, 2))}
                         className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white text-sm rounded-lg shadow-lg"
                     >
                         <DocumentDuplicateIcon className="w-4 h-4" />
                         Copy
-                    </button>
+                    </Button>
                 </div>
             </div>
 
@@ -219,13 +221,13 @@ const FlowActionDetails: FC<FlowActionDetailsProps> = ({
         return (
             <div className="fixed inset-0 z-50 bg-slate-100 dark:bg-surface-page flex flex-col">
                 <div className="flex justify-end gap-2 px-4 py-2.5 border-b border-slate-200 bg-white dark:bg-surface-elevated shadow-xs">
-                    <button
-                        type="button"
+                    <Button
+                        variant="ghost"
                         onClick={() => setExpanded(false)}
                         className="px-4 py-2 text-sm font-medium text-slate-700 bg-slate-200 dark:bg-surface-muted rounded-lg hover:bg-slate-300 dark:hover:bg-surface-elevated transition-colors focus:outline-hidden focus:ring-2 focus:ring-sky-400 focus:ring-offset-2"
                     >
                         Exit fullscreen
-                    </button>
+                    </Button>
                 </div>
                 <div className="flex-1 min-h-0 p-6 overflow-auto flex items-center justify-center">
                     <div className="h-full w-full mx-20">{root}</div>

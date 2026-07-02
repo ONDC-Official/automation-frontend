@@ -12,7 +12,7 @@ const DeveloperGuideCollapsedNavBar: FC = () => {
 
     return (
         <div
-            className={`shrink-0 flex items-center h-11 min-h-11 pr-4 border-b border-slate-200 bg-slate-100 dark:bg-surface-muted shadow-xs ${
+            className={`shrink-0 flex items-center h-11 min-h-11 pr-4 border-b border-slate-200 dark:border-border-default bg-slate-100 dark:bg-surface-muted shadow-xs ${
                 navSidebarOpen ? "pl-4" : "pl-16"
             }`}
         >
