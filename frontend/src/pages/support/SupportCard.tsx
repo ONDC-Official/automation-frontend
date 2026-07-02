@@ -30,7 +30,10 @@ const SupportCard: FC<{ card: ISupportChannelCard }> = ({ card }) => (
                     </li>
                 ))}
             </ul>
-            <div className="grid grid-cols-3 gap-3 rounded-lg bg-n-20 dark:bg-n-800 px-3 py-4">
+            <div
+                className="grid gap-3 rounded-lg bg-n-20 dark:bg-n-800 px-3 py-4"
+                style={{ gridTemplateColumns: `repeat(${card.stats.length}, minmax(0, 1fr))` }}
+            >
                 {card.stats.map((stat) => (
                     <div key={stat.label}>
                         <p className="text-caption-2 font-semibold uppercase tracking-wide text-n-300 dark:text-n-60 mb-1">
