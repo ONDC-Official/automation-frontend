@@ -9,7 +9,7 @@ import JsonPathInput from "@/pages/protocol-playground/ui/json-path-input.tsx";
 import { handleAddParam } from "@/pages/protocol-playground/ui/json-path-input";
 import JsonPathOutputPopup from "@/pages/protocol-playground/ui/JsonPathOutputModal";
 import { MockPlaygroundConfigType } from "@ondc/automation-mock-runner";
-import JsonViewerDark from "@/pages/protocol-playground/ui/json-path-extractor_old";
+import JsonViewerDark from "@/pages/protocol-playground/ui/Json-path-extractor";
 import { getGroupSteps, setGroupSteps } from "@/pages/protocol-playground/utils/step-group";
 import Input from "@/components/Shadcn/TextField/input";
 import { Button } from "@/components/Shadcn/Button";

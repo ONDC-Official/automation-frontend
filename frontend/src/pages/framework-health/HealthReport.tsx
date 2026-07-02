@@ -1,7 +1,6 @@
 import { FC, useEffect, useState } from "react";
-import JsonView from "@uiw/react-json-view";
-import { githubLightTheme } from "@uiw/react-json-view/githubLight";
 import { HealthReportData, DomainResult, VersionResult } from "@hooks/useFrameworkHealth";
+import AppJsonViewer from "@/components/AppJsonViewer";
 
 interface Props {
     report: HealthReportData;
@@ -59,11 +58,9 @@ const VersionDetail: FC<{ v: VersionResult }> = ({ v }) => {
             {v.error && (
                 <div className="rounded-md overflow-hidden border border-red-200">
                     {parsedError ? (
-                        <JsonView
+                        <AppJsonViewer
                             value={parsedError}
                             style={{
-                                ...githubLightTheme,
-                                backgroundColor: "#fff1f2",
                                 padding: "10px",
                                 fontSize: "12px",
                             }}
@@ -82,7 +79,10 @@ const VersionDetail: FC<{ v: VersionResult }> = ({ v }) => {
 };
 
 /** Modal that shows full domain details */
-const DomainModal: FC<{ domain: DomainResult; onClose: () => void }> = ({ domain, onClose }) => {
+const DomainModal: FC<{
+    domain: DomainResult;
+    onClose: () => void;
+}> = ({ domain, onClose }) => {
     const allHealthy = domain.versions.every((v) => v.healthy);
     const healthyCount = domain.versions.filter((v) => v.healthy).length;
 

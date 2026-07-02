@@ -1,7 +1,4 @@
-import { CSSProperties, FC, useMemo, useState } from "react";
-import JsonView from "@uiw/react-json-view";
-import { githubDarkTheme } from "@uiw/react-json-view/githubDark";
-import { githubLightTheme } from "@uiw/react-json-view/githubLight";
+import { FC, useState, useMemo } from "react";
 import type { OpenAPISpecification } from "../types";
 import type { SchemaView } from "./types";
 import SchemaTree from "./SchemaTree";
@@ -10,7 +7,7 @@ import { useSchemaViewReadiness } from "./useSchemaViewReadiness";
 import { getResponseSchema, getResponseExamples, deepResolveSchema } from "./specUtils";
 import Spinner from "@/components/Shadcn/Spinner";
 import CodeBlock from "@components/CodeBlock";
-import { useAppliedTheme } from "@/context/theme/useAppliedTheme";
+import AppJsonViewer from "@/components/AppJsonViewer";
 
 interface ResponseTabProps {
     spec: OpenAPISpecification;
@@ -22,7 +19,6 @@ const ResponseTab: FC<ResponseTabProps> = ({ spec, api }) => {
     const [view, setView] = useState<SchemaView>("schema");
     const [selectedExampleIndex, setSelectedExampleIndex] = useState(0);
     const { rawReady, schemaReady } = useSchemaViewReadiness(api, view);
-    const appliedTheme = useAppliedTheme();
 
     const schema = getResponseSchema(spec, api);
     const deepSchema = useMemo(
@@ -31,14 +27,6 @@ const ResponseTab: FC<ResponseTabProps> = ({ spec, api }) => {
     );
     const examples = getResponseExamples(spec, api);
     const selectedExample = examples[selectedExampleIndex] ?? examples[0];
-
-    const jsonTheme = useMemo(
-        () => ({
-            ...(appliedTheme === "dark" ? githubDarkTheme : githubLightTheme),
-            "--w-rjv-background-color": "transparent",
-        }),
-        [appliedTheme]
-    );
 
     return (
         <div className="flex flex-col gap-8">
@@ -69,12 +57,7 @@ const ResponseTab: FC<ResponseTabProps> = ({ spec, api }) => {
                                     <Spinner className="size-8 text-brand-normal" />
                                 </div>
                             ) : deepSchema ? (
-                                <JsonView
-                                    value={deepSchema}
-                                    style={jsonTheme as CSSProperties}
-                                    displayDataTypes={false}
-                                    shortenTextAfterLength={120}
-                                />
+                                <AppJsonViewer value={deepSchema} shortenTextAfterLength={120} />
                             ) : (
                                 <span className="text-muted-foreground">No schema</span>
                             )}
@@ -144,10 +127,8 @@ const ResponseTab: FC<ResponseTabProps> = ({ spec, api }) => {
                         code={JSON.stringify(selectedExample.payload, null, 2)}
                         maxHeightClass="max-h-150"
                     >
-                        <JsonView
+                        <AppJsonViewer
                             value={selectedExample.payload as object}
-                            style={jsonTheme as CSSProperties}
-                            displayDataTypes={false}
                             shortenTextAfterLength={120}
                         />
                     </CodeBlock>

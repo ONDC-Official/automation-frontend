@@ -1,8 +1,5 @@
-import { type FC, type CSSProperties } from "react";
-import JsonView from "@uiw/react-json-view";
-import { githubLightTheme } from "@uiw/react-json-view/githubLight";
-import { githubDarkTheme } from "@uiw/react-json-view/githubDark";
-import { useTheme } from "@/context/theme/themeContext";
+import { type FC } from "react";
+import AppJsonViewer from "@/components/AppJsonViewer";
 
 function tryParseJson(str: string | undefined): object | null {
     if (!str) return null;
@@ -20,7 +17,6 @@ export const DIFF_CHIP_CLASSES = {
 };
 
 const DiffRow: FC<{ label: "Before" | "After"; raw?: string }> = ({ label, raw }) => {
-    const { isDark } = useTheme();
     if (raw === undefined || raw === "") return null;
     const json = tryParseJson(raw);
     const isBefore = label === "Before";
@@ -53,10 +49,8 @@ const DiffRow: FC<{ label: "Before" | "After"; raw?: string }> = ({ label, raw }
                 {label}
             </div>
             <div className="p-4 bg-white dark:bg-surface-elevated max-h-72 overflow-auto">
-                <JsonView
+                <AppJsonViewer
                     value={json}
-                    style={(isDark ? githubDarkTheme : githubLightTheme) as CSSProperties}
-                    displayDataTypes={false}
                     displayObjectSize={false}
                     enableClipboard
                     collapsed={2}

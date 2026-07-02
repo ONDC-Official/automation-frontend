@@ -1,7 +1,4 @@
-import { CSSProperties, useMemo, useState } from "react";
-import JsonView from "@uiw/react-json-view";
-import { githubDarkTheme } from "@uiw/react-json-view/githubDark";
-import { githubLightTheme } from "@uiw/react-json-view/githubLight";
+import { useMemo, useState } from "react";
 import {
     ArrowsRightLeftIcon,
     ChevronDownIcon,
@@ -11,9 +8,9 @@ import {
 } from "@heroicons/react/24/outline";
 import { MockPlaygroundConfigType } from "@ondc/automation-mock-runner";
 
-import { useAppliedTheme } from "@/context/theme/useAppliedTheme";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/Shadcn/Button";
+import AppJsonViewer from "@/components/AppJsonViewer";
 
 type Step = MockPlaygroundConfigType["steps"][number];
 type HistoryEntry = MockPlaygroundConfigType["transaction_history"][number];
@@ -53,15 +50,7 @@ function ownerStyles(owner?: string) {
     return "bg-sky-100 text-sky-700 ring-sky-200 dark:bg-sky-500/15 dark:text-sky-300 dark:ring-sky-500/30";
 }
 
-function MessageBlock({
-    node,
-    paired,
-    jsonTheme,
-}: {
-    node: TraceNode;
-    paired: boolean;
-    jsonTheme: CSSProperties;
-}) {
+function MessageBlock({ node, paired }: { node: TraceNode; paired: boolean }) {
     const [open, setOpen] = useState(false);
     const ctx = contextOf(node.entry.payload);
     const owner = node.def?.owner;
@@ -127,12 +116,7 @@ function MessageBlock({
                         </div>
                     )}
                     <div className="overflow-hidden rounded-lg border border-border-default bg-surface-muted p-2">
-                        <JsonView
-                            value={node.entry.payload as object}
-                            collapsed={2}
-                            style={jsonTheme}
-                            displayDataTypes={false}
-                        />
+                        <AppJsonViewer value={node.entry.payload as object} collapsed={2} />
                     </div>
                 </div>
             )}
@@ -141,12 +125,6 @@ function MessageBlock({
 }
 
 export default function TraceView({ config }: { config: MockPlaygroundConfigType }) {
-    const appliedTheme = useAppliedTheme();
-    const jsonTheme = useMemo(
-        () => (appliedTheme === "dark" ? githubDarkTheme : githubLightTheme),
-        [appliedTheme]
-    );
-
     const rows = useMemo<TraceRow[]>(() => {
         const defMap = new Map<string, Step>();
         [...config.steps, ...(config.extra_steps?.steps ?? [])].forEach((s) =>
@@ -219,11 +197,7 @@ export default function TraceView({ config }: { config: MockPlaygroundConfigType
                             className="divide-y divide-border-default overflow-hidden rounded-xl border border-border-default bg-surface-elevated shadow-xs"
                         >
                             {row.request && (
-                                <MessageBlock
-                                    node={row.request}
-                                    paired={!!row.response}
-                                    jsonTheme={jsonTheme as CSSProperties}
-                                />
+                                <MessageBlock node={row.request} paired={!!row.response} />
                             )}
                             {row.request && row.response && (
                                 <div className="flex items-center justify-center gap-2 border-y border-border-default bg-brand-light/60 py-1.5 dark:bg-surface-muted">
@@ -234,11 +208,7 @@ export default function TraceView({ config }: { config: MockPlaygroundConfigType
                                 </div>
                             )}
                             {row.response && (
-                                <MessageBlock
-                                    node={row.response}
-                                    paired={!!row.request}
-                                    jsonTheme={jsonTheme as CSSProperties}
-                                />
+                                <MessageBlock node={row.response} paired={!!row.request} />
                             )}
                         </div>
                     ))}

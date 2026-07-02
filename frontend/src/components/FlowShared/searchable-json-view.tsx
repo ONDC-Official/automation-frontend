@@ -1,12 +1,9 @@
-import { CSSProperties, useMemo, useState } from "react";
-import JsonView from "@uiw/react-json-view";
-import { githubDarkTheme } from "@uiw/react-json-view/githubDark";
-import { githubLightTheme } from "@uiw/react-json-view/githubLight";
+import { useMemo, useState } from "react";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 import SearchField from "@/components/Shadcn/SearchField";
 import { Button } from "@/components/Shadcn/Button/button";
-import { useAppliedTheme } from "@/context/theme/useAppliedTheme";
 import { cn } from "@/lib/utils";
+import AppJsonViewer from "@/components/AppJsonViewer";
 
 function filterJsonBySearch(data: unknown, query: string): unknown {
     if (!query) return data;
@@ -60,17 +57,8 @@ export default function SearchableJsonView({
     placeholder = "Search",
 }: SearchableJsonViewProps) {
     const [query, setQuery] = useState<string>("");
-    const appliedTheme = useAppliedTheme();
 
-    const jsonTheme = useMemo(
-        () => (appliedTheme === "dark" ? githubDarkTheme : githubLightTheme),
-        [appliedTheme]
-    );
-
-    const filteredValue = useMemo(
-        () => filterJsonBySearch(value, query) as object,
-        [value, query]
-    );
+    const filteredValue = useMemo(() => filterJsonBySearch(value, query) as object, [value, query]);
 
     return (
         <div className="space-y-3">
@@ -94,14 +82,12 @@ export default function SearchableJsonView({
                     </Button>
                 ) : null}
             </div>
-            <JsonView
+            <AppJsonViewer
                 value={filteredValue}
-                style={jsonTheme as CSSProperties}
                 className={cn(
                     "min-h-[320px] rounded-lg border border-n-40 bg-surface-elevated p-3",
                     "dark:border-border-default dark:bg-surface-muted"
                 )}
-                displayDataTypes={false}
             />
         </div>
     );

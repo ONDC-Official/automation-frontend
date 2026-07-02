@@ -1,7 +1,4 @@
-import { CSSProperties, FC, useMemo, useState } from "react";
-import JsonView from "@uiw/react-json-view";
-import { githubDarkTheme } from "@uiw/react-json-view/githubDark";
-import { githubLightTheme } from "@uiw/react-json-view/githubLight";
+import { FC, useState, useMemo } from "react";
 import type { OpenAPISpecification } from "../types";
 import type { SchemaView } from "./types";
 import SchemaTree from "./SchemaTree";
@@ -10,7 +7,7 @@ import { useSchemaViewReadiness } from "./useSchemaViewReadiness";
 import { getRequestSchema, deepResolveSchema } from "./specUtils";
 import Spinner from "@/components/Shadcn/Spinner";
 import CodeBlock from "@components/CodeBlock";
-import { useAppliedTheme } from "@/context/theme/useAppliedTheme";
+import AppJsonViewer from "@/components/AppJsonViewer";
 
 interface RequestTabProps {
     spec: OpenAPISpecification;
@@ -21,20 +18,11 @@ interface RequestTabProps {
 const RequestTab: FC<RequestTabProps> = ({ spec, api }) => {
     const [view, setView] = useState<SchemaView>("schema");
     const { rawReady, schemaReady } = useSchemaViewReadiness(api, view);
-    const appliedTheme = useAppliedTheme();
 
     const schema = getRequestSchema(spec, api);
     const deepSchema = useMemo(
         () => (schema ? (deepResolveSchema(spec, schema) as object) : null),
         [spec, schema]
-    );
-
-    const jsonTheme = useMemo(
-        () => ({
-            ...(appliedTheme === "dark" ? githubDarkTheme : githubLightTheme),
-            "--w-rjv-background-color": "transparent",
-        }),
-        [appliedTheme]
     );
 
     return (
@@ -66,12 +54,7 @@ const RequestTab: FC<RequestTabProps> = ({ spec, api }) => {
                                     <Spinner className="size-8 text-brand-normal" />
                                 </div>
                             ) : deepSchema ? (
-                                <JsonView
-                                    value={deepSchema}
-                                    style={jsonTheme as CSSProperties}
-                                    displayDataTypes={false}
-                                    shortenTextAfterLength={120}
-                                />
+                                <AppJsonViewer value={deepSchema} shortenTextAfterLength={120} />
                             ) : (
                                 <span className="text-muted-foreground">No schema</span>
                             )}
