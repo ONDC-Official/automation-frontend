@@ -1,25 +1,49 @@
-import { FC } from "react";
+import { FC, useContext } from "react";
 import { Button } from "@/components/Shadcn/Button/button";
+import { ROUTES } from "@/constants/routes";
+import { useNavigate } from "react-router-dom";
+import { AuthContext } from "@/context/authContext";
 
-const HeroInfo: FC = () => (
-    <div>
-        <h1 className="text-h3 lg:text-h2 font-semibold text-n-800 dark:text-n-60 mb-3">
-            <span className="text-brand-normal">ONDC</span> Integration, Simplified!
-        </h1>
-        <p className="text-h4 font-regular text-n-900 dark:text-n-20 mb-3">
-            Validate, Debug, Deploy
-        </p>
-        <p className="text-body-1 text-n-300 dark:text-n-60 mb-6 max-w-lg">
-            Your all-in-one toolkit for seamless ONDC integration. From schema validations to
-            testing full flows, get ONDC-ready quicker!
-        </p>
-        <div className="flex flex-wrap gap-4">
-            <Button size="lg">Start Building</Button>
-            <Button size="lg" variant="outline">
-                Read Documentation
-            </Button>
+const HeroInfo: FC = () => {
+    const navigate = useNavigate();
+    const { user } = useContext(AuthContext);
+
+    const handleStartBuilding = () => {
+        if (user) {
+            navigate(ROUTES.SCENARIO);
+            return;
+        }
+
+        const backendUrl = import.meta.env.VITE_DEVELOPER_GUIDE_BACKEND_URL;
+        window.location.href = `${backendUrl}/login`;
+    };
+
+    return (
+        <div>
+            <h1 className="text-h3 lg:text-h2 font-semibold text-n-800 dark:text-n-60 mb-3">
+                <span className="text-brand-normal">ONDC</span> Integration, Simplified!
+            </h1>
+            <p className="text-h4 font-regular text-n-900 dark:text-n-20 mb-3">
+                Validate, Debug, Deploy
+            </p>
+            <p className="text-body-1 text-n-300 dark:text-n-60 mb-6 max-w-lg">
+                Your all-in-one toolkit for seamless ONDC integration. From schema validations to
+                testing full flows, get ONDC-ready quicker!
+            </p>
+            <div className="flex flex-wrap gap-4">
+                <Button size="lg" onClick={handleStartBuilding}>
+                    Start Building
+                </Button>
+                <Button
+                    size="lg"
+                    variant="outline"
+                    onClick={() => navigate(ROUTES.DEVELOPER_GUIDE)}
+                >
+                    Read Documentation
+                </Button>
+            </div>
         </div>
-    </div>
-);
+    );
+};
 
 export default HeroInfo;
