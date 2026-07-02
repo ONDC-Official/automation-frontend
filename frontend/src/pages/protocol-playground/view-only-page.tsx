@@ -1,5 +1,4 @@
 import { useContext, useState } from "react";
-import JsonView from "@uiw/react-json-view";
 import {
     FiPackage,
     FiTag,
@@ -11,6 +10,7 @@ import {
 } from "react-icons/fi";
 
 import { PlaygroundContext } from "@pages/protocol-playground/context/playground-context";
+import AppJsonViewer from "@/components/AppJsonViewer";
 
 const ViewOnlyPlaygroundPage = ({ onCreateFlowSession }: { onCreateFlowSession: () => void }) => {
     const playgroundContext = useContext(PlaygroundContext);
@@ -152,14 +152,13 @@ const ViewOnlyPlaygroundPage = ({ onCreateFlowSession }: { onCreateFlowSession: 
                         </div>
                         <div className="p-6 bg-gray-50/50 overflow-x-auto">
                             <div className="bg-white rounded-lg border border-gray-200 p-4">
-                                <JsonView
+                                <AppJsonViewer
                                     value={config}
                                     collapsed={1}
                                     style={{
                                         fontSize: "13px",
                                         fontFamily:
                                             "'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace",
-                                        backgroundColor: "transparent",
                                     }}
                                 />
                             </div>

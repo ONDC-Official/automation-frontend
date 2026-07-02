@@ -1,4 +1,4 @@
-import { CSSProperties, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
     FaCheckCircle,
     FaChevronDown,
@@ -6,8 +6,7 @@ import {
     FaExclamationCircle,
     FaSpinner,
 } from "react-icons/fa";
-import JsonView from "@uiw/react-json-view";
-import { githubLightTheme } from "@uiw/react-json-view/githubLight";
+import AppJsonViewer from "@/components/AppJsonViewer";
 
 import type { ToolMessage } from "../hooks/use-chat-session";
 
@@ -61,11 +60,7 @@ export function ToolCallCard({ message }: ToolCallCardProps) {
     useEffect(() => {
         const prev = prevStatusRef.current;
         if (prev !== message.status) {
-            if (
-                prev === "running" &&
-                message.status === "done" &&
-                !userToggledRef.current
-            ) {
+            if (prev === "running" && message.status === "done" && !userToggledRef.current) {
                 setExpanded(false);
             } else if (message.status === "error") {
                 setExpanded(true);
@@ -145,9 +140,7 @@ export function ToolCallCard({ message }: ToolCallCardProps) {
                     </div>
 
                     {message.status === "running" && (
-                        <div className="text-[11px] text-sky-700 italic">
-                            executing…
-                        </div>
+                        <div className="text-[11px] text-sky-700 italic">executing…</div>
                     )}
 
                     {message.status === "error" && (
@@ -187,12 +180,7 @@ export function ToolCallCard({ message }: ToolCallCardProps) {
                               typeof parsedResult === "object" &&
                               parsedResult !== null ? (
                                 <div className="bg-white border border-gray-200 rounded p-2 overflow-auto max-h-96">
-                                    <JsonView
-                                        value={parsedResult as object}
-                                        style={githubLightTheme as CSSProperties}
-                                        collapsed={2}
-                                        displayDataTypes={false}
-                                    />
+                                    <AppJsonViewer value={parsedResult as object} collapsed={2} />
                                 </div>
                             ) : (
                                 <pre className="font-mono text-[11px] whitespace-pre-wrap wrap-break-word bg-gray-50 border border-gray-200 rounded p-2 max-h-96 overflow-auto">
