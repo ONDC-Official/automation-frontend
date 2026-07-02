@@ -1,5 +1,11 @@
 import { type FC, useState, useCallback, useContext } from "react";
-import * as commentsApi from "@services/developerGuideCommentsApi";
+import {
+    useLazyGetCommentsQuery,
+    useCreateCommentMutation,
+    useReplyToCommentMutation,
+    useResolveCommentMutation,
+    useDeleteCommentMutation,
+} from "@store/api";
 import { AuthContext } from "@/context/authContext";
 import GuideAsyncPanel from "../../shared/components/GuideAsyncPanel";
 import { EmptyState } from "../../shared/components/states";
@@ -18,6 +24,11 @@ const CommentsPanel: FC<CommentsPanelProps> = ({ selectedPath, actionApi, useCas
     const [newCommentText, setNewCommentText] = useState("");
     const [replyTextByThreadId, setReplyTextByThreadId] = useState<Record<string, string>>({});
     const [replyingToId, setReplyingToId] = useState<string | null>(null);
+    const [triggerGetComments] = useLazyGetCommentsQuery();
+    const [createComment] = useCreateCommentMutation();
+    const [replyToComment] = useReplyToCommentMutation();
+    const [resolveComment] = useResolveCommentMutation();
+    const [deleteComment] = useDeleteCommentMutation();
 
     const {
         items: threads,
@@ -28,12 +39,13 @@ const CommentsPanel: FC<CommentsPanelProps> = ({ selectedPath, actionApi, useCas
     } = useThreadedApi<CommentThread>({
         enabled: useApi,
         fetchItems: async () => {
-            const res = await commentsApi.getComments({
+            const result = await triggerGetComments({
                 use_case_id: useCaseId!,
                 flow_id: flowId!,
                 action_id: actionApi,
             });
-            const list = Array.isArray(res.data) ? res.data : [];
+            if (result.error) throw result.error;
+            const list = Array.isArray(result.data) ? result.data : [];
             return buildThreadsFromApiList(list);
         },
         deps: [flowId, useCaseId, actionApi],
@@ -48,13 +60,13 @@ const CommentsPanel: FC<CommentsPanelProps> = ({ selectedPath, actionApi, useCas
         if (useApi && flowId && useCaseId) {
             const ok = await mutate(
                 () =>
-                    commentsApi.createComment({
+                    createComment({
                         use_case_id: useCaseId,
                         flow_id: flowId,
                         action_id: actionApi,
                         json_path: path,
                         comment: text,
-                    }),
+                    }).unwrap(),
                 "Failed to post comment"
             );
             if (ok) setNewCommentText("");
@@ -92,14 +104,14 @@ const CommentsPanel: FC<CommentsPanelProps> = ({ selectedPath, actionApi, useCas
             if (useApi && flowId && useCaseId) {
                 const ok = await mutate(
                     () =>
-                        commentsApi.replyToComment({
+                        replyToComment({
                             use_case_id: useCaseId,
                             flow_id: flowId,
                             action_id: actionApi,
                             json_path: selectedPath ?? "$",
                             comment: text,
                             parent_comment_id: threadId,
-                        }),
+                        }).unwrap(),
                     "Failed to post reply"
                 );
                 if (!ok) return;
@@ -148,7 +160,7 @@ const CommentsPanel: FC<CommentsPanelProps> = ({ selectedPath, actionApi, useCas
 
             if (useApi && flowId && useCaseId) {
                 await mutate(
-                    () => commentsApi.resolveComment(threadId, newResolved),
+                    () => resolveComment({ commentId: threadId, resolved: newResolved }).unwrap(),
                     "Failed to update comment"
                 );
             } else {
@@ -172,7 +184,7 @@ const CommentsPanel: FC<CommentsPanelProps> = ({ selectedPath, actionApi, useCas
         async (threadId: string) => {
             if (!isLoggedIn) return;
             if (useApi && flowId && useCaseId) {
-                await mutate(() => commentsApi.deleteComment(threadId), "Failed to delete comment");
+                await mutate(() => deleteComment(threadId).unwrap(), "Failed to delete comment");
             } else {
                 setThreads((prev) => prev.filter((t) => t.id !== threadId));
             }

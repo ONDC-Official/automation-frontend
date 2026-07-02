@@ -6,10 +6,13 @@ import { Modal } from "antd";
 import { ExclamationTriangleIcon } from "@heroicons/react/24/outline";
 
 import { ROUTES } from "@constants/routes";
-import { apiClient } from "@services/apiClient";
-import { API_ROUTES } from "@services/apiRoutes";
+import {
+    useLazyGetScenarioFormDataQuery,
+    useLazyGetScenarioPreferencesQuery,
+    useSaveScenarioPreferenceMutation,
+    useDeleteScenarioPreferenceMutation,
+} from "@store/api";
 import { IDomain } from "@pages/schema-validation/types";
-import { useProfileShell } from "@pages/user-profile/ProfileShellContext";
 import type {
     IDomainVersionWithUsecase,
     ScenarioPreferences,
@@ -47,7 +50,6 @@ const fromAPI = (p: ScenarioPreferencesAPI, configName: string): ScenarioPrefere
 
 export const useScenarioPreferences = () => {
     const navigate = useNavigate();
-    const { setCounts } = useProfileShell();
 
     const {
         control,
@@ -66,6 +68,10 @@ export const useScenarioPreferences = () => {
     const [editingKey, setEditingKey] = useState<string | null>(null);
 
     const allDomainsRef = useRef<IDomain[]>([]);
+    const [triggerGetScenarioFormData] = useLazyGetScenarioFormDataQuery();
+    const [triggerGetScenarioPreferences] = useLazyGetScenarioPreferencesQuery();
+    const [saveScenarioPreference] = useSaveScenarioPreferenceMutation();
+    const [deleteScenarioPreference] = useDeleteScenarioPreferenceMutation();
 
     const watchedDomain = watch("domain");
     const watchedVersion = watch("version");
@@ -86,43 +92,31 @@ export const useScenarioPreferences = () => {
         return version?.usecase ?? [];
     }, [domains, watchedDomain, watchedVersion]);
 
-    const updateConfigCount = useCallback(
-        (prefs: Record<string, ScenarioPreferences>) => {
-            setCounts((prev) => ({ ...prev, configs: Object.keys(prefs).length }));
-        },
-        [setCounts]
-    );
-
     const fetchDomainData = useCallback(async () => {
         try {
-            const response = await apiClient.get<{ domain: IDomain[] }>(
-                API_ROUTES.CONFIG.SCENARIO_FORM_DATA
-            );
-            const fetchedDomains: IDomain[] = response.data.domain || [];
+            const result = await triggerGetScenarioFormData();
+            const fetchedDomains: IDomain[] = result.data?.domain || [];
             allDomainsRef.current = fetchedDomains;
             setDomains(fetchedDomains);
         } catch (e) {
             console.error("Error fetching scenario form data", e);
         }
-    }, []);
+    }, [triggerGetScenarioFormData]);
 
     const fetchSavedPreferences = useCallback(async () => {
         try {
-            const response = await apiClient.get<Record<string, ScenarioPreferencesAPI>>(
-                API_ROUTES.USER.SCENARIO_PREFERENCES
-            );
-            const raw = response.data;
+            const result = await triggerGetScenarioPreferences();
+            const raw = result.data;
             if (!raw) return;
             const mapped: Record<string, ScenarioPreferences> = {};
             Object.entries(raw).forEach(([key, val]) => {
                 mapped[key] = fromAPI(val as ScenarioPreferencesAPI, key);
             });
             setSavedPrefs(mapped);
-            updateConfigCount(mapped);
         } catch {
             // No saved preferences yet
         }
-    }, [updateConfigCount]);
+    }, [triggerGetScenarioPreferences]);
 
     useEffect(() => {
         Promise.all([fetchDomainData(), fetchSavedPreferences()]).finally(() =>
@@ -177,7 +171,7 @@ export const useScenarioPreferences = () => {
 
         setIsSaving(true);
         try {
-            await apiClient.put(API_ROUTES.USER.SCENARIO_PREFERENCE_BY_KEY(configKey), payload);
+            await saveScenarioPreference({ configKey, payload }).unwrap();
             const nextPrefs = {
                 ...savedPrefs,
                 [configKey]: {
@@ -191,7 +185,6 @@ export const useScenarioPreferences = () => {
                 },
             };
             setSavedPrefs(nextPrefs);
-            updateConfigCount(nextPrefs);
             toast.success(editingKey ? "Configuration updated" : "Configuration saved");
             setEditingKey(null);
             reset(EMPTY_PREFERENCES);
@@ -205,11 +198,10 @@ export const useScenarioPreferences = () => {
 
     const handleDelete = async (configKey: string) => {
         try {
-            await apiClient.delete(API_ROUTES.USER.SCENARIO_PREFERENCE_BY_KEY(configKey));
+            await deleteScenarioPreference(configKey).unwrap();
             const nextPrefs = { ...savedPrefs };
             delete nextPrefs[configKey];
             setSavedPrefs(nextPrefs);
-            updateConfigCount(nextPrefs);
             if (editingKey === configKey) handleCancelEdit();
             toast.success("Configuration deleted");
         } catch (e) {

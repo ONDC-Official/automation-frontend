@@ -1,9 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { apiClient } from "@services/apiClient";
-import { API_ROUTES } from "@services/apiRoutes";
+import { useLazyGetFlowsQuery, useLazyGetSessionByIdQuery } from "@store/api";
 import { SessionCache } from "@/types/session-types";
-import { Flow } from "@/types/flow-types";
 import { buildFlowRows } from "@pages/user-profile/utils/buildFlowRows";
 import type { FlowStatus, IFlowRow, Session } from "@pages/user-profile/types";
 
@@ -11,6 +9,8 @@ export const useSessionFlows = (session: Session, isExpanded: boolean) => {
     const [flowRows, setFlowRows] = useState<IFlowRow[]>([]);
     const [loadingDetail, setLoadingDetail] = useState(false);
     const detailFetched = useRef(false);
+    const [triggerGetFlows] = useLazyGetFlowsQuery();
+    const [triggerGetSessionById] = useLazyGetSessionByIdQuery();
 
     useEffect(() => {
         if (!isExpanded || detailFetched.current) return;
@@ -27,24 +27,18 @@ export const useSessionFlows = (session: Session, isExpanded: boolean) => {
                         : "NOT_RUN";
 
                 if (session.domain && session.version && session.usecaseId) {
-                    const res = await apiClient.get<{ data: { flows: Flow[] } }>(
-                        API_ROUTES.CONFIG.FLOWS,
-                        {
-                            params: {
-                                domain: session.domain,
-                                version: session.version,
-                                usecase: session.usecaseId,
-                            },
-                        }
-                    );
+                    const res = await triggerGetFlows({
+                        domain: session.domain,
+                        version: session.version,
+                        usecase: session.usecaseId,
+                    });
+                    if (res.error) throw res.error;
                     setFlowRows(buildFlowRows(res.data?.data?.flows ?? [], deriveStatus));
                     return;
                 }
 
-                const res = await apiClient.get<SessionCache>(API_ROUTES.SESSIONS.BASE, {
-                    params: { session_id: session.sessionId },
-                });
-                const detail = res.data;
+                const res = await triggerGetSessionById({ sessionId: session.sessionId }).unwrap();
+                const detail = res as unknown as SessionCache;
                 const attemptedMap = detail.flowMap ?? {};
                 const flowConfigs = detail.flowConfigs ?? {};
 

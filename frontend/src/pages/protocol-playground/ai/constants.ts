@@ -1,14 +1,10 @@
-export const AI_SETTINGS_LS_KEY = "pg-ai-settings";
+// Canonical defaults live in the Redux slice (the settings' actual owner); re-exported here so
+// existing feature imports (e.g. AISettingsPanel) don't need to reach into `@store` directly.
+export { DEFAULT_AI_SETTINGS } from "@store/slices/aiSlice";
+import { DEFAULT_AI_SETTINGS } from "@store/slices/aiSlice";
 
-export const DEFAULT_AI_ENDPOINT = "https://api.openai.com";
-export const DEFAULT_AI_MODEL = "gpt-4o-mini";
-
-export const DEFAULT_AI_SETTINGS = {
-    endpoint: DEFAULT_AI_ENDPOINT,
-    model: DEFAULT_AI_MODEL,
-    inlineCompletionEnabled: true,
-    useProxy: false,
-};
+export const DEFAULT_AI_ENDPOINT = DEFAULT_AI_SETTINGS.endpoint;
+export const DEFAULT_AI_MODEL = DEFAULT_AI_SETTINGS.model;
 
 export const CONTEXT_TRUNCATION = {
     stepCodeMaxChars: 16_000,

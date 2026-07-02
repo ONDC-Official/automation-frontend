@@ -1,5 +1,4 @@
-import apiClient from "./apiClient";
-import { API_ROUTES } from "./apiRoutes";
+import { API_ROUTES } from "@services/apiRoutes";
 import type {
     BuildEntry,
     SpecResponse,
@@ -7,105 +6,29 @@ import type {
     FlowEntry,
     ValidationTableSection,
     ChangelogEntry,
-} from "@pages/developer-guide/types";
+} from "@/types/apiShared/developerGuide";
+import { mainApi } from "@store/api/main/mainApi";
+import type { IGetSpecParams } from "./types";
 
-/**
- * Fetch available domains and versions from the backend.
- */
-export async function fetchBuilds(): Promise<BuildEntry[]> {
-    const response = await apiClient.get<BuildEntry[]>(API_ROUTES.DEV_GUIDE.BUILDS);
-    return response.data ?? [];
-}
-
-export interface FetchSpecOptions {
-    include?: string[];
-    usecase?: string;
-    flowId?: string;
-    tag?: string;
-    docSlug?: string;
-}
-
-/**
- * Fetch spec data for a domain/version and transform it into the
- * OpenAPISpecification shape that frontend components expect.
- */
-export async function fetchSpec(
-    domain: string,
-    version: string,
-    options?: FetchSpecOptions
-): Promise<OpenAPISpecification> {
-    const raw = await fetchSpecRaw(domain, version, options);
-    return specResponseToOpenAPI(raw, domain, version);
-}
-
-/**
- * Fetch raw spec response without transformation.
- */
-export async function fetchSpecRaw(
-    domain: string,
-    version: string,
-    options?: FetchSpecOptions
-): Promise<SpecResponse> {
+const buildSpecQuery = ({ domain, version, ...options }: IGetSpecParams) => {
     const params: Record<string, string> = {};
 
-    if (options?.include?.length) {
+    if (options.include?.length) {
         params.include = options.include.join(",");
     }
-    if (options?.usecase) params.usecase = options.usecase;
-    if (options?.flowId) params.flowId = options.flowId;
-    if (options?.tag) params.tag = options.tag;
-    if (options?.docSlug) params.docSlug = options.docSlug;
+    if (options.usecase) params.usecase = options.usecase;
+    if (options.flowId) params.flowId = options.flowId;
+    if (options.tag) params.tag = options.tag;
+    if (options.docSlug) params.docSlug = options.docSlug;
 
-    const response = await apiClient.get<SpecResponse>(API_ROUTES.DEV_GUIDE.SPEC(domain, version), {
+    return {
+        url: API_ROUTES.DEV_GUIDE.SPEC(domain, version),
+        method: "GET" as const,
         params,
-    });
+    };
+};
 
-    return response.data;
-}
-
-// ─── Lazy-load helpers ───────────────────────────────────────────────────────
-
-/**
- * Fetch validation table for a domain/version.
- * Returns the table keyed by action name, or null.
- */
-export async function fetchValidationTable(
-    domain: string,
-    version: string
-): Promise<ValidationTableSection | null> {
-    const raw = await fetchSpecRaw(domain, version, { include: ["validationTable"] });
-    return (raw.validationTable as ValidationTableSection) ?? null;
-}
-
-/**
- * Fetch changelog entries for a domain/version.
- */
-export async function fetchChangelog(domain: string, version: string): Promise<ChangelogEntry[]> {
-    const raw = await fetchSpecRaw(domain, version, { include: ["changelog"] });
-    return (raw.changelog as ChangelogEntry[] | undefined) ?? [];
-}
-
-/**
- * Fetch docs for a domain/version.
- * Returns a slug→content map (sorted by order).
- */
-export async function fetchDocs(
-    domain: string,
-    version: string,
-    options?: Pick<FetchSpecOptions, "docSlug" | "usecase">
-): Promise<Record<string, string>> {
-    const raw = await fetchSpecRaw(domain, version, {
-        include: ["docs"],
-        ...(options?.docSlug ? { docSlug: options.docSlug } : {}),
-        ...(options?.usecase ? { usecase: options.usecase } : {}),
-    });
-    if (!raw.docs?.length) return {};
-    return Object.fromEntries(
-        raw.docs.sort((a, b) => (a.order ?? 0) - (b.order ?? 0)).map((d) => [d.slug, d.content])
-    );
-}
-
-// ─── Transform helpers ───────────────────────────────────────────────────────
+// ─── Transform helpers (moved verbatim from services/developerGuideSpecApi.ts) ───
 
 function specResponseToOpenAPI(
     raw: SpecResponse,
@@ -194,3 +117,72 @@ function str(v: unknown, fallback: string | undefined): string | undefined {
 function asStringArray(v: unknown): string[] | undefined {
     return Array.isArray(v) ? v.filter((i): i is string => typeof i === "string") : undefined;
 }
+
+export const specApi = mainApi.injectEndpoints({
+    endpoints: (builder) => ({
+        getBuilds: builder.query<BuildEntry[], void>({
+            query: () => ({
+                url: API_ROUTES.DEV_GUIDE.BUILDS,
+                method: "GET",
+            }),
+            transformResponse: (response: BuildEntry[]) => response ?? [],
+            providesTags: ["Build"],
+        }),
+        getSpec: builder.query<OpenAPISpecification, IGetSpecParams>({
+            query: buildSpecQuery,
+            transformResponse: (raw: SpecResponse, _meta, arg) =>
+                specResponseToOpenAPI(raw, arg.domain, arg.version),
+            providesTags: ["Spec"],
+        }),
+        getValidationTable: builder.query<
+            ValidationTableSection | null,
+            { domain: string; version: string }
+        >({
+            query: ({ domain, version }) =>
+                buildSpecQuery({ domain, version, include: ["validationTable"] }),
+            transformResponse: (raw: SpecResponse) =>
+                (raw.validationTable as ValidationTableSection) ?? null,
+            providesTags: ["ValidationTable"],
+        }),
+        getChangelog: builder.query<ChangelogEntry[], { domain: string; version: string }>({
+            query: ({ domain, version }) =>
+                buildSpecQuery({ domain, version, include: ["changelog"] }),
+            transformResponse: (raw: SpecResponse) =>
+                (raw.changelog as ChangelogEntry[] | undefined) ?? [],
+            providesTags: ["Changelog"],
+        }),
+        getDocs: builder.query<
+            Record<string, string>,
+            { domain: string; version: string; docSlug?: string; usecase?: string }
+        >({
+            query: ({ domain, version, docSlug, usecase }) =>
+                buildSpecQuery({
+                    domain,
+                    version,
+                    include: ["docs"],
+                    ...(docSlug ? { docSlug } : {}),
+                    ...(usecase ? { usecase } : {}),
+                }),
+            transformResponse: (raw: SpecResponse) => {
+                if (!raw.docs?.length) return {};
+                return Object.fromEntries(
+                    raw.docs
+                        .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+                        .map((d) => [d.slug, d.content])
+                );
+            },
+            providesTags: ["Docs"],
+        }),
+    }),
+});
+
+export const {
+    useGetBuildsQuery,
+    useLazyGetBuildsQuery,
+    useGetSpecQuery,
+    useLazyGetSpecQuery,
+    useGetValidationTableQuery,
+    useGetChangelogQuery,
+    useGetDocsQuery,
+    useLazyGetDocsQuery,
+} = specApi;

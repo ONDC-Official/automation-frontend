@@ -1,15 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { Button, message } from "antd";
 import { UploadOutlined, DeleteOutlined } from "@ant-design/icons";
-import axios from "axios";
+import { useUploadMultipleImagesMutation } from "@store/api";
 import { LabelWithToolTip } from "@/components/Shadcn/TextField";
 
 type UploadedImage = { imageUrl?: string };
-type UploadMultipleResponse = {
-    success: boolean;
-    data: { images: UploadedImage[] };
-    message?: string;
-};
 
 interface MultiImageUploadProps {
     label: string;
@@ -46,6 +41,7 @@ const MultiImageUpload: React.FC<MultiImageUploadProps> = ({
     const [uploadLoading, setUploadLoading] = useState<boolean>(false);
     const [urlInputValue, setUrlInputValue] = useState<string>("");
     const [inputMode, setInputMode] = useState<"upload" | "url">("upload");
+    const [uploadMultipleImages] = useUploadMultipleImagesMutation();
 
     // Sync with external value changes
     useEffect(() => {
@@ -107,19 +103,10 @@ const MultiImageUpload: React.FC<MultiImageUploadProps> = ({
             });
             formData.append("folder", folder);
 
-            const baseURL = import.meta.env.VITE_BACKEND_URL || "http://localhost:4000";
-            const response = await axios.post<UploadMultipleResponse>(
-                `${baseURL}/images/upload-multiple`,
-                formData,
-                {
-                    headers: {
-                        "Content-Type": "multipart/form-data",
-                    },
-                }
-            );
+            const response = await uploadMultipleImages(formData).unwrap();
 
-            if (response.data.success) {
-                const newUploadedUrls = response.data.data.images.map(
+            if (response.success) {
+                const newUploadedUrls = response.data.images.map(
                     (img: UploadedImage) => img.imageUrl || defaultImageUrl
                 );
                 const allUrls = [...uploadedUrls, ...newUploadedUrls];
@@ -133,7 +120,7 @@ const MultiImageUpload: React.FC<MultiImageUploadProps> = ({
                 message.success(`${newUploadedUrls.length} image(s) uploaded successfully!`);
                 return newUploadedUrls;
             } else {
-                throw new Error(response.data.message || "Upload failed");
+                throw new Error(response.message || "Upload failed");
             }
         } catch (error: unknown) {
             console.error("Error uploading images:", error);

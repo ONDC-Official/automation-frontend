@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
-import axios from "axios";
 import { IDomain } from "@/pages/schema-validation/types";
 import { IDomainVersion } from "@/pages/schema-validation/types";
+import { useGetScenarioFormDataQuery } from "@store/api";
 
 export type IDomainVersionWithUsecase = IDomainVersion & {
     usecase: string[];
@@ -47,22 +47,12 @@ export const useFormFieldData = () => {
         env: "PRE-PRODUCTION",
     });
 
-    const fetchFormFieldData = async () => {
-        try {
-            const response = await axios.get(
-                `${import.meta.env.VITE_BACKEND_URL}/config/senarioFormData`
-            );
-            setDynamicList((prev) => {
-                return { ...prev, domain: response.data.domain || [] };
-            });
-        } catch (e) {
-            console.error("error while fetching form field data", e);
-        }
-    };
+    const { data } = useGetScenarioFormDataQuery();
 
     useEffect(() => {
-        fetchFormFieldData();
-    }, []);
+        if (!data) return;
+        setDynamicList((prev) => ({ ...prev, domain: data.domain || [] }));
+    }, [data]);
 
     return {
         dynamicList,

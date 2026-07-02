@@ -8,7 +8,6 @@ import {
 } from "react";
 import { marked } from "marked";
 import { v4 as uuidv4 } from "uuid";
-import { STORAGE_KEY } from "./constants";
 import ChatHeader from "./ChatHeader";
 import ChatInput from "./ChatInput";
 import ChatMessages from "./ChatMessages";
@@ -21,6 +20,8 @@ import {
     ThinkingStepType,
 } from "./types";
 import { describeArgs, getAssistantBaseUrl, getSessionId, parsePayloadString } from "./utils";
+import { useAppDispatch } from "@store/hooks";
+import { setMcpSessionId } from "@store/slices/chatbotSlice";
 
 const FULLSCREEN_ANIMATION_MS = 300;
 const WELCOME_MESSAGE =
@@ -31,6 +32,7 @@ marked.setOptions({
 });
 
 const Chatbot: FC<ChatbotProps> = ({ domain, version, flowId, actionId, actionApi }) => {
+    const dispatch = useAppDispatch();
     const [knowledgeSource, setKnowledgeSource] = useState<KnowledgeSource>("all");
     const [sessionId, setSessionId] = useState<string>("");
     const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -239,7 +241,7 @@ const Chatbot: FC<ChatbotProps> = ({ domain, version, flowId, actionId, actionAp
         abortControllerRef.current = null;
         setIsStreaming(false);
         const nextSession = uuidv4();
-        localStorage.setItem(STORAGE_KEY, nextSession);
+        dispatch(setMcpSessionId(nextSession));
         setSessionId(nextSession);
         addAgentWelcome("Chat reset. How can I help you?");
     };

@@ -1,17 +1,18 @@
-import { STORAGE_KEY } from "./constants";
 import { v4 as uuidv4 } from "uuid";
+import { store } from "@store/index";
+import { setMcpSessionId } from "@store/slices/chatbotSlice";
 
 export function getAssistantBaseUrl(): string {
     return import.meta.env.VITE_CHATBOT_MCP_BASE_URL || "";
 }
 
 export function getSessionId(): string {
-    const existing = localStorage.getItem(STORAGE_KEY);
+    const existing = store.getState().chatbot.mcpSessionId;
     if (existing) {
         return existing;
     }
     const created = uuidv4();
-    localStorage.setItem(STORAGE_KEY, created);
+    store.dispatch(setMcpSessionId(created));
     return created;
 }
 

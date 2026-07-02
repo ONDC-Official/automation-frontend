@@ -4,7 +4,7 @@ import { toast } from "sonner";
 
 import { Flow } from "@/types/flow-types";
 import { ApiData, SessionCache } from "@/types/session-types";
-import { getTransactionData } from "@utils/request-utils";
+import { useLazyGetTransactionDataQuery } from "@store/api";
 import Modal from "@components/Modal";
 import { CheckCircleIcon, ExclamationCircleIcon } from "@heroicons/react/20/solid";
 import { Button } from "@/components/Shadcn/Button/button";
@@ -53,6 +53,7 @@ const GenerateReportModal = ({
 }) => {
     const { user } = useContext(AuthContext);
     const [loading, setLoading] = useState(false);
+    const [triggerGetTransactionData] = useLazyGetTransactionDataQuery();
 
     const generateReport = async () => {
         if (completedReportableFlows?.length == 0) {
@@ -75,7 +76,11 @@ const GenerateReportModal = ({
             for (const flow in cacheSessionData.flowMap) {
                 const transactionId = cacheSessionData.flowMap[flow];
                 if (!transactionId) continue;
-                const transData = await getTransactionData(transactionId, subUrl);
+                const result = await triggerGetTransactionData({
+                    transactionId,
+                    subscriberUrl: subUrl,
+                });
+                const transData = result.data as { apiList?: ApiData[] } | undefined;
                 if (!transData) continue;
                 apiList = transData.apiList;
 

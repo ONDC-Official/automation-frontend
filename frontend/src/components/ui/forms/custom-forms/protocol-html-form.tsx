@@ -21,7 +21,7 @@ import type {
     IProtocolHtmlFormProps,
 } from "../types/protocol-html-form-types";
 
-import { htmlFormSubmit } from "@utils/request-utils";
+import { useHtmlFormSubmitMutation } from "@store/api";
 // --- Helper: label resolution -------------------------------------------------
 
 function getLabelForInput(input: Element, formEl: HTMLFormElement): string | undefined {
@@ -247,6 +247,7 @@ export default function ProtocolHTMLForm({
 
     // Parse once per formHtml
     const parsed = useMemo<ParsedForm>(() => parseFormHtml(formHtml), [formHtml]);
+    const [htmlFormSubmitMutation] = useHtmlFormSubmitMutation();
 
     // Build initial state from defaults/selected
     const [values, setValues] = useState<ValueState>(() => {
@@ -414,10 +415,16 @@ export default function ProtocolHTMLForm({
                 // 	method: parsed.method,
                 // 	body: fd,
                 // });
-                res = (await htmlFormSubmit(
-                    parsed.action || window.location.href,
-                    fd
-                )) as AxiosResponse<unknown, unknown>;
+                {
+                    const submitData = await htmlFormSubmitMutation({
+                        link: parsed.action || window.location.href,
+                        data: fd,
+                    }).unwrap();
+                    res = { data: submitData, headers: undefined } as unknown as AxiosResponse<
+                        unknown,
+                        unknown
+                    >;
+                }
             } else {
                 const params = new URLSearchParams();
                 for (const f of parsed.fields) {
@@ -450,10 +457,16 @@ export default function ProtocolHTMLForm({
                     }
                 }
 
-                res = (await htmlFormSubmit(
-                    parsed.action || window.location.href,
-                    params.toString()
-                )) as AxiosResponse<unknown, unknown>;
+                {
+                    const submitData = await htmlFormSubmitMutation({
+                        link: parsed.action || window.location.href,
+                        data: params.toString(),
+                    }).unwrap();
+                    res = { data: submitData, headers: undefined } as unknown as AxiosResponse<
+                        unknown,
+                        unknown
+                    >;
+                }
             }
             // Parse response
             const rawCt =

@@ -1,18 +1,20 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { getPayloadsBySessionId } from "@utils/request-utils";
+import { useLazyGetPayloadsBySessionIdQuery } from "@store/api";
 
 export const useSessionLogs = (sessionId: string) => {
     const [hasPayloads, setHasPayloads] = useState(true);
     const [downloadingLogs, setDownloadingLogs] = useState(false);
+    const [triggerGetPayloadsBySessionId] = useLazyGetPayloadsBySessionIdQuery();
 
     useEffect(() => {
         let cancelled = false;
 
         const checkPayloads = async () => {
             try {
-                const payloads = await getPayloadsBySessionId(sessionId);
-                if (!cancelled) setHasPayloads((payloads?.length ?? 0) > 0);
+                const result = await triggerGetPayloadsBySessionId({ sessionId });
+                if (result.error) throw result.error;
+                if (!cancelled) setHasPayloads((result.data?.length ?? 0) > 0);
             } catch {
                 if (!cancelled) setHasPayloads(false);
             }
@@ -23,7 +25,7 @@ export const useSessionLogs = (sessionId: string) => {
         return () => {
             cancelled = true;
         };
-    }, [sessionId]);
+    }, [sessionId, triggerGetPayloadsBySessionId]);
 
     const handleDownloadLogs = async (e: React.MouseEvent) => {
         e.stopPropagation();
@@ -31,7 +33,9 @@ export const useSessionLogs = (sessionId: string) => {
 
         setDownloadingLogs(true);
         try {
-            const payloads = await getPayloadsBySessionId(sessionId);
+            const result = await triggerGetPayloadsBySessionId({ sessionId });
+            if (result.error) throw result.error;
+            const payloads = result.data;
             const blob = new Blob([JSON.stringify(payloads, null, 2)], {
                 type: "application/json",
             });

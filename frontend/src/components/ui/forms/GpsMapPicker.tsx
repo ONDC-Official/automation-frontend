@@ -5,7 +5,7 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { HiOutlineLocationMarker, HiSearch } from "react-icons/hi";
 import type { WidgetProps } from "@rjsf/utils";
-import { geocodePlace, type GeocodeResult } from "@utils/request-utils";
+import { useLazyGeocodePlaceQuery, type GeocodeResult } from "@store/api";
 
 /**
  * Real-Time Ride Map Integration — single-location picker.
@@ -67,6 +67,7 @@ export function SingleLocationPickerModal({
     const [query, setQuery] = useState("");
     const [results, setResults] = useState<GeocodeResult[]>([]);
     const [searching, setSearching] = useState(false);
+    const [triggerGeocodePlace] = useLazyGeocodePlaceQuery();
 
     if (!open) return null;
 
@@ -74,7 +75,8 @@ export function SingleLocationPickerModal({
         if (!query.trim()) return;
         setSearching(true);
         try {
-            setResults(await geocodePlace(query.trim()));
+            const result = await triggerGeocodePlace({ q: query.trim() });
+            setResults(result.data ?? []);
         } finally {
             setSearching(false);
         }

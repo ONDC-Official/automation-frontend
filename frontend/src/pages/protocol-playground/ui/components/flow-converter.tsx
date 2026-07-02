@@ -22,8 +22,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useAppliedTheme } from "@/context/theme/useAppliedTheme";
 import { useClipboard } from "@hooks/useClipboard";
-import { apiClient } from "@services/apiClient";
-import { API_ROUTES } from "@services/apiRoutes";
+import { useGetScenarioFormDataQuery } from "@store/api";
 import type { IScenarioDomainItem } from "@pages/protocol-playground/ui/starter/types";
 import type { IFlowConverterModalProps } from "@pages/protocol-playground/ui/types";
 
@@ -87,25 +86,15 @@ export const FlowConverterModal = ({ isOpen, onClose }: IFlowConverterModalProps
     inputRef.current = inputValue;
     outputRef.current = outputValue;
 
+    const { data: scenarioFormData } = useGetScenarioFormDataQuery(undefined, { skip: !isOpen });
+
     useEffect(() => {
-        if (!isOpen) return;
-        const fetchFormData = async () => {
-            try {
-                const response = await apiClient.get<{
-                    domain?: IScenarioDomainItem[];
-                    version?: { key: string }[];
-                }>(API_ROUTES.CONFIG.SCENARIO_FORM_DATA);
-                setDynamicList((prev) => ({
-                    ...prev,
-                    domain: response.data.domain ?? [],
-                    version: response.data.version ?? [],
-                }));
-            } catch (e) {
-                console.error("error while fetching form field data", e);
-            }
-        };
-        fetchFormData();
-    }, [isOpen]);
+        if (!isOpen || !scenarioFormData) return;
+        setDynamicList((prev) => ({
+            ...prev,
+            domain: scenarioFormData.domain ?? [],
+        }));
+    }, [isOpen, scenarioFormData]);
 
     const handleInputChange = (v: string | undefined) => {
         const val = v || "";
