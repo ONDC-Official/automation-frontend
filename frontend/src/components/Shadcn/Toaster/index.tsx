@@ -1,34 +1,8 @@
-import { useEffect } from "react";
-import { Toaster as Sonner, toast, type ToasterProps, type ExternalToast } from "sonner";
+import { Toaster as Sonner, type ToasterProps } from "sonner";
 import { useTheme } from "@/context/theme/themeContext";
 
-interface IToasterProps extends ToasterProps {
-    initialToastMessage?: string;
-    initialToastOptions?: Omit<ExternalToast, "description">;
-}
-
-export const Toaster = ({
-    position = "bottom-right",
-    duration = 3000,
-    initialToastMessage,
-    initialToastOptions,
-    ...rest
-}: IToasterProps) => {
+export const Toaster = ({ position = "bottom-right", duration = 3000, ...rest }: ToasterProps) => {
     const { resolvedTheme } = useTheme();
-
-    useEffect(() => {
-        if (!initialToastMessage) return;
-
-        let id: string | number | undefined;
-        const timeoutId = setTimeout(() => {
-            id = toast(initialToastMessage, initialToastOptions);
-        }, 0);
-
-        return () => {
-            clearTimeout(timeoutId);
-            if (id !== undefined) toast.dismiss(id);
-        };
-    }, [initialToastMessage, initialToastOptions]);
 
     return (
         <Sonner
