@@ -20,14 +20,14 @@ import { IPreviousSessionItem } from "@/pages/scenario/types";
 import { apiClient } from "@services/apiClient";
 import { API_ROUTES } from "@services/apiRoutes";
 import { AuthContext } from "@/context/authContext";
-import { SCENARIO_GUIDE_STEPS } from "@/pages/scenario/constants";
 import { IScenarioFormData, ISessionResponse, ISavedPrefAPI } from "@/pages/scenario/types";
 import { openSessionInNewTab } from "@/pages/scenario/helpers";
 import NewSessionForm from "@/pages/scenario/NewSessionForm";
 import Spinner from "@/components/Shadcn/Spinner";
-import { ScenarioTipBanner } from "@/pages/scenario/ScenarioTipBanner";
+import { PageToast } from "@/components/PageToast";
+import { SCENARIO_GUIDE_STEPS, SCENARIO_TIP_BANNER_MESSAGE } from "@/pages/scenario/constants";
 
-export default function FlowContent() {
+export const FlowContent = () => {
     const {
         flowStepNum,
         setFlowStepNum,
@@ -272,10 +272,10 @@ export default function FlowContent() {
     };
     return (
         <div className="w-full">
-            <ScenarioTipBanner />
+            <PageToast message={SCENARIO_TIP_BANNER_MESSAGE} />
             <div className="mx-auto px-20 py-6">
                 <Body />
             </div>
         </div>
     );
-}
+};
