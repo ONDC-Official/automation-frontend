@@ -24,10 +24,11 @@ import { IScenarioFormData, ISessionResponse, ISavedPrefAPI } from "@/pages/scen
 import { openSessionInNewTab } from "@/pages/scenario/helpers";
 import NewSessionForm from "@/pages/scenario/NewSessionForm";
 import Spinner from "@/components/Shadcn/Spinner";
-import { PageToast } from "@/components/PageToast";
+import { Toaster } from "@/components/Shadcn/Toaster";
 import { SCENARIO_GUIDE_STEPS, SCENARIO_TIP_BANNER_MESSAGE } from "@/pages/scenario/constants";
+import { InformationCircleIcon } from "@heroicons/react/24/outline";
 
-export const FlowContent = () => {
+const Scenario = () => {
     const {
         flowStepNum,
         setFlowStepNum,
@@ -272,10 +273,21 @@ export const FlowContent = () => {
     };
     return (
         <div className="w-full">
-            <PageToast message={SCENARIO_TIP_BANNER_MESSAGE} />
+            <Toaster
+                position="top-right"
+                initialToastMessage={SCENARIO_TIP_BANNER_MESSAGE}
+                initialToastOptions={{
+                    duration: Infinity,
+                    closeButton: true,
+                    position: "top-right",
+                    icon: <InformationCircleIcon className="size-5 text-brand-normal" />,
+                }}
+            />
             <div className="mx-auto px-20 py-6">
                 <Body />
             </div>
         </div>
     );
 };
+
+export default Scenario;
