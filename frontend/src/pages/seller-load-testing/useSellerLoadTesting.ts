@@ -1,34 +1,26 @@
 import React from "react";
 import { useCreateLoadTestSessionMutation, useDeleteLoadTestSessionMutation } from "@store/api";
 import { FormValues } from "./types";
+import { useAppDispatch, useAppSelector } from "@store/hooks";
+import {
+    selectSellerSession,
+    setSellerSession,
+    type ISellerSessionData,
+} from "@store/slices/sellerLoadTestSlice";
 
-interface SessionData {
-    sessionId: string;
-    bppId: string;
-    bppUri: string;
-    createdAt: string;
-    expiresAt: string;
-    status: string;
-}
+type SessionData = ISellerSessionData;
 
 export const useSellerLoadTesting = () => {
     const [createLoadTestSession] = useCreateLoadTestSessionMutation();
     const [deleteLoadTestSession] = useDeleteLoadTestSessionMutation();
+    const dispatch = useAppDispatch();
     const [isLoading, setIsLoading] = React.useState<boolean>(false);
     const [isDeleting, setIsDeleting] = React.useState<boolean>(false);
-    const [sessionData, setSessionData] = React.useState<SessionData | null>(() => {
-        const saved = localStorage.getItem("seller_session");
-        return saved ? JSON.parse(saved) : null;
-    });
+    const sessionData = useAppSelector(selectSellerSession);
     const [discoveryComplete, setDiscoveryComplete] = React.useState<boolean>(false);
 
     const saveSession = (data: SessionData | null) => {
-        if (data) {
-            localStorage.setItem("seller_session", JSON.stringify(data));
-        } else {
-            localStorage.removeItem("seller_session");
-        }
-        setSessionData(data);
+        dispatch(setSellerSession(data));
     };
 
     const onSubmit = async (data: FormValues) => {

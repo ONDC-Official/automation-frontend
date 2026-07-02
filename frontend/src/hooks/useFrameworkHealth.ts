@@ -2,18 +2,20 @@ import { useCallback, useState } from "react";
 import { toast } from "sonner";
 import { useAdminAuthMutation, useLazyGetApiServiceHealthQuery } from "@store/api";
 import type { IVersionResult, IDomainResult, IHealthSummary, IHealthReportData } from "@store/api";
+import { useAppDispatch, useAppSelector } from "@store/hooks";
+import {
+    selectFrameworkHealthAuthenticated,
+    setFrameworkHealthAuthenticated,
+} from "@store/slices/frameworkHealthSlice";
 
 export type VersionResult = IVersionResult;
 export type DomainResult = IDomainResult;
 export type HealthSummary = IHealthSummary;
 export type HealthReportData = IHealthReportData;
 
-const SESSION_KEY = "framework_health_auth";
-
 export const useFrameworkHealth = () => {
-    const [isAuthenticated, setIsAuthenticated] = useState<boolean>(
-        () => sessionStorage.getItem(SESSION_KEY) === "true"
-    );
+    const dispatch = useAppDispatch();
+    const isAuthenticated = useAppSelector(selectFrameworkHealthAuthenticated);
     const [isAuthLoading, setIsAuthLoading] = useState(false);
     const [credentials, setCredentials] = useState({ username: "", password: "" });
     const [isRunning, setIsRunning] = useState(false);
@@ -29,8 +31,7 @@ export const useFrameworkHealth = () => {
             try {
                 const response = await adminAuth(credentials).unwrap();
                 if (response.authenticated) {
-                    setIsAuthenticated(true);
-                    sessionStorage.setItem(SESSION_KEY, "true");
+                    dispatch(setFrameworkHealthAuthenticated(true));
                     toast.success("Login successful!");
                 } else {
                     toast.error("Invalid credentials");
@@ -41,15 +42,14 @@ export const useFrameworkHealth = () => {
                 setIsAuthLoading(false);
             }
         },
-        [credentials, adminAuth]
+        [credentials, adminAuth, dispatch]
     );
 
     const handleLogout = useCallback(() => {
-        setIsAuthenticated(false);
-        sessionStorage.removeItem(SESSION_KEY);
+        dispatch(setFrameworkHealthAuthenticated(false));
         setReport(null);
         setCredentials({ username: "", password: "" });
-    }, []);
+    }, [dispatch]);
 
     const runApiServiceCheck = useCallback(async () => {
         setIsRunning(true);

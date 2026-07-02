@@ -1,23 +1,20 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback } from "react";
 
-import { localStorageManager } from "@utils/localStorageManager";
+import { useAppDispatch, useAppSelector } from "@store/hooks";
+import { selectAiSettings, updateAiSettings } from "@store/slices/aiSlice";
 
-import { AI_SETTINGS_LS_KEY, DEFAULT_AI_SETTINGS } from "../constants";
 import type { AiSettings } from "../context/ai-context";
 
 export function useAiSettings() {
-    const [settings, setSettings] = useState<AiSettings>(() => {
-        const stored = localStorageManager.getItem<Partial<AiSettings>>(AI_SETTINGS_LS_KEY);
-        return { ...DEFAULT_AI_SETTINGS, ...(stored ?? {}) };
-    });
+    const dispatch = useAppDispatch();
+    const settings = useAppSelector(selectAiSettings);
 
-    useEffect(() => {
-        localStorageManager.setItem<AiSettings>(AI_SETTINGS_LS_KEY, settings);
-    }, [settings]);
-
-    const updateSettings = useCallback((patch: Partial<AiSettings>) => {
-        setSettings((prev) => ({ ...prev, ...patch }));
-    }, []);
+    const updateSettings = useCallback(
+        (patch: Partial<AiSettings>) => {
+            dispatch(updateAiSettings(patch));
+        },
+        [dispatch]
+    );
 
     return { settings, updateSettings };
 }

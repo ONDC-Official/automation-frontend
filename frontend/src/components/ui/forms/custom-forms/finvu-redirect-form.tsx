@@ -7,6 +7,8 @@ import FormDialogShell from "@/components/ui/forms/form-dialog-shell";
 import { SubmitEventParams } from "@/types/flow-types";
 import { useLazyGetFinvuCompletionQuery, useVerifyFinvuConsentMutation } from "@store/api";
 import { cn } from "@/lib/utils";
+import { useAppDispatch } from "@store/hooks";
+import { setFinvuFlowActive } from "@store/slices/uiFlagsSlice";
 
 interface IFinvuRedirectFormProps {
     submitEvent: (data: SubmitEventParams) => Promise<void>;
@@ -32,6 +34,7 @@ export default function FinvuRedirectForm({
     const hasCompletedRef = useRef<boolean>(false);
     const [triggerGetFinvuCompletion] = useLazyGetFinvuCompletionQuery();
     const [verifyFinvuConsent] = useVerifyFinvuConsentMutation();
+    const dispatch = useAppDispatch();
 
     const cleanup = useCallback(() => {
         if (pollingIntervalRef.current) {
@@ -39,8 +42,8 @@ export default function FinvuRedirectForm({
             pollingIntervalRef.current = null;
         }
         isPollingRef.current = false;
-        localStorage.removeItem("finvu_flow_active");
-    }, []);
+        dispatch(setFinvuFlowActive(false));
+    }, [dispatch]);
 
     useEffect(() => {
         return () => {
@@ -183,7 +186,7 @@ export default function FinvuRedirectForm({
                 setStatus("waiting");
                 setErrorMessage("");
                 setPollCount(0);
-                localStorage.setItem("finvu_flow_active", "true");
+                dispatch(setFinvuFlowActive(true));
 
                 if (!transactionId) {
                     throw new Error("Transaction ID is missing! Cannot create Finvu callback URL.");

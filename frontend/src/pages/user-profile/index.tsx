@@ -4,14 +4,13 @@ import Spinner from "@/components/Shadcn/Spinner";
 import { AuthContext } from "@/context/authContext";
 import { ROUTES } from "@constants/routes";
 import { useGetScenarioPreferencesQuery, useGetPastReportsQuery } from "@store/api";
-import { useProfileCounts } from "@hooks/useProfileCounts";
 import { ProfileSidebar } from "@pages/user-profile/ProfileSidebar";
-import { ProfileShellContext } from "@pages/user-profile/ProfileShellContext";
+import { ProfileShellContext, useProfileShell } from "@pages/user-profile/ProfileShellContext";
 
 const UserProfile = () => {
     const { isAuthLoading, user } = useContext(AuthContext);
     const navigate = useNavigate();
-    const [counts, setCounts] = useProfileCounts();
+    const { counts, setCounts } = useProfileShell();
     const username = user?.username;
 
     useEffect(() => {

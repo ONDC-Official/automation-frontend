@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect, useContext, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import RenderFlows from "@components/FlowShared/render-flows";
@@ -12,7 +12,13 @@ import { trackEvent } from "@utils/analytics";
 import { useWorkbenchFlows } from "@hooks/useWorkbenchFlow";
 import { IDomain } from "@/pages/schema-validation/types";
 import { Flow } from "@/types/flow-types";
-import { sessionIdSupport } from "@/utils/localStorageManager";
+import { useAppDispatch, useAppSelector } from "@store/hooks";
+import {
+    pruneExpiredSessions,
+    setSessions,
+    type IFlowTestingSessionEntry,
+} from "@store/slices/sessionHistorySlice";
+import { setScenarioSession } from "@store/slices/supportSessionSlice";
 import { PreviousSessionsPanel } from "@/pages/scenario/PreviousSessionPanel";
 import { IPreviousSessionItem } from "@/pages/scenario/types";
 import {
@@ -27,9 +33,9 @@ import { IScenarioFormData, ISessionResponse, ISavedPrefAPI } from "@/pages/scen
 import { openSessionInNewTab } from "@/pages/scenario/helpers";
 import NewSessionForm from "@/pages/scenario/NewSessionForm";
 import Spinner from "@/components/Shadcn/Spinner";
-import { Toaster } from "@/components/Shadcn/Toaster";
 import { SCENARIO_GUIDE_STEPS, SCENARIO_TIP_BANNER_MESSAGE } from "@/pages/scenario/constants";
-import { InformationCircleIcon } from "@heroicons/react/24/outline";
+import { Button } from "@/components/Shadcn/Button";
+import { InformationCircleIcon, XMarkIcon } from "@heroicons/react/24/outline";
 
 const Scenario = () => {
     const {
@@ -48,8 +54,18 @@ const Scenario = () => {
     const { sessionId: contextSessionId } = useSession();
     const { user } = useContext(AuthContext);
     const [searchParams] = useSearchParams();
+    const dispatch = useAppDispatch();
 
-    const [existingSessions, setExistingSessions] = useState<IPreviousSessionItem[]>([]);
+    const storedSessions = useAppSelector((state) => state.sessionHistory.sessions);
+    const existingSessions = useMemo<IPreviousSessionItem[]>(
+        () =>
+            [...storedSessions].sort(
+                (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+            ),
+        [storedSessions]
+    );
+    const setExistingSessions = (sessions: IFlowTestingSessionEntry[]) =>
+        dispatch(setSessions(sessions));
     const [isInitializing, setIsInitializing] = useState(true);
     const [savedPreferences, setSavedPreferences] = useState<Record<string, IScenarioFormData>>({});
     const initialSavedConfigKey = searchParams.get("config") ?? "";
@@ -78,7 +94,7 @@ const Scenario = () => {
                 },
             }).unwrap();
             const sessionID = response.sessionId;
-            sessionIdSupport.setScenarioSession(response.sessionId);
+            dispatch(setScenarioSession(response.sessionId));
             const currentUrl = window.location.origin;
             const newTabUrl = `${currentUrl}/flow-testing?sessionId=${sessionID}&subscriberUrl=${encodeURIComponent(data.subscriberUrl)}&role=${data.npType}`;
             if (newTab) {
@@ -161,16 +177,7 @@ const Scenario = () => {
     };
 
     useEffect(() => {
-        const storedSessions = localStorage.getItem("flowTestingSessions");
-        if (storedSessions) {
-            const parsed = JSON.parse(storedSessions) as IPreviousSessionItem[];
-            const valid = parsed.filter((s) => Date.now() < new Date(s.expiresAt).getTime());
-            if (valid.length !== parsed.length) {
-                localStorage.setItem("flowTestingSessions", JSON.stringify(valid));
-            }
-            valid.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
-            setExistingSessions(valid);
-        }
+        dispatch(pruneExpiredSessions());
         Promise.all([fetchFormFieldData(), fetchAndApplyPreferences()]).finally(() =>
             setIsInitializing(false)
         );
@@ -210,6 +217,39 @@ const Scenario = () => {
             putCacheData({ data: { activeStep: flowStepNum }, sessionId: session });
         }
     }, [flowStepNum, session]);
+
+    useEffect(() => {
+        const id = setTimeout(() => {
+            toast(SCENARIO_TIP_BANNER_MESSAGE, {
+                duration: Infinity,
+                action: {
+                    label: (
+                        <Button
+                            variant="ghost"
+                            className="text-destructive"
+                            size="sm"
+                            icon={<XMarkIcon className="size-5 text-brand-normal" />}
+                        />
+                    ),
+                    onClick: () => {
+                        toast.dismiss();
+                    },
+                },
+                actionButtonStyle: {
+                    background: "transparent",
+                    boxShadow: "none",
+                    padding: 0,
+                },
+                style: { alignItems: "flex-start" },
+                position: "top-right",
+                icon: <InformationCircleIcon className="size-5 text-brand-normal" />,
+            });
+        }, 0);
+        return () => {
+            clearTimeout(id);
+            toast.dismiss();
+        };
+    }, []);
 
     const Body = () => {
         switch (flowStepNum) {
@@ -271,16 +311,6 @@ const Scenario = () => {
     };
     return (
         <div className="w-full">
-            <Toaster
-                position="top-right"
-                initialToastMessage={SCENARIO_TIP_BANNER_MESSAGE}
-                initialToastOptions={{
-                    duration: Infinity,
-                    closeButton: true,
-                    position: "top-right",
-                    icon: <InformationCircleIcon className="size-5 text-brand-normal" />,
-                }}
-            />
             <div className="mx-auto px-20 py-6">
                 <Body />
             </div>
