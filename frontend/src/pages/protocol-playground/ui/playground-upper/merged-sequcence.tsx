@@ -167,6 +167,7 @@ export const ActionTimeline = ({
                                         onMouseEnter={cancelClose}
                                         onMouseLeave={scheduleClose}
                                         onOpenAutoFocus={(event) => event.preventDefault()}
+                                        onCloseAutoFocus={(event) => event.preventDefault()}
                                     >
                                         <ActionDetailsCard
                                             action={action}

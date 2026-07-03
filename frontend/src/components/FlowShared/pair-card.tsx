@@ -152,8 +152,8 @@ function StepDisplay({ step, flowId }: { step: MappedStep; flowId: string }) {
                 onKeyDown={(e) => e.key === "Enter" && onClickFunc()}
             >
                 <div className="flex w-full flex-col gap-2">
-                    <div className="flex items-start justify-between gap-2">
-                        <h1 className="min-w-0 flex-1 text-sm leading-snug font-semibold text-text-primary wrap-break-word">
+                    <div className="flex flex-wrap items-start justify-between gap-x-2 gap-y-1">
+                        <h1 className="min-w-24 flex-1 text-sm leading-snug font-semibold text-text-primary wrap-break-word">
                             {!step.missedStep ? (
                                 <span className="mr-1 font-normal text-text-secondary">
                                     {step.index + 1}:
