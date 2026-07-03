@@ -12,7 +12,7 @@ import { pathCards } from "@/pages/home/constants";
 import PathCardLinks from "@/pages/home/PathCardLinks";
 
 const PickYourPath: FC = () => (
-    <section className="bg-surface-page py-16 lg:py-20">
+    <section className="bg-n-0 dark:bg-surface-page py-16 lg:py-20">
         <div className="mx-auto px-20">
             <SectionLabel label="// GET STARTED" />
             <h2 className="text-h3 lg:text-h3 font-bold text-n-800 dark:text-n-0 mb-3">
