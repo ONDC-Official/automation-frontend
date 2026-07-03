@@ -4,8 +4,8 @@ import { supportChannelCards } from "@pages/support/constants";
 import SupportChannelCard from "@/pages/support/SupportCard";
 
 const SupportChannelsSection: FC = () => (
-    <section className="bg-n-10 dark:bg-surface-page">
-        <div className="mx-auto px-20">
+    <section className="bg-n-10 dark:bg-surface-page border-b border-n-30 dark:border-n-600">
+        <div className="mx-auto px-20 py-16">
             <SectionLabel label="// SUPPORT CHANNELS" />
             <h2 className="text-h3 font-bold text-n-800 dark:text-n-0 mb-3">
                 Choose how you want help.

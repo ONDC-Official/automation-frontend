@@ -4,7 +4,7 @@ import { quickSteps } from "@/pages/home/constants";
 import { QuickStepBadge } from "@pages/home/QuickStepBadge";
 
 const IntialStepsSection: FC = () => (
-    <section className="border-y border-n-30 bg-surface-page dark:border-border-default">
+    <section className="border-y border-n-30 bg-n-0 dark:bg-surface-page dark:border-border-default">
         <div className="mx-auto py-8 px-20">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-10">
                 {quickSteps.map((step) => (
