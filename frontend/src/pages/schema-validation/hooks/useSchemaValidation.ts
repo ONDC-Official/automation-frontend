@@ -3,12 +3,12 @@
  */
 
 import { useState, useEffect, useLayoutEffect, useCallback, useRef } from "react";
-import axios from "axios";
 import type { editor as MonacoEditor } from "monaco-editor";
 import type { MonacoModule, IParsedValidationError } from "@pages/schema-validation/types";
 import { trackEvent } from "@utils/analytics";
-import { fetchFormFieldData } from "@utils/request-utils";
-import { PAYLOAD_STORAGE_KEY } from "@pages/schema-validation/constants";
+import { useGetScenarioFormDataQuery, useValidateActionMutation } from "@store/api";
+import { useAppDispatch, useAppSelector } from "@store/hooks";
+import { selectSchemaDraftPayload, setDraftPayload } from "@store/slices/schemaValidationSlice";
 import {
     parsePayload,
     validateAction,
@@ -23,7 +23,6 @@ import { buildValidationError } from "@pages/schema-validation/utils/validationE
 import type {
     IUseSchemaValidationReturn,
     IActiveDomainConfig,
-    IValidationResponse,
 } from "@pages/schema-validation/types";
 
 /**
@@ -32,12 +31,14 @@ import type {
  * @returns Object containing state and handler functions for schema validation
  */
 export const useSchemaValidation = (): IUseSchemaValidationReturn => {
-    const [payload, setPayload] = useState<string>("");
+    const dispatch = useAppDispatch();
+    const payload = useAppSelector(selectSchemaDraftPayload);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [validationErrors, setValidationErrors] = useState<
         ReturnType<typeof parseValidationErrors>
     >([]);
     const [isSuccessResponse, setIsSuccessResponse] = useState<boolean>(false);
+    const [triggerValidateAction] = useValidateActionMutation();
     const [isValidationVisible, setIsValidationVisible] = useState<boolean>(false);
     const [isErrorsExpanded, setIsErrorsExpanded] = useState<boolean>(false);
     const [activeDomain, setActiveDomain] = useState<IActiveDomainConfig>({});
@@ -46,34 +47,16 @@ export const useSchemaValidation = (): IUseSchemaValidationReturn => {
     const monacoRef = useRef<MonacoModule | null>(null);
 
     /**
-     * Load payload from localStorage on component mount
-     */
-    useEffect(() => {
-        const savedPayload = localStorage.getItem(PAYLOAD_STORAGE_KEY);
-        if (savedPayload) {
-            setPayload(savedPayload);
-        }
-    }, []);
-
-    /**
      * Fetch active domain configuration from the backend
      */
-    const getFormFields = useCallback(async () => {
-        try {
-            const data = await fetchFormFieldData();
-            setActiveDomain((data as IActiveDomainConfig) || {});
-        } catch (error) {
-            console.error("Error fetching form fields:", error);
-            setActiveDomain({});
-        }
-    }, []);
+    const { data: scenarioFormData } = useGetScenarioFormDataQuery();
 
     /**
-     * Load active domain configuration on mount
+     * Sync active domain configuration once it's loaded
      */
     useEffect(() => {
-        getFormFields();
-    }, [getFormFields]);
+        setActiveDomain((scenarioFormData as unknown as IActiveDomainConfig) || {});
+    }, [scenarioFormData]);
 
     /**
      * Clears editor decorations whenever the payload changes.
@@ -107,11 +90,13 @@ export const useSchemaValidation = (): IUseSchemaValidationReturn => {
      *
      * @param value - The new payload value from the editor
      */
-    const handlePayloadChange = useCallback((value: string | undefined) => {
-        const newPayload = value || "";
-        setPayload(newPayload);
-        localStorage.setItem(PAYLOAD_STORAGE_KEY, newPayload);
-    }, []);
+    const handlePayloadChange = useCallback(
+        (value: string | undefined) => {
+            const newPayload = value || "";
+            dispatch(setDraftPayload(newPayload));
+        },
+        [dispatch]
+    );
 
     /**
      * Shows validation errors in the panel and applies editor highlights.
@@ -178,15 +163,15 @@ export const useSchemaValidation = (): IUseSchemaValidationReturn => {
 
         try {
             setIsLoading(true);
-            const response = await axios.post<IValidationResponse>(
-                `${import.meta.env.VITE_BACKEND_URL}/flow/validate/${actionResult.value}`,
-                parsedPayloadResult.value
-            );
+            const response = await triggerValidateAction({
+                action: actionResult.value,
+                payload: parsedPayloadResult.value,
+            }).unwrap();
 
             setIsValidationVisible(true);
 
-            if (response.data?.error?.message) {
-                showValidationErrors(parseValidationErrors(response.data.error.message));
+            if (response?.error?.message) {
+                showValidationErrors(parseValidationErrors(response.error.message));
             } else {
                 setValidationErrors([]);
                 setIsSuccessResponse(true);

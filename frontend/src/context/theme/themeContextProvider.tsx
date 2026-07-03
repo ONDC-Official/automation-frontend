@@ -1,28 +1,27 @@
-import {
-    useCallback,
-    useEffect,
-    useMemo,
-    useRef,
-    useState,
-    createContext,
-    type ReactNode,
-} from "react";
+import { useCallback, useEffect, useMemo, useRef, createContext, type ReactNode } from "react";
 import {
     ThemePreference,
     ResolvedTheme,
     ThemeContextValue,
 } from "@/context/theme/themeContextTypes";
 import { applyThemeToDocument, resolveTheme } from "@/context/theme/themeUtils";
+import { useAppDispatch, useAppSelector } from "@store/hooks";
+import {
+    selectThemePreference,
+    setPreference as setPreferenceAction,
+    setTheme as setThemeAction,
+    toggleTheme as toggleThemeAction,
+} from "@store/slices/themeSlice";
 
 export const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
 /**
- * Provides app-wide theme state backed by CSS tokens (`tokens.css`) and the `.dark` class.
+ * Thin shell over the Redux `theme` slice. State lives in the store (persisted); this provider
+ * keeps the same Context API for existing consumers and applies the theme to the document.
  * Ant Design is not coupled here — ready for a future shadcn migration.
  */
 export const ThemeContextProvider = ({ children }: { children: ReactNode }) => {
-    const [preference, setPreferenceState] = useState<ThemePreference>(() => {
-        return "light";
-    });
+    const dispatch = useAppDispatch();
+    const preference = useAppSelector(selectThemePreference);
 
     const resolvedTheme = useMemo(() => resolveTheme(preference), [preference]);
     const isInitialMount = useRef(true);
@@ -32,20 +31,23 @@ export const ThemeContextProvider = ({ children }: { children: ReactNode }) => {
         isInitialMount.current = false;
     }, [resolvedTheme]);
 
-    const setPreference = useCallback((next: ThemePreference) => {
-        setPreferenceState(next);
-    }, []);
+    const setPreference = useCallback(
+        (next: ThemePreference) => {
+            dispatch(setPreferenceAction(next));
+        },
+        [dispatch]
+    );
 
-    const setTheme = useCallback((theme: ResolvedTheme) => {
-        setPreferenceState(theme);
-    }, []);
+    const setTheme = useCallback(
+        (theme: ResolvedTheme) => {
+            dispatch(setThemeAction(theme));
+        },
+        [dispatch]
+    );
 
     const toggleTheme = useCallback(() => {
-        setPreferenceState((current) => {
-            const currentResolved = resolveTheme(current);
-            return currentResolved === "dark" ? "light" : "dark";
-        });
-    }, []);
+        dispatch(toggleThemeAction());
+    }, [dispatch]);
 
     const value = useMemo<ThemeContextValue>(
         () => ({

@@ -3,16 +3,15 @@ import { Outlet, useNavigate } from "react-router-dom";
 import Spinner from "@/components/Shadcn/Spinner";
 import { AuthContext } from "@/context/authContext";
 import { ROUTES } from "@constants/routes";
-import { apiClient } from "@services/apiClient";
-import { API_ROUTES } from "@services/apiRoutes";
-import { useProfileCounts } from "@hooks/useProfileCounts";
+import { useGetScenarioPreferencesQuery, useGetPastReportsQuery } from "@store/api";
 import { ProfileSidebar } from "@pages/user-profile/ProfileSidebar";
-import { ProfileShellContext } from "@pages/user-profile/ProfileShellContext";
+import { ProfileShellContext, useProfileShell } from "@pages/user-profile/ProfileShellContext";
 
 const UserProfile = () => {
     const { isAuthLoading, user } = useContext(AuthContext);
     const navigate = useNavigate();
-    const [counts, setCounts] = useProfileCounts();
+    const { counts, setCounts } = useProfileShell();
+    const username = user?.username;
 
     useEffect(() => {
         if (isAuthLoading || user) {
@@ -22,32 +21,19 @@ const UserProfile = () => {
         navigate(ROUTES.HOME);
     }, [isAuthLoading, navigate, user]);
 
+    const { data: scenarioPreferences } = useGetScenarioPreferencesQuery(undefined, {
+        skip: !username,
+    });
+    const { data: pastReports } = useGetPastReportsQuery(username ?? "", { skip: !username });
+
     useEffect(() => {
-        const username = user?.username;
         if (!username) return;
-
-        const loadCounts = async () => {
-            try {
-                const [prefsRes, reportsRes] = await Promise.all([
-                    apiClient.get(API_ROUTES.USER.SCENARIO_PREFERENCES).catch(() => ({ data: {} })),
-                    apiClient
-                        .get(API_ROUTES.USER.PAST_REPORTS(username))
-                        .catch(() => ({ data: [] })),
-                ]);
-                const prefs = prefsRes.data ?? {};
-                const reports = Array.isArray(reportsRes.data) ? reportsRes.data : [];
-                setCounts((prev) => ({
-                    ...prev,
-                    configs: Object.keys(prefs).length,
-                    pastReports: reports.length,
-                }));
-            } catch {
-                // Badge counts are non-critical
-            }
-        };
-
-        loadCounts();
-    }, [user?.username]);
+        setCounts((prev) => ({
+            ...prev,
+            configs: Object.keys(scenarioPreferences ?? {}).length,
+            pastReports: (pastReports ?? []).length,
+        }));
+    }, [username, scenarioPreferences, pastReports, setCounts]);
 
     if (isAuthLoading) {
         return (

@@ -13,7 +13,11 @@ import { cn } from "@/lib/utils";
 import { MappedStep } from "@/types/flow-state-type";
 import { Flow } from "@/types/flow-types";
 import { useSession } from "@context/context";
-import { getCompletePayload, PayloadResponse, updateCustomFlow } from "@utils/request-utils";
+import {
+    useLazyGetCompletePayloadQuery,
+    useUpdateCustomFlowMutation,
+    type PayloadResponse,
+} from "@store/api";
 import { openDevGuide } from "@utils/dev-guide-url-gen";
 
 export default function PairedCard({
@@ -58,6 +62,8 @@ function StepDisplay({ step, flowId }: { step: MappedStep; flowId: string }) {
         experimentalMode,
     } = useSession();
     const [isUpdatingManual, setIsUpdatingManual] = useState(false);
+    const [updateCustomFlow] = useUpdateCustomFlowMutation();
+    const [triggerGetCompletePayload] = useLazyGetCompletePayloadQuery();
 
     const flowConfig = sessionData?.flowConfigs?.[flowId];
     const seqStep = flowConfig?.sequence.find((s) => s.key === step.actionId);
@@ -80,7 +86,7 @@ function StepDisplay({ step, flowId }: { step: MappedStep; flowId: string }) {
         });
         setIsUpdatingManual(true);
         try {
-            await updateCustomFlow(sessionId, updatedFlow);
+            await updateCustomFlow({ sessionId, flow: updatedFlow }).unwrap();
         } catch (e) {
             setSessionData(prevSessionData);
             toast.error("Failed to update manual mode");
@@ -106,7 +112,7 @@ function StepDisplay({ step, flowId }: { step: MappedStep; flowId: string }) {
             return;
         }
         const payloadIds = step.payloads?.payloads.map((p) => p.payloadId) ?? [];
-        const payloads = await getCompletePayload(payloadIds);
+        const payloads = await triggerGetCompletePayload({ payloadIds }).unwrap();
         setRequestData(payloads.map((p: PayloadResponse<unknown, unknown>) => p.req));
         setResponseData(payloads.map((p: PayloadResponse<unknown, unknown>) => p.res.response));
     };

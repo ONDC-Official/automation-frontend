@@ -1,4 +1,4 @@
-import type { CommentResponse } from "@services/developerGuideCommentsApi";
+import type { ICommentResponse } from "@store/api";
 import { generateLocalId } from "../../shared/utils/generateLocalId";
 import { DEFAULT_COMMENT_AUTHOR } from "./constants";
 import type { CommentThread } from "./types";
@@ -6,7 +6,7 @@ import type { CommentThread } from "./types";
 export const generateCommentId = generateLocalId;
 
 /** Builds threads from a flat API list by pairing replies (`parent_comment_id`) to their parent comment. */
-export function buildThreadsFromApiList(list: CommentResponse[]): CommentThread[] {
+export function buildThreadsFromApiList(list: ICommentResponse[]): CommentThread[] {
     const parents = list.filter((r) => !r.parent_comment_id);
     const replies = list.filter((r) => r.parent_comment_id);
 

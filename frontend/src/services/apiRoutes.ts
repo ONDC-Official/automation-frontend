@@ -18,6 +18,7 @@ export const API_ROUTES = {
         ACTIONS: "/flow/actions",
         ROUTE: "/flow/route",
         GEOCODE: "/flow/geocode",
+        VALIDATE: (action: string) => `/flow/validate/${action}`,
     },
 
     // Session routes
@@ -27,6 +28,7 @@ export const API_ROUTES = {
         TRANSACTION: "/sessions/transaction",
         EXPECTATION: "/sessions/expectation",
         FLOW_PERMISSION: "/sessions/flowPermission",
+        PLAYGROUND: "/sessions/playground",
     },
 
     // Database routes
@@ -61,15 +63,35 @@ export const API_ROUTES = {
         SAVE_REDIRECTION: "/form/save-redirection",
     },
 
+    // Finvu Account Aggregator routes
+    FINVU: {
+        CHECK_COMPLETION: "/finvu/check-completion",
+        VERIFY_CONSENT: "/finvu/verify-consent",
+    },
+
     // API routes (external services)
     API: {
         SESSIONS_FLOWS: (sessionId: string) => `/api/sessions/flows/${sessionId}`,
+    },
+
+    // Image upload routes
+    IMAGES: {
+        UPLOAD: "/images/upload",
+        UPLOAD_MULTIPLE: "/images/upload-multiple",
     },
 
     AUTH: {
         // LOGOUT: "/auth/logout",
         ME: "/auth/api/me",
         EXCHANGE: "/auth/exchange",
+        SUBSCRIBE: "/auth/subscribe",
+        LOOKUP: "/auth/lookup",
+        GENERATE_KEYS: "/auth/api/generate-keys",
+    },
+
+    // Seller routes
+    SELLER: {
+        ON_SEARCH: "/seller/on_search",
     },
 
     USER: {
@@ -99,5 +121,15 @@ export const API_ROUTES = {
         BUILDS: "dev-guide/available-builds",
         SPEC: (domain: string, version: string) =>
             `dev-guide/spec/${encodeURIComponent(domain)}/${encodeURIComponent(version)}`,
+    },
+
+    // Seller load-testing routes (load-test backend)
+    LOAD_TEST: {
+        SESSIONS: "/sessions/",
+        SESSION_BY_ID: (sessionId: string) => `/sessions/${sessionId}`,
+        DISCOVERY_PAYLOAD: (sessionId: string) => `/sessions/${sessionId}/discovery/payload`,
+        DISCOVERY: (sessionId: string) => `/sessions/${sessionId}/discovery`,
+        PREORDER: (sessionId: string) => `/sessions/${sessionId}/preorder`,
+        RUN_STATUS: (sessionId: string, runId: string) => `/sessions/${sessionId}/runs/${runId}`,
     },
 } as const;

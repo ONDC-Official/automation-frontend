@@ -1,10 +1,8 @@
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
 
-import { apiClient, ApiError } from "@services/apiClient";
-import { API_ROUTES } from "@services/apiRoutes";
+import { useAdminAuthMutation, useLazyGetPayloadsQuery } from "@store/api";
 import { LoginCredentials, PayloadData } from "@pages/db-back-office/types";
-import { AxiosError } from "axios";
 
 type FetchParams = {
     domain: string;
@@ -27,6 +25,8 @@ export const useDbBackOffice = () => {
         page: "",
         action: "any",
     });
+    const [adminAuth] = useAdminAuthMutation();
+    const [triggerGetPayloads] = useLazyGetPayloadsQuery();
 
     const handleLogin = useCallback(
         async (e: React.FormEvent) => {
@@ -34,34 +34,22 @@ export const useDbBackOffice = () => {
             setIsLoading(true);
 
             try {
-                const response = await apiClient.get<{ authenticated: boolean }>(
-                    API_ROUTES.DB.ADMIN_AUTH,
-                    {
-                        params: {
-                            username: credentials.username,
-                            password: credentials.password,
-                        },
-                    }
-                );
+                const response = await adminAuth(credentials).unwrap();
 
-                if (response.data.authenticated) {
+                if (response.authenticated) {
                     setIsAuthenticated(true);
                     toast.success("Login successful!");
                 } else {
                     toast.error("Invalid credentials");
                 }
             } catch (error: unknown) {
-                toast.error(
-                    (error as AxiosError<ApiError>).response?.data?.message ||
-                        (error as Error).message ||
-                        "Login failed"
-                );
-                console.error("Authentication error:", error as Error);
+                toast.error((error as { message?: string }).message || "Login failed");
+                console.error("Authentication error:", error);
             } finally {
                 setIsLoading(false);
             }
         },
-        [credentials]
+        [credentials, adminAuth]
     );
 
     const fetchPayloadData = useCallback(async () => {
@@ -72,32 +60,22 @@ export const useDbBackOffice = () => {
 
         setIsLoading(true);
         try {
-            const url = API_ROUTES.DB.PAYLOADS(
-                fetchParams.domain,
-                fetchParams.version,
-                fetchParams.action,
-                fetchParams.page
-            );
-
-            const response = await apiClient.get(url);
+            const result = await triggerGetPayloads(fetchParams);
+            if (result.error) throw result.error;
             setPayloadData({
                 domain: fetchParams.domain,
                 version: fetchParams.version,
                 page: fetchParams.page,
-                data: response.data,
+                data: result.data,
             });
             toast.success("Data fetched successfully!");
         } catch (error: unknown) {
-            toast.error(
-                (error as AxiosError<ApiError>).response?.data?.message ||
-                    (error as Error).message ||
-                    "Failed to fetch data"
-            );
-            console.error("Fetch error:", error as Error);
+            toast.error((error as { message?: string }).message || "Failed to fetch data");
+            console.error("Fetch error:", error);
         } finally {
             setIsLoading(false);
         }
-    }, [fetchParams]);
+    }, [fetchParams, triggerGetPayloads]);
 
     const handleLogout = useCallback(() => {
         setIsAuthenticated(false);

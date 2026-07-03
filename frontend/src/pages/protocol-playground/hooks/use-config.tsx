@@ -8,6 +8,7 @@ import { isRideMapEnabled } from "@components/FlowShared/ride-map-utils";
 import { calcCurrentIndex } from "@pages/protocol-playground/mock-engine";
 import { MockRunner, MockPlaygroundConfigType } from "@ondc/automation-mock-runner";
 import { createFlowSessionWithPlayground } from "@pages/protocol-playground/utils/request-utils";
+import { useCreatePlaygroundSessionMutation } from "@store/api";
 import { GetRequestEndpoint } from "@components/FlowShared/guides";
 import MockDynamicForm from "@pages/protocol-playground/ui/components/mock-dynamic-form";
 import { PlaygroundSchemaFormShell } from "@pages/protocol-playground/ui/playground-schema-form-shell";
@@ -32,6 +33,7 @@ export const useConfigOperations = () => {
     // const generateRunner = useCodeRunner("generate");
     // const generateResult = generateRunner.result;
     const modal = playgroundContext.useModal;
+    const [createPlaygroundSession] = useCreatePlaygroundSessionMutation();
 
     const exportConfig = () => {
         if (!playgroundContext.config) {
@@ -338,7 +340,8 @@ export const useConfigOperations = () => {
             const result = await createFlowSessionWithPlayground(
                 playgroundContext.config,
                 subscriberUrl,
-                role
+                role,
+                createPlaygroundSession
             );
 
             if (!result) {

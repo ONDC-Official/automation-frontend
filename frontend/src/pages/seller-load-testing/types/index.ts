@@ -45,23 +45,12 @@ export interface DiscoverySectionProps {
     onDiscoveryComplete: () => void;
 }
 
-export interface PayloadResponse {
-    payload: Record<string, unknown>;
-}
-
-export interface DiscoveryResponse {
-    [key: string]: unknown;
-}
+export type { DiscoveryResponse } from "@/types/apiShared/loadTest";
 
 export interface PreorderLoadTestProps {
     sessionId: string;
     status: string;
     discoveryComplete: boolean;
-}
-
-export interface PreorderResponse {
-    session_id: string;
-    run_id: string;
 }
 
 export interface StageMetric {

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { fetchBuilds, fetchSpec, fetchDocs } from "@services/developerGuideSpecApi";
+import { useLazyGetBuildsQuery, useLazyGetSpecQuery, useLazyGetDocsQuery } from "@store/api";
 import { getUsecaseLabelFromBuilds } from "../../utils";
 import type { OpenAPISpecification, FlowEntry, BuildEntry } from "../../types";
 
@@ -12,6 +12,9 @@ export function useSpecData(domainKey: string, versionKey: string, slug: string)
     const [specData, setSpecData] = useState<OpenAPISpecification | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [notFound, setNotFound] = useState(false);
+    const [triggerGetBuilds] = useLazyGetBuildsQuery();
+    const [triggerGetSpec] = useLazyGetSpecQuery();
+    const [triggerGetDocs] = useLazyGetDocsQuery();
 
     const apiUsecase = useMemo(
         () => getUsecaseLabelFromBuilds(builds, domainKey, versionKey, slug) ?? slug,
@@ -27,20 +30,26 @@ export function useSpecData(domainKey: string, versionKey: string, slug: string)
             setIsLoading(true);
             setNotFound(false);
             try {
-                const buildsData = await fetchBuilds();
+                const buildsResult = await triggerGetBuilds();
+                if (buildsResult.error) throw buildsResult.error;
+                const buildsData = buildsResult.data ?? [];
                 if (cancelled) return;
 
                 const resolvedUsecase =
                     getUsecaseLabelFromBuilds(buildsData, domainKey, versionKey, slug) ?? slug;
 
-                const spec = await fetchSpec(domainKey, versionKey, {
+                const specResult = await triggerGetSpec({
+                    domain: domainKey,
+                    version: versionKey,
                     include: ["meta", "flows", "attributes", "validations", "docs"],
                     usecase: resolvedUsecase || undefined,
                 });
+                if (specResult.error) throw specResult.error;
+                const spec = specResult.data;
 
                 if (cancelled) return;
                 setBuilds(buildsData);
-                setSpecData(spec);
+                setSpecData(spec ?? null);
             } catch {
                 if (!cancelled) {
                     setBuilds([]);
@@ -65,8 +74,9 @@ export function useSpecData(domainKey: string, versionKey: string, slug: string)
         if (existing && Object.keys(existing).length > 0) return;
 
         let cancelled = false;
-        fetchDocs(domainKey, versionKey, { usecase: apiUsecase || undefined })
-            .then((docs) => {
+        triggerGetDocs({ domain: domainKey, version: versionKey, usecase: apiUsecase || undefined })
+            .then((result) => {
+                const docs = result.data ?? {};
                 if (cancelled || Object.keys(docs).length === 0) return;
                 setSpecData((prev) => (prev ? { ...prev, "x-docs": docs } : prev));
             })

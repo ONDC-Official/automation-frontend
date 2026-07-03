@@ -1,6 +1,6 @@
 import { Request, Response, RequestHandler } from 'express';
 import axios from 'axios';
-import { RedisService } from 'ondc-automation-cache-lib';
+import { RedisService } from '@ondc/ondc-automation-cache-lib';
 import logger from '@ondc/automation-logger';
 
 const FINVU_SERVICE_URL = process.env.FINVU_SERVICE_URL;

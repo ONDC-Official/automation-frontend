@@ -192,14 +192,8 @@ export const developerGuideApiClient = new ApiClient({
     timeout: 30000,
 });
 
-export const developerGuideNotesApiClient = new ApiClient({
-    baseURL: import.meta.env.VITE_DEVELOPER_GUIDE_BACKEND_URL,
-    withCredentials: true,
-    timeout: 30000,
-});
-
-export const developerGuideCommentsApiClient = new ApiClient({
-    baseURL: import.meta.env.VITE_DEVELOPER_GUIDE_BACKEND_URL,
+export const loadTestApiClient = new ApiClient({
+    baseURL: import.meta.env.VITE_LOAD_TEST_BACKEND_URL,
     withCredentials: true,
     timeout: 30000,
 });

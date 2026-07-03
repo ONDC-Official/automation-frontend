@@ -11,7 +11,7 @@ import TextField from "@/components/Shadcn/TextField";
 import { Field, FieldLabel } from "@/components/Shadcn/TextField/field";
 import FormDialogShell from "@/components/ui/forms/form-dialog-shell";
 import { useSession } from "@/context/context";
-import { getCompletePayload, getTransactionData } from "@/utils/request-utils";
+import { useLazyGetCompletePayloadQuery, useLazyGetTransactionDataQuery } from "@store/api";
 
 const ORDER_TYPE_OPTIONS = [
     { value: "ILBN", label: "ILBN" },
@@ -38,6 +38,8 @@ export default function RetINVLInitOffersForm({ submitEvent }: IRetINVLInitOffer
     const { sessionData, activeFlowId } = useSession();
     const [isLoading, setIsLoading] = useState(false);
     const [isDataPasted, setIsDataPasted] = useState(false);
+    const [triggerGetTransactionData] = useLazyGetTransactionDataQuery();
+    const [triggerGetCompletePayload] = useLazyGetCompletePayloadQuery();
 
     const { control, handleSubmit, watch } = useForm<IFormValues>({
         defaultValues: DEFAULT_FORM_VALUES,
@@ -356,10 +358,13 @@ export default function RetINVLInitOffersForm({ submitEvent }: IRetINVLInitOffer
             if (!transactionId) return;
 
             setIsLoading(true);
-            const transactionData = await getTransactionData(
+            const transactionResult = await triggerGetTransactionData({
                 transactionId,
-                sessionData.subscriberUrl
-            );
+                subscriberUrl: sessionData.subscriberUrl,
+            });
+            const transactionData = transactionResult.data as
+                | { apiList: { action: string; payloadId: string }[] }
+                | undefined;
             if (!transactionData) {
                 setIsLoading(false);
                 return;
@@ -377,9 +382,12 @@ export default function RetINVLInitOffersForm({ submitEvent }: IRetINVLInitOffer
             const latestOnSearch = onSearchActions[onSearchActions.length - 1];
             const payloadId = latestOnSearch.payloadId;
 
-            const completePayloads = await getCompletePayload<unknown, IOnSearchPayload>([
-                payloadId,
-            ]);
+            const completePayloadsResult = await triggerGetCompletePayload({
+                payloadIds: [payloadId],
+            }).unwrap();
+            const completePayloads = completePayloadsResult as unknown as {
+                req: IOnSearchPayload;
+            }[];
             if (!completePayloads || completePayloads.length === 0) {
                 setIsLoading(false);
                 return;

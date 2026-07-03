@@ -1,6 +1,3 @@
-import axios from "axios";
-import { toast } from "sonner";
-
 export async function getGithubAvatarUrl(userName: string) {
     try {
         if (!userName) {
@@ -18,19 +15,5 @@ export async function getGithubAvatarUrl(userName: string) {
     } catch (error) {
         console.error("Error fetching GitHub avatar:", error);
         return undefined; // Return undefined if there's an error
-    }
-}
-
-export async function generateKeys() {
-    try {
-        const url = `${import.meta.env.VITE_BACKEND_URL}/auth/api/generate-keys`;
-        const response = await axios.get(url, {
-            withCredentials: true,
-        });
-        return response.data;
-    } catch (error) {
-        console.error("Error generating keys:", error);
-        toast.error("Failed to generate keys!");
-        throw new Error("Failed to generate keys");
     }
 }

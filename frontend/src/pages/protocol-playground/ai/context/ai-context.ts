@@ -1,11 +1,8 @@
 import { Context, createContext } from "react";
 
-export type AiSettings = {
-    endpoint: string;
-    model: string;
-    inlineCompletionEnabled: boolean;
-    useProxy: boolean;
-};
+// Canonical type lives in the Redux slice (the settings' actual owner).
+export type { AiSettings } from "@store/slices/aiSlice";
+import type { AiSettings } from "@store/slices/aiSlice";
 
 export type UnlockGateResult = "unlocked" | "cancelled";
 

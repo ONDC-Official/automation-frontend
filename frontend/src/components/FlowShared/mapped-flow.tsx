@@ -7,7 +7,7 @@ import { FormConfig, FormConfigType, FormFieldConfigType } from "@/components/ui
 import FormLaunchPopup from "@components/ui/forms/custom-forms/form-launch-popup";
 import { TooltipHint } from "@/components/Shadcn/Tooltip";
 import { SequenceStep, SubmitEventParams } from "@/types/flow-types";
-import { proceedFlow, triggerExtra } from "@utils/request-utils";
+import { useProceedFlowMutation, useTriggerExtraMutation } from "@store/api";
 import { useSession } from "@context/context";
 
 import PairedCard from "@components/FlowShared/pair-card";
@@ -16,6 +16,9 @@ import {
     isTrackingActive,
     isRideMapEnabled,
 } from "@components/FlowShared/ride-map-utils";
+import { useAppDispatch } from "@store/hooks";
+import { setLamfLaunchDone, clearLamfLaunchDone } from "@store/slices/uiFlagsSlice";
+import { store } from "@store/index";
 
 // LAMF single-redirection flow: its MANUAL_DYNAMIC_FORM form is launched from a
 // separate one-button popup as soon as the FIRST on_select completes (this flow
@@ -37,6 +40,8 @@ export default function DisplayFlow({
         missedSteps: [],
         reference_data: mappedFlow.reference_data,
     });
+    const [proceedFlow] = useProceedFlowMutation();
+    const [triggerExtra] = useTriggerExtraMutation();
     const [inputPopUp, setInputPopUp] = useState(false);
     const [activeFormConfig, setActiveFormConfig] = useState<FormConfigType | undefined>(undefined);
     const [activeFormTitle, setActiveFormTitle] = useState<string | undefined>(undefined);
@@ -72,6 +77,7 @@ export default function DisplayFlow({
     const [activeExtraKey, setActiveExtraKey] = useState<string | undefined>(undefined);
     const [triggeringKey, setTriggeringKey] = useState<string | undefined>(undefined);
 
+    const dispatch = useAppDispatch();
     const {
         sessionId,
         sessionData,
@@ -102,11 +108,7 @@ export default function DisplayFlow({
     // Mark the launch as done (button clicked) and dismiss the popup. The marker
     // persists across refreshes; it clears naturally when the flow is cleared.
     const handleFormLaunched = () => {
-        try {
-            localStorage.setItem(launchMarkerKey(), "1");
-        } catch {
-            // localStorage unavailable — non-fatal, popup just won't persist.
-        }
+        dispatch(setLamfLaunchDone(launchMarkerKey()));
         setLaunchPopUp(false);
         setLaunchFormConfig(undefined);
     };
@@ -177,11 +179,7 @@ export default function DisplayFlow({
                 // During a live run on_select stays COMPLETE, so this never runs
                 // mid-run — refresh-survival is preserved.
                 launchHandledSigRef.current = undefined;
-                try {
-                    localStorage.removeItem(markerKey);
-                } catch {
-                    // localStorage unavailable — non-fatal.
-                }
+                dispatch(clearLamfLaunchDone(markerKey));
             }
         }
 
@@ -261,7 +259,7 @@ export default function DisplayFlow({
         // via the map.
         if (trackingActive && isTrackingPhaseStep(latestSending?.actionType)) return;
         if (latestSending && latestSending.force_proceed && transactionId) {
-            proceedFlow(sessionId, transactionId);
+            proceedFlow({ sessionId, transactionId });
         }
     }, [mappedFlow]);
 
@@ -350,9 +348,19 @@ export default function DisplayFlow({
             // popup submissions fall back to the stored key set when the form opened.
             const key = extraKey ?? activeInputExtraKey;
             if (key) {
-                await triggerExtra(sessionId, txId, key, formData.formData);
+                await triggerExtra({
+                    sessionId,
+                    transactionId: txId,
+                    triggerExtraKey: key,
+                    inputs: formData.formData,
+                }).unwrap();
             } else {
-                await proceedFlow(sessionId, txId, formData.jsonPath, formData.formData);
+                await proceedFlow({
+                    sessionId,
+                    transactionId: txId,
+                    jsonPathChanges: formData.jsonPath,
+                    inputs: formData.formData,
+                }).unwrap();
             }
 
             // Remember what we submitted so the auto-open effect won't re-open it while the
@@ -377,7 +385,12 @@ export default function DisplayFlow({
         }
         setTriggeringKey(key);
         try {
-            await triggerExtra(sessionId, transactionId, key, inputs);
+            await triggerExtra({
+                sessionId,
+                transactionId,
+                triggerExtraKey: key,
+                inputs,
+            }).unwrap();
             toast.success(`Triggered ${key}`);
         } catch (error) {
             toast.error("Error triggering extra step");
@@ -590,11 +603,7 @@ function stepSignature(step: MappedStep): string {
 
 // Whether the LAMF launch popup has already been handled this run (survives refresh).
 function isLaunchDone(markerKey: string): boolean {
-    try {
-        return localStorage.getItem(markerKey) === "1";
-    } catch {
-        return false;
-    }
+    return Boolean(store.getState().uiFlags.lamfLaunchDone[markerKey]);
 }
 
 // Nearest actually-scrolling ancestor, or null when the window/document is the scroller.
