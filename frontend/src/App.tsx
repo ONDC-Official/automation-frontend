@@ -2,7 +2,6 @@ import { useEffect } from "react";
 import { BrowserRouter, useLocation } from "react-router-dom";
 import { Provider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
-import { ConfigProvider } from "antd";
 import { AuthProvider } from "@/context/authContext";
 import { SessionProvider } from "@context/context";
 import { ThemeContextProvider } from "@/context/theme/themeContextProvider";
@@ -42,11 +41,9 @@ const App = () => (
             onBeforeLift={() => runLegacyStorageMigration(store)}
         >
             <ThemeContextProvider>
-                <ConfigProvider>
-                    <BrowserRouter>
-                        <Wrapper />
-                    </BrowserRouter>
-                </ConfigProvider>
+                <BrowserRouter>
+                    <Wrapper />
+                </BrowserRouter>
             </ThemeContextProvider>
         </PersistGate>
     </Provider>

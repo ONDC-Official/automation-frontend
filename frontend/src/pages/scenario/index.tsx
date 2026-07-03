@@ -35,7 +35,7 @@ import NewSessionForm from "@/pages/scenario/NewSessionForm";
 import Spinner from "@/components/Shadcn/Spinner";
 import { SCENARIO_GUIDE_STEPS, SCENARIO_TIP_BANNER_MESSAGE } from "@/pages/scenario/constants";
 import { Button } from "@/components/Shadcn/Button";
-import { InformationCircleIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import { InformationCircleIcon } from "@heroicons/react/24/outline";
 import { ROUTES } from "@/constants/routes";
 
 const Scenario = () => {
@@ -234,24 +234,6 @@ const Scenario = () => {
         const id = setTimeout(() => {
             toast(SCENARIO_TIP_BANNER_MESSAGE, {
                 duration: Infinity,
-                action: {
-                    label: (
-                        <Button
-                            variant="ghost"
-                            className="text-destructive"
-                            size="sm"
-                            icon={<XMarkIcon className="size-5 text-brand-normal" />}
-                        />
-                    ),
-                    onClick: () => {
-                        toast.dismiss();
-                    },
-                },
-                actionButtonStyle: {
-                    background: "transparent",
-                    boxShadow: "none",
-                    padding: 0,
-                },
                 style: { alignItems: "flex-start" },
                 position: "top-right",
                 icon: <InformationCircleIcon className="size-5 text-brand-normal" />,

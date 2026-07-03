@@ -463,6 +463,7 @@ export default function SessionDataTab() {
                             data={payloadFromTranscationHistory(selectedCall)}
                             isSelected={isSelected}
                             handleKeyClick={handleKeyClick}
+                            invertTheme
                         />
                         {/* <div className="text-gray-400">{"}"}</div> */}
                     </div>

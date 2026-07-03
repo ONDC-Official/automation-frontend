@@ -104,7 +104,7 @@ const FlowInformation: FC<FlowInformationProps> = ({
 
                     {hasTabs && (
                         <div className="border-t border-slate-200 dark:border-border-default">
-                            <div className="relative flex items-stretch gap-0 mt-4 mb-4 h-[calc(100vh-10rem)]">
+                            <div className="relative flex items-start gap-0 mt-4 mb-4">
                                 {/* Left pane: flows accordion/sidebar — fixed across tab changes */}
                                 <FlowsSidebar
                                     flows={flows}

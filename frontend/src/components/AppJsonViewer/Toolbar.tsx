@@ -11,6 +11,7 @@ type ToolbarProps = {
     searchTerm: string;
     searchPlaceholder: string;
     isFullscreen: boolean;
+    invertTheme?: boolean;
     toolbarClassName?: string;
     onSearchTermChange: (value: string) => void;
     onExpandAll: () => void;
@@ -27,6 +28,7 @@ const AppJsonViewerToolbar = ({
     searchTerm,
     searchPlaceholder,
     isFullscreen,
+    invertTheme = false,
     toolbarClassName,
     onSearchTermChange,
     onExpandAll,
@@ -36,7 +38,10 @@ const AppJsonViewerToolbar = ({
 }: ToolbarProps) => (
     <div
         className={cn(
-            "flex items-center gap-2 px-4 py-2.5 border-b border-slate-200 bg-brand-light dark:bg-surface-elevated/90 backdrop-blur-xs overflow-x-auto",
+            "flex items-center gap-2 px-4 py-2.5 border-b backdrop-blur-xs overflow-x-auto",
+            invertTheme
+                ? "border-gray-700 bg-gray-800"
+                : "border-slate-200 bg-brand-light dark:bg-surface-elevated/90",
             toolbarClassName
         )}
     >
@@ -46,7 +51,11 @@ const AppJsonViewerToolbar = ({
                 onChange={(e) => onSearchTermChange(e.target.value)}
                 placeholder={searchPlaceholder}
                 containerClassName="w-44 shrink-0"
-                className="h-8 text-[12px] font-mono"
+                className={cn(
+                    "h-8 text-[12px] font-mono",
+                    invertTheme &&
+                        "bg-gray-900! border-gray-700! text-gray-100! placeholder:text-gray-500!"
+                )}
             />
         )}
         {showExpandCollapse && (

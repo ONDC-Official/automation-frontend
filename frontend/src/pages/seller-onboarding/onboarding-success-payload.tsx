@@ -1,11 +1,14 @@
-import React from "react";
+import React, { useState } from "react";
 import { toast } from "sonner";
-import { Button, Card, Tabs, Typography } from "antd";
-import { CopyOutlined, DownloadOutlined, CheckCircleOutlined } from "@ant-design/icons";
-import { useClipboard } from "@hooks/useClipboard";
+import {
+    ClipboardDocumentIcon,
+    ArrowDownTrayIcon,
+    CheckCircleIcon,
+} from "@heroicons/react/24/outline";
 
-const { Title, Text } = Typography;
-const { TabPane } = Tabs;
+import { Button } from "@/components/Shadcn/Button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/Shadcn/Tabs";
+import { useClipboard } from "@hooks/useClipboard";
 
 interface OnboardingSuccessPayloadProps {
     submittedData: Record<string, unknown>;
@@ -21,15 +24,16 @@ const OnboardingSuccessPayload: React.FC<OnboardingSuccessPayloadProps> = ({
     payloadType = "single-domain",
 }) => {
     const { copyToClipboard } = useClipboard();
-
-    const handleCopy = (text: string) => {
-        void copyToClipboard(text);
-    };
-
     const isMultiDomain =
         payloadType === "multi-domain" &&
         typeof onSearchPayload === "object" &&
         !Array.isArray(onSearchPayload);
+
+    const [activeTab, setActiveTab] = useState(isMultiDomain ? "domain-0" : "1");
+
+    const handleCopy = (text: string) => {
+        void copyToClipboard(text);
+    };
 
     const handleDownload = (data: Record<string, unknown>, filename: string) => {
         const jsonString = JSON.stringify(data, null, 2);
@@ -54,31 +58,42 @@ const OnboardingSuccessPayload: React.FC<OnboardingSuccessPayloadProps> = ({
             <div className="container mx-auto px-6 max-w-6xl">
                 <div className="text-center mb-8">
                     <div className="flex justify-center mb-4">
-                        <CheckCircleOutlined className="text-6xl text-green-500" />
+                        <CheckCircleIcon className="size-16 text-green-500" />
                     </div>
-                    <Title level={2} className="mb-2">
-                        Seller Onboarding Successful!
-                    </Title>
-                    <Text className="text-gray-600">
+                    <h2 className="text-2xl font-bold mb-2">Seller Onboarding Successful!</h2>
+                    <p className="text-gray-600">
                         Your seller profile has been created successfully. Below you can view and
                         copy the generated payloads.
-                    </Text>
+                    </p>
                 </div>
 
-                <Card className="shadow-lg">
-                    <Tabs defaultActiveKey="1" size="large">
+                <div className="rounded-lg border border-n-30 bg-white p-6 shadow-lg">
+                    <Tabs value={activeTab} onValueChange={setActiveTab}>
+                        <TabsList variant="line" className="mb-4 border-b border-n-30">
+                            {isMultiDomain ? (
+                                Object.keys(onSearchPayload).map((domain, index) => (
+                                    <TabsTrigger key={`domain-${index}`} value={`domain-${index}`}>
+                                        {domain} Payload
+                                    </TabsTrigger>
+                                ))
+                            ) : (
+                                <TabsTrigger value="1">On Search Payload</TabsTrigger>
+                            )}
+                            <TabsTrigger value="2">Submitted Data</TabsTrigger>
+                        </TabsList>
+
                         {isMultiDomain ? (
-                            // Multi-domain: Create a tab for each domain
                             Object.entries(onSearchPayload).map(([domain, payload], index) => (
-                                <TabPane tab={`${domain} Payload`} key={`domain-${index}`}>
+                                <TabsContent key={`domain-${index}`} value={`domain-${index}`}>
                                     <div className="space-y-4">
                                         <div className="flex justify-between items-center mb-4">
-                                            <Title level={4} className="mb-0">
+                                            <h4 className="text-lg font-semibold mb-0">
                                                 {domain} on_search Payload
-                                            </Title>
+                                            </h4>
                                             <div className="space-x-2">
                                                 <Button
-                                                    icon={<CopyOutlined />}
+                                                    variant="outline"
+                                                    icon={<ClipboardDocumentIcon />}
                                                     onClick={() =>
                                                         handleCopy(
                                                             formatJson(
@@ -90,7 +105,8 @@ const OnboardingSuccessPayload: React.FC<OnboardingSuccessPayloadProps> = ({
                                                     Copy
                                                 </Button>
                                                 <Button
-                                                    icon={<DownloadOutlined />}
+                                                    variant="outline"
+                                                    icon={<ArrowDownTrayIcon />}
                                                     onClick={() =>
                                                         handleDownload(
                                                             payload as Record<string, unknown>,
@@ -117,19 +133,19 @@ const OnboardingSuccessPayload: React.FC<OnboardingSuccessPayloadProps> = ({
                                             </p>
                                         </div>
                                     </div>
-                                </TabPane>
+                                </TabsContent>
                             ))
                         ) : (
-                            // Single domain: Original behavior
-                            <TabPane tab="On Search Payload" key="1">
+                            <TabsContent value="1">
                                 <div className="space-y-4">
                                     <div className="flex justify-between items-center mb-4">
-                                        <Title level={4} className="mb-0">
+                                        <h4 className="text-lg font-semibold mb-0">
                                             on_search Payload
-                                        </Title>
+                                        </h4>
                                         <div className="space-x-2">
                                             <Button
-                                                icon={<CopyOutlined />}
+                                                variant="outline"
+                                                icon={<ClipboardDocumentIcon />}
                                                 onClick={() =>
                                                     handleCopy(formatJson(onSearchPayload))
                                                 }
@@ -137,7 +153,8 @@ const OnboardingSuccessPayload: React.FC<OnboardingSuccessPayloadProps> = ({
                                                 Copy
                                             </Button>
                                             <Button
-                                                icon={<DownloadOutlined />}
+                                                variant="outline"
+                                                icon={<ArrowDownTrayIcon />}
                                                 onClick={() =>
                                                     handleDownload(
                                                         onSearchPayload as Record<string, unknown>,
@@ -164,18 +181,19 @@ const OnboardingSuccessPayload: React.FC<OnboardingSuccessPayloadProps> = ({
                                         </p>
                                     </div>
                                 </div>
-                            </TabPane>
+                            </TabsContent>
                         )}
 
-                        <TabPane tab="Submitted Data" key="2">
+                        <TabsContent value="2">
                             <div className="space-y-4">
                                 <div className="flex justify-between items-center mb-4">
-                                    <Title level={4} className="mb-0">
+                                    <h4 className="text-lg font-semibold mb-0">
                                         Original Submitted Data
-                                    </Title>
+                                    </h4>
                                     <div className="space-x-2">
                                         <Button
-                                            icon={<CopyOutlined />}
+                                            variant="outline"
+                                            icon={<ClipboardDocumentIcon />}
                                             onClick={() =>
                                                 handleCopy(
                                                     formatJson(
@@ -187,7 +205,8 @@ const OnboardingSuccessPayload: React.FC<OnboardingSuccessPayloadProps> = ({
                                             Copy
                                         </Button>
                                         <Button
-                                            icon={<DownloadOutlined />}
+                                            variant="outline"
+                                            icon={<ArrowDownTrayIcon />}
                                             onClick={() =>
                                                 handleDownload(
                                                     submittedData as Record<string, unknown>,
@@ -206,19 +225,19 @@ const OnboardingSuccessPayload: React.FC<OnboardingSuccessPayloadProps> = ({
                                     </pre>
                                 </div>
                             </div>
-                        </TabPane>
+                        </TabsContent>
                     </Tabs>
-                </Card>
+                </div>
 
                 <div className="mt-8 text-center space-x-4">
-                    <Button size="large" onClick={onBack}>
+                    <Button variant="outline" size="lg" onClick={onBack}>
                         Back to Dashboard
                     </Button>
                     {isMultiDomain && (
                         <Button
-                            type="default"
-                            size="large"
-                            icon={<DownloadOutlined />}
+                            variant="outline"
+                            size="lg"
+                            icon={<ArrowDownTrayIcon />}
                             onClick={() =>
                                 handleDownload(
                                     onSearchPayload as Record<string, unknown>,

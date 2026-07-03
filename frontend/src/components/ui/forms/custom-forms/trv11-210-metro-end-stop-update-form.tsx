@@ -3,7 +3,7 @@ import { toast } from "sonner";
 
 import { ComboBoxControl } from "@/components/Shadcn/ComboBox";
 import { Button } from "@/components/Shadcn/Button/button";
-import PayloadEditor from "@/components/ui/mini-components/payload-editor";
+import PayloadEditor from "@/components/PayloadEditor/PastePayloadModal";
 import FormDialogShell from "@/components/ui/forms/form-dialog-shell";
 import { PastePayloadButton } from "@/components/ui/forms/paste-payload-button";
 

@@ -2,8 +2,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { Modal } from "antd";
-import { ExclamationTriangleIcon } from "@heroicons/react/24/outline";
 
 import { ROUTES } from "@constants/routes";
 import {
@@ -66,6 +64,7 @@ export const useScenarioPreferences = () => {
     const [isSaving, setIsSaving] = useState(false);
     const [isFetching, setIsFetching] = useState(true);
     const [editingKey, setEditingKey] = useState<string | null>(null);
+    const [pendingDeleteKey, setPendingDeleteKey] = useState<string | null>(null);
 
     const allDomainsRef = useRef<IDomain[]>([]);
     const [triggerGetScenarioFormData] = useLazyGetScenarioFormDataQuery();
@@ -215,28 +214,18 @@ export const useScenarioPreferences = () => {
     };
 
     const confirmDelete = (configKey: string) => {
-        Modal.confirm({
-            title: "Delete configuration",
-            icon: <ExclamationTriangleIcon className="size-5 text-error-500" />,
-            content: (
-                <span>
-                    Are you sure you want to delete{" "}
-                    <span className="font-semibold text-text-primary">{configKey}</span>? This
-                    action cannot be undone.
-                </span>
-            ),
-            okText: "Delete",
-            cancelText: "Cancel",
-            centered: true,
-            okButtonProps: {
-                style: {
-                    backgroundColor: "var(--color-error-500)",
-                    borderColor: "var(--color-error-500)",
-                    color: "#fff",
-                },
-            },
-            onOk: () => handleDelete(configKey),
-        });
+        setPendingDeleteKey(configKey);
+    };
+
+    const closeConfirmDelete = () => {
+        setPendingDeleteKey(null);
+    };
+
+    const confirmDeleteAction = () => {
+        if (!pendingDeleteKey) return;
+        const configKey = pendingDeleteKey;
+        setPendingDeleteKey(null);
+        void handleDelete(configKey);
     };
 
     return {
@@ -259,6 +248,9 @@ export const useScenarioPreferences = () => {
         handleCancelEdit,
         onSubmit,
         confirmDelete,
+        pendingDeleteKey,
+        closeConfirmDelete,
+        confirmDeleteAction,
         handleLaunch,
         allDomainsRef,
     };

@@ -7,6 +7,12 @@ export type AppJsonViewerProps = Omit<React.ComponentProps<typeof JsonView>, "va
     toolbarClassName?: string;
     viewerWrapperClassName?: string;
     transparentBackground?: boolean;
+    /**
+     * Render the viewer with the opposite of the app's active theme. Useful for
+     * panels (e.g. the playground Session Manager) that intentionally invert the
+     * app theme via the aliased gray/slate palette.
+     */
+    invertTheme?: boolean;
     showToolbar?: boolean;
     showSearch?: boolean;
     showExpandCollapse?: boolean;

@@ -21,6 +21,7 @@ const AppJsonViewer = ({
     downloadFileName = "payload.json",
     noResultsText = "No results found",
     transparentBackground = true,
+    invertTheme = false,
     style,
     displayDataTypes = false,
     shortenTextAfterLength = 0,
@@ -30,6 +31,13 @@ const AppJsonViewer = ({
     ...jsonViewProps
 }: AppJsonViewerProps) => {
     const appliedTheme = useAppliedTheme();
+    // When inverted, the viewer follows the opposite of the app theme so it
+    // aligns with panels that flip via the aliased gray/slate palette.
+    const effectiveTheme = invertTheme
+        ? appliedTheme === "dark"
+            ? "light"
+            : "dark"
+        : appliedTheme;
     const [searchTerm, setSearchTerm] = useState("");
     const [collapsed, setCollapsed] = useState(false);
     const [viewerKey, setViewerKey] = useState(0);
@@ -39,11 +47,11 @@ const AppJsonViewer = ({
     const filteredValue = useMemo(() => filterJsonBySearch(value, searchTerm), [value, searchTerm]);
     const themedStyle = useMemo(
         () => ({
-            ...(appliedTheme === "dark" ? githubDarkTheme : githubLightTheme),
+            ...(effectiveTheme === "dark" ? githubDarkTheme : githubLightTheme),
             ...(transparentBackground ? { "--w-rjv-background-color": "transparent" } : {}),
             ...(style || {}),
         }),
-        [appliedTheme, transparentBackground, style]
+        [effectiveTheme, transparentBackground, style]
     );
     const expandAll = () => {
         setCollapsed(false);
@@ -75,6 +83,7 @@ const AppJsonViewer = ({
                     searchTerm={searchTerm}
                     searchPlaceholder={searchPlaceholder}
                     isFullscreen={isFullscreen}
+                    invertTheme={invertTheme}
                     toolbarClassName={toolbarClassName}
                     onSearchTermChange={setSearchTerm}
                     onExpandAll={expandAll}
@@ -115,7 +124,10 @@ const AppJsonViewer = ({
     return (
         <div
             className={cn(
-                "font-mono text-sm h-full flex flex-col bg-white dark:bg-surface-elevated text-slate-700",
+                "font-mono text-sm h-full flex flex-col",
+                invertTheme
+                    ? "bg-gray-900 text-gray-100"
+                    : "bg-white dark:bg-surface-elevated text-slate-700",
                 containerClassName
             )}
         >

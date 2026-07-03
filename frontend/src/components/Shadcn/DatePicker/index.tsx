@@ -21,6 +21,7 @@ const DatePickerControl = memo(function DatePickerControl({
     error,
     placeholder = "Select date",
     className,
+    disabledDate,
 }: Omit<IDatePickerProps, "name" | "register" | "control" | "errors" | "rules">) {
     const [open, setOpen] = useState(false);
     const selectedDate = useMemo(() => parseDateOnly(value), [value]);
@@ -66,6 +67,7 @@ const DatePickerControl = memo(function DatePickerControl({
                         defaultMonth={selectedDate}
                         captionLayout="dropdown"
                         onSelect={handleSelect}
+                        disabled={disabledDate}
                     />
                 </PopoverContent>
             </Popover>

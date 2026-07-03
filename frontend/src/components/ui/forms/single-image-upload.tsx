@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { Button, message } from "antd";
-import { UploadOutlined, DeleteOutlined } from "@ant-design/icons";
+import { toast } from "sonner";
+import { FaUpload, FaTrash } from "react-icons/fa";
 import { useUploadImageMutation } from "@store/api";
 import { LabelWithToolTip } from "@/components/Shadcn/TextField";
+import { Button } from "@/components/Shadcn/Button";
 
 interface SingleImageUploadProps {
     label: string;
@@ -49,13 +50,13 @@ const SingleImageUpload: React.FC<SingleImageUploadProps> = ({
         const file = event.target.files?.[0];
         if (file) {
             if (file.size > maxSizePerFile) {
-                message.error(`File size must be less than ${maxSizePerFile / (1024 * 1024)}MB`);
+                toast.error(`File size must be less than ${maxSizePerFile / (1024 * 1024)}MB`);
                 event.target.value = "";
                 return;
             }
 
             if (!file.type.startsWith("image/")) {
-                message.error("Please select a valid image file");
+                toast.error("Please select a valid image file");
                 event.target.value = "";
                 return;
             }
@@ -89,14 +90,14 @@ const SingleImageUpload: React.FC<SingleImageUploadProps> = ({
                 // Call onChange callback
                 onChange?.(uploadedUrl);
 
-                message.success("Image uploaded successfully!");
+                toast.success("Image uploaded successfully!");
                 return uploadedUrl;
             } else {
                 throw new Error(response.message || "Upload failed");
             }
         } catch (error: unknown) {
             console.error("Error uploading image:", error);
-            message.error("Failed to upload image. Using default image URL.");
+            toast.error("Failed to upload image. Using default image URL.");
             // Use default URL on upload failure
             const fallbackUrl = defaultImageUrl;
             setUploadedUrl(fallbackUrl);
@@ -111,7 +112,7 @@ const SingleImageUpload: React.FC<SingleImageUploadProps> = ({
 
     const handleUrlSubmit = () => {
         if (!urlInputValue.trim()) {
-            message.warning("Please enter an image URL");
+            toast.warning("Please enter an image URL");
             return;
         }
 
@@ -121,9 +122,9 @@ const SingleImageUpload: React.FC<SingleImageUploadProps> = ({
             setUploadedUrl(urlInputValue);
             onChange?.(urlInputValue);
             setUrlInputValue("");
-            message.success("Image URL set successfully!");
+            toast.success("Image URL set successfully!");
         } catch (error: unknown) {
-            message.error("Please enter a valid URL");
+            toast.error("Please enter a valid URL");
             console.error("Error setting image URL:", error);
         }
     };
@@ -163,15 +164,15 @@ const SingleImageUpload: React.FC<SingleImageUploadProps> = ({
                 {allowUrlInput && (
                     <div className="flex gap-2 mb-2">
                         <Button
-                            type={inputMode === "upload" ? "primary" : "default"}
-                            size="small"
+                            variant={inputMode === "upload" ? "default" : "outline"}
+                            size="sm"
                             onClick={() => setInputMode("upload")}
                         >
                             Upload File
                         </Button>
                         <Button
-                            type={inputMode === "url" ? "primary" : "default"}
-                            size="small"
+                            variant={inputMode === "url" ? "default" : "outline"}
+                            size="sm"
                             onClick={() => setInputMode("url")}
                         >
                             Enter URL
@@ -204,9 +205,7 @@ const SingleImageUpload: React.FC<SingleImageUploadProps> = ({
                                 }
                             }}
                         />
-                        <Button type="primary" onClick={handleUrlSubmit}>
-                            Set URL
-                        </Button>
+                        <Button onClick={handleUrlSubmit}>Set URL</Button>
                     </div>
                 )}
 
@@ -217,20 +216,19 @@ const SingleImageUpload: React.FC<SingleImageUploadProps> = ({
                             {selectedFile.name} ready for upload
                         </p>
                         <Button
-                            type="primary"
-                            size="small"
-                            loading={uploadLoading}
+                            size="sm"
+                            isLoading={uploadLoading}
                             onClick={uploadToS3}
-                            icon={<UploadOutlined />}
+                            icon={<FaUpload />}
                         >
                             Upload
                         </Button>
                         <Button
-                            type="text"
-                            size="small"
+                            variant="ghost"
+                            size="sm"
                             onClick={removeImage}
-                            icon={<DeleteOutlined />}
-                            danger
+                            icon={<FaTrash />}
+                            className="text-destructive hover:text-destructive"
                         >
                             Remove
                         </Button>
@@ -243,11 +241,11 @@ const SingleImageUpload: React.FC<SingleImageUploadProps> = ({
                             Url - {uploadedUrl}
                         </p>
                         <Button
-                            type="text"
-                            size="small"
+                            variant="ghost"
+                            size="sm"
                             onClick={removeImage}
-                            icon={<DeleteOutlined />}
-                            danger
+                            icon={<FaTrash />}
+                            className="text-destructive hover:text-destructive"
                         >
                             Remove
                         </Button>

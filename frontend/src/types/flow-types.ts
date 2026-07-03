@@ -57,7 +57,7 @@ export type OnSearchPayload = {
 
 export interface SubmitEventParams {
     jsonPath: Record<string, unknown>;
-    formData: Record<string, string>;
+    formData: Record<string, unknown>;
     catalog?: OnSearchPayload;
     offerRules?: Record<string, DynamicOfferRule>;
 }

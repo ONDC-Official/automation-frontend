@@ -378,7 +378,7 @@ export default function DisplayFlow({
         }
     };
 
-    const fireExtra = async (key: string, inputs?: Record<string, string>) => {
+    const fireExtra = async (key: string, inputs?: Record<string, unknown>) => {
         if (!transactionId) {
             toast.info("Start the flow first");
             return;
