@@ -174,7 +174,7 @@ export const Fis13InsuranceSearchForm = ({
                     tags: provider.tags,
                     items: provider.items?.filter((item) => item.id === selectedItemId) ?? [],
                 },
-            } as unknown as Record<string, string>,
+            },
         });
     };
 
@@ -212,7 +212,7 @@ export const Fis13InsuranceSearchForm = ({
                         },
                     ],
                 },
-            } as unknown as Record<string, string>,
+            },
         });
     };
 
