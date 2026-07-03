@@ -1,6 +1,6 @@
 import React from "react";
-import axios from "axios";
-import type { DiscoveryResponse, PayloadResponse } from "@pages/seller-load-testing/types";
+import { useLazyGenerateDiscoveryPayloadQuery, useStartDiscoveryMutation } from "@store/api";
+import type { DiscoveryResponse } from "@pages/seller-load-testing/types";
 
 interface UseDiscoverySectionParams {
     sessionId: string;
@@ -21,15 +21,15 @@ export const useDiscoverySection = ({
     const [discoveryResponse, setDiscoveryResponse] = React.useState<DiscoveryResponse | null>(
         null
     );
+    const [triggerGenerateDiscoveryPayload] = useLazyGenerateDiscoveryPayloadQuery();
+    const [startDiscoveryMutation] = useStartDiscoveryMutation();
 
     const handleGeneratePayload = async () => {
         setIsGenerating(true);
         try {
-            const response = await axios.get<PayloadResponse>(
-                `${import.meta.env.VITE_LOAD_TEST_BACKEND_URL}/sessions/${sessionId}/discovery/payload`
-            );
-            setPayload(response.data.payload);
-            setEditedJson(JSON.stringify(response.data.payload, null, 2));
+            const result = await triggerGenerateDiscoveryPayload(sessionId).unwrap();
+            setPayload(result.payload);
+            setEditedJson(JSON.stringify(result.payload, null, 2));
             setShowButtons(true);
         } catch (error) {
             console.error("Error generating payload:", error);
@@ -41,11 +41,8 @@ export const useDiscoverySection = ({
     const handleStartDiscovery = async () => {
         setIsStarting(true);
         try {
-            const response = await axios.post<DiscoveryResponse>(
-                `${import.meta.env.VITE_LOAD_TEST_BACKEND_URL}/sessions/${sessionId}/discovery`,
-                { payload }
-            );
-            setDiscoveryResponse(response.data);
+            const response = await startDiscoveryMutation({ sessionId, payload }).unwrap();
+            setDiscoveryResponse(response);
             setPayload(null);
             setShowButtons(false);
             setDiscoveryDone(true);

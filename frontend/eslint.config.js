@@ -31,5 +31,24 @@ export default tseslint.config(
             ],
             "no-console": ["warn", { allow: ["warn", "error"] }],
         },
+    },
+    {
+        files: ["src/**/*.{ts,tsx}"],
+        ignores: ["src/store/**"],
+        rules: {
+            "no-restricted-imports": [
+                "error",
+                {
+                    patterns: [
+                        {
+                            group: ["@store/api/*"],
+                            message:
+                                "Import RTK Query hooks only from the public barrel '@store/api'. " +
+                                "Everything under it (main/, developerGuide/, loadTest/, endpoints/) is internal.",
+                        },
+                    ],
+                },
+            ],
+        },
     }
 );

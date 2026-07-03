@@ -1,3 +1,5 @@
+import type { IDomain } from "@/types/domain";
+
 export type IEditorRange = {
     startLineNumber: number;
     startColumn: number;
@@ -5,19 +7,9 @@ export type IEditorRange = {
     endColumn: number;
 };
 
-export interface IDomainVersion {
-    key: string;
-}
-
 export type MonacoModule = typeof import("monaco-editor");
 
-/**
- * Structure of a domain entry
- */
-export interface IDomain {
-    key: string;
-    version: IDomainVersion[];
-}
+export type { IDomain, IDomainVersion } from "@/types/domain";
 
 /**
  * Active domain configuration structure
@@ -39,16 +31,6 @@ export interface IPayloadContext {
  */
 export interface IParsedPayload {
     context?: IPayloadContext;
-    [key: string]: unknown;
-}
-
-/**
- * Validation response structure
- */
-export interface IValidationResponse {
-    error?: {
-        message?: string;
-    };
     [key: string]: unknown;
 }
 

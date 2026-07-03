@@ -1,4 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
+import { store } from "@store/index";
+import { setCooldown, clearCooldown } from "@store/slices/cooldownsSlice";
 
 interface Props {
     strokeWidth?: number;
@@ -24,8 +26,7 @@ const CircularProgress: React.FC<Props> = ({
 
     const [progress, setProgress] = useState<number>(() => {
         if (id) {
-            const storedProgress = Number(localStorage.getItem(id));
-            return isNaN(storedProgress) ? 0 : storedProgress;
+            return store.getState().cooldowns.entries[id]?.progress ?? 0;
         }
         return 0;
     });
@@ -53,7 +54,7 @@ const CircularProgress: React.FC<Props> = ({
         if (pauseRef.current) return;
         isRunning.current = true;
 
-        const savedElapsed = id ? Number(localStorage.getItem(`${id}_elapsed`)) || 0 : 0;
+        const savedElapsed = id ? (store.getState().cooldowns.entries[id]?.elapsed ?? 0) : 0;
 
         startTimeRef.current = null;
 
@@ -70,8 +71,7 @@ const CircularProgress: React.FC<Props> = ({
             setProgress(currentProgress);
 
             if (id) {
-                localStorage.setItem(id, String(currentProgress));
-                localStorage.setItem(`${id}_elapsed`, String(elapsed));
+                store.dispatch(setCooldown({ id, progress: currentProgress, elapsed }));
             }
 
             if (currentProgress < 1) {
@@ -79,10 +79,9 @@ const CircularProgress: React.FC<Props> = ({
             } else {
                 isRunning.current = false;
 
-                // Clear storage
+                // Clear stored cooldown progress
                 if (id) {
-                    localStorage.removeItem(id);
-                    localStorage.removeItem(`${id}_elapsed`);
+                    store.dispatch(clearCooldown(id));
                 }
                 pauseRef.current = true;
                 onComplete().finally(() => {
@@ -91,10 +90,6 @@ const CircularProgress: React.FC<Props> = ({
                     isRunning.current = false;
                     startTimeRef.current = null;
                     pauseRef.current = false;
-                    if (id) {
-                        localStorage.removeItem(`${id}_startTime`);
-                        localStorage.removeItem(`${id}_cycleId`);
-                    }
                 });
             }
         };

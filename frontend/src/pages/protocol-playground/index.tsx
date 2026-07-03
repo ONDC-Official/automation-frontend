@@ -21,6 +21,9 @@ import {
 } from "@pages/protocol-playground/utils/config-storage";
 
 import { fetchGistData, getFirstGistFile } from "@pages/protocol-playground/utils/fetch-gist";
+import { useAppDispatch } from "@store/hooks";
+import { store } from "@store/index";
+import { setDraftConfig } from "@store/slices/playgroundConfigsSlice";
 import {
     StepGroup,
     getGroupSteps,
@@ -51,6 +54,7 @@ const Body = ({ workbenchFlow }: { workbenchFlow: ReturnType<typeof useWorkbench
 };
 
 const ProtocolPlayGround = () => {
+    const dispatch = useAppDispatch();
     const [playgroundState, setPlaygroundState] = useState<MockPlaygroundConfigType | undefined>(
         undefined
     );
@@ -72,15 +76,26 @@ const ProtocolPlayGround = () => {
 
     function setCurrentConfig(config: MockPlaygroundConfigType | undefined) {
         if (!config) {
-            localStorage.removeItem("playgroundConfig");
+            dispatch(setDraftConfig(null));
             setPlaygroundState(undefined);
             return;
         }
-        setPlaygroundState(config);
-        localStorage.setItem("playgroundConfig", JSON.stringify(config));
+        // `config` may come from anywhere — a freshly built object, the Redux-owned
+        // persisted draft, or a saved config read straight out of the `configs`
+        // slice via `loadConfig()` (config-storage.ts) — and anything sourced from
+        // Redux is Immer-frozen. `playgroundState` is mutated in place by the
+        // helpers below (resetTransactionHistory, updateTransactionHistory, etc.),
+        // so it must always be an independently mutable working copy regardless of
+        // where `config` came from. Clone unconditionally here rather than relying
+        // on every caller to hand in a fresh object.
+        const workingConfig = structuredClone(config);
+        setPlaygroundState(workingConfig);
+        // Dispatch a separate clone: the store must not share identity with
+        // `workingConfig` either, or freezing the store's copy would freeze it too.
+        dispatch(setDraftConfig(structuredClone(workingConfig)));
 
         // Auto-save whenever config is set/updated
-        autoSaveConfig(config);
+        autoSaveConfig(workingConfig);
     }
 
     const updateStepMock = (stepId: string, property: string, value: string) => {
@@ -281,15 +296,12 @@ const ProtocolPlayGround = () => {
             newUrl.searchParams.delete("gist");
             window.history.replaceState({}, "", newUrl.toString());
         } else {
-            // try to load from local storage only if no gist parameter
-            const savedConfig = localStorage.getItem("playgroundConfig");
+            // Restore the draft config from the persisted Redux store if present.
+            // Clone it: the stored object is Immer-frozen, but playgroundState must
+            // stay a mutable object (mutated in place by the helpers below).
+            const savedConfig = store.getState().playgroundConfigs.draft;
             if (savedConfig) {
-                try {
-                    const parsedConfig = JSON.parse(savedConfig);
-                    setPlaygroundState(parsedConfig);
-                } catch (e) {
-                    console.error("Failed to parse saved config:", e);
-                }
+                setPlaygroundState(structuredClone(savedConfig));
             }
         }
     }, [loadConfigFromGist]);

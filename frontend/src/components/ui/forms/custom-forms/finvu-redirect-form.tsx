@@ -1,12 +1,14 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { ArrowPathIcon, CheckCircleIcon, XCircleIcon } from "@heroicons/react/24/outline";
-import axios from "axios";
 import { toast } from "sonner";
 
 import { Button } from "@/components/Shadcn/Button/button";
 import FormDialogShell from "@/components/ui/forms/form-dialog-shell";
 import { SubmitEventParams } from "@/types/flow-types";
+import { useLazyGetFinvuCompletionQuery, useVerifyFinvuConsentMutation } from "@store/api";
 import { cn } from "@/lib/utils";
+import { useAppDispatch } from "@store/hooks";
+import { setFinvuFlowActive } from "@store/slices/uiFlagsSlice";
 
 interface IFinvuRedirectFormProps {
     submitEvent: (data: SubmitEventParams) => Promise<void>;
@@ -30,6 +32,9 @@ export default function FinvuRedirectForm({
     const finvuWindowRef = useRef<Window | null>(null);
     const isPollingRef = useRef<boolean>(false);
     const hasCompletedRef = useRef<boolean>(false);
+    const [triggerGetFinvuCompletion] = useLazyGetFinvuCompletionQuery();
+    const [verifyFinvuConsent] = useVerifyFinvuConsentMutation();
+    const dispatch = useAppDispatch();
 
     const cleanup = useCallback(() => {
         if (pollingIntervalRef.current) {
@@ -37,8 +42,8 @@ export default function FinvuRedirectForm({
             pollingIntervalRef.current = null;
         }
         isPollingRef.current = false;
-        localStorage.removeItem("finvu_flow_active");
-    }, []);
+        dispatch(setFinvuFlowActive(false));
+    }, [dispatch]);
 
     useEffect(() => {
         return () => {
@@ -52,18 +57,10 @@ export default function FinvuRedirectForm({
         try {
             setPollCount((prev) => prev + 1);
 
-            const response = await axios.get(
-                `${import.meta.env.VITE_BACKEND_URL}/finvu/check-completion`,
-                {
-                    params: {
-                        session_id: sessionId,
-                        transaction_id: transactionId,
-                    },
-                    timeout: 5000,
-                }
-            );
+            const result = await triggerGetFinvuCompletion({ sessionId, transactionId });
+            if (result.error) throw result.error;
 
-            if (response.data.completed) {
+            if (result.data?.completed) {
                 hasCompletedRef.current = true;
                 cleanup();
                 setStatus("completed");
@@ -189,28 +186,19 @@ export default function FinvuRedirectForm({
                 setStatus("waiting");
                 setErrorMessage("");
                 setPollCount(0);
-                localStorage.setItem("finvu_flow_active", "true");
+                dispatch(setFinvuFlowActive(true));
 
                 if (!transactionId) {
                     throw new Error("Transaction ID is missing! Cannot create Finvu callback URL.");
                 }
 
-                const response = await axios.post(
-                    `${import.meta.env.VITE_BACKEND_URL}/finvu/verify-consent`,
-                    {
-                        transactionId,
-                        sessionId,
-                    },
-                    {
-                        timeout: 15000,
-                    }
-                );
+                const response = await verifyFinvuConsent({ transactionId, sessionId }).unwrap();
 
-                const url = response.data?.url;
+                const url = response?.url;
 
                 if (!url) {
                     throw new Error(
-                        "No URL received from backend. Response: " + JSON.stringify(response.data)
+                        "No URL received from backend. Response: " + JSON.stringify(response)
                     );
                 }
 
@@ -226,12 +214,8 @@ export default function FinvuRedirectForm({
             } catch (error: unknown) {
                 console.error("Error starting Finvu verification:", error);
                 setStatus("error");
-                const err = error as {
-                    message?: string;
-                    response?: { data?: { message?: string } };
-                };
-                const message =
-                    err.response?.data?.message || err.message || "Failed to start verification";
+                const err = error as { message?: string };
+                const message = err.message || "Failed to start verification";
                 setErrorMessage(message);
                 toast.error(message);
 

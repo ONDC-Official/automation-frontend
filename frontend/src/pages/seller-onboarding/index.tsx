@@ -1,7 +1,7 @@
 import { useState } from "react";
-import axios, { AxiosError } from "axios";
 import { toast } from "sonner";
 import { FaUser, FaBriefcase, FaUtensils, FaBox } from "react-icons/fa";
+import { useSellerOnSearchMutation } from "@store/api";
 
 import Stepper from "@components/ui/mini-components/stepper";
 import BasicInformationForm from "@pages/seller-onboarding/basic-information-form";
@@ -271,6 +271,7 @@ const SellerOnboarding = () => {
     const [payloadType, setPayloadType] = useState<"single-domain" | "multi-domain">(
         "single-domain"
     );
+    const [sellerOnSearch] = useSellerOnSearchMutation();
 
     const isFnBDomain = formData?.domain?.includes("F&B");
 
@@ -316,22 +317,22 @@ const SellerOnboarding = () => {
 
         try {
             // Call the seller API to create on_search payload
-            const baseURL = import.meta.env.VITE_BACKEND_URL || "http://localhost:4000";
-            const response = await axios.post(`${baseURL}/seller/on_search`, completeData);
+            const response = await sellerOnSearch(completeData).unwrap();
             toast.success("Seller onboarding completed successfully!");
 
             // Set completion state and store completed data
             setCompletedData(completeData);
-            setOnSearchPayload(response.data.data || response.data);
-            setPayloadType(response.data.type || "single-domain");
+            setOnSearchPayload((response.data as Record<string, unknown>) || response);
+            setPayloadType((response.type as "single-domain" | "multi-domain") || "single-domain");
             setIsCompleted(true);
         } catch (error: unknown) {
             console.error("Failed to complete onboarding", error);
             toast.error("Failed to complete onboarding. Please try again.");
 
             // Handle axios error response
-            if (error instanceof AxiosError && error.response?.data?.message) {
-                toast.error(error.response?.data?.message as string);
+            const message = (error as { message?: string })?.message;
+            if (message) {
+                toast.error(message);
             } else {
                 toast.error("Failed to complete onboarding. Please try again.");
             }

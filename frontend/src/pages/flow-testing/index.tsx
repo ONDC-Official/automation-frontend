@@ -4,8 +4,7 @@ import { toast } from "sonner";
 import { DocumentTextIcon, ExclamationTriangleIcon } from "@heroicons/react/24/outline";
 import RenderFlows from "@components/FlowShared/render-flows";
 import Spinner from "@/components/Shadcn/Spinner";
-import { apiClient } from "@services/apiClient";
-import { API_ROUTES } from "@services/apiRoutes";
+import { useLazyGetSessionByIdQuery } from "@store/api";
 import { Flow } from "@/types/flow-types";
 
 export default function FlowTestingWrapper() {
@@ -16,17 +15,16 @@ export default function FlowTestingWrapper() {
     const sessionId = searchParams.get("sessionId");
     const subscriberUrl = searchParams.get("subscriberUrl");
     const role = searchParams.get("role");
+    const [triggerGetSessionById] = useLazyGetSessionByIdQuery();
 
     const fetchSessionData = useCallback(async () => {
         try {
             setLoading(true);
-            const response = await apiClient.get<{ flowConfigs?: Record<string, Flow> }>(
-                API_ROUTES.SESSIONS.BASE,
-                { params: { session_id: sessionId } }
-            );
+            const response = await triggerGetSessionById({ sessionId: sessionId ?? "" }).unwrap();
+            const flowConfigs = (response as { flowConfigs?: Record<string, Flow> }).flowConfigs;
 
-            if (response.data.flowConfigs) {
-                setFlows(Object.values(response.data.flowConfigs));
+            if (flowConfigs) {
+                setFlows(Object.values(flowConfigs));
             } else {
                 toast.error("No flow configurations found in session");
             }
@@ -36,7 +34,7 @@ export default function FlowTestingWrapper() {
         } finally {
             setLoading(false);
         }
-    }, [sessionId]);
+    }, [sessionId, triggerGetSessionById]);
 
     useEffect(() => {
         if (!sessionId || !subscriberUrl || !role) {

@@ -1,9 +1,9 @@
 import { toast } from "sonner";
-import axios from "axios";
 import { useEffect, useRef, useState } from "react";
 import InfoCard from "@components/ui/info-card";
 import { useReactToPrint } from "react-to-print";
 import { IoMdArrowRoundBack } from "react-icons/io";
+import { useLazyGetSessionByIdQuery } from "@store/api";
 
 export function ReportPage({
     sessionId,
@@ -16,6 +16,7 @@ export function ReportPage({
 }) {
     const [sessionData, setSessionData] = useState<Record<string, unknown> | null>(null);
     const htmlRef = useRef<HTMLDivElement>(null);
+    const [triggerGetSessionById] = useLazyGetSessionByIdQuery();
 
     const handlePrint = useReactToPrint({
         contentRef: htmlRef,
@@ -24,11 +25,8 @@ export function ReportPage({
 
     async function fetchPayloads() {
         try {
-            const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/sessions`, {
-                params: { session_id: sessionId },
-            });
-
-            setSessionData(response.data);
+            const response = await triggerGetSessionById({ sessionId }).unwrap();
+            setSessionData(response);
         } catch (e) {
             toast.error("Error while fetching session data");
             console.error("error while fetching session data", e);

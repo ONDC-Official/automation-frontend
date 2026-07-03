@@ -6,10 +6,14 @@ import { buildDifficultyState } from "@components/ui/difficulty-cards";
 import { InfoSection } from "@components/FlowShared/ui/InfoSection";
 import { EndpointsSection } from "@components/FlowShared/ui/EndpointsSection";
 import { CollapsibleSection } from "@components/FlowShared/ui/CollapsibleSection";
-import axios, { AxiosResponse } from "axios";
 import { toast } from "sonner";
 import { SessionCache } from "@/types/session-types";
-import { getCompletePayload, getReport, putCacheData } from "@utils/request-utils";
+import {
+    useLazyGetCompletePayloadQuery,
+    useLazyGetReportQuery,
+    usePutCacheDataMutation,
+    useLazyGetSessionByIdQuery,
+} from "@store/api";
 import { Accordion } from "@components/FlowShared/complete-flow";
 import { useSession } from "@context/context";
 import Spinner from "@/components/Shadcn/Spinner";
@@ -36,6 +40,17 @@ import GenerateReportModal from "@components/FlowShared/GenerateReportModal";
 import { FlowSettingsModal, type SettingsDraft } from "@components/FlowShared/FlowSettingsModal";
 import RideMapTab from "@components/FlowShared/ride-map-tab";
 import { isRideMapEnabled } from "@components/FlowShared/ride-map-utils";
+import { useAppDispatch, useAppSelector } from "@store/hooks";
+import {
+    acquireFlowFormDialogLock as acquireFlowFormDialogLockAction,
+    releaseFlowFormDialogLock as releaseFlowFormDialogLockAction,
+    setAutoScrollEnabled as setAutoScrollEnabledAction,
+    setExperimentalMode as setExperimentalModeAction,
+    selectIsFlowFormDialogOpen,
+} from "@store/slices/sessionSlice";
+import { upsertSession } from "@store/slices/sessionHistorySlice";
+import { store } from "@store/index";
+import { createDispatchSetter } from "@store/utils/createDispatchSetter";
 
 type ExtractedMetadataValue = { name?: string; value: unknown; errorMessage?: string };
 
@@ -166,8 +181,13 @@ function RenderFlows({
     const [metadata, setMetadata] = useState<Record<string, ExtractedMetadataValue>>({});
     const apiCallFailCount = useRef(0);
     const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
+    const [triggerGetCompletePayload] = useLazyGetCompletePayloadQuery();
+    const [triggerGetReport] = useLazyGetReportQuery();
+    const [putCacheData] = usePutCacheDataMutation();
+    const [triggerGetSessionById] = useLazyGetSessionByIdQuery();
     const [isGuideOpen, setIsGuideOpen] = useState(false);
     const navigate = useNavigate();
+    const dispatch = useAppDispatch();
     const { setSessionId } = useSession();
     const pollingRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -180,46 +200,26 @@ function RenderFlows({
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
     const [settingsDraft, setSettingsDraft] = useState<SettingsDraft | null>(null);
     const [isSettingsSaving, setIsSettingsSaving] = useState(false);
-    const [isFlowFormDialogOpen, setFlowFormDialogOpenCount] = useState(0);
-    const flowFormDialogOpen = isFlowFormDialogOpen > 0;
+    // Flow-form dialog lock + frontend-only UI prefs now live in the Redux session slice
+    // (prefs persisted via redux-persist; NOT saved to the backend session).
+    const flowFormDialogOpen = useAppSelector(selectIsFlowFormDialogOpen);
 
     const acquireFlowFormDialogLock = useCallback(() => {
-        setFlowFormDialogOpenCount((count) => count + 1);
-    }, []);
+        dispatch(acquireFlowFormDialogLockAction());
+    }, [dispatch]);
 
     const releaseFlowFormDialogLock = useCallback(() => {
-        setFlowFormDialogOpenCount((count) => Math.max(0, count - 1));
-    }, []);
-    // Frontend-only UI prefs (persisted in localStorage; NOT saved to the backend session).
-    // Auto-scroll defaults on; experimental mode defaults off.
-    const [autoScrollEnabled, setAutoScrollEnabled] = useState<boolean>(() => {
-        try {
-            return localStorage.getItem("flow-auto-scroll-enabled") !== "false";
-        } catch {
-            return true;
-        }
-    });
-    useEffect(() => {
-        try {
-            localStorage.setItem("flow-auto-scroll-enabled", String(autoScrollEnabled));
-        } catch {
-            /* ignore storage failures */
-        }
-    }, [autoScrollEnabled]);
-    const [experimentalMode, setExperimentalMode] = useState<boolean>(() => {
-        try {
-            return localStorage.getItem("flow-experimental-mode") === "true";
-        } catch {
-            return false;
-        }
-    });
-    useEffect(() => {
-        try {
-            localStorage.setItem("flow-experimental-mode", String(experimentalMode));
-        } catch {
-            /* ignore storage failures */
-        }
-    }, [experimentalMode]);
+        dispatch(releaseFlowFormDialogLockAction());
+    }, [dispatch]);
+
+    const autoScrollEnabled = useAppSelector((state) => state.session.autoScrollEnabled);
+    const experimentalMode = useAppSelector((state) => state.session.experimentalMode);
+    const setAutoScrollEnabled = createDispatchSetter(autoScrollEnabled, (next) =>
+        dispatch(setAutoScrollEnabledAction(next))
+    );
+    const setExperimentalMode = createDispatchSetter(experimentalMode, (next) =>
+        dispatch(setExperimentalModeAction(next))
+    );
 
     const startPolling = () => {
         if (isPolling) return; // Prevent multiple starts
@@ -240,7 +240,7 @@ function RenderFlows({
             if (stopped) return;
 
             try {
-                const result = await getReport(sessionId);
+                const result = await triggerGetReport({ sessionId }).unwrap();
 
                 if (result?.data) {
                     stopPolling();
@@ -290,7 +290,9 @@ function RenderFlows({
     const test = async () => {
         try {
             // ✅ Fetch payload
-            const data = await getCompletePayload([(sideView.payloadId as string) ?? ""]);
+            const data = await triggerGetCompletePayload({
+                payloadIds: [(sideView.payloadId as string) ?? ""],
+            }).unwrap();
 
             const requestPayload = (data?.[0]?.req ?? EMPTY_RECORD) as Record<string, unknown>;
             let responsePayload: Record<string, unknown> = {};
@@ -398,25 +400,22 @@ function RenderFlows({
     }, [flows, requestData, responseData]);
 
     function fetchSessionData() {
-        axios
-            .get(`${import.meta.env.VITE_BACKEND_URL}/sessions`, {
-                params: {
-                    session_id: sessionId,
-                },
-            })
-            .then((response: AxiosResponse<SessionCache>) => {
-                const filteredData = Object.entries(response.data)
+        triggerGetSessionById({ sessionId })
+            .unwrap()
+            .then((data) => {
+                const response = data as unknown as SessionCache;
+                const filteredData = Object.entries(response)
                     .filter(([_, value]) => typeof value === "string")
                     .reduce((acc: Record<string, unknown>, [key, value]) => {
                         acc[key] = value;
                         return acc;
                     }, {});
                 delete filteredData["active_session_id"];
-                setDifficultyCache(response.data.sessionDifficulty);
-                setCacheSessionData(response.data);
+                setDifficultyCache(response.sessionDifficulty);
+                setCacheSessionData(response);
 
                 if (cacheSessionData === null) {
-                    updateLocalStorageSession(response.data, sessionId);
+                    updateLocalStorageSession(response, sessionId);
                 }
                 apiCallFailCount.current = 0; // Reset fail count on successful fetch
             })
@@ -467,7 +466,7 @@ function RenderFlows({
                 ...difficultyCache,
                 ...settingsDraft.sessionDifficulty,
             };
-            await putCacheData({ sessionDifficulty }, sessionId);
+            await putCacheData({ data: { sessionDifficulty }, sessionId }).unwrap();
 
             setAutoScrollEnabled(settingsDraft.autoScrollEnabled);
             setExperimentalMode(settingsDraft.experimentalMode);
@@ -618,7 +617,9 @@ function RenderFlows({
                                         <Button
                                             size="sm"
                                             onClick={async () => {
-                                                const response = await getReport(sessionId);
+                                                const response = await triggerGetReport({
+                                                    sessionId,
+                                                }).unwrap();
                                                 try {
                                                     const decodedHtml = response.data;
                                                     openReportInNewTab(decodedHtml, sessionId);
@@ -824,25 +825,13 @@ function updateLocalStorageSession(sessionData: SessionCache, sessionId: string)
         return;
     }
     const now = new Date();
-    const data = {
-        sessionId: sessionId,
-        subscriberUrl: sessionData.subscriberUrl,
-        role: sessionData.npType,
-        timestamp: now.toISOString(),
-        expiresAt: new Date(now.getTime() + 24 * 60 * 60 * 1000).toISOString(),
-    };
-    const currentData = JSON.parse(localStorage.getItem("flowTestingSessions") || "[]");
-    const existingIndex = currentData.findIndex(
-        (item: { sessionId: string }) => item.sessionId === sessionId
+    store.dispatch(
+        upsertSession({
+            sessionId: sessionId,
+            subscriberUrl: sessionData.subscriberUrl,
+            role: sessionData.npType,
+            timestamp: now.toISOString(),
+            expiresAt: new Date(now.getTime() + 24 * 60 * 60 * 1000).toISOString(),
+        })
     );
-    if (existingIndex !== -1) {
-        currentData[existingIndex] = {
-            ...data,
-            timestamp: currentData[existingIndex].timestamp,
-            expiresAt: currentData[existingIndex].expiresAt,
-        };
-    } else {
-        currentData.push(data);
-    }
-    localStorage.setItem("flowTestingSessions", JSON.stringify(currentData));
 }

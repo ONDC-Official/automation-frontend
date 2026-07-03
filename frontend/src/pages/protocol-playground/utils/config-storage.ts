@@ -1,19 +1,14 @@
 import { MockPlaygroundConfigType } from "@ondc/automation-mock-runner";
+import { store } from "@store/index";
+import {
+    upsertConfig,
+    removeConfig,
+    clearConfigs,
+    type SavedConfig,
+    type SavedConfigMetadata,
+} from "@store/slices/playgroundConfigsSlice";
 
-export interface SavedConfigMetadata {
-    domain: string;
-    version: string;
-    flowId: string;
-    savedAt: string;
-    configId: string;
-}
-
-export interface SavedConfig extends SavedConfigMetadata {
-    config: MockPlaygroundConfigType;
-}
-
-const STORAGE_PREFIX = "playground_config_";
-const METADATA_KEY = "playground_configs_metadata";
+export type { SavedConfig, SavedConfigMetadata } from "@store/slices/playgroundConfigsSlice";
 
 /**
  * Generate a unique config ID from domain, version, and flowId
@@ -86,35 +81,14 @@ export function saveConfig(
             flowId,
             configId,
             savedAt: new Date().toISOString(),
-            config,
+            // Clone: `config` is typically the caller's live, mutable working object
+            // (e.g. Playground's `playgroundState`). Dispatching it as-is would let
+            // Immer freeze that exact reference when the `configs` slice is produced,
+            // silently freezing the caller's object too.
+            config: structuredClone(config),
         };
 
-        // Save the config
-        localStorage.setItem(`${STORAGE_PREFIX}${configId}`, JSON.stringify(savedConfig));
-
-        // Update metadata list
-        const metadata = getSavedConfigsMetadata();
-        const existingIndex = metadata.findIndex((m) => m.configId === configId);
-
-        if (existingIndex >= 0) {
-            metadata[existingIndex] = {
-                domain,
-                version,
-                flowId,
-                configId,
-                savedAt: savedConfig.savedAt,
-            };
-        } else {
-            metadata.push({
-                domain,
-                version,
-                flowId,
-                configId,
-                savedAt: savedConfig.savedAt,
-            });
-        }
-
-        localStorage.setItem(METADATA_KEY, JSON.stringify(metadata));
+        store.dispatch(upsertConfig(savedConfig));
         return true;
     } catch (error) {
         console.error("Failed to save config:", error);
@@ -140,35 +114,12 @@ export function saveGistConfig(gistUrl: string, config: MockPlaygroundConfigType
             flowId: config.meta.flowId,
             configId,
             savedAt: new Date().toISOString(),
-            config,
+            // Clone for the same reason as saveConfig(): don't let Immer freeze the
+            // caller's live object when it freezes the store's copy.
+            config: structuredClone(config),
         };
 
-        // Save the config
-        localStorage.setItem(`${STORAGE_PREFIX}${configId}`, JSON.stringify(savedConfig));
-
-        // Update metadata list
-        const metadata = getSavedConfigsMetadata();
-        const existingIndex = metadata.findIndex((m) => m.configId === configId);
-
-        if (existingIndex >= 0) {
-            metadata[existingIndex] = {
-                domain: config.meta.domain,
-                version: config.meta.version,
-                flowId: config.meta.flowId,
-                configId,
-                savedAt: savedConfig.savedAt,
-            };
-        } else {
-            metadata.push({
-                domain: config.meta.domain,
-                version: config.meta.version,
-                flowId: config.meta.flowId,
-                configId,
-                savedAt: savedConfig.savedAt,
-            });
-        }
-
-        localStorage.setItem(METADATA_KEY, JSON.stringify(metadata));
+        store.dispatch(upsertConfig(savedConfig));
         return true;
     } catch (error) {
         console.error("Failed to save gist config:", error);
@@ -181,9 +132,7 @@ export function saveGistConfig(gistUrl: string, config: MockPlaygroundConfigType
  */
 export function loadConfig(configId: string): SavedConfig | null {
     try {
-        const saved = localStorage.getItem(`${STORAGE_PREFIX}${configId}`);
-        if (!saved) return null;
-        return JSON.parse(saved);
+        return store.getState().playgroundConfigs.configs[configId] ?? null;
     } catch (error) {
         console.error("Failed to load config:", error);
         return null;
@@ -207,8 +156,7 @@ export function loadConfigByIdentifiers(
  */
 export function getSavedConfigsMetadata(): SavedConfigMetadata[] {
     try {
-        const metadata = localStorage.getItem(METADATA_KEY);
-        return metadata ? JSON.parse(metadata) : [];
+        return store.getState().playgroundConfigs.metadata;
     } catch (error) {
         console.error("Failed to load configs metadata:", error);
         return [];
@@ -237,13 +185,7 @@ export function getAllSavedConfigs(): SavedConfig[] {
  */
 export function deleteConfig(configId: string): boolean {
     try {
-        localStorage.removeItem(`${STORAGE_PREFIX}${configId}`);
-
-        // Update metadata
-        const metadata = getSavedConfigsMetadata();
-        const filteredMetadata = metadata.filter((m) => m.configId !== configId);
-        localStorage.setItem(METADATA_KEY, JSON.stringify(filteredMetadata));
-
+        store.dispatch(removeConfig(configId));
         return true;
     } catch (error) {
         console.error("Failed to delete config:", error);
@@ -256,7 +198,7 @@ export function deleteConfig(configId: string): boolean {
  */
 export function configExists(domain: string, version: string, flowId: string): boolean {
     const configId = generateConfigId(domain, version, flowId);
-    return localStorage.getItem(`${STORAGE_PREFIX}${configId}`) !== null;
+    return Boolean(store.getState().playgroundConfigs.configs[configId]);
 }
 
 /**
@@ -264,15 +206,7 @@ export function configExists(domain: string, version: string, flowId: string): b
  */
 export function clearAllConfigs(): boolean {
     try {
-        const metadata = getSavedConfigsMetadata();
-
-        // Remove all config entries
-        for (const meta of metadata) {
-            localStorage.removeItem(`${STORAGE_PREFIX}${meta.configId}`);
-        }
-
-        // Clear metadata
-        localStorage.removeItem(METADATA_KEY);
+        store.dispatch(clearConfigs());
         return true;
     } catch (error) {
         console.error("Failed to clear all configs:", error);
