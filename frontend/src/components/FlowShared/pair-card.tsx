@@ -345,7 +345,7 @@ function getStatusStyles(
             };
         case "WAITING":
             return {
-                card: "border-n-30 bg-surface-muted shadow-xs dark:border-border-default",
+                card: "border-n-30 bg-surface-elevated shadow-xs dark:border-border-default",
                 messageBg: "bg-n-500",
             };
         case "PROCESSING":
