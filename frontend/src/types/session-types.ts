@@ -1,6 +1,11 @@
 import { FormConfigType } from "@/components/ui/forms/config-form";
 import { Flow } from "./flow-types";
 
+export type SessionPayloadData = Record<string, unknown> | unknown[] | null;
+export type SessionSideView = Record<string, unknown> | null;
+export type SessionMetadataValue = { name?: string; value: unknown; errorMessage?: string };
+export type SessionMetadata = Record<string, SessionMetadataValue> | null;
+
 export interface ApiResponseData {
     message?: {
         ack?: {

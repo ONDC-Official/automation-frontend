@@ -55,7 +55,7 @@ const OnboardingSuccessPayload: React.FC<OnboardingSuccessPayloadProps> = ({
 
     return (
         <div className="min-h-screen bg-gray-50 py-8">
-            <div className="container mx-auto px-6 max-w-6xl">
+            <div className="mx-auto px-20">
                 <div className="text-center mb-8">
                     <div className="flex justify-center mb-4">
                         <CheckCircleIcon className="size-16 text-green-500" />

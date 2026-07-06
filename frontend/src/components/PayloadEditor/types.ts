@@ -3,7 +3,7 @@
  */
 import type { editor as MonacoEditor } from "monaco-editor";
 import type { BeforeMount, OnMount } from "@monaco-editor/react";
-import type { IParsedValidationError } from "@/pages/schema-validation/types";
+import type { IParsedValidationError } from "@/types/validation-error";
 
 export interface ICodeEditorProps {
     value?: string;

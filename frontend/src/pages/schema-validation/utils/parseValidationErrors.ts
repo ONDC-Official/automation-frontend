@@ -39,9 +39,4 @@ export function parseValidationErrors(markdown: string): IParsedValidationError[
  * @param path - Raw JSON path from the API
  * @returns Display-friendly path without leading `$` or `/`
  */
-export function formatErrorPath(path: string): string {
-    return path
-        .replace(/^\$\.?/, "")
-        .replace(/^\//, "")
-        .replace(/\$/g, "");
-}
+export { formatErrorPath } from "@/utils/format-error-path";

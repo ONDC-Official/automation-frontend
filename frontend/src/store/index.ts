@@ -13,7 +13,6 @@ import { storage } from "@store/storage";
 import devGuideApi from "@store/api/developerGuide/devGuideApi";
 import loadTestApi from "@store/api/loadTest/loadTestApi";
 import mainApi from "@store/api/main/mainApi";
-import authSlice from "@store/slices/authSlice";
 import sessionSlice from "@store/slices/sessionSlice";
 import themeSlice from "@store/slices/themeSlice";
 import sessionHistorySlice from "@store/slices/sessionHistorySlice";
@@ -25,15 +24,10 @@ import frameworkHealthSlice from "@store/slices/frameworkHealthSlice";
 import chatbotSlice from "@store/slices/chatbotSlice";
 import cooldownsSlice from "@store/slices/cooldownsSlice";
 import aiSlice from "@store/slices/aiSlice";
-import profileShellSlice from "@store/slices/profileShellSlice";
 import devGuideShellSlice from "@store/slices/devGuideShellSlice";
 import playgroundConfigsSlice from "@store/slices/playgroundConfigsSlice";
 import { listenerMiddleware } from "@store/listenerMiddleware";
-import {
-    authPersistConfig,
-    sessionPersistConfig,
-    frameworkHealthPersistConfig,
-} from "@store/persistConfig";
+import { sessionPersistConfig, frameworkHealthPersistConfig } from "@store/persistConfig";
 
 const localPersist = (key: string) => ({ key, storage });
 
@@ -42,7 +36,6 @@ const rootReducer = combineReducers({
     [devGuideApi.reducerPath]: devGuideApi.reducer,
     [loadTestApi.reducerPath]: loadTestApi.reducer,
     theme: persistReducer(localPersist("theme"), themeSlice.reducer),
-    auth: persistReducer(authPersistConfig, authSlice.reducer),
     session: persistReducer(sessionPersistConfig, sessionSlice.reducer),
     sessionHistory: persistReducer(localPersist("sessionHistory"), sessionHistorySlice.reducer),
     supportSession: persistReducer(localPersist("supportSession"), supportSessionSlice.reducer),
@@ -54,13 +47,12 @@ const rootReducer = combineReducers({
     sellerLoadTest: persistReducer(localPersist("sellerLoadTest"), sellerLoadTestSlice.reducer),
     frameworkHealth: persistReducer(frameworkHealthPersistConfig, frameworkHealthSlice.reducer),
     chatbot: persistReducer(localPersist("chatbot"), chatbotSlice.reducer),
-    cooldowns: persistReducer(localPersist("cooldowns"), cooldownsSlice.reducer),
+    cooldowns: cooldownsSlice.reducer,
     ai: persistReducer(localPersist("ai"), aiSlice.reducer),
     playgroundConfigs: persistReducer(
         localPersist("playgroundConfigs"),
         playgroundConfigsSlice.reducer
     ),
-    profileShell: profileShellSlice.reducer,
     devGuideShell: devGuideShellSlice.reducer,
 });
 

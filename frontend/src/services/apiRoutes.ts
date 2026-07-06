@@ -18,6 +18,7 @@ export const API_ROUTES = {
         ACTIONS: "/flow/actions",
         ROUTE: "/flow/route",
         GEOCODE: "/flow/geocode",
+        REPORT: "/flow/report",
         VALIDATE: (action: string) => `/flow/validate/${action}`,
     },
 

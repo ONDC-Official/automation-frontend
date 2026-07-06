@@ -24,11 +24,7 @@
             "@utils/*": ["./src/utils/*"],
             "@hooks/*": ["./src/hooks/*"],
             "@context/*": ["./src/context/*"],
-            "@config/*": ["./src/config/*"],
             "@constants/*": ["./src/constants/*"],
-            "@types/*": ["./src/types/*"],
-            "@styles/*": ["./src/styles/*"],
-            "@interface/*": ["./src/interface/*"],
             "@services/*": ["./src/services/*"],
             "@store/*": ["./src/store/*"]
         },

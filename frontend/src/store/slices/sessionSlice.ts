@@ -1,12 +1,12 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import type { SessionCache } from "@/types/session-types";
+import type {
+    SessionCache,
+    SessionMetadata,
+    SessionPayloadData,
+    SessionSideView,
+} from "@/types/session-types";
 
 export type SessionTab = "Request" | "Response" | "Metadata" | "Guide" | "Application";
-
-type SessionPayloadData = Record<string, unknown> | unknown[] | null;
-type SessionSideView = Record<string, unknown> | null;
-type SessionMetadataValue = { name?: string; value: unknown; errorMessage?: string };
-type SessionMetadata = Record<string, SessionMetadataValue> | null;
 
 export interface ISessionState {
     sessionId: string;

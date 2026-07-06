@@ -3206,6 +3206,7 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
             {fields.map((_field, index) => (
                 <Dialog
                     key={`variant-modal-${index}`}
+                    modal={false}
                     open={showVariantModal[index] || false}
                     onOpenChange={(open) => {
                         if (!open) {

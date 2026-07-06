@@ -25,7 +25,7 @@ import type { Session } from "@pages/user-profile/types";
 
 export const ActivityHistorySection = () => {
     const { user } = useContext(AuthContext);
-    const { setCounts } = useProfileShell();
+    const { setActivityHistoryCount } = useProfileShell();
     const [subscriberId, setSubscriberId] = useState("");
     const [subscriberOptions, setSubscriberOptions] = useState<string[]>([]);
     const [loadingSubscribers, setLoadingSubscribers] = useState(false);
@@ -53,11 +53,8 @@ export const ActivityHistorySection = () => {
         "flex-1 min-w-48 w-full rounded-xl border-border-default bg-surface-elevated text-body-2 text-text-primary";
 
     useEffect(() => {
-        setCounts((prev) => ({
-            ...prev,
-            history: sessions.length,
-        }));
-    }, [sessions.length, setCounts]);
+        setActivityHistoryCount(sessions.length);
+    }, [sessions.length, setActivityHistoryCount]);
 
     useEffect(() => {
         const fetchSubscribers = async () => {

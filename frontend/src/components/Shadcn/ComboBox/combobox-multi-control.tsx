@@ -41,18 +41,13 @@ export const ComboBoxMultiControl = ({
     className,
 }: IComboBoxMultiControlProps) => {
     const normalizedOptions = useMemo(() => normalizeComboBoxOptions(options), [options]);
+    const items = useMemo(
+        () => normalizedOptions.map((option) => option.value),
+        [normalizedOptions]
+    );
 
     const getLabel = (itemValue: string) =>
         normalizedOptions.find((option) => option.value === itemValue)?.label ?? itemValue;
-
-    const availableItems = normalizedOptions
-        .map((option) => option.value)
-        .filter((optionValue) => !value.includes(optionValue));
-
-    const addValue = (next: string | null) => {
-        if (!next || value.includes(next)) return;
-        onValueChange?.([...value, next]);
-    };
 
     const removeValue = (target: string) => {
         onValueChange?.(value.filter((item) => item !== target));
@@ -86,9 +81,10 @@ export const ComboBoxMultiControl = ({
                 </div>
             )}
             <Combobox
-                items={availableItems}
-                value={null}
-                onValueChange={addValue}
+                multiple
+                items={items}
+                value={value}
+                onValueChange={(next) => onValueChange?.(Array.isArray(next) ? next : [])}
                 disabled={disabled}
             >
                 <ComboboxInput
