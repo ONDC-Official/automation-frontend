@@ -2,7 +2,7 @@ import { FormEvent, useEffect, useState } from "react";
 import { PiShieldStarBold } from "react-icons/pi";
 import { toast } from "sonner";
 
-import Popup from "@components/ui/pop-up/pop-up";
+import FormFlowDialog from "@/components/Shadcn/Dialog/form-flow-dialog";
 import { setupKey } from "@utils/secure-key-store";
 
 interface SetupKeyModalProps {
@@ -61,8 +61,11 @@ export function SetupKeyModal({ isOpen, onClose, onSuccess }: SetupKeyModalProps
     };
 
     return (
-        <Popup isOpen={isOpen} onClose={onClose}>
-            <form onSubmit={handleSubmit} className="flex flex-col gap-4 pr-8">
+        <FormFlowDialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+            <form
+                onSubmit={handleSubmit}
+                className="flex flex-1 flex-col gap-4 overflow-y-auto p-6"
+            >
                 <div className="flex items-start gap-3">
                     <span className="inline-flex items-center justify-center h-9 w-9 rounded-md bg-linear-to-br from-sky-500 to-indigo-600 text-white shadow-xs shrink-0">
                         <PiShieldStarBold className="h-5 w-5" />
@@ -133,6 +136,6 @@ export function SetupKeyModal({ isOpen, onClose, onSuccess }: SetupKeyModalProps
                     </button>
                 </div>
             </form>
-        </Popup>
+        </FormFlowDialog>
     );
 }

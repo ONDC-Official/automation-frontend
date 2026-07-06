@@ -1,15 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { Button, message } from "antd";
-import { UploadOutlined, DeleteOutlined } from "@ant-design/icons";
-import axios from "axios";
+import { toast } from "sonner";
+import { FaUpload, FaTrash } from "react-icons/fa";
+import { useUploadMultipleImagesMutation } from "@store/api";
 import { LabelWithToolTip } from "@/components/Shadcn/TextField";
+import { Button } from "@/components/Shadcn/Button";
 
 type UploadedImage = { imageUrl?: string };
-type UploadMultipleResponse = {
-    success: boolean;
-    data: { images: UploadedImage[] };
-    message?: string;
-};
 
 interface MultiImageUploadProps {
     label: string;
@@ -46,6 +42,7 @@ const MultiImageUpload: React.FC<MultiImageUploadProps> = ({
     const [uploadLoading, setUploadLoading] = useState<boolean>(false);
     const [urlInputValue, setUrlInputValue] = useState<string>("");
     const [inputMode, setInputMode] = useState<"upload" | "url">("upload");
+    const [uploadMultipleImages] = useUploadMultipleImagesMutation();
 
     // Sync with external value changes
     useEffect(() => {
@@ -59,7 +56,7 @@ const MultiImageUpload: React.FC<MultiImageUploadProps> = ({
 
             // Check file count limit
             if (fileArray.length > maxFiles) {
-                message.error(`Maximum ${maxFiles} files allowed`);
+                toast.error(`Maximum ${maxFiles} files allowed`);
                 event.target.value = "";
                 return;
             }
@@ -67,7 +64,7 @@ const MultiImageUpload: React.FC<MultiImageUploadProps> = ({
             // Validate each file
             for (const file of fileArray) {
                 if (file.size > maxSizePerFile) {
-                    message.error(
+                    toast.error(
                         `File ${file.name} is too large. Maximum size is ${maxSizePerFile / (1024 * 1024)}MB.`
                     );
                     event.target.value = "";
@@ -75,7 +72,7 @@ const MultiImageUpload: React.FC<MultiImageUploadProps> = ({
                 }
 
                 if (!file.type.startsWith("image/")) {
-                    message.error(`${file.name} is not a valid image file.`);
+                    toast.error(`${file.name} is not a valid image file.`);
                     event.target.value = "";
                     return;
                 }
@@ -107,19 +104,10 @@ const MultiImageUpload: React.FC<MultiImageUploadProps> = ({
             });
             formData.append("folder", folder);
 
-            const baseURL = import.meta.env.VITE_BACKEND_URL || "http://localhost:4000";
-            const response = await axios.post<UploadMultipleResponse>(
-                `${baseURL}/images/upload-multiple`,
-                formData,
-                {
-                    headers: {
-                        "Content-Type": "multipart/form-data",
-                    },
-                }
-            );
+            const response = await uploadMultipleImages(formData).unwrap();
 
-            if (response.data.success) {
-                const newUploadedUrls = response.data.data.images.map(
+            if (response.success) {
+                const newUploadedUrls = response.data.images.map(
                     (img: UploadedImage) => img.imageUrl || defaultImageUrl
                 );
                 const allUrls = [...uploadedUrls, ...newUploadedUrls];
@@ -130,14 +118,14 @@ const MultiImageUpload: React.FC<MultiImageUploadProps> = ({
                 // Call onChange callback
                 onChange?.(allUrls);
 
-                message.success(`${newUploadedUrls.length} image(s) uploaded successfully!`);
+                toast.success(`${newUploadedUrls.length} image(s) uploaded successfully!`);
                 return newUploadedUrls;
             } else {
-                throw new Error(response.data.message || "Upload failed");
+                throw new Error(response.message || "Upload failed");
             }
         } catch (error: unknown) {
             console.error("Error uploading images:", error);
-            message.error("Failed to upload images. Using default image URLs.");
+            toast.error("Failed to upload images. Using default image URLs.");
             // Use default URLs for the number of files that failed
             const fallbackUrls = selectedFiles.map(() => defaultImageUrl);
             const allUrls = [...uploadedUrls, ...fallbackUrls];
@@ -158,12 +146,12 @@ const MultiImageUpload: React.FC<MultiImageUploadProps> = ({
             .filter((url) => url !== "");
 
         if (urls.length === 0) {
-            message.warning("Please enter at least one image URL");
+            toast.warning("Please enter at least one image URL");
             return;
         }
 
         if (uploadedUrls.length + urls.length > maxFiles) {
-            message.error(`Total images cannot exceed ${maxFiles}`);
+            toast.error(`Total images cannot exceed ${maxFiles}`);
             return;
         }
 
@@ -175,7 +163,7 @@ const MultiImageUpload: React.FC<MultiImageUploadProps> = ({
                 validUrls.push(url);
             } catch (error: unknown) {
                 console.error("Error validating URL:", error);
-                message.error(`Invalid URL: ${url}`);
+                toast.error(`Invalid URL: ${url}`);
                 return;
             }
         }
@@ -184,7 +172,7 @@ const MultiImageUpload: React.FC<MultiImageUploadProps> = ({
         setUploadedUrls(allUrls);
         onChange?.(allUrls);
         setUrlInputValue("");
-        message.success(`${validUrls.length} URL(s) added successfully!`);
+        toast.success(`${validUrls.length} URL(s) added successfully!`);
     };
 
     const removeImage = (index: number) => {
@@ -247,15 +235,15 @@ const MultiImageUpload: React.FC<MultiImageUploadProps> = ({
                 {allowUrlInput && (
                     <div className="flex gap-2 mb-2">
                         <Button
-                            type={inputMode === "upload" ? "primary" : "default"}
-                            size="small"
+                            variant={inputMode === "upload" ? "default" : "outline"}
+                            size="sm"
                             onClick={() => setInputMode("upload")}
                         >
                             Upload Files
                         </Button>
                         <Button
-                            type={inputMode === "url" ? "primary" : "default"}
-                            size="small"
+                            variant={inputMode === "url" ? "default" : "outline"}
+                            size="sm"
                             onClick={() => setInputMode("url")}
                         >
                             Enter URLs
@@ -283,9 +271,7 @@ const MultiImageUpload: React.FC<MultiImageUploadProps> = ({
                             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-sky-500 focus:border-sky-500 text-sm min-h-[100px]"
                             rows={4}
                         />
-                        <Button type="primary" onClick={handleUrlsSubmit}>
-                            Add URLs
-                        </Button>
+                        <Button onClick={handleUrlsSubmit}>Add URLs</Button>
                     </div>
                 )}
 
@@ -296,20 +282,19 @@ const MultiImageUpload: React.FC<MultiImageUploadProps> = ({
                             {selectedFiles.length} image(s) ready for upload
                         </p>
                         <Button
-                            type="primary"
-                            size="small"
-                            loading={uploadLoading}
+                            size="sm"
+                            isLoading={uploadLoading}
                             onClick={uploadToS3}
-                            icon={<UploadOutlined />}
+                            icon={<FaUpload />}
                         >
                             Upload All
                         </Button>
                         <Button
-                            type="text"
-                            size="small"
+                            variant="ghost"
+                            size="sm"
                             onClick={removeAll}
-                            icon={<DeleteOutlined />}
-                            danger
+                            icon={<FaTrash />}
+                            className="text-destructive hover:text-destructive"
                         >
                             Clear
                         </Button>
@@ -333,11 +318,11 @@ const MultiImageUpload: React.FC<MultiImageUploadProps> = ({
                                 </div>
                             </div>
                             <Button
-                                type="text"
-                                size="small"
+                                variant="ghost"
+                                size="sm"
                                 onClick={removeAll}
-                                icon={<DeleteOutlined />}
-                                danger
+                                icon={<FaTrash />}
+                                className="text-destructive hover:text-destructive"
                             >
                                 Remove All
                             </Button>

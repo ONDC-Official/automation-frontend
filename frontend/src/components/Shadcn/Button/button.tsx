@@ -42,6 +42,7 @@ const Button = ({
     asChild = false,
     isLoading = false,
     disabled,
+    type,
     children,
     ...props
 }: React.ComponentProps<"button"> &
@@ -50,12 +51,17 @@ const Button = ({
         isLoading?: boolean;
     }) => {
     const Comp = asChild ? Slot.Root : "button";
+    // Native <button> defaults to type="submit" inside a <form>; antd's Button (which this
+    // replaces) always defaulted to type="button" unless told otherwise. Preserve that default
+    // here so migrated callers don't need an explicit type="button" on every non-submit button.
+    const resolvedType = asChild ? type : (type ?? "button");
 
     return (
         <Comp
             data-slot="button"
             data-variant={variant}
             data-size={size}
+            type={resolvedType}
             disabled={disabled || isLoading}
             className={cn(buttonVariants({ variant, size, className }))}
             {...props}

@@ -1,5 +1,5 @@
 import logger from "@ondc/automation-logger";
-import { RedisService } from "ondc-automation-cache-lib";
+import { RedisService } from "@ondc/ondc-automation-cache-lib";
 export async function saveLog(
 	sessionId: string,
 	message: string,

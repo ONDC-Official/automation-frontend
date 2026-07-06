@@ -105,6 +105,7 @@ const ComboboxContent = ({
                 alignOffset={alignOffset}
                 anchor={anchor}
                 className={cn("isolate", FORM_FLOW_FLOATING_Z_INDEX)}
+                style={{ zIndex: 70 }}
             >
                 <ComboboxPrimitive.Popup
                     data-slot="combobox-content"

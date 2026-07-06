@@ -1,14 +1,16 @@
 import { toast } from "sonner";
-import { generateKeys } from "../../utils/regsitry-utils";
+import { useLazyGenerateApiKeysQuery } from "@store/api";
 
 interface DownloadKeysButtonProps {
     onDownload: (signingPublicKey: string, encryptionPublicKey: string) => Promise<void>;
 }
 
 export default function DownloadKeysButton({ onDownload }: DownloadKeysButtonProps) {
+    const [triggerGenerateApiKeys] = useLazyGenerateApiKeysQuery();
+
     const handleDownload = async () => {
         try {
-            const keysData = await generateKeys();
+            const keysData = await triggerGenerateApiKeys().unwrap();
 
             const blob = new Blob([JSON.stringify(keysData, null, 2)], {
                 type: "application/json",
@@ -26,6 +28,7 @@ export default function DownloadKeysButton({ onDownload }: DownloadKeysButtonPro
             await onDownload(keysData.signing_public_key, keysData.encryption_public_key);
         } catch (err) {
             console.error("Download failed:", err);
+            toast.error("Failed to generate keys!");
         }
     };
 

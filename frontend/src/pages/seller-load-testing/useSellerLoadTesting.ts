@@ -1,52 +1,35 @@
 import React from "react";
-import axios from "axios";
+import { useCreateLoadTestSessionMutation, useDeleteLoadTestSessionMutation } from "@store/api";
 import { FormValues } from "./types";
+import { useAppDispatch, useAppSelector } from "@store/hooks";
+import {
+    selectSellerSession,
+    setSellerSession,
+    type ISellerSessionData,
+} from "@store/slices/sellerLoadTestSlice";
 
-interface SessionData {
-    sessionId: string;
-    bppId: string;
-    bppUri: string;
-    createdAt: string;
-    expiresAt: string;
-    status: string;
-}
-
-interface CreateSessionResponse {
-    id: string;
-    created_at: string;
-    expires_at: string;
-    status: string;
-}
+type SessionData = ISellerSessionData;
 
 export const useSellerLoadTesting = () => {
+    const [createLoadTestSession] = useCreateLoadTestSessionMutation();
+    const [deleteLoadTestSession] = useDeleteLoadTestSessionMutation();
+    const dispatch = useAppDispatch();
     const [isLoading, setIsLoading] = React.useState<boolean>(false);
     const [isDeleting, setIsDeleting] = React.useState<boolean>(false);
-    const [sessionData, setSessionData] = React.useState<SessionData | null>(() => {
-        const saved = localStorage.getItem("seller_session");
-        return saved ? JSON.parse(saved) : null;
-    });
+    const sessionData = useAppSelector(selectSellerSession);
     const [discoveryComplete, setDiscoveryComplete] = React.useState<boolean>(false);
 
     const saveSession = (data: SessionData | null) => {
-        if (data) {
-            localStorage.setItem("seller_session", JSON.stringify(data));
-        } else {
-            localStorage.removeItem("seller_session");
-        }
-        setSessionData(data);
+        dispatch(setSellerSession(data));
     };
 
     const onSubmit = async (data: FormValues) => {
         setIsLoading(true);
         try {
-            const response = await axios.post<CreateSessionResponse>(
-                `${import.meta.env.VITE_LOAD_TEST_BACKEND_URL}/sessions/`,
-                {
-                    bpp_id: data.bppId,
-                    bpp_uri: data.bppUri,
-                }
-            );
-            const result = response.data;
+            const result = await createLoadTestSession({
+                bppId: data.bppId,
+                bppUri: data.bppUri,
+            }).unwrap();
             saveSession({
                 sessionId: result.id,
                 bppId: data.bppId,
@@ -66,9 +49,7 @@ export const useSellerLoadTesting = () => {
         if (!sessionData) return;
         setIsDeleting(true);
         try {
-            await axios.delete(
-                `${import.meta.env.VITE_LOAD_TEST_BACKEND_URL}/sessions/${sessionData.sessionId}`
-            );
+            await deleteLoadTestSession(sessionData.sessionId).unwrap();
             saveSession(null);
         } catch (error) {
             console.error("Error deleting session:", error);

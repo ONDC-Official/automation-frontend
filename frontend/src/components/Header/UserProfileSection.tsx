@@ -1,7 +1,7 @@
 import { useCallback, useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "@/context/authContext";
-import { AuthService } from "@services/authService";
+import { authTokenManager } from "@utils/localStorageManager";
 import { ROUTES } from "@constants/routes";
 import { Button } from "@/components/Shadcn/Button/button";
 import Spinner from "@/components/Shadcn/Spinner";
@@ -30,7 +30,7 @@ export const UserProfileSection = ({ inDrawer = false }: { inDrawer?: boolean })
 
     const handleLogout = useCallback(async () => {
         try {
-            await AuthService.logout();
+            authTokenManager.remove();
         } catch (error) {
             console.error("Logout failed:", error);
         } finally {

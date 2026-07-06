@@ -1,18 +1,44 @@
-import { createContext, useContext, type Dispatch, type SetStateAction } from "react";
+import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from "react";
 import type { IProfileCounts } from "@pages/user-profile/types";
+import { useProfileDerivedCounts } from "@store/selectors/profileSelectors";
 
-export interface IProfileShellContext {
+interface ProfileShellContextValue {
     counts: IProfileCounts;
-    setCounts: Dispatch<SetStateAction<IProfileCounts>>;
+    setActivityHistoryCount: (count: number) => void;
 }
 
-export const ProfileShellContext = createContext<IProfileShellContext | null>(null);
+const ProfileShellContext = createContext<ProfileShellContextValue | null>(null);
 
-const NOOP_SET_COUNTS: Dispatch<SetStateAction<IProfileCounts>> = () => {};
+/** Profile sidebar counts: configs/reports from RTK Query; history from activity search results. */
+export const ProfileShellProvider = ({ children }: { children: ReactNode }) => {
+    const { configs, pastReports } = useProfileDerivedCounts();
+    const [activityHistoryCount, setActivityHistoryCount] = useState(0);
 
-const STANDALONE_SHELL: IProfileShellContext = {
-    counts: { configs: 0, pastReports: 0, history: 0 },
-    setCounts: NOOP_SET_COUNTS,
+    const setActivityHistoryCountStable = useCallback((count: number) => {
+        setActivityHistoryCount(count);
+    }, []);
+
+    const counts = useMemo<IProfileCounts>(
+        () => ({
+            configs,
+            pastReports,
+            history: activityHistoryCount,
+        }),
+        [configs, pastReports, activityHistoryCount]
+    );
+
+    const value = useMemo(
+        () => ({ counts, setActivityHistoryCount: setActivityHistoryCountStable }),
+        [counts, setActivityHistoryCountStable]
+    );
+
+    return <ProfileShellContext.Provider value={value}>{children}</ProfileShellContext.Provider>;
 };
 
-export const useProfileShell = () => useContext(ProfileShellContext) ?? STANDALONE_SHELL;
+export const useProfileShell = (): ProfileShellContextValue => {
+    const ctx = useContext(ProfileShellContext);
+    if (!ctx) {
+        throw new Error("useProfileShell must be used within ProfileShellProvider");
+    }
+    return ctx;
+};

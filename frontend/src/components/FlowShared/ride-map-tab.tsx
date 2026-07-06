@@ -2,7 +2,12 @@ import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { FlowMap } from "@/types/flow-state-type";
 import { useSession } from "@context/context";
-import { proceedFlow, triggerExtra, getMappedFlow, getRoute } from "@utils/request-utils";
+import {
+    useProceedFlowMutation,
+    useTriggerExtraMutation,
+    useLazyGetMappedFlowQuery,
+    useLazyGetRouteQuery,
+} from "@store/api";
 import MapPanel from "@components/FlowShared/map-panel";
 import {
     deriveRideMapData,
@@ -52,6 +57,10 @@ export default function RideMapTab({ flowId }: { flowId: string | null }) {
     const [sendingState, setSendingState] = useState(false);
     const autoStateFiredRef = useRef<Set<string>>(new Set());
     const payloadCacheRef = useRef<Map<string, unknown>>(new Map());
+    const [proceedFlow] = useProceedFlowMutation();
+    const [triggerExtra] = useTriggerExtraMutation();
+    const [triggerGetMappedFlow] = useLazyGetMappedFlowQuery();
+    const [triggerGetRoute] = useLazyGetRouteQuery();
 
     // Active segment route (drives the map polyline, the two-tone progress and the ETA panel).
     type Segment = {
@@ -84,7 +93,7 @@ export default function RideMapTab({ flowId }: { flowId: string | null }) {
         let cancelled = false;
         const fetchOnce = async () => {
             try {
-                const data = await getMappedFlow(transactionId, sessionId);
+                const data = await triggerGetMappedFlow({ transactionId, sessionId }).unwrap();
                 if (!cancelled) setMappedFlow(data);
             } catch (e) {
                 console.error("RideMapTab: failed to fetch mapped flow", e);
@@ -127,7 +136,11 @@ export default function RideMapTab({ flowId }: { flowId: string | null }) {
         setLocalPhase(code);
         setSendingState(true);
         try {
-            const res = await proceedFlow(sessionId, transactionId, undefined, { id: actionId });
+            const res = await proceedFlow({
+                sessionId,
+                transactionId,
+                inputs: { id: actionId },
+            }).unwrap();
             if (res?.success === false) {
                 setLocalPhase(prevPhase);
                 toast.error(res.message || "Ride state not dispatched");
@@ -170,7 +183,12 @@ export default function RideMapTab({ flowId }: { flowId: string | null }) {
     const sendOnTrack = async (gps: string) => {
         if (!transactionId || !sessionData) return;
         try {
-            await triggerExtra(sessionId, transactionId, "on_track_driver_move", { gps });
+            await triggerExtra({
+                sessionId,
+                transactionId,
+                triggerExtraKey: "on_track_driver_move",
+                inputs: { gps },
+            }).unwrap();
         } catch (e) {
             console.error("on_track (animation) failed", e);
         }
@@ -186,7 +204,8 @@ export default function RideMapTab({ flowId }: { flowId: string | null }) {
         const from = parseGps(fromGps);
         const to = parseGps(toGps);
         if (!from || !to) return null;
-        const res = await getRoute(fromGps as string, toGps as string);
+        const routeResult = await triggerGetRoute({ from: fromGps as string, to: toGps as string });
+        const res = routeResult.data;
         if (res?.geometry?.length) {
             return {
                 geometry: res.geometry,
@@ -319,9 +338,12 @@ export default function RideMapTab({ flowId }: { flowId: string | null }) {
         }
 
         try {
-            const res = await triggerExtra(sessionId, transactionId, "on_track_driver_move", {
-                gps,
-            });
+            const res = await triggerExtra({
+                sessionId,
+                transactionId,
+                triggerExtraKey: "on_track_driver_move",
+                inputs: { gps },
+            }).unwrap();
             if (res?.success === false) {
                 toast.error(res.message || "Driver location not dispatched");
                 console.warn("on_track_driver_move trigger rejected:", res.message);

@@ -1,10 +1,29 @@
-import { createContext, ReactNode, useContext, useState, Dispatch, SetStateAction } from "react";
-import { SessionCache } from "../types/session-types";
-
-type SessionPayloadData = Record<string, unknown> | unknown[] | null;
-type SessionSideView = Record<string, unknown> | null;
-type SessionMetadataValue = { name?: string; value: unknown; errorMessage?: string };
-type SessionMetadata = Record<string, SessionMetadataValue> | null;
+import { createContext, ReactNode, useContext, useMemo, Dispatch, SetStateAction } from "react";
+import {
+    SessionCache,
+    SessionMetadata,
+    SessionPayloadData,
+    SessionSideView,
+} from "@/types/session-types";
+import { useAppDispatch, useAppSelector } from "@store/hooks";
+import { createDispatchSetter } from "@store/utils/createDispatchSetter";
+import {
+    setSessionId as setSessionIdAction,
+    setActiveFlowId as setActiveFlowIdAction,
+    setSessionData as setSessionDataAction,
+    setSelectedTab as setSelectedTabAction,
+    setRequestData as setRequestDataAction,
+    setResponseData as setResponseDataAction,
+    setSideView as setSideViewAction,
+    setMetadata as setMetadataAction,
+    setActiveCallClickedToggle as setActiveCallClickedToggleAction,
+    setAutoScrollEnabled as setAutoScrollEnabledAction,
+    setExperimentalMode as setExperimentalModeAction,
+    acquireFlowFormDialogLock as acquireFlowFormDialogLockAction,
+    releaseFlowFormDialogLock as releaseFlowFormDialogLockAction,
+    selectIsFlowFormDialogOpen,
+    type SessionTab,
+} from "@store/slices/sessionSlice";
 
 interface SessionContextProps {
     sessionId: string;
@@ -13,10 +32,8 @@ interface SessionContextProps {
     setActiveFlowId?: Dispatch<SetStateAction<string | null>>;
     sessionData: SessionCache | null | undefined;
     setSessionData?: Dispatch<SetStateAction<SessionCache | null>>;
-    selectedTab: "Request" | "Response" | "Metadata" | "Guide" | "Application";
-    setSelectedTab?: Dispatch<
-        SetStateAction<"Request" | "Response" | "Metadata" | "Guide" | "Application">
-    >;
+    selectedTab: SessionTab;
+    setSelectedTab?: Dispatch<SetStateAction<SessionTab>>;
     requestData: SessionPayloadData;
     setRequestData: Dispatch<SetStateAction<SessionPayloadData>>;
     responseData: SessionPayloadData;
@@ -25,10 +42,9 @@ interface SessionContextProps {
     setSideView: Dispatch<SetStateAction<SessionSideView>>;
     metadata: SessionMetadata;
     setMetadata: Dispatch<SetStateAction<SessionMetadata>>;
-    setActiveCallClickedToggle: React.Dispatch<React.SetStateAction<boolean>>;
+    setActiveCallClickedToggle: Dispatch<SetStateAction<boolean>>;
     activeCallClickedToggle: boolean;
-    // Frontend-only UI prefs (persisted in localStorage, NOT in the backend session). Optional so
-    // providers that don't manage them fall back to defaults (handled by readers).
+    // Frontend-only UI prefs (persisted via the Redux session slice, NOT the backend session).
     autoScrollEnabled?: boolean;
     setAutoScrollEnabled?: Dispatch<SetStateAction<boolean>>;
     experimentalMode?: boolean;
@@ -41,45 +57,69 @@ interface SessionContextProps {
 
 export const SessionContext = createContext<SessionContextProps | undefined>(undefined);
 
+/**
+ * Thin shell over the Redux `session` slice. State lives in the store; this provider preserves the
+ * existing `useSession()` Context API (including functional setter updates) for all consumers.
+ */
 export const SessionProvider = ({ children }: { children: ReactNode }) => {
-    const [sessionId, setSessionId] = useState<string>("");
-    const [activeFlowId, setActiveFlowId] = useState<string | null>(null);
-    const [sessionData, setSessionData] = useState<SessionCache | null>(null);
-    const [selectedTab, setSelectedTab] = useState<
-        "Request" | "Response" | "Metadata" | "Guide" | "Application"
-    >("Request");
-    const [requestData, setRequestData] = useState<SessionPayloadData>(null);
-    const [responseData, setResponseData] = useState<SessionPayloadData>(null);
-    const [activeCallClickedToggle, setActiveCallClickedToggle] = useState<boolean>(false);
-    const [sideView, setSideView] = useState<SessionSideView>(null);
-    const [metadata, setMetadata] = useState<SessionMetadata>(null);
+    const dispatch = useAppDispatch();
+    const session = useAppSelector((state) => state.session);
+    const isFlowFormDialogOpen = useAppSelector(selectIsFlowFormDialogOpen);
 
-    return (
-        <SessionContext.Provider
-            value={{
-                sessionId,
-                setSessionId,
-                activeFlowId,
-                setActiveFlowId,
-                sessionData,
-                setSessionData,
-                selectedTab,
-                setSelectedTab,
-                requestData,
-                setRequestData,
-                setActiveCallClickedToggle,
-                activeCallClickedToggle,
-                responseData,
-                setResponseData,
-                sideView, // 👈 optional if you also want to read it
-                setSideView, // 👈 fixes missing prop
-                metadata, // 👈 optional
-                setMetadata,
-            }}
-        >
-            {children}
-        </SessionContext.Provider>
-    );
+    const value = useMemo<SessionContextProps>(() => {
+        return {
+            sessionId: session.sessionId,
+            setSessionId: createDispatchSetter(session.sessionId, (next) =>
+                dispatch(setSessionIdAction(next))
+            ),
+            activeFlowId: session.activeFlowId,
+            setActiveFlowId: createDispatchSetter(session.activeFlowId, (next) =>
+                dispatch(setActiveFlowIdAction(next))
+            ),
+            sessionData: session.sessionData,
+            setSessionData: createDispatchSetter(session.sessionData, (next) =>
+                dispatch(setSessionDataAction(next))
+            ),
+            selectedTab: session.selectedTab,
+            setSelectedTab: createDispatchSetter(session.selectedTab, (next) =>
+                dispatch(setSelectedTabAction(next))
+            ),
+            requestData: session.requestData,
+            setRequestData: createDispatchSetter(session.requestData, (next) =>
+                dispatch(setRequestDataAction(next))
+            ),
+            responseData: session.responseData,
+            setResponseData: createDispatchSetter(session.responseData, (next) =>
+                dispatch(setResponseDataAction(next))
+            ),
+            sideView: session.sideView,
+            setSideView: createDispatchSetter(session.sideView, (next) =>
+                dispatch(setSideViewAction(next))
+            ),
+            metadata: session.metadata,
+            setMetadata: createDispatchSetter(session.metadata, (next) =>
+                dispatch(setMetadataAction(next))
+            ),
+            activeCallClickedToggle: session.activeCallClickedToggle,
+            setActiveCallClickedToggle: createDispatchSetter(
+                session.activeCallClickedToggle,
+                (next) => dispatch(setActiveCallClickedToggleAction(next))
+            ),
+            autoScrollEnabled: session.autoScrollEnabled,
+            setAutoScrollEnabled: createDispatchSetter(session.autoScrollEnabled, (next) =>
+                dispatch(setAutoScrollEnabledAction(next))
+            ),
+            experimentalMode: session.experimentalMode,
+            setExperimentalMode: createDispatchSetter(session.experimentalMode, (next) =>
+                dispatch(setExperimentalModeAction(next))
+            ),
+            isFlowFormDialogOpen,
+            acquireFlowFormDialogLock: () => dispatch(acquireFlowFormDialogLockAction()),
+            releaseFlowFormDialogLock: () => dispatch(releaseFlowFormDialogLockAction()),
+        };
+    }, [session, isFlowFormDialogOpen, dispatch]);
+
+    return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;
 };
 
 export const useSession = () => {

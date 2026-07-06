@@ -1,7 +1,7 @@
 import "./config/otelConfig";
 import express from "express";
 import routes from "./routes/index";
-import { RedisService } from "ondc-automation-cache-lib";
+import { RedisService } from "@ondc/ondc-automation-cache-lib";
 import cookieParser from "cookie-parser";
 // import redisClient from './config/redisConfig'; // Import the Redis client
 import session from "express-session";

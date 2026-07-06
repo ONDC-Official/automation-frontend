@@ -5,6 +5,9 @@
 
 @theme {
     --breakpoint-nav: 1290px;
+    --z-index-55: 55;
+    --z-index-60: 60;
+    --z-index-70: 70;
     --animate-accordion-down: accordion-down 0.2s ease-out;
     --animate-accordion-up: accordion-up 0.2s ease-out;
 
@@ -89,77 +92,6 @@
 :root {
     --font-family-default: "Inter", sans-serif;
     --font-family-code: "Fira Code", monospace;
-}
-
-/* Ant Design Select custom styling */
-.antd-select .ant-select-selector {
-    border-color: var(--border-default) !important;
-    border-radius: 0.375rem !important;
-    padding: 0.375rem 0.75rem !important;
-    min-height: 2.5rem !important;
-    background-color: transparent !important;
-}
-
-.antd-select .ant-select-selector:hover {
-    border-color: var(--color-n-60) !important;
-    background-color: transparent !important;
-}
-
-.antd-select.ant-select-focused .ant-select-selector {
-    border-color: var(--color-brand-normal) !important;
-    box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-brand-normal) 50%, transparent) !important;
-    background-color: transparent !important;
-}
-
-.antd-select.ant-select-disabled .ant-select-selector {
-    background-color: transparent !important;
-}
-
-.antd-select .ant-select-selection-item {
-    background-color: var(--color-brand-light) !important;
-    border-color: var(--color-brand-normal) !important;
-    color: var(--color-brand-dark) !important;
-}
-
-.antd-select .ant-select-selection-item-remove {
-    color: var(--color-brand-dark) !important;
-}
-
-.antd-select .ant-select-selection-item-remove:hover {
-    color: var(--color-brand-darker) !important;
-}
-
-/* Ant Design Input custom styling */
-.antd-input {
-    background-color: transparent !important;
-    border-color: var(--border-default) !important;
-    border-radius: 0.375rem !important;
-    padding: 0.375rem 0.75rem !important;
-    min-height: 2.5rem !important;
-}
-
-.antd-input:hover {
-    border-color: var(--color-n-60) !important;
-    background-color: transparent !important;
-}
-
-.antd-input:focus,
-.antd-input.ant-input-focused {
-    border-color: var(--color-brand-normal) !important;
-    box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-brand-normal) 50%, transparent) !important;
-    background-color: transparent !important;
-}
-
-.antd-input.ant-input-disabled {
-    background-color: transparent !important;
-    color: var(--text-secondary) !important;
-}
-
-.antd-input.ant-input,
-.antd-input textarea.ant-input,
-.antd-input.ant-input-password,
-.antd-input.ant-input-password .ant-input {
-    background-color: transparent !important;
 }
 
 /* ── Global Scrollbar ── */

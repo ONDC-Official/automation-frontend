@@ -10,7 +10,13 @@ import {
 } from "react-hook-form";
 import { toast } from "sonner";
 import { FaPlus, FaTrash, FaStore, FaClock } from "react-icons/fa";
-import { Input, Select, DatePicker, Tabs, DatePickerProps } from "antd";
+
+import { Input } from "@/components/Shadcn/TextField/input";
+import { Textarea } from "@/components/Shadcn/ComboBox/textarea";
+import { SelectControl } from "@/components/Shadcn/Select";
+import { ComboBoxMultiControl } from "@/components/Shadcn/ComboBox";
+import { DatePicker } from "@/components/Shadcn/DatePicker";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/Shadcn/Tabs";
 
 import TimeInput from "@components/ui/forms/time-input";
 import LoadingButton from "@components/ui/forms/loading-button";
@@ -160,20 +166,13 @@ const StoreTimingsSection = ({ storeIndex, control, watch }: StoreTimingsSection
                                 }}
                                 render={({ field, fieldState: { error } }) => (
                                     <>
-                                        <Select
-                                            {...field}
-                                            className="w-full"
-                                            size="large"
+                                        <SelectControl
+                                            value={field.value}
+                                            onValueChange={field.onChange}
+                                            options={Types}
                                             placeholder="Select Fulfillment Type"
-                                            allowClear
-                                            status={error ? "error" : undefined}
-                                        >
-                                            {Types.map((bt) => (
-                                                <Select.Option key={bt.value} value={bt.value}>
-                                                    {bt.key}
-                                                </Select.Option>
-                                            ))}
-                                        </Select>
+                                            className={error ? "border-destructive" : undefined}
+                                        />
                                         {error && (
                                             <p className="text-red-500 text-xs mt-1">
                                                 {error.message}
@@ -197,20 +196,13 @@ const StoreTimingsSection = ({ storeIndex, control, watch }: StoreTimingsSection
                                 }}
                                 render={({ field, fieldState: { error } }) => (
                                     <>
-                                        <Select
-                                            {...field}
-                                            className="w-full"
-                                            size="large"
+                                        <SelectControl
+                                            value={field.value}
+                                            onValueChange={field.onChange}
+                                            options={weekDays}
                                             placeholder="Select Start Day"
-                                            allowClear
-                                            status={error ? "error" : undefined}
-                                        >
-                                            {weekDays.map((day) => (
-                                                <Select.Option key={day.value} value={day.value}>
-                                                    {day.key}
-                                                </Select.Option>
-                                            ))}
-                                        </Select>
+                                            className={error ? "border-destructive" : undefined}
+                                        />
                                         {error && (
                                             <p className="text-red-500 text-xs mt-1">
                                                 {error.message}
@@ -233,20 +225,13 @@ const StoreTimingsSection = ({ storeIndex, control, watch }: StoreTimingsSection
                                 }}
                                 render={({ field, fieldState: { error } }) => (
                                     <>
-                                        <Select
-                                            {...field}
-                                            className="w-full"
-                                            size="large"
+                                        <SelectControl
+                                            value={field.value}
+                                            onValueChange={field.onChange}
+                                            options={weekDays}
                                             placeholder="Select End Day"
-                                            allowClear
-                                            status={error ? "error" : undefined}
-                                        >
-                                            {weekDays.map((day) => (
-                                                <Select.Option key={day.value} value={day.value}>
-                                                    {day.key}
-                                                </Select.Option>
-                                            ))}
-                                        </Select>
+                                            className={error ? "border-destructive" : undefined}
+                                        />
                                         {error && (
                                             <p className="text-red-500 text-xs mt-1">
                                                 {error.message}
@@ -653,8 +638,7 @@ const BusinessVerificationForm = ({
                                     <Input
                                         {...field}
                                         placeholder="Enter GPS Coordinates"
-                                        size="large"
-                                        status={error ? "error" : undefined}
+                                        aria-invalid={!!error}
                                     />
                                     {error && (
                                         <p className="text-red-500 text-xs mt-1">{error.message}</p>
@@ -691,8 +675,7 @@ const BusinessVerificationForm = ({
                                     <Input
                                         {...field}
                                         placeholder="Enter Locality"
-                                        size="large"
-                                        status={error ? "error" : undefined}
+                                        aria-invalid={!!error}
                                     />
                                     {error && (
                                         <p className="text-red-500 text-xs mt-1">{error.message}</p>
@@ -724,8 +707,7 @@ const BusinessVerificationForm = ({
                                     <Input
                                         {...field}
                                         placeholder="Enter Street Address"
-                                        size="large"
-                                        status={error ? "error" : undefined}
+                                        aria-invalid={!!error}
                                     />
                                     {error && (
                                         <p className="text-red-500 text-xs mt-1">{error.message}</p>
@@ -762,8 +744,7 @@ const BusinessVerificationForm = ({
                                     <Input
                                         {...field}
                                         placeholder="Enter City"
-                                        size="large"
-                                        status={error ? "error" : undefined}
+                                        aria-invalid={!!error}
                                     />
                                     {error && (
                                         <p className="text-red-500 text-xs mt-1">{error.message}</p>
@@ -801,8 +782,7 @@ const BusinessVerificationForm = ({
                                     <Input
                                         {...field}
                                         placeholder="Enter PIN Code"
-                                        size="large"
-                                        status={error ? "error" : undefined}
+                                        aria-invalid={!!error}
                                     />
                                     {error && (
                                         <p className="text-red-500 text-xs mt-1">{error.message}</p>
@@ -821,20 +801,13 @@ const BusinessVerificationForm = ({
                             control={control}
                             render={({ field, fieldState: { error } }) => (
                                 <>
-                                    <Select
-                                        {...field}
-                                        className="w-full"
-                                        size="large"
+                                    <SelectControl
+                                        value={field.value}
+                                        onValueChange={field.onChange}
+                                        options={indianStates}
                                         placeholder="Select State"
-                                        allowClear
-                                        status={error ? "error" : undefined}
-                                    >
-                                        {indianStates.map((state) => (
-                                            <Select.Option key={state.value} value={state.value}>
-                                                {state.key}
-                                            </Select.Option>
-                                        ))}
-                                    </Select>
+                                        className={error ? "border-destructive" : undefined}
+                                    />
                                     {error && (
                                         <p className="text-red-500 text-xs mt-1">{error.message}</p>
                                     )}
@@ -878,8 +851,7 @@ const BusinessVerificationForm = ({
                                     <Input
                                         {...field}
                                         placeholder="Enter Contact Phone"
-                                        size="large"
-                                        status={error ? "error" : undefined}
+                                        aria-invalid={!!error}
                                     />
                                     {error && (
                                         <p className="text-red-500 text-xs mt-1">{error.message}</p>
@@ -924,9 +896,8 @@ const BusinessVerificationForm = ({
                                     <Input
                                         {...field}
                                         placeholder="Enter Contact Email"
-                                        size="large"
                                         type="email"
-                                        status={error ? "error" : undefined}
+                                        aria-invalid={!!error}
                                     />
                                     {error && (
                                         <p className="text-red-500 text-xs mt-1">{error.message}</p>
@@ -964,22 +935,15 @@ const BusinessVerificationForm = ({
                                     <>
                                         <div className="space-y-2">
                                             <DatePicker
-                                                className="w-full"
-                                                size="large"
+                                                value=""
                                                 placeholder="Select a holiday date"
-                                                allowClear
-                                                status={error ? "error" : undefined}
-                                                format="YYYY-MM-DD"
-                                                value={null}
-                                                disabledDate={(current) => {
-                                                    return (
-                                                        current &&
-                                                        current.isBefore(new Date(), "day")
-                                                    );
+                                                disabledDate={(date) => {
+                                                    const today = new Date();
+                                                    today.setHours(0, 0, 0, 0);
+                                                    return date < today;
                                                 }}
-                                                onChange={(date: DatePickerProps["value"]) => {
-                                                    if (date) {
-                                                        const dateStr = date.format("YYYY-MM-DD");
+                                                onChange={(dateStr) => {
+                                                    if (dateStr) {
                                                         handleDateAdd(dateStr);
                                                     }
                                                 }}
@@ -1077,9 +1041,8 @@ const BusinessVerificationForm = ({
                                         <Input
                                             {...field}
                                             placeholder="Enter FSSAI License Number"
-                                            size="large"
                                             maxLength={14}
-                                            status={error ? "error" : undefined}
+                                            aria-invalid={!!error}
                                         />
                                         {error && (
                                             <p className="text-red-500 text-xs mt-1">
@@ -1111,28 +1074,13 @@ const BusinessVerificationForm = ({
                             }}
                             render={({ field, fieldState: { error } }) => (
                                 <>
-                                    <Select
-                                        {...field}
-                                        mode="multiple"
-                                        className="w-full"
-                                        size="large"
+                                    <ComboBoxMultiControl
+                                        value={field.value || []}
+                                        onValueChange={field.onChange}
+                                        options={categoryOptions}
                                         placeholder="Select Subcategories"
-                                        allowClear
-                                        status={error ? "error" : undefined}
-                                        maxTagCount="responsive"
-                                        maxTagPlaceholder={(omittedValues) =>
-                                            `+${omittedValues.length} more`
-                                        }
-                                    >
-                                        {categoryOptions.map((category) => (
-                                            <Select.Option key={category} value={category}>
-                                                {category}
-                                            </Select.Option>
-                                        ))}
-                                    </Select>
-                                    {error && (
-                                        <p className="text-red-500 text-xs mt-1">{error.message}</p>
-                                    )}
+                                        error={error?.message}
+                                    />
                                 </>
                             )}
                         />
@@ -1151,20 +1099,13 @@ const BusinessVerificationForm = ({
                             }}
                             render={({ field, fieldState: { error } }) => (
                                 <>
-                                    <Select
-                                        {...field}
-                                        className="w-full"
-                                        size="large"
+                                    <SelectControl
+                                        value={field.value}
+                                        onValueChange={field.onChange}
+                                        options={Types}
                                         placeholder="Select Fulfillment Types"
-                                        allowClear
-                                        status={error ? "error" : undefined}
-                                    >
-                                        {Types.map((bt) => (
-                                            <Select.Option key={bt.value} value={bt.value}>
-                                                {bt.key}
-                                            </Select.Option>
-                                        ))}
-                                    </Select>
+                                        className={error ? "border-destructive" : undefined}
+                                    />
                                     {error && (
                                         <p className="text-red-500 text-xs mt-1">{error.message}</p>
                                     )}
@@ -1197,9 +1138,8 @@ const BusinessVerificationForm = ({
                                         {...field}
                                         type="number"
                                         placeholder="Enter Minimum Order Value"
-                                        size="large"
                                         min={0}
-                                        status={error ? "error" : undefined}
+                                        aria-invalid={!!error}
                                     />
                                     {error && (
                                         <p className="text-red-500 text-xs mt-1">{error.message}</p>
@@ -1220,31 +1160,6 @@ const BusinessVerificationForm = ({
         </div>
     );
 
-    // Create tab items for stores
-    const tabItems = fields.map((_, index) => ({
-        key: index.toString(),
-        label: (
-            <div className="flex items-center gap-2">
-                <FaStore className="text-sky-600" />
-                <span>Store {index + 1}</span>
-                {fields.length > 1 && (
-                    <button
-                        type="button"
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            removeStore(index);
-                        }}
-                        className="ml-2 text-red-500 hover:text-red-700 p-1 rounded hover:bg-red-50"
-                        title="Remove Store"
-                    >
-                        <FaTrash className="text-xs" />
-                    </button>
-                )}
-            </div>
-        ),
-        children: renderStoreContent(index),
-    }));
-
     return (
         <form onSubmit={handleSubmit(onSubmitForm, onFormError)} className="space-y-8">
             <div className="flex items-center justify-between border-b pb-4">
@@ -1261,13 +1176,36 @@ const BusinessVerificationForm = ({
                 </button>
             </div>
 
-            <Tabs
-                activeKey={activeTabKey}
-                onChange={setActiveTabKey}
-                type="card"
-                className="mb-6"
-                items={tabItems}
-            />
+            <Tabs value={activeTabKey} onValueChange={setActiveTabKey} className="mb-6">
+                <TabsList variant="line" className="border-b border-n-30">
+                    {fields.map((field, index) => (
+                        <TabsTrigger key={field.id} value={index.toString()}>
+                            <span className="flex items-center gap-2">
+                                <FaStore className="text-sky-600" />
+                                <span>Store {index + 1}</span>
+                                {fields.length > 1 && (
+                                    <button
+                                        type="button"
+                                        onClick={(event) => {
+                                            event.stopPropagation();
+                                            removeStore(index);
+                                        }}
+                                        className="ml-2 text-red-500 hover:text-red-700 p-1 rounded hover:bg-red-50"
+                                        title="Remove Store"
+                                    >
+                                        <FaTrash className="text-xs" />
+                                    </button>
+                                )}
+                            </span>
+                        </TabsTrigger>
+                    ))}
+                </TabsList>
+                {fields.map((field, index) => (
+                    <TabsContent key={field.id} value={index.toString()}>
+                        {renderStoreContent(index)}
+                    </TabsContent>
+                ))}
+            </Tabs>
 
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                 <p className="text-sm text-blue-800">
@@ -1480,25 +1418,21 @@ const ServiceabilitySection = ({
                                     }}
                                     render={({ field, fieldState: { error } }) => (
                                         <>
-                                            <Select
-                                                {...field}
-                                                className="w-full"
-                                                size="large"
+                                            <SelectControl
+                                                value={field.value}
+                                                onValueChange={field.onChange}
+                                                options={supportedSubcategories.map((category) => ({
+                                                    key: category,
+                                                    value: category,
+                                                }))}
                                                 placeholder={
                                                     supportedSubcategories.length > 0
                                                         ? "Select Category"
                                                         : "No categories available"
                                                 }
-                                                allowClear
-                                                status={error ? "error" : undefined}
                                                 disabled={supportedSubcategories.length === 0}
-                                            >
-                                                {supportedSubcategories.map((category: string) => (
-                                                    <Select.Option key={category} value={category}>
-                                                        {category}
-                                                    </Select.Option>
-                                                ))}
-                                            </Select>
+                                                className={error ? "border-destructive" : undefined}
+                                            />
                                             {error && (
                                                 <p className="text-red-500 text-xs mt-1">
                                                     {error.message}
@@ -1553,14 +1487,12 @@ const ServiceabilitySection = ({
                                     }}
                                     render={({ field, fieldState: { error } }) => (
                                         <>
-                                            <Select
-                                                {...field}
-                                                className="w-full"
-                                                size="large"
+                                            <SelectControl
+                                                value={field.value}
+                                                className={error ? "border-destructive" : undefined}
                                                 placeholder="Select Type"
-                                                allowClear
-                                                status={error ? "error" : undefined}
-                                                onChange={(value) => {
+                                                options={serviceabilityOptions}
+                                                onValueChange={(value) => {
                                                     field.onChange(value);
 
                                                     // Always clear all related fields first when type changes
@@ -1636,16 +1568,7 @@ const ServiceabilitySection = ({
                                                         );
                                                     }
                                                 }}
-                                            >
-                                                {serviceabilityOptions.map((option) => (
-                                                    <Select.Option
-                                                        key={option.value}
-                                                        value={option.value}
-                                                    >
-                                                        {option.key}
-                                                    </Select.Option>
-                                                ))}
-                                            </Select>
+                                            />
                                             {error && (
                                                 <p className="text-red-500 text-xs mt-1">
                                                     {error.message}
@@ -1720,10 +1643,9 @@ const ServiceabilitySection = ({
                                                         {...field}
                                                         type="number"
                                                         placeholder="e.g., 5"
-                                                        size="large"
                                                         min={0}
                                                         step="0.1"
-                                                        status={error ? "error" : undefined}
+                                                        aria-invalid={!!error}
                                                     />
                                                     {error && (
                                                         <p className="text-red-500 text-xs mt-1">
@@ -1782,23 +1704,15 @@ const ServiceabilitySection = ({
                                             }}
                                             render={({ field, fieldState: { error } }) => (
                                                 <>
-                                                    <Select
-                                                        {...field}
-                                                        className="w-full"
-                                                        size="large"
+                                                    <SelectControl
+                                                        value={field.value}
+                                                        onValueChange={field.onChange}
+                                                        options={unitOptions}
                                                         placeholder="Select Unit"
-                                                        allowClear
-                                                        status={error ? "error" : undefined}
-                                                    >
-                                                        {unitOptions.map((unit) => (
-                                                            <Select.Option
-                                                                key={unit.value}
-                                                                value={unit.value}
-                                                            >
-                                                                {unit.key}
-                                                            </Select.Option>
-                                                        ))}
-                                                    </Select>
+                                                        className={
+                                                            error ? "border-destructive" : undefined
+                                                        }
+                                                    />
                                                     {error && (
                                                         <p className="text-red-500 text-xs mt-1">
                                                             {error.message}
@@ -1867,12 +1781,11 @@ const ServiceabilitySection = ({
                                         }}
                                         render={({ field, fieldState: { error } }) => (
                                             <>
-                                                <Input.TextArea
+                                                <Textarea
                                                     {...field}
                                                     placeholder="e.g., 560001, 560002, 560003"
-                                                    size="large"
                                                     rows={2}
-                                                    status={error ? "error" : undefined}
+                                                    aria-invalid={!!error}
                                                 />
                                                 {error && (
                                                     <p className="text-red-500 text-xs mt-1">
@@ -1941,12 +1854,11 @@ const ServiceabilitySection = ({
                                         }}
                                         render={({ field, fieldState: { error } }) => (
                                             <>
-                                                <Input.TextArea
+                                                <Textarea
                                                     {...field}
                                                     placeholder='{"type": "Polygon", "coordinates": [[[lng1, lat1], [lng2, lat2], ...]]}'
-                                                    size="large"
                                                     rows={3}
-                                                    status={error ? "error" : undefined}
+                                                    aria-invalid={!!error}
                                                 />
                                                 {error && (
                                                     <p className="text-red-500 text-xs mt-1">

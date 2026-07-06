@@ -3,7 +3,20 @@ import { useForm, useFieldArray, Controller, Path } from "react-hook-form";
 import { ItemDetails, SellerOnboardingData } from "@pages/seller-onboarding";
 import { toast } from "sonner";
 import { FaPlus, FaTrash, FaBox, FaEdit } from "react-icons/fa";
-import { Select, Input, Checkbox, Modal, Button, Form } from "antd";
+import { SelectControl } from "@/components/Shadcn/Select";
+import { ComboBoxMultiControl, ComboBoxControl } from "@/components/Shadcn/ComboBox";
+import { Input } from "@/components/Shadcn/TextField/input";
+import { Textarea } from "@/components/Shadcn/ComboBox/textarea";
+import { Checkbox } from "@/components/Shadcn/Checkbox";
+import {
+    Dialog,
+    DialogContent,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/Shadcn/Dialog";
+import { Button } from "@/components/Shadcn/Button";
+import TagsInput from "@components/ui/forms/tags-input";
 import LoadingButton from "@components/ui/forms/loading-button";
 import MultiImageUpload from "@components/ui/forms/multi-image-upload";
 import SingleImageUpload from "@components/ui/forms/single-image-upload";
@@ -18,6 +31,11 @@ import { applianceData } from "@constants/appliances";
 import { getFnBAttributes } from "@constants/fnb";
 import { domainCategories } from "@constants/categories";
 import { LabelWithToolTip } from "@/components/Shadcn/TextField";
+
+const YES_NO_OPTIONS = [
+    { key: "Yes", value: "yes" },
+    { key: "No", value: "no" },
+];
 
 interface ItemDetailsFormProps {
     initialData: SellerOnboardingData;
@@ -76,7 +94,11 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
         variantIndex: null,
     });
     const [editingVariant, setEditingVariant] = useState<ItemVariant | null>(null);
-    const [variantForm] = Form.useForm();
+    const [variantFormValues, setVariantFormValues] = useState<Record<string, string>>({});
+    const [variantFormErrors, setVariantFormErrors] = useState<Record<string, string>>({});
+    const updateVariantField = (key: string, value: string) => {
+        setVariantFormValues((prev) => ({ ...prev, [key]: value }));
+    };
 
     // Use optimized hooks for image state management
     const itemImages = useFormImageState<{ [itemIndex: number]: string[] }>({});
@@ -776,128 +798,146 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
         }
 
         // Set form initial values
-        variantForm.setFieldsValue({
-            name: variant.name,
-            short_desc: variant.short_desc || variant.shortDescription,
-            long_desc: variant.long_desc || variant.longDescription,
-            selling_price: variant.selling_price,
-            mrp: variant.mrp,
-            code_value: variant.code_value,
-            code_type: variant.code_type,
-            images: variant.images,
-            symbol: variant.symbol,
-            unit: variant.unit,
-            value: variant.value,
-            available_count: variant.available_count,
-            maximum_count: variant.maximum_count,
-            minimum_count: variant.minimum_count,
+        setVariantFormValues({
+            name: variant.name ?? "",
+            short_desc:
+                variant.short_desc ||
+                (variant as unknown as Record<string, string>).shortDescription ||
+                "",
+            long_desc:
+                variant.long_desc ||
+                (variant as unknown as Record<string, string>).longDescription ||
+                "",
+            selling_price: variant.selling_price ?? "",
+            mrp: variant.mrp ?? "",
+            code_value: variant.code_value ?? "",
+            code_type: variant.code_type ?? "",
+            unit: variant.unit ?? "",
+            value: variant.value ?? "",
+            available_count: variant.available_count ?? "",
+            maximum_count: variant.maximum_count ?? "",
+            minimum_count: variant.minimum_count ?? "",
             ...variant.variantCombination,
             ...variant.attributes,
         });
+        setVariantFormErrors({});
     };
 
     const handleSaveVariant = () => {
-        variantForm
-            .validateFields()
-            .then((values) => {
-                const { itemIndex, variantIndex } = editVariantModal;
-                if (itemIndex === null || variantIndex === null) return;
+        const { itemIndex, variantIndex } = editVariantModal;
+        if (itemIndex === null || variantIndex === null) return;
 
-                const currentVariant = itemVariants[itemIndex][variantIndex];
+        const isFnBDomain = watchItems[itemIndex]?.domain === "F&B";
+        const values = variantFormValues;
 
-                // Define which fields are main fields (not attributes)
-                const mainFields = [
-                    "name",
-                    "short_desc",
-                    "long_desc",
-                    "selling_price",
-                    "mrp",
-                    "code_value",
-                    "code_type",
-                    "images",
-                    "symbol",
-                    "unit",
-                    "value",
-                    "available_count",
-                    "maximum_count",
-                    "minimum_count",
-                ];
+        const errors: Record<string, string> = {};
+        if (!values.name?.trim()) errors.name = "Name is required";
+        if (!isFnBDomain && !values.code_type?.trim()) errors.code_type = "Code type is required";
+        if (!isFnBDomain && !values.code_value?.trim())
+            errors.code_value = "Code value is required";
+        if (!values.short_desc?.trim()) errors.short_desc = "Short description is required";
+        if (!values.long_desc?.trim()) errors.long_desc = "Long description is required";
+        if (!values.selling_price?.toString().trim())
+            errors.selling_price = "Selling price is required";
+        if (!values.mrp?.toString().trim()) errors.mrp = "MRP is required";
 
-                // Start with the current variant data
-                const updatedVariant = {
-                    ...currentVariant,
-                };
+        if (Object.keys(errors).length > 0) {
+            setVariantFormErrors(errors);
+            toast.error("Please fill in all required fields");
+            return;
+        }
 
-                // Update main fields from form values
-                mainFields.forEach((field) => {
-                    if (values[field] !== undefined) {
-                        updatedVariant[field] = values[field];
-                    }
-                });
+        const currentVariant = itemVariants[itemIndex][variantIndex];
 
-                // Handle images from MultiImageUpload using hooks
-                const variantKey = `${itemIndex}-${variantIndex}`;
-                if (variantImages.imageState[variantKey]) {
-                    updatedVariant.images = variantImages.imageState[variantKey];
+        // Define which fields are main fields (not attributes)
+        const mainFields = [
+            "name",
+            "short_desc",
+            "long_desc",
+            "selling_price",
+            "mrp",
+            "code_value",
+            "code_type",
+            "images",
+            "symbol",
+            "unit",
+            "value",
+            "available_count",
+            "maximum_count",
+            "minimum_count",
+        ];
+
+        // Start with the current variant data
+        const updatedVariant = {
+            ...currentVariant,
+        };
+
+        // Update main fields from form values
+        mainFields.forEach((field) => {
+            if (values[field] !== undefined) {
+                updatedVariant[field] = values[field];
+            }
+        });
+
+        // Handle images from MultiImageUpload using hooks
+        const variantKey = `${itemIndex}-${variantIndex}`;
+        if (variantImages.imageState[variantKey]) {
+            updatedVariant.images = variantImages.imageState[variantKey];
+        }
+
+        // Handle symbol from SingleImageUpload using hooks
+        if (variantSymbolImages.imageState[variantKey]) {
+            updatedVariant.symbol = variantSymbolImages.imageState[variantKey];
+        }
+
+        // Preserve existing attributes and update with new attribute values
+        const attributeUpdates: Record<string, string> = {};
+        Object.keys(values).forEach((key) => {
+            if (!mainFields.includes(key)) {
+                attributeUpdates[key] = values[key];
+            }
+        });
+
+        // Merge attributes, preserving existing ones and updating with new values
+        if (Object.keys(attributeUpdates).length > 0) {
+            updatedVariant.attributes = {
+                ...currentVariant.attributes,
+                ...attributeUpdates,
+            };
+        }
+
+        // Preserve variantCombination if it exists and update its values
+        if (currentVariant.variantCombination) {
+            const variantCombinationUpdates: Record<string, string> = {};
+            Object.keys(currentVariant.variantCombination).forEach((key) => {
+                if (values[key] !== undefined) {
+                    variantCombinationUpdates[key] = values[key];
+                } else {
+                    variantCombinationUpdates[key] = currentVariant.variantCombination[key];
                 }
-
-                // Handle symbol from SingleImageUpload using hooks
-                if (variantSymbolImages.imageState[variantKey]) {
-                    updatedVariant.symbol = variantSymbolImages.imageState[variantKey];
-                }
-
-                // Preserve existing attributes and update with new attribute values
-                const attributeUpdates: Record<string, string> = {};
-                Object.keys(values).forEach((key) => {
-                    if (!mainFields.includes(key)) {
-                        attributeUpdates[key] = values[key];
-                    }
-                });
-
-                // Merge attributes, preserving existing ones and updating with new values
-                if (Object.keys(attributeUpdates).length > 0) {
-                    updatedVariant.attributes = {
-                        ...currentVariant.attributes,
-                        ...attributeUpdates,
-                    };
-                }
-
-                // Preserve variantCombination if it exists and update its values
-                if (currentVariant.variantCombination) {
-                    const variantCombinationUpdates: Record<string, string> = {};
-                    Object.keys(currentVariant.variantCombination).forEach((key) => {
-                        if (values[key] !== undefined) {
-                            variantCombinationUpdates[key] = values[key];
-                        } else {
-                            variantCombinationUpdates[key] = currentVariant.variantCombination[key];
-                        }
-                    });
-                    updatedVariant.variantCombination = variantCombinationUpdates;
-                }
-
-                // Update the variant in state
-                setItemVariants((prev) => ({
-                    ...prev,
-                    [itemIndex]: prev[itemIndex].map((v, idx) =>
-                        idx === variantIndex ? updatedVariant : v
-                    ),
-                }));
-
-                // Close modal and reset
-                setEditVariantModal({
-                    visible: false,
-                    itemIndex: null,
-                    variantIndex: null,
-                });
-                setEditingVariant(null);
-                variantForm.resetFields();
-
-                toast.success("Variant updated successfully");
-            })
-            .catch((error) => {
-                console.error("Validation failed:", error);
-                toast.error("Please fill in all required fields");
             });
+            updatedVariant.variantCombination = variantCombinationUpdates;
+        }
+
+        // Update the variant in state
+        setItemVariants((prev) => ({
+            ...prev,
+            [itemIndex]: prev[itemIndex].map((v, idx) =>
+                idx === variantIndex ? updatedVariant : v
+            ),
+        }));
+
+        // Close modal and reset
+        setEditVariantModal({
+            visible: false,
+            itemIndex: null,
+            variantIndex: null,
+        });
+        setEditingVariant(null);
+        setVariantFormValues({});
+        setVariantFormErrors({});
+
+        toast.success("Variant updated successfully");
     };
 
     const handleCancelEditVariant = () => {
@@ -907,7 +947,8 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
             variantIndex: null,
         });
         setEditingVariant(null);
-        variantForm.resetFields();
+        setVariantFormValues({});
+        setVariantFormErrors({});
     };
 
     // Consumer Care functions
@@ -1243,27 +1284,22 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                     render={({ field, fieldState: { error } }) => (
                         <>
                             {isSelectField && Array.isArray(config.value) ? (
-                                <Select
-                                    {...field}
-                                    className="w-full"
-                                    size="large"
+                                <SelectControl
+                                    value={field.value as string | undefined}
+                                    onValueChange={field.onChange}
+                                    options={config.value.map((option: string) => ({
+                                        key: option,
+                                        value: option,
+                                    }))}
                                     placeholder={`Select ${attributeName.replace(/_/g, " ")}`}
-                                    status={error ? "error" : undefined}
-                                    allowClear={isOptional}
-                                >
-                                    {config.value.map((option: string) => (
-                                        <Select.Option key={option} value={option}>
-                                            {option}
-                                        </Select.Option>
-                                    ))}
-                                </Select>
+                                    className={error ? "border-destructive" : undefined}
+                                />
                             ) : (
                                 <Input
                                     {...field}
                                     value={field.value as string}
                                     placeholder={getAttributePlaceholder(attributeName)}
-                                    size="large"
-                                    status={error ? "error" : undefined}
+                                    aria-invalid={!!error}
                                 />
                             )}
                             {error && <p className="text-red-500 text-xs mt-1">{error.message}</p>}
@@ -1342,8 +1378,7 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                                                     <Input
                                                         {...field}
                                                         placeholder="Enter Item Name"
-                                                        size="large"
-                                                        status={error ? "error" : undefined}
+                                                        aria-invalid={!!error}
                                                     />
                                                     {error && (
                                                         <p className="text-red-500 text-xs mt-1">
@@ -1367,14 +1402,19 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                                             rules={{ required: "Domain is required" }}
                                             render={({ field, fieldState: { error } }) => (
                                                 <>
-                                                    <Select
-                                                        {...field}
-                                                        className="w-full"
-                                                        size="large"
+                                                    <SelectControl
+                                                        value={field.value}
+                                                        options={(initialData?.domain ?? []).map(
+                                                            (domain) => ({
+                                                                key: domain,
+                                                                value: domain,
+                                                            })
+                                                        )}
                                                         placeholder="Select Domain"
-                                                        allowClear
-                                                        status={error ? "error" : undefined}
-                                                        onChange={(value) => {
+                                                        className={
+                                                            error ? "border-destructive" : undefined
+                                                        }
+                                                        onValueChange={(value) => {
                                                             field.onChange(value);
                                                             // Clear category when domain changes
                                                             setValue(
@@ -1389,16 +1429,7 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                                                                 })
                                                             );
                                                         }}
-                                                    >
-                                                        {initialData?.domain?.map((domain) => (
-                                                            <Select.Option
-                                                                key={domain}
-                                                                value={domain}
-                                                            >
-                                                                {domain}
-                                                            </Select.Option>
-                                                        ))}
-                                                    </Select>
+                                                    />
                                                     {error && (
                                                         <p className="text-red-500 text-xs mt-1">
                                                             {error.message}
@@ -1427,31 +1458,21 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                                                         name={`items.${index}.code_type`}
                                                         control={control}
                                                         render={({ field }) => (
-                                                            <Select
-                                                                {...field}
-                                                                className="w-full"
-                                                                size="large"
+                                                            <SelectControl
+                                                                value={field.value}
+                                                                onValueChange={field.onChange}
+                                                                options={[
+                                                                    { key: "EAN", value: "EAN" },
+                                                                    { key: "ISBN", value: "ISBN" },
+                                                                    { key: "GTIN", value: "GTIN" },
+                                                                    { key: "HSN", value: "HSN" },
+                                                                    {
+                                                                        key: "Others",
+                                                                        value: "Others",
+                                                                    },
+                                                                ]}
                                                                 placeholder="Select Code Type"
-                                                                onChange={(value) => {
-                                                                    field.onChange(value);
-                                                                }}
-                                                            >
-                                                                <Select.Option value="EAN">
-                                                                    EAN
-                                                                </Select.Option>
-                                                                <Select.Option value="ISBN">
-                                                                    ISBN
-                                                                </Select.Option>
-                                                                <Select.Option value="GTIN">
-                                                                    GTIN
-                                                                </Select.Option>
-                                                                <Select.Option value="HSN">
-                                                                    HSN
-                                                                </Select.Option>
-                                                                <Select.Option value="Others">
-                                                                    Others
-                                                                </Select.Option>
-                                                            </Select>
+                                                            />
                                                         )}
                                                     />
                                                 </div>
@@ -1479,10 +1500,7 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                                                                 <Input
                                                                     {...field}
                                                                     placeholder="Enter Code Value"
-                                                                    size="large"
-                                                                    status={
-                                                                        error ? "error" : undefined
-                                                                    }
+                                                                    aria-invalid={!!error}
                                                                     onChange={(e) => {
                                                                         field.onChange(e);
                                                                         const codeType =
@@ -1554,7 +1572,6 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                                                 <Input
                                                     {...field}
                                                     placeholder="Enter Short Description"
-                                                    size="large"
                                                 />
                                             )}
                                         />
@@ -1571,11 +1588,10 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                                             name={`items.${index}.long_desc`}
                                             control={control}
                                             render={({ field }) => (
-                                                <Input.TextArea
+                                                <Textarea
                                                     {...field}
                                                     placeholder="Enter Detailed Description"
                                                     rows={3}
-                                                    size="large"
                                                 />
                                             )}
                                         />
@@ -1597,30 +1613,20 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                                             name={`items.${index}.unit`}
                                             control={control}
                                             render={({ field }) => (
-                                                <Select
-                                                    {...field}
-                                                    className="w-full"
-                                                    size="large"
+                                                <SelectControl
+                                                    value={field.value}
+                                                    onValueChange={field.onChange}
+                                                    options={[
+                                                        { key: "Unit", value: "unit" },
+                                                        { key: "Dozen", value: "dozen" },
+                                                        { key: "Gram", value: "gram" },
+                                                        { key: "Litre", value: "litre" },
+                                                        { key: "Millilitre", value: "millilitre" },
+                                                        { key: "Kilogram", value: "kilogram" },
+                                                        { key: "Tonne", value: "tonne" },
+                                                    ]}
                                                     placeholder="Select Unit"
-                                                >
-                                                    <Select.Option value="unit">Unit</Select.Option>
-                                                    <Select.Option value="dozen">
-                                                        Dozen
-                                                    </Select.Option>
-                                                    <Select.Option value="gram">Gram</Select.Option>
-                                                    <Select.Option value="litre">
-                                                        Litre
-                                                    </Select.Option>
-                                                    <Select.Option value="millilitre">
-                                                        Millilitre
-                                                    </Select.Option>
-                                                    <Select.Option value="kilogram">
-                                                        Kilogram
-                                                    </Select.Option>
-                                                    <Select.Option value="tonne">
-                                                        Tonne
-                                                    </Select.Option>
-                                                </Select>
+                                                />
                                             )}
                                         />
                                     </div>
@@ -1639,7 +1645,6 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                                                 <Input
                                                     {...field}
                                                     placeholder="Enter Quantity Value"
-                                                    size="large"
                                                 />
                                             )}
                                         />
@@ -1658,19 +1663,15 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                                             rules={{ required: "Availability is required" }}
                                             render={({ field, fieldState: { error } }) => (
                                                 <>
-                                                    <Select
-                                                        {...field}
-                                                        className="w-full"
-                                                        size="large"
+                                                    <SelectControl
+                                                        value={field.value}
+                                                        onValueChange={field.onChange}
+                                                        options={[
+                                                            { key: "Available", value: "99" },
+                                                            { key: "Not Available", value: "0" },
+                                                        ]}
                                                         placeholder="Select Availability"
-                                                    >
-                                                        <Select.Option value="99">
-                                                            Available
-                                                        </Select.Option>
-                                                        <Select.Option value="0">
-                                                            Not Available
-                                                        </Select.Option>
-                                                    </Select>
+                                                    />
 
                                                     {error && (
                                                         <p className="text-red-500 text-xs mt-1">
@@ -1697,7 +1698,6 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                                                     {...field}
                                                     type="number"
                                                     placeholder="Enter Maximum Count"
-                                                    size="large"
                                                     min={0}
                                                 />
                                             )}
@@ -1719,7 +1719,6 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                                                     {...field}
                                                     type="number"
                                                     placeholder="Enter Minimum Count"
-                                                    size="large"
                                                     min={0}
                                                 />
                                             )}
@@ -1748,9 +1747,8 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                                                         {...field}
                                                         type="number"
                                                         placeholder="Enter Selling Price"
-                                                        size="large"
                                                         min={0}
-                                                        status={error ? "error" : undefined}
+                                                        aria-invalid={!!error}
                                                     />
                                                     {error && (
                                                         <p className="text-red-500 text-xs mt-1">
@@ -1777,7 +1775,6 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                                                     {...field}
                                                     type="number"
                                                     placeholder="Enter MRP"
-                                                    size="large"
                                                     min={0}
                                                 />
                                             )}
@@ -1795,14 +1792,12 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                                             name={`items.${index}.currency`}
                                             control={control}
                                             render={({ field }) => (
-                                                <Select
-                                                    {...field}
-                                                    className="w-full"
-                                                    size="large"
+                                                <SelectControl
+                                                    value={field.value}
+                                                    onValueChange={field.onChange}
+                                                    options={[{ key: "INR", value: "INR" }]}
                                                     placeholder="Select Currency"
-                                                >
-                                                    <Select.Option value="INR">INR</Select.Option>
-                                                </Select>
+                                                />
                                             )}
                                         />
                                     </div>
@@ -1825,29 +1820,23 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                                             name={`items.${index}.store`}
                                             control={control}
                                             render={({ field }) => (
-                                                <Select
-                                                    {...field}
-                                                    className="w-full"
-                                                    size="large"
+                                                <SelectControl
+                                                    value={field.value}
+                                                    options={(initialData?.stores ?? [])
+                                                        .filter((store) => !!store.locality)
+                                                        .map((store) => ({
+                                                            key: store.locality as string,
+                                                            value: store.locality as string,
+                                                        }))}
                                                     placeholder="Select Store"
-                                                    allowClear
-                                                    onChange={(value) => {
+                                                    onValueChange={(value) => {
                                                         field.onChange(value);
                                                         setValue(
                                                             `items.${index}.category` as Path<FormData>,
                                                             ""
                                                         );
                                                     }}
-                                                >
-                                                    {initialData?.stores?.map((store) => (
-                                                        <Select.Option
-                                                            value={store.locality}
-                                                            key={store.locality}
-                                                        >
-                                                            {store.locality}
-                                                        </Select.Option>
-                                                    ))}
-                                                </Select>
+                                                />
                                             )}
                                         />
                                     </div>
@@ -1907,10 +1896,14 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
 
                                                 return (
                                                     <>
-                                                        <Select
-                                                            {...field}
-                                                            className="w-full"
-                                                            size="large"
+                                                        <SelectControl
+                                                            value={field.value}
+                                                            options={subcategories.map(
+                                                                (category) => ({
+                                                                    key: category,
+                                                                    value: category,
+                                                                })
+                                                            )}
                                                             placeholder={
                                                                 !selectedStore
                                                                     ? "Please Select A Store First"
@@ -1925,10 +1918,13 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                                                                 !selectedDomain ||
                                                                 subcategories.length === 0
                                                             }
-                                                            status={error ? "error" : undefined}
-                                                            onChange={(value) => {
+                                                            className={
+                                                                error
+                                                                    ? "border-destructive"
+                                                                    : undefined
+                                                            }
+                                                            onValueChange={(value) => {
                                                                 field.onChange(value);
-                                                                // setSelectedSubCategory(value);
                                                                 // Clear selected optional attributes when category changes
                                                                 setSelectedOptionalAttributes(
                                                                     (prev) => ({
@@ -1937,24 +1933,7 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                                                                     })
                                                                 );
                                                             }}
-                                                        >
-                                                            {subcategories.length === 0 &&
-                                                            selectedStore ? (
-                                                                <Select.Option value="" disabled>
-                                                                    No categories available for this
-                                                                    store
-                                                                </Select.Option>
-                                                            ) : (
-                                                                subcategories.map((category) => (
-                                                                    <Select.Option
-                                                                        value={category}
-                                                                        key={category}
-                                                                    >
-                                                                        {category}
-                                                                    </Select.Option>
-                                                                ))
-                                                            )}
-                                                        </Select>
+                                                        />
                                                         {error && (
                                                             <p className="text-red-500 text-xs mt-1">
                                                                 {error.message}
@@ -1981,34 +1960,29 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
 
                                                     return (
                                                         <>
-                                                            <Select
-                                                                {...field}
-                                                                className="w-full"
-                                                                size="large"
+                                                            <SelectControl
+                                                                value={field.value}
+                                                                onValueChange={field.onChange}
+                                                                options={availableMenus.map(
+                                                                    (menu) => ({
+                                                                        key: `${menu.name} - ${menu.category} (${menu.vegNonVeg})`,
+                                                                        value: menu.name,
+                                                                    })
+                                                                )}
                                                                 placeholder={
                                                                     availableMenus.length === 0
                                                                         ? "No menus available - Create menus in Custom Menu step first"
                                                                         : "Select a menu item to link (optional)"
                                                                 }
-                                                                allowClear
                                                                 disabled={
                                                                     availableMenus.length === 0
                                                                 }
-                                                                status={error ? "error" : undefined}
-                                                            >
-                                                                {availableMenus.map(
-                                                                    (menu, menuIndex) => (
-                                                                        <Select.Option
-                                                                            value={menu.name}
-                                                                            key={menuIndex}
-                                                                        >
-                                                                            {menu.name} -{" "}
-                                                                            {menu.category} (
-                                                                            {menu.vegNonVeg})
-                                                                        </Select.Option>
-                                                                    )
-                                                                )}
-                                                            </Select>
+                                                                className={
+                                                                    error
+                                                                        ? "border-destructive"
+                                                                        : undefined
+                                                                }
+                                                            />
                                                             {availableMenus.length === 0 && (
                                                                 <p className="text-amber-600 text-xs mt-1">
                                                                     💡 Create menu items in the
@@ -2039,19 +2013,18 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                                             name={`items.${index}.default_fulfillment_type`}
                                             control={control}
                                             render={({ field }) => (
-                                                <Select
-                                                    {...field}
-                                                    className="w-full"
-                                                    size="large"
+                                                <SelectControl
+                                                    value={field.value}
+                                                    onValueChange={field.onChange}
+                                                    options={[
+                                                        { key: "Delivery", value: "Delivery" },
+                                                        {
+                                                            key: "Self-Pickup",
+                                                            value: "Self-Pickup",
+                                                        },
+                                                    ]}
                                                     placeholder="Select Fulfillment Type"
-                                                >
-                                                    <Select.Option value="Delivery">
-                                                        Delivery
-                                                    </Select.Option>
-                                                    <Select.Option value="Self-Pickup">
-                                                        Self-Pickup
-                                                    </Select.Option>
-                                                </Select>
+                                                />
                                             )}
                                         />
                                     </div>
@@ -2068,25 +2041,16 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                                                 name={`items.${index}.return_window_unit`}
                                                 control={control}
                                                 render={({ field }) => (
-                                                    <Select
-                                                        {...field}
-                                                        className="w-full"
-                                                        size="large"
+                                                    <SelectControl
+                                                        value={field.value}
+                                                        onValueChange={field.onChange}
+                                                        options={[
+                                                            { key: "Minutes", value: "minute" },
+                                                            { key: "Hours", value: "hour" },
+                                                            { key: "Days", value: "day" },
+                                                        ]}
                                                         placeholder="Select Time Unit"
-                                                        onChange={(value) => {
-                                                            field.onChange(value);
-                                                        }}
-                                                    >
-                                                        <Select.Option value="minute">
-                                                            Minutes
-                                                        </Select.Option>
-                                                        <Select.Option value="hour">
-                                                            Hours
-                                                        </Select.Option>
-                                                        <Select.Option value="day">
-                                                            Days
-                                                        </Select.Option>
-                                                    </Select>
+                                                    />
                                                 )}
                                             />
                                             <Controller
@@ -2097,7 +2061,6 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                                                         {...field}
                                                         type="number"
                                                         placeholder="Value"
-                                                        size="large"
                                                         min={1}
                                                         onChange={(e) => {
                                                             field.onChange(e);
@@ -2129,12 +2092,15 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                                                 name={`items.${index}.replacement_window_unit`}
                                                 control={control}
                                                 render={({ field }) => (
-                                                    <Select
-                                                        {...field}
-                                                        className="w-full"
-                                                        size="large"
+                                                    <SelectControl
+                                                        value={field.value}
+                                                        options={[
+                                                            { key: "Minutes", value: "minute" },
+                                                            { key: "Hours", value: "hour" },
+                                                            { key: "Days", value: "day" },
+                                                        ]}
                                                         placeholder="Select Replacement Time Unit"
-                                                        onChange={(value) => {
+                                                        onValueChange={(value) => {
                                                             field.onChange(value);
                                                             const numValue =
                                                                 watchItems[index]
@@ -2147,17 +2113,7 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                                                                 numValue
                                                             );
                                                         }}
-                                                    >
-                                                        <Select.Option value="minute">
-                                                            Minutes
-                                                        </Select.Option>
-                                                        <Select.Option value="hour">
-                                                            Hours
-                                                        </Select.Option>
-                                                        <Select.Option value="day">
-                                                            Days
-                                                        </Select.Option>
-                                                    </Select>
+                                                    />
                                                 )}
                                             />
                                             <Controller
@@ -2168,7 +2124,6 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                                                         {...field}
                                                         type="number"
                                                         placeholder="Value"
-                                                        size="large"
                                                         min={1}
                                                         onChange={(e) => {
                                                             field.onChange(e);
@@ -2201,12 +2156,15 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                                                 name={`items.${index}.time_to_ship_unit`}
                                                 control={control}
                                                 render={({ field }) => (
-                                                    <Select
-                                                        {...field}
-                                                        className="w-full"
-                                                        size="large"
+                                                    <SelectControl
+                                                        value={field.value}
+                                                        options={[
+                                                            { key: "Minutes", value: "minute" },
+                                                            { key: "Hours", value: "hour" },
+                                                            { key: "Days", value: "day" },
+                                                        ]}
                                                         placeholder="Select Shipping Time Unit"
-                                                        onChange={(value) => {
+                                                        onValueChange={(value) => {
                                                             field.onChange(value);
                                                             const numValue =
                                                                 watchItems[index]
@@ -2218,17 +2176,7 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                                                                 numValue
                                                             );
                                                         }}
-                                                    >
-                                                        <Select.Option value="minute">
-                                                            Minutes
-                                                        </Select.Option>
-                                                        <Select.Option value="hour">
-                                                            Hours
-                                                        </Select.Option>
-                                                        <Select.Option value="day">
-                                                            Days
-                                                        </Select.Option>
-                                                    </Select>
+                                                    />
                                                 )}
                                             />
                                             <Controller
@@ -2239,7 +2187,6 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                                                         {...field}
                                                         type="number"
                                                         placeholder="Value"
-                                                        size="large"
                                                         min={1}
                                                         onChange={(e) => {
                                                             field.onChange(e);
@@ -2272,19 +2219,14 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                                             name={`items.${index}.returnable`}
                                             control={control}
                                             render={({ field }) => (
-                                                <Select
-                                                    {...field}
+                                                <SelectControl
                                                     value={field.value ? "yes" : "no"}
-                                                    onChange={(value) =>
+                                                    onValueChange={(value) =>
                                                         field.onChange(value === "yes")
                                                     }
-                                                    className="w-full"
-                                                    size="large"
+                                                    options={YES_NO_OPTIONS}
                                                     placeholder="Select option"
-                                                >
-                                                    <Select.Option value="yes">Yes</Select.Option>
-                                                    <Select.Option value="no">No</Select.Option>
-                                                </Select>
+                                                />
                                             )}
                                         />
                                     </div>
@@ -2300,19 +2242,14 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                                             name={`items.${index}.cancellable`}
                                             control={control}
                                             render={({ field }) => (
-                                                <Select
-                                                    {...field}
+                                                <SelectControl
                                                     value={field.value ? "yes" : "no"}
-                                                    onChange={(value) =>
+                                                    onValueChange={(value) =>
                                                         field.onChange(value === "yes")
                                                     }
-                                                    className="w-full"
-                                                    size="large"
+                                                    options={YES_NO_OPTIONS}
                                                     placeholder="Select option"
-                                                >
-                                                    <Select.Option value="yes">Yes</Select.Option>
-                                                    <Select.Option value="no">No</Select.Option>
-                                                </Select>
+                                                />
                                             )}
                                         />
                                     </div>
@@ -2328,19 +2265,14 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                                             name={`items.${index}.cod_availability`}
                                             control={control}
                                             render={({ field }) => (
-                                                <Select
-                                                    {...field}
+                                                <SelectControl
                                                     value={field.value ? "yes" : "no"}
-                                                    onChange={(value) =>
+                                                    onValueChange={(value) =>
                                                         field.onChange(value === "yes")
                                                     }
-                                                    className="w-full"
-                                                    size="large"
+                                                    options={YES_NO_OPTIONS}
                                                     placeholder="Select option"
-                                                >
-                                                    <Select.Option value="yes">Yes</Select.Option>
-                                                    <Select.Option value="no">No</Select.Option>
-                                                </Select>
+                                                />
                                             )}
                                         />
                                     </div>
@@ -2379,21 +2311,14 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                                                 name={`items.${index}.refer_back_image`}
                                                 control={control}
                                                 render={({ field }) => (
-                                                    <Select
-                                                        {...field}
+                                                    <SelectControl
                                                         value={field.value ? "yes" : "no"}
-                                                        onChange={(value) =>
+                                                        onValueChange={(value) =>
                                                             field.onChange(value === "yes")
                                                         }
-                                                        className="w-full"
-                                                        size="large"
+                                                        options={YES_NO_OPTIONS}
                                                         placeholder="Select option"
-                                                    >
-                                                        <Select.Option value="yes">
-                                                            Yes
-                                                        </Select.Option>
-                                                        <Select.Option value="no">No</Select.Option>
-                                                    </Select>
+                                                    />
                                                 )}
                                             />
                                             {referBackImage && (
@@ -2424,7 +2349,6 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                                                                     <Input
                                                                         {...field}
                                                                         placeholder="Enter Manufacturer Or Packer Name"
-                                                                        size="large"
                                                                     />
                                                                 )}
                                                             />
@@ -2443,11 +2367,10 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                                                                 name={`items.${index}.manufacturer_or_packer_address`}
                                                                 control={control}
                                                                 render={({ field }) => (
-                                                                    <Input.TextArea
+                                                                    <Textarea
                                                                         {...field}
                                                                         placeholder="Enter Manufacturer Or Packer Address"
                                                                         rows={2}
-                                                                        size="large"
                                                                     />
                                                                 )}
                                                             />
@@ -2469,7 +2392,6 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                                                                     <Input
                                                                         {...field}
                                                                         placeholder="Enter Common Or Generic Name"
-                                                                        size="large"
                                                                     />
                                                                 )}
                                                             />
@@ -2489,7 +2411,6 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                                                                     <Input
                                                                         {...field}
                                                                         placeholder="e.g., 500g, 1L"
-                                                                        size="large"
                                                                     />
                                                                 )}
                                                             />
@@ -2511,7 +2432,6 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                                                                     <Input
                                                                         {...field}
                                                                         placeholder="e.g., 10/2024"
-                                                                        size="large"
                                                                         type="date"
                                                                     />
                                                                 )}
@@ -2538,7 +2458,6 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                                                                     <Input
                                                                         {...field}
                                                                         placeholder="Enter Country Of Origin"
-                                                                        size="large"
                                                                     />
                                                                 )}
                                                             />
@@ -2555,11 +2474,10 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                                                                 name={`items.${index}.nutritional_info`}
                                                                 control={control}
                                                                 render={({ field }) => (
-                                                                    <Input.TextArea
+                                                                    <Textarea
                                                                         {...field}
                                                                         placeholder="Enter Nutritional Information"
                                                                         rows={3}
-                                                                        size="large"
                                                                     />
                                                                 )}
                                                             />
@@ -2576,11 +2494,10 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                                                                 name={`items.${index}.additives_info`}
                                                                 control={control}
                                                                 render={({ field }) => (
-                                                                    <Input.TextArea
+                                                                    <Textarea
                                                                         {...field}
                                                                         placeholder="Enter Additives Information"
                                                                         rows={2}
-                                                                        size="large"
                                                                     />
                                                                 )}
                                                             />
@@ -2600,7 +2517,6 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                                                                     <Input
                                                                         {...field}
                                                                         placeholder="Enter Brand Owner Name"
-                                                                        size="large"
                                                                     />
                                                                 )}
                                                             />
@@ -2617,11 +2533,10 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                                                                 name={`items.${index}.brand_owner_address`}
                                                                 control={control}
                                                                 render={({ field }) => (
-                                                                    <Input.TextArea
+                                                                    <Textarea
                                                                         {...field}
                                                                         placeholder="Enter Brand Owner Address"
                                                                         rows={2}
-                                                                        size="large"
                                                                     />
                                                                 )}
                                                             />
@@ -2643,7 +2558,6 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                                                                     <Input
                                                                         {...field}
                                                                         placeholder="Enter FSSAI License Number"
-                                                                        size="large"
                                                                     />
                                                                 )}
                                                             />
@@ -2663,7 +2577,6 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                                                                     <Input
                                                                         {...field}
                                                                         placeholder="Enter other FSSAI license number"
-                                                                        size="large"
                                                                     />
                                                                 )}
                                                             />
@@ -2683,7 +2596,6 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                                                                     <Input
                                                                         {...field}
                                                                         placeholder="Enter Importer Name"
-                                                                        size="large"
                                                                     />
                                                                 )}
                                                             />
@@ -2700,11 +2612,10 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                                                                 name={`items.${index}.importer_address`}
                                                                 control={control}
                                                                 render={({ field }) => (
-                                                                    <Input.TextArea
+                                                                    <Textarea
                                                                         {...field}
                                                                         placeholder="Enter Importer Address"
                                                                         rows={2}
-                                                                        size="large"
                                                                     />
                                                                 )}
                                                             />
@@ -2724,7 +2635,6 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                                                                     <Input
                                                                         {...field}
                                                                         placeholder="Enter Importer FSSAI License Number"
-                                                                        size="large"
                                                                     />
                                                                 )}
                                                             />
@@ -2753,18 +2663,14 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                                             name={`items.${index}.country_of_origin`}
                                             control={control}
                                             render={({ field }) => (
-                                                <Select
-                                                    {...field}
-                                                    className="w-full"
-                                                    size="large"
+                                                <ComboBoxControl
+                                                    value={field.value}
+                                                    onValueChange={field.onChange}
+                                                    options={countries.map((country) => ({
+                                                        label: country.key,
+                                                        value: country.value,
+                                                    }))}
                                                     placeholder="Select Country"
-                                                    showSearch
-                                                    filterOption={(input, option) =>
-                                                        (option?.key ?? "")
-                                                            .toLowerCase()
-                                                            .includes(input.toLowerCase())
-                                                    }
-                                                    options={countries}
                                                 />
                                             )}
                                         />
@@ -2784,20 +2690,18 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                                                     name={`items.${index}.veg_non_veg`}
                                                     control={control}
                                                     render={({ field }) => (
-                                                        <Select
-                                                            {...field}
-                                                            className="w-full"
-                                                            size="large"
+                                                        <SelectControl
+                                                            value={field.value}
+                                                            onValueChange={field.onChange}
+                                                            options={[
+                                                                { key: "Veg", value: "veg" },
+                                                                {
+                                                                    key: "Non-Veg",
+                                                                    value: "non-veg",
+                                                                },
+                                                            ]}
                                                             placeholder="Select type"
-                                                            allowClear
-                                                        >
-                                                            <Select.Option value="veg">
-                                                                Veg
-                                                            </Select.Option>
-                                                            <Select.Option value="non-veg">
-                                                                Non-Veg
-                                                            </Select.Option>
-                                                        </Select>
+                                                        />
                                                     )}
                                                 />
                                             </div>
@@ -2830,14 +2734,18 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                                 <div className="flex items-center justify-between mb-3">
                                     <h4 className="font-medium text-gray-700">Consumer Care</h4>
                                     {index > 0 && getFirstItemConsumerCare() && (
-                                        <Checkbox
-                                            checked={useExistingConsumerCare[index] || false}
-                                            onChange={(e) =>
-                                                handleConsumerCareToggle(index, e.target.checked)
-                                            }
-                                        >
+                                        <label className="flex items-center gap-2 text-sm font-normal text-gray-700">
+                                            <Checkbox
+                                                checked={useExistingConsumerCare[index] || false}
+                                                onCheckedChange={(checked) =>
+                                                    handleConsumerCareToggle(
+                                                        index,
+                                                        checked === true
+                                                    )
+                                                }
+                                            />
                                             Use same as first item
-                                        </Checkbox>
+                                        </label>
                                     )}
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -2855,7 +2763,6 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                                                 <Input
                                                     {...field}
                                                     placeholder="Enter consumer care name"
-                                                    size="large"
                                                     disabled={
                                                         useExistingConsumerCare[index] || false
                                                     }
@@ -2912,8 +2819,7 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                                                         {...field}
                                                         type="email"
                                                         placeholder="Enter consumer care email"
-                                                        size="large"
-                                                        status={error ? "error" : undefined}
+                                                        aria-invalid={!!error}
                                                         disabled={
                                                             useExistingConsumerCare[index] || false
                                                         }
@@ -2991,9 +2897,8 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                                                         {...field}
                                                         type="tel"
                                                         placeholder="Enter contact number (e.g., 9876543210 or +919876543210)"
-                                                        size="large"
                                                         maxLength={15}
-                                                        status={error ? "error" : undefined}
+                                                        aria-invalid={!!error}
                                                         disabled={
                                                             useExistingConsumerCare[index] || false
                                                         }
@@ -3045,7 +2950,6 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                                                             <Input
                                                                 {...field}
                                                                 placeholder="Enter brand name"
-                                                                size="large"
                                                             />
                                                         )}
                                                     />
@@ -3091,35 +2995,26 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                                                     <label className="block text-sm font-medium text-gray-700 mb-1">
                                                         Select Additional Attributes (Optional)
                                                     </label>
-                                                    <Select
-                                                        mode="multiple"
-                                                        className="w-full"
-                                                        size="large"
-                                                        placeholder="Choose optional attributes to add"
+                                                    <ComboBoxMultiControl
                                                         value={selectedOptionals}
-                                                        onChange={(values) =>
+                                                        onValueChange={(values) =>
                                                             handleOptionalAttributeChange(
                                                                 index,
                                                                 values
                                                             )
                                                         }
-                                                        allowClear
-                                                    >
-                                                        {Object.keys(optionalAttributes).map(
-                                                            (attributeName) => (
-                                                                <Select.Option
-                                                                    key={attributeName}
-                                                                    value={attributeName}
-                                                                >
-                                                                    {attributeName
-                                                                        .replace(/_/g, " ")
-                                                                        .replace(/\b\w/g, (l) =>
-                                                                            l.toUpperCase()
-                                                                        )}
-                                                                </Select.Option>
-                                                            )
-                                                        )}
-                                                    </Select>
+                                                        options={Object.keys(
+                                                            optionalAttributes
+                                                        ).map((attributeName) => ({
+                                                            label: attributeName
+                                                                .replace(/_/g, " ")
+                                                                .replace(/\b\w/g, (l) =>
+                                                                    l.toUpperCase()
+                                                                ),
+                                                            value: attributeName,
+                                                        }))}
+                                                        placeholder="Choose optional attributes to add"
+                                                    />
                                                 </div>
 
                                                 {/* Render Selected Optional Attributes */}
@@ -3172,7 +3067,7 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                                 <div className="flex justify-between items-center mb-4">
                                     <h4 className="font-medium text-gray-700">Variants</h4>
                                     <Button
-                                        type="default"
+                                        variant="outline"
                                         onClick={() => {
                                             setShowVariantModal((prev) => ({
                                                 ...prev,
@@ -3309,531 +3204,686 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
 
             {/* Variant Creation Modals */}
             {fields.map((_field, index) => (
-                <Modal
+                <Dialog
                     key={`variant-modal-${index}`}
-                    title={`${
-                        itemVariants[index] && itemVariants[index].length > 0
-                            ? "Add More Variants for"
-                            : "Create Variants for"
-                    } ${watchItems[index]?.name || `Item ${index + 1}`}`}
+                    modal={false}
                     open={showVariantModal[index] || false}
-                    onCancel={() => {
-                        setShowVariantModal((prev) => ({
-                            ...prev,
-                            [index]: false,
-                        }));
-                        setSelectedVariantAttributes((prev) => ({
-                            ...prev,
-                            [index]: [],
-                        }));
+                    onOpenChange={(open) => {
+                        if (!open) {
+                            setShowVariantModal((prev) => ({
+                                ...prev,
+                                [index]: false,
+                            }));
+                            setSelectedVariantAttributes((prev) => ({
+                                ...prev,
+                                [index]: [],
+                            }));
+                        }
                     }}
-                    onOk={() => handleCreateVariants(index)}
-                    width={600}
                 >
-                    <div className="space-y-4">
-                        <div>
-                            <p className="text-sm text-gray-600 mb-4">
-                                Select which attributes you want to vary for this item. Each variant
-                                will inherit all properties from the parent item but differ in the
-                                selected attributes. You can create variants with just one attribute
-                                and value, or use multiple attributes with various combinations.
-                                {itemVariants[index] && itemVariants[index].length > 0 && (
-                                    <span className="block mt-2 text-blue-600 font-medium">
-                                        This item already has {itemVariants[index].length}{" "}
-                                        variant(s). You can add more variants with different
-                                        attributes.
-                                    </span>
-                                )}
-                            </p>
-                        </div>
+                    <DialogContent className="max-w-[600px]">
+                        <DialogHeader>
+                            <DialogTitle>
+                                {`${
+                                    itemVariants[index] && itemVariants[index].length > 0
+                                        ? "Add More Variants for"
+                                        : "Create Variants for"
+                                } ${watchItems[index]?.name || `Item ${index + 1}`}`}
+                            </DialogTitle>
+                        </DialogHeader>
+                        <div className="space-y-4">
+                            <div>
+                                <p className="text-sm text-gray-600 mb-4">
+                                    Select which attributes you want to vary for this item. Each
+                                    variant will inherit all properties from the parent item but
+                                    differ in the selected attributes. You can create variants with
+                                    just one attribute and value, or use multiple attributes with
+                                    various combinations.
+                                    {itemVariants[index] && itemVariants[index].length > 0 && (
+                                        <span className="block mt-2 text-blue-600 font-medium">
+                                            This item already has {itemVariants[index].length}{" "}
+                                            variant(s). You can add more variants with different
+                                            attributes.
+                                        </span>
+                                    )}
+                                </p>
+                            </div>
 
-                        <div>
-                            <LabelWithToolTip
-                                labelInfo={""}
-                                label={"Select Variant Attributes"}
-                                required={true}
-                            />
+                            <div>
+                                <LabelWithToolTip
+                                    labelInfo={""}
+                                    label={"Select Variant Attributes"}
+                                    required={true}
+                                />
 
-                            <Select
-                                mode="multiple"
-                                className="w-full"
-                                size="large"
-                                placeholder="Choose attributes that will differ in variants"
-                                value={selectedVariantAttributes[index] || []}
-                                onChange={(values) => {
-                                    setSelectedVariantAttributes((prev) => ({
-                                        ...prev,
-                                        [index]: values,
-                                    }));
-                                }}
-                                allowClear
-                            >
-                                {getAvailableAttributesForVariants(index).map((attr) => (
-                                    <Select.Option key={attr} value={attr}>
-                                        {attr
-                                            .replace(/_/g, " ")
-                                            .replace(/\b\w/g, (l) => l.toUpperCase())}
-                                    </Select.Option>
-                                ))}
-                            </Select>
-                            <p className="text-xs text-gray-500 mt-1">
-                                Each selected attribute can have one or more values. Variants will
-                                be created for all possible combinations. Examples: "color" alone
-                                with 3 values = 3 variants, or "color" (2 values) + "size" (3
-                                values) = 6 variants.
-                            </p>
-                        </div>
+                                <ComboBoxMultiControl
+                                    value={selectedVariantAttributes[index] || []}
+                                    onValueChange={(values) => {
+                                        setSelectedVariantAttributes((prev) => ({
+                                            ...prev,
+                                            [index]: values,
+                                        }));
+                                    }}
+                                    options={getAvailableAttributesForVariants(index).map(
+                                        (attr) => ({
+                                            label: attr
+                                                .replace(/_/g, " ")
+                                                .replace(/\b\w/g, (l) => l.toUpperCase()),
+                                            value: attr,
+                                        })
+                                    )}
+                                    placeholder="Choose attributes that will differ in variants"
+                                />
+                                <p className="text-xs text-gray-500 mt-1">
+                                    Each selected attribute can have one or more values. Variants
+                                    will be created for all possible combinations. Examples: "color"
+                                    alone with 3 values = 3 variants, or "color" (2 values) + "size"
+                                    (3 values) = 6 variants.
+                                </p>
+                            </div>
 
-                        {selectedVariantAttributes[index] &&
-                            selectedVariantAttributes[index].length > 0 && (
-                                <>
-                                    <div className="space-y-4">
-                                        <h4 className="text-sm font-medium text-gray-700">
-                                            Provide values for each variant attribute:
-                                        </h4>
-                                        {selectedVariantAttributes[index].map((attr) => {
-                                            const item = watchItems[index];
-                                            const predefinedValues =
-                                                item?.domain && item?.category
-                                                    ? getAttributePredefinedValues(
-                                                          item.domain,
-                                                          item.category,
-                                                          attr
-                                                      )
-                                                    : [];
-                                            const hasPredefinedValues =
-                                                Array.isArray(predefinedValues) &&
-                                                predefinedValues.length > 0;
+                            {selectedVariantAttributes[index] &&
+                                selectedVariantAttributes[index].length > 0 && (
+                                    <>
+                                        <div className="space-y-4">
+                                            <h4 className="text-sm font-medium text-gray-700">
+                                                Provide values for each variant attribute:
+                                            </h4>
+                                            {selectedVariantAttributes[index].map((attr) => {
+                                                const item = watchItems[index];
+                                                const predefinedValues =
+                                                    item?.domain && item?.category
+                                                        ? getAttributePredefinedValues(
+                                                              item.domain,
+                                                              item.category,
+                                                              attr
+                                                          )
+                                                        : [];
+                                                const hasPredefinedValues =
+                                                    Array.isArray(predefinedValues) &&
+                                                    predefinedValues.length > 0;
 
-                                            return (
-                                                <div key={attr}>
-                                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                                        {attr
-                                                            .replace(/_/g, " ")
-                                                            .replace(/\b\w/g, (l) =>
-                                                                l.toUpperCase()
-                                                            )}{" "}
-                                                        Values
-                                                        {hasPredefinedValues && (
-                                                            <span className="text-xs text-blue-600 ml-2">
-                                                                (Select from predefined values or
-                                                                add custom)
-                                                            </span>
-                                                        )}
-                                                    </label>
-                                                    <Select
-                                                        mode="tags"
-                                                        className="w-full"
-                                                        size="large"
-                                                        placeholder={
-                                                            hasPredefinedValues
-                                                                ? `Select from list or type custom ${attr} values`
-                                                                : `Enter ${attr} values (press Enter after each)`
-                                                        }
-                                                        value={variantValues[index]?.[attr] || []}
-                                                        onChange={(values) => {
-                                                            setVariantValues((prev) => ({
-                                                                ...prev,
-                                                                [index]: {
-                                                                    ...prev[index],
-                                                                    [attr]: values,
-                                                                },
-                                                            }));
-                                                        }}
-                                                        allowClear
-                                                    >
-                                                        {hasPredefinedValues &&
-                                                            predefinedValues.map(
-                                                                (value: string) => (
-                                                                    <Select.Option
-                                                                        key={value}
-                                                                        value={value}
-                                                                    >
-                                                                        {value}
-                                                                    </Select.Option>
-                                                                )
+                                                return (
+                                                    <div key={attr}>
+                                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                            {attr
+                                                                .replace(/_/g, " ")
+                                                                .replace(/\b\w/g, (l) =>
+                                                                    l.toUpperCase()
+                                                                )}{" "}
+                                                            Values
+                                                            {hasPredefinedValues && (
+                                                                <span className="text-xs text-blue-600 ml-2">
+                                                                    (Select from predefined values
+                                                                    or add custom)
+                                                                </span>
                                                             )}
-                                                    </Select>
-                                                    <p className="text-xs text-gray-500 mt-1">
-                                                        {hasPredefinedValues
-                                                            ? "Select from predefined options or type custom values. Even a single value will create a variant."
-                                                            : "Add values for this attribute. Each value will create a separate variant, even with just one value."}
+                                                        </label>
+                                                        <TagsInput
+                                                            value={
+                                                                variantValues[index]?.[attr] || []
+                                                            }
+                                                            onChange={(values) => {
+                                                                setVariantValues((prev) => ({
+                                                                    ...prev,
+                                                                    [index]: {
+                                                                        ...prev[index],
+                                                                        [attr]: values,
+                                                                    },
+                                                                }));
+                                                            }}
+                                                            suggestions={
+                                                                hasPredefinedValues
+                                                                    ? predefinedValues
+                                                                    : []
+                                                            }
+                                                            placeholder={
+                                                                hasPredefinedValues
+                                                                    ? `Select from list or type custom ${attr} values`
+                                                                    : `Enter ${attr} values (press Enter after each)`
+                                                            }
+                                                        />
+                                                        <p className="text-xs text-gray-500 mt-1">
+                                                            {hasPredefinedValues
+                                                                ? "Select from predefined options or type custom values. Even a single value will create a variant."
+                                                                : "Add values for this attribute. Each value will create a separate variant, even with just one value."}
+                                                        </p>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+
+                                        {variantValues[index] &&
+                                            Object.keys(variantValues[index]).length > 0 && (
+                                                <div className="p-3 bg-blue-50 rounded">
+                                                    <p className="text-sm font-medium text-blue-700 mb-1">
+                                                        Preview:{" "}
+                                                        {(() => {
+                                                            const counts =
+                                                                selectedVariantAttributes[
+                                                                    index
+                                                                ].map(
+                                                                    (attr) =>
+                                                                        variantValues[index]?.[attr]
+                                                                            ?.length || 0
+                                                                );
+                                                            const total = counts.reduce(
+                                                                (a, b) => a * b || 1,
+                                                                1
+                                                            );
+                                                            return total;
+                                                        })()}{" "}
+                                                        variant(s) will be created
+                                                    </p>
+                                                    <p className="text-xs text-blue-600">
+                                                        Combinations based on your input values
                                                     </p>
                                                 </div>
-                                            );
-                                        })}
-                                    </div>
-
-                                    {variantValues[index] &&
-                                        Object.keys(variantValues[index]).length > 0 && (
-                                            <div className="p-3 bg-blue-50 rounded">
-                                                <p className="text-sm font-medium text-blue-700 mb-1">
-                                                    Preview:{" "}
-                                                    {(() => {
-                                                        const counts = selectedVariantAttributes[
-                                                            index
-                                                        ].map(
-                                                            (attr) =>
-                                                                variantValues[index]?.[attr]
-                                                                    ?.length || 0
-                                                        );
-                                                        const total = counts.reduce(
-                                                            (a, b) => a * b || 1,
-                                                            1
-                                                        );
-                                                        return total;
-                                                    })()}{" "}
-                                                    variant(s) will be created
-                                                </p>
-                                                <p className="text-xs text-blue-600">
-                                                    Combinations based on your input values
-                                                </p>
-                                            </div>
-                                        )}
-                                </>
-                            )}
-                    </div>
-                </Modal>
+                                            )}
+                                    </>
+                                )}
+                        </div>
+                        <DialogFooter>
+                            <Button
+                                variant="outline"
+                                onClick={() => {
+                                    setShowVariantModal((prev) => ({
+                                        ...prev,
+                                        [index]: false,
+                                    }));
+                                    setSelectedVariantAttributes((prev) => ({
+                                        ...prev,
+                                        [index]: [],
+                                    }));
+                                }}
+                            >
+                                Cancel
+                            </Button>
+                            <Button onClick={() => handleCreateVariants(index)}>
+                                {itemVariants[index] && itemVariants[index].length > 0
+                                    ? "Add More Variants"
+                                    : "Create Variants"}
+                            </Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
             ))}
 
             {/* Edit Variant Modal */}
-            <Modal
-                title="View/Edit Variant Details"
+            <Dialog
                 open={editVariantModal.visible}
-                onOk={handleSaveVariant}
-                onCancel={handleCancelEditVariant}
-                width={800}
-                okText="Save Changes"
-                cancelText="Cancel"
+                onOpenChange={(open) => !open && handleCancelEditVariant()}
             >
-                {editingVariant && (
-                    <Form
-                        form={variantForm}
-                        layout="vertical"
-                        className="max-h-[600px] overflow-y-auto"
-                    >
-                        {/* Basic Information Section */}
-                        <div className="mb-6">
-                            <h3 className="text-lg font-semibold mb-4 border-b pb-2">
-                                Basic Information
-                            </h3>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <Form.Item
-                                    label="Item Name"
-                                    name="name"
-                                    rules={[{ required: true, message: "Name is required" }]}
-                                >
-                                    <Input placeholder="Enter item name" />
-                                </Form.Item>
-
-                                {/* Hide Code Type and Code Value for F&B domain */}
-                                {editVariantModal.itemIndex !== null &&
-                                    watchItems[editVariantModal.itemIndex]?.domain !== "F&B" && (
-                                        <>
-                                            <Form.Item
-                                                label="Code Type"
-                                                name="code_type"
-                                                rules={[
-                                                    {
-                                                        required: true,
-                                                        message: "Code type is required",
-                                                    },
-                                                ]}
-                                            >
-                                                <Select placeholder="Select code type">
-                                                    <Select.Option value="EAN">EAN</Select.Option>
-                                                    <Select.Option value="ISBN">ISBN</Select.Option>
-                                                    <Select.Option value="GTIN">GTIN</Select.Option>
-                                                    <Select.Option value="HSN">HSN</Select.Option>
-                                                    <Select.Option value="Others">
-                                                        Others
-                                                    </Select.Option>
-                                                </Select>
-                                            </Form.Item>
-
-                                            <Form.Item
-                                                label="Code Value"
-                                                name="code_value"
-                                                rules={[
-                                                    {
-                                                        required: true,
-                                                        message: "Code value is required",
-                                                    },
-                                                ]}
-                                            >
-                                                <Input placeholder="Enter code value" />
-                                            </Form.Item>
-                                        </>
-                                    )}
-
-                                <div className="md:col-span-2">
-                                    <MultiImageUpload
-                                        label="Variant Images"
-                                        labelInfo="Upload multiple images for this variant"
-                                        required={true}
-                                        folder="workbench-seller-onboarding"
-                                        value={
-                                            editVariantModal.itemIndex !== null &&
-                                            editVariantModal.variantIndex !== null
-                                                ? variantImages.imageState[
-                                                      `${editVariantModal.itemIndex}-${editVariantModal.variantIndex}`
-                                                  ] || []
-                                                : []
-                                        }
-                                        onChange={(urls) => {
-                                            if (
-                                                editVariantModal.itemIndex !== null &&
-                                                editVariantModal.variantIndex !== null
-                                            ) {
-                                                const variantKey = `${editVariantModal.itemIndex}-${editVariantModal.variantIndex}`;
-                                                variantImages.updateImageField(variantKey, urls);
-                                                variantForm.setFieldsValue({ images: urls });
-                                            }
-                                        }}
-                                        maxFiles={5}
-                                        previewSize="small"
-                                    />
-                                </div>
-
-                                <Form.Item label="Symbol/Icon" name="symbol">
-                                    <SingleImageUpload
-                                        label=""
-                                        labelInfo="Upload a symbol/icon for this variant"
-                                        required={false}
-                                        folder="workbench-seller-onboarding"
-                                        value={
-                                            editVariantModal.itemIndex !== null &&
-                                            editVariantModal.variantIndex !== null
-                                                ? variantSymbolImages.imageState[
-                                                      `${editVariantModal.itemIndex}-${editVariantModal.variantIndex}`
-                                                  ] || ""
-                                                : ""
-                                        }
-                                        onChange={(url) => {
-                                            if (
-                                                editVariantModal.itemIndex !== null &&
-                                                editVariantModal.variantIndex !== null
-                                            ) {
-                                                const variantKey = `${editVariantModal.itemIndex}-${editVariantModal.variantIndex}`;
-                                                variantSymbolImages.updateImageField(
-                                                    variantKey,
-                                                    url
-                                                );
-                                                variantForm.setFieldsValue({ symbol: url });
-                                            }
-                                        }}
-                                        previewSize="small"
-                                    />
-                                </Form.Item>
-                            </div>
-                        </div>
-
-                        {/* Descriptions Section */}
-                        <div className="mb-6">
-                            <h3 className="text-lg font-semibold mb-4 border-b pb-2">
-                                Descriptions
-                            </h3>
-                            <div className="grid grid-cols-1 gap-4">
-                                <Form.Item
-                                    label="Short Description"
-                                    name="short_desc"
-                                    rules={[
-                                        {
-                                            required: true,
-                                            message: "Short description is required",
-                                        },
-                                    ]}
-                                >
-                                    <Input.TextArea
-                                        rows={2}
-                                        placeholder="Enter short description"
-                                    />
-                                </Form.Item>
-
-                                <Form.Item
-                                    label="Long Description"
-                                    name="long_desc"
-                                    rules={[
-                                        { required: true, message: "Long description is required" },
-                                    ]}
-                                >
-                                    <Input.TextArea rows={3} placeholder="Enter long description" />
-                                </Form.Item>
-                            </div>
-                        </div>
-
-                        {/* Pricing Section */}
-                        <div className="mb-6">
-                            <h3 className="text-lg font-semibold mb-4 border-b pb-2">Pricing</h3>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <Form.Item
-                                    label="Selling Price (₹)"
-                                    name="selling_price"
-                                    rules={[
-                                        { required: true, message: "Selling price is required" },
-                                    ]}
-                                >
-                                    <Input
-                                        type="number"
-                                        step="0.01"
-                                        placeholder="Enter selling price"
-                                    />
-                                </Form.Item>
-
-                                <Form.Item
-                                    label="MRP (₹)"
-                                    name="mrp"
-                                    rules={[{ required: true, message: "MRP is required" }]}
-                                >
-                                    <Input type="number" step="0.01" placeholder="Enter MRP" />
-                                </Form.Item>
-                            </div>
-                        </div>
-
-                        {/* Quantity Section */}
-                        <div className="mb-6">
-                            <h3 className="text-lg font-semibold mb-4 border-b pb-2">
-                                Quantity & Units
-                            </h3>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <Form.Item label="Unit" name="unit">
-                                    <Select placeholder="Select unit">
-                                        <Select.Option value="unit">Unit</Select.Option>
-                                        <Select.Option value="kg">Kilogram</Select.Option>
-                                        <Select.Option value="g">Gram</Select.Option>
-                                        <Select.Option value="l">Liter</Select.Option>
-                                        <Select.Option value="ml">Milliliter</Select.Option>
-                                        <Select.Option value="dozen">Dozen</Select.Option>
-                                        <Select.Option value="pack">Pack</Select.Option>
-                                    </Select>
-                                </Form.Item>
-
-                                <Form.Item label="Value" name="value">
-                                    <Input placeholder="Enter value (e.g., 1, 500)" />
-                                </Form.Item>
-
-                                <Form.Item label="Available Count" name="available_count">
-                                    <Input type="number" placeholder="Enter available quantity" />
-                                </Form.Item>
-
-                                <Form.Item label="Maximum Count" name="maximum_count">
-                                    <Input
-                                        type="number"
-                                        placeholder="Enter maximum order quantity"
-                                    />
-                                </Form.Item>
-
-                                <Form.Item label="Minimum Count" name="minimum_count">
-                                    <Input
-                                        type="number"
-                                        placeholder="Enter minimum order quantity"
-                                    />
-                                </Form.Item>
-                            </div>
-                        </div>
-
-                        {/* Variant Attributes Section */}
-                        {editingVariant?.variantCombination && (
+                <DialogContent className="max-w-[800px]">
+                    <DialogHeader>
+                        <DialogTitle>View/Edit Variant Details</DialogTitle>
+                    </DialogHeader>
+                    {editingVariant && (
+                        <div className="max-h-[600px] overflow-y-auto">
+                            {/* Basic Information Section */}
                             <div className="mb-6">
                                 <h3 className="text-lg font-semibold mb-4 border-b pb-2">
-                                    Variant Attributes
+                                    Basic Information
                                 </h3>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    {Object.entries(editingVariant.variantCombination).map(
-                                        ([key]) => (
-                                            <Form.Item
-                                                key={key}
-                                                label={
-                                                    key.replace(/_/g, " ").charAt(0).toUpperCase() +
-                                                    key.replace(/_/g, " ").slice(1)
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Item Name<span className="text-red-500 ml-1">*</span>
+                                        </label>
+                                        <Input
+                                            value={variantFormValues.name ?? ""}
+                                            onChange={(e) =>
+                                                updateVariantField("name", e.target.value)
+                                            }
+                                            placeholder="Enter item name"
+                                            aria-invalid={!!variantFormErrors.name}
+                                        />
+                                        {variantFormErrors.name && (
+                                            <p className="text-red-500 text-xs mt-1">
+                                                {variantFormErrors.name}
+                                            </p>
+                                        )}
+                                    </div>
+
+                                    {/* Hide Code Type and Code Value for F&B domain */}
+                                    {editVariantModal.itemIndex !== null &&
+                                        watchItems[editVariantModal.itemIndex]?.domain !==
+                                            "F&B" && (
+                                            <>
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                        Code Type
+                                                        <span className="text-red-500 ml-1">*</span>
+                                                    </label>
+                                                    <SelectControl
+                                                        value={variantFormValues.code_type}
+                                                        onValueChange={(value) =>
+                                                            updateVariantField("code_type", value)
+                                                        }
+                                                        options={[
+                                                            { key: "EAN", value: "EAN" },
+                                                            { key: "ISBN", value: "ISBN" },
+                                                            { key: "GTIN", value: "GTIN" },
+                                                            { key: "HSN", value: "HSN" },
+                                                            { key: "Others", value: "Others" },
+                                                        ]}
+                                                        placeholder="Select code type"
+                                                        className={
+                                                            variantFormErrors.code_type
+                                                                ? "border-destructive"
+                                                                : undefined
+                                                        }
+                                                    />
+                                                    {variantFormErrors.code_type && (
+                                                        <p className="text-red-500 text-xs mt-1">
+                                                            {variantFormErrors.code_type}
+                                                        </p>
+                                                    )}
+                                                </div>
+
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                        Code Value
+                                                        <span className="text-red-500 ml-1">*</span>
+                                                    </label>
+                                                    <Input
+                                                        value={variantFormValues.code_value ?? ""}
+                                                        onChange={(e) =>
+                                                            updateVariantField(
+                                                                "code_value",
+                                                                e.target.value
+                                                            )
+                                                        }
+                                                        placeholder="Enter code value"
+                                                        aria-invalid={
+                                                            !!variantFormErrors.code_value
+                                                        }
+                                                    />
+                                                    {variantFormErrors.code_value && (
+                                                        <p className="text-red-500 text-xs mt-1">
+                                                            {variantFormErrors.code_value}
+                                                        </p>
+                                                    )}
+                                                </div>
+                                            </>
+                                        )}
+
+                                    <div className="md:col-span-2">
+                                        <MultiImageUpload
+                                            label="Variant Images"
+                                            labelInfo="Upload multiple images for this variant"
+                                            required={true}
+                                            folder="workbench-seller-onboarding"
+                                            value={
+                                                editVariantModal.itemIndex !== null &&
+                                                editVariantModal.variantIndex !== null
+                                                    ? variantImages.imageState[
+                                                          `${editVariantModal.itemIndex}-${editVariantModal.variantIndex}`
+                                                      ] || []
+                                                    : []
+                                            }
+                                            onChange={(urls) => {
+                                                if (
+                                                    editVariantModal.itemIndex !== null &&
+                                                    editVariantModal.variantIndex !== null
+                                                ) {
+                                                    const variantKey = `${editVariantModal.itemIndex}-${editVariantModal.variantIndex}`;
+                                                    variantImages.updateImageField(
+                                                        variantKey,
+                                                        urls
+                                                    );
                                                 }
-                                                name={key}
-                                            >
-                                                <Input placeholder={`Enter ${key}`} />
-                                            </Form.Item>
-                                        )
-                                    )}
+                                            }}
+                                            maxFiles={5}
+                                            previewSize="small"
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Symbol/Icon
+                                        </label>
+                                        <SingleImageUpload
+                                            label=""
+                                            labelInfo="Upload a symbol/icon for this variant"
+                                            required={false}
+                                            folder="workbench-seller-onboarding"
+                                            value={
+                                                editVariantModal.itemIndex !== null &&
+                                                editVariantModal.variantIndex !== null
+                                                    ? variantSymbolImages.imageState[
+                                                          `${editVariantModal.itemIndex}-${editVariantModal.variantIndex}`
+                                                      ] || ""
+                                                    : ""
+                                            }
+                                            onChange={(url) => {
+                                                if (
+                                                    editVariantModal.itemIndex !== null &&
+                                                    editVariantModal.variantIndex !== null
+                                                ) {
+                                                    const variantKey = `${editVariantModal.itemIndex}-${editVariantModal.variantIndex}`;
+                                                    variantSymbolImages.updateImageField(
+                                                        variantKey,
+                                                        url
+                                                    );
+                                                }
+                                            }}
+                                            previewSize="small"
+                                        />
+                                    </div>
                                 </div>
                             </div>
-                        )}
 
-                        {/* Additional Attributes Section */}
-                        {editingVariant?.attributes && (
+                            {/* Descriptions Section */}
                             <div className="mb-6">
                                 <h3 className="text-lg font-semibold mb-4 border-b pb-2">
-                                    Additional Attributes
+                                    Descriptions
+                                </h3>
+                                <div className="grid grid-cols-1 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Short Description
+                                            <span className="text-red-500 ml-1">*</span>
+                                        </label>
+                                        <Textarea
+                                            value={variantFormValues.short_desc ?? ""}
+                                            onChange={(e) =>
+                                                updateVariantField("short_desc", e.target.value)
+                                            }
+                                            rows={2}
+                                            placeholder="Enter short description"
+                                            aria-invalid={!!variantFormErrors.short_desc}
+                                        />
+                                        {variantFormErrors.short_desc && (
+                                            <p className="text-red-500 text-xs mt-1">
+                                                {variantFormErrors.short_desc}
+                                            </p>
+                                        )}
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Long Description
+                                            <span className="text-red-500 ml-1">*</span>
+                                        </label>
+                                        <Textarea
+                                            value={variantFormValues.long_desc ?? ""}
+                                            onChange={(e) =>
+                                                updateVariantField("long_desc", e.target.value)
+                                            }
+                                            rows={3}
+                                            placeholder="Enter long description"
+                                            aria-invalid={!!variantFormErrors.long_desc}
+                                        />
+                                        {variantFormErrors.long_desc && (
+                                            <p className="text-red-500 text-xs mt-1">
+                                                {variantFormErrors.long_desc}
+                                            </p>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Pricing Section */}
+                            <div className="mb-6">
+                                <h3 className="text-lg font-semibold mb-4 border-b pb-2">
+                                    Pricing
                                 </h3>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    {Object.entries(editingVariant.attributes)
-                                        .filter(
-                                            ([key]) => !editingVariant.variantCombination?.[key]
-                                        )
-                                        .filter(
-                                            ([key]) =>
-                                                ![
-                                                    "name",
-                                                    "short_desc",
-                                                    "long_desc",
-                                                    "selling_price",
-                                                    "mrp",
-                                                    "code_value",
-                                                    "code_type",
-                                                    "images",
-                                                    "symbol",
-                                                    "unit",
-                                                    "value",
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Selling Price (₹)
+                                            <span className="text-red-500 ml-1">*</span>
+                                        </label>
+                                        <Input
+                                            value={variantFormValues.selling_price ?? ""}
+                                            onChange={(e) =>
+                                                updateVariantField("selling_price", e.target.value)
+                                            }
+                                            type="number"
+                                            step="0.01"
+                                            placeholder="Enter selling price"
+                                            aria-invalid={!!variantFormErrors.selling_price}
+                                        />
+                                        {variantFormErrors.selling_price && (
+                                            <p className="text-red-500 text-xs mt-1">
+                                                {variantFormErrors.selling_price}
+                                            </p>
+                                        )}
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            MRP (₹)<span className="text-red-500 ml-1">*</span>
+                                        </label>
+                                        <Input
+                                            value={variantFormValues.mrp ?? ""}
+                                            onChange={(e) =>
+                                                updateVariantField("mrp", e.target.value)
+                                            }
+                                            type="number"
+                                            step="0.01"
+                                            placeholder="Enter MRP"
+                                            aria-invalid={!!variantFormErrors.mrp}
+                                        />
+                                        {variantFormErrors.mrp && (
+                                            <p className="text-red-500 text-xs mt-1">
+                                                {variantFormErrors.mrp}
+                                            </p>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Quantity Section */}
+                            <div className="mb-6">
+                                <h3 className="text-lg font-semibold mb-4 border-b pb-2">
+                                    Quantity & Units
+                                </h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Unit
+                                        </label>
+                                        <SelectControl
+                                            value={variantFormValues.unit}
+                                            onValueChange={(value) =>
+                                                updateVariantField("unit", value)
+                                            }
+                                            options={[
+                                                { key: "Unit", value: "unit" },
+                                                { key: "Kilogram", value: "kg" },
+                                                { key: "Gram", value: "g" },
+                                                { key: "Liter", value: "l" },
+                                                { key: "Milliliter", value: "ml" },
+                                                { key: "Dozen", value: "dozen" },
+                                                { key: "Pack", value: "pack" },
+                                            ]}
+                                            placeholder="Select unit"
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Value
+                                        </label>
+                                        <Input
+                                            value={variantFormValues.value ?? ""}
+                                            onChange={(e) =>
+                                                updateVariantField("value", e.target.value)
+                                            }
+                                            placeholder="Enter value (e.g., 1, 500)"
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Available Count
+                                        </label>
+                                        <Input
+                                            value={variantFormValues.available_count ?? ""}
+                                            onChange={(e) =>
+                                                updateVariantField(
                                                     "available_count",
-                                                    "maximum_count",
-                                                    "minimum_count",
-                                                ].includes(key)
-                                        )
-                                        .map(([key]) => (
-                                            <Form.Item
-                                                key={key}
-                                                label={
-                                                    key.replace(/_/g, " ").charAt(0).toUpperCase() +
-                                                    key.replace(/_/g, " ").slice(1)
-                                                }
-                                                name={key}
-                                            >
-                                                <Input placeholder={`Enter ${key}`} />
-                                            </Form.Item>
-                                        ))}
+                                                    e.target.value
+                                                )
+                                            }
+                                            type="number"
+                                            placeholder="Enter available quantity"
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Maximum Count
+                                        </label>
+                                        <Input
+                                            value={variantFormValues.maximum_count ?? ""}
+                                            onChange={(e) =>
+                                                updateVariantField("maximum_count", e.target.value)
+                                            }
+                                            type="number"
+                                            placeholder="Enter maximum order quantity"
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Minimum Count
+                                        </label>
+                                        <Input
+                                            value={variantFormValues.minimum_count ?? ""}
+                                            onChange={(e) =>
+                                                updateVariantField("minimum_count", e.target.value)
+                                            }
+                                            type="number"
+                                            placeholder="Enter minimum order quantity"
+                                        />
+                                    </div>
                                 </div>
                             </div>
-                        )}
 
-                        {/* Read-only Information */}
-                        <div className="mb-6">
-                            <h3 className="text-lg font-semibold mb-4 border-b pb-2">
-                                System Information
-                            </h3>
-                            <div className="bg-gray-50 p-4 rounded">
-                                <div className="grid grid-cols-2 gap-4 text-sm">
-                                    <div>
-                                        <span className="font-medium">Variant ID:</span>{" "}
-                                        <span className="text-gray-600">
-                                            {editingVariant?.variantId}
-                                        </span>
+                            {/* Variant Attributes Section */}
+                            {editingVariant?.variantCombination && (
+                                <div className="mb-6">
+                                    <h3 className="text-lg font-semibold mb-4 border-b pb-2">
+                                        Variant Attributes
+                                    </h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        {Object.entries(editingVariant.variantCombination).map(
+                                            ([key]) => (
+                                                <div key={key}>
+                                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                        {key
+                                                            .replace(/_/g, " ")
+                                                            .charAt(0)
+                                                            .toUpperCase() +
+                                                            key.replace(/_/g, " ").slice(1)}
+                                                    </label>
+                                                    <Input
+                                                        value={variantFormValues[key] ?? ""}
+                                                        onChange={(e) =>
+                                                            updateVariantField(key, e.target.value)
+                                                        }
+                                                        placeholder={`Enter ${key}`}
+                                                    />
+                                                </div>
+                                            )
+                                        )}
                                     </div>
-                                    <div>
-                                        <span className="font-medium">Parent Item Index:</span>{" "}
-                                        <span className="text-gray-600">
-                                            {editingVariant?.variantOf}
-                                        </span>
+                                </div>
+                            )}
+
+                            {/* Additional Attributes Section */}
+                            {editingVariant?.attributes && (
+                                <div className="mb-6">
+                                    <h3 className="text-lg font-semibold mb-4 border-b pb-2">
+                                        Additional Attributes
+                                    </h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        {Object.entries(editingVariant.attributes)
+                                            .filter(
+                                                ([key]) => !editingVariant.variantCombination?.[key]
+                                            )
+                                            .filter(
+                                                ([key]) =>
+                                                    ![
+                                                        "name",
+                                                        "short_desc",
+                                                        "long_desc",
+                                                        "selling_price",
+                                                        "mrp",
+                                                        "code_value",
+                                                        "code_type",
+                                                        "images",
+                                                        "symbol",
+                                                        "unit",
+                                                        "value",
+                                                        "available_count",
+                                                        "maximum_count",
+                                                        "minimum_count",
+                                                    ].includes(key)
+                                            )
+                                            .map(([key]) => (
+                                                <div key={key}>
+                                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                        {key
+                                                            .replace(/_/g, " ")
+                                                            .charAt(0)
+                                                            .toUpperCase() +
+                                                            key.replace(/_/g, " ").slice(1)}
+                                                    </label>
+                                                    <Input
+                                                        value={variantFormValues[key] ?? ""}
+                                                        onChange={(e) =>
+                                                            updateVariantField(key, e.target.value)
+                                                        }
+                                                        placeholder={`Enter ${key}`}
+                                                    />
+                                                </div>
+                                            ))}
                                     </div>
-                                    <div>
-                                        <span className="font-medium">Is Variant:</span>{" "}
-                                        <span className="text-gray-600">
-                                            {editingVariant?.isVariant ? "Yes" : "No"}
-                                        </span>
+                                </div>
+                            )}
+
+                            {/* Read-only Information */}
+                            <div className="mb-6">
+                                <h3 className="text-lg font-semibold mb-4 border-b pb-2">
+                                    System Information
+                                </h3>
+                                <div className="bg-gray-50 p-4 rounded">
+                                    <div className="grid grid-cols-2 gap-4 text-sm">
+                                        <div>
+                                            <span className="font-medium">Variant ID:</span>{" "}
+                                            <span className="text-gray-600">
+                                                {editingVariant?.variantId}
+                                            </span>
+                                        </div>
+                                        <div>
+                                            <span className="font-medium">Parent Item Index:</span>{" "}
+                                            <span className="text-gray-600">
+                                                {editingVariant?.variantOf}
+                                            </span>
+                                        </div>
+                                        <div>
+                                            <span className="font-medium">Is Variant:</span>{" "}
+                                            <span className="text-gray-600">
+                                                {editingVariant?.isVariant ? "Yes" : "No"}
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </Form>
-                )}
-            </Modal>
+                    )}
+                    <DialogFooter>
+                        <Button variant="outline" onClick={handleCancelEditVariant}>
+                            Cancel
+                        </Button>
+                        <Button onClick={handleSaveVariant}>Save Changes</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 };

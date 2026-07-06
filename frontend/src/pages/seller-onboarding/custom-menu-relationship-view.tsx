@@ -1,6 +1,20 @@
 import React from "react";
-import { Card, Tag, Timeline, Collapse, Badge, Divider, Alert } from "antd";
 import { FaLayerGroup, FaUtensils, FaPuzzlePiece, FaLink } from "react-icons/fa";
+
+import { Badge } from "@/components/Shadcn/Badge/badge";
+import { Alert } from "@/components/Shadcn/Alert";
+import { Separator } from "@/components/Shadcn/Seperator/separator";
+import {
+    Accordion,
+    AccordionContent,
+    AccordionItem,
+    AccordionTrigger,
+} from "@/components/Shadcn/Accordion/accordion";
+import { Card, Tag } from "@/pages/seller-onboarding/components/LegacyCardTag";
+import {
+    RelationshipTimeline,
+    type RelationshipTimelineItem,
+} from "@/pages/seller-onboarding/components/RelationshipTimeline";
 
 interface CustomizationItem {
     id: string;
@@ -79,6 +93,294 @@ const CustomMenuRelationshipView: React.FC<CustomMenuRelationshipViewProps> = ({
         }
     });
 
+    const timelineItems: RelationshipTimelineItem[] = sortedCategories.map(
+        (category, categoryIndex) => {
+            const items = categorizedItems[category];
+            const rank = categoryRankMap[category] || categoryIndex + 1;
+
+            return {
+                key: category,
+                label: (
+                    <div className="text-right">
+                        <Badge className="border-transparent bg-green-500 text-white">
+                            {`Rank ${rank}`}
+                        </Badge>
+                    </div>
+                ),
+                dot: <FaLayerGroup className="text-blue-600" />,
+                content: (
+                    <Card
+                        title={
+                            <div className="flex items-center justify-between">
+                                <span className="font-semibold text-lg">{category}</span>
+                                <Tag color="blue">Category (custom_menu)</Tag>
+                            </div>
+                        }
+                        className="shadow-md"
+                    >
+                        <div className="space-y-3">
+                            <div className="text-sm text-gray-600">
+                                <span className="font-medium">Category ID:</span> Auto-generated
+                                (e.g., V{Math.random().toString(36).substr(2, 9).toUpperCase()})
+                            </div>
+                            <div className="text-sm text-gray-600">
+                                <span className="font-medium">Items in category:</span>{" "}
+                                {items.length}
+                            </div>
+
+                            <Separator className="my-3" />
+
+                            <Accordion type="single" collapsible>
+                                {items.map((item, itemIndex) => (
+                                    <AccordionItem key={itemIndex} value={itemIndex.toString()}>
+                                        <AccordionTrigger>
+                                            <div className="flex items-center justify-between w-full pr-2">
+                                                <div className="flex items-center gap-2">
+                                                    <FaUtensils className="text-orange-600" />
+                                                    <span className="font-medium">{item.name}</span>
+                                                    <Tag
+                                                        color={
+                                                            item.vegNonVeg === "veg"
+                                                                ? "green"
+                                                                : "red"
+                                                        }
+                                                    >
+                                                        {item.vegNonVeg === "veg"
+                                                            ? "Veg"
+                                                            : "Non-Veg"}
+                                                    </Tag>
+                                                </div>
+                                                <span className="text-gray-600">₹{item.price}</span>
+                                            </div>
+                                        </AccordionTrigger>
+                                        <AccordionContent>
+                                            <div className="pl-4 space-y-3">
+                                                <div className="text-sm">
+                                                    <span className="font-medium text-gray-700">
+                                                        Item ID:
+                                                    </span>{" "}
+                                                    I{itemIndex + 1}
+                                                </div>
+                                                <div className="text-sm">
+                                                    <span className="font-medium text-gray-700">
+                                                        parent_item_id:
+                                                    </span>{" "}
+                                                    "{category}"
+                                                </div>
+                                                <div className="text-sm">
+                                                    <span className="font-medium text-gray-700">
+                                                        category_id:
+                                                    </span>{" "}
+                                                    "{category}"
+                                                </div>
+
+                                                {item.customizationGroups &&
+                                                    item.customizationGroups.length > 0 && (
+                                                        <>
+                                                            <Separator className="my-2" />
+                                                            <div className="space-y-2">
+                                                                <div className="font-medium text-gray-700 text-sm">
+                                                                    <FaLink className="inline mr-1" />
+                                                                    Linked Custom Groups (via
+                                                                    custom_group tags):
+                                                                </div>
+                                                                <Alert
+                                                                    message="Items reference custom_group IDs in their tags"
+                                                                    variant="warning"
+                                                                    banner
+                                                                    className="mb-2"
+                                                                />
+                                                                {item.customizationGroups.map(
+                                                                    (group, groupIndex) => (
+                                                                        <Card
+                                                                            key={group.id}
+                                                                            small
+                                                                            inner
+                                                                            title={
+                                                                                <div className="flex items-center justify-between">
+                                                                                    <span>
+                                                                                        {group.name}
+                                                                                    </span>
+                                                                                    <div className="flex gap-2">
+                                                                                        <Tag color="purple">
+                                                                                            {group.type ===
+                                                                                            "single"
+                                                                                                ? "Single Select"
+                                                                                                : "Multi Select"}
+                                                                                        </Tag>
+                                                                                        {group.required && (
+                                                                                            <Tag color="red">
+                                                                                                Required
+                                                                                            </Tag>
+                                                                                        )}
+                                                                                    </div>
+                                                                                </div>
+                                                                            }
+                                                                        >
+                                                                            <div className="space-y-2">
+                                                                                <div className="text-xs text-gray-600">
+                                                                                    <span className="font-medium">
+                                                                                        Item
+                                                                                        references
+                                                                                        custom_group
+                                                                                        ID:
+                                                                                    </span>{" "}
+                                                                                    {group.id}
+                                                                                </div>
+                                                                                <div className="text-xs bg-yellow-50 p-2 rounded">
+                                                                                    <code className="text-xs">
+                                                                                        tags: [{"{"}{" "}
+                                                                                        code:
+                                                                                        "custom_group",
+                                                                                        list: [{"{"}{" "}
+                                                                                        code: "id",
+                                                                                        value: "
+                                                                                        {group.id}"{" "}
+                                                                                        {"}"}] {"}"}
+                                                                                        ]
+                                                                                    </code>
+                                                                                </div>
+                                                                                <div className="text-xs mt-2">
+                                                                                    <span className="font-medium">
+                                                                                        Customization
+                                                                                        Items belong
+                                                                                        to this
+                                                                                        group:
+                                                                                    </span>
+                                                                                </div>
+                                                                                <div className="pl-4 space-y-1">
+                                                                                    {group.items.map(
+                                                                                        (
+                                                                                            customItem,
+                                                                                            custIndex
+                                                                                        ) => (
+                                                                                            <div
+                                                                                                key={
+                                                                                                    customItem.id
+                                                                                                }
+                                                                                                className="text-xs bg-gray-50 p-2 rounded"
+                                                                                            >
+                                                                                                <div className="flex items-center justify-between">
+                                                                                                    <div>
+                                                                                                        <span className="font-medium">
+                                                                                                            {
+                                                                                                                customItem.name
+                                                                                                            }
+                                                                                                        </span>
+                                                                                                        <Tag
+                                                                                                            color={
+                                                                                                                customItem.vegNonVeg ===
+                                                                                                                "veg"
+                                                                                                                    ? "green"
+                                                                                                                    : "red"
+                                                                                                            }
+                                                                                                            className="ml-2"
+                                                                                                        >
+                                                                                                            {customItem.vegNonVeg ===
+                                                                                                            "veg"
+                                                                                                                ? "V"
+                                                                                                                : "NV"}
+                                                                                                        </Tag>
+                                                                                                    </div>
+                                                                                                    <span className="text-gray-600">
+                                                                                                        +₹
+                                                                                                        {
+                                                                                                            customItem.price
+                                                                                                        }
+                                                                                                    </span>
+                                                                                                </div>
+                                                                                                <div className="text-gray-600 mt-1">
+                                                                                                    <div>
+                                                                                                        <span className="font-medium">
+                                                                                                            Item
+                                                                                                            ID:
+                                                                                                        </span>{" "}
+                                                                                                        C
+                                                                                                        {itemIndex +
+                                                                                                            1}
+
+                                                                                                        _
+                                                                                                        {custIndex +
+                                                                                                            1}
+                                                                                                    </div>
+                                                                                                    <div>
+                                                                                                        <span className="font-medium">
+                                                                                                            Parent
+                                                                                                            (custom_group):
+                                                                                                        </span>{" "}
+                                                                                                        {
+                                                                                                            group.id
+                                                                                                        }
+                                                                                                    </div>
+                                                                                                    <div className="bg-yellow-50 p-1 mt-1 rounded">
+                                                                                                        <code className="text-xs">
+                                                                                                            parent:
+                                                                                                            [
+                                                                                                            {
+                                                                                                                "{"
+                                                                                                            }{" "}
+                                                                                                            code:
+                                                                                                            "id",
+                                                                                                            value:
+                                                                                                            "
+                                                                                                            {
+                                                                                                                group.id
+                                                                                                            }
+
+                                                                                                            "{" "}
+                                                                                                            {
+                                                                                                                "}"
+                                                                                                            }
+
+                                                                                                            ]
+                                                                                                        </code>
+                                                                                                    </div>
+                                                                                                    {item.customizationGroups &&
+                                                                                                        groupIndex <
+                                                                                                            item
+                                                                                                                .customizationGroups
+                                                                                                                .length -
+                                                                                                                1 && (
+                                                                                                            <div className="text-blue-600 mt-1">
+                                                                                                                <FaLink className="inline mr-1" />
+                                                                                                                Links
+                                                                                                                to
+                                                                                                                next
+                                                                                                                group:{" "}
+                                                                                                                {
+                                                                                                                    item
+                                                                                                                        .customizationGroups[
+                                                                                                                        groupIndex +
+                                                                                                                            1
+                                                                                                                    ]
+                                                                                                                        .id
+                                                                                                                }
+                                                                                                            </div>
+                                                                                                        )}
+                                                                                                </div>
+                                                                                            </div>
+                                                                                        )
+                                                                                    )}
+                                                                                </div>
+                                                                            </div>
+                                                                        </Card>
+                                                                    )
+                                                                )}
+                                                            </div>
+                                                        </>
+                                                    )}
+                                            </div>
+                                        </AccordionContent>
+                                    </AccordionItem>
+                                ))}
+                            </Accordion>
+                        </div>
+                    </Card>
+                ),
+            };
+        }
+    );
+
     return (
         <div className="space-y-6">
             <div className="mb-4">
@@ -101,16 +403,12 @@ const CustomMenuRelationshipView: React.FC<CustomMenuRelationshipViewProps> = ({
                     </h4>
                     <Alert
                         message="Custom groups are added as separate entries in the categories array with type 'custom_group'"
-                        type="info"
+                        variant="info"
                         className="mb-4"
                     />
                     <div className="grid md:grid-cols-2 gap-4">
                         {allCustomGroups.map((group) => (
-                            <Card
-                                key={group.id}
-                                size="small"
-                                className="border-2 border-purple-200"
-                            >
+                            <Card key={group.id} small className="border-2 border-purple-200">
                                 <div className="space-y-2">
                                     <div className="flex items-center justify-between">
                                         <span className="font-medium">{group.name}</span>
@@ -140,310 +438,9 @@ const CustomMenuRelationshipView: React.FC<CustomMenuRelationshipViewProps> = ({
                 </Card>
             )}
 
-            <Timeline mode="left">
-                {sortedCategories.map((category, categoryIndex) => {
-                    const items = categorizedItems[category];
-                    const rank = categoryRankMap[category] || categoryIndex + 1;
+            <RelationshipTimeline items={timelineItems} />
 
-                    return (
-                        <Timeline.Item
-                            key={category}
-                            label={
-                                <div className="text-right">
-                                    <Badge
-                                        count={`Rank ${rank}`}
-                                        style={{ backgroundColor: "#52c41a" }}
-                                    />
-                                </div>
-                            }
-                            dot={<FaLayerGroup className="text-blue-600" />}
-                        >
-                            <Card
-                                title={
-                                    <div className="flex items-center justify-between">
-                                        <span className="font-semibold text-lg">{category}</span>
-                                        <Tag color="blue">Category (custom_menu)</Tag>
-                                    </div>
-                                }
-                                className="shadow-md"
-                            >
-                                <div className="space-y-3">
-                                    <div className="text-sm text-gray-600">
-                                        <span className="font-medium">Category ID:</span>{" "}
-                                        Auto-generated (e.g., V
-                                        {Math.random().toString(36).substr(2, 9).toUpperCase()})
-                                    </div>
-                                    <div className="text-sm text-gray-600">
-                                        <span className="font-medium">Items in category:</span>{" "}
-                                        {items.length}
-                                    </div>
-
-                                    <Divider className="my-3" />
-
-                                    <Collapse accordion>
-                                        {items.map((item, itemIndex) => (
-                                            <Collapse.Panel
-                                                key={itemIndex}
-                                                header={
-                                                    <div className="flex items-center justify-between">
-                                                        <div className="flex items-center gap-2">
-                                                            <FaUtensils className="text-orange-600" />
-                                                            <span className="font-medium">
-                                                                {item.name}
-                                                            </span>
-                                                            <Tag
-                                                                color={
-                                                                    item.vegNonVeg === "veg"
-                                                                        ? "green"
-                                                                        : "red"
-                                                                }
-                                                            >
-                                                                {item.vegNonVeg === "veg"
-                                                                    ? "Veg"
-                                                                    : "Non-Veg"}
-                                                            </Tag>
-                                                        </div>
-                                                        <span className="text-gray-600">
-                                                            ₹{item.price}
-                                                        </span>
-                                                    </div>
-                                                }
-                                            >
-                                                <div className="pl-4 space-y-3">
-                                                    <div className="text-sm">
-                                                        <span className="font-medium text-gray-700">
-                                                            Item ID:
-                                                        </span>{" "}
-                                                        I{itemIndex + 1}
-                                                    </div>
-                                                    <div className="text-sm">
-                                                        <span className="font-medium text-gray-700">
-                                                            parent_item_id:
-                                                        </span>{" "}
-                                                        "{category}"
-                                                    </div>
-                                                    <div className="text-sm">
-                                                        <span className="font-medium text-gray-700">
-                                                            category_id:
-                                                        </span>{" "}
-                                                        "{category}"
-                                                    </div>
-
-                                                    {item.customizationGroups &&
-                                                        item.customizationGroups.length > 0 && (
-                                                            <>
-                                                                <Divider className="my-2" />
-                                                                <div className="space-y-2">
-                                                                    <div className="font-medium text-gray-700 text-sm">
-                                                                        <FaLink className="inline mr-1" />
-                                                                        Linked Custom Groups (via
-                                                                        custom_group tags):
-                                                                    </div>
-                                                                    <Alert
-                                                                        message="Items reference custom_group IDs in their tags"
-                                                                        type="warning"
-                                                                        className="mb-2"
-                                                                        banner
-                                                                    />
-                                                                    {item.customizationGroups.map(
-                                                                        (group, groupIndex) => (
-                                                                            <Card
-                                                                                key={group.id}
-                                                                                size="small"
-                                                                                type="inner"
-                                                                                title={
-                                                                                    <div className="flex items-center justify-between">
-                                                                                        <span>
-                                                                                            {
-                                                                                                group.name
-                                                                                            }
-                                                                                        </span>
-                                                                                        <div className="flex gap-2">
-                                                                                            <Tag color="purple">
-                                                                                                {group.type ===
-                                                                                                "single"
-                                                                                                    ? "Single Select"
-                                                                                                    : "Multi Select"}
-                                                                                            </Tag>
-                                                                                            {group.required && (
-                                                                                                <Tag color="red">
-                                                                                                    Required
-                                                                                                </Tag>
-                                                                                            )}
-                                                                                        </div>
-                                                                                    </div>
-                                                                                }
-                                                                            >
-                                                                                <div className="space-y-2">
-                                                                                    <div className="text-xs text-gray-600">
-                                                                                        <span className="font-medium">
-                                                                                            Item
-                                                                                            references
-                                                                                            custom_group
-                                                                                            ID:
-                                                                                        </span>{" "}
-                                                                                        {group.id}
-                                                                                    </div>
-                                                                                    <div className="text-xs bg-yellow-50 p-2 rounded">
-                                                                                        <code className="text-xs">
-                                                                                            tags: [
-                                                                                            {"{"}{" "}
-                                                                                            code:
-                                                                                            "custom_group",
-                                                                                            list: [
-                                                                                            {"{"}{" "}
-                                                                                            code:
-                                                                                            "id",
-                                                                                            value: "
-                                                                                            {
-                                                                                                group.id
-                                                                                            }
-                                                                                            " {"}"}]{" "}
-                                                                                            {"}"}]
-                                                                                        </code>
-                                                                                    </div>
-                                                                                    <div className="text-xs mt-2">
-                                                                                        <span className="font-medium">
-                                                                                            Customization
-                                                                                            Items
-                                                                                            belong
-                                                                                            to this
-                                                                                            group:
-                                                                                        </span>
-                                                                                    </div>
-                                                                                    <div className="pl-4 space-y-1">
-                                                                                        {group.items.map(
-                                                                                            (
-                                                                                                customItem,
-                                                                                                custIndex
-                                                                                            ) => (
-                                                                                                <div
-                                                                                                    key={
-                                                                                                        customItem.id
-                                                                                                    }
-                                                                                                    className="text-xs bg-gray-50 p-2 rounded"
-                                                                                                >
-                                                                                                    <div className="flex items-center justify-between">
-                                                                                                        <div>
-                                                                                                            <span className="font-medium">
-                                                                                                                {
-                                                                                                                    customItem.name
-                                                                                                                }
-                                                                                                            </span>
-                                                                                                            <Tag
-                                                                                                                color={
-                                                                                                                    customItem.vegNonVeg ===
-                                                                                                                    "veg"
-                                                                                                                        ? "green"
-                                                                                                                        : "red"
-                                                                                                                }
-                                                                                                                className="ml-2"
-                                                                                                            >
-                                                                                                                {customItem.vegNonVeg ===
-                                                                                                                "veg"
-                                                                                                                    ? "V"
-                                                                                                                    : "NV"}
-                                                                                                            </Tag>
-                                                                                                        </div>
-                                                                                                        <span className="text-gray-600">
-                                                                                                            +₹
-                                                                                                            {
-                                                                                                                customItem.price
-                                                                                                            }
-                                                                                                        </span>
-                                                                                                    </div>
-                                                                                                    <div className="text-gray-600 mt-1">
-                                                                                                        <div>
-                                                                                                            <span className="font-medium">
-                                                                                                                Item
-                                                                                                                ID:
-                                                                                                            </span>{" "}
-                                                                                                            C
-                                                                                                            {itemIndex +
-                                                                                                                1}
-
-                                                                                                            _
-                                                                                                            {custIndex +
-                                                                                                                1}
-                                                                                                        </div>
-                                                                                                        <div>
-                                                                                                            <span className="font-medium">
-                                                                                                                Parent
-                                                                                                                (custom_group):
-                                                                                                            </span>{" "}
-                                                                                                            {
-                                                                                                                group.id
-                                                                                                            }
-                                                                                                        </div>
-                                                                                                        <div className="bg-yellow-50 p-1 mt-1 rounded">
-                                                                                                            <code className="text-xs">
-                                                                                                                parent:
-                                                                                                                [
-                                                                                                                {
-                                                                                                                    "{"
-                                                                                                                }{" "}
-                                                                                                                code:
-                                                                                                                "id",
-                                                                                                                value:
-                                                                                                                "
-                                                                                                                {
-                                                                                                                    group.id
-                                                                                                                }
-
-                                                                                                                "{" "}
-                                                                                                                {
-                                                                                                                    "}"
-                                                                                                                }
-
-                                                                                                                ]
-                                                                                                            </code>
-                                                                                                        </div>
-                                                                                                        {item.customizationGroups &&
-                                                                                                            groupIndex <
-                                                                                                                item
-                                                                                                                    .customizationGroups
-                                                                                                                    .length -
-                                                                                                                    1 && (
-                                                                                                                <div className="text-blue-600 mt-1">
-                                                                                                                    <FaLink className="inline mr-1" />
-                                                                                                                    Links
-                                                                                                                    to
-                                                                                                                    next
-                                                                                                                    group:{" "}
-                                                                                                                    {
-                                                                                                                        item
-                                                                                                                            .customizationGroups[
-                                                                                                                            groupIndex +
-                                                                                                                                1
-                                                                                                                        ]
-                                                                                                                            .id
-                                                                                                                    }
-                                                                                                                </div>
-                                                                                                            )}
-                                                                                                    </div>
-                                                                                                </div>
-                                                                                            )
-                                                                                        )}
-                                                                                    </div>
-                                                                                </div>
-                                                                            </Card>
-                                                                        )
-                                                                    )}
-                                                                </div>
-                                                            </>
-                                                        )}
-                                                </div>
-                                            </Collapse.Panel>
-                                        ))}
-                                    </Collapse>
-                                </div>
-                            </Card>
-                        </Timeline.Item>
-                    );
-                })}
-            </Timeline>
-
-            <Card className="bg-blue-50 border-blue-200">
+            <Card className="bg-linear-to-r from-blue-50 to-purple-50">
                 <h4 className="font-semibold text-blue-900 mb-2">
                     Understanding the ONDC F&B Relationships:
                 </h4>

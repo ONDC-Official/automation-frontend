@@ -3,6 +3,7 @@ import { Dialog as DialogPrimitive } from "radix-ui";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 
 import { cn } from "@/lib/utils";
+import { isFormFlowPortaledOverlay } from "@/components/Shadcn/Dialog/form-flow-dialog-utils";
 
 const Dialog = ({ ...props }: React.ComponentProps<typeof DialogPrimitive.Root>) => (
     <DialogPrimitive.Root data-slot="dialog" {...props} />
@@ -41,12 +42,24 @@ const DialogOverlay = ({
     />
 );
 
+const allowPortaledOverlayInteraction = (event: {
+    target: EventTarget | null;
+    preventDefault: () => void;
+}) => {
+    if (isFormFlowPortaledOverlay(event.target)) {
+        event.preventDefault();
+    }
+};
+
 const DialogContent = ({
     className,
     children,
     showCloseButton = true,
     container,
     overlayClassName,
+    onInteractOutside,
+    onPointerDownOutside,
+    onFocusOutside,
     ...props
 }: React.ComponentProps<typeof DialogPrimitive.Content> & {
     showCloseButton?: boolean;
@@ -61,6 +74,18 @@ const DialogContent = ({
                 "fixed top-[50%] left-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 rounded-2xl border border-border-default bg-surface-elevated p-6 text-text-primary shadow-2xl duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
                 className
             )}
+            onInteractOutside={(event) => {
+                allowPortaledOverlayInteraction(event);
+                onInteractOutside?.(event);
+            }}
+            onPointerDownOutside={(event) => {
+                allowPortaledOverlayInteraction(event);
+                onPointerDownOutside?.(event);
+            }}
+            onFocusOutside={(event) => {
+                allowPortaledOverlayInteraction(event);
+                onFocusOutside?.(event);
+            }}
             {...props}
         >
             {children}
@@ -127,3 +152,5 @@ export {
     DialogTitle,
     DialogTrigger,
 };
+
+export { ConfirmDialog, type IConfirmDialogProps } from "./confirm-dialog";

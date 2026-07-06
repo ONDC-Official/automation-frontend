@@ -3,14 +3,17 @@ import {
     MockPlaygroundConfigType,
     createOptimizedMockConfig,
 } from "@ondc/automation-mock-runner";
-import axios from "axios";
 import { toast } from "sonner";
 import { SessionCache } from "@/types/session-types";
 
 export async function createFlowSessionWithPlayground(
     config: MockPlaygroundConfigType,
     subscriberUrl: string,
-    type: "BAP" | "BPP"
+    type: "BAP" | "BPP",
+    createPlaygroundSession: (args: {
+        sessionData: unknown;
+        playgroundConfig: unknown;
+    }) => Promise<{ data?: { sessionId: string } }>
 ): Promise<string | undefined> {
     try {
         const flowConfig = convertToFlowConfig(config);
@@ -39,14 +42,12 @@ export async function createFlowSessionWithPlayground(
             },
             activeFlow: null,
         };
-        const backendUrl = import.meta.env.VITE_BACKEND_URL;
-        const finalUrl = `${backendUrl}/sessions/playground`;
-        const body = {
+        const result = await createPlaygroundSession({
             sessionData: newSession,
             playgroundConfig: await createOptimizedMockConfig(config),
-        };
-        const res = await axios.post(finalUrl, body);
-        return res.data.sessionId;
+        });
+        if (!result.data) throw new Error("No session created");
+        return result.data.sessionId;
     } catch (err) {
         toast.error("Error creating playground session");
         console.error("Error creating playground session:", err);

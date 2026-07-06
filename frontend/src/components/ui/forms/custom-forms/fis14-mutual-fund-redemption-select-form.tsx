@@ -8,7 +8,7 @@ import { Button } from "@/components/Shadcn/Button/button";
 import TextField from "@/components/Shadcn/TextField";
 import { Field, FieldLabel } from "@/components/Shadcn/TextField/field";
 import { Input } from "@/components/Shadcn/TextField/input";
-import PayloadEditor from "@/components/ui/mini-components/payload-editor";
+import PayloadEditor from "@/components/PayloadEditor/PastePayloadModal";
 import FormDialogShell from "@/components/ui/forms/form-dialog-shell";
 import { PastePayloadButton } from "@/components/ui/forms/paste-payload-button";
 import { cn } from "@/lib/utils";

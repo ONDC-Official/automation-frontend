@@ -1,7 +1,7 @@
 import { FormEvent, useEffect, useState } from "react";
 import { PiShieldStarBold } from "react-icons/pi";
 
-import Popup from "@components/ui/pop-up/pop-up";
+import FormFlowDialog from "@/components/Shadcn/Dialog/form-flow-dialog";
 import { InvalidPassphraseError, unlockKey } from "@utils/secure-key-store";
 
 interface UnlockKeyModalProps {
@@ -56,8 +56,11 @@ export function UnlockKeyModal({
     };
 
     return (
-        <Popup isOpen={isOpen} onClose={onClose}>
-            <form onSubmit={handleSubmit} className="flex flex-col gap-4 pr-8">
+        <FormFlowDialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+            <form
+                onSubmit={handleSubmit}
+                className="flex flex-1 flex-col gap-4 overflow-y-auto p-6"
+            >
                 <div className="flex items-start gap-3">
                     <span className="inline-flex items-center justify-center h-9 w-9 rounded-md bg-linear-to-br from-sky-500 to-indigo-600 text-white shadow-xs shrink-0">
                         <PiShieldStarBold className="h-5 w-5" />
@@ -67,8 +70,8 @@ export function UnlockKeyModal({
                             Unlock Protocol Guardian
                         </h2>
                         <p className="text-sm text-gray-600 mt-1">
-                            Enter the passphrase you set up on this device. The key is
-                            decrypted in memory only — nothing is written back.
+                            Enter the passphrase you set up on this device. The key is decrypted in
+                            memory only — nothing is written back.
                         </p>
                     </div>
                 </div>
@@ -111,6 +114,6 @@ export function UnlockKeyModal({
                     </div>
                 </div>
             </form>
-        </Popup>
+        </FormFlowDialog>
     );
 }

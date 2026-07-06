@@ -3,11 +3,13 @@ import { toast } from "sonner";
 import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 
 import { AuthContext } from "@/context/authContext";
-import { apiClient } from "@services/apiClient";
-import { API_ROUTES } from "@services/apiRoutes";
-import { getSessions, getReport, getSubscriberUrls } from "@utils/request-utils";
+import {
+    useGetScenarioFormDataQuery,
+    useLazyGetSessionsQuery,
+    useLazyGetReportQuery,
+    useLazyGetSubscriberUrlsQuery,
+} from "@store/api";
 import { openReportInNewTab } from "@utils/generic-utils";
-import { IDomain } from "@pages/schema-validation/types";
 import { Button } from "@/components/Shadcn/Button/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/Shadcn/Card/card";
 import Spinner from "@/components/Shadcn/Spinner";
@@ -23,12 +25,11 @@ import type { Session } from "@pages/user-profile/types";
 
 export const ActivityHistorySection = () => {
     const { user } = useContext(AuthContext);
-    const { setCounts } = useProfileShell();
+    const { setActivityHistoryCount } = useProfileShell();
     const [subscriberId, setSubscriberId] = useState("");
     const [subscriberOptions, setSubscriberOptions] = useState<string[]>([]);
     const [loadingSubscribers, setLoadingSubscribers] = useState(false);
     const [npType, setNpType] = useState("BAP");
-    const [domains, setDomains] = useState<IDomain[]>([]);
     const [selectedDomain, setSelectedDomain] = useState("");
     const [selectedVersion, setSelectedVersion] = useState("");
     const [sessions, setSessions] = useState<Session[]>([]);
@@ -36,6 +37,11 @@ export const ActivityHistorySection = () => {
     const [hasFetched, setHasFetched] = useState(false);
     const [viewingId, setViewingId] = useState<string | null>(null);
     const [expandedId, setExpandedId] = useState<string | undefined>();
+    const { data: scenarioFormData } = useGetScenarioFormDataQuery();
+    const domains = scenarioFormData?.domain ?? [];
+    const [triggerGetSessions] = useLazyGetSessionsQuery();
+    const [triggerGetReport] = useLazyGetReportQuery();
+    const [triggerGetSubscriberUrls] = useLazyGetSubscriberUrlsQuery();
 
     const versionOptions = domains.find((d) => d.key === selectedDomain)?.version ?? [];
     const copy = PROFILE_PAGE_COPY.history;
@@ -47,38 +53,24 @@ export const ActivityHistorySection = () => {
         "flex-1 min-w-48 w-full rounded-xl border-border-default bg-surface-elevated text-body-2 text-text-primary";
 
     useEffect(() => {
-        setCounts((prev) => ({
-            ...prev,
-            history: sessions.length,
-        }));
-    }, [sessions.length, setCounts]);
+        setActivityHistoryCount(sessions.length);
+    }, [sessions.length, setActivityHistoryCount]);
 
     useEffect(() => {
         const fetchSubscribers = async () => {
             if (!user?.username) return;
             setLoadingSubscribers(true);
             try {
-                const urls = await getSubscriberUrls(user?.username);
-                setSubscriberOptions(urls);
+                const result = await triggerGetSubscriberUrls({ userId: user.username });
+                setSubscriberOptions(result.data?.subscriberUrls ?? []);
             } catch {
                 setSubscriberOptions([]);
             } finally {
                 setLoadingSubscribers(false);
             }
         };
-        const fetchDomains = async () => {
-            try {
-                const res = await apiClient.get<{ domain: IDomain[] }>(
-                    API_ROUTES.CONFIG.SCENARIO_FORM_DATA
-                );
-                setDomains(res.data.domain ?? []);
-            } catch {
-                setDomains([]);
-            }
-        };
         fetchSubscribers();
-        fetchDomains();
-    }, [user?.username]);
+    }, [user?.username, triggerGetSubscriberUrls]);
 
     const handleDomainChange = (domain: string) => {
         setSelectedDomain(domain);
@@ -91,12 +83,12 @@ export const ActivityHistorySection = () => {
         setSessions([]);
         setExpandedId(undefined);
         try {
-            const response = await getSessions(
-                subscriberId,
+            const response = await triggerGetSessions({
+                subId: subscriberId,
                 npType,
-                selectedDomain || undefined,
-                selectedVersion || undefined
-            );
+                domain: selectedDomain || undefined,
+                version: selectedVersion || undefined,
+            }).unwrap();
             setSessions(
                 (response.sessions as Session[])
                     .slice()
@@ -116,7 +108,7 @@ export const ActivityHistorySection = () => {
     const viewReport = async (sessionId: string) => {
         setViewingId(sessionId);
         try {
-            const report = await getReport(sessionId);
+            const report = await triggerGetReport({ sessionId }).unwrap();
             if (!report?.data) {
                 toast.error("Report not available");
                 return;

@@ -6,6 +6,12 @@ import type {
     UseFormWatch,
 } from "react-hook-form";
 import type { IDomain } from "@pages/schema-validation/types";
+import type { IPastReport } from "@/types/apiShared/userProfile";
+export interface IProfileCounts {
+    configs: number;
+    pastReports: number;
+    history: number;
+}
 
 export type ProfileCountKey = "configs" | "pastReports" | "history";
 
@@ -13,12 +19,6 @@ export interface IProfileNavItem {
     label: string;
     to: string;
     countKey: ProfileCountKey;
-}
-
-export interface IProfileCounts {
-    configs: number;
-    pastReports: number;
-    history: number;
 }
 
 export interface IProfileSidebarProps {
@@ -84,37 +84,7 @@ export interface IUseConfigFlowDescriptionsResult {
     isLoading: boolean;
 }
 
-export type FlowCategorySummary = {
-    total: number;
-    completed: number;
-};
-
-export type FlowSummary = {
-    REPORTABLE?: FlowCategorySummary;
-    MANDATORY?: FlowCategorySummary;
-    OPTIONAL?: FlowCategorySummary;
-    [key: string]: FlowCategorySummary | undefined;
-};
-
-export interface IPastReport {
-    test_id: string;
-    total_tests?: number;
-    passed_tests?: number;
-    flow_summary?: FlowSummary;
-    createdAt: string;
-    updatedAt: string;
-    domain?: string;
-    version?: string;
-    env?: string;
-    npType?: string;
-    np_type?: string;
-    subscriberUrl?: string;
-    subscriber_url?: string;
-    usecaseId?: string;
-    usecase_id?: string;
-    configName?: string;
-    config_name?: string;
-}
+export type { FlowCategorySummary, FlowSummary, IPastReport } from "@/types/apiShared/userProfile";
 
 export interface IPastReportCardProps {
     report: IPastReport;

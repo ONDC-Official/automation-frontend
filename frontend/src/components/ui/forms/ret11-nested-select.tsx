@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/Shadcn/Button/button";
 import { LabelWithToolTip } from "@/components/Shadcn/TextField";
 import { SelectControl } from "@/components/Shadcn/Select";
-import PayloadEditor from "@/components/ui/mini-components/payload-editor";
+import PayloadEditor from "@/components/PayloadEditor/PastePayloadModal";
 import FormDialogShell from "@/components/ui/forms/form-dialog-shell";
 import { PastePayloadButton } from "@/components/ui/forms/paste-payload-button";
 import { getItemsAndCustomistions } from "@/utils/generic-utils";

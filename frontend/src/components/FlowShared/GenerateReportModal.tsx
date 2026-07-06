@@ -1,36 +1,20 @@
 import { useContext, useState } from "react";
-import axios, { AxiosResponse } from "axios";
 import { toast } from "sonner";
 
 import { Flow } from "@/types/flow-types";
 import { ApiData, SessionCache } from "@/types/session-types";
-import { getTransactionData } from "@utils/request-utils";
+import { useGenerateReportMutation, useLazyGetTransactionDataQuery } from "@store/api";
 import Modal from "@components/Modal";
 import { CheckCircleIcon, ExclamationCircleIcon } from "@heroicons/react/20/solid";
 import { Button } from "@/components/Shadcn/Button/button";
 import SpinnerDialog from "@/components/Shadcn/SpinnerDialog";
 import { AuthContext } from "@/context/authContext";
-
-type ReportRequestBody = Record<string, string[]>;
-
-type FlowCategorySummary = { total: number; completed: number };
-type FlowSummary = Record<string, FlowCategorySummary>;
+import type {
+    FlowCategorySummary,
+    FlowSummary,
+} from "@/types/apiShared/userProfile/userProfile.types";
 
 const TRACKED_TAGS = ["REPORTABLE", "MANDATORY", "OPTIONAL"] as const;
-
-interface ReportResponseData {
-    data?: {
-        html?: string;
-
-        message?: {
-            ack?: {
-                status?: "ACK" | "NACK";
-            };
-        };
-    };
-}
-
-type ReportResponse = AxiosResponse<ReportResponseData>;
 
 const GenerateReportModal = ({
     flows,
@@ -53,8 +37,10 @@ const GenerateReportModal = ({
 }) => {
     const { user } = useContext(AuthContext);
     const [loading, setLoading] = useState(false);
+    const [triggerGetTransactionData] = useLazyGetTransactionDataQuery();
+    const [generateReport] = useGenerateReportMutation();
 
-    const generateReport = async () => {
+    const generateReportHandler = async () => {
         if (completedReportableFlows?.length == 0) {
             toast.error("No completed reportable flows ready for report generation");
             onClose();
@@ -63,29 +49,29 @@ const GenerateReportModal = ({
 
         setLoading(true);
         try {
-            const body: ReportRequestBody = {};
+            const body: Record<string, string[]> = {};
 
             if (!cacheSessionData) {
                 setLoading(false);
                 toast.error("Error while generating report");
                 return;
             }
-            let apiList: ApiData[] | undefined = undefined;
 
             for (const flow in cacheSessionData.flowMap) {
                 const transactionId = cacheSessionData.flowMap[flow];
                 if (!transactionId) continue;
-                const transData = await getTransactionData(transactionId, subUrl);
-                if (!transData) continue;
-                apiList = transData.apiList;
-
-                body[flow] = (apiList || []).map((data) => {
-                    return data.payloadId;
+                const result = await triggerGetTransactionData({
+                    transactionId,
+                    subscriberUrl: subUrl,
                 });
+                const transData = result.data as { apiList?: ApiData[] } | undefined;
+                if (!transData) continue;
+                const apiList = transData.apiList;
+
+                body[flow] = (apiList || []).map((data) => data.payloadId);
             }
 
-            // Compute flow_summary across all tracked tag categories
-            const flow_summary: FlowSummary = {};
+            const flowSummary: FlowSummary = {};
             for (const tag of TRACKED_TAGS) {
                 const flowsWithTag = flows.filter((f) => f.tags?.includes(tag));
                 if (flowsWithTag.length === 0) continue;
@@ -93,60 +79,42 @@ const GenerateReportModal = ({
                     (f) =>
                         f.id in cacheSessionData.flowMap && cacheSessionData.flowMap[f.id] !== null
                 );
-                flow_summary[tag] = {
+                flowSummary[tag] = {
                     total: flowsWithTag.length,
                     completed: completedWithTag.length,
-                };
+                } satisfies FlowCategorySummary;
             }
 
-            const params: Record<string, string> = { sessionId };
-            if (user?.username) {
-                params.user_id = user.username;
+            const response = await generateReport({
+                sessionId,
+                userId: user?.username,
+                body,
+                flowSummary: flowSummary as Record<string, { total: number; completed: number }>,
+            }).unwrap();
+
+            setLoading(false);
+
+            if (response?.data?.html) {
+                toast.info("Report Generated");
+                const decodedHtml = response.data.html;
+                const blob = new Blob([decodedHtml], { type: "text/html" });
+                const url = URL.createObjectURL(blob);
+                window.open(url, "_blank");
+                setTimeout(() => {
+                    URL.revokeObjectURL(url);
+                    onClose();
+                }, 5000);
+            } else if (response?.data?.message?.ack?.status === "ACK") {
+                toast.info("Generating report. It can take upto 90 sec. Please wait...");
+                setGotReport(false);
+                setTimeout(() => {
+                    startPolling();
+                }, 30000);
+                onClose();
+            } else if (response?.data?.message?.ack?.status === "NACK") {
+                toast.error("Error while generating report");
+                onClose();
             }
-
-            axios
-                .post(
-                    `${import.meta.env.VITE_BACKEND_URL}/flow/report`,
-                    { ...body, flow_summary },
-                    {
-                        params,
-                    }
-                )
-                .then((response: ReportResponse) => {
-                    setLoading(false);
-
-                    if (response?.data?.data?.html) {
-                        toast.info("Report Generated");
-
-                        const decodedHtml = response.data.data.html;
-                        const blob = new Blob([decodedHtml], {
-                            type: "text/html",
-                        });
-                        const url = URL.createObjectURL(blob);
-                        window.open(url, "_blank");
-                        setTimeout(() => {
-                            URL.revokeObjectURL(url);
-                            onClose();
-                        }, 5000);
-                    } else if (response?.data?.data?.message?.ack?.status === "ACK") {
-                        toast.info("Generating report. It can take upto 90 sec. Please wait...");
-                        setGotReport(false);
-
-                        setTimeout(() => {
-                            startPolling();
-                        }, 30000);
-
-                        onClose();
-                    } else if (response?.data?.data?.message?.ack?.status === "NACK") {
-                        toast.error("Error while generating report");
-                        onClose();
-                    }
-                })
-                .catch((e) => {
-                    setLoading(false);
-                    console.error(e);
-                    toast.error("Error while generating report");
-                });
         } catch (error) {
             setLoading(false);
             console.error(error);
@@ -160,13 +128,9 @@ const GenerateReportModal = ({
         }
 
         return flows.filter((flow) => {
-            // Check if flow is completed (exists in flowMap with a transaction ID)
             const isCompleted =
                 flow.id in cacheSessionData.flowMap && cacheSessionData.flowMap[flow.id] !== null;
-
-            // Check if flow has "reportable" tag
             const hasReportableTag = flow.tags?.includes("REPORTABLE") ?? false;
-
             return isCompleted && hasReportableTag;
         });
     };
@@ -240,7 +204,11 @@ const GenerateReportModal = ({
                         <Button variant="outline" onClick={onClose}>
                             Cancel
                         </Button>
-                        <Button variant="default" onClick={generateReport} isLoading={loading}>
+                        <Button
+                            variant="default"
+                            onClick={generateReportHandler}
+                            isLoading={loading}
+                        >
                             {loading ? "Generating Report..." : "Ok"}
                         </Button>
                     </div>

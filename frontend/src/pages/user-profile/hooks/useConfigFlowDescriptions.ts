@@ -1,8 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 
-import { apiClient } from "@services/apiClient";
-import { API_ROUTES } from "@services/apiRoutes";
-import type { Flow } from "@/types/flow-types";
+import { useLazyGetFlowsQuery } from "@store/api";
 import { formatConfigFlowDescription } from "@pages/user-profile/utils/formatConfigFlowDescription";
 import type {
     IUseConfigFlowDescriptionsResult,
@@ -19,6 +17,7 @@ export const useConfigFlowDescriptions = (
         {}
     );
     const [isLoading, setIsLoading] = useState(false);
+    const [triggerGetFlows] = useLazyGetFlowsQuery();
 
     const configEntries = useMemo(() => Object.entries(configs), [configs]);
 
@@ -45,17 +44,12 @@ export const useConfigFlowDescriptions = (
         Promise.all(
             uniqueCombos.map(async ([comboKey, { domain, version, usecaseId }]) => {
                 try {
-                    const res = await apiClient.get<{ data: { flows: Flow[] } }>(
-                        API_ROUTES.CONFIG.FLOWS,
-                        {
-                            params: {
-                                domain,
-                                version,
-                                usecase: usecaseId,
-                            },
-                        }
-                    );
-                    return [comboKey, formatConfigFlowDescription(res.data?.data?.flows ?? [])] as const;
+                    const res = await triggerGetFlows({ domain, version, usecase: usecaseId });
+                    if (res.error) throw res.error;
+                    return [
+                        comboKey,
+                        formatConfigFlowDescription(res.data?.data?.flows ?? []),
+                    ] as const;
                 } catch {
                     return [comboKey, undefined] as const;
                 }

@@ -13,7 +13,11 @@ import { cn } from "@/lib/utils";
 import { MappedStep } from "@/types/flow-state-type";
 import { Flow } from "@/types/flow-types";
 import { useSession } from "@context/context";
-import { getCompletePayload, PayloadResponse, updateCustomFlow } from "@utils/request-utils";
+import {
+    useLazyGetCompletePayloadQuery,
+    useUpdateCustomFlowMutation,
+    type PayloadResponse,
+} from "@store/api";
 import { openDevGuide } from "@utils/dev-guide-url-gen";
 
 export default function PairedCard({
@@ -58,6 +62,8 @@ function StepDisplay({ step, flowId }: { step: MappedStep; flowId: string }) {
         experimentalMode,
     } = useSession();
     const [isUpdatingManual, setIsUpdatingManual] = useState(false);
+    const [updateCustomFlow] = useUpdateCustomFlowMutation();
+    const [triggerGetCompletePayload] = useLazyGetCompletePayloadQuery();
 
     const flowConfig = sessionData?.flowConfigs?.[flowId];
     const seqStep = flowConfig?.sequence.find((s) => s.key === step.actionId);
@@ -80,7 +86,7 @@ function StepDisplay({ step, flowId }: { step: MappedStep; flowId: string }) {
         });
         setIsUpdatingManual(true);
         try {
-            await updateCustomFlow(sessionId, updatedFlow);
+            await updateCustomFlow({ sessionId, flow: updatedFlow }).unwrap();
         } catch (e) {
             setSessionData(prevSessionData);
             toast.error("Failed to update manual mode");
@@ -106,7 +112,7 @@ function StepDisplay({ step, flowId }: { step: MappedStep; flowId: string }) {
             return;
         }
         const payloadIds = step.payloads?.payloads.map((p) => p.payloadId) ?? [];
-        const payloads = await getCompletePayload(payloadIds);
+        const payloads = await triggerGetCompletePayload({ payloadIds }).unwrap();
         setRequestData(payloads.map((p: PayloadResponse<unknown, unknown>) => p.req));
         setResponseData(payloads.map((p: PayloadResponse<unknown, unknown>) => p.res.response));
     };
@@ -146,8 +152,8 @@ function StepDisplay({ step, flowId }: { step: MappedStep; flowId: string }) {
                 onKeyDown={(e) => e.key === "Enter" && onClickFunc()}
             >
                 <div className="flex w-full flex-col gap-2">
-                    <div className="flex items-start justify-between gap-2">
-                        <h1 className="min-w-0 flex-1 text-sm leading-snug font-semibold text-text-primary wrap-break-word">
+                    <div className="flex flex-wrap items-start justify-between gap-x-2 gap-y-1">
+                        <h1 className="min-w-24 flex-1 text-sm leading-snug font-semibold text-text-primary wrap-break-word">
                             {!step.missedStep ? (
                                 <span className="mr-1 font-normal text-text-secondary">
                                     {step.index + 1}:
@@ -339,7 +345,7 @@ function getStatusStyles(
             };
         case "WAITING":
             return {
-                card: "border-n-30 bg-surface-muted shadow-xs dark:border-border-default",
+                card: "border-n-30 bg-surface-elevated shadow-xs dark:border-border-default",
                 messageBg: "bg-n-500",
             };
         case "PROCESSING":

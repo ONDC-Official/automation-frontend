@@ -6,7 +6,7 @@ import { MinusIcon, PlusIcon } from "@heroicons/react/24/outline";
 import { ComboBoxControl } from "@/components/Shadcn/ComboBox";
 import { Button } from "@/components/Shadcn/Button/button";
 import TextField from "@/components/Shadcn/TextField";
-import PayloadEditor from "@/components/ui/mini-components/payload-editor";
+import PayloadEditor from "@/components/PayloadEditor/PastePayloadModal";
 import FormDialogShell from "@/components/ui/forms/form-dialog-shell";
 import { PastePayloadButton } from "@/components/ui/forms/paste-payload-button";
 import { cn } from "@/lib/utils";

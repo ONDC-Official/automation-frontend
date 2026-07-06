@@ -1,5 +1,10 @@
 import { type FC, useState, useCallback, useContext } from "react";
-import * as notesApi from "@services/developerGuideNotesApi";
+import {
+    useLazyGetNotesQuery,
+    useCreateNoteMutation,
+    useUpdateNoteMutation,
+    useDeleteNoteMutation,
+} from "@store/api";
 import { AuthContext } from "@/context/authContext";
 import GuideAsyncPanel from "../../shared/components/GuideAsyncPanel";
 import GuidePanel from "../../shared/components/GuidePanel";
@@ -20,6 +25,10 @@ const NotesPanel: FC<NotesPanelProps> = ({ selectedPath, actionApi, useCaseId, f
     const [isCreating, setIsCreating] = useState(false);
     const [formTitle, setFormTitle] = useState("");
     const [formContent, setFormContent] = useState("");
+    const [triggerGetNotes] = useLazyGetNotesQuery();
+    const [createNote] = useCreateNoteMutation();
+    const [updateNote] = useUpdateNoteMutation();
+    const [deleteNoteMutation] = useDeleteNoteMutation();
 
     const {
         items: notes,
@@ -30,12 +39,13 @@ const NotesPanel: FC<NotesPanelProps> = ({ selectedPath, actionApi, useCaseId, f
     } = useThreadedApi<Note>({
         enabled: useApi,
         fetchItems: async () => {
-            const res = await notesApi.getNotes({
+            const result = await triggerGetNotes({
                 use_case_id: useCaseId!,
                 flow_id: flowId!,
                 action_id: actionApi,
             });
-            const list = Array.isArray(res.data) ? res.data : [];
+            if (result.error) throw result.error;
+            const list = Array.isArray(result.data) ? result.data : [];
             return list.map(apiNoteToNote);
         },
         deps: [flowId, useCaseId, actionApi],
@@ -75,15 +85,15 @@ const NotesPanel: FC<NotesPanelProps> = ({ selectedPath, actionApi, useCaseId, f
         if (useApi && flowId && useCaseId) {
             const ok = await mutate(async () => {
                 if (editingId) {
-                    await notesApi.updateNote(editingId, { note: noteText });
+                    await updateNote({ noteId: editingId, payload: { note: noteText } }).unwrap();
                 } else {
-                    await notesApi.createNote({
+                    await createNote({
                         use_case_id: useCaseId,
                         flow_id: flowId,
                         action_id: actionApi,
                         json_path: path,
                         note: noteText,
-                    });
+                    }).unwrap();
                 }
             }, "Failed to save note");
             if (!ok) return;
@@ -136,7 +146,7 @@ const NotesPanel: FC<NotesPanelProps> = ({ selectedPath, actionApi, useCaseId, f
         async (id: string) => {
             if (editingId === id) cancelForm();
             if (useApi && flowId && useCaseId) {
-                await mutate(() => notesApi.deleteNote(id), "Failed to delete note");
+                await mutate(() => deleteNoteMutation(id).unwrap(), "Failed to delete note");
             } else {
                 setNotes((prev) => prev.filter((n) => n.id !== id));
             }

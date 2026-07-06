@@ -1,5 +1,5 @@
 import { FC } from "react";
-import { formatErrorPath } from "@/pages/schema-validation/utils/parseValidationErrors";
+import { formatErrorPath } from "@/utils/format-error-path";
 import type { IErrorItemProps } from "@/components/PayloadEditor/types";
 
 export const ErrorItem: FC<IErrorItemProps> = ({ error }) => (

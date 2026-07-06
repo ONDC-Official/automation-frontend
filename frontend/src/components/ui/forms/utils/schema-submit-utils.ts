@@ -15,7 +15,7 @@ export const buildSchemaFormSubmit = (
     formConfig: ISchemaSubmitFieldConfig[]
 ) => {
     const jsonPath: Record<string, string | number> = {};
-    const formData: Record<string, string> = {};
+    const formData: Record<string, unknown> = {};
 
     for (const [key, rawValue] of Object.entries(data)) {
         if (rawValue === undefined || rawValue === null) {
@@ -27,12 +27,12 @@ export const buildSchemaFormSubmit = (
             (schemaProp["x-payloadField"] as string | undefined) ??
             formConfig.find((field) => field.name === key)?.payloadField;
 
-        const stringValue =
-            typeof rawValue === "object" ? JSON.stringify(rawValue) : String(rawValue);
-        formData[key] = stringValue;
+        formData[key] = rawValue;
 
         if (payloadField) {
             const fieldConfig = formConfig.find((field) => field.name === key);
+            const stringValue =
+                typeof rawValue === "object" ? JSON.stringify(rawValue) : String(rawValue);
             jsonPath[payloadField] = formatFormFieldForPayload(stringValue, {
                 type: fieldConfig?.type,
                 payloadField,

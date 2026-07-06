@@ -32,6 +32,23 @@ type JsonViewRowProps = React.HTMLAttributes<HTMLDivElement> & {
     className?: string;
 };
 
+type JsonViewKeyNameProps = React.HTMLAttributes<HTMLSpanElement> & {
+    className?: string;
+};
+
+const getSelectedClass = (
+    isSelected: (path: string) => { status: boolean; type: SelectedType | null },
+    path: string
+): string => {
+    const selected = isSelected(path);
+    if (!selected.status) return "";
+    // Translucent tints keep the underlying syntax-highlighted text readable on
+    // both light and dark (inverted) tree backgrounds, unlike a solid fill.
+    return selected.type === SelectedType.SaveData
+        ? "bg-sky-400/20 ring-1 ring-sky-400/70 shadow-xs rounded"
+        : "bg-amber-400/20 ring-1 ring-amber-400/70 shadow-xs rounded";
+};
+
 const derivePathFromNode = (ctx: NodeContext): string => {
     const keys = [...(ctx.keys || [])].filter((k) => k !== "root" && k !== "$");
     const keyName = ctx.keyName;
@@ -55,12 +72,14 @@ interface JsonViewerProps {
     onExpand?: () => void;
     isExpanded?: boolean;
     onCollapse?: () => void;
+    invertTheme?: boolean;
 }
 
 const JsonViewer: React.FC<JsonViewerProps> = ({
     data,
     isSelected,
     handleKeyClick,
+    invertTheme = false,
     onExpand: _onExpand,
     isExpanded: _isExpanded,
 }) => {
@@ -74,20 +93,37 @@ const JsonViewer: React.FC<JsonViewerProps> = ({
             showExpandCollapse={true}
             showDownload={isDeveloperGuide}
             showFullscreen={isDeveloperGuide}
+            invertTheme={invertTheme}
             className={cn("min-h-full rounded-md")}
             enableClipboard={true}
             noResultsText="No results for"
         >
+            <JsonView.KeyName
+                as="span"
+                render={(props: JsonViewKeyNameProps, ctx: NodeContext) => {
+                    const path = derivePathFromNode(ctx);
+                    const selectedClass = getSelectedClass(isSelected, path);
+
+                    return (
+                        <span
+                            {...props}
+                            title={path}
+                            className={cn(props.className, "cursor-pointer", selectedClass)}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                const key = String(ctx?.keyName ?? "");
+                                handleKeyClick(path, key, e as React.MouseEvent);
+                                props.onClick?.(e);
+                            }}
+                        />
+                    );
+                }}
+            />
             <JsonView.Row
                 as="div"
                 render={(props: JsonViewRowProps, ctx: NodeContext) => {
                     const path = derivePathFromNode(ctx);
-                    const selected = isSelected(path);
-                    const selectedClass = selected.status
-                        ? selected.type === SelectedType.SaveData
-                            ? "bg-sky-100 dark:bg-sky-500/15 ring-1 ring-sky-400 dark:ring-sky-400/60 shadow-xs rounded"
-                            : "bg-slate-100 ring-1 ring-slate-300 shadow-xs rounded"
-                        : "";
+                    const selectedClass = getSelectedClass(isSelected, path);
 
                     return (
                         <div

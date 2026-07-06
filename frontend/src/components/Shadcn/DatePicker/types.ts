@@ -27,6 +27,7 @@ export interface IDatePickerProps<
     error?: string;
     placeholder?: string;
     className?: string;
+    disabledDate?: (date: Date) => boolean;
 }
 
 export interface IDateTimePickerProps<
