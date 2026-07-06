@@ -10,12 +10,17 @@ export const flowApi = mainApi.injectEndpoints({
         // Zero consumers today — moved verbatim for parity with request-utils.ts. Callers must
         // replicate the `session.subscriberType === "BAP"` early-return guard themselves; it isn't
         // part of the HTTP call.
-        triggerSearch: builder.mutation<unknown, { session: TransactionCache; subUrl: string }>({
+        triggerSearch: builder.mutation<
+            unknown,
+            { session: TransactionCache; subUrl: string; transactionId?: string }
+        >({
             query: ({ subUrl }) => ({
                 url: API_ROUTES.FLOW.TRIGGER,
                 method: "POST",
                 data: { subscriberUrl: subUrl, initiateSearch: true },
             }),
+            invalidatesTags: (_result, _err, { transactionId }) =>
+                transactionId ? [{ type: "Flow", id: transactionId }] : [],
         }),
         // Zero consumers today — moved verbatim.
         triggerRequestAction: builder.mutation<
@@ -53,6 +58,9 @@ export const flowApi = mainApi.injectEndpoints({
                     flow_id: flowId,
                 },
             }),
+            invalidatesTags: (_result, _err, { transactionId }) => [
+                { type: "Flow", id: transactionId },
+            ],
         }),
         getMappedFlow: builder.query<FlowMap, { transactionId: string; sessionId: string }>({
             query: ({ transactionId, sessionId }) => ({
@@ -177,6 +185,30 @@ export const flowApi = mainApi.injectEndpoints({
                 data: { domain, version },
             }),
         }),
+        generateReport: builder.mutation<
+            {
+                data?: {
+                    html?: string;
+                    message?: { ack?: { status?: "ACK" | "NACK" } };
+                };
+            },
+            {
+                sessionId: string;
+                userId?: string;
+                body: Record<string, string[]>;
+                flowSummary: Record<string, { total: number; completed: number }>;
+            }
+        >({
+            query: ({ sessionId, userId, body, flowSummary }) => ({
+                url: API_ROUTES.FLOW.REPORT,
+                method: "POST",
+                data: { ...body, flow_summary: flowSummary },
+                params: {
+                    sessionId,
+                    ...(userId ? { user_id: userId } : {}),
+                },
+            }),
+        }),
     }),
 });
 
@@ -193,4 +225,5 @@ export const {
     useHtmlFormSubmitMutation,
     useUpdateCustomFlowMutation,
     useGetActionsMutation,
+    useGenerateReportMutation,
 } = flowApi;

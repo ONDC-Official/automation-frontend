@@ -5,6 +5,9 @@
 
 @theme {
     --breakpoint-nav: 1290px;
+    --z-index-55: 55;
+    --z-index-60: 60;
+    --z-index-70: 70;
     --animate-accordion-down: accordion-down 0.2s ease-out;
     --animate-accordion-up: accordion-up 0.2s ease-out;
 

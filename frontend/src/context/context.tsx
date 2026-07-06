@@ -1,5 +1,10 @@
 import { createContext, ReactNode, useContext, useMemo, Dispatch, SetStateAction } from "react";
-import { SessionCache } from "../types/session-types";
+import {
+    SessionCache,
+    SessionMetadata,
+    SessionPayloadData,
+    SessionSideView,
+} from "@/types/session-types";
 import { useAppDispatch, useAppSelector } from "@store/hooks";
 import { createDispatchSetter } from "@store/utils/createDispatchSetter";
 import {
@@ -19,11 +24,6 @@ import {
     selectIsFlowFormDialogOpen,
     type SessionTab,
 } from "@store/slices/sessionSlice";
-
-type SessionPayloadData = Record<string, unknown> | unknown[] | null;
-type SessionSideView = Record<string, unknown> | null;
-type SessionMetadataValue = { name?: string; value: unknown; errorMessage?: string };
-type SessionMetadata = Record<string, SessionMetadataValue> | null;
 
 interface SessionContextProps {
     sessionId: string;

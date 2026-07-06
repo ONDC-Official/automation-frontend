@@ -1,15 +1,7 @@
 import { storage, sessionStorage } from "@store/storage";
 import type { PersistConfig } from "redux-persist";
-import type { IAuthState } from "@store/slices/authSlice";
 import type { ISessionState } from "@store/slices/sessionSlice";
 import type { IFrameworkHealthState } from "@store/slices/frameworkHealthSlice";
-
-/** Persist the auth token. `user`/`isAuthLoading` aren't store state at all — see authContext.ts. */
-export const authPersistConfig: PersistConfig<IAuthState> = {
-    key: "auth",
-    storage,
-    whitelist: ["token"],
-};
 
 /** Persist only the frontend-only UI prefs from the session slice. */
 export const sessionPersistConfig: PersistConfig<ISessionState> = {

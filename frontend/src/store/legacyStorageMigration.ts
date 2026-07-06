@@ -1,5 +1,5 @@
 import type { AppStore } from "@store/index";
-import { setToken } from "@store/slices/authSlice";
+import { authTokenManager } from "@utils/localStorageManager";
 import { setAutoScrollEnabled, setExperimentalMode } from "@store/slices/sessionSlice";
 import { setSessions, type IFlowTestingSessionEntry } from "@store/slices/sessionHistorySlice";
 import { setSupportSession } from "@store/slices/supportSessionSlice";
@@ -41,10 +41,10 @@ export function runLegacyStorageMigration(store: AppStore): void {
 
     const { dispatch } = store;
 
-    // Auth token (kept in localStorage via listener write-through; not removed here).
+    // Auth token (kept in localStorage via authTokenManager; not removed here).
     const legacyToken = readJson<string>(localStorage.getItem("authToken"));
-    if (legacyToken && !store.getState().auth.token) {
-        dispatch(setToken(legacyToken));
+    if (legacyToken && !authTokenManager.get()) {
+        authTokenManager.set(legacyToken);
     }
 
     // Support session (kept in localStorage via listener write-through; not removed here).
