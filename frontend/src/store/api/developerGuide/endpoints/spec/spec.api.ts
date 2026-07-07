@@ -118,6 +118,11 @@ function asStringArray(v: unknown): string[] | undefined {
     return Array.isArray(v) ? v.filter((i): i is string => typeof i === "string") : undefined;
 }
 
+// Developer Guide reference data (builds/specs/docs/changelog) is effectively immutable for a
+// session. Keep it resident in the Redux (RTK Query) cache for an hour so navigating between
+// use-cases and tabs reads straight from the store with no refetch or spinner.
+const DEV_GUIDE_CACHE_SECONDS = 60 * 60;
+
 export const specApi = mainApi.injectEndpoints({
     endpoints: (builder) => ({
         getBuilds: builder.query<BuildEntry[], void>({
@@ -127,12 +132,14 @@ export const specApi = mainApi.injectEndpoints({
             }),
             transformResponse: (response: BuildEntry[]) => response ?? [],
             providesTags: ["Build"],
+            keepUnusedDataFor: DEV_GUIDE_CACHE_SECONDS,
         }),
         getSpec: builder.query<OpenAPISpecification, IGetSpecParams>({
             query: buildSpecQuery,
             transformResponse: (raw: SpecResponse, _meta, arg) =>
                 specResponseToOpenAPI(raw, arg.domain, arg.version),
             providesTags: ["Spec"],
+            keepUnusedDataFor: DEV_GUIDE_CACHE_SECONDS,
         }),
         getValidationTable: builder.query<
             ValidationTableSection | null,
@@ -143,6 +150,7 @@ export const specApi = mainApi.injectEndpoints({
             transformResponse: (raw: SpecResponse) =>
                 (raw.validationTable as ValidationTableSection) ?? null,
             providesTags: ["ValidationTable"],
+            keepUnusedDataFor: DEV_GUIDE_CACHE_SECONDS,
         }),
         getChangelog: builder.query<ChangelogEntry[], { domain: string; version: string }>({
             query: ({ domain, version }) =>
@@ -150,6 +158,7 @@ export const specApi = mainApi.injectEndpoints({
             transformResponse: (raw: SpecResponse) =>
                 (raw.changelog as ChangelogEntry[] | undefined) ?? [],
             providesTags: ["Changelog"],
+            keepUnusedDataFor: DEV_GUIDE_CACHE_SECONDS,
         }),
         getDocs: builder.query<
             Record<string, string>,
@@ -172,6 +181,7 @@ export const specApi = mainApi.injectEndpoints({
                 );
             },
             providesTags: ["Docs"],
+            keepUnusedDataFor: DEV_GUIDE_CACHE_SECONDS,
         }),
     }),
 });

@@ -3,7 +3,7 @@ import GenericForm from "@components/ui/forms/generic-form";
 import TextField from "@/components/Shadcn/TextField";
 import { SelectField } from "@/components/Shadcn/Select";
 import { trackEvent } from "@utils/analytics";
-import { IDomain, IDomainVersion } from "@/pages/schema-validation/types";
+import { IDomain, IDomainVersion } from "@/types/domain";
 
 type IDomainVersionWithUsecase = IDomainVersion & {
     usecase: string[];

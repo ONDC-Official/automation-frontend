@@ -1,20 +1,17 @@
-import { FC, useEffect, useMemo, useState } from "react";
+import { FC, useCallback, useEffect, useMemo, useState } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import { ArrowLeftIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import DeveloperGuideCollapsedNavBar from "./DeveloperGuideCollapsedNavBar";
 import DeveloperGuideNavBackButton from "./DeveloperGuideNavBackButton";
-import { useLazyGetBuildsQuery } from "@store/api";
-import { fetchDocContent, fetchDocList } from "@services/developerDocsApi";
-import type { BuildEntry, DocMeta } from "../types";
-import { isUseCaseEnabled } from "../utils";
 import Spinner from "@/components/Shadcn/Spinner";
-import { buildNavTree } from "./buildNavTree";
-import { DOCS_WITH_SIDEBAR_SECTIONS } from "./docsWithSidebarSections";
 import { filterNavTree } from "./filterNavTree";
 import DeveloperGuideSidebar from "./DeveloperGuideSidebar";
-import { useDeveloperGuideShell } from "./DeveloperGuideShellContext";
-import { useAppDispatch } from "@store/hooks";
-import { setDevGuideShellData, resetDevGuideShell } from "@store/slices/devGuideShellSlice";
+import { useAppDispatch, useAppSelector } from "@store/hooks";
+import {
+    resetDevGuideShell,
+    toggleNavSidebar as toggleNavSidebarAction,
+} from "@store/slices/devGuideShellSlice";
+import { useDevGuideShellServerState } from "@store/selectors/devGuideSelectors";
 import { NAV_STATUS_LABEL, NAV_STATUS_STYLES, type NavStatus } from "../shared/statusPlaceholders";
 import { Button } from "@/components/Shadcn/Button";
 import Input from "@/components/Shadcn/TextField/input";
@@ -50,88 +47,21 @@ const DeveloperGuideShellMain: FC = () => {
 
 const DeveloperGuideShell: FC = () => {
     const dispatch = useAppDispatch();
-    const { navSidebarOpen, toggleNavSidebar } = useDeveloperGuideShell();
-    const [builds, setBuilds] = useState<BuildEntry[]>([]);
-    const [docs, setDocs] = useState<DocMeta[]>([]);
-    const [docMarkdownBySlug, setDocMarkdownBySlug] = useState<Record<string, string>>({});
-    const [isLoading, setIsLoading] = useState(true);
-    const [loadError, setLoadError] = useState<string | null>(null);
+    const navSidebarOpen = useAppSelector((state) => state.devGuideShell.navSidebarOpen);
+    const toggleNavSidebar = useCallback(() => dispatch(toggleNavSidebarAction()), [dispatch]);
+    const { navTree, isLoading, loadError, isNavEnriching } = useDevGuideShellServerState();
     const [searchQuery, setSearchQuery] = useState("");
-    const [triggerGetBuilds] = useLazyGetBuildsQuery();
-
-    useEffect(() => {
-        let cancelled = false;
-        const load = async () => {
-            setIsLoading(true);
-            setLoadError(null);
-            try {
-                const [buildsResult, docsData] = await Promise.all([
-                    triggerGetBuilds(),
-                    fetchDocList().catch(() => [] as DocMeta[]),
-                ]);
-                if (buildsResult.error) throw buildsResult.error;
-                const buildsData = buildsResult.data ?? [];
-
-                const sidebarDocSlugs = docsData
-                    .map((d) => d.slug)
-                    .filter((slug) => DOCS_WITH_SIDEBAR_SECTIONS.has(slug));
-
-                const sidebarDocContents = await Promise.all(
-                    sidebarDocSlugs.map((slug) =>
-                        fetchDocContent(slug)
-                            .then((content) => [slug, content] as const)
-                            .catch(() => null)
-                    )
-                );
-
-                if (!cancelled) {
-                    setBuilds(buildsData);
-                    setDocs(docsData);
-                    setDocMarkdownBySlug(
-                        Object.fromEntries(
-                            sidebarDocContents.filter(
-                                (entry): entry is readonly [string, string] => entry !== null
-                            )
-                        )
-                    );
-                }
-            } catch {
-                if (!cancelled) {
-                    setLoadError("Unable to load navigation. Please try again later.");
-                    setBuilds([]);
-                }
-            } finally {
-                if (!cancelled) setIsLoading(false);
-            }
-        };
-        load();
-        return () => {
-            cancelled = true;
-        };
-    }, []);
-
-    const navTree = useMemo(
-        () => buildNavTree(builds, docs, isUseCaseEnabled, docMarkdownBySlug),
-        [builds, docs, docMarkdownBySlug]
-    );
-
-    const filteredNavTree = useMemo(
-        () => filterNavTree(navTree, searchQuery),
-        [navTree, searchQuery]
-    );
-
-    // Mirror the shell's server-fetched data + `inShell` flag into the Redux slice so consumers
-    // (sidebar, breadcrumb, nested content) read a single source of truth. The fetch itself is
-    // unchanged (API layer). Reset on unmount so out-of-shell routes see defaults again.
-    useEffect(() => {
-        dispatch(setDevGuideShellData({ inShell: true, loadError, docs, builds, navTree }));
-    }, [dispatch, loadError, docs, builds, navTree]);
 
     useEffect(() => {
         return () => {
             dispatch(resetDevGuideShell());
         };
     }, [dispatch]);
+
+    const filteredNavTree = useMemo(
+        () => filterNavTree(navTree, searchQuery),
+        [navTree, searchQuery]
+    );
 
     if (isLoading) {
         return (
@@ -183,6 +113,9 @@ const DeveloperGuideShell: FC = () => {
                             />
                         </div>
                         <StatusLegend />
+                        {isNavEnriching ? (
+                            <p className="mt-2 text-xs text-slate-400">Loading docs…</p>
+                        ) : null}
                     </div>
                     <div className="min-h-0 flex-1 overflow-y-auto px-4 pt-1 pb-10 scrollbar-none">
                         {loadError ? (

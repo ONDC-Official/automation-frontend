@@ -1,7 +1,7 @@
 import { XMarkIcon } from "@heroicons/react/24/outline";
 import { DismissableLayer } from "radix-ui/internal";
 import { Toaster as Sonner, type ToasterProps } from "sonner";
-import { useTheme } from "@/context/theme/themeContext";
+import { useTheme } from "@/theme/hooks/useTheme";
 
 export const Toaster = ({ position = "bottom-right", duration = 3000, ...rest }: ToasterProps) => {
     const { resolvedTheme } = useTheme();

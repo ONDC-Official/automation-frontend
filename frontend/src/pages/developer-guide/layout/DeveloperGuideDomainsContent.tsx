@@ -9,7 +9,7 @@ import { getDeveloperGuideUseCasePath } from "@constants/routes";
 import type { BuildEntry } from "../types";
 import { groupBuildsByFamily } from "../domainGrouping";
 import { isDomainEnabled, isUseCaseEnabled } from "../utils";
-import { useDeveloperGuideShell } from "./DeveloperGuideShellContext";
+import { useDeveloperGuideShell } from "./DeveloperGuideNav";
 import DomainCardsSection from "../landing/DomainCardsSection";
 
 const DeveloperGuideDomainsContent: FC = () => {

@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Editor, { type Monaco } from "@monaco-editor/react";
 import type { editor as MonacoEditor } from "monaco-editor";
-import { useTheme } from "@/context/theme/themeContext";
-import { subscribeToThemeApply } from "@/context/theme/themeUtils";
+import { useTheme } from "@/theme/hooks/useTheme";
+import { subscribeToThemeApply } from "@/theme/utils/themeUtils";
 import { EDITOR_CONFIG, getEditorThemeName } from "@/components/PayloadEditor/constants";
 import { cn } from "@/lib/utils";
 import type { ICodeEditorProps } from "@/components/PayloadEditor/types";

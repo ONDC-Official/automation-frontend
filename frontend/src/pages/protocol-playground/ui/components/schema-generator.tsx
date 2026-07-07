@@ -12,7 +12,7 @@ import {
     DialogTitle,
 } from "@/components/Shadcn/Dialog";
 import { cn } from "@/lib/utils";
-import { useAppliedTheme } from "@/context/theme/useAppliedTheme";
+import { useAppliedTheme } from "@/theme/hooks/useAppliedTheme";
 import { SelectBox } from "@pages/protocol-playground/ui/components/github-select";
 import {
     fetchBranches,

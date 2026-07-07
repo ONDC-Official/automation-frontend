@@ -6,7 +6,7 @@ import {
     variantSolidIcons,
     variantStyles,
 } from "@/components/FlowShared/ui/constants";
-import { useAppliedTheme } from "@/context/theme/useAppliedTheme";
+import { useAppliedTheme } from "@/theme/hooks/useAppliedTheme";
 
 export const FlowActionButton = ({ label, onClick, variant, disabled }: FlowActionButtonProps) => {
     const appliedTheme = useAppliedTheme();

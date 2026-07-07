@@ -1,9 +1,6 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 
-// `user`/`isAuthLoading` deliberately do NOT live here: they're derived from the `getMe` RTK Query
-// call and would just duplicate its cache. `AuthProvider` (context/authContext.ts) holds them as
-// local state instead. This slice only owns the raw token, which legacy consumers (apiClient's
-// interceptor via authTokenManager) read from localStorage, not from Redux.
+/** Durable auth credential only — `user` lives in the RTK Query `getMe` cache. */
 export interface IAuthState {
     token: string | null;
 }

@@ -36,6 +36,7 @@ const CircularProgress: React.FC<Props> = ({
     const isMounted = useRef(true);
     const isRunning = useRef(false);
     const pauseRef = useRef(false);
+    const [resumeKey, setResumeKey] = useState(0);
 
     useEffect(() => {
         isMounted.current = true;
@@ -48,6 +49,24 @@ const CircularProgress: React.FC<Props> = ({
             }
         };
     }, []);
+
+    // Background tabs throttle rAF — resume polling when the user returns.
+    useEffect(() => {
+        const onVisible = () => {
+            if (document.visibilityState !== "visible" || !isActive) return;
+            pauseRef.current = false;
+            isRunning.current = false;
+            startTimeRef.current = null;
+            if (id) {
+                store.dispatch(clearCooldown(id));
+            }
+            setProgress(0);
+            setResumeKey((k) => k + 1);
+        };
+
+        document.addEventListener("visibilitychange", onVisible);
+        return () => document.removeEventListener("visibilitychange", onVisible);
+    }, [isActive, id]);
 
     useEffect(() => {
         if (!isActive) return;
@@ -102,7 +121,7 @@ const CircularProgress: React.FC<Props> = ({
             }
             isRunning.current = false;
         };
-    }, [duration, loop, onComplete, isActive, id]);
+    }, [duration, loop, onComplete, isActive, id, resumeKey]);
 
     const strokeDashoffset = circumference * (1 - progress);
 

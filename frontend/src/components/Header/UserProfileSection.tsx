@@ -1,7 +1,6 @@
-import { useCallback, useContext, useState } from "react";
+import { useCallback, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { AuthContext } from "@/context/authContext";
-import { authTokenManager } from "@utils/localStorageManager";
+import { useAuth } from "@hooks/useAuth";
 import { ROUTES } from "@constants/routes";
 import { Button } from "@/components/Shadcn/Button/button";
 import Spinner from "@/components/Shadcn/Spinner";
@@ -12,7 +11,7 @@ import { cn } from "@/lib/utils";
 
 export const UserProfileSection = ({ inDrawer = false }: { inDrawer?: boolean }) => {
     const navigate = useNavigate();
-    const { user, getUser } = useContext(AuthContext);
+    const { user, logout } = useAuth();
     const [isLoading, setIsLoading] = useState(false);
 
     const handleLogin = useCallback(() => {
@@ -28,20 +27,15 @@ export const UserProfileSection = ({ inDrawer = false }: { inDrawer?: boolean })
         window.location.href = authUrl;
     }, [user]);
 
-    const handleLogout = useCallback(async () => {
+    const handleLogout = useCallback(() => {
         try {
-            authTokenManager.remove();
+            logout();
         } catch (error) {
             console.error("Logout failed:", error);
         } finally {
-            try {
-                await getUser();
-            } catch (refreshError) {
-                console.error("Failed to refresh user after logout:", refreshError);
-            }
             navigate(ROUTES.HOME);
         }
-    }, [navigate, getUser]);
+    }, [navigate, logout]);
 
     return (
         <div

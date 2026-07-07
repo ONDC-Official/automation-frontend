@@ -1,12 +1,12 @@
-import { FC, useContext } from "react";
+import { FC } from "react";
 import { Button } from "@/components/Shadcn/Button/button";
 import { ROUTES } from "@/constants/routes";
 import { useNavigate } from "react-router-dom";
-import { AuthContext } from "@/context/authContext";
+import { useAuth } from "@hooks/useAuth";
 
 const HeroInfo: FC = () => {
     const navigate = useNavigate();
-    const { user } = useContext(AuthContext);
+    const { user } = useAuth();
 
     const handleStartBuilding = () => {
         if (user) {

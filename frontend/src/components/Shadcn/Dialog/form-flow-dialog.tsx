@@ -9,7 +9,7 @@ import {
     DialogTitle,
 } from "@/components/Shadcn/Dialog";
 import { isFormFlowPortaledOverlay } from "@/components/Shadcn/Dialog/form-flow-dialog-utils";
-import { useSession } from "@/context/context";
+import { useSession } from "@hooks/useSession";
 import { cn } from "@/lib/utils";
 import { ArrowsPointingOutIcon, MinusIcon, XMarkIcon } from "@heroicons/react/24/outline";
 

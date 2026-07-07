@@ -41,7 +41,7 @@ export const userProfileApi = mainApi.injectEndpoints({
                 url: API_ROUTES.USER.PAST_REPORTS(userId),
                 method: "GET",
             }),
-            providesTags: ["Report"],
+            providesTags: [{ type: "Report", id: "LIST" }],
         }),
     }),
 });

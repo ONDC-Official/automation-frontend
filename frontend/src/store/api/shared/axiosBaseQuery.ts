@@ -1,6 +1,7 @@
 import type { BaseQueryFn } from "@reduxjs/toolkit/query";
 import type { AxiosError, AxiosInstance, AxiosRequestConfig, Method } from "axios";
 
+// Mutation error toasts are handled per-endpoint in each endpoint file's `onQueryStarted`
 export interface IAxiosBaseQueryArgs {
     url: string;
     method?: Method;

@@ -1,11 +1,11 @@
-import { type FC, useState, useCallback, useContext } from "react";
+import { type FC, useState, useCallback } from "react";
 import {
     useLazyGetNotesQuery,
     useCreateNoteMutation,
     useUpdateNoteMutation,
     useDeleteNoteMutation,
 } from "@store/api";
-import { AuthContext } from "@/context/authContext";
+import { useAuth } from "@hooks/useAuth";
 import GuideAsyncPanel from "../../shared/components/GuideAsyncPanel";
 import GuidePanel from "../../shared/components/GuidePanel";
 import { EmptyState } from "../../shared/components/states";
@@ -18,7 +18,7 @@ import type { Note, NotesPanelProps } from "./types";
 import { PencilSquareIcon } from "@heroicons/react/24/outline";
 
 const NotesPanel: FC<NotesPanelProps> = ({ selectedPath, actionApi, useCaseId, flowId }) => {
-    const { user } = useContext(AuthContext);
+    const { user } = useAuth();
     const isLoggedIn = Boolean(user);
     const useApi = Boolean(flowId && useCaseId);
     const [editingId, setEditingId] = useState<string | null>(null);

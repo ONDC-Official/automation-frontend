@@ -7,19 +7,18 @@ import { InfoSection } from "@components/FlowShared/ui/InfoSection";
 import { EndpointsSection } from "@components/FlowShared/ui/EndpointsSection";
 import { CollapsibleSection } from "@components/FlowShared/ui/CollapsibleSection";
 import { toast } from "sonner";
-import { SessionCache } from "@/types/session-types";
+import { SessionCache, SessionMetadataValue } from "@/types/session-types";
 import {
     useLazyGetCompletePayloadQuery,
     useLazyGetReportQuery,
     usePutCacheDataMutation,
     useLazyGetSessionByIdQuery,
 } from "@store/api";
-import { Accordion } from "@components/FlowShared/complete-flow";
-import { useSession } from "@context/context";
+import { FlowRunAccordion } from "@components/FlowShared/complete-flow";
+import { useSession } from "@hooks/useSession";
 import Spinner from "@/components/Shadcn/Spinner";
 import SearchableJsonView from "@components/FlowShared/searchable-json-view";
 import { FlowTabs, TabsContent } from "@/components/Shadcn/Tabs";
-import { SessionContext } from "@context/context";
 import CircularProgress from "@components/ui/circular-cooldown";
 import Modal from "@components/Modal";
 import GuideModal from "@components/FlowShared/flow-guide";
@@ -40,19 +39,11 @@ import GenerateReportModal from "@components/FlowShared/GenerateReportModal";
 import { FlowSettingsModal, type SettingsDraft } from "@components/FlowShared/FlowSettingsModal";
 import RideMapTab from "@components/FlowShared/ride-map-tab";
 import { isRideMapEnabled } from "@components/FlowShared/ride-map-utils";
-import { useAppDispatch, useAppSelector } from "@store/hooks";
-import {
-    acquireFlowFormDialogLock as acquireFlowFormDialogLockAction,
-    releaseFlowFormDialogLock as releaseFlowFormDialogLockAction,
-    setAutoScrollEnabled as setAutoScrollEnabledAction,
-    setExperimentalMode as setExperimentalModeAction,
-    selectIsFlowFormDialogOpen,
-} from "@store/slices/sessionSlice";
+import { useAppDispatch } from "@store/hooks";
+import { initializeFlowPage, resetFlowRuntime, type SessionTab } from "@store/slices/sessionSlice";
+import { SESSION_EMPTY_METADATA, SESSION_EMPTY_RECORD } from "@store/slices/sessionConstants";
 import { upsertSession } from "@store/slices/sessionHistorySlice";
 import { store } from "@store/index";
-import { createDispatchSetter } from "@store/utils/createDispatchSetter";
-
-type ExtractedMetadataValue = { name?: string; value: unknown; errorMessage?: string };
 
 type SideViewResponse = {
     res?: Array<{ response?: Record<string, unknown> }>;
@@ -66,54 +57,38 @@ type SideViewState = {
     [key: string]: unknown;
 };
 
-type SessionPayloadData = Record<string, unknown> | unknown[] | null;
-type SessionSideView = Record<string, unknown> | null;
-type SessionMetadata = Record<string, ExtractedMetadataValue> | null;
-
-const EMPTY_RECORD = {} as Record<string, unknown>;
-const EMPTY_METADATA = {} as Record<string, ExtractedMetadataValue>;
-
 function extractMetadataFromFlows(flows: Flow[]): Record<string, MetadataField[]> {
     const flowMetadataMap: Record<string, MetadataField[]> = {};
 
     flows.forEach((flow) => {
         const flowMetadata: MetadataField[] = [];
 
-        // Extract metadata from each sequence step (API call)
         flow.sequence.forEach((step) => {
-            // Look for meta-data array (with hyphen) in the sequence object
             const metadataArray = step["meta-data"] || step.metadata;
 
             if (metadataArray && Array.isArray(metadataArray) && metadataArray.length > 0) {
                 flowMetadata.push(...metadataArray);
-            } else {
-                console.error(`  ❌ No metadata array found for API call ${step.key}`);
             }
         });
 
-        // Store metadata for this specific flow
         flowMetadataMap[flow.id] = flowMetadata;
     });
 
     return flowMetadataMap;
 }
 
-// Function to extract metadata for a specific flow by flow name
 function extractMetadataByFlowName(
     flowMetadataMap: Record<string, MetadataField[]>,
     flowName: string
 ): MetadataField[] {
-    const flowMetadata = flowMetadataMap[flowName] || [];
-
-    return flowMetadata;
+    return flowMetadataMap[flowName] || [];
 }
 
-// Function to extract values from payload using metadata
 function extractMetadataValues(
     payload: Record<string, unknown> | Record<string, unknown>[],
     metadataFields: MetadataField[]
-): Record<string, ExtractedMetadataValue> {
-    const extractedData: Record<string, ExtractedMetadataValue> = {};
+): Record<string, SessionMetadataValue> {
+    const extractedData: Record<string, SessionMetadataValue> = {};
 
     metadataFields.forEach((meta) => {
         try {
@@ -122,7 +97,6 @@ function extractMetadataValues(
 
             const value = result.length > 0 ? result[0] : null;
 
-            // Filter out empty, null, undefined values and show "Data not available at this moment"
             const displayValue =
                 value === null ||
                 value === undefined ||
@@ -148,37 +122,53 @@ function extractMetadataValues(
     return extractedData;
 }
 
+function sessionCacheMeaningfullyChanged(prev: SessionCache, next: SessionCache): boolean {
+    return (
+        prev.activeFlow !== next.activeFlow ||
+        JSON.stringify(prev.flowMap) !== JSON.stringify(next.flowMap)
+    );
+}
+
 function RenderFlows({
     flows,
     subUrl,
     sessionId,
-    // setStep,
-    // setReport,
     newSession,
 }: {
     flows: Flow[];
     subUrl: string;
     sessionId: string;
     newSession?: () => void;
-    // setStep: React.Dispatch<React.SetStateAction<number>>;
-    // setReport: React.Dispatch<React.SetStateAction<string>>;
 }) {
-    const [activeFlow, setActiveFlow] = useState<string | null>(null);
-    const activeFlowRef = useRef<string | null>(activeFlow);
-    const [cacheSessionData, setCacheSessionData] = useState<SessionCache | null>(null);
-    const [sideView, setSideView] = useState<SideViewState>({});
+    const dispatch = useAppDispatch();
+    const {
+        setSessionId,
+        activeFlowId,
+        setActiveFlowId,
+        sessionData,
+        setSessionData,
+        sideView,
+        setSideView,
+        selectedTab,
+        setSelectedTab,
+        requestData,
+        setRequestData,
+        responseData,
+        setResponseData,
+        setMetadata,
+        autoScrollEnabled,
+        setAutoScrollEnabled,
+        experimentalMode,
+        setExperimentalMode,
+        isFlowFormDialogOpen: flowFormDialogOpen,
+    } = useSession();
+
+    const activeFlowRef = useRef<string | null>(activeFlowId);
+    const sessionDataPrimedRef = useRef(false);
     const [difficultyCache, setDifficultyCache] = useState<SessionCache["sessionDifficulty"]>(
         {} as SessionCache["sessionDifficulty"]
     );
     const [isFlowStopped, setIsFlowStopped] = useState<boolean>(false);
-    const [selectedTab, setSelectedTab] = useState<
-        "Request" | "Response" | "Metadata" | "Guide" | "Application"
-    >("Request");
-    const [requestData, setRequestData] = useState<Record<string, unknown>>({});
-    const [responseData, setResponseData] = useState<Record<string, unknown> | SideViewResponse>(
-        {}
-    );
-    const [metadata, setMetadata] = useState<Record<string, ExtractedMetadataValue>>({});
     const apiCallFailCount = useRef(0);
     const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
     const [triggerGetCompletePayload] = useLazyGetCompletePayloadQuery();
@@ -187,46 +177,206 @@ function RenderFlows({
     const [triggerGetSessionById] = useLazyGetSessionByIdQuery();
     const [isGuideOpen, setIsGuideOpen] = useState(false);
     const navigate = useNavigate();
-    const dispatch = useAppDispatch();
-    const { setSessionId } = useSession();
     const pollingRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const [isPolling, setIsPolling] = useState(false);
     const [gotReport, setGotReport] = useState(false);
     const [flowTags, setFlowTags] = useState<string[]>([]);
     const [selectedTags, setSelectedTags] = useState<string[]>([]);
-    const [activeCallClickedToggle, setActiveCallClickedToggle] = useState<boolean>(false);
     const [isReportDialogOpen, setIsReportDialogOpen] = useState<boolean>(false);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
     const [settingsDraft, setSettingsDraft] = useState<SettingsDraft | null>(null);
     const [isSettingsSaving, setIsSettingsSaving] = useState(false);
-    // Flow-form dialog lock + frontend-only UI prefs now live in the Redux session slice
-    // (prefs persisted via redux-persist; NOT saved to the backend session).
-    const flowFormDialogOpen = useAppSelector(selectIsFlowFormDialogOpen);
 
-    const acquireFlowFormDialogLock = useCallback(() => {
-        dispatch(acquireFlowFormDialogLockAction());
-    }, [dispatch]);
+    useEffect(() => {
+        dispatch(initializeFlowPage(sessionId));
+        sessionDataPrimedRef.current = false;
+        return () => {
+            dispatch(resetFlowRuntime());
+        };
+    }, [sessionId, dispatch]);
 
-    const releaseFlowFormDialogLock = useCallback(() => {
-        dispatch(releaseFlowFormDialogLockAction());
-    }, [dispatch]);
+    const handleMetadataExtraction = useCallback(
+        (requestPayload: Record<string, unknown>) => {
+            if (!flows || flows.length === 0) {
+                setMetadata(SESSION_EMPTY_METADATA);
+                return;
+            }
 
-    const autoScrollEnabled = useAppSelector((state) => state.session.autoScrollEnabled);
-    const experimentalMode = useAppSelector((state) => state.session.experimentalMode);
-    const setAutoScrollEnabled = createDispatchSetter(autoScrollEnabled, (next) =>
-        dispatch(setAutoScrollEnabledAction(next))
+            const flowMetadataMap = extractMetadataFromFlows(flows);
+
+            if (!Object.keys(flowMetadataMap).length) {
+                setMetadata(SESSION_EMPTY_METADATA);
+                return;
+            }
+
+            const currentActiveFlowId = store.getState().session.activeFlowId;
+            let metadataToUse: MetadataField[] = [];
+
+            if (currentActiveFlowId && flowMetadataMap[currentActiveFlowId]) {
+                metadataToUse = extractMetadataByFlowName(flowMetadataMap, currentActiveFlowId);
+            } else {
+                metadataToUse = Object.values(flowMetadataMap).flat();
+            }
+
+            if (requestPayload && Object.keys(requestPayload).length > 0) {
+                setMetadata(extractMetadataValues(requestPayload, metadataToUse));
+            } else {
+                setMetadata(SESSION_EMPTY_METADATA);
+            }
+        },
+        [flows, setMetadata]
     );
-    const setExperimentalMode = createDispatchSetter(experimentalMode, (next) =>
-        dispatch(setExperimentalModeAction(next))
+
+    const test = useCallback(async () => {
+        const currentSideView = store.getState().session.sideView as SideViewState | null;
+        if (!currentSideView?.payloadId) return;
+        const view = currentSideView;
+
+        try {
+            const data = await triggerGetCompletePayload({
+                payloadIds: [(view.payloadId as string) ?? ""],
+            }).unwrap();
+
+            const requestPayload = (data?.[0]?.req ?? SESSION_EMPTY_RECORD) as Record<
+                string,
+                unknown
+            >;
+            let responsePayload: Record<string, unknown> = {};
+
+            const sideResponse = view.response as SideViewResponse | undefined;
+            if (sideResponse?.res?.[0]?.response) {
+                responsePayload = sideResponse.res[0].response;
+            } else if (sideResponse) {
+                responsePayload = sideResponse as Record<string, unknown>;
+            }
+
+            setRequestData(requestPayload);
+            setResponseData(responsePayload);
+            handleMetadataExtraction(requestPayload);
+        } catch (error: unknown) {
+            const requestPayload = view.request ?? SESSION_EMPTY_RECORD;
+            let responsePayload: Record<string, unknown> = {};
+
+            const sideResponse = view.response as SideViewResponse | undefined;
+            if (sideResponse?.res?.[0]?.response) {
+                responsePayload = sideResponse.res[0].response;
+            } else if (sideResponse) {
+                responsePayload = sideResponse as Record<string, unknown>;
+            }
+
+            setRequestData(requestPayload);
+            setResponseData(responsePayload);
+            handleMetadataExtraction(requestPayload);
+            console.error("Error while extracting metadata: ", error);
+        }
+    }, [triggerGetCompletePayload, setRequestData, setResponseData, handleMetadataExtraction]);
+
+    useEffect(() => {
+        if (sideView?.payloadId) {
+            void test();
+        } else {
+            const empty = (sideView as SideViewState | null) || SESSION_EMPTY_RECORD;
+            setRequestData(empty);
+            setResponseData(empty);
+        }
+    }, [sideView, test, setRequestData, setResponseData]);
+
+    useEffect(() => {
+        activeFlowRef.current = activeFlowId;
+    }, [activeFlowId]);
+
+    useEffect(() => {
+        if (!flows.length) {
+            setMetadata(SESSION_EMPTY_METADATA);
+            return;
+        }
+        const payload = (requestData ?? SESSION_EMPTY_RECORD) as Record<string, unknown>;
+        handleMetadataExtraction(payload);
+    }, [flows, requestData, activeFlowId, handleMetadataExtraction, setMetadata]);
+
+    const mapEnabled = isRideMapEnabled(sessionData?.domain, sessionData?.version);
+
+    const tabAutoDefaultedRef = useRef(false);
+    useEffect(() => {
+        if (tabAutoDefaultedRef.current) return;
+        if (mapEnabled) {
+            tabAutoDefaultedRef.current = true;
+            setSelectedTab("Application");
+        }
+    }, [mapEnabled, setSelectedTab]);
+
+    useEffect(() => {
+        if (!mapEnabled && selectedTab === "Application") {
+            setSelectedTab("Request");
+        }
+    }, [mapEnabled, selectedTab, setSelectedTab]);
+
+    const fetchSessionData = useCallback(
+        (options?: { force?: boolean }) => {
+            triggerGetSessionById({ sessionId })
+                .unwrap()
+                .then((data) => {
+                    const response = data as unknown as SessionCache;
+                    setDifficultyCache(response.sessionDifficulty);
+
+                    const prev = store.getState().session.sessionData;
+                    if (
+                        options?.force ||
+                        !prev ||
+                        sessionCacheMeaningfullyChanged(prev, response)
+                    ) {
+                        setSessionData(response);
+                    }
+
+                    if (!sessionDataPrimedRef.current) {
+                        sessionDataPrimedRef.current = true;
+                        updateLocalStorageSession(response, sessionId);
+                    }
+                    apiCallFailCount.current = 0;
+                })
+                .catch((e: unknown) => {
+                    console.error("Error while fetching session: ", e);
+                    apiCallFailCount.current += 1;
+                });
+        },
+        [sessionId, triggerGetSessionById, setSessionData]
     );
+
+    useEffect(() => {
+        fetchSessionData();
+    }, [subUrl, sessionId, fetchSessionData]);
+
+    // Catch up when returning from another tab (buyer/seller run in parallel tabs).
+    useEffect(() => {
+        const onVisible = () => {
+            if (document.visibilityState === "visible") {
+                fetchSessionData({ force: true });
+            }
+        };
+        document.addEventListener("visibilitychange", onVisible);
+        return () => document.removeEventListener("visibilitychange", onVisible);
+    }, [fetchSessionData]);
+
+    useEffect(() => {
+        const allTags = new Set(Object.values(flows).flatMap((cfg) => cfg.tags ?? []));
+        setFlowTags([...allTags].filter((tag) => tag !== "WORKBENCH"));
+    }, [flows]);
+
+    const onPollComplete = useCallback(async () => {
+        if (apiCallFailCount.current < 5) {
+            fetchSessionData();
+        } else if (!isErrorModalOpen) {
+            setIsErrorModalOpen(true);
+        }
+    }, [fetchSessionData, isErrorModalOpen]);
 
     const startPolling = () => {
-        if (isPolling) return; // Prevent multiple starts
+        if (isPolling) return;
         setIsPolling(true);
 
-        const POLL_INTERVAL = 5000; // 5 seconds
-        const TIMEOUT = 90000; // 90 seconds
+        const POLL_INTERVAL = 5000;
+        const TIMEOUT = 90000;
         let stopped = false;
 
         const stopPolling = () => {
@@ -255,175 +405,13 @@ function RenderFlows({
             pollingRef.current = setTimeout(poll, POLL_INTERVAL);
         };
 
-        // Start first poll
         poll();
 
-        // Set timeout to stop polling after 90s
         timeoutRef.current = setTimeout(() => {
             toast.error("Something went wrong while fetching the report.");
             stopPolling();
         }, TIMEOUT);
     };
-
-    useEffect(() => {
-        fetchSessionData();
-    }, [subUrl]);
-
-    useEffect(() => {
-        const allTags = new Set(Object.values(flows).flatMap((cfg) => cfg.tags ?? []));
-        const tagsArray = [...allTags].filter((tag) => tag !== "WORKBENCH");
-        setFlowTags(tagsArray);
-    }, [flows]);
-
-    useEffect(() => {
-        if (sideView?.payloadId) {
-            test();
-        } else {
-            setRequestData(sideView || EMPTY_RECORD);
-            setResponseData(sideView || EMPTY_RECORD);
-            setMetadata(EMPTY_METADATA);
-        }
-
-        extractMetadataFromFlows(flows);
-    }, [sideView, flows, activeFlow]);
-
-    const test = async () => {
-        try {
-            // ✅ Fetch payload
-            const data = await triggerGetCompletePayload({
-                payloadIds: [(sideView.payloadId as string) ?? ""],
-            }).unwrap();
-
-            const requestPayload = (data?.[0]?.req ?? EMPTY_RECORD) as Record<string, unknown>;
-            let responsePayload: Record<string, unknown> = {};
-
-            // ✅ Extract response payload safely
-            if (sideView?.response?.res?.[0]?.response) {
-                responsePayload = sideView.response.res[0].response;
-            } else if (sideView?.response) {
-                responsePayload = sideView.response;
-            }
-
-            setRequestData(requestPayload);
-            setResponseData(responsePayload);
-
-            // ✅ Extract metadata if flows are available
-            handleMetadataExtraction(requestPayload);
-        } catch (error: unknown) {
-            const requestPayload = sideView?.request ?? EMPTY_RECORD;
-            let responsePayload: Record<string, unknown> = {};
-
-            if (sideView?.response?.res?.[0]?.response) {
-                responsePayload = sideView.response.res[0].response;
-            } else if (sideView?.response) {
-                responsePayload = sideView.response;
-            }
-
-            setRequestData(requestPayload);
-            setResponseData(responsePayload);
-
-            // ✅ Extract metadata from fallback
-            handleMetadataExtraction(requestPayload);
-            console.error("Error while extracting metadata: ", error);
-        }
-    };
-
-    /**
-     * Helper function to handle metadata extraction from flows
-     */
-    const handleMetadataExtraction = (requestPayload: Record<string, unknown>) => {
-        if (!flows || flows.length === 0) {
-            setMetadata(EMPTY_METADATA);
-            return;
-        }
-
-        const flowMetadataMap = extractMetadataFromFlows(flows);
-
-        if (!Object.keys(flowMetadataMap).length) {
-            setMetadata(EMPTY_METADATA);
-            return;
-        }
-
-        // Use active flow if available, otherwise use first flow or all flows combined
-        let metadataToUse: MetadataField[] = [];
-
-        if (activeFlow && flowMetadataMap[activeFlow]) {
-            metadataToUse = extractMetadataByFlowName(flowMetadataMap, activeFlow);
-        } else {
-            // Combine metadata from all flows if no specific flow is active
-            metadataToUse = Object.values(flowMetadataMap).flat();
-        }
-
-        if (requestPayload && Object.keys(requestPayload).length > 0) {
-            const Metadata = extractMetadataValues(requestPayload, metadataToUse);
-            setMetadata(Metadata);
-        } else {
-            setMetadata(EMPTY_METADATA);
-        }
-    };
-
-    // Update the ref whenever activeFlow changes
-    useEffect(() => {
-        activeFlowRef.current = activeFlow;
-    }, [activeFlow]);
-
-    // The ride-map feature (Application tab + live map) is only available for ONDC:TRV10 2.0.1.
-    const mapEnabled = isRideMapEnabled(cacheSessionData?.domain, cacheSessionData?.version);
-
-    // For the map-enabled domain, surface the live map by default: auto-select the "Application"
-    // tab once the session loads so the map is visible the moment start/end locations are entered
-    // — on both buyer (BPP) and seller (BAP) sides. Runs once so it never fights a manual tab
-    // change the user makes afterwards.
-    const tabAutoDefaultedRef = useRef(false);
-    useEffect(() => {
-        if (tabAutoDefaultedRef.current) return;
-        if (mapEnabled) {
-            tabAutoDefaultedRef.current = true;
-            setSelectedTab("Application");
-        }
-    }, [mapEnabled]);
-
-    // If the session is not map-enabled, never leave the UI on the (now hidden) Application tab.
-    useEffect(() => {
-        if (!mapEnabled && selectedTab === "Application") {
-            setSelectedTab("Request");
-        }
-    }, [mapEnabled, selectedTab]);
-
-    // Extract metadata whenever flows are provided
-    useEffect(() => {
-        if (flows && flows.length > 0) {
-            handleMetadataExtraction(requestData);
-        } else {
-            setMetadata(EMPTY_METADATA);
-        }
-    }, [flows, requestData, responseData]);
-
-    function fetchSessionData() {
-        triggerGetSessionById({ sessionId })
-            .unwrap()
-            .then((data) => {
-                const response = data as unknown as SessionCache;
-                const filteredData = Object.entries(response)
-                    .filter(([_, value]) => typeof value === "string")
-                    .reduce((acc: Record<string, unknown>, [key, value]) => {
-                        acc[key] = value;
-                        return acc;
-                    }, {});
-                delete filteredData["active_session_id"];
-                setDifficultyCache(response.sessionDifficulty);
-                setCacheSessionData(response);
-
-                if (cacheSessionData === null) {
-                    updateLocalStorageSession(response, sessionId);
-                }
-                apiCallFailCount.current = 0; // Reset fail count on successful fetch
-            })
-            .catch((e: unknown) => {
-                console.error("Error while fetching session: ", e);
-                apiCallFailCount.current = apiCallFailCount.current + 1;
-            });
-    }
 
     let filteredFlows: Flow[] = [];
 
@@ -436,9 +424,9 @@ function RenderFlows({
     }
 
     const handleClearFlow = () => {
-        setRequestData(EMPTY_RECORD);
-        setResponseData(EMPTY_RECORD);
-        setMetadata(EMPTY_METADATA);
+        setRequestData(SESSION_EMPTY_RECORD);
+        setResponseData(SESSION_EMPTY_RECORD);
+        setMetadata(SESSION_EMPTY_METADATA);
         fetchSessionData();
     };
 
@@ -482,41 +470,7 @@ function RenderFlows({
     };
 
     return (
-        <SessionContext.Provider
-            value={{
-                sessionId,
-                setSessionId,
-                activeFlowId: activeFlow,
-                sessionData: cacheSessionData,
-                setSessionData: setCacheSessionData,
-                selectedTab: selectedTab,
-                requestData,
-                responseData,
-                sideView: sideView as unknown as SessionSideView,
-                metadata: metadata as unknown as SessionMetadata,
-                setRequestData: setRequestData as unknown as React.Dispatch<
-                    React.SetStateAction<SessionPayloadData>
-                >,
-                setResponseData: setResponseData as unknown as React.Dispatch<
-                    React.SetStateAction<SessionPayloadData>
-                >,
-                setSideView: setSideView as unknown as React.Dispatch<
-                    React.SetStateAction<SessionSideView>
-                >,
-                setMetadata: setMetadata as unknown as React.Dispatch<
-                    React.SetStateAction<SessionMetadata>
-                >,
-                setActiveCallClickedToggle: setActiveCallClickedToggle,
-                activeCallClickedToggle: activeCallClickedToggle,
-                autoScrollEnabled: autoScrollEnabled,
-                setAutoScrollEnabled: setAutoScrollEnabled,
-                experimentalMode: experimentalMode,
-                setExperimentalMode: setExperimentalMode,
-                isFlowFormDialogOpen: flowFormDialogOpen,
-                acquireFlowFormDialogLock,
-                releaseFlowFormDialogLock,
-            }}
-        >
+        <>
             <Modal
                 isOpen={isErrorModalOpen}
                 onClose={() => {
@@ -531,7 +485,7 @@ function RenderFlows({
             <GuideModal
                 isOpen={isGuideOpen}
                 onClose={() => setIsGuideOpen(false)}
-                domain={cacheSessionData?.domain}
+                domain={sessionData?.domain}
             />
             <FlowSettingsModal
                 isOpen={isSettingsOpen}
@@ -545,18 +499,18 @@ function RenderFlows({
 
             <div className="flex min-h-screen w-full flex-1 flex-col bg-surface-page">
                 <div className="space-y-3 py-6 px-15 xl:px-0">
-                    {cacheSessionData ? (
+                    {sessionData ? (
                         <div className="flex flex-col gap-3">
                             <InfoSection
                                 data={{
                                     sessionId: sessionId,
                                     subscriberUrl: subUrl,
-                                    activeFlow: activeFlow || "N/A",
-                                    subscriberType: cacheSessionData.npType,
-                                    domain: cacheSessionData.domain,
-                                    version: cacheSessionData.version,
-                                    env: cacheSessionData.env,
-                                    use_case: cacheSessionData.usecaseId,
+                                    activeFlow: activeFlowId || "N/A",
+                                    subscriberType: sessionData.npType,
+                                    domain: sessionData.domain,
+                                    version: sessionData.version,
+                                    env: sessionData.env,
+                                    use_case: sessionData.usecaseId,
                                 }}
                                 pollingIndicator={
                                     <CircularProgress
@@ -564,16 +518,7 @@ function RenderFlows({
                                         id="flow-cool-down"
                                         loop={true}
                                         isActive={!flowFormDialogOpen}
-                                        onComplete={async () => {
-                                            if (apiCallFailCount.current < 5) {
-                                                fetchSessionData();
-                                            } else if (
-                                                apiCallFailCount.current >= 5 &&
-                                                !isErrorModalOpen
-                                            ) {
-                                                setIsErrorModalOpen(true);
-                                            }
-                                        }}
+                                        onComplete={onPollComplete}
                                         sqSize={16}
                                         strokeWidth={2}
                                     />
@@ -591,7 +536,7 @@ function RenderFlows({
                                         {newSession ? (
                                             <Button
                                                 size="sm"
-                                                onClick={async () => {
+                                                onClick={() => {
                                                     setSessionId("");
                                                     newSession();
                                                 }}
@@ -602,7 +547,7 @@ function RenderFlows({
                                         ) : null}
                                         <Button
                                             size="sm"
-                                            onClick={async () => {
+                                            onClick={() => {
                                                 trackEvent({
                                                     category: "SCENARIO_TESTING-FLOWS",
                                                     action: "Generate report",
@@ -651,9 +596,9 @@ function RenderFlows({
                             <CollapsibleSection title="Endpoints" defaultOpen>
                                 <EndpointsSection
                                     sendUrl={`${GetRequestEndpoint(
-                                        cacheSessionData.domain,
-                                        cacheSessionData.version,
-                                        cacheSessionData.npType
+                                        sessionData.domain,
+                                        sessionData.version,
+                                        sessionData.npType
                                     )}/<action>`}
                                     receiveUrl={`${subUrl}/<action>`}
                                 />
@@ -693,14 +638,14 @@ function RenderFlows({
                 <div className="grid flex-1 grid-cols-1 gap-4 px-15 xl:px-0 pb-4 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
                     <div className="min-w-0 flex flex-col gap-3 overflow-y-auto">
                         {filteredFlows.map((flow: Flow) => (
-                            <Accordion
+                            <FlowRunAccordion
                                 key={flow.id}
                                 flow={flow}
-                                activeFlow={activeFlow}
+                                activeFlow={activeFlowId}
                                 sessionId={sessionId}
-                                setActiveFlow={setActiveFlow}
-                                sessionCache={cacheSessionData}
-                                setSideView={setSideView as unknown as React.Dispatch<unknown>}
+                                setActiveFlow={setActiveFlowId}
+                                sessionCache={sessionData}
+                                setSideView={setSideView as React.Dispatch<unknown>}
                                 subUrl={subUrl}
                                 onFlowStop={() => setIsFlowStopped(true)}
                                 onFlowClear={() => handleClearFlow()}
@@ -720,24 +665,17 @@ function RenderFlows({
                                         : []),
                                 ]}
                                 value={selectedTab}
-                                onValueChange={(value) =>
-                                    setSelectedTab(
-                                        value as
-                                            | "Request"
-                                            | "Response"
-                                            | "Metadata"
-                                            | "Guide"
-                                            | "Application"
-                                    )
-                                }
+                                onValueChange={(value) => setSelectedTab(value as SessionTab)}
                             >
                                 <TabsContent value="Request" className="pb-4 pt-3">
-                                    {cacheSessionData ? (
+                                    {sessionData ? (
                                         <div
                                             className="overflow-auto"
                                             style={{ maxHeight: "600px" }}
                                         >
-                                            <SearchableJsonView value={requestData} />
+                                            <SearchableJsonView
+                                                value={requestData ?? SESSION_EMPTY_RECORD}
+                                            />
                                         </div>
                                     ) : (
                                         <div className="flex items-center justify-center py-16">
@@ -746,12 +684,14 @@ function RenderFlows({
                                     )}
                                 </TabsContent>
                                 <TabsContent value="Response" className="pb-4 pt-3">
-                                    {cacheSessionData ? (
+                                    {sessionData ? (
                                         <div
                                             className="overflow-auto"
                                             style={{ maxHeight: "600px" }}
                                         >
-                                            <SearchableJsonView value={responseData} />
+                                            <SearchableJsonView
+                                                value={responseData ?? SESSION_EMPTY_RECORD}
+                                            />
                                         </div>
                                     ) : (
                                         <div className="flex items-center justify-center py-16">
@@ -760,15 +700,15 @@ function RenderFlows({
                                     )}
                                 </TabsContent>
                                 <TabsContent value="Guide" className="pb-4 pt-3">
-                                    {cacheSessionData ? (
+                                    {sessionData ? (
                                         <div
                                             className="overflow-auto rounded-lg border border-n-40 bg-surface-elevated p-3 dark:border-border-default dark:bg-surface-muted"
                                             style={{ maxHeight: "600px" }}
                                         >
                                             <FlowHelperTab
-                                                domain={cacheSessionData?.domain}
-                                                version={cacheSessionData?.version}
-                                                npType={cacheSessionData?.npType}
+                                                domain={sessionData?.domain}
+                                                version={sessionData?.version}
+                                                npType={sessionData?.npType}
                                             />
                                         </div>
                                     ) : (
@@ -779,14 +719,14 @@ function RenderFlows({
                                 </TabsContent>
                                 {mapEnabled ? (
                                     <TabsContent value="Application" className="px-4 pb-4 pt-3">
-                                        {cacheSessionData ? (
+                                        {sessionData ? (
                                             <div
                                                 className="overflow-auto rounded-lg border border-n-40 bg-surface-elevated p-3 dark:border-border-default dark:bg-surface-muted"
                                                 style={{ maxHeight: "600px" }}
                                             >
                                                 <RideMapTab
-                                                    key={activeFlow ?? "none"}
-                                                    flowId={activeFlow}
+                                                    key={activeFlowId ?? "none"}
+                                                    flowId={activeFlowId}
                                                 />
                                             </div>
                                         ) : (
@@ -807,14 +747,14 @@ function RenderFlows({
                     flows={flows}
                     subUrl={subUrl}
                     sessionId={sessionId}
-                    cacheSessionData={cacheSessionData}
+                    cacheSessionData={sessionData ?? null}
                     open={isReportDialogOpen}
                     onClose={() => setIsReportDialogOpen(false)}
                     startPolling={startPolling}
                     setGotReport={setGotReport}
                 />
             )}
-        </SessionContext.Provider>
+        </>
     );
 }
 

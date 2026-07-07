@@ -6,7 +6,7 @@ export type ResolvedTheme = "light" | "dark";
 
 export type ThemeApplyListener = (theme: ResolvedTheme) => void;
 
-export interface ThemeContextValue {
+export interface ThemeValue {
     /** User preference (light or dark). */
     preference: ThemePreference;
     /** Active theme after resolving user preference. */

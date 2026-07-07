@@ -1,6 +1,6 @@
 import { matchPath, useLocation } from "react-router-dom";
 import { ROUTES } from "@constants/routes";
-import { useDeveloperGuideShell } from "./DeveloperGuideShellContext";
+import { useDeveloperGuideShell } from "./DeveloperGuideNav";
 import { findBreadcrumbTrail, type BreadcrumbCrumb } from "./findBreadcrumbTrail";
 import { useTopLevelView } from "../DeveloperGuideFlowPage/hooks/useTopLevelView";
 import { VIEW_LABEL } from "../DeveloperGuideFlowPage/types";

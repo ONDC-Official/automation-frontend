@@ -1,6 +1,6 @@
 import { API_ROUTES } from "@services/apiRoutes";
-import { authTokenManager } from "@utils/localStorageManager";
 import { devGuideApi } from "@store/api/developerGuide/devGuideApi";
+import { clearAuth, setToken } from "@store/slices/authSlice";
 import type { IGetMeResponse, IExchangeCodeResponse } from "./types";
 
 export const authApi = devGuideApi.injectEndpoints({
@@ -11,13 +11,11 @@ export const authApi = devGuideApi.injectEndpoints({
                 method: "GET",
             }),
             providesTags: ["User"],
-            // Matches the old fetchUser's behavior: clear the stored token whenever this fails
-            // (network error, expired token, etc.) so the app doesn't keep retrying with a stale one.
-            onQueryStarted: async (_arg, { queryFulfilled }) => {
+            onQueryStarted: async (_arg, { dispatch, queryFulfilled }) => {
                 try {
                     await queryFulfilled;
                 } catch {
-                    authTokenManager.remove();
+                    dispatch(clearAuth());
                 }
             },
         }),
@@ -28,12 +26,12 @@ export const authApi = devGuideApi.injectEndpoints({
                 data: { code },
             }),
             invalidatesTags: ["User"],
-            // Never throws (matches the old exchangeCodeForToken) — persists the token on success,
-            // just logs on failure. Callers should not use .unwrap() here.
-            onQueryStarted: async (_arg, { queryFulfilled }) => {
+            onQueryStarted: async (_arg, { dispatch, queryFulfilled }) => {
                 try {
                     const { data } = await queryFulfilled;
-                    if (data.token) authTokenManager.set(data.token);
+                    if (data.token) {
+                        dispatch(setToken(data.token));
+                    }
                 } catch (err) {
                     console.error("Error exchanging auth code:", err);
                 }

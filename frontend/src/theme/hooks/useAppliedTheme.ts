@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import { useTheme } from "@/context/theme/themeContext";
-import { subscribeToThemeApply } from "@/context/theme/themeUtils";
-import type { ResolvedTheme } from "@/context/theme/themeContextTypes";
+import { useTheme } from "@/theme/hooks/useTheme";
+import { subscribeToThemeApply } from "@/theme/utils/themeUtils";
+import type { ResolvedTheme } from "@/theme/types";
 
 /**
  * Returns the theme currently applied to the document, synced with view-transition

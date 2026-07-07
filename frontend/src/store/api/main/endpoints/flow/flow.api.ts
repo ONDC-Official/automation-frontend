@@ -208,6 +208,10 @@ export const flowApi = mainApi.injectEndpoints({
                     ...(userId ? { user_id: userId } : {}),
                 },
             }),
+            invalidatesTags: (_result, _err, { sessionId }) => [
+                { type: "Report", id: sessionId },
+                { type: "Report", id: "LIST" },
+            ],
         }),
     }),
 });

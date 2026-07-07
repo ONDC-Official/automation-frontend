@@ -11,6 +11,7 @@ import {
 } from "redux-persist";
 import { storage } from "@store/storage";
 import devGuideApi from "@store/api/developerGuide/devGuideApi";
+import githubDocsApi from "@store/api/githubDocs/githubDocsApi";
 import loadTestApi from "@store/api/loadTest/loadTestApi";
 import mainApi from "@store/api/main/mainApi";
 import sessionSlice from "@store/slices/sessionSlice";
@@ -26,16 +27,25 @@ import cooldownsSlice from "@store/slices/cooldownsSlice";
 import aiSlice from "@store/slices/aiSlice";
 import devGuideShellSlice from "@store/slices/devGuideShellSlice";
 import playgroundConfigsSlice from "@store/slices/playgroundConfigsSlice";
+import profileShellSlice from "@store/slices/profileShellSlice";
 import { listenerMiddleware } from "@store/listenerMiddleware";
-import { sessionPersistConfig, frameworkHealthPersistConfig } from "@store/persistConfig";
+import {
+    sessionPersistConfig,
+    frameworkHealthPersistConfig,
+    authPersistConfig,
+} from "@store/persistConfig";
+import authSlice, { selectAuthToken } from "@store/slices/authSlice";
+import { registerAuthTokenReader } from "@store/authTokenReader";
 
 const localPersist = (key: string) => ({ key, storage });
 
 const rootReducer = combineReducers({
     [mainApi.reducerPath]: mainApi.reducer,
     [devGuideApi.reducerPath]: devGuideApi.reducer,
+    [githubDocsApi.reducerPath]: githubDocsApi.reducer,
     [loadTestApi.reducerPath]: loadTestApi.reducer,
     theme: persistReducer(localPersist("theme"), themeSlice.reducer),
+    auth: persistReducer(authPersistConfig, authSlice.reducer),
     session: persistReducer(sessionPersistConfig, sessionSlice.reducer),
     sessionHistory: persistReducer(localPersist("sessionHistory"), sessionHistorySlice.reducer),
     supportSession: persistReducer(localPersist("supportSession"), supportSessionSlice.reducer),
@@ -54,6 +64,7 @@ const rootReducer = combineReducers({
         playgroundConfigsSlice.reducer
     ),
     devGuideShell: devGuideShellSlice.reducer,
+    profileShell: profileShellSlice.reducer,
 });
 
 export type RootState = ReturnType<typeof rootReducer>;
@@ -68,12 +79,19 @@ export const createAppStore = (preloadedState?: Partial<RootState>) =>
                 },
             })
                 .prepend(listenerMiddleware.middleware)
-                .concat(mainApi.middleware, devGuideApi.middleware, loadTestApi.middleware),
+                .concat(
+                    mainApi.middleware,
+                    devGuideApi.middleware,
+                    githubDocsApi.middleware,
+                    loadTestApi.middleware
+                ),
         devTools: import.meta.env.DEV,
         preloadedState,
     });
 
 export const store = createAppStore();
+
+registerAuthTokenReader(() => selectAuthToken(store.getState()));
 
 export const persistor = persistStore(store);
 

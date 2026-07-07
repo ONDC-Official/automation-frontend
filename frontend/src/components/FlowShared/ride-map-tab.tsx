@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { FlowMap } from "@/types/flow-state-type";
-import { useSession } from "@context/context";
+import { useSession } from "@hooks/useSession";
 import {
     useProceedFlowMutation,
     useTriggerExtraMutation,

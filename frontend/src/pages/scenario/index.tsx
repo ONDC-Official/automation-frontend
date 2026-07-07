@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import RenderFlows from "@components/FlowShared/render-flows";
@@ -7,7 +7,7 @@ import Accordion from "@/components/Shadcn/Accordion";
 import { ReportPage } from "@components/FlowShared/report";
 import { GetRequestEndpoint } from "@components/FlowShared/guides";
 import NotFound from "@/components/NotFound";
-import { useSession } from "@context/context";
+import { useSession } from "@hooks/useSession";
 import { trackEvent } from "@utils/analytics";
 import { useWorkbenchFlows } from "@hooks/useWorkbenchFlow";
 import { IDomain } from "@/pages/schema-validation/types";
@@ -28,7 +28,7 @@ import {
     usePutCacheDataMutation,
     useLazyGetSessionByIdQuery,
 } from "@store/api";
-import { AuthContext } from "@/context/authContext";
+import { useAuth } from "@hooks/useAuth";
 import { IScenarioFormData, ISessionResponse, ISavedPrefAPI } from "@/pages/scenario/types";
 import { openSessionInNewTab } from "@/pages/scenario/helpers";
 import NewSessionForm from "@/pages/scenario/NewSessionForm";
@@ -53,7 +53,7 @@ const Scenario = () => {
     const [isFormSubmitted, setIsFormSubmitted] = useState(false);
     const [domains, setDomains] = useState<IDomain[]>([]);
     const { sessionId: contextSessionId } = useSession();
-    const { user } = useContext(AuthContext);
+    const { user } = useAuth();
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const dispatch = useAppDispatch();
