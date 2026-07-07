@@ -11,6 +11,7 @@ export function createDispatchSetter<T>(
 ): Dispatch<SetStateAction<T>> {
     return (value) => {
         const next = typeof value === "function" ? (value as (prev: T) => T)(current) : value;
+        if (Object.is(next, current)) return;
         onNext(next);
     };
 }

@@ -20,7 +20,7 @@ import {
     SelectValue,
 } from "@/components/Shadcn/Select/select";
 import { cn } from "@/lib/utils";
-import { useAppliedTheme } from "@/context/theme/useAppliedTheme";
+import { useAppliedTheme } from "@/theme/hooks/useAppliedTheme";
 import { useClipboard } from "@hooks/useClipboard";
 import { useGetScenarioFormDataQuery } from "@store/api";
 import type { IScenarioDomainItem } from "@pages/protocol-playground/ui/starter/types";

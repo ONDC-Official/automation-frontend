@@ -1,14 +1,16 @@
-import { useContext, useEffect } from "react";
+import { useEffect } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 import Spinner from "@/components/Shadcn/Spinner";
-import { AuthContext } from "@/context/authContext";
+import { useAuth } from "@hooks/useAuth";
+import { useAppDispatch } from "@store/hooks";
+import { resetActivityHistoryCount } from "@store/slices/profileShellSlice";
+import { useProfileCounts } from "@store/selectors/profileSelectors";
 import { ROUTES } from "@constants/routes";
 import { ProfileSidebar } from "@pages/user-profile/ProfileSidebar";
-import { ProfileShellProvider, useProfileShell } from "@pages/user-profile/ProfileShellContext";
 
 const UserProfileLayout = () => {
-    const { user } = useContext(AuthContext);
-    const { counts } = useProfileShell();
+    const { user } = useAuth();
+    const counts = useProfileCounts();
 
     if (!user) {
         return null;
@@ -25,8 +27,9 @@ const UserProfileLayout = () => {
 };
 
 const UserProfile = () => {
-    const { isAuthLoading, user } = useContext(AuthContext);
+    const { isAuthLoading, user } = useAuth();
     const navigate = useNavigate();
+    const dispatch = useAppDispatch();
 
     useEffect(() => {
         if (isAuthLoading || user) {
@@ -35,6 +38,13 @@ const UserProfile = () => {
 
         navigate(ROUTES.HOME);
     }, [isAuthLoading, navigate, user]);
+
+    // Match prior Provider unmount: clear history badge when leaving the profile route.
+    useEffect(() => {
+        return () => {
+            dispatch(resetActivityHistoryCount());
+        };
+    }, [dispatch]);
 
     if (isAuthLoading) {
         return (
@@ -48,11 +58,7 @@ const UserProfile = () => {
         return null;
     }
 
-    return (
-        <ProfileShellProvider>
-            <UserProfileLayout />
-        </ProfileShellProvider>
-    );
+    return <UserProfileLayout />;
 };
 
 export default UserProfile;

@@ -1,32 +1,30 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 
-export interface IProfileCounts {
-    configs: number;
-    pastReports: number;
-    history: number;
-}
-
 export interface IProfileShellState {
-    counts: IProfileCounts;
+    /** Activity-history badge count — set when the user runs a profile history search. */
+    activityHistoryCount: number;
 }
 
 const initialState: IProfileShellState = {
-    counts: { configs: 0, pastReports: 0, history: 0 },
+    activityHistoryCount: 0,
 };
 
 const profileShellSlice = createSlice({
     name: "profileShell",
     initialState,
     reducers: {
-        setCounts: (state, action: PayloadAction<IProfileCounts>) => {
-            state.counts = action.payload;
+        setActivityHistoryCount: (state, action: PayloadAction<number>) => {
+            state.activityHistoryCount = action.payload;
+        },
+        resetActivityHistoryCount: (state) => {
+            state.activityHistoryCount = 0;
         },
     },
 });
 
-export const { setCounts } = profileShellSlice.actions;
+export const { setActivityHistoryCount, resetActivityHistoryCount } = profileShellSlice.actions;
 
-export const selectProfileCounts = (state: { profileShell: IProfileShellState }) =>
-    state.profileShell.counts;
+export const selectActivityHistoryCount = (state: { profileShell: IProfileShellState }) =>
+    state.profileShell.activityHistoryCount;
 
 export default profileShellSlice;

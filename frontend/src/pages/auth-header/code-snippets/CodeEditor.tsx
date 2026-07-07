@@ -4,8 +4,8 @@ import type { editor as MonacoEditor } from "monaco-editor";
 import { codeSnippets } from "@pages/auth-header/code-snippets/data";
 import { CodeEditorProps } from "@pages/auth-header/code-snippets/types";
 import { ClipboardDocumentIcon } from "@heroicons/react/24/outline";
-import { useTheme } from "@/context/theme/themeContext";
-import { subscribeToThemeApply } from "@/context/theme/themeUtils";
+import { useTheme } from "@/theme/hooks/useTheme";
+import { subscribeToThemeApply } from "@/theme/utils/themeUtils";
 import { getEditorThemeName } from "@/components/PayloadEditor/constants";
 
 const EDITOR_HEIGHT = "500px";

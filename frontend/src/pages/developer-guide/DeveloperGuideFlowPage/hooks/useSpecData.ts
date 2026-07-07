@@ -1,91 +1,61 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { useLazyGetBuildsQuery, useLazyGetSpecQuery, useLazyGetDocsQuery } from "@store/api";
+import { useCallback, useMemo } from "react";
+import { useGetBuildsQuery, useGetSpecQuery, useGetDocsQuery } from "@store/api";
 import { getUsecaseLabelFromBuilds } from "../../utils";
-import type { OpenAPISpecification, FlowEntry, BuildEntry } from "../../types";
+import type { OpenAPISpecification, FlowEntry } from "../../types";
 
 /**
- * Owns builds/spec/docs fetching for the resolved domain/version/use case route,
- * plus the data derived from the loaded spec (flows, error codes, supported actions).
+ * Owns builds/spec/docs data for the resolved domain/version/use case route, plus the data
+ * derived from the loaded spec (flows, error codes, supported actions).
+ *
+ * Reads entirely from the RTK Query cache (which lives in Redux). The dev-guide endpoints are
+ * configured with a long `keepUnusedDataFor`, so the first visit to a use case fetches once and
+ * every subsequent visit/tab-switch resolves instantly from the store with no refetch or spinner.
  */
 export function useSpecData(domainKey: string, versionKey: string, slug: string) {
-    const [builds, setBuilds] = useState<BuildEntry[]>([]);
-    const [specData, setSpecData] = useState<OpenAPISpecification | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
-    const [notFound, setNotFound] = useState(false);
-    const [triggerGetBuilds] = useLazyGetBuildsQuery();
-    const [triggerGetSpec] = useLazyGetSpecQuery();
-    const [triggerGetDocs] = useLazyGetDocsQuery();
+    const { data: builds = [], isLoading: buildsLoading } = useGetBuildsQuery();
 
     const apiUsecase = useMemo(
         () => getUsecaseLabelFromBuilds(builds, domainKey, versionKey, slug) ?? slug,
         [builds, domainKey, versionKey, slug]
     );
 
-    // Load builds then spec (resolve API usecase label from builds for correct flows/meta)
-    useEffect(() => {
-        if (!domainKey || !versionKey) return;
+    const hasRoute = Boolean(domainKey && versionKey);
 
-        let cancelled = false;
-        const load = async () => {
-            setIsLoading(true);
-            setNotFound(false);
-            try {
-                const buildsResult = await triggerGetBuilds();
-                if (buildsResult.error) throw buildsResult.error;
-                const buildsData = buildsResult.data ?? [];
-                if (cancelled) return;
+    const {
+        data: specFromQuery,
+        isLoading: specLoading,
+        isError: specError,
+    } = useGetSpecQuery(
+        {
+            domain: domainKey,
+            version: versionKey,
+            include: ["meta", "flows", "attributes", "validations", "docs"],
+            usecase: apiUsecase || undefined,
+        },
+        { skip: !hasRoute }
+    );
 
-                const resolvedUsecase =
-                    getUsecaseLabelFromBuilds(buildsData, domainKey, versionKey, slug) ?? slug;
+    const specHasDocs = useMemo(() => {
+        const existing = specFromQuery?.["x-docs"];
+        return !!existing && Object.keys(existing).length > 0;
+    }, [specFromQuery]);
 
-                const specResult = await triggerGetSpec({
-                    domain: domainKey,
-                    version: versionKey,
-                    include: ["meta", "flows", "attributes", "validations", "docs"],
-                    usecase: resolvedUsecase || undefined,
-                });
-                if (specResult.error) throw specResult.error;
-                const spec = specResult.data;
+    // Fallback: fetch docs separately only when the spec payload didn't include them.
+    const { data: fallbackDocs } = useGetDocsQuery(
+        { domain: domainKey, version: versionKey, usecase: apiUsecase || undefined },
+        { skip: !hasRoute || !specFromQuery || specHasDocs }
+    );
 
-                if (cancelled) return;
-                setBuilds(buildsData);
-                setSpecData(spec ?? null);
-            } catch {
-                if (!cancelled) {
-                    setBuilds([]);
-                    setSpecData(null);
-                    setNotFound(true);
-                }
-            } finally {
-                if (!cancelled) setIsLoading(false);
-            }
-        };
-        load();
-        return () => {
-            cancelled = true;
-        };
-    }, [domainKey, versionKey, slug]);
+    const specData: OpenAPISpecification | null = useMemo(() => {
+        if (!specFromQuery) return null;
+        if (specHasDocs || !fallbackDocs || Object.keys(fallbackDocs).length === 0) {
+            return specFromQuery;
+        }
+        return { ...specFromQuery, "x-docs": fallbackDocs };
+    }, [specFromQuery, specHasDocs, fallbackDocs]);
 
-    // Fallback: fetch docs separately if not included in spec payload
-    useEffect(() => {
-        if (isLoading || !domainKey || !versionKey || !specData) return;
-
-        const existing = specData["x-docs"];
-        if (existing && Object.keys(existing).length > 0) return;
-
-        let cancelled = false;
-        triggerGetDocs({ domain: domainKey, version: versionKey, usecase: apiUsecase || undefined })
-            .then((result) => {
-                const docs = result.data ?? {};
-                if (cancelled || Object.keys(docs).length === 0) return;
-                setSpecData((prev) => (prev ? { ...prev, "x-docs": docs } : prev));
-            })
-            .catch(() => {});
-
-        return () => {
-            cancelled = true;
-        };
-    }, [isLoading, specData, domainKey, versionKey, apiUsecase]);
+    const isLoading = buildsLoading || (hasRoute && specLoading);
+    const notFound = specError;
 
     const flows: FlowEntry[] = useMemo(() => specData?.["x-flows"] ?? [], [specData]);
     const errorCodes = specData?.["x-errorcodes"];
@@ -99,9 +69,8 @@ export function useSpecData(domainKey: string, versionKey: string, slug: string)
         return getUsecaseLabelFromBuilds(builds, domainKey, versionKey, slug);
     }, [builds, domainKey, versionKey, slug]);
 
-    const resetForNewRoute = useCallback(() => {
-        setSpecData(null);
-    }, []);
+    // Route changes are handled by arg-keyed cache selection — nothing to reset locally.
+    const resetForNewRoute = useCallback(() => {}, []);
 
     return {
         specData,

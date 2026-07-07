@@ -2,12 +2,12 @@ import { FC } from "react";
 import { ArrowRightIcon } from "@heroicons/react/24/outline";
 import { Button } from "@/components/Shadcn/Button";
 import { cn } from "@/lib/utils";
-import { useDeveloperGuideShell } from "./DeveloperGuideShellContext";
+import { useDeveloperGuideNav } from "./DeveloperGuideNav";
 import type { DeveloperGuideNavBackButtonProps } from "./navTypes";
 
 /** Sidebar expand toggle — fixed on the left edge, aligned with the breadcrumb bar. */
 const DeveloperGuideNavBackButton: FC<DeveloperGuideNavBackButtonProps> = ({ className = "" }) => {
-    const { navSidebarOpen, openNavSidebar } = useDeveloperGuideShell();
+    const { navSidebarOpen, openNavSidebar } = useDeveloperGuideNav();
 
     if (navSidebarOpen) return null;
 

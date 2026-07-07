@@ -8,7 +8,7 @@ import FormLaunchPopup from "@components/ui/forms/custom-forms/form-launch-popup
 import { TooltipHint } from "@/components/Shadcn/Tooltip";
 import { SequenceStep, SubmitEventParams } from "@/types/flow-types";
 import { useProceedFlowMutation, useTriggerExtraMutation } from "@store/api";
-import { useSession } from "@context/context";
+import { useSession } from "@hooks/useSession";
 
 import PairedCard from "@components/FlowShared/pair-card";
 import {

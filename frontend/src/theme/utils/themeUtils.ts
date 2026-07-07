@@ -3,7 +3,7 @@ import {
     ResolvedTheme,
     IApplyThemeOptions,
     ThemeApplyListener,
-} from "@/context/theme/themeContextTypes";
+} from "@/theme/types";
 
 const themeApplyListeners = new Set<ThemeApplyListener>();
 
@@ -24,16 +24,12 @@ const notifyThemeApplied = (theme: ResolvedTheme): void => {
 
 /**
  * Resolves the effective theme from preference and system settings.
- *
- * @param preference - User theme preference
- * @returns Resolved light or dark theme
  */
 export function resolveTheme(preference: ThemePreference): ResolvedTheme {
     if (preference === "dark") {
         return "dark";
-    } else {
-        return "light";
     }
+    return "light";
 }
 
 /**
@@ -50,9 +46,6 @@ export const isThemeApplied = (theme: ResolvedTheme): boolean => {
 
 /**
  * Applies the resolved theme to the document root for CSS tokens and Tailwind `dark:`.
- *
- * @param theme - Resolved theme to apply
- * @param options - Optional settings; `animate` defaults to true
  */
 export const applyThemeToDocument = (
     theme: ResolvedTheme,

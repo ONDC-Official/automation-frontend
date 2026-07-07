@@ -1,4 +1,4 @@
-import { type FC, useState, useCallback, useContext } from "react";
+import { type FC, useState, useCallback } from "react";
 import {
     useLazyGetCommentsQuery,
     useCreateCommentMutation,
@@ -6,7 +6,7 @@ import {
     useResolveCommentMutation,
     useDeleteCommentMutation,
 } from "@store/api";
-import { AuthContext } from "@/context/authContext";
+import { useAuth } from "@hooks/useAuth";
 import GuideAsyncPanel from "../../shared/components/GuideAsyncPanel";
 import { EmptyState } from "../../shared/components/states";
 import { useThreadedApi } from "../../shared/hooks/useThreadedApi";
@@ -18,7 +18,7 @@ import { DEFAULT_COMMENT_AUTHOR } from "./constants";
 import type { CommentThread, CommentsPanelProps } from "./types";
 
 const CommentsPanel: FC<CommentsPanelProps> = ({ selectedPath, actionApi, useCaseId, flowId }) => {
-    const { user } = useContext(AuthContext);
+    const { user } = useAuth();
     const isLoggedIn = Boolean(user);
     const useApi = Boolean(flowId && useCaseId);
     const [newCommentText, setNewCommentText] = useState("");

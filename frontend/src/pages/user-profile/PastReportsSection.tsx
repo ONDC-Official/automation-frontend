@@ -1,7 +1,7 @@
-import { useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
-import { AuthContext } from "@/context/authContext";
+import { useAuth } from "@hooks/useAuth";
 import { useGetPastReportsQuery, useLazyGetReportQuery } from "@store/api";
 import { openReportInNewTab } from "@utils/generic-utils";
 import Spinner from "@/components/Shadcn/Spinner";
@@ -11,7 +11,7 @@ import { useReportFlowDescriptions } from "@pages/user-profile/hooks/useReportFl
 import { PROFILE_PAGE_COPY } from "@pages/user-profile/constants";
 
 export const PastReportsSection = () => {
-    const { user } = useContext(AuthContext);
+    const { user } = useAuth();
     const [viewingId, setViewingId] = useState<string | null>(null);
 
     const {

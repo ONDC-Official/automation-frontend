@@ -1,7 +1,6 @@
-import { type FC, useContext, memo } from "react";
+import { type FC, memo } from "react";
 import { type Node, type NodeProps, Handle, Position } from "@xyflow/react";
-import { useTheme } from "@/context/theme/themeContext";
-import { GraphCtx } from "./graphContext";
+import { useTheme } from "@/theme/hooks/useTheme";
 import { NODE_W, NODE_H } from "./computeLayout";
 
 export interface ActionNodeData extends Record<string, unknown> {
@@ -10,20 +9,29 @@ export interface ActionNodeData extends Record<string, unknown> {
     isResponse: boolean;
     nextCount: number;
     historyCount: number;
+    isFocused: boolean;
+    isNext: boolean;
+    isHistory: boolean;
+    isDimmed: boolean;
+    onToggleFocus: (api: string) => void;
+    onHover: (api: string | null, x: number, y: number) => void;
 }
 
 export const ActionNode: FC<NodeProps<Node<ActionNodeData>>> = memo(({ data }) => {
-    const { label, isEntry, isResponse, nextCount, historyCount } = data;
-    const ctx = useContext(GraphCtx);
+    const {
+        label,
+        isEntry,
+        isResponse,
+        nextCount,
+        historyCount,
+        isFocused,
+        isNext,
+        isHistory,
+        isDimmed,
+        onToggleFocus,
+        onHover,
+    } = data;
     const { isDark } = useTheme();
-
-    const isFocused = ctx.focused === label;
-    const isNext = ctx.focused !== null && (ctx.actionMap[ctx.focused] ?? []).includes(label);
-    const isHistory =
-        ctx.focused !== null &&
-        ((ctx.apiProperties[ctx.focused]?.transaction_partner ?? []).includes(label) ||
-            ctx.apiProperties[ctx.focused]?.async_predecessor === label);
-    const isDimmed = ctx.focused !== null && !isFocused && !isNext && !isHistory;
 
     const accentColor = isEntry ? "#10b981" : isResponse ? "#818cf8" : "#38bdf8";
     const borderColor = isFocused
@@ -83,10 +91,10 @@ export const ActionNode: FC<NodeProps<Node<ActionNodeData>>> = memo(({ data }) =
                 }}
             />
             <div
-                onClick={() => ctx.toggleFocus(label)}
-                onMouseEnter={(e) => ctx.onHover(label, e.clientX, e.clientY)}
-                onMouseMove={(e) => ctx.onHover(label, e.clientX, e.clientY)}
-                onMouseLeave={() => ctx.onHover(null, 0, 0)}
+                onClick={() => onToggleFocus(label)}
+                onMouseEnter={(e) => onHover(label, e.clientX, e.clientY)}
+                onMouseMove={(e) => onHover(label, e.clientX, e.clientY)}
+                onMouseLeave={() => onHover(null, 0, 0)}
                 style={{
                     width: NODE_W,
                     height: NODE_H,
@@ -103,7 +111,6 @@ export const ActionNode: FC<NodeProps<Node<ActionNodeData>>> = memo(({ data }) =
                     userSelect: "none",
                 }}
             >
-                {/* Left accent bar */}
                 <div
                     style={{
                         width: 4,
@@ -111,7 +118,6 @@ export const ActionNode: FC<NodeProps<Node<ActionNodeData>>> = memo(({ data }) =
                         background: `linear-gradient(180deg, ${accentColor}dd 0%, ${accentColor}88 100%)`,
                     }}
                 />
-                {/* Content */}
                 <div
                     style={{
                         flex: 1,

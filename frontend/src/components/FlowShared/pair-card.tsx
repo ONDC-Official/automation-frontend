@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils";
 
 import { MappedStep } from "@/types/flow-state-type";
 import { Flow } from "@/types/flow-types";
-import { useSession } from "@context/context";
+import { useSession } from "@hooks/useSession";
 import {
     useLazyGetCompletePayloadQuery,
     useUpdateCustomFlowMutation,

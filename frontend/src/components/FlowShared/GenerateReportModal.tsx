@@ -1,4 +1,4 @@
-import { useContext, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 
 import { Flow } from "@/types/flow-types";
@@ -8,7 +8,7 @@ import Modal from "@components/Modal";
 import { CheckCircleIcon, ExclamationCircleIcon } from "@heroicons/react/20/solid";
 import { Button } from "@/components/Shadcn/Button/button";
 import SpinnerDialog from "@/components/Shadcn/SpinnerDialog";
-import { AuthContext } from "@/context/authContext";
+import { useAuth } from "@hooks/useAuth";
 import type {
     FlowCategorySummary,
     FlowSummary,
@@ -35,7 +35,7 @@ const GenerateReportModal = ({
     startPolling: () => void;
     setGotReport: (gotReport: boolean) => void;
 }) => {
-    const { user } = useContext(AuthContext);
+    const { user } = useAuth();
     const [loading, setLoading] = useState(false);
     const [triggerGetTransactionData] = useLazyGetTransactionDataQuery();
     const [generateReport] = useGenerateReportMutation();

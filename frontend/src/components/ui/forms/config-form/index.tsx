@@ -1,4 +1,4 @@
-import { useContext } from "react";
+import { useSession } from "@hooks/useSession";
 import { toast } from "sonner";
 import { DatePicker } from "@/components/Shadcn/DatePicker";
 import { DateTimePicker } from "@/components/Shadcn/DateTimePicker";
@@ -22,7 +22,7 @@ import TRV10ScheduleForm from "@/components/ui/forms/custom-forms/trv10-schedule
 import TRV10ScheduleRentalForm from "@/components/ui/forms/custom-forms/trv10-schedule-rental-form";
 import TRV11SelectForm from "@/components/ui/forms/custom-forms/trv11-select-form";
 import TRV11PartialSelectForm from "@/components/ui/forms/custom-forms/trv11-201-partial-select-form";
-import JsonSchemaForm from "@/pages/protocol-playground/ui/extras/rsjf-form";
+import JsonSchemaForm from "@/components/JsonSchemaForm";
 import { isRideMapEnabled } from "@components/FlowShared/ride-map-utils";
 import TRV12AirlineSelectForm from "@/components/ui/forms/custom-forms/trv12-airline-select-form";
 import TRV12AirlineSeatSelectForm from "@/components/ui/forms/custom-forms/trv12-airline-seat-select-form";
@@ -31,7 +31,6 @@ import TRV12BusSeatCountSelectionForm from "@/components/ui/forms/custom-forms/t
 import FinvuRedirectForm from "@/components/ui/forms/custom-forms/finvu-redirect-form";
 import DynamicFormHandler from "@/components/ui/forms/handlers/dynamic-form-handler";
 import ManualDynamicFormHandler from "@/components/ui/forms/handlers/manual-dynamic-form-handler";
-import { SessionContext } from "@/context/context";
 import TRV12IntercitySelectForm from "@/components/ui/forms/custom-forms/trv12-intercity-select-form";
 import TRV13HotelSelectProviderForm from "@/components/ui/forms/custom-forms/trv13-hotel-select-provider";
 import FIS13ItemSelectionForm from "@/components/ui/forms/custom-forms/fis13-select-form";
@@ -75,9 +74,7 @@ export const FormConfig = ({
     referenceData?: Record<string, unknown>;
     flowId?: string;
 }) => {
-    const sessionContext = useContext(SessionContext);
-    const sessionId = sessionContext?.sessionId || "";
-    const sessionData = sessionContext?.sessionData;
+    const { sessionId, sessionData } = useSession();
 
     const onSubmit = async (data: Record<string, string>) => {
         if (sessionData?.activeFlow === "RTO_PLUS_PART_CANCELLATION") {

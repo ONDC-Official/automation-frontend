@@ -1,9 +1,7 @@
 import { useContext } from "react";
 import { PlaygroundContext } from "@pages/protocol-playground/context/playground-context";
 import { toast } from "sonner";
-import JsonSchemaForm, {
-    PLAYGROUND_RJSF_FORM_ID,
-} from "@pages/protocol-playground/ui/extras/rsjf-form";
+import JsonSchemaForm, { PLAYGROUND_RJSF_FORM_ID } from "@/components/JsonSchemaForm";
 import { isRideMapEnabled } from "@components/FlowShared/ride-map-utils";
 import { calcCurrentIndex } from "@pages/protocol-playground/mock-engine";
 import { MockRunner, MockPlaygroundConfigType } from "@ondc/automation-mock-runner";

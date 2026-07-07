@@ -2,9 +2,8 @@ import { useEffect } from "react";
 import { BrowserRouter, useLocation } from "react-router-dom";
 import { Provider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
-import { AuthProvider } from "@/context/authContext";
-import { SessionProvider } from "@context/context";
-import { ThemeContextProvider } from "@/context/theme/themeContextProvider";
+import ThemeWrapper from "@/theme";
+import { AuthBootstrap } from "@/components/AuthBootstrap";
 import { store, persistor } from "@store/index";
 import { runLegacyStorageMigration } from "@store/legacyStorageMigration";
 import { trackPageView } from "@utils/analytics";
@@ -14,22 +13,19 @@ import Layout from "@components/Layout";
 const Wrapper = () => {
     const location = useLocation();
 
-    // Clean up invalid sessionIdForSupport from localStorage
     useEffect(() => {
         sessionIdSupport.validateAndCleanup();
     }, []);
 
-    // Track page views for analytics
     useEffect(() => {
         trackPageView(location.pathname + location.search);
     }, [location.pathname, location.search]);
 
     return (
-        <AuthProvider>
-            <SessionProvider>
-                <Layout />
-            </SessionProvider>
-        </AuthProvider>
+        <>
+            <AuthBootstrap />
+            <Layout />
+        </>
     );
 };
 
@@ -40,11 +36,10 @@ const App = () => (
             persistor={persistor}
             onBeforeLift={() => runLegacyStorageMigration(store)}
         >
-            <ThemeContextProvider>
-                <BrowserRouter>
-                    <Wrapper />
-                </BrowserRouter>
-            </ThemeContextProvider>
+            <ThemeWrapper />
+            <BrowserRouter>
+                <Wrapper />
+            </BrowserRouter>
         </PersistGate>
     </Provider>
 );
