@@ -1,6 +1,6 @@
-import { useContext, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
-import { AuthContext } from "@/context/authContext";
+import { useAuth } from "@hooks/useAuth";
 import { DEFAULT_VALUES } from "@/pages/scenario/constants";
 import {
     IDomainVersionWithUsecase,
@@ -15,7 +15,7 @@ export function useNewSessionForm({
     initialSavedConfigKey = "",
     onSubmit,
 }: INewSessionFormProps) {
-    const { user } = useContext(AuthContext);
+    const { user } = useAuth();
 
     const savedConfigKeys = Object.keys(savedPreferences);
     const hasSavedPrefs = savedConfigKeys.length > 0;

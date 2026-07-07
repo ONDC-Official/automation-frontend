@@ -1,6 +1,6 @@
 import { type FC, useContext, memo } from "react";
 import { type Node, type NodeProps, Handle, Position } from "@xyflow/react";
-import { useTheme } from "@/context/theme/themeContext";
+import { useTheme } from "@/theme/hooks/useTheme";
 import { GraphCtx } from "./graphContext";
 import { NODE_W, NODE_H } from "./computeLayout";
 

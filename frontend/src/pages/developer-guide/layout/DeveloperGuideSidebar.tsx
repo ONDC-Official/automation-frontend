@@ -34,12 +34,12 @@ const groupDescentStyle = (depth: number) => {
     };
 };
 
-const TREE_LINE_COLOR = "bg-n-40 dark:bg-n-60";
-const TREE_LINE_BORDER = "border-n-40 dark:border-border-default";
+const TREE_LINE_COLOR = "bg-n-300 dark:bg-text-secondary";
+const TREE_LINE_BORDER = "border-n-300 dark:border-text-secondary";
 
-const navTextDefault = "text-n-300 dark:text-n-60";
-const navTextSelected = "text-n-900 dark:text-n-0";
-const navTextInteractive = `${navTextDefault} hover:text-n-900 dark:hover:text-n-0`;
+const navTextDefault = "text-n-300 dark:text-text-secondary";
+const navTextSelected = "text-n-900 dark:text-text-primary";
+const navTextInteractive = `${navTextDefault} hover:text-n-900 dark:hover:text-text-primary`;
 const mainNodeShell = "rounded-xl";
 const mainNodeSelectedBg = "bg-brand-light dark:bg-brand-normal/10";
 
@@ -172,13 +172,13 @@ const NavLinkItem: FC<{
             <div className="relative w-full min-w-0">
                 <TreeConnectors depth={depth} isLastSibling={isLastSibling} />
                 <div
-                    className="relative z-10 flex items-center gap-1 w-full text-[13px] text-n-300 dark:text-n-60 cursor-not-allowed min-w-0"
+                    className={`relative z-10 flex items-center gap-1 w-full text-[13px] ${navTextDefault} cursor-not-allowed min-w-0`}
                     style={{ paddingLeft: inset }}
                 >
                     {reserveChevronSlot && <ChevronSlot />}
                     <span className="flex-1 min-w-0 py-1 pr-3">{node.label}</span>
                     {node.suffix && (
-                        <span className="font-mono text-[11px] text-n-300 dark:text-n-60 shrink-0">
+                        <span className={`font-mono text-[11px] ${navTextDefault} shrink-0`}>
                             {node.suffix}
                         </span>
                     )}
@@ -192,7 +192,7 @@ const NavLinkItem: FC<{
         <div className={`relative w-full min-w-0${depth === 0 ? " mb-1" : ""}`}>
             <TreeConnectors depth={depth} isLastSibling={isLastSibling} />
             <div
-                className="relative z-10 flex items-center w-full min-w-0"
+                className={`relative z-10 flex items-center w-full min-w-0 ${navTextDefault}`}
                 style={{ paddingLeft: inset }}
             >
                 {reserveChevronSlot && <ChevronSlot showChevron={node.showArrow} rotated />}
@@ -278,9 +278,9 @@ const NavGroupItem: FC<{
         ? navTextInteractive
         : nestedRowSelected
           ? `${navTextSelected} font-semibold`
-          : `${navTextInteractive} font-semibold`;
+          : navTextInteractive;
 
-    const headerClass = "text-[13px] font-semibold";
+    const headerClass = "text-[13px]";
 
     const rowShellClass = `flex items-center gap-1 w-full min-w-0 transition-colors ${groupRowTextClass} ${
         isMainNode ? mainNodeShell : ""
@@ -319,6 +319,9 @@ const NavGroupItem: FC<{
                                 [
                                     "group/header flex-1 min-w-0 py-1 pr-3 text-left transition-colors rounded-md flex items-center gap-1",
                                     headerClass,
+                                    headerRowActive
+                                        ? `${navTextSelected} font-semibold`
+                                        : navTextInteractive,
                                 ].join(" ")
                             }
                             title={node.label}
@@ -409,7 +412,7 @@ const DeveloperGuideSidebar: FC<DeveloperGuideSidebarProps> = ({ nodes, searchQu
     }
 
     return (
-        <nav className="py-2 space-y-1" aria-label="Developer guide navigation">
+        <nav className={`py-2 space-y-1 ${navTextDefault}`} aria-label="Developer guide navigation">
             {nodes.map((node, index) => (
                 <NavTreeItem
                     key={node.id}

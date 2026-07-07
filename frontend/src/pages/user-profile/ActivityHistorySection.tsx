@@ -1,8 +1,8 @@
-import { useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 
-import { AuthContext } from "@/context/authContext";
+import { useAuth } from "@hooks/useAuth";
 import {
     useGetScenarioFormDataQuery,
     useLazyGetSessionsQuery,
@@ -24,7 +24,7 @@ import { PROFILE_PAGE_COPY } from "@pages/user-profile/constants";
 import type { Session } from "@pages/user-profile/types";
 
 export const ActivityHistorySection = () => {
-    const { user } = useContext(AuthContext);
+    const { user } = useAuth();
     const { setActivityHistoryCount } = useProfileShell();
     const [subscriberId, setSubscriberId] = useState("");
     const [subscriberOptions, setSubscriberOptions] = useState<string[]>([]);

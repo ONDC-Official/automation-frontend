@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/Shadcn/Button/button";
-import { useTheme } from "@/context/theme/themeContext";
+import { useTheme } from "@/theme/hooks/useTheme";
 import { MoonIcon, SunIcon } from "@heroicons/react/20/solid";
 
 export const ThemeToggle = () => {

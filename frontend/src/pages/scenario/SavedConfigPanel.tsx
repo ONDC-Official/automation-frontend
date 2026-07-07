@@ -1,6 +1,6 @@
 import { Button } from "@/components/Shadcn/Button/button";
+import { ComboBoxControl } from "@/components/Shadcn/ComboBox";
 import { FieldGroup } from "@/components/Shadcn/TextField/field";
-import { NATIVE_SELECT_CLASS } from "@/pages/scenario/helpers";
 import { SessionFormActions } from "@/pages/scenario/SessionFormActions";
 import { ISavedConfigPanelProps } from "@/pages/scenario/types";
 
@@ -21,26 +21,14 @@ export const SavedConfigPanel = ({
     return (
         <div className="space-y-4">
             <FieldGroup>
-                <div className="flex flex-col gap-1.5">
-                    <label className="text-sm font-semibold">
-                        Select Saved Configuration
-                        <span className="text-destructive">*</span>
-                    </label>
-                    <select
-                        className={NATIVE_SELECT_CLASS}
-                        value={selectedSavedConfigKey}
-                        onChange={(e) => onConfigKeyChange(e.target.value)}
-                    >
-                        <option value="" disabled>
-                            Select a configuration
-                        </option>
-                        {savedConfigKeys.map((key) => (
-                            <option key={key} value={key}>
-                                {key}
-                            </option>
-                        ))}
-                    </select>
-                </div>
+                <ComboBoxControl
+                    label="Select Saved Configuration"
+                    placeholder="Select a configuration"
+                    value={selectedSavedConfigKey}
+                    onValueChange={onConfigKeyChange}
+                    options={savedConfigKeys}
+                    required
+                />
 
                 {selectedSavedConfig && (
                     <div className="space-y-3">
@@ -56,26 +44,14 @@ export const SavedConfigPanel = ({
                                 </span>
                             </p>
                         ) : (
-                            <div className="flex flex-col gap-1.5">
-                                <label className="text-sm font-semibold">
-                                    Select Use Case
-                                    <span className="text-destructive">*</span>
-                                </label>
-                                <select
-                                    className={NATIVE_SELECT_CLASS}
-                                    value={savedUsecaseId}
-                                    onChange={(e) => onUsecaseChange(e.target.value)}
-                                >
-                                    <option value="" disabled>
-                                        Select a use case
-                                    </option>
-                                    {savedConfigUsecaseOptions.map((uc) => (
-                                        <option key={uc} value={uc}>
-                                            {uc}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
+                            <ComboBoxControl
+                                label="Select Use Case"
+                                placeholder="Select a use case"
+                                value={savedUsecaseId}
+                                onValueChange={onUsecaseChange}
+                                options={savedConfigUsecaseOptions}
+                                required
+                            />
                         )}
                     </div>
                 )}

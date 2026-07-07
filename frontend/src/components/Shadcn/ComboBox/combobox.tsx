@@ -24,7 +24,10 @@ const ComboboxTrigger = ({ className, children, ...props }: ComboboxPrimitive.Tr
     return (
         <ComboboxPrimitive.Trigger
             data-slot="combobox-trigger"
-            className={cn("[&_svg:not([class*='size-'])]:size-4", className)}
+            className={cn(
+                "cursor-pointer disabled:cursor-not-allowed [&_svg:not([class*='size-'])]:size-4",
+                className
+            )}
             {...props}
         >
             {children}
@@ -61,8 +64,21 @@ const ComboboxInput = ({
     showClear?: boolean;
 }) => {
     return (
-        <InputGroup className={cn("w-auto", className)}>
-            <ComboboxPrimitive.Input render={<InputGroupInput disabled={disabled} />} {...props} />
+        <InputGroup
+            className={cn(
+                "w-auto cursor-pointer has-[[data-slot=input-group-control]:disabled]:cursor-not-allowed **:data-[slot=input-group-addon]:cursor-pointer",
+                className
+            )}
+        >
+            <ComboboxPrimitive.Input
+                render={
+                    <InputGroupInput
+                        disabled={disabled}
+                        className="cursor-pointer data-popup-open:cursor-text disabled:cursor-not-allowed"
+                    />
+                }
+                {...props}
+            />
             <InputGroupAddon align="inline-end">
                 {showTrigger && (
                     <InputGroupButton

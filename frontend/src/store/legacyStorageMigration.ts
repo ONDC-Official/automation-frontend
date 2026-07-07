@@ -1,5 +1,5 @@
-import type { AppStore } from "@store/index";
-import { authTokenManager } from "@utils/localStorageManager";
+import type { AppStore, RootState } from "@store/index";
+import { setToken } from "@store/slices/authSlice";
 import { setAutoScrollEnabled, setExperimentalMode } from "@store/slices/sessionSlice";
 import { setSessions, type IFlowTestingSessionEntry } from "@store/slices/sessionHistorySlice";
 import { setSupportSession } from "@store/slices/supportSessionSlice";
@@ -30,7 +30,7 @@ function readJson<T>(raw: string | null): T | null {
  * One-time import of pre-Redux localStorage/sessionStorage keys into the store, run after
  * redux-persist has rehydrated (via PersistGate onBeforeLift). Legacy keys are removed after import
  * so the store becomes the single source of truth. Keys still needed for backward compatibility
- * (authToken, sessionIdForSupport) are re-populated by listener write-through and are not removed.
+ * (auth token via redux-persist `auth` slice; sessionIdForSupport) are re-populated by listener
  */
 export function runLegacyStorageMigration(store: AppStore): void {
     try {
@@ -40,11 +40,19 @@ export function runLegacyStorageMigration(store: AppStore): void {
     }
 
     const { dispatch } = store;
+    const state = store.getState() as RootState;
 
-    // Auth token (kept in localStorage via authTokenManager; not removed here).
+    // Legacy standalone authToken key → auth slice (redux-persist owns token going forward).
     const legacyToken = readJson<string>(localStorage.getItem("authToken"));
-    if (legacyToken && !authTokenManager.get()) {
-        authTokenManager.set(legacyToken);
+    if (legacyToken && !state.auth.token) {
+        dispatch(setToken(legacyToken));
+    }
+    if (legacyToken !== null) {
+        try {
+            localStorage.removeItem("authToken");
+        } catch {
+            /* ignore */
+        }
     }
 
     // Support session (kept in localStorage via listener write-through; not removed here).

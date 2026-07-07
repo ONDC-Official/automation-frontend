@@ -36,5 +36,5 @@
         "noFallthroughCasesInSwitch": true,
         "noUncheckedSideEffectImports": true
     },
-    "include": ["src"]
+    "include": ["src", "src/components/Shadcn/Chart/index.tsx"]
 }

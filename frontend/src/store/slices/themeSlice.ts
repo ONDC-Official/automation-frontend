@@ -1,6 +1,6 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import type { ThemePreference, ResolvedTheme } from "@/context/theme/themeContextTypes";
-import { resolveTheme } from "@/context/theme/themeUtils";
+import type { ThemePreference, ResolvedTheme } from "@/theme/types";
+import { resolveTheme } from "@/theme/utils/themeUtils";
 
 export interface IThemeState {
     preference: ThemePreference;

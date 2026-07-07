@@ -10,7 +10,7 @@ import {
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import "./SupportedActionsGraph.css";
-import { useTheme } from "@/context/theme/themeContext";
+import { useTheme } from "@/theme/hooks/useTheme";
 import type { SupportedActions } from "../types";
 import { GraphCtx, type GraphCtxValue } from "./graphContext";
 import { isSentinelKey, computeLayout } from "./computeLayout";

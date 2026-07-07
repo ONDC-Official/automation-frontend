@@ -1,13 +1,13 @@
-import { useContext, useEffect } from "react";
+import { useEffect } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 import Spinner from "@/components/Shadcn/Spinner";
-import { AuthContext } from "@/context/authContext";
+import { useAuth } from "@hooks/useAuth";
 import { ROUTES } from "@constants/routes";
 import { ProfileSidebar } from "@pages/user-profile/ProfileSidebar";
 import { ProfileShellProvider, useProfileShell } from "@pages/user-profile/ProfileShellContext";
 
 const UserProfileLayout = () => {
-    const { user } = useContext(AuthContext);
+    const { user } = useAuth();
     const { counts } = useProfileShell();
 
     if (!user) {
@@ -25,7 +25,7 @@ const UserProfileLayout = () => {
 };
 
 const UserProfile = () => {
-    const { isAuthLoading, user } = useContext(AuthContext);
+    const { isAuthLoading, user } = useAuth();
     const navigate = useNavigate();
 
     useEffect(() => {

@@ -27,7 +27,13 @@ import aiSlice from "@store/slices/aiSlice";
 import devGuideShellSlice from "@store/slices/devGuideShellSlice";
 import playgroundConfigsSlice from "@store/slices/playgroundConfigsSlice";
 import { listenerMiddleware } from "@store/listenerMiddleware";
-import { sessionPersistConfig, frameworkHealthPersistConfig } from "@store/persistConfig";
+import {
+    sessionPersistConfig,
+    frameworkHealthPersistConfig,
+    authPersistConfig,
+} from "@store/persistConfig";
+import authSlice, { selectAuthToken } from "@store/slices/authSlice";
+import { registerAuthTokenReader } from "@store/authTokenReader";
 
 const localPersist = (key: string) => ({ key, storage });
 
@@ -36,6 +42,7 @@ const rootReducer = combineReducers({
     [devGuideApi.reducerPath]: devGuideApi.reducer,
     [loadTestApi.reducerPath]: loadTestApi.reducer,
     theme: persistReducer(localPersist("theme"), themeSlice.reducer),
+    auth: persistReducer(authPersistConfig, authSlice.reducer),
     session: persistReducer(sessionPersistConfig, sessionSlice.reducer),
     sessionHistory: persistReducer(localPersist("sessionHistory"), sessionHistorySlice.reducer),
     supportSession: persistReducer(localPersist("supportSession"), supportSessionSlice.reducer),
@@ -74,6 +81,8 @@ export const createAppStore = (preloadedState?: Partial<RootState>) =>
     });
 
 export const store = createAppStore();
+
+registerAuthTokenReader(() => selectAuthToken(store.getState()));
 
 export const persistor = persistStore(store);
 

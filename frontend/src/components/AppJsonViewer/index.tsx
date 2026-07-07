@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import JsonView from "@uiw/react-json-view";
 import { githubDarkTheme } from "@uiw/react-json-view/githubDark";
 import { githubLightTheme } from "@uiw/react-json-view/githubLight";
-import { useAppliedTheme } from "@/context/theme/useAppliedTheme";
+import { useAppliedTheme } from "@/theme/hooks/useAppliedTheme";
 import { cn } from "@/lib/utils";
 import { AppJsonViewerProps } from "@/components/AppJsonViewer/types";
 import { filterJsonBySearch, hasVisibleResults } from "@/components/AppJsonViewer/utils";

@@ -1,10 +1,10 @@
-import { useContext, useMemo } from "react";
+import { useMemo } from "react";
 import { useGetPastReportsQuery, useGetScenarioPreferencesQuery } from "@store/api";
-import { AuthContext } from "@/context/authContext";
+import { useAuth } from "@hooks/useAuth";
 
 /** Config and past-report counts derived from RTK Query caches. */
 export const useProfileDerivedCounts = () => {
-    const { user } = useContext(AuthContext);
+    const { user } = useAuth();
     const username = user?.username;
     const { data: scenarioPreferences } = useGetScenarioPreferencesQuery(undefined, {
         skip: !username,
