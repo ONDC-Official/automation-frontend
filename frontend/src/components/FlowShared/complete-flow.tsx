@@ -28,10 +28,10 @@ import { trackEvent } from "@utils/analytics";
 import { generatePlaygroundConfigFromFlowConfig } from "@ondc/automation-mock-runner";
 import { cn } from "@/lib/utils";
 import { ChevronDownIcon } from "@heroicons/react/24/outline";
-import { IAccordionProps } from "@components/FlowShared/types";
-import { useSession } from "@context/context";
+import { IFlowRunAccordionProps } from "@components/FlowShared/types";
+import { useSession } from "@hooks/useSession";
 
-export function Accordion({
+export function FlowRunAccordion({
     flow,
     activeFlow,
     setActiveFlow,
@@ -40,7 +40,7 @@ export function Accordion({
     subUrl,
     onFlowStop,
     onFlowClear,
-}: IAccordionProps) {
+}: IFlowRunAccordionProps) {
     const [inputPopUp, setInputPopUp] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
     const [mappedFlow, setMappedFlow] = useState<FlowMap>({
@@ -381,7 +381,7 @@ export function Accordion({
                     }}
                     loop={true}
                     isActive={activeFlow === flow.id && !isFlowFormDialogOpen && !inputPopUp}
-                    id="fetch-transaction-data"
+                    id={`fetch-transaction-data-${flow.id}`}
                 />
             </div>
         );

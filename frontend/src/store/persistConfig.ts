@@ -17,7 +17,7 @@ export const frameworkHealthPersistConfig: PersistConfig<IFrameworkHealthState> 
     storage: sessionStorage,
 };
 
-/** Persist only the auth token — user profile is refetched on boot via `getMe`. */
+/** Persist only the auth token — user profile is owned by the RTK Query `getMe` cache. */
 export const authPersistConfig: PersistConfig<IAuthState> = {
     key: "auth",
     storage,

@@ -2,7 +2,7 @@ import { FC, useEffect, useMemo, useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { ChevronDownIcon } from "@heroicons/react/24/outline";
 import { ROUTES } from "@constants/routes";
-import { useDeveloperGuideShell } from "./DeveloperGuideShellContext";
+import { useDeveloperGuideNav } from "./DeveloperGuideNav";
 import type { NavNode, DeveloperGuideSidebarProps } from "./navTypes";
 import { isNavGroup, isNavLink } from "./navTypes";
 import { parseNavPath, isNavLinkActive, isNavGroupPathActive } from "./navMatch";
@@ -156,7 +156,7 @@ const NavLinkItem: FC<{
     isLastSibling: boolean;
 }> = ({ node, depth, isLastSibling }) => {
     const location = useLocation();
-    const { collapseNavSidebar } = useDeveloperGuideShell();
+    const { collapseNavSidebar } = useDeveloperGuideNav();
     const { pathname: linkPath, hash: linkHash } = parseNavPath(node.path);
     const useEnd = node.id === "overview" || Boolean(linkHash);
     const inset = rowInset(depth);

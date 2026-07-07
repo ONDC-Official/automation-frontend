@@ -7,13 +7,13 @@ import DocsViewer from "../DocsViewer";
 import ErrorCodesTable from "../ErrorCodesTable";
 import SupportedActionsView from "../SupportedActionsView";
 import ChangelogView from "../ChangelogView";
-import { useDeveloperGuideShell } from "../layout/DeveloperGuideShellContext";
+import { useDeveloperGuideNav } from "../layout/DeveloperGuideNav";
 import FlowPageHeader from "./FlowPageHeader";
 import { useDeveloperGuideFlowPageData } from "./useDeveloperGuideFlowPageData";
 
 const DeveloperGuideFlowPage: FC = () => {
     const navigate = useNavigate();
-    const { inShell } = useDeveloperGuideShell();
+    const { inShell } = useDeveloperGuideNav();
 
     const {
         domainKey,

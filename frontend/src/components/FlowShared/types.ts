@@ -1,7 +1,7 @@
 import { Flow } from "@/types/flow-types";
 import { SessionCache } from "@/types/session-types";
 
-export interface IAccordionProps {
+export interface IFlowRunAccordionProps {
     flow: Flow;
     activeFlow: string | null;
     setActiveFlow: (flowId: string | null) => void;

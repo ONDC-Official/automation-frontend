@@ -7,7 +7,7 @@ import Accordion from "@/components/Shadcn/Accordion";
 import { ReportPage } from "@components/FlowShared/report";
 import { GetRequestEndpoint } from "@components/FlowShared/guides";
 import NotFound from "@/components/NotFound";
-import { useSession } from "@context/context";
+import { useSession } from "@hooks/useSession";
 import { trackEvent } from "@utils/analytics";
 import { useWorkbenchFlows } from "@hooks/useWorkbenchFlow";
 import { IDomain } from "@/pages/schema-validation/types";

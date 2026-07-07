@@ -1,12 +1,12 @@
 import { FC } from "react";
 import { Link } from "react-router-dom";
 import { useDeveloperGuideBreadcrumb } from "./useDeveloperGuideBreadcrumb";
-import { useDeveloperGuideShell } from "./DeveloperGuideShellContext";
+import { useDeveloperGuideNav } from "./DeveloperGuideNav";
 
 /** Breadcrumb bar above content — route trail with `>` separators (no sidebar toggle). */
 const DeveloperGuideCollapsedNavBar: FC = () => {
     const crumbs = useDeveloperGuideBreadcrumb();
-    const { navSidebarOpen } = useDeveloperGuideShell();
+    const { navSidebarOpen } = useDeveloperGuideNav();
 
     if (crumbs.length === 0) return null;
 

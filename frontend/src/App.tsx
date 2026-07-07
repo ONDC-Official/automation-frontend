@@ -2,7 +2,6 @@ import { useEffect } from "react";
 import { BrowserRouter, useLocation } from "react-router-dom";
 import { Provider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
-import { SessionProvider } from "@context/context";
 import ThemeWrapper from "@/theme";
 import { AuthBootstrap } from "@/components/AuthBootstrap";
 import { store, persistor } from "@store/index";
@@ -23,10 +22,10 @@ const Wrapper = () => {
     }, [location.pathname, location.search]);
 
     return (
-        <SessionProvider>
+        <>
             <AuthBootstrap />
             <Layout />
-        </SessionProvider>
+        </>
     );
 };
 

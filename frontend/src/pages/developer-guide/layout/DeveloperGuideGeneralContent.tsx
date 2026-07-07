@@ -2,7 +2,7 @@ import { FC, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { DocumentTextIcon, KeyIcon, Square3Stack3DIcon } from "@heroicons/react/24/outline";
 import { ROUTES, getDeveloperGuideDocPath } from "@constants/routes";
-import { useDeveloperGuideShell } from "./DeveloperGuideShellContext";
+import { useDeveloperGuideShell } from "./DeveloperGuideNav";
 import DeveloperGuideGuideCard from "./DeveloperGuideGuideCard";
 import { sortDocsByPreferredSequence } from "../utils";
 

@@ -1,38 +1,26 @@
-import { FC, useEffect, useMemo, useState } from "react";
+import { FC, useEffect, useMemo } from "react";
 import { useLocation, useParams } from "react-router-dom";
-import { fetchDocContent } from "@services/developerDocsApi";
+import { useGetGithubDocContentQuery } from "@store/api";
 import GithubMarkdown from "@components/GithubMarkdown";
 import TableOfContents from "@components/TableOfContents";
 import { scrollToSectionWithOffset } from "@components/TableOfContents/scrollToSection";
 import { stripMarkdownTableOfContents } from "@utils/markdownToc";
 import { docUsesSidebarSections } from "./docsWithSidebarSections";
-import { useDeveloperGuideShell } from "./DeveloperGuideShellContext";
+import { useDeveloperGuideNav } from "./DeveloperGuideNav";
 
 const TOC_TOP = 100;
 
 const DeveloperGuideDocContent: FC = () => {
     const { slug } = useParams<{ slug: string }>();
     const { hash } = useLocation();
-    const { navSidebarOpen } = useDeveloperGuideShell();
+    const { navSidebarOpen } = useDeveloperGuideNav();
     const usesSidebarSections = docUsesSidebarSections(slug);
-    const [content, setContent] = useState("");
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
 
-    useEffect(() => {
-        if (!slug) return;
-        setIsLoading(true);
-        setError(null);
-        fetchDocContent(slug)
-            .then((text) => {
-                setContent(text);
-                setIsLoading(false);
-            })
-            .catch(() => {
-                setError("Failed to load documentation. Please try again.");
-                setIsLoading(false);
-            });
-    }, [slug]);
+    const {
+        data: content = "",
+        isLoading,
+        isError,
+    } = useGetGithubDocContentQuery(slug ?? "", { skip: !slug });
 
     useEffect(() => {
         if (!usesSidebarSections || !hash) return;
@@ -69,10 +57,12 @@ const DeveloperGuideDocContent: FC = () => {
         );
     }
 
-    if (error) {
+    if (isError) {
         return (
             <div className="px-6 md:px-10 py-16 text-center">
-                <p className="text-slate-500 text-sm">{error}</p>
+                <p className="text-slate-500 text-sm">
+                    Failed to load documentation. Please try again.
+                </p>
             </div>
         );
     }

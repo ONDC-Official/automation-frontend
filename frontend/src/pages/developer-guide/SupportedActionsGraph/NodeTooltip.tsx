@@ -1,7 +1,7 @@
 import { type FC } from "react";
 import { createPortal } from "react-dom";
 import { useTheme } from "@/theme/hooks/useTheme";
-import type { ApiProps } from "./graphContext";
+import type { ApiProps } from "./types";
 
 interface TooltipProps {
     api: string;

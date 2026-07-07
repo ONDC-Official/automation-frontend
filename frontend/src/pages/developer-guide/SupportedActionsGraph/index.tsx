@@ -12,7 +12,6 @@ import "@xyflow/react/dist/style.css";
 import "./SupportedActionsGraph.css";
 import { useTheme } from "@/theme/hooks/useTheme";
 import type { SupportedActions } from "../types";
-import { GraphCtx, type GraphCtxValue } from "./graphContext";
 import { isSentinelKey, computeLayout } from "./computeLayout";
 import { nodeTypes, type ActionNodeData } from "./ActionNode";
 import { NodeTooltip } from "./NodeTooltip";
@@ -56,9 +55,18 @@ const SupportedActionsGraph: FC<SupportedActionsGraphProps> = ({ supportedAction
         setTooltip(api ? { api, x, y } : null);
     }, []);
 
-    const ctxValue = useMemo<GraphCtxValue>(
-        () => ({ focused, toggleFocus, onHover, actionMap, apiProperties, entryPoints }),
-        [focused, toggleFocus, onHover, actionMap, apiProperties, entryPoints]
+    const getNodeFocusState = useCallback(
+        (label: string) => {
+            const isFocused = focused === label;
+            const isNext = focused !== null && (actionMap[focused] ?? []).includes(label);
+            const isHistory =
+                focused !== null &&
+                ((apiProperties[focused]?.transaction_partner ?? []).includes(label) ||
+                    apiProperties[focused]?.async_predecessor === label);
+            const isDimmed = focused !== null && !isFocused && !isNext && !isHistory;
+            return { isFocused, isNext, isHistory, isDimmed };
+        },
+        [focused, actionMap, apiProperties]
     );
 
     const nodes: Node<ActionNodeData>[] = useMemo(
@@ -73,9 +81,21 @@ const SupportedActionsGraph: FC<SupportedActionsGraphProps> = ({ supportedAction
                     isResponse: api.startsWith("on_"),
                     nextCount: (actionMap[api] ?? []).length,
                     historyCount: (apiProperties[api]?.transaction_partner ?? []).length,
+                    ...getNodeFocusState(api),
+                    onToggleFocus: toggleFocus,
+                    onHover,
                 },
             })),
-        [allApis, positions, entryPoints, actionMap, apiProperties]
+        [
+            allApis,
+            positions,
+            entryPoints,
+            actionMap,
+            apiProperties,
+            getNodeFocusState,
+            toggleFocus,
+            onHover,
+        ]
     );
 
     const edges: Edge[] = useMemo(() => {
@@ -146,7 +166,7 @@ const SupportedActionsGraph: FC<SupportedActionsGraphProps> = ({ supportedAction
     }, [allApis, actionMap, apiProperties, focused, entryPoints]);
 
     return (
-        <GraphCtx.Provider value={ctxValue}>
+        <>
             <div className="guide-actions-graph w-full rounded-2xl border border-slate-200 overflow-hidden shadow-xs bg-white dark:bg-surface-elevated">
                 {/* ── Legend bar ──────────────────────────────────────── */}
                 <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 px-4 py-2.5 border-b border-slate-100 bg-linear-to-r from-slate-50/80 to-white dark:from-surface-muted/50 dark:to-surface-elevated text-xs text-slate-600">
@@ -300,7 +320,7 @@ const SupportedActionsGraph: FC<SupportedActionsGraphProps> = ({ supportedAction
                     entryPoints={entryPoints}
                 />
             )}
-        </GraphCtx.Provider>
+        </>
     );
 };
 

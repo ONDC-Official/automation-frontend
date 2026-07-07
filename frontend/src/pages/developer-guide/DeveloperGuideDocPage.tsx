@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeftIcon } from "@heroicons/react/24/outline";
 import { ROUTES } from "@constants/routes";
-import { fetchDocContent } from "@services/developerDocsApi";
+import { useGetGithubDocContentQuery } from "@store/api";
 import GithubMarkdown from "@components/GithubMarkdown";
 import TableOfContents from "@components/TableOfContents";
 import GuideCard from "./shared/components/GuideCard";
@@ -16,24 +16,14 @@ const TOC_TOP = HEADER_HEIGHT + BREADCRUMB_HEIGHT;
 const DeveloperGuideDocPage = () => {
     const { slug } = useParams<{ slug: string }>();
     const navigate = useNavigate();
-    const [content, setContent] = useState<string>("");
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
 
-    useEffect(() => {
-        if (!slug) return;
-        setIsLoading(true);
-        setError(null);
-        fetchDocContent(slug)
-            .then((text) => {
-                setContent(text);
-                setIsLoading(false);
-            })
-            .catch(() => {
-                setError("Failed to load documentation. Please try again.");
-                setIsLoading(false);
-            });
-    }, [slug]);
+    const {
+        data: content = "",
+        isLoading,
+        isError,
+    } = useGetGithubDocContentQuery(slug ?? "", {
+        skip: !slug,
+    });
 
     const title = useMemo(() => {
         if (!slug) return "";
@@ -76,9 +66,11 @@ const DeveloperGuideDocPage = () => {
                         <div className="h-3.5 bg-slate-100 rounded w-5/6" />
                     </div>
                 </div>
-            ) : error ? (
+            ) : isError ? (
                 <div className="container mx-auto px-6 py-16 text-center">
-                    <p className="text-slate-500 text-sm">{error}</p>
+                    <p className="text-slate-500 text-sm">
+                        Failed to load documentation. Please try again.
+                    </p>
                 </div>
             ) : (
                 <div className="container mx-auto px-6 py-8">

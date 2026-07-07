@@ -1,8 +1,8 @@
 import type { ReactNode } from "react";
 import type { NavNode } from "@/types/apiShared/developerGuide";
 
-// Canonical type lives in @/types/apiShared/developerGuide (shared with the Redux devGuideShell
-// slice); re-exported here so existing feature imports don't need to change.
+// Canonical type lives in @/types/apiShared/developerGuide; re-exported here so existing
+// feature imports don't need to change.
 export type { NavNode } from "@/types/apiShared/developerGuide";
 export { isNavGroup, isNavLink } from "@/types/apiShared/developerGuide";
 

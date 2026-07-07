@@ -19,13 +19,14 @@ import { ActivityHistoryAccordion } from "@pages/user-profile/components/Activit
 import { HistoryFilterComboBox } from "@pages/user-profile/components/HistoryFilterComboBox";
 import { HistorySubscriberComboBox } from "@pages/user-profile/components/HistorySubscriberComboBox";
 import { ProfilePageHeader } from "@pages/user-profile/ProfilePageHeader";
-import { useProfileShell } from "@pages/user-profile/ProfileShellContext";
+import { useAppDispatch } from "@store/hooks";
+import { setActivityHistoryCount } from "@store/slices/profileShellSlice";
 import { PROFILE_PAGE_COPY } from "@pages/user-profile/constants";
 import type { Session } from "@pages/user-profile/types";
 
 export const ActivityHistorySection = () => {
     const { user } = useAuth();
-    const { setActivityHistoryCount } = useProfileShell();
+    const dispatch = useAppDispatch();
     const [subscriberId, setSubscriberId] = useState("");
     const [subscriberOptions, setSubscriberOptions] = useState<string[]>([]);
     const [loadingSubscribers, setLoadingSubscribers] = useState(false);
@@ -53,8 +54,8 @@ export const ActivityHistorySection = () => {
         "flex-1 min-w-48 w-full rounded-xl border-border-default bg-surface-elevated text-body-2 text-text-primary";
 
     useEffect(() => {
-        setActivityHistoryCount(sessions.length);
-    }, [sessions.length, setActivityHistoryCount]);
+        dispatch(setActivityHistoryCount(sessions.length));
+    }, [sessions.length, dispatch]);
 
     useEffect(() => {
         const fetchSubscribers = async () => {
