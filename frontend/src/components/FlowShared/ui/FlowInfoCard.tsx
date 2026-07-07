@@ -1,12 +1,12 @@
 import type { ReactNode } from "react";
 
-interface IInfoCardProps {
+interface IFlowInfoCardProps {
     title: string;
     data: Record<string, string>;
     children?: ReactNode;
 }
 
-const InfoCard = ({ title, data, children }: IInfoCardProps) => (
+const FlowInfoCard = ({ title, data, children }: IFlowInfoCardProps) => (
     <div className="w-full rounded-md border border-gray-200 bg-gray-100 p-4 backdrop-blur-md">
         <div className="mb-4">
             <div className="flex items-center gap-1 text-xl font-bold text-sky-700">
@@ -30,4 +30,4 @@ const InfoCard = ({ title, data, children }: IInfoCardProps) => (
     </div>
 );
 
-export default InfoCard;
+export default FlowInfoCard;

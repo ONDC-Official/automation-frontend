@@ -1,6 +1,7 @@
 import { CollapsibleSection } from "@/components/FlowShared/ui/CollapsibleSection";
 import { FlowFiltersPanel } from "@/components/FlowShared/filter-flows";
-import { FlowSettingsPanel, type FilteredDifficultyCache } from "@/components/ui/difficulty-cards";
+import FlowSettingsPanel from "@/pages/scenario/FlowSettingsPanel";
+import type { FilteredDifficultyCache } from "@/pages/scenario/types";
 import { Button } from "@/components/Shadcn/Button/button";
 import SpinnerDialog from "@/components/Shadcn/SpinnerDialog";
 import { XMarkIcon } from "@heroicons/react/24/outline";

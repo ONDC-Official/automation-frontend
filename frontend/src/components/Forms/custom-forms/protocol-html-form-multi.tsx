@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { queryJsonPath } from "../../../../utils/jsonpath-query";
+import { queryJsonPath } from "@/utils/jsonpath-query";
 import { AxiosResponse } from "axios";
 import { PlusIcon, TrashIcon } from "@heroicons/react/24/outline";
 
