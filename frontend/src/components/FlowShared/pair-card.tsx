@@ -2,12 +2,12 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { ArrowsRightLeftIcon, InformationCircleIcon } from "@heroicons/react/24/outline";
 
-import { PairedStep } from "@components/FlowShared/mapped-flow";
-import { TooltipHint } from "@/components/Shadcn/Tooltip";
-import FlippableWrapper from "@/pages/scenario/FlippableContainer";
-import { Badge } from "@/components/Shadcn/Badge";
-import { Button } from "@/components/Shadcn/Button/button";
-import { Switch } from "@/components/Shadcn/Switch/switch";
+import { PairedStep } from "@components/FlowShared/mapped-flow-utils";
+import { TooltipHint } from "@components/Shadcn/Tooltip";
+import FlippableWrapper from "@pages/scenario/FlippableContainer";
+import { Badge } from "@components/Shadcn/Badge";
+import { Button } from "@components/Shadcn/Button/button";
+import { Switch } from "@components/Shadcn/Switch/switch";
 import { cn } from "@/lib/utils";
 
 import { MappedStep } from "@/types/flow-state-type";

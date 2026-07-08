@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
 import { MockPlaygroundConfigType, TransactionHistoryItem } from "@ondc/automation-mock-runner";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/Shadcn/Popover";
-import { Button } from "@/components/Shadcn/Button/button";
+import { Popover, PopoverContent, PopoverTrigger } from "@components/Shadcn/Popover";
+import { Button } from "@components/Shadcn/Button/button";
 import { usePlayground } from "@pages/protocol-playground/hooks/playground-runtime";
 import ActionDetailsCard from "@pages/protocol-playground/ui/playground-upper/action-details-card";
 import { cn } from "@/lib/utils";

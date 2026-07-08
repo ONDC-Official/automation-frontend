@@ -1,13 +1,13 @@
 import { useNavigate } from "react-router-dom";
 
-import { Card } from "@/components/Shadcn/Card";
-import { Button } from "@/components/Shadcn/Button/button";
-import { ComboBox } from "@/components/Shadcn/ComboBox";
-import { FieldGroup } from "@/components/Shadcn/TextField/field";
-import { TextField } from "@/components/Shadcn/TextField";
+import { Card } from "@components/Shadcn/Card";
+import { Button } from "@components/Shadcn/Button/button";
+import { ComboBox } from "@components/Shadcn/ComboBox";
+import { FieldGroup } from "@components/Shadcn/TextField/field";
+import { TextField } from "@components/Shadcn/TextField";
 import { ROUTES } from "@constants/routes";
 import { ENV_OPTIONS, PROFILE_PAGE_COPY } from "@pages/user-profile/constants";
-import { DomainVersionUsecaseFields } from "@/pages/scenario/DomainVersionUsecaseFields";
+import { DomainVersionUsecaseFields } from "@pages/scenario/DomainVersionUsecaseFields";
 import type { INewConfigFormProps, ScenarioPreferences } from "@pages/user-profile/types";
 
 export const NewConfigForm = ({

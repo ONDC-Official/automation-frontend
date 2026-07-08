@@ -10,7 +10,7 @@ import {
 } from "react-icons/fi";
 
 import { usePlayground } from "@pages/protocol-playground/hooks/playground-runtime";
-import AppJsonViewer from "@/components/AppJsonViewer";
+import AppJsonViewer from "@components/AppJsonViewer";
 
 const ViewOnlyPlaygroundPage = ({ onCreateFlowSession }: { onCreateFlowSession: () => void }) => {
     const playgroundContext = usePlayground();

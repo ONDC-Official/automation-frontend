@@ -4,7 +4,7 @@ import { v4 as uuidv4 } from "uuid";
 import { SubmitEventParams } from "@/types/flow-types";
 import { SessionCache } from "@/types/session-types";
 import { FlowActionButton } from "@components/FlowShared/ui/FlowActionButton";
-import { Progress } from "@/components/Shadcn/Progress/progress";
+import { Progress } from "@components/Shadcn/Progress/progress";
 import {
     useClearFlowDataMutation,
     useDeleteExpectationMutation,
@@ -20,10 +20,10 @@ import { store } from "@store/index";
 import { FlowMap } from "@/types/flow-state-type";
 import DisplayFlow from "@components/FlowShared/mapped-flow";
 import { getSequenceFromFlow } from "@utils/flow-utils";
-import CircularProgress from "@/components/FlowShared/ui/CircularProgress";
-import FormFlowDialog from "@/components/Shadcn/Dialog/form-flow-dialog";
-import { FormConfigType } from "@/components/Forms/config-form/types";
-import { FormConfig } from "@/components/Forms/config-form";
+import CircularProgress from "@components/FlowShared/ui/CircularProgress";
+import FormFlowDialog from "@components/Shadcn/Dialog/form-flow-dialog";
+import { FormConfigType } from "@components/Forms/config-form/types";
+import { FormConfig } from "@components/Forms/config-form";
 import { trackEvent } from "@utils/analytics";
 import { generatePlaygroundConfigFromFlowConfig } from "@ondc/automation-mock-runner";
 import { cn } from "@/lib/utils";

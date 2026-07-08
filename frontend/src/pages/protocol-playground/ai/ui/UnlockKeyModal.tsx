@@ -1,7 +1,7 @@
 import { FormEvent, useEffect, useState } from "react";
 import { PiShieldStarBold } from "react-icons/pi";
 
-import FormFlowDialog from "@/components/Shadcn/Dialog/form-flow-dialog";
+import FormFlowDialog from "@components/Shadcn/Dialog/form-flow-dialog";
 import { InvalidPassphraseError, unlockKey } from "@utils/secure-key-store";
 
 interface UnlockKeyModalProps {

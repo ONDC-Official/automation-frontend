@@ -7,7 +7,7 @@ import {
     UseFormRegister,
     UseFormWatch,
 } from "react-hook-form";
-import { IDomain, IDomainVersion } from "@/pages/schema-validation/types";
+import { IDomain, IDomainVersion } from "@pages/schema-validation/types";
 import { Flow } from "@/types/flow-types";
 
 export type INewSessionFormValues = IScenarioFormData & {

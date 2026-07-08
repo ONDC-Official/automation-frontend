@@ -3,7 +3,7 @@ import JsonView from "@uiw/react-json-view";
 import { useLocation } from "react-router-dom";
 import { SelectedType } from "@pages/protocol-playground/ui/types";
 import { cn } from "@/lib/utils";
-import AppJsonViewer from "@/components/AppJsonViewer";
+import AppJsonViewer from "@components/AppJsonViewer";
 
 type JsonPrimitive = string | number | boolean | null;
 type JsonArray = JsonValue[];

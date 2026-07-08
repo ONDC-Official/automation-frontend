@@ -12,19 +12,19 @@ import {
 } from "react-hook-form";
 import { FaPlus, FaTrash, FaEdit, FaSitemap, FaClock } from "react-icons/fa";
 
-import { SelectControl } from "@/components/Shadcn/Select";
-import { Button } from "@/components/Shadcn/Button";
-import { Checkbox } from "@/components/Shadcn/Checkbox";
+import { SelectControl } from "@components/Shadcn/Select";
+import { Button } from "@components/Shadcn/Button";
+import { Checkbox } from "@components/Shadcn/Checkbox";
 import {
     Dialog,
     DialogContent,
     DialogFooter,
     DialogHeader,
     DialogTitle,
-} from "@/components/Shadcn/Dialog";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/Shadcn/Tabs";
-import { Card } from "@/pages/seller-onboarding/components/LegacyCardTag";
-import TextField from "@/components/Shadcn/TextField";
+} from "@components/Shadcn/Dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@components/Shadcn/Tabs";
+import { Card } from "@pages/seller-onboarding/components/LegacyCardTag";
+import TextField from "@components/Shadcn/TextField";
 import LoadingButton from "@components/ui/forms/loading-button";
 import { SellerOnboardingData } from "@pages/seller-onboarding";
 import { weekDays } from "@constants/common";

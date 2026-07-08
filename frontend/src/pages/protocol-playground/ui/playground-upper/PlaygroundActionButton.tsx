@@ -1,5 +1,5 @@
-import { Button } from "@/components/Shadcn/Button/button";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/Shadcn/Tooltip";
+import { Button } from "@components/Shadcn/Button/button";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@components/Shadcn/Tooltip";
 import { cn } from "@/lib/utils";
 import type { IPlaygroundActionButtonProps } from "@pages/protocol-playground/ui/playground-upper/types";
 import { PLAYGROUND_ACTION_VARIANT_STYLES } from "@pages/protocol-playground/ui/playground-upper/constants";
@@ -10,7 +10,7 @@ import {
     PlayCircleIcon,
     ArchiveBoxIcon,
 } from "@heroicons/react/24/solid";
-import FullScreenIcon from "@/assets/svgs/FullScreenIcon";
+import FullScreenIcon from "@assets/svgs/FullScreenIcon";
 
 const VARIANT_ICONS = {
     play: PlayCircleIcon,

@@ -1,5 +1,5 @@
-import { FooterLinkItem } from "@/components/Footer/FooterLinkItem";
-import { FooterLinkColumnProps } from "@/components/Footer/types";
+import { FooterLinkItem } from "@components/Footer/FooterLinkItem";
+import { FooterLinkColumnProps } from "@components/Footer/types";
 
 export const FooterLinkColumn = ({ title, links }: FooterLinkColumnProps) => (
     <div>

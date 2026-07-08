@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { parse as yamlParse } from "yaml";
 import { MockRunner, MockPlaygroundConfigType } from "@ondc/automation-mock-runner";
 
-import { Button } from "@/components/Shadcn/Button/button";
+import { Button } from "@components/Shadcn/Button/button";
 import {
     Dialog,
     DialogContent,
@@ -10,8 +10,8 @@ import {
     DialogFooter,
     DialogHeader,
     DialogTitle,
-} from "@/components/Shadcn/Dialog";
-import GitHubIcon from "@/assets/svgs/GitHubIcon";
+} from "@components/Shadcn/Dialog";
+import GitHubIcon from "@assets/svgs/GitHubIcon";
 import { cn } from "@/lib/utils";
 import {
     fetchBranches,

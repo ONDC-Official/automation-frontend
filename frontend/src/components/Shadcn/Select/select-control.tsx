@@ -4,7 +4,7 @@ import {
     SelectItem,
     SelectTrigger,
     SelectValue,
-} from "@/components/Shadcn/Select/select";
+} from "@components/Shadcn/Select/select";
 import { cn } from "@/lib/utils";
 
 export interface ISelectControlOption {

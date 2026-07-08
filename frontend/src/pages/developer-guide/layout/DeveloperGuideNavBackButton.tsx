@@ -1,6 +1,6 @@
 import { FC } from "react";
 import { ArrowRightIcon } from "@heroicons/react/24/outline";
-import { Button } from "@/components/Shadcn/Button";
+import { Button } from "@components/Shadcn/Button";
 import { cn } from "@/lib/utils";
 import { useDeveloperGuideNav } from "./DeveloperGuideNav";
 import type { DeveloperGuideNavBackButtonProps } from "./navTypes";

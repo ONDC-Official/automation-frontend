@@ -1,4 +1,4 @@
-import { FilterBadge } from "@/components/Shadcn/Badge";
+import { FilterBadge } from "@components/Shadcn/Badge";
 
 interface IFlowFiltersPanelProps {
     flowTags: string[];

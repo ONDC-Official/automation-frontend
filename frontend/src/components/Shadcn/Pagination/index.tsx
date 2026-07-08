@@ -4,10 +4,10 @@ import {
     PaginationContent,
     PaginationItem,
     PaginationLink,
-} from "@/components/Shadcn/Pagination/pagination";
-import type { PaginationProps } from "@/components/Shadcn/Pagination/types";
-import { getPageNumbers } from "@/components/Shadcn/Pagination/helpers";
-import { navButtonClass } from "@/components/Shadcn/Pagination/constants";
+} from "@components/Shadcn/Pagination/pagination";
+import type { PaginationProps } from "@components/Shadcn/Pagination/types";
+import { getPageNumbers } from "@components/Shadcn/Pagination/helpers";
+import { navButtonClass } from "@components/Shadcn/Pagination/constants";
 import { ArrowLeftIcon, ArrowRightIcon } from "@heroicons/react/24/outline";
 
 export const Pagination = ({

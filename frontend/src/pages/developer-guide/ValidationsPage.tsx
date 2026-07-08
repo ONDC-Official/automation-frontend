@@ -2,7 +2,7 @@ import { type FC, useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useGetValidationTableQuery } from "@store/api";
 import ValidationsTable from "./ValidationsTable";
-import Spinner from "@/components/Shadcn/Spinner";
+import Spinner from "@components/Shadcn/Spinner";
 import GuideTabs, { type GuideTabItem } from "./shared/components/GuideTabs";
 import GuideHeader from "./shared/components/GuideHeader";
 

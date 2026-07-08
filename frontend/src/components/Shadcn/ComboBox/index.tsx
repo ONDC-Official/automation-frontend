@@ -1,7 +1,7 @@
 import { Controller, FieldValues } from "react-hook-form";
 
-import { normalizeComboBoxOptions } from "@/components/Shadcn/ComboBox/combo-box-options";
-import { Field, FieldError, FieldLabel } from "@/components/Shadcn/TextField/field";
+import { normalizeComboBoxOptions } from "@components/Shadcn/ComboBox/combo-box-options";
+import { Field, FieldError, FieldLabel } from "@components/Shadcn/TextField/field";
 import {
     Combobox as ShadCnComboBox,
     ComboboxInput,
@@ -9,8 +9,8 @@ import {
     ComboboxEmpty,
     ComboboxItem,
     ComboboxList,
-} from "@/components/Shadcn/ComboBox/combobox";
-import { IComboBoxProps } from "@/components/Shadcn/ComboBox/types";
+} from "@components/Shadcn/ComboBox/combobox";
+import { IComboBoxProps } from "@components/Shadcn/ComboBox/types";
 
 export const ComboBox = <T extends FieldValues>({
     control,
@@ -80,13 +80,13 @@ export const ComboBox = <T extends FieldValues>({
     );
 };
 
-export { ComboBoxControl } from "@/components/Shadcn/ComboBox/combobox-control";
-export type { IComboBoxControlProps } from "@/components/Shadcn/ComboBox/combobox-control";
-export { ComboBoxMultiControl } from "@/components/Shadcn/ComboBox/combobox-multi-control";
-export type { IComboBoxMultiControlProps } from "@/components/Shadcn/ComboBox/combobox-multi-control";
+export { ComboBoxControl } from "@components/Shadcn/ComboBox/combobox-control";
+export type { IComboBoxControlProps } from "@components/Shadcn/ComboBox/combobox-control";
+export { ComboBoxMultiControl } from "@components/Shadcn/ComboBox/combobox-multi-control";
+export type { IComboBoxMultiControlProps } from "@components/Shadcn/ComboBox/combobox-multi-control";
 export type {
     ComboBoxOptionInput,
     IComboBoxOption,
-} from "@/components/Shadcn/ComboBox/combo-box-options";
+} from "@components/Shadcn/ComboBox/combo-box-options";
 
 export default ComboBox;

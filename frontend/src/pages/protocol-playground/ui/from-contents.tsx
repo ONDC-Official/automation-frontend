@@ -1,16 +1,16 @@
 import { useState } from "react";
 import { PlaygroundActionStep } from "@ondc/automation-mock-runner";
 
-import { Button } from "@/components/Shadcn/Button/button";
+import { Button } from "@components/Shadcn/Button/button";
 import {
     DialogDescription,
     DialogFooter,
     DialogHeader,
     DialogTitle,
-} from "@/components/Shadcn/Dialog";
-import { Textarea } from "@/components/Shadcn/ComboBox/textarea";
-import { Label } from "@/components/Shadcn/Label/label";
-import { TextField } from "@/components/Shadcn/TextField";
+} from "@components/Shadcn/Dialog";
+import { Textarea } from "@components/Shadcn/ComboBox/textarea";
+import { Label } from "@components/Shadcn/Label/label";
+import { TextField } from "@components/Shadcn/TextField";
 import { cn } from "@/lib/utils";
 import { ONDC_ACTION_LIST, ONDC_FORM_LIST } from "@pages/protocol-playground/types";
 import { usePlayground } from "@pages/protocol-playground/hooks/playground-runtime";

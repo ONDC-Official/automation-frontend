@@ -1,5 +1,5 @@
-import type { IAccordionStep } from "@/components/Shadcn/Accordion/types";
-import { FilteredDifficultyCache, INewSessionFormValues } from "@/pages/scenario/types";
+import type { IAccordionStep } from "@components/Shadcn/Accordion/types";
+import { FilteredDifficultyCache, INewSessionFormValues } from "@pages/scenario/types";
 
 const workbenchBaseUrl = import.meta.env.VITE_BASE_URL;
 

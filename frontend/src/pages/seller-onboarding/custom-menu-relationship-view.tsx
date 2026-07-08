@@ -1,20 +1,20 @@
 import React from "react";
 import { FaLayerGroup, FaUtensils, FaPuzzlePiece, FaLink } from "react-icons/fa";
 
-import { Badge } from "@/components/Shadcn/Badge/badge";
-import { Alert } from "@/components/Shadcn/Alert";
-import { Separator } from "@/components/Shadcn/Seperator/separator";
+import { Badge } from "@components/Shadcn/Badge/badge";
+import { Alert } from "@components/Shadcn/Alert";
+import { Separator } from "@components/Shadcn/Seperator/separator";
 import {
     Accordion,
     AccordionContent,
     AccordionItem,
     AccordionTrigger,
-} from "@/components/Shadcn/Accordion/accordion";
-import { Card, Tag } from "@/pages/seller-onboarding/components/LegacyCardTag";
+} from "@components/Shadcn/Accordion/accordion";
+import { Card, Tag } from "@pages/seller-onboarding/components/LegacyCardTag";
 import {
     RelationshipTimeline,
     type RelationshipTimelineItem,
-} from "@/pages/seller-onboarding/components/RelationshipTimeline";
+} from "@pages/seller-onboarding/components/RelationshipTimeline";
 
 interface CustomizationItem {
     id: string;

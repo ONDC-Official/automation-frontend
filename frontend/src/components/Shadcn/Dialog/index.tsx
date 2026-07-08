@@ -3,7 +3,7 @@ import { Dialog as DialogPrimitive } from "radix-ui";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 
 import { cn } from "@/lib/utils";
-import { isFormFlowPortaledOverlay } from "@/components/Shadcn/Dialog/form-flow-dialog-utils";
+import { isFormFlowPortaledOverlay } from "@components/Shadcn/Dialog/form-flow-dialog-utils";
 
 const Dialog = ({ ...props }: React.ComponentProps<typeof DialogPrimitive.Root>) => (
     <DialogPrimitive.Root data-slot="dialog" {...props} />

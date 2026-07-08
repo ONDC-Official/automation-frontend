@@ -4,8 +4,8 @@ import {
     AccordionContent,
     AccordionItem,
     AccordionTrigger,
-} from "@/components/Shadcn/Accordion/accordion";
-import SearchField from "@/components/Shadcn/SearchField";
+} from "@components/Shadcn/Accordion/accordion";
+import SearchField from "@components/Shadcn/SearchField";
 import { GetRequestEndpoint } from "@components/FlowShared/guides";
 
 const FAQ_ITEMS = [
@@ -107,7 +107,9 @@ export default function FlowHelperTab({
             </Accordion>
 
             {filteredItems.length === 0 ? (
-                <p className="py-6 text-center text-body-2 text-text-secondary">No matching guide items.</p>
+                <p className="py-6 text-center text-body-2 text-text-secondary">
+                    No matching guide items.
+                </p>
             ) : null}
         </div>
     );

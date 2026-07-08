@@ -3,7 +3,7 @@ import { Outlet, useLocation } from "react-router-dom";
 import { ArrowLeftIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import DeveloperGuideCollapsedNavBar from "./DeveloperGuideCollapsedNavBar";
 import DeveloperGuideNavBackButton from "./DeveloperGuideNavBackButton";
-import Spinner from "@/components/Shadcn/Spinner";
+import Spinner from "@components/Shadcn/Spinner";
 import { filterNavTree } from "./filterNavTree";
 import DeveloperGuideSidebar from "./DeveloperGuideSidebar";
 import { useAppDispatch, useAppSelector } from "@store/hooks";
@@ -13,8 +13,8 @@ import {
 } from "@store/slices/devGuideShellSlice";
 import { useDevGuideShellServerState } from "@store/selectors/devGuideSelectors";
 import { NAV_STATUS_LABEL, NAV_STATUS_STYLES, type NavStatus } from "../shared/statusPlaceholders";
-import { Button } from "@/components/Shadcn/Button";
-import Input from "@/components/Shadcn/TextField/input";
+import { Button } from "@components/Shadcn/Button";
+import Input from "@components/Shadcn/TextField/input";
 
 const STATUS_LEGEND_ORDER: NavStatus[] = ["released", "drafted", "to-be-deprecated", "deprecated"];
 

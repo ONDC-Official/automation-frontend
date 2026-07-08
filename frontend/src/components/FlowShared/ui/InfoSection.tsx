@@ -1,5 +1,5 @@
-import { InfoPill } from "@/components/FlowShared/ui/InfoPill";
-import type { InfoSectionProps } from "@/components/FlowShared/ui/types";
+import { InfoPill } from "@components/FlowShared/ui/InfoPill";
+import type { InfoSectionProps } from "@components/FlowShared/ui/types";
 
 const COPYABLE_KEYS = new Set(["sessionId", "subscriberUrl"]);
 

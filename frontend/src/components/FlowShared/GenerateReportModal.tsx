@@ -6,8 +6,8 @@ import { ApiData, SessionCache } from "@/types/session-types";
 import { useGenerateReportMutation, useLazyGetTransactionDataQuery } from "@store/api";
 import Modal from "@components/Modal";
 import { CheckCircleIcon, ExclamationCircleIcon } from "@heroicons/react/20/solid";
-import { Button } from "@/components/Shadcn/Button/button";
-import SpinnerDialog from "@/components/Shadcn/SpinnerDialog";
+import { Button } from "@components/Shadcn/Button/button";
+import SpinnerDialog from "@components/Shadcn/SpinnerDialog";
 import { useAuth } from "@hooks/useAuth";
 import type {
     FlowCategorySummary,

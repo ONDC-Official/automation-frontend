@@ -1,5 +1,5 @@
 import { FC } from "react";
-import { ISectionLabelProps } from "@/components/SectionLabel/types";
+import { ISectionLabelProps } from "@components/SectionLabel/types";
 
 const SectionLabel: FC<ISectionLabelProps> = ({ label, className = "" }) => (
     <p

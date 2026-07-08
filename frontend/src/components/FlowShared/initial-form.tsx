@@ -1,7 +1,7 @@
 import react from "react";
 import GenericForm from "@components/ui/forms/generic-form";
-import TextField from "@/components/Shadcn/TextField";
-import { SelectField } from "@/components/Shadcn/Select";
+import TextField from "@components/Shadcn/TextField";
+import { SelectField } from "@components/Shadcn/Select";
 import { trackEvent } from "@utils/analytics";
 import { IDomain, IDomainVersion } from "@/types/domain";
 

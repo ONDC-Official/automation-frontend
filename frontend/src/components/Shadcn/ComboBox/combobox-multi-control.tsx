@@ -1,11 +1,11 @@
 import { useMemo } from "react";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 
-import { Badge } from "@/components/Shadcn/Badge/badge";
+import { Badge } from "@components/Shadcn/Badge/badge";
 import {
     ComboBoxOptionInput,
     normalizeComboBoxOptions,
-} from "@/components/Shadcn/ComboBox/combo-box-options";
+} from "@components/Shadcn/ComboBox/combo-box-options";
 import {
     Combobox,
     ComboboxContent,
@@ -13,8 +13,8 @@ import {
     ComboboxInput,
     ComboboxItem,
     ComboboxList,
-} from "@/components/Shadcn/ComboBox/combobox";
-import { Field, FieldError, FieldLabel } from "@/components/Shadcn/TextField/field";
+} from "@components/Shadcn/ComboBox/combobox";
+import { Field, FieldError, FieldLabel } from "@components/Shadcn/TextField/field";
 import { cn } from "@/lib/utils";
 
 export interface IComboBoxMultiControlProps {

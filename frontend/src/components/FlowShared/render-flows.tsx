@@ -2,12 +2,12 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Flow, MetadataField } from "@/types/flow-types";
 import { ROUTES } from "@constants/routes";
-import { buildDifficultyState } from "@/pages/scenario/FlowSettingsPanel";
+import { buildDifficultyState } from "@pages/scenario/FlowSettingsPanel";
 import { InfoSection } from "@components/FlowShared/ui/InfoSection";
 import { EndpointsSection } from "@components/FlowShared/ui/EndpointsSection";
 import { CollapsibleSection } from "@components/FlowShared/ui/CollapsibleSection";
 import { toast } from "sonner";
-import { SessionCache, SessionMetadataValue } from "@/types/session-types";
+import { SessionCache } from "@/types/session-types";
 import {
     useLazyGetCompletePayloadQuery,
     useLazyGetReportQuery,
@@ -16,10 +16,7 @@ import {
 } from "@store/api";
 import { FlowRunAccordion } from "@components/FlowShared/complete-flow";
 import { useSession } from "@hooks/useSession";
-import Spinner from "@/components/Shadcn/Spinner";
-import SearchableJsonView from "@components/FlowShared/searchable-json-view";
-import { FlowTabs, TabsContent } from "@/components/Shadcn/Tabs";
-import CircularProgress from "@/components/FlowShared/ui/CircularProgress";
+import CircularProgress from "@components/FlowShared/ui/CircularProgress";
 import Modal from "@components/Modal";
 import GuideModal from "@components/FlowShared/flow-guide";
 import {
@@ -29,105 +26,27 @@ import {
     QuestionMarkCircleIcon,
 } from "@heroicons/react/24/outline";
 import { Cog6ToothIcon } from "@heroicons/react/24/solid";
-import { queryJsonPath } from "../../utils/jsonpath-query";
-import FlowHelperTab from "@components/FlowShared/helper-tab";
 import { GetRequestEndpoint } from "@components/FlowShared/guides";
-import { Button } from "@/components/Shadcn/Button/button";
+import { Button } from "@components/Shadcn/Button/button";
 import { trackEvent } from "@utils/analytics";
 import { openReportInNewTab } from "@utils/generic-utils";
 import GenerateReportModal from "@components/FlowShared/GenerateReportModal";
 import { FlowSettingsModal, type SettingsDraft } from "@components/FlowShared/FlowSettingsModal";
-import RideMapTab from "@components/FlowShared/ride-map-tab";
 import { isRideMapEnabled } from "@components/FlowShared/ride-map-utils";
 import { useAppDispatch } from "@store/hooks";
-import { initializeFlowPage, resetFlowRuntime, type SessionTab } from "@store/slices/sessionSlice";
+import { initializeFlowPage, resetFlowRuntime } from "@store/slices/sessionSlice";
 import { SESSION_EMPTY_METADATA, SESSION_EMPTY_RECORD } from "@store/slices/sessionConstants";
-import { upsertSession } from "@store/slices/sessionHistorySlice";
 import { store } from "@store/index";
-
-type SideViewResponse = {
-    res?: Array<{ response?: Record<string, unknown> }>;
-    [key: string]: unknown;
-};
-
-type SideViewState = {
-    payloadId?: string;
-    request?: Record<string, unknown>;
-    response?: SideViewResponse;
-    [key: string]: unknown;
-};
-
-function extractMetadataFromFlows(flows: Flow[]): Record<string, MetadataField[]> {
-    const flowMetadataMap: Record<string, MetadataField[]> = {};
-
-    flows.forEach((flow) => {
-        const flowMetadata: MetadataField[] = [];
-
-        flow.sequence.forEach((step) => {
-            const metadataArray = step["meta-data"] || step.metadata;
-
-            if (metadataArray && Array.isArray(metadataArray) && metadataArray.length > 0) {
-                flowMetadata.push(...metadataArray);
-            }
-        });
-
-        flowMetadataMap[flow.id] = flowMetadata;
-    });
-
-    return flowMetadataMap;
-}
-
-function extractMetadataByFlowName(
-    flowMetadataMap: Record<string, MetadataField[]>,
-    flowName: string
-): MetadataField[] {
-    return flowMetadataMap[flowName] || [];
-}
-
-function extractMetadataValues(
-    payload: Record<string, unknown> | Record<string, unknown>[],
-    metadataFields: MetadataField[]
-): Record<string, SessionMetadataValue> {
-    const extractedData: Record<string, SessionMetadataValue> = {};
-
-    metadataFields.forEach((meta) => {
-        try {
-            const payloadData = Array.isArray(payload) ? payload[0] : payload;
-            const result = queryJsonPath(payloadData, meta.path);
-
-            const value = result.length > 0 ? result[0] : null;
-
-            const displayValue =
-                value === null ||
-                value === undefined ||
-                value === "" ||
-                (typeof value === "string" && value.trim() === "") ||
-                (Array.isArray(value) && value.length === 0) ||
-                (typeof value === "object" && value !== null && Object.keys(value).length === 0)
-                    ? "Data not available"
-                    : value;
-
-            extractedData[meta.description.name] = {
-                value: displayValue,
-            };
-        } catch (error: unknown) {
-            extractedData[meta.description.name] = {
-                name: meta.description.name,
-                value: "Data not available",
-                errorMessage: error instanceof Error ? error.message : "Unknown error",
-            };
-        }
-    });
-
-    return extractedData;
-}
-
-function sessionCacheMeaningfullyChanged(prev: SessionCache, next: SessionCache): boolean {
-    return (
-        prev.activeFlow !== next.activeFlow ||
-        JSON.stringify(prev.flowMap) !== JSON.stringify(next.flowMap)
-    );
-}
+import { SessionSidePanel } from "@components/FlowShared/session-side-panel";
+import {
+    extractMetadataByFlowName,
+    extractMetadataFromFlows,
+    extractMetadataValues,
+    sessionCacheMeaningfullyChanged,
+    updateLocalStorageSession,
+    type SideViewResponse,
+    type SideViewState,
+} from "@components/FlowShared/metadata-utils";
 
 function RenderFlows({
     flows,
@@ -653,92 +572,15 @@ function RenderFlows({
                         ))}
                     </div>
 
-                    <div className="min-w-0 lg:sticky lg:top-20 lg:self-start">
-                        <div>
-                            <FlowTabs
-                                options={[
-                                    { key: "Request", label: "Request" },
-                                    { key: "Response", label: "Response" },
-                                    { key: "Guide", label: "Guide" },
-                                    ...(mapEnabled
-                                        ? [{ key: "Application", label: "Application" }]
-                                        : []),
-                                ]}
-                                value={selectedTab}
-                                onValueChange={(value) => setSelectedTab(value as SessionTab)}
-                            >
-                                <TabsContent value="Request" className="pb-4 pt-3">
-                                    {sessionData ? (
-                                        <div
-                                            className="overflow-auto"
-                                            style={{ maxHeight: "600px" }}
-                                        >
-                                            <SearchableJsonView
-                                                value={requestData ?? SESSION_EMPTY_RECORD}
-                                            />
-                                        </div>
-                                    ) : (
-                                        <div className="flex items-center justify-center py-16">
-                                            <Spinner className="size-8 text-brand-normal" />
-                                        </div>
-                                    )}
-                                </TabsContent>
-                                <TabsContent value="Response" className="pb-4 pt-3">
-                                    {sessionData ? (
-                                        <div
-                                            className="overflow-auto"
-                                            style={{ maxHeight: "600px" }}
-                                        >
-                                            <SearchableJsonView
-                                                value={responseData ?? SESSION_EMPTY_RECORD}
-                                            />
-                                        </div>
-                                    ) : (
-                                        <div className="flex items-center justify-center py-16">
-                                            <Spinner className="size-8 text-brand-normal" />
-                                        </div>
-                                    )}
-                                </TabsContent>
-                                <TabsContent value="Guide" className="pb-4 pt-3">
-                                    {sessionData ? (
-                                        <div
-                                            className="overflow-auto rounded-lg border border-n-40 bg-surface-elevated p-3 dark:border-border-default dark:bg-surface-muted"
-                                            style={{ maxHeight: "600px" }}
-                                        >
-                                            <FlowHelperTab
-                                                domain={sessionData?.domain}
-                                                version={sessionData?.version}
-                                                npType={sessionData?.npType}
-                                            />
-                                        </div>
-                                    ) : (
-                                        <div className="flex items-center justify-center py-16">
-                                            <Spinner className="size-8 text-brand-normal" />
-                                        </div>
-                                    )}
-                                </TabsContent>
-                                {mapEnabled ? (
-                                    <TabsContent value="Application" className="px-4 pb-4 pt-3">
-                                        {sessionData ? (
-                                            <div
-                                                className="overflow-auto rounded-lg border border-n-40 bg-surface-elevated p-3 dark:border-border-default dark:bg-surface-muted"
-                                                style={{ maxHeight: "600px" }}
-                                            >
-                                                <RideMapTab
-                                                    key={activeFlowId ?? "none"}
-                                                    flowId={activeFlowId}
-                                                />
-                                            </div>
-                                        ) : (
-                                            <div className="flex items-center justify-center py-16">
-                                                <Spinner className="size-8 text-brand-normal" />
-                                            </div>
-                                        )}
-                                    </TabsContent>
-                                ) : null}
-                            </FlowTabs>
-                        </div>
-                    </div>
+                    <SessionSidePanel
+                        sessionData={sessionData}
+                        requestData={requestData}
+                        responseData={responseData}
+                        selectedTab={selectedTab}
+                        setSelectedTab={setSelectedTab}
+                        mapEnabled={mapEnabled}
+                        activeFlowId={activeFlowId}
+                    />
                 </div>
             </div>
 
@@ -759,19 +601,3 @@ function RenderFlows({
 }
 
 export default RenderFlows;
-
-function updateLocalStorageSession(sessionData: SessionCache, sessionId: string) {
-    if (sessionData.usecaseId === "PLAYGROUND-FLOW") {
-        return;
-    }
-    const now = new Date();
-    store.dispatch(
-        upsertSession({
-            sessionId: sessionId,
-            subscriberUrl: sessionData.subscriberUrl,
-            role: sessionData.npType,
-            timestamp: now.toISOString(),
-            expiresAt: new Date(now.getTime() + 24 * 60 * 60 * 1000).toISOString(),
-        })
-    );
-}

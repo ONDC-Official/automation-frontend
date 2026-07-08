@@ -6,8 +6,8 @@ import {
     CheckCircleIcon,
 } from "@heroicons/react/24/outline";
 
-import { Button } from "@/components/Shadcn/Button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/Shadcn/Tabs";
+import { Button } from "@components/Shadcn/Button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@components/Shadcn/Tabs";
 import { useClipboard } from "@hooks/useClipboard";
 
 interface OnboardingSuccessPayloadProps {

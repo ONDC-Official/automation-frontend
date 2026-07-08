@@ -1,6 +1,6 @@
-import { Badge } from "@/components/Shadcn/Badge/badge";
+import { Badge } from "@components/Shadcn/Badge/badge";
 import { cn } from "@/lib/utils";
-import type { FilterBadgeProps } from "@/components/Shadcn/Badge/types";
+import type { FilterBadgeProps } from "@components/Shadcn/Badge/types";
 
 export const FilterBadge = ({ label, selected, onClick }: FilterBadgeProps) => (
     <button
@@ -22,4 +22,4 @@ export const FilterBadge = ({ label, selected, onClick }: FilterBadgeProps) => (
     </button>
 );
 
-export { Badge, badgeVariants } from "@/components/Shadcn/Badge/badge";
+export { Badge, badgeVariants } from "@components/Shadcn/Badge/badge";

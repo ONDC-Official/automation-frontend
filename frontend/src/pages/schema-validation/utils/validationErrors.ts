@@ -1,5 +1,5 @@
 import { VALIDATION_MESSAGES, VALIDATION_PATHS } from "../constants";
-import type { IParsedValidationError } from "@/pages/schema-validation/types";
+import type { IParsedValidationError } from "@pages/schema-validation/types";
 
 export type ValidationErrorCode = keyof typeof VALIDATION_MESSAGES;
 

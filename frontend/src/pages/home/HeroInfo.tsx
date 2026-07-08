@@ -1,6 +1,6 @@
 import { FC } from "react";
-import { Button } from "@/components/Shadcn/Button/button";
-import { ROUTES } from "@/constants/routes";
+import { Button } from "@components/Shadcn/Button/button";
+import { ROUTES } from "@constants/routes";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@hooks/useAuth";
 

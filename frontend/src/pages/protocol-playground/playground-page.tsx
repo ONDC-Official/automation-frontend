@@ -6,7 +6,7 @@ import {
     setTimelineOpen as setTimelineOpenAction,
 } from "@store/slices/playgroundUiSlice";
 import { PlaygroundModal } from "@pages/protocol-playground/ui/playground-modal";
-import { DialogDescription, DialogHeader, DialogTitle } from "@/components/Shadcn/Dialog";
+import { DialogDescription, DialogHeader, DialogTitle } from "@components/Shadcn/Dialog";
 import { PlaygroundRightTabType } from "@pages/protocol-playground/types";
 import { LeftSideView } from "@pages/protocol-playground/ui/LeftSideView";
 import { RightSideView } from "@pages/protocol-playground/ui/RightSideView";
@@ -16,7 +16,7 @@ import { useConfigOperations } from "@pages/protocol-playground/hooks/use-config
 import { PlaygroundHeader } from "@pages/protocol-playground/ui/playground-upper/playground-header";
 import { useModalHandlers } from "@pages/protocol-playground/hooks/use-modal";
 import { usePlaygroundActions } from "@pages/protocol-playground/hooks/use-playground-actions";
-import SpinnerDialog from "@/components/Shadcn/SpinnerDialog";
+import SpinnerDialog from "@components/Shadcn/SpinnerDialog";
 import { ActionTimeline } from "@pages/protocol-playground/ui/playground-upper/merged-sequcence";
 import TraceView from "@pages/protocol-playground/ui/extras/trace-view";
 import ViewOnlyPlaygroundPage from "@pages/protocol-playground/view-only-page";

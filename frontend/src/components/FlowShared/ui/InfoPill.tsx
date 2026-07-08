@@ -1,6 +1,6 @@
-import { Button } from "@/components/Shadcn/Button/button";
+import { Button } from "@components/Shadcn/Button/button";
 import { cn } from "@/lib/utils";
-import type { InfoPillProps } from "@/components/FlowShared/ui/types";
+import type { InfoPillProps } from "@components/FlowShared/ui/types";
 import { ClipboardDocumentIcon } from "@heroicons/react/24/outline";
 import { useClipboard } from "@hooks/useClipboard";
 

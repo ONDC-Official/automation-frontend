@@ -1,17 +1,17 @@
 import { useState, useEffect } from "react";
 import { usePlayground } from "@pages/protocol-playground/hooks/playground-runtime";
-import { queryJsonPath } from "@/utils/jsonpath-query";
+import { queryJsonPath } from "@utils/jsonpath-query";
 import { inputClass } from "@components/ui/forms/inputClass";
 import { FaExclamationTriangle, FaPlus } from "react-icons/fa";
-import JsonPathInput from "@/pages/protocol-playground/ui/json-path-input.tsx";
-import { handleAddParam } from "@/pages/protocol-playground/ui/json-path-input";
-import JsonPathOutputPopup from "@/pages/protocol-playground/ui/JsonPathOutputModal";
+import { handleAddParam } from "@pages/protocol-playground/ui/json-path-input";
+import JsonPathOutputPopup from "@pages/protocol-playground/ui/JsonPathOutputModal";
 import { MockPlaygroundConfigType } from "@ondc/automation-mock-runner";
-import JsonViewerDark from "@/pages/protocol-playground/ui/Json-path-extractor";
-import { getGroupSteps, setGroupSteps } from "@/pages/protocol-playground/utils/step-group";
-import Input from "@/components/Shadcn/TextField/input";
-import { Button } from "@/components/Shadcn/Button";
+import JsonViewerDark from "@pages/protocol-playground/ui/Json-path-extractor";
+import { getGroupSteps, setGroupSteps } from "@pages/protocol-playground/utils/step-group";
+import { Button } from "@components/Shadcn/Button";
 import { SelectedType } from "@pages/protocol-playground/ui/types";
+import { AddMappingForm } from "@pages/protocol-playground/ui/session-data-tab/add-mapping-form";
+import { SavedPathRow } from "@pages/protocol-playground/ui/session-data-tab/saved-path-row";
 
 export default function SessionDataTab() {
     const [selectedCall, setSelectedCall] = useState("");
@@ -456,14 +456,12 @@ export default function SessionDataTab() {
                         💡 Click on object keys (like "context") or primitive values
                     </div>
                     <div className="bg-gray-900 p-2 rounded-md font-mono text-sm">
-                        {/* <div className="text-gray-400">{"{"}</div> */}
                         <JsonViewerDark
                             data={payloadFromTranscationHistory(selectedCall)}
                             isSelected={isSelected}
                             handleKeyClick={handleKeyClick}
                             invertTheme
                         />
-                        {/* <div className="text-gray-400">{"}"}</div> */}
                     </div>
                 </div>
 
@@ -486,43 +484,18 @@ export default function SessionDataTab() {
                     </div>
 
                     {showInput && (
-                        <div className="bg-gray-800 mt-4 p-4 rounded-lg border border-sky-500/30">
-                            <div className="flex flex-col gap-2 items-center">
-                                <Input
-                                    type="text"
-                                    value={alias}
-                                    onChange={(e) => setAlias(e.target.value)}
-                                    placeholder="Enter alias (e.g. userInfo)"
-                                    className="px-3 w-full py-2 rounded bg-gray-900 text-white border border-gray-700 focus:border-sky-500 outline-hidden"
-                                />
-                                :
-                                <Input
-                                    type="text"
-                                    value={path}
-                                    onChange={(e) => setPath(e.target.value)}
-                                    placeholder="Enter JSON path (e.g. $.context.city)"
-                                    className="px-3 w-full py-2 rounded bg-gray-900 text-white border border-gray-700 focus:border-sky-500 outline-hidden"
-                                />
-                            </div>
-                            {error && <p className="text-red-400 text-sm">{error}</p>}
-                            <div className="flex gap-2 mt-2">
-                                <Button
-                                    onClick={() => handleAdd({})}
-                                    className="px-4 py-2 bg-sky-600 text-white rounded hover:bg-sky-700 transition-colors"
-                                >
-                                    Save
-                                </Button>
-                                <Button
-                                    onClick={() => {
-                                        setShowInput(false);
-                                        setError("");
-                                    }}
-                                    className="px-4 py-2 bg-gray-700 text-gray-300 rounded hover:bg-gray-600 transition-colors"
-                                >
-                                    Cancel
-                                </Button>
-                            </div>
-                        </div>
+                        <AddMappingForm
+                            alias={alias}
+                            path={path}
+                            error={error}
+                            onAliasChange={setAlias}
+                            onPathChange={setPath}
+                            onSave={() => handleAdd({})}
+                            onCancel={() => {
+                                setShowInput(false);
+                                setError("");
+                            }}
+                        />
                     )}
 
                     {savedInfoLength + saveDataLength === 0 ? (
@@ -535,28 +508,22 @@ export default function SessionDataTab() {
                                 groupSteps.find((s) => s.action_id === selectedCall)?.mock
                                     .saveData || {}
                             ).map(([alias, path]) => (
-                                <div
+                                <SavedPathRow
                                     key={alias}
-                                    className="bg-gray-800 p-3 rounded-lg border border-sky-500/30 flex items-center justify-between group hover:border-sky-500/50 transition-colors"
-                                >
-                                    <JsonPathInput
-                                        onDelete={(aliasToDelete: string) => {
-                                            setShowAlert(true);
-                                            setAlias(aliasToDelete);
-                                            // handleRemoveSavedData(alias)
-                                        }}
-                                        alias={alias}
-                                        path={path}
-                                        // selectedCall={selectedCall}
-                                        error={error}
-                                        setError={setError}
-                                        handleAdd={handleAdd}
-                                        onView={(path: string) => {
-                                            setIsViewActive(true);
-                                            setViewPath(path);
-                                        }}
-                                    />
-                                </div>
+                                    onDelete={(aliasToDelete: string) => {
+                                        setShowAlert(true);
+                                        setAlias(aliasToDelete);
+                                    }}
+                                    alias={alias}
+                                    path={path}
+                                    error={error}
+                                    setError={setError}
+                                    handleAdd={handleAdd}
+                                    onView={(path: string) => {
+                                        setIsViewActive(true);
+                                        setViewPath(path);
+                                    }}
+                                />
                             ))}
                             {savedInfoLength > 0 && (
                                 <div className="my-6 border-t border-gray-700" />
@@ -567,32 +534,27 @@ export default function SessionDataTab() {
                                 </h2>
                             )}
                             {Object.entries(savedInfo).map(([alias, path]) => (
-                                <div
+                                <SavedPathRow
                                     key={alias}
-                                    className="bg-gray-800 p-3 rounded-lg border border-sky-500/30 flex items-center justify-between group hover:border-sky-500/50 transition-colors"
-                                >
-                                    <JsonPathInput
-                                        onDelete={() => {
-                                            removePath(alias);
-                                        }}
-                                        alias={alias}
-                                        path={path}
-                                        // selectedCall={selectedCall}
-                                        error={error}
-                                        setError={setError}
-                                        handleAdd={({
-                                            oldAlias,
-                                            currAlias,
-                                            currPath,
-                                        }: handleAddParam) =>
-                                            editSavedInfo(oldAlias || "", currAlias, currPath)
-                                        }
-                                        onView={(path: string) => {
-                                            setIsViewActive(true);
-                                            setViewPath(path);
-                                        }}
-                                    />
-                                </div>
+                                    onDelete={() => {
+                                        removePath(alias);
+                                    }}
+                                    alias={alias}
+                                    path={path}
+                                    error={error}
+                                    setError={setError}
+                                    handleAdd={({
+                                        oldAlias,
+                                        currAlias,
+                                        currPath,
+                                    }: handleAddParam) =>
+                                        editSavedInfo(oldAlias || "", currAlias, currPath)
+                                    }
+                                    onView={(path: string) => {
+                                        setIsViewActive(true);
+                                        setViewPath(path);
+                                    }}
+                                />
                             ))}
                         </div>
                     )}

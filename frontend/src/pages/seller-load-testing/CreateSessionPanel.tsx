@@ -1,5 +1,5 @@
-import TextField from "@/components/Shadcn/TextField";
-import LoadingButton from "@/components/ui/forms/loading-button";
+import TextField from "@components/Shadcn/TextField";
+import LoadingButton from "@components/ui/forms/loading-button";
 import type { CreateSessionPanelProps } from "@pages/seller-load-testing/types";
 
 export const CreateSessionPanel = ({

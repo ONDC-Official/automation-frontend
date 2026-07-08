@@ -2,8 +2,8 @@ import React, { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { FaUpload, FaTrash } from "react-icons/fa";
 import { useUploadImageMutation } from "@store/api";
-import { LabelWithToolTip } from "@/components/Shadcn/TextField";
-import { Button } from "@/components/Shadcn/Button";
+import { LabelWithToolTip } from "@components/Shadcn/TextField";
+import { Button } from "@components/Shadcn/Button";
 
 interface SingleImageUploadProps {
     label: string;

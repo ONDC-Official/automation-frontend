@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 
-import { Badge } from "@/components/Shadcn/Badge/badge";
+import { Badge } from "@components/Shadcn/Badge/badge";
 import { cn } from "@/lib/utils";
 
 interface TagsInputProps {

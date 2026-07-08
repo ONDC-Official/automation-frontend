@@ -9,16 +9,16 @@ import {
     ClipboardDocumentIcon,
 } from "@heroicons/react/24/outline";
 
-import { Button } from "@/components/Shadcn/Button/button";
-import { Input } from "@/components/Shadcn/TextField/input";
-import { Dialog, DialogContent, DialogTitle } from "@/components/Shadcn/Dialog";
+import { Button } from "@components/Shadcn/Button/button";
+import { Input } from "@components/Shadcn/TextField/input";
+import { Dialog, DialogContent, DialogTitle } from "@components/Shadcn/Dialog";
 import {
     Select,
     SelectContent,
     SelectItem,
     SelectTrigger,
     SelectValue,
-} from "@/components/Shadcn/Select/select";
+} from "@components/Shadcn/Select/select";
 import { cn } from "@/lib/utils";
 import { useAppliedTheme } from "@/theme/hooks/useAppliedTheme";
 import { useClipboard } from "@hooks/useClipboard";

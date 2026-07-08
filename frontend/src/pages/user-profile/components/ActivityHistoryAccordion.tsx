@@ -1,4 +1,4 @@
-import { Accordion } from "@/components/Shadcn/Accordion/accordion";
+import { Accordion } from "@components/Shadcn/Accordion/accordion";
 import { HistorySessionAccordionItem } from "@pages/user-profile/components/HistorySessionAccordionItem";
 import type { IActivityHistoryAccordionProps } from "@pages/user-profile/types";
 

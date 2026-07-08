@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useAppSelector } from "@store/hooks";
 import { useExchangeCodeMutation, useGetMeQuery } from "@store/api";
 import { selectAuthToken } from "@store/slices/authSlice";
-import { ROUTES } from "@/constants/routes";
+import { ROUTES } from "@constants/routes";
 
 /** Bootstraps auth on app load and handles the OAuth code-exchange redirect. */
 export const AuthInitializer = () => {

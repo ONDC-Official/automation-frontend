@@ -2,8 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { PlayIcon, ArrowUturnLeftIcon } from "@heroicons/react/24/outline";
 
-import FormFlowDialog from "@/components/Shadcn/Dialog/form-flow-dialog";
-import { Button } from "@/components/Shadcn/Button/button";
+import FormFlowDialog from "@components/Shadcn/Dialog/form-flow-dialog";
+import { Button } from "@components/Shadcn/Button/button";
 import {
     Combobox,
     ComboboxContent,
@@ -11,7 +11,7 @@ import {
     ComboboxInput,
     ComboboxItem,
     ComboboxList,
-} from "@/components/Shadcn/ComboBox/combobox";
+} from "@components/Shadcn/ComboBox/combobox";
 import { usePlayground } from "@pages/protocol-playground/hooks/playground-runtime";
 import type { ToolMessage } from "../../hooks/use-chat-session";
 import { usePendingApprovals } from "../../hooks/use-pending-approvals";

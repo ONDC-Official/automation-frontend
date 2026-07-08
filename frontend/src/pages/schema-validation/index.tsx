@@ -1,8 +1,8 @@
 import { FC } from "react";
 import { useSchemaValidation } from "@pages/schema-validation/hooks/useSchemaValidation";
 import SchemaGuideAccordion from "@pages/schema-validation/SchemaGuideAccordion";
-import PayloadEditor from "@/components/PayloadEditor";
-import { Button } from "@/components/Shadcn/Button/button";
+import PayloadEditor from "@components/PayloadEditor";
+import { Button } from "@components/Shadcn/Button/button";
 
 /**
  * Schema validation page with guide accordion and Monaco payload editor.

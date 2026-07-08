@@ -4,9 +4,9 @@ import {
     Collapsible,
     CollapsibleContent,
     CollapsibleTrigger,
-} from "@/components/Shadcn/Collapsible/collapsible";
+} from "@components/Shadcn/Collapsible/collapsible";
 import { cn } from "@/lib/utils";
-import type { CollapsibleSectionProps } from "@/components/FlowShared/ui/types";
+import type { CollapsibleSectionProps } from "@components/FlowShared/ui/types";
 
 export const CollapsibleSection = ({
     title,

@@ -5,12 +5,12 @@ import {
     ComboboxInput,
     ComboboxItem,
     ComboboxList,
-} from "@/components/Shadcn/ComboBox/combobox";
+} from "@components/Shadcn/ComboBox/combobox";
 import {
     ComboBoxOptionInput,
     normalizeComboBoxOptions,
-} from "@/components/Shadcn/ComboBox/combo-box-options";
-import { Field, FieldError, FieldLabel } from "@/components/Shadcn/TextField/field";
+} from "@components/Shadcn/ComboBox/combo-box-options";
+import { Field, FieldError, FieldLabel } from "@components/Shadcn/TextField/field";
 import { cn } from "@/lib/utils";
 
 export interface IComboBoxControlProps {

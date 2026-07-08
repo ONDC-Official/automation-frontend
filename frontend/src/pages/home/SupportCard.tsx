@@ -8,7 +8,7 @@ import {
     CardFooter,
     CardHeader,
     CardTitle,
-} from "@/components/Shadcn/Card/card";
+} from "@components/Shadcn/Card/card";
 import type { ISupportCard as SupportCardData } from "@pages/home/types";
 
 interface SupportCardProps {

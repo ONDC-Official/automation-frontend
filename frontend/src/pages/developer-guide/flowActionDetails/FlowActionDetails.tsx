@@ -12,7 +12,7 @@ import AttributesPanel from "./AttributesPanel";
 import CommentsPanel from "./CommentsPanel";
 import NotesPanel from "./NotesPanel";
 import { getLeafRowsForApi, getValueAtPath, type RawTableAction } from "./attributePanelUtils";
-import { Button } from "@/components/Shadcn/Button";
+import { Button } from "@components/Shadcn/Button";
 
 type RightPanelTab = "attributes" | "comments" | "notes";
 

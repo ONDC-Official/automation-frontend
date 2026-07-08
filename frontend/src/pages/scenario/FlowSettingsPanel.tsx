@@ -1,14 +1,14 @@
-import { SwitchField, SwitchFieldGroup } from "@/components/Shadcn/Switch";
+import { SwitchField, SwitchFieldGroup } from "@components/Shadcn/Switch";
 import {
     DifficultyCache,
     FilteredDifficultyCache,
     FlowSettingsPanelProps,
-} from "@/pages/scenario/types";
+} from "@pages/scenario/types";
 import {
     keyDetailsMapping,
     SESSION_VALIDATION_DEFAULTS,
     skipItems,
-} from "@/pages/scenario/constants";
+} from "@pages/scenario/constants";
 import { trackEvent } from "@utils/analytics";
 
 export const buildDifficultyState = (cache: Partial<DifficultyCache>): FilteredDifficultyCache => {

@@ -2,8 +2,8 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
-import TextField, { LabelWithToolTip } from "@/components/Shadcn/TextField";
-import { ComboBoxMultiControl } from "@/components/Shadcn/ComboBox";
+import TextField, { LabelWithToolTip } from "@components/Shadcn/TextField";
+import { ComboBoxMultiControl } from "@components/Shadcn/ComboBox";
 import LoadingButton from "@components/ui/forms/loading-button";
 import { SellerOnboardingData } from "@pages/seller-onboarding";
 import { domainOptions } from "@constants/common.tsx";

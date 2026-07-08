@@ -1,6 +1,6 @@
 import { FC } from "react";
-import SectionLabel from "@/components/SectionLabel";
-import { IStatLayoutProps } from "@/components/StatLayout/types";
+import SectionLabel from "@components/SectionLabel";
+import { IStatLayoutProps } from "@components/StatLayout/types";
 
 const StatLayout: FC<IStatLayoutProps> = ({ label, title, description, stats }) => (
     <section className="text-n-0 py-16 lg:py-20 bg-brand-section">

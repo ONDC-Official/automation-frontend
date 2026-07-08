@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { MockPlaygroundConfigType } from "@ondc/automation-mock-runner";
-import { Button } from "@/components/Shadcn/Button/button";
+import { Button } from "@components/Shadcn/Button/button";
 import {
     Dialog,
     DialogContent,
@@ -8,10 +8,10 @@ import {
     DialogFooter,
     DialogHeader,
     DialogTitle,
-} from "@/components/Shadcn/Dialog";
-import { TextField } from "@/components/Shadcn/TextField";
-import { Textarea } from "@/components/Shadcn/ComboBox/textarea";
-import { Label } from "@/components/Shadcn/Label/label";
+} from "@components/Shadcn/Dialog";
+import { TextField } from "@components/Shadcn/TextField";
+import { Textarea } from "@components/Shadcn/ComboBox/textarea";
+import { Label } from "@components/Shadcn/Label/label";
 import { PencilSquareIcon } from "@heroicons/react/24/outline";
 
 type Meta = MockPlaygroundConfigType["meta"];

@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/Shadcn/Button/button";
+import { Button } from "@components/Shadcn/Button/button";
 import { useTheme } from "@/theme/hooks/useTheme";
 import { MoonIcon, SunIcon } from "@heroicons/react/20/solid";
 

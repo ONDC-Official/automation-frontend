@@ -2,15 +2,14 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { IoPlay } from "react-icons/io5";
 import { FlowMap, MappedStep } from "@/types/flow-state-type";
-import FormFlowDialog from "@/components/Shadcn/Dialog/form-flow-dialog";
-import { FormConfig, FormConfigType, FormFieldConfigType } from "@/components/ui/forms/config-form";
+import FormFlowDialog from "@components/Shadcn/Dialog/form-flow-dialog";
+import { FormConfig, FormConfigType, FormFieldConfigType } from "@components/ui/forms/config-form";
 import FormLaunchPopup from "@components/ui/forms/custom-forms/form-launch-popup";
-import { TooltipHint } from "@/components/Shadcn/Tooltip";
+import { TooltipHint } from "@components/Shadcn/Tooltip";
 import { SequenceStep, SubmitEventParams } from "@/types/flow-types";
 import { useProceedFlowMutation, useTriggerExtraMutation } from "@store/api";
 import { useSession } from "@hooks/useSession";
 
-import PairedCard from "@components/FlowShared/pair-card";
 import {
     isTrackingPhaseStep,
     isTrackingActive,
@@ -18,7 +17,14 @@ import {
 } from "@components/FlowShared/ride-map-utils";
 import { useAppDispatch } from "@store/hooks";
 import { setLamfLaunchDone, clearLamfLaunchDone } from "@store/slices/uiFlagsSlice";
-import { store } from "@store/index";
+import { PairedStepRow } from "@components/FlowShared/paired-step-row";
+import {
+    getOrderedSteps,
+    getScrollParent,
+    isLaunchDone,
+    stepSignature,
+    type PairedStep,
+} from "@components/FlowShared/mapped-flow-utils";
 
 // LAMF single-redirection flow: its MANUAL_DYNAMIC_FORM form is launched from a
 // separate one-button popup as soon as the FIRST on_select completes (this flow
@@ -33,7 +39,6 @@ export default function DisplayFlow({
     mappedFlow: FlowMap;
     flowId: string;
 }) {
-    // mappedFlow = dummy;
     const steps = getOrderedSteps(mappedFlow);
     const extraSteps = getOrderedSteps({
         sequence: mappedFlow.extraSteps ?? [],
@@ -493,9 +498,12 @@ export default function DisplayFlow({
             )}
             <div>
                 {steps.map((pairedStep) => (
-                    <div key={stepSignature(pairedStep.first)} ref={registerRow(pairedStep)}>
-                        <PairedCard pairedStep={pairedStep} flowId={flowId} />
-                    </div>
+                    <PairedStepRow
+                        key={stepSignature(pairedStep.first)}
+                        pairedStep={pairedStep}
+                        flowId={flowId}
+                        registerRow={registerRow(pairedStep)}
+                    />
                 ))}
             </div>
             {extraSteps.length > 0 && (
@@ -505,12 +513,12 @@ export default function DisplayFlow({
                         <h3 className="text-sm font-semibold text-alert-500">Extra Steps</h3>
                     </div>
                     {extraSteps.map((pairedStep) => (
-                        <div
+                        <PairedStepRow
                             key={`extra-${stepSignature(pairedStep.first)}`}
-                            ref={registerRow(pairedStep)}
-                        >
-                            <PairedCard pairedStep={pairedStep} flowId={flowId} />
-                        </div>
+                            pairedStep={pairedStep}
+                            flowId={flowId}
+                            registerRow={registerRow(pairedStep)}
+                        />
                     ))}
                 </div>
             )}
@@ -586,72 +594,4 @@ function ExtraTriggerButton({
             </span>
         </TooltipHint>
     );
-}
-
-export type PairedStep = {
-    first: MappedStep;
-    second?: MappedStep;
-};
-
-// Stable identity for a step across polls — used for INPUT-REQUIRED suppression, change detection,
-// and ref/React keys. The `m`/`s` prefix separates a missed step from a sequence step that happens
-// to share actionId+index; extra steps carry index === -1 (sequence >= 0) so never collide, and
-// differ from each other by actionId.
-function stepSignature(step: MappedStep): string {
-    return `${step.missedStep ? "m" : "s"}|${step.actionId}|${step.index}`;
-}
-
-// Whether the LAMF launch popup has already been handled this run (survives refresh).
-function isLaunchDone(markerKey: string): boolean {
-    return Boolean(store.getState().uiFlags.lamfLaunchDone[markerKey]);
-}
-
-// Nearest actually-scrolling ancestor, or null when the window/document is the scroller.
-function getScrollParent(el: HTMLElement): HTMLElement | null {
-    let parent = el.parentElement;
-    while (parent) {
-        const overflowY = getComputedStyle(parent).overflowY;
-        if (
-            (overflowY === "auto" || overflowY === "scroll") &&
-            parent.scrollHeight > parent.clientHeight
-        ) {
-            return parent;
-        }
-        parent = parent.parentElement;
-    }
-    return null;
-}
-
-function getOrderedSteps(mappedFlow: FlowMap): PairedStep[] {
-    const sequence = [...mappedFlow.sequence, ...mappedFlow.missedSteps];
-    // Track visited steps by array position, not `actionId_index`: extra steps all carry
-    // index === -1, so duplicate actionIds would otherwise collide and get dropped.
-    const visited = new Set<number>();
-    const steps: PairedStep[] = [];
-
-    for (let i = 0; i < sequence.length; i++) {
-        if (visited.has(i)) continue;
-        visited.add(i);
-        const step = sequence[i];
-
-        let pairStep: MappedStep | undefined;
-        if (step.pairActionId) {
-            const pairIndex = sequence.findIndex(
-                (s, j) => !visited.has(j) && s.actionId === step.pairActionId
-            );
-            if (pairIndex !== -1) {
-                visited.add(pairIndex);
-                pairStep = sequence[pairIndex];
-            }
-        }
-
-        steps.push({
-            first: step,
-            second: pairStep,
-        });
-    }
-
-    return steps.sort((a, b) => {
-        return a.first.index - b.first.index;
-    });
 }

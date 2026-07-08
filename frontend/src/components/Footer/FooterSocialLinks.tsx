@@ -1,5 +1,5 @@
 import { trackEvent } from "@utils/analytics";
-import { socialLinks } from "@/components/Footer/constants";
+import { socialLinks } from "@components/Footer/constants";
 
 export const FooterSocialLinks = () => (
     <div className="flex items-center gap-4">

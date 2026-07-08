@@ -1,6 +1,6 @@
 import { FC, useEffect, useState } from "react";
 import { HealthReportData, DomainResult, VersionResult } from "@hooks/useFrameworkHealth";
-import AppJsonViewer from "@/components/AppJsonViewer";
+import AppJsonViewer from "@components/AppJsonViewer";
 
 interface Props {
     report: HealthReportData;

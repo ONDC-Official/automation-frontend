@@ -1,4 +1,4 @@
-import { Dialog, DialogContent } from "@/components/Shadcn/Dialog";
+import { Dialog, DialogContent } from "@components/Shadcn/Dialog";
 import { cn } from "@/lib/utils";
 
 interface IPlaygroundModalProps {

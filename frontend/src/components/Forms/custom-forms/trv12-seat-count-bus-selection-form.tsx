@@ -3,11 +3,11 @@ import { useForm, useFieldArray, useWatch } from "react-hook-form";
 import { PlusIcon, TrashIcon } from "@heroicons/react/24/outline";
 import { toast } from "sonner";
 
-import { ComboBox } from "@/components/Shadcn/ComboBox";
-import { Button } from "@/components/Shadcn/Button/button";
-import PayloadEditor from "@/components/PayloadEditor/PastePayloadModal";
-import FormDialogShell from "@/components/ui/forms/form-dialog-shell";
-import { PastePayloadButton } from "@/components/ui/forms/paste-payload-button";
+import { ComboBox } from "@components/Shadcn/ComboBox";
+import { Button } from "@components/Shadcn/Button/button";
+import PayloadEditor from "@components/PayloadEditor/PastePayloadModal";
+import FormDialogShell from "@components/ui/forms/form-dialog-shell";
+import { PastePayloadButton } from "@components/ui/forms/paste-payload-button";
 import type {
     IOnSelectPayload,
     ISeatSelectionFormValues,

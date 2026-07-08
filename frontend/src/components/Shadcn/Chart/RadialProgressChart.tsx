@@ -1,6 +1,6 @@
 import { Label, PolarAngleAxis, PolarRadiusAxis, RadialBar, RadialBarChart } from "recharts";
 
-import { ChartContainer, type ChartConfig } from "@/components/Shadcn/Chart";
+import { ChartContainer, type ChartConfig } from "@components/Shadcn/Chart";
 import { cn } from "@/lib/utils";
 
 const chartConfig = {

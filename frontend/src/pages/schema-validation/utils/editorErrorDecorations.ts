@@ -6,7 +6,7 @@ import {
     getKeyRangeOnLine,
     getLineRangeAtIndex,
     getValueRangeOnLine,
-} from "@/pages/schema-validation/utils/helpers";
+} from "@pages/schema-validation/utils/helpers";
 
 let activeDecorationIds: string[] = [];
 
@@ -60,7 +60,11 @@ export function parsePathSegments(rawPath: string): string[] {
 export function findPathRangeInJsonSource(
     source: string,
     rawPath: string
-): { lineRange: IEditorRange; valueRange: IEditorRange | null; keyRange: IEditorRange | null } | null {
+): {
+    lineRange: IEditorRange;
+    valueRange: IEditorRange | null;
+    keyRange: IEditorRange | null;
+} | null {
     const segments = parsePathSegments(rawPath);
     if (segments.length === 0) {
         return null;

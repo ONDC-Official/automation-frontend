@@ -1,5 +1,5 @@
 import React from "react";
-import LoadingButton from "@/components/ui/forms/loading-button";
+import LoadingButton from "@components/ui/forms/loading-button";
 import RunMetrics from "@pages/seller-load-testing/RunMetrics";
 import type { PreorderLoadTestProps } from "@pages/seller-load-testing/types";
 import { usePreorderLoadTest } from "@pages/seller-load-testing/usePreorderLoadTest";

@@ -26,10 +26,10 @@ import {
 } from "@heroicons/react/24/outline";
 
 import { cn } from "@/lib/utils";
-import AppJsonViewer from "@/components/AppJsonViewer";
-import { CodeEditor } from "@/components/PayloadEditor";
-import { Button } from "@/components/Shadcn/Button/button";
-import Spinner from "@/components/Shadcn/Spinner";
+import AppJsonViewer from "@components/AppJsonViewer";
+import { CodeEditor } from "@components/PayloadEditor";
+import { Button } from "@components/Shadcn/Button/button";
+import Spinner from "@components/Shadcn/Spinner";
 import {
     Dialog,
     DialogContent,
@@ -37,7 +37,7 @@ import {
     DialogFooter,
     DialogHeader,
     DialogTitle,
-} from "@/components/Shadcn/Dialog";
+} from "@components/Shadcn/Dialog";
 import { usePlayground } from "@pages/protocol-playground/hooks/playground-runtime";
 import { buildLinearConfig } from "@pages/protocol-playground/utils/transaction-view";
 import {

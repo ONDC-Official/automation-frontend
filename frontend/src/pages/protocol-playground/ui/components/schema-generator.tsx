@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Editor } from "@monaco-editor/react";
 import { ArrowPathIcon, CodeBracketIcon } from "@heroicons/react/24/outline";
 
-import { Button } from "@/components/Shadcn/Button/button";
+import { Button } from "@components/Shadcn/Button/button";
 import {
     Dialog,
     DialogContent,
@@ -10,7 +10,7 @@ import {
     DialogFooter,
     DialogHeader,
     DialogTitle,
-} from "@/components/Shadcn/Dialog";
+} from "@components/Shadcn/Dialog";
 import { cn } from "@/lib/utils";
 import { useAppliedTheme } from "@/theme/hooks/useAppliedTheme";
 import { SelectBox } from "@pages/protocol-playground/ui/components/github-select";

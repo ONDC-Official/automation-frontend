@@ -1,9 +1,9 @@
 import { useMemo } from "react";
 import { ArrowTopRightOnSquareIcon } from "@heroicons/react/24/outline";
 
-import { Button } from "@/components/Shadcn/Button/button";
-import { FormFieldConfigType } from "@/components/ui/forms/config-form";
-import FormDialogShell from "@/components/ui/forms/form-dialog-shell";
+import { Button } from "@components/Shadcn/Button/button";
+import { FormFieldConfigType } from "@components/ui/forms/config-form";
+import FormDialogShell from "@components/ui/forms/form-dialog-shell";
 import { useResetCompletionMutation, useSaveRedirectionMutation } from "@store/api";
 import { queryJsonPath } from "@utils/jsonpath-query";
 

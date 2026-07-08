@@ -10,10 +10,10 @@ import {
     useLazyGetSubscriberUrlsQuery,
 } from "@store/api";
 import { openReportInNewTab } from "@utils/generic-utils";
-import { Button } from "@/components/Shadcn/Button/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/Shadcn/Card/card";
-import Spinner from "@/components/Shadcn/Spinner";
-import { Input } from "@/components/Shadcn/TextField/input";
+import { Button } from "@components/Shadcn/Button/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@components/Shadcn/Card/card";
+import Spinner from "@components/Shadcn/Spinner";
+import { Input } from "@components/Shadcn/TextField/input";
 import { cn } from "@/lib/utils";
 import { ActivityHistoryAccordion } from "@pages/user-profile/components/ActivityHistoryAccordion";
 import { HistoryFilterComboBox } from "@pages/user-profile/components/HistoryFilterComboBox";

@@ -6,7 +6,7 @@ import {
     FaExclamationCircle,
     FaSpinner,
 } from "react-icons/fa";
-import AppJsonViewer from "@/components/AppJsonViewer";
+import AppJsonViewer from "@components/AppJsonViewer";
 
 import type { ToolMessage } from "../hooks/use-chat-session";
 

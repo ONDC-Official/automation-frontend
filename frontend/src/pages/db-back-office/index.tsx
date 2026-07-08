@@ -47,6 +47,7 @@ const DBBackOffice: FC = () => {
 
                 {!payloadData && !isLoading && (
                     <EmptyState
+                        variant="card"
                         title="No data loaded"
                         message="Enter domain and version parameters above to fetch payload data"
                     />

@@ -1,6 +1,6 @@
 import type { RJSFSchema } from "@rjsf/utils";
 
-import { formatFormFieldForPayload } from "@/components/ui/forms/utils/date-utils";
+import { formatFormFieldForPayload } from "@components/ui/forms/utils/date-utils";
 
 interface ISchemaSubmitFieldConfig {
     name: string;

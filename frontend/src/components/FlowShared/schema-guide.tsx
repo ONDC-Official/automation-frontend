@@ -1,4 +1,4 @@
-import { availableDomains } from "@/constants/common";
+import { availableDomains } from "@constants/common";
 
 export function SchemaGuide() {
     return (

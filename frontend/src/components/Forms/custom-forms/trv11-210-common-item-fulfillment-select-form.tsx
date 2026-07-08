@@ -1,13 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
-import { ComboBoxControl } from "@/components/Shadcn/ComboBox";
-import { Button } from "@/components/Shadcn/Button/button";
-import { Input } from "@/components/Shadcn/TextField/input";
-import { Field, FieldLabel } from "@/components/Shadcn/TextField/field";
-import PayloadEditor from "@/components/PayloadEditor/PastePayloadModal";
-import FormDialogShell from "@/components/ui/forms/form-dialog-shell";
-import { PastePayloadButton } from "@/components/ui/forms/paste-payload-button";
+import { ComboBoxControl } from "@components/Shadcn/ComboBox";
+import { Button } from "@components/Shadcn/Button/button";
+import { Input } from "@components/Shadcn/TextField/input";
+import { Field, FieldLabel } from "@components/Shadcn/TextField/field";
+import PayloadEditor from "@components/PayloadEditor/PastePayloadModal";
+import FormDialogShell from "@components/ui/forms/form-dialog-shell";
+import { PastePayloadButton } from "@components/ui/forms/paste-payload-button";
 import { SubmitEventParams } from "@/types/flow-types";
 import { cn } from "@/lib/utils";
 import type {

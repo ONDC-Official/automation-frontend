@@ -1,6 +1,6 @@
 //TODO: Remove this component when seller onboarding revamp and refactor is complete
-import { Button } from "@/components/Shadcn/Button/button";
-import Spinner from "@/components/Shadcn/Spinner";
+import { Button } from "@components/Shadcn/Button/button";
+import Spinner from "@components/Shadcn/Spinner";
 
 interface ILoadingButtonProps {
     type?: "submit" | "reset" | "button";

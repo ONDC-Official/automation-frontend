@@ -1,6 +1,6 @@
 import { FC } from "react";
-import { useFormFieldData, type IDomainVersionWithUsecase } from "@/hooks/useFormFieldData";
-import type { IDomain, IDomainVersion } from "@/pages/schema-validation/types";
+import { useFormFieldData, type IDomainVersionWithUsecase } from "@hooks/useFormFieldData";
+import type { IDomain, IDomainVersion } from "@pages/schema-validation/types";
 
 interface DeveloperGuideHeaderFiltersProps {
     onSubmit: (data: { domain: string; version: string; useCase: string }) => Promise<void>;

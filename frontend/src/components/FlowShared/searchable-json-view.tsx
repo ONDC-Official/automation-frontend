@@ -1,9 +1,9 @@
 import { useMemo, useState } from "react";
 import { XMarkIcon } from "@heroicons/react/24/outline";
-import SearchField from "@/components/Shadcn/SearchField";
-import { Button } from "@/components/Shadcn/Button/button";
+import SearchField from "@components/Shadcn/SearchField";
+import { Button } from "@components/Shadcn/Button/button";
 import { cn } from "@/lib/utils";
-import AppJsonViewer from "@/components/AppJsonViewer";
+import AppJsonViewer from "@components/AppJsonViewer";
 
 function filterJsonBySearch(data: unknown, query: string): unknown {
     if (!query) return data;

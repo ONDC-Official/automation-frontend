@@ -1,10 +1,10 @@
 import { cn } from "@/lib/utils";
-import { METHOD, METHOD_STYLES } from "@/pages/protocol-playground/ui/playground-upper/constants";
+import { METHOD, METHOD_STYLES } from "@pages/protocol-playground/ui/playground-upper/constants";
 import {
     IActionDetailsCardProps,
     IDetailField,
 } from "@pages/protocol-playground/ui/playground-upper/types";
-import { ActionButton } from "@/pages/protocol-playground/ui/playground-upper/action-button";
+import { ActionButton } from "@pages/protocol-playground/ui/playground-upper/action-button";
 import { CheckIcon } from "@heroicons/react/24/solid";
 import {
     ArrowLeftIcon,

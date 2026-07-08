@@ -1,4 +1,4 @@
-import { ICheckboxOption } from "@/components/Shadcn/Checkbox";
+import { ICheckboxOption } from "@components/Shadcn/Checkbox";
 import { RJSFSchema } from "@rjsf/utils";
 
 export interface FormFieldConfigType {

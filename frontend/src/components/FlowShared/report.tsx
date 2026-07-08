@@ -1,6 +1,6 @@
 import { toast } from "sonner";
 import { useEffect, useRef, useState } from "react";
-import InfoCard from "@/components/FlowShared/ui/FlowInfoCard";
+import InfoCard from "@components/FlowShared/ui/FlowInfoCard";
 import { useReactToPrint } from "react-to-print";
 import { IoMdArrowRoundBack } from "react-icons/io";
 import { useLazyGetSessionByIdQuery } from "@store/api";

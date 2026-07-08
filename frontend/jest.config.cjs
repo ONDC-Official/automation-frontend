@@ -6,7 +6,6 @@ module.exports = {
         "^.+\\.(ts|tsx|js|jsx)$": ["babel-jest", { configFile: "./babel.config.cjs" }],
     },
     moduleNameMapper: {
-        "^@/components/ui/forms/(.*)$": "<rootDir>/src/components/Forms/$1",
         "^@components/ui/forms/(.*)$": "<rootDir>/src/components/Forms/$1",
         "^@pages/(.*)$": "<rootDir>/src/pages/$1",
         "^@components/(.*)$": "<rootDir>/src/components/$1",
@@ -16,6 +15,7 @@ module.exports = {
         "^@services/(.*)$": "<rootDir>/src/services/$1",
         "^@store/(.*)$": "<rootDir>/src/store/$1",
         "^@constants/(.*)$": "<rootDir>/src/constants/$1",
+        "^@assets/(.*)$": "<rootDir>/src/assets/$1",
         "^@styles/(.*)$": "<rootDir>/src/styles/$1",
         "^@/(.*)$": "<rootDir>/src/$1",
         "\\.(css|less|scss|sass)$": "identity-obj-proxy",
