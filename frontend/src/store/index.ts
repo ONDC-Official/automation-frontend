@@ -26,6 +26,7 @@ import chatbotSlice from "@store/slices/chatbotSlice";
 import aiSlice from "@store/slices/aiSlice";
 import devGuideShellSlice from "@store/slices/devGuideShellSlice";
 import playgroundConfigsSlice from "@store/slices/playgroundConfigsSlice";
+import playgroundUiSlice from "@store/slices/playgroundUiSlice";
 import profileShellSlice from "@store/slices/profileShellSlice";
 import { listenerMiddleware } from "@store/listenerMiddleware";
 import {
@@ -61,6 +62,7 @@ const rootReducer = combineReducers({
         localPersist("playgroundConfigs"),
         playgroundConfigsSlice.reducer
     ),
+    playgroundUi: persistReducer(localPersist("playgroundUi"), playgroundUiSlice.reducer),
     devGuideShell: devGuideShellSlice.reducer,
     profileShell: profileShellSlice.reducer,
 });

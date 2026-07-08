@@ -3,7 +3,7 @@ import { useCallback } from "react";
 import { useAppDispatch, useAppSelector } from "@store/hooks";
 import { selectAiSettings, updateAiSettings } from "@store/slices/aiSlice";
 
-import type { AiSettings } from "../context/ai-context";
+import type { AiSettings } from "@store/slices/aiSlice";
 
 export function useAiSettings() {
     const dispatch = useAppDispatch();

@@ -1,4 +1,4 @@
-import { useContext, useState } from "react";
+import { useState } from "react";
 import { PlaygroundActionStep } from "@ondc/automation-mock-runner";
 
 import { Button } from "@/components/Shadcn/Button/button";
@@ -13,7 +13,7 @@ import { Label } from "@/components/Shadcn/Label/label";
 import { TextField } from "@/components/Shadcn/TextField";
 import { cn } from "@/lib/utils";
 import { ONDC_ACTION_LIST, ONDC_FORM_LIST } from "@pages/protocol-playground/types";
-import { PlaygroundContext } from "@pages/protocol-playground/context/playground-context";
+import { usePlayground } from "@pages/protocol-playground/hooks/playground-runtime";
 
 const selectClass = cn(
     "h-9 w-full min-w-0 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs outline-none",
@@ -34,7 +34,7 @@ interface IAddActionFormProps {
 }
 
 export const AddActionForm = ({ title, onSubmit, onCancel }: IAddActionFormProps) => {
-    const { stepGroup } = useContext(PlaygroundContext);
+    const { stepGroup } = usePlayground();
     const allowForm = stepGroup !== "extra";
     const [stepType, setStepType] = useState<"action" | "form">("action");
     const [api, setApi] = useState<string>(ONDC_ACTION_LIST[0]);

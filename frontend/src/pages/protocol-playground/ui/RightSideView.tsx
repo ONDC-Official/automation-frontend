@@ -1,7 +1,8 @@
 import { editor, Position } from "monaco-editor";
 import { PLAYGROUND_RIGHT_TABS, PlaygroundRightTabType } from "@pages/protocol-playground/types";
-import { useContext, useEffect, useRef, useState } from "react";
-import { PlaygroundContext } from "@pages/protocol-playground/context/playground-context";
+import { useEffect, useRef, useState } from "react";
+import { usePlayground } from "@pages/protocol-playground/hooks/playground-runtime";
+import { useChatSession } from "@pages/protocol-playground/ai/hooks/use-chat-session";
 import SessionDataTab from "@pages/protocol-playground/ui/session-data-tab";
 import { ExecutionResults } from "@pages/protocol-playground/ui/extras/terminal";
 import OutputPayloadViewer from "@pages/protocol-playground/ui/extras/output-payload-viewer";
@@ -39,6 +40,7 @@ export const RightSideView = (props: {
 }) => {
     const { width, activeRightTab, setActiveRightTab } = props;
     const tabOptions = PLAYGROUND_RIGHT_TABS.map((tab) => ({ key: tab.id, label: tab.label }));
+    const chatSession = useChatSession();
 
     return (
         <div
@@ -60,7 +62,11 @@ export const RightSideView = (props: {
                         value={tab.id}
                         className="mt-0 flex min-h-0 flex-1 flex-col overflow-hidden data-[state=inactive]:hidden"
                     >
-                        <GetRightSideContent tabId={tab.id} actionId={props.activeApi} />
+                        <GetRightSideContent
+                            tabId={tab.id}
+                            actionId={props.activeApi}
+                            chatSession={chatSession}
+                        />
                     </TabsContent>
                 ))}
             </FlowTabs>
@@ -71,11 +77,13 @@ export const RightSideView = (props: {
 const GetRightSideContent = ({
     tabId,
     actionId,
+    chatSession,
 }: {
     tabId: string;
     actionId: string | undefined;
+    chatSession: ReturnType<typeof useChatSession>;
 }) => {
-    const playgroundContext = useContext(PlaygroundContext);
+    const playgroundContext = usePlayground();
     const [sessionData, setSessionData] = useState<string>("{}");
     const [isSessionLoading, setIsSessionLoading] = useState(false);
     const savedMetaRef = useRef<SavedMetadata>({});
@@ -247,7 +255,16 @@ const GetRightSideContent = ({
         case "common_lib":
             return <CommonLibView />;
         case "ai_chat":
-            return <AIChatPanel actionId={actionId} />;
+            return (
+                <AIChatPanel
+                    actionId={actionId}
+                    messages={chatSession.messages}
+                    isStreaming={chatSession.isStreaming}
+                    sendMessage={chatSession.sendMessage}
+                    stop={chatSession.stop}
+                    clear={chatSession.clear}
+                />
+            );
     }
     return null;
 };

@@ -1,11 +1,11 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, type SetStateAction } from "react";
 import { toast } from "sonner";
 import {
     MockRunner,
     ExecutionResult,
     MockPlaygroundConfigType,
 } from "@ondc/automation-mock-runner";
-import { PlaygroundContext } from "@pages/protocol-playground/context/playground-context";
+import { PlaygroundRuntimeProvider } from "@pages/protocol-playground/hooks/playground-runtime";
 import GetPlaygroundComponent from "@pages/protocol-playground/starter-page";
 import { usePlaygroundModals } from "@pages/protocol-playground/hooks/use-playground-modal";
 import { PlaygroundModal } from "@pages/protocol-playground/ui/playground-modal";
@@ -21,9 +21,13 @@ import {
 } from "@pages/protocol-playground/utils/config-storage";
 
 import { fetchGistData, getFirstGistFile } from "@pages/protocol-playground/utils/fetch-gist";
-import { useAppDispatch } from "@store/hooks";
+import { useAppDispatch, useAppSelector } from "@store/hooks";
 import { store } from "@store/index";
 import { setDraftConfig } from "@store/slices/playgroundConfigsSlice";
+import {
+    setActiveApi as setActiveApiAction,
+    setStepGroup as setStepGroupAction,
+} from "@store/slices/playgroundUiSlice";
 import {
     StepGroup,
     getGroupSteps,
@@ -60,8 +64,32 @@ const ProtocolPlayGround = () => {
     );
     const [currentState, setCurrentState] = useState<"editing" | "running">("editing");
     const [loading, setLoading] = useState(false);
-    const [activeApi, setActiveApi] = useState<string | undefined>(undefined);
-    const [stepGroup, setStepGroup] = useState<StepGroup>("main");
+
+    // Persisted navigation state — restored across reloads/navigation so the user
+    // returns to the same step + group they left. See playgroundUiSlice.
+    const activeApi = useAppSelector((s) => s.playgroundUi.activeApi) ?? undefined;
+    const stepGroup = useAppSelector((s) => s.playgroundUi.stepGroup);
+    const setActiveApi = useCallback(
+        (value: SetStateAction<string | undefined>) => {
+            const next =
+                typeof value === "function"
+                    ? value(store.getState().playgroundUi.activeApi ?? undefined)
+                    : value;
+            dispatch(setActiveApiAction(next ?? null));
+        },
+        [dispatch]
+    );
+    const setStepGroup = useCallback(
+        (value: SetStateAction<StepGroup>) => {
+            const next =
+                typeof value === "function"
+                    ? value(store.getState().playgroundUi.stepGroup)
+                    : value;
+            dispatch(setStepGroupAction(next));
+        },
+        [dispatch]
+    );
+
     const [activeTerminalData, setActiveTerminalData] = useState<ExecutionResult[]>([]);
     const [dirtyConfig, setDirtyConfig] = useState(true);
 
@@ -317,44 +345,44 @@ const ProtocolPlayGround = () => {
     const { popupOpen, popupContent, modalClassName, openModal, closeModal } =
         usePlaygroundModals();
 
+    const playgroundRuntime = {
+        config: playgroundState,
+        setCurrentConfig,
+        currentState,
+        setCurrentState,
+        dirtyConfig,
+        setDirtyConfig,
+        updateStepMock,
+        activeApi,
+        setActiveApi,
+        stepGroup,
+        setStepGroup,
+        activeTerminalData,
+        setActiveTerminalData,
+        useModal: { openModal, closeModal },
+        updateHelperLib,
+        updateTransactionHistory,
+        appendExtraStepRun,
+        resetTransactionHistory,
+        loading,
+        setLoading,
+        workbenchFlow,
+        updateConfigMeta,
+        loadSavedConfig,
+        getSavedConfigs,
+        deleteSavedConfig,
+        loadConfigFromGist,
+    };
+
     return (
-        <PlaygroundContext.Provider
-            value={{
-                config: playgroundState,
-                setCurrentConfig: setCurrentConfig,
-                currentState,
-                setCurrentState,
-                dirtyConfig,
-                setDirtyConfig,
-                updateStepMock,
-                activeApi,
-                setActiveApi,
-                stepGroup,
-                setStepGroup,
-                activeTerminalData,
-                setActiveTerminalData,
-                useModal: { openModal, closeModal },
-                updateHelperLib,
-                updateTransactionHistory,
-                appendExtraStepRun,
-                resetTransactionHistory,
-                loading,
-                setLoading,
-                workbenchFlow,
-                updateConfigMeta,
-                loadSavedConfig,
-                getSavedConfigs,
-                deleteSavedConfig,
-                loadConfigFromGist,
-            }}
-        >
+        <PlaygroundRuntimeProvider value={playgroundRuntime}>
             <div className="flex h-full min-h-0 w-full flex-1 flex-col px-20 mx-auto">
                 <Body workbenchFlow={workbenchFlow} />
             </div>
             <PlaygroundModal isOpen={popupOpen} onClose={closeModal} className={modalClassName}>
                 {popupContent}
             </PlaygroundModal>
-        </PlaygroundContext.Provider>
+        </PlaygroundRuntimeProvider>
     );
 };
 

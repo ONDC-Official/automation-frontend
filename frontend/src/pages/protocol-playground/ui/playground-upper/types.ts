@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { StepGroup } from "@pages/protocol-playground/utils/step-group";
 import { MockPlaygroundConfigType } from "@ondc/automation-mock-runner";
-import { PlaygroundContextProps } from "@pages/protocol-playground/context/playground-context";
+import type { PlaygroundRuntimeValue } from "@pages/protocol-playground/types/playground-runtime";
 
 export type PlaygroundActionVariant =
     | "play"
@@ -65,7 +65,7 @@ export interface IActionDetailsCardProps {
     onAddAfter?: (id: string) => void;
     onEditAction?: (id: string) => void;
     onDeleteAction?: (id: string) => void;
-    playgroundContext?: PlaygroundContextProps;
+    playgroundContext?: PlaygroundRuntimeValue;
 }
 
 export interface IFieldRow {
@@ -100,7 +100,7 @@ export interface IActionDetailsCardProps {
     onAddAfter?: (id: string) => void;
     onEditAction?: (id: string) => void;
     onDeleteAction?: (id: string) => void;
-    playgroundContext?: PlaygroundContextProps;
+    playgroundContext?: PlaygroundRuntimeValue;
 }
 
 export interface IDetailField {

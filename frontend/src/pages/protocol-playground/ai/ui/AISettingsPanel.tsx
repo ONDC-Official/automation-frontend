@@ -1,4 +1,4 @@
-import { useContext, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { ArrowPathIcon } from "@heroicons/react/24/outline";
 
@@ -14,7 +14,7 @@ import {
     ComboboxList,
 } from "@/components/Shadcn/ComboBox/combobox";
 import { DEFAULT_AI_ENDPOINT, DEFAULT_AI_MODEL } from "../constants";
-import { AIContext } from "../context/ai-context";
+import { useAi } from "../hooks/use-ai";
 import { getKey } from "@utils/secure-key-store";
 
 interface IAISettingsPanelProps {
@@ -22,7 +22,7 @@ interface IAISettingsPanelProps {
 }
 
 export const AISettingsPanel = ({ onClose }: IAISettingsPanelProps) => {
-    const ai = useContext(AIContext);
+    const ai = useAi();
     const [endpoint, setEndpoint] = useState(ai.settings.endpoint);
     const [model, setModel] = useState(ai.settings.model);
     const [inlineEnabled, setInlineEnabled] = useState(ai.settings.inlineCompletionEnabled);
