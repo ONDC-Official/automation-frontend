@@ -44,8 +44,7 @@ export const proposeStepEditTool: Tool<ProposeStepEditArgs, ProposeStepEditResul
                     },
                     rationale: {
                         type: "string",
-                        description:
-                            "One short sentence explaining what the edit does and why.",
+                        description: "One short sentence explaining what the edit does and why.",
                     },
                 },
                 required: ["step_id", "file", "new_code", "rationale"],
@@ -56,10 +55,8 @@ export const proposeStepEditTool: Tool<ProposeStepEditArgs, ProposeStepEditResul
     execute: async (args, ctx) => {
         if (!ctx.config) throw new Error("no playground config loaded");
         if (!ctx.toolCallId) throw new Error("missing tool call id");
-        if (!ctx.requestApproval)
-            throw new Error("approval system not wired into this context");
-        if (!ctx.updateStepMock)
-            throw new Error("step write path not wired into this context");
+        if (!ctx.requestApproval) throw new Error("approval system not wired into these deps");
+        if (!ctx.updateStepMock) throw new Error("step write path not wired into these deps");
         if (!EDITABLE_FILES.includes(args.file)) {
             throw new Error(
                 `file '${args.file}' is not editable; choose one of ${EDITABLE_FILES.join(", ")}`

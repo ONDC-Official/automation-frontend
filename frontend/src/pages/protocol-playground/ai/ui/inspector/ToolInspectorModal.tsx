@@ -16,7 +16,7 @@ import { usePlayground } from "@pages/protocol-playground/hooks/playground-runti
 import type { ToolMessage } from "../../hooks/use-chat-session";
 import { usePendingApprovals } from "../../hooks/use-pending-approvals";
 import { createReadToolRegistry } from "../../tools/registry";
-import type { ToolContext } from "../../tools/types";
+import type { ToolDeps } from "../../tools/types";
 import { InspectorMessageList } from "./InspectorMessageList";
 import type {
     IJsonSchemaParameters,
@@ -118,7 +118,7 @@ export const ToolInspectorModal = ({ isOpen, onClose }: IToolInspectorModalProps
         setMessages((prev) => [...prev, running]);
         setIsRunning(true);
 
-        const ctx: ToolContext = {
+        const deps: ToolDeps = {
             config: playground.config,
             activeApi: playground.activeApi,
             terminalTail: playground.activeTerminalData,
@@ -128,7 +128,7 @@ export const ToolInspectorModal = ({ isOpen, onClose }: IToolInspectorModalProps
         };
 
         try {
-            const outcome = await registry.execute(selectedTool, JSON.stringify(parsed), ctx);
+            const outcome = await registry.execute(selectedTool, JSON.stringify(parsed), deps);
             setMessages((prev) =>
                 prev.map((m) =>
                     m.id !== toolCallId
@@ -155,8 +155,8 @@ export const ToolInspectorModal = ({ isOpen, onClose }: IToolInspectorModalProps
                     </span>
                 </div>
                 <p className="text-[11px] text-gray-600">
-                    Run any registered tool directly against the live playground context — no LLM in
-                    the loop. Use this to evaluate tool quality and inputs/outputs.
+                    Run any registered tool directly against the live playground snapshot — no LLM
+                    in the loop. Use this to evaluate tool quality and inputs/outputs.
                 </p>
 
                 <div className="flex flex-col gap-1">
