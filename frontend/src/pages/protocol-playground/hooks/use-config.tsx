@@ -1,5 +1,4 @@
-import { useContext } from "react";
-import { PlaygroundContext } from "@pages/protocol-playground/context/playground-context";
+import { usePlayground } from "@pages/protocol-playground/hooks/playground-runtime";
 import { toast } from "sonner";
 import JsonSchemaForm, { PLAYGROUND_RJSF_FORM_ID } from "@/components/JsonSchemaForm";
 import { isRideMapEnabled } from "@components/FlowShared/ride-map-utils";
@@ -27,7 +26,7 @@ type RunResult = { success: boolean };
 
 // hooks/useConfigOperations.ts
 export const useConfigOperations = () => {
-    const playgroundContext = useContext(PlaygroundContext);
+    const playgroundContext = usePlayground();
     // const generateRunner = useCodeRunner("generate");
     // const generateResult = generateRunner.result;
     const modal = playgroundContext.useModal;

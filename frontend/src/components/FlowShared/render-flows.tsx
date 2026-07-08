@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Flow, MetadataField } from "@/types/flow-types";
 import { ROUTES } from "@constants/routes";
-import { buildDifficultyState } from "@components/ui/difficulty-cards";
+import { buildDifficultyState } from "@/pages/scenario/FlowSettingsPanel";
 import { InfoSection } from "@components/FlowShared/ui/InfoSection";
 import { EndpointsSection } from "@components/FlowShared/ui/EndpointsSection";
 import { CollapsibleSection } from "@components/FlowShared/ui/CollapsibleSection";
@@ -19,7 +19,7 @@ import { useSession } from "@hooks/useSession";
 import Spinner from "@/components/Shadcn/Spinner";
 import SearchableJsonView from "@components/FlowShared/searchable-json-view";
 import { FlowTabs, TabsContent } from "@/components/Shadcn/Tabs";
-import CircularProgress from "@components/ui/circular-cooldown";
+import CircularProgress from "@/components/FlowShared/ui/CircularProgress";
 import Modal from "@components/Modal";
 import GuideModal from "@components/FlowShared/flow-guide";
 import {

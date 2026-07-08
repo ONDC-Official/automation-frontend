@@ -1,5 +1,10 @@
-import { useContext, useEffect, useRef, useState } from "react";
-import { PlaygroundContext } from "@pages/protocol-playground/context/playground-context";
+import { useEffect, useRef, useState } from "react";
+import { usePlayground } from "@pages/protocol-playground/hooks/playground-runtime";
+import { useAppDispatch, useAppSelector } from "@store/hooks";
+import {
+    setActiveRightTab as setActiveRightTabAction,
+    setTimelineOpen as setTimelineOpenAction,
+} from "@store/slices/playgroundUiSlice";
 import { PlaygroundModal } from "@pages/protocol-playground/ui/playground-modal";
 import { DialogDescription, DialogHeader, DialogTitle } from "@/components/Shadcn/Dialog";
 import { PlaygroundRightTabType } from "@pages/protocol-playground/types";
@@ -24,16 +29,28 @@ import { ExportReviewModal } from "@pages/protocol-playground/ui/export-review-m
 import { GitHubImportModal } from "@pages/protocol-playground/ui/github-import-modal";
 import { ReplaceFlowConfirmModal } from "@pages/protocol-playground/ui/replace-flow-confirm-modal";
 import { CreateFlowSessionModal } from "@pages/protocol-playground/ui/create-flow-session-modal";
-import { AIProvider } from "@pages/protocol-playground/ai/context/ai-provider";
+import { AiAuthModals } from "@pages/protocol-playground/ai/ui/AiAuthModals";
+import { ProposeEditModal } from "@pages/protocol-playground/ai/ui/ProposeEditModal";
 import { StepGroup, getGroupSteps } from "@pages/protocol-playground/utils/step-group";
 import { validateConfigGroups } from "@pages/protocol-playground/utils/step-group-rules";
 
 const PlaygroundPage = () => {
-    const playgroundContext = useContext(PlaygroundContext);
+    const playgroundContext = usePlayground();
+    const dispatch = useAppDispatch();
 
     const { activeApi, setActiveApi, stepGroup, setStepGroup } = playgroundContext;
 
     const groupSteps = getGroupSteps(playgroundContext.config, stepGroup);
+
+    // Keep a valid step selected: on config load (incl. restored draft) or after a
+    // group switch, if the persisted activeApi is missing/stale, fall back to the
+    // first step so the editor never renders an empty selection.
+    useEffect(() => {
+        if (groupSteps.length === 0) return;
+        if (!groupSteps.some((step) => step.action_id === activeApi)) {
+            setActiveApi(groupSteps[0].action_id);
+        }
+    }, [activeApi, groupSteps, setActiveApi]);
 
     const handleStepGroupChange = (group: StepGroup) => {
         setStepGroup(group);
@@ -79,7 +96,9 @@ const PlaygroundPage = () => {
         setIsReplaceFlowConfirmOpen(true);
     };
 
-    const [activeRightTab, setActiveRightTab] = useState<PlaygroundRightTabType>("session");
+    const activeRightTab = useAppSelector((s) => s.playgroundUi.activeRightTab);
+    const setActiveRightTab = (tab: PlaygroundRightTabType) =>
+        dispatch(setActiveRightTabAction(tab));
     const [isRawEditorOpen, setIsRawEditorOpen] = useState(false);
     const [rawConfigValue, setRawConfigValue] = useState("");
     const [rawConfigError, setRawConfigError] = useState<string | null>(null);
@@ -93,7 +112,7 @@ const PlaygroundPage = () => {
         null
     );
     const [isExportDownloading, setIsExportDownloading] = useState(false);
-    const [isTimelineOpen, setIsTimelineOpen] = useState(true);
+    const isTimelineOpen = useAppSelector((s) => s.playgroundUi.isTimelineOpen);
 
     const isWideRight = activeRightTab === "transaction";
     const {
@@ -214,7 +233,9 @@ const PlaygroundPage = () => {
     }
 
     return (
-        <AIProvider>
+        <>
+            <AiAuthModals />
+            <ProposeEditModal />
             <div
                 ref={containerRef}
                 className="flex h-[calc(100svh-4rem)] min-h-0 w-full flex-col overflow-hidden bg-surface-page"
@@ -231,7 +252,7 @@ const PlaygroundPage = () => {
                         extraStepCount={playgroundContext.config?.extra_steps?.steps.length || 0}
                         hasSteps={groupSteps.length > 0}
                         isTimelineOpen={isTimelineOpen}
-                        onToggleTimeline={() => setIsTimelineOpen((open) => !open)}
+                        onToggleTimeline={() => dispatch(setTimelineOpenAction(!isTimelineOpen))}
                         onExport={exportConfig}
                         onImport={importConfig}
                         onImportFromGitHub={handleImportFromGitHub}
@@ -360,7 +381,7 @@ const PlaygroundPage = () => {
                     onSubmit={submitCreateFlowSession}
                 />
             </div>
-        </AIProvider>
+        </>
     );
 };
 

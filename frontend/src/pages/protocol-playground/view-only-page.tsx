@@ -1,4 +1,4 @@
-import { useContext, useState } from "react";
+import { useState } from "react";
 import {
     FiPackage,
     FiTag,
@@ -9,11 +9,11 @@ import {
     FiChevronUp,
 } from "react-icons/fi";
 
-import { PlaygroundContext } from "@pages/protocol-playground/context/playground-context";
+import { usePlayground } from "@pages/protocol-playground/hooks/playground-runtime";
 import AppJsonViewer from "@/components/AppJsonViewer";
 
 const ViewOnlyPlaygroundPage = ({ onCreateFlowSession }: { onCreateFlowSession: () => void }) => {
-    const playgroundContext = useContext(PlaygroundContext);
+    const playgroundContext = usePlayground();
     const config = playgroundContext.config;
     const [showJsonView, setShowJsonView] = useState(false);
 

@@ -15,6 +15,8 @@ export default defineConfig({
     },
     resolve: {
         alias: {
+            "@/components/ui/forms": path.resolve(__dirname, "./src/components/Forms"),
+            "@components/ui/forms": path.resolve(__dirname, "./src/components/Forms"),
             "@": path.resolve(__dirname, "./src"),
             "@components": path.resolve(__dirname, "./src/components"),
             "@pages": path.resolve(__dirname, "./src/pages"),

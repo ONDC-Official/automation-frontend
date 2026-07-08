@@ -6,7 +6,7 @@ import { selectAuthToken } from "@store/slices/authSlice";
 import { ROUTES } from "@/constants/routes";
 
 /** Bootstraps auth on app load and handles the OAuth code-exchange redirect. */
-export const AuthBootstrap = () => {
+export const AuthInitializer = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const token = useAppSelector(selectAuthToken);

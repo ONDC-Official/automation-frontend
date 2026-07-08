@@ -1,10 +1,10 @@
-import { useContext, useMemo } from "react";
+import { useMemo } from "react";
 import { FaCheck, FaTimes } from "react-icons/fa";
 import { PiShieldStarBold } from "react-icons/pi";
 import { MockRunner } from "@ondc/automation-mock-runner";
 
 import FormFlowDialog from "@/components/Shadcn/Dialog/form-flow-dialog";
-import { PlaygroundContext } from "@pages/protocol-playground/context/playground-context";
+import { usePlayground } from "@pages/protocol-playground/hooks/playground-runtime";
 
 import { usePendingApprovals } from "../hooks/use-pending-approvals";
 import { diffStats, lineDiff, type DiffRow } from "../utils/line-diff";
@@ -50,7 +50,7 @@ function DiffViewer({ rows }: { rows: DiffRow[] }) {
 }
 
 export function ProposeEditModal() {
-    const playground = useContext(PlaygroundContext);
+    const playground = usePlayground();
     const approvals = usePendingApprovals();
 
     // Show the oldest pending approval that has propose-edit args. Approvals

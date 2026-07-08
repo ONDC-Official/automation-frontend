@@ -1,4 +1,4 @@
-import { useContext, useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
     ArrowRightIcon,
     ChevronDownIcon,
@@ -23,7 +23,7 @@ import {
 } from "@/components/Shadcn/Dialog";
 import GitHubIcon from "@/assets/svgs/GitHubIcon";
 import { cn } from "@/lib/utils";
-import { PlaygroundContext } from "@pages/protocol-playground/context/playground-context";
+import { usePlayground } from "@pages/protocol-playground/hooks/playground-runtime";
 import { SavedConfigMetadata } from "@pages/protocol-playground/utils/config-storage";
 import type {
     IDomainFolderProps,
@@ -209,7 +209,7 @@ export const SavedConfigsModal = ({
     onClose,
     onConfigSelected,
 }: ISavedConfigsModalProps) => {
-    const { getSavedConfigs, loadSavedConfig, deleteSavedConfig } = useContext(PlaygroundContext);
+    const { getSavedConfigs, loadSavedConfig, deleteSavedConfig } = usePlayground();
 
     const [savedConfigs, setSavedConfigs] = useState<SavedConfigMetadata[]>([]);
     const [openDomains, setOpenDomains] = useState<Set<string>>(new Set());

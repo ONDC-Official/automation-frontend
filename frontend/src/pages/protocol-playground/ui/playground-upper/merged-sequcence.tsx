@@ -1,8 +1,8 @@
-import { useContext, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { MockPlaygroundConfigType, TransactionHistoryItem } from "@ondc/automation-mock-runner";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/Shadcn/Popover";
 import { Button } from "@/components/Shadcn/Button/button";
-import { PlaygroundContext } from "@pages/protocol-playground/context/playground-context";
+import { usePlayground } from "@pages/protocol-playground/hooks/playground-runtime";
 import ActionDetailsCard from "@pages/protocol-playground/ui/playground-upper/action-details-card";
 import { cn } from "@/lib/utils";
 import { ArrowsRightLeftIcon, ArrowRightIcon, CheckIcon } from "@heroicons/react/24/solid";
@@ -32,7 +32,7 @@ export const ActionTimeline = ({
     onAddBefore,
     onAddAfter,
 }: ActionTimelineProps) => {
-    const playgroundContext = useContext(PlaygroundContext);
+    const playgroundContext = usePlayground();
     const [openActionId, setOpenActionId] = useState<string | null>(null);
     const closeTimerRef = useRef<number | null>(null);
 

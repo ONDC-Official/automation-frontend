@@ -1,5 +1,4 @@
-import { useContext } from "react";
-import { PlaygroundContext } from "../context/playground-context";
+import { usePlayground } from "@pages/protocol-playground/hooks/playground-runtime";
 import { toast } from "sonner";
 import { MockRunner } from "@ondc/automation-mock-runner";
 import { getGroupSteps, setGroupSteps } from "../utils/step-group";
@@ -17,7 +16,7 @@ type UpdateActionFormData = {
 
 // hooks/usePlaygroundActions.ts
 export const usePlaygroundActions = () => {
-    const playgroundContext = useContext(PlaygroundContext);
+    const playgroundContext = usePlayground();
 
     const addAction = (
         api: string,

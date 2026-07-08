@@ -18,6 +18,8 @@
         /* Path aliases */
         // "baseUrl": ".",
         "paths": {
+            "@/components/ui/forms/*": ["./src/components/Forms/*"],
+            "@components/ui/forms/*": ["./src/components/Forms/*"],
             "@/*": ["./src/*"],
             "@components/*": ["./src/components/*"],
             "@pages/*": ["./src/pages/*"],

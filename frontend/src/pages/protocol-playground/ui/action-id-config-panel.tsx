@@ -1,5 +1,4 @@
-import { useContext } from "react";
-import { PlaygroundContext } from "../context/playground-context";
+import { usePlayground } from "@pages/protocol-playground/hooks/playground-runtime";
 import { MdEdit } from "react-icons/md";
 import { TbColumnInsertLeft, TbColumnInsertRight } from "react-icons/tb";
 import { Button } from "@/components/Shadcn/Button";
@@ -26,7 +25,7 @@ export function ActionIdConfigurationPanel({
     onAddAfterClick,
     onDeleteClick,
 }: ActionIdConfigurationPanelProps) {
-    const playgroundContext = useContext(PlaygroundContext);
+    const playgroundContext = usePlayground();
 
     if (!actionId) {
         return (

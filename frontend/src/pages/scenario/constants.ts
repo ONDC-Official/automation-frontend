@@ -1,5 +1,5 @@
 import type { IAccordionStep } from "@/components/Shadcn/Accordion/types";
-import { INewSessionFormValues } from "@/pages/scenario/types";
+import { FilteredDifficultyCache, INewSessionFormValues } from "@/pages/scenario/types";
 
 const workbenchBaseUrl = import.meta.env.VITE_BASE_URL;
 
@@ -74,3 +74,58 @@ export const SESSIONS_PER_PAGE = 4;
 
 export const SCENARIO_TIP_BANNER_MESSAGE =
     "Tip: Allow pop-ups for this site in your browser settings, they are blocked by default and required for the new tabs to open.";
+
+export const keyDetailsMapping: Record<string, { label: string; info: string }> = {
+    stopAfterFirstNack: {
+        label: "Stop At Nack",
+        info: "Stops execution after the first NACK response is received.",
+    },
+    timeValidations: {
+        label: "Time Validation",
+        info: "Checks whether request and response timestamps are valid.",
+    },
+    protocolValidations: {
+        label: "Protocol Validation",
+        info: "Validates payloads against protocol-level schema and rules.",
+    },
+    useGateway: {
+        label: "Use Gateway",
+        info: "Routes requests through gateway before reaching target participants.",
+    },
+    headerValidaton: {
+        label: "Header Validation",
+        info: "Verifies required request headers and their expected values.",
+    },
+    useGzip: {
+        label: "Use Gzip",
+        info: "Enables gzip compression for payload transfer.",
+    },
+    encryptionValidation: {
+        label: "Encryption Validation",
+        info: "Validates encryption-related fields and expected encrypted values.",
+    },
+    useCare: {
+        label: "Use Care(IGM)",
+        info: "Enables IGM care flow specific checks for supported scenarios.",
+    },
+    useTunnelForFIS: {
+        label: "Use Tunnel(FIS)",
+        info: "Uses the FIS tunnel path for request/response execution.",
+    },
+    totalDifficulty: {
+        label: "Total Difficulty",
+        info: "Represents combined score based on enabled difficulty settings.",
+    },
+};
+
+export const SESSION_VALIDATION_DEFAULTS: FilteredDifficultyCache = {
+    protocolValidations: true,
+    useGateway: true,
+    headerValidaton: true,
+    useGzip: false,
+    encryptionValidation: false,
+    useCare: false,
+    useTunnelForFIS: false,
+};
+
+export const skipItems = ["stopAfterFirstNack", "sensitiveTTL", "timeValidations"];
