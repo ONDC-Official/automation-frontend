@@ -51,7 +51,6 @@ const Routes = () => (
         <Route path={ROUTES.SELLER_ONBOARDING} element={<SellerOnboarding />} />
         <Route path={ROUTES.PLAYGROUND} element={<ProtocolPlayGround />} />
         <Route path={ROUTES.HISTORY} element={<HistoryPage />} />
-        <Route path="*" element={<NotFoundPage />} />
         <Route path={ROUTES.DB_BACK_OFFICE} element={<DBBackOffice />} />
         <Route path={ROUTES.AUTH_HEADER} element={<AuthHeader />} />
         <Route path={ROUTES.SELLER_LOAD_TESTING} element={<SellerLoadTesting />} />
@@ -88,6 +87,7 @@ const Routes = () => (
                 </DeveloperGuideWrapper>
             }
         />
+        <Route path="*" element={<NotFoundPage />} />
     </RouterRoutes>
 );
 
