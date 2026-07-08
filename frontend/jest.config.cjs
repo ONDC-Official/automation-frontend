@@ -6,6 +6,8 @@ module.exports = {
         "^.+\\.(ts|tsx|js|jsx)$": ["babel-jest", { configFile: "./babel.config.cjs" }],
     },
     moduleNameMapper: {
+        "^@/components/ui/forms/(.*)$": "<rootDir>/src/components/Forms/$1",
+        "^@components/ui/forms/(.*)$": "<rootDir>/src/components/Forms/$1",
         "^@pages/(.*)$": "<rootDir>/src/pages/$1",
         "^@components/(.*)$": "<rootDir>/src/components/$1",
         "^@utils/(.*)$": "<rootDir>/src/utils/$1",

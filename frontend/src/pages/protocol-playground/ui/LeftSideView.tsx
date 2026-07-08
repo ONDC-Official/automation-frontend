@@ -1,5 +1,7 @@
-import { useContext, useState, useMemo, useEffect, useRef } from "react";
-import { PlaygroundContext } from "@pages/protocol-playground/context/playground-context";
+import { useMemo, useEffect, useRef } from "react";
+import { usePlayground } from "@pages/protocol-playground/hooks/playground-runtime";
+import { useAppDispatch, useAppSelector } from "@store/hooks";
+import { setActiveLeftTab as setActiveLeftTabAction } from "@store/slices/playgroundUiSlice";
 import { PLAYGROUND_LEFT_TABS, PLAYGROUND_LEFT_TABS_FORM } from "@pages/protocol-playground/types";
 import { CodeValidator, getFunctionSchema } from "@ondc/automation-mock-runner";
 import { decodeBase64 } from "@pages/protocol-playground/utils/base64";
@@ -12,7 +14,7 @@ import { cn } from "@/lib/utils";
 
 export const LeftSideView = (props: { width: string; activeApi?: string }) => {
     const { width, activeApi } = props;
-    const playgroundContext = useContext(PlaygroundContext);
+    const playgroundContext = usePlayground();
 
     const stepData = getGroupSteps(playgroundContext.config, playgroundContext.stepGroup).find(
         (f) => f.action_id === activeApi
@@ -25,7 +27,10 @@ export const LeftSideView = (props: { width: string; activeApi?: string }) => {
 
     const tabs = isForm ? PLAYGROUND_LEFT_TABS_FORM : PLAYGROUND_LEFT_TABS;
 
-    const [activeLeftTab, setActiveLeftTab] = useState<string>(tabs[0].id);
+    const dispatch = useAppDispatch();
+    const persistedLeftTab = useAppSelector((s) => s.playgroundUi.activeLeftTab);
+    const activeLeftTab = persistedLeftTab ?? tabs[0].id;
+    const setActiveLeftTab = (tabId: string) => dispatch(setActiveLeftTabAction(tabId));
     useEffect(() => {
         if (!tabs.some((tab) => tab.id === activeLeftTab)) {
             setActiveLeftTab(tabs[0].id);

@@ -1,12 +1,12 @@
-import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
-import { PlaygroundContext } from "@pages/protocol-playground/context/playground-context";
+import { usePlayground } from "@pages/protocol-playground/hooks/playground-runtime";
 import { getKey, onLock } from "@utils/secure-key-store";
 
 import { createOpenAIClient } from "../client/openai-client";
 import type { OpenAIMessage, OpenAIToolCall, StreamEvent } from "../client/types";
-import { AIContext } from "../context/ai-context";
+import { useAi } from "./use-ai";
 import { buildRuntimeContext } from "../prompt/context-injector";
 import { buildSystemPrompt } from "../prompt/system-prompt";
 import { TOOL_DESCRIPTIONS } from "../prompt/tool-descriptions";
@@ -93,8 +93,8 @@ interface ToolCallAccumulator {
 }
 
 export function useChatSession() {
-    const ai = useContext(AIContext);
-    const playground = useContext(PlaygroundContext);
+    const ai = useAi();
+    const playground = usePlayground();
     const approvals = usePendingApprovals();
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [isStreaming, setIsStreaming] = useState(false);

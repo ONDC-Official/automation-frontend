@@ -6,7 +6,6 @@ import Card from "@/components/Shadcn/Card";
 import Accordion from "@/components/Shadcn/Accordion";
 import { ReportPage } from "@components/FlowShared/report";
 import { GetRequestEndpoint } from "@components/FlowShared/guides";
-import NotFound from "@/components/NotFound";
 import { useSession } from "@hooks/useSession";
 import { trackEvent } from "@utils/analytics";
 import { useWorkbenchFlows } from "@hooks/useWorkbenchFlow";
@@ -196,7 +195,8 @@ const Scenario = () => {
                 setSubscriberUrl(response.subscriberUrl);
                 setSession(sessId);
 
-                setFlowStepNum(response.activeStep);
+                const step = response.activeStep;
+                setFlowStepNum(step === 0 || step === 1 || step === 2 ? step : 0);
             })
             .catch((e: unknown) => {
                 console.error("Error while fetching session: ", e);
@@ -247,7 +247,21 @@ const Scenario = () => {
 
     const Body = () => {
         switch (flowStepNum) {
+            case 1:
+                if (!flows) return <Spinner />;
+                return (
+                    <RenderFlows
+                        flows={flows}
+                        subUrl={subscriberUrl}
+                        sessionId={session}
+                        newSession={newSession}
+                    />
+                );
+            case 2:
+                if (!session) return <Spinner />;
+                return <ReportPage sessionId={session} report={report} setStep={setFlowStepNum} />;
             case 0:
+            default:
                 return (
                     <div className="flex w-full flex-col gap-6">
                         <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(280px,2fr)_minmax(0,3fr)]">
@@ -297,21 +311,6 @@ const Scenario = () => {
                         />
                     </div>
                 );
-            case 1:
-                if (!flows) return <Spinner />;
-                return (
-                    <RenderFlows
-                        flows={flows}
-                        subUrl={subscriberUrl}
-                        sessionId={session}
-                        newSession={newSession}
-                    />
-                );
-            case 2:
-                if (!session) return <Spinner />;
-                return <ReportPage sessionId={session} report={report} setStep={setFlowStepNum} />;
-            default:
-                return <NotFound />;
         }
     };
     return (

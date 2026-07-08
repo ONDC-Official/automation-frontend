@@ -1,4 +1,4 @@
-import { useCallback, useContext, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import Markdown from "react-markdown";
 import {
@@ -6,29 +6,39 @@ import {
     ExecutionResult,
     MockPlaygroundConfigType,
 } from "@ondc/automation-mock-runner";
-import { Editor } from "@monaco-editor/react";
 
 import { useGetScenarioFormDataQuery, useValidateActionMutation } from "@store/api";
 
 import {
-    IoCheckmarkCircle,
-    IoCloseCircle,
-    IoChevronDown,
-    IoChevronUp,
-    IoCodeSlash,
-    IoShieldCheckmark,
-    IoPlayCircle,
-    IoAlertCircle,
-    IoTerminal,
-    IoDocumentText,
-    IoClose,
-    IoPencil,
-    IoRefresh,
-} from "react-icons/io5";
+    ArrowPathIcon,
+    CheckCircleIcon,
+    ChevronDownIcon,
+    ChevronUpIcon,
+    CodeBracketIcon,
+    CommandLineIcon,
+    DocumentTextIcon,
+    ExclamationCircleIcon,
+    PencilSquareIcon,
+    PlayCircleIcon,
+    ShieldCheckIcon,
+    XCircleIcon,
+    XMarkIcon,
+} from "@heroicons/react/24/outline";
 
 import { cn } from "@/lib/utils";
 import AppJsonViewer from "@/components/AppJsonViewer";
-import { PlaygroundContext } from "@pages/protocol-playground/context/playground-context";
+import { CodeEditor } from "@/components/PayloadEditor";
+import { Button } from "@/components/Shadcn/Button/button";
+import Spinner from "@/components/Shadcn/Spinner";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/Shadcn/Dialog";
+import { usePlayground } from "@pages/protocol-playground/hooks/playground-runtime";
 import { buildLinearConfig } from "@pages/protocol-playground/utils/transaction-view";
 import {
     IActiveDomainConfig,
@@ -138,98 +148,87 @@ function ValidateRequirementsModal({
         }
     };
 
-    if (!isOpen) return null;
-
     return (
-        <div
-            className="fixed inset-0 z-50 flex items-center justify-center"
-            style={{ background: "rgba(15,23,42,0.65)", backdropFilter: "blur(4px)" }}
-            onClick={(e) => {
-                if (e.target === e.currentTarget) onClose();
-            }}
-        >
-            <div
-                className="relative flex flex-col bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden"
-                style={{ width: "min(820px, 95vw)", maxHeight: "90vh" }}
+        <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+            <DialogContent
+                showCloseButton={false}
+                className="flex h-[80vh] max-h-[720px] w-[min(820px,95vw)] max-w-none flex-col gap-0 overflow-hidden p-0"
             >
                 {/* Modal Header */}
-                <div className="flex items-center justify-between px-6 py-4 bg-linear-to-r from-indigo-600 to-sky-500">
+                <DialogHeader className="flex-row items-center justify-between gap-3 border-b border-border-default bg-brand-light px-6 py-4 dark:bg-surface-muted">
                     <div className="flex items-center gap-3">
-                        <IoPencil className="text-white text-xl" />
-                        <div>
-                            <h2 className="text-white font-bold text-base leading-tight">
-                                Validate Requirements
-                            </h2>
-                            <p className="text-indigo-100 text-xs mt-0.5">
+                        <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-brand-normal/10 text-brand-normal">
+                            <PencilSquareIcon className="size-5" />
+                        </div>
+                        <div className="min-w-0">
+                            <DialogTitle>Validate Requirements</DialogTitle>
+                            <DialogDescription className="mt-0.5">
                                 Edit the live session data below, then run validation against&nbsp;
-                                <span className="font-mono bg-white/20 px-1 rounded">
+                                <span className="rounded bg-surface-muted px-1 font-mono text-text-primary dark:bg-surface-page">
                                     {actionId || "unknown"}
                                 </span>
-                            </p>
+                            </DialogDescription>
                         </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                        <button
+                    <div className="flex items-center gap-1">
+                        <Button
+                            variant="ghost"
+                            size="icon-sm"
                             onClick={() => {
                                 hasFetched.current = false;
                                 fetchSession();
                             }}
                             disabled={loadingSession}
                             title="Refresh session data"
-                            className="p-2 rounded-lg bg-white/20 hover:bg-white/30 text-white transition disabled:opacity-50"
+                            className="text-text-secondary"
                         >
-                            <IoRefresh
-                                className={`text-lg ${loadingSession ? "animate-spin" : ""}`}
+                            <ArrowPathIcon
+                                className={cn("size-5", loadingSession && "animate-spin")}
                             />
-                        </button>
-                        <button
+                        </Button>
+                        <Button
+                            variant="ghost"
+                            size="icon-sm"
                             onClick={onClose}
-                            className="p-2 rounded-lg bg-white/20 hover:bg-white/30 text-white transition"
+                            title="Close"
+                            className="text-text-secondary"
                         >
-                            <IoClose className="text-xl" />
-                        </button>
+                            <XMarkIcon className="size-5" />
+                        </Button>
                     </div>
-                </div>
+                </DialogHeader>
 
                 {/* Session Data Editor */}
-                <div className="flex-1 overflow-hidden flex flex-col" style={{ minHeight: 0 }}>
-                    <div className="px-4 pt-3 pb-1 border-b border-gray-100 bg-gray-50 flex items-center gap-2">
-                        <IoCodeSlash className="text-sky-500 text-sm" />
-                        <span className="text-xs font-semibold text-gray-600 uppercase tracking-wide">
+                <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+                    <div className="flex items-center gap-2 border-b border-border-default bg-surface-muted px-4 py-2">
+                        <CodeBracketIcon className="size-3.5 text-brand-normal" />
+                        <span className="text-xs font-semibold uppercase tracking-wide text-text-secondary">
                             Live Session Data
                         </span>
                         {loadingSession && (
-                            <span className="ml-auto flex items-center gap-1.5 text-xs text-sky-600">
-                                <span className="w-3 h-3 border-2 border-sky-500 border-t-transparent rounded-full animate-spin inline-block" />
+                            <span className="ml-auto flex items-center gap-1.5 text-xs text-brand-normal">
+                                <Spinner className="size-3" />
                                 Loading…
                             </span>
                         )}
                     </div>
 
-                    <div style={{ flex: "1 1 320px", minHeight: "260px" }}>
-                        <Editor
-                            height="100%"
-                            language="json"
-                            theme="vs-dark"
+                    <div className="min-h-0 flex-1">
+                        <CodeEditor
+                            editorKey="validate-reqs-session-editor"
                             value={sessionJson}
+                            language="json"
                             onChange={(v) => setSessionJson(v ?? "{}")}
-                            options={{
-                                fontSize: 13,
-                                minimap: { enabled: false },
-                                scrollBeyondLastLine: false,
-                                automaticLayout: true,
-                                formatOnPaste: true,
-                                padding: { top: 12, bottom: 12 },
-                                lineNumbers: "on",
-                            }}
+                            className="h-full w-full"
+                            options={{ fontSize: 13, padding: { top: 12, bottom: 12 } }}
                         />
                     </div>
 
                     {/* JSON parse error */}
                     {jsonError && (
-                        <div className="px-4 py-2 bg-red-50 border-t border-red-200 flex items-start gap-2">
-                            <IoAlertCircle className="text-red-500 mt-0.5 shrink-0" />
-                            <p className="text-xs text-red-700">{jsonError}</p>
+                        <div className="flex items-start gap-2 border-t border-error-500/30 bg-error-50 px-4 py-2 dark:bg-error-500/10">
+                            <ExclamationCircleIcon className="mt-0.5 size-4 shrink-0 text-error-500" />
+                            <p className="text-xs text-error-500">{jsonError}</p>
                         </div>
                     )}
                 </div>
@@ -237,38 +236,48 @@ function ValidateRequirementsModal({
                 {/* Result Banner */}
                 {result && (
                     <div
-                        className={`px-6 py-3 flex items-start gap-3 border-t ${
+                        className={cn(
+                            "flex items-start gap-3 border-t px-6 py-3",
                             result.valid
-                                ? "bg-green-50 border-green-200"
-                                : "bg-red-50 border-red-200"
-                        }`}
+                                ? "border-green-200 bg-green-50 dark:border-green-500/30 dark:bg-green-500/10"
+                                : "border-red-200 bg-red-50 dark:border-red-500/30 dark:bg-red-500/10"
+                        )}
                     >
                         {result.valid ? (
-                            <IoCheckmarkCircle className="text-green-500 text-2xl shrink-0 mt-0.5" />
+                            <CheckCircleIcon className="mt-0.5 size-6 shrink-0 text-green-500" />
                         ) : (
-                            <IoCloseCircle className="text-red-500 text-2xl shrink-0 mt-0.5" />
+                            <XCircleIcon className="mt-0.5 size-6 shrink-0 text-red-500" />
                         )}
-                        <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 flex-wrap">
+                        <div className="min-w-0 flex-1">
+                            <div className="flex flex-wrap items-center gap-2">
                                 <span
-                                    className={`text-sm font-semibold ${
-                                        result.valid ? "text-green-700" : "text-red-700"
-                                    }`}
+                                    className={cn(
+                                        "text-sm font-semibold",
+                                        result.valid
+                                            ? "text-green-700 dark:text-green-400"
+                                            : "text-red-700 dark:text-red-400"
+                                    )}
                                 >
                                     {result.valid ? "Requirements Met" : "Requirements Not Met"}
                                 </span>
                                 <span
-                                    className={`px-2 py-0.5 rounded-full text-xs font-mono font-medium ${
+                                    className={cn(
+                                        "rounded-full border px-2 py-0.5 font-mono text-xs font-medium",
                                         result.code === 200
-                                            ? "bg-green-100 text-green-800 border border-green-200"
-                                            : "bg-red-100 text-red-800 border border-red-200"
-                                    }`}
+                                            ? "border-green-200 bg-green-100 text-green-800 dark:border-green-500/30 dark:bg-green-500/15 dark:text-green-400"
+                                            : "border-red-200 bg-red-100 text-red-800 dark:border-red-500/30 dark:bg-red-500/15 dark:text-red-400"
+                                    )}
                                 >
                                     {result.code}
                                 </span>
                             </div>
                             <p
-                                className={`text-xs mt-1 ${result.valid ? "text-green-600" : "text-red-600"}`}
+                                className={cn(
+                                    "mt-1 text-xs",
+                                    result.valid
+                                        ? "text-green-600 dark:text-green-400/80"
+                                        : "text-red-600 dark:text-red-400/80"
+                                )}
                             >
                                 {result.description}
                             </p>
@@ -277,33 +286,30 @@ function ValidateRequirementsModal({
                 )}
 
                 {/* Footer Actions */}
-                <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-100 bg-gray-50">
-                    <button
-                        onClick={onClose}
-                        className="px-4 py-2 rounded-lg text-sm font-medium text-gray-600 bg-white border border-gray-300 hover:bg-gray-50 transition"
-                    >
+                <DialogFooter className="border-t border-border-default bg-surface-muted px-6 py-4">
+                    <Button variant="outline" onClick={onClose}>
                         Close
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                         onClick={handleValidate}
                         disabled={validating || loadingSession}
-                        className="flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-semibold text-white bg-linear-to-r from-indigo-600 to-sky-500 hover:from-indigo-700 hover:to-sky-600 disabled:opacity-60 disabled:cursor-not-allowed transition shadow-xs"
+                        isLoading={validating}
                     >
                         {validating ? (
                             <>
-                                <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                <Spinner className="size-4" />
                                 Validating…
                             </>
                         ) : (
                             <>
-                                <IoShieldCheckmark className="text-base" />
+                                <ShieldCheckIcon className="size-4" />
                                 Run Validation
                             </>
                         )}
-                    </button>
-                </div>
-            </div>
-        </div>
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
     );
 }
 
@@ -343,7 +349,7 @@ export default function OutputPayloadViewer({
     // Validate Requirements modal
     const [reqsModalOpen, setReqsModalOpen] = useState(false);
 
-    const playgroundContext = useContext(PlaygroundContext);
+    const playgroundContext = usePlayground();
     const [l2Result, setL2Result] = useState<
         | {
               valid: boolean;
@@ -468,7 +474,7 @@ export default function OutputPayloadViewer({
         return (
             <div className="mt-2 flex h-full items-center justify-center rounded-lg border border-border-default bg-surface-muted">
                 <div className="p-8 text-center">
-                    <IoDocumentText className="mx-auto mb-3 text-5xl text-text-secondary" />
+                    <DocumentTextIcon className="mx-auto mb-3 size-12 text-text-secondary" />
                     <p className="text-sm font-medium text-text-secondary">No payload available</p>
                     <p className="mt-1 text-xs text-text-secondary/80">
                         Execute a function to see the output
@@ -495,7 +501,7 @@ export default function OutputPayloadViewer({
             {/* Header */}
             <div className="flex items-center justify-between border-b border-border-default bg-brand-light px-4 py-3 dark:bg-surface-muted">
                 <div className="flex items-center gap-2">
-                    <IoTerminal className="text-xl text-brand-normal" />
+                    <CommandLineIcon className="size-5 text-brand-normal" />
                     <h3 className="text-base font-semibold text-text-primary">Output Payload</h3>
                 </div>
                 <div className="flex gap-2">
@@ -511,7 +517,7 @@ export default function OutputPayloadViewer({
                             </>
                         ) : (
                             <>
-                                <IoShieldCheckmark className="text-base" />
+                                <ShieldCheckIcon className="size-4" />
                                 <span>L1 Validation</span>
                             </>
                         )}
@@ -527,7 +533,7 @@ export default function OutputPayloadViewer({
                             </>
                         ) : (
                             <>
-                                <IoShieldCheckmark className="text-base" />
+                                <ShieldCheckIcon className="size-4" />
                                 <span>L2 Validation</span>
                             </>
                         )}
@@ -544,7 +550,7 @@ export default function OutputPayloadViewer({
                             </>
                         ) : (
                             <>
-                                <IoShieldCheckmark className="text-base" />
+                                <ShieldCheckIcon className="size-4" />
                                 <span>Validate Requirements</span>
                             </>
                         )}
@@ -561,7 +567,7 @@ export default function OutputPayloadViewer({
                         className="flex w-full items-center justify-between bg-surface-muted p-3 text-left transition hover:bg-brand-light dark:hover:bg-surface-muted/80"
                     >
                         <div className="flex items-center gap-2">
-                            <IoCodeSlash className="text-base text-brand-normal" />
+                            <CodeBracketIcon className="size-4 text-brand-normal" />
                             <span className="text-sm font-semibold text-text-primary">
                                 Payload Data
                             </span>
@@ -572,9 +578,9 @@ export default function OutputPayloadViewer({
                             )}
                         </div>
                         {showPayload ? (
-                            <IoChevronUp className="text-text-secondary" />
+                            <ChevronUpIcon className="size-4 text-text-secondary" />
                         ) : (
-                            <IoChevronDown className="text-text-secondary" />
+                            <ChevronDownIcon className="size-4 text-text-secondary" />
                         )}
                     </button>
                     {showPayload && (
@@ -620,11 +626,11 @@ export default function OutputPayloadViewer({
                         >
                             <div className="flex items-center gap-2">
                                 {validationSuccess === false ? (
-                                    <IoCloseCircle className="text-red-500 text-base" />
+                                    <XCircleIcon className="size-4 text-red-500" />
                                 ) : validationSuccess === true ? (
-                                    <IoCheckmarkCircle className="text-green-500 text-base" />
+                                    <CheckCircleIcon className="size-4 text-green-500" />
                                 ) : (
-                                    <IoAlertCircle className="text-yellow-500 text-base" />
+                                    <ExclamationCircleIcon className="size-4 text-yellow-500" />
                                 )}
                                 <span
                                     className={cn(
@@ -652,24 +658,26 @@ export default function OutputPayloadViewer({
                                 )}
                             </div>
                             {showValidation ? (
-                                <IoChevronUp
-                                    className={
+                                <ChevronUpIcon
+                                    className={cn(
+                                        "size-4",
                                         validationSuccess === false
                                             ? "text-red-400"
                                             : validationSuccess === true
                                               ? "text-green-400"
                                               : "text-yellow-400"
-                                    }
+                                    )}
                                 />
                             ) : (
-                                <IoChevronDown
-                                    className={
+                                <ChevronDownIcon
+                                    className={cn(
+                                        "size-4",
                                         validationSuccess === false
                                             ? "text-red-400"
                                             : validationSuccess === true
                                               ? "text-green-400"
                                               : "text-yellow-400"
-                                    }
+                                    )}
                                 />
                             )}
                         </button>
@@ -815,9 +823,9 @@ export default function OutputPayloadViewer({
                         >
                             <div className="flex items-center gap-2">
                                 {!l2Result.valid ? (
-                                    <IoCloseCircle className="text-red-500 text-base" />
+                                    <XCircleIcon className="size-4 text-red-500" />
                                 ) : (
-                                    <IoCheckmarkCircle className="text-green-500 text-base" />
+                                    <CheckCircleIcon className="size-4 text-green-500" />
                                 )}
                                 <span
                                     className={cn(
@@ -843,12 +851,18 @@ export default function OutputPayloadViewer({
                                 </span>
                             </div>
                             {showL2Results ? (
-                                <IoChevronUp
-                                    className={!l2Result.valid ? "text-red-400" : "text-green-400"}
+                                <ChevronUpIcon
+                                    className={cn(
+                                        "size-4",
+                                        !l2Result.valid ? "text-red-400" : "text-green-400"
+                                    )}
                                 />
                             ) : (
-                                <IoChevronDown
-                                    className={!l2Result.valid ? "text-red-400" : "text-green-400"}
+                                <ChevronDownIcon
+                                    className={cn(
+                                        "size-4",
+                                        !l2Result.valid ? "text-red-400" : "text-green-400"
+                                    )}
                                 />
                             )}
                         </button>
@@ -887,7 +901,7 @@ export default function OutputPayloadViewer({
                 {/* Empty state when no validation run yet */}
                 {!mdData && !loading && (
                     <div className="p-8 text-center">
-                        <IoPlayCircle className="mx-auto mb-3 text-5xl text-text-secondary/50" />
+                        <PlayCircleIcon className="mx-auto mb-3 size-12 text-text-secondary/50" />
                         <p className="text-sm font-medium text-text-secondary">Ready to validate</p>
                         <p className="mt-1 text-xs text-text-secondary/80">
                             Click "L1 Validation" to run validation checks

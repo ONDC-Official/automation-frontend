@@ -1,10 +1,8 @@
-import { useContext, useState } from "react";
+import { useState, useEffect } from "react";
+import { usePlayground } from "@pages/protocol-playground/hooks/playground-runtime";
 import { queryJsonPath } from "@/utils/jsonpath-query";
 import { inputClass } from "@components/ui/forms/inputClass";
-// import { MockPlaygroundConfigType } from "../mock-engine/types";
 import { FaExclamationTriangle, FaPlus } from "react-icons/fa";
-import { PlaygroundContext } from "@/pages/protocol-playground/context/playground-context";
-import { useEffect } from "react";
 import JsonPathInput from "@/pages/protocol-playground/ui/json-path-input.tsx";
 import { handleAddParam } from "@/pages/protocol-playground/ui/json-path-input";
 import JsonPathOutputPopup from "@/pages/protocol-playground/ui/JsonPathOutputModal";
@@ -22,7 +20,7 @@ export default function SessionDataTab() {
         setCurrentConfig: setPlayGroundConfig,
         resetTransactionHistory,
         stepGroup,
-    } = useContext(PlaygroundContext);
+    } = usePlayground();
     const groupSteps = getGroupSteps(playgroundConfig, stepGroup);
     const [showAlert, setShowAlert] = useState(false);
     const [showInput, setShowInput] = useState(false);

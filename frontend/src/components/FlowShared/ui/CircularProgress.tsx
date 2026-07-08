@@ -1,6 +1,4 @@
 import React, { useEffect, useRef, useState } from "react";
-import { store } from "@store/index";
-import { setCooldown, clearCooldown } from "@store/slices/cooldownsSlice";
 
 interface Props {
     strokeWidth?: number;
@@ -17,22 +15,18 @@ const CircularProgress: React.FC<Props> = ({
     sqSize = 120,
     duration = 5,
     onComplete,
-    loop,
+    loop: _loop,
     isActive = true,
-    id,
+    id: _id,
 }) => {
     const radius = (sqSize - strokeWidth) / 2;
     const circumference = 2 * Math.PI * radius;
 
-    const [progress, setProgress] = useState<number>(() => {
-        if (id) {
-            return store.getState().cooldowns.entries[id]?.progress ?? 0;
-        }
-        return 0;
-    });
+    const [progress, setProgress] = useState(0);
 
     const animationRef = useRef<number | null>(null);
     const startTimeRef = useRef<number | null>(null);
+    const elapsedOffsetRef = useRef(0);
     const isMounted = useRef(true);
     const isRunning = useRef(false);
     const pauseRef = useRef(false);
@@ -57,23 +51,21 @@ const CircularProgress: React.FC<Props> = ({
             pauseRef.current = false;
             isRunning.current = false;
             startTimeRef.current = null;
-            if (id) {
-                store.dispatch(clearCooldown(id));
-            }
+            elapsedOffsetRef.current = 0;
             setProgress(0);
             setResumeKey((k) => k + 1);
         };
 
         document.addEventListener("visibilitychange", onVisible);
         return () => document.removeEventListener("visibilitychange", onVisible);
-    }, [isActive, id]);
+    }, [isActive]);
 
     useEffect(() => {
         if (!isActive) return;
         if (pauseRef.current) return;
         isRunning.current = true;
 
-        const savedElapsed = id ? (store.getState().cooldowns.entries[id]?.elapsed ?? 0) : 0;
+        const savedElapsed = elapsedOffsetRef.current;
 
         startTimeRef.current = null;
 
@@ -89,19 +81,11 @@ const CircularProgress: React.FC<Props> = ({
 
             setProgress(currentProgress);
 
-            if (id) {
-                store.dispatch(setCooldown({ id, progress: currentProgress, elapsed }));
-            }
-
             if (currentProgress < 1) {
                 animationRef.current = requestAnimationFrame(animate);
             } else {
                 isRunning.current = false;
-
-                // Clear stored cooldown progress
-                if (id) {
-                    store.dispatch(clearCooldown(id));
-                }
+                elapsedOffsetRef.current = 0;
                 pauseRef.current = true;
                 onComplete().finally(() => {
                     if (!isMounted.current) return;
@@ -119,9 +103,13 @@ const CircularProgress: React.FC<Props> = ({
             if (animationRef.current) {
                 cancelAnimationFrame(animationRef.current);
             }
+            if (isRunning.current && startTimeRef.current !== null) {
+                const elapsed = (performance.now() - startTimeRef.current) / 1000;
+                elapsedOffsetRef.current = Math.min(elapsed, duration);
+            }
             isRunning.current = false;
         };
-    }, [duration, loop, onComplete, isActive, id, resumeKey]);
+    }, [duration, onComplete, isActive, resumeKey]);
 
     const strokeDashoffset = circumference * (1 - progress);
 

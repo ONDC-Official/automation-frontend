@@ -1,4 +1,4 @@
-import { useContext, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { PlayIcon, ArrowUturnLeftIcon } from "@heroicons/react/24/outline";
 
@@ -12,7 +12,7 @@ import {
     ComboboxItem,
     ComboboxList,
 } from "@/components/Shadcn/ComboBox/combobox";
-import { PlaygroundContext } from "@pages/protocol-playground/context/playground-context";
+import { usePlayground } from "@pages/protocol-playground/hooks/playground-runtime";
 import type { ToolMessage } from "../../hooks/use-chat-session";
 import { usePendingApprovals } from "../../hooks/use-pending-approvals";
 import { createReadToolRegistry } from "../../tools/registry";
@@ -67,7 +67,7 @@ function stubFromSchema(parameters: unknown): string {
 }
 
 export const ToolInspectorModal = ({ isOpen, onClose }: IToolInspectorModalProps) => {
-    const playground = useContext(PlaygroundContext);
+    const playground = usePlayground();
     const approvals = usePendingApprovals();
     const registry = useMemo(() => createReadToolRegistry(), []);
     const toolDefs = useMemo(() => registry.listDescriptions(), [registry]);

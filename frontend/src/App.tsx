@@ -3,7 +3,7 @@ import { BrowserRouter, useLocation } from "react-router-dom";
 import { Provider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
 import ThemeWrapper from "@/theme";
-import { AuthBootstrap } from "@/components/AuthBootstrap";
+import { AuthInitializer } from "@/hooks/useAuthInitialization";
 import { store, persistor } from "@store/index";
 import { runLegacyStorageMigration } from "@store/legacyStorageMigration";
 import { trackPageView } from "@utils/analytics";
@@ -23,7 +23,7 @@ const Wrapper = () => {
 
     return (
         <>
-            <AuthBootstrap />
+            <AuthInitializer />
             <Layout />
         </>
     );

@@ -1,8 +1,8 @@
-import { useContext, useState } from "react";
+import { useState } from "react";
 import { PiShieldStarBold } from "react-icons/pi";
 
-import { AIContext } from "../context/ai-context";
-import { useChatSessionContext } from "../context/chat-session-context";
+import { useAi } from "../hooks/use-ai";
+import type { ChatMessage } from "../hooks/use-chat-session";
 import { AISettingsPanel } from "./AISettingsPanel";
 import { AvailableToolsBar } from "./AvailableToolsBar";
 import { ChatComposer } from "./ChatComposer";
@@ -14,13 +14,24 @@ const IS_DEV = import.meta.env.VITE_ENVIRONMENT === "development";
 
 interface AIChatPanelProps {
     actionId: string | undefined;
+    messages: ChatMessage[];
+    isStreaming: boolean;
+    sendMessage: (text: string) => Promise<void>;
+    stop: () => void;
+    clear: () => void;
 }
 
-export function AIChatPanel({ actionId: _actionId }: AIChatPanelProps) {
-    const ai = useContext(AIContext);
+export function AIChatPanel({
+    actionId: _actionId,
+    messages,
+    isStreaming,
+    sendMessage,
+    stop,
+    clear,
+}: AIChatPanelProps) {
+    const ai = useAi();
     const [showSettings, setShowSettings] = useState(false);
     const [inspectorOpen, setInspectorOpen] = useState(false);
-    const { messages, isStreaming, sendMessage, stop, clear } = useChatSessionContext();
 
     return (
         <div className="flex flex-col gap-3 h-full min-h-0">

@@ -4,7 +4,7 @@ import { ArrowsRightLeftIcon, InformationCircleIcon } from "@heroicons/react/24/
 
 import { PairedStep } from "@components/FlowShared/mapped-flow";
 import { TooltipHint } from "@/components/Shadcn/Tooltip";
-import FlippableWrapper from "@components/ui/flippable-div";
+import FlippableWrapper from "@/pages/scenario/FlippableContainer";
 import { Badge } from "@/components/Shadcn/Badge";
 import { Button } from "@/components/Shadcn/Button/button";
 import { Switch } from "@/components/Shadcn/Switch/switch";

@@ -1,9 +1,7 @@
-import { useContext } from "react";
-
-import { AIContext } from "../context/ai-context";
+import { useAiUnlockGate } from "./use-ai-unlock-gate";
 
 export function useUnlockGate() {
-    const ai = useContext(AIContext);
+    const ai = useAiUnlockGate();
     return {
         ensureUnlocked: ai.ensureUnlocked,
         isUnlocked: ai.isUnlocked,

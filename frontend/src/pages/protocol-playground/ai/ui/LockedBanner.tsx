@@ -1,10 +1,9 @@
-import { useContext } from "react";
 import { PiShieldStarBold } from "react-icons/pi";
 
-import { AIContext } from "../context/ai-context";
+import { useAi } from "../hooks/use-ai";
 
 export function LockedBanner() {
-    const ai = useContext(AIContext);
+    const ai = useAi();
 
     if (ai.isUnlocked) return null;
 

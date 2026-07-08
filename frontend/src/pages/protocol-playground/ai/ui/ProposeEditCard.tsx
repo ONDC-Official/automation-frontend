@@ -1,9 +1,9 @@
-import { useContext, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { FaCheckCircle, FaExclamationCircle, FaTimes } from "react-icons/fa";
 import { PiShieldStarBold } from "react-icons/pi";
 import { MockRunner } from "@ondc/automation-mock-runner";
 
-import { PlaygroundContext } from "@pages/protocol-playground/context/playground-context";
+import { usePlayground } from "@pages/protocol-playground/hooks/playground-runtime";
 
 import type { ToolMessage } from "../hooks/use-chat-session";
 import { diffStats, lineDiff, type DiffRow } from "../utils/line-diff";
@@ -71,7 +71,7 @@ function DiffViewer({ rows }: { rows: DiffRow[] }) {
 }
 
 export function ProposeEditCard({ message }: ProposeEditCardProps) {
-    const playground = useContext(PlaygroundContext);
+    const playground = usePlayground();
     const [expanded, setExpanded] = useState(false);
 
     const args = useMemo(() => parseArgs(message.argsJson), [message.argsJson]);

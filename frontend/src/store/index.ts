@@ -23,10 +23,10 @@ import schemaValidationSlice from "@store/slices/schemaValidationSlice";
 import sellerLoadTestSlice from "@store/slices/sellerLoadTestSlice";
 import frameworkHealthSlice from "@store/slices/frameworkHealthSlice";
 import chatbotSlice from "@store/slices/chatbotSlice";
-import cooldownsSlice from "@store/slices/cooldownsSlice";
 import aiSlice from "@store/slices/aiSlice";
 import devGuideShellSlice from "@store/slices/devGuideShellSlice";
 import playgroundConfigsSlice from "@store/slices/playgroundConfigsSlice";
+import playgroundUiSlice from "@store/slices/playgroundUiSlice";
 import profileShellSlice from "@store/slices/profileShellSlice";
 import { listenerMiddleware } from "@store/listenerMiddleware";
 import {
@@ -57,12 +57,12 @@ const rootReducer = combineReducers({
     sellerLoadTest: persistReducer(localPersist("sellerLoadTest"), sellerLoadTestSlice.reducer),
     frameworkHealth: persistReducer(frameworkHealthPersistConfig, frameworkHealthSlice.reducer),
     chatbot: persistReducer(localPersist("chatbot"), chatbotSlice.reducer),
-    cooldowns: cooldownsSlice.reducer,
     ai: persistReducer(localPersist("ai"), aiSlice.reducer),
     playgroundConfigs: persistReducer(
         localPersist("playgroundConfigs"),
         playgroundConfigsSlice.reducer
     ),
+    playgroundUi: persistReducer(localPersist("playgroundUi"), playgroundUiSlice.reducer),
     devGuideShell: devGuideShellSlice.reducer,
     profileShell: profileShellSlice.reducer,
 });
