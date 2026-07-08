@@ -20,7 +20,12 @@ const FLOWS_WITH_ADD_ITEM_BUTTON: string[] = [
 ];
 
 type CatalogAddOn = { id: string };
-type CatalogItem = { id: string; parent_item_id?: string; add_ons?: CatalogAddOn[] };
+type CatalogItem = {
+    id: string;
+    parent_item_id?: string;
+    add_ons?: CatalogAddOn[];
+    fulfillment_ids?: string[];
+};
 type CatalogFulfillmentStop = {
     type: string;
     instructions?: Record<string, unknown>;
@@ -50,6 +55,14 @@ type FormValues = {
     fulfillmentId: string;
 };
 
+interface ExtractedItem {
+    itemid: string;
+    parentItemId: string;
+    providerid: string;
+    addOns: string[];
+    fulfillmentIds: string[];
+}
+
 export default function TRVSelect({
     submitEvent,
     flowId,
@@ -76,6 +89,18 @@ export default function TRVSelect({
     const selectedItems = watch("items");
     const [itemOptions, setItemOptions] = useState<ExtractedItem[]>([]);
     const [fulfillmentOptions, setFulfillmentOptions] = useState<CatalogFulfillment[]>([]);
+
+    const selectedItemIds = selectedItems.map((item) => item.itemId).filter((id) => id !== "");
+
+    const filteredFulfillmentOptions =
+        selectedItemIds.length === 0
+            ? []
+            : fulfillmentOptions.filter((fulfillment) => {
+                  return selectedItemIds.every((itemId) => {
+                      const itemOpt = itemOptions.find((opt) => opt.itemid === itemId);
+                      return itemOpt?.fulfillmentIds.includes(fulfillment.id);
+                  });
+              });
 
     const onSubmit = async (data: FormValues) => {
         const selectedFulfillment = fulfillmentOptions.find((f) => f.id === data.fulfillmentId);
@@ -124,6 +149,7 @@ export default function TRVSelect({
                             parentItemId: item.parent_item_id,
                             providerid: providerId,
                             addOns: (item.add_ons || []).map((addon: CatalogAddOn) => addon.id),
+                            fulfillmentIds: item.fulfillment_ids || [],
                         });
                     }
                 });
@@ -167,8 +193,12 @@ export default function TRVSelect({
                     const selectedId = e.target.value;
                     const selectedOption = options.find((opt) => opt.itemid === selectedId);
 
+                    setValue(
+                        `items.${index}.itemId` as unknown as FieldPath<FormValues>,
+                        selectedId
+                    );
+
                     if (selectedOption) {
-                        // update the other fields in the same row
                         setValue(
                             `items.${index}.parentItemId` as unknown as FieldPath<FormValues>,
                             selectedOption.parentItemId
@@ -178,6 +208,17 @@ export default function TRVSelect({
                             `items.${index}.addOns` as unknown as FieldPath<FormValues>,
                             [] as string[]
                         );
+                        const currentFulfillmentId = getValues("fulfillmentId");
+                        if (currentFulfillmentId) {
+                            const isStillCompatible =
+                                selectedOption.fulfillmentIds.includes(currentFulfillmentId);
+                            if (!isStillCompatible) {
+                                setValue("fulfillmentId", "");
+                            }
+                        }
+                    } else {
+                        // No item selected — reset fulfillment
+                        setValue("fulfillmentId", "");
                     }
                 }}
                 className={inputStyle}
@@ -326,13 +367,18 @@ export default function TRVSelect({
                         ) : (
                             <select {...register("fulfillmentId")} className={inputStyle}>
                                 <option value="">Select Fulfillment...</option>
-                                {fulfillmentOptions.map((f) => (
+                                {filteredFulfillmentOptions.map((f) => (
                                     <option key={f.id} value={f.id}>
                                         {f.id}
                                         {f.type ? ` (${f.type})` : ""}
                                     </option>
                                 ))}
                             </select>
+                        )}
+                        {selectedItemIds.length > 0 && filteredFulfillmentOptions.length === 0 && (
+                            <p className="text-red-500 text-xs">
+                                No fulfillments available for the selected items.
+                            </p>
                         )}
                     </div>
                 </div>
