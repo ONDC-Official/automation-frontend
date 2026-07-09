@@ -1,6 +1,6 @@
 import { FC } from "react";
 import { useNavigate } from "react-router-dom";
-import Spinner from "@/components/Shadcn/Spinner";
+import Spinner from "@components/Shadcn/Spinner";
 import { Button } from "@/components/Shadcn/Button/button";
 import { ROUTES } from "@constants/routes";
 import FlowInformation from "../FlowInformation";

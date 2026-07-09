@@ -1,7 +1,7 @@
 import type { FieldPath, FieldValues, RegisterOptions } from "react-hook-form";
 import { Controller } from "react-hook-form";
 
-import { Textarea } from "@/components/Shadcn/ComboBox/textarea";
+import { Textarea } from "@components/Shadcn/ComboBox/textarea";
 import { cn } from "@/lib/utils";
 
 import { Field, FieldDescription, FieldError, FieldLabel } from "./field";

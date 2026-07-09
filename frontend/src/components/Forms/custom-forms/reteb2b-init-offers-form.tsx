@@ -2,12 +2,12 @@ import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { PlusIcon, TrashIcon } from "@heroicons/react/24/outline";
 import { toast } from "sonner";
 
-import { ComboBoxControl } from "@/components/Shadcn/ComboBox";
-import { Button } from "@/components/Shadcn/Button/button";
-import { Checkbox } from "@/components/Shadcn/Checkbox";
-import { Input } from "@/components/Shadcn/TextField/input";
-import { Field, FieldLabel } from "@/components/Shadcn/TextField/field";
-import FormDialogShell from "@/components/ui/forms/form-dialog-shell";
+import { ComboBoxControl } from "@components/Shadcn/ComboBox";
+import { Button } from "@components/Shadcn/Button/button";
+import { Checkbox } from "@components/Shadcn/Checkbox";
+import { Input } from "@components/Shadcn/TextField/input";
+import { Field, FieldLabel } from "@components/Shadcn/TextField/field";
+import FormDialogShell from "@components/Forms/form-dialog-shell";
 import { useSession } from "@hooks/useSession";
 import { useLazyGetCompletePayloadQuery, useLazyGetTransactionDataQuery } from "@store/api";
 import { cn } from "@/lib/utils";
@@ -25,7 +25,7 @@ import {
     ITag,
     ITargetListItem,
     IOnSearchPayload,
-} from "@/components/ui/forms/types/reteb2b-init-offers-form-types";
+} from "@components/Forms/types/reteb2b-init-offers-form-types";
 
 const toComboOptions = (values: string[]) => values.map((value) => ({ value, label: value }));
 

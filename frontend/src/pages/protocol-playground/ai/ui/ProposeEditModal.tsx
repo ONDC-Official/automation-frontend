@@ -3,7 +3,7 @@ import { FaCheck, FaTimes } from "react-icons/fa";
 import { PiShieldStarBold } from "react-icons/pi";
 import { MockRunner } from "@ondc/automation-mock-runner";
 
-import FormFlowDialog from "@/components/Shadcn/Dialog/form-flow-dialog";
+import FormFlowDialog from "@components/Shadcn/Dialog/form-flow-dialog";
 import { Button } from "@/components/Shadcn/Button/button";
 import { usePlayground } from "@pages/protocol-playground/hooks/playground-runtime";
 

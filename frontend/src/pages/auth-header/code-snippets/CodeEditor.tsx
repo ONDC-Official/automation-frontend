@@ -6,7 +6,7 @@ import { CodeEditorProps } from "@pages/auth-header/code-snippets/types";
 import { ClipboardDocumentIcon } from "@heroicons/react/24/outline";
 import { useTheme } from "@/theme/hooks/useTheme";
 import { subscribeToThemeApply } from "@/theme/utils/themeUtils";
-import { getEditorThemeName } from "@/components/PayloadEditor/constants";
+import { getEditorThemeName } from "@components/PayloadEditor/constants";
 import { Button } from "@/components/Shadcn/Button/button";
 
 const EDITOR_HEIGHT = "500px";

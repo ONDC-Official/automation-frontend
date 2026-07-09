@@ -9,7 +9,7 @@ import type {
 } from "react-hook-form";
 import { Controller } from "react-hook-form";
 
-import { Field, FieldError, FieldLabel } from "@/components/Shadcn/TextField/field";
+import { Field, FieldError, FieldLabel } from "@components/Shadcn/TextField/field";
 import { cn } from "@/lib/utils";
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./select";

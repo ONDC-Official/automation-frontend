@@ -1,6 +1,6 @@
 import { CONFIG_DISPLAY_NAME_MAP } from "@pages/user-profile/constants";
 import type { IPastReport } from "@pages/user-profile/types";
-import { truncateId, toTitleCase } from "@/utils/formatUtils";
+import { truncateId, toTitleCase } from "@utils/formatUtils";
 
 export const getPastReportMeta = (report: IPastReport) => ({
     domain: report.domain,

@@ -18,17 +18,15 @@
         /* Path aliases */
         // "baseUrl": ".",
         "paths": {
-            "@/components/ui/forms/*": ["./src/components/Forms/*"],
-            "@components/ui/forms/*": ["./src/components/Forms/*"],
             "@/*": ["./src/*"],
             "@components/*": ["./src/components/*"],
             "@pages/*": ["./src/pages/*"],
             "@utils/*": ["./src/utils/*"],
             "@hooks/*": ["./src/hooks/*"],
-            "@context/*": ["./src/context/*"],
             "@constants/*": ["./src/constants/*"],
             "@services/*": ["./src/services/*"],
-            "@store/*": ["./src/store/*"]
+            "@store/*": ["./src/store/*"],
+            "@assets/*": ["./src/assets/*"]
         },
 
         /* Linting */

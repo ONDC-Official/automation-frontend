@@ -2,13 +2,13 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
-import TextField, { LabelWithToolTip } from "@/components/Shadcn/TextField";
-import { ComboBoxMultiControl } from "@/components/Shadcn/ComboBox";
-import LoadingButton from "@components/ui/forms/loading-button";
+import TextField, { LabelWithToolTip } from "@components/Shadcn/TextField";
+import { ComboBoxMultiControl } from "@components/Shadcn/ComboBox";
+import LoadingButton from "@components/Forms/loading-button";
 import { SellerOnboardingData } from "@pages/seller-onboarding";
 import { domainOptions } from "@constants/common.tsx";
-import MultiImageUpload from "@components/ui/forms/multi-image-upload";
-import SingleImageUpload from "@components/ui/forms/single-image-upload";
+import MultiImageUpload from "@components/Forms/multi-image-upload";
+import SingleImageUpload from "@components/Forms/single-image-upload";
 import { useSingleImageUpload, useMultiImageUpload } from "@hooks/useImageUpload";
 
 interface BasicInformationFormProps {

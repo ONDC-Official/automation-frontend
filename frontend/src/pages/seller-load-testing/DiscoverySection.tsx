@@ -1,5 +1,5 @@
 import React from "react";
-import LoadingButton from "@/components/ui/forms/loading-button";
+import LoadingButton from "@components/Forms/loading-button";
 import { Textarea } from "@/components/Shadcn/ComboBox/textarea";
 import { Button } from "@/components/Shadcn/Button/button";
 import type { DiscoverySectionProps } from "@pages/seller-load-testing/types";

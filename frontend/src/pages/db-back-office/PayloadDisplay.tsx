@@ -1,6 +1,6 @@
 import { FC } from "react";
 import { PayloadDisplayProps } from "@pages/db-back-office/types";
-import AppJsonViewer from "@/components/AppJsonViewer";
+import AppJsonViewer from "@components/AppJsonViewer";
 
 const PayloadDisplay: FC<PayloadDisplayProps> = ({ payloadData }) => {
     return (

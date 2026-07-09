@@ -4,7 +4,7 @@ import SupportChannelsSection from "@pages/support/SupportChannelsSection";
 import SupportHero from "@pages/support/SupportHero";
 import SupportHowItWorksSection from "@pages/support/SupportHowItWorksSection";
 import SupportInfoBar from "@pages/support/SupportInfoBar";
-import HeroSection from "@/components/HeroLayout";
+import HeroSection from "@components/HeroLayout";
 
 const SupportPage: FC = () => (
     <>

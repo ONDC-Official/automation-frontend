@@ -1,6 +1,6 @@
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/Shadcn/Tabs/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@components/Shadcn/Tabs/tabs";
 import { cn } from "@/lib/utils";
-import type { FlowTabsProps } from "@/components/Shadcn/Tabs/types";
+import type { FlowTabsProps } from "@components/Shadcn/Tabs/types";
 
 export const FlowTabs = ({
     options,

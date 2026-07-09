@@ -9,8 +9,8 @@ import {
 import { MockPlaygroundConfigType } from "@ondc/automation-mock-runner";
 
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/Shadcn/Button";
-import AppJsonViewer from "@/components/AppJsonViewer";
+import { Button } from "@components/Shadcn/Button";
+import AppJsonViewer from "@components/AppJsonViewer";
 
 type Step = MockPlaygroundConfigType["steps"][number];
 type HistoryEntry = MockPlaygroundConfigType["transaction_history"][number];

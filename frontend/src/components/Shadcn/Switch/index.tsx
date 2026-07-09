@@ -1,8 +1,8 @@
 import { InformationCircleIcon } from "@heroicons/react/24/outline";
-import { TooltipHint } from "@/components/Shadcn/Tooltip";
-import { Switch } from "@/components/Shadcn/Switch/switch";
+import { TooltipHint } from "@components/Shadcn/Tooltip";
+import { Switch } from "@components/Shadcn/Switch/switch";
 import { cn } from "@/lib/utils";
-import type { SwitchFieldGroupProps, SwitchFieldProps } from "@/components/Shadcn/Switch/types";
+import type { SwitchFieldGroupProps, SwitchFieldProps } from "@components/Shadcn/Switch/types";
 
 export const SwitchField = ({
     id,

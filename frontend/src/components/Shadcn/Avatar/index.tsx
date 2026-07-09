@@ -1,13 +1,13 @@
 import { Link } from "react-router-dom";
 import { ROUTES } from "@constants/routes";
-import { Button } from "@/components/Shadcn/Button/button";
+import { Button } from "@components/Shadcn/Button/button";
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuSeparator,
     DropdownMenuTrigger,
-} from "@/components/Shadcn/DropDownMenu/dropdown-menu";
+} from "@components/Shadcn/DropDownMenu/dropdown-menu";
 import { IUserProfileMenu } from "@components/Header/types";
 import { ArrowLeftStartOnRectangleIcon, UserIcon } from "@heroicons/react/20/solid";
 

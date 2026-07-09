@@ -2,8 +2,8 @@
  * Constants for the Schema Validation page
  */
 
-import { availableDomains } from "@/constants/common";
-import { ISchemaGuideStepDefinition } from "@/pages/schema-validation/types";
+import { availableDomains } from "@constants/common";
+import { ISchemaGuideStepDefinition } from "@pages/schema-validation/types";
 
 /**
  * Example JSON payload shown in the schema guide accordion

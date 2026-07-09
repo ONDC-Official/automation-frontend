@@ -9,7 +9,7 @@ import HistoryPage from "@pages/history";
 import ProtocolPlayGround from "@pages/protocol-playground";
 import DBBackOffice from "@pages/db-back-office";
 import FlowTestingWrapper from "@pages/flow-testing";
-import NotFoundPage from "@/components/NotFound";
+import NotFoundPage from "@components/NotFound";
 import ScenarioPage from "@pages/scenario";
 import HomePage from "@pages/home";
 import SupportPage from "@pages/support";
@@ -17,14 +17,14 @@ import SellerLoadTesting from "@pages/seller-load-testing";
 import AuthHeader from "@pages/auth-header";
 import FrameworkHealthPage from "@pages/framework-health";
 import { ROUTES } from "@constants/routes";
-import DeveloperGuideFlowPage from "@/pages/developer-guide/DeveloperGuideFlowPage";
-import DeveloperGuideShell from "@/pages/developer-guide/layout/DeveloperGuideShell";
-import DeveloperGuideGettingStartedContent from "@/pages/developer-guide/layout/DeveloperGuideGettingStartedContent";
-import DeveloperGuideAuthToolsContent from "@/pages/developer-guide/layout/DeveloperGuideAuthToolsContent";
-import DeveloperGuideGeneralContent from "@/pages/developer-guide/layout/DeveloperGuideGeneralContent";
-import DeveloperGuideDomainsContent from "@/pages/developer-guide/layout/DeveloperGuideDomainsContent";
-import DeveloperGuideDocContent from "@/pages/developer-guide/layout/DeveloperGuideDocContent";
-import ValidationsPage from "@/pages/developer-guide/ValidationsPage";
+import DeveloperGuideFlowPage from "@pages/developer-guide/DeveloperGuideFlowPage";
+import DeveloperGuideShell from "@pages/developer-guide/layout/DeveloperGuideShell";
+import DeveloperGuideGettingStartedContent from "@pages/developer-guide/layout/DeveloperGuideGettingStartedContent";
+import DeveloperGuideAuthToolsContent from "@pages/developer-guide/layout/DeveloperGuideAuthToolsContent";
+import DeveloperGuideGeneralContent from "@pages/developer-guide/layout/DeveloperGuideGeneralContent";
+import DeveloperGuideDomainsContent from "@pages/developer-guide/layout/DeveloperGuideDomainsContent";
+import DeveloperGuideDocContent from "@pages/developer-guide/layout/DeveloperGuideDocContent";
+import ValidationsPage from "@pages/developer-guide/ValidationsPage";
 
 /** Developer Guide is only available in development; redirect to home in production */
 const DeveloperGuideWrapper = ({ children }: { children: React.ReactNode }) =>

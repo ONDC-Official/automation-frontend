@@ -1,13 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useAuth } from "@hooks/useAuth";
-import { DEFAULT_VALUES } from "@/pages/scenario/constants";
+import { DEFAULT_VALUES } from "@pages/scenario/constants";
 import {
     IDomainVersionWithUsecase,
     INewSessionFormProps,
     INewSessionFormValues,
-} from "@/pages/scenario/types";
-import { trackSchemaValidationForm } from "@/pages/scenario/helpers";
+} from "@pages/scenario/types";
+import { trackSchemaValidationForm } from "@pages/scenario/helpers";
 
 export function useNewSessionForm({
     domains,

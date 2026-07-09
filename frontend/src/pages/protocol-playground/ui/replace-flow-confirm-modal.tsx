@@ -1,5 +1,5 @@
 import { ExclamationTriangleIcon } from "@heroicons/react/24/outline";
-import { Button } from "@/components/Shadcn/Button/button";
+import { Button } from "@components/Shadcn/Button/button";
 import {
     Dialog,
     DialogContent,
@@ -7,7 +7,7 @@ import {
     DialogFooter,
     DialogHeader,
     DialogTitle,
-} from "@/components/Shadcn/Dialog";
+} from "@components/Shadcn/Dialog";
 
 interface IReplaceFlowConfirmModalProps {
     isOpen: boolean;

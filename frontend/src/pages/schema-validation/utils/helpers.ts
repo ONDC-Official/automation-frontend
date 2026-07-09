@@ -1,18 +1,18 @@
-import { IEditorRange } from "@/pages/schema-validation/types";
+import { IEditorRange } from "@pages/schema-validation/types";
 import type {
     IParsedValidationError,
     IParsedPayload,
     IActiveDomainConfig,
     IPayloadContext,
     IValidationResult,
-} from "@/pages/schema-validation/types";
+} from "@pages/schema-validation/types";
 import {
     MARKDOWN_BLOCK_REGEX,
     LIST_ITEM_REGEX,
     AJV_AT_PATH_REGEX,
     ADDITIONAL_PROPERTY_REGEX,
-} from "@/pages/schema-validation/constants";
-import { buildValidationError } from "@/pages/schema-validation/utils/validationErrors";
+} from "@pages/schema-validation/constants";
+import { buildValidationError } from "@pages/schema-validation/utils/validationErrors";
 
 /**
  * Escapes a string for safe use inside a RegExp.

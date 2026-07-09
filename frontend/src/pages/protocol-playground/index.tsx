@@ -10,7 +10,7 @@ import GetPlaygroundComponent from "@pages/protocol-playground/starter-page";
 import { usePlaygroundModals } from "@pages/protocol-playground/hooks/use-playground-modal";
 import { PlaygroundModal } from "@pages/protocol-playground/ui/playground-modal";
 import { useWorkbenchFlows } from "@hooks/useWorkbenchFlow";
-import RenderFlows from "@components/FlowShared/render-flows";
+import RenderFlows from "@components/DomainFlowRunner/RenderFlows";
 import {
     saveConfig,
     loadConfig,

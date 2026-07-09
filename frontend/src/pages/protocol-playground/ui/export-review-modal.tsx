@@ -7,10 +7,10 @@ import {
     DialogFooter,
     DialogHeader,
     DialogTitle,
-} from "@/components/Shadcn/Dialog";
+} from "@components/Shadcn/Dialog";
 import { cn } from "@/lib/utils";
 import { ArrowDownTrayIcon, CheckIcon, PencilIcon } from "@heroicons/react/24/outline";
-import { Button } from "@/components/Shadcn/Button/button";
+import { Button } from "@components/Shadcn/Button/button";
 import { Textarea } from "@/components/Shadcn/ComboBox/textarea";
 
 interface IExportReviewModalProps {

@@ -1,7 +1,7 @@
 import { useState } from "react";
 
-import { Button } from "@/components/Shadcn/Button/button";
-import FormFlowDialog from "@/components/Shadcn/Dialog/form-flow-dialog";
+import { Button } from "@components/Shadcn/Button/button";
+import FormFlowDialog from "@components/Shadcn/Dialog/form-flow-dialog";
 
 import { CodeEditor } from "./CodeEditor";
 

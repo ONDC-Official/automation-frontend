@@ -12,7 +12,7 @@ import {
     TooltipContent,
     TooltipProvider,
     TooltipTrigger,
-} from "@/components/Shadcn/Tooltip";
+} from "@components/Shadcn/Tooltip";
 import { Button } from "@/components/Shadcn/Button/button";
 
 interface FlowsAccordionProps {

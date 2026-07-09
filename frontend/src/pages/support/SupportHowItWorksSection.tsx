@@ -1,6 +1,6 @@
 import { FC } from "react";
-import { Card, CardContent } from "@/components/Shadcn/Card/card";
-import SectionLabel from "@/components/SectionLabel";
+import { Card, CardContent } from "@components/Shadcn/Card/card";
+import SectionLabel from "@components/SectionLabel";
 import { supportHowItWorksSteps } from "@pages/support/constants";
 
 const SupportHowItWorksSection: FC = () => (

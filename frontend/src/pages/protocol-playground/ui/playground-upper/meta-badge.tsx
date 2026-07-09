@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
-import { Badge } from "@/components/Shadcn/Badge/badge";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/Shadcn/Tooltip";
+import { Badge } from "@components/Shadcn/Badge/badge";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@components/Shadcn/Tooltip";
 import { IMetaBadgeProps } from "@pages/protocol-playground/ui/playground-upper/types";
 
 export const MetaBadge = ({ value, className, showTooltip = true }: IMetaBadgeProps) => {

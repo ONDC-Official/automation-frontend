@@ -11,16 +11,16 @@ import {
 import { toast } from "sonner";
 import { FaPlus, FaTrash, FaStore, FaClock } from "react-icons/fa";
 
-import { Input } from "@/components/Shadcn/TextField/input";
+import { Input } from "@components/Shadcn/TextField/input";
 import { Button } from "@/components/Shadcn/Button/button";
-import { Textarea } from "@/components/Shadcn/ComboBox/textarea";
-import { SelectControl } from "@/components/Shadcn/Select";
-import { ComboBoxMultiControl } from "@/components/Shadcn/ComboBox";
-import { DatePicker } from "@/components/Shadcn/DatePicker";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/Shadcn/Tabs";
+import { Textarea } from "@components/Shadcn/ComboBox/textarea";
+import { SelectControl } from "@components/Shadcn/Select";
+import { ComboBoxMultiControl } from "@components/Shadcn/ComboBox";
+import { DatePicker } from "@components/Shadcn/DatePicker";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@components/Shadcn/Tabs";
 
-import TimeInput from "@components/ui/forms/time-input";
-import LoadingButton from "@components/ui/forms/loading-button";
+import TimeInput from "@components/Forms/time-input";
+import LoadingButton from "@components/Forms/loading-button";
 import { SellerOnboardingData, StoreDetails } from "@pages/seller-onboarding";
 import {
     indianStates,

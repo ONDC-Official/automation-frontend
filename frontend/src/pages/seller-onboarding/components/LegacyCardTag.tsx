@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 
-import { Badge } from "@/components/Shadcn/Badge/badge";
+import { Badge } from "@components/Shadcn/Badge/badge";
 import { cn } from "@/lib/utils";
 
 const tagColorClasses = {

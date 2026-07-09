@@ -1,4 +1,4 @@
-import { FormConfigType } from "@/components/ui/forms/config-form";
+import { FormConfigType } from "@components/Forms/config-form";
 import { ApiResponseData } from "./session-types";
 
 export type ReducedApiData = {

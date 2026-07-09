@@ -7,7 +7,7 @@ import {
     UseFormRegister,
     UseFormWatch,
 } from "react-hook-form";
-import { IDomain, IDomainVersion } from "@/pages/schema-validation/types";
+import { IDomain, IDomainVersion } from "@pages/schema-validation/types";
 import { Flow } from "@/types/flow-types";
 
 export type INewSessionFormValues = IScenarioFormData & {
@@ -139,34 +139,3 @@ export type ISessionFormActionsProps = {
     extraActions?: ReactNode;
     className?: string;
 };
-
-export interface DifficultyCache {
-    stopAfterFirstNack?: boolean;
-    timeValidations: boolean;
-    protocolValidations: boolean;
-    useGateway: boolean;
-    headerValidaton: boolean;
-    sensitiveTTL?: boolean;
-    useGzip: boolean;
-    encryptionValidation?: boolean;
-    useCare?: boolean;
-    useTunnelForFIS?: boolean;
-    totalDifficulty?: number;
-}
-
-export type FilteredDifficultyCache = Partial<
-    Omit<
-        DifficultyCache,
-        "stopAfterFirstNack" | "sensitiveTTL" | "timeValidations" | "totalDifficulty"
-    >
->;
-
-export interface FlowSettingsPanelProps {
-    autoScrollEnabled: boolean;
-    onAutoScrollChange: (value: boolean) => void;
-    experimentalMode: boolean;
-    onExperimentalModeChange: (value: boolean) => void;
-    sessionDifficulty: FilteredDifficultyCache;
-    onSessionDifficultyChange: (key: string, value: boolean) => void;
-    singleColumn?: boolean;
-}

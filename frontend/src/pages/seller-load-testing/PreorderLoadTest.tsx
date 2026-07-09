@@ -1,5 +1,5 @@
 import React from "react";
-import LoadingButton from "@/components/ui/forms/loading-button";
+import LoadingButton from "@components/Forms/loading-button";
 import { Input } from "@/components/Shadcn/TextField/input";
 import RunMetrics from "@pages/seller-load-testing/RunMetrics";
 import type { PreorderLoadTestProps } from "@pages/seller-load-testing/types";

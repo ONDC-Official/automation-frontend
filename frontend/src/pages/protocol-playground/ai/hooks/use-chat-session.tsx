@@ -7,11 +7,11 @@ import { getKey, onLock } from "@utils/secure-key-store";
 import { createOpenAIClient } from "../client/openai-client";
 import type { OpenAIMessage, OpenAIToolCall, StreamEvent } from "../client/types";
 import { useAi } from "./use-ai";
-import { buildRuntimeContext } from "../prompt/context-injector";
+import { buildRuntimeSnapshot } from "../prompt/runtime-snapshot";
 import { buildSystemPrompt } from "../prompt/system-prompt";
 import { TOOL_DESCRIPTIONS } from "../prompt/tool-descriptions";
 import { createReadToolRegistry } from "../tools/registry";
-import type { ToolContext } from "../tools/types";
+import type { ToolDeps } from "../tools/types";
 import { usePendingApprovals } from "./use-pending-approvals";
 
 const MAX_TOOL_ITERATIONS = 15;
@@ -150,7 +150,7 @@ export function useChatSession() {
                 { role: "system", content: buildSystemPrompt() },
                 {
                     role: "system",
-                    content: buildRuntimeContext({
+                    content: buildRuntimeSnapshot({
                         config: playground.config,
                         activeApi: playground.activeApi,
                         terminalTail: playground.activeTerminalData,
@@ -281,7 +281,7 @@ export function useChatSession() {
                         };
                         setMessages((prev) => [...prev, running]);
 
-                        const ctx: ToolContext = {
+                        const deps: ToolDeps = {
                             config: playground.config,
                             activeApi: playground.activeApi,
                             terminalTail: playground.activeTerminalData,
@@ -289,7 +289,7 @@ export function useChatSession() {
                             updateStepMock: playground.updateStepMock,
                             requestApproval: approvals.request,
                         };
-                        const outcome = await registry.execute(tc.name, tc.argsJson, ctx);
+                        const outcome = await registry.execute(tc.name, tc.argsJson, deps);
                         const finished: ToolMessage = outcome.ok
                             ? {
                                   ...running,

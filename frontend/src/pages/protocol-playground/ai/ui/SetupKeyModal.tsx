@@ -2,7 +2,7 @@ import { FormEvent, useEffect, useState } from "react";
 import { PiShieldStarBold } from "react-icons/pi";
 import { toast } from "sonner";
 
-import FormFlowDialog from "@/components/Shadcn/Dialog/form-flow-dialog";
+import FormFlowDialog from "@components/Shadcn/Dialog/form-flow-dialog";
 import { Button } from "@/components/Shadcn/Button/button";
 import { Input } from "@/components/Shadcn/TextField/input";
 import { setupKey } from "@utils/secure-key-store";

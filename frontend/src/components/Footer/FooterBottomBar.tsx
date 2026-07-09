@@ -1,4 +1,4 @@
-import { FooterSocialLinks } from "@/components/Footer/FooterSocialLinks";
+import { FooterSocialLinks } from "@components/Footer/FooterSocialLinks";
 
 export const FooterBottomBar = () => (
     <>

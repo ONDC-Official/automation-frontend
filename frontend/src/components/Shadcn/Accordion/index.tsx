@@ -3,8 +3,8 @@ import {
     AccordionContent,
     AccordionItem,
     AccordionTrigger,
-} from "@/components/Shadcn/Accordion/accordion";
-import { IAccordionProps } from "@/components/Shadcn/Accordion/types";
+} from "@components/Shadcn/Accordion/accordion";
+import { IAccordionProps } from "@components/Shadcn/Accordion/types";
 
 /**
  * Collapsible accordion that renders a list of guide steps.

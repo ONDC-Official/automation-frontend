@@ -1,6 +1,6 @@
 import type { ComponentProps } from "react";
 import { VariantProps } from "class-variance-authority";
-import { badgeVariants } from "@/components/Shadcn/Badge/badge";
+import { badgeVariants } from "@components/Shadcn/Badge/badge";
 
 export type BadgeProps = ComponentProps<"span"> &
     VariantProps<typeof badgeVariants> & {

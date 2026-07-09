@@ -2,7 +2,7 @@ import { type FC, useCallback, useState } from "react";
 import FlowDetailsAndSummary from "../FlowDetailsAndSummary";
 import FlowContextStrip from "./FlowContextStrip";
 import { FlowActionDetails } from "../flowActionDetails";
-import Spinner from "@/components/Shadcn/Spinner";
+import Spinner from "@components/Shadcn/Spinner";
 import ValidationsTable from "../ValidationsTable";
 import { RequestTab, ResponseTab } from "../RequestResponseTabs";
 import DetailTabsHeader from "./DetailTabsHeader";
@@ -13,7 +13,7 @@ import { useSelectedFlowStep } from "./useSelectedFlowStep";
 import FlowsSidebar from "./FlowsSidebar";
 import type { FlowInformationProps } from "./types";
 import { ChevronLeftIcon } from "@heroicons/react/24/outline";
-import { Button } from "@/components/Shadcn/Button";
+import { Button } from "@components/Shadcn/Button";
 
 const FlowInformation: FC<FlowInformationProps> = ({
     data,

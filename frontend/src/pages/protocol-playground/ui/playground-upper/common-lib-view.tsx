@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { usePlayground } from "@pages/protocol-playground/hooks/playground-runtime";
 import { decodeBase64 } from "@pages/protocol-playground/utils/base64";
-import { CodeEditor } from "@/components/PayloadEditor";
+import { CodeEditor } from "@components/PayloadEditor";
 import { PLAYGROUND_EDITOR_OPTIONS } from "@pages/protocol-playground/constants";
 
 export default function CommonLibView() {

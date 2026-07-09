@@ -1,4 +1,4 @@
-import LogoDark from "@/assets/svgs/LogoDark";
+import LogoDark from "@assets/svgs/LogoDark";
 
 export const FooterBrand = () => (
     <div className="max-w-xs shrink-0">

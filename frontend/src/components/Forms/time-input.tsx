@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from "react";
 import { FaClock } from "react-icons/fa";
 
-import { Input } from "@/components/Shadcn/TextField/input";
-import { SelectControl } from "@/components/Shadcn/Select";
-import { Button } from "@/components/Shadcn/Button";
+import { Input } from "@components/Shadcn/TextField/input";
+import { SelectControl } from "@components/Shadcn/Select";
+import { Button } from "@components/Shadcn/Button";
 import {
     Dialog,
     DialogContent,
     DialogFooter,
     DialogHeader,
     DialogTitle,
-} from "@/components/Shadcn/Dialog";
+} from "@components/Shadcn/Dialog";
 import { cn } from "@/lib/utils";
 
 interface TimeInputProps {

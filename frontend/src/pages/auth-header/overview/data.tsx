@@ -1,7 +1,7 @@
 import { FaHashtag, FaKey } from "react-icons/fa";
-import { FlowStep, AlgorithmInfo, ScenarioRow } from "@pages/auth-header/overview/types";
+import { ProcessFlowStep, AlgorithmInfo, ScenarioRow } from "@pages/auth-header/overview/types";
 
-export const signingFlowSteps: FlowStep[] = [
+export const signingFlowSteps: ProcessFlowStep[] = [
     {
         label: "JSON Payload",
         bgColor: "bg-brand-light dark:bg-brand-normal/15",
@@ -34,7 +34,7 @@ export const signingFlowSteps: FlowStep[] = [
     },
 ];
 
-export const verificationFlowSteps: FlowStep[] = [
+export const verificationFlowSteps: ProcessFlowStep[] = [
     {
         label: "Auth Header",
         bgColor: "bg-n-20 dark:bg-surface-muted",

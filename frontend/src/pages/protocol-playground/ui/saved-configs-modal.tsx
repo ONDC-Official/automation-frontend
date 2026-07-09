@@ -11,8 +11,8 @@ import {
     TrashIcon,
 } from "@heroicons/react/24/outline";
 
-import { Button } from "@/components/Shadcn/Button/button";
-import { Input } from "@/components/Shadcn/TextField/input";
+import { Button } from "@components/Shadcn/Button/button";
+import { Input } from "@components/Shadcn/TextField/input";
 import {
     Dialog,
     DialogContent,
@@ -20,8 +20,8 @@ import {
     DialogFooter,
     DialogHeader,
     DialogTitle,
-} from "@/components/Shadcn/Dialog";
-import GitHubIcon from "@/assets/svgs/GitHubIcon";
+} from "@components/Shadcn/Dialog";
+import GitHubIcon from "@assets/svgs/GitHubIcon";
 import { cn } from "@/lib/utils";
 import { usePlayground } from "@pages/protocol-playground/hooks/playground-runtime";
 import { SavedConfigMetadata } from "@pages/protocol-playground/utils/config-storage";

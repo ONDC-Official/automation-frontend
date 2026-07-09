@@ -1,6 +1,6 @@
 import { FC, useCallback } from "react";
 import { ClipboardDocumentIcon, SparklesIcon } from "@heroicons/react/24/outline";
-import { Button } from "@/components/Shadcn/Button";
+import { Button } from "@components/Shadcn/Button";
 import CodeBlock from "@components/CodeBlock";
 import { AI_PROMPT } from "@pages/auth-header/overview/data";
 import { useClipboard } from "@hooks/useClipboard";

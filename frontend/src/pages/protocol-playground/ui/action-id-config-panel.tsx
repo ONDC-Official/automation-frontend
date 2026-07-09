@@ -1,7 +1,7 @@
 import { usePlayground } from "@pages/protocol-playground/hooks/playground-runtime";
 import { MdEdit } from "react-icons/md";
 import { TbColumnInsertLeft, TbColumnInsertRight } from "react-icons/tb";
-import { Button } from "@/components/Shadcn/Button";
+import { Button } from "@components/Shadcn/Button";
 import { cn } from "@/lib/utils";
 import { IoMdTrash } from "react-icons/io";
 import { RxReset } from "react-icons/rx";

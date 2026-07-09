@@ -4,8 +4,8 @@ import {
     CardTitle,
     CardDescription,
     CardContent,
-} from "@/components/Shadcn/Card/card";
-import { ICardProps } from "@/components/Shadcn/Card/types";
+} from "@components/Shadcn/Card/card";
+import { ICardProps } from "@components/Shadcn/Card/types";
 
 export const Card = ({ title, description, badgeCount, headerAction, children }: ICardProps) => (
     <ShadCnCard>

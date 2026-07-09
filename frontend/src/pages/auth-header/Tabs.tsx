@@ -1,4 +1,4 @@
-import { Button } from "@/components/Shadcn/Button";
+import { Button } from "@components/Shadcn/Button";
 import { TabConfig, TabType } from "@pages/auth-header/types";
 
 interface TabsProps {

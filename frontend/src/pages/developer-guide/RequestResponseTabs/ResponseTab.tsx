@@ -5,9 +5,9 @@ import SchemaTree from "./SchemaTree";
 import SchemaViewToggle from "./SchemaViewToggle";
 import { useSchemaViewReadiness } from "./useSchemaViewReadiness";
 import { getResponseSchema, getResponseExamples, deepResolveSchema } from "./specUtils";
-import Spinner from "@/components/Shadcn/Spinner";
+import Spinner from "@components/Shadcn/Spinner";
 import CodeBlock from "@components/CodeBlock";
-import AppJsonViewer from "@/components/AppJsonViewer";
+import AppJsonViewer from "@components/AppJsonViewer";
 
 interface ResponseTabProps {
     spec: OpenAPISpecification;

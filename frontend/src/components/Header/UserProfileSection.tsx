@@ -2,11 +2,11 @@ import { useCallback, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@hooks/useAuth";
 import { ROUTES } from "@constants/routes";
-import { Button } from "@/components/Shadcn/Button/button";
-import Spinner from "@/components/Shadcn/Spinner";
-import GitHubIcon from "@/assets/svgs/GitHubIcon";
-import { UserProfileMenu } from "@/components/Header/UserProfileMenu";
-import { trackEvent } from "@/utils/analytics";
+import { Button } from "@components/Shadcn/Button/button";
+import Spinner from "@components/Shadcn/Spinner";
+import GitHubIcon from "@assets/svgs/GitHubIcon";
+import { UserProfileMenu } from "@components/Header/UserProfileMenu";
+import { trackEvent } from "@utils/analytics";
 import { cn } from "@/lib/utils";
 
 export const UserProfileSection = ({ inDrawer = false }: { inDrawer?: boolean }) => {

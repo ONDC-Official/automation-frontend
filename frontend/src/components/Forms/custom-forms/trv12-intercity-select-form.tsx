@@ -2,12 +2,12 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
-import { ComboBox } from "@/components/Shadcn/ComboBox";
-import { Button } from "@/components/Shadcn/Button/button";
-import TextField from "@/components/Shadcn/TextField";
-import PayloadEditor from "@/components/PayloadEditor/PastePayloadModal";
-import FormDialogShell from "@/components/ui/forms/form-dialog-shell";
-import { PastePayloadButton } from "@/components/ui/forms/paste-payload-button";
+import { ComboBox } from "@components/Shadcn/ComboBox";
+import { Button } from "@components/Shadcn/Button/button";
+import TextField from "@components/Shadcn/TextField";
+import PayloadEditor from "@components/PayloadEditor/PastePayloadModal";
+import FormDialogShell from "@components/Forms/form-dialog-shell";
+import { PastePayloadButton } from "@components/Forms/paste-payload-button";
 import {
     ICatalogItem,
     IOnSearchPayload,

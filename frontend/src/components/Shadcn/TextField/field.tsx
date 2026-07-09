@@ -1,8 +1,8 @@
 import { useMemo } from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
-import { Label } from "@/components/Shadcn/Label/label";
-import { Separator } from "@/components/Shadcn/Seperator/separator";
+import { Label } from "@components/Shadcn/Label/label";
+import { Separator } from "@components/Shadcn/Seperator/separator";
 
 const FieldSet = ({ className, ...props }: React.ComponentProps<"fieldset">) => (
     <fieldset
@@ -83,10 +83,7 @@ const Field = ({
 const FieldContent = ({ className, ...props }: React.ComponentProps<"div">) => (
     <div
         data-slot="field-content"
-        className={cn(
-            "group/field-content flex flex-1 flex-col gap-1.5 leading-snug",
-            className
-        )}
+        className={cn("group/field-content flex flex-1 flex-col gap-1.5 leading-snug", className)}
         {...props}
     />
 );

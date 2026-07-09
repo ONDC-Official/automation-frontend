@@ -1,5 +1,5 @@
 import { FC } from "react";
-import { ONDC_ACTION_LIST } from "@/pages/protocol-playground/types";
+import { ONDC_ACTION_LIST } from "@pages/protocol-playground/types";
 import { FetchFormProps } from "@pages/db-back-office/types";
 import LoadingButton from "@/components/Forms/loading-button";
 import { Input } from "@/components/Shadcn/TextField/input";

@@ -1,8 +1,8 @@
-import { Textarea } from "@/components/Shadcn/ComboBox/textarea";
-import { Checkbox } from "@/components/Shadcn/Checkbox";
-import { SelectControl } from "@/components/Shadcn/Select/select-control";
-import { Input } from "@/components/Shadcn/TextField/input";
-import { Field, FieldError, FieldLabel } from "@/components/Shadcn/TextField/field";
+import { Textarea } from "@components/Shadcn/ComboBox/textarea";
+import { Checkbox } from "@components/Shadcn/Checkbox";
+import { SelectControl } from "@components/Shadcn/Select/select-control";
+import { Input } from "@components/Shadcn/TextField/input";
+import { Field, FieldError, FieldLabel } from "@components/Shadcn/TextField/field";
 import { RadioGroup, RadioGroupItem } from "@/components/Shadcn/RadioGroup";
 import { cn } from "@/lib/utils";
 

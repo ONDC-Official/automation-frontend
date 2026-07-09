@@ -1,6 +1,6 @@
-import { IFooterLinks, ISocialLink } from "@/components/Footer/types";
-import GitHubIcon from "@/assets/svgs/GitHubIcon";
-import LinkedInIcon from "@/assets/svgs/LinkedInIcon";
+import { IFooterLinks, ISocialLink } from "@components/Footer/types";
+import GitHubIcon from "@assets/svgs/GitHubIcon";
+import LinkedInIcon from "@assets/svgs/LinkedInIcon";
 
 export const footerLinks: IFooterLinks = {
     company: [

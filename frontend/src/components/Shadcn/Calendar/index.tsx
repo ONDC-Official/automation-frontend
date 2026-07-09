@@ -3,7 +3,7 @@ import { ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon } from "@heroicons/r
 import { DayPicker, getDefaultClassNames, type DayButton } from "react-day-picker";
 
 import { cn } from "@/lib/utils";
-import { Button, buttonVariants } from "@/components/Shadcn/Button/button";
+import { Button, buttonVariants } from "@components/Shadcn/Button/button";
 
 const Calendar = ({
     className,

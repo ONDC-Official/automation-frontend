@@ -1,15 +1,15 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
-import RenderFlows from "@components/FlowShared/render-flows";
-import Card from "@/components/Shadcn/Card";
-import Accordion from "@/components/Shadcn/Accordion";
-import { ReportPage } from "@components/FlowShared/report";
-import { GetRequestEndpoint } from "@components/FlowShared/guides";
+import RenderFlows from "@components/DomainFlowRunner/RenderFlows";
+import Card from "@components/Shadcn/Card";
+import Accordion from "@components/Shadcn/Accordion";
+import { ReportPage } from "@pages/scenario/ReportPage";
+import { GetRequestEndpoint } from "@components/DomainFlowRunner/utils/get-request-endpoint";
 import { useSession } from "@hooks/useSession";
 import { trackEvent } from "@utils/analytics";
 import { useWorkbenchFlows } from "@hooks/useWorkbenchFlow";
-import { IDomain } from "@/pages/schema-validation/types";
+import { IDomain } from "@pages/schema-validation/types";
 import { Flow } from "@/types/flow-types";
 import { useAppDispatch, useAppSelector } from "@store/hooks";
 import {
@@ -18,8 +18,8 @@ import {
     type IFlowTestingSessionEntry,
 } from "@store/slices/sessionHistorySlice";
 import { setScenarioSession } from "@store/slices/supportSessionSlice";
-import { PreviousSessionsPanel } from "@/pages/scenario/PreviousSessionPanel";
-import { IPreviousSessionItem } from "@/pages/scenario/types";
+import { PreviousSessionsPanel } from "@pages/scenario/PreviousSessionPanel";
+import { IPreviousSessionItem } from "@pages/scenario/types";
 import {
     useLazyGetScenarioFormDataQuery,
     useLazyGetScenarioPreferencesQuery,
@@ -28,14 +28,14 @@ import {
     useLazyGetSessionByIdQuery,
 } from "@store/api";
 import { useAuth } from "@hooks/useAuth";
-import { IScenarioFormData, ISessionResponse, ISavedPrefAPI } from "@/pages/scenario/types";
-import { openSessionInNewTab } from "@/pages/scenario/helpers";
-import NewSessionForm from "@/pages/scenario/NewSessionForm";
-import Spinner from "@/components/Shadcn/Spinner";
-import { SCENARIO_GUIDE_STEPS, SCENARIO_TIP_BANNER_MESSAGE } from "@/pages/scenario/constants";
-import { Button } from "@/components/Shadcn/Button";
+import { IScenarioFormData, ISessionResponse, ISavedPrefAPI } from "@pages/scenario/types";
+import { openSessionInNewTab } from "@pages/scenario/helpers";
+import NewSessionForm from "@pages/scenario/NewSessionForm";
+import Spinner from "@components/Shadcn/Spinner";
+import { SCENARIO_GUIDE_STEPS, SCENARIO_TIP_BANNER_MESSAGE } from "@pages/scenario/constants";
+import { Button } from "@components/Shadcn/Button";
 import { InformationCircleIcon } from "@heroicons/react/24/outline";
-import { ROUTES } from "@/constants/routes";
+import { ROUTES } from "@constants/routes";
 
 const Scenario = () => {
     const {
