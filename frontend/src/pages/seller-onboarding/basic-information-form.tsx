@@ -4,7 +4,7 @@ import { toast } from "sonner";
 
 import TextField, { LabelWithToolTip } from "@components/Shadcn/TextField";
 import { ComboBoxMultiControl } from "@components/Shadcn/ComboBox";
-import LoadingButton from "@components/Forms/loading-button";
+import { Button } from "@components/Shadcn/Button";
 import { SellerOnboardingData } from "@pages/seller-onboarding";
 import { domainOptions } from "@constants/common.tsx";
 import MultiImageUpload from "@components/Forms/multi-image-upload";
@@ -229,7 +229,7 @@ const BasicInformationForm = ({ initialData, onNext }: BasicInformationFormProps
             </div>
 
             <div className="flex justify-end mt-8">
-                <LoadingButton buttonText="Next Step" type="submit" isLoading={false} />
+                <Button type="submit">Next Step</Button>
             </div>
         </form>
     );

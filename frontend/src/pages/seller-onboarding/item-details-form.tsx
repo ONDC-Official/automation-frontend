@@ -15,8 +15,8 @@ import {
     DialogTitle,
 } from "@components/Shadcn/Dialog";
 import { Button } from "@components/Shadcn/Button";
+import Spinner from "@components/Shadcn/Spinner";
 import TagsInput from "@components/Forms/tags-input";
-import LoadingButton from "@components/Forms/loading-button";
 import MultiImageUpload from "@components/Forms/multi-image-upload";
 import SingleImageUpload from "@components/Forms/single-image-upload";
 import { useFormImageState } from "@hooks/useImageUpload";
@@ -2678,7 +2678,16 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                     >
                         Previous
                     </Button>
-                    <LoadingButton type="submit" buttonText="Next" isLoading={isSubmitting} />
+                    <Button type="submit" isLoading={isSubmitting}>
+                        {isSubmitting ? (
+                            <>
+                                <Spinner className="size-4" />
+                                Loading...
+                            </>
+                        ) : (
+                            "Next"
+                        )}
+                    </Button>
                 </div>
             </form>
 

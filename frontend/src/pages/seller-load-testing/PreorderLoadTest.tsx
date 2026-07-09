@@ -1,5 +1,6 @@
 import React from "react";
-import LoadingButton from "@components/Forms/loading-button";
+import { Button } from "@components/Shadcn/Button";
+import Spinner from "@components/Shadcn/Spinner";
 import { Input } from "@/components/Shadcn/TextField/input";
 import RunMetrics from "@pages/seller-load-testing/RunMetrics";
 import type { PreorderLoadTestProps } from "@pages/seller-load-testing/types";
@@ -55,13 +56,21 @@ const PreorderLoadTest: React.FC<PreorderLoadTestProps> = ({
                             />
                         </div>
                         <div className={!discoveryComplete ? "opacity-40 cursor-not-allowed" : ""}>
-                            <LoadingButton
+                            <Button
                                 type="button"
-                                buttonText="Start Load Test"
                                 isLoading={isStarting}
                                 onClick={handleStartLoadTest}
                                 disabled={!discoveryComplete}
-                            />
+                            >
+                                {isStarting ? (
+                                    <>
+                                        <Spinner className="size-4" />
+                                        Loading...
+                                    </>
+                                ) : (
+                                    "Start Load Test"
+                                )}
+                            </Button>
                         </div>
                     </div>
                 </div>

@@ -1,7 +1,8 @@
 import { FC } from "react";
 import { ONDC_ACTION_LIST } from "@pages/protocol-playground/types";
 import { FetchFormProps } from "@pages/db-back-office/types";
-import LoadingButton from "@/components/Forms/loading-button";
+import { Button } from "@components/Shadcn/Button";
+import Spinner from "@components/Shadcn/Spinner";
 import { Input } from "@/components/Shadcn/TextField/input";
 
 const FetchForm: FC<FetchFormProps> = ({
@@ -66,14 +67,21 @@ const FetchForm: FC<FetchFormProps> = ({
                 </select>
             </div>
             <div className="flex items-end">
-                <LoadingButton
+                <Button
                     type="button"
-                    buttonText="Fetch Data"
                     isLoading={isLoading}
                     onClick={onFetch}
-                    loadingText="Fetching..."
                     className="w-full bg-linear-to-r from-sky-500 to-blue-500 py-2 px-4 rounded-lg font-medium hover:from-sky-600 hover:to-blue-600 focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                />
+                >
+                    {isLoading ? (
+                        <>
+                            <Spinner className="size-4" />
+                            Fetching...
+                        </>
+                    ) : (
+                        "Fetch Data"
+                    )}
+                </Button>
             </div>
         </div>
     </div>

@@ -12,7 +12,8 @@ import { toast } from "sonner";
 import { FaPlus, FaTrash, FaStore, FaClock } from "react-icons/fa";
 
 import { Input } from "@components/Shadcn/TextField/input";
-import { Button } from "@/components/Shadcn/Button/button";
+import { Button } from "@components/Shadcn/Button";
+import Spinner from "@components/Shadcn/Spinner";
 import { Textarea } from "@components/Shadcn/ComboBox/textarea";
 import { SelectControl } from "@components/Shadcn/Select";
 import { ComboBoxMultiControl } from "@components/Shadcn/ComboBox";
@@ -20,7 +21,6 @@ import { DatePicker } from "@components/Shadcn/DatePicker";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@components/Shadcn/Tabs";
 
 import TimeInput from "@components/Forms/time-input";
-import LoadingButton from "@components/Forms/loading-button";
 import { SellerOnboardingData, StoreDetails } from "@pages/seller-onboarding";
 import {
     indianStates,
@@ -1243,17 +1243,18 @@ const BusinessVerificationForm = ({
                     Previous
                 </Button>
 
-                <LoadingButton
-                    buttonText={
-                        isFinalStep
-                            ? isSubmitting
-                                ? "Submitting..."
-                                : "Submit Application"
-                            : "Next Step"
-                    }
-                    type="submit"
-                    isLoading={isSubmitting}
-                />
+                <Button type="submit" isLoading={isSubmitting}>
+                    {isSubmitting ? (
+                        <>
+                            <Spinner className="size-4" />
+                            Loading...
+                        </>
+                    ) : isFinalStep ? (
+                        "Submit Application"
+                    ) : (
+                        "Next Step"
+                    )}
+                </Button>
             </div>
         </form>
     );

@@ -1,5 +1,6 @@
 import TextField from "@components/Shadcn/TextField";
-import LoadingButton from "@components/Forms/loading-button";
+import { Button } from "@components/Shadcn/Button";
+import Spinner from "@components/Shadcn/Spinner";
 import type { CreateSessionPanelProps } from "@pages/seller-load-testing/types";
 
 export const CreateSessionPanel = ({
@@ -71,11 +72,16 @@ export const CreateSessionPanel = ({
                     <TextField control={control} name="environment" label="Environment" disable />
                 </div>
                 <div className="flex justify-end">
-                    <LoadingButton
-                        type="submit"
-                        buttonText="Create Session"
-                        isLoading={isLoading}
-                    />
+                    <Button type="submit" isLoading={isLoading}>
+                        {isLoading ? (
+                            <>
+                                <Spinner className="size-4" />
+                                Loading...
+                            </>
+                        ) : (
+                            "Create Session"
+                        )}
+                    </Button>
                 </div>
             </div>
         </form>

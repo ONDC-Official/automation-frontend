@@ -26,7 +26,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@components/Shadcn/Tab
 import { Card } from "@pages/seller-onboarding/components/LegacyCardTag";
 import TextField from "@components/Shadcn/TextField";
 import { Input } from "@/components/Shadcn/TextField/input";
-import LoadingButton from "@components/Forms/loading-button";
 import { SellerOnboardingData } from "@pages/seller-onboarding";
 import { weekDays } from "@constants/common";
 
@@ -1053,11 +1052,9 @@ const CustomMenuFormEnhanced = ({
                                 >
                                     Skip This Step
                                 </Button>
-                                <LoadingButton
-                                    buttonText={isFinalStep ? "Submit Application" : "Next Step"}
-                                    type="submit"
-                                    isLoading={false}
-                                />
+                                <Button type="submit">
+                                    {isFinalStep ? "Submit Application" : "Next Step"}
+                                </Button>
                             </div>
                         </div>
                     </form>

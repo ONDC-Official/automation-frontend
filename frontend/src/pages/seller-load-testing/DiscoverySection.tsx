@@ -1,7 +1,7 @@
 import React from "react";
-import LoadingButton from "@components/Forms/loading-button";
+import { Button } from "@components/Shadcn/Button";
+import Spinner from "@components/Shadcn/Spinner";
 import { Textarea } from "@/components/Shadcn/ComboBox/textarea";
-import { Button } from "@/components/Shadcn/Button/button";
 import type { DiscoverySectionProps } from "@pages/seller-load-testing/types";
 import { useDiscoverySection } from "@pages/seller-load-testing/useDiscoverySection";
 
@@ -47,12 +47,20 @@ const DiscoverySection: React.FC<DiscoverySectionProps> = ({
             <div className="px-5 py-4 space-y-4">
                 {!discoveryDone && (
                     <div className="flex items-center gap-3">
-                        <LoadingButton
+                        <Button
                             type="button"
-                            buttonText="Generate Search Payload"
                             isLoading={isGenerating}
                             onClick={handleGeneratePayload}
-                        />
+                        >
+                            {isGenerating ? (
+                                <>
+                                    <Spinner className="size-4" />
+                                    Loading...
+                                </>
+                            ) : (
+                                "Generate Search Payload"
+                            )}
+                        </Button>
                     </div>
                 )}
 
@@ -80,12 +88,16 @@ const DiscoverySection: React.FC<DiscoverySectionProps> = ({
 
                 {payload && showButtons && (
                     <div className="flex items-center gap-3 mt-4">
-                        <LoadingButton
-                            type="button"
-                            buttonText="Start Search"
-                            isLoading={isStarting}
-                            onClick={handleStartDiscovery}
-                        />
+                        <Button type="button" isLoading={isStarting} onClick={handleStartDiscovery}>
+                            {isStarting ? (
+                                <>
+                                    <Spinner className="size-4" />
+                                    Loading...
+                                </>
+                            ) : (
+                                "Start Search"
+                            )}
+                        </Button>
                         <Button
                             type="button"
                             variant="ghost"

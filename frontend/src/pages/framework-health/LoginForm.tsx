@@ -1,5 +1,6 @@
 import { FC } from "react";
-import LoadingButton from "@/components/Forms/loading-button";
+import { Button } from "@components/Shadcn/Button";
+import Spinner from "@components/Shadcn/Spinner";
 import { Input } from "@/components/Shadcn/TextField/input";
 
 interface Props {
@@ -74,13 +75,20 @@ const LoginForm: FC<Props> = ({ credentials, isLoading, onCredentialsChange, onL
                         />
                     </div>
 
-                    <LoadingButton
+                    <Button
                         type="submit"
-                        buttonText="Sign In"
                         isLoading={isLoading}
-                        loadingText="Signing in..."
                         className="w-full bg-linear-to-r from-sky-500 to-blue-500 py-3 px-4 rounded-lg font-medium hover:from-sky-600 hover:to-blue-600 focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                    />
+                    >
+                        {isLoading ? (
+                            <>
+                                <Spinner className="size-4" />
+                                Signing in...
+                            </>
+                        ) : (
+                            "Sign In"
+                        )}
+                    </Button>
                 </form>
 
                 <div className="bg-sky-50 p-4 text-center border-t border-sky-100">
