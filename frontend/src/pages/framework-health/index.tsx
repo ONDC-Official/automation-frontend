@@ -1,6 +1,6 @@
 import { FC } from "react";
 import { useFrameworkHealth } from "@hooks/useFrameworkHealth";
-import { Button } from "@/components/Shadcn/Button/button";
+import { Button } from "@/components/Shadcn/Button";
 import LoginForm from "./LoginForm";
 import HealthReport from "./HealthReport";
 

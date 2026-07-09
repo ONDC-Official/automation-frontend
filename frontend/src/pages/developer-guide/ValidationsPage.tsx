@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import { useGetValidationTableQuery } from "@store/api";
 import ValidationsTable from "./ValidationsTable";
 import Spinner from "@components/Shadcn/Spinner";
-import { Button } from "@/components/Shadcn/Button/button";
+import { Button } from "@/components/Shadcn/Button";
 import GuideTabs, { type GuideTabItem } from "./shared/components/GuideTabs";
 import GuideHeader from "./shared/components/GuideHeader";
 

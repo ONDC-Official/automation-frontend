@@ -33,7 +33,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { Cog6ToothIcon } from "@heroicons/react/24/solid";
 import { GetRequestEndpoint } from "@components/DomainFlowRunner/utils/get-request-endpoint";
-import { Button } from "@components/Shadcn/Button/button";
+import { Button } from "@components/Shadcn/Button";
 import { trackEvent } from "@utils/analytics";
 import { openReportInNewTab } from "@utils/generic-utils";
 import GenerateReportModal from "@components/DomainFlowRunner/GenerateReportModal";

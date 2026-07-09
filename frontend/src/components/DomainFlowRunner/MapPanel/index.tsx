@@ -10,7 +10,7 @@ import {
     useMapEvents,
 } from "react-leaflet";
 import { INDIA_RINGS } from "@components/DomainFlowRunner/IndiaBoundary";
-import { Button } from "@/components/Shadcn/Button/button";
+import { Button } from "@/components/Shadcn/Button";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { useLazyGetRouteQuery } from "@store/api";

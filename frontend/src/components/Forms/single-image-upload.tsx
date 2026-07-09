@@ -4,7 +4,7 @@ import { FaUpload, FaTrash } from "react-icons/fa";
 import { useUploadImageMutation } from "@store/api";
 import { LabelWithToolTip } from "@/components/Shadcn/TextField";
 import { Button } from "@/components/Shadcn/Button";
-import { Input } from "@/components/Shadcn/TextField/input";
+import { Input } from "@components/Shadcn/Input";
 
 interface SingleImageUploadProps {
     label: string;

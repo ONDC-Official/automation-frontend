@@ -5,7 +5,7 @@ import { Flow } from "@/types/flow-types";
 import { ApiData, SessionCache } from "@/types/session-types";
 import { useGenerateReportMutation, useLazyGetTransactionDataQuery } from "@store/api";
 import { CheckCircleIcon, ExclamationCircleIcon } from "@heroicons/react/20/solid";
-import { Button } from "@components/Shadcn/Button/button";
+import { Button } from "@components/Shadcn/Button";
 import {
     Dialog,
     DialogContent,
@@ -13,7 +13,7 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@components/Shadcn/Dialog";
-import SpinnerDialog from "@components/Shadcn/SpinnerDialog";
+import LoadingOverlay from "@components/Shadcn/LoadingOverlay";
 import { useAuth } from "@hooks/useAuth";
 import {
     FLOW_DIALOG_OVERLAY_CLASS,
@@ -150,7 +150,7 @@ const GenerateReportModal = ({
 
     return (
         <>
-            {loading && <SpinnerDialog />}
+            {loading && <LoadingOverlay />}
             <Dialog open={open} onOpenChange={(next) => !next && onClose()}>
                 <DialogContent
                     overlayClassName={FLOW_DIALOG_OVERLAY_CLASS}

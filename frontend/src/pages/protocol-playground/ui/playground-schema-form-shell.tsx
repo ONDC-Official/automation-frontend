@@ -4,7 +4,7 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@components/Shadcn/Dialog";
-import { Button } from "@components/Shadcn/Button/button";
+import { Button } from "@components/Shadcn/Button";
 
 interface IPlaygroundSchemaFormShellProps {
     title: string;

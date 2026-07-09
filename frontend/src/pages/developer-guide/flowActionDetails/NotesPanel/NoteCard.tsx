@@ -1,5 +1,5 @@
 import { type FC } from "react";
-import { Button } from "@/components/Shadcn/Button/button";
+import { Button } from "@/components/Shadcn/Button";
 import { IconEdit, IconDelete } from "../../shared/icons";
 import { formatDateTime } from "../../shared/utils/formatDateTime";
 import type { Note } from "./types";

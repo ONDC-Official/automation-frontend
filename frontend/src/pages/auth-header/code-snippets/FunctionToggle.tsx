@@ -1,6 +1,6 @@
 import { FC } from "react";
 import { FunctionToggleProps } from "@pages/auth-header/code-snippets/types";
-import { Button } from "@/components/Shadcn/Button/button";
+import { Button } from "@/components/Shadcn/Button";
 
 const inactiveClass =
     "bg-n-20 text-n-300 hover:bg-n-30 dark:bg-surface-muted dark:text-n-60 dark:hover:bg-surface-elevated";

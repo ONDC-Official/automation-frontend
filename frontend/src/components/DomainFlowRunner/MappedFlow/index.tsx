@@ -3,7 +3,7 @@ import { toast } from "sonner";
 import { IoPlay } from "react-icons/io5";
 import { FlowMap, MappedStep } from "@/types/flow-state-type";
 import FormFlowDialog from "@components/Shadcn/Dialog/form-flow-dialog";
-import { Button } from "@components/Shadcn/Button/button";
+import { Button } from "@components/Shadcn/Button";
 import { FormConfig, FormConfigType, FormFieldConfigType } from "@components/Forms/config-form";
 import FormLaunchPopup from "@components/Forms/custom-forms/form-launch-popup";
 import { TooltipHint } from "@components/Shadcn/Tooltip";

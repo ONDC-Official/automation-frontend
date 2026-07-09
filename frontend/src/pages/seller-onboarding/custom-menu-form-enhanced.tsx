@@ -25,7 +25,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@components/Shadcn/Tabs";
 import { Card } from "@pages/seller-onboarding/components/LegacyCardTag";
 import TextField from "@components/Shadcn/TextField";
-import { Input } from "@/components/Shadcn/TextField/input";
+import { Input } from "@components/Shadcn/Input";
 import { SellerOnboardingData } from "@pages/seller-onboarding";
 import { weekDays } from "@constants/common";
 

@@ -5,7 +5,7 @@ import {
     ArrowsPointingInIcon,
 } from "@heroicons/react/24/outline";
 import { useClipboard } from "@hooks/useClipboard";
-import { Button } from "@/components/Shadcn/Button/button";
+import { Button } from "@/components/Shadcn/Button";
 
 interface CodeBlockProps {
     code: string;

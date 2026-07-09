@@ -2,7 +2,7 @@ import { type FC } from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 import { IconSearch, IconClear } from "../icons";
-import Input from "@components/Shadcn/TextField/input";
+import Input from "@components/Shadcn/Input";
 import { Button } from "@components/Shadcn/Button";
 
 const inputVariants = cva(

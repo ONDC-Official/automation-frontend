@@ -1,7 +1,7 @@
 import { FC } from "react";
 import { Check, X } from "lucide-react";
 import type { IValidationErrorsPanelProps } from "@components/PayloadEditor/types";
-import { Button } from "@components/Shadcn/Button/button";
+import { Button } from "@components/Shadcn/Button";
 import { ErrorItem } from "@components/PayloadEditor/ErrorItem";
 import { ExclamationTriangleIcon } from "@heroicons/react/20/solid";
 

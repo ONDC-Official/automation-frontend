@@ -1,5 +1,5 @@
 import { ChevronDownIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
-import { Button } from "@/components/Shadcn/Button/button";
+import { Button } from "@/components/Shadcn/Button";
 import type { GuideTableColumn } from "../../shared/components/GuideTable";
 import { emptyCell } from "../../shared/components/tableCells";
 import type { SchemaRow } from "./utils";

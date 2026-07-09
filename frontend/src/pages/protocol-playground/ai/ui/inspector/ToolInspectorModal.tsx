@@ -3,8 +3,8 @@ import { toast } from "sonner";
 import { PlayIcon, ArrowUturnLeftIcon } from "@heroicons/react/24/outline";
 
 import FormFlowDialog from "@components/Shadcn/Dialog/form-flow-dialog";
-import { Button } from "@components/Shadcn/Button/button";
-import { Textarea } from "@/components/Shadcn/ComboBox/textarea";
+import { Button } from "@components/Shadcn/Button";
+import { Textarea } from "@/components/Shadcn/TextArea/text-area";
 import {
     Combobox,
     ComboboxContent,

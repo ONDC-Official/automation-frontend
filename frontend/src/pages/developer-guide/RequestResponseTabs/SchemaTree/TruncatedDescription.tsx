@@ -1,5 +1,5 @@
 import { type FC, useState } from "react";
-import { Button } from "@/components/Shadcn/Button/button";
+import { Button } from "@/components/Shadcn/Button";
 import { DESC_CHAR_LIMIT } from "./constants";
 
 const TruncatedDescription: FC<{ text: string }> = ({ text }) => {

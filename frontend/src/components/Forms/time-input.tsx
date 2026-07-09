@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { FaClock } from "react-icons/fa";
 
-import { Input } from "@components/Shadcn/TextField/input";
+import { Input } from "@components/Shadcn/Input";
 import { SelectControl } from "@components/Shadcn/Select";
 import { Button } from "@components/Shadcn/Button";
 import {

@@ -6,8 +6,8 @@ import "leaflet/dist/leaflet.css";
 import { HiOutlineLocationMarker, HiSearch } from "react-icons/hi";
 import type { WidgetProps } from "@rjsf/utils";
 import { useLazyGeocodePlaceQuery, type GeocodeResult } from "@store/api";
-import { Button } from "@/components/Shadcn/Button/button";
-import { Input } from "@/components/Shadcn/TextField/input";
+import { Button } from "@/components/Shadcn/Button";
+import { Input } from "@components/Shadcn/Input";
 
 /**
  * Real-Time Ride Map Integration — single-location picker.

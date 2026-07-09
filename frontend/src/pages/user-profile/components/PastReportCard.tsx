@@ -1,6 +1,6 @@
 import { useClipboard } from "@hooks/useClipboard";
 import { ClipboardDocumentIcon } from "@heroicons/react/24/outline";
-import { Button } from "@components/Shadcn/Button/button";
+import { Button } from "@components/Shadcn/Button";
 import { RadialProgressChart } from "@components/Shadcn/Chart";
 import { cn } from "@/lib/utils";
 import { ProgressBar } from "@pages/user-profile/components/ProgressBar";

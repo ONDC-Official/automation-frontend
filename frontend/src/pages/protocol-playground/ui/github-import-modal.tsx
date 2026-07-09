@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { parse as yamlParse } from "yaml";
 import { MockRunner, MockPlaygroundConfigType } from "@ondc/automation-mock-runner";
 
-import { Button } from "@components/Shadcn/Button/button";
+import { Button } from "@components/Shadcn/Button";
 import {
     Dialog,
     DialogContent,

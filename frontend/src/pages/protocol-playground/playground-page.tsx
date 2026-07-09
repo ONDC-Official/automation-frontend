@@ -16,7 +16,7 @@ import { useConfigOperations } from "@pages/protocol-playground/hooks/use-config
 import { PlaygroundHeader } from "@pages/protocol-playground/ui/playground-upper/playground-header";
 import { useModalHandlers } from "@pages/protocol-playground/hooks/use-modal";
 import { usePlaygroundActions } from "@pages/protocol-playground/hooks/use-playground-actions";
-import SpinnerDialog from "@components/Shadcn/SpinnerDialog";
+import LoadingOverlay from "@components/Shadcn/LoadingOverlay";
 import { ActionTimeline } from "@pages/protocol-playground/ui/playground-upper/merged-sequcence";
 import TraceView from "@pages/protocol-playground/ui/extras/trace-view";
 import ViewOnlyPlaygroundPage from "@pages/protocol-playground/view-only-page";
@@ -222,7 +222,7 @@ const PlaygroundPage = () => {
                 <ViewOnlyPlaygroundPage
                     onCreateFlowSession={() => setIsCreateFlowSessionOpen(true)}
                 />
-                {playgroundContext.loading && <SpinnerDialog />}
+                {playgroundContext.loading && <LoadingOverlay />}
                 <CreateFlowSessionModal
                     isOpen={isCreateFlowSessionOpen}
                     onClose={() => setIsCreateFlowSessionOpen(false)}
@@ -332,7 +332,7 @@ const PlaygroundPage = () => {
                         </div>
                     </PlaygroundModal>
                 ) : null}
-                {playgroundContext.loading && <SpinnerDialog />}
+                {playgroundContext.loading && <LoadingOverlay />}
                 <PlaygroundHelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
                 {playgroundContext.config && (
                     <FlowInfoModal

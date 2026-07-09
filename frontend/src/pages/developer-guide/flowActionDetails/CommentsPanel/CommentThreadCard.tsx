@@ -2,8 +2,8 @@ import { type FC } from "react";
 import { IconDelete } from "../../shared/icons";
 import { formatDateTime } from "../../shared/utils/formatDateTime";
 import type { CommentThread } from "./types";
-import { Button } from "@/components/Shadcn/Button/button";
-import { Textarea } from "@/components/Shadcn/ComboBox/textarea";
+import { Button } from "@/components/Shadcn/Button";
+import { Textarea } from "@/components/Shadcn/TextArea/text-area";
 
 interface CommentThreadCardProps {
     thread: CommentThread;

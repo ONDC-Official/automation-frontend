@@ -2,7 +2,7 @@ import { FC } from "react";
 import { LoginFormProps } from "@pages/db-back-office/types";
 import { Button } from "@components/Shadcn/Button";
 import Spinner from "@components/Shadcn/Spinner";
-import { Input } from "@/components/Shadcn/TextField/input";
+import { Input } from "@components/Shadcn/Input";
 
 const LoginForm: FC<LoginFormProps> = ({
     credentials,

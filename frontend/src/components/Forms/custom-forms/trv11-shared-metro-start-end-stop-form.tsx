@@ -2,8 +2,8 @@ import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import { ComboBoxControl } from "@components/Shadcn/ComboBox";
-import { Button } from "@components/Shadcn/Button/button";
-import { Input } from "@components/Shadcn/TextField/input";
+import { Button } from "@components/Shadcn/Button";
+import { Input } from "@components/Shadcn/Input";
 import { Field, FieldLabel } from "@components/Shadcn/TextField/field";
 import PayloadEditor from "@components/PayloadEditor/PastePayloadModal";
 import FormDialogShell from "@components/Forms/form-dialog-shell";

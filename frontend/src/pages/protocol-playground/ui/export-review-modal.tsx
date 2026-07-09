@@ -10,8 +10,8 @@ import {
 } from "@components/Shadcn/Dialog";
 import { cn } from "@/lib/utils";
 import { ArrowDownTrayIcon, CheckIcon, PencilIcon } from "@heroicons/react/24/outline";
-import { Button } from "@components/Shadcn/Button/button";
-import { Textarea } from "@/components/Shadcn/ComboBox/textarea";
+import { Button } from "@components/Shadcn/Button";
+import { Textarea } from "@/components/Shadcn/TextArea/text-area";
 
 interface IExportReviewModalProps {
     config: MockPlaygroundConfigType | null;

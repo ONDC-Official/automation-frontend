@@ -3,7 +3,7 @@ import { toast } from "sonner";
 import { useReactToPrint } from "react-to-print";
 import { IoMdArrowRoundBack } from "react-icons/io";
 import { useLazyGetSessionByIdQuery } from "@store/api";
-import { Button } from "@components/Shadcn/Button/button";
+import { Button } from "@components/Shadcn/Button";
 import { InfoSection } from "@components/DomainFlowRunner/InfoSection";
 import { REPORT_INFO_LABELS } from "@components/DomainFlowRunner/constants";
 import type { IReportPageProps } from "@components/DomainFlowRunner/types";

@@ -11,7 +11,7 @@ import { groupBuildsByFamily } from "../domainGrouping";
 import { isDomainEnabled, isUseCaseEnabled } from "../utils";
 import { useDeveloperGuideShell } from "./DeveloperGuideNav";
 import DomainCardsSection from "../landing/DomainCardsSection";
-import { Input } from "@/components/Shadcn/TextField/input";
+import { Input } from "@components/Shadcn/Input";
 
 const DeveloperGuideDomainsContent: FC = () => {
     const navigate = useNavigate();

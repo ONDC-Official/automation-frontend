@@ -1,4 +1,4 @@
-import { Button } from "@components/Shadcn/Button/button";
+import { Button } from "@components/Shadcn/Button";
 import {
     Drawer,
     DrawerContent,

@@ -4,8 +4,8 @@ import { FaUpload, FaTrash } from "react-icons/fa";
 import { useUploadMultipleImagesMutation } from "@store/api";
 import { LabelWithToolTip } from "@/components/Shadcn/TextField";
 import { Button } from "@/components/Shadcn/Button";
-import { Input } from "@/components/Shadcn/TextField/input";
-import { Textarea } from "@/components/Shadcn/ComboBox/textarea";
+import { Input } from "@components/Shadcn/Input";
+import { Textarea } from "@/components/Shadcn/TextArea/text-area";
 
 type UploadedImage = { imageUrl?: string };
 

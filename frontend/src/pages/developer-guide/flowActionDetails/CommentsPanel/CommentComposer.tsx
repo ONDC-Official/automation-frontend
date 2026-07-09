@@ -1,6 +1,6 @@
 import { type FC } from "react";
-import { Button } from "@/components/Shadcn/Button/button";
-import { Textarea } from "@/components/Shadcn/ComboBox/textarea";
+import { Button } from "@/components/Shadcn/Button";
+import { Textarea } from "@/components/Shadcn/TextArea/text-area";
 
 interface CommentComposerProps {
     value: string;

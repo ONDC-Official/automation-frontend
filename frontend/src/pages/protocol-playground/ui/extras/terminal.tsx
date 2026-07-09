@@ -1,6 +1,6 @@
 // components/ExecutionResults.tsx
 import { ExecutionResult } from "@ondc/automation-mock-runner";
-import { Button } from "@/components/Shadcn/Button/button";
+import { Button } from "@/components/Shadcn/Button";
 import { useState } from "react";
 import {
     IoCheckmarkCircle,

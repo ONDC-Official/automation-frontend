@@ -1,4 +1,4 @@
-import { Button } from "@components/Shadcn/Button/button";
+import { Button } from "@components/Shadcn/Button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@components/Shadcn/Tooltip";
 import { cn } from "@/lib/utils";
 import type { IPlaygroundActionButtonProps } from "@pages/protocol-playground/ui/playground-upper/types";

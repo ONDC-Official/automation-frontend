@@ -1,7 +1,7 @@
 import { FC } from "react";
 import { Button } from "@components/Shadcn/Button";
 import Spinner from "@components/Shadcn/Spinner";
-import { Input } from "@/components/Shadcn/TextField/input";
+import { Input } from "@components/Shadcn/Input";
 
 interface Props {
     credentials: { username: string; password: string };

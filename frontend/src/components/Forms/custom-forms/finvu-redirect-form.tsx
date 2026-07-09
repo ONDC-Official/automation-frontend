@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { ArrowPathIcon, CheckCircleIcon, XCircleIcon } from "@heroicons/react/24/outline";
 import { toast } from "sonner";
 
-import { Button } from "@components/Shadcn/Button/button";
+import { Button } from "@components/Shadcn/Button";
 import FormDialogShell from "@components/Forms/form-dialog-shell";
 import { SubmitEventParams } from "@/types/flow-types";
 import { useLazyGetFinvuCompletionQuery, useVerifyFinvuConsentMutation } from "@store/api";

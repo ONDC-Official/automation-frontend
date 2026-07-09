@@ -7,7 +7,7 @@ import {
 import type { ValidationTableAction, ValidationTableRow } from "./types";
 import GuideTable, { type GuideTableColumn } from "./shared/components/GuideTable";
 import { emptyCell, isEmptyCell } from "./shared/components/tableCells";
-import { Button } from "@/components/Shadcn/Button/button";
+import { Button } from "@/components/Shadcn/Button";
 
 // Re-export for backward compat
 export type ValidationTable = ValidationTableAction;

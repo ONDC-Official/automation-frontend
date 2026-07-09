@@ -1,4 +1,4 @@
-import { Button } from "@components/Shadcn/Button/button";
+import { Button } from "@components/Shadcn/Button";
 import { ComboBoxControl } from "@components/Shadcn/ComboBox";
 import { FieldGroup } from "@components/Shadcn/TextField/field";
 import { SessionFormActions } from "@pages/scenario/SessionFormActions";

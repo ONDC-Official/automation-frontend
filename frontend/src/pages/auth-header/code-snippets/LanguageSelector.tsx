@@ -1,7 +1,7 @@
 import { FC } from "react";
 import { codeSnippets } from "@pages/auth-header/code-snippets/data";
 import { LanguageSelectorProps } from "@pages/auth-header/code-snippets/types";
-import { Button } from "@/components/Shadcn/Button/button";
+import { Button } from "@/components/Shadcn/Button";
 
 const LanguageSelector: FC<LanguageSelectorProps> = ({
     languages,

@@ -4,7 +4,7 @@ import { PiShieldStarBold } from "react-icons/pi";
 import { MockRunner } from "@ondc/automation-mock-runner";
 
 import FormFlowDialog from "@components/Shadcn/Dialog/form-flow-dialog";
-import { Button } from "@/components/Shadcn/Button/button";
+import { Button } from "@/components/Shadcn/Button";
 import { usePlayground } from "@pages/protocol-playground/hooks/playground-runtime";
 
 import { usePendingApprovals } from "../hooks/use-pending-approvals";

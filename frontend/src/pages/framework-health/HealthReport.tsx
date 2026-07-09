@@ -1,7 +1,7 @@
 import { FC, useEffect, useState } from "react";
 import { HealthReportData, DomainResult, VersionResult } from "@hooks/useFrameworkHealth";
 import AppJsonViewer from "@components/AppJsonViewer";
-import { Button } from "@/components/Shadcn/Button/button";
+import { Button } from "@/components/Shadcn/Button";
 
 interface Props {
     report: HealthReportData;

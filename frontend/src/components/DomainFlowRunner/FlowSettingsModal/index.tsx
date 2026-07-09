@@ -3,7 +3,7 @@ import { FlowFiltersPanel } from "@components/DomainFlowRunner/FilterFlows";
 import FlowSettingsPanel from "@components/DomainFlowRunner/FlowSettingsPanel";
 import { FLOW_DIALOG_OVERLAY_CLASS } from "@components/DomainFlowRunner/constants";
 import type { IFlowSettingsModalProps } from "@components/DomainFlowRunner/types";
-import { Button } from "@components/Shadcn/Button/button";
+import { Button } from "@components/Shadcn/Button";
 import {
     Dialog,
     DialogContent,
@@ -11,7 +11,7 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@components/Shadcn/Dialog";
-import SpinnerDialog from "@components/Shadcn/SpinnerDialog";
+import LoadingOverlay from "@components/Shadcn/LoadingOverlay";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 
 export type { SettingsDraft } from "@components/DomainFlowRunner/types";
@@ -29,7 +29,7 @@ export const FlowSettingsModal = ({
 
     return (
         <>
-            {isSaving && <SpinnerDialog />}
+            {isSaving && <LoadingOverlay />}
             <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
                 <DialogContent
                     showCloseButton={false}

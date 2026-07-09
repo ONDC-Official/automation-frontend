@@ -1,4 +1,4 @@
-import { Button } from "@components/Shadcn/Button/button";
+import { Button } from "@components/Shadcn/Button";
 import { FieldGroup } from "@components/Shadcn/TextField/field";
 import { ComboBox } from "@components/Shadcn/ComboBox";
 import { TextField } from "@components/Shadcn/TextField";

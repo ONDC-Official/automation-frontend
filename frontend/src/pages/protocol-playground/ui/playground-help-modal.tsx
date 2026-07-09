@@ -15,8 +15,8 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@components/Shadcn/Dialog";
-import { Input } from "@components/Shadcn/TextField/input";
-import { Button } from "@/components/Shadcn/Button/button";
+import { Input } from "@components/Shadcn/Input";
+import { Button } from "@/components/Shadcn/Button";
 import { cn } from "@/lib/utils";
 import { FAQS, HELP_SECTIONS, type Faq } from "./playground-help-content";
 

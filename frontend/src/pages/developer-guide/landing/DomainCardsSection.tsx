@@ -5,7 +5,7 @@ import type { BuildEntry } from "../types";
 import type { DomainFamilyGroup } from "../domainGrouping";
 import { getDomainFamilyLabel, getDomainShortLabel, groupBuildsByFamily } from "../domainGrouping";
 import type { DomainCardsSectionProps } from "./types";
-import { Button } from "@/components/Shadcn/Button/button";
+import { Button } from "@/components/Shadcn/Button";
 
 interface UseCaseEntry {
     dom: BuildEntry;

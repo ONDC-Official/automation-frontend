@@ -11,7 +11,7 @@ import {
 
 import { usePlayground } from "@pages/protocol-playground/hooks/playground-runtime";
 import AppJsonViewer from "@components/AppJsonViewer";
-import { Button } from "@/components/Shadcn/Button/button";
+import { Button } from "@/components/Shadcn/Button";
 
 const ViewOnlyPlaygroundPage = ({ onCreateFlowSession }: { onCreateFlowSession: () => void }) => {
     const playgroundContext = usePlayground();

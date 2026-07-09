@@ -4,8 +4,8 @@ import { toast } from "sonner";
 import { FaPlus, FaTrash, FaBox, FaEdit } from "react-icons/fa";
 import { SelectControl } from "@components/Shadcn/Select";
 import { ComboBoxMultiControl, ComboBoxControl } from "@components/Shadcn/ComboBox";
-import { Input } from "@components/Shadcn/TextField/input";
-import { Textarea } from "@components/Shadcn/ComboBox/textarea";
+import { Input } from "@components/Shadcn/Input";
+import { Textarea } from "@/components/Shadcn/TextArea/text-area";
 import { Checkbox } from "@components/Shadcn/Checkbox";
 import {
     Dialog,
@@ -21,7 +21,7 @@ import MultiImageUpload from "@components/Forms/multi-image-upload";
 import SingleImageUpload from "@components/Forms/single-image-upload";
 import { useFormImageState } from "@hooks/useImageUpload";
 import { countries } from "@constants/common";
-import { LabelWithToolTip } from "@components/Shadcn/TextField";
+import { LabelWithToolTip } from "@components/Shadcn/TextField/label-with-tooltip";
 import type {
     AttributeConfig,
     FormData,

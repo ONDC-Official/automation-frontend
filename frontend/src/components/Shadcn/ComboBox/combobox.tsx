@@ -6,7 +6,7 @@ import { CheckIcon, ChevronDownIcon, XCircleIcon } from "@heroicons/react/24/out
 
 import { FORM_FLOW_FLOATING_Z_INDEX } from "@components/Shadcn/Dialog/form-flow-dialog-utils";
 import { cn } from "@/lib/utils";
-import { Button } from "@components/Shadcn/Button/button";
+import { Button } from "@components/Shadcn/Button";
 import {
     InputGroup,
     InputGroupAddon,

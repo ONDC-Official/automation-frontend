@@ -15,7 +15,7 @@ import type { SupportedActions } from "../types";
 import { isSentinelKey, computeLayout } from "./computeLayout";
 import { nodeTypes, type ActionNodeData } from "./ActionNode";
 import { NodeTooltip } from "./NodeTooltip";
-import { Button } from "@/components/Shadcn/Button/button";
+import { Button } from "@/components/Shadcn/Button";
 
 interface SupportedActionsGraphProps {
     supportedActions: SupportedActions;

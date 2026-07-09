@@ -6,7 +6,7 @@ import {
     useDeleteNoteMutation,
 } from "@store/api";
 import { useAuth } from "@hooks/useAuth";
-import { Button } from "@/components/Shadcn/Button/button";
+import { Button } from "@/components/Shadcn/Button";
 import GuideAsyncPanel from "../../shared/components/GuideAsyncPanel";
 import GuidePanel from "../../shared/components/GuidePanel";
 import { EmptyState } from "../../shared/components/states";

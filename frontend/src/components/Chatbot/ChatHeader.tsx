@@ -1,6 +1,6 @@
 import { FC } from "react";
 import { FiChevronDown, FiMaximize2, FiMinimize2, FiRefreshCw } from "react-icons/fi";
-import { Button } from "@/components/Shadcn/Button/button";
+import { Button } from "@/components/Shadcn/Button";
 import { KnowledgeSource } from "./types";
 import { SOURCE_LABELS } from "./constants";
 

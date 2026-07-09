@@ -1,7 +1,7 @@
 import React from "react";
 import { Button } from "@components/Shadcn/Button";
 import Spinner from "@components/Shadcn/Spinner";
-import { Input } from "@/components/Shadcn/TextField/input";
+import { Input } from "@components/Shadcn/Input";
 import RunMetrics from "@pages/seller-load-testing/RunMetrics";
 import type { PreorderLoadTestProps } from "@pages/seller-load-testing/types";
 import { usePreorderLoadTest } from "@pages/seller-load-testing/usePreorderLoadTest";

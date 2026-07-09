@@ -7,7 +7,7 @@ import {
     FaSpinner,
 } from "react-icons/fa";
 import AppJsonViewer from "@components/AppJsonViewer";
-import { Button } from "@/components/Shadcn/Button/button";
+import { Button } from "@/components/Shadcn/Button";
 
 import type { ToolMessage } from "../hooks/use-chat-session";
 

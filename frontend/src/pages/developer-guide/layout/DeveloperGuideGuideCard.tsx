@@ -1,6 +1,6 @@
 import { FC } from "react";
 import { ArrowRightIcon } from "@heroicons/react/24/outline";
-import { Button } from "@/components/Shadcn/Button/button";
+import { Button } from "@/components/Shadcn/Button";
 import type { DeveloperGuideGuideCardProps } from "./navTypes";
 
 const DeveloperGuideGuideCard: FC<DeveloperGuideGuideCardProps> = ({

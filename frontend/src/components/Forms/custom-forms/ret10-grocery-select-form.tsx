@@ -4,7 +4,7 @@ import { PlusIcon } from "@heroicons/react/24/outline";
 import { toast } from "sonner";
 
 import { ComboBoxControl } from "@components/Shadcn/ComboBox";
-import { Button } from "@components/Shadcn/Button/button";
+import { Button } from "@components/Shadcn/Button";
 import { Checkbox } from "@components/Shadcn/Checkbox";
 import { CheckboxGroup } from "@components/Shadcn/Checkbox";
 import TextField from "@components/Shadcn/TextField";

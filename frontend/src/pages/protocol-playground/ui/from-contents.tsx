@@ -1,14 +1,14 @@
 import { useState } from "react";
 import { PlaygroundActionStep } from "@ondc/automation-mock-runner";
 
-import { Button } from "@components/Shadcn/Button/button";
+import { Button } from "@components/Shadcn/Button";
 import {
     DialogDescription,
     DialogFooter,
     DialogHeader,
     DialogTitle,
 } from "@components/Shadcn/Dialog";
-import { Textarea } from "@components/Shadcn/ComboBox/textarea";
+import { Textarea } from "@/components/Shadcn/TextArea/text-area";
 import { Label } from "@components/Shadcn/Label/label";
 import { TextField } from "@components/Shadcn/TextField";
 import { cn } from "@/lib/utils";

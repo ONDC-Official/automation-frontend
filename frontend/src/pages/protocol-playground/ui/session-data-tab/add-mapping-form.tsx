@@ -1,4 +1,4 @@
-import Input from "@components/Shadcn/TextField/input";
+import Input from "@components/Shadcn/Input";
 import { Button } from "@components/Shadcn/Button";
 
 interface AddMappingFormProps {

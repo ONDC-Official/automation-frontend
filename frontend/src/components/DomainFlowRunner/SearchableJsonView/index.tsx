@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 import SearchField from "@components/Shadcn/SearchField";
-import { Button } from "@components/Shadcn/Button/button";
+import { Button } from "@components/Shadcn/Button";
 import { cn } from "@/lib/utils";
 import AppJsonViewer from "@components/AppJsonViewer";
 

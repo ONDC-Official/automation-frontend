@@ -4,7 +4,7 @@ import { ClipboardDocumentIcon } from "@heroicons/react/24/outline";
 import { toast } from "sonner";
 
 import { ComboBoxControl } from "@components/Shadcn/ComboBox";
-import { Button } from "@components/Shadcn/Button/button";
+import { Button } from "@components/Shadcn/Button";
 import PayloadEditor from "@components/PayloadEditor/PastePayloadModal";
 import FormDialogShell from "@components/Forms/form-dialog-shell";
 import { PastePayloadButton } from "@components/Forms/paste-payload-button";

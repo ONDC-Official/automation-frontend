@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { MinusIcon, PlusIcon } from "@heroicons/react/24/outline";
 
 import { ComboBoxControl } from "@components/Shadcn/ComboBox";
-import { Button } from "@components/Shadcn/Button/button";
+import { Button } from "@components/Shadcn/Button";
 import TextField from "@components/Shadcn/TextField";
 import PayloadEditor from "@components/PayloadEditor/PastePayloadModal";
 import FormDialogShell from "@components/Forms/form-dialog-shell";

@@ -7,7 +7,7 @@ import { ClipboardDocumentIcon } from "@heroicons/react/24/outline";
 import { useTheme } from "@/theme/hooks/useTheme";
 import { subscribeToThemeApply } from "@/theme/utils/themeUtils";
 import { getEditorThemeName } from "@components/PayloadEditor/constants";
-import { Button } from "@/components/Shadcn/Button/button";
+import { Button } from "@/components/Shadcn/Button";
 
 const EDITOR_HEIGHT = "500px";
 const EDITOR_OPTIONS: MonacoEditor.IStandaloneEditorConstructionOptions = {

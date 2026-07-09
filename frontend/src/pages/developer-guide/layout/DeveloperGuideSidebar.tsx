@@ -1,7 +1,7 @@
 import { FC, useEffect, useMemo, useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { ChevronDownIcon } from "@heroicons/react/24/outline";
-import { Button } from "@/components/Shadcn/Button/button";
+import { Button } from "@/components/Shadcn/Button";
 import { ROUTES } from "@constants/routes";
 import { useDeveloperGuideNav } from "./DeveloperGuideNav";
 import type { NavNode, DeveloperGuideSidebarProps } from "./navTypes";

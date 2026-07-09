@@ -1,7 +1,7 @@
 import { FC, useState } from "react";
 import { safeDescription, hasDescription } from "../attributePanelUtils";
 import type { TagField, TagFieldItem } from "../types";
-import { Button } from "@/components/Shadcn/Button/button";
+import { Button } from "@/components/Shadcn/Button";
 
 // ─── Tag helpers ──────────────────────────────────────────────────────────────
 

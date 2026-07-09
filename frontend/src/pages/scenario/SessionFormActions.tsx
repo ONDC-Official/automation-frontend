@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { Button } from "@components/Shadcn/Button/button";
+import { Button } from "@components/Shadcn/Button";
 import { ROUTES } from "@constants/routes";
 import { ISessionFormActionsProps } from "@pages/scenario/types";
 

@@ -1,11 +1,11 @@
 import type { FieldPath, FieldValues, RegisterOptions } from "react-hook-form";
 import { Controller } from "react-hook-form";
 
-import { Textarea } from "@components/Shadcn/ComboBox/textarea";
+import { Textarea } from "@/components/Shadcn/TextArea/text-area";
 import { cn } from "@/lib/utils";
 
-import { Field, FieldDescription, FieldError, FieldLabel } from "./field";
-import type { ITextAreaFieldProps } from "./types";
+import { Field, FieldDescription, FieldError, FieldLabel } from "../TextField/field";
+import type { ITextAreaFieldProps } from "../TextField/types";
 
 const buildValidationRules = <T extends FieldValues>(
     required: ITextAreaFieldProps<T>["required"],

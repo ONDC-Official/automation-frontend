@@ -1,5 +1,5 @@
 import React from "react";
-import { Button } from "@/components/Shadcn/Button/button";
+import { Button } from "@/components/Shadcn/Button";
 
 interface SessionCardProps {
     sessionId: string;

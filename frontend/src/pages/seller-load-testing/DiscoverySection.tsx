@@ -1,7 +1,7 @@
 import React from "react";
 import { Button } from "@components/Shadcn/Button";
 import Spinner from "@components/Shadcn/Spinner";
-import { Textarea } from "@/components/Shadcn/ComboBox/textarea";
+import { Textarea } from "@/components/Shadcn/TextArea/text-area";
 import type { DiscoverySectionProps } from "@pages/seller-load-testing/types";
 import { useDiscoverySection } from "@pages/seller-load-testing/useDiscoverySection";
 

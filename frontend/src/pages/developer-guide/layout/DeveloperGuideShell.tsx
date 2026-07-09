@@ -14,7 +14,7 @@ import {
 import { useDevGuideShellServerState } from "@store/selectors/devGuideSelectors";
 import { NAV_STATUS_LABEL, NAV_STATUS_STYLES, type NavStatus } from "../shared/statusPlaceholders";
 import { Button } from "@components/Shadcn/Button";
-import Input from "@components/Shadcn/TextField/input";
+import Input from "@components/Shadcn/Input";
 
 const STATUS_LEGEND_ORDER: NavStatus[] = ["released", "drafted", "to-be-deprecated", "deprecated"];
 

@@ -1,6 +1,6 @@
 import { PiShieldStarBold } from "react-icons/pi";
 
-import { Button } from "@/components/Shadcn/Button/button";
+import { Button } from "@/components/Shadcn/Button";
 import { useAi } from "../hooks/use-ai";
 
 export function LockedBanner() {

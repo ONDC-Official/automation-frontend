@@ -1,6 +1,6 @@
 import { FC } from "react";
 import { HeaderProps } from "@pages/db-back-office/types";
-import { Button } from "@/components/Shadcn/Button/button";
+import { Button } from "@/components/Shadcn/Button";
 
 const Header: FC<HeaderProps> = ({ onLogout }) => (
     <div className="bg-white shadow-xs border-b border-sky-100">

@@ -13,7 +13,7 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from "@components/Shadcn/Tooltip";
-import { Button } from "@/components/Shadcn/Button/button";
+import { Button } from "@/components/Shadcn/Button";
 
 interface FlowsAccordionProps {
     flows: FlowEntry[];

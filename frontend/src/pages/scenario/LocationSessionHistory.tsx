@@ -3,7 +3,7 @@ import { LocalSessionHistoryCard } from "@pages/scenario/LocalSessionHistoryCard
 import { Pagination } from "@components/Shadcn/Pagination";
 import { SESSIONS_PER_PAGE } from "@pages/scenario/constants";
 import { ILocationSessionHistoryProps } from "@pages/scenario/types";
-import { Button } from "@components/Shadcn/Button/button";
+import { Button } from "@components/Shadcn/Button";
 import { SearchField } from "@components/Shadcn/SearchField";
 
 export const LocationSessionHistory = ({

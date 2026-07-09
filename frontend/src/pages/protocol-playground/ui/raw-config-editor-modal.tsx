@@ -1,5 +1,5 @@
 import { Editor, Monaco } from "@monaco-editor/react";
-import { Button } from "@components/Shadcn/Button/button";
+import { Button } from "@components/Shadcn/Button";
 import { Dialog, DialogContent, DialogTitle } from "@components/Shadcn/Dialog";
 import { DarkSkyBlueTheme } from "@pages/protocol-playground/ui/editor-themes";
 import { DocumentTextIcon } from "@heroicons/react/24/outline";

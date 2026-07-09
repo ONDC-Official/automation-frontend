@@ -1,7 +1,11 @@
 import * as React from "react";
-import { Button as ButtonPrimitive, buttonVariants } from "./button";
+import { Button as ButtonPrimitive, buttonVariants } from "@/components/Shadcn/Button/button";
 import { cn } from "@/lib/utils";
-import { ICON_SIZE_CLASSES, type IButtonProps, type IconSize } from "./types";
+import {
+    ICON_SIZE_CLASSES,
+    type IButtonProps,
+    type IconSize,
+} from "@/components/Shadcn/Button/types";
 
 const renderIcon = (icon: React.ReactNode, iconSize: IconSize, iconOnly: boolean) => {
     if (!icon) {
@@ -18,17 +22,26 @@ const renderIcon = (icon: React.ReactNode, iconSize: IconSize, iconOnly: boolean
     return icon;
 };
 
-export const Button = ({
-    icon,
-    iconSize = "default",
-    children,
-    ...props
-}: IButtonProps) => (
-    <ButtonPrimitive {...props}>
-        {renderIcon(icon, iconSize, children == null)}
-        {children}
-    </ButtonPrimitive>
-);
+export const Button = ({ icon, iconSize = "default", children, ...props }: IButtonProps) => {
+    if (props.asChild) {
+        if (!React.isValidElement(children) || React.Children.count(children) !== 1) {
+            return (
+                <ButtonPrimitive {...props} asChild={false}>
+                    {renderIcon(icon, iconSize, children == null)}
+                    {children}
+                </ButtonPrimitive>
+            );
+        }
+
+        return <ButtonPrimitive {...props}>{children}</ButtonPrimitive>;
+    }
+
+    return (
+        <ButtonPrimitive {...props}>
+            {renderIcon(icon, iconSize, children == null)}
+            {children}
+        </ButtonPrimitive>
+    );
+};
 
 export { buttonVariants };
-export type { IconSize };

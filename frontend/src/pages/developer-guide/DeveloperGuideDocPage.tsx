@@ -6,7 +6,7 @@ import { useGetGithubDocContentQuery } from "@store/api";
 import GithubMarkdown from "@components/GithubMarkdown";
 import TableOfContents from "@components/TableOfContents";
 import GuideCard from "./shared/components/GuideCard";
-import { Button } from "@/components/Shadcn/Button/button";
+import { Button } from "@/components/Shadcn/Button";
 
 // Fixed site header is 86px (2px gradient bar + 84px nav).
 // Breadcrumb bar below it adds 44px → TOC sticks at 86+44=130px.

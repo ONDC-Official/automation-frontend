@@ -4,7 +4,7 @@ import { PiShieldStarBold } from "react-icons/pi";
 import { MockRunner } from "@ondc/automation-mock-runner";
 
 import { usePlayground } from "@pages/protocol-playground/hooks/playground-runtime";
-import { Button } from "@/components/Shadcn/Button/button";
+import { Button } from "@/components/Shadcn/Button";
 
 import type { ToolMessage } from "../hooks/use-chat-session";
 import { diffStats, lineDiff, type DiffRow } from "../utils/line-diff";

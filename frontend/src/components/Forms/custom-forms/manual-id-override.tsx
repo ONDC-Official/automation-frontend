@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { PlayIcon } from "@heroicons/react/24/solid";
 
-import { Button } from "@components/Shadcn/Button/button";
+import { Button } from "@components/Shadcn/Button";
 import FormDialogShell from "@components/Forms/form-dialog-shell";
 import { SubmitEventParams } from "@/types/flow-types";
 

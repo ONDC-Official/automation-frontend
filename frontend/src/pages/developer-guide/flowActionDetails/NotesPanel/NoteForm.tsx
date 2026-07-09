@@ -1,7 +1,7 @@
 import { type FC } from "react";
-import { Button } from "@/components/Shadcn/Button/button";
-import { Textarea } from "@/components/Shadcn/ComboBox/textarea";
-import { Input } from "@/components/Shadcn/TextField/input";
+import { Button } from "@/components/Shadcn/Button";
+import { Textarea } from "@/components/Shadcn/TextArea/text-area";
+import { Input } from "@components/Shadcn/Input";
 
 interface NoteFormProps {
     title: string;

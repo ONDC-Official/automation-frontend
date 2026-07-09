@@ -11,10 +11,10 @@ import {
 import { toast } from "sonner";
 import { FaPlus, FaTrash, FaStore, FaClock } from "react-icons/fa";
 
-import { Input } from "@components/Shadcn/TextField/input";
+import { Input } from "@components/Shadcn/Input";
 import { Button } from "@components/Shadcn/Button";
 import Spinner from "@components/Shadcn/Spinner";
-import { Textarea } from "@components/Shadcn/ComboBox/textarea";
+import { Textarea } from "@/components/Shadcn/TextArea/text-area";
 import { SelectControl } from "@components/Shadcn/Select";
 import { ComboBoxMultiControl } from "@components/Shadcn/ComboBox";
 import { DatePicker } from "@components/Shadcn/DatePicker";

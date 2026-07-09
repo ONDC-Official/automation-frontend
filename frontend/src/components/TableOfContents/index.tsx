@@ -1,7 +1,7 @@
 import { type FC, useMemo, useState } from "react";
 import { extractMarkdownToc } from "@utils/markdownToc";
 import { scrollToSectionWithOffset } from "./scrollToSection";
-import { Button } from "@/components/Shadcn/Button/button";
+import { Button } from "@/components/Shadcn/Button";
 
 interface TableOfContentsProps {
     content: string;

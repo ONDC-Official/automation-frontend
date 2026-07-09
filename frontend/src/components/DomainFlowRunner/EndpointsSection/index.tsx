@@ -1,4 +1,4 @@
-import { Button } from "@components/Shadcn/Button/button";
+import { Button } from "@components/Shadcn/Button";
 import { cn } from "@/lib/utils";
 import type { IEndpointsSectionProps } from "@components/DomainFlowRunner/types";
 import { ClipboardDocumentIcon } from "@heroicons/react/24/outline";

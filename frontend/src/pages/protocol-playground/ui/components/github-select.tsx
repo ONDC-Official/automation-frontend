@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { FaSpinner, FaChevronDown } from "react-icons/fa";
-import { Input } from "@/components/Shadcn/TextField/input";
+import { Input } from "@components/Shadcn/Input";
 
 export const Spinner = () => (
     <FaSpinner className="animate-spin text-sky-500 inline-block ml-2" size={13} />
@@ -144,7 +144,9 @@ export const SelectBox = ({
                                     }}
                                     onMouseEnter={() => setHighlight(i)}
                                     className={`px-3 py-2 cursor-pointer truncate ${
-                                        i === highlight ? "bg-sky-100 text-sky-800" : "text-gray-800"
+                                        i === highlight
+                                            ? "bg-sky-100 text-sky-800"
+                                            : "text-gray-800"
                                     } ${opt === value ? "font-semibold" : ""}`}
                                 >
                                     {opt}

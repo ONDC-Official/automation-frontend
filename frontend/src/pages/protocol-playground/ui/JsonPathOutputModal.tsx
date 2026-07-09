@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Editor, Monaco } from "@monaco-editor/react";
 import { ClipboardDocumentIcon, CodeBracketIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { useClipboard } from "@hooks/useClipboard";
-import { Button } from "@/components/Shadcn/Button/button";
+import { Button } from "@/components/Shadcn/Button";
 import { DarkSkyBlueTheme } from "@pages/protocol-playground/ui/editor-themes";
 
 interface JsonPathOutputPopupProps {

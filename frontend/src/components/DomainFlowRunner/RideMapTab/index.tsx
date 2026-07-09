@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import EmptyState from "@components/EmptyState";
-import { Button } from "@components/Shadcn/Button/button";
+import { Button } from "@components/Shadcn/Button";
 import { FlowMap } from "@/types/flow-state-type";
 import { useSession } from "@hooks/useSession";
 import {

@@ -3,7 +3,7 @@ import { ONDC_ACTION_LIST } from "@pages/protocol-playground/types";
 import { FetchFormProps } from "@pages/db-back-office/types";
 import { Button } from "@components/Shadcn/Button";
 import Spinner from "@components/Shadcn/Spinner";
-import { Input } from "@/components/Shadcn/TextField/input";
+import { Input } from "@components/Shadcn/Input";
 
 const FetchForm: FC<FetchFormProps> = ({
     fetchParams,

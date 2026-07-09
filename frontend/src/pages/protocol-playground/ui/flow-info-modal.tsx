@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { MockPlaygroundConfigType } from "@ondc/automation-mock-runner";
-import { Button } from "@components/Shadcn/Button/button";
+import { Button } from "@components/Shadcn/Button";
 import {
     Dialog,
     DialogContent,
@@ -10,7 +10,7 @@ import {
     DialogTitle,
 } from "@components/Shadcn/Dialog";
 import { TextField } from "@components/Shadcn/TextField";
-import { Textarea } from "@components/Shadcn/ComboBox/textarea";
+import { Textarea } from "@/components/Shadcn/TextArea/text-area";
 import { Label } from "@components/Shadcn/Label/label";
 import { PencilSquareIcon } from "@heroicons/react/24/outline";
 

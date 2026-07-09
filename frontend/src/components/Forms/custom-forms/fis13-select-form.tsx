@@ -2,9 +2,9 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { TrashIcon } from "@heroicons/react/24/outline";
 
-import { Button } from "@components/Shadcn/Button/button";
+import { Button } from "@components/Shadcn/Button";
 import { Checkbox } from "@components/Shadcn/Checkbox";
-import { Input } from "@components/Shadcn/TextField/input";
+import { Input } from "@components/Shadcn/Input";
 import { Field, FieldLabel } from "@components/Shadcn/TextField/field";
 import PayloadEditor from "@components/PayloadEditor/PastePayloadModal";
 import FormDialogShell from "@components/Forms/form-dialog-shell";

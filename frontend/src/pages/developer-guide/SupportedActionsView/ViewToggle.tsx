@@ -1,5 +1,5 @@
 import { type FC } from "react";
-import { Button } from "@/components/Shadcn/Button/button";
+import { Button } from "@/components/Shadcn/Button";
 import type { SupportedActionsViewMode } from "./types";
 
 interface ViewToggleProps {

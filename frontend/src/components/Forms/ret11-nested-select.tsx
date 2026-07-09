@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { MinusIcon, PlusIcon } from "@heroicons/react/24/outline";
 import { toast } from "sonner";
 
-import { Button } from "@components/Shadcn/Button/button";
+import { Button } from "@components/Shadcn/Button";
 import { LabelWithToolTip } from "@components/Shadcn/TextField";
 import { SelectControl } from "@components/Shadcn/Select";
 import PayloadEditor from "@components/PayloadEditor/PastePayloadModal";

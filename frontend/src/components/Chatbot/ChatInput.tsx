@@ -1,7 +1,7 @@
 import { FC, KeyboardEvent } from "react";
 import { FiSend, FiSquare } from "react-icons/fi";
-import { Button } from "@/components/Shadcn/Button/button";
-import { Input } from "@/components/Shadcn/TextField/input";
+import { Button } from "@/components/Shadcn/Button";
+import { Input } from "@components/Shadcn/Input";
 
 interface ChatInputProps {
     input: string;

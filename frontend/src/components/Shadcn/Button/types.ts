@@ -12,8 +12,7 @@ export const ICON_SIZE_CLASSES = {
 export type IconSize = keyof typeof ICON_SIZE_CLASSES;
 
 export interface IButtonProps
-    extends React.ComponentProps<"button">,
-        VariantProps<typeof buttonVariants> {
+    extends React.ComponentProps<"button">, VariantProps<typeof buttonVariants> {
     icon?: React.ReactNode;
     iconSize?: IconSize;
     isLoading?: boolean;

@@ -4,7 +4,7 @@ import type { ErrorCodes } from "./types";
 import GuideSearchInput from "./shared/components/GuideSearchInput";
 import GuideTable, { type GuideTableColumn } from "./shared/components/GuideTable";
 import { EmptyState } from "./shared/components/states";
-import { Button } from "@/components/Shadcn/Button/button";
+import { Button } from "@/components/Shadcn/Button";
 
 const PAGE_SIZE = 10;
 

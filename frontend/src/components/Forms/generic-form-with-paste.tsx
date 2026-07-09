@@ -3,8 +3,8 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
 import { ComboBox } from "@components/Shadcn/ComboBox";
-import { Button } from "@components/Shadcn/Button/button";
-import SpinnerDialog from "@components/Shadcn/SpinnerDialog";
+import { Button } from "@components/Shadcn/Button";
+import LoadingOverlay from "@components/Shadcn/LoadingOverlay";
 import PayloadEditor from "@components/PayloadEditor/PastePayloadModal";
 import FormDialogShell from "@components/Forms/form-dialog-shell";
 import { PastePayloadButton } from "@components/Forms/paste-payload-button";
@@ -171,7 +171,7 @@ const GenericFormWithPaste = ({
 
     return (
         <>
-            {isLoading && <SpinnerDialog />}
+            {isLoading && <LoadingOverlay />}
             <FormDialogShell
                 onSubmit={handleSubmit(handleSubmitForm)}
                 className={className}

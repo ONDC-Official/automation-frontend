@@ -28,7 +28,7 @@ import {
 import { cn } from "@/lib/utils";
 import AppJsonViewer from "@components/AppJsonViewer";
 import { CodeEditor } from "@components/PayloadEditor";
-import { Button } from "@components/Shadcn/Button/button";
+import { Button } from "@components/Shadcn/Button";
 import Spinner from "@components/Shadcn/Spinner";
 import {
     Dialog,

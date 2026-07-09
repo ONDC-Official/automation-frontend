@@ -1,7 +1,7 @@
 import { IoMdAdd } from "react-icons/io";
 import { FiCheck } from "react-icons/fi";
 import { MockPlaygroundConfigType } from "@ondc/automation-mock-runner";
-import { Button } from "@/components/Shadcn/Button/button";
+import { Button } from "@/components/Shadcn/Button";
 
 // components/playground/ActionIdsButtons.tsx
 interface ActionIdsButtonsProps {
