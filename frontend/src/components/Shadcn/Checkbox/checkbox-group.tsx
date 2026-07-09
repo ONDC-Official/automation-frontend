@@ -1,9 +1,9 @@
 import type { Control, FieldValues } from "react-hook-form";
 import { Controller } from "react-hook-form";
 
-import { Checkbox } from "@/components/Shadcn/Checkbox";
-import { Field } from "@/components/Shadcn/TextField/field";
-import { LabelWithToolTip } from "@/components/Shadcn/TextField/label-with-tooltip";
+import { Checkbox } from "@components/Shadcn/Checkbox";
+import { Field } from "@components/Shadcn/TextField/field";
+import { LabelWithToolTip } from "@components/Shadcn/TextField/label-with-tooltip";
 import { cn } from "@/lib/utils";
 
 export interface ICheckboxOption {

@@ -1,9 +1,9 @@
-import { ComboBox } from "@/components/Shadcn/ComboBox";
-import { trackSchemaValidationForm } from "@/pages/scenario/helpers";
+import { ComboBox } from "@components/Shadcn/ComboBox";
+import { trackSchemaValidationForm } from "@pages/scenario/helpers";
 import {
     IDomainVersionUsecaseFields,
     IDomainVersionUsecaseFieldsProps,
-} from "@/pages/scenario/types";
+} from "@pages/scenario/types";
 import { FieldPath } from "react-hook-form";
 
 export const DomainVersionUsecaseFields = <

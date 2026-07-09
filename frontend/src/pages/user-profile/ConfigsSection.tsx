@@ -1,7 +1,7 @@
 import { ExclamationTriangleIcon } from "@heroicons/react/24/outline";
 
-import Spinner from "@/components/Shadcn/Spinner";
-import { ConfirmDialog } from "@/components/Shadcn/Dialog";
+import Spinner from "@components/Shadcn/Spinner";
+import { ConfirmDialog } from "@components/Shadcn/Dialog";
 import { PROFILE_PAGE_COPY } from "@pages/user-profile/constants";
 import { NewConfigForm } from "@pages/user-profile/NewConfigForm";
 import { ProfilePageHeader } from "@pages/user-profile/ProfilePageHeader";

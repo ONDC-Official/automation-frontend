@@ -1,17 +1,17 @@
-import { Button } from "@/components/Shadcn/Button/button";
+import { Button } from "@components/Shadcn/Button";
 import {
     Tooltip,
     TooltipContent,
     TooltipProvider,
     TooltipTrigger,
-} from "@/components/Shadcn/Tooltip";
+} from "@components/Shadcn/Tooltip";
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuSeparator,
     DropdownMenuTrigger,
-} from "@/components/Shadcn/DropDownMenu/dropdown-menu";
+} from "@components/Shadcn/DropDownMenu/dropdown-menu";
 import { PlaygroundActionButton } from "@pages/protocol-playground/ui/playground-upper/PlaygroundActionButton";
 import { MetaBadge } from "@pages/protocol-playground/ui/playground-upper/meta-badge";
 import {

@@ -1,7 +1,7 @@
 import { usePlayground } from "@pages/protocol-playground/hooks/playground-runtime";
 import { MdEdit } from "react-icons/md";
 import { TbColumnInsertLeft, TbColumnInsertRight } from "react-icons/tb";
-import { Button } from "@/components/Shadcn/Button";
+import { Button } from "@components/Shadcn/Button";
 import { cn } from "@/lib/utils";
 import { IoMdTrash } from "react-icons/io";
 import { RxReset } from "react-icons/rx";
@@ -155,9 +155,13 @@ export function ActionIdConfigurationPanel({
                     offset={[0, 8]}
                     maxWidth="none"
                 >
-                    <button className="inline-flex items-center justify-center w-7 h-7 rounded-md text-gray-400 hover:text-sky-600 hover:bg-sky-50 transition-colors">
+                    <Button
+                        type="button"
+                        variant="ghost"
+                        className="w-7 h-7 rounded-md text-gray-400 hover:text-sky-600 hover:bg-sky-50 transition-colors"
+                    >
                         <HiOutlineInformationCircle size={18} />
-                    </button>
+                    </Button>
                 </Tippy>
             </div>
 

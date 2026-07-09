@@ -1,6 +1,6 @@
 import { type ElementType } from "react";
 import { cn } from "@/lib/utils";
-import { Tabs, TabsList, TabsTrigger } from "@/components/Shadcn/Tabs/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@components/Shadcn/Tabs/tabs";
 
 export interface GuideTabItem<T extends string = string> {
     id: T;

@@ -7,7 +7,7 @@ import { readSessionDataTool } from "./read-session-data";
 import { readStepCodeTool } from "./read-step-code";
 import { readTerminalTool } from "./read-terminal";
 import { stringifyResult } from "./truncate";
-import type { Tool, ToolContext, ToolExecutionOutcome } from "./types";
+import type { Tool, ToolDeps, ToolExecutionOutcome } from "./types";
 
 const ALL_TOOLS: Tool[] = [
     listStepsTool as Tool,
@@ -29,11 +29,7 @@ export class ToolRegistry {
         return Array.from(this.tools.values()).map((t) => t.description);
     }
 
-    async execute(
-        name: string,
-        argsJson: string,
-        ctx: ToolContext
-    ): Promise<ToolExecutionOutcome> {
+    async execute(name: string, argsJson: string, deps: ToolDeps): Promise<ToolExecutionOutcome> {
         const tool = this.tools.get(name);
         if (!tool) {
             return { ok: false, errorText: `unknown tool: ${name}` };
@@ -46,7 +42,7 @@ export class ToolRegistry {
             return { ok: false, errorText: `invalid args for ${name}: ${message}` };
         }
         try {
-            const result = await tool.execute(args, ctx);
+            const result = await tool.execute(args, deps);
             return {
                 ok: true,
                 result,

@@ -1,9 +1,9 @@
 import { useMemo, useState } from "react";
-import { queryJsonPath } from "@/utils/jsonpath-query";
+import { queryJsonPath } from "@utils/jsonpath-query";
 import { AxiosResponse } from "axios";
 
-import { Button } from "@/components/Shadcn/Button/button";
-import FormDialogShell from "@/components/ui/forms/form-dialog-shell";
+import { Button } from "@components/Shadcn/Button";
+import FormDialogShell from "@components/Forms/form-dialog-shell";
 import ProtocolHtmlFieldRenderer from "./protocol-html-field-renderer";
 import type {
     BaseField,

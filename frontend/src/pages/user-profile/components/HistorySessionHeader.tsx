@@ -1,8 +1,8 @@
 import { ArrowDownIcon } from "@heroicons/react/24/outline";
 
-import { Button } from "@/components/Shadcn/Button/button";
-import { RadialProgressChart } from "@/components/Shadcn/Chart";
-import Spinner from "@/components/Shadcn/Spinner";
+import { Button } from "@components/Shadcn/Button";
+import { RadialProgressChart } from "@components/Shadcn/Chart";
+import Spinner from "@components/Shadcn/Spinner";
 import { cn } from "@/lib/utils";
 import type { IHistorySessionHeaderProps } from "@pages/user-profile/types";
 

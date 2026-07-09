@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { FiEdit, FiEye, FiTrash } from "react-icons/fi";
+import { Button } from "@/components/Shadcn/Button";
+import { Input } from "@components/Shadcn/Input";
 
 export interface handleAddParam {
     currPath: string;
@@ -37,25 +39,27 @@ const JsonPathInput = ({
             //   <div className="bg-gray-800 mt-4 p-4 rounded-lg border border-sky-500/30">
             <div className="w-full">
                 <div className="flex flex-col gap-2 items-center">
-                    <input
+                    <Input
                         type="text"
                         value={newAlias}
                         onChange={(e) => setNewAlisa(e.target.value)}
                         placeholder="Enter alias (e.g. userInfo)"
-                        className="px-3 py-2 rounded bg-gray-900 text-white border border-gray-700 focus:border-sky-500 outline-hidden"
+                        className="rounded bg-gray-900 text-white border-gray-700 focus-visible:border-sky-500"
                     />
                     :
-                    <input
+                    <Input
                         type="text"
                         value={newPath}
                         onChange={(e) => setNewPath(e.target.value)}
                         placeholder="Enter JSON path (e.g. $.context.city)"
-                        className="px-3 w-full py-2 rounded bg-gray-900 text-white border border-gray-700 focus:border-sky-500 outline-hidden"
+                        className="w-full rounded bg-gray-900 text-white border-gray-700 focus-visible:border-sky-500"
                     />
                 </div>
                 {error && <p className="text-red-400 text-sm">{error}</p>}
                 <div className="flex gap-2 mt-2">
-                    <button
+                    <Button
+                        type="button"
+                        variant="ghost"
                         onClick={() => {
                             handleAdd({
                                 currAlias: newAlias,
@@ -67,8 +71,10 @@ const JsonPathInput = ({
                         className="px-4 py-2 bg-sky-600 text-white rounded hover:bg-sky-700 transition-colors"
                     >
                         Save
-                    </button>
-                    <button
+                    </Button>
+                    <Button
+                        type="button"
+                        variant="ghost"
                         onClick={() => {
                             //   setShowInput(false);
                             setIsEdit(false);
@@ -77,7 +83,7 @@ const JsonPathInput = ({
                         className="px-4 py-2 bg-gray-700 text-gray-300 rounded hover:bg-gray-600 transition-colors"
                     >
                         Cancel
-                    </button>
+                    </Button>
                 </div>
             </div>
         );
@@ -96,37 +102,43 @@ const JsonPathInput = ({
             {/* Hover-visible button group */}
             <div className="absolute right-0 opacity-0 group-hover:opacity-100 flex gap-2 transition-opacity">
                 {/* View */}
-                <button
+                <Button
+                    type="button"
+                    variant="ghost"
                     onClick={() => onView(path)}
-                    className="p-1.5 rounded bg-sky-500/20 text-sky-400 relative group/button"
+                    className="h-auto rounded p-1.5 bg-sky-500/20 text-sky-400 relative group/button"
                 >
                     <FiEye size={16} />
                     <span className="absolute top-full left-1/2 -translate-x-1/2 mt-1 text-[10px] bg-gray-800 text-white px-2 py-0.5 rounded opacity-0 group-hover/button:opacity-100 transition-opacity">
                         View
                     </span>
-                </button>
+                </Button>
 
                 {/* Edit */}
-                <button
+                <Button
+                    type="button"
+                    variant="ghost"
                     onClick={() => setIsEdit(true)}
-                    className="p-1.5 rounded bg-yellow-500/20 text-yellow-400 relative group/button"
+                    className="h-auto rounded p-1.5 bg-yellow-500/20 text-yellow-400 relative group/button"
                 >
                     <FiEdit size={16} />
                     <span className="absolute top-full left-1/2 -translate-x-1/2 mt-1 text-[10px] bg-gray-800 text-white px-2 py-0.5 rounded opacity-0 group-hover/button:opacity-100 transition-opacity">
                         Edit
                     </span>
-                </button>
+                </Button>
 
                 {/* Delete */}
-                <button
+                <Button
+                    type="button"
+                    variant="ghost"
                     onClick={() => onDelete(alias)}
-                    className="p-1.5 rounded bg-red-500/20 text-red-400 relative group/button"
+                    className="h-auto rounded p-1.5 bg-red-500/20 text-red-400 relative group/button"
                 >
                     <FiTrash size={16} />
                     <span className="absolute top-full left-1/2 -translate-x-1/2 mt-1 text-[10px] bg-gray-800 text-white px-2 py-0.5 rounded opacity-0 group-hover/button:opacity-100 transition-opacity">
                         Delete
                     </span>
-                </button>
+                </Button>
             </div>
         </div>
     );

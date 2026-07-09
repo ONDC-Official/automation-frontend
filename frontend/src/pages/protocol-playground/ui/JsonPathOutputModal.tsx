@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Editor, Monaco } from "@monaco-editor/react";
 import { ClipboardDocumentIcon, CodeBracketIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { useClipboard } from "@hooks/useClipboard";
+import { Button } from "@/components/Shadcn/Button";
 import { DarkSkyBlueTheme } from "@pages/protocol-playground/ui/editor-themes";
 
 interface JsonPathOutputPopupProps {
@@ -69,22 +70,26 @@ const JsonPathOutputPopup: React.FC<JsonPathOutputPopupProps> = ({ jsonPath, out
                     </div>
 
                     <div className="flex items-center gap-2">
-                        <button
+                        <Button
+                            type="button"
+                            variant="ghost"
                             onClick={handleCopy}
-                            className="flex items-center gap-2 px-3 py-2 rounded-lg font-medium text-sm transition-all duration-200 bg-gray-700/50 text-gray-300 border border-gray-600/50 hover:bg-gray-600/50 hover:border-gray-500/50 hover:text-white"
+                            className="gap-2 px-3 py-2 rounded-lg font-medium text-sm transition-all duration-200 bg-gray-700/50 text-gray-300 border border-gray-600/50 hover:bg-gray-600/50 hover:border-gray-500/50 hover:text-white"
                             title="Copy JSON"
                         >
                             <ClipboardDocumentIcon className="size-4" />
                             <span>Copy</span>
-                        </button>
+                        </Button>
 
-                        <button
+                        <Button
+                            type="button"
+                            variant="ghost"
                             onClick={handleClose}
                             className="p-2 text-gray-400 hover:text-white hover:bg-red-500/20 hover:border-red-500/30 rounded-lg transition-all duration-200 border border-gray-600/50"
                             title="Close (ESC)"
                         >
                             <XMarkIcon className="size-5" />
-                        </button>
+                        </Button>
                     </div>
                 </div>
 

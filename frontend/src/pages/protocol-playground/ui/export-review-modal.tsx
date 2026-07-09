@@ -7,10 +7,11 @@ import {
     DialogFooter,
     DialogHeader,
     DialogTitle,
-} from "@/components/Shadcn/Dialog";
+} from "@components/Shadcn/Dialog";
 import { cn } from "@/lib/utils";
 import { ArrowDownTrayIcon, CheckIcon, PencilIcon } from "@heroicons/react/24/outline";
-import { Button } from "@/components/Shadcn/Button/button";
+import { Button } from "@components/Shadcn/Button";
+import { Textarea } from "@/components/Shadcn/TextArea/text-area";
 
 interface IExportReviewModalProps {
     config: MockPlaygroundConfigType | null;
@@ -110,14 +111,14 @@ const StepCard = ({ index, actionId, api, owner, description, onChange }: IStepC
                 role="presentation"
             >
                 {isEditing ? (
-                    <textarea
+                    <Textarea
                         ref={textareaRef}
                         value={description}
                         placeholder="Add a description for this step…"
                         onChange={(e) => onChange(e.target.value)}
                         onInput={handleInput}
                         onBlur={() => setIsEditing(false)}
-                        className="min-h-[40px] w-full resize-none border-0 bg-transparent text-sm leading-relaxed text-text-primary outline-none placeholder:text-text-secondary"
+                        className="min-h-[40px] w-full resize-none border-0 bg-transparent text-sm leading-relaxed text-text-primary shadow-none outline-none placeholder:text-text-secondary"
                     />
                 ) : description ? (
                     <p className="line-clamp-2 text-sm leading-relaxed text-text-secondary">

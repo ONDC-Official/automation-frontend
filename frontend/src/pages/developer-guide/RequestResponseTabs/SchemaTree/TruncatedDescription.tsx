@@ -1,4 +1,5 @@
 import { type FC, useState } from "react";
+import { Button } from "@/components/Shadcn/Button";
 import { DESC_CHAR_LIMIT } from "./constants";
 
 const TruncatedDescription: FC<{ text: string }> = ({ text }) => {
@@ -9,13 +10,14 @@ const TruncatedDescription: FC<{ text: string }> = ({ text }) => {
     return (
         <span>
             {expanded ? text : `${text.slice(0, DESC_CHAR_LIMIT)}…`}
-            <button
+            <Button
                 type="button"
+                variant="ghost"
                 onClick={() => setExpanded((v) => !v)}
-                className="ml-1 text-[11px] text-sky-600 dark:text-sky-400 hover:text-sky-800 dark:hover:text-sky-300 font-medium cursor-pointer"
+                className="h-auto rounded-none p-0 ml-1 text-[11px] text-sky-600 dark:text-sky-400 hover:text-sky-800 dark:hover:text-sky-300 font-medium cursor-pointer"
             >
                 {expanded ? "less" : "more"}
-            </button>
+            </Button>
         </span>
     );
 };

@@ -3,10 +3,11 @@ import { format } from "date-fns";
 import { ChevronDownIcon } from "@heroicons/react/24/outline";
 import { Controller, type FieldValues } from "react-hook-form";
 
-import { Calendar } from "@/components/Shadcn/Calendar";
-import { Field, FieldError, FieldLabel } from "@/components/Shadcn/TextField/field";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/Shadcn/Popover";
-import { formatDateOnly, parseDateOnly } from "@/components/ui/forms/utils/date-utils";
+import { Calendar } from "@components/Shadcn/Calendar";
+import { Field, FieldError, FieldLabel } from "@components/Shadcn/TextField/field";
+import { Popover, PopoverContent, PopoverTrigger } from "@components/Shadcn/Popover";
+import { Button } from "@components/Shadcn/Button";
+import { formatDateOnly, parseDateOnly } from "@components/Forms/utils/date-utils";
 import { cn } from "@/lib/utils";
 
 import type { IDatePickerProps } from "./types";
@@ -42,7 +43,7 @@ const DatePickerControl = memo(function DatePickerControl({
             )}
             <Popover open={open} onOpenChange={setOpen}>
                 <PopoverTrigger asChild>
-                    <button
+                    <Button
                         type="button"
                         id={fieldId}
                         disabled={disabled}
@@ -58,7 +59,7 @@ const DatePickerControl = memo(function DatePickerControl({
                     >
                         {selectedDate ? format(selectedDate, "PPP") : placeholder}
                         <ChevronDownIcon className="size-4 opacity-50" />
-                    </button>
+                    </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto overflow-hidden p-0" align="start">
                     <Calendar

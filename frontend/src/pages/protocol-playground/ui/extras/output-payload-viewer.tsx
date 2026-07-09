@@ -26,10 +26,10 @@ import {
 } from "@heroicons/react/24/outline";
 
 import { cn } from "@/lib/utils";
-import AppJsonViewer from "@/components/AppJsonViewer";
-import { CodeEditor } from "@/components/PayloadEditor";
-import { Button } from "@/components/Shadcn/Button/button";
-import Spinner from "@/components/Shadcn/Spinner";
+import AppJsonViewer from "@components/AppJsonViewer";
+import { CodeEditor } from "@components/PayloadEditor";
+import { Button } from "@components/Shadcn/Button";
+import Spinner from "@components/Shadcn/Spinner";
 import {
     Dialog,
     DialogContent,
@@ -37,7 +37,7 @@ import {
     DialogFooter,
     DialogHeader,
     DialogTitle,
-} from "@/components/Shadcn/Dialog";
+} from "@components/Shadcn/Dialog";
 import { usePlayground } from "@pages/protocol-playground/hooks/playground-runtime";
 import { buildLinearConfig } from "@pages/protocol-playground/utils/transaction-view";
 import {
@@ -505,10 +505,12 @@ export default function OutputPayloadViewer({
                     <h3 className="text-base font-semibold text-text-primary">Output Payload</h3>
                 </div>
                 <div className="flex gap-2">
-                    <button
+                    <Button
+                        type="button"
+                        variant="ghost"
                         onClick={verifyRequestL0}
                         disabled={loading}
-                        className="flex items-center gap-1.5 px-3 py-1.5 bg-sky-500 text-white text-xs font-semibold rounded-md hover:bg-sky-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition shadow-xs"
+                        className="gap-1.5 px-3 py-1.5 bg-sky-500 text-white text-xs font-semibold rounded-md hover:bg-sky-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition shadow-xs"
                     >
                         {loading ? (
                             <>
@@ -521,9 +523,11 @@ export default function OutputPayloadViewer({
                                 <span>L1 Validation</span>
                             </>
                         )}
-                    </button>
-                    <button
-                        className="flex items-center gap-1.5 px-3 py-1.5 bg-sky-500 text-white text-xs font-semibold rounded-md hover:bg-sky-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition shadow-xs"
+                    </Button>
+                    <Button
+                        type="button"
+                        variant="ghost"
+                        className="gap-1.5 px-3 py-1.5 bg-sky-500 text-white text-xs font-semibold rounded-md hover:bg-sky-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition shadow-xs"
                         onClick={verifyRequestL2}
                     >
                         {loading ? (
@@ -537,10 +541,12 @@ export default function OutputPayloadViewer({
                                 <span>L2 Validation</span>
                             </>
                         )}
-                    </button>
+                    </Button>
 
-                    <button
-                        className="flex items-center gap-1.5 px-3 py-1.5 bg-sky-500 text-white text-xs font-semibold rounded-md hover:bg-sky-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition shadow-xs"
+                    <Button
+                        type="button"
+                        variant="ghost"
+                        className="gap-1.5 px-3 py-1.5 bg-sky-500 text-white text-xs font-semibold rounded-md hover:bg-sky-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition shadow-xs"
                         onClick={verifyRequestMeetReqs}
                     >
                         {loading ? (
@@ -554,7 +560,7 @@ export default function OutputPayloadViewer({
                                 <span>Validate Requirements</span>
                             </>
                         )}
-                    </button>
+                    </Button>
                 </div>
             </div>
 
@@ -562,9 +568,11 @@ export default function OutputPayloadViewer({
             <div className="flex-1 overflow-y-auto">
                 {/* Payload Section */}
                 <div className="border-b border-border-default">
-                    <button
+                    <Button
+                        type="button"
+                        variant="ghost"
                         onClick={() => setShowPayload(!showPayload)}
-                        className="flex w-full items-center justify-between bg-surface-muted p-3 text-left transition hover:bg-brand-light dark:hover:bg-surface-muted/80"
+                        className="w-full justify-start rounded-none bg-surface-muted p-3 font-normal text-left transition hover:bg-brand-light dark:hover:bg-surface-muted/80"
                     >
                         <div className="flex items-center gap-2">
                             <CodeBracketIcon className="size-4 text-brand-normal" />
@@ -578,28 +586,30 @@ export default function OutputPayloadViewer({
                             )}
                         </div>
                         {showPayload ? (
-                            <ChevronUpIcon className="size-4 text-text-secondary" />
+                            <ChevronUpIcon className="ml-auto size-4 text-text-secondary" />
                         ) : (
-                            <ChevronDownIcon className="size-4 text-text-secondary" />
+                            <ChevronDownIcon className="ml-auto size-4 text-text-secondary" />
                         )}
-                    </button>
+                    </Button>
                     {showPayload && (
                         <div className="bg-surface-elevated p-4">
                             {hasRuns && runs.length > 1 && (
                                 <div className="mb-3 flex flex-wrap items-center gap-1.5">
                                     {runs.map((_, i) => (
-                                        <button
+                                        <Button
                                             key={i}
+                                            type="button"
+                                            variant="ghost"
                                             onClick={() => setSelectedRun(i)}
                                             className={cn(
-                                                "rounded-md px-2.5 py-1 text-xs font-semibold transition",
+                                                "h-auto rounded-md px-2.5 py-1 text-xs font-semibold transition",
                                                 i === runIndex
                                                     ? "bg-brand-normal text-n-0 shadow-xs"
                                                     : "bg-surface-muted text-text-secondary hover:bg-brand-light dark:hover:bg-surface-muted/80"
                                             )}
                                         >
                                             Run {i + 1}
-                                        </button>
+                                        </Button>
                                     ))}
                                 </div>
                             )}
@@ -613,10 +623,12 @@ export default function OutputPayloadViewer({
                 {/* L1 Validation Results Section */}
                 {mdData && (
                     <div className="border-b border-border-default">
-                        <button
+                        <Button
+                            type="button"
+                            variant="ghost"
                             onClick={() => setShowValidation(!showValidation)}
                             className={cn(
-                                "flex w-full items-center justify-between p-3 text-left transition",
+                                "w-full justify-between rounded-none p-3 font-normal text-left transition",
                                 validationSuccess === false
                                     ? "bg-red-50 hover:bg-red-100 dark:bg-red-500/10 dark:hover:bg-red-500/15"
                                     : validationSuccess === true
@@ -680,7 +692,7 @@ export default function OutputPayloadViewer({
                                     )}
                                 />
                             )}
-                        </button>
+                        </Button>
                         {showValidation && (
                             <div className="prose prose-sm max-w-none bg-surface-elevated p-4 text-text-primary">
                                 <Markdown
@@ -812,10 +824,12 @@ export default function OutputPayloadViewer({
                 {/* L2 Validation Results Section */}
                 {l2Result && (
                     <div className="border-b border-border-default">
-                        <button
+                        <Button
+                            type="button"
+                            variant="ghost"
                             onClick={() => setShowL2Results(!showL2Results)}
                             className={cn(
-                                "flex w-full items-center justify-between p-3 text-left transition",
+                                "w-full justify-between rounded-none p-3 font-normal text-left transition",
                                 !l2Result.valid
                                     ? "bg-red-50 hover:bg-red-100 dark:bg-red-500/10 dark:hover:bg-red-500/15"
                                     : "bg-green-50 hover:bg-green-100 dark:bg-green-500/10 dark:hover:bg-green-500/15"
@@ -865,7 +879,7 @@ export default function OutputPayloadViewer({
                                     )}
                                 />
                             )}
-                        </button>
+                        </Button>
                         {showL2Results && (
                             <div className="bg-surface-elevated p-4">
                                 <div className="space-y-3">

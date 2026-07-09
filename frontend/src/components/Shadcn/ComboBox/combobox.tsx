@@ -4,15 +4,15 @@ import * as React from "react";
 import { Combobox as ComboboxPrimitive } from "@base-ui/react";
 import { CheckIcon, ChevronDownIcon, XCircleIcon } from "@heroicons/react/24/outline";
 
-import { FORM_FLOW_FLOATING_Z_INDEX } from "@/components/Shadcn/Dialog/form-flow-dialog-utils";
+import { FORM_FLOW_FLOATING_Z_INDEX } from "@components/Shadcn/Dialog/form-flow-dialog-utils";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/Shadcn/Button/button";
+import { Button } from "@components/Shadcn/Button";
 import {
     InputGroup,
     InputGroupAddon,
     InputGroupButton,
     InputGroupInput,
-} from "@/components/Shadcn/ComboBox/input-group";
+} from "@components/Shadcn/ComboBox/input-group";
 
 const Combobox = ComboboxPrimitive.Root;
 

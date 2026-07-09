@@ -15,14 +15,11 @@ export default defineConfig({
     },
     resolve: {
         alias: {
-            "@/components/ui/forms": path.resolve(__dirname, "./src/components/Forms"),
-            "@components/ui/forms": path.resolve(__dirname, "./src/components/Forms"),
             "@": path.resolve(__dirname, "./src"),
             "@components": path.resolve(__dirname, "./src/components"),
             "@pages": path.resolve(__dirname, "./src/pages"),
             "@utils": path.resolve(__dirname, "./src/utils"),
             "@hooks": path.resolve(__dirname, "./src/hooks"),
-            "@context": path.resolve(__dirname, "./src/context"),
             "@constants": path.resolve(__dirname, "./src/constants"),
             "@services": path.resolve(__dirname, "./src/services"),
             "@store": path.resolve(__dirname, "./src/store"),

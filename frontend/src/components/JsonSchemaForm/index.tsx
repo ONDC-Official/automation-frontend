@@ -13,9 +13,9 @@ import {
 } from "@rjsf/utils";
 import { PlusIcon, TrashIcon } from "@heroicons/react/24/outline";
 
-import { Button } from "@/components/Shadcn/Button/button";
-import FormDialogShell from "@/components/ui/forms/form-dialog-shell";
-import GpsWidget from "@/components/ui/forms/GpsMapPicker";
+import { Button } from "@components/Shadcn/Button";
+import FormDialogShell from "@components/Forms/form-dialog-shell";
+import GpsWidget from "@components/Forms/GpsMapPicker";
 
 import "./rsjs.css";
 
@@ -120,28 +120,30 @@ function CustomArrayFieldTemplate(props: ArrayFieldTemplateProps) {
                     <div key={element.key} className="array-item">
                         <div className="array-item-content">{element.children}</div>
                         {element.hasRemove && (
-                            <button
+                            <Button
                                 type="button"
+                                variant="ghost"
                                 className="array-item-remove"
                                 onClick={element.onDropIndexClick(element.index)}
                                 aria-label={`Remove item ${element.index + 1}`}
                             >
                                 <TrashIcon className="size-4" />
-                            </button>
+                            </Button>
                         )}
                     </div>
                 ))}
             </div>
             {canAdd && (
-                <button
+                <Button
                     type="button"
+                    variant="ghost"
                     className="array-add-button"
                     onClick={onAddClick}
                     aria-label="Add new item"
                 >
                     <PlusIcon className="size-3.5" />
                     Add
-                </button>
+                </Button>
             )}
         </div>
     );

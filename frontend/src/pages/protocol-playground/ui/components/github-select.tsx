@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { FaSpinner, FaChevronDown } from "react-icons/fa";
+import { Input } from "@components/Shadcn/Input";
 
 export const Spinner = () => (
     <FaSpinner className="animate-spin text-sky-500 inline-block ml-2" size={13} />
@@ -99,7 +100,7 @@ export const SelectBox = ({
                 {loading && <Spinner />}
             </label>
             <div className="relative">
-                <input
+                <Input
                     id={selectId}
                     type="text"
                     role="combobox"
@@ -116,7 +117,7 @@ export const SelectBox = ({
                     }}
                     onFocus={openMenu}
                     onKeyDown={onKeyDown}
-                    className={`w-full appearance-none border rounded-lg px-3 py-2.5 pr-8 text-sm focus:outline-hidden focus:ring-2 focus:ring-sky-400 transition-colors
+                    className={`w-full rounded-lg px-3 py-2.5 pr-8 text-sm focus-visible:ring-2 focus-visible:ring-sky-400 transition-colors
                     ${isDisabled ? "bg-gray-50 text-gray-400 border-gray-200 cursor-not-allowed" : "bg-white text-gray-800 border-sky-200 hover:border-sky-400 cursor-text"}`}
                 />
                 <FaChevronDown
@@ -143,7 +144,9 @@ export const SelectBox = ({
                                     }}
                                     onMouseEnter={() => setHighlight(i)}
                                     className={`px-3 py-2 cursor-pointer truncate ${
-                                        i === highlight ? "bg-sky-100 text-sky-800" : "text-gray-800"
+                                        i === highlight
+                                            ? "bg-sky-100 text-sky-800"
+                                            : "text-gray-800"
                                     } ${opt === value ? "font-semibold" : ""}`}
                                 >
                                     {opt}

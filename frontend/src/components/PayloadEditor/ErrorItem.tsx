@@ -1,6 +1,6 @@
 import { FC } from "react";
-import { formatErrorPath } from "@/utils/format-error-path";
-import type { IErrorItemProps } from "@/components/PayloadEditor/types";
+import { formatErrorPath } from "@utils/format-error-path";
+import type { IErrorItemProps } from "@components/PayloadEditor/types";
 
 export const ErrorItem: FC<IErrorItemProps> = ({ error }) => (
     <div className="py-2">

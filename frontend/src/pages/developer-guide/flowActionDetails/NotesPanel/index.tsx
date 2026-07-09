@@ -6,6 +6,7 @@ import {
     useDeleteNoteMutation,
 } from "@store/api";
 import { useAuth } from "@hooks/useAuth";
+import { Button } from "@/components/Shadcn/Button";
 import GuideAsyncPanel from "../../shared/components/GuideAsyncPanel";
 import GuidePanel from "../../shared/components/GuidePanel";
 import { EmptyState } from "../../shared/components/states";
@@ -173,15 +174,16 @@ const NotesPanel: FC<NotesPanelProps> = ({ selectedPath, actionApi, useCaseId, f
                             {selectedPath}
                         </span>
                         {isLoggedIn ? (
-                            <button
+                            <Button
                                 type="button"
+                                variant="ghost"
                                 onClick={startCreate}
                                 disabled={showForm}
-                                className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-amber-700 dark:text-amber-300 bg-amber-500/10 rounded-xl hover:bg-amber-500/20 disabled:opacity-50 transition-colors shrink-0"
+                                className="gap-1.5 px-3 py-2 text-sm font-medium text-amber-700 dark:text-amber-300 bg-amber-500/10 rounded-xl hover:bg-amber-500/20 disabled:opacity-50 transition-colors shrink-0"
                             >
                                 <IconAdd className="w-4 h-4" />
                                 New note
-                            </button>
+                            </Button>
                         ) : (
                             <span className="text-sm text-slate-500 shrink-0">
                                 Sign in to add notes.

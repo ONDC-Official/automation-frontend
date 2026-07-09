@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { parse as yamlParse } from "yaml";
 import { MockRunner, MockPlaygroundConfigType } from "@ondc/automation-mock-runner";
 
-import { Button } from "@/components/Shadcn/Button/button";
+import { Button } from "@components/Shadcn/Button";
 import {
     Dialog,
     DialogContent,
@@ -10,8 +10,8 @@ import {
     DialogFooter,
     DialogHeader,
     DialogTitle,
-} from "@/components/Shadcn/Dialog";
-import GitHubIcon from "@/assets/svgs/GitHubIcon";
+} from "@components/Shadcn/Dialog";
+import GitHubIcon from "@assets/svgs/GitHubIcon";
 import { cn } from "@/lib/utils";
 import {
     fetchBranches,
@@ -188,12 +188,13 @@ export const GitHubImportModal = ({
                                 {files.map((file) => {
                                     const isSelected = selectedFile?.name === file.name;
                                     return (
-                                        <button
+                                        <Button
                                             type="button"
+                                            variant="ghost"
                                             key={file.name}
                                             onClick={() => setSelectedFile(file)}
                                             className={cn(
-                                                "flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm transition-colors",
+                                                "h-auto w-full justify-start gap-3 rounded-none px-4 py-2.5 text-left text-sm font-normal transition-colors",
                                                 isSelected
                                                     ? "bg-brand-light font-medium text-brand-normal dark:bg-surface-muted"
                                                     : "text-text-primary hover:bg-surface-muted"
@@ -208,7 +209,7 @@ export const GitHubImportModal = ({
                                                 )}
                                             />
                                             {file.name}
-                                        </button>
+                                        </Button>
                                     );
                                 })}
                             </div>

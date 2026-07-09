@@ -6,6 +6,7 @@ import { useGetGithubDocContentQuery } from "@store/api";
 import GithubMarkdown from "@components/GithubMarkdown";
 import TableOfContents from "@components/TableOfContents";
 import GuideCard from "./shared/components/GuideCard";
+import { Button } from "@/components/Shadcn/Button";
 
 // Fixed site header is 86px (2px gradient bar + 84px nav).
 // Breadcrumb bar below it adds 44px → TOC sticks at 86+44=130px.
@@ -41,14 +42,15 @@ const DeveloperGuideDocPage = () => {
                 style={{ top: HEADER_HEIGHT }}
             >
                 <div className="container mx-auto px-6 h-11 flex items-center gap-2">
-                    <button
+                    <Button
                         type="button"
+                        variant="ghost"
                         onClick={() => navigate(ROUTES.DEVELOPER_GUIDE)}
-                        className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-slate-800 transition-colors"
+                        className="gap-1.5 text-sm font-medium text-slate-500 hover:text-slate-800 transition-colors"
                     >
                         <ArrowLeftIcon className="w-3.5 h-3.5" />
                         Developer Guide
-                    </button>
+                    </Button>
                     <span className="text-slate-300 text-sm">/</span>
                     <span className="text-sm font-semibold text-slate-800 truncate">{title}</span>
                 </div>

@@ -3,20 +3,20 @@ import { useForm, useFieldArray, Controller } from "react-hook-form";
 import { PlusIcon, TrashIcon } from "@heroicons/react/24/outline";
 import { toast } from "sonner";
 
-import { ComboBoxControl } from "@/components/Shadcn/ComboBox";
-import { Button } from "@/components/Shadcn/Button/button";
-import TextField from "@/components/Shadcn/TextField";
-import { Field, FieldLabel } from "@/components/Shadcn/TextField/field";
-import { Input } from "@/components/Shadcn/TextField/input";
-import PayloadEditor from "@/components/PayloadEditor/PastePayloadModal";
-import FormDialogShell from "@/components/ui/forms/form-dialog-shell";
-import { PastePayloadButton } from "@/components/ui/forms/paste-payload-button";
+import { ComboBoxControl } from "@components/Shadcn/ComboBox";
+import { Button } from "@components/Shadcn/Button";
+import TextField from "@components/Shadcn/TextField";
+import { Field, FieldLabel } from "@components/Shadcn/TextField/field";
+import { Input } from "@components/Shadcn/Input";
+import { RadioGroupField } from "@/components/Shadcn/RadioGroup";
+import PayloadEditor from "@components/PayloadEditor/PastePayloadModal";
+import FormDialogShell from "@components/Forms/form-dialog-shell";
+import { PastePayloadButton } from "@components/Forms/paste-payload-button";
 import { cn } from "@/lib/utils";
 import type {
     IOnSearchPayload,
     IParsedProvider,
     ICatalogData,
-    IRedeemMode,
     IFormValues,
     IFIS14MutualFundRedemptionSelectFormProps,
 } from "../types/fis14-mutual-fund-redemption-select-form-types";
@@ -38,7 +38,6 @@ export default function FIS14MutualFundRedemptionSelectForm({
     const [extraErrors, setExtraErrors] = useState<Record<string, string>>({});
 
     const {
-        register,
         control,
         handleSubmit,
         watch,
@@ -329,29 +328,16 @@ export default function FIS14MutualFundRedemptionSelectForm({
 
                         {selectedFulfillment && (
                             <div className={sectionClassName}>
-                                <FieldLabel className="font-semibold uppercase tracking-wide">
-                                    Redemption Mode
-                                </FieldLabel>
-                                <div className="flex flex-wrap gap-4">
-                                    {(["AMOUNT", "MF_UNITS", "REDEEM_ALL"] as IRedeemMode[]).map(
-                                        (mode) => (
-                                            <label
-                                                key={mode}
-                                                className="flex cursor-pointer items-center gap-2 text-sm font-medium text-text-primary"
-                                            >
-                                                <input
-                                                    type="radio"
-                                                    value={mode}
-                                                    {...register("redeemMode")}
-                                                    className="accent-primary"
-                                                />
-                                                {mode === "AMOUNT" && "Redeem by Amount"}
-                                                {mode === "MF_UNITS" && "Redeem by Units"}
-                                                {mode === "REDEEM_ALL" && "Redeem All"}
-                                            </label>
-                                        )
-                                    )}
-                                </div>
+                                <RadioGroupField
+                                    control={control}
+                                    name="redeemMode"
+                                    label="Redemption Mode"
+                                    options={[
+                                        { label: "Redeem by Amount", value: "AMOUNT" },
+                                        { label: "Redeem by Units", value: "MF_UNITS" },
+                                        { label: "Redeem All", value: "REDEEM_ALL" },
+                                    ]}
+                                />
                                 <p className="text-xs text-text-secondary">
                                     {watchedRedeemMode === "AMOUNT" &&
                                         'Will send: measure = { unit: "INR", value: <amount> }'}
@@ -477,7 +463,7 @@ export default function FIS14MutualFundRedemptionSelectForm({
                                             {field.label}
                                             {field.required !== false ? " *" : ""}
                                         </FieldLabel>
-                                        <input
+                                        <Input
                                             type="text"
                                             value={extraData[field.name] ?? ""}
                                             onChange={(event) => {
@@ -493,10 +479,7 @@ export default function FIS14MutualFundRedemptionSelectForm({
                                                     });
                                                 }
                                             }}
-                                            className={cn(
-                                                "flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs",
-                                                extraErrors[field.name] && "border-destructive"
-                                            )}
+                                            aria-invalid={!!extraErrors[field.name]}
                                         />
                                         {extraErrors[field.name] && (
                                             <p className="text-xs text-destructive">

@@ -1,5 +1,6 @@
 // components/ExecutionResults.tsx
 import { ExecutionResult } from "@ondc/automation-mock-runner";
+import { Button } from "@/components/Shadcn/Button";
 import { useState } from "react";
 import {
     IoCheckmarkCircle,
@@ -154,9 +155,11 @@ export function ExecutionResults({ results }: ExecutionResultsProps) {
                                 {/* Result Section */}
                                 {result.result !== undefined && (
                                     <div className="border-b border-gray-200">
-                                        <button
+                                        <Button
+                                            type="button"
+                                            variant="ghost"
                                             onClick={() => toggleSection(index, "result")}
-                                            className="w-full flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100 transition text-left"
+                                            className="w-full justify-between rounded-none p-3 font-normal bg-gray-50 hover:bg-gray-100 transition text-left"
                                         >
                                             <div className="flex items-center gap-2">
                                                 <IoCodeSlash className="text-sky-500" />
@@ -169,7 +172,7 @@ export function ExecutionResults({ results }: ExecutionResultsProps) {
                                             ) : (
                                                 <IoChevronDown className="text-gray-400 text-sm" />
                                             )}
-                                        </button>
+                                        </Button>
                                         {sections.result && (
                                             <div className="bg-gray-900 p-3 max-h-96 overflow-auto">
                                                 <pre className="text-xs text-green-400 font-mono whitespace-pre-wrap wrap-break-word">
@@ -183,9 +186,11 @@ export function ExecutionResults({ results }: ExecutionResultsProps) {
                                 {/* Error Section */}
                                 {result.error && (
                                     <div className="border-b border-gray-200">
-                                        <button
+                                        <Button
+                                            type="button"
+                                            variant="ghost"
                                             onClick={() => toggleSection(index, "error")}
-                                            className="w-full flex items-center justify-between p-3 bg-red-50 hover:bg-red-100 transition text-left"
+                                            className="w-full justify-between rounded-none p-3 font-normal bg-red-50 hover:bg-red-100 transition text-left"
                                         >
                                             <div className="flex items-center gap-2">
                                                 <IoBug className="text-red-500" />
@@ -198,7 +203,7 @@ export function ExecutionResults({ results }: ExecutionResultsProps) {
                                             ) : (
                                                 <IoChevronDown className="text-red-400 text-sm" />
                                             )}
-                                        </button>
+                                        </Button>
                                         {sections.error && (
                                             <div className="bg-gray-900 p-3 max-h-96 overflow-auto">
                                                 <div className="text-xs space-y-2">
@@ -229,9 +234,11 @@ export function ExecutionResults({ results }: ExecutionResultsProps) {
                                 {/* Logs Section */}
                                 {result.logs.length > 0 && (
                                     <div className="border-b border-gray-200">
-                                        <button
+                                        <Button
+                                            type="button"
+                                            variant="ghost"
                                             onClick={() => toggleSection(index, "logs")}
-                                            className="w-full flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100 transition text-left"
+                                            className="w-full justify-between rounded-none p-3 font-normal bg-gray-50 hover:bg-gray-100 transition text-left"
                                         >
                                             <div className="flex items-center gap-2">
                                                 <IoTerminal className="text-sky-500" />
@@ -244,7 +251,7 @@ export function ExecutionResults({ results }: ExecutionResultsProps) {
                                             ) : (
                                                 <IoChevronDown className="text-gray-400 text-sm" />
                                             )}
-                                        </button>
+                                        </Button>
                                         {sections.logs && (
                                             <div className="bg-gray-900 p-3 max-h-64 overflow-y-auto">
                                                 <div className="space-y-1.5">
@@ -276,9 +283,11 @@ export function ExecutionResults({ results }: ExecutionResultsProps) {
                                 {(!result.validation.isValid ||
                                     result.validation.warnings.length > 0) && (
                                     <div>
-                                        <button
+                                        <Button
+                                            type="button"
+                                            variant="ghost"
                                             onClick={() => toggleSection(index, "validation")}
-                                            className="w-full flex items-center justify-between p-3 bg-yellow-50 hover:bg-yellow-100 transition text-left"
+                                            className="w-full justify-between rounded-none p-3 font-normal bg-yellow-50 hover:bg-yellow-100 transition text-left"
                                         >
                                             <div className="flex items-center gap-2">
                                                 <IoAlertCircle className="text-yellow-600" />
@@ -294,7 +303,7 @@ export function ExecutionResults({ results }: ExecutionResultsProps) {
                                             ) : (
                                                 <IoChevronDown className="text-yellow-400 text-sm" />
                                             )}
-                                        </button>
+                                        </Button>
                                         {sections.validation && (
                                             <div className="p-3 bg-gray-50">
                                                 {result.validation.errors.length > 0 && (

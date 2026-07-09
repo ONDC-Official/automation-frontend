@@ -1,7 +1,7 @@
 import {
     NavigationMenu,
     NavigationMenuList,
-} from "@/components/Shadcn/NavigationMenu/navigation-menu";
+} from "@components/Shadcn/NavigationMenu/navigation-menu";
 import { navLinks } from "@components/Header/constants";
 import { NavigationMenuNavItem } from "@components/Header/NavigationMenuNavItem";
 import { trackEvent } from "@utils/analytics";

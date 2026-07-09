@@ -5,7 +5,7 @@ import {
     ComboboxInput,
     ComboboxItem,
     ComboboxList,
-} from "@/components/Shadcn/ComboBox/combobox";
+} from "@components/Shadcn/ComboBox/combobox";
 import { cn } from "@/lib/utils";
 import type { IHistorySubscriberComboBoxProps } from "@pages/user-profile/types";
 
@@ -42,7 +42,11 @@ export const HistorySubscriberComboBox = ({
             <ComboboxEmpty>No subscribers found.</ComboboxEmpty>
             <ComboboxList>
                 {(item) => (
-                    <ComboboxItem key={item} value={item} className="text-body-2 text-text-primary truncate">
+                    <ComboboxItem
+                        key={item}
+                        value={item}
+                        className="text-body-2 text-text-primary truncate"
+                    >
                         {item}
                     </ComboboxItem>
                 )}

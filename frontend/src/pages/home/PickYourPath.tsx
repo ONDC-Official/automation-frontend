@@ -6,10 +6,10 @@ import {
     CardFooter,
     CardHeader,
     CardTitle,
-} from "@/components/Shadcn/Card/card";
-import SectionLabel from "@/components/SectionLabel";
-import { pathCards } from "@/pages/home/constants";
-import PathCardLinks from "@/pages/home/PathCardLinks";
+} from "@components/Shadcn/Card/card";
+import SectionLabel from "@components/SectionLabel";
+import { pathCards } from "@pages/home/constants";
+import PathCardLinks from "@pages/home/PathCardLinks";
 
 const PickYourPath: FC = () => (
     <section className="bg-n-0 dark:bg-surface-page py-16 lg:py-20">

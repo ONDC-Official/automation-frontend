@@ -1,14 +1,14 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { Button } from "@/components/Shadcn/Button/button";
+import { Button } from "@components/Shadcn/Button";
 import {
     Dialog,
     DialogContent,
     DialogDescription,
     DialogHeader,
     DialogTitle,
-} from "@/components/Shadcn/Dialog";
-import { isFormFlowPortaledOverlay } from "@/components/Shadcn/Dialog/form-flow-dialog-utils";
+} from "@components/Shadcn/Dialog";
+import { isFormFlowPortaledOverlay } from "@components/Shadcn/Dialog/form-flow-dialog-utils";
 import { useSession } from "@hooks/useSession";
 import { cn } from "@/lib/utils";
 import { ArrowsPointingOutIcon, MinusIcon, XMarkIcon } from "@heroicons/react/24/outline";

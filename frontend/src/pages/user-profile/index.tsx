@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
-import Spinner from "@/components/Shadcn/Spinner";
+import Spinner from "@components/Shadcn/Spinner";
 import { useAuth } from "@hooks/useAuth";
 import { useAppDispatch } from "@store/hooks";
 import { resetActivityHistoryCount } from "@store/slices/profileShellSlice";

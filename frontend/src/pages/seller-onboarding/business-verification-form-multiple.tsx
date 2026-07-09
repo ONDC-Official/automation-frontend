@@ -11,15 +11,16 @@ import {
 import { toast } from "sonner";
 import { FaPlus, FaTrash, FaStore, FaClock } from "react-icons/fa";
 
-import { Input } from "@/components/Shadcn/TextField/input";
-import { Textarea } from "@/components/Shadcn/ComboBox/textarea";
-import { SelectControl } from "@/components/Shadcn/Select";
-import { ComboBoxMultiControl } from "@/components/Shadcn/ComboBox";
-import { DatePicker } from "@/components/Shadcn/DatePicker";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/Shadcn/Tabs";
+import { Input } from "@components/Shadcn/Input";
+import { Button } from "@components/Shadcn/Button";
+import Spinner from "@components/Shadcn/Spinner";
+import { Textarea } from "@/components/Shadcn/TextArea/text-area";
+import { SelectControl } from "@components/Shadcn/Select";
+import { ComboBoxMultiControl } from "@components/Shadcn/ComboBox";
+import { DatePicker } from "@components/Shadcn/DatePicker";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@components/Shadcn/Tabs";
 
-import TimeInput from "@components/ui/forms/time-input";
-import LoadingButton from "@components/ui/forms/loading-button";
+import TimeInput from "@components/Forms/time-input";
 import { SellerOnboardingData, StoreDetails } from "@pages/seller-onboarding";
 import {
     indianStates,
@@ -141,14 +142,15 @@ const StoreTimingsSection = ({ storeIndex, control, watch }: StoreTimingsSection
                         </h5>
                         <div className="flex gap-2">
                             {fields.length > 1 && (
-                                <button
+                                <Button
                                     type="button"
+                                    variant="ghost"
                                     onClick={() => removeTiming(timingIndex)}
-                                    className="text-red-500 hover:text-red-700 p-1"
+                                    className="h-auto text-red-500 hover:text-red-700 p-1"
                                     title="Remove timing"
                                 >
                                     <FaTrash className="text-sm" />
-                                </button>
+                                </Button>
                             )}
                         </div>
                     </div>
@@ -323,13 +325,14 @@ const StoreTimingsSection = ({ storeIndex, control, watch }: StoreTimingsSection
                 </div>
             ))}
 
-            <button
+            <Button
                 type="button"
+                variant="ghost"
                 onClick={addTiming}
-                className="flex items-center gap-2 px-4 py-2 border border-sky-600 text-sky-600 rounded-md hover:bg-sky-50 transition-colors"
+                className="gap-2 px-4 py-2 border border-sky-600 text-sky-600 rounded-md hover:bg-sky-50 transition-colors"
             >
                 <FaPlus className="text-sm" /> Add Another Timing Configuration
-            </button>
+            </Button>
 
             <div className="bg-blue-50 p-3 rounded-lg">
                 <p className="text-xs text-blue-800">
@@ -961,15 +964,16 @@ const BusinessVerificationForm = ({
                                                                 className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full"
                                                             >
                                                                 {date}
-                                                                <button
+                                                                <Button
                                                                     type="button"
+                                                                    variant="ghost"
                                                                     onClick={() =>
                                                                         handleDateRemove(date)
                                                                     }
-                                                                    className="text-blue-600 hover:text-blue-800 ml-1"
+                                                                    className="h-auto p-0 text-blue-600 hover:text-blue-800 ml-1"
                                                                 >
                                                                     ×
-                                                                </button>
+                                                                </Button>
                                                             </span>
                                                         ))}
                                                     </div>
@@ -1167,13 +1171,14 @@ const BusinessVerificationForm = ({
                     <FaStore className="text-sky-600" />
                     Store Details
                 </h2>
-                <button
+                <Button
                     type="button"
+                    variant="ghost"
                     onClick={addStore}
-                    className="flex items-center gap-2 px-4 py-2 bg-sky-600 text-white rounded-md hover:bg-sky-700 transition-colors"
+                    className="gap-2 px-4 py-2 bg-sky-600 text-white rounded-md hover:bg-sky-700 transition-colors"
                 >
                     <FaPlus /> Add Store
-                </button>
+                </Button>
             </div>
 
             <Tabs value={activeTabKey} onValueChange={setActiveTabKey} className="mb-6">
@@ -1184,17 +1189,18 @@ const BusinessVerificationForm = ({
                                 <FaStore className="text-sky-600" />
                                 <span>Store {index + 1}</span>
                                 {fields.length > 1 && (
-                                    <button
+                                    <Button
                                         type="button"
+                                        variant="ghost"
                                         onClick={(event) => {
                                             event.stopPropagation();
                                             removeStore(index);
                                         }}
-                                        className="ml-2 text-red-500 hover:text-red-700 p-1 rounded hover:bg-red-50"
+                                        className="h-auto ml-2 text-red-500 hover:text-red-700 p-1 rounded hover:bg-red-50"
                                         title="Remove Store"
                                     >
                                         <FaTrash className="text-xs" />
-                                    </button>
+                                    </Button>
                                 )}
                             </span>
                         </TabsTrigger>
@@ -1227,26 +1233,28 @@ const BusinessVerificationForm = ({
       )} */}
 
             <div className="flex justify-between pt-6 border-t">
-                <button
+                <Button
                     type="button"
+                    variant="ghost"
                     onClick={onPrevious}
                     className="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
                     disabled={isSubmitting}
                 >
                     Previous
-                </button>
+                </Button>
 
-                <LoadingButton
-                    buttonText={
-                        isFinalStep
-                            ? isSubmitting
-                                ? "Submitting..."
-                                : "Submit Application"
-                            : "Next Step"
-                    }
-                    type="submit"
-                    isLoading={isSubmitting}
-                />
+                <Button type="submit" isLoading={isSubmitting}>
+                    {isSubmitting ? (
+                        <>
+                            <Spinner className="size-4" />
+                            Loading...
+                        </>
+                    ) : isFinalStep ? (
+                        "Submit Application"
+                    ) : (
+                        "Next Step"
+                    )}
+                </Button>
             </div>
         </form>
     );
@@ -1286,13 +1294,14 @@ const ServiceabilitySection = ({
         <div className="space-y-4">
             <div className="flex items-center justify-between">
                 <h4 className="text-md font-semibold text-gray-600">Serviceability Details</h4>
-                <button
+                <Button
                     type="button"
+                    variant="ghost"
                     onClick={addServiceability}
-                    className="flex items-center gap-2 px-3 py-1 bg-sky-600 text-white rounded-md hover:bg-sky-700 transition-colors text-sm"
+                    className="gap-2 px-3 py-1 bg-sky-600 text-white rounded-md hover:bg-sky-700 transition-colors text-sm"
                 >
                     <FaPlus /> Add Serviceability
-                </button>
+                </Button>
             </div>
 
             {fields.map((field, serviceIndex) => {
@@ -1308,13 +1317,14 @@ const ServiceabilitySection = ({
                                 Serviceability {serviceIndex + 1}
                             </h5>
                             {fields.length > 1 && (
-                                <button
+                                <Button
                                     type="button"
+                                    variant="ghost"
                                     onClick={() => remove(serviceIndex)}
-                                    className="text-red-600 hover:bg-red-50 p-1 rounded transition-colors"
+                                    className="h-auto text-red-600 hover:bg-red-50 p-1 rounded transition-colors"
                                 >
                                     <FaTrash />
-                                </button>
+                                </Button>
                             )}
                         </div>
 

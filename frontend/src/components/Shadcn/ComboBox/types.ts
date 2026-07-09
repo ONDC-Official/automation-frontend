@@ -1,6 +1,6 @@
 import { Control, FieldPath, FieldValues } from "react-hook-form";
 
-import type { ComboBoxOptionInput } from "@/components/Shadcn/ComboBox/combo-box-options";
+import type { ComboBoxOptionInput } from "@components/Shadcn/ComboBox/combo-box-options";
 
 export interface IComboBoxProps<T extends FieldValues> {
     control?: Control<T>;

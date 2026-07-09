@@ -1,14 +1,14 @@
 import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { ArrowLeftIcon } from "@heroicons/react/24/outline";
 
-import { ComboBoxControl } from "@/components/Shadcn/ComboBox";
-import { Button } from "@/components/Shadcn/Button/button";
-import { Input } from "@/components/Shadcn/TextField/input";
-import { Field, FieldLabel } from "@/components/Shadcn/TextField/field";
-import PayloadEditor from "@/components/PayloadEditor/PastePayloadModal";
-import FormDialogShell from "@/components/ui/forms/form-dialog-shell";
-import { PastePayloadButton } from "@/components/ui/forms/paste-payload-button";
+import { ComboBoxControl } from "@components/Shadcn/ComboBox";
+import { Button } from "@components/Shadcn/Button";
+import { Input } from "@components/Shadcn/Input";
+import { Field, FieldLabel } from "@components/Shadcn/TextField/field";
+import PayloadEditor from "@components/PayloadEditor/PastePayloadModal";
+import FormDialogShell from "@components/Forms/form-dialog-shell";
+import { PastePayloadButton } from "@components/Forms/paste-payload-button";
 import { toast } from "sonner";
 import type {
     IFis13ManualBapInput,
@@ -77,7 +77,7 @@ export const Fis13InsuranceSearchForm = ({
     const [manualPolicyId, setManualPolicyId] = useState("");
     const [manualItemId, setManualItemId] = useState("");
 
-    const { register, handleSubmit } = useForm();
+    const { register, handleSubmit, control } = useForm();
 
     const selectedProvider = allProviders.find((provider) => provider.id === selectedProviderId);
     const availableItems = selectedProvider?.items ?? [];
@@ -222,17 +222,19 @@ export const Fis13InsuranceSearchForm = ({
                 <Field key={input.code}>
                     <FieldLabel className="font-semibold">{input.label}</FieldLabel>
                     {input.type === "select" ? (
-                        <select
-                            {...register(`manual_${input.code}`)}
-                            className="h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm"
-                        >
-                            <option value="">Select...</option>
-                            {GENDER_OPTIONS.map((option) => (
-                                <option key={option.value} value={option.value}>
-                                    {option.label}
-                                </option>
-                            ))}
-                        </select>
+                        <Controller
+                            name={`manual_${input.code}`}
+                            control={control}
+                            defaultValue=""
+                            render={({ field }) => (
+                                <ComboBoxControl
+                                    value={field.value}
+                                    onValueChange={field.onChange}
+                                    options={GENDER_OPTIONS}
+                                    placeholder="Select..."
+                                />
+                            )}
+                        />
                     ) : (
                         <Input type={input.type} {...register(`manual_${input.code}`)} />
                     )}

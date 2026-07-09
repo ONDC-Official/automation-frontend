@@ -1,8 +1,8 @@
-import { Button } from "@/components/Shadcn/Button/button";
-import { ComboBoxControl } from "@/components/Shadcn/ComboBox";
-import { FieldGroup } from "@/components/Shadcn/TextField/field";
-import { SessionFormActions } from "@/pages/scenario/SessionFormActions";
-import { ISavedConfigPanelProps } from "@/pages/scenario/types";
+import { Button } from "@components/Shadcn/Button";
+import { ComboBoxControl } from "@components/Shadcn/ComboBox";
+import { FieldGroup } from "@components/Shadcn/TextField/field";
+import { SessionFormActions } from "@pages/scenario/SessionFormActions";
+import { ISavedConfigPanelProps } from "@pages/scenario/types";
 
 export const SavedConfigPanel = ({
     savedConfigKeys,

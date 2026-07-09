@@ -1,15 +1,15 @@
-import { Button } from "@/components/Shadcn/Button/button";
+import { Button } from "@components/Shadcn/Button";
 import {
     Drawer,
     DrawerContent,
     DrawerTitle,
     DrawerTrigger,
-} from "@/components/Shadcn/Drawer/drawer";
+} from "@components/Shadcn/Drawer/drawer";
 import { Logo } from "@components/Header/Logo";
-import { NavigationMenuSection } from "@/components/Header/NavigationMenuSection";
+import { NavigationMenuSection } from "@components/Header/NavigationMenuSection";
 import { ThemeToggle } from "@components/Header/ThemeToggle";
 import { UserProfileSection } from "@components/Header/UserProfileSection";
-import { mobileDrawerNavClassName } from "@/components/Header/constants";
+import { mobileDrawerNavClassName } from "@components/Header/constants";
 import { Bars3Icon } from "@heroicons/react/20/solid";
 
 const env = import.meta.env.VITE_ENVIRONMENT;

@@ -1,4 +1,5 @@
 import React from "react";
+import { Button } from "@/components/Shadcn/Button";
 
 interface SessionCardProps {
     sessionId: string;
@@ -49,21 +50,23 @@ const SessionCard: React.FC<SessionCardProps> = ({
                         <span className="text-xs bg-green-500/30 text-green-300 border border-green-400/30 px-3 py-1 rounded-full font-medium">
                             {status}
                         </span>
-                        <button
+                        <Button
                             type="button"
+                            variant="ghost"
                             onClick={onNewSession}
                             className="px-3 py-1.5 text-xs font-medium text-white border border-white/30 rounded-lg hover:bg-white/10 transition-colors"
                         >
                             New Session
-                        </button>
-                        <button
+                        </Button>
+                        <Button
                             type="button"
+                            variant="ghost"
                             onClick={onDelete}
                             disabled={isDeleting}
                             className="px-3 py-1.5 text-xs font-medium text-red-300 border border-red-400/30 rounded-lg hover:bg-red-500/10 transition-colors disabled:opacity-50"
                         >
                             {isDeleting ? "Deleting..." : "Delete"}
-                        </button>
+                        </Button>
                     </div>
                 </div>
             </div>

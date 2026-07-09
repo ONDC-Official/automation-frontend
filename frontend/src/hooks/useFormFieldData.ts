@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
-import { IDomain } from "@/pages/schema-validation/types";
-import { IDomainVersion } from "@/pages/schema-validation/types";
+import { IDomain } from "@pages/schema-validation/types";
+import { IDomainVersion } from "@pages/schema-validation/types";
 import { useGetScenarioFormDataQuery } from "@store/api";
 
 export type IDomainVersionWithUsecase = IDomainVersion & {

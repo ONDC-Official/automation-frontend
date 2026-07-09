@@ -1,7 +1,7 @@
 import { type FC } from "react";
 import { CodeBracketIcon, ListBulletIcon } from "@heroicons/react/24/outline";
 import type { SchemaView } from "./types";
-import { Button } from "@/components/Shadcn/Button";
+import { Button } from "@components/Shadcn/Button";
 import { cn } from "@/lib/utils";
 
 interface SchemaViewToggleProps {

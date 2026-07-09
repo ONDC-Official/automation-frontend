@@ -1,11 +1,10 @@
 import { useMemo } from "react";
-import { XMarkIcon } from "@heroicons/react/24/outline";
-
-import { Badge } from "@/components/Shadcn/Badge/badge";
+import { Badge } from "@components/Shadcn/Badge/badge";
+import { Button } from "@components/Shadcn/Button";
 import {
     ComboBoxOptionInput,
     normalizeComboBoxOptions,
-} from "@/components/Shadcn/ComboBox/combo-box-options";
+} from "@components/Shadcn/ComboBox/combo-box-options";
 import {
     Combobox,
     ComboboxContent,
@@ -13,10 +12,10 @@ import {
     ComboboxInput,
     ComboboxItem,
     ComboboxList,
-} from "@/components/Shadcn/ComboBox/combobox";
-import { Field, FieldError, FieldLabel } from "@/components/Shadcn/TextField/field";
+} from "@components/Shadcn/ComboBox/combobox";
+import { Field, FieldError, FieldLabel } from "@components/Shadcn/TextField/field";
 import { cn } from "@/lib/utils";
-
+import { XMarkIcon } from "@heroicons/react/24/outline";
 export interface IComboBoxMultiControlProps {
     value?: string[];
     onValueChange?: (value: string[]) => void;
@@ -67,14 +66,14 @@ export const ComboBoxMultiControl = ({
                         <Badge key={item} variant="secondary" className="gap-1 py-1 pr-1">
                             {getLabel(item)}
                             {!disabled && (
-                                <button
-                                    type="button"
+                                <Button
+                                    variant="ghost"
                                     onClick={() => removeValue(item)}
-                                    className="rounded-full p-0.5 hover:bg-n-30"
+                                    className="rounded-full p-0.5 h-6 w-6 hover:bg-n-30"
                                     aria-label={`Remove ${getLabel(item)}`}
                                 >
                                     <XMarkIcon className="size-3" />
-                                </button>
+                                </Button>
                             )}
                         </Badge>
                     ))}

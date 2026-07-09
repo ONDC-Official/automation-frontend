@@ -1,24 +1,24 @@
 import { useState } from "react";
 import { PlaygroundActionStep } from "@ondc/automation-mock-runner";
 
-import { Button } from "@/components/Shadcn/Button/button";
+import { Button } from "@components/Shadcn/Button";
 import {
     DialogDescription,
     DialogFooter,
     DialogHeader,
     DialogTitle,
-} from "@/components/Shadcn/Dialog";
-import { Textarea } from "@/components/Shadcn/ComboBox/textarea";
-import { Label } from "@/components/Shadcn/Label/label";
-import { TextField } from "@/components/Shadcn/TextField";
-import { cn } from "@/lib/utils";
+} from "@components/Shadcn/Dialog";
+import TextArea from "@/components/Shadcn/TextArea";
+import { ComboBoxControl } from "@components/Shadcn/ComboBox";
+import { Label } from "@components/Shadcn/Label/label";
+import { TextField } from "@components/Shadcn/TextField";
 import { ONDC_ACTION_LIST, ONDC_FORM_LIST } from "@pages/protocol-playground/types";
 import { usePlayground } from "@pages/protocol-playground/hooks/playground-runtime";
 
-const selectClass = cn(
-    "h-9 w-full min-w-0 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs outline-none",
-    "focus-visible:border-ring focus-visible:ring focus-visible:ring-ring/50 dark:bg-input/30"
-);
+// ComboBoxControl treats an empty-string `value` as "no selection" (shows the
+// placeholder), so a distinct sentinel is needed to keep the "None" option
+// visually selectable while `responseFor` itself still stores "" for "none".
+const RESPONSE_FOR_NONE_VALUE = "__none__";
 
 export interface IAddActionFormData {
     stepType: "action" | "form";
@@ -52,49 +52,43 @@ export const AddActionForm = ({ title, onSubmit, onCancel }: IAddActionFormProps
                 {allowForm ? (
                     <div className="space-y-1.5">
                         <Label htmlFor="step-type">Step Type</Label>
-                        <select
+                        <ComboBoxControl
                             id="step-type"
-                            className={selectClass}
                             value={stepType}
-                            onChange={(e) => setStepType(e.target.value as "action" | "form")}
-                        >
-                            <option value="action">API</option>
-                            <option value="form">FORM</option>
-                        </select>
+                            onValueChange={(value) => setStepType(value as "action" | "form")}
+                            options={[
+                                { value: "action", label: "API" },
+                                { value: "form", label: "FORM" },
+                            ]}
+                        />
                     </div>
                 ) : null}
 
                 {stepType === "action" ? (
                     <div className="space-y-1.5">
                         <Label htmlFor="api-name">API</Label>
-                        <select
+                        <ComboBoxControl
                             id="api-name"
-                            className={selectClass}
                             value={api}
-                            onChange={(e) => setApi(e.target.value)}
-                        >
-                            {ONDC_ACTION_LIST.map((action) => (
-                                <option key={action} value={action}>
-                                    {action}
-                                </option>
-                            ))}
-                        </select>
+                            onValueChange={setApi}
+                            options={ONDC_ACTION_LIST.map((action) => ({
+                                value: action,
+                                label: action,
+                            }))}
+                        />
                     </div>
                 ) : (
                     <div className="space-y-1.5">
                         <Label htmlFor="form-name">Form</Label>
-                        <select
+                        <ComboBoxControl
                             id="form-name"
-                            className={selectClass}
                             value={form}
-                            onChange={(e) => setForm(e.target.value)}
-                        >
-                            {ONDC_FORM_LIST.map((formName) => (
-                                <option key={formName} value={formName}>
-                                    {formName}
-                                </option>
-                            ))}
-                        </select>
+                            onValueChange={setForm}
+                            options={ONDC_FORM_LIST.map((formName) => ({
+                                value: formName,
+                                label: formName,
+                            }))}
+                        />
                     </div>
                 )}
 
@@ -191,18 +185,15 @@ export const EditActionForm = ({
             <div className="grid grid-cols-1 gap-4 px-6 py-5 sm:grid-cols-2">
                 <div className="space-y-1.5">
                     <Label htmlFor="edit-api">API Name</Label>
-                    <select
+                    <ComboBoxControl
                         id="edit-api"
-                        className={selectClass}
                         value={api}
-                        onChange={(e) => setApi(e.target.value)}
-                    >
-                        {ONDC_ACTION_LIST.map((action) => (
-                            <option key={action} value={action}>
-                                {action}
-                            </option>
-                        ))}
-                    </select>
+                        onValueChange={setApi}
+                        options={ONDC_ACTION_LIST.map((action) => ({
+                            value: action,
+                            label: action,
+                        }))}
+                    />
                 </div>
 
                 <TextField
@@ -216,50 +207,51 @@ export const EditActionForm = ({
 
                 <div className="space-y-1.5">
                     <Label htmlFor="edit-owner">Owner</Label>
-                    <select
+                    <ComboBoxControl
                         id="edit-owner"
-                        className={selectClass}
                         value={owner}
-                        onChange={(e) => setOwner(e.target.value)}
-                    >
-                        <option value="BAP">BAP</option>
-                        <option value="BPP">BPP</option>
-                    </select>
+                        onValueChange={setOwner}
+                        options={[
+                            { value: "BAP", label: "BAP" },
+                            { value: "BPP", label: "BPP" },
+                        ]}
+                    />
                 </div>
 
                 <div className="space-y-1.5">
                     <Label htmlFor="edit-unsolicited">Unsolicited</Label>
-                    <select
+                    <ComboBoxControl
                         id="edit-unsolicited"
-                        className={selectClass}
                         value={unsolicited}
-                        onChange={(e) => setUnsolicited(e.target.value)}
-                    >
-                        <option value="yes">Yes</option>
-                        <option value="no">No</option>
-                    </select>
+                        onValueChange={setUnsolicited}
+                        options={[
+                            { value: "yes", label: "Yes" },
+                            { value: "no", label: "No" },
+                        ]}
+                    />
                 </div>
 
                 <div className="col-span-full space-y-1.5">
                     <Label htmlFor="edit-response-for">Response For</Label>
-                    <select
+                    <ComboBoxControl
                         id="edit-response-for"
-                        className={selectClass}
-                        value={responseFor}
-                        onChange={(e) => setResponseFor(e.target.value)}
-                    >
-                        <option value="">None</option>
-                        {previousSteps.map((step) => (
-                            <option key={step.action_id} value={step.action_id}>
-                                {step.action_id} ({step.api})
-                            </option>
-                        ))}
-                    </select>
+                        value={responseFor || RESPONSE_FOR_NONE_VALUE}
+                        onValueChange={(value) =>
+                            setResponseFor(value === RESPONSE_FOR_NONE_VALUE ? "" : value)
+                        }
+                        options={[
+                            { value: RESPONSE_FOR_NONE_VALUE, label: "None" },
+                            ...previousSteps.map((step) => ({
+                                value: step.action_id,
+                                label: `${step.action_id} (${step.api})`,
+                            })),
+                        ]}
+                    />
                 </div>
 
                 <div className="col-span-full space-y-1.5">
                     <Label htmlFor="edit-description">Description</Label>
-                    <Textarea
+                    <TextArea
                         id="edit-description"
                         placeholder="Add a description..."
                         rows={3}

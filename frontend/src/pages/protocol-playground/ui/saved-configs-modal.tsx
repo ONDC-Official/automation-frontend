@@ -11,8 +11,8 @@ import {
     TrashIcon,
 } from "@heroicons/react/24/outline";
 
-import { Button } from "@/components/Shadcn/Button/button";
-import { Input } from "@/components/Shadcn/TextField/input";
+import { Button } from "@components/Shadcn/Button";
+import { Input } from "@components/Shadcn/Input";
 import {
     Dialog,
     DialogContent,
@@ -20,8 +20,8 @@ import {
     DialogFooter,
     DialogHeader,
     DialogTitle,
-} from "@/components/Shadcn/Dialog";
-import GitHubIcon from "@/assets/svgs/GitHubIcon";
+} from "@components/Shadcn/Dialog";
+import GitHubIcon from "@assets/svgs/GitHubIcon";
 import { cn } from "@/lib/utils";
 import { usePlayground } from "@pages/protocol-playground/hooks/playground-runtime";
 import { SavedConfigMetadata } from "@pages/protocol-playground/utils/config-storage";
@@ -106,10 +106,11 @@ const VersionFolder = ({
 
     return (
         <div>
-            <button
+            <Button
                 type="button"
+                variant="ghost"
                 onClick={() => onToggle(key)}
-                className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 transition-colors hover:bg-surface-muted"
+                className="h-auto w-full justify-start gap-2 rounded-lg px-2 py-1.5 font-normal transition-colors hover:bg-surface-muted"
             >
                 <div className="flex items-center gap-1.5 text-text-secondary">
                     <span className="h-px w-4 bg-border-default" />
@@ -128,7 +129,7 @@ const VersionFolder = ({
                 <span className="ml-auto text-xs font-normal text-text-secondary">
                     {node.flows.length} flow{node.flows.length !== 1 ? "s" : ""}
                 </span>
-            </button>
+            </Button>
 
             {isOpen && (
                 <div className="mt-0.5 ml-8 space-y-0.5 border-l border-border-default pl-2">
@@ -159,10 +160,11 @@ const DomainFolder = ({
 
     return (
         <div className="overflow-hidden rounded-xl border border-n-30 bg-surface-elevated shadow-sm dark:border-border-default">
-            <button
+            <Button
                 type="button"
+                variant="ghost"
                 onClick={() => onToggleDomain(node.domain)}
-                className="flex w-full items-center gap-3 px-4 py-3 transition-colors hover:bg-surface-muted"
+                className="h-auto w-full justify-start gap-3 rounded-none px-4 py-3 font-normal transition-colors hover:bg-surface-muted"
             >
                 {isOpen ? (
                     <ChevronDownIcon className="size-4 shrink-0 text-text-secondary" />
@@ -183,7 +185,7 @@ const DomainFolder = ({
                         {node.totalConfigs} config{node.totalConfigs !== 1 ? "s" : ""}
                     </span>
                 </div>
-            </button>
+            </Button>
 
             {isOpen && (
                 <div className="space-y-0.5 border-t border-border-default bg-surface-muted/40 px-3 pt-1 pb-3">

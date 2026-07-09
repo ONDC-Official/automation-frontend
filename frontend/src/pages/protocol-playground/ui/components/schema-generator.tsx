@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Editor } from "@monaco-editor/react";
 import { ArrowPathIcon, CodeBracketIcon } from "@heroicons/react/24/outline";
 
-import { Button } from "@/components/Shadcn/Button/button";
+import { Button } from "@components/Shadcn/Button";
 import {
     Dialog,
     DialogContent,
@@ -10,7 +10,7 @@ import {
     DialogFooter,
     DialogHeader,
     DialogTitle,
-} from "@/components/Shadcn/Dialog";
+} from "@components/Shadcn/Dialog";
 import { cn } from "@/lib/utils";
 import { useAppliedTheme } from "@/theme/hooks/useAppliedTheme";
 import { SelectBox } from "@pages/protocol-playground/ui/components/github-select";
@@ -194,19 +194,20 @@ export const SchemaGeneratorModal = ({
                                 </label>
                                 <div className="flex items-center rounded-lg border border-border-default bg-surface-muted p-0.5">
                                     {(["yaml", "json"] as const).map((fmt) => (
-                                        <button
+                                        <Button
                                             type="button"
+                                            variant="ghost"
                                             key={fmt}
                                             onClick={() => setOutputFormat(fmt)}
                                             className={cn(
-                                                "rounded-md px-3 py-1 text-xs font-medium uppercase transition-colors",
+                                                "h-auto rounded-md px-3 py-1 text-xs font-medium uppercase transition-colors",
                                                 outputFormat === fmt
                                                     ? "bg-surface-elevated text-brand-normal shadow-xs"
                                                     : "text-text-secondary hover:text-text-primary"
                                             )}
                                         >
                                             {fmt}
-                                        </button>
+                                        </Button>
                                     ))}
                                 </div>
                             </div>

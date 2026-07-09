@@ -1,5 +1,5 @@
 import { type FC } from "react";
-import AppJsonViewer from "@/components/AppJsonViewer";
+import AppJsonViewer from "@components/AppJsonViewer";
 
 function tryParseJson(str: string | undefined): object | null {
     if (!str) return null;

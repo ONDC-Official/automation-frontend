@@ -2,9 +2,9 @@ import type { FieldPath, FieldValues, RegisterOptions } from "react-hook-form";
 import { Controller } from "react-hook-form";
 
 import { cn } from "@/lib/utils";
+import { Input } from "@components/Shadcn/Input";
 
 import { Field, FieldDescription, FieldError, FieldLabel } from "./field";
-import { Input } from "./input";
 import type { ITextFieldProps } from "./types";
 
 const buildValidationRules = <T extends FieldValues>(
@@ -140,7 +140,8 @@ export const TextField = <T extends FieldValues = FieldValues>({
     );
 };
 
-export { TextAreaField } from "./text-area-field";
+export default TextField;
+
+export { TextAreaField } from "@/components/Shadcn/TextArea";
 export { LabelToolTip, LabelWithToolTip, type ILabelWithToolTipProps } from "./label-with-tooltip";
 export type { ITextFieldProps, ITextAreaFieldProps } from "./types";
-export default TextField;

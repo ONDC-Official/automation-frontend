@@ -7,6 +7,7 @@ import {
 import type { ValidationTableAction, ValidationTableRow } from "./types";
 import GuideTable, { type GuideTableColumn } from "./shared/components/GuideTable";
 import { emptyCell, isEmptyCell } from "./shared/components/tableCells";
+import { Button } from "@/components/Shadcn/Button";
 
 // Re-export for backward compat
 export type ValidationTable = ValidationTableAction;
@@ -143,10 +144,11 @@ const ValidationsTable: FC<ValidationsTableProps> = ({ validations }) => {
                         {visibleRows.length} of {validations.numLeafTests} leaf tests visible
                     </span>
                     <div className="flex gap-1.5">
-                        <button
+                        <Button
                             type="button"
+                            variant="ghost"
                             onClick={toggleGlobal}
-                            className="flex items-center gap-1 px-2 py-0.5 text-[11px] text-sky-600 dark:text-sky-300 hover:text-sky-800 dark:hover:text-sky-200 bg-white dark:bg-surface-elevated hover:bg-sky-100 dark:hover:bg-sky-500/20 rounded border border-sky-200/60 dark:border-sky-500/30 transition-colors"
+                            className="h-auto gap-1 px-2 py-0.5 text-[11px] text-sky-600 dark:text-sky-300 hover:text-sky-800 dark:hover:text-sky-200 bg-white dark:bg-surface-elevated hover:bg-sky-100 dark:hover:bg-sky-500/20 rounded border border-sky-200/60 dark:border-sky-500/30 transition-colors"
                         >
                             {globalExpanded ? (
                                 <ChevronDoubleUpIcon className="w-3 h-3" />
@@ -154,15 +156,16 @@ const ValidationsTable: FC<ValidationsTableProps> = ({ validations }) => {
                                 <ChevronDoubleDownIcon className="w-3 h-3" />
                             )}
                             {globalExpanded ? "Collapse all" : "Expand all"}
-                        </button>
-                        <button
+                        </Button>
+                        <Button
                             type="button"
+                            variant="ghost"
                             onClick={exportAll}
-                            className="flex items-center gap-1 px-2 py-0.5 text-[11px] text-white bg-sky-500 hover:bg-sky-600 rounded border border-sky-500 transition-colors"
+                            className="h-auto gap-1 px-2 py-0.5 text-[11px] text-white bg-sky-500 hover:bg-sky-600 rounded border border-sky-500 transition-colors"
                         >
                             <ArrowDownTrayIcon className="w-3 h-3" />
                             Export All
-                        </button>
+                        </Button>
                     </div>
                 </div>
             }

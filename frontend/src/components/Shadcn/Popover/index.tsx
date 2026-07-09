@@ -1,7 +1,7 @@
 import * as React from "react";
 import { Popover as PopoverPrimitive } from "radix-ui";
 
-import { FORM_FLOW_FLOATING_Z_INDEX } from "@/components/Shadcn/Dialog/form-flow-dialog-utils";
+import { FORM_FLOW_FLOATING_Z_INDEX } from "@components/Shadcn/Dialog/form-flow-dialog-utils";
 import { cn } from "@/lib/utils";
 
 const Popover = ({ ...props }: React.ComponentProps<typeof PopoverPrimitive.Root>) => (

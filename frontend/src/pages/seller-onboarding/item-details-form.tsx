@@ -1,63 +1,50 @@
 import React, { useState, useEffect } from "react";
 import { useForm, useFieldArray, Controller, Path } from "react-hook-form";
-import { ItemDetails, SellerOnboardingData } from "@pages/seller-onboarding";
 import { toast } from "sonner";
 import { FaPlus, FaTrash, FaBox, FaEdit } from "react-icons/fa";
-import { SelectControl } from "@/components/Shadcn/Select";
-import { ComboBoxMultiControl, ComboBoxControl } from "@/components/Shadcn/ComboBox";
-import { Input } from "@/components/Shadcn/TextField/input";
-import { Textarea } from "@/components/Shadcn/ComboBox/textarea";
-import { Checkbox } from "@/components/Shadcn/Checkbox";
+import { SelectControl } from "@components/Shadcn/Select";
+import { ComboBoxMultiControl, ComboBoxControl } from "@components/Shadcn/ComboBox";
+import { Input } from "@components/Shadcn/Input";
+import { Textarea } from "@/components/Shadcn/TextArea/text-area";
+import { Checkbox } from "@components/Shadcn/Checkbox";
 import {
     Dialog,
     DialogContent,
     DialogFooter,
     DialogHeader,
     DialogTitle,
-} from "@/components/Shadcn/Dialog";
-import { Button } from "@/components/Shadcn/Button";
-import TagsInput from "@components/ui/forms/tags-input";
-import LoadingButton from "@components/ui/forms/loading-button";
-import MultiImageUpload from "@components/ui/forms/multi-image-upload";
-import SingleImageUpload from "@components/ui/forms/single-image-upload";
+} from "@components/Shadcn/Dialog";
+import { Button } from "@components/Shadcn/Button";
+import Spinner from "@components/Shadcn/Spinner";
+import TagsInput from "@components/Forms/tags-input";
+import MultiImageUpload from "@components/Forms/multi-image-upload";
+import SingleImageUpload from "@components/Forms/single-image-upload";
 import { useFormImageState } from "@hooks/useImageUpload";
-import { categoryProtocolMappings, countries } from "@constants/common";
-import { fashion } from "@constants/fashion";
-import { BPCJSON } from "@constants/bcp";
-import { electronicsData } from "@constants/electronics";
-import { health } from "@constants/health";
-import { homeJSON } from "@constants/home";
-import { applianceData } from "@constants/appliances";
-import { getFnBAttributes } from "@constants/fnb";
-import { domainCategories } from "@constants/categories";
-import { LabelWithToolTip } from "@/components/Shadcn/TextField";
-
-const YES_NO_OPTIONS = [
-    { key: "Yes", value: "yes" },
-    { key: "No", value: "no" },
-];
-
-interface ItemDetailsFormProps {
-    initialData: SellerOnboardingData;
-    onNext: (data: Partial<SellerOnboardingData>) => void;
-    onPrevious: () => void;
-}
-
-interface FormData {
-    items: ItemDetails[];
-}
-
-interface ItemVariant extends ItemDetails {
-    variantOf: number;
-    variantId: string;
-    variantCombination: { [attribute: string]: string };
-    isVariant: true;
-}
-
-interface AttributeConfig {
-    mandatory: boolean;
-    value: string[] | string;
-}
+import { countries } from "@constants/common";
+import { LabelWithToolTip } from "@components/Shadcn/TextField/label-with-tooltip";
+import type {
+    AttributeConfig,
+    FormData,
+    ItemDetailsFormProps,
+    ItemVariant,
+} from "@pages/seller-onboarding/item-details-form/types";
+import {
+    ATTRIBUTE_MIGRATION_KEYS,
+    YES_NO_OPTIONS,
+    createEmptyAttributes,
+} from "@pages/seller-onboarding/item-details-form/constants";
+import {
+    generateVariantCombinations,
+    parseDuration,
+} from "@pages/seller-onboarding/item-details-form/variant-utils";
+import {
+    getAttributePlaceholder,
+    getAttributePredefinedValues,
+    getCategoriesByDomain,
+    getMandatoryAttributes,
+    getOptionalAttributes,
+    getProtocolKeysByCategory,
+} from "@pages/seller-onboarding/item-details-form/attribute-config";
 
 const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, onPrevious }) => {
     // const [selectedSubCategory, setSelectedSubCategory] = useState("");
@@ -107,27 +94,6 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
     const variantImages = useFormImageState<{ [key: string]: string[] }>({});
     const variantSymbolImages = useFormImageState<{ [key: string]: string }>({});
 
-    const parseDuration = (duration: string) => {
-        if (!duration) return { unit: "hour", value: "1" };
-
-        const dayMatch = duration.match(/^P(\d+)D$/);
-        if (dayMatch) {
-            return { unit: "day", value: dayMatch[1] };
-        }
-
-        const hourMatch = duration.match(/^PT(\d+)H$/);
-        if (hourMatch) {
-            return { unit: "hour", value: hourMatch[1] };
-        }
-
-        const minuteMatch = duration.match(/^PT(\d+)M$/);
-        if (minuteMatch) {
-            return { unit: "minute", value: minuteMatch[1] };
-        }
-
-        return { unit: "hour", value: "1" };
-    };
-
     const processInitialItems = () => {
         return (
             initialData.items?.map((item) => {
@@ -139,62 +105,7 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                 }
 
                 // Migrate any existing attributes from root level to attributes object
-                const attributeKeys = [
-                    "gender",
-                    "colour",
-                    "size",
-                    "size_chart",
-                    "fabric",
-                    "colour_name",
-                    "pattern",
-                    "material",
-                    "season",
-                    "occasion",
-                    "sleeve_length",
-                    "collar",
-                    "fit",
-                    "neck",
-                    "hemline",
-                    "coverage",
-                    "padding",
-                    "closure_type",
-                    "fasten_type",
-                    "water_resistant",
-                    "sport_type",
-                    "material_finish",
-                    "fabric_finish",
-                    "concern",
-                    "ingredient",
-                    "conscious",
-                    "preference",
-                    "formulation",
-                    "skin_type",
-                    "manufacturer",
-                    "manufacturer_address",
-                    "net_quantity",
-                    "expiry_date",
-                    "ingredients",
-                    "model",
-                    "warranty_period",
-                    "screen_size",
-                    "storage",
-                    "ram",
-                    "dimensions",
-                    "weight",
-                    "dosage_form",
-                    "prescription_required",
-                    "composition",
-                    "side_effects",
-                    "cuisine",
-                    "course",
-                    "allergen_info",
-                    "serving_size",
-                    "power_consumption",
-                    "capacity",
-                    "energy_rating",
-                ];
-
-                attributeKeys.forEach((key) => {
+                ATTRIBUTE_MIGRATION_KEYS.forEach((key) => {
                     if (processedItem[key] !== undefined && processedItem.attributes) {
                         processedItem.attributes[key] = processedItem[key];
                         delete processedItem[key]; // Remove from root level
@@ -296,64 +207,7 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                     importer_address: "",
                     importer_fssai_license_no: "",
                     // All dynamic attributes in a nested object
-                    attributes: {
-                        // Dynamic attributes will be added based on category selection
-                        gender: "",
-                        colour: "",
-                        size: "",
-                        size_chart: "",
-                        fabric: "",
-                        colour_name: "",
-                        // Additional common fashion attributes
-                        pattern: "",
-                        material: "",
-                        season: "",
-                        occasion: "",
-                        sleeve_length: "",
-                        collar: "",
-                        fit: "",
-                        neck: "",
-                        hemline: "",
-                        coverage: "",
-                        padding: "",
-                        closure_type: "",
-                        fasten_type: "",
-                        water_resistant: "",
-                        sport_type: "",
-                        material_finish: "",
-                        fabric_finish: "",
-                        // BPC attributes
-                        concern: "",
-                        ingredient: "",
-                        conscious: "",
-                        preference: "",
-                        formulation: "",
-                        skin_type: "",
-                        // Other domain attributes
-                        manufacturer: "",
-                        manufacturer_address: "",
-                        net_quantity: "",
-                        expiry_date: "",
-                        ingredients: "",
-                        model: "",
-                        warranty_period: "",
-                        screen_size: "",
-                        storage: "",
-                        ram: "",
-                        dimensions: "",
-                        weight: "",
-                        dosage_form: "",
-                        prescription_required: "",
-                        composition: "",
-                        side_effects: "",
-                        cuisine: "",
-                        course: "",
-                        allergen_info: "",
-                        serving_size: "",
-                        power_consumption: "",
-                        capacity: "",
-                        energy_rating: "",
-                    },
+                    attributes: createEmptyAttributes(),
                 },
             ]
         );
@@ -501,64 +355,7 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
             importer_address: "",
             importer_fssai_license_no: "",
             // All dynamic attributes in a nested object
-            attributes: {
-                // Dynamic attributes will be added based on category selection
-                gender: "",
-                colour: "",
-                size: "",
-                size_chart: "",
-                fabric: "",
-                colour_name: "",
-                // Additional common fashion attributes
-                pattern: "",
-                material: "",
-                season: "",
-                occasion: "",
-                sleeve_length: "",
-                collar: "",
-                fit: "",
-                neck: "",
-                hemline: "",
-                coverage: "",
-                padding: "",
-                closure_type: "",
-                fasten_type: "",
-                water_resistant: "",
-                sport_type: "",
-                material_finish: "",
-                fabric_finish: "",
-                // BPC attributes
-                concern: "",
-                ingredient: "",
-                conscious: "",
-                preference: "",
-                formulation: "",
-                skin_type: "",
-                // Other domain attributes
-                manufacturer: "",
-                manufacturer_address: "",
-                net_quantity: "",
-                expiry_date: "",
-                ingredients: "",
-                model: "",
-                warranty_period: "",
-                screen_size: "",
-                storage: "",
-                ram: "",
-                dimensions: "",
-                weight: "",
-                dosage_form: "",
-                prescription_required: "",
-                composition: "",
-                side_effects: "",
-                cuisine: "",
-                course: "",
-                allergen_info: "",
-                serving_size: "",
-                power_consumption: "",
-                capacity: "",
-                energy_rating: "",
-            },
+            attributes: createEmptyAttributes(),
         });
     };
 
@@ -601,43 +398,6 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
         return availableAttrs;
     };
 
-    const getAttributePredefinedValues = (
-        domain: string,
-        category: string,
-        attributeName: string
-    ): string[] => {
-        try {
-            const categoryConfig = getCategoryConfig(domain, category);
-            if (!categoryConfig || typeof categoryConfig !== "object") {
-                return [];
-            }
-
-            const attributeConfig = categoryConfig[attributeName as keyof typeof categoryConfig];
-            if (!attributeConfig || typeof attributeConfig !== "object") {
-                return [];
-            }
-
-            // Type guard to check if attributeConfig has a 'value' property
-            const config = attributeConfig as {
-                value?: unknown;
-                mandatory?: boolean;
-            };
-
-            if (Array.isArray(config.value) && config.value.length > 0) {
-                // Ensure all values are strings
-                return config.value.filter((val) => typeof val === "string") as string[];
-            }
-
-            return [];
-        } catch (error) {
-            console.warn(
-                `Error getting predefined values for ${domain}/${category}/${attributeName}:`,
-                error
-            );
-            return [];
-        }
-    };
-
     const handleCreateVariants = (itemIndex: number) => {
         const item = watchItems[itemIndex];
         const selectedAttrs = selectedVariantAttributes[itemIndex] || [];
@@ -668,32 +428,7 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
         }
 
         // Generate all combinations of variant values
-        const generateCombinations = (
-            attrs: string[],
-            index: number = 0
-        ): Record<string, string>[] => {
-            if (index >= attrs.length) {
-                return [{}];
-            }
-
-            const attr = attrs[index];
-            const attrValues = values[attr] || [];
-            const remainingCombinations = generateCombinations(attrs, index + 1);
-
-            const combinations: Record<string, string>[] = [];
-            for (const value of attrValues) {
-                for (const combo of remainingCombinations) {
-                    combinations.push({
-                        ...combo,
-                        [attr]: value,
-                    });
-                }
-            }
-
-            return combinations;
-        };
-
-        const combinations = generateCombinations(selectedAttrs);
+        const combinations = generateVariantCombinations(selectedAttrs, values);
 
         // Check for duplicate combinations
         const existingVariants = itemVariants[itemIndex] || [];
@@ -990,266 +725,6 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
         }
     };
 
-    function getProtocolKeysByCategory(category: string): string[] {
-        const mapping = categoryProtocolMappings.find(
-            (item) => item.category.toLowerCase() === category.toLowerCase()
-        );
-
-        return mapping?.protocolKeys || [];
-    }
-
-    // Function to get categories based on selected domain
-    function getCategoriesByDomain(domain: string): string[] {
-        const domainConfig = domainCategories.find((item) => item.domain === domain);
-        return domainConfig?.categories || [];
-    }
-    // Function to get category configuration based on domain
-    const getCategoryConfig = (domain: string, subcategory: string) => {
-        // For Fashion domain, use the detailed fashion configuration
-        if (domain === "Fashion" && fashion[subcategory as keyof typeof fashion]) {
-            return fashion[subcategory as keyof typeof fashion];
-        }
-
-        // For BPC domain
-        if (domain === "BPC" && BPCJSON[subcategory as keyof typeof BPCJSON]) {
-            return BPCJSON[subcategory as keyof typeof BPCJSON];
-        }
-
-        // For Electronics domain
-        if (
-            domain === "Electronics" &&
-            electronicsData[subcategory as keyof typeof electronicsData]
-        ) {
-            return electronicsData[subcategory as keyof typeof electronicsData];
-        }
-
-        // For Health & Wellness domain
-        if (domain === "Health & Wellness" && health[subcategory as keyof typeof health]) {
-            return health[subcategory as keyof typeof health];
-        }
-
-        // For Home & Kitchen domain
-        if (domain === "Home & Kitchen" && homeJSON[subcategory as keyof typeof homeJSON]) {
-            return homeJSON[subcategory as keyof typeof homeJSON];
-        }
-
-        // For Appliances domain
-        if (domain === "Appliances" && applianceData[subcategory as keyof typeof applianceData]) {
-            return applianceData[subcategory as keyof typeof applianceData];
-        }
-
-        // For F&B domain
-        if (domain === "F&B") {
-            const fnbConfig = getFnBAttributes(subcategory);
-            return {
-                ...fnbConfig.mandatory,
-                ...fnbConfig.optional,
-            };
-        }
-
-        // Default configuration for other domains
-        return {
-            brand: {
-                mandatory: false,
-                value: [],
-            },
-        };
-    };
-
-    // Function to get mandatory attributes for a subcategory
-    const getMandatoryAttributes = (domain: string, subcategory: string) => {
-        const categoryConfig = getCategoryConfig(domain, subcategory);
-
-        if (!categoryConfig || Object.keys(categoryConfig).length === 0) {
-            return {};
-        }
-
-        const mandatoryOnly = Object.fromEntries(
-            Object.entries(categoryConfig).filter(
-                ([_, config]) => (config as AttributeConfig).mandatory === true
-            )
-        );
-        return mandatoryOnly;
-    };
-
-    // Function to get optional attributes for a subcategory
-    const getOptionalAttributes = (domain: string, subcategory: string) => {
-        const categoryConfig = getCategoryConfig(domain, subcategory);
-        if (!categoryConfig || Object.keys(categoryConfig).length === 0) {
-            return {};
-        }
-
-        const optionalOnly = Object.fromEntries(
-            Object.entries(categoryConfig).filter(
-                ([_, config]) => (config as AttributeConfig).mandatory === false
-            )
-        );
-        return optionalOnly;
-    };
-
-    // Function to get smart placeholder for attributes
-    const getAttributePlaceholder = (attributeName: string): string => {
-        const attrLower = attributeName.toLowerCase();
-
-        // Weight related attributes
-        if (
-            attrLower.includes("weight") ||
-            attrLower === "net_weight" ||
-            attrLower === "gross_weight"
-        ) {
-            return `Enter ${attributeName.replace(/_/g, " ")} in grams (e.g., 500)`;
-        }
-
-        // Dimension related attributes
-        if (
-            attrLower.includes("height") ||
-            attrLower.includes("width") ||
-            attrLower.includes("breadth") ||
-            attrLower.includes("length") ||
-            attrLower.includes("depth") ||
-            attrLower.includes("thickness")
-        ) {
-            return `Enter ${attributeName.replace(/_/g, " ")} in cm (e.g., 25)`;
-        }
-
-        // Size/dimensions combined
-        if (attrLower === "dimensions" || attrLower === "size_dimensions") {
-            return "Enter dimensions in cm (L x W x H, e.g., 30 x 20 x 10)";
-        }
-
-        // Volume/Capacity
-        if (attrLower.includes("capacity") || attrLower.includes("volume")) {
-            return `Enter ${attributeName.replace(/_/g, " ")} in liters or ml (e.g., 1.5L or 500ml)`;
-        }
-
-        // Power/Energy
-        if (attrLower.includes("power") || attrLower.includes("wattage")) {
-            return `Enter ${attributeName.replace(/_/g, " ")} in watts (e.g., 1500)`;
-        }
-
-        // Screen size
-        if (attrLower === "screen_size" || attrLower === "display_size") {
-            return "Enter screen size in inches (e.g., 15.6)";
-        }
-
-        // Storage/Memory
-        if (attrLower === "storage" || attrLower === "memory" || attrLower === "ram") {
-            return `Enter ${attributeName.replace(/_/g, " ")} (e.g., 8GB, 256GB, 1TB)`;
-        }
-
-        // Battery
-        if (attrLower.includes("battery")) {
-            return "Enter battery capacity in mAh (e.g., 5000)";
-        }
-
-        // Price/Cost
-        if (attrLower.includes("price") || attrLower.includes("cost") || attrLower === "mrp") {
-            return `Enter ${attributeName.replace(/_/g, " ")} in INR (e.g., 999)`;
-        }
-
-        // Quantity
-        if (attrLower === "net_quantity" || attrLower === "quantity") {
-            return "Enter quantity with unit (e.g., 500g, 1kg, 2L, 10 pieces)";
-        }
-
-        // Warranty
-        if (attrLower.includes("warranty")) {
-            return "Enter warranty period (e.g., 1 year, 6 months)";
-        }
-
-        // Expiry/Shelf life
-        if (attrLower.includes("expiry") || attrLower.includes("shelf_life")) {
-            return "Enter date in DD/MM/YYYY format or duration (e.g., 6 months)";
-        }
-
-        // Color specific
-        if (attrLower === "colour" || attrLower === "color") {
-            return "Please add hexadecimal color code (e.g., #FF5733)";
-        }
-
-        // Material
-        if (attrLower === "material" || attrLower === "fabric") {
-            return `Enter ${attributeName.replace(/_/g, " ")} (e.g., Cotton, Polyester, Steel)`;
-        }
-
-        // Size (clothing/shoes)
-        if (attrLower === "size" && !attrLower.includes("screen")) {
-            return "Enter size (e.g., S, M, L, XL, 42, 8)";
-        }
-
-        // Model/SKU
-        if (attrLower === "model" || attrLower === "model_number" || attrLower === "sku") {
-            return `Enter ${attributeName.replace(/_/g, " ")} (e.g., ABC-123-XYZ)`;
-        }
-
-        // Ingredients
-        if (attrLower === "ingredients" || attrLower === "composition") {
-            return "Enter ingredients/composition separated by commas";
-        }
-
-        // Nutritional
-        if (
-            attrLower.includes("calories") ||
-            attrLower.includes("protein") ||
-            attrLower.includes("carbs")
-        ) {
-            return `Enter ${attributeName.replace(/_/g, " ")} per 100g/100ml`;
-        }
-
-        // Temperature
-        if (attrLower.includes("temperature") || attrLower === "temp") {
-            return "Enter temperature in °C (e.g., 25)";
-        }
-
-        // Speed/Frequency
-        if (attrLower.includes("speed") || attrLower === "rpm") {
-            return "Enter speed in RPM or km/h";
-        }
-
-        // Voltage
-        if (attrLower.includes("voltage")) {
-            return "Enter voltage in V (e.g., 220V)";
-        }
-
-        // Resolution
-        if (attrLower.includes("resolution")) {
-            return "Enter resolution (e.g., 1920x1080, 4K, Full HD)";
-        }
-
-        // Connectivity
-        if (attrLower.includes("connectivity") || attrLower === "interface") {
-            return "Enter connectivity type (e.g., WiFi, Bluetooth, USB-C)";
-        }
-
-        // Age
-        if (attrLower.includes("age_group") || attrLower === "age") {
-            return "Enter age group (e.g., 3-5 years, Adult, Kids)";
-        }
-
-        // Gender
-        if (attrLower === "gender") {
-            return "Enter gender (e.g., Male, Female, Unisex)";
-        }
-
-        // Country
-        if (attrLower === "country_of_origin" || attrLower === "origin") {
-            return "Enter country code or name (e.g., IND, India)";
-        }
-
-        // Dosage
-        if (attrLower.includes("dosage")) {
-            return "Enter dosage (e.g., 500mg, 2 tablets daily)";
-        }
-
-        // Percentage
-        if (attrLower.includes("percentage") || attrLower.includes("purity")) {
-            return `Enter ${attributeName.replace(/_/g, " ")} in % (e.g., 99.9)`;
-        }
-
-        // Default
-        return `Enter ${attributeName.replace(/_/g, " ")}`;
-    };
-
     // Function to render dynamic attribute field
     const renderAttributeField = (
         attributeName: string,
@@ -1348,14 +823,15 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                                 <FaBox className="text-blue-500" />
                                 Item {index + 1}
                             </h3>
-                            <button
+                            <Button
                                 type="button"
+                                variant="ghost"
                                 onClick={() => removeItem(index)}
-                                className="text-red-500 hover:text-red-700 p-1"
+                                className="h-auto text-red-500 hover:text-red-700 p-1"
                                 disabled={fields.length === 1}
                             >
                                 <FaTrash />
-                            </button>
+                            </Button>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -3131,29 +2607,31 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                                                             </div>
                                                         </div>
                                                         <div className="flex gap-1">
-                                                            <button
+                                                            <Button
                                                                 type="button"
+                                                                variant="ghost"
                                                                 onClick={() =>
                                                                     openEditVariantModal(
                                                                         index,
                                                                         vIdx
                                                                     )
                                                                 }
-                                                                className="text-blue-500 hover:text-blue-700 p-1 rounded hover:bg-blue-50"
+                                                                className="h-auto text-blue-500 hover:text-blue-700 p-1 rounded hover:bg-blue-50"
                                                                 title="View/Edit variant"
                                                             >
                                                                 <FaEdit className="text-sm" />
-                                                            </button>
-                                                            <button
+                                                            </Button>
+                                                            <Button
                                                                 type="button"
+                                                                variant="ghost"
                                                                 onClick={() =>
                                                                     removeVariant(index, vIdx)
                                                                 }
-                                                                className="text-red-500 hover:text-red-700 p-1 rounded hover:bg-red-50"
+                                                                className="h-auto text-red-500 hover:text-red-700 p-1 rounded hover:bg-red-50"
                                                                 title="Remove variant"
                                                             >
                                                                 <FaTrash className="text-sm" />
-                                                            </button>
+                                                            </Button>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -3180,25 +2658,36 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                 ))}
 
                 <div className="flex justify-center gap-4">
-                    <button
+                    <Button
                         type="button"
+                        variant="ghost"
                         onClick={addItem}
-                        className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors duration-200 flex items-center gap-2"
+                        className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors duration-200 gap-2"
                     >
                         <FaPlus />
                         Add Another Item
-                    </button>
+                    </Button>
                 </div>
 
                 <div className="flex justify-between pt-6">
-                    <button
+                    <Button
                         type="button"
+                        variant="ghost"
                         onClick={onPrevious}
                         className="bg-gray-500 text-white px-6 py-2 rounded-md hover:bg-gray-600 transition-colors duration-200"
                     >
                         Previous
-                    </button>
-                    <LoadingButton type="submit" buttonText="Next" isLoading={isSubmitting} />
+                    </Button>
+                    <Button type="submit" isLoading={isSubmitting}>
+                        {isSubmitting ? (
+                            <>
+                                <Spinner className="size-4" />
+                                Loading...
+                            </>
+                        ) : (
+                            "Next"
+                        )}
+                    </Button>
                 </div>
             </form>
 

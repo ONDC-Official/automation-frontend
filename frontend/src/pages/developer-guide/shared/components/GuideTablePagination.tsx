@@ -1,6 +1,6 @@
 import { type FC } from "react";
 import { cn } from "@/lib/utils";
-import Pagination from "@/components/Shadcn/Pagination";
+import Pagination from "@components/Shadcn/Pagination";
 
 export interface GuideTablePaginationProps {
     page: number;

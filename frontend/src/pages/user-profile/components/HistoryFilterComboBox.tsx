@@ -5,7 +5,7 @@ import {
     ComboboxInput,
     ComboboxItem,
     ComboboxList,
-} from "@/components/Shadcn/ComboBox/combobox";
+} from "@components/Shadcn/ComboBox/combobox";
 import { cn } from "@/lib/utils";
 import type { IHistoryFilterComboBoxProps } from "@pages/user-profile/types";
 

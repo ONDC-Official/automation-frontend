@@ -1,5 +1,5 @@
-import { ComboBox } from "@/components/Shadcn/ComboBox";
-import { TextField } from "@/components/Shadcn/TextField";
+import { ComboBox } from "@components/Shadcn/ComboBox";
+import { TextField } from "@components/Shadcn/TextField";
 import type {
     IFlowFieldsProps,
     IStarterFormValues,

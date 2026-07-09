@@ -7,15 +7,15 @@ export interface ApprovalOutcome {
     applied: boolean;
 }
 
-export interface ToolContext {
+export interface ToolDeps {
     config: MockPlaygroundConfigType | undefined;
     activeApi: string | undefined;
     terminalTail: ExecutionResult[];
     /** Unique id for the in-flight tool call. Lets write-tools key approvals. */
     toolCallId?: string;
-    /** Bridge to the playground's step-write path. Only present in chat ctx. */
+    /** Bridge to the playground's step-write path. Only present in chat deps. */
     updateStepMock?: (stepId: string, property: string, value: string) => void;
-    /** Bridge to the human-in-the-loop approval queue. Only present in chat ctx. */
+    /** Bridge to the human-in-the-loop approval queue. Only present in chat deps. */
     requestApproval?: (
         toolCallId: string,
         payload?: ProposeEditPayload
@@ -25,7 +25,7 @@ export interface ToolContext {
 export interface Tool<Args = unknown, Result = unknown> {
     name: string;
     description: OpenAITool;
-    execute: (args: Args, ctx: ToolContext) => Promise<Result> | Result;
+    execute: (args: Args, deps: ToolDeps) => Promise<Result> | Result;
 }
 
 export interface ToolExecutionSuccess<Result = unknown> {

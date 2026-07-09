@@ -3,9 +3,9 @@ import { useForm } from "react-hook-form";
 import { createInitialMockConfig } from "@ondc/automation-mock-runner";
 import { ArrowRightIcon, FolderOpenIcon } from "@heroicons/react/24/outline";
 
-import { Button } from "@/components/Shadcn/Button/button";
-import { Tabs, TabsList, TabsTrigger } from "@/components/Shadcn/Tabs/tabs";
-import GitHubIcon from "@/assets/svgs/GitHubIcon";
+import { Button } from "@components/Shadcn/Button";
+import { Tabs, TabsList, TabsTrigger } from "@components/Shadcn/Tabs/tabs";
+import GitHubIcon from "@assets/svgs/GitHubIcon";
 import { cn } from "@/lib/utils";
 import { usePlayground } from "@pages/protocol-playground/hooks/playground-runtime";
 import { GitHubImportModal } from "@pages/protocol-playground/ui/github-import-modal";

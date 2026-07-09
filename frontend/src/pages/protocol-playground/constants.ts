@@ -1,4 +1,4 @@
-import { EDITOR_CONFIG } from "@/components/PayloadEditor/constants";
+import { EDITOR_CONFIG } from "@components/PayloadEditor/constants";
 import type { editor as MonacoEditor } from "monaco-editor";
 
 export const PLAYGROUND_EDITOR_OPTIONS: MonacoEditor.IStandaloneEditorConstructionOptions = {

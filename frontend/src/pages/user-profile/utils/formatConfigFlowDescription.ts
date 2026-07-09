@@ -1,5 +1,5 @@
 import type { Flow } from "@/types/flow-types";
-import { toTitleCase } from "@/utils/formatUtils";
+import { toTitleCase } from "@utils/formatUtils";
 
 const getStepLabel = (label?: string, type?: string): string | undefined => {
     if (label?.trim()) return label.trim();

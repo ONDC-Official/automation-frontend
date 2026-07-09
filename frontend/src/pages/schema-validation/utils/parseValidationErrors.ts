@@ -1,8 +1,8 @@
-import type { IParsedValidationError } from "@/pages/schema-validation/types";
+import type { IParsedValidationError } from "@pages/schema-validation/types";
 import {
     parseMarkdownValidationErrors,
     parsePlainValidationErrors,
-} from "@/pages/schema-validation/utils/helpers";
+} from "@pages/schema-validation/utils/helpers";
 
 /**
  * Parses validation error content from the schema validation API.
@@ -39,4 +39,4 @@ export function parseValidationErrors(markdown: string): IParsedValidationError[
  * @param path - Raw JSON path from the API
  * @returns Display-friendly path without leading `$` or `/`
  */
-export { formatErrorPath } from "@/utils/format-error-path";
+export { formatErrorPath } from "@utils/format-error-path";

@@ -2,6 +2,8 @@ import { useState } from "react";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 
 import { Badge } from "@/components/Shadcn/Badge/badge";
+import { Button } from "@/components/Shadcn/Button";
+import { Input } from "@components/Shadcn/Input";
 import { cn } from "@/lib/utils";
 
 interface TagsInputProps {
@@ -56,38 +58,40 @@ const TagsInput = ({
                 {value.map((tag) => (
                     <Badge key={tag} variant="secondary" className="gap-1 py-1 pr-1">
                         {tag}
-                        <button
+                        <Button
                             type="button"
+                            variant="ghost"
                             onClick={() => removeTag(tag)}
                             className="rounded-full p-0.5 hover:bg-n-30"
                             aria-label={`Remove ${tag}`}
                         >
                             <XMarkIcon className="size-3" />
-                        </button>
+                        </Button>
                     </Badge>
                 ))}
-                <input
+                <Input
                     value={inputValue}
                     onChange={(event) => setInputValue(event.target.value)}
                     onKeyDown={handleKeyDown}
                     onBlur={() => addTag(inputValue)}
                     placeholder={value.length === 0 ? placeholder : ""}
                     disabled={disabled}
-                    className="min-w-24 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+                    className="h-auto min-w-24 flex-1 border-0 bg-transparent p-0 text-sm shadow-none outline-none placeholder:text-muted-foreground focus-visible:ring-0"
                 />
             </div>
             {remainingSuggestions.length > 0 && (
                 <div className="flex flex-wrap gap-1.5">
                     {remainingSuggestions.map((suggestion) => (
-                        <button
+                        <Button
                             key={suggestion}
                             type="button"
+                            variant="ghost"
                             onClick={() => addTag(suggestion)}
                             disabled={disabled}
                             className="rounded-full border border-n-30 px-2 py-0.5 text-xs text-n-600 hover:bg-n-30/40"
                         >
                             + {suggestion}
-                        </button>
+                        </Button>
                     ))}
                 </div>
             )}

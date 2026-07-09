@@ -1,18 +1,19 @@
-import { useCallback, useState } from "react";
+import { useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@hooks/useAuth";
+import { useGitHubLogin } from "@hooks/useGitHubLogin";
 import { ROUTES } from "@constants/routes";
-import { Button } from "@/components/Shadcn/Button/button";
-import Spinner from "@/components/Shadcn/Spinner";
-import GitHubIcon from "@/assets/svgs/GitHubIcon";
-import { UserProfileMenu } from "@/components/Header/UserProfileMenu";
-import { trackEvent } from "@/utils/analytics";
+import { Button } from "@components/Shadcn/Button";
+import LoadingOverlay from "@components/Shadcn/LoadingOverlay";
+import GitHubIcon from "@assets/svgs/GitHubIcon";
+import { UserProfileMenu } from "@components/Header/UserProfileMenu";
+import { trackEvent } from "@utils/analytics";
 import { cn } from "@/lib/utils";
 
 export const UserProfileSection = ({ inDrawer = false }: { inDrawer?: boolean }) => {
     const navigate = useNavigate();
     const { user, logout } = useAuth();
-    const [isLoading, setIsLoading] = useState(false);
+    const { startLogin, isLoginRedirecting } = useGitHubLogin();
 
     const handleLogin = useCallback(() => {
         trackEvent({
@@ -21,11 +22,8 @@ export const UserProfileSection = ({ inDrawer = false }: { inDrawer?: boolean })
             label: user ? "PROFILE" : "LOGIN",
         });
 
-        setIsLoading(true);
-        const backendUrl = import.meta.env.VITE_DEVELOPER_GUIDE_BACKEND_URL;
-        const authUrl = `${backendUrl}/login`;
-        window.location.href = authUrl;
-    }, [user]);
+        startLogin();
+    }, [startLogin, user]);
 
     const handleLogout = useCallback(() => {
         try {
@@ -62,21 +60,19 @@ export const UserProfileSection = ({ inDrawer = false }: { inDrawer?: boolean })
                 <Button
                     type="button"
                     onClick={handleLogin}
-                    isLoading={isLoading}
+                    disabled={isLoginRedirecting}
                     className={cn(
                         "h-9 gap-3 rounded-full border border-n-40 bg-n-900 px-3 py-2 text-body-2 font-medium text-n-0 hover:bg-n-600 dark:text-neutral-900 dark:border-n-0 dark:bg-n-0 dark:hover:border-n-0 dark:hover:bg-n-30",
                         inDrawer && "w-full justify-center"
                     )}
                     title="Login with GitHub"
                 >
-                    {isLoading ? (
-                        <Spinner className="size-6 shrink-0" />
-                    ) : (
-                        <GitHubIcon className="size-6 text-body-1 font-medium" />
-                    )}
+                    <GitHubIcon className="size-6 text-body-1 font-medium" />
                     Login with GitHub
                 </Button>
             )}
+
+            {isLoginRedirecting ? <LoadingOverlay /> : null}
         </div>
     );
 };

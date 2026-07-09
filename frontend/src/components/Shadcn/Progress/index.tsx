@@ -1,6 +1,6 @@
-import { Field, FieldLabel } from "@/components/Shadcn/TextField/field";
-import { Progress } from "@/components/Shadcn/Progress/progress";
-import { IProgressWithLabelProps } from "@/components/Shadcn/Progress/types";
+import { Field, FieldLabel } from "@components/Shadcn/TextField/field";
+import { Progress } from "@components/Shadcn/Progress/progress";
+import { IProgressWithLabelProps } from "@components/Shadcn/Progress/types";
 import { cn } from "@/lib/utils";
 
 export const ProgressWithLabel = ({ id, label, value, className }: IProgressWithLabelProps) => (
