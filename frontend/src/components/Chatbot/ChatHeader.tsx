@@ -1,6 +1,7 @@
 import { FC } from "react";
-import { FiChevronDown, FiMaximize2, FiMinimize2, FiRefreshCw } from "react-icons/fi";
+import { FiMaximize2, FiMinimize2, FiRefreshCw } from "react-icons/fi";
 import { Button } from "@/components/Shadcn/Button/button";
+import { ComboBoxControl } from "@/components/Shadcn/ComboBox";
 import { KnowledgeSource } from "./types";
 import { SOURCE_LABELS } from "./constants";
 
@@ -36,22 +37,14 @@ const ChatHeader: FC<ChatHeaderProps> = ({
             </div>
             <div className="flex items-center gap-2 shrink-0">
                 <div className="relative">
-                    <select
+                    <ComboBoxControl
                         value={knowledgeSource}
-                        onChange={(event) =>
-                            setKnowledgeSource(event.target.value as KnowledgeSource)
-                        }
-                        className="h-9 appearance-none rounded-xl border border-sky-200 bg-white px-3 pr-8 text-xs font-semibold text-slate-700 shadow-none transition-colors hover:border-sky-300 hover:bg-sky-50 focus:outline-hidden focus:ring-2 focus:ring-sky-300/70"
-                    >
-                        {(Object.keys(SOURCE_LABELS) as KnowledgeSource[]).map((key) => (
-                            <option key={key} value={key}>
-                                {SOURCE_LABELS[key]}
-                            </option>
-                        ))}
-                    </select>
-                    <span className="pointer-events-none absolute inset-y-0 right-2 flex items-center text-[10px] text-sky-700">
-                        <FiChevronDown className="h-3.5 w-3.5" />
-                    </span>
+                        onValueChange={(value) => setKnowledgeSource(value as KnowledgeSource)}
+                        options={(Object.keys(SOURCE_LABELS) as KnowledgeSource[]).map((key) => ({
+                            value: key,
+                            label: SOURCE_LABELS[key],
+                        }))}
+                    />
                 </div>
 
                 <div className="group relative">
