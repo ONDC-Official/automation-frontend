@@ -11,7 +11,7 @@ The user composes a sequence of "steps" where each step corresponds to one ONDC 
 - **defaultPayload.json** — base JSON merged into the generator's output.
 - **inputs.json** — a JSON Schema describing runtime user inputs for the step.
 
-All JavaScript is stored base64-encoded at rest; you receive it already decoded in the context messages. A shared **helperLib** JS module is available to every step's generator.
+All JavaScript is stored base64-encoded at rest; you receive it already decoded in the snapshot messages. A shared **helperLib** JS module is available to every step's generator.
 
 ## Code conventions
 

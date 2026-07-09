@@ -10,23 +10,23 @@ import {
     FaSitemap,
 } from "react-icons/fa";
 
-import { Badge } from "@/components/Shadcn/Badge/badge";
-import { Button } from "@/components/Shadcn/Button";
+import { Badge } from "@components/Shadcn/Badge/badge";
+import { Button } from "@components/Shadcn/Button";
 import {
     Dialog,
     DialogContent,
     DialogFooter,
     DialogHeader,
     DialogTitle,
-} from "@/components/Shadcn/Dialog";
-import { Alert } from "@/components/Shadcn/Alert";
-import { TooltipHint } from "@/components/Shadcn/Tooltip";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/Shadcn/Tabs";
-import { Card, Tag } from "@/pages/seller-onboarding/components/LegacyCardTag";
+} from "@components/Shadcn/Dialog";
+import { Alert } from "@components/Shadcn/Alert";
+import { TooltipHint } from "@components/Shadcn/Tooltip";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@components/Shadcn/Tabs";
+import { Card, Tag } from "@pages/seller-onboarding/components/LegacyCardTag";
 import {
     CategoryTree,
     type CategoryTreeNodeData,
-} from "@/pages/seller-onboarding/components/CategoryTree";
+} from "@pages/seller-onboarding/components/CategoryTree";
 
 interface CustomizationItem {
     id: string;

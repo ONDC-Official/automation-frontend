@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 
-export interface FlowStep {
+export interface ProcessFlowStep {
     label: string;
     bgColor: string;
     textColor: string;
@@ -33,5 +33,5 @@ export interface CryptoAlgorithmCardProps {
 
 export interface ProcessFlowSectionProps {
     title: string;
-    steps: FlowStep[];
+    steps: ProcessFlowStep[];
 }

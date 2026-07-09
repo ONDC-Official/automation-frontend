@@ -6,6 +6,8 @@ import "leaflet/dist/leaflet.css";
 import { HiOutlineLocationMarker, HiSearch } from "react-icons/hi";
 import type { WidgetProps } from "@rjsf/utils";
 import { useLazyGeocodePlaceQuery, type GeocodeResult } from "@store/api";
+import { Button } from "@/components/Shadcn/Button";
+import { Input } from "@components/Shadcn/Input";
 
 /**
  * Real-Time Ride Map Integration — single-location picker.
@@ -98,18 +100,20 @@ export function SingleLocationPickerModal({
             <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl flex flex-col max-h-[90vh] overflow-y-auto">
                 <div className="flex items-center justify-between px-4 py-3 border-b">
                     <h3 className="text-sm font-semibold text-gray-800">{title}</h3>
-                    <button
+                    <Button
+                        type="button"
+                        variant="ghost"
                         onClick={onClose}
                         className="text-gray-500 hover:text-gray-700 text-lg leading-none"
                     >
                         &times;
-                    </button>
+                    </Button>
                 </div>
 
                 {/* Search box */}
                 <div className="px-4 pt-3">
                     <div className="relative">
-                        <input
+                        <Input
                             type="text"
                             value={query}
                             onChange={(e) => setQuery(e.target.value)}
@@ -117,15 +121,16 @@ export function SingleLocationPickerModal({
                                 e.key === "Enter" && (e.preventDefault(), runSearch())
                             }
                             placeholder="Search a place…"
-                            className="w-full border border-gray-300 rounded px-3 py-2 pr-9 text-sm bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-sky-500"
+                            className="h-auto w-full rounded border-gray-300 px-3 py-2 pr-9 text-sm text-gray-900 shadow-none placeholder-gray-400 focus-visible:border-sky-500 focus-visible:ring-1 focus-visible:ring-sky-500"
                         />
-                        <button
+                        <Button
                             type="button"
+                            variant="ghost"
                             onClick={runSearch}
                             className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-sky-600"
                         >
                             <HiSearch />
-                        </button>
+                        </Button>
                     </div>
                     {searching && <p className="text-xs text-gray-400 mt-1">Searching…</p>}
                     {results.length > 0 && (
@@ -184,19 +189,23 @@ export function SingleLocationPickerModal({
                 </div>
 
                 <div className="flex justify-end gap-2 px-4 py-3 border-t">
-                    <button
+                    <Button
+                        type="button"
+                        variant="ghost"
                         onClick={onClose}
                         className="text-sm px-3 py-1.5 rounded border border-gray-300 text-gray-600 hover:bg-gray-50"
                     >
                         Cancel
-                    </button>
-                    <button
+                    </Button>
+                    <Button
+                        type="button"
+                        variant="ghost"
                         disabled={!pin}
                         onClick={() => pin && onConfirm(toGps(pin))}
                         className="text-sm px-3 py-1.5 rounded bg-sky-600 text-white hover:bg-sky-700 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         Use this location
-                    </button>
+                    </Button>
                 </div>
             </div>
         </div>,
@@ -218,7 +227,11 @@ export default function GpsWidget(props: WidgetProps) {
     return (
         <div className="relative">
             {/* type="text" so it inherits the rjsf form's standard (white) input styling like every
-                other field; explicit paddingRight keeps text clear of the pin icon. */}
+                other field; explicit paddingRight keeps text clear of the pin icon.
+                Kept native intentionally: this relies on ambient rjsf-form input CSS shared with
+                sibling fields (not yet migrated) rather than Tailwind utility classes — swapping to
+                the Shadcn Input wrapper here would visually diverge from those siblings. See Phase 1
+                migration summary ("manual verification needed"). */}
             <input
                 id={id}
                 type="text"
@@ -231,15 +244,16 @@ export default function GpsWidget(props: WidgetProps) {
                 className="w-full"
                 style={{ paddingRight: "2.25rem" }}
             />
-            <button
+            <Button
                 type="button"
+                variant="ghost"
                 title="Pick on map"
                 disabled={!editable}
                 onClick={() => setOpen(true)}
                 className="absolute right-2 top-1/2 -translate-y-1/2 text-sky-600 hover:text-sky-700 disabled:opacity-40"
             >
                 <HiOutlineLocationMarker className="text-lg" />
-            </button>
+            </Button>
             <SingleLocationPickerModal
                 open={open}
                 title="Pick location on map"

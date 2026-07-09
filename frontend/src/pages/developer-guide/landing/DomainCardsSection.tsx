@@ -5,6 +5,7 @@ import type { BuildEntry } from "../types";
 import type { DomainFamilyGroup } from "../domainGrouping";
 import { getDomainFamilyLabel, getDomainShortLabel, groupBuildsByFamily } from "../domainGrouping";
 import type { DomainCardsSectionProps } from "./types";
+import { Button } from "@/components/Shadcn/Button";
 
 interface UseCaseEntry {
     dom: BuildEntry;
@@ -66,9 +67,10 @@ const DomainFamilyAccordion: FC<{
                 animationDelay: `${familyIndex * 40}ms`,
             }}
         >
-            <button
+            <Button
                 type="button"
-                className={`w-full flex items-center gap-4 px-5 py-4 text-left transition-colors ${
+                variant="ghost"
+                className={`h-auto w-full gap-4 rounded-none px-5 py-4 font-normal text-left transition-colors ${
                     enabled ? "hover:bg-sky-50/60 dark:hover:bg-sky-500/10" : "hover:bg-slate-50"
                 }`}
                 onClick={() => setOpen((v) => !v)}
@@ -132,7 +134,7 @@ const DomainFamilyAccordion: FC<{
                         aria-hidden
                     />
                 </span>
-            </button>
+            </Button>
 
             <div
                 id={panelId}
@@ -150,12 +152,13 @@ const DomainFamilyAccordion: FC<{
                         {useCases.map(({ dom, verKey, label, domainLabel }) => {
                             const clickable = isUseCaseEnabled(dom, label);
                             return (
-                                <button
+                                <Button
                                     key={`${dom.key}-${verKey}-${label}`}
                                     type="button"
+                                    variant="ghost"
                                     disabled={!clickable}
                                     onClick={() => clickable && onUseCaseClick(dom, verKey, label)}
-                                    className={`group/chip relative inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border transition-colors duration-150 ${
+                                    className={`group/chip relative gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border transition-colors duration-150 ${
                                         clickable
                                             ? "bg-white dark:bg-surface-elevated text-sky-700 dark:text-sky-300 border-sky-200 dark:border-sky-500/30 hover:bg-sky-50 dark:hover:bg-sky-500/10 hover:border-sky-300 dark:hover:border-sky-500/50 hover:shadow-xs cursor-pointer shadow-xs pr-7"
                                             : "bg-slate-50 text-slate-400 border-slate-100 cursor-not-allowed"
@@ -196,7 +199,7 @@ const DomainFamilyAccordion: FC<{
                                             />
                                         </svg>
                                     )}
-                                </button>
+                                </Button>
                             );
                         })}
                     </div>

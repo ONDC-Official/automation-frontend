@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { trackEvent } from "@utils/analytics";
-import { IFooterLinkItemProps } from "@/components/Footer/types";
+import { IFooterLinkItemProps } from "@components/Footer/types";
 
 export const FooterLinkItem = ({ link }: IFooterLinkItemProps) => (
     <li onClick={() => trackEvent(link.analytics)}>

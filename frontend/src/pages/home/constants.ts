@@ -1,9 +1,9 @@
 import { ROUTES, getDeveloperGuideDocPath } from "@constants/routes";
 import { IQuickStep, IPathCard, ISupportCard, ISupportInfoItem } from "@pages/home/types";
-import { IStatLayoutProps } from "@/components/StatLayout/types";
-import GitHubIcon from "@/assets/svgs/GitHubIcon";
-import LiveStatusIcon from "@/assets/svgs/LiveStatusIcon";
-import SmartPhoneGraphIcon from "@/assets/svgs/SmartPhoneGraphIcon";
+import { IStatLayoutProps } from "@components/StatLayout/types";
+import GitHubIcon from "@assets/svgs/GitHubIcon";
+import LiveStatusIcon from "@assets/svgs/LiveStatusIcon";
+import SmartPhoneGraphIcon from "@assets/svgs/SmartPhoneGraphIcon";
 
 export const quickSteps: IQuickStep[] = [
     {

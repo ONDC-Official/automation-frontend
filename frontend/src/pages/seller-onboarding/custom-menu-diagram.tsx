@@ -1,6 +1,6 @@
 import React from "react";
 
-import { Card, Tag } from "@/pages/seller-onboarding/components/LegacyCardTag";
+import { Card, Tag } from "@pages/seller-onboarding/components/LegacyCardTag";
 
 const CustomMenuDiagram: React.FC = () => {
     return (

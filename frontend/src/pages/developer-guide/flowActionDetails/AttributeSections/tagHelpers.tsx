@@ -1,6 +1,7 @@
 import { FC, useState } from "react";
 import { safeDescription, hasDescription } from "../attributePanelUtils";
 import type { TagField, TagFieldItem } from "../types";
+import { Button } from "@/components/Shadcn/Button";
 
 // ─── Tag helpers ──────────────────────────────────────────────────────────────
 
@@ -21,10 +22,11 @@ export const NestedTagItem: FC<{ item: TagFieldItem; depth: number }> = ({ item,
             className="border-l-2 border-sky-100 dark:border-sky-500/30 pl-3 py-2 min-w-0"
             style={{ marginLeft: depth * 20 }}
         >
-            <button
+            <Button
                 type="button"
+                variant="ghost"
                 onClick={() => hasList && setExpanded((e) => !e)}
-                className={`w-full text-left flex items-start justify-between gap-2 ${hasList ? "cursor-pointer" : "cursor-default"}`}
+                className={`h-auto w-full items-start justify-between gap-2 rounded-none p-0 font-normal text-left ${hasList ? "cursor-pointer" : "cursor-default"}`}
             >
                 <div className="flex items-start gap-2 flex-1 min-w-0">
                     {hasList && (
@@ -51,7 +53,7 @@ export const NestedTagItem: FC<{ item: TagFieldItem; depth: number }> = ({ item,
                         {nestedCount} item{nestedCount !== 1 ? "s" : ""}
                     </span>
                 )}
-            </button>
+            </Button>
             {hasList && expanded && (
                 <div className="mt-1 space-y-0">
                     {item.list!.map((child, i) => (
@@ -70,10 +72,11 @@ export const TagGroupItem: FC<{ field: TagField }> = ({ field }) => {
 
     return (
         <div className="rounded-lg border border-sky-100 dark:border-sky-500/30 overflow-hidden bg-white dark:bg-surface-elevated shadow-xs">
-            <button
+            <Button
                 type="button"
+                variant="ghost"
                 onClick={() => hasList && setExpanded((e) => !e)}
-                className={`w-full flex items-center justify-between gap-2 px-3 py-2.5 text-left transition-colors ${hasList ? "hover:bg-sky-50/50 dark:hover:bg-sky-500/10 cursor-pointer" : "cursor-default"}`}
+                className={`h-auto w-full justify-between gap-2 rounded-none px-3 py-2.5 font-normal text-left transition-colors ${hasList ? "hover:bg-sky-50/50 dark:hover:bg-sky-500/10 cursor-pointer" : "cursor-default"}`}
             >
                 <span className="flex items-center gap-2 min-w-0">
                     {hasList && (
@@ -98,7 +101,7 @@ export const TagGroupItem: FC<{ field: TagField }> = ({ field }) => {
                         {nestedCount} item{nestedCount !== 1 ? "s" : ""}
                     </span>
                 )}
-            </button>
+            </Button>
             {hasList && expanded && (
                 <div className="px-3 pb-3 pt-0 border-t border-sky-100 dark:border-sky-500/30 bg-sky-50/30 dark:bg-sky-500/5">
                     <div className="mt-2 space-y-0">

@@ -1,4 +1,4 @@
-import Terminal from "@/assets/svgs/TerminalImageWrapper";
+import Terminal from "@assets/svgs/TerminalImageWrapper";
 
 const HeroLayout = ({ children }: { children: React.ReactNode }) => (
     <section className="bg-n-0 dark:bg-surface-page">

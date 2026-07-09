@@ -2,7 +2,7 @@ import {
     NavigationMenuContent,
     NavigationMenuItem,
     NavigationMenuTrigger,
-} from "@/components/Shadcn/NavigationMenu/navigation-menu";
+} from "@components/Shadcn/NavigationMenu/navigation-menu";
 import { NavigationMenuNavLink } from "@components/Header/NavigationMenuNavLink";
 import { INavigationMenuNavItem } from "@components/Header/types";
 

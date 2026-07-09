@@ -1,6 +1,6 @@
 import { FaCheck } from "react-icons/fa";
 import { cn } from "@/lib/utils";
-import type { StepperProps } from "@/components/Shadcn/Stepper/types";
+import type { StepperProps } from "@components/Shadcn/Stepper/types";
 
 export function Stepper({ steps, currentStep }: StepperProps) {
     return (

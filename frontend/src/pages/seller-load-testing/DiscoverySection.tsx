@@ -1,5 +1,7 @@
 import React from "react";
-import LoadingButton from "@/components/ui/forms/loading-button";
+import { Button } from "@components/Shadcn/Button";
+import Spinner from "@components/Shadcn/Spinner";
+import { Textarea } from "@/components/Shadcn/TextArea/text-area";
 import type { DiscoverySectionProps } from "@pages/seller-load-testing/types";
 import { useDiscoverySection } from "@pages/seller-load-testing/useDiscoverySection";
 
@@ -45,12 +47,20 @@ const DiscoverySection: React.FC<DiscoverySectionProps> = ({
             <div className="px-5 py-4 space-y-4">
                 {!discoveryDone && (
                     <div className="flex items-center gap-3">
-                        <LoadingButton
+                        <Button
                             type="button"
-                            buttonText="Generate Search Payload"
                             isLoading={isGenerating}
                             onClick={handleGeneratePayload}
-                        />
+                        >
+                            {isGenerating ? (
+                                <>
+                                    <Spinner className="size-4" />
+                                    Loading...
+                                </>
+                            ) : (
+                                "Generate Search Payload"
+                            )}
+                        </Button>
                     </div>
                 )}
 
@@ -67,10 +77,10 @@ const DiscoverySection: React.FC<DiscoverySectionProps> = ({
                             <span className="text-xs text-gray-400 font-mono">payload.json</span>
                             {jsonError && <span className="text-red-400 text-xs">{jsonError}</span>}
                         </div>
-                        <textarea
+                        <Textarea
                             value={editedJson}
                             onChange={(e) => handleEditedJsonChange(e.target.value)}
-                            className="w-full h-80 bg-gray-900 text-green-400 font-mono text-xs p-4 focus:outline-hidden resize-none"
+                            className="w-full h-80 min-h-80 border-0 shadow-none rounded-none bg-gray-900 text-green-400 font-mono text-xs p-4 focus:outline-hidden focus-visible:ring-0 resize-none"
                             spellCheck={false}
                         />
                     </div>
@@ -78,19 +88,24 @@ const DiscoverySection: React.FC<DiscoverySectionProps> = ({
 
                 {payload && showButtons && (
                     <div className="flex items-center gap-3 mt-4">
-                        <LoadingButton
+                        <Button type="button" isLoading={isStarting} onClick={handleStartDiscovery}>
+                            {isStarting ? (
+                                <>
+                                    <Spinner className="size-4" />
+                                    Loading...
+                                </>
+                            ) : (
+                                "Start Search"
+                            )}
+                        </Button>
+                        <Button
                             type="button"
-                            buttonText="Start Search"
-                            isLoading={isStarting}
-                            onClick={handleStartDiscovery}
-                        />
-                        <button
-                            type="button"
+                            variant="ghost"
                             onClick={handleCancel}
                             className="px-4 py-2 text-sm font-medium text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
                         >
                             Cancel
-                        </button>
+                        </Button>
                     </div>
                 )}
 

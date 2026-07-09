@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
-import { Field, FieldLabel } from "@/components/Shadcn/TextField/field";
-import { Input } from "@/components/Shadcn/TextField/input";
-import { ISearchFieldProps } from "@/components/Shadcn/SearchField/types";
+import { Field, FieldLabel } from "@components/Shadcn/TextField/field";
+import { Input } from "@components/Shadcn/Input";
+import { ISearchFieldProps } from "@components/Shadcn/SearchField/types";
 import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 
 export const SearchField = ({

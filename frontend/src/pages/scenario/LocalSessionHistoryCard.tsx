@@ -1,7 +1,7 @@
 import { ArrowTopRightOnSquareIcon } from "@heroicons/react/24/solid";
-import { truncateId } from "@/utils/formatUtils";
-import { ILocalSessionHistoryCardProps } from "@/pages/scenario/types";
-import { Button } from "@/components/Shadcn/Button/button";
+import { truncateId } from "@utils/formatUtils";
+import { ILocalSessionHistoryCardProps } from "@pages/scenario/types";
+import { Button } from "@components/Shadcn/Button";
 
 export function LocalSessionHistoryCard({
     sessionId,

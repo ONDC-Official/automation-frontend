@@ -1,5 +1,7 @@
 import { FC, KeyboardEvent } from "react";
 import { FiSend, FiSquare } from "react-icons/fi";
+import { Button } from "@/components/Shadcn/Button";
+import { Input } from "@components/Shadcn/Input";
 
 interface ChatInputProps {
     input: string;
@@ -33,34 +35,36 @@ const ChatInput: FC<ChatInputProps> = ({
                         />
                     </div>
                 )}
-                <input
+                <Input
                     type="text"
                     value={input}
                     onChange={(event) => onInputChange(event.target.value)}
                     onKeyDown={onInputKeyDown}
                     placeholder={isStreaming ? "Streaming response..." : "Type your ONDC query..."}
                     disabled={isStreaming}
-                    className={`flex-1 bg-transparent py-2 text-sm text-slate-700 placeholder-slate-400 outline-hidden disabled:cursor-not-allowed disabled:opacity-70 px-2`}
+                    className="h-auto flex-1 border-0 bg-transparent py-2 text-sm text-slate-700 placeholder-slate-400 shadow-none outline-hidden focus-visible:ring-0 disabled:cursor-not-allowed disabled:opacity-70 px-2"
                 />
                 {showStop ? (
-                    <button
+                    <Button
                         type="button"
+                        variant="ghost"
                         onClick={onStop}
                         className="rounded-xl bg-red-100 p-2.5 text-red-600 transition-colors hover:bg-red-200"
                         title="Stop generating"
                     >
                         <FiSquare className="h-4 w-4" />
-                    </button>
+                    </Button>
                 ) : (
-                    <button
+                    <Button
                         type="button"
+                        variant="ghost"
                         onClick={onSend}
                         disabled={!canSend}
                         className="rounded-xl bg-blue-600 p-2.5 text-white transition-all hover:-translate-y-0.5 hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-300"
                         title="Send"
                     >
                         <FiSend className="h-4 w-4" />
-                    </button>
+                    </Button>
                 )}
             </div>
         </div>

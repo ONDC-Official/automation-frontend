@@ -7,8 +7,8 @@ import { CodeValidator, getFunctionSchema } from "@ondc/automation-mock-runner";
 import { decodeBase64 } from "@pages/protocol-playground/utils/base64";
 import { CodeStatistics } from "@pages/protocol-playground/ui/extras/statistics";
 import { getGroupSteps } from "@pages/protocol-playground/utils/step-group";
-import { CodeEditor } from "@/components/PayloadEditor";
-import { FlowTabs, TabsContent } from "@/components/Shadcn/Tabs";
+import { CodeEditor } from "@components/PayloadEditor";
+import { FlowTabs, TabsContent } from "@components/Shadcn/Tabs";
 import { PLAYGROUND_EDITOR_OPTIONS } from "@pages/protocol-playground/constants";
 import { cn } from "@/lib/utils";
 

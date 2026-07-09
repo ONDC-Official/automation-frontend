@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { PiShieldStarBold } from "react-icons/pi";
 
+import { Button } from "@/components/Shadcn/Button";
 import { useAi } from "../hooks/use-ai";
 import type { ChatMessage } from "../hooks/use-chat-session";
 import { AISettingsPanel } from "./AISettingsPanel";
@@ -50,31 +51,34 @@ export function AIChatPanel({
                     </div>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
-                    <button
+                    <Button
                         type="button"
+                        variant="ghost"
                         onClick={clear}
                         disabled={isStreaming || messages.length === 0}
                         className="text-xs px-2 py-1 rounded border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50"
                     >
                         Clear chat
-                    </button>
+                    </Button>
                     {IS_DEV && (
-                        <button
+                        <Button
                             type="button"
+                            variant="ghost"
                             onClick={() => setInspectorOpen(true)}
                             title="Invoke individual tools without the LLM (dev)"
                             className="text-xs px-2 py-1 rounded border border-gray-300 text-gray-700 hover:bg-gray-50"
                         >
                             🔧 Inspect tools
-                        </button>
+                        </Button>
                     )}
-                    <button
+                    <Button
                         type="button"
+                        variant="ghost"
                         onClick={() => setShowSettings((s) => !s)}
                         className="text-xs px-2 py-1 rounded border border-gray-300 text-gray-700 hover:bg-gray-50"
                     >
                         {showSettings ? "Hide settings" : "Settings"}
-                    </button>
+                    </Button>
                 </div>
             </div>
 

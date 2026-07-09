@@ -5,15 +5,16 @@ import {
     ComboboxInput,
     ComboboxItem,
     ComboboxList,
-} from "@/components/Shadcn/ComboBox/combobox";
+} from "@components/Shadcn/ComboBox/combobox";
 import {
     ComboBoxOptionInput,
     normalizeComboBoxOptions,
-} from "@/components/Shadcn/ComboBox/combo-box-options";
-import { Field, FieldError, FieldLabel } from "@/components/Shadcn/TextField/field";
+} from "@components/Shadcn/ComboBox/combo-box-options";
+import { Field, FieldError, FieldLabel } from "@components/Shadcn/TextField/field";
 import { cn } from "@/lib/utils";
 
 export interface IComboBoxControlProps {
+    id?: string;
     value?: string;
     onValueChange?: (value: string) => void;
     options: ComboBoxOptionInput[];
@@ -26,6 +27,7 @@ export interface IComboBoxControlProps {
 }
 
 export const ComboBoxControl = ({
+    id,
     value,
     onValueChange,
     options,
@@ -57,6 +59,7 @@ export const ComboBoxControl = ({
                 disabled={disabled}
             >
                 <ComboboxInput
+                    id={id}
                     className="w-full"
                     placeholder={placeholder ?? "Select a value"}
                     disabled={disabled}

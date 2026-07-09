@@ -9,8 +9,8 @@ import {
 import { MockPlaygroundConfigType } from "@ondc/automation-mock-runner";
 
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/Shadcn/Button";
-import AppJsonViewer from "@/components/AppJsonViewer";
+import { Button } from "@components/Shadcn/Button";
+import AppJsonViewer from "@components/AppJsonViewer";
 
 type Step = MockPlaygroundConfigType["steps"][number];
 type HistoryEntry = MockPlaygroundConfigType["transaction_history"][number];
@@ -59,6 +59,7 @@ function MessageBlock({ node, paired }: { node: TraceNode; paired: boolean }) {
     return (
         <div>
             <Button
+                variant="ghost"
                 onClick={() => setOpen((v) => !v)}
                 className="flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-brand-light dark:hover:bg-surface-muted"
             >

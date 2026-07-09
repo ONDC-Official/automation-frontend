@@ -1,4 +1,4 @@
-import { Button } from "@/components/Shadcn/Button/button";
+import { Button } from "@components/Shadcn/Button";
 import { cn } from "@/lib/utils";
 import { ACTION_BUTTON_VARIANTS } from "@pages/protocol-playground/ui/playground-upper/constants";
 import { IActionButtonProps } from "@pages/protocol-playground/ui/playground-upper/types";

@@ -2,8 +2,8 @@ import { type FC } from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 import { IconSearch, IconClear } from "../icons";
-import Input from "@/components/Shadcn/TextField/input";
-import { Button } from "@/components/Shadcn/Button";
+import Input from "@components/Shadcn/Input";
+import { Button } from "@components/Shadcn/Button";
 
 const inputVariants = cva(
     "w-full rounded-xl border border-slate-200 bg-white dark:bg-surface-elevated pl-10 pr-10 py-2.5 text-sm text-slate-800 placeholder-slate-400 shadow-xs transition focus:outline-hidden focus:border-current",

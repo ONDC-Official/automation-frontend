@@ -1,4 +1,4 @@
-import { ISupportChannelCard, ISupportHowItWorksStep } from "@/pages/support/types";
+import { ISupportChannelCard, ISupportHowItWorksStep } from "@pages/support/types";
 import { COMMUNITY_CALL_URL, ONE_ON_ONE_URL, TICKET_URL } from "@constants/support";
 
 export const supportChannelCards: ISupportChannelCard[] = [

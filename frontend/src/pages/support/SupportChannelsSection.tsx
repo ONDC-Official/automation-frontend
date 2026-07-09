@@ -1,7 +1,7 @@
 import { FC } from "react";
-import SectionLabel from "@/components/SectionLabel";
+import SectionLabel from "@components/SectionLabel";
 import { supportChannelCards } from "@pages/support/constants";
-import SupportChannelCard from "@/pages/support/SupportCard";
+import SupportChannelCard from "@pages/support/SupportCard";
 
 const SupportChannelsSection: FC = () => (
     <section className="bg-n-10 dark:bg-surface-page border-b border-n-30 dark:border-n-600">

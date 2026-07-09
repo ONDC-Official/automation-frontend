@@ -1,7 +1,7 @@
 import { FC } from "react";
-import SectionLabel from "@/components/SectionLabel";
-import SupportCardsGrid from "@/pages/home/SupportCardsGrid";
-import SupportInfoGrid from "@/pages/home/SupportInfoGrid";
+import SectionLabel from "@components/SectionLabel";
+import SupportCardsGrid from "@pages/home/SupportCardsGrid";
+import SupportInfoGrid from "@pages/home/SupportInfoGrid";
 
 const SupportSection: FC = () => (
     <section className="bg-n-0 dark:bg-surface-page py-16 lg:py-20">

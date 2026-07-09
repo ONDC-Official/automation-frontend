@@ -1,4 +1,4 @@
-import { Button } from "@/components/Shadcn/Button/button";
+import { Button } from "@components/Shadcn/Button";
 import {
     Table,
     TableBody,
@@ -6,7 +6,7 @@ import {
     TableHead,
     TableHeader,
     TableRow,
-} from "@/components/Shadcn/Table/table";
+} from "@components/Shadcn/Table/table";
 import { cn } from "@/lib/utils";
 import type { FlowStatus, ISessionFlowsTableProps } from "@pages/user-profile/types";
 

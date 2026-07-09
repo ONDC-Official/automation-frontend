@@ -1,4 +1,4 @@
-import { Toaster } from "@/components/Shadcn/Toaster";
+import { Toaster } from "@components/Shadcn/Toaster";
 import Header from "@components/Header";
 import Footer from "@components/Footer";
 import Routes from "@components/Routes";

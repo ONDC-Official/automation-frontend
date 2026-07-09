@@ -1,4 +1,5 @@
 import { type FC } from "react";
+import { Button } from "@/components/Shadcn/Button";
 
 interface EntryPointsBannerProps {
     entryPoints: string[];
@@ -31,17 +32,19 @@ const EntryPointsBanner: FC<EntryPointsBannerProps> = ({ entryPoints, focused, o
         </p>
         <div className="flex flex-wrap gap-2 ml-5">
             {entryPoints.map((ep) => (
-                <button
+                <Button
                     key={ep}
+                    type="button"
+                    variant="ghost"
                     onClick={() => onToggleFocus(ep)}
-                    className={`inline-flex items-center rounded-lg px-3 py-1.5 text-xs font-semibold border transition-all shadow-xs ${
+                    className={`rounded-lg px-3 py-1.5 text-xs font-semibold border transition-all shadow-xs ${
                         focused === ep
                             ? "bg-emerald-600 text-white border-emerald-600"
                             : "bg-white dark:bg-surface-elevated text-emerald-800 dark:text-emerald-300 border-emerald-300 dark:border-emerald-500/40 hover:bg-emerald-100 dark:hover:bg-emerald-500/20"
                     }`}
                 >
                     {ep}
-                </button>
+                </Button>
             ))}
         </div>
     </div>

@@ -1,8 +1,8 @@
 /** Payload Editor Component **/
 import { cn } from "@/lib/utils";
-import { IPayloadEditorProps } from "@/components/PayloadEditor/types";
-import { CodeEditor } from "@/components/PayloadEditor/CodeEditor";
-import ValidationErrorsPanel from "@/components/PayloadEditor/ValidationErrorsPanel";
+import { IPayloadEditorProps } from "@components/PayloadEditor/types";
+import { CodeEditor } from "@components/PayloadEditor/CodeEditor";
+import ValidationErrorsPanel from "@components/PayloadEditor/ValidationErrorsPanel";
 
 const PayloadEditor = ({
     payload,
@@ -62,4 +62,4 @@ const PayloadEditor = ({
 };
 
 export default PayloadEditor;
-export { CodeEditor } from "@/components/PayloadEditor/CodeEditor";
+export { CodeEditor } from "@components/PayloadEditor/CodeEditor";

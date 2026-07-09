@@ -1,4 +1,4 @@
-import { Button } from "@/components/Shadcn/Button/button";
+import { Button } from "@components/Shadcn/Button";
 import { cn } from "@/lib/utils";
 import { TagBadge } from "@pages/user-profile/components/TagBadge";
 import { CONFIG_DISPLAY_NAME_MAP } from "@pages/user-profile/constants";

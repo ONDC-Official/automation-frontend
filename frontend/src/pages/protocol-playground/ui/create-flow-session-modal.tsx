@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { PlayIcon } from "@heroicons/react/24/outline";
 
-import { Button } from "@/components/Shadcn/Button/button";
+import { Button } from "@components/Shadcn/Button";
 import {
     Combobox,
     ComboboxContent,
@@ -9,7 +9,7 @@ import {
     ComboboxInput,
     ComboboxItem,
     ComboboxList,
-} from "@/components/Shadcn/ComboBox/combobox";
+} from "@components/Shadcn/ComboBox/combobox";
 import {
     Dialog,
     DialogContent,
@@ -17,9 +17,9 @@ import {
     DialogFooter,
     DialogHeader,
     DialogTitle,
-} from "@/components/Shadcn/Dialog";
-import { Field, FieldContent, FieldLabel } from "@/components/Shadcn/TextField/field";
-import { Input } from "@/components/Shadcn/TextField/input";
+} from "@components/Shadcn/Dialog";
+import { Field, FieldContent, FieldLabel } from "@components/Shadcn/TextField/field";
+import { Input } from "@components/Shadcn/Input";
 
 const ROLE_OPTIONS = ["BAP", "BPP"] as const;
 

@@ -1,6 +1,7 @@
 import { FC, useEffect, useMemo, useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { ChevronDownIcon } from "@heroicons/react/24/outline";
+import { Button } from "@/components/Shadcn/Button";
 import { ROUTES } from "@constants/routes";
 import { useDeveloperGuideNav } from "./DeveloperGuideNav";
 import type { NavNode, DeveloperGuideSidebarProps } from "./navTypes";
@@ -282,7 +283,7 @@ const NavGroupItem: FC<{
 
     const headerClass = "text-[13px]";
 
-    const rowShellClass = `flex items-center gap-1 w-full min-w-0 transition-colors ${groupRowTextClass} ${
+    const rowShellClass = `flex items-center gap-1 min-w-0 transition-colors ${groupRowTextClass} ${
         isMainNode ? mainNodeShell : ""
     } ${mainSectionActive ? mainNodeSelectedBg : ""}`;
 
@@ -298,17 +299,18 @@ const NavGroupItem: FC<{
                         style={{ paddingLeft: inset }}
                     >
                         {hasChildren ? (
-                            <button
+                            <Button
                                 type="button"
+                                variant="ghost"
                                 onClick={() => setOpen((prev) => !prev)}
-                                className="flex h-3.5 w-3.5 shrink-0 items-center justify-center"
+                                className="h-3.5 w-3.5 shrink-0 rounded-none p-0"
                                 aria-expanded={open}
                                 aria-label={open ? "Collapse section" : "Expand section"}
                             >
                                 <ChevronDownIcon
                                     className={`h-3.5 w-3.5 transition-transform duration-150 ${open ? "" : "-rotate-90"}`}
                                 />
-                            </button>
+                            </Button>
                         ) : (
                             reserveChevronSlot && <ChevronSlot />
                         )}
@@ -333,10 +335,11 @@ const NavGroupItem: FC<{
             ) : hasChildren ? (
                 <div className="relative w-full min-w-0">
                     <TreeConnectors depth={depth} isLastSibling={isLastSibling} />
-                    <button
+                    <Button
                         type="button"
+                        variant="ghost"
                         onClick={() => setOpen((prev) => !prev)}
-                        className={`relative z-10 ${rowShellClass} text-left`}
+                        className={`relative z-10 h-auto rounded-none p-0 font-normal ${rowShellClass} text-left`}
                         style={{ paddingLeft: inset }}
                     >
                         <span className="flex h-3.5 w-3.5 shrink-0 items-center justify-center">
@@ -345,7 +348,7 @@ const NavGroupItem: FC<{
                             />
                         </span>
                         <span className={`py-1 pr-3 ${headerClass}`}>{node.label}</span>
-                    </button>
+                    </Button>
                 </div>
             ) : (
                 <div className="relative w-full min-w-0">

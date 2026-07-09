@@ -2,13 +2,13 @@ import React, { useState, useRef, useEffect, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
-import { ComboBox } from "@/components/Shadcn/ComboBox";
-import { Button } from "@/components/Shadcn/Button/button";
-import SpinnerDialog from "@/components/Shadcn/SpinnerDialog";
-import PayloadEditor from "@/components/PayloadEditor/PastePayloadModal";
-import FormDialogShell from "@/components/ui/forms/form-dialog-shell";
-import { PastePayloadButton } from "@/components/ui/forms/paste-payload-button";
-import { ICatalogItem, IGenericFormWithPasteProps } from "@/components/ui/forms/generic-form.types";
+import { ComboBox } from "@components/Shadcn/ComboBox";
+import { Button } from "@components/Shadcn/Button";
+import LoadingOverlay from "@components/Shadcn/LoadingOverlay";
+import PayloadEditor from "@components/PayloadEditor/PastePayloadModal";
+import FormDialogShell from "@components/Forms/form-dialog-shell";
+import { PastePayloadButton } from "@components/Forms/paste-payload-button";
+import { ICatalogItem, IGenericFormWithPasteProps } from "@components/Forms/generic-form.types";
 
 const GenericFormWithPaste = ({
     defaultValues,
@@ -171,7 +171,7 @@ const GenericFormWithPaste = ({
 
     return (
         <>
-            {isLoading && <SpinnerDialog />}
+            {isLoading && <LoadingOverlay />}
             <FormDialogShell
                 onSubmit={handleSubmit(handleSubmitForm)}
                 className={className}

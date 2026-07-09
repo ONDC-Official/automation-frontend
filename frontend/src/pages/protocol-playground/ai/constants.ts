@@ -6,7 +6,7 @@ import { DEFAULT_AI_SETTINGS } from "@store/slices/aiSlice";
 export const DEFAULT_AI_ENDPOINT = DEFAULT_AI_SETTINGS.endpoint;
 export const DEFAULT_AI_MODEL = DEFAULT_AI_SETTINGS.model;
 
-export const CONTEXT_TRUNCATION = {
+export const SNAPSHOT_TRUNCATION = {
     stepCodeMaxChars: 16_000,
     helperLibMaxChars: 8_000,
     terminalTailCount: 5,

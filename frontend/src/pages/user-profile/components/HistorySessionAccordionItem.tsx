@@ -4,8 +4,8 @@ import {
     AccordionContent,
     AccordionItem,
     AccordionTrigger,
-} from "@/components/Shadcn/Accordion/accordion";
-import Spinner from "@/components/Shadcn/Spinner";
+} from "@components/Shadcn/Accordion/accordion";
+import Spinner from "@components/Shadcn/Spinner";
 import { ROUTES } from "@constants/routes";
 import { HistorySessionHeader } from "@pages/user-profile/components/HistorySessionHeader";
 import { SessionFlowsTable } from "@pages/user-profile/components/SessionFlowsTable";

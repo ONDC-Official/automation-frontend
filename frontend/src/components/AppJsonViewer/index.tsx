@@ -4,10 +4,10 @@ import { githubDarkTheme } from "@uiw/react-json-view/githubDark";
 import { githubLightTheme } from "@uiw/react-json-view/githubLight";
 import { useAppliedTheme } from "@/theme/hooks/useAppliedTheme";
 import { cn } from "@/lib/utils";
-import { AppJsonViewerProps } from "@/components/AppJsonViewer/types";
-import { filterJsonBySearch, hasVisibleResults } from "@/components/AppJsonViewer/utils";
-import AppJsonViewerToolbar from "@/components/AppJsonViewer/Toolbar";
-import AppJsonViewerNoResults from "@/components/AppJsonViewer/NoResults";
+import { AppJsonViewerProps } from "@components/AppJsonViewer/types";
+import { filterJsonBySearch, hasVisibleResults } from "@components/AppJsonViewer/utils";
+import AppJsonViewerToolbar from "@components/AppJsonViewer/Toolbar";
+import AppJsonViewerNoResults from "@components/AppJsonViewer/NoResults";
 
 const AppJsonViewer = ({
     value,

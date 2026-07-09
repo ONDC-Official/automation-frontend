@@ -14,9 +14,9 @@ import {
     getFullSession,
     getSessionUpToActionId,
 } from "@pages/protocol-playground/utils/transaction-view";
-import { CodeEditor } from "@/components/PayloadEditor";
-import { FlowTabs, TabsContent } from "@/components/Shadcn/Tabs";
-import Spinner from "@/components/Shadcn/Spinner";
+import { CodeEditor } from "@components/PayloadEditor";
+import { FlowTabs, TabsContent } from "@components/Shadcn/Tabs";
+import Spinner from "@components/Shadcn/Spinner";
 import { PLAYGROUND_EDITOR_OPTIONS } from "@pages/protocol-playground/constants";
 import { cn } from "@/lib/utils";
 import type { OnMount } from "@monaco-editor/react";

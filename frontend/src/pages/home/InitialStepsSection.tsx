@@ -1,6 +1,6 @@
 import { FC } from "react";
 import { Link } from "react-router-dom";
-import { quickSteps } from "@/pages/home/constants";
+import { quickSteps } from "@pages/home/constants";
 import { QuickStepBadge } from "@pages/home/QuickStepBadge";
 
 const IntialStepsSection: FC = () => (

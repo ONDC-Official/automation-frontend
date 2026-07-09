@@ -2,9 +2,9 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { ArrowPathIcon } from "@heroicons/react/24/outline";
 
-import { Button } from "@/components/Shadcn/Button/button";
-import { Input } from "@/components/Shadcn/TextField/input";
-import { Switch } from "@/components/Shadcn/Switch/switch";
+import { Button } from "@components/Shadcn/Button";
+import { Input } from "@components/Shadcn/Input";
+import { Switch } from "@components/Shadcn/Switch/switch";
 import {
     Combobox,
     ComboboxContent,
@@ -12,7 +12,7 @@ import {
     ComboboxInput,
     ComboboxItem,
     ComboboxList,
-} from "@/components/Shadcn/ComboBox/combobox";
+} from "@components/Shadcn/ComboBox/combobox";
 import { DEFAULT_AI_ENDPOINT, DEFAULT_AI_MODEL } from "../constants";
 import { useAi } from "../hooks/use-ai";
 import { getKey } from "@utils/secure-key-store";

@@ -1,4 +1,4 @@
-import { Card } from "@/components/Shadcn/Card";
+import { Card } from "@components/Shadcn/Card";
 import { ConfigCard } from "@pages/user-profile/components/ConfigCard";
 import { PROFILE_PAGE_COPY } from "@pages/user-profile/constants";
 import { useConfigFlowDescriptions } from "@pages/user-profile/hooks/useConfigFlowDescriptions";

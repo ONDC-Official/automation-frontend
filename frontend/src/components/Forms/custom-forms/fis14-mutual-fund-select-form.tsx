@@ -3,14 +3,14 @@ import { useForm, useFieldArray, Controller } from "react-hook-form";
 import { PlusIcon, TrashIcon } from "@heroicons/react/24/outline";
 import { toast } from "sonner";
 
-import { ComboBoxControl } from "@/components/Shadcn/ComboBox";
-import { Button } from "@/components/Shadcn/Button/button";
-import TextField from "@/components/Shadcn/TextField";
-import { Field, FieldLabel } from "@/components/Shadcn/TextField/field";
-import { Input } from "@/components/Shadcn/TextField/input";
-import PayloadEditor from "@/components/PayloadEditor/PastePayloadModal";
-import FormDialogShell from "@/components/ui/forms/form-dialog-shell";
-import { PastePayloadButton } from "@/components/ui/forms/paste-payload-button";
+import { ComboBoxControl } from "@components/Shadcn/ComboBox";
+import { Button } from "@components/Shadcn/Button";
+import TextField from "@components/Shadcn/TextField";
+import { Field, FieldLabel } from "@components/Shadcn/TextField/field";
+import { Input } from "@components/Shadcn/Input";
+import PayloadEditor from "@components/PayloadEditor/PastePayloadModal";
+import FormDialogShell from "@components/Forms/form-dialog-shell";
+import { PastePayloadButton } from "@components/Forms/paste-payload-button";
 import { cn } from "@/lib/utils";
 import type {
     IOnSearchPayload,
@@ -410,7 +410,7 @@ export default function FIS14MutualFundSelectForm({
                                             {field.label}
                                             {field.required !== false ? " *" : ""}
                                         </FieldLabel>
-                                        <input
+                                        <Input
                                             type="text"
                                             value={extraData[field.name] ?? ""}
                                             onChange={(event) => {
@@ -426,10 +426,7 @@ export default function FIS14MutualFundSelectForm({
                                                     });
                                                 }
                                             }}
-                                            className={cn(
-                                                "flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs",
-                                                extraErrors[field.name] && "border-destructive"
-                                            )}
+                                            aria-invalid={!!extraErrors[field.name]}
                                         />
                                         {extraErrors[field.name] && (
                                             <p className="text-xs text-destructive">

@@ -1,6 +1,6 @@
-import { FooterBottomBar } from "@/components/Footer/FooterBottomBar";
-import { FooterBrand } from "@/components/Footer/FooterBrand";
-import { FooterNav } from "@/components/Footer/FooterNav";
+import { FooterBottomBar } from "@components/Footer/FooterBottomBar";
+import { FooterBrand } from "@components/Footer/FooterBrand";
+import { FooterNav } from "@components/Footer/FooterNav";
 
 const Footer = () => (
     <footer className="text-n-0 mt-auto bg-brand-section">

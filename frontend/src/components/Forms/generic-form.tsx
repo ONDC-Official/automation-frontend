@@ -1,8 +1,8 @@
 import { Children, cloneElement, useEffect, useRef, useState, type ReactElement } from "react";
 import { DefaultValues, FieldValues, useForm } from "react-hook-form";
 
-import { Button } from "@/components/Shadcn/Button/button";
-import FormDialogShell from "@/components/ui/forms/form-dialog-shell";
+import { Button } from "@components/Shadcn/Button";
+import FormDialogShell from "@components/Forms/form-dialog-shell";
 
 interface IGenericFormProps<T extends FieldValues> {
     defaultValues?: DefaultValues<T>;

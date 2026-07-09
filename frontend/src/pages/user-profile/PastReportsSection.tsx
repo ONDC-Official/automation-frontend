@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { useAuth } from "@hooks/useAuth";
 import { useGetPastReportsQuery, useLazyGetReportQuery } from "@store/api";
 import { openReportInNewTab } from "@utils/generic-utils";
-import Spinner from "@/components/Shadcn/Spinner";
+import Spinner from "@components/Shadcn/Spinner";
 import { PastReportCard } from "@pages/user-profile/components/PastReportCard";
 import { ProfilePageHeader } from "@pages/user-profile/ProfilePageHeader";
 import { useReportFlowDescriptions } from "@pages/user-profile/hooks/useReportFlowDescriptions";

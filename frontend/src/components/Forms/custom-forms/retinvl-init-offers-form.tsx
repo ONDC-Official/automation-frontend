@@ -3,13 +3,13 @@ import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { PlusIcon } from "@heroicons/react/24/outline";
 import { toast } from "sonner";
 
-import { ComboBoxControl } from "@/components/Shadcn/ComboBox";
-import { Button } from "@/components/Shadcn/Button/button";
-import { Checkbox } from "@/components/Shadcn/Checkbox";
-import { CheckboxGroup } from "@/components/Shadcn/Checkbox";
-import TextField from "@/components/Shadcn/TextField";
-import { Field, FieldLabel } from "@/components/Shadcn/TextField/field";
-import FormDialogShell from "@/components/ui/forms/form-dialog-shell";
+import { ComboBoxControl } from "@components/Shadcn/ComboBox";
+import { Button } from "@components/Shadcn/Button";
+import { Checkbox } from "@components/Shadcn/Checkbox";
+import { CheckboxGroup } from "@components/Shadcn/Checkbox";
+import TextField from "@components/Shadcn/TextField";
+import { Field, FieldLabel } from "@components/Shadcn/TextField/field";
+import FormDialogShell from "@components/Forms/form-dialog-shell";
 import { useSession } from "@hooks/useSession";
 import { useLazyGetCompletePayloadQuery, useLazyGetTransactionDataQuery } from "@store/api";
 

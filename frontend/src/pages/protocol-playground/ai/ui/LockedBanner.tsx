@@ -1,5 +1,6 @@
 import { PiShieldStarBold } from "react-icons/pi";
 
+import { Button } from "@/components/Shadcn/Button";
 import { useAi } from "../hooks/use-ai";
 
 export function LockedBanner() {
@@ -19,13 +20,14 @@ export function LockedBanner() {
                         : "Protocol Guardian needs an API key. Set one up to enable chat and autocomplete."}
                 </span>
             </div>
-            <button
+            <Button
                 type="button"
+                variant="ghost"
                 onClick={configured ? ai.openUnlockModal : ai.openSetupModal}
                 className="shrink-0 px-3 py-1.5 text-sm rounded bg-sky-600 text-white hover:bg-sky-700"
             >
                 {configured ? "Unlock" : "Set up"}
-            </button>
+            </Button>
         </div>
     );
 }

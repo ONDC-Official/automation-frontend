@@ -2,8 +2,9 @@ import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { PlayIcon, ArrowUturnLeftIcon } from "@heroicons/react/24/outline";
 
-import FormFlowDialog from "@/components/Shadcn/Dialog/form-flow-dialog";
-import { Button } from "@/components/Shadcn/Button/button";
+import FormFlowDialog from "@components/Shadcn/Dialog/form-flow-dialog";
+import { Button } from "@components/Shadcn/Button";
+import { Textarea } from "@/components/Shadcn/TextArea/text-area";
 import {
     Combobox,
     ComboboxContent,
@@ -11,12 +12,12 @@ import {
     ComboboxInput,
     ComboboxItem,
     ComboboxList,
-} from "@/components/Shadcn/ComboBox/combobox";
+} from "@components/Shadcn/ComboBox/combobox";
 import { usePlayground } from "@pages/protocol-playground/hooks/playground-runtime";
 import type { ToolMessage } from "../../hooks/use-chat-session";
 import { usePendingApprovals } from "../../hooks/use-pending-approvals";
 import { createReadToolRegistry } from "../../tools/registry";
-import type { ToolContext } from "../../tools/types";
+import type { ToolDeps } from "../../tools/types";
 import { InspectorMessageList } from "./InspectorMessageList";
 import type {
     IJsonSchemaParameters,
@@ -118,7 +119,7 @@ export const ToolInspectorModal = ({ isOpen, onClose }: IToolInspectorModalProps
         setMessages((prev) => [...prev, running]);
         setIsRunning(true);
 
-        const ctx: ToolContext = {
+        const deps: ToolDeps = {
             config: playground.config,
             activeApi: playground.activeApi,
             terminalTail: playground.activeTerminalData,
@@ -128,7 +129,7 @@ export const ToolInspectorModal = ({ isOpen, onClose }: IToolInspectorModalProps
         };
 
         try {
-            const outcome = await registry.execute(selectedTool, JSON.stringify(parsed), ctx);
+            const outcome = await registry.execute(selectedTool, JSON.stringify(parsed), deps);
             setMessages((prev) =>
                 prev.map((m) =>
                     m.id !== toolCallId
@@ -155,8 +156,8 @@ export const ToolInspectorModal = ({ isOpen, onClose }: IToolInspectorModalProps
                     </span>
                 </div>
                 <p className="text-[11px] text-gray-600">
-                    Run any registered tool directly against the live playground context — no LLM in
-                    the loop. Use this to evaluate tool quality and inputs/outputs.
+                    Run any registered tool directly against the live playground snapshot — no LLM
+                    in the loop. Use this to evaluate tool quality and inputs/outputs.
                 </p>
 
                 <div className="flex flex-col gap-1">
@@ -223,12 +224,12 @@ export const ToolInspectorModal = ({ isOpen, onClose }: IToolInspectorModalProps
                             <ArrowUturnLeftIcon className="size-2.5" /> Reset stub
                         </Button>
                     </div>
-                    <textarea
+                    <Textarea
                         value={argsJson}
                         onChange={(e) => setArgsJson(e.target.value)}
                         rows={10}
                         spellCheck={false}
-                        className="font-mono text-[11px] border bg-white border-gray-300 rounded p-2 resize-y"
+                        className="font-mono text-[11px] bg-white border-gray-300 rounded shadow-none p-2 resize-y"
                     />
                 </div>
 

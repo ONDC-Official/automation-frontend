@@ -3,17 +3,18 @@ import { MinusIcon, PlusIcon } from "@heroicons/react/24/outline";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 
-import { ComboBoxControl } from "@/components/Shadcn/ComboBox";
-import { Button } from "@/components/Shadcn/Button/button";
-import { Checkbox } from "@/components/Shadcn/Checkbox";
-import TextField from "@/components/Shadcn/TextField";
-import { Field, FieldLabel } from "@/components/Shadcn/TextField/field";
-import { LabelWithToolTip } from "@/components/Shadcn/TextField";
-import { SelectControl } from "@/components/Shadcn/Select";
-import PayloadEditor from "@/components/PayloadEditor/PastePayloadModal";
-import FormDialogShell from "@/components/ui/forms/form-dialog-shell";
-import { PastePayloadButton } from "@/components/ui/forms/paste-payload-button";
-import { getItemsAndCustomistions } from "@/utils/generic-utils";
+import { ComboBoxControl } from "@components/Shadcn/ComboBox";
+import { Button } from "@components/Shadcn/Button";
+import { Checkbox } from "@components/Shadcn/Checkbox";
+import TextField from "@components/Shadcn/TextField";
+import { Field, FieldLabel } from "@components/Shadcn/TextField/field";
+import { LabelWithToolTip } from "@components/Shadcn/TextField";
+import { Input } from "@components/Shadcn/Input";
+import { SelectControl } from "@components/Shadcn/Select";
+import PayloadEditor from "@components/PayloadEditor/PastePayloadModal";
+import FormDialogShell from "@components/Forms/form-dialog-shell";
+import { PastePayloadButton } from "@components/Forms/paste-payload-button";
+import { getItemsAndCustomistions } from "@utils/generic-utils";
 import { SubmitEventParams } from "@/types/flow-types";
 import { CatalogLocation } from "../types/ret10-grocery-select-form-types";
 import { validateFormDataRET11 } from "./ret10-grocery-select-form";
@@ -343,7 +344,7 @@ const RET11NestedSelectForm = ({
                                     return (
                                         <Field>
                                             <FieldLabel>Provider Location Id</FieldLabel>
-                                            <input
+                                            <Input
                                                 type="text"
                                                 value={
                                                     Array.isArray(field.value)
@@ -353,7 +354,6 @@ const RET11NestedSelectForm = ({
                                                 onChange={(event) =>
                                                     field.onChange(event.target.value)
                                                 }
-                                                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring focus-visible:ring-ring/50"
                                                 placeholder="Enter location id"
                                             />
                                         </Field>

@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { toast } from "sonner";
 
-import { Button } from "@/components/Shadcn/Button/button";
-import PayloadEditor from "@/components/PayloadEditor/PastePayloadModal";
-import FormDialogShell from "@/components/ui/forms/form-dialog-shell";
-import { PastePayloadButton } from "@/components/ui/forms/paste-payload-button";
+import { Button } from "@components/Shadcn/Button";
+import PayloadEditor from "@components/PayloadEditor/PastePayloadModal";
+import FormDialogShell from "@components/Forms/form-dialog-shell";
+import { PastePayloadButton } from "@components/Forms/paste-payload-button";
 import { cn } from "@/lib/utils";
 import {
     IAirlineSeatSelectProps,
@@ -561,7 +561,7 @@ export default function TRV12AirlineSeatSelectForm({ submitEvent }: IAirlineSeat
                                                         }
 
                                                         return (
-                                                            <button
+                                                            <Button
                                                                 key={
                                                                     seatNumber ||
                                                                     `${rowIndex}-${colIndex}`
@@ -625,7 +625,7 @@ export default function TRV12AirlineSeatSelectForm({ submitEvent }: IAirlineSeat
                                                                             )}
                                                                     </>
                                                                 )}
-                                                            </button>
+                                                            </Button>
                                                         );
                                                     })}
                                                 </div>

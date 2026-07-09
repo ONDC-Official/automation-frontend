@@ -1,7 +1,7 @@
 import { FC } from "react";
-import { Card, CardContent } from "@/components/Shadcn/Card/card";
-import { supportInfoItems } from "@/pages/home/constants";
-import SupportInfoItem from "@/pages/home/SupportInfoItem";
+import { Card, CardContent } from "@components/Shadcn/Card/card";
+import { supportInfoItems } from "@pages/home/constants";
+import SupportInfoItem from "@pages/home/SupportInfoItem";
 
 const SupportInfoGrid: FC = () => (
     <Card variant="muted">

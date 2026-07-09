@@ -1,11 +1,11 @@
-import { Button } from "@/components/Shadcn/Button/button";
-import { FieldGroup } from "@/components/Shadcn/TextField/field";
-import { ComboBox } from "@/components/Shadcn/ComboBox";
-import { TextField } from "@/components/Shadcn/TextField";
-import { DomainVersionUsecaseFields } from "@/pages/scenario/DomainVersionUsecaseFields";
-import { trackSchemaValidationForm } from "@/pages/scenario/helpers";
-import { SessionFormActions } from "@/pages/scenario/SessionFormActions";
-import { IManualSessionFormProps } from "@/pages/scenario/types";
+import { Button } from "@components/Shadcn/Button";
+import { FieldGroup } from "@components/Shadcn/TextField/field";
+import { ComboBox } from "@components/Shadcn/ComboBox";
+import { TextField } from "@components/Shadcn/TextField";
+import { DomainVersionUsecaseFields } from "@pages/scenario/DomainVersionUsecaseFields";
+import { trackSchemaValidationForm } from "@pages/scenario/helpers";
+import { SessionFormActions } from "@pages/scenario/SessionFormActions";
+import { IManualSessionFormProps } from "@pages/scenario/types";
 
 export const ManualSessionForm = ({
     domains,

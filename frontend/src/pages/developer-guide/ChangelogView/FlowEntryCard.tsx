@@ -3,7 +3,7 @@ import type { ChangeEntry } from "../types";
 import { IconChevronDown } from "../shared/icons";
 import { KIND_CONFIG } from "./kindConfig";
 import { DIFF_CHIP_CLASSES } from "./DiffViewer";
-import { Button } from "@/components/Shadcn/Button";
+import { Button } from "@components/Shadcn/Button";
 
 const LABEL_COL = "w-28 shrink-0";
 const CHIP_WIDTH = "w-20";

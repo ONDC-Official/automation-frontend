@@ -17,9 +17,9 @@ export const frameworkHealthPersistConfig: PersistConfig<IFrameworkHealthState> 
     storage: sessionStorage,
 };
 
-/** Persist only the auth token — user profile is owned by the RTK Query `getMe` cache. */
+/** Persist auth token and in-flight OAuth flag — user profile is owned by the RTK Query `getMe` cache. */
 export const authPersistConfig: PersistConfig<IAuthState> = {
     key: "auth",
     storage,
-    whitelist: ["token"],
+    whitelist: ["token", "isLoginPending"],
 };

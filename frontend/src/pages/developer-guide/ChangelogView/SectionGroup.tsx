@@ -2,7 +2,7 @@ import { type FC, useState } from "react";
 import type { ChangeSection } from "../types";
 import { IconChevronDown } from "../shared/icons";
 import { ChangeRow } from "./ChangeRow";
-import { Button } from "@/components/Shadcn/Button";
+import { Button } from "@components/Shadcn/Button";
 
 export const SectionGroup: FC<{ section: ChangeSection }> = ({ section }) => {
     const [collapsed, setCollapsed] = useState(false);

@@ -1,4 +1,5 @@
 import { type FC } from "react";
+import { Button } from "@/components/Shadcn/Button";
 import type { ActionRelationship } from "./types";
 
 interface ActionCardProps {
@@ -42,10 +43,12 @@ const ActionCard: FC<ActionCardProps> = ({
             />
 
             <div className="pl-4 pr-4 py-3 flex items-center gap-2 border-b border-slate-100 bg-slate-50/60 dark:bg-surface-muted/60">
-                <button
+                <Button
+                    type="button"
+                    variant="ghost"
                     onClick={() => onToggleFocus(api)}
                     title="Focus this action"
-                    className="flex items-center gap-2 flex-1 min-w-0 text-left group"
+                    className="h-auto justify-start gap-2 flex-1 min-w-0 rounded-none p-0 font-normal text-left group"
                 >
                     <span className="font-mono text-sm font-bold text-slate-800 truncate">
                         {api}
@@ -60,7 +63,7 @@ const ActionCard: FC<ActionCardProps> = ({
                         <circle cx="11" cy="11" r="8" />
                         <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35" />
                     </svg>
-                </button>
+                </Button>
 
                 <div className="flex items-center gap-1 shrink-0">
                     {isEntry && (
@@ -81,12 +84,14 @@ const ActionCard: FC<ActionCardProps> = ({
                     <div className="flex items-start gap-2 border-l-2 border-slate-300 pl-2.5 py-0.5">
                         <p className="text-xs text-slate-500 leading-relaxed">
                             Async response to{" "}
-                            <button
+                            <Button
+                                type="button"
+                                variant="ghost"
                                 onClick={() => onToggleFocus(asyncPredecessor)}
-                                className="font-mono font-semibold text-slate-700 hover:text-sky-700 dark:hover:text-sky-400 hover:underline transition"
+                                className="h-auto rounded-none p-0 font-mono font-semibold text-slate-700 hover:text-sky-700 dark:hover:text-sky-400 hover:underline transition"
                             >
                                 {asyncPredecessor}
-                            </button>{" "}
+                            </Button>{" "}
                             — must share the same{" "}
                             <span className="font-semibold text-slate-700">message_id</span>.
                         </p>
@@ -101,17 +106,19 @@ const ActionCard: FC<ActionCardProps> = ({
                     {nextActions.length > 0 ? (
                         <div className="flex flex-wrap gap-1.5">
                             {nextActions.map((next) => (
-                                <button
+                                <Button
                                     key={next}
+                                    type="button"
+                                    variant="ghost"
                                     onClick={() => onToggleFocus(next)}
-                                    className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium border transition-all ${
+                                    className={`rounded-md px-2 py-0.5 text-xs font-medium border transition-all ${
                                         focused === next
                                             ? "bg-sky-500 text-white border-sky-500 shadow-xs"
                                             : "bg-sky-50 dark:bg-sky-500/10 text-sky-700 dark:text-sky-300 border-sky-200 dark:border-sky-500/30 hover:bg-sky-100 dark:hover:bg-sky-500/20"
                                     }`}
                                 >
                                     {next}
-                                </button>
+                                </Button>
                             ))}
                         </div>
                     ) : (
@@ -129,17 +136,19 @@ const ActionCard: FC<ActionCardProps> = ({
                     {requiredHistory.length > 0 ? (
                         <div className="flex flex-wrap gap-1.5">
                             {requiredHistory.map((h) => (
-                                <button
+                                <Button
                                     key={h}
+                                    type="button"
+                                    variant="ghost"
                                     onClick={() => onToggleFocus(h)}
-                                    className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium border transition-all ${
+                                    className={`rounded-md px-2 py-0.5 text-xs font-medium border transition-all ${
                                         focused === h
                                             ? "bg-slate-700 text-white border-slate-700 shadow-xs"
                                             : "bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200"
                                     }`}
                                 >
                                     {h}
-                                </button>
+                                </Button>
                             ))}
                         </div>
                     ) : (
