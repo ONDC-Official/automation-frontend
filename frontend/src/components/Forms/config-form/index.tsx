@@ -46,6 +46,7 @@ import FIS12SelectForm from "@/components/ui/forms/custom-forms/fis12-select-for
 import FIS13AddonSelectForm from "@/components/ui/forms/custom-forms/fis13-addon-select-form";
 import InsuranceSelectForm from "@/components/ui/forms/custom-forms/fis13-insurance-select-form";
 import FIS12SearchForm from "@/components/ui/forms/custom-forms/fis12-search-form";
+import FIS12PersonalLoanSelectForm from "@/components/Forms/custom-forms/fis12-personal-loan-select-form";
 import TRV11SelectMetroForm from "@/components/ui/forms/custom-forms/trv11-select-metro-form";
 import { RJSFSchema } from "@rjsf/utils";
 import RetINVLInitILBPForm from "@/components/ui/forms/custom-forms/retinvl-ilbp-form";
@@ -324,6 +325,10 @@ export const FormConfig = ({
 
     if (formConfig.find((field) => field.type === "fis12_select_pl")) {
         return <FIS12SelectForm submitEvent={submitEvent} />;
+    }
+
+    if (formConfig.find((field) => field.type === "fis12_personal_loan_select")) {
+        return <FIS12PersonalLoanSelectForm submitEvent={submitEvent} />;
     }
 
     if (formConfig.find((field) => field.type === "fis13_addon_select")) {

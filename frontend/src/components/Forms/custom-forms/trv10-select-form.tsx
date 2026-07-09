@@ -196,15 +196,6 @@ export default function TRV10SelectForm({ submitEvent }: ITRV10SelectFormProps) 
                                 />
                             )}
 
-                            <TextField
-                                control={control}
-                                name={`items.${index}.count`}
-                                label="Quantity"
-                                type="number"
-                                min={1}
-                                required
-                            />
-
                             {selectedExtracted && selectedExtracted.addOns.length > 0 && (
                                 <div className="space-y-2">
                                     <ComboBoxControl
