@@ -823,14 +823,15 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                                 <FaBox className="text-blue-500" />
                                 Item {index + 1}
                             </h3>
-                            <button
+                            <Button
                                 type="button"
+                                variant="ghost"
                                 onClick={() => removeItem(index)}
-                                className="text-red-500 hover:text-red-700 p-1"
+                                className="h-auto text-red-500 hover:text-red-700 p-1"
                                 disabled={fields.length === 1}
                             >
                                 <FaTrash />
-                            </button>
+                            </Button>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -2606,29 +2607,31 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                                                             </div>
                                                         </div>
                                                         <div className="flex gap-1">
-                                                            <button
+                                                            <Button
                                                                 type="button"
+                                                                variant="ghost"
                                                                 onClick={() =>
                                                                     openEditVariantModal(
                                                                         index,
                                                                         vIdx
                                                                     )
                                                                 }
-                                                                className="text-blue-500 hover:text-blue-700 p-1 rounded hover:bg-blue-50"
+                                                                className="h-auto text-blue-500 hover:text-blue-700 p-1 rounded hover:bg-blue-50"
                                                                 title="View/Edit variant"
                                                             >
                                                                 <FaEdit className="text-sm" />
-                                                            </button>
-                                                            <button
+                                                            </Button>
+                                                            <Button
                                                                 type="button"
+                                                                variant="ghost"
                                                                 onClick={() =>
                                                                     removeVariant(index, vIdx)
                                                                 }
-                                                                className="text-red-500 hover:text-red-700 p-1 rounded hover:bg-red-50"
+                                                                className="h-auto text-red-500 hover:text-red-700 p-1 rounded hover:bg-red-50"
                                                                 title="Remove variant"
                                                             >
                                                                 <FaTrash className="text-sm" />
-                                                            </button>
+                                                            </Button>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -2655,24 +2658,26 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                 ))}
 
                 <div className="flex justify-center gap-4">
-                    <button
+                    <Button
                         type="button"
+                        variant="ghost"
                         onClick={addItem}
-                        className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors duration-200 flex items-center gap-2"
+                        className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors duration-200 gap-2"
                     >
                         <FaPlus />
                         Add Another Item
-                    </button>
+                    </Button>
                 </div>
 
                 <div className="flex justify-between pt-6">
-                    <button
+                    <Button
                         type="button"
+                        variant="ghost"
                         onClick={onPrevious}
                         className="bg-gray-500 text-white px-6 py-2 rounded-md hover:bg-gray-600 transition-colors duration-200"
                     >
                         Previous
-                    </button>
+                    </Button>
                     <LoadingButton type="submit" buttonText="Next" isLoading={isSubmitting} />
                 </div>
             </form>

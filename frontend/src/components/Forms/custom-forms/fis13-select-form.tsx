@@ -278,14 +278,15 @@ export default function FIS13ItemSelection({ submitEvent, referenceData }: IFIS1
                                 className="inline-flex items-center gap-2 rounded-full bg-surface-muted px-3 py-1.5 text-sm font-medium text-text-primary"
                             >
                                 {item.descriptor?.name || item.id}
-                                <button
+                                <Button
                                     type="button"
+                                    variant="ghost"
                                     onClick={() => toggleItemSelection(item)}
                                     className="text-text-secondary hover:text-destructive"
                                     aria-label={`Remove ${item.id}`}
                                 >
                                     <TrashIcon className="size-4" />
-                                </button>
+                                </Button>
                             </span>
                         ))}
                     </div>

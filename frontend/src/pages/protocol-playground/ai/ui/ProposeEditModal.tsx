@@ -4,6 +4,7 @@ import { PiShieldStarBold } from "react-icons/pi";
 import { MockRunner } from "@ondc/automation-mock-runner";
 
 import FormFlowDialog from "@components/Shadcn/Dialog/form-flow-dialog";
+import { Button } from "@/components/Shadcn/Button/button";
 import { usePlayground } from "@pages/protocol-playground/hooks/playground-runtime";
 
 import { usePendingApprovals } from "../hooks/use-pending-approvals";
@@ -126,20 +127,22 @@ export function ProposeEditModal() {
                 <DiffViewer rows={rows} />
 
                 <div className="flex items-center justify-end gap-2 pt-2 border-t border-gray-200">
-                    <button
+                    <Button
                         type="button"
+                        variant="ghost"
                         onClick={() => approvals.resolve(current.toolCallId, false)}
-                        className="inline-flex items-center gap-1 px-3 py-1.5 text-sm rounded border border-gray-300 text-gray-700 hover:bg-gray-50"
+                        className="gap-1 px-3 py-1.5 text-sm rounded border border-gray-300 text-gray-700 hover:bg-gray-50"
                     >
                         <FaTimes className="h-3 w-3" /> Reject
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                         type="button"
+                        variant="ghost"
                         onClick={() => approvals.resolve(current.toolCallId, true)}
-                        className="inline-flex items-center gap-1 px-3 py-1.5 text-sm rounded bg-emerald-600 text-white hover:bg-emerald-700"
+                        className="gap-1 px-3 py-1.5 text-sm rounded bg-emerald-600 text-white hover:bg-emerald-700"
                     >
                         <FaCheck className="h-3 w-3" /> Approve
-                    </button>
+                    </Button>
                 </div>
             </div>
         </FormFlowDialog>

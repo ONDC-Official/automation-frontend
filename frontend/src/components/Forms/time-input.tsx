@@ -216,8 +216,9 @@ const TimeInput: React.FC<TimeInputProps> = ({
                         {allowFormatToggle && (
                             <div className="flex justify-center">
                                 <div className="bg-gray-100 rounded-lg p-1 flex">
-                                    <button
+                                    <Button
                                         type="button"
+                                        variant="ghost"
                                         className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                                             currentFormat === "12h"
                                                 ? "bg-white text-sky-600 shadow-xs"
@@ -226,9 +227,10 @@ const TimeInput: React.FC<TimeInputProps> = ({
                                         onClick={() => handleFormatChange("12h")}
                                     >
                                         12 Hour
-                                    </button>
-                                    <button
+                                    </Button>
+                                    <Button
                                         type="button"
+                                        variant="ghost"
                                         className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                                             currentFormat === "24h"
                                                 ? "bg-white text-sky-600 shadow-xs"
@@ -237,7 +239,7 @@ const TimeInput: React.FC<TimeInputProps> = ({
                                         onClick={() => handleFormatChange("24h")}
                                     >
                                         24 Hour
-                                    </button>
+                                    </Button>
                                 </div>
                             </div>
                         )}

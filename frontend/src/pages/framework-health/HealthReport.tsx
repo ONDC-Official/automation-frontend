@@ -1,6 +1,7 @@
 import { FC, useEffect, useState } from "react";
 import { HealthReportData, DomainResult, VersionResult } from "@hooks/useFrameworkHealth";
 import AppJsonViewer from "@components/AppJsonViewer";
+import { Button } from "@/components/Shadcn/Button/button";
 
 interface Props {
     report: HealthReportData;
@@ -134,9 +135,11 @@ const DomainModal: FC<{
                             {healthyCount}/{domain.versions.length} healthy
                         </span>
                     </div>
-                    <button
+                    <Button
+                        type="button"
+                        variant="ghost"
                         onClick={onClose}
-                        className="ml-4 shrink-0 w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-700 transition-colors"
+                        className="ml-4 shrink-0 w-8 h-8 rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-700 transition-colors"
                     >
                         <svg
                             className="w-4 h-4"
@@ -151,7 +154,7 @@ const DomainModal: FC<{
                                 d="M6 18L18 6M6 6l12 12"
                             />
                         </svg>
-                    </button>
+                    </Button>
                 </div>
 
                 {/* Scrollable body */}
@@ -196,9 +199,11 @@ const DomainBox: FC<{ domain: DomainResult; onOpen: () => void }> = ({ domain, o
           : "bg-yellow-100 text-yellow-700";
 
     return (
-        <button
+        <Button
+            type="button"
+            variant="ghost"
             onClick={onOpen}
-            className={`w-full text-left rounded-xl border-2 ${borderColor} bg-white shadow-xs ${headerBg} transition-all hover:shadow-md active:scale-[0.98] px-4 py-3`}
+            className={`h-auto w-full flex-col items-stretch text-left rounded-xl border-2 ${borderColor} bg-white font-normal shadow-xs ${headerBg} transition-all hover:shadow-md active:scale-[0.98] px-4 py-3`}
         >
             <div className="flex items-start justify-between gap-2">
                 <div className="flex items-center gap-2 min-w-0">
@@ -246,7 +251,7 @@ const DomainBox: FC<{ domain: DomainResult; onOpen: () => void }> = ({ domain, o
                     </span>
                 ))}
             </div>
-        </button>
+        </Button>
     );
 };
 
@@ -295,17 +300,19 @@ const HealthReport: FC<Props> = ({ report, lastChecked }) => {
             <div className="flex items-center justify-between flex-wrap gap-3">
                 <div className="flex items-center gap-2">
                     {(["all", "healthy", "unhealthy"] as const).map((f) => (
-                        <button
+                        <Button
                             key={f}
+                            type="button"
+                            variant="ghost"
                             onClick={() => setFilter(f)}
-                            className={`text-xs px-3 py-1.5 rounded-full font-medium capitalize transition-colors ${
+                            className={`h-auto text-xs px-3 py-1.5 rounded-full font-medium capitalize transition-colors ${
                                 filter === f
                                     ? "bg-sky-500 text-white"
                                     : "bg-white border border-sky-200 text-gray-600 hover:border-sky-400"
                             }`}
                         >
                             {f}
-                        </button>
+                        </Button>
                     ))}
                     <span className="text-xs text-gray-400 ml-1">{filtered.length} domains</span>
                 </div>

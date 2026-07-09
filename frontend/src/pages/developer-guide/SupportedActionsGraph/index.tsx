@@ -15,6 +15,7 @@ import type { SupportedActions } from "../types";
 import { isSentinelKey, computeLayout } from "./computeLayout";
 import { nodeTypes, type ActionNodeData } from "./ActionNode";
 import { NodeTooltip } from "./NodeTooltip";
+import { Button } from "@/components/Shadcn/Button/button";
 
 interface SupportedActionsGraphProps {
     supportedActions: SupportedActions;
@@ -233,10 +234,11 @@ const SupportedActionsGraph: FC<SupportedActionsGraphProps> = ({ supportedAction
                         <span className="ml-1">history</span>
                     </span>
                     {focused ? (
-                        <button
+                        <Button
                             type="button"
+                            variant="ghost"
                             onClick={() => setFocused(null)}
-                            className="ml-auto flex items-center gap-1 text-xs font-semibold text-sky-600 dark:text-sky-400 hover:text-sky-800 dark:hover:text-sky-300 transition-colors"
+                            className="h-auto ml-auto p-0 gap-1 text-xs font-semibold text-sky-600 dark:text-sky-400 hover:text-sky-800 dark:hover:text-sky-300 transition-colors"
                         >
                             <svg
                                 className="h-3 w-3"
@@ -253,7 +255,7 @@ const SupportedActionsGraph: FC<SupportedActionsGraphProps> = ({ supportedAction
                                 />
                             </svg>
                             Clear focus
-                        </button>
+                        </Button>
                     ) : (
                         <p className="ml-auto text-slate-400 italic hidden sm:block">
                             Click node to focus · hover for details

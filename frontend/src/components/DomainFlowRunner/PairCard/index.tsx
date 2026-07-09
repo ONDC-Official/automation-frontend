@@ -194,14 +194,15 @@ function StepDisplay({ step, flowId }: { step: MappedStep; flowId: string }) {
 
                             {step.description ? (
                                 <TooltipHint content={step.description}>
-                                    <button
+                                    <Button
                                         type="button"
+                                        variant="ghost"
                                         tabIndex={-1}
                                         aria-label="Step description"
-                                        className="shrink-0 text-brand-normal"
+                                        className="h-auto shrink-0 rounded-none p-0 text-brand-normal"
                                     >
                                         <InformationCircleIcon className="size-4" />
-                                    </button>
+                                    </Button>
                                 </TooltipHint>
                             ) : null}
                         </div>

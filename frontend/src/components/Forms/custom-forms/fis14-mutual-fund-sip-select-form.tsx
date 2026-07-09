@@ -7,6 +7,7 @@ import { ComboBoxControl } from "@components/Shadcn/ComboBox";
 import { Button } from "@components/Shadcn/Button/button";
 import TextField from "@components/Shadcn/TextField";
 import { Field, FieldLabel } from "@components/Shadcn/TextField/field";
+import { Input } from "@/components/Shadcn/TextField/input";
 import PayloadEditor from "@components/PayloadEditor/PastePayloadModal";
 import FormDialogShell from "@components/Forms/form-dialog-shell";
 import { PastePayloadButton } from "@components/Forms/paste-payload-button";
@@ -678,7 +679,7 @@ export default function FIS14MutualFundSIPSelectForm({
                                             {field.label}
                                             {field.required !== false ? " *" : ""}
                                         </FieldLabel>
-                                        <input
+                                        <Input
                                             type="text"
                                             value={extraData[field.name] ?? ""}
                                             onChange={(e) => {
@@ -693,10 +694,7 @@ export default function FIS14MutualFundSIPSelectForm({
                                                         return next;
                                                     });
                                             }}
-                                            className={cn(
-                                                "flex h-9 w-full rounded-md border border-border-default bg-surface px-3 py-1 text-sm text-text-primary shadow-sm transition-colors placeholder:text-text-secondary focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
-                                                extraErrors[field.name] && "border-destructive"
-                                            )}
+                                            aria-invalid={!!extraErrors[field.name]}
                                         />
                                         {extraErrors[field.name] && (
                                             <p className="text-xs text-destructive">

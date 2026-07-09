@@ -203,15 +203,16 @@ export default function InsuranceSelectForm({ submitEvent }: IInsuranceSelectFor
                             {catalog.items.map((item, index) => {
                                 const isSelected = selectedItemIndex === index;
                                 return (
-                                    <button
+                                    <Button
                                         key={item.id}
                                         type="button"
+                                        variant="ghost"
                                         onClick={() => {
                                             setValue("selectedItemIndex", index);
                                             setSelectedAddOns([]);
                                         }}
                                         className={cn(
-                                            "flex w-full items-center gap-3 p-3 text-left transition-colors",
+                                            "h-auto w-full items-center justify-start gap-3 rounded-none p-3 text-left font-normal whitespace-normal transition-colors",
                                             isSelected
                                                 ? "border-l-4 border-l-brand-normal bg-surface-muted/60"
                                                 : "hover:bg-surface-muted/40"
@@ -247,7 +248,7 @@ export default function InsuranceSelectForm({ submitEvent }: IInsuranceSelectFor
                                                 {item.add_ons.length} add-on(s)
                                             </Badge>
                                         )}
-                                    </button>
+                                    </Button>
                                 );
                             })}
                         </div>

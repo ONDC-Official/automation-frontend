@@ -2,8 +2,9 @@ import React, { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { FaUpload, FaTrash } from "react-icons/fa";
 import { useUploadImageMutation } from "@store/api";
-import { LabelWithToolTip } from "@components/Shadcn/TextField";
-import { Button } from "@components/Shadcn/Button";
+import { LabelWithToolTip } from "@/components/Shadcn/TextField";
+import { Button } from "@/components/Shadcn/Button";
+import { Input } from "@/components/Shadcn/TextField/input";
 
 interface SingleImageUploadProps {
     label: string;
@@ -182,22 +183,22 @@ const SingleImageUpload: React.FC<SingleImageUploadProps> = ({
 
                 {inputMode === "upload" ? (
                     <div className="relative">
-                        <input
+                        <Input
                             type="file"
                             accept="image/*"
                             name={`${folder}-single-image`}
                             onChange={handleFileChange}
-                            className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-sky-50 file:text-sky-700 hover:file:bg-sky-100 cursor-pointer border border-gray-300 rounded-md focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-colors"
+                            className="h-auto w-full cursor-pointer text-sm text-gray-500 file:mr-4 file:rounded-md file:border-0 file:bg-sky-50 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-sky-700 hover:file:bg-sky-100 transition-colors"
                         />
                     </div>
                 ) : (
                     <div className="flex gap-2">
-                        <input
+                        <Input
                             type="text"
                             placeholder="Enter image URL (e.g., https://example.com/image.jpg)"
                             value={urlInputValue}
                             onChange={(e) => setUrlInputValue(e.target.value)}
-                            className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-sky-500 focus:border-sky-500 text-sm"
+                            className="flex-1 rounded-md text-sm"
                             onKeyPress={(e) => {
                                 if (e.key === "Enter") {
                                     e.preventDefault();

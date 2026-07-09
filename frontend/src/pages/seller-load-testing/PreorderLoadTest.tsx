@@ -1,5 +1,6 @@
 import React from "react";
 import LoadingButton from "@components/Forms/loading-button";
+import { Input } from "@/components/Shadcn/TextField/input";
 import RunMetrics from "@pages/seller-load-testing/RunMetrics";
 import type { PreorderLoadTestProps } from "@pages/seller-load-testing/types";
 import { usePreorderLoadTest } from "@pages/seller-load-testing/usePreorderLoadTest";
@@ -33,24 +34,24 @@ const PreorderLoadTest: React.FC<PreorderLoadTestProps> = ({
                     <div className="flex items-end gap-4">
                         <div className="flex flex-col gap-1">
                             <label className="text-xs font-medium text-gray-600">RPS</label>
-                            <input
+                            <Input
                                 type="number"
                                 min={1}
                                 value={rps}
                                 onChange={(e) => setRps(Number(e.target.value))}
-                                className="w-20 border border-gray-900 rounded-md px-3 py-2 text-sm bg-gray-50 focus:outline-hidden focus:ring-2 focus:ring-sky-500"
+                                className="w-20 border-gray-900 rounded-md px-3 py-2 text-sm bg-gray-50 focus-visible:ring-2 focus-visible:ring-sky-500"
                             />
                         </div>
                         <div className="flex flex-col gap-1">
                             <label className="text-xs font-medium text-gray-600">
                                 Duration (sec)
                             </label>
-                            <input
+                            <Input
                                 type="number"
                                 min={1}
                                 value={duration}
                                 onChange={(e) => setDuration(Number(e.target.value))}
-                                className="w-20 border border-gray-900 rounded-md px-3 py-2 text-sm bg-gray-50 focus:outline-hidden focus:ring-2 focus:ring-sky-500"
+                                className="w-20 border-gray-900 rounded-md px-3 py-2 text-sm bg-gray-50 focus-visible:ring-2 focus-visible:ring-sky-500"
                             />
                         </div>
                         <div className={!discoveryComplete ? "opacity-40 cursor-not-allowed" : ""}>

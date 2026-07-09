@@ -25,6 +25,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@components/Shadcn/Tabs";
 import { Card } from "@pages/seller-onboarding/components/LegacyCardTag";
 import TextField from "@components/Shadcn/TextField";
+import { Input } from "@/components/Shadcn/TextField/input";
 import LoadingButton from "@components/Forms/loading-button";
 import { SellerOnboardingData } from "@pages/seller-onboarding";
 import { weekDays } from "@constants/common";
@@ -145,13 +146,14 @@ const AvailabilityTimingsSection = ({
                     <FaClock className="text-sky-600" />
                     Availability Timings
                 </h5>
-                <button
+                <Button
                     type="button"
+                    variant="ghost"
                     onClick={addTiming}
                     className="text-sm px-3 py-1 border border-sky-600 text-sky-600 rounded-md hover:bg-sky-50 transition-colors"
                 >
                     + Add Timing
-                </button>
+                </Button>
             </div>
 
             {timingFields.map((field, timingIndex) => (
@@ -161,14 +163,15 @@ const AvailabilityTimingsSection = ({
                             Timing {timingIndex + 1}
                         </h6>
                         {timingFields.length > 1 && (
-                            <button
+                            <Button
                                 type="button"
+                                variant="ghost"
                                 onClick={() => handleRemoveTiming(timingIndex)}
-                                className="text-red-500 hover:text-red-700 p-1"
+                                className="h-auto text-red-500 hover:text-red-700 p-1"
                                 title="Remove timing"
                             >
                                 <FaTrash className="text-sm" />
-                            </button>
+                            </Button>
                         )}
                     </div>
 
@@ -679,13 +682,14 @@ const CustomMenuFormEnhanced = ({
                                 <h3 className="text-lg font-semibold text-gray-700">
                                     Custom Menu with Customizations
                                 </h3>
-                                <button
+                                <Button
                                     type="button"
+                                    variant="ghost"
                                     onClick={addMenuItem}
                                     className="px-4 py-2 text-sm bg-sky-600 text-white rounded-md hover:bg-sky-700 transition-colors"
                                 >
                                     + Add Menu
-                                </button>
+                                </Button>
                             </div>
 
                             {fields.map((field, index) => (
@@ -698,13 +702,14 @@ const CustomMenuFormEnhanced = ({
                                                 Menu Item {index + 1}
                                             </h4>
                                             {fields.length > 1 && (
-                                                <button
+                                                <Button
                                                     type="button"
+                                                    variant="ghost"
                                                     onClick={() => removeMenuItem(index)}
-                                                    className="text-red-600 hover:text-red-800 text-sm"
+                                                    className="h-auto p-0 text-red-600 hover:text-red-800 text-sm"
                                                 >
                                                     Remove
-                                                </button>
+                                                </Button>
                                             )}
                                         </div>
                                     }
@@ -1031,21 +1036,23 @@ const CustomMenuFormEnhanced = ({
                         </div>
 
                         <div className="flex justify-between mt-8">
-                            <button
+                            <Button
                                 type="button"
+                                variant="ghost"
                                 onClick={onPrevious}
                                 className="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
                             >
                                 Previous
-                            </button>
+                            </Button>
                             <div className="flex gap-3">
-                                <button
+                                <Button
                                     type="button"
+                                    variant="ghost"
                                     onClick={handleSkip}
                                     className="px-6 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors border border-gray-300"
                                 >
                                     Skip This Step
-                                </button>
+                                </Button>
                                 <LoadingButton
                                     buttonText={isFinalStep ? "Submit Application" : "Next Step"}
                                     type="submit"
@@ -1060,28 +1067,31 @@ const CustomMenuFormEnhanced = ({
                     <CustomMenuComprehensiveView menuItems={watchMenu} />
 
                     <div className="flex justify-between mt-8">
-                        <button
+                        <Button
                             type="button"
+                            variant="ghost"
                             onClick={onPrevious}
                             className="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
                         >
                             Previous
-                        </button>
+                        </Button>
                         <div className="flex gap-3">
-                            <button
+                            <Button
                                 type="button"
+                                variant="ghost"
                                 onClick={handleSkip}
                                 className="px-6 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors border border-gray-300"
                             >
                                 Skip This Step
-                            </button>
-                            <button
+                            </Button>
+                            <Button
                                 type="button"
+                                variant="ghost"
                                 onClick={handleSubmit(onSubmit as (data: unknown) => void)}
                                 className="px-6 py-2 bg-sky-600 text-white rounded-md hover:bg-sky-700 transition-colors"
                             >
                                 {isFinalStep ? "Submit Application" : "Next Step"}
-                            </button>
+                            </Button>
                         </div>
                     </div>
                 </TabsContent>
@@ -1174,11 +1184,11 @@ const CustomizationGroupForm = ({
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                         Group Name <span className="text-red-500">*</span>
                     </label>
-                    <input
+                    <Input
                         type="text"
                         value={group.name}
                         onChange={(e) => onChange({ ...group, name: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                        className="w-full rounded-md"
                         placeholder="e.g., Size, Toppings, Add-ons"
                     />
                 </div>
@@ -1203,12 +1213,12 @@ const CustomizationGroupForm = ({
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                         Display Sequence <span className="text-red-500">*</span>
                     </label>
-                    <input
+                    <Input
                         type="number"
                         min="1"
                         value={group.seq || 1}
                         onChange={(e) => onChange({ ...group, seq: parseInt(e.target.value) || 1 })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                        className="w-full rounded-md"
                         placeholder="1"
                     />
                     <p className="text-xs text-gray-500 mt-1">Order of this group (1 = first)</p>
@@ -1245,7 +1255,7 @@ const CustomizationGroupForm = ({
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                         Min Quantity {group.required && <span className="text-red-500">*</span>}
                     </label>
-                    <input
+                    <Input
                         type="number"
                         min={group.required ? "1" : "0"}
                         value={group.minQuantity}
@@ -1255,7 +1265,7 @@ const CustomizationGroupForm = ({
                             const minValue = group.required ? Math.max(1, value) : value;
                             onChange({ ...group, minQuantity: minValue });
                         }}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                        className="w-full rounded-md"
                     />
                     {group.required && group.minQuantity < 1 && (
                         <p className="text-xs text-red-500 mt-1">
@@ -1268,14 +1278,14 @@ const CustomizationGroupForm = ({
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                         Max Quantity
                     </label>
-                    <input
+                    <Input
                         type="number"
                         min="1"
                         value={group.maxQuantity}
                         onChange={(e) =>
                             onChange({ ...group, maxQuantity: parseInt(e.target.value) || 1 })
                         }
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                        className="w-full rounded-md"
                     />
                 </div>
             </div>
@@ -1299,7 +1309,7 @@ const CustomizationGroupForm = ({
                     {group.items.map((item, index) => (
                         <div key={item.id} className="flex gap-2 items-end">
                             <div className="flex-1">
-                                <input
+                                <Input
                                     type="text"
                                     value={item.name}
                                     onChange={(e) =>
@@ -1308,12 +1318,12 @@ const CustomizationGroupForm = ({
                                             name: e.target.value,
                                         })
                                     }
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                                    className="w-full rounded-md"
                                     placeholder="Option name (e.g., Small, Large, Extra Cheese)"
                                 />
                             </div>
                             <div className="w-32">
-                                <input
+                                <Input
                                     type="number"
                                     min="0"
                                     step="1"
@@ -1324,7 +1334,7 @@ const CustomizationGroupForm = ({
                                             price: e.target.value,
                                         })
                                     }
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                                    className="w-full rounded-md"
                                     placeholder="Price"
                                 />
                             </div>

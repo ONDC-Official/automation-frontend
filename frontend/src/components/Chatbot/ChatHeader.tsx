@@ -1,5 +1,6 @@
 import { FC } from "react";
 import { FiChevronDown, FiMaximize2, FiMinimize2, FiRefreshCw } from "react-icons/fi";
+import { Button } from "@/components/Shadcn/Button/button";
 import { KnowledgeSource } from "./types";
 import { SOURCE_LABELS } from "./constants";
 
@@ -54,33 +55,35 @@ const ChatHeader: FC<ChatHeaderProps> = ({
                 </div>
 
                 <div className="group relative">
-                    <button
+                    <Button
                         type="button"
+                        variant="ghost"
                         onClick={onReset}
                         aria-label="New Chat"
                         title="New Chat"
-                        className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-white text-sky-700 ring-1 ring-sky-200 transition-all hover:-translate-y-0.5 hover:bg-sky-50 focus:outline-hidden focus:ring-2 focus:ring-sky-300/70"
+                        className="h-9 w-9 rounded-xl bg-white text-sky-700 ring-1 ring-sky-200 transition-all hover:-translate-y-0.5 hover:bg-sky-50 focus:outline-hidden focus:ring-2 focus:ring-sky-300/70"
                     >
                         <FiRefreshCw className="h-3.5 w-3.5" aria-hidden />
-                    </button>
+                    </Button>
                     <span className="pointer-events-none absolute -bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-slate-900 px-2 py-1 text-[10px] font-medium text-white opacity-0 shadow-xs transition-opacity duration-150 group-hover:opacity-100 group-focus-within:opacity-100">
                         New Chat
                     </span>
                 </div>
                 <div className="group relative">
-                    <button
+                    <Button
                         type="button"
+                        variant="ghost"
                         onClick={onToggleFullscreen}
                         aria-label={isFullscreen ? "Exit Fullscreen" : "Fullscreen"}
                         title={isFullscreen ? "Exit Fullscreen" : "Fullscreen"}
-                        className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-white text-sky-700 ring-1 ring-sky-200 transition-all hover:-translate-y-0.5 hover:bg-sky-50 focus:outline-hidden focus:ring-2 focus:ring-sky-300/70"
+                        className="h-9 w-9 rounded-xl bg-white text-sky-700 ring-1 ring-sky-200 transition-all hover:-translate-y-0.5 hover:bg-sky-50 focus:outline-hidden focus:ring-2 focus:ring-sky-300/70"
                     >
                         {isFullscreen ? (
                             <FiMinimize2 className="h-3.5 w-3.5" aria-hidden />
                         ) : (
                             <FiMaximize2 className="h-3.5 w-3.5" aria-hidden />
                         )}
-                    </button>
+                    </Button>
                     <span className="pointer-events-none absolute -bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-slate-900 px-2 py-1 text-[10px] font-medium text-white opacity-0 shadow-xs transition-opacity duration-150 group-hover:opacity-100 group-focus-within:opacity-100">
                         {isFullscreen ? "Exit Fullscreen" : "Fullscreen"}
                     </span>

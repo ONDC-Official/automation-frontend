@@ -3,6 +3,7 @@ import { Checkbox } from "@components/Shadcn/Checkbox";
 import { SelectControl } from "@components/Shadcn/Select/select-control";
 import { Input } from "@components/Shadcn/TextField/input";
 import { Field, FieldError, FieldLabel } from "@components/Shadcn/TextField/field";
+import { RadioGroup, RadioGroupItem } from "@/components/Shadcn/RadioGroup";
 import { cn } from "@/lib/utils";
 
 import type {
@@ -154,22 +155,21 @@ export const ProtocolHtmlFieldRenderer = ({
                         <legend className="text-sm font-semibold text-text-primary">
                             {labelText}
                         </legend>
-                        {radioField.options.map((option, index) => (
-                            <label
-                                key={index}
-                                className="flex cursor-pointer items-center gap-2 text-sm text-text-primary"
-                            >
-                                <input
-                                    type="radio"
-                                    name={`${field.name}${radioNameSuffix}`}
-                                    value={option.value}
-                                    checked={selectedValue === option.value}
-                                    onChange={() => onValueChange(option.value)}
-                                    className="size-4 accent-brand-normal"
-                                />
-                                <span>{option.label ?? option.value}</span>
-                            </label>
-                        ))}
+                        <RadioGroup
+                            name={`${field.name}${radioNameSuffix}`}
+                            value={selectedValue || undefined}
+                            onValueChange={(nextValue) => onValueChange(nextValue)}
+                        >
+                            {radioField.options.map((option, index) => (
+                                <label
+                                    key={index}
+                                    className="flex cursor-pointer items-center gap-2 text-sm text-text-primary"
+                                >
+                                    <RadioGroupItem value={option.value} />
+                                    <span>{option.label ?? option.value}</span>
+                                </label>
+                            ))}
+                        </RadioGroup>
                     </fieldset>
                     {error && <FieldError>{error}</FieldError>}
                 </Field>

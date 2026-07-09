@@ -1,5 +1,6 @@
 import { FC } from "react";
 import { ArrowRightIcon } from "@heroicons/react/24/outline";
+import { Button } from "@/components/Shadcn/Button/button";
 import type { DeveloperGuideGuideCardProps } from "./navTypes";
 
 const DeveloperGuideGuideCard: FC<DeveloperGuideGuideCardProps> = ({
@@ -54,9 +55,14 @@ const DeveloperGuideGuideCard: FC<DeveloperGuideGuideCardProps> = ({
 
     if (isInteractive) {
         return (
-            <button type="button" onClick={onClick} className={`${className} w-full text-left`}>
+            <Button
+                type="button"
+                variant="ghost"
+                onClick={onClick}
+                className={`h-auto w-full rounded-2xl p-0 font-normal text-left ${className}`}
+            >
                 {content}
-            </button>
+            </Button>
         );
     }
 

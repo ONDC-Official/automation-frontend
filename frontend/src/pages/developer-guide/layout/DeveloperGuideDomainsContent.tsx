@@ -11,6 +11,7 @@ import { groupBuildsByFamily } from "../domainGrouping";
 import { isDomainEnabled, isUseCaseEnabled } from "../utils";
 import { useDeveloperGuideShell } from "./DeveloperGuideNav";
 import DomainCardsSection from "../landing/DomainCardsSection";
+import { Input } from "@/components/Shadcn/TextField/input";
 
 const DeveloperGuideDomainsContent: FC = () => {
     const navigate = useNavigate();
@@ -80,12 +81,12 @@ const DeveloperGuideDomainsContent: FC = () => {
                     </div>
                     <div className="relative">
                         <MagnifyingGlassIcon className="w-3.5 h-3.5 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-                        <input
+                        <Input
                             type="search"
                             placeholder="Search domains..."
                             value={domainSearch}
                             onChange={(e) => setDomainSearch(e.target.value)}
-                            className="w-full sm:w-64 pl-10 pr-3.5 py-2.5 text-sm bg-white dark:bg-surface-elevated border border-slate-200 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-sky-100 dark:focus:ring-sky-500/20 focus:border-sky-300 placeholder-slate-400 text-slate-800 shadow-xs"
+                            className="w-full sm:w-64 pl-10 pr-3.5 py-2.5 text-sm bg-white dark:bg-surface-elevated border-slate-200 rounded-lg shadow-xs focus-visible:ring-2 focus-visible:ring-sky-100 dark:focus-visible:ring-sky-500/20 focus-visible:border-sky-300 placeholder-slate-400 text-slate-800"
                         />
                     </div>
                 </div>

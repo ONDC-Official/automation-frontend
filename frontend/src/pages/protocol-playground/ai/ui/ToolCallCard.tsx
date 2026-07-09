@@ -7,6 +7,7 @@ import {
     FaSpinner,
 } from "react-icons/fa";
 import AppJsonViewer from "@components/AppJsonViewer";
+import { Button } from "@/components/Shadcn/Button/button";
 
 import type { ToolMessage } from "../hooks/use-chat-session";
 
@@ -105,10 +106,11 @@ export function ToolCallCard({ message }: ToolCallCardProps) {
         <div
             className={`self-start max-w-[95%] w-full border rounded-md text-xs ${headerColor} overflow-hidden`}
         >
-            <button
+            <Button
                 type="button"
+                variant="ghost"
                 onClick={handleToggle}
-                className="w-full flex items-center gap-2 px-3 py-2 hover:bg-black/5 text-left"
+                className="w-full gap-2 px-3 py-2 hover:bg-black/5 text-left"
             >
                 {expanded ? (
                     <FaChevronDown className="text-gray-500 shrink-0" />
@@ -126,7 +128,7 @@ export function ToolCallCard({ message }: ToolCallCardProps) {
                           ? "done"
                           : "error"}
                 </span>
-            </button>
+            </Button>
 
             {expanded && (
                 <div className="px-3 py-2 border-t border-black/10 bg-white flex flex-col gap-2">

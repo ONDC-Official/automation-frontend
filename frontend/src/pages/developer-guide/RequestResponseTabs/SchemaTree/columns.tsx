@@ -1,4 +1,5 @@
 import { ChevronDownIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
+import { Button } from "@/components/Shadcn/Button/button";
 import type { GuideTableColumn } from "../../shared/components/GuideTable";
 import { emptyCell } from "../../shared/components/tableCells";
 import type { SchemaRow } from "./utils";
@@ -21,17 +22,18 @@ export function buildSchemaColumns(
                 <div className="flex items-center gap-1 min-w-0">
                     <TreeIndent depth={row.depth} />
                     {row.hasChildren ? (
-                        <button
+                        <Button
                             type="button"
+                            variant="ghost"
                             onClick={() => onToggleRow(row.key)}
-                            className="shrink-0 text-slate-400 hover:text-slate-600 transition-colors"
+                            className="h-auto shrink-0 rounded-none p-0 text-slate-400 hover:text-slate-600 transition-colors"
                         >
                             {row.isExpanded ? (
                                 <ChevronDownIcon className="w-3.5 h-3.5" />
                             ) : (
                                 <ChevronRightIcon className="w-3.5 h-3.5" />
                             )}
-                        </button>
+                        </Button>
                     ) : (
                         <span className="shrink-0 inline-block w-3.5" aria-hidden="true" />
                     )}

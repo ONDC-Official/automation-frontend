@@ -120,28 +120,30 @@ function CustomArrayFieldTemplate(props: ArrayFieldTemplateProps) {
                     <div key={element.key} className="array-item">
                         <div className="array-item-content">{element.children}</div>
                         {element.hasRemove && (
-                            <button
+                            <Button
                                 type="button"
+                                variant="ghost"
                                 className="array-item-remove"
                                 onClick={element.onDropIndexClick(element.index)}
                                 aria-label={`Remove item ${element.index + 1}`}
                             >
                                 <TrashIcon className="size-4" />
-                            </button>
+                            </Button>
                         )}
                     </div>
                 ))}
             </div>
             {canAdd && (
-                <button
+                <Button
                     type="button"
+                    variant="ghost"
                     className="array-add-button"
                     onClick={onAddClick}
                     aria-label="Add new item"
                 >
                     <PlusIcon className="size-3.5" />
                     Add
-                </button>
+                </Button>
             )}
         </div>
     );

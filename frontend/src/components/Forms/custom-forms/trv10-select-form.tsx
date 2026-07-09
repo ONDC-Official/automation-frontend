@@ -6,10 +6,10 @@ import { toast } from "sonner";
 import { ComboBoxControl } from "@components/Shadcn/ComboBox";
 import { Button } from "@components/Shadcn/Button/button";
 import TextField from "@components/Shadcn/TextField";
+import { Input } from "@/components/Shadcn/TextField/input";
 import PayloadEditor from "@components/PayloadEditor/PastePayloadModal";
 import FormDialogShell from "@components/Forms/form-dialog-shell";
 import { PastePayloadButton } from "@components/Forms/paste-payload-button";
-import { cn } from "@/lib/utils";
 import type {
     IFormValues,
     IOnSearchPayload,
@@ -226,7 +226,7 @@ export default function TRV10SelectForm({ submitEvent }: ITRV10SelectFormProps) 
                                                         <span className="text-xs text-text-secondary">
                                                             Qty:
                                                         </span>
-                                                        <input
+                                                        <Input
                                                             type="number"
                                                             min={1}
                                                             max={maxQty}
@@ -239,10 +239,7 @@ export default function TRV10SelectForm({ submitEvent }: ITRV10SelectFormProps) 
                                                                     maxQty
                                                                 )
                                                             }
-                                                            className={cn(
-                                                                "h-8 w-16 rounded-md border border-border-default bg-surface-default px-2 text-sm",
-                                                                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                                                            )}
+                                                            className="h-8 w-16 px-2"
                                                         />
                                                         <span className="text-xs text-text-secondary">
                                                             (Max: {maxQty})

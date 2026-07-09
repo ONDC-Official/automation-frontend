@@ -2,6 +2,8 @@ import { FormEvent, useEffect, useState } from "react";
 import { PiShieldStarBold } from "react-icons/pi";
 
 import FormFlowDialog from "@components/Shadcn/Dialog/form-flow-dialog";
+import { Button } from "@/components/Shadcn/Button/button";
+import { Input } from "@/components/Shadcn/TextField/input";
 import { InvalidPassphraseError, unlockKey } from "@utils/secure-key-store";
 
 interface UnlockKeyModalProps {
@@ -77,40 +79,43 @@ export function UnlockKeyModal({
                 </div>
                 <label className="flex flex-col gap-1 text-sm text-gray-700">
                     Passphrase
-                    <input
+                    <Input
                         type="password"
                         autoComplete="current-password"
                         value={passphrase}
                         onChange={(e) => setPassphrase(e.target.value)}
-                        className="border bg-white border-gray-300 rounded px-3 py-2 text-sm focus:outline-hidden focus:ring-2 focus:ring-sky-500"
+                        className="bg-white rounded px-3 py-2 text-sm"
                         autoFocus
                     />
                 </label>
                 {error && <p className="text-sm text-red-600">{error}</p>}
                 <div className="flex items-center justify-between gap-2 pt-2">
-                    <button
+                    <Button
                         type="button"
+                        variant="ghost"
                         onClick={onSwitchToSetup}
-                        className="text-xs text-sky-600 hover:underline"
+                        className="h-auto p-0 text-xs text-sky-600 hover:underline"
                     >
                         Forgot passphrase? Reset and set up a new key.
-                    </button>
+                    </Button>
                     <div className="flex gap-2">
-                        <button
+                        <Button
                             type="button"
+                            variant="ghost"
                             onClick={onClose}
                             disabled={submitting}
                             className="px-4 py-2 text-sm rounded border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50"
                         >
                             Cancel
-                        </button>
-                        <button
+                        </Button>
+                        <Button
                             type="submit"
+                            variant="ghost"
                             disabled={submitting}
                             className="px-4 py-2 text-sm rounded bg-sky-600 text-white hover:bg-sky-700 disabled:opacity-50"
                         >
                             {submitting ? "Unlocking..." : "Unlock"}
-                        </button>
+                        </Button>
                     </div>
                 </div>
             </form>
