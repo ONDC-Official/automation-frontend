@@ -23,7 +23,7 @@ import TRV10ScheduleRentalForm from "@components/ui/forms/custom-forms/trv10-sch
 import TRV11SelectForm from "@components/ui/forms/custom-forms/trv11-select-form";
 import TRV11PartialSelectForm from "@components/ui/forms/custom-forms/trv11-201-partial-select-form";
 import JsonSchemaForm from "@components/JsonSchemaForm";
-import { isRideMapEnabled } from "@components/FlowShared/ride-map-utils";
+import { isRideMapEnabled } from "@components/DomainFlowRunner/RideMapUtils";
 import TRV12AirlineSelectForm from "@components/ui/forms/custom-forms/trv12-airline-select-form";
 import TRV12AirlineSeatSelectForm from "@components/ui/forms/custom-forms/trv12-airline-seat-select-form";
 import TRV13HotelSelectForm from "@components/ui/forms/custom-forms/trv13-hotel-select-form";

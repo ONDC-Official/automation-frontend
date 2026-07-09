@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { DocumentTextIcon, ExclamationTriangleIcon } from "@heroicons/react/24/outline";
-import RenderFlows from "@components/FlowShared/render-flows";
+import RenderFlows from "@components/DomainFlowRunner/RenderFlows";
 import Spinner from "@components/Shadcn/Spinner";
 import { useLazyGetSessionByIdQuery } from "@store/api";
 import { Flow } from "@/types/flow-types";

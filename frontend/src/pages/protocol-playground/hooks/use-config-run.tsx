@@ -1,12 +1,12 @@
 import { usePlayground } from "@pages/protocol-playground/hooks/playground-runtime";
 import { toast } from "sonner";
 import JsonSchemaForm, { PLAYGROUND_RJSF_FORM_ID } from "@components/JsonSchemaForm";
-import { isRideMapEnabled } from "@components/FlowShared/ride-map-utils";
+import { isRideMapEnabled } from "@components/DomainFlowRunner/RideMapUtils";
 import { calcCurrentIndex } from "@pages/protocol-playground/mock-engine";
 import { MockRunner } from "@ondc/automation-mock-runner";
 import { createFlowSessionWithPlayground } from "@pages/protocol-playground/utils/request-utils";
 import { useCreatePlaygroundSessionMutation } from "@store/api";
-import { GetRequestEndpoint } from "@components/FlowShared/guides";
+import { GetRequestEndpoint } from "@components/DomainFlowRunner/utils/get-request-endpoint";
 import MockDynamicForm from "@pages/protocol-playground/ui/components/mock-dynamic-form";
 import { PlaygroundSchemaFormShell } from "@pages/protocol-playground/ui/playground-schema-form-shell";
 import { v4 as uuidv4 } from "uuid";

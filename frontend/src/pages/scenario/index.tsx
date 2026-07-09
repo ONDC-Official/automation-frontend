@@ -1,11 +1,11 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
-import RenderFlows from "@components/FlowShared/render-flows";
+import RenderFlows from "@components/DomainFlowRunner/RenderFlows";
 import Card from "@components/Shadcn/Card";
 import Accordion from "@components/Shadcn/Accordion";
-import { ReportPage } from "@components/FlowShared/report";
-import { GetRequestEndpoint } from "@components/FlowShared/guides";
+import { ReportPage } from "@pages/scenario/ReportPage";
+import { GetRequestEndpoint } from "@components/DomainFlowRunner/utils/get-request-endpoint";
 import { useSession } from "@hooks/useSession";
 import { trackEvent } from "@utils/analytics";
 import { useWorkbenchFlows } from "@hooks/useWorkbenchFlow";
