@@ -228,39 +228,29 @@ export default function FIS12PersonalLoanSelectForm({
             return;
         }
 
-        // Build the xinput block only when the item has an xinput form
-        const xinputBlock =
-            hasXInput && selectedItem?.xinput
-                ? {
-                      xinput: {
-                          form: { id: selectedItem.xinput.formId },
-                          form_response: {
-                              status: "SUCCESS",
-                              submission_id:
-                                  data.formSubmissionId ||
-                                  `${selectedItem.xinput.formId}_SUBMISSION_ID`,
-                          },
-                      },
-                  }
-                : {};
-
-        const selectPayload = {
-            message: {
-                order: {
-                    provider: { id: data.providerId },
-                    items: [
-                        {
-                            id: data.itemId,
-                            ...xinputBlock,
-                        },
-                    ],
+        // Build structured item entry for generator consumption
+        const itemEntry: Record<string, unknown> = { id: data.itemId };
+        if (hasXInput && selectedItem?.xinput) {
+            itemEntry.xinput = {
+                form: { id: selectedItem.xinput.formId },
+                form_response: {
+                    status: "SUCCESS",
+                    submission_id:
+                        data.formSubmissionId || `${selectedItem.xinput.formId}_SUBMISSION_ID`,
                 },
-            },
-        };
+            };
+        }
 
+        // Send as structured formData so the generator can access:
+        //   userInputs.provider.id
+        //   userInputs.items[0].id
+        //   userInputs.items[0].xinput  (when present)
         await submitEvent({
             jsonPath: {},
-            formData: { data: JSON.stringify(selectPayload) },
+            formData: {
+                provider: JSON.stringify({ id: data.providerId }),
+                items: JSON.stringify([itemEntry]),
+            } as unknown as Record<string, string>,
         });
     };
 
