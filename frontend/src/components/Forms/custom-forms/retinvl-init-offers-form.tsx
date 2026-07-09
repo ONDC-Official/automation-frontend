@@ -9,7 +9,7 @@ import { Checkbox } from "@components/Shadcn/Checkbox";
 import { CheckboxGroup } from "@components/Shadcn/Checkbox";
 import TextField from "@components/Shadcn/TextField";
 import { Field, FieldLabel } from "@components/Shadcn/TextField/field";
-import FormDialogShell from "@components/ui/forms/form-dialog-shell";
+import FormDialogShell from "@components/Forms/form-dialog-shell";
 import { useSession } from "@hooks/useSession";
 import { useLazyGetCompletePayloadQuery, useLazyGetTransactionDataQuery } from "@store/api";
 

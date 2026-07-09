@@ -15,10 +15,10 @@ import {
     DialogTitle,
 } from "@components/Shadcn/Dialog";
 import { Button } from "@components/Shadcn/Button";
-import TagsInput from "@components/ui/forms/tags-input";
-import LoadingButton from "@components/ui/forms/loading-button";
-import MultiImageUpload from "@components/ui/forms/multi-image-upload";
-import SingleImageUpload from "@components/ui/forms/single-image-upload";
+import TagsInput from "@components/Forms/tags-input";
+import LoadingButton from "@components/Forms/loading-button";
+import MultiImageUpload from "@components/Forms/multi-image-upload";
+import SingleImageUpload from "@components/Forms/single-image-upload";
 import { useFormImageState } from "@hooks/useImageUpload";
 import { countries } from "@constants/common";
 import { LabelWithToolTip } from "@components/Shadcn/TextField";

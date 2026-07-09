@@ -48,6 +48,7 @@ export interface FormFieldConfigType {
         | "trv11_210_start_end_stop_selection"
         | "trv11_start_end_stop_selection_200"
         | "fis12_select_pl"
+        | "fis12_personal_loan_select"
         | "fis12_search_pl"
         | "fis13_addon_select"
         | "select_metro_trv11"

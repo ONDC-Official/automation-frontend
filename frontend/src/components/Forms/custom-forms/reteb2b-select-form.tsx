@@ -8,8 +8,8 @@ import { Checkbox } from "@components/Shadcn/Checkbox";
 import { Input } from "@components/Shadcn/TextField/input";
 import { Field, FieldLabel } from "@components/Shadcn/TextField/field";
 import PayloadEditor from "@components/PayloadEditor/PastePayloadModal";
-import FormDialogShell from "@components/ui/forms/form-dialog-shell";
-import { PastePayloadButton } from "@components/ui/forms/paste-payload-button";
+import FormDialogShell from "@components/Forms/form-dialog-shell";
+import { PastePayloadButton } from "@components/Forms/paste-payload-button";
 import { cn } from "@/lib/utils";
 
 import {
@@ -25,7 +25,7 @@ import {
     IReteB2BSelectFormProps,
     ITag,
     ITargetListItem,
-} from "@components/ui/forms/types/reteb2b-select-form-types";
+} from "@components/Forms/types/reteb2b-select-form-types";
 
 const toComboOptions = (values: string[]) => values.map((value) => ({ value, label: value }));
 

@@ -1,5 +1,5 @@
-import { DynamicOfferRule } from "@components/ui/forms/types/reteb2b-select-form-types";
-import { FormConfigType } from "@components/ui/forms/config-form/types";
+import { DynamicOfferRule } from "@components/Forms/types/reteb2b-select-form-types";
+import { FormConfigType } from "@components/Forms/config-form/types";
 
 // Define your data types
 export interface FetchFlowsResponse {

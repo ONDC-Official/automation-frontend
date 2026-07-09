@@ -3,7 +3,7 @@ import { ArrowPathIcon, CheckCircleIcon, XCircleIcon } from "@heroicons/react/24
 import { toast } from "sonner";
 
 import { Button } from "@components/Shadcn/Button/button";
-import FormDialogShell from "@components/ui/forms/form-dialog-shell";
+import FormDialogShell from "@components/Forms/form-dialog-shell";
 import { SubmitEventParams } from "@/types/flow-types";
 import { useLazyGetFinvuCompletionQuery, useVerifyFinvuConsentMutation } from "@store/api";
 import { cn } from "@/lib/utils";

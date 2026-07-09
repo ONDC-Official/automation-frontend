@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { usePlayground } from "@pages/protocol-playground/hooks/playground-runtime";
 import { queryJsonPath } from "@utils/jsonpath-query";
-import { inputClass } from "@components/ui/forms/inputClass";
+import { inputClass } from "@components/Forms/inputClass";
 import { FaExclamationTriangle, FaPlus } from "react-icons/fa";
 import { handleAddParam } from "@pages/protocol-playground/ui/json-path-input";
 import JsonPathOutputPopup from "@pages/protocol-playground/ui/JsonPathOutputModal";

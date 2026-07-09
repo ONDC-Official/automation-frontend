@@ -18,8 +18,8 @@ import { ComboBoxMultiControl } from "@components/Shadcn/ComboBox";
 import { DatePicker } from "@components/Shadcn/DatePicker";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@components/Shadcn/Tabs";
 
-import TimeInput from "@components/ui/forms/time-input";
-import LoadingButton from "@components/ui/forms/loading-button";
+import TimeInput from "@components/Forms/time-input";
+import LoadingButton from "@components/Forms/loading-button";
 import { SellerOnboardingData, StoreDetails } from "@pages/seller-onboarding";
 import {
     indianStates,

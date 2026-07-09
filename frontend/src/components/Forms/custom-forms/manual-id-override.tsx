@@ -2,7 +2,7 @@ import { useState } from "react";
 import { PlayIcon } from "@heroicons/react/24/solid";
 
 import { Button } from "@components/Shadcn/Button/button";
-import FormDialogShell from "@components/ui/forms/form-dialog-shell";
+import FormDialogShell from "@components/Forms/form-dialog-shell";
 import { SubmitEventParams } from "@/types/flow-types";
 
 export default function ManualIdOverride({

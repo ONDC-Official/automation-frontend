@@ -25,12 +25,12 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@components/Shadcn/Tabs";
 import { Card } from "@pages/seller-onboarding/components/LegacyCardTag";
 import TextField from "@components/Shadcn/TextField";
-import LoadingButton from "@components/ui/forms/loading-button";
+import LoadingButton from "@components/Forms/loading-button";
 import { SellerOnboardingData } from "@pages/seller-onboarding";
 import { weekDays } from "@constants/common";
 
-import TimeInput from "@components/ui/forms/time-input";
-import MultiImageUpload from "@components/ui/forms/multi-image-upload";
+import TimeInput from "@components/Forms/time-input";
+import MultiImageUpload from "@components/Forms/multi-image-upload";
 import { useFormImageState } from "@hooks/useImageUpload";
 
 import CustomMenuComprehensiveView from "./custom-menu-comprehensive-view";
