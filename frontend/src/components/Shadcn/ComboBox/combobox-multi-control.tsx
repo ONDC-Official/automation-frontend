@@ -71,7 +71,7 @@ export const ComboBoxMultiControl = ({
                                 <Button
                                     type="button"
                                     onClick={() => removeValue(item)}
-                                    className="rounded-full p-0.5 hover:bg-n-30"
+                                    className="rounded-full p-0.5 hover:bg-n-30 h-6 w-1"
                                     aria-label={`Remove ${getLabel(item)}`}
                                 >
                                     <XMarkIcon className="size-3" />
