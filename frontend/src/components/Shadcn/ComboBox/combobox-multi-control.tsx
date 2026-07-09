@@ -1,6 +1,4 @@
 import { useMemo } from "react";
-import { XMarkIcon } from "@heroicons/react/24/outline";
-
 import { Badge } from "@components/Shadcn/Badge/badge";
 import { Button } from "@components/Shadcn/Button";
 import {
@@ -17,7 +15,7 @@ import {
 } from "@components/Shadcn/ComboBox/combobox";
 import { Field, FieldError, FieldLabel } from "@components/Shadcn/TextField/field";
 import { cn } from "@/lib/utils";
-
+import { XMarkIcon } from "@heroicons/react/24/outline";
 export interface IComboBoxMultiControlProps {
     value?: string[];
     onValueChange?: (value: string[]) => void;
@@ -69,9 +67,9 @@ export const ComboBoxMultiControl = ({
                             {getLabel(item)}
                             {!disabled && (
                                 <Button
-                                    type="button"
+                                    variant="ghost"
                                     onClick={() => removeValue(item)}
-                                    className="rounded-full p-0.5 hover:bg-n-30"
+                                    className="rounded-full p-0.5 h-6 w-6 hover:bg-n-30"
                                     aria-label={`Remove ${getLabel(item)}`}
                                 >
                                     <XMarkIcon className="size-3" />
