@@ -16,6 +16,7 @@ import {
     DialogTitle,
 } from "@/components/Shadcn/Dialog";
 import { Input } from "@/components/Shadcn/TextField/input";
+import { Button } from "@/components/Shadcn/Button/button";
 import { cn } from "@/lib/utils";
 import { FAQS, HELP_SECTIONS, type Faq } from "./playground-help-content";
 
@@ -24,8 +25,9 @@ const FaqItem = ({ faq, defaultOpen = false }: { faq: Faq; defaultOpen?: boolean
 
     return (
         <div className="overflow-hidden rounded-lg border border-border-default">
-            <button
+            <Button
                 type="button"
+                variant="ghost"
                 onClick={() => setOpen((v) => !v)}
                 className="flex w-full items-center justify-between px-4 py-3 text-left text-sm font-medium text-text-primary transition-colors hover:bg-surface-muted"
             >
@@ -35,7 +37,7 @@ const FaqItem = ({ faq, defaultOpen = false }: { faq: Faq; defaultOpen?: boolean
                 ) : (
                     <ChevronRightIcon className="size-3 shrink-0 text-text-secondary" />
                 )}
-            </button>
+            </Button>
             {open ? (
                 <div className="border-t border-border-default px-4 pt-1 pb-4 text-sm leading-relaxed text-text-secondary">
                     {faq.a}
@@ -83,15 +85,16 @@ const SearchResults = ({
                     </p>
                     <div className="space-y-1">
                         {matchedSections.map((s) => (
-                            <button
+                            <Button
                                 type="button"
+                                variant="ghost"
                                 key={s.id}
                                 onClick={() => onNavigate(s.id)}
                                 className="flex w-full items-center justify-between rounded-lg border border-border-default px-4 py-2.5 text-left text-sm text-text-primary transition-colors hover:border-brand-light-active hover:bg-brand-light dark:hover:bg-surface-muted"
                             >
                                 <span className="font-medium">{s.title}</span>
                                 <ChevronRightIcon className="size-3 shrink-0 text-text-secondary" />
-                            </button>
+                            </Button>
                         ))}
                     </div>
                 </div>
@@ -158,13 +161,14 @@ export const PlaygroundHelpModal = ({ isOpen, onClose }: IPlaygroundHelpModalPro
                             </DialogDescription>
                         </div>
                     </div>
-                    <button
+                    <Button
                         type="button"
+                        variant="ghost"
                         onClick={onClose}
                         className="rounded-lg p-2 text-text-secondary transition-colors hover:bg-surface-muted hover:text-text-primary"
                     >
                         <XMarkIcon className="size-4" />
-                    </button>
+                    </Button>
                 </DialogHeader>
 
                 <div className="flex min-h-0 flex-1">
@@ -180,13 +184,14 @@ export const PlaygroundHelpModal = ({ isOpen, onClose }: IPlaygroundHelpModalPro
                                     className="h-8 pl-8 text-xs"
                                 />
                                 {searchQuery ? (
-                                    <button
+                                    <Button
                                         type="button"
+                                        variant="ghost"
                                         onClick={() => setSearchQuery("")}
                                         className="absolute top-1/2 right-2 -translate-y-1/2 text-text-secondary hover:text-text-primary"
                                     >
                                         <XMarkIcon className="size-3" />
-                                    </button>
+                                    </Button>
                                 ) : null}
                             </div>
                         </div>
@@ -197,8 +202,9 @@ export const PlaygroundHelpModal = ({ isOpen, onClose }: IPlaygroundHelpModalPro
                                     Sections
                                 </p>
                                 {HELP_SECTIONS.map((section) => (
-                                    <button
+                                    <Button
                                         type="button"
+                                        variant="ghost"
                                         key={section.id}
                                         onClick={() => setActiveSection(section.id)}
                                         className={cn(
@@ -209,14 +215,15 @@ export const PlaygroundHelpModal = ({ isOpen, onClose }: IPlaygroundHelpModalPro
                                         )}
                                     >
                                         {section.title}
-                                    </button>
+                                    </Button>
                                 ))}
                                 <div className="my-3 border-t border-border-default" />
                                 <p className="mb-2 px-4 text-[10px] font-semibold tracking-widest text-text-secondary uppercase">
                                     FAQ
                                 </p>
-                                <button
+                                <Button
                                     type="button"
+                                    variant="ghost"
                                     onClick={() => setActiveSection("faq")}
                                     className={cn(
                                         "w-full rounded-none px-4 py-2 text-left text-sm transition-colors",
@@ -226,7 +233,7 @@ export const PlaygroundHelpModal = ({ isOpen, onClose }: IPlaygroundHelpModalPro
                                     )}
                                 >
                                     Frequently Asked
-                                </button>
+                                </Button>
                             </div>
                         ) : null}
                     </nav>
@@ -271,26 +278,28 @@ export const PlaygroundHelpModal = ({ isOpen, onClose }: IPlaygroundHelpModalPro
                                     return (
                                         <>
                                             {prev ? (
-                                                <button
+                                                <Button
                                                     type="button"
+                                                    variant="ghost"
                                                     onClick={() => setActiveSection(prev)}
                                                     className="flex items-center gap-1 transition-colors hover:text-brand-normal"
                                                 >
                                                     <ArrowLeftIcon className="size-3" />{" "}
                                                     {labelOf(prev)}
-                                                </button>
+                                                </Button>
                                             ) : (
                                                 <span />
                                             )}
                                             {next ? (
-                                                <button
+                                                <Button
                                                     type="button"
+                                                    variant="ghost"
                                                     onClick={() => setActiveSection(next)}
                                                     className="flex items-center gap-1 transition-colors hover:text-brand-normal"
                                                 >
                                                     {labelOf(next)}{" "}
                                                     <ChevronRightIcon className="size-3" />
-                                                </button>
+                                                </Button>
                                             ) : null}
                                         </>
                                     );

@@ -11,6 +11,7 @@ import {
 
 import { usePlayground } from "@pages/protocol-playground/hooks/playground-runtime";
 import AppJsonViewer from "@/components/AppJsonViewer";
+import { Button } from "@/components/Shadcn/Button/button";
 
 const ViewOnlyPlaygroundPage = ({ onCreateFlowSession }: { onCreateFlowSession: () => void }) => {
     const playgroundContext = usePlayground();
@@ -116,17 +117,21 @@ const ViewOnlyPlaygroundPage = ({ onCreateFlowSession }: { onCreateFlowSession: 
 
                 {/* Action Buttons */}
                 <div className="flex flex-col sm:flex-row gap-3 mb-6">
-                    <button
+                    <Button
+                        type="button"
+                        variant="ghost"
                         onClick={onCreateFlowSession}
-                        className="flex items-center justify-center gap-2 px-6 py-3 bg-sky-500 hover:bg-sky-600 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg shadow-sky-500/20 hover:shadow-xl hover:shadow-sky-500/30"
+                        className="gap-2 px-6 py-3 bg-sky-500 hover:bg-sky-600 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg shadow-sky-500/20 hover:shadow-xl hover:shadow-sky-500/30"
                     >
                         <FiPlay className="w-4 h-4" />
                         Create New Session
-                    </button>
+                    </Button>
 
-                    <button
+                    <Button
+                        type="button"
+                        variant="ghost"
                         onClick={() => setShowJsonView(!showJsonView)}
-                        className="flex items-center justify-center gap-2 px-6 py-3 bg-white hover:bg-gray-50 text-gray-700 font-semibold rounded-xl transition-all duration-200 border border-gray-200 hover:border-gray-300"
+                        className="gap-2 px-6 py-3 bg-white hover:bg-gray-50 text-gray-700 font-semibold rounded-xl transition-all duration-200 border border-gray-200 hover:border-gray-300"
                     >
                         <FiCode className="w-4 h-4" />
                         {showJsonView ? "Hide" : "View"} Configuration JSON
@@ -135,7 +140,7 @@ const ViewOnlyPlaygroundPage = ({ onCreateFlowSession }: { onCreateFlowSession: 
                         ) : (
                             <FiChevronDown className="w-4 h-4" />
                         )}
-                    </button>
+                    </Button>
                 </div>
 
                 {/* JSON View Section */}

@@ -1,4 +1,5 @@
 import { type FC } from "react";
+import { Button } from "@/components/Shadcn/Button/button";
 import { IconEdit, IconDelete } from "../../shared/icons";
 import { formatDateTime } from "../../shared/utils/formatDateTime";
 import type { Note } from "./types";
@@ -17,22 +18,24 @@ const NoteCard: FC<NoteCardProps> = ({ note, onEdit, onDelete }) => (
                 <p className="text-xs text-slate-400 mt-0.5">{formatDateTime(note.updatedAt)}</p>
             </div>
             <div className="flex items-center gap-0.5 shrink-0 opacity-70 hover:opacity-100">
-                <button
+                <Button
                     type="button"
+                    variant="ghost"
                     onClick={() => onEdit(note)}
                     className="p-1.5 rounded-lg text-slate-400 hover:text-amber-600 hover:bg-amber-500/10 transition-colors"
                     title="Edit"
                 >
                     <IconEdit className="w-4 h-4" />
-                </button>
-                <button
+                </Button>
+                <Button
                     type="button"
+                    variant="ghost"
                     onClick={() => onDelete(note.id)}
                     className="p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-500/10 transition-colors"
                     title="Delete"
                 >
                     <IconDelete className="w-4 h-4" />
-                </button>
+                </Button>
             </div>
         </div>
         <p className="text-sm text-slate-600 leading-relaxed mt-2 whitespace-pre-wrap line-clamp-3">

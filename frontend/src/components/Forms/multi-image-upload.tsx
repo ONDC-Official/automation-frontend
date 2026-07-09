@@ -4,6 +4,8 @@ import { FaUpload, FaTrash } from "react-icons/fa";
 import { useUploadMultipleImagesMutation } from "@store/api";
 import { LabelWithToolTip } from "@/components/Shadcn/TextField";
 import { Button } from "@/components/Shadcn/Button";
+import { Input } from "@/components/Shadcn/TextField/input";
+import { Textarea } from "@/components/Shadcn/ComboBox/textarea";
 
 type UploadedImage = { imageUrl?: string };
 
@@ -253,22 +255,22 @@ const MultiImageUpload: React.FC<MultiImageUploadProps> = ({
 
                 {inputMode === "upload" ? (
                     <div className="relative">
-                        <input
+                        <Input
                             type="file"
                             accept="image/*"
                             multiple
                             name={`${folder}-images`}
                             onChange={handleFileChange}
-                            className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-sky-50 file:text-sky-700 hover:file:bg-sky-100 cursor-pointer border border-gray-300 rounded-md focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-colors"
+                            className="h-auto w-full cursor-pointer text-sm text-gray-500 file:mr-4 file:rounded-md file:border-0 file:bg-sky-50 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-sky-700 hover:file:bg-sky-100 transition-colors"
                         />
                     </div>
                 ) : (
                     <div className="space-y-2">
-                        <textarea
+                        <Textarea
                             placeholder="Enter image URLs (one per line or comma-separated)&#10;e.g., https://example.com/image1.jpg&#10;https://example.com/image2.jpg"
                             value={urlInputValue}
                             onChange={(e) => setUrlInputValue(e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-sky-500 focus:border-sky-500 text-sm min-h-[100px]"
+                            className="w-full rounded-md text-sm min-h-[100px]"
                             rows={4}
                         />
                         <Button onClick={handleUrlsSubmit}>Add URLs</Button>
@@ -350,13 +352,15 @@ const MultiImageUpload: React.FC<MultiImageUploadProps> = ({
                                     <div className="absolute bottom-0 left-0 right-0 bg-black/75 text-white text-xs p-1 rounded-b truncate">
                                         {selectedFiles[index]?.name}
                                     </div>
-                                    <button
+                                    <Button
                                         type="button"
+                                        variant="ghost"
+                                        size="icon-xs"
                                         onClick={() => removeFilePreview(index)}
                                         className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white rounded-full text-xs hover:bg-red-600 opacity-0 group-hover:opacity-100 transition-opacity"
                                     >
                                         ×
-                                    </button>
+                                    </Button>
                                 </div>
                             ))}
                             {uploadedUrls.map((url, index) => (
@@ -373,13 +377,15 @@ const MultiImageUpload: React.FC<MultiImageUploadProps> = ({
                                     <div className="absolute top-1 left-1 bg-green-500 text-white text-xs px-1 rounded">
                                         ✓
                                     </div>
-                                    <button
+                                    <Button
                                         type="button"
+                                        variant="ghost"
+                                        size="icon-xs"
                                         onClick={() => removeImage(index)}
                                         className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white rounded-full text-xs hover:bg-red-600 opacity-0 group-hover:opacity-100 transition-opacity"
                                     >
                                         ×
-                                    </button>
+                                    </Button>
                                 </div>
                             ))}
                         </div>

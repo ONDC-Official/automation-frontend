@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import { useGetValidationTableQuery } from "@store/api";
 import ValidationsTable from "./ValidationsTable";
 import Spinner from "@/components/Shadcn/Spinner";
+import { Button } from "@/components/Shadcn/Button/button";
 import GuideTabs, { type GuideTabItem } from "./shared/components/GuideTabs";
 import GuideHeader from "./shared/components/GuideHeader";
 
@@ -87,13 +88,14 @@ const ValidationsPage: FC = () => {
                 {!loading && error && (
                     <div className="flex flex-col items-center justify-center h-[60vh] gap-3">
                         <p className="text-sm text-slate-600">{error}</p>
-                        <button
+                        <Button
                             type="button"
+                            variant="ghost"
                             onClick={() => refetch()}
                             className="px-4 py-2 rounded-lg bg-sky-500 text-white hover:bg-sky-600 text-sm font-medium"
                         >
                             Retry
-                        </button>
+                        </Button>
                     </div>
                 )}
                 {!loading && !error && !selectedValidations && (

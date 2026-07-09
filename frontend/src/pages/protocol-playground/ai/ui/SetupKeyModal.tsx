@@ -3,6 +3,8 @@ import { PiShieldStarBold } from "react-icons/pi";
 import { toast } from "sonner";
 
 import FormFlowDialog from "@/components/Shadcn/Dialog/form-flow-dialog";
+import { Button } from "@/components/Shadcn/Button/button";
+import { Input } from "@/components/Shadcn/TextField/input";
 import { setupKey } from "@utils/secure-key-store";
 
 interface SetupKeyModalProps {
@@ -82,35 +84,35 @@ export function SetupKeyModal({ isOpen, onClose, onSuccess }: SetupKeyModalProps
                 </div>
                 <label className="flex flex-col gap-1 text-sm text-gray-700">
                     API key
-                    <input
+                    <Input
                         type="password"
                         autoComplete="off"
                         spellCheck={false}
                         value={apiKey}
                         onChange={(e) => setApiKey(e.target.value)}
-                        className="border border-gray-300 bg-white rounded px-3 py-2 text-sm focus:outline-hidden focus:ring-2 focus:ring-sky-500"
+                        className="bg-white rounded px-3 py-2 text-sm"
                         placeholder="sk-..."
                     />
                 </label>
                 <label className="flex flex-col gap-1 text-sm text-gray-700">
                     Passphrase
-                    <input
+                    <Input
                         type="password"
                         autoComplete="new-password"
                         value={passphrase}
                         onChange={(e) => setPassphrase(e.target.value)}
-                        className="border border-gray-300 bg-white rounded px-3 py-2 text-sm focus:outline-hidden focus:ring-2 focus:ring-sky-500"
+                        className="bg-white rounded px-3 py-2 text-sm"
                         placeholder="at least 8 characters"
                     />
                 </label>
                 <label className="flex flex-col gap-1 text-sm text-gray-700">
                     Confirm passphrase
-                    <input
+                    <Input
                         type="password"
                         autoComplete="new-password"
                         value={confirm}
                         onChange={(e) => setConfirm(e.target.value)}
-                        className="border border-gray-300 bg-white rounded px-3 py-2 text-sm focus:outline-hidden focus:ring-2 focus:ring-sky-500"
+                        className="bg-white rounded px-3 py-2 text-sm"
                     />
                 </label>
                 {error && <p className="text-sm text-red-600">{error}</p>}
@@ -119,21 +121,23 @@ export function SetupKeyModal({ isOpen, onClose, onSuccess }: SetupKeyModalProps
                     again with a fresh API key.
                 </p>
                 <div className="flex justify-end gap-2 pt-2">
-                    <button
+                    <Button
                         type="button"
+                        variant="ghost"
                         onClick={onClose}
                         disabled={submitting}
                         className="px-4 py-2 text-sm rounded border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50"
                     >
                         Cancel
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                         type="submit"
+                        variant="ghost"
                         disabled={submitting}
                         className="px-4 py-2 text-sm rounded bg-sky-600 text-white hover:bg-sky-700 disabled:opacity-50"
                     >
                         {submitting ? "Encrypting..." : "Save key"}
-                    </button>
+                    </Button>
                 </div>
             </form>
         </FormFlowDialog>

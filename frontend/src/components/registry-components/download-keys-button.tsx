@@ -1,5 +1,6 @@
 import { toast } from "sonner";
 import { useLazyGenerateApiKeysQuery } from "@store/api";
+import { Button } from "@/components/Shadcn/Button/button";
 
 interface DownloadKeysButtonProps {
     onDownload: (signingPublicKey: string, encryptionPublicKey: string) => Promise<void>;
@@ -33,12 +34,13 @@ export default function DownloadKeysButton({ onDownload }: DownloadKeysButtonPro
     };
 
     return (
-        <button
+        <Button
             type="button"
+            variant="ghost"
             onClick={handleDownload}
             className="px-4 py-2 bg-black text-white hover:bg-slate-700 rounded-md"
         >
             Generate & Download New Keys
-        </button>
+        </Button>
     );
 }

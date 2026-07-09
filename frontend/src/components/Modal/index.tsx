@@ -1,5 +1,6 @@
 import { ReactNode } from "react";
 import { IoMdClose } from "react-icons/io";
+import { Button } from "@/components/Shadcn/Button/button";
 
 interface IProps {
     isOpen: boolean;
@@ -23,9 +24,9 @@ const Modal = ({ isOpen, onClose, children, className = "", fullWidth = false }:
                 } ${className}`}
                 onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside content
             >
-                <button className="flex float-end" onClick={onClose}>
+                <Button type="button" variant="ghost" className="h-auto p-0 float-end" onClick={onClose}>
                     <IoMdClose />
-                </button>
+                </Button>
                 <div className="flex flex-col gap-5">{children}</div>
             </div>
         </div>

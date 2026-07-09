@@ -10,6 +10,7 @@ import {
     useMapEvents,
 } from "react-leaflet";
 import { INDIA_RINGS } from "@components/FlowShared/india-boundary";
+import { Button } from "@/components/Shadcn/Button/button";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { useLazyGetRouteQuery } from "@store/api";
@@ -287,13 +288,14 @@ export default function MapPanel({
                     )}
                 </div>
                 {interactive && onReset && (
-                    <button
+                    <Button
                         type="button"
+                        variant="ghost"
                         onClick={onReset}
                         className="text-xs px-2 py-1 rounded border border-gray-300 text-gray-600 hover:bg-gray-50"
                     >
                         Reset Tracking
-                    </button>
+                    </Button>
                 )}
             </div>
 
@@ -304,9 +306,10 @@ export default function MapPanel({
                         const active = state === currentState;
                         const enabled = enabledStates?.includes(state) ?? false;
                         return (
-                            <button
+                            <Button
                                 key={state}
                                 type="button"
+                                variant="ghost"
                                 disabled={!enabled}
                                 onClick={() => enabled && onRideState?.(state)}
                                 className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
@@ -318,7 +321,7 @@ export default function MapPanel({
                                 }`}
                             >
                                 {RIDE_STATE_BUTTON_LABEL[state]}
-                            </button>
+                            </Button>
                         );
                     })}
                 </div>
@@ -328,14 +331,15 @@ export default function MapPanel({
                 className="relative rounded-md overflow-hidden border border-gray-200"
                 style={{ height: 360 }}
             >
-                <button
+                <Button
                     type="button"
+                    variant="ghost"
                     onClick={recenter}
                     title="Recenter / fit"
                     className="absolute bottom-3 left-3 z-[500] flex h-8 w-8 items-center justify-center rounded-md border border-gray-300 bg-white text-gray-600 shadow hover:bg-gray-50"
                 >
                     ⊕
-                </button>
+                </Button>
                 <MapContainer
                     ref={mapRef}
                     center={initialCenter}

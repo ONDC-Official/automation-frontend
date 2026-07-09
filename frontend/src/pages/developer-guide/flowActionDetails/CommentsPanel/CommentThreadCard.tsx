@@ -2,6 +2,8 @@ import { type FC } from "react";
 import { IconDelete } from "../../shared/icons";
 import { formatDateTime } from "../../shared/utils/formatDateTime";
 import type { CommentThread } from "./types";
+import { Button } from "@/components/Shadcn/Button/button";
+import { Textarea } from "@/components/Shadcn/ComboBox/textarea";
 
 interface CommentThreadCardProps {
     thread: CommentThread;
@@ -40,8 +42,9 @@ const CommentThreadCard: FC<CommentThreadCardProps> = ({
                 {thread.text}
             </p>
             <div className="flex items-center gap-1 shrink-0 opacity-80 hover:opacity-100">
-                <button
+                <Button
                     type="button"
+                    variant="ghost"
                     onClick={() => onToggleResolved(thread.id)}
                     disabled={!isLoggedIn}
                     className="p-1.5 rounded-lg text-slate-400 hover:text-sky-600 hover:bg-sky-500/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
@@ -54,16 +57,17 @@ const CommentThreadCard: FC<CommentThreadCardProps> = ({
                     ) : (
                         <span className="text-[10px] font-medium uppercase">Resolve</span>
                     )}
-                </button>
+                </Button>
                 {isLoggedIn && (
-                    <button
+                    <Button
                         type="button"
+                        variant="ghost"
                         onClick={() => onDelete(thread.id)}
                         className="p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-500/10 transition-colors"
                         title="Delete"
                     >
                         <IconDelete className="w-4 h-4" />
-                    </button>
+                    </Button>
                 )}
             </div>
         </div>
@@ -90,41 +94,44 @@ const CommentThreadCard: FC<CommentThreadCardProps> = ({
             <div className="mt-3">
                 {isReplying ? (
                     <div className="rounded-xl bg-slate-50/80 dark:bg-surface-muted/80 p-2">
-                        <textarea
+                        <Textarea
                             value={replyText}
                             onChange={(e) => onReplyTextChange(thread.id, e.target.value)}
                             placeholder="Write a reply..."
                             rows={2}
-                            className="w-full px-3 py-2 text-sm bg-white dark:bg-surface-elevated rounded-lg border border-slate-200/80 text-slate-800 placeholder-slate-400 focus:ring-2 focus:ring-sky-500/20 resize-none"
+                            className="w-full px-3 py-2 text-sm bg-white dark:bg-surface-elevated rounded-lg border-slate-200/80 shadow-none text-slate-800 placeholder-slate-400 focus:ring-2 focus:ring-sky-500/20 resize-none"
                             autoFocus
                         />
                         <div className="flex gap-2 mt-2">
-                            <button
+                            <Button
                                 type="button"
+                                variant="ghost"
                                 onClick={() => onSubmitReply(thread.id)}
                                 disabled={!replyText.trim()}
                                 className="px-3 py-1.5 text-xs font-medium text-white bg-sky-500 rounded-lg hover:bg-sky-600 disabled:opacity-40"
                             >
                                 Reply
-                            </button>
-                            <button
+                            </Button>
+                            <Button
                                 type="button"
+                                variant="ghost"
                                 onClick={onCancelReply}
                                 className="px-3 py-1.5 text-xs font-medium text-slate-500 hover:bg-slate-100 rounded-lg"
                             >
                                 Cancel
-                            </button>
+                            </Button>
                         </div>
                     </div>
                 ) : (
                     isLoggedIn && (
-                        <button
+                        <Button
                             type="button"
+                            variant="ghost"
                             onClick={() => onStartReply(thread.id)}
                             className="text-xs font-medium text-sky-600 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300"
                         >
                             Reply
-                        </button>
+                        </Button>
                     )
                 )}
             </div>

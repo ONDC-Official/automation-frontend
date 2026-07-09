@@ -410,7 +410,7 @@ export default function FIS14MutualFundSelectForm({
                                             {field.label}
                                             {field.required !== false ? " *" : ""}
                                         </FieldLabel>
-                                        <input
+                                        <Input
                                             type="text"
                                             value={extraData[field.name] ?? ""}
                                             onChange={(event) => {
@@ -426,10 +426,7 @@ export default function FIS14MutualFundSelectForm({
                                                     });
                                                 }
                                             }}
-                                            className={cn(
-                                                "flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs",
-                                                extraErrors[field.name] && "border-destructive"
-                                            )}
+                                            aria-invalid={!!extraErrors[field.name]}
                                         />
                                         {extraErrors[field.name] && (
                                             <p className="text-xs text-destructive">

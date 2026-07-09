@@ -1,4 +1,5 @@
 import { type FC } from "react";
+import { Button } from "@/components/Shadcn/Button/button";
 
 interface LegendProps {
     focused: string | null;
@@ -25,7 +26,9 @@ const Legend: FC<LegendProps> = ({ focused, onClearFocus }) => (
             Click any card or chip to focus
         </p>
         {focused && (
-            <button
+            <Button
+                type="button"
+                variant="ghost"
                 onClick={onClearFocus}
                 className="sm:ml-auto flex items-center gap-1 text-xs font-semibold text-sky-600 dark:text-sky-400 hover:text-sky-800 dark:hover:text-sky-300 transition"
             >
@@ -39,7 +42,7 @@ const Legend: FC<LegendProps> = ({ focused, onClearFocus }) => (
                     <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                 </svg>
                 Clear focus
-            </button>
+            </Button>
         )}
     </div>
 );

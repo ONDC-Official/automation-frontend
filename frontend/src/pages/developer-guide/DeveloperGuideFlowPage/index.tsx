@@ -1,6 +1,7 @@
 import { FC } from "react";
 import { useNavigate } from "react-router-dom";
 import Spinner from "@/components/Shadcn/Spinner";
+import { Button } from "@/components/Shadcn/Button/button";
 import { ROUTES } from "@constants/routes";
 import FlowInformation from "../FlowInformation";
 import DocsViewer from "../DocsViewer";
@@ -57,13 +58,14 @@ const DeveloperGuideFlowPage: FC = () => {
                 }`}
             >
                 <p className="text-gray-600 mb-4">Use case not found for this domain/version.</p>
-                <button
+                <Button
                     type="button"
+                    variant="ghost"
                     onClick={handleBack}
                     className="px-4 py-2 rounded-lg bg-sky-500 text-white hover:bg-sky-600 text-sm font-medium"
                 >
                     Back to Developer Guide
-                </button>
+                </Button>
             </div>
         );
     }

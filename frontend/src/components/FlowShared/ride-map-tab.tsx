@@ -9,6 +9,7 @@ import {
     useLazyGetRouteQuery,
 } from "@store/api";
 import MapPanel from "@components/FlowShared/map-panel";
+import { Button } from "@/components/Shadcn/Button/button";
 import {
     deriveRideMapData,
     deriveRideDisplay,
@@ -508,8 +509,9 @@ export default function RideMapTab({ flowId }: { flowId: string | null }) {
                 </span>
                 {isController && !finished && (
                     <div className="flex items-center gap-2">
-                        <button
+                        <Button
                             type="button"
+                            variant="ghost"
                             onClick={autoRunActive ? stopAutoRun : startAutoRun}
                             className={`rounded-full border px-2.5 py-1 text-xs font-semibold transition-colors ${
                                 autoRunActive
@@ -518,21 +520,22 @@ export default function RideMapTab({ flowId }: { flowId: string | null }) {
                             }`}
                         >
                             {autoRunActive ? "■ Stop" : "▶ Auto-run"}
-                        </button>
+                        </Button>
                         <span className="flex items-center gap-0.5 text-xs text-gray-500">
                             {[1, 2, 4].map((s) => (
-                                <button
+                                <Button
                                     key={s}
                                     type="button"
+                                    variant="ghost"
                                     onClick={() => setSpeed(s)}
-                                    className={`rounded px-1.5 py-0.5 ${
+                                    className={`h-auto rounded px-1.5 py-0.5 ${
                                         speed === s
                                             ? "bg-sky-600 text-white"
                                             : "text-gray-500 hover:bg-gray-100"
                                     }`}
                                 >
                                     {s}×
-                                </button>
+                                </Button>
                             ))}
                         </span>
                     </div>

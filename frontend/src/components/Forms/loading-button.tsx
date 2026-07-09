@@ -1,6 +1,7 @@
 //TODO: Remove this component when seller onboarding revamp and refactor is complete
 import { Button } from "@/components/Shadcn/Button/button";
 import Spinner from "@/components/Shadcn/Spinner";
+import { cn } from "@/lib/utils";
 
 interface ILoadingButtonProps {
     type?: "submit" | "reset" | "button";
@@ -9,6 +10,7 @@ interface ILoadingButtonProps {
     isLoading?: boolean;
     onClick?: () => void;
     loadingText?: string;
+    className?: string;
 }
 
 const buttonClass =
@@ -21,8 +23,14 @@ const LoadingButton = ({
     isLoading = false,
     onClick,
     loadingText = "Loading...",
+    className,
 }: ILoadingButtonProps) => (
-    <Button type={type} disabled={disabled || isLoading} className={buttonClass} onClick={onClick}>
+    <Button
+        type={type}
+        disabled={disabled || isLoading}
+        className={cn(buttonClass, className)}
+        onClick={onClick}
+    >
         {isLoading ? (
             <>
                 <Spinner className="size-4" />

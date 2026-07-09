@@ -1,4 +1,5 @@
 import { type FC } from "react";
+import { Button } from "@/components/Shadcn/Button/button";
 import type { SupportedActionsViewMode } from "./types";
 
 interface ViewToggleProps {
@@ -8,8 +9,9 @@ interface ViewToggleProps {
 
 const ViewToggle: FC<ViewToggleProps> = ({ view, onChange }) => (
     <div className="flex rounded-xl border border-slate-200 overflow-hidden shadow-xs shrink-0 bg-white dark:bg-surface-elevated">
-        <button
+        <Button
             type="button"
+            variant="ghost"
             onClick={() => onChange("cards")}
             aria-pressed={view === "cards"}
             className={`flex items-center gap-1.5 px-3 py-2 text-xs font-semibold transition-colors ${
@@ -33,9 +35,10 @@ const ViewToggle: FC<ViewToggleProps> = ({ view, onChange }) => (
                 />
             </svg>
             Cards
-        </button>
-        <button
+        </Button>
+        <Button
             type="button"
+            variant="ghost"
             onClick={() => onChange("graph")}
             aria-pressed={view === "graph"}
             className={`flex items-center gap-1.5 px-3 py-2 text-xs font-semibold transition-colors border-l border-slate-200 ${
@@ -58,7 +61,7 @@ const ViewToggle: FC<ViewToggleProps> = ({ view, onChange }) => (
                 <path strokeLinecap="round" d="M7 12h5M12 12l5-5M12 12l5 5" />
             </svg>
             Graph
-        </button>
+        </Button>
     </div>
 );
 

@@ -3,6 +3,8 @@ import type { Mapping } from "./registry-types";
 import { v4 as uuidv4 } from "uuid";
 import { TrashIcon } from "./key-section";
 import { useGetScenarioFormDataQuery } from "@store/api";
+import { Button } from "@/components/Shadcn/Button/button";
+import { Input } from "@/components/Shadcn/TextField/input";
 
 const DOMAIN_OPTIONS = ["ONDC:TRV10", "ONDC:RET10", "ONDC:LOG10"];
 
@@ -89,7 +91,7 @@ export const MappingsSection: React.FC<MappingsSectionProps> = ({
 
                 <div>
                     <label className="block text-sm font-medium text-gray-700">URI</label>
-                    <input
+                    <Input
                         type="text"
                         placeholder="Select URI"
                         className={selectClasses}
@@ -100,7 +102,7 @@ export const MappingsSection: React.FC<MappingsSectionProps> = ({
 
                 <div>
                     <label className="block text-sm font-medium text-gray-700">Country</label>
-                    <input
+                    <Input
                         type="text"
                         placeholder="Enter Country"
                         className={selectClasses}
@@ -118,7 +120,7 @@ export const MappingsSection: React.FC<MappingsSectionProps> = ({
                     <label className="block text-sm font-medium text-gray-700">
                         City (Comma Separated) eg: std:011, std:080 or *
                     </label>
-                    <input
+                    <Input
                         type="text"
                         placeholder="Enter City"
                         className={selectClasses}
@@ -134,19 +136,23 @@ export const MappingsSection: React.FC<MappingsSectionProps> = ({
                 </div>
             </div>
             <div className="flex justify-end space-x-3">
-                <button
+                <Button
+                    type="button"
+                    variant="ghost"
                     onClick={() => setEditingMapping(null)}
                     className="text-sm font-medium text-gray-600"
                 >
                     Cancel
-                </button>
+                </Button>
 
-                <button
+                <Button
+                    type="button"
+                    variant="ghost"
                     onClick={handleSave}
                     className="px-4 py-1.5 text-sm font-medium rounded-md text-white bg-sky-600 hover:bg-sky-700"
                 >
                     Save Mapping
-                </button>
+                </Button>
             </div>
         </div>
     );
@@ -160,12 +166,14 @@ export const MappingsSection: React.FC<MappingsSectionProps> = ({
                 {editingMapping ? (
                     renderEditForm(editingMapping)
                 ) : (
-                    <button
+                    <Button
+                        type="button"
+                        variant="ghost"
                         onClick={handleAddNew}
-                        className="w-full sm:w-auto flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-xs text-white bg-sky-600 hover:bg-sky-700"
+                        className="w-full sm:w-auto px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-xs text-white bg-sky-600 hover:bg-sky-700"
                     >
                         + Add Mapping
-                    </button>
+                    </Button>
                 )}
             </div>
 
@@ -182,7 +190,11 @@ export const MappingsSection: React.FC<MappingsSectionProps> = ({
                                     {m.domain} ({m.type})
                                 </span>
                                 <div>
-                                    <button className="text-gray-400 hover:text-sky-600 mr-2 text-xl">
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        className="h-auto rounded-none p-0 text-gray-400 hover:text-sky-600 mr-2 text-xl"
+                                    >
                                         <svg
                                             className={`w-4 h-4 ml-2 text-gray-400 group-open:rotate-180 transition-transform duration-200 ${
                                                 isExpanded ? "rotate-180" : ""
@@ -198,16 +210,18 @@ export const MappingsSection: React.FC<MappingsSectionProps> = ({
                                                 d="M19 9l-7 7-7-7"
                                             />
                                         </svg>
-                                    </button>
-                                    <button
+                                    </Button>
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
                                         onClick={(event) => {
                                             event.stopPropagation();
                                             onDeleteMapping(m.id);
                                         }}
-                                        className="text-gray-400 hover:text-red-600"
+                                        className="h-auto rounded-none p-0 text-gray-400 hover:text-red-600"
                                     >
                                         <TrashIcon />
-                                    </button>
+                                    </Button>
                                 </div>
                             </div>
                             {isExpanded && (

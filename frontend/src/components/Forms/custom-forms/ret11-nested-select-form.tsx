@@ -9,6 +9,7 @@ import { Checkbox } from "@/components/Shadcn/Checkbox";
 import TextField from "@/components/Shadcn/TextField";
 import { Field, FieldLabel } from "@/components/Shadcn/TextField/field";
 import { LabelWithToolTip } from "@/components/Shadcn/TextField";
+import { Input } from "@/components/Shadcn/TextField/input";
 import { SelectControl } from "@/components/Shadcn/Select";
 import PayloadEditor from "@/components/PayloadEditor/PastePayloadModal";
 import FormDialogShell from "@/components/ui/forms/form-dialog-shell";
@@ -343,7 +344,7 @@ const RET11NestedSelectForm = ({
                                     return (
                                         <Field>
                                             <FieldLabel>Provider Location Id</FieldLabel>
-                                            <input
+                                            <Input
                                                 type="text"
                                                 value={
                                                     Array.isArray(field.value)
@@ -353,7 +354,6 @@ const RET11NestedSelectForm = ({
                                                 onChange={(event) =>
                                                     field.onChange(event.target.value)
                                                 }
-                                                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring focus-visible:ring-ring/50"
                                                 placeholder="Enter location id"
                                             />
                                         </Field>

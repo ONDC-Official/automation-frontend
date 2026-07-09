@@ -13,6 +13,7 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from "@/components/Shadcn/Tooltip";
+import { Button } from "@/components/Shadcn/Button/button";
 
 interface FlowsAccordionProps {
     flows: FlowEntry[];
@@ -105,11 +106,13 @@ const FlowsAccordion: FC<FlowsAccordionProps> = ({
         const isTransitioning = transitioningAction === actionId;
 
         return (
-            <button
+            <Button
                 key={actionId}
+                type="button"
+                variant="ghost"
                 onClick={() => handleStepClick(flowId, actionId)}
                 disabled={isTransitioning}
-                className={`w-full min-w-0 px-3 py-2.5 rounded-lg border text-left transition-all duration-200 ${
+                className={`h-auto w-full min-w-0 flex-col items-stretch px-3 py-2.5 rounded-lg border font-normal text-left transition-all duration-200 ${
                     isSelected || isTransitioning
                         ? "border-sky-400 dark:border-sky-500 ring-2 ring-sky-100 dark:ring-sky-500/20 bg-white dark:bg-surface-elevated shadow-sm"
                         : "border-slate-200 bg-white dark:bg-surface-elevated hover:border-slate-300 hover:shadow-xs"
@@ -164,7 +167,7 @@ const FlowsAccordion: FC<FlowsAccordionProps> = ({
                         </TooltipProvider>
                     </div>
                 </div>
-            </button>
+            </Button>
         );
     };
 
@@ -182,10 +185,11 @@ const FlowsAccordion: FC<FlowsAccordionProps> = ({
                         key={flowIndex}
                         className="bg-white dark:bg-surface-elevated rounded-xl shadow-sm hover:shadow-md overflow-hidden transition-all duration-300 border border-slate-200"
                     >
-                        <button
+                        <Button
                             onClick={() => toggleFlow(flowIndex)}
                             type="button"
-                            className="w-full text-left flex items-center justify-between p-4 cursor-pointer bg-white dark:bg-surface-elevated hover:bg-slate-50 dark:hover:bg-surface-muted transition-colors duration-200 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-sky-400/60"
+                            variant="ghost"
+                            className="h-auto w-full justify-between rounded-none p-4 font-normal text-left cursor-pointer bg-white dark:bg-surface-elevated hover:bg-slate-50 dark:hover:bg-surface-muted transition-colors duration-200 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-sky-400/60"
                             aria-expanded={isOpen}
                         >
                             <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -217,7 +221,7 @@ const FlowsAccordion: FC<FlowsAccordionProps> = ({
                             <ChevronDownIcon
                                 className={`w-3.5 h-3.5 text-slate-400 shrink-0 ml-3 transition-transform duration-300 ${isOpen ? "rotate-180" : ""}`}
                             />
-                        </button>
+                        </Button>
 
                         <div
                             className={`grid transition-all duration-300 ease-in-out ${

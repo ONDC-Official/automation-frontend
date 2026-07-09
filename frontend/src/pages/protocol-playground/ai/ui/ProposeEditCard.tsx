@@ -4,6 +4,7 @@ import { PiShieldStarBold } from "react-icons/pi";
 import { MockRunner } from "@ondc/automation-mock-runner";
 
 import { usePlayground } from "@pages/protocol-playground/hooks/playground-runtime";
+import { Button } from "@/components/Shadcn/Button/button";
 
 import type { ToolMessage } from "../hooks/use-chat-session";
 import { diffStats, lineDiff, type DiffRow } from "../utils/line-diff";
@@ -136,10 +137,11 @@ export function ProposeEditCard({ message }: ProposeEditCardProps) {
         <div
             className={`self-start w-full max-w-[95%] border rounded-md text-xs ${tone.border} overflow-hidden`}
         >
-            <button
+            <Button
                 type="button"
+                variant="ghost"
                 onClick={() => setExpanded((v) => !v)}
-                className="w-full flex items-center gap-2 px-3 py-2 hover:bg-black/5 text-left"
+                className="w-full gap-2 px-3 py-2 hover:bg-black/5 text-left"
             >
                 <StatusIcon className={`shrink-0 ${tone.icon}`} />
                 <span className="font-mono font-semibold text-gray-800 truncate">
@@ -155,7 +157,7 @@ export function ProposeEditCard({ message }: ProposeEditCardProps) {
                     <span className="font-mono text-red-700">−{stats.removed}</span>
                     <span className="text-gray-500">{tone.label}</span>
                 </span>
-            </button>
+            </Button>
 
             {expanded && (
                 <div className="px-3 py-2 border-t border-black/10 bg-white flex flex-col gap-2">

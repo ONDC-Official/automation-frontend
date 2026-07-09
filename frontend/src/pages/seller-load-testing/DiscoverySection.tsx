@@ -1,5 +1,7 @@
 import React from "react";
 import LoadingButton from "@/components/ui/forms/loading-button";
+import { Textarea } from "@/components/Shadcn/ComboBox/textarea";
+import { Button } from "@/components/Shadcn/Button/button";
 import type { DiscoverySectionProps } from "@pages/seller-load-testing/types";
 import { useDiscoverySection } from "@pages/seller-load-testing/useDiscoverySection";
 
@@ -67,10 +69,10 @@ const DiscoverySection: React.FC<DiscoverySectionProps> = ({
                             <span className="text-xs text-gray-400 font-mono">payload.json</span>
                             {jsonError && <span className="text-red-400 text-xs">{jsonError}</span>}
                         </div>
-                        <textarea
+                        <Textarea
                             value={editedJson}
                             onChange={(e) => handleEditedJsonChange(e.target.value)}
-                            className="w-full h-80 bg-gray-900 text-green-400 font-mono text-xs p-4 focus:outline-hidden resize-none"
+                            className="w-full h-80 min-h-80 border-0 shadow-none rounded-none bg-gray-900 text-green-400 font-mono text-xs p-4 focus:outline-hidden focus-visible:ring-0 resize-none"
                             spellCheck={false}
                         />
                     </div>
@@ -84,13 +86,14 @@ const DiscoverySection: React.FC<DiscoverySectionProps> = ({
                             isLoading={isStarting}
                             onClick={handleStartDiscovery}
                         />
-                        <button
+                        <Button
                             type="button"
+                            variant="ghost"
                             onClick={handleCancel}
                             className="px-4 py-2 text-sm font-medium text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
                         >
                             Cancel
-                        </button>
+                        </Button>
                     </div>
                 )}
 

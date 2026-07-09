@@ -4,6 +4,7 @@ import { PlayIcon, ArrowUturnLeftIcon } from "@heroicons/react/24/outline";
 
 import FormFlowDialog from "@/components/Shadcn/Dialog/form-flow-dialog";
 import { Button } from "@/components/Shadcn/Button/button";
+import { Textarea } from "@/components/Shadcn/ComboBox/textarea";
 import {
     Combobox,
     ComboboxContent,
@@ -223,12 +224,12 @@ export const ToolInspectorModal = ({ isOpen, onClose }: IToolInspectorModalProps
                             <ArrowUturnLeftIcon className="size-2.5" /> Reset stub
                         </Button>
                     </div>
-                    <textarea
+                    <Textarea
                         value={argsJson}
                         onChange={(e) => setArgsJson(e.target.value)}
                         rows={10}
                         spellCheck={false}
-                        className="font-mono text-[11px] border bg-white border-gray-300 rounded p-2 resize-y"
+                        className="font-mono text-[11px] bg-white border-gray-300 rounded shadow-none p-2 resize-y"
                     />
                 </div>
 

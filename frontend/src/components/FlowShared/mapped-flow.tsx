@@ -6,6 +6,7 @@ import FormFlowDialog from "@/components/Shadcn/Dialog/form-flow-dialog";
 import { FormConfig, FormConfigType, FormFieldConfigType } from "@/components/ui/forms/config-form";
 import FormLaunchPopup from "@components/ui/forms/custom-forms/form-launch-popup";
 import { TooltipHint } from "@/components/Shadcn/Tooltip";
+import { Button } from "@/components/Shadcn/Button/button";
 import { SequenceStep, SubmitEventParams } from "@/types/flow-types";
 import { useProceedFlowMutation, useTriggerExtraMutation } from "@store/api";
 import { useSession } from "@hooks/useSession";
@@ -565,11 +566,12 @@ function ExtraTriggerButton({
     return (
         <TooltipHint content={tooltip}>
             <span className="inline-flex">
-                <button
+                <Button
                     type="button"
+                    variant="ghost"
                     disabled={disabled || loading}
                     onClick={onTrigger}
-                    className="flex items-center gap-1.5 rounded-full border border-brand-light-active bg-brand-light px-3 py-1 text-sm font-semibold text-brand-normal transition-all duration-150 hover:bg-brand-light-hover active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 dark:border-border-default dark:bg-brand-dark/20 dark:hover:bg-brand-dark/30"
+                    className="gap-1.5 rounded-full border border-brand-light-active bg-brand-light px-3 py-1 text-sm font-semibold text-brand-normal transition-all duration-150 hover:bg-brand-light-hover active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 dark:border-border-default dark:bg-brand-dark/20 dark:hover:bg-brand-dark/30"
                 >
                     {loading ? (
                         <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-sky-600 border-t-transparent" />
@@ -582,7 +584,7 @@ function ExtraTriggerButton({
                             input
                         </span>
                     )}
-                </button>
+                </Button>
             </span>
         </TooltipHint>
     );

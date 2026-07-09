@@ -1,5 +1,6 @@
 import { FC } from "react";
 import { useFrameworkHealth } from "@hooks/useFrameworkHealth";
+import { Button } from "@/components/Shadcn/Button/button";
 import LoginForm from "./LoginForm";
 import HealthReport from "./HealthReport";
 
@@ -82,9 +83,11 @@ const FrameworkHealthPage: FC = () => {
                         </div>
                         <span className="font-semibold text-gray-800">Framework Health</span>
                     </div>
-                    <button
+                    <Button
+                        type="button"
+                        variant="ghost"
                         onClick={handleLogout}
-                        className="text-sm text-gray-500 hover:text-gray-800 transition-colors flex items-center gap-1.5"
+                        className="text-sm text-gray-500 hover:text-gray-800 transition-colors gap-1.5"
                     >
                         <svg
                             className="w-4 h-4"
@@ -100,7 +103,7 @@ const FrameworkHealthPage: FC = () => {
                             />
                         </svg>
                         Logout
-                    </button>
+                    </Button>
                 </div>
             </div>
 
@@ -149,10 +152,12 @@ const FrameworkHealthPage: FC = () => {
                                     {card.description}
                                 </p>
                             </div>
-                            <button
+                            <Button
+                                type="button"
+                                variant="ghost"
                                 onClick={card.action}
                                 disabled={card.isRunning}
-                                className="w-full py-2.5 px-4 rounded-lg bg-linear-to-r from-sky-500 to-blue-500 hover:from-sky-600 hover:to-blue-600 text-white text-sm font-medium transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                className="w-full py-2.5 px-4 rounded-lg bg-linear-to-r from-sky-500 to-blue-500 hover:from-sky-600 hover:to-blue-600 text-white text-sm font-medium transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed gap-2"
                             >
                                 {card.isRunning ? (
                                     <>
@@ -202,7 +207,7 @@ const FrameworkHealthPage: FC = () => {
                                         Test API Services
                                     </>
                                 )}
-                            </button>
+                            </Button>
                         </div>
                     ))}
                 </div>

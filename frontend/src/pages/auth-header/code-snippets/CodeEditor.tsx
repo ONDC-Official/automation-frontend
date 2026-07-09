@@ -7,6 +7,7 @@ import { ClipboardDocumentIcon } from "@heroicons/react/24/outline";
 import { useTheme } from "@/theme/hooks/useTheme";
 import { subscribeToThemeApply } from "@/theme/utils/themeUtils";
 import { getEditorThemeName } from "@/components/PayloadEditor/constants";
+import { Button } from "@/components/Shadcn/Button/button";
 
 const EDITOR_HEIGHT = "500px";
 const EDITOR_OPTIONS: MonacoEditor.IStandaloneEditorConstructionOptions = {
@@ -55,15 +56,16 @@ const CodeEditor: FC<CodeEditorProps> = ({
                 <span className="font-mono text-body-2 font-semibold tracking-wider text-foreground">
                     {editorTitle}
                 </span>
-                <button
+                <Button
                     type="button"
+                    variant="ghost"
                     onClick={onCopy}
-                    className="flex items-center gap-1 rounded px-2 py-0.5 text-body-2 font-semibold text-foreground transition-colors hover:bg-slate-700 hover:text-white"
+                    className="gap-1 rounded px-2 py-0.5 text-body-2 font-semibold text-foreground transition-colors hover:bg-slate-700 hover:text-white"
                     aria-label="Copy code to clipboard"
                 >
                     <ClipboardDocumentIcon className="h-4 w-4" />
                     Copy Code
-                </button>
+                </Button>
             </div>
             <Editor
                 height={EDITOR_HEIGHT}

@@ -73,13 +73,14 @@ export const ActionTimeline = ({
         <div className="flex h-16 shrink-0 items-center overflow-x-auto rounded-xl border border-border-default bg-surface-elevated px-6 dark:border-border-default">
             <div className="flex min-w-max items-center gap-0">
                 {actionData.length === 0 ? (
-                    <button
+                    <Button
                         type="button"
+                        variant="ghost"
                         onClick={onAddAction}
-                        className="text-body-2 font-medium text-text-secondary transition-colors hover:text-brand-normal"
+                        className="h-auto p-0 text-body-2 font-medium text-text-secondary transition-colors hover:text-brand-normal"
                     >
                         No steps yet — use &quot;Add First Action&quot; in the toolbar
-                    </button>
+                    </Button>
                 ) : (
                     actionData.map((action, index) => {
                         const isActive = activeApi === action.id;

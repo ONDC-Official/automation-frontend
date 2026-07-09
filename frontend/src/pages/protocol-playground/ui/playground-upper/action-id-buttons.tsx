@@ -1,6 +1,7 @@
 import { IoMdAdd } from "react-icons/io";
 import { FiCheck } from "react-icons/fi";
 import { MockPlaygroundConfigType } from "@ondc/automation-mock-runner";
+import { Button } from "@/components/Shadcn/Button/button";
 
 // components/playground/ActionIdsButtons.tsx
 interface ActionIdsButtonsProps {
@@ -37,7 +38,9 @@ export const ActionIdsButtons = ({
                     return (
                         <div key={action.id} className="flex items-center">
                             {/* Action Step */}
-                            <button
+                            <Button
+                                type="button"
+                                variant="ghost"
                                 onClick={() => onApiSelect(action.id)}
                                 className={`
 									group relative flex items-center gap-3 px-4 py-2 transition-all duration-200
@@ -94,7 +97,7 @@ export const ActionIdsButtons = ({
                                 {isActive && (
                                     <div className="absolute inset-0 rounded-lg border-2 border-sky-400 pointer-events-none"></div>
                                 )}
-                            </button>
+                            </Button>
 
                             {/* Connector Line */}
                             {index !== actionData.length - 1 && (
@@ -126,20 +129,22 @@ export const ActionIdsButtons = ({
 
                 {/* Add Action Button */}
                 {actionData.length === 0 ? (
-                    <button
+                    <Button
+                        type="button"
+                        variant="ghost"
                         onClick={onAddAction}
                         className="
-							flex items-center gap-2 px-5 py-2.5 
-							bg-sky-500 text-white rounded-lg 
+							gap-2 px-5 py-2.5
+							bg-sky-500 text-white rounded-lg
 							hover:bg-sky-600 active:scale-95
-							transition-all duration-200 
+							transition-all duration-200
 							font-semibold text-sm
 							shadow-xs hover:shadow-md
 						"
                     >
                         <IoMdAdd size={18} />
                         <span>Add First Action</span>
-                    </button>
+                    </Button>
                 ) : (
                     <></>
                 )}

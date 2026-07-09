@@ -4,6 +4,7 @@ import type { ErrorCodes } from "./types";
 import GuideSearchInput from "./shared/components/GuideSearchInput";
 import GuideTable, { type GuideTableColumn } from "./shared/components/GuideTable";
 import { EmptyState } from "./shared/components/states";
+import { Button } from "@/components/Shadcn/Button/button";
 
 const PAGE_SIZE = 10;
 
@@ -87,12 +88,14 @@ const ErrorCodesTable: FC<ErrorCodesTableProps> = ({ errorCodes }) => {
                     rows.length > 0 &&
                     hasSearch && (
                         <div className="border-t border-slate-100 bg-slate-50/60 dark:bg-surface-muted/60 px-5 py-2.5 flex items-center justify-end">
-                            <button
+                            <Button
+                                type="button"
+                                variant="ghost"
                                 onClick={() => setSearch("")}
-                                className="text-xs text-rose-500 dark:text-rose-400 hover:text-rose-700 dark:hover:text-rose-300 font-medium transition"
+                                className="h-auto p-0 text-xs text-rose-500 dark:text-rose-400 hover:text-rose-700 dark:hover:text-rose-300 font-medium transition"
                             >
                                 Clear filter
-                            </button>
+                            </Button>
                         </div>
                     )
                 }

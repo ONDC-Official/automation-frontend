@@ -1,5 +1,6 @@
 import { FC } from "react";
 import { HeaderProps } from "@pages/db-back-office/types";
+import { Button } from "@/components/Shadcn/Button/button";
 
 const Header: FC<HeaderProps> = ({ onLogout }) => (
     <div className="bg-white shadow-xs border-b border-sky-100">
@@ -11,12 +12,14 @@ const Header: FC<HeaderProps> = ({ onLogout }) => (
                     </h1>
                     <p className="text-sm text-sky-600">Payload Data Management</p>
                 </div>
-                <button
+                <Button
+                    type="button"
+                    variant="ghost"
                     onClick={onLogout}
                     className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
                 >
                     Logout
-                </button>
+                </Button>
             </div>
         </div>
     </div>

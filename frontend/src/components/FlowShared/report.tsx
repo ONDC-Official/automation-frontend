@@ -4,6 +4,7 @@ import InfoCard from "@/components/FlowShared/ui/FlowInfoCard";
 import { useReactToPrint } from "react-to-print";
 import { IoMdArrowRoundBack } from "react-icons/io";
 import { useLazyGetSessionByIdQuery } from "@store/api";
+import { Button } from "@/components/Shadcn/Button/button";
 
 export function ReportPage({
     sessionId,
@@ -41,23 +42,27 @@ export function ReportPage({
         <>
             <div className="flex flex-row justify-between">
                 <div className="flex flex-row gap-2 justify-center items-center">
-                    <button
+                    <Button
+                        type="button"
+                        variant="ghost"
                         onClick={() => setStep((s: number) => s - 1)}
                         className="p-2 rounded-full border border-sky-500 hover:bg-blue-100 text-sky-500 hover:text-blue-600 transition-all duration-300 shadow-xs"
                     >
                         <IoMdArrowRoundBack size={12} />
-                    </button>
+                    </Button>
                     <h2 className="text-h5 font-bold text-brand-primary dark:text-neutral-900">
                         Report
                     </h2>
                 </div>
 
-                <button
+                <Button
+                    type="button"
+                    variant="ghost"
                     onClick={() => handlePrint()}
                     className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700"
                 >
                     Download PDF
-                </button>
+                </Button>
             </div>
 
             <div className="my-4">

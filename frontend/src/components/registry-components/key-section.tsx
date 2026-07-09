@@ -1,6 +1,9 @@
 import React, { useState } from "react";
 import type { Key } from "./registry-types";
 import DownloadKeysButton from "./download-keys-button";
+import { Textarea } from "@/components/Shadcn/ComboBox/textarea";
+import { Input } from "@/components/Shadcn/TextField/input";
+import { Button } from "@/components/Shadcn/Button/button";
 
 interface KeysSectionProps {
     keys: Key[];
@@ -56,7 +59,7 @@ export const KeysSection: React.FC<KeysSectionProps> = ({ keys, onAddKey, onDele
                         <h3 className="font-medium">Add New Key</h3>
 
                         <label className={labelClasses}>UK ID</label>
-                        <input
+                        <Input
                             type="text"
                             placeholder="unique-key-id"
                             className={inputClasses}
@@ -66,7 +69,7 @@ export const KeysSection: React.FC<KeysSectionProps> = ({ keys, onAddKey, onDele
 
                         <div>
                             <label className={labelClasses}>Signing Public Key</label>
-                            <textarea
+                            <Textarea
                                 className={inputClasses}
                                 value={newKey.signing_pub}
                                 onChange={(e) =>
@@ -76,7 +79,7 @@ export const KeysSection: React.FC<KeysSectionProps> = ({ keys, onAddKey, onDele
                         </div>
                         <div>
                             <label className={labelClasses}>Encryption Public Key</label>
-                            <textarea
+                            <Textarea
                                 className={inputClasses}
                                 value={newKey.encryption_pub}
                                 onChange={(e) =>
@@ -87,20 +90,20 @@ export const KeysSection: React.FC<KeysSectionProps> = ({ keys, onAddKey, onDele
                         <div className="flex flex-col sm:flex-row sm:space-x-4 space-y-4 sm:space-y-0">
                             <div className="flex-1">
                                 <label className={labelClasses}>Valid From</label>
-                                <input
+                                <Input
                                     type="text"
                                     placeholder="unique-key-id"
-                                    className="cursor-not-allowed mt-1 block w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-md shadow-xs focus:outline-hidden focus:ring-sky-500 focus:border-sky-500 sm:text-sm"
+                                    className="cursor-not-allowed mt-1 bg-gray-100 border-gray-300 rounded-md shadow-xs sm:text-sm"
                                     value={new Date().toISOString()}
                                     disabled
                                 />
                             </div>
                             <div className="flex-1">
                                 <label className={labelClasses}>Valid Till</label>
-                                <input
+                                <Input
                                     type="text"
                                     placeholder="unique-key-id"
-                                    className="cursor-not-allowed mt-1 block w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-md shadow-xs focus:outline-hidden focus:ring-sky-500 focus:border-sky-500 sm:text-sm"
+                                    className="cursor-not-allowed mt-1 bg-gray-100 border-gray-300 rounded-md shadow-xs sm:text-sm"
                                     value={new Date(
                                         new Date().setFullYear(new Date().getFullYear() + 1)
                                     ).toISOString()}
@@ -109,19 +112,23 @@ export const KeysSection: React.FC<KeysSectionProps> = ({ keys, onAddKey, onDele
                             </div>
                         </div>
                         <div className="flex justify-end space-x-3">
-                            <button
+                            <Button
+                                type="button"
+                                variant="ghost"
                                 onClick={() => setIsAdding(false)}
                                 className="text-sm font-medium text-gray-600"
                             >
                                 Cancel
-                            </button>
+                            </Button>
 
-                            <button
+                            <Button
+                                type="button"
+                                variant="ghost"
                                 onClick={handleAdd}
                                 className="px-4 py-1.5 text-sm font-medium rounded-md text-white bg-sky-600 hover:bg-sky-700"
                             >
                                 Add Key
-                            </button>
+                            </Button>
 
                             <DownloadKeysButton
                                 onDownload={async (p, e) => {
@@ -131,12 +138,14 @@ export const KeysSection: React.FC<KeysSectionProps> = ({ keys, onAddKey, onDele
                         </div>
                     </div>
                 ) : (
-                    <button
+                    <Button
+                        type="button"
+                        variant="ghost"
                         onClick={() => setIsAdding(true)}
-                        className="w-full sm:w-auto flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-xs text-white bg-sky-600 hover:bg-sky-700"
+                        className="w-full sm:w-auto px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-xs text-white bg-sky-600 hover:bg-sky-700"
                     >
                         + Add Key
-                    </button>
+                    </Button>
                 )}
             </div>
 
@@ -166,19 +175,21 @@ export const KeysSection: React.FC<KeysSectionProps> = ({ keys, onAddKey, onDele
                                             d="M19 9l-7 7-7-7"
                                         />
                                     </svg>
-                                    <button
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
                                         onClick={() => onDeleteKey(key.uk_id)}
-                                        className="text-gray-400 hover:text-red-600"
+                                        className="h-auto p-0 text-gray-400 hover:text-red-600"
                                     >
                                         <TrashIcon />
-                                    </button>
+                                    </Button>
                                 </div>
                             </summary>
                             <div className="pl-2 pr-2 pb-2 pt-1 animate-fade-in">
                                 <span className="block text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
                                     Public Signing Key
                                 </span>
-                                <textarea
+                                <Textarea
                                     className="w-full mt-1 p-2 bg-gray-50 border border-gray-200 rounded-md shadow-xs text-sm text-gray-800"
                                     value={key.signing_pub}
                                     readOnly
@@ -186,7 +197,7 @@ export const KeysSection: React.FC<KeysSectionProps> = ({ keys, onAddKey, onDele
                                 <span className="block text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded mt-2">
                                     Public Encryption Key
                                 </span>
-                                <textarea
+                                <Textarea
                                     className="w-full mt-1 p-2 bg-gray-50 border border-gray-200 rounded-md shadow-xs text-sm text-gray-800"
                                     value={key.encryption_pub}
                                     readOnly

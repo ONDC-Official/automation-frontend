@@ -5,6 +5,7 @@ import {
     ArrowsPointingInIcon,
 } from "@heroicons/react/24/outline";
 import { useClipboard } from "@hooks/useClipboard";
+import { Button } from "@/components/Shadcn/Button/button";
 
 interface CodeBlockProps {
     code: string;
@@ -68,17 +69,19 @@ const CodeBlock: FC<CodeBlockProps> = ({
                     </span>
 
                     <div className="flex items-center gap-2">
-                        <button
+                        <Button
                             type="button"
+                            variant="ghost"
                             onClick={handleCopy}
-                            className="flex items-center gap-1 rounded px-2 py-0.5 text-body-2 font-semibold text-foreground transition-colors hover:bg-slate-700 hover:text-white"
+                            className="gap-1 rounded px-2 py-0.5 text-body-2 font-semibold text-foreground transition-colors hover:bg-slate-700 hover:text-white"
                         >
                             <DocumentDuplicateIcon className="h-4 w-4" />
                             Copy
-                        </button>
+                        </Button>
 
-                        <button
+                        <Button
                             type="button"
+                            variant="ghost"
                             onClick={() => setIsFullscreen((v) => !v)}
                             className="rounded p-1 text-foreground transition-colors hover:bg-slate-700 hover:text-white"
                             aria-label={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
@@ -88,7 +91,7 @@ const CodeBlock: FC<CodeBlockProps> = ({
                             ) : (
                                 <ArrowsPointingOutIcon className="h-4 w-4" />
                             )}
-                        </button>
+                        </Button>
                     </div>
                 </div>
 

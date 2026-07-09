@@ -1,6 +1,7 @@
 import { type FC, useMemo, useState } from "react";
 import { extractMarkdownToc } from "@utils/markdownToc";
 import { scrollToSectionWithOffset } from "./scrollToSection";
+import { Button } from "@/components/Shadcn/Button/button";
 
 interface TableOfContentsProps {
     content: string;
@@ -51,12 +52,13 @@ const TableOfContents: FC<TableOfContentsProps> = ({ content, className, style, 
                                 {isActive && (
                                     <span className="absolute left-0 top-1 bottom-1 w-0.5 rounded-full bg-sky-500" />
                                 )}
-                                <button
+                                <Button
                                     type="button"
+                                    variant="ghost"
                                     onClick={() => handleClick(entry.id)}
                                     title={entry.text}
                                     className={[
-                                        "flex-1 text-left text-sm leading-snug rounded py-1.5 pr-2 transition-colors truncate",
+                                        "h-auto flex-1 justify-start text-left text-sm leading-snug font-normal rounded py-1.5 pr-2 transition-colors truncate",
                                         entry.level === 3 ? "pl-5" : "pl-3",
                                         isActive
                                             ? "bg-sky-50 text-sky-800 font-semibold"
@@ -64,7 +66,7 @@ const TableOfContents: FC<TableOfContentsProps> = ({ content, className, style, 
                                     ].join(" ")}
                                 >
                                     {entry.text}
-                                </button>
+                                </Button>
                             </div>
                         );
                     })}

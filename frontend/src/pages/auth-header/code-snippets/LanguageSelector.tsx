@@ -1,6 +1,7 @@
 import { FC } from "react";
 import { codeSnippets } from "@pages/auth-header/code-snippets/data";
 import { LanguageSelectorProps } from "@pages/auth-header/code-snippets/types";
+import { Button } from "@/components/Shadcn/Button/button";
 
 const LanguageSelector: FC<LanguageSelectorProps> = ({
     languages,
@@ -9,9 +10,10 @@ const LanguageSelector: FC<LanguageSelectorProps> = ({
 }) => (
     <div className="flex flex-wrap gap-2">
         {languages.map((lang) => (
-            <button
+            <Button
                 key={lang}
                 type="button"
+                variant="ghost"
                 onClick={() => onLanguageChange(lang)}
                 className={`rounded-lg px-4 py-2 font-medium transition-all ${
                     selectedLang === lang
@@ -22,7 +24,7 @@ const LanguageSelector: FC<LanguageSelectorProps> = ({
                 aria-label={`Select ${codeSnippets[lang].label} language`}
             >
                 {codeSnippets[lang].label}
-            </button>
+            </Button>
         ))}
     </div>
 );
