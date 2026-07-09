@@ -1,10 +1,10 @@
 import { Textarea } from "@/components/Shadcn/TextArea/text-area";
 import { Checkbox } from "@components/Shadcn/Checkbox";
 import { SelectControl } from "@components/Shadcn/Select/select-control";
+import { ComboBoxMultiControl } from "@components/Shadcn/ComboBox/combobox-multi-control";
 import { Input } from "@components/Shadcn/Input";
 import { Field, FieldError, FieldLabel } from "@components/Shadcn/TextField/field";
 import { RadioGroup, RadioGroupItem } from "@/components/Shadcn/RadioGroup";
-import { cn } from "@/lib/utils";
 
 import type {
     AnyField,
@@ -16,13 +16,6 @@ import type {
     TextareaField,
     ValueState,
 } from "../types/protocol-html-form-types";
-
-const nativeSelectClassName = cn(
-    "flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-[color,box-shadow] outline-none",
-    "focus-visible:border-ring focus-visible:ring focus-visible:ring-ring/50",
-    "disabled:cursor-not-allowed disabled:opacity-50 dark:bg-input/30",
-    "aria-invalid:border-destructive aria-invalid:ring-destructive/20"
-);
 
 export interface IProtocolHtmlFieldRendererProps {
     field: AnyField;
@@ -102,27 +95,13 @@ export const ProtocolHtmlFieldRenderer = ({
                 return (
                     <Field data-invalid={!!error}>
                         <FieldLabel>{labelText}</FieldLabel>
-                        <select
-                            name={field.name}
+                        <ComboBoxMultiControl
                             value={selectedValues}
-                            onChange={(event) => {
-                                const opts = Array.from(event.currentTarget.selectedOptions).map(
-                                    (option) => option.value
-                                );
-                                onValueChange(opts);
-                            }}
-                            multiple
-                            required={field.required}
+                            onValueChange={(next) => onValueChange(next)}
+                            options={selectField.options}
+                            placeholder="Select values"
                             disabled={field.disabled}
-                            className={cn(nativeSelectClassName, "min-h-24")}
-                            aria-invalid={!!error}
-                        >
-                            {selectField.options.map((option, index) => (
-                                <option key={index} value={option.value}>
-                                    {option.label}
-                                </option>
-                            ))}
-                        </select>
+                        />
                         {error && <FieldError>{error}</FieldError>}
                     </Field>
                 );

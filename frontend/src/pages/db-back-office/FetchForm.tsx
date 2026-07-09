@@ -4,6 +4,7 @@ import { FetchFormProps } from "@pages/db-back-office/types";
 import { Button } from "@components/Shadcn/Button";
 import Spinner from "@components/Shadcn/Spinner";
 import { Input } from "@components/Shadcn/Input";
+import { ComboBoxControl } from "@/components/Shadcn/ComboBox";
 
 const FetchForm: FC<FetchFormProps> = ({
     fetchParams,
@@ -52,19 +53,16 @@ const FetchForm: FC<FetchFormProps> = ({
             </div>
             <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Action</label>
-                <select
+                <ComboBoxControl
                     value={fetchParams.action}
-                    onChange={(e) =>
-                        onFetchParamsChange({ ...fetchParams, action: e.target.value })
+                    onValueChange={(value) =>
+                        onFetchParamsChange({ ...fetchParams, action: value })
                     }
-                    className="bg-white w-full px-3 py-2 border border-sky-200 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
-                >
-                    {["any", ...ONDC_ACTION_LIST].map((action) => (
-                        <option key={action} value={action}>
-                            {action}
-                        </option>
-                    ))}
-                </select>
+                    options={["any", ...ONDC_ACTION_LIST].map((action) => ({
+                        value: action,
+                        label: action,
+                    }))}
+                />
             </div>
             <div className="flex items-end">
                 <Button

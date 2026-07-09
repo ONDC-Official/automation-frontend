@@ -1,11 +1,14 @@
 import type { FieldPath, FieldValues, RegisterOptions } from "react-hook-form";
 import { Controller } from "react-hook-form";
-
-import { Textarea } from "@/components/Shadcn/TextArea/text-area";
+import TextArea from "@/components/Shadcn/TextArea";
 import { cn } from "@/lib/utils";
-
-import { Field, FieldDescription, FieldError, FieldLabel } from "../TextField/field";
-import type { ITextAreaFieldProps } from "../TextField/types";
+import {
+    Field,
+    FieldDescription,
+    FieldError,
+    FieldLabel,
+} from "@/components/Shadcn/TextField/field";
+import type { ITextAreaFieldProps } from "@/components/Shadcn/TextField/types";
 
 const buildValidationRules = <T extends FieldValues>(
     required: ITextAreaFieldProps<T>["required"],
@@ -72,7 +75,7 @@ export const TextAreaField = <T extends FieldValues = FieldValues>({
                 rules={validationRules as RegisterOptions<T, FieldPath<T>>}
                 render={({ field, fieldState }) =>
                     fieldLayout(
-                        <Textarea
+                        <TextArea
                             {...sharedTextareaProps}
                             aria-invalid={!!fieldState.error?.message}
                             name={field.name}
@@ -101,7 +104,7 @@ export const TextAreaField = <T extends FieldValues = FieldValues>({
 
     if (registration) {
         return fieldLayout(
-            <Textarea
+            <TextArea
                 {...sharedTextareaProps}
                 {...textareaProps}
                 aria-invalid={!!fieldError}
@@ -120,7 +123,7 @@ export const TextAreaField = <T extends FieldValues = FieldValues>({
     }
 
     return fieldLayout(
-        <Textarea {...sharedTextareaProps} {...textareaProps} aria-invalid={!!fieldError} />
+        <TextArea {...sharedTextareaProps} {...textareaProps} aria-invalid={!!fieldError} />
     );
 };
 

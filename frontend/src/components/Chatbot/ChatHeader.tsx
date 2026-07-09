@@ -1,8 +1,13 @@
 import { FC } from "react";
-import { FiChevronDown, FiMaximize2, FiMinimize2, FiRefreshCw } from "react-icons/fi";
+import {
+    ArrowPathIcon,
+    ArrowsPointingInIcon,
+    ArrowsPointingOutIcon,
+} from "@heroicons/react/24/outline";
 import { Button } from "@/components/Shadcn/Button";
-import { KnowledgeSource } from "./types";
-import { SOURCE_LABELS } from "./constants";
+import { ComboBoxControl } from "@/components/Shadcn/ComboBox";
+import { KnowledgeSource } from "@/components/Chatbot/types";
+import { SOURCE_LABELS } from "@/components/Chatbot/constants";
 
 interface ChatHeaderProps {
     knowledgeSource: KnowledgeSource;
@@ -36,22 +41,14 @@ const ChatHeader: FC<ChatHeaderProps> = ({
             </div>
             <div className="flex items-center gap-2 shrink-0">
                 <div className="relative">
-                    <select
+                    <ComboBoxControl
                         value={knowledgeSource}
-                        onChange={(event) =>
-                            setKnowledgeSource(event.target.value as KnowledgeSource)
-                        }
-                        className="h-9 appearance-none rounded-xl border border-sky-200 bg-white px-3 pr-8 text-xs font-semibold text-slate-700 shadow-none transition-colors hover:border-sky-300 hover:bg-sky-50 focus:outline-hidden focus:ring-2 focus:ring-sky-300/70"
-                    >
-                        {(Object.keys(SOURCE_LABELS) as KnowledgeSource[]).map((key) => (
-                            <option key={key} value={key}>
-                                {SOURCE_LABELS[key]}
-                            </option>
-                        ))}
-                    </select>
-                    <span className="pointer-events-none absolute inset-y-0 right-2 flex items-center text-[10px] text-sky-700">
-                        <FiChevronDown className="h-3.5 w-3.5" />
-                    </span>
+                        onValueChange={(value) => setKnowledgeSource(value as KnowledgeSource)}
+                        options={(Object.keys(SOURCE_LABELS) as KnowledgeSource[]).map((key) => ({
+                            value: key,
+                            label: SOURCE_LABELS[key],
+                        }))}
+                    />
                 </div>
 
                 <div className="group relative">
@@ -63,7 +60,7 @@ const ChatHeader: FC<ChatHeaderProps> = ({
                         title="New Chat"
                         className="h-9 w-9 rounded-xl bg-white text-sky-700 ring-1 ring-sky-200 transition-all hover:-translate-y-0.5 hover:bg-sky-50 focus:outline-hidden focus:ring-2 focus:ring-sky-300/70"
                     >
-                        <FiRefreshCw className="h-3.5 w-3.5" aria-hidden />
+                        <ArrowPathIcon className="size-3.5" aria-hidden />
                     </Button>
                     <span className="pointer-events-none absolute -bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-slate-900 px-2 py-1 text-[10px] font-medium text-white opacity-0 shadow-xs transition-opacity duration-150 group-hover:opacity-100 group-focus-within:opacity-100">
                         New Chat
@@ -79,9 +76,9 @@ const ChatHeader: FC<ChatHeaderProps> = ({
                         className="h-9 w-9 rounded-xl bg-white text-sky-700 ring-1 ring-sky-200 transition-all hover:-translate-y-0.5 hover:bg-sky-50 focus:outline-hidden focus:ring-2 focus:ring-sky-300/70"
                     >
                         {isFullscreen ? (
-                            <FiMinimize2 className="h-3.5 w-3.5" aria-hidden />
+                            <ArrowsPointingInIcon className="size-3.5" aria-hidden />
                         ) : (
-                            <FiMaximize2 className="h-3.5 w-3.5" aria-hidden />
+                            <ArrowsPointingOutIcon className="size-3.5" aria-hidden />
                         )}
                     </Button>
                     <span className="pointer-events-none absolute -bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-slate-900 px-2 py-1 text-[10px] font-medium text-white opacity-0 shadow-xs transition-opacity duration-150 group-hover:opacity-100 group-focus-within:opacity-100">

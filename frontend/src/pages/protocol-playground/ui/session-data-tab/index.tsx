@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { usePlayground } from "@pages/protocol-playground/hooks/playground-runtime";
 import { queryJsonPath } from "@utils/jsonpath-query";
-import { inputClass } from "@components/Forms/inputClass";
+import { ComboBoxControl } from "@components/Shadcn/ComboBox";
 import { FaExclamationTriangle, FaPlus } from "react-icons/fa";
 import { handleAddParam } from "@pages/protocol-playground/ui/json-path-input";
 import JsonPathOutputPopup from "@pages/protocol-playground/ui/JsonPathOutputModal";
@@ -432,21 +432,19 @@ export default function SessionDataTab() {
 
             <div>
                 <label className="text-sm text-gray-400">Select a call</label>
-                <select
+                <ComboBoxControl
                     id="apiNameInput"
-                    className={inputClass}
                     value={selectedCall}
-                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
-                        setSelectedCall(e.target.value)
+                    onValueChange={setSelectedCall}
+                    options={
+                        groupSteps.length > 1
+                            ? groupSteps.map((step) => ({
+                                  value: step.action_id,
+                                  label: step.action_id,
+                              }))
+                            : []
                     }
-                >
-                    {groupSteps.length > 1 &&
-                        groupSteps.map((step) => (
-                            <option key={step.action_id} value={step.action_id}>
-                                {step.action_id}
-                            </option>
-                        ))}
-                </select>
+                />
             </div>
 
             <div className="flex flex-1 bg-gray-900 text-gray-100 min-h-0 p-4">

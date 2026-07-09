@@ -1,13 +1,13 @@
 import { FC } from "react";
 import { useFormFieldData, type IDomainVersionWithUsecase } from "@hooks/useFormFieldData";
 import type { IDomain, IDomainVersion } from "@pages/schema-validation/types";
+import { ComboBoxControl } from "@components/Shadcn/ComboBox";
 
 interface DeveloperGuideHeaderFiltersProps {
     onSubmit: (data: { domain: string; version: string; useCase: string }) => Promise<void>;
 }
 
-const selectClass =
-    "h-9 w-[120px] min-w-[120px] max-w-[120px] md:w-[140px] md:min-w-[140px] md:max-w-[140px] lg:w-[160px] lg:min-w-[160px] lg:max-w-[160px] rounded-lg border border-sky-100 dark:border-sky-500/30 bg-white dark:bg-surface-elevated px-3 text-xs text-gray-800 focus:outline-hidden focus:ring-2 focus:ring-sky-500/30 focus:border-sky-400 truncate";
+const selectWidthClass = "w-[120px] md:w-[140px] lg:w-[160px]";
 
 const pillClass = "flex items-center gap-2";
 
@@ -64,21 +64,17 @@ const DeveloperGuideHeaderFilters: FC<DeveloperGuideHeaderFiltersProps> = ({ onS
                 >
                     Domain
                 </label>
-                <select
+                <ComboBoxControl
                     id="dev-guide-domain-select"
-                    className={selectClass}
+                    className={selectWidthClass}
                     value={dynamicValue.domain}
-                    onChange={(e) => handleDomainChange(e.target.value)}
-                >
-                    <option value="" disabled>
-                        Select
-                    </option>
-                    {dynamicList.domain.map((d: IDomain) => (
-                        <option key={d.key} value={d.key}>
-                            {d.key}
-                        </option>
-                    ))}
-                </select>
+                    onValueChange={handleDomainChange}
+                    placeholder="Select"
+                    options={dynamicList.domain.map((d: IDomain) => ({
+                        value: d.key,
+                        label: d.key,
+                    }))}
+                />
             </div>
 
             <div className={pillClass}>
@@ -88,22 +84,17 @@ const DeveloperGuideHeaderFilters: FC<DeveloperGuideHeaderFiltersProps> = ({ onS
                 >
                     Version
                 </label>
-                <select
+                <ComboBoxControl
                     id="dev-guide-version-select"
-                    className={selectClass}
+                    className={selectWidthClass}
                     value={dynamicValue.version}
                     disabled={!dynamicValue.domain}
-                    onChange={(e) => handleVersionChange(e.target.value)}
-                >
-                    <option value="" disabled>
-                        Select
-                    </option>
-                    {(dynamicList.version?.map((v: IDomainVersion) => v.key) || []).map((key) => (
-                        <option key={key} value={key}>
-                            {key}
-                        </option>
-                    ))}
-                </select>
+                    onValueChange={handleVersionChange}
+                    placeholder="Select"
+                    options={(dynamicList.version?.map((v: IDomainVersion) => v.key) || []).map(
+                        (key) => ({ value: key, label: key })
+                    )}
+                />
             </div>
 
             <div className={pillClass}>
@@ -113,22 +104,15 @@ const DeveloperGuideHeaderFilters: FC<DeveloperGuideHeaderFiltersProps> = ({ onS
                 >
                     Use Case
                 </label>
-                <select
+                <ComboBoxControl
                     id="dev-guide-usecase-select"
-                    className={selectClass}
+                    className={selectWidthClass}
                     value={dynamicValue.usecaseId}
                     disabled={!dynamicValue.version}
-                    onChange={(e) => handleUseCaseChange(e.target.value)}
-                >
-                    <option value="" disabled>
-                        Select
-                    </option>
-                    {(dynamicList.usecase || []).map((uc) => (
-                        <option key={uc} value={uc}>
-                            {uc}
-                        </option>
-                    ))}
-                </select>
+                    onValueChange={handleUseCaseChange}
+                    placeholder="Select"
+                    options={(dynamicList.usecase || []).map((uc) => ({ value: uc, label: uc }))}
+                />
             </div>
         </div>
     );
