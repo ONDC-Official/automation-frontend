@@ -561,7 +561,7 @@ export default function TRV12AirlineSeatSelectForm({ submitEvent }: IAirlineSeat
                                                         }
 
                                                         return (
-                                                            <button
+                                                            <Button
                                                                 key={
                                                                     seatNumber ||
                                                                     `${rowIndex}-${colIndex}`
@@ -625,7 +625,7 @@ export default function TRV12AirlineSeatSelectForm({ submitEvent }: IAirlineSeat
                                                                             )}
                                                                     </>
                                                                 )}
-                                                            </button>
+                                                            </Button>
                                                         );
                                                     })}
                                                 </div>

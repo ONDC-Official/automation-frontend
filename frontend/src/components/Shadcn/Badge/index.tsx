@@ -1,9 +1,10 @@
 import { Badge } from "@components/Shadcn/Badge/badge";
+import { Button } from "@components/Shadcn/Button";
 import { cn } from "@/lib/utils";
 import type { FilterBadgeProps } from "@components/Shadcn/Badge/types";
 
 export const FilterBadge = ({ label, selected, onClick }: FilterBadgeProps) => (
-    <button
+    <Button
         type="button"
         onClick={onClick}
         className="rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-normal/50"
@@ -19,7 +20,7 @@ export const FilterBadge = ({ label, selected, onClick }: FilterBadgeProps) => (
         >
             {label}
         </Badge>
-    </button>
+    </Button>
 );
 
 export { Badge, badgeVariants } from "@components/Shadcn/Badge/badge";
