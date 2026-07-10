@@ -1,4 +1,4 @@
-import { type FC, useState, useEffect } from "react";
+import { type FC, useState, useEffect, useMemo } from "react";
 import React from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -16,6 +16,7 @@ import { Button } from "@/components/Shadcn/Button";
 
 interface GithubMarkdownProps {
     content: string;
+    onSectionClick?: (id: string) => void;
 }
 
 // Recursively extracts text from React children for copy
@@ -258,7 +259,33 @@ const components: Components = {
     },
 };
 
-const GithubMarkdown: FC<GithubMarkdownProps> = ({ content }) => {
+const GithubMarkdown: FC<GithubMarkdownProps> = ({ content, onSectionClick }) => {
+    const markdownComponents = useMemo<Components>(() => {
+        if (!onSectionClick) return components;
+        return {
+            ...components,
+            h2({ children, id }) {
+                return (
+                    <h2
+                        id={id}
+                        role={id ? "button" : undefined}
+                        tabIndex={id ? 0 : undefined}
+                        onClick={() => id && onSectionClick(id)}
+                        onKeyDown={(e) => {
+                            if (id && (e.key === "Enter" || e.key === " ")) {
+                                e.preventDefault();
+                                onSectionClick(id);
+                            }
+                        }}
+                        className="text-xl font-semibold text-slate-800 py-2 border-b border-slate-200 scroll-mt-24 cursor-pointer hover:text-sky-700 transition-colors"
+                    >
+                        {children}
+                    </h2>
+                );
+            },
+        };
+    }, [onSectionClick]);
+
     return (
         <div className="github-markdown text-slate-800">
             <ReactMarkdown
@@ -268,7 +295,7 @@ const GithubMarkdown: FC<GithubMarkdownProps> = ({ content }) => {
                     [rehypeAutolinkHeadings, { behavior: "wrap" }],
                     rehypeHighlight,
                 ]}
-                components={components}
+                components={markdownComponents}
             >
                 {content}
             </ReactMarkdown>

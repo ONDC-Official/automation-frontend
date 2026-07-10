@@ -15,9 +15,20 @@ interface TableOfContentsProps {
      * instead of pulling the section to the absolute top of the viewport.
      */
     offset?: number;
+    /** When provided, called on section click (parent handles scroll/URL). */
+    onSectionClick?: (id: string) => void;
+    /** Externally controlled active section id. */
+    activeSectionId?: string | null;
 }
 
-const TableOfContents: FC<TableOfContentsProps> = ({ content, className, style, offset = 0 }) => {
+const TableOfContents: FC<TableOfContentsProps> = ({
+    content,
+    className,
+    style,
+    offset = 0,
+    onSectionClick,
+    activeSectionId,
+}) => {
     const toc = useMemo(() => extractMarkdownToc(content), [content]);
     const [activeId, setActiveId] = useState("");
 
@@ -25,6 +36,10 @@ const TableOfContents: FC<TableOfContentsProps> = ({ content, className, style, 
 
     const handleClick = (id: string) => {
         setActiveId(id);
+        if (onSectionClick) {
+            onSectionClick(id);
+            return;
+        }
         if (offset > 0) {
             scrollToSectionWithOffset(id, offset);
         } else {
@@ -32,20 +47,22 @@ const TableOfContents: FC<TableOfContentsProps> = ({ content, className, style, 
         }
     };
 
+    const resolvedActiveId = activeSectionId ?? activeId;
+
     return (
         <div className={className} style={style}>
             <div className="bg-white rounded-xl border border-slate-300 shadow-xs overflow-hidden">
                 {/* Header */}
                 <div className="px-3 py-2 bg-slate-100 border-b border-slate-200">
                     <span className="text-[12px] font-bold text-slate-700 uppercase tracking-widest">
-                        On this page
+                        On this pagesssss
                     </span>
                 </div>
 
                 {/* Nav */}
                 <nav className="p-1.5 space-y-px">
                     {toc.map((entry) => {
-                        const isActive = activeId === entry.id;
+                        const isActive = resolvedActiveId === entry.id;
                         return (
                             <div key={entry.id} className="relative flex items-start">
                                 {/* Active accent bar */}

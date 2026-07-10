@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { useAppDispatch, useAppSelector } from "@store/hooks";
 import { useAuth } from "@hooks/useAuth";
 import { selectIsLoginPending, setLoginPending } from "@store/slices/authSlice";
@@ -11,16 +11,19 @@ export const useGitHubLogin = () => {
     const dispatch = useAppDispatch();
     const { user, token } = useAuth();
     const isLoginRedirecting = useAppSelector(selectIsLoginPending);
+    /** True only for the in-tab click → navigate window; resets on full reload / bfcache restore. */
+    const isStartingLoginRef = useRef(false);
 
     const clearPendingLogin = useCallback(() => {
         dispatch(setLoginPending(false));
     }, [dispatch]);
 
     const resetPendingLoginIfAbandoned = useCallback(() => {
-        if (!isLoginRedirecting) {
+        if (!isLoginRedirecting || isStartingLoginRef.current) {
             return;
         }
 
+        // Still in-flight if profile is ready, token arrived, or OAuth callback is mid-exchange.
         if (user || token || hasOAuthCallbackCode()) {
             return;
         }
@@ -29,23 +32,33 @@ export const useGitHubLogin = () => {
     }, [clearPendingLogin, isLoginRedirecting, token, user]);
 
     const startLogin = useCallback(() => {
+        isStartingLoginRef.current = true;
         dispatch(setLoginPending(true));
 
         const backendUrl = import.meta.env.VITE_DEVELOPER_GUIDE_BACKEND_URL;
         window.location.href = `${backendUrl}/login`;
     }, [dispatch]);
 
+    // Option B: keep the overlay through outbound redirect + inbound exchange/getMe
+    // until the profile is actually ready — not merely when the token lands.
     useEffect(() => {
-        if (user || token) {
+        if (user) {
             clearPendingLogin();
         }
-    }, [clearPendingLogin, token, user]);
+    }, [clearPendingLogin, user]);
+
+    // Clear stale pending left over from a previous abandoned OAuth attempt after rehydration.
+    // Intentionally mount-only: must not re-run when `isLoginPending` flips true on click.
+    const resetPendingLoginIfAbandonedRef = useRef(resetPendingLoginIfAbandoned);
+    resetPendingLoginIfAbandonedRef.current = resetPendingLoginIfAbandoned;
+    useEffect(() => {
+        resetPendingLoginIfAbandonedRef.current();
+    }, []);
 
     useEffect(() => {
-        resetPendingLoginIfAbandoned();
-
         const handlePageShow = (event: PageTransitionEvent) => {
             if (event.persisted) {
+                isStartingLoginRef.current = false;
                 resetPendingLoginIfAbandoned();
             }
         };

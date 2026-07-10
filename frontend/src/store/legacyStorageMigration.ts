@@ -28,9 +28,11 @@ function readJson<T>(raw: string | null): T | null {
 
 /**
  * One-time import of pre-Redux localStorage/sessionStorage keys into the store, run after
- * redux-persist has rehydrated (via PersistGate onBeforeLift). Legacy keys are removed after import
- * so the store becomes the single source of truth. Keys still needed for backward compatibility
- * (auth token via redux-persist `auth` slice; sessionIdForSupport) are re-populated by listener
+ * redux-persist has rehydrated (via PersistGate onBeforeLift). Legacy keys are removed after
+ * import so the store becomes the single source of truth; going forward, persistence lives
+ * entirely in Redux Persist (see @store/persistConfig). This file is temporary rollout code —
+ * remove it once users who last opened the app before the Redux Persist migration (2026-07-02)
+ * have all passed through it at least once.
  */
 export function runLegacyStorageMigration(store: AppStore): void {
     try {
@@ -55,12 +57,19 @@ export function runLegacyStorageMigration(store: AppStore): void {
         }
     }
 
-    // Support session (kept in localStorage via listener write-through; not removed here).
+    // Legacy support-session key → supportSession slice (redux-persist owns it going forward).
     const legacySupport = readJson<{ unitSession?: string; scenarioSession?: string }>(
         localStorage.getItem("sessionIdForSupport")
     );
     if (legacySupport) {
         dispatch(setSupportSession(legacySupport));
+    }
+    if (legacySupport !== null) {
+        try {
+            localStorage.removeItem("sessionIdForSupport");
+        } catch {
+            /* ignore */
+        }
     }
 
     // Session UI prefs.

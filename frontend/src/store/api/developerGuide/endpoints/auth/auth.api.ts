@@ -1,7 +1,19 @@
+import { toast } from "sonner";
 import { API_ROUTES } from "@services/apiRoutes";
 import { devGuideApi } from "@store/api/developerGuide/devGuideApi";
-import { clearAuth, setToken } from "@store/slices/authSlice";
+import type { RootState } from "@store/index";
+import {
+    clearAuth,
+    selectIsLoginPending,
+    setLoginPending,
+    setToken,
+} from "@store/slices/authSlice";
 import type { IGetMeResponse, IExchangeCodeResponse } from "./types";
+
+/** Set when `exchangeCode` succeeds this page load — survives URL cleanup after navigate. */
+let oauthExchangeCompletedThisPageLoad = false;
+
+const hasOAuthCallbackCode = () => new URLSearchParams(window.location.search).has("code");
 
 export const authApi = devGuideApi.injectEndpoints({
     endpoints: (builder) => ({
@@ -11,9 +23,21 @@ export const authApi = devGuideApi.injectEndpoints({
                 method: "GET",
             }),
             providesTags: ["User"],
-            onQueryStarted: async (_arg, { dispatch, queryFulfilled }) => {
+            onQueryStarted: async (_arg, { dispatch, getState, queryFulfilled }) => {
+                const wasLoginPending = selectIsLoginPending(getState() as RootState);
                 try {
-                    await queryFulfilled;
+                    const { data } = await queryFulfilled;
+                    if (!wasLoginPending) {
+                        return;
+                    }
+
+                    const isFreshOAuthLogin =
+                        hasOAuthCallbackCode() || oauthExchangeCompletedThisPageLoad;
+                    if (isFreshOAuthLogin && data.ok && data.user) {
+                        toast.success("Login Successfull!");
+                    }
+
+                    dispatch(setLoginPending(false));
                 } catch {
                     dispatch(clearAuth());
                 }
@@ -30,10 +54,15 @@ export const authApi = devGuideApi.injectEndpoints({
                 try {
                     const { data } = await queryFulfilled;
                     if (data.token) {
+                        oauthExchangeCompletedThisPageLoad = true;
                         dispatch(setToken(data.token));
+                        // Keep isLoginPending true until getMe resolves the user (Option B).
+                    } else {
+                        dispatch(setLoginPending(false));
                     }
                 } catch (err) {
                     console.error("Error exchanging auth code:", err);
+                    dispatch(setLoginPending(false));
                 }
             },
         }),
