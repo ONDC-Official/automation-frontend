@@ -52,7 +52,7 @@ import {
     extractMetadataFromFlows,
     extractMetadataValues,
     sessionCacheMeaningfullyChanged,
-    updateLocalStorageSession,
+    upsertFlowSession,
     type SideViewResponse,
     type SideViewState,
 } from "@components/DomainFlowRunner/MetadataUtils";
@@ -249,7 +249,7 @@ function RenderFlows({ flows, subUrl, sessionId, newSession }: IRenderFlowsProps
 
                     if (!sessionDataPrimedRef.current) {
                         sessionDataPrimedRef.current = true;
-                        updateLocalStorageSession(response, sessionId);
+                        upsertFlowSession(response, sessionId);
                     }
                     apiCallFailCount.current = 0;
                 })

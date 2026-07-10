@@ -50,5 +50,44 @@ export default tseslint.config(
                 },
             ],
         },
+    },
+    {
+        // Persisted frontend state belongs in Redux, persisted via Redux Persist
+        // (see src/store/persistConfig.ts). Direct localStorage/sessionStorage
+        // access is only allowed in the two files that implement that adapter,
+        // plus the temporary one-time legacy-key import.
+        files: ["src/**/*.{ts,tsx}"],
+        ignores: ["src/store/storage.ts", "src/store/legacyStorageMigration.ts"],
+        rules: {
+            "no-restricted-globals": [
+                "error",
+                {
+                    name: "localStorage",
+                    message:
+                        "Do not use localStorage directly. Persist frontend state via Redux Persist " +
+                        "(add a slice + persistConfig entry, see src/store/persistConfig.ts).",
+                },
+                {
+                    name: "sessionStorage",
+                    message:
+                        "Do not use sessionStorage directly. Persist frontend state via Redux Persist " +
+                        "(add a slice + persistConfig entry using the sessionStorage engine, see " +
+                        "src/store/persistConfig.ts).",
+                },
+            ],
+            "no-restricted-properties": [
+                "error",
+                {
+                    object: "window",
+                    property: "localStorage",
+                    message: "Do not use window.localStorage directly. See src/store/persistConfig.ts.",
+                },
+                {
+                    object: "window",
+                    property: "sessionStorage",
+                    message: "Do not use window.sessionStorage directly. See src/store/persistConfig.ts.",
+                },
+            ],
+        },
     }
 );

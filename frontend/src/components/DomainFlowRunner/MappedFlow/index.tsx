@@ -105,7 +105,8 @@ export default function DisplayFlow({
 
     // Per-run key for the LAMF launch popup's "already handled" marker. Keyed on
     // the transaction id so it resets only when the flow is cleared (new txn id),
-    // and persisted in localStorage so a page refresh does not re-show the popup.
+    // and persisted in Redux (uiFlagsSlice, via Redux Persist) so a page refresh
+    // does not re-show the popup.
     const launchMarkerKey = () => {
         const txnId = sessionData?.flowMap?.[flowId] ?? "";
         return `lamf_launch_done:${flowId}:${txnId}`;
@@ -167,8 +168,9 @@ export default function DisplayFlow({
             const manualFormField = formStep?.input?.find((f) => f.type === "MANUAL_DYNAMIC_FORM");
 
             // "Already handled" must survive a page refresh, so it is persisted in
-            // localStorage keyed by the per-run transaction id; it resets only when
-            // the flow is cleared, or once the form step itself is COMPLETE.
+            // Redux (uiFlagsSlice, via Redux Persist) keyed by the per-run transaction
+            // id; it resets only when the flow is cleared, or once the form step itself
+            // is COMPLETE.
             const markerKey = launchMarkerKey();
             const alreadyDone = formStep?.status === "COMPLETE" || isLaunchDone(markerKey);
 

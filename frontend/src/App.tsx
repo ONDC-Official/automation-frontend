@@ -7,15 +7,10 @@ import { AuthInitializer } from "@hooks/useAuthInitialization";
 import { store, persistor } from "@store/index";
 import { runLegacyStorageMigration } from "@store/legacyStorageMigration";
 import { trackPageView } from "@utils/analytics";
-import { sessionIdSupport } from "@utils/localStorageManager";
 import Layout from "@components/Layout";
 
 const Wrapper = () => {
     const location = useLocation();
-
-    useEffect(() => {
-        sessionIdSupport.validateAndCleanup();
-    }, []);
 
     useEffect(() => {
         trackPageView(location.pathname + location.search);
