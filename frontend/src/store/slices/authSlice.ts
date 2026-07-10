@@ -3,7 +3,11 @@ import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 /** Durable auth credential only — `user` lives in the RTK Query `getMe` cache. */
 export interface IAuthState {
     token: string | null;
-    /** True while a GitHub OAuth redirect is in flight (survives full-page navigation via persist). */
+    /**
+     * True from "Login with GitHub" click through OAuth return + code exchange + getMe,
+     * until the user profile is ready (or the attempt is abandoned / times out / fails).
+     * Survives full-page navigation via redux-persist.
+     */
     isLoginPending: boolean;
 }
 

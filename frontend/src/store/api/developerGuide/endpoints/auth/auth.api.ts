@@ -1,6 +1,6 @@
 import { API_ROUTES } from "@services/apiRoutes";
 import { devGuideApi } from "@store/api/developerGuide/devGuideApi";
-import { clearAuth, setToken } from "@store/slices/authSlice";
+import { clearAuth, setLoginPending, setToken } from "@store/slices/authSlice";
 import type { IGetMeResponse, IExchangeCodeResponse } from "./types";
 
 export const authApi = devGuideApi.injectEndpoints({
@@ -31,9 +31,13 @@ export const authApi = devGuideApi.injectEndpoints({
                     const { data } = await queryFulfilled;
                     if (data.token) {
                         dispatch(setToken(data.token));
+                        // Keep isLoginPending true until getMe resolves the user (Option B).
+                    } else {
+                        dispatch(setLoginPending(false));
                     }
                 } catch (err) {
                     console.error("Error exchanging auth code:", err);
+                    dispatch(setLoginPending(false));
                 }
             },
         }),
