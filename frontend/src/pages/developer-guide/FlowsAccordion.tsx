@@ -23,6 +23,36 @@ interface FlowsAccordionProps {
     setSelectedFlowAction: (action: string) => void;
 }
 
+const StepDescriptionTooltip: FC<{ description: string }> = ({ description }) => {
+    const [expanded, setExpanded] = useState(false);
+
+    return (
+        <TooltipContent className="max-w-sm">
+            <div className="space-y-1">
+                <p
+                    className={`text-sm leading-5 whitespace-pre-wrap break-words ${
+                        expanded ? "" : "line-clamp-2"
+                    }`}
+                >
+                    {description}
+                </p>
+
+                <button
+                    type="button"
+                    onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setExpanded((prev) => !prev);
+                    }}
+                    className="text-xs font-medium text-sky-600 hover:text-sky-700"
+                >
+                    {expanded ? "Show less" : "Show more"}
+                </button>
+            </div>
+        </TooltipContent>
+    );
+};
+
 const ArrowsIcon = () => (
     <ArrowsRightLeftIcon className="w-4 h-4 text-slate-400 shrink-0" aria-hidden />
 );
@@ -119,10 +149,10 @@ const FlowsAccordion: FC<FlowsAccordionProps> = ({
                 }`}
             >
                 <div className="flex items-start justify-between gap-2">
-                    <div className="flex items-start gap-2 min-w-0">
+                    <div className="flex items-start gap-2 min-w-0 flex-1">
                         {isTransitioning && (
                             <svg
-                                className="shrink-0 h-3.5 w-3.5 animate-spin text-sky-500 dark:text-sky-400"
+                                className="shrink-0 h-3.5 w-3.5 animate-spin text-sky-500 dark:text-sky-400 mt-0.5"
                                 fill="none"
                                 viewBox="0 0 24 24"
                             >
@@ -141,15 +171,13 @@ const FlowsAccordion: FC<FlowsAccordionProps> = ({
                                 />
                             </svg>
                         )}
-                        <span className="text-body-2 font-medium text-slate-800 wrap-break-word min-w-0">
+
+                        <span className="min-w-0 flex-1 text-body-2 font-medium text-slate-800 break-words [overflow-wrap:anywhere] whitespace-normal">
                             {step.action_label ?? step.api}
                         </span>
                     </div>
-                    <div className="flex items-center gap-1.5 shrink-0 text-sky-700 dark:text-sky-300">
-                        {/* <span className="shrink-0 inline-flex items-center gap-1 text-[11px] font-semibold leading-non bg-sky-50 dark:bg-sky-500/10 rounded-full px-3 py-1">
-                            Docs
-                        </span> */}
 
+                    <div className="flex items-center gap-1.5 shrink-0 text-sky-700 dark:text-sky-300">
                         <TooltipProvider>
                             <Tooltip>
                                 <TooltipTrigger asChild>
@@ -161,7 +189,7 @@ const FlowsAccordion: FC<FlowsAccordionProps> = ({
                                     </span>
                                 </TooltipTrigger>
                                 {step.description && (
-                                    <TooltipContent>{step.description}</TooltipContent>
+                                    <StepDescriptionTooltip description={step.description} />
                                 )}
                             </Tooltip>
                         </TooltipProvider>
@@ -179,7 +207,8 @@ const FlowsAccordion: FC<FlowsAccordionProps> = ({
                 const isSelectedFlow = selectedFlow === flowId;
                 const steps = flow.config?.steps ?? [];
                 const displayItems = buildStepDisplayItems(steps);
-                const flowName = flowId.split("_").join(" ");
+                const flowName = flow.flowId.split("_").join(" ");
+
                 return (
                     <div
                         key={flowIndex}
@@ -189,38 +218,32 @@ const FlowsAccordion: FC<FlowsAccordionProps> = ({
                             onClick={() => toggleFlow(flowIndex)}
                             type="button"
                             variant="ghost"
-                            className="h-auto w-full justify-between rounded-none p-4 font-normal text-left cursor-pointer bg-white dark:bg-surface-elevated hover:bg-slate-50 dark:hover:bg-surface-muted transition-colors duration-200 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-sky-400/60"
+                            className="h-auto w-full rounded-none p-4 font-normal text-left cursor-pointer bg-white dark:bg-surface-elevated hover:bg-slate-50 dark:hover:bg-surface-muted transition-colors duration-200 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-sky-400/60"
                             aria-expanded={isOpen}
                         >
-                            <div className="flex items-center gap-3 flex-1 min-w-0">
-                                <div className="flex-1 min-w-0">
-                                    <span className="font-semibold text-gray-900 text-body-1 wrap-break-word block">
+                            <div className="grid w-full min-w-0 grid-cols-[minmax(0,1fr)_auto] items-start gap-3">
+                                <div className="min-w-0">
+                                    <div className="text-body-1 font-semibold text-gray-900 break-words [overflow-wrap:anywhere] whitespace-normal leading-8">
                                         {flowName}
-                                    </span>
+                                    </div>
+
                                     {flow.description && (
                                         <p
-                                            className={`text-[12px] leading-4 text-slate-500 mt-0.5 ${isOpen ? "" : "line-clamp-2"}`}
+                                            className={`mt-1 text-[12px] leading-5 text-slate-500 break-words [overflow-wrap:anywhere] whitespace-normal ${
+                                                isOpen ? "" : "line-clamp-2"
+                                            }`}
                                         >
                                             {flow.description}
                                         </p>
                                     )}
-                                    {/* {flow.tags.length > 0 && (
-                                        <div className="flex flex-wrap gap-1 mt-1">
-                                            {flow.tags.map((tag) => (
-                                                <span
-                                                    key={tag}
-                                                    className="text-[11px] font-semibold leading-none text-sky-700 bg-sky-50 rounded-full px-3 py-1"
-                                                >
-                                                    {tag}
-                                                </span>
-                                            ))}
-                                        </div>
-                                    )} */}
                                 </div>
+
+                                <ChevronDownIcon
+                                    className={`mt-1 h-4 w-4 shrink-0 text-slate-400 transition-transform duration-300 ${
+                                        isOpen ? "rotate-180" : ""
+                                    }`}
+                                />
                             </div>
-                            <ChevronDownIcon
-                                className={`w-3.5 h-3.5 text-slate-400 shrink-0 ml-3 transition-transform duration-300 ${isOpen ? "rotate-180" : ""}`}
-                            />
                         </Button>
 
                         <div

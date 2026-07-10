@@ -134,7 +134,10 @@ const FlowInformation: FC<FlowInformationProps> = ({
                                 {/* Right pane: section tabs header + the content area that changes per tab */}
                                 <div className="flex-1 min-w-0 min-h-0 flex flex-col pl-4">
                                     {selectedFlowData && (
-                                        <FlowContextStrip flow={selectedFlowData} />
+                                        <FlowContextStrip
+                                            flow={selectedFlowData}
+                                            action={selectedFlowAction}
+                                        />
                                     )}
 
                                     <DetailTabsHeader
