@@ -1,4 +1,4 @@
-import { FC, useState, useCallback, ComponentProps, MouseEvent, useMemo } from "react";
+import { FC, useState, useCallback, useEffect, ComponentProps, MouseEvent, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import { DocumentDuplicateIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
 import { useClipboard } from "@hooks/useClipboard";
@@ -56,6 +56,18 @@ const FlowActionDetails: FC<FlowActionDetailsProps> = ({
     const [expanded, setExpanded] = useState(false);
     const [rightPanelOpen, setRightPanelOpen] = useState(true);
     const { copyToClipboard } = useClipboard();
+
+    useEffect(() => {
+        const attr = searchParams.get("attr");
+        setSelectedPathState(attr);
+    }, [searchParams]);
+
+    useEffect(() => {
+        const panel = searchParams.get("panel");
+        setRightPanelTabState(
+            panel === "comments" || panel === "notes" ? (panel as RightPanelTab) : "attributes"
+        );
+    }, [searchParams]);
 
     const setRightPanelTab = useCallback(
         (tab: RightPanelTab) => {

@@ -12,9 +12,10 @@ export function buildThreadsFromApiList(list: ICommentResponse[]): CommentThread
 
     return parents.map((r) => {
         const threadReplies = replies.filter((rep) => rep.parent_comment_id === r._id);
+        const anchor = r.section_id ?? r.json_path ?? "$";
         return {
             id: r._id,
-            path: r.json_path ?? "$",
+            path: anchor,
             text: r.comment ?? "",
             author: r.user?.username ?? DEFAULT_COMMENT_AUTHOR,
             createdAt: r.created_at ? new Date(r.created_at).getTime() : Date.now(),

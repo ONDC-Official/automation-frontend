@@ -36,6 +36,7 @@ const DeveloperGuideFlowPage: FC = () => {
         hasSupportedActions,
         lazyChangelog,
         changelogLoading,
+        apiUsecase,
     } = useDeveloperGuideFlowPageData();
 
     const handleBack = () => navigate(ROUTES.DEVELOPER_GUIDE);
@@ -133,7 +134,7 @@ const DeveloperGuideFlowPage: FC = () => {
                                     </p>
                                 </div>
                             ) : (
-                                <DocsViewer docs={docs} />
+                                <DocsViewer docs={docs} useCaseId={apiUsecase ?? slug} />
                             ))}
                         {activeView === "changelog" &&
                             (changelogLoading ? (

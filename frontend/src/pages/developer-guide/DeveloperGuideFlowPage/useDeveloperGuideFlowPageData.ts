@@ -85,6 +85,7 @@ export function useDeveloperGuideFlowPageData() {
         hasErrorCodes: specDataState.hasErrorCodes,
         hasSupportedActions: specDataState.hasSupportedActions,
         usecaseLabel: specDataState.usecaseLabel,
+        apiUsecase: specDataState.apiUsecase,
         lazyChangelog: changelogState.lazyChangelog,
         changelogLoading: changelogState.changelogLoading,
     };
