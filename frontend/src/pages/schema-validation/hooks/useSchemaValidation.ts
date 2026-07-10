@@ -86,7 +86,7 @@ export const useSchemaValidation = (): IUseSchemaValidationReturn => {
     }, [validationErrors, isSuccessResponse]);
 
     /**
-     * Handles payload changes and persists to localStorage
+     * Handles payload changes and persists to Redux (schemaValidation slice, via Redux Persist)
      *
      * @param value - The new payload value from the editor
      */

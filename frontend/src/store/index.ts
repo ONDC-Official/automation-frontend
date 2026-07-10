@@ -28,7 +28,6 @@ import devGuideShellSlice from "@store/slices/devGuideShellSlice";
 import playgroundConfigsSlice from "@store/slices/playgroundConfigsSlice";
 import playgroundUiSlice from "@store/slices/playgroundUiSlice";
 import profileShellSlice from "@store/slices/profileShellSlice";
-import { listenerMiddleware } from "@store/listenerMiddleware";
 import {
     sessionPersistConfig,
     frameworkHealthPersistConfig,
@@ -77,14 +76,12 @@ export const createAppStore = (preloadedState?: Partial<RootState>) =>
                 serializableCheck: {
                     ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
                 },
-            })
-                .prepend(listenerMiddleware.middleware)
-                .concat(
-                    mainApi.middleware,
-                    devGuideApi.middleware,
-                    githubDocsApi.middleware,
-                    loadTestApi.middleware
-                ),
+            }).concat(
+                mainApi.middleware,
+                devGuideApi.middleware,
+                githubDocsApi.middleware,
+                loadTestApi.middleware
+            ),
         devTools: import.meta.env.DEV,
         preloadedState,
     });

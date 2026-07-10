@@ -72,33 +72,35 @@ PlaygroundActionStep {
 
 Defined in `context/playground-context.ts`, provided by `index.tsx`.
 
-| Field | Purpose |
-|---|---|
-| `config` | The live `MockPlaygroundConfigType` |
-| `setCurrentConfig(c)` | Updates state + auto-saves to localStorage |
-| `activeApi` | `action_id` of the selected step in the timeline |
-| `activeTerminalData` | Array of `ExecutionResult` from the mock runner |
-| `useModal` | Shared modal: `openModal(jsx)` / `closeModal()` |
-| `loading` | Global spinner flag |
-| `updateStepMock(stepId, property, value)` | Edits one mock property; Base64-encodes JS/HTML |
-| `updateTransactionHistory(actionId, action, payload, savedInfo?)` | Appends to `transaction_history` |
-| `resetTransactionHistory(actionId?)` | Clears all history, or slices from `actionId` forward |
-| `updateHelperLib(code)` | Base64-encodes and saves shared library |
-| `loadSavedConfig / deleteSavedConfig / getSavedConfigs / loadConfigFromGist` | Config management |
+| Field                                                                        | Purpose                                                           |
+| ---------------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| `config`                                                                     | The live `MockPlaygroundConfigType`                               |
+| `setCurrentConfig(c)`                                                        | Updates state + auto-saves to Redux (persisted via Redux Persist) |
+| `activeApi`                                                                  | `action_id` of the selected step in the timeline                  |
+| `activeTerminalData`                                                         | Array of `ExecutionResult` from the mock runner                   |
+| `useModal`                                                                   | Shared modal: `openModal(jsx)` / `closeModal()`                   |
+| `loading`                                                                    | Global spinner flag                                               |
+| `updateStepMock(stepId, property, value)`                                    | Edits one mock property; Base64-encodes JS/HTML                   |
+| `updateTransactionHistory(actionId, action, payload, savedInfo?)`            | Appends to `transaction_history`                                  |
+| `resetTransactionHistory(actionId?)`                                         | Clears all history, or slices from `actionId` forward             |
+| `updateHelperLib(code)`                                                      | Base64-encodes and saves shared library                           |
+| `loadSavedConfig / deleteSavedConfig / getSavedConfigs / loadConfigFromGist` | Config management                                                 |
 
 ---
 
-## Persistence — Two-Layer localStorage
+## Persistence — Redux (playgroundConfigs slice) via Redux Persist
 
-`utils/config-storage.ts` manages all persistence. No IndexedDB.
+`utils/config-storage.ts` dispatches into the `playgroundConfigs` Redux slice, which is persisted
+via Redux Persist (`redux-persist/lib/storage`, i.e. localStorage under the hood — but nothing in
+this module touches `localStorage` directly). No IndexedDB.
 
-| Key | Contents |
-|---|---|
-| `"playgroundConfig"` | Current working config (raw JSON). Reloaded on page refresh. |
-| `"playground_config_<id>"` | Named saved config. Key = `domain_version_flowId` (sanitized). |
-| `"playground_configs_metadata"` | JSON array of `SavedConfigMetadata[]` — index for the browser. |
+| Slice field         | Contents                                                              |
+| ------------------- | --------------------------------------------------------------------- |
+| `draft`             | Current working config. Reloaded on page refresh.                     |
+| `configs[configId]` | Named saved config. `configId` = `domain_version_flowId` (sanitized). |
+| `metadata`          | `SavedConfigMetadata[]` — index for the UI.                           |
 
-Gist-loaded configs use key prefix `"gist_<gistId>"`. Every `setCurrentConfig` call also triggers `saveConfig` (auto-save into the named slot).
+Gist-loaded configs use `configId` prefix `"gist_<gistId>"`. Every `setCurrentConfig` call also triggers `saveConfig` (auto-save into the named slot).
 
 URL param `?gist=<url or id>` on load → fetches gist, validates with `MockRunner.validateConfig()`, saves, sets as current.
 
@@ -135,14 +137,14 @@ executePayload()
 
 Shown per selected action. Tab definitions live in `types/index.ts` as `PLAYGROUND_LEFT_TABS`.
 
-| Tab file | Language | `mock` property | Notes |
-|---|---|---|---|
-| `generator.js` | JavaScript | `generate` | Main payload generator function |
-| `validator.js` | JavaScript | `validate` | Validation logic |
-| `requirements.js` | JavaScript | `requirements` | Pre-conditions check |
-| `defaultPayload.json` | JSON | `defaultPayload` | Base payload |
-| `inputs.json` | JSON | `inputs` | `{ jsonSchema: {...} }` — drives the input form |
-| `form.html` | HTML | `formHtml` | Only shown for `dynamic_form`/`html_form` steps |
+| Tab file              | Language   | `mock` property  | Notes                                           |
+| --------------------- | ---------- | ---------------- | ----------------------------------------------- |
+| `generator.js`        | JavaScript | `generate`       | Main payload generator function                 |
+| `validator.js`        | JavaScript | `validate`       | Validation logic                                |
+| `requirements.js`     | JavaScript | `requirements`   | Pre-conditions check                            |
+| `defaultPayload.json` | JSON       | `defaultPayload` | Base payload                                    |
+| `inputs.json`         | JSON       | `inputs`         | `{ jsonSchema: {...} }` — drives the input form |
+| `form.html`           | HTML       | `formHtml`       | Only shown for `dynamic_form`/`html_form` steps |
 
 Monaco uses a custom dark sky-blue theme defined in `ui/editor-themes.tsx`.
 
@@ -150,13 +152,13 @@ Monaco uses a custom dark sky-blue theme defined in `ui/editor-themes.tsx`.
 
 ## Right Panel — Five Tabs
 
-| Tab id | Component | Purpose |
-|---|---|---|
-| `session` | `LeftSideView` (json tree) | Live accumulated session data with hover tooltips showing which action set each field |
-| `transaction` | `SessionDataTab` | JSONPath manager — see below |
-| `common_lib` | `CommonLibView` | Monaco editor for `helperLib` (shared JS available to all generators) |
-| `output_payload` | `OutputPayloadViewer` | Payload for the active action + L1/L2 validation buttons |
-| `terminal` | `Terminal` | `ExecutionResult` list: Result / Error / Logs / Validation sections |
+| Tab id           | Component                  | Purpose                                                                               |
+| ---------------- | -------------------------- | ------------------------------------------------------------------------------------- |
+| `session`        | `LeftSideView` (json tree) | Live accumulated session data with hover tooltips showing which action set each field |
+| `transaction`    | `SessionDataTab`           | JSONPath manager — see below                                                          |
+| `common_lib`     | `CommonLibView`            | Monaco editor for `helperLib` (shared JS available to all generators)                 |
+| `output_payload` | `OutputPayloadViewer`      | Payload for the active action + L1/L2 validation buttons                              |
+| `terminal`       | `Terminal`                 | `ExecutionResult` list: Result / Error / Logs / Validation sections                   |
 
 ---
 
@@ -166,10 +168,10 @@ This tab manages **saveData** — a mechanism for the mock runner to pull values
 
 ### Two tiers of path mappings
 
-| Tier | Stored in | Lifecycle |
-|---|---|---|
-| **saveData** | `step.mock.saveData` (inside step config) | Persisted. Mock runner reads this to inject values. |
-| **Tentative (saved_info)** | `transaction_history[n].saved_info` | Session-only. Promoted to `saveData` on "Save" button click. |
+| Tier                       | Stored in                                 | Lifecycle                                                    |
+| -------------------------- | ----------------------------------------- | ------------------------------------------------------------ |
+| **saveData**               | `step.mock.saveData` (inside step config) | Persisted. Mock runner reads this to inject values.          |
+| **Tentative (saved_info)** | `transaction_history[n].saved_info`       | Session-only. Promoted to `saveData` on "Save" button click. |
 
 ### Adding a mapping
 
@@ -179,9 +181,11 @@ This tab manages **saveData** — a mechanism for the mock runner to pull values
 ### `EVAL#` prefix
 
 A path value can start with `EVAL#` followed by a **Base64-encoded JS function**:
+
 ```
 EVAL#<base64 of: function getSave(payload) { ...; return dataToSave; }>
 ```
+
 Paths starting with `EVAL#` bypass JSONPath validation. The mock runner decodes and executes the function with the step's payload, using the return value as the saved data. Use this when the value to extract can't be expressed as a static JSONPath.
 
 ### Removing a saveData entry
@@ -202,6 +206,7 @@ calcCurrentIndex(config) → number  (-1 if all done)
 Each step circle supports: Add Before / Add After / Edit / Delete / Reset (clears history from that point).
 
 Step types:
+
 - **API step**: standard ONDC action from `ONDC_ACTION_LIST` (24 actions)
 - **Form step**: `"dynamic_form"` or `"html_form"` — uses `formHtml` tab instead of JS tabs
 
@@ -210,6 +215,7 @@ Step types:
 ## GitHub Gist Integration
 
 `utils/fetch-gist.ts` fetches raw gist content via the GitHub API. Accepts:
+
 - Full URL: `https://gist.github.com/user/id`
 - Bare gist ID: `abc123def456`
 
@@ -219,26 +225,26 @@ The first file in the gist is used. Config is validated before being set. Gist c
 
 ## Key Files at a Glance
 
-| File | Role |
-|---|---|
-| `index.tsx` | Context provider, localStorage boot, auto-save |
-| `starter-page.tsx` | Domain/version/flow picker + saved configs modal |
-| `playground-page.tsx` | Split-pane editor shell |
-| `view-only-page.tsx` | Read-only mode (`?devMode=false`) |
-| `context/playground-context.ts` | Context type definition |
-| `hooks/use-config.tsx` | Export / import / run / deploy — all header button logic |
-| `hooks/use-playground-actions.tsx` | CRUD for steps in the timeline |
-| `ui/LeftSideView.tsx` | Monaco code editor + stats/validation badges |
-| `ui/RightSideView.tsx` | Tab container for right panel |
-| `ui/session-data-tab.tsx` | JSONPath saveData manager |
-| `ui/playground-upper/merged-sequcence.tsx` | Action timeline |
-| `ui/playground-upper/playground-header.tsx` | Header with all action buttons |
-| `ui/extras/terminal.tsx` | Execution result viewer |
-| `ui/extras/output-payload-viewer.tsx` | Payload + L1/L2 validation |
-| `ui/components/mock-dynamic-form.tsx` | Renders Base64 HTML forms |
-| `ui/extras/rsjf-form.tsx` | JSON Schema → React form |
-| `utils/config-storage.ts` | localStorage CRUD for configs |
-| `utils/fetch-gist.ts` | GitHub Gist fetcher |
-| `utils/editor-utils.ts` | JSONPath from cursor position (hover tooltips) |
-| `mock-engine/index.ts` | `calcCurrentIndex` — next step to run |
-| `types/index.ts` | `ONDC_ACTION_LIST`, tab configs, type exports |
+| File                                        | Role                                                     |
+| ------------------------------------------- | -------------------------------------------------------- |
+| `index.tsx`                                 | Context provider, Redux-backed config boot, auto-save    |
+| `starter-page.tsx`                          | Domain/version/flow picker + saved configs modal         |
+| `playground-page.tsx`                       | Split-pane editor shell                                  |
+| `view-only-page.tsx`                        | Read-only mode (`?devMode=false`)                        |
+| `context/playground-context.ts`             | Context type definition                                  |
+| `hooks/use-config.tsx`                      | Export / import / run / deploy — all header button logic |
+| `hooks/use-playground-actions.tsx`          | CRUD for steps in the timeline                           |
+| `ui/LeftSideView.tsx`                       | Monaco code editor + stats/validation badges             |
+| `ui/RightSideView.tsx`                      | Tab container for right panel                            |
+| `ui/session-data-tab.tsx`                   | JSONPath saveData manager                                |
+| `ui/playground-upper/merged-sequcence.tsx`  | Action timeline                                          |
+| `ui/playground-upper/playground-header.tsx` | Header with all action buttons                           |
+| `ui/extras/terminal.tsx`                    | Execution result viewer                                  |
+| `ui/extras/output-payload-viewer.tsx`       | Payload + L1/L2 validation                               |
+| `ui/components/mock-dynamic-form.tsx`       | Renders Base64 HTML forms                                |
+| `ui/extras/rsjf-form.tsx`                   | JSON Schema → React form                                 |
+| `utils/config-storage.ts`                   | Redux (`playgroundConfigs` slice) CRUD for configs       |
+| `utils/fetch-gist.ts`                       | GitHub Gist fetcher                                      |
+| `utils/editor-utils.ts`                     | JSONPath from cursor position (hover tooltips)           |
+| `mock-engine/index.ts`                      | `calcCurrentIndex` — next step to run                    |
+| `types/index.ts`                            | `ONDC_ACTION_LIST`, tab configs, type exports            |

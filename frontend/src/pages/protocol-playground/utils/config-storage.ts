@@ -64,7 +64,7 @@ function extractGistId(input: string): string | null {
 }
 
 /**
- * Save a config to localStorage with metadata
+ * Save a config to Redux (playgroundConfigs slice, persisted via Redux Persist) with metadata
  */
 export function saveConfig(
     domain: string,
@@ -97,7 +97,7 @@ export function saveConfig(
 }
 
 /**
- * Save a gist-based config to localStorage
+ * Save a gist-based config to Redux (playgroundConfigs slice, persisted via Redux Persist)
  */
 export function saveGistConfig(gistUrl: string, config: MockPlaygroundConfigType): boolean {
     try {
