@@ -38,7 +38,21 @@ export default function TRV11SelectForm({ submitEvent }: ITRV11SelectFormProps) 
     });
 
     const onSubmit = async (data: IFormValues) => {
-        await submitEvent({ jsonPath: {}, formData: data as unknown as Record<string, string> });
+        const normalizedData: IFormValues = {
+            ...data,
+            items: data.items.map((item) => ({
+                ...item,
+                count:
+                    typeof item.count === "number"
+                        ? item.count
+                        : parseInt(String(item.count), 10) || 1,
+            })),
+        };
+
+        await submitEvent({
+            jsonPath: {},
+            formData: normalizedData as unknown as Record<string, string>,
+        });
     };
 
     const handlePaste = (payload: unknown) => {
