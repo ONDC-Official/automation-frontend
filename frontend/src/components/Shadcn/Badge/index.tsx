@@ -5,7 +5,7 @@ import type { FilterBadgeProps } from "@components/Shadcn/Badge/types";
 
 export const FilterBadge = ({ label, selected, onClick }: FilterBadgeProps) => (
     <Button
-        type="button"
+        variant="ghost"
         onClick={onClick}
         className="rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-normal/50"
     >

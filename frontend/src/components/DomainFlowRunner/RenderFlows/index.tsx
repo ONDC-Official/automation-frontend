@@ -42,8 +42,13 @@ import {
     type SettingsDraft,
 } from "@components/DomainFlowRunner/FlowSettingsModal";
 import { isRideMapEnabled } from "@components/DomainFlowRunner/RideMapUtils";
-import { useAppDispatch } from "@store/hooks";
-import { initializeFlowPage, resetFlowRuntime } from "@store/slices/sessionSlice";
+import { useAppDispatch, useAppSelector } from "@store/hooks";
+import {
+    initializeFlowPage,
+    resetFlowRuntime,
+    selectFlowFilterTags,
+    setFlowFilterTags,
+} from "@store/slices/sessionSlice";
 import { SESSION_EMPTY_METADATA, SESSION_EMPTY_RECORD } from "@store/slices/sessionConstants";
 import { store } from "@store/index";
 import { SessionSidePanel } from "@components/DomainFlowRunner/SessionSidePanel";
@@ -59,6 +64,7 @@ import {
 
 function RenderFlows({ flows, subUrl, sessionId, newSession }: IRenderFlowsProps) {
     const dispatch = useAppDispatch();
+    const selectedTags = useAppSelector(selectFlowFilterTags(sessionId));
     const {
         setSessionId,
         activeFlowId,
@@ -100,7 +106,6 @@ function RenderFlows({ flows, subUrl, sessionId, newSession }: IRenderFlowsProps
     const [isPolling, setIsPolling] = useState(false);
     const [gotReport, setGotReport] = useState(false);
     const [flowTags, setFlowTags] = useState<string[]>([]);
-    const [selectedTags, setSelectedTags] = useState<string[]>([]);
     const [isReportDialogOpen, setIsReportDialogOpen] = useState<boolean>(false);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
     const [settingsDraft, setSettingsDraft] = useState<SettingsDraft | null>(null);
@@ -374,7 +379,7 @@ function RenderFlows({ flows, subUrl, sessionId, newSession }: IRenderFlowsProps
 
             setAutoScrollEnabled(settingsDraft.autoScrollEnabled);
             setExperimentalMode(settingsDraft.experimentalMode);
-            setSelectedTags(settingsDraft.selectedTags);
+            dispatch(setFlowFilterTags({ sessionId, tags: settingsDraft.selectedTags }));
             setDifficultyCache(sessionDifficulty);
             closeSettings();
         } catch (e) {
