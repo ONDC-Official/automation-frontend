@@ -88,7 +88,7 @@ export function sessionCacheMeaningfullyChanged(prev: SessionCache, next: Sessio
     );
 }
 
-export function updateLocalStorageSession(sessionData: SessionCache, sessionId: string) {
+export function upsertFlowSession(sessionData: SessionCache, sessionId: string) {
     if (sessionData.usecaseId === "PLAYGROUND-FLOW") {
         return;
     }

@@ -21,6 +21,8 @@ export interface ISessionState {
     activeCallClickedToggle: boolean;
     autoScrollEnabled: boolean;
     experimentalMode: boolean;
+    /** Per-session flow filter tags; keyed by sessionId for redux-persist. */
+    flowFilterTagsBySessionId: Record<string, string[]>;
     flowFormDialogLockCount: number;
 }
 
@@ -36,6 +38,7 @@ const initialState: ISessionState = {
     activeCallClickedToggle: false,
     autoScrollEnabled: true,
     experimentalMode: false,
+    flowFilterTagsBySessionId: {},
     flowFormDialogLockCount: 0,
 };
 
@@ -99,6 +102,13 @@ const sessionSlice = createSlice({
             if (state.experimentalMode === action.payload) return;
             state.experimentalMode = action.payload;
         },
+        setFlowFilterTags: (
+            state,
+            action: PayloadAction<{ sessionId: string; tags: string[] }>
+        ) => {
+            const { sessionId, tags } = action.payload;
+            state.flowFilterTagsBySessionId[sessionId] = tags;
+        },
         acquireFlowFormDialogLock: (state) => {
             state.flowFormDialogLockCount += 1;
         },
@@ -107,19 +117,21 @@ const sessionSlice = createSlice({
         },
         /** Mount flow page: set session id and reset ephemeral runtime (prefs preserved). */
         initializeFlowPage: (state, action: PayloadAction<string>) => {
-            const { autoScrollEnabled, experimentalMode } = state;
+            const { autoScrollEnabled, experimentalMode, flowFilterTagsBySessionId } = state;
             state.sessionId = action.payload;
             clearFlowRuntimeFields(state);
             state.autoScrollEnabled = autoScrollEnabled;
             state.experimentalMode = experimentalMode;
+            state.flowFilterTagsBySessionId = flowFilterTagsBySessionId;
         },
         /** Clear flow-runtime fields; keep persisted UI prefs (autoScroll, experimental). */
         resetFlowRuntime: (state) => {
-            const { autoScrollEnabled, experimentalMode } = state;
+            const { autoScrollEnabled, experimentalMode, flowFilterTagsBySessionId } = state;
             state.sessionId = "";
             clearFlowRuntimeFields(state);
             state.autoScrollEnabled = autoScrollEnabled;
             state.experimentalMode = experimentalMode;
+            state.flowFilterTagsBySessionId = flowFilterTagsBySessionId;
         },
         resetSession: () => initialState,
     },
@@ -137,6 +149,7 @@ export const {
     setActiveCallClickedToggle,
     setAutoScrollEnabled,
     setExperimentalMode,
+    setFlowFilterTags,
     acquireFlowFormDialogLock,
     releaseFlowFormDialogLock,
     initializeFlowPage,
@@ -146,5 +159,10 @@ export const {
 
 export const selectIsFlowFormDialogOpen = (state: { session: ISessionState }) =>
     state.session.flowFormDialogLockCount > 0;
+
+export const selectFlowFilterTags =
+    (sessionId: string) =>
+    (state: { session: ISessionState }): string[] =>
+        state.session.flowFilterTagsBySessionId[sessionId] ?? [];
 
 export default sessionSlice;

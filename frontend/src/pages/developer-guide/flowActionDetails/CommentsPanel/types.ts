@@ -1,3 +1,5 @@
+export type { CommentScope, FlowCommentScope, DocumentCommentScope } from "@/types/comment-scope";
+
 export interface CommentReply {
     id: string;
     text: string;
@@ -18,7 +20,13 @@ export interface CommentThread {
 
 export interface CommentsPanelProps {
     selectedPath: string | null;
-    actionApi: string;
+    /** Explicit scope for API calls (preferred). */
+    commentScope?: import("@/types/comment-scope").CommentScope;
+    /** Legacy flow props — used when commentScope is omitted. */
+    actionApi?: string;
     useCaseId?: string;
     flowId?: string;
+    /** Human-readable label for the selected anchor (e.g. section title). */
+    selectionLabel?: string;
+    emptySelectionMessage?: string;
 }

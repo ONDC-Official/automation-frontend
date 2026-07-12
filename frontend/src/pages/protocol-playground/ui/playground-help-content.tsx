@@ -554,9 +554,9 @@ export const HELP_SECTIONS: HelpSection[] = [
                     </div>
                 </div>
                 <Callout type="tip">
-                    The playground auto-saves your config to localStorage on every change. Your work
-                    survives page refreshes. Use <strong>Download</strong> for explicit checkpoints
-                    or to share with teammates.
+                    The playground auto-saves your config on every change. Your work survives page
+                    refreshes. Use <strong>Download</strong> for explicit checkpoints or to share
+                    with teammates.
                 </Callout>
             </div>
         ),

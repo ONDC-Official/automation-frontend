@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { toast } from "sonner";
 import { v4 as uuidv4 } from "uuid";
 import { SubmitEventParams } from "@/types/flow-types";
@@ -75,13 +75,63 @@ export function FlowRunAccordion({
         return () => releaseFlowFormDialogLock?.();
     }, [inputPopUp, acquireFlowFormDialogLock, releaseFlowFormDialogLock]);
 
+    const getCurrentState = useCallback(
+        async (cache: SessionCache) => {
+            const tx = cache.flowMap?.[flow.id];
+            if (tx) {
+                try {
+                    const txData = await triggerGetMappedFlow({
+                        transactionId: tx,
+                        sessionId,
+                    }).unwrap();
+                    for (let i = 0; i < txData.sequence.length; i++) {
+                        const payloads = txData.sequence[i].payloads;
+                        if (payloads) {
+                            if (!payloads.entryType) {
+                                txData.sequence[i].payloads!.entryType = "API";
+                            }
+                        }
+                    }
+                    setMappedFlow(txData);
+                    apiCallFailCount.current = 0;
+                } catch (error) {
+                    apiCallFailCount.current = apiCallFailCount.current + 1;
+                    console.error("Failed to fetch transaction data:", error);
+                }
+            } else {
+                setMappedFlow({
+                    sequence: getSequenceFromFlow(
+                        cache?.flowConfigs[flow.id] ?? flow,
+                        cache,
+                        activeFlow
+                    ),
+                    missedSteps: [],
+                });
+            }
+        },
+        [activeFlow, flow, sessionId, triggerGetMappedFlow]
+    );
+
+    const fetchTransactionData = useCallback(async () => {
+        if (activeFlow !== flow.id || !sessionCache) {
+            return;
+        }
+        await getCurrentState(sessionCache);
+    }, [activeFlow, flow.id, sessionCache, getCurrentState]);
+
+    const onMappedFlowPollComplete = useCallback(async () => {
+        if (apiCallFailCount.current < 5) {
+            await fetchTransactionData();
+        }
+    }, [fetchTransactionData]);
+
     useEffect(() => {
         const executedFlowId = Object.keys(
             (sessionCache?.flowMap as Record<string, string | null>) || {}
         );
 
         if (executedFlowId.includes(flow.id) && sessionCache) {
-            getCurrentState(sessionCache);
+            void getCurrentState(sessionCache);
         }
 
         if (sessionCache?.activeFlow) {
@@ -89,44 +139,19 @@ export function FlowRunAccordion({
         } else {
             setActiveFlow(null);
         }
-    }, [flow, sessionCache]);
+    }, [flow.id, sessionCache, getCurrentState, setActiveFlow]);
 
-    const getCurrentState = async (sessionCache: SessionCache) => {
-        const tx = sessionCache.flowMap?.[flow.id];
-        if (tx) {
-            try {
-                const txData = await triggerGetMappedFlow({
-                    transactionId: tx,
-                    sessionId,
-                }).unwrap();
-                for (let i = 0; i < txData.sequence.length; i++) {
-                    const payloads = txData.sequence[i].payloads;
-                    if (payloads) {
-                        if (!payloads.entryType) {
-                            txData.sequence[i].payloads!.entryType = "API";
-                        }
-                    }
-                }
-                setMappedFlow(txData);
-                apiCallFailCount.current = 0; // Reset fail count on successful fetch
-            } catch (error) {
-                apiCallFailCount.current = apiCallFailCount.current + 1;
-                console.error("Failed to fetch transaction data:", error);
-            }
-        } else {
-            setMappedFlow({
-                sequence: getSequenceFromFlow(flow, sessionCache, activeFlow),
-                missedSteps: [],
-            });
-        }
-    };
-
-    const fetchTransactionData = async () => {
-        if (activeFlow !== flow.id || !sessionCache) {
-            return;
-        }
-        getCurrentState(sessionCache);
-    };
+    // Catch up mapped-flow state when returning to this tab (e.g. buyer tab while seller
+    // requests run in another tab or via Postman).
+    useEffect(() => {
+        const onVisible = () => {
+            if (document.visibilityState !== "visible") return;
+            if (activeFlow !== flow.id || !sessionCache) return;
+            void getCurrentState(sessionCache);
+        };
+        document.addEventListener("visibilitychange", onVisible);
+        return () => document.removeEventListener("visibilitychange", onVisible);
+    }, [activeFlow, flow.id, sessionCache, getCurrentState]);
 
     useEffect(() => {
         if (contentRef.current) {
@@ -374,11 +399,7 @@ export function FlowRunAccordion({
                     sqSize={24}
                     strokeWidth={3}
                     duration={3}
-                    onComplete={async () => {
-                        if (apiCallFailCount.current < 5) {
-                            await fetchTransactionData();
-                        }
-                    }}
+                    onComplete={onMappedFlowPollComplete}
                     loop={true}
                     isActive={activeFlow === flow.id && !isFlowFormDialogOpen && !inputPopUp}
                     id={`fetch-transaction-data-${flow.id}`}

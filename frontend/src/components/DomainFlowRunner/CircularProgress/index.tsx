@@ -15,7 +15,7 @@ const CircularProgress: React.FC<Props> = ({
     sqSize = 120,
     duration = 5,
     onComplete,
-    loop: _loop,
+    loop = false,
     isActive = true,
     id: _id,
 }) => {
@@ -30,7 +30,21 @@ const CircularProgress: React.FC<Props> = ({
     const isMounted = useRef(true);
     const isRunning = useRef(false);
     const pauseRef = useRef(false);
+    const onCompleteRef = useRef(onComplete);
     const [resumeKey, setResumeKey] = useState(0);
+
+    useEffect(() => {
+        onCompleteRef.current = onComplete;
+    }, [onComplete]);
+
+    const restartCycle = () => {
+        pauseRef.current = false;
+        isRunning.current = false;
+        startTimeRef.current = null;
+        elapsedOffsetRef.current = 0;
+        setProgress(0);
+        setResumeKey((k) => k + 1);
+    };
 
     useEffect(() => {
         isMounted.current = true;
@@ -48,12 +62,7 @@ const CircularProgress: React.FC<Props> = ({
     useEffect(() => {
         const onVisible = () => {
             if (document.visibilityState !== "visible" || !isActive) return;
-            pauseRef.current = false;
-            isRunning.current = false;
-            startTimeRef.current = null;
-            elapsedOffsetRef.current = 0;
-            setProgress(0);
-            setResumeKey((k) => k + 1);
+            restartCycle();
         };
 
         document.addEventListener("visibilitychange", onVisible);
@@ -87,12 +96,18 @@ const CircularProgress: React.FC<Props> = ({
                 isRunning.current = false;
                 elapsedOffsetRef.current = 0;
                 pauseRef.current = true;
-                onComplete().finally(() => {
+                onCompleteRef.current().finally(() => {
                     if (!isMounted.current) return;
 
                     isRunning.current = false;
                     startTimeRef.current = null;
                     pauseRef.current = false;
+
+                    // Restart the timer when looping — without this, polling stops after one
+                    // cycle unless a parent re-render changes effect dependencies.
+                    if (loop) {
+                        restartCycle();
+                    }
                 });
             }
         };
@@ -109,7 +124,7 @@ const CircularProgress: React.FC<Props> = ({
             }
             isRunning.current = false;
         };
-    }, [duration, onComplete, isActive, resumeKey]);
+    }, [duration, isActive, loop, resumeKey]);
 
     const strokeDashoffset = circumference * (1 - progress);
 

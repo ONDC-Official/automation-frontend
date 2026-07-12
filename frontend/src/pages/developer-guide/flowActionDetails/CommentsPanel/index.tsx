@@ -1,4 +1,4 @@
-import { type FC, useState, useCallback } from "react";
+import { type FC, useState, useCallback, useMemo } from "react";
 import {
     useLazyGetCommentsQuery,
     useCreateCommentMutation,
@@ -7,6 +7,11 @@ import {
     useDeleteCommentMutation,
 } from "@store/api";
 import { useAuth } from "@hooks/useAuth";
+import {
+    commentScopeToCreatePayload,
+    commentScopeToListParams,
+    resolveCommentScope,
+} from "@/types/comment-scope";
 import GuideAsyncPanel from "../../shared/components/GuideAsyncPanel";
 import { EmptyState } from "../../shared/components/states";
 import { useThreadedApi } from "../../shared/hooks/useThreadedApi";
@@ -17,10 +22,34 @@ import { buildThreadsFromApiList, generateCommentId } from "./utils";
 import { DEFAULT_COMMENT_AUTHOR } from "./constants";
 import type { CommentThread, CommentsPanelProps } from "./types";
 
-const CommentsPanel: FC<CommentsPanelProps> = ({ selectedPath, actionApi, useCaseId, flowId }) => {
+const DEFAULT_EMPTY_SELECTION_MESSAGE = "Select a key in the JSON tree to add comments.";
+
+const CommentsPanel: FC<CommentsPanelProps> = ({
+    selectedPath,
+    commentScope: commentScopeProp,
+    actionApi,
+    useCaseId,
+    flowId,
+    selectionLabel,
+    emptySelectionMessage = DEFAULT_EMPTY_SELECTION_MESSAGE,
+}) => {
+    const commentScope = resolveCommentScope(commentScopeProp, useCaseId, flowId, actionApi);
+    const listParams = useMemo(
+        () => (commentScope ? commentScopeToListParams(commentScope) : null),
+        [commentScope]
+    );
+    const scopeDeps = useMemo(() => {
+        if (!commentScope) return [];
+        if (commentScope.kind === "flow") {
+            return [commentScope.use_case_id, commentScope.flow_id, commentScope.action_id];
+        }
+        return [commentScope.use_case_id, commentScope.document_slug];
+    }, [commentScope]);
+
     const { user } = useAuth();
     const isLoggedIn = Boolean(user);
-    const useApi = Boolean(flowId && useCaseId);
+    const useApi = Boolean(commentScope);
+    const selectionDisplay = selectionLabel ?? selectedPath;
     const [newCommentText, setNewCommentText] = useState("");
     const [replyTextByThreadId, setReplyTextByThreadId] = useState<Record<string, string>>({});
     const [replyingToId, setReplyingToId] = useState<string | null>(null);
@@ -39,16 +68,12 @@ const CommentsPanel: FC<CommentsPanelProps> = ({ selectedPath, actionApi, useCas
     } = useThreadedApi<CommentThread>({
         enabled: useApi,
         fetchItems: async () => {
-            const result = await triggerGetComments({
-                use_case_id: useCaseId!,
-                flow_id: flowId!,
-                action_id: actionApi,
-            });
+            const result = await triggerGetComments(listParams!);
             if (result.error) throw result.error;
             const list = Array.isArray(result.data) ? result.data : [];
             return buildThreadsFromApiList(list);
         },
-        deps: [flowId, useCaseId, actionApi],
+        deps: scopeDeps,
     });
 
     const addComment = useCallback(async () => {
@@ -57,16 +82,9 @@ const CommentsPanel: FC<CommentsPanelProps> = ({ selectedPath, actionApi, useCas
         const text = newCommentText.trim();
         if (!text) return;
 
-        if (useApi && flowId && useCaseId) {
+        if (useApi && commentScope) {
             const ok = await mutate(
-                () =>
-                    createComment({
-                        use_case_id: useCaseId,
-                        flow_id: flowId,
-                        action_id: actionApi,
-                        json_path: path,
-                        comment: text,
-                    }).unwrap(),
+                () => createComment(commentScopeToCreatePayload(commentScope, path, text)).unwrap(),
                 "Failed to post comment"
             );
             if (ok) setNewCommentText("");
@@ -83,17 +101,7 @@ const CommentsPanel: FC<CommentsPanelProps> = ({ selectedPath, actionApi, useCas
             setThreads((prev) => [thread, ...prev]);
             setNewCommentText("");
         }
-    }, [
-        isLoggedIn,
-        selectedPath,
-        newCommentText,
-        useApi,
-        flowId,
-        useCaseId,
-        actionApi,
-        mutate,
-        setThreads,
-    ]);
+    }, [isLoggedIn, selectedPath, newCommentText, useApi, commentScope, mutate, setThreads]);
 
     const addReply = useCallback(
         async (threadId: string) => {
@@ -101,14 +109,11 @@ const CommentsPanel: FC<CommentsPanelProps> = ({ selectedPath, actionApi, useCas
             const text = (replyTextByThreadId[threadId] ?? "").trim();
             if (!text) return;
 
-            if (useApi && flowId && useCaseId) {
+            if (useApi && commentScope && listParams) {
                 const ok = await mutate(
                     () =>
                         replyToComment({
-                            use_case_id: useCaseId,
-                            flow_id: flowId,
-                            action_id: actionApi,
-                            json_path: selectedPath ?? "$",
+                            ...listParams,
                             comment: text,
                             parent_comment_id: threadId,
                         }).unwrap(),
@@ -138,17 +143,7 @@ const CommentsPanel: FC<CommentsPanelProps> = ({ selectedPath, actionApi, useCas
             setReplyTextByThreadId((prev) => ({ ...prev, [threadId]: "" }));
             setReplyingToId(null);
         },
-        [
-            isLoggedIn,
-            replyTextByThreadId,
-            useApi,
-            flowId,
-            useCaseId,
-            actionApi,
-            selectedPath,
-            mutate,
-            setThreads,
-        ]
+        [isLoggedIn, replyTextByThreadId, useApi, commentScope, listParams, mutate, setThreads]
     );
 
     const toggleResolved = useCallback(
@@ -158,7 +153,7 @@ const CommentsPanel: FC<CommentsPanelProps> = ({ selectedPath, actionApi, useCas
             if (!thread) return;
             const newResolved = !thread.resolved;
 
-            if (useApi && flowId && useCaseId) {
+            if (useApi && commentScope) {
                 await mutate(
                     () => resolveComment({ commentId: threadId, resolved: newResolved }).unwrap(),
                     "Failed to update comment"
@@ -177,19 +172,19 @@ const CommentsPanel: FC<CommentsPanelProps> = ({ selectedPath, actionApi, useCas
                 );
             }
         },
-        [isLoggedIn, threads, useApi, flowId, useCaseId, mutate, setThreads]
+        [isLoggedIn, threads, useApi, commentScope, mutate, setThreads]
     );
 
     const deleteThread = useCallback(
         async (threadId: string) => {
             if (!isLoggedIn) return;
-            if (useApi && flowId && useCaseId) {
+            if (useApi && commentScope) {
                 await mutate(() => deleteComment(threadId).unwrap(), "Failed to delete comment");
             } else {
                 setThreads((prev) => prev.filter((t) => t.id !== threadId));
             }
         },
-        [isLoggedIn, useApi, flowId, useCaseId, mutate, setThreads]
+        [isLoggedIn, useApi, commentScope, mutate, setThreads]
     );
 
     const handleReplyTextChange = useCallback((threadId: string, value: string) => {
@@ -202,17 +197,19 @@ const CommentsPanel: FC<CommentsPanelProps> = ({ selectedPath, actionApi, useCas
 
     const filteredThreads = threads;
     const hasSelection = selectedPath != null;
-    const selectPathEmptyState = (
-        <EmptyState message="Select a key in the JSON tree to add comments." icon={IconComment} />
-    );
+    const selectPathEmptyState = <EmptyState message={emptySelectionMessage} icon={IconComment} />;
 
     return (
         <GuideAsyncPanel title="Comments" loading={loading} error={error}>
             <>
                 {hasSelection && (
                     <div className="flex items-center gap-2 mb-3 shrink-0 break-all">
-                        <span className="inline-flex items-center px-2.5 py-1 rounded-lg bg-sky-500/10 text-sky-700 dark:text-sky-300 font-mono text-xs">
-                            {selectedPath}
+                        <span
+                            className={`inline-flex items-center px-2.5 py-1 rounded-lg bg-sky-500/10 text-sky-700 dark:text-sky-300 text-xs ${
+                                selectionLabel ? "font-medium" : "font-mono"
+                            }`}
+                        >
+                            {selectionDisplay}
                         </span>
                     </div>
                 )}
@@ -240,13 +237,17 @@ const CommentsPanel: FC<CommentsPanelProps> = ({ selectedPath, actionApi, useCas
                         <div className="shrink-0 mb-4">
                             <p className="text-sm text-slate-700 mb-2 break-all">
                                 Comments on{" "}
-                                <span className="text-sky-600 dark:text-sky-400 font-mono normal-case">
-                                    {selectedPath}
+                                <span
+                                    className={`text-sky-600 dark:text-sky-400 normal-case ${
+                                        selectionLabel ? "font-medium" : "font-mono"
+                                    }`}
+                                >
+                                    {selectionDisplay}
                                 </span>
                             </p>
                             {threads.filter((t) => t.path === selectedPath).length === 0 ? (
                                 <p className="text-sm text-slate-400 py-2">
-                                    No comments on this path yet.
+                                    No comments on this {selectionLabel ? "section" : "path"} yet.
                                 </p>
                             ) : (
                                 <div className="space-y-3">

@@ -3,6 +3,8 @@ export interface ICommentPayload {
     flow_id?: string;
     action_id?: string;
     json_path?: string;
+    document_slug?: string;
+    section_id?: string;
     comment: string;
 }
 
@@ -12,6 +14,8 @@ export interface ICommentResponse {
     flow_id?: string;
     action_id?: string;
     json_path?: string;
+    document_slug?: string;
+    section_id?: string;
     comment?: string;
     resolved?: boolean;
     parent_comment_id?: string;
@@ -29,7 +33,7 @@ export interface IReplyPayload {
     use_case_id?: string;
     flow_id?: string;
     action_id?: string;
-    json_path?: string;
+    document_slug?: string;
     comment: string;
     parent_comment_id: string;
 }
@@ -46,4 +50,5 @@ export interface ICommentsListParams {
     use_case_id?: string;
     flow_id?: string;
     action_id?: string;
+    document_slug?: string;
 }
