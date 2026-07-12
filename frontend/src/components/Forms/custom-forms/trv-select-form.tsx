@@ -70,7 +70,11 @@ export default function TRVSelectForm({ submitEvent, flowId }: ITRVSelectFormPro
         const selectedFulfillment = fulfillmentOptions.find((f) => f.id === data.fulfillmentId);
         const output = {
             provider: data.provider,
-            items: data.items,
+            items: data.items.map((item) => ({
+                ...item,
+                count: Number(item.count) || 1,
+                addOnsQuantity: Number(item.addOnsQuantity) || 1,
+            })),
             fulfillments: selectedFulfillment
                 ? [
                       {
@@ -83,7 +87,10 @@ export default function TRVSelectForm({ submitEvent, flowId }: ITRVSelectFormPro
                   ]
                 : [],
         };
-        await submitEvent({ jsonPath: {}, formData: output as unknown as Record<string, string> });
+        await submitEvent({
+            jsonPath: {},
+            formData: output as unknown as Record<string, unknown>,
+        });
     };
 
     const handlePaste = (payload: unknown) => {
