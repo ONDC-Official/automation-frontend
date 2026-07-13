@@ -14,4 +14,6 @@ export interface NotesPanelProps {
     actionApi: string;
     useCaseId?: string;
     flowId?: string;
+    domain?: string;
+    version?: string;
 }

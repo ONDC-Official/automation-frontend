@@ -11,13 +11,15 @@ import { buildDocumentCommentScope } from "./DocsViewer/utils";
 interface DocsViewerProps {
     docs: Record<string, string>;
     useCaseId: string;
+    domain: string;
+    version: string;
 }
 
 function formatSlug(slug: string): string {
     return slug.replace(/[-_]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
-const DocsViewer: FC<DocsViewerProps> = ({ docs, useCaseId }) => {
+const DocsViewer: FC<DocsViewerProps> = ({ docs, useCaseId, domain, version }) => {
     const slugs = useMemo(() => Object.keys(docs), [docs]);
 
     const {
@@ -36,10 +38,10 @@ const DocsViewer: FC<DocsViewerProps> = ({ docs, useCaseId }) => {
     const content = docs[activeDocSlug] ?? "";
     const commentScope = useMemo(
         () =>
-            useCaseId && activeDocSlug
-                ? buildDocumentCommentScope(useCaseId, activeDocSlug)
+            useCaseId && activeDocSlug && domain && version
+                ? buildDocumentCommentScope(domain, version, useCaseId, activeDocSlug)
                 : undefined,
-        [useCaseId, activeDocSlug]
+        [useCaseId, activeDocSlug, domain, version]
     );
 
     if (slugs.length === 0) {
