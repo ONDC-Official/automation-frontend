@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useLayoutEffect } from "react";
 import { BrowserRouter, useLocation } from "react-router-dom";
 import { Provider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
@@ -11,6 +11,10 @@ import Layout from "@components/Layout";
 
 const Wrapper = () => {
     const location = useLocation();
+
+    useLayoutEffect(() => {
+        window.scrollTo({ top: 0, left: 0 });
+    }, [location.pathname]);
 
     useEffect(() => {
         trackPageView(location.pathname + location.search);

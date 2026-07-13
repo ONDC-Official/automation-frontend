@@ -1,5 +1,5 @@
 import { FC, useCallback, useEffect, useMemo, useState } from "react";
-import { Outlet, useLocation } from "react-router-dom";
+import { Outlet } from "react-router-dom";
 import { ArrowLeftIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import DeveloperGuideCollapsedNavBar from "./DeveloperGuideCollapsedNavBar";
 import DeveloperGuideNavBackButton from "./DeveloperGuideNavBackButton";
@@ -31,19 +31,11 @@ const StatusLegend: FC = () => (
     </div>
 );
 
-const DeveloperGuideShellMain: FC = () => {
-    const { pathname } = useLocation();
-
-    useEffect(() => {
-        window.scrollTo({ top: 0, left: 0 });
-    }, [pathname]);
-
-    return (
-        <main className="flex-1 min-w-0">
-            <Outlet />
-        </main>
-    );
-};
+const DeveloperGuideShellMain: FC = () => (
+    <main className="flex-1 min-w-0">
+        <Outlet />
+    </main>
+);
 
 const DeveloperGuideShell: FC = () => {
     const dispatch = useAppDispatch();
