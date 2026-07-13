@@ -1,6 +1,6 @@
 import { FC } from "react";
 import { useNavigate } from "react-router-dom";
-import Spinner from "@components/Shadcn/Spinner";
+import LoadingOverlay from "@components/Shadcn/LoadingOverlay";
 import { Button } from "@/components/Shadcn/Button";
 import { ROUTES } from "@constants/routes";
 import FlowInformation from "../FlowInformation";
@@ -42,13 +42,7 @@ const DeveloperGuideFlowPage: FC = () => {
     const handleBack = () => navigate(ROUTES.DEVELOPER_GUIDE);
 
     if (isLoading) {
-        return (
-            <div
-                className={`flex items-center justify-center bg-white dark:bg-surface-page ${inShell ? "min-h-[40vh]" : "min-h-screen"}`}
-            >
-                <Spinner className="size-8 text-brand-normal" />
-            </div>
-        );
+        return <LoadingOverlay />;
     }
 
     if (notFound || !domainKey || !versionKey || !slug) {
@@ -78,6 +72,7 @@ const DeveloperGuideFlowPage: FC = () => {
         <div
             className={`relative bg-white dark:bg-surface-page flex flex-col ${inShell ? "min-h-0" : "min-h-screen"}`}
         >
+            {changelogLoading && <LoadingOverlay />}
             <FlowPageHeader
                 activeView={activeView}
                 hasErrorCodes={hasErrorCodes}
@@ -134,14 +129,15 @@ const DeveloperGuideFlowPage: FC = () => {
                                     </p>
                                 </div>
                             ) : (
-                                <DocsViewer docs={docs} useCaseId={apiUsecase ?? slug} />
+                                <DocsViewer
+                                    docs={docs}
+                                    useCaseId={apiUsecase ?? slug}
+                                    domain={domainKey}
+                                    version={versionKey}
+                                />
                             ))}
                         {activeView === "changelog" &&
-                            (changelogLoading ? (
-                                <div className="flex items-center justify-center py-16">
-                                    <Spinner className="size-8 text-brand-normal" />
-                                </div>
-                            ) : (
+                            (changelogLoading ? null : (
                                 <ChangelogView changelogs={lazyChangelog || []} />
                             ))}
                     </div>

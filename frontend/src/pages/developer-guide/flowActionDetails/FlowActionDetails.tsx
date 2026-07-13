@@ -31,6 +31,8 @@ interface FlowActionDetailsProps {
     spec: OpenAPISpecification | null | undefined;
     useCaseId?: string;
     flowId?: string;
+    domain?: string;
+    version?: string;
     /** Validation table data keyed by action name. Loaded lazily from API. */
     validationTableData?: Record<string, ValidationTableAction> | null;
 }
@@ -42,6 +44,8 @@ const FlowActionDetails: FC<FlowActionDetailsProps> = ({
     spec,
     useCaseId,
     flowId,
+    domain,
+    version,
     validationTableData,
 }) => {
     const [searchParams, setSearchParams] = useSearchParams();
@@ -213,6 +217,8 @@ const FlowActionDetails: FC<FlowActionDetailsProps> = ({
                                 actionApi={actionApi}
                                 useCaseId={useCaseId}
                                 flowId={flowId}
+                                domain={domain}
+                                version={version}
                             />
                         )}
                         {rightPanelTab === "notes" && (
@@ -221,6 +227,8 @@ const FlowActionDetails: FC<FlowActionDetailsProps> = ({
                                 actionApi={actionApi}
                                 useCaseId={useCaseId}
                                 flowId={flowId}
+                                domain={domain}
+                                version={version}
                             />
                         )}
                     </div>

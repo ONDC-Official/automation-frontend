@@ -1,4 +1,4 @@
-import { type FC, useState, useCallback } from "react";
+import { type FC, useState, useCallback, useMemo } from "react";
 import {
     useLazyGetNotesQuery,
     useCreateNoteMutation,
@@ -6,6 +6,7 @@ import {
     useDeleteNoteMutation,
 } from "@store/api";
 import { useAuth } from "@hooks/useAuth";
+import { toWireUseCaseId } from "@/types/comment-scope";
 import { Button } from "@/components/Shadcn/Button";
 import GuideAsyncPanel from "../../shared/components/GuideAsyncPanel";
 import GuidePanel from "../../shared/components/GuidePanel";
@@ -18,10 +19,21 @@ import { apiNoteToNote, generateNoteId, groupNotesByPath } from "./utils";
 import type { Note, NotesPanelProps } from "./types";
 import { PencilSquareIcon } from "@heroicons/react/24/outline";
 
-const NotesPanel: FC<NotesPanelProps> = ({ selectedPath, actionApi, useCaseId, flowId }) => {
+const NotesPanel: FC<NotesPanelProps> = ({
+    selectedPath,
+    actionApi,
+    useCaseId,
+    flowId,
+    domain,
+    version,
+}) => {
     const { user } = useAuth();
     const isLoggedIn = Boolean(user);
-    const useApi = Boolean(flowId && useCaseId);
+    const wireUseCaseId = useMemo(() => {
+        if (!useCaseId || !domain || !version) return null;
+        return toWireUseCaseId(domain, version, useCaseId);
+    }, [domain, version, useCaseId]);
+    const useApi = Boolean(flowId && wireUseCaseId);
     const [editingId, setEditingId] = useState<string | null>(null);
     const [isCreating, setIsCreating] = useState(false);
     const [formTitle, setFormTitle] = useState("");
@@ -41,7 +53,7 @@ const NotesPanel: FC<NotesPanelProps> = ({ selectedPath, actionApi, useCaseId, f
         enabled: useApi,
         fetchItems: async () => {
             const result = await triggerGetNotes({
-                use_case_id: useCaseId!,
+                use_case_id: wireUseCaseId!,
                 flow_id: flowId!,
                 action_id: actionApi,
             });
@@ -49,7 +61,7 @@ const NotesPanel: FC<NotesPanelProps> = ({ selectedPath, actionApi, useCaseId, f
             const list = Array.isArray(result.data) ? result.data : [];
             return list.map(apiNoteToNote);
         },
-        deps: [flowId, useCaseId, actionApi],
+        deps: [flowId, wireUseCaseId, actionApi, domain, version],
     });
 
     const showForm = isCreating || editingId !== null;
@@ -83,13 +95,13 @@ const NotesPanel: FC<NotesPanelProps> = ({ selectedPath, actionApi, useCaseId, f
         const noteText = title && content ? `${title}\n${content}` : content || title;
         const now = Date.now();
 
-        if (useApi && flowId && useCaseId) {
+        if (useApi && flowId && wireUseCaseId) {
             const ok = await mutate(async () => {
                 if (editingId) {
                     await updateNote({ noteId: editingId, payload: { note: noteText } }).unwrap();
                 } else {
                     await createNote({
-                        use_case_id: useCaseId,
+                        use_case_id: wireUseCaseId,
                         flow_id: flowId,
                         action_id: actionApi,
                         json_path: path,
@@ -127,7 +139,7 @@ const NotesPanel: FC<NotesPanelProps> = ({ selectedPath, actionApi, useCaseId, f
         isCreating,
         useApi,
         flowId,
-        useCaseId,
+        wireUseCaseId,
         actionApi,
         mutate,
         setNotes,
@@ -146,13 +158,13 @@ const NotesPanel: FC<NotesPanelProps> = ({ selectedPath, actionApi, useCaseId, f
     const deleteNote = useCallback(
         async (id: string) => {
             if (editingId === id) cancelForm();
-            if (useApi && flowId && useCaseId) {
+            if (useApi && flowId && wireUseCaseId) {
                 await mutate(() => deleteNoteMutation(id).unwrap(), "Failed to delete note");
             } else {
                 setNotes((prev) => prev.filter((n) => n.id !== id));
             }
         },
-        [editingId, cancelForm, useApi, flowId, useCaseId, mutate, setNotes]
+        [editingId, cancelForm, useApi, flowId, wireUseCaseId, mutate, setNotes]
     );
 
     if (!isLoggedIn) {

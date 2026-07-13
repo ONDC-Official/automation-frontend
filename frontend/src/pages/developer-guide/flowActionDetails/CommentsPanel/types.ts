@@ -26,6 +26,8 @@ export interface CommentsPanelProps {
     actionApi?: string;
     useCaseId?: string;
     flowId?: string;
+    domain?: string;
+    version?: string;
     /** Human-readable label for the selected anchor (e.g. section title). */
     selectionLabel?: string;
     emptySelectionMessage?: string;

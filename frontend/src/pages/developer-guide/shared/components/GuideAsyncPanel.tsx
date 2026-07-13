@@ -1,6 +1,7 @@
 import { type FC, type ReactNode } from "react";
+import LoadingOverlay from "@components/Shadcn/LoadingOverlay";
 import GuidePanel from "./GuidePanel";
-import { ErrorState, LoadingState } from "./states";
+import { ErrorState } from "./states";
 
 export interface GuideAsyncPanelProps {
     title: string;
@@ -12,8 +13,9 @@ export interface GuideAsyncPanelProps {
 /** GuidePanel + loading/error gate shared by CommentsPanel and NotesPanel. */
 const GuideAsyncPanel: FC<GuideAsyncPanelProps> = ({ title, loading, error, children }) => (
     <GuidePanel title={title}>
+        {loading && <LoadingOverlay />}
         {error && <ErrorState message={error} />}
-        {loading ? <LoadingState /> : children}
+        {children}
     </GuidePanel>
 );
 

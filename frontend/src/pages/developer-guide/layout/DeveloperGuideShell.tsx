@@ -3,7 +3,7 @@ import { Outlet, useLocation } from "react-router-dom";
 import { ArrowLeftIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import DeveloperGuideCollapsedNavBar from "./DeveloperGuideCollapsedNavBar";
 import DeveloperGuideNavBackButton from "./DeveloperGuideNavBackButton";
-import Spinner from "@components/Shadcn/Spinner";
+import LoadingOverlay from "@components/Shadcn/LoadingOverlay";
 import { filterNavTree } from "./filterNavTree";
 import DeveloperGuideSidebar from "./DeveloperGuideSidebar";
 import { useAppDispatch, useAppSelector } from "@store/hooks";
@@ -64,11 +64,7 @@ const DeveloperGuideShell: FC = () => {
     );
 
     if (isLoading) {
-        return (
-            <div className="min-h-[calc(100svh-4rem)] flex items-center justify-center bg-white dark:bg-surface-page">
-                <Spinner className="size-8 text-brand-normal" />
-            </div>
-        );
+        return <LoadingOverlay />;
     }
 
     return (
