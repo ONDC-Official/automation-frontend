@@ -14,6 +14,7 @@ import type {
 } from "./types";
 
 const listId = (params: ICommentsListParams) => {
+    // use_case_id is already version-scoped via toWireUseCaseId on the FE.
     if (params.document_slug) {
         return `LIST-${params.use_case_id ?? ""}-doc-${params.document_slug}`;
     }

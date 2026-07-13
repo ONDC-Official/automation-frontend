@@ -1,10 +1,13 @@
 // Shared by notes/comments RTK endpoints: both list by the composite
 // use_case_id+flow_id+action_id key, not a single field — a flat "LIST" id
 // would invalidate every action's notes/comments on any one action's change.
+// Domain/version uniqueness is currently encoded into use_case_id (see toWireUseCaseId).
 export interface IScopedListParams {
     use_case_id?: string;
     flow_id?: string;
     action_id?: string;
+    domain?: string;
+    version?: string;
 }
 
 export const buildScopedListId = (params: IScopedListParams) =>

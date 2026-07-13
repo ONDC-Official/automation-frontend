@@ -52,12 +52,19 @@ export function useThreadedApi<TItem>({
     );
 
     useEffect(() => {
-        if (enabled) void refetch();
+        if (!enabled) {
+            setItems([]);
+            setLoading(false);
+            setError(null);
+            return;
+        }
+        void refetch();
     }, [enabled, ...deps]);
 
     const mutate = useCallback(
         async (action: () => Promise<unknown>, errorMessage: string) => {
             setError(null);
+            setLoading(true);
             try {
                 await action();
                 await refetch(false);
@@ -65,6 +72,8 @@ export function useThreadedApi<TItem>({
             } catch (err) {
                 setError(err instanceof Error ? err.message : errorMessage);
                 return false;
+            } finally {
+                setLoading(false);
             }
         },
         [refetch]

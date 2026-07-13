@@ -54,10 +54,22 @@ export function useDeveloperGuideFlowPageData() {
                 next.set("view", "docs");
                 next.delete("flow");
                 next.delete("action");
+                next.delete("tab");
+                next.delete("attr");
+                next.delete("panel");
+                next.delete("doc");
                 return next;
             },
             { replace: true }
         );
+
+        if (window.location.hash) {
+            window.history.replaceState(
+                null,
+                "",
+                `${window.location.pathname}${window.location.search}`
+            );
+        }
     }, [
         routeKey,
         setSearchParams,

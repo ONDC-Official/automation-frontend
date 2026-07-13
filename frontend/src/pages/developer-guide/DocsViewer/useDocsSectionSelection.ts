@@ -37,6 +37,12 @@ export function useDocsSectionSelection({ docSlugs, docs }: UseDocsSectionSelect
         return toc.find((entry) => entry.id === selectedSectionId)?.text;
     }, [selectedSectionId, toc]);
 
+    // Keep selection in sync with URL (clears when attr is dropped on route change).
+    useEffect(() => {
+        const attr = searchParams.get("attr");
+        setSelectedSectionIdState(attr ?? (hash ? hash.slice(1) : null));
+    }, [searchParams, hash]);
+
     // Keep doc param in sync with active slug
     useEffect(() => {
         if (!activeDocSlug) return;

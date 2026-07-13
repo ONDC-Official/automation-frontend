@@ -1,4 +1,4 @@
-import { type FC, useState, useCallback, useMemo } from "react";
+import { type FC, useState, useCallback, useMemo, useEffect } from "react";
 import {
     useLazyGetCommentsQuery,
     useCreateCommentMutation,
@@ -30,10 +30,18 @@ const CommentsPanel: FC<CommentsPanelProps> = ({
     actionApi,
     useCaseId,
     flowId,
+    domain,
+    version,
     selectionLabel,
     emptySelectionMessage = DEFAULT_EMPTY_SELECTION_MESSAGE,
 }) => {
-    const commentScope = resolveCommentScope(commentScopeProp, useCaseId, flowId, actionApi);
+    const commentScope = resolveCommentScope(commentScopeProp, {
+        useCaseId,
+        flowId,
+        actionApi,
+        domain,
+        version,
+    });
     const listParams = useMemo(
         () => (commentScope ? commentScopeToListParams(commentScope) : null),
         [commentScope]
@@ -41,9 +49,20 @@ const CommentsPanel: FC<CommentsPanelProps> = ({
     const scopeDeps = useMemo(() => {
         if (!commentScope) return [];
         if (commentScope.kind === "flow") {
-            return [commentScope.use_case_id, commentScope.flow_id, commentScope.action_id];
+            return [
+                commentScope.domain,
+                commentScope.version,
+                commentScope.use_case_id,
+                commentScope.flow_id,
+                commentScope.action_id,
+            ];
         }
-        return [commentScope.use_case_id, commentScope.document_slug];
+        return [
+            commentScope.domain,
+            commentScope.version,
+            commentScope.use_case_id,
+            commentScope.document_slug,
+        ];
     }, [commentScope]);
 
     const { user } = useAuth();
@@ -58,6 +77,13 @@ const CommentsPanel: FC<CommentsPanelProps> = ({
     const [replyToComment] = useReplyToCommentMutation();
     const [resolveComment] = useResolveCommentMutation();
     const [deleteComment] = useDeleteCommentMutation();
+
+    // Clear draft UI when navigating to a different scope/route.
+    useEffect(() => {
+        setNewCommentText("");
+        setReplyTextByThreadId({});
+        setReplyingToId(null);
+    }, scopeDeps);
 
     const {
         items: threads,

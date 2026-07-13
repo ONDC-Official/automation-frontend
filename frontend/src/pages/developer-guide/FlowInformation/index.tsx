@@ -170,6 +170,8 @@ const FlowInformation: FC<FlowInformationProps> = ({
                                                                 selectedFlowData?.flowId ??
                                                                 selectedFlow
                                                             }
+                                                            domain={domain}
+                                                            version={version}
                                                             validationTableData={validationTable}
                                                         />
                                                     ) : (
