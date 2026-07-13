@@ -1,3 +1,4 @@
+import { type ReactNode } from "react";
 import { Navigate, Route, Routes as RouterRoutes } from "react-router-dom";
 import SchemaValidationPage from "@pages/schema-validation";
 import SellerOnboarding from "@pages/seller-onboarding";
@@ -25,6 +26,9 @@ import DeveloperGuideGeneralContent from "@pages/developer-guide/layout/Develope
 import DeveloperGuideDomainsContent from "@pages/developer-guide/layout/DeveloperGuideDomainsContent";
 import DeveloperGuideDocContent from "@pages/developer-guide/layout/DeveloperGuideDocContent";
 import ValidationsPage from "@pages/developer-guide/ValidationsPage";
+import PageReveal from "./page-reveal";
+
+const page = (children: ReactNode) => <PageReveal>{children}</PageReveal>;
 
 /** Developer Guide is only available in development; redirect to home in production */
 const DeveloperGuideWrapper = ({ children }: { children: React.ReactNode }) =>
@@ -36,25 +40,25 @@ const DeveloperGuideWrapper = ({ children }: { children: React.ReactNode }) =>
 
 const Routes = () => (
     <RouterRoutes>
-        <Route path={ROUTES.HOME} element={<HomePage />} />
-        <Route path={ROUTES.SUPPORT} element={<SupportPage />} />
-        <Route path={ROUTES.SCHEMA} element={<SchemaValidationPage />} />
+        <Route path={ROUTES.HOME} element={page(<HomePage />)} />
+        <Route path={ROUTES.SUPPORT} element={page(<SupportPage />)} />
+        <Route path={ROUTES.SCHEMA} element={page(<SchemaValidationPage />)} />
         {/*  Scenario Page Route  is the go to flow testing page with np form*/}
-        <Route path={ROUTES.SCENARIO} element={<ScenarioPage />} />
+        <Route path={ROUTES.SCENARIO} element={page(<ScenarioPage />)} />
         {/* ROUTES.FLOW_TESTING is for Flow testing through URL parameters not via scenario testing page */}
-        <Route path={ROUTES.FLOW_TESTING} element={<FlowTestingWrapper />} />
+        <Route path={ROUTES.FLOW_TESTING} element={page(<FlowTestingWrapper />)} />
         <Route path={ROUTES.PROFILE} element={<UserProfile />}>
-            <Route index element={<ConfigsSection />} />
-            <Route path="past-reports" element={<PastReportsSection />} />
-            <Route path="history" element={<ActivityHistorySection />} />
+            <Route index element={page(<ConfigsSection />)} />
+            <Route path="past-reports" element={page(<PastReportsSection />)} />
+            <Route path="history" element={page(<ActivityHistorySection />)} />
         </Route>
-        <Route path={ROUTES.SELLER_ONBOARDING} element={<SellerOnboarding />} />
-        <Route path={ROUTES.PLAYGROUND} element={<ProtocolPlayGround />} />
-        <Route path={ROUTES.HISTORY} element={<HistoryPage />} />
-        <Route path={ROUTES.DB_BACK_OFFICE} element={<DBBackOffice />} />
-        <Route path={ROUTES.AUTH_HEADER} element={<AuthHeader />} />
-        <Route path={ROUTES.SELLER_LOAD_TESTING} element={<SellerLoadTesting />} />
-        <Route path={ROUTES.FRAMEWORK_HEALTH} element={<FrameworkHealthPage />} />
+        <Route path={ROUTES.SELLER_ONBOARDING} element={page(<SellerOnboarding />)} />
+        <Route path={ROUTES.PLAYGROUND} element={page(<ProtocolPlayGround />)} />
+        <Route path={ROUTES.HISTORY} element={page(<HistoryPage />)} />
+        <Route path={ROUTES.DB_BACK_OFFICE} element={page(<DBBackOffice />)} />
+        <Route path={ROUTES.AUTH_HEADER} element={page(<AuthHeader />)} />
+        <Route path={ROUTES.SELLER_LOAD_TESTING} element={page(<SellerLoadTesting />)} />
+        <Route path={ROUTES.FRAMEWORK_HEALTH} element={page(<FrameworkHealthPage />)} />
         <Route
             path={ROUTES.DEVELOPER_GUIDE}
             element={
@@ -72,22 +76,18 @@ const Routes = () => (
                     />
                 }
             />
-            <Route path="getting-started" element={<DeveloperGuideGettingStartedContent />} />
-            <Route path="general" element={<DeveloperGuideGeneralContent />} />
-            <Route path="domains" element={<DeveloperGuideDomainsContent />} />
-            <Route path="auth-tools" element={<DeveloperGuideAuthToolsContent />} />
-            <Route path="docs/:slug" element={<DeveloperGuideDocContent />} />
-            <Route path=":domain/:version/:useCase" element={<DeveloperGuideFlowPage />} />
+            <Route path="getting-started" element={page(<DeveloperGuideGettingStartedContent />)} />
+            <Route path="general" element={page(<DeveloperGuideGeneralContent />)} />
+            <Route path="domains" element={page(<DeveloperGuideDomainsContent />)} />
+            <Route path="auth-tools" element={page(<DeveloperGuideAuthToolsContent />)} />
+            <Route path="docs/:slug" element={page(<DeveloperGuideDocContent />)} />
+            <Route path=":domain/:version/:useCase" element={page(<DeveloperGuideFlowPage />)} />
         </Route>
         <Route
             path={ROUTES.DEVELOPER_GUIDE_VALIDATIONS}
-            element={
-                <DeveloperGuideWrapper>
-                    <ValidationsPage />
-                </DeveloperGuideWrapper>
-            }
+            element={<DeveloperGuideWrapper>{page(<ValidationsPage />)}</DeveloperGuideWrapper>}
         />
-        <Route path="*" element={<NotFoundPage />} />
+        <Route path="*" element={page(<NotFoundPage />)} />
     </RouterRoutes>
 );
 
