@@ -4,7 +4,7 @@
 @import "tailwindcss";
 
 @theme {
-    --breakpoint-nav: 1290px;
+    --breakpoint-nav: 1024px;
     --z-index-55: 55;
     --z-index-60: 60;
     --z-index-70: 70;
@@ -32,7 +32,7 @@
     --animate-slow-pulse: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
     --animate-spin-slow: spin 1.5s linear infinite;
     --animate-spin-progress: spin-progress linear forwards;
-    --animate-page-enter: page-enter 0.45s ease-in forwards;
+    --animate-page-enter: page-enter 0.22s ease-in forwards;
 
     @keyframes spin-progress {
         0% {
@@ -46,7 +46,7 @@
     @keyframes page-enter {
         from {
             opacity: 0;
-            transform: translateY(0.75rem);
+            transform: translateY(0.375rem);
         }
         to {
             opacity: 1;
@@ -169,11 +169,11 @@
 /* Scroll-triggered page section reveals (see PageReveal) */
 .page-reveal-child {
     opacity: 0;
-    transform: translateY(0.75rem);
+    transform: translateY(0.375rem);
 }
 
 .page-reveal-child.is-revealed {
-    animation: page-enter 0.45s ease-in forwards;
+    animation: page-enter 0.22s ease-in forwards;
 }
 
 @media (prefers-reduced-motion: reduce) {

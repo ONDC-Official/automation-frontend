@@ -19,6 +19,17 @@ export const domainOptions = [
     { key: "Health & Wellness", value: "ONDC:RET18" },
 ];
 
+/** User-friendly names for domain codes that don't have a family-wide grouping (e.g. RET has per-category names above). */
+export const DOMAIN_FRIENDLY_NAMES: Record<string, string> = {
+    ...Object.fromEntries(domainOptions.map((option) => [option.value, option.key])),
+    "ONDC:TRV10": "Ride Hailing",
+    "ONDC:TRV11": "Metro",
+    "ONDC:TRV12": "Intercity",
+    "ONDC:TRV13": "Hotel",
+    "ONDC:FIS12": "Lending",
+    "ONDC:FIS13": "Insurance",
+};
+
 export const Types = [
     { key: "Delivery", value: "Delivery" },
     { key: "Self-Pickup", value: "Self-Pickup" },

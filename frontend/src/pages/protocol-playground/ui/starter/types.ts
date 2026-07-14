@@ -1,3 +1,4 @@
+import type { ComboBoxOptionInput } from "@components/Shadcn/ComboBox/combo-box-options";
 import type { Control } from "react-hook-form";
 
 export interface IScenarioVersionItem {
@@ -21,7 +22,7 @@ export type StarterTabKey = "tools" | "flow-converter" | "schema-generator";
 
 export interface IFlowFieldsProps {
     control: Control<IStarterFormValues>;
-    domainOptions: string[];
+    domainOptions: ComboBoxOptionInput[];
     versionOptions: string[];
     onDomainChange: () => void;
 }

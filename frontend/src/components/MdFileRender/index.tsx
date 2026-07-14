@@ -28,14 +28,12 @@ const MdFileRender: FC<MdFileRenderProps> = ({
             className={
                 isGuide
                     ? undefined
-                    : "overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xs"
+                    : "overflow-hidden rounded-2xl border border-border bg-surface-elevated shadow-xs"
             }
         >
             <header
                 className={
-                    isGuide
-                        ? "mb-6"
-                        : "border-b border-slate-100 bg-slate-50 px-6 pb-4 pt-6 md:px-8"
+                    isGuide ? "mb-6" : "border-b border-border bg-muted px-6 pb-4 pt-6 md:px-8"
                 }
             >
                 <h1 className="text-2xl font-bold tracking-tight text-n-900 dark:text-n-0">
@@ -46,7 +44,7 @@ const MdFileRender: FC<MdFileRenderProps> = ({
                         className={
                             isGuide
                                 ? "mt-2 text-body-2 font-regular text-n-300 dark:text-n-60"
-                                : "mt-2 text-sm text-slate-600"
+                                : "mt-2 text-sm text-muted-foreground"
                         }
                     >
                         {description}
@@ -55,7 +53,7 @@ const MdFileRender: FC<MdFileRenderProps> = ({
             </header>
             <div className="flex gap-0">
                 {showTableOfContents && (
-                    <div className="hidden w-56 shrink-0 border-r border-slate-100 px-3 py-5 lg:block">
+                    <div className="hidden w-56 shrink-0 border-r border-border px-3 py-5 lg:block">
                         <TableOfContents
                             content={mdData}
                             className="sticky"

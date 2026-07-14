@@ -33,14 +33,14 @@ export default function FeatureCard({
                 <ArrowRightIcon className="w-4 h-4 text-gray-300 group-hover:text-sky-500 dark:group-hover:text-sky-400 group-hover:translate-x-0.5 transition-all duration-200 mt-1 shrink-0" />
             </div>
 
-            <div>
-                <h3 className="text-base font-bold text-gray-900 mb-1 group-hover:text-sky-900 dark:group-hover:text-sky-300 transition-colors duration-200">
+            <div className="flex-1 min-h-0">
+                <h3 className="line-clamp-2 text-base font-bold text-gray-900 mb-1 group-hover:text-sky-900 dark:group-hover:text-sky-300 transition-colors duration-200">
                     {title}
                 </h3>
                 <p className="text-sky-600 dark:text-sky-400 text-xs font-semibold mb-2 uppercase tracking-wide">
                     {subtitle}
                 </p>
-                <p className="text-gray-600 text-sm leading-relaxed">{description}</p>
+                <p className="line-clamp-3 text-gray-600 text-sm leading-relaxed">{description}</p>
             </div>
         </div>
     );

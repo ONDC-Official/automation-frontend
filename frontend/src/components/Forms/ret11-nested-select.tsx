@@ -109,7 +109,7 @@ const RET11NestedSelect = ({
             }
 
             if (!payload?.message?.catalog?.["bpp/providers"]) {
-                throw new Error("Providers not presnt");
+                throw new Error("Providers not present");
             }
 
             setCatalogData(parsedText);

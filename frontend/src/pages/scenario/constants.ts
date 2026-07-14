@@ -14,19 +14,19 @@ export const SCENARIO_GUIDE_STEPS: IAccordionStep[] = [
         key: "2",
         label: "2. Select Domain:",
         description:
-            "Select the domain for which you want to test. For example: to test Retail F&B, select ONDC:RET11.",
+            "Select the domain for which you want to test. For example: to test Retail F&B, select F&B (ONDC:RET11).",
     },
     {
         key: "3",
         label: "3. Select Version:",
         description:
-            "Based on the domain selected, available versions will be displayed. Select the version you want to test. For example: for ONDC:RET11, version 1.2.5 is available.",
+            "Based on the domain selected, available versions will be displayed. Select the version you want to test. For example: for F&B (ONDC:RET11), version 1.2.5 is available.",
     },
     {
         key: "4",
         label: "4. Select Usecase:",
         description:
-            "Based on domain and version, a list of use cases is shown. For example: for ONDC:RET11 version 1.2.5, F&B is displayed.",
+            "Based on domain and version, a list of use cases is shown. For example: for F&B (ONDC:RET11) version 1.2.5, F&B is displayed.",
     },
     {
         key: "5",

@@ -1,6 +1,8 @@
 import { FLOW_DIALOG_OVERLAY_CLASS } from "@components/DomainFlowRunner/constants";
 import type { IGuideModalProps } from "@components/DomainFlowRunner/types";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@components/Shadcn/Dialog";
+import { domainOptions } from "@constants/common";
+import { getDomainFriendlyName } from "@pages/developer-guide/domainGrouping";
 
 export default function GuideModal({ isOpen, onClose, domain }: IGuideModalProps) {
     const renderGuideContent = () => {
@@ -12,7 +14,11 @@ export default function GuideModal({ isOpen, onClose, domain }: IGuideModalProps
             return (
                 <div className="space-y-3 text-sm">
                     <h2 className="text-base font-semibold text-gray-800">
-                        For Retail Domain(RET10,RET11,RET12,RET13,RET14,RET15,RET16,RET18)
+                        For Retail Domain (
+                        {domainOptions
+                            .map((option) => `${option.key} (${option.value.replace("ONDC:", "")})`)
+                            .join(", ")}
+                        )
                     </h2>
 
                     <div className="space-y-2">
@@ -75,7 +81,8 @@ export default function GuideModal({ isOpen, onClose, domain }: IGuideModalProps
                             flow is completed other flows can be tested
                         </p>
                         <p className="font-medium">
-                            Example:- To test Delivery Flow in RET10 domain
+                            Example:- To test Delivery Flow in {getDomainFriendlyName("ONDC:RET10")}{" "}
+                            (RET10) domain
                         </p>
                         <p className="ml-4">
                             After{" "}
