@@ -30,6 +30,13 @@ import { cn } from "@/lib/utils";
 import { ChevronDownIcon } from "@heroicons/react/24/outline";
 import { IFlowRunAccordionProps } from "@components/DomainFlowRunner/types";
 import { useSession } from "@hooks/useSession";
+import { useAppSelector } from "@store/hooks";
+import { selectActiveFlowLifecycleInFlight } from "@store/slices/sessionSlice";
+
+function normalizeServerActiveFlow(activeFlow: string | null | undefined): string | null {
+    if (!activeFlow || activeFlow === "NONE") return null;
+    return activeFlow;
+}
 
 export function FlowRunAccordion({
     flow,
@@ -59,8 +66,20 @@ export function FlowRunAccordion({
     const clickCountRef = useRef(0);
     const [isBusy, setIsBusy] = useState(false);
     const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-    const { isFlowFormDialogOpen, acquireFlowFormDialogLock, releaseFlowFormDialogLock } =
-        useSession();
+    const activeFlowRef = useRef(activeFlow);
+    activeFlowRef.current = activeFlow;
+    const lifecycleGenRef = useRef(0);
+
+    const {
+        isFlowFormDialogOpen,
+        acquireFlowFormDialogLock,
+        releaseFlowFormDialogLock,
+        applyOptimisticActiveFlow,
+        beginActiveFlowLifecycle,
+        endActiveFlowLifecycle,
+    } = useSession();
+    const lifecycleInFlight = useAppSelector(selectActiveFlowLifecycleInFlight);
+
     const [clearFlowData] = useClearFlowDataMutation();
     const [deleteExpectation] = useDeleteExpectationMutation();
     const [triggerGetCompletePayload] = useLazyGetCompletePayloadQuery();
@@ -104,13 +123,13 @@ export function FlowRunAccordion({
                     sequence: getSequenceFromFlow(
                         cache?.flowConfigs[flow.id] ?? flow,
                         cache,
-                        activeFlow
+                        activeFlowRef.current
                     ),
                     missedSteps: [],
                 });
             }
         },
-        [activeFlow, flow, sessionId, triggerGetMappedFlow]
+        [flow, sessionId, triggerGetMappedFlow]
     );
 
     const fetchTransactionData = useCallback(async () => {
@@ -126,21 +145,20 @@ export function FlowRunAccordion({
         }
     }, [fetchTransactionData]);
 
+    // Refresh mapped-flow for flows that already have a transaction — do not touch activeFlow here.
+    const flowMapEntry = sessionCache?.flowMap?.[flow.id];
     useEffect(() => {
-        const executedFlowId = Object.keys(
-            (sessionCache?.flowMap as Record<string, string | null>) || {}
-        );
-
-        if (executedFlowId.includes(flow.id) && sessionCache) {
+        if (flowMapEntry && sessionCache) {
             void getCurrentState(sessionCache);
         }
+    }, [flow.id, flowMapEntry, sessionCache, getCurrentState]);
 
-        if (sessionCache?.activeFlow) {
-            setActiveFlow(sessionCache.activeFlow);
-        } else {
-            setActiveFlow(null);
-        }
-    }, [flow.id, sessionCache, getCurrentState, setActiveFlow]);
+    // Adopt server activeFlow only when a lifecycle write is not in flight.
+    useEffect(() => {
+        if (lifecycleInFlight) return;
+        const serverActive = normalizeServerActiveFlow(sessionCache?.activeFlow);
+        setActiveFlow(serverActive);
+    }, [sessionCache?.activeFlow, lifecycleInFlight, setActiveFlow]);
 
     // Catch up mapped-flow state when returning to this tab (e.g. buyer tab while seller
     // requests run in another tab or via Postman).
@@ -178,13 +196,32 @@ export function FlowRunAccordion({
         }
     }
 
-    const startFlow = async () => {
-        try {
-            if (!sessionCache) return;
-            const canStart = await canStartFlow(sessionCache, mappedFlow);
+    const revertActiveFlow = useCallback(
+        (previous: string | null) => {
+            applyOptimisticActiveFlow(previous);
+        },
+        [applyOptimisticActiveFlow]
+    );
 
-            if (!canStart) return;
-            setActiveFlow(flow.id);
+    const startFlow = async () => {
+        if (!sessionCache) return;
+        const previousActive = activeFlowRef.current;
+        const gen = ++lifecycleGenRef.current;
+
+        beginActiveFlowLifecycle();
+        applyOptimisticActiveFlow(flow.id);
+        setIsOpen(true);
+        // Release the dual-click guard now that Stop is visible — network work continues under the lifecycle lock.
+        setIsBusy(false);
+
+        try {
+            const canStart = await canStartFlow(sessionCache, mappedFlow);
+            if (gen !== lifecycleGenRef.current) return;
+            if (!canStart) {
+                revertActiveFlow(previousActive);
+                return;
+            }
+
             const given = sessionCache.flowMap[flow.id];
             if (given) {
                 toast.info("Resuming the flow!");
@@ -199,15 +236,94 @@ export function FlowRunAccordion({
                     setActiveFormTitle(flow.title ?? flow.id);
                     setInputPopUp(true);
                 }
-                // if (data.expectationAdded) {
-                // 	toast.info("Expectation added successfully");
-                // }
             }
-            putCacheData({ data: { activeFlow: flow.id }, sessionId });
-            setIsOpen(true);
+            if (gen !== lifecycleGenRef.current) return;
+            await putCacheData({ data: { activeFlow: flow.id }, sessionId });
         } catch (e) {
+            if (gen !== lifecycleGenRef.current) return;
+            revertActiveFlow(previousActive);
             toast.error("Error while starting flow");
             console.error(e);
+        } finally {
+            if (gen === lifecycleGenRef.current) {
+                endActiveFlowLifecycle();
+            }
+        }
+    };
+
+    const handleStartClick = async (e: React.MouseEvent<HTMLButtonElement>) => {
+        e.stopPropagation();
+        if (isBusy || lifecycleInFlight) return;
+        setIsBusy(true);
+        try {
+            void addFlowToSessionInDB({
+                sessionId,
+                flow: {
+                    id: flow.id,
+                    status: "PENDING",
+                },
+            });
+            trackEvent({
+                category: "SCENARIO_TESTING-FLOWS",
+                action: `Started a flow: ${flow.id}`,
+            });
+            await startFlow();
+        } finally {
+            setIsBusy(false);
+        }
+    };
+
+    const handleStopClick = async (e: React.MouseEvent<HTMLButtonElement>) => {
+        e.stopPropagation();
+        // Allow Stop during an in-flight Start so the user can cancel immediately.
+        if (isBusy) return;
+        const gen = ++lifecycleGenRef.current;
+        setIsBusy(true);
+        beginActiveFlowLifecycle();
+        applyOptimisticActiveFlow(null);
+        setIsOpen(false);
+        onFlowStop();
+        setIsBusy(false);
+
+        try {
+            trackEvent({
+                category: "SCENARIO_TESTING-FLOWS",
+                action: `Stopped a flow: ${flow.id}`,
+            });
+            // Fire deleteExpectation without blocking the UI; cache write is awaited so
+            // the lifecycle lock covers the window where polls could still see the old activeFlow.
+            void deleteExpectation({ sessionId, subscriberUrl: subUrl });
+            await putCacheData({ data: { activeFlow: "NONE" }, sessionId });
+        } catch (err) {
+            console.error(err);
+        } finally {
+            if (gen === lifecycleGenRef.current) {
+                endActiveFlowLifecycle();
+            }
+        }
+    };
+
+    const handleClearClick = async (e: React.MouseEvent<HTMLButtonElement>) => {
+        e.stopPropagation();
+        if (isBusy) return;
+        setIsBusy(true);
+        try {
+            trackEvent({
+                category: "SCENARIO_TESTING-FLOWS",
+                action: `Cleared a flow: ${flow.id}`,
+            });
+            setMappedFlow({
+                sequence: getSequenceFromFlow(
+                    sessionCache?.flowConfigs[flow.id] ?? flow,
+                    sessionCache,
+                    null
+                ),
+                missedSteps: [],
+            });
+            onFlowClear();
+            void clearFlowData({ sessionId, flowId: flow.id });
+        } finally {
+            setIsBusy(false);
         }
     };
 
@@ -316,117 +432,6 @@ export function FlowRunAccordion({
         document.body.removeChild(a);
     };
 
-    function AccordionButtons() {
-        return (
-            <div className="flex items-center gap-2">
-                {!activeFlow ? (
-                    <FlowActionButton
-                        label="Start flow"
-                        variant="play"
-                        disabled={isBusy}
-                        onClick={async (e) => {
-                            e.stopPropagation();
-                            setIsBusy(true);
-                            try {
-                                addFlowToSessionInDB({
-                                    sessionId,
-                                    flow: {
-                                        id: flow.id,
-                                        status: "PENDING",
-                                    },
-                                });
-                                trackEvent({
-                                    category: "SCENARIO_TESTING-FLOWS",
-                                    action: `Started a flow: ${flow.id}`,
-                                });
-                                await startFlow();
-                            } finally {
-                                setIsBusy(false);
-                            }
-                        }}
-                    />
-                ) : null}
-                {activeFlow === flow.id ? (
-                    <FlowActionButton
-                        label="Stop flow"
-                        variant="stop"
-                        disabled={isBusy}
-                        onClick={async (e) => {
-                            e.stopPropagation();
-                            setIsBusy(true);
-                            try {
-                                trackEvent({
-                                    category: "SCENARIO_TESTING-FLOWS",
-                                    action: `Stopped a flow: ${flow.id}`,
-                                });
-                                setActiveFlow(null);
-                                setIsOpen(false);
-                                await deleteExpectation({ sessionId, subscriberUrl: subUrl });
-                                putCacheData({ data: { activeFlow: "NONE" }, sessionId });
-                                onFlowStop();
-                            } finally {
-                                setIsBusy(false);
-                            }
-                        }}
-                    />
-                ) : null}
-                {!activeFlow ? (
-                    <FlowActionButton
-                        label="Clear flow data"
-                        variant="delete"
-                        disabled={isBusy}
-                        onClick={async (e) => {
-                            e.stopPropagation();
-                            setIsBusy(true);
-                            try {
-                                trackEvent({
-                                    category: "SCENARIO_TESTING-FLOWS",
-                                    action: `Cleared a flow: ${flow.id}`,
-                                });
-                                setMappedFlow({
-                                    sequence: getSequenceFromFlow(
-                                        sessionCache?.flowConfigs[flow.id] ?? flow,
-                                        sessionCache,
-                                        activeFlow
-                                    ),
-                                    missedSteps: [],
-                                });
-                                await clearFlowData({ sessionId, flowId: flow.id });
-                                onFlowClear();
-                            } finally {
-                                setIsBusy(false);
-                            }
-                        }}
-                    />
-                ) : null}
-                {mappedFlow?.sequence && mappedFlow?.sequence?.length > 0 ? (
-                    <FlowActionButton
-                        label="Download Logs"
-                        variant="download"
-                        onClick={async (e) => {
-                            trackEvent({
-                                category: "SCENARIO_TESTING-FLOWS",
-                                action: `Download logs for flow: ${flow.id}`,
-                            });
-                            e.stopPropagation();
-                            handleDownload();
-                        }}
-                    />
-                ) : null}
-                <CircularProgress
-                    key={flow.id}
-                    sqSize={24}
-                    strokeWidth={3}
-                    duration={3}
-                    onComplete={onMappedFlowPollComplete}
-                    loop={true}
-                    isActive={activeFlow === flow.id && !isFlowFormDialogOpen && !inputPopUp}
-                    id={`fetch-transaction-data-${flow.id}`}
-                />
-            </div>
-        );
-    }
-
     async function onAccordionClick() {
         setIsOpen((prev) => !prev);
     }
@@ -435,19 +440,18 @@ export function FlowRunAccordion({
         try {
             clickCountRef.current += 1;
 
-            // Reset timer on every click
             if (timerRef.current) {
                 clearTimeout(timerRef.current);
             }
 
             timerRef.current = setTimeout(() => {
                 clickCountRef.current = 0;
-            }, 300); // ⏱️ max gap allowed between clicks
+            }, 300);
 
             if (clickCountRef.current === 4) {
                 toast.info("Generating playground config...");
                 await handlePlaygroundConversion();
-                clickCountRef.current = 0; // reset after success
+                clickCountRef.current = 0;
             }
         } catch (err) {
             console.error("Error in downloading playground config", err);
@@ -494,7 +498,31 @@ export function FlowRunAccordion({
                             description={flow.description}
                             actions={
                                 <div onClick={(e) => e.stopPropagation()}>
-                                    <AccordionButtons />
+                                    <AccordionButtons
+                                        activeFlow={activeFlow}
+                                        flowId={flow.id}
+                                        isBusy={isBusy}
+                                        hasSequence={Boolean(
+                                            mappedFlow?.sequence && mappedFlow.sequence.length > 0
+                                        )}
+                                        isMappedFlowPollActive={
+                                            activeFlow === flow.id &&
+                                            !isFlowFormDialogOpen &&
+                                            !inputPopUp
+                                        }
+                                        onStart={handleStartClick}
+                                        onStop={handleStopClick}
+                                        onClear={handleClearClick}
+                                        onDownload={async (e) => {
+                                            trackEvent({
+                                                category: "SCENARIO_TESTING-FLOWS",
+                                                action: `Download logs for flow: ${flow.id}`,
+                                            });
+                                            e.stopPropagation();
+                                            await handleDownload();
+                                        }}
+                                        onMappedFlowPollComplete={onMappedFlowPollComplete}
+                                    />
                                 </div>
                             }
                         />
@@ -522,6 +550,72 @@ export function FlowRunAccordion({
                     />
                 </FormFlowDialog>
             )}
+        </div>
+    );
+}
+
+function AccordionButtons({
+    activeFlow,
+    flowId,
+    isBusy,
+    hasSequence,
+    isMappedFlowPollActive,
+    onStart,
+    onStop,
+    onClear,
+    onDownload,
+    onMappedFlowPollComplete,
+}: {
+    activeFlow: string | null;
+    flowId: string;
+    isBusy: boolean;
+    hasSequence: boolean;
+    isMappedFlowPollActive: boolean;
+    onStart: (e: React.MouseEvent<HTMLButtonElement>) => void | Promise<void>;
+    onStop: (e: React.MouseEvent<HTMLButtonElement>) => void | Promise<void>;
+    onClear: (e: React.MouseEvent<HTMLButtonElement>) => void | Promise<void>;
+    onDownload: (e: React.MouseEvent<HTMLButtonElement>) => void | Promise<void>;
+    onMappedFlowPollComplete: () => Promise<void>;
+}) {
+    return (
+        <div className="flex items-center gap-2">
+            {!activeFlow ? (
+                <FlowActionButton
+                    label="Start flow"
+                    variant="play"
+                    disabled={isBusy}
+                    onClick={onStart}
+                />
+            ) : null}
+            {activeFlow === flowId ? (
+                <FlowActionButton
+                    label="Stop flow"
+                    variant="stop"
+                    disabled={isBusy}
+                    onClick={onStop}
+                />
+            ) : null}
+            {!activeFlow ? (
+                <FlowActionButton
+                    label="Clear flow data"
+                    variant="delete"
+                    disabled={isBusy}
+                    onClick={onClear}
+                />
+            ) : null}
+            {hasSequence ? (
+                <FlowActionButton label="Download Logs" variant="download" onClick={onDownload} />
+            ) : null}
+            <CircularProgress
+                key={flowId}
+                sqSize={24}
+                strokeWidth={3}
+                duration={3}
+                onComplete={onMappedFlowPollComplete}
+                loop={true}
+                isActive={isMappedFlowPollActive}
+                id={`fetch-transaction-data-${flowId}`}
+            />
         </div>
     );
 }

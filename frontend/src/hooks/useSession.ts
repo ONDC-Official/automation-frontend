@@ -10,6 +10,9 @@ import { store } from "@store/index";
 import {
     setSessionId as setSessionIdAction,
     setActiveFlowId as setActiveFlowIdAction,
+    patchSessionActiveFlow as patchSessionActiveFlowAction,
+    beginActiveFlowLifecycle as beginActiveFlowLifecycleAction,
+    endActiveFlowLifecycle as endActiveFlowLifecycleAction,
     setSessionData as setSessionDataAction,
     setSelectedTab as setSelectedTabAction,
     setRequestData as setRequestDataAction,
@@ -51,6 +54,10 @@ export interface UseSessionResult {
     isFlowFormDialogOpen: boolean;
     acquireFlowFormDialogLock: () => void;
     releaseFlowFormDialogLock: () => void;
+    /** Optimistic activeFlow write — patches sessionData.activeFlow + activeFlowId together. */
+    applyOptimisticActiveFlow: (flowId: string | null) => void;
+    beginActiveFlowLifecycle: () => void;
+    endActiveFlowLifecycle: () => void;
 }
 
 /** Flow session state — backed by global `sessionSlice` (Option A: single runtime slot). */
@@ -188,6 +195,24 @@ export const useSession = (): UseSessionResult => {
         [dispatch]
     );
 
+    const applyOptimisticActiveFlow = useCallback(
+        (flowId: string | null) => {
+            dispatch(setActiveFlowIdAction(flowId));
+            dispatch(patchSessionActiveFlowAction(flowId));
+        },
+        [dispatch]
+    );
+
+    const beginActiveFlowLifecycle = useCallback(
+        () => dispatch(beginActiveFlowLifecycleAction()),
+        [dispatch]
+    );
+
+    const endActiveFlowLifecycle = useCallback(
+        () => dispatch(endActiveFlowLifecycleAction()),
+        [dispatch]
+    );
+
     return {
         sessionId,
         setSessionId,
@@ -214,5 +239,8 @@ export const useSession = (): UseSessionResult => {
         isFlowFormDialogOpen,
         acquireFlowFormDialogLock,
         releaseFlowFormDialogLock,
+        applyOptimisticActiveFlow,
+        beginActiveFlowLifecycle,
+        endActiveFlowLifecycle,
     };
 };

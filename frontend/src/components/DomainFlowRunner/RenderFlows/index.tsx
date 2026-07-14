@@ -241,7 +241,14 @@ function RenderFlows({ flows, subUrl, sessionId, newSession }: IRenderFlowsProps
             triggerGetSessionById({ sessionId })
                 .unwrap()
                 .then((data) => {
-                    const response = data as unknown as SessionCache;
+                    let response = data as unknown as SessionCache;
+                    // While Start/Stop has written local activeFlow but Redis may still be
+                    // stale, keep the optimistic value so a concurrent poll cannot snap the UI back.
+                    const { activeFlowLifecycleInFlight, activeFlowId } = store.getState().session;
+                    if (activeFlowLifecycleInFlight) {
+                        response = { ...response, activeFlow: activeFlowId };
+                    }
+
                     setDifficultyCache(response.sessionDifficulty);
 
                     const prev = store.getState().session.sessionData;
@@ -345,12 +352,20 @@ function RenderFlows({ flows, subUrl, sessionId, newSession }: IRenderFlowsProps
         filteredFlows = flows;
     }
 
-    const handleClearFlow = () => {
+    const handleClearFlow = useCallback(() => {
         setRequestData(SESSION_EMPTY_RECORD);
         setResponseData(SESSION_EMPTY_RECORD);
         setMetadata(SESSION_EMPTY_METADATA);
         fetchSessionData();
-    };
+    }, [setRequestData, setResponseData, setMetadata, fetchSessionData]);
+
+    const handleFlowStop = useCallback(() => {
+        setIsFlowStopped(true);
+    }, []);
+
+    const handleFlowClear = useCallback(() => {
+        handleClearFlow();
+    }, [handleClearFlow]);
 
     const openSettings = () => {
         setSettingsDraft({
@@ -586,8 +601,8 @@ function RenderFlows({ flows, subUrl, sessionId, newSession }: IRenderFlowsProps
                                 sessionCache={sessionData}
                                 setSideView={setSideView as React.Dispatch<unknown>}
                                 subUrl={subUrl}
-                                onFlowStop={() => setIsFlowStopped(true)}
-                                onFlowClear={() => handleClearFlow()}
+                                onFlowStop={handleFlowStop}
+                                onFlowClear={handleFlowClear}
                             />
                         ))}
                     </div>
