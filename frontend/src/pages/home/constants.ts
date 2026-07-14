@@ -63,7 +63,11 @@ export const pathCards: IPathCard[] = [
             { label: "Set up your environment", href: ROUTES.DEVELOPER_GUIDE_GETTING_STARTED },
             { label: "Choose a domain", href: ROUTES.DEVELOPER_GUIDE_DOMAINS },
             { label: "Run your first scenario", href: ROUTES.SCENARIO },
-            { label: "View past session reports", href: ROUTES.HISTORY },
+            {
+                label: "View past session reports",
+                href: ROUTES.PROFILE_HISTORY,
+                requiresAuth: true,
+            },
         ],
     },
     {

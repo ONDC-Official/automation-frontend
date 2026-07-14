@@ -1,14 +1,20 @@
 import { useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { useAppSelector } from "@store/hooks";
+import { useAppDispatch, useAppSelector, useAppStore } from "@store/hooks";
 import { useExchangeCodeMutation, useGetMeQuery } from "@store/api";
-import { selectAuthToken } from "@store/slices/authSlice";
+import {
+    selectAuthToken,
+    selectPostLoginRedirect,
+    setPostLoginRedirect,
+} from "@store/slices/authSlice";
 import { ROUTES } from "@constants/routes";
 
 /** Bootstraps auth on app load and handles the OAuth code-exchange redirect. */
 export const AuthInitializer = () => {
     const location = useLocation();
     const navigate = useNavigate();
+    const dispatch = useAppDispatch();
+    const store = useAppStore();
     const token = useAppSelector(selectAuthToken);
     const [exchangeCode] = useExchangeCodeMutation();
 
@@ -21,13 +27,24 @@ export const AuthInitializer = () => {
             return;
         }
 
+        let cancelled = false;
+
         const exchangeCodeAndNavigate = async () => {
+            // Read before exchange — abandoned-login cleanup must not race-clear it mid-flight.
+            const destination = selectPostLoginRedirect(store.getState()) || ROUTES.HOME;
             await exchangeCode({ code: oauthCode });
-            navigate(ROUTES.HOME, { replace: true });
+            if (cancelled) {
+                return;
+            }
+            dispatch(setPostLoginRedirect(null));
+            navigate(destination, { replace: true });
         };
 
         exchangeCodeAndNavigate();
-    }, [location.search, navigate, exchangeCode]);
+        return () => {
+            cancelled = true;
+        };
+    }, [location.search, navigate, exchangeCode, dispatch, store]);
 
     return null;
 };

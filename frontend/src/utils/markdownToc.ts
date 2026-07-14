@@ -48,6 +48,49 @@ export function slugifyHeading(text: string): string {
 }
 
 const TABLE_OF_CONTENTS_HEADING = /^##\s+table of contents\s*$/i;
+const MARKDOWN_HEADING = /^#{1,6}\s+\S/;
+const THEMATIC_BREAK = /^---$/;
+
+function isMarkdownHeading(line: string): boolean {
+    return MARKDOWN_HEADING.test(line.trim());
+}
+
+function nearestNonEmptyLine(lines: string[], from: number, direction: -1 | 1): string | undefined {
+    for (let i = from; i >= 0 && i < lines.length; i += direction) {
+        const trimmed = lines[i].trim();
+        if (trimmed !== "") return trimmed;
+    }
+    return undefined;
+}
+
+/**
+ * Removes standalone `---` rules that sit next to headings.
+ * GithubMarkdown already draws `border-b` on h1/h2, so those rules render as a double divider.
+ */
+export function stripRedundantMarkdownHorizontalRules(markdown: string): string {
+    const lines = markdown.split("\n");
+    const kept: string[] = [];
+
+    for (let i = 0; i < lines.length; i++) {
+        if (!THEMATIC_BREAK.test(lines[i].trim())) {
+            kept.push(lines[i]);
+            continue;
+        }
+
+        const previous = nearestNonEmptyLine(kept, kept.length - 1, -1);
+        const next = nearestNonEmptyLine(lines, i + 1, 1);
+        if (
+            (previous !== undefined && isMarkdownHeading(previous)) ||
+            (next !== undefined && isMarkdownHeading(next))
+        ) {
+            continue;
+        }
+
+        kept.push(lines[i]);
+    }
+
+    return kept.join("\n");
+}
 
 /** Removes the in-document "## Table of Contents" block (through the next h2). */
 export function stripMarkdownTableOfContents(markdown: string): string {

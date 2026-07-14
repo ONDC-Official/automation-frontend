@@ -50,7 +50,7 @@ export const PastReportsSection = () => {
     const flowDescriptions = useReportFlowDescriptions(reports);
 
     return (
-        <div className="min-w-0 flex-1 min-h-full p-5">
+        <div className="min-w-0 flex-1 min-h-full py-6">
             <ProfilePageHeader
                 title={copy.title}
                 subtitle={copy.subtitle}

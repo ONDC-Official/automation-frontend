@@ -62,6 +62,7 @@ export const useScenarioPreferences = () => {
     const [domains, setDomains] = useState<IDomain[]>([]);
     const [savedPrefs, setSavedPrefs] = useState<Record<string, ScenarioPreferences>>({});
     const [isSaving, setIsSaving] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
     const [isFetching, setIsFetching] = useState(true);
     const [editingKey, setEditingKey] = useState<string | null>(null);
     const [pendingDeleteKey, setPendingDeleteKey] = useState<string | null>(null);
@@ -197,6 +198,7 @@ export const useScenarioPreferences = () => {
     };
 
     const handleDelete = async (configKey: string) => {
+        setIsDeleting(true);
         try {
             await deleteScenarioPreference(configKey).unwrap();
             const nextPrefs = { ...savedPrefs };
@@ -204,9 +206,12 @@ export const useScenarioPreferences = () => {
             setSavedPrefs(nextPrefs);
             if (editingKey === configKey) handleCancelEdit();
             toast.success("Configuration deleted");
+            setPendingDeleteKey(null);
         } catch (e) {
             console.error("Error deleting preference", e);
             toast.error("Failed to delete configuration");
+        } finally {
+            setIsDeleting(false);
         }
     };
 
@@ -219,14 +224,13 @@ export const useScenarioPreferences = () => {
     };
 
     const closeConfirmDelete = () => {
+        if (isDeleting) return;
         setPendingDeleteKey(null);
     };
 
     const confirmDeleteAction = () => {
-        if (!pendingDeleteKey) return;
-        const configKey = pendingDeleteKey;
-        setPendingDeleteKey(null);
-        void handleDelete(configKey);
+        if (!pendingDeleteKey || isDeleting) return;
+        void handleDelete(pendingDeleteKey);
     };
 
     return {
@@ -243,6 +247,7 @@ export const useScenarioPreferences = () => {
         handleVersionChange,
         savedPrefs,
         isSaving,
+        isDeleting,
         isFetching,
         editingKey,
         handleEdit,

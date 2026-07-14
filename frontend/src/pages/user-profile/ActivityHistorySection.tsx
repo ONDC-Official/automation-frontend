@@ -124,7 +124,7 @@ export const ActivityHistorySection = () => {
     };
 
     return (
-        <div className="min-w-0 flex-1 min-h-full px-5 py-6">
+        <div className="min-w-0 flex-1 min-h-full py-6">
             <ProfilePageHeader
                 title={copy.title}
                 subtitle={copy.subtitle}

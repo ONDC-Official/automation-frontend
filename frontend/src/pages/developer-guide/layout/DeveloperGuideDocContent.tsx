@@ -68,7 +68,7 @@ const DeveloperGuideDocContent: FC = () => {
     }
 
     return (
-        <div className="px-8 md:px-12 py-4 md:py-6">
+        <div className="p-4">
             {!navSidebarOpen ? null : (
                 <div>
                     <h1 className="text-2xl font-bold text-slate-900 tracking-tight">{title}</h1>
@@ -86,7 +86,21 @@ const DeveloperGuideDocContent: FC = () => {
                         offset={TOC_TOP}
                     />
                 )}
-                <div className="flex-1 min-w-0 prose prose-slate max-w-none">
+                {/* Doc-route only: GitHub md uses --- dividers that stack with heading border-b. */}
+                <div
+                    className={[
+                        "flex-1 min-w-0 max-w-none",
+                        // Avoid double rule under title (h1 border-b + following ---)
+                        "[&_h1:has(+hr)]:border-b-0!",
+                        "[&_h1:has(+hr)]:pb-0!",
+                        // Equalize space above/below ## titles between --- and border-b
+                        "[&_hr:has(+h2)]:mt-8!",
+                        "[&_hr:has(+h2)]:mb-0!",
+                        "[&_hr+h2]:mt-0!",
+                        "[&_hr+h2]:pt-3!",
+                        "[&_hr+h2]:pb-3!",
+                    ].join(" ")}
+                >
                     <GithubMarkdown content={displayContent} />
                 </div>
             </div>

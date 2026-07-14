@@ -93,9 +93,9 @@ const PreBlock: FC<{ children?: React.ReactNode }> = ({ children }) => {
                             type="button"
                             variant="ghost"
                             onClick={handleCopy}
-                            className="gap-1 rounded px-2 py-0.5 text-body-2 font-semibold text-foreground transition-colors hover:bg-slate-700 hover:text-white"
+                            className="gap-1 rounded px-2 py-0.5 text-body-2 font-semibold bg-brand-normal text-n-0 transition-colors hover:bg-brand-normal-hover hover:text-n-0"
                         >
-                            <DocumentDuplicateIcon className="h-4 w-4" />
+                            <DocumentDuplicateIcon className="size-4" />
                             Copy
                         </Button>
 
@@ -103,13 +103,13 @@ const PreBlock: FC<{ children?: React.ReactNode }> = ({ children }) => {
                             type="button"
                             variant="ghost"
                             onClick={() => setIsFullscreen((v) => !v)}
-                            className="rounded p-1 text-foreground transition-colors hover:bg-slate-700 hover:text-white"
+                            className="rounded p-1 text-brand-normal transition-colors hover:bg-brand-normal hover:text-n-0"
                             aria-label={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
                         >
                             {isFullscreen ? (
-                                <ArrowsPointingInIcon className="h-4 w-4" />
+                                <ArrowsPointingInIcon className="size-4" />
                             ) : (
-                                <ArrowsPointingOutIcon className="h-4 w-4" />
+                                <ArrowsPointingOutIcon className="size-4" />
                             )}
                         </Button>
                     </div>
