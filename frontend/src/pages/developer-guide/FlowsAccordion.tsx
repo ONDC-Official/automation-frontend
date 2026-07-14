@@ -2,17 +2,7 @@ import { FC, useState, useEffect, useRef } from "react";
 import type { FlowEntry, FlowStep } from "./types";
 import { getActionId } from "./utils";
 import { buildStepDisplayItems } from "./FlowInformation/utils";
-import {
-    ChevronDownIcon,
-    InformationCircleIcon,
-    ArrowsRightLeftIcon,
-} from "@heroicons/react/24/outline";
-import {
-    Tooltip,
-    TooltipContent,
-    TooltipProvider,
-    TooltipTrigger,
-} from "@components/Shadcn/Tooltip";
+import { ChevronDownIcon, ArrowsRightLeftIcon } from "@heroicons/react/24/outline";
 import { Button } from "@/components/Shadcn/Button";
 
 interface FlowsAccordionProps {
@@ -22,36 +12,6 @@ interface FlowsAccordionProps {
     setSelectedFlow: (flow: string) => void;
     setSelectedFlowAction: (action: string) => void;
 }
-
-const StepDescriptionTooltip: FC<{ description: string }> = ({ description }) => {
-    const [expanded, setExpanded] = useState(false);
-
-    return (
-        <TooltipContent className="max-w-sm">
-            <div className="space-y-1">
-                <p
-                    className={`text-sm leading-5 whitespace-pre-wrap break-words ${
-                        expanded ? "" : "line-clamp-2"
-                    }`}
-                >
-                    {description}
-                </p>
-
-                <button
-                    type="button"
-                    onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        setExpanded((prev) => !prev);
-                    }}
-                    className="text-xs font-medium text-sky-600 hover:text-sky-700"
-                >
-                    {expanded ? "Show less" : "Show more"}
-                </button>
-            </div>
-        </TooltipContent>
-    );
-};
 
 const ArrowsIcon = () => (
     <ArrowsRightLeftIcon className="w-4 h-4 text-slate-400 shrink-0" aria-hidden />
@@ -175,24 +135,6 @@ const FlowsAccordion: FC<FlowsAccordionProps> = ({
                         <span className="min-w-0 flex-1 text-body-2 font-medium text-slate-800 break-words [overflow-wrap:anywhere] whitespace-normal">
                             {step.action_label ?? step.api}
                         </span>
-                    </div>
-
-                    <div className="flex items-center gap-1.5 shrink-0 text-sky-700 dark:text-sky-300">
-                        <TooltipProvider>
-                            <Tooltip>
-                                <TooltipTrigger asChild>
-                                    <span
-                                        onClick={(e) => e.stopPropagation()}
-                                        className="inline-flex"
-                                    >
-                                        <InformationCircleIcon className="w-4 h-4" aria-hidden />
-                                    </span>
-                                </TooltipTrigger>
-                                {step.description && (
-                                    <StepDescriptionTooltip description={step.description} />
-                                )}
-                            </Tooltip>
-                        </TooltipProvider>
                     </div>
                 </div>
             </Button>

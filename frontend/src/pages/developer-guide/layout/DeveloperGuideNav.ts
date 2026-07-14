@@ -15,7 +15,6 @@ export interface DeveloperGuideNavValue {
     navSidebarOpen: boolean;
     toggleNavSidebar: () => void;
     openNavSidebar: () => void;
-    collapseNavSidebar: () => void;
 }
 
 /**
@@ -31,9 +30,8 @@ export function useDeveloperGuideNav(): DeveloperGuideNavValue {
 
     const toggleNavSidebar = useCallback(() => dispatch(toggleNavSidebarAction()), [dispatch]);
     const openNavSidebar = useCallback(() => dispatch(setNavSidebarOpen(true)), [dispatch]);
-    const collapseNavSidebar = useCallback(() => dispatch(setNavSidebarOpen(false)), [dispatch]);
 
-    return { inShell, navSidebarOpen, toggleNavSidebar, openNavSidebar, collapseNavSidebar };
+    return { inShell, navSidebarOpen, toggleNavSidebar, openNavSidebar };
 }
 
 export interface DeveloperGuideShellContextValue extends DeveloperGuideNavValue {

@@ -3,7 +3,6 @@ import { NavLink, useLocation } from "react-router-dom";
 import { ChevronDownIcon } from "@heroicons/react/24/outline";
 import { Button } from "@/components/Shadcn/Button";
 import { ROUTES } from "@constants/routes";
-import { useDeveloperGuideNav } from "./DeveloperGuideNav";
 import type { NavNode, DeveloperGuideSidebarProps } from "./navTypes";
 import { isNavGroup, isNavLink } from "./navTypes";
 import { parseNavPath, isNavLinkActive, isNavGroupPathActive } from "./navMatch";
@@ -157,7 +156,6 @@ const NavLinkItem: FC<{
     isLastSibling: boolean;
 }> = ({ node, depth, isLastSibling }) => {
     const location = useLocation();
-    const { collapseNavSidebar } = useDeveloperGuideNav();
 
     const { pathname: linkPath, hash: linkHash } = parseNavPath(node.path);
 
@@ -207,11 +205,6 @@ const NavLinkItem: FC<{
                 <NavLink
                     to={node.path}
                     end={useEnd}
-                    onClick={() => {
-                        if (node.collapseOnNavigate) {
-                            collapseNavSidebar();
-                        }
-                    }}
                     className={({ isActive: routerActive }) =>
                         linkClass({
                             isActive: resolveIsActive(routerActive),

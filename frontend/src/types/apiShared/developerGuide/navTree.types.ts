@@ -20,8 +20,6 @@ export type NavNode =
           suffix?: string;
           /** Show a trailing chevron to indicate navigation. */
           showArrow?: boolean;
-          /** Collapse the shell sidebar when this link is clicked (domain use cases). */
-          collapseOnNavigate?: boolean;
           searchText?: string;
       };
 

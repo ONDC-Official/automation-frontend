@@ -158,9 +158,9 @@ const DomainFamilyAccordion: FC<{
                                     variant="ghost"
                                     disabled={!clickable}
                                     onClick={() => clickable && onUseCaseClick(dom, verKey, label)}
-                                    className={`group/chip relative gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border transition-colors duration-150 ${
+                                    className={`gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border transition-colors duration-150 ${
                                         clickable
-                                            ? "bg-white dark:bg-surface-elevated text-sky-700 dark:text-sky-300 border-sky-200 dark:border-sky-500/30 hover:bg-sky-50 dark:hover:bg-sky-500/10 hover:border-sky-300 dark:hover:border-sky-500/50 hover:shadow-xs cursor-pointer shadow-xs pr-7"
+                                            ? "bg-white dark:bg-surface-elevated text-sky-700 dark:text-sky-300 border-sky-200 dark:border-sky-500/30 hover:bg-sky-50 dark:hover:bg-sky-500/10 hover:border-sky-300 dark:hover:border-sky-500/50 hover:shadow-xs cursor-pointer shadow-xs"
                                             : "bg-slate-50 text-slate-400 border-slate-100 cursor-not-allowed"
                                     }`}
                                 >
@@ -183,22 +183,6 @@ const DomainFamilyAccordion: FC<{
                                     >
                                         v{verKey}
                                     </span>
-                                    {clickable && (
-                                        <svg
-                                            className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-sky-400 opacity-0 -translate-x-1 group-hover/chip:opacity-100 group-hover/chip:translate-x-0 transition-all duration-150"
-                                            fill="none"
-                                            viewBox="0 0 24 24"
-                                            stroke="currentColor"
-                                            strokeWidth={2.5}
-                                            aria-hidden
-                                        >
-                                            <path
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"
-                                            />
-                                        </svg>
-                                    )}
                                 </Button>
                             );
                         })}
