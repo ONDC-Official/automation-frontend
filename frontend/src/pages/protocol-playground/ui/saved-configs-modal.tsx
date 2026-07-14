@@ -24,6 +24,7 @@ import {
 import GitHubIcon from "@assets/svgs/GitHubIcon";
 import { cn } from "@/lib/utils";
 import { usePlayground } from "@pages/protocol-playground/hooks/playground-runtime";
+import { DeleteConfirmationForm } from "@pages/protocol-playground/ui/from-contents";
 import { SavedConfigMetadata } from "@pages/protocol-playground/utils/config-storage";
 import type {
     IDomainFolderProps,
@@ -211,7 +212,7 @@ export const SavedConfigsModal = ({
     onClose,
     onConfigSelected,
 }: ISavedConfigsModalProps) => {
-    const { getSavedConfigs, loadSavedConfig, deleteSavedConfig } = usePlayground();
+    const { getSavedConfigs, loadSavedConfig, deleteSavedConfig, useModal } = usePlayground();
 
     const [savedConfigs, setSavedConfigs] = useState<SavedConfigMetadata[]>([]);
     const [openDomains, setOpenDomains] = useState<Set<string>>(new Set());
@@ -293,10 +294,18 @@ export const SavedConfigsModal = ({
     };
 
     const handleDelete = (config: SavedConfigMetadata) => {
-        if (window.confirm(`Delete "${config.domain} / v${config.version} / ${config.flowId}"?`)) {
-            deleteSavedConfig(config.configId);
-            setSavedConfigs(getSavedConfigs());
-        }
+        useModal.openModal(
+            <DeleteConfirmationForm
+                title="Confirm Deletion"
+                description={`Are you sure you want to delete "${config.domain} / v${config.version} / ${config.flowId}"? This action cannot be undone.`}
+                onConfirm={() => {
+                    deleteSavedConfig(config.configId);
+                    setSavedConfigs(getSavedConfigs());
+                    useModal.closeModal();
+                }}
+                onCancel={useModal.closeModal}
+            />
+        );
     };
 
     const domainCount = useMemo(

@@ -271,13 +271,13 @@ export default function SessionDataTab() {
 
         // 🔹 If the old alias doesn’t exist, do nothing
         if (!Object.prototype.hasOwnProperty.call(savedInfo, oldAlias)) {
-            console.warn(`Alias "${oldAlias}" not found in saved_info`);
+            setError(`Alias "${oldAlias}" not found in saved_info`);
             return;
         }
 
         // 🔹 Check if the new alias already exists (and is not the same as oldAlias)
         if (newAlias !== oldAlias && Object.prototype.hasOwnProperty.call(savedInfo, newAlias)) {
-            console.warn(`Alias "${newAlias}" already exists. Choose a different alias.`);
+            setError(`Alias "${newAlias}" already exists. Choose a different alias.`);
             return;
         }
 
@@ -350,7 +350,7 @@ export default function SessionDataTab() {
         );
 
         if (duplicateEntry) {
-            console.warn(`⚠️ This path is already assigned to alias "${duplicateEntry[0]}".`);
+            setError(`This path is already assigned to alias "${duplicateEntry[0]}".`);
             return;
         }
 

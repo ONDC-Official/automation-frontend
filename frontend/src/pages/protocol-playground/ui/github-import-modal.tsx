@@ -115,7 +115,7 @@ export const GitHubImportModal = ({
             const parsed = yamlParse(rawYaml) as MockPlaygroundConfigType;
             const validation = new MockRunner(parsed).validateConfig();
             if (!validation.success) {
-                setError(`Invalid config: ${validation.errors?.join(", ") || "unknown error"}`);
+                setError(`Invalid config:\n${validation.errors?.join("\n") || "unknown error"}`);
                 return;
             }
             onImport(parsed);
@@ -217,7 +217,7 @@ export const GitHubImportModal = ({
                     </div>
 
                     {error && (
-                        <div className="rounded-lg border border-error-500/40 bg-error-50 px-3 py-2 text-sm text-error-500">
+                        <div className="rounded-lg border border-error-500/40 bg-error-50 px-3 py-2 text-sm whitespace-pre-line text-error-500">
                             {error}
                         </div>
                     )}

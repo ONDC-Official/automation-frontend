@@ -20,7 +20,7 @@ export const ScenarioTestConfigSection = ({
             <div className="max-h-[calc(100vh-16rem)] overflow-y-auto space-y-3">
                 {configCount === 0 ? (
                     <p className="text-body-2 text-text-secondary text-center py-8">
-                        No saved configurations yet. Create one to get started.
+                        No saved configurations found. Create one to get started.
                     </p>
                 ) : (
                     Object.entries(configs).map(([key, config]) => (

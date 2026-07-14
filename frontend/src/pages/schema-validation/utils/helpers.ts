@@ -311,7 +311,7 @@ export function parsePlainValidationErrors(message: string): IParsedValidationEr
  * @returns Parsed payload or client validation errors
  */
 export const parsePayload = (payload: string): IValidationResult<IParsedPayload> => {
-    if (payload === "") {
+    if (payload.trim() === "") {
         return {
             ok: false,
             errors: [buildValidationError("EMPTY_PAYLOAD")],

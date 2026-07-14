@@ -222,7 +222,7 @@ const FrameworkHealthPage: FC = () => {
                             <p className="text-gray-800 font-medium">Health check in progress…</p>
                             <p className="text-gray-500 text-sm mt-0.5">
                                 Sending test requests to all registered domain/version combinations.
-                                This may take a minute or two.
+                                This may take up to 5 minutes.
                             </p>
                         </div>
                     </div>

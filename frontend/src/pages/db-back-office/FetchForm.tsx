@@ -12,7 +12,13 @@ const FetchForm: FC<FetchFormProps> = ({
     onFetchParamsChange,
     onFetch,
 }) => (
-    <div className="bg-white rounded-xl shadow-lg border border-sky-100 p-6 mb-8">
+    <form
+        onSubmit={(e) => {
+            e.preventDefault();
+            onFetch();
+        }}
+        className="bg-white rounded-xl shadow-lg border border-sky-100 p-6 mb-8"
+    >
         <h2 className="text-lg font-semibold text-gray-800 mb-4">Fetch Payload Data</h2>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
@@ -66,9 +72,8 @@ const FetchForm: FC<FetchFormProps> = ({
             </div>
             <div className="flex items-end">
                 <Button
-                    type="button"
+                    type="submit"
                     isLoading={isLoading}
-                    onClick={onFetch}
                     className="w-full bg-linear-to-r from-sky-500 to-blue-500 py-2 px-4 rounded-lg font-medium hover:from-sky-600 hover:to-blue-600 focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                     {isLoading ? (
@@ -82,7 +87,7 @@ const FetchForm: FC<FetchFormProps> = ({
                 </Button>
             </div>
         </div>
-    </div>
+    </form>
 );
 
 export default FetchForm;

@@ -34,11 +34,12 @@ export const authApi = devGuideApi.injectEndpoints({
                     const isFreshOAuthLogin =
                         hasOAuthCallbackCode() || oauthExchangeCompletedThisPageLoad;
                     if (isFreshOAuthLogin && data.ok && data.user) {
-                        toast.success("Login Successfull!");
+                        toast.success("Login successful!");
                     }
 
                     dispatch(setLoginPending(false));
                 } catch {
+                    toast.error("We couldn't sign you in. Please try again.");
                     dispatch(clearAuth());
                 }
             },
@@ -62,6 +63,7 @@ export const authApi = devGuideApi.injectEndpoints({
                     }
                 } catch (err) {
                     console.error("Error exchanging auth code:", err);
+                    toast.error("We couldn't sign you in. Please try again.");
                     dispatch(setLoginPending(false));
                 }
             },

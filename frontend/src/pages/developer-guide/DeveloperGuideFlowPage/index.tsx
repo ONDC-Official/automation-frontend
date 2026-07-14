@@ -52,7 +52,9 @@ const DeveloperGuideFlowPage: FC = () => {
                     inShell ? "min-h-[40vh]" : "min-h-screen"
                 }`}
             >
-                <p className="text-gray-600 mb-4">Use case not found for this domain/version.</p>
+                <p className="text-gray-600 mb-4">
+                    This use case couldn&apos;t be loaded for this domain/version.
+                </p>
                 <Button
                     type="button"
                     variant="ghost"

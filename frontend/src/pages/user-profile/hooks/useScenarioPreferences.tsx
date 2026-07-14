@@ -57,7 +57,7 @@ export const useScenarioPreferences = () => {
         setValue,
         formState: { errors },
         reset,
-    } = useForm<ScenarioPreferences>({ defaultValues: EMPTY_PREFERENCES });
+    } = useForm<ScenarioPreferences>({ defaultValues: EMPTY_PREFERENCES, mode: "onBlur" });
 
     const [domains, setDomains] = useState<IDomain[]>([]);
     const [savedPrefs, setSavedPrefs] = useState<Record<string, ScenarioPreferences>>({});
@@ -99,6 +99,7 @@ export const useScenarioPreferences = () => {
             setDomains(fetchedDomains);
         } catch (e) {
             console.error("Error fetching scenario form data", e);
+            toast.error("Failed to load domain options");
         }
     }, [triggerGetScenarioFormData]);
 

@@ -42,7 +42,7 @@ export const ProfileSidebar = ({ username, avatarUrl, counts }: IProfileSidebarP
                     }
                 >
                     <span className="pl-1">{item.label}</span>
-                    {counts[item.countKey] > 0 ? (
+                    {item.countKey && counts[item.countKey] > 0 ? (
                         <span className="inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full bg-brand-normal/20 text-brand-normal text-caption-1 font-semibold">
                             {counts[item.countKey]}
                         </span>

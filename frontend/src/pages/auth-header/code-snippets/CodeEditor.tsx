@@ -8,6 +8,7 @@ import { useTheme } from "@/theme/hooks/useTheme";
 import { subscribeToThemeApply } from "@/theme/utils/themeUtils";
 import { getEditorThemeName } from "@components/PayloadEditor/constants";
 import { Button } from "@/components/Shadcn/Button";
+import Spinner from "@/components/Shadcn/Spinner";
 
 const EDITOR_HEIGHT = "500px";
 const EDITOR_OPTIONS: MonacoEditor.IStandaloneEditorConstructionOptions = {
@@ -74,6 +75,7 @@ const CodeEditor: FC<CodeEditorProps> = ({
                 theme={editorTheme}
                 onMount={handleEditorMount}
                 options={EDITOR_OPTIONS}
+                loading={<Spinner className="size-8" />}
             />
         </div>
     );

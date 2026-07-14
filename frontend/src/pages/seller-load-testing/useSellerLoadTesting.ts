@@ -1,4 +1,5 @@
 import React from "react";
+import { toast } from "sonner";
 import { useCreateLoadTestSessionMutation, useDeleteLoadTestSessionMutation } from "@store/api";
 import { FormValues } from "./types";
 import { useAppDispatch, useAppSelector } from "@store/hooks";
@@ -40,6 +41,7 @@ export const useSellerLoadTesting = () => {
             });
         } catch (error) {
             console.error("Error creating session:", error);
+            toast.error("Failed to create session");
         } finally {
             setIsLoading(false);
         }
@@ -53,6 +55,7 @@ export const useSellerLoadTesting = () => {
             saveSession(null);
         } catch (error) {
             console.error("Error deleting session:", error);
+            toast.error("Failed to delete session");
         } finally {
             setIsDeleting(false);
         }

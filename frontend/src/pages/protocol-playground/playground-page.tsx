@@ -172,9 +172,9 @@ const PlaygroundPage = () => {
             const parsedConfig = JSON.parse(rawConfigValue) as MockPlaygroundConfigType;
             const validConfig = new MockRunner(parsedConfig).validateConfig();
             if (!validConfig.success) {
-                const validationError = `Invalid configuration: ${validConfig.errors?.join(", ")}`;
+                const validationError = `Invalid configuration:\n${validConfig.errors?.join("\n")}`;
                 setRawConfigError(validationError);
-                toast.error(validationError);
+                toast.error("Invalid configuration");
                 return;
             }
             const ruleError = validateConfigGroups(parsedConfig);

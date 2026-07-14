@@ -14,6 +14,8 @@ export const FooterLinkItem = ({ link }: IFooterLinkItemProps) => (
         ) : (
             <a
                 href={link.href}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="text-n-60 hover:text-brand-light transition-colors text-body-2 inline-block"
             >
                 {link.name}

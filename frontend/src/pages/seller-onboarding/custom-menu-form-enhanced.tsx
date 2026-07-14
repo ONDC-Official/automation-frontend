@@ -21,6 +21,7 @@ import {
     DialogFooter,
     DialogHeader,
     DialogTitle,
+    ConfirmDialog,
 } from "@components/Shadcn/Dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@components/Shadcn/Tabs";
 import { Card } from "@pages/seller-onboarding/components/LegacyCardTag";
@@ -490,6 +491,14 @@ const CustomMenuFormEnhanced = ({
         }
     };
 
+    const [pendingRemoveMenuItemIndex, setPendingRemoveMenuItemIndex] = useState<number | null>(
+        null
+    );
+    const [pendingRemoveCustomizationGroup, setPendingRemoveCustomizationGroup] = useState<{
+        menuIndex: number;
+        groupIndex: number;
+    } | null>(null);
+
     const handleAddCustomizationGroup = (menuIndex: number) => {
         const currentGroups = watchMenu[menuIndex]?.customizationGroups || [];
         const newGroup: CustomizationGroup = {
@@ -614,7 +623,7 @@ const CustomMenuFormEnhanced = ({
             onNext(formData as unknown as Partial<SellerOnboardingData>);
         } catch (error) {
             console.error("Error in form submission:", error);
-            alert(
+            toast.error(
                 `Error submitting form: ${error instanceof Error ? error.message : "Unknown error"}`
             );
         }
@@ -704,7 +713,9 @@ const CustomMenuFormEnhanced = ({
                                                 <Button
                                                     type="button"
                                                     variant="ghost"
-                                                    onClick={() => removeMenuItem(index)}
+                                                    onClick={() =>
+                                                        setPendingRemoveMenuItemIndex(index)
+                                                    }
                                                     className="h-auto p-0 text-red-600 hover:text-red-800 text-sm"
                                                 >
                                                     Remove
@@ -1008,9 +1019,11 @@ const CustomMenuFormEnhanced = ({
                                                                     icon={<FaTrash />}
                                                                     className="text-destructive hover:text-destructive"
                                                                     onClick={() =>
-                                                                        handleRemoveCustomizationGroup(
-                                                                            index,
-                                                                            groupIndex
+                                                                        setPendingRemoveCustomizationGroup(
+                                                                            {
+                                                                                menuIndex: index,
+                                                                                groupIndex,
+                                                                            }
                                                                         )
                                                                     }
                                                                 />
@@ -1129,6 +1142,41 @@ const CustomMenuFormEnhanced = ({
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
+
+            <ConfirmDialog
+                open={pendingRemoveMenuItemIndex !== null}
+                onOpenChange={(open) => !open && setPendingRemoveMenuItemIndex(null)}
+                title="Remove menu item"
+                description="Are you sure you want to remove this menu item? This action cannot be undone."
+                confirmText="Remove"
+                cancelText="Cancel"
+                danger
+                onConfirm={() => {
+                    if (pendingRemoveMenuItemIndex !== null) {
+                        removeMenuItem(pendingRemoveMenuItemIndex);
+                    }
+                    setPendingRemoveMenuItemIndex(null);
+                }}
+            />
+
+            <ConfirmDialog
+                open={!!pendingRemoveCustomizationGroup}
+                onOpenChange={(open) => !open && setPendingRemoveCustomizationGroup(null)}
+                title="Remove customization group"
+                description="Are you sure you want to remove this customization group? This action cannot be undone."
+                confirmText="Remove"
+                cancelText="Cancel"
+                danger
+                onConfirm={() => {
+                    if (pendingRemoveCustomizationGroup) {
+                        handleRemoveCustomizationGroup(
+                            pendingRemoveCustomizationGroup.menuIndex,
+                            pendingRemoveCustomizationGroup.groupIndex
+                        );
+                    }
+                    setPendingRemoveCustomizationGroup(null);
+                }}
+            />
         </>
     );
 };

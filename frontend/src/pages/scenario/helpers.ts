@@ -1,3 +1,4 @@
+import { toast } from "sonner";
 import { trackEvent } from "@utils/analytics";
 import { ROUTES } from "@constants/routes";
 
@@ -7,7 +8,15 @@ export function openSessionInNewTab(sessionId: string, subscriberUrl: string, ro
         subscriberUrl,
         role,
     });
-    window.open(`${window.location.origin}${ROUTES.FLOW_TESTING}?${params}`, "_blank");
+    const newWindow = window.open(
+        `${window.location.origin}${ROUTES.FLOW_TESTING}?${params}`,
+        "_blank"
+    );
+    if (!newWindow) {
+        toast.error(
+            "Your browser blocked the popup. Please allow popups for this site and try again."
+        );
+    }
 }
 
 export function trackSchemaValidationForm(action: string, label: string) {

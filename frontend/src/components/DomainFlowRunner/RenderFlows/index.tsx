@@ -110,6 +110,7 @@ function RenderFlows({ flows, subUrl, sessionId, newSession }: IRenderFlowsProps
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
     const [settingsDraft, setSettingsDraft] = useState<SettingsDraft | null>(null);
     const [isSettingsSaving, setIsSettingsSaving] = useState(false);
+    const [isViewingReport, setIsViewingReport] = useState(false);
 
     useEffect(() => {
         dispatch(initializeFlowPage(sessionId));
@@ -410,7 +411,9 @@ function RenderFlows({ flows, subUrl, sessionId, newSession }: IRenderFlowsProps
                             Alert
                         </DialogTitle>
                     </DialogHeader>
-                    <p className="text-sm text-text-secondary">Sesson has expired.</p>
+                    <p className="text-sm text-text-secondary">
+                        We couldn&apos;t reach the server to keep this session updated.
+                    </p>
                     <p className="text-sm text-text-secondary">Check support to raise a query.</p>
                 </DialogContent>
             </Dialog>
@@ -494,20 +497,24 @@ function RenderFlows({ flows, subUrl, sessionId, newSession }: IRenderFlowsProps
                                         <Button
                                             size="sm"
                                             onClick={async () => {
-                                                const response = await triggerGetReport({
-                                                    sessionId,
-                                                }).unwrap();
+                                                setIsViewingReport(true);
                                                 try {
+                                                    const response = await triggerGetReport({
+                                                        sessionId,
+                                                    }).unwrap();
                                                     const decodedHtml = response.data;
                                                     openReportInNewTab(decodedHtml, sessionId);
                                                 } catch (error) {
                                                     console.error(
-                                                        "Failed to decode or open Base64 HTML:",
+                                                        "Failed to fetch or open report:",
                                                         error
                                                     );
+                                                    toast.error("Failed to load the report");
+                                                } finally {
+                                                    setIsViewingReport(false);
                                                 }
                                             }}
-                                            disabled={!gotReport}
+                                            disabled={!gotReport || isViewingReport}
                                         >
                                             <EyeIcon className="size-4" />
                                             View Report

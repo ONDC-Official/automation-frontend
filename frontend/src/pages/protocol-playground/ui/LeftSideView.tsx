@@ -1,4 +1,5 @@
 import { useMemo, useEffect, useRef } from "react";
+import { toast } from "sonner";
 import { usePlayground } from "@pages/protocol-playground/hooks/playground-runtime";
 import { useAppDispatch, useAppSelector } from "@store/hooks";
 import { setActiveLeftTab as setActiveLeftTabAction } from "@store/slices/playgroundUiSlice";
@@ -101,7 +102,13 @@ export const LeftSideView = (props: { width: string; activeApi?: string }) => {
         if (pendingRef.current.timer !== null) {
             window.clearTimeout(pendingRef.current.timer);
         }
-        pendingRef.current.flush = () => playgroundContext.updateStepMock(stepId, property, value);
+        const tabLabel = activeTabConfig.label;
+        pendingRef.current.flush = () => {
+            const result = playgroundContext.updateStepMock(stepId, property, value);
+            if (!result?.ok) {
+                toast.error(`Invalid JSON — not saved for ${tabLabel}`);
+            }
+        };
         pendingRef.current.timer = window.setTimeout(() => {
             pendingRef.current.flush?.();
             pendingRef.current.timer = null;
