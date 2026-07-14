@@ -2,8 +2,7 @@ import { Toaster } from "@components/Shadcn/Toaster";
 import Header from "@components/Header";
 import Footer from "@components/Footer";
 import Routes from "@components/Routes";
-
-const isDev = import.meta.env.VITE_ENVIRONMENT === "development";
+import { isDev } from "@/types/environment";
 
 const Layout = () => (
     <div className="flex min-h-svh flex-col bg-surface-page text-text-primary">

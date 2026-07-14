@@ -11,24 +11,22 @@ import { ThemeToggle } from "@components/Header/ThemeToggle";
 import { UserProfileSection } from "@components/Header/UserProfileSection";
 import { mobileDrawerNavClassName } from "@components/Header/constants";
 import { Bars3Icon } from "@heroicons/react/20/solid";
-
-const env = import.meta.env.VITE_ENVIRONMENT;
-const isDev = import.meta.env.VITE_ENVIRONMENT === "development";
+import { appEnvironment, isDev } from "@/types/environment";
 
 const Header = () => (
     <header className="fixed inset-x-0 top-0 z-50 w-full">
         {isDev && (
             <div className="flex h-8 items-center justify-center bg-[#F5A623]">
                 <span className="text-xs font-bold tracking-widest text-gray-900 uppercase">
-                    {env} ENVIRONMENT — NOT A PRODUCTION RELEASE
+                    {appEnvironment} ENVIRONMENT — NOT A PRODUCTION RELEASE
                 </span>
             </div>
         )}
         <div className="border-b border-n-30 bg-n-0 dark:border-border-default dark:bg-black">
-            <nav className="relative mx-auto flex h-16 items-center px-4 xl:px-10 2xl:px-20">
+            <nav className="relative mx-auto flex h-16 items-center px-20">
                 <Logo />
 
-                <div className="mx-2 hidden h-8 w-px shrink-0 bg-n-30 dark:bg-border-default nav:block" />
+                <div className="mx-5 hidden h-8 w-px shrink-0 bg-n-30 dark:bg-border-default nav:block" />
 
                 <div className="hidden min-w-0 flex-1 nav:flex">
                     <NavigationMenuSection />
