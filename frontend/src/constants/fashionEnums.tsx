@@ -1049,7 +1049,7 @@ export const FINISH = [
     "tinted",
 ];
 export const WAIST_RISE = ["alpha", "low", "high", "med"];
-export const TYPE = ["Air Conditioner", "Refrigerator", "Vaccum Cleaner", "Washing Machine"];
+export const TYPE = ["Air Conditioner", "Refrigerator", "Vacuum Cleaner", "Washing Machine"];
 export const MATERIAL = [
     "alpha",
     "acetate",

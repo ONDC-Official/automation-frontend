@@ -136,8 +136,8 @@ export function useDocsSectionSelection({ docSlugs, docs }: UseDocsSectionSelect
             setSearchParams(
                 (prev) => {
                     const next = new URLSearchParams(prev);
-                    if (open) next.set("panel", "comments");
-                    else next.delete("panel");
+                    if (open) next.delete("panel");
+                    else next.set("panel", "closed");
                     return next;
                 },
                 { replace: true }
@@ -146,7 +146,7 @@ export function useDocsSectionSelection({ docSlugs, docs }: UseDocsSectionSelect
         [setSearchParams]
     );
 
-    // Open panel when panel=comments is in URL
+    // Keep panel state in sync with the "closed" URL flag
     useEffect(() => {
         setRightPanelOpenState(commentsPanelOpen);
     }, [commentsPanelOpen]);

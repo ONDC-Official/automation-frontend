@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 
+import { getDomainDisplayLabel } from "@pages/developer-guide/domainGrouping";
 import { useGetScenarioFormDataQuery } from "@store/api";
 
 /**
@@ -13,7 +14,10 @@ export const useScenarioFormData = (domain: string) => {
     return useMemo(() => {
         const versions = domains.find((item) => item.key === domain)?.version ?? [];
         return {
-            domainOptions: domains.map((item) => item.key),
+            domainOptions: domains.map((item) => ({
+                label: getDomainDisplayLabel(item.key),
+                value: item.key,
+            })),
             versionOptions: versions.map((item) => item.key),
         };
     }, [domains, domain]);

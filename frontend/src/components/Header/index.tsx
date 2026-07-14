@@ -25,10 +25,10 @@ const Header = () => (
             </div>
         )}
         <div className="border-b border-n-30 bg-n-0 dark:border-border-default dark:bg-black">
-            <nav className="relative mx-auto flex h-16 items-center px-20">
+            <nav className="relative mx-auto flex h-16 items-center px-4 xl:px-10 2xl:px-20">
                 <Logo />
 
-                <div className="mx-5 hidden h-8 w-px shrink-0 bg-n-30 dark:bg-border-default nav:block" />
+                <div className="mx-2 hidden h-8 w-px shrink-0 bg-n-30 dark:bg-border-default nav:block" />
 
                 <div className="hidden min-w-0 flex-1 nav:flex">
                     <NavigationMenuSection />
@@ -61,7 +61,7 @@ const Header = () => (
                         </DrawerContent>
                     </Drawer>
 
-                    <div className="hidden items-center gap-2 nav:flex nav:gap-3">
+                    <div className="hidden items-center gap-2 nav:flex">
                         <UserProfileSection />
                         <ThemeToggle />
                     </div>

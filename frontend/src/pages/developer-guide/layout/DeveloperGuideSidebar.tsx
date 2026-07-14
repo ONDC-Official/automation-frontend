@@ -137,7 +137,7 @@ function nodeHasActiveDescendant(
 
 const linkClass = ({ isActive, depth }: { isActive: boolean; depth: number }) => {
     const base =
-        "flex flex-1 items-center gap-1 min-w-0 text-left py-1 pr-2 text-[13px] leading-snug transition-colors";
+        "flex flex-1 items-center gap-1 min-w-0 text-left py-1 pr-3 text-[13px] leading-snug transition-colors";
     const rounding = depth === 0 ? mainNodeShell : "rounded-lg";
 
     if (depth === 0) {
@@ -158,10 +158,11 @@ const NavLinkItem: FC<{
 }> = ({ node, depth, isLastSibling }) => {
     const location = useLocation();
     const { collapseNavSidebar } = useDeveloperGuideNav();
+
     const { pathname: linkPath, hash: linkHash } = parseNavPath(node.path);
+
     const useEnd = node.id === "overview" || Boolean(linkHash);
     const inset = rowInset(depth);
-    const reserveChevronSlot = depth > 0;
 
     const linkTitle = node.suffix ? `${node.label} ${node.suffix}` : node.label;
 
@@ -172,18 +173,22 @@ const NavLinkItem: FC<{
         return (
             <div className="relative w-full min-w-0">
                 <TreeConnectors depth={depth} isLastSibling={isLastSibling} />
+
                 <div
-                    className={`relative z-10 flex items-center gap-1 w-full text-[13px] ${navTextDefault} cursor-not-allowed min-w-0`}
+                    className={`relative z-10 flex w-full min-w-0 items-center gap-1 text-[13px] ${navTextDefault} cursor-not-allowed`}
                     style={{ paddingLeft: inset }}
                 >
-                    {reserveChevronSlot && <ChevronSlot />}
-                    <span className="flex-1 min-w-0 py-1 pr-3">{node.label}</span>
+                    <ChevronSlot />
+
+                    <span className="flex-1 min-w-0 py-1 pr-3 wrap-break-word">{node.label}</span>
+
                     {node.suffix && (
-                        <span className={`font-mono text-[11px] ${navTextDefault} shrink-0`}>
+                        <span className={`shrink-0 font-mono text-[11px] ${navTextDefault}`}>
                             {node.suffix}
                         </span>
                     )}
                 </div>
+
                 {!isLastSibling && <InterSiblingTrunk depth={depth} spansSubtree={false} />}
             </div>
         );
@@ -192,33 +197,42 @@ const NavLinkItem: FC<{
     return (
         <div className={`relative w-full min-w-0${depth === 0 ? " mb-1" : ""}`}>
             <TreeConnectors depth={depth} isLastSibling={isLastSibling} />
+
             <div
-                className={`relative z-10 flex items-center w-full min-w-0 ${navTextDefault}`}
+                className={`relative z-10 flex w-full min-w-0 items-center gap-1 ${navTextDefault}`}
                 style={{ paddingLeft: inset }}
             >
-                {reserveChevronSlot && <ChevronSlot showChevron={node.showArrow} rotated />}
+                <ChevronSlot showChevron={node.showArrow} rotated />
+
                 <NavLink
                     to={node.path}
                     end={useEnd}
                     onClick={() => {
-                        if (node.collapseOnNavigate) collapseNavSidebar();
+                        if (node.collapseOnNavigate) {
+                            collapseNavSidebar();
+                        }
                     }}
                     className={({ isActive: routerActive }) =>
-                        linkClass({ isActive: resolveIsActive(routerActive), depth })
+                        linkClass({
+                            isActive: resolveIsActive(routerActive),
+                            depth,
+                        })
                     }
                     title={linkTitle}
                 >
-                    <span className="flex-1 min-w-0">{node.label}</span>
+                    <span className="flex-1 min-w-0 wrap-break-word">{node.label}</span>
+
                     {node.suffix && (
                         <span
                             title={NAV_STATUS_LABEL[getNavStatus(node.id)]}
-                            className={`text-caption-2-size font-bold tracking-tighter leading-none shrink-0 rounded-full px-2.5 py-2 min-h-0 h-auto ${NAV_STATUS_STYLES[getNavStatus(node.id)]}`}
+                            className={`shrink-0 rounded-full px-2.5 py-2 text-caption-2-size font-bold tracking-tighter leading-none ${NAV_STATUS_STYLES[getNavStatus(node.id)]}`}
                         >
                             {node.suffix}
                         </span>
                     )}
                 </NavLink>
             </div>
+
             {!isLastSibling && <InterSiblingTrunk depth={depth} spansSubtree={false} />}
         </div>
     );
@@ -252,7 +266,6 @@ const NavGroupItem: FC<{
     }, [searchQuery]);
 
     const inset = rowInset(depth);
-    const reserveChevronSlot = depth > 0 || hasChildren;
     const { pathname: linkPath, hash: linkHash } = parseNavPath(node.path ?? "");
     const groupPathActive = isNavGroupPathActive(node, location.pathname, location.hash);
     const headerActive = linkHash
@@ -303,7 +316,7 @@ const NavGroupItem: FC<{
                                 type="button"
                                 variant="ghost"
                                 onClick={() => setOpen((prev) => !prev)}
-                                className="h-3.5 w-3.5 shrink-0 rounded-none p-0"
+                                className="h-3.5 w-3.5 shrink-0 rounded-none p-0 has-[>svg]:px-0"
                                 aria-expanded={open}
                                 aria-label={open ? "Collapse section" : "Expand section"}
                             >
@@ -312,7 +325,7 @@ const NavGroupItem: FC<{
                                 />
                             </Button>
                         ) : (
-                            reserveChevronSlot && <ChevronSlot />
+                            <ChevronSlot />
                         )}
                         <NavLink
                             to={node.path}
@@ -328,7 +341,7 @@ const NavGroupItem: FC<{
                             }
                             title={node.label}
                         >
-                            <span>{node.label}</span>
+                            <span className="min-w-0 wrap-break-word">{node.label}</span>
                         </NavLink>
                     </div>
                 </div>
@@ -339,7 +352,7 @@ const NavGroupItem: FC<{
                         type="button"
                         variant="ghost"
                         onClick={() => setOpen((prev) => !prev)}
-                        className={`relative z-10 h-auto rounded-none p-0 font-normal ${rowShellClass} text-left`}
+                        className={`relative z-10 w-full h-auto rounded-none p-0 has-[>svg]:px-0 font-normal whitespace-normal ${rowShellClass} text-left`}
                         style={{ paddingLeft: inset }}
                     >
                         <span className="flex h-3.5 w-3.5 shrink-0 items-center justify-center">
@@ -347,7 +360,9 @@ const NavGroupItem: FC<{
                                 className={`h-3.5 w-3.5 transition-transform duration-150 ${open ? "" : "-rotate-90"}`}
                             />
                         </span>
-                        <span className={`py-1 pr-3 ${headerClass}`}>{node.label}</span>
+                        <span className={`min-w-0 flex-1 py-1 pr-3 wrap-break-word ${headerClass}`}>
+                            {node.label}
+                        </span>
                     </Button>
                 </div>
             ) : (
@@ -357,8 +372,10 @@ const NavGroupItem: FC<{
                         className={`relative z-10 ${rowShellClass}`}
                         style={{ paddingLeft: inset }}
                     >
-                        {reserveChevronSlot && <ChevronSlot />}
-                        <span className={`py-1 pr-3 ${headerClass}`}>{node.label}</span>
+                        <ChevronSlot />
+                        <span className={`min-w-0 flex-1 py-1 pr-3 wrap-break-word ${headerClass}`}>
+                            {node.label}
+                        </span>
                     </div>
                 </div>
             )}

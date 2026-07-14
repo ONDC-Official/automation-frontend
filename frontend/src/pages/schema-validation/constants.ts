@@ -3,6 +3,7 @@
  */
 
 import { availableDomains } from "@constants/common";
+import { getDomainFriendlyName } from "@pages/developer-guide/domainGrouping";
 import { ISchemaGuideStepDefinition } from "@pages/schema-validation/types";
 
 /**
@@ -37,7 +38,10 @@ export const EXAMPLE_PAYLOAD = `{
 
 /** Human-readable list of supported domains for the guide */
 export const domainSummary = availableDomains
-    .map((domain) => `${domain.code} (Version: ${domain.version})`)
+    .map(
+        (domain) =>
+            `${getDomainFriendlyName(domain.code)} (${domain.code}, Version: ${domain.version})`
+    )
     .join(" / ");
 
 /** Step definitions for the schema validation how-to accordion */
@@ -126,6 +130,7 @@ export const VALIDATION_MESSAGES = {
     INVALID_PAYLOAD: "Invalid payload",
     MISSING_ACTION:
         "Select an action before validating — this is a domain/version selection issue, not a payload error.",
+    MISSING_CONTEXT: "Your payload is missing the 'context' object required by every ONDC request.",
     DOMAIN_NOT_ACTIVE:
         "Select an active domain and version before validating — this is a domain/version selection issue, not a payload error.",
     VALIDATION_ERROR: "Something went wrong",
@@ -136,6 +141,7 @@ export const VALIDATION_MESSAGES = {
 /** JSON paths used to highlight client validation errors in the editor */
 export const VALIDATION_PATHS = {
     MISSING_ACTION: "/context/action",
+    MISSING_CONTEXT: "/context",
     DOMAIN_NOT_ACTIVE: "/context/domain",
 };
 

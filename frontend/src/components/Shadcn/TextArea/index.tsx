@@ -1,6 +1,6 @@
 import type { FieldPath, FieldValues, RegisterOptions } from "react-hook-form";
 import { Controller } from "react-hook-form";
-import TextArea from "@/components/Shadcn/TextArea";
+import { Textarea as TextArea } from "@/components/Shadcn/TextArea/text-area";
 import { cn } from "@/lib/utils";
 import {
     Field,

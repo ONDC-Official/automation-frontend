@@ -345,7 +345,14 @@ export const parsePayload = (payload: string): IValidationResult<IParsedPayload>
  * @returns Action string or client validation errors
  */
 export const validateAction = (parsedPayload: IParsedPayload): IValidationResult<string> => {
-    const action = parsedPayload?.context?.action;
+    if (!parsedPayload?.context) {
+        return {
+            ok: false,
+            errors: [buildValidationError("MISSING_CONTEXT")],
+        };
+    }
+
+    const action = parsedPayload.context.action;
 
     if (!action) {
         return {

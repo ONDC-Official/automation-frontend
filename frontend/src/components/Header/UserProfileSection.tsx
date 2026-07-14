@@ -62,13 +62,13 @@ export const UserProfileSection = ({ inDrawer = false }: { inDrawer?: boolean })
                     onClick={handleLogin}
                     disabled={isLoginRedirecting}
                     className={cn(
-                        "h-9 gap-3 rounded-full border border-n-40 bg-n-900 px-3 py-2 text-body-2 font-medium text-n-0 hover:bg-n-600 dark:text-neutral-900 dark:border-n-0 dark:bg-n-0 dark:hover:border-n-0 dark:hover:bg-n-30",
-                        inDrawer && "w-full justify-center"
+                        "h-9 gap-2 rounded-full border border-n-40 bg-n-900 px-2.5 py-2 text-body-2 font-medium text-n-0 hover:bg-n-600 dark:text-neutral-900 dark:border-n-0 dark:bg-n-0 dark:hover:border-n-0 dark:hover:bg-n-30",
+                        inDrawer && "w-full justify-center gap-3 px-3"
                     )}
                     title="Login with GitHub"
                 >
                     <GitHubIcon className="size-6 text-body-1 font-medium" />
-                    Login with GitHub
+                    {inDrawer ? "Login with GitHub" : "Login"}
                 </Button>
             )}
 

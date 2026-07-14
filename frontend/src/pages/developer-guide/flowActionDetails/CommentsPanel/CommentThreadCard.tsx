@@ -16,6 +16,8 @@ interface CommentThreadCardProps {
     onCancelReply: () => void;
     onReplyTextChange: (id: string, value: string) => void;
     onSubmitReply: (id: string) => void;
+    /** Show which key/path this comment is attached to (e.g. in an unfiltered "All Comments" list). */
+    showPath?: boolean;
 }
 
 const CommentThreadCard: FC<CommentThreadCardProps> = ({
@@ -29,6 +31,7 @@ const CommentThreadCard: FC<CommentThreadCardProps> = ({
     onCancelReply,
     onReplyTextChange,
     onSubmitReply,
+    showPath = false,
 }) => (
     <div
         className={`p-4 rounded-2xl border shadow-xs transition-all ${
@@ -37,6 +40,11 @@ const CommentThreadCard: FC<CommentThreadCardProps> = ({
                 : "bg-white dark:bg-surface-elevated border-slate-200/80"
         }`}
     >
+        {showPath && (
+            <span className="inline-flex items-center px-2 py-0.5 mb-2 rounded-md bg-sky-500/10 text-sky-700 dark:text-sky-300 text-xs font-mono break-all">
+                {thread.path}
+            </span>
+        )}
         <div className="flex items-start justify-between gap-2">
             <p className="text-sm text-slate-800 leading-relaxed whitespace-pre-wrap flex-1 min-w-0">
                 {thread.text}
