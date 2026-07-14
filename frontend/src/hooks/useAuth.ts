@@ -1,6 +1,6 @@
 import { useCallback } from "react";
 import { useAppDispatch, useAppSelector } from "@store/hooks";
-import { useGetMeQuery, devGuideApi } from "@store/api";
+import { useGetMeQuery, devGuideApi, mainApi } from "@store/api";
 import { clearAuth, selectAuthToken } from "@store/slices/authSlice";
 import type { IUser } from "@/types/user";
 
@@ -35,7 +35,9 @@ export const useAuth = (): UseAuthResult => {
 
     const logout = useCallback(() => {
         dispatch(clearAuth());
+        // getMe → devGuideApi; scenario prefs / other auth-scoped data → mainApi
         dispatch(devGuideApi.util.resetApiState());
+        dispatch(mainApi.util.resetApiState());
     }, [dispatch]);
 
     return {
