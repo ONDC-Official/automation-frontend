@@ -35,7 +35,7 @@ export function useNewSessionForm({
         watch,
         setValue,
         formState: { errors },
-    } = useForm<INewSessionFormValues>({ defaultValues: DEFAULT_VALUES });
+    } = useForm<INewSessionFormValues>({ defaultValues: DEFAULT_VALUES, mode: "onBlur" });
 
     const watchedDomain = watch("domain");
     const watchedVersion = watch("version");

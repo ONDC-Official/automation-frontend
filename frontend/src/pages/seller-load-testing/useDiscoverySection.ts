@@ -1,4 +1,5 @@
 import React from "react";
+import { toast } from "sonner";
 import { useLazyGenerateDiscoveryPayloadQuery, useStartDiscoveryMutation } from "@store/api";
 import type { DiscoveryResponse } from "@pages/seller-load-testing/types";
 
@@ -21,6 +22,7 @@ export const useDiscoverySection = ({
     const [discoveryResponse, setDiscoveryResponse] = React.useState<DiscoveryResponse | null>(
         null
     );
+    const originalEditedJsonRef = React.useRef<string>("");
     const [triggerGenerateDiscoveryPayload] = useLazyGenerateDiscoveryPayloadQuery();
     const [startDiscoveryMutation] = useStartDiscoveryMutation();
 
@@ -28,11 +30,14 @@ export const useDiscoverySection = ({
         setIsGenerating(true);
         try {
             const result = await triggerGenerateDiscoveryPayload(sessionId).unwrap();
+            const generatedJson = JSON.stringify(result.payload, null, 2);
             setPayload(result.payload);
-            setEditedJson(JSON.stringify(result.payload, null, 2));
+            setEditedJson(generatedJson);
+            originalEditedJsonRef.current = generatedJson;
             setShowButtons(true);
         } catch (error) {
             console.error("Error generating payload:", error);
+            toast.error("Failed to generate discovery payload");
         } finally {
             setIsGenerating(false);
         }
@@ -49,6 +54,7 @@ export const useDiscoverySection = ({
             onDiscoveryComplete();
         } catch (error) {
             console.error("Error starting discovery:", error);
+            toast.error("Failed to start discovery");
         } finally {
             setIsStarting(false);
         }
@@ -65,6 +71,8 @@ export const useDiscoverySection = ({
         }
     };
 
+    const isPayloadEdited = editedJson !== originalEditedJsonRef.current;
+
     const handleCancel = () => {
         setPayload(null);
         setShowButtons(false);
@@ -79,6 +87,7 @@ export const useDiscoverySection = ({
         editedJson,
         jsonError,
         discoveryResponse,
+        isPayloadEdited,
         handleGeneratePayload,
         handleStartDiscovery,
         handleEditedJsonChange,

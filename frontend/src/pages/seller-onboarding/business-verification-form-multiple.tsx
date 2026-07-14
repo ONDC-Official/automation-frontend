@@ -19,6 +19,7 @@ import { SelectControl } from "@components/Shadcn/Select";
 import { ComboBoxMultiControl } from "@components/Shadcn/ComboBox";
 import { DatePicker } from "@components/Shadcn/DatePicker";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@components/Shadcn/Tabs";
+import { ConfirmDialog } from "@components/Shadcn/Dialog";
 
 import TimeInput from "@components/Forms/time-input";
 import { SellerOnboardingData, StoreDetails } from "@pages/seller-onboarding";
@@ -454,6 +455,8 @@ const BusinessVerificationForm = ({
         const newTabKey = fields.length.toString();
         setActiveTabKey(newTabKey);
     };
+
+    const [pendingRemoveStoreIndex, setPendingRemoveStoreIndex] = useState<number | null>(null);
 
     const removeStore = (index: number) => {
         if (fields.length > 1) {
@@ -1194,7 +1197,7 @@ const BusinessVerificationForm = ({
                                         variant="ghost"
                                         onClick={(event) => {
                                             event.stopPropagation();
-                                            removeStore(index);
+                                            setPendingRemoveStoreIndex(index);
                                         }}
                                         className="h-auto ml-2 text-red-500 hover:text-red-700 p-1 rounded hover:bg-red-50"
                                         title="Remove Store"
@@ -1256,6 +1259,22 @@ const BusinessVerificationForm = ({
                     )}
                 </Button>
             </div>
+
+            <ConfirmDialog
+                open={pendingRemoveStoreIndex !== null}
+                onOpenChange={(open) => !open && setPendingRemoveStoreIndex(null)}
+                title="Remove store"
+                description="Are you sure you want to remove this store? This action cannot be undone."
+                confirmText="Remove"
+                cancelText="Cancel"
+                danger
+                onConfirm={() => {
+                    if (pendingRemoveStoreIndex !== null) {
+                        removeStore(pendingRemoveStoreIndex);
+                    }
+                    setPendingRemoveStoreIndex(null);
+                }}
+            />
         </form>
     );
 };

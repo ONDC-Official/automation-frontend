@@ -1,17 +1,9 @@
-import { FC, useCallback } from "react";
-import { ClipboardDocumentIcon, SparklesIcon } from "@heroicons/react/24/outline";
-import { Button } from "@components/Shadcn/Button";
+import { FC } from "react";
+import { SparklesIcon } from "@heroicons/react/24/outline";
 import CodeBlock from "@components/CodeBlock";
 import { AI_PROMPT } from "@pages/auth-header/overview/data";
-import { useClipboard } from "@hooks/useClipboard";
 
 const AIPromptGenerator: FC = () => {
-    const { copyToClipboard } = useClipboard();
-
-    const handleCopy = useCallback(() => {
-        copyToClipboard(AI_PROMPT);
-    }, [copyToClipboard]);
-
     return (
         <div className="rounded-xl border border-n-40 bg-brand-light p-6 dark:border-border-default dark:bg-brand-normal/10">
             <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -28,15 +20,6 @@ const AIPromptGenerator: FC = () => {
                         </p>
                     </div>
                 </div>
-                <Button
-                    type="button"
-                    onClick={handleCopy}
-                    className="shrink-0 gap-2"
-                    aria-label="Copy AI prompt to clipboard"
-                >
-                    <ClipboardDocumentIcon className="h-5 w-5" />
-                    Copy Prompt
-                </Button>
             </div>
 
             <CodeBlock code={AI_PROMPT} language="Prompt" wrap maxHeightClass="max-h-80" />

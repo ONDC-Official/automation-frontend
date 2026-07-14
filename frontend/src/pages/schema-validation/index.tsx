@@ -46,7 +46,7 @@ const SchemaValidation: FC = () => {
                                     <Button
                                         type="button"
                                         onClick={verifyRequest}
-                                        disabled={isLoading || payload === ""}
+                                        disabled={isLoading || payload.trim() === ""}
                                         className="shrink-0"
                                     >
                                         {isLoading ? "Validating..." : "Validate"}

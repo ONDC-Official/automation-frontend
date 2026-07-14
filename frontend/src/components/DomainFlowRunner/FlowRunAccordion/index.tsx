@@ -57,6 +57,7 @@ export function FlowRunAccordion({
     const [maxHeight, setMaxHeight] = useState("0px");
     const apiCallFailCount = useRef(0);
     const clickCountRef = useRef(0);
+    const [isBusy, setIsBusy] = useState(false);
     const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const { isFlowFormDialogOpen, acquireFlowFormDialogLock, releaseFlowFormDialogLock } =
         useSession();
@@ -322,20 +323,26 @@ export function FlowRunAccordion({
                     <FlowActionButton
                         label="Start flow"
                         variant="play"
+                        disabled={isBusy}
                         onClick={async (e) => {
-                            addFlowToSessionInDB({
-                                sessionId,
-                                flow: {
-                                    id: flow.id,
-                                    status: "PENDING",
-                                },
-                            });
-                            trackEvent({
-                                category: "SCENARIO_TESTING-FLOWS",
-                                action: `Started a flow: ${flow.id}`,
-                            });
                             e.stopPropagation();
-                            await startFlow();
+                            setIsBusy(true);
+                            try {
+                                addFlowToSessionInDB({
+                                    sessionId,
+                                    flow: {
+                                        id: flow.id,
+                                        status: "PENDING",
+                                    },
+                                });
+                                trackEvent({
+                                    category: "SCENARIO_TESTING-FLOWS",
+                                    action: `Started a flow: ${flow.id}`,
+                                });
+                                await startFlow();
+                            } finally {
+                                setIsBusy(false);
+                            }
                         }}
                     />
                 ) : null}
@@ -343,17 +350,23 @@ export function FlowRunAccordion({
                     <FlowActionButton
                         label="Stop flow"
                         variant="stop"
+                        disabled={isBusy}
                         onClick={async (e) => {
-                            trackEvent({
-                                category: "SCENARIO_TESTING-FLOWS",
-                                action: `Stopped a flow: ${flow.id}`,
-                            });
                             e.stopPropagation();
-                            setActiveFlow(null);
-                            setIsOpen(false);
-                            await deleteExpectation({ sessionId, subscriberUrl: subUrl });
-                            putCacheData({ data: { activeFlow: "NONE" }, sessionId });
-                            onFlowStop();
+                            setIsBusy(true);
+                            try {
+                                trackEvent({
+                                    category: "SCENARIO_TESTING-FLOWS",
+                                    action: `Stopped a flow: ${flow.id}`,
+                                });
+                                setActiveFlow(null);
+                                setIsOpen(false);
+                                await deleteExpectation({ sessionId, subscriberUrl: subUrl });
+                                putCacheData({ data: { activeFlow: "NONE" }, sessionId });
+                                onFlowStop();
+                            } finally {
+                                setIsBusy(false);
+                            }
                         }}
                     />
                 ) : null}
@@ -361,22 +374,28 @@ export function FlowRunAccordion({
                     <FlowActionButton
                         label="Clear flow data"
                         variant="delete"
+                        disabled={isBusy}
                         onClick={async (e) => {
-                            trackEvent({
-                                category: "SCENARIO_TESTING-FLOWS",
-                                action: `Cleared a flow: ${flow.id}`,
-                            });
                             e.stopPropagation();
-                            setMappedFlow({
-                                sequence: getSequenceFromFlow(
-                                    sessionCache?.flowConfigs[flow.id] ?? flow,
-                                    sessionCache,
-                                    activeFlow
-                                ),
-                                missedSteps: [],
-                            });
-                            await clearFlowData({ sessionId, flowId: flow.id });
-                            onFlowClear();
+                            setIsBusy(true);
+                            try {
+                                trackEvent({
+                                    category: "SCENARIO_TESTING-FLOWS",
+                                    action: `Cleared a flow: ${flow.id}`,
+                                });
+                                setMappedFlow({
+                                    sequence: getSequenceFromFlow(
+                                        sessionCache?.flowConfigs[flow.id] ?? flow,
+                                        sessionCache,
+                                        activeFlow
+                                    ),
+                                    missedSteps: [],
+                                });
+                                await clearFlowData({ sessionId, flowId: flow.id });
+                                onFlowClear();
+                            } finally {
+                                setIsBusy(false);
+                            }
                         }}
                     />
                 ) : null}

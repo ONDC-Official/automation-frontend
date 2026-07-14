@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/Shadcn/Button";
+import { ConfirmDialog } from "@/components/Shadcn/Dialog";
 
 interface SessionCardProps {
     sessionId: string;
@@ -24,6 +25,9 @@ const SessionCard: React.FC<SessionCardProps> = ({
     onNewSession,
     isDeleting = false,
 }) => {
+    const [isNewSessionConfirmOpen, setIsNewSessionConfirmOpen] = useState(false);
+    const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
+
     const formatDate = (dateStr: string): string => {
         if (!dateStr) return "";
         const date = new Date(dateStr);
@@ -53,7 +57,7 @@ const SessionCard: React.FC<SessionCardProps> = ({
                         <Button
                             type="button"
                             variant="ghost"
-                            onClick={onNewSession}
+                            onClick={() => setIsNewSessionConfirmOpen(true)}
                             className="px-3 py-1.5 text-xs font-medium text-white border border-white/30 rounded-lg hover:bg-white/10 transition-colors"
                         >
                             New Session
@@ -61,7 +65,7 @@ const SessionCard: React.FC<SessionCardProps> = ({
                         <Button
                             type="button"
                             variant="ghost"
-                            onClick={onDelete}
+                            onClick={() => setIsDeleteConfirmOpen(true)}
                             disabled={isDeleting}
                             className="px-3 py-1.5 text-xs font-medium text-red-300 border border-red-400/30 rounded-lg hover:bg-red-500/10 transition-colors disabled:opacity-50"
                         >
@@ -89,6 +93,35 @@ const SessionCard: React.FC<SessionCardProps> = ({
                     <p className="text-sm text-gray-800 font-medium">{formatDate(expiresAt)}</p>
                 </div>
             </div>
+
+            <ConfirmDialog
+                open={isNewSessionConfirmOpen}
+                onOpenChange={setIsNewSessionConfirmOpen}
+                title="Start a new session"
+                description="Starting a new session will abandon the current session and any in-flight discovery or load test results. This action cannot be undone."
+                confirmText="New Session"
+                cancelText="Cancel"
+                danger
+                onConfirm={() => {
+                    setIsNewSessionConfirmOpen(false);
+                    onNewSession();
+                }}
+            />
+
+            <ConfirmDialog
+                open={isDeleteConfirmOpen}
+                onOpenChange={setIsDeleteConfirmOpen}
+                title="Delete session"
+                description="Deleting this session will remove it and any in-flight discovery or load test results. This action cannot be undone."
+                confirmText="Delete"
+                cancelText="Cancel"
+                danger
+                isLoading={isDeleting}
+                onConfirm={() => {
+                    onDelete();
+                    setIsDeleteConfirmOpen(false);
+                }}
+            />
         </div>
     );
 };

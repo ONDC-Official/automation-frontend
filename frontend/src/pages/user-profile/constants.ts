@@ -11,12 +11,12 @@ export const ENV_OPTIONS = ["PRE-PRODUCTION", "STAGING", "PRODUCTION"];
 export const PROFILE_NAV_ITEMS: IProfileNavItem[] = [
     { label: "Configs", to: ROUTES.PROFILE, countKey: "configs" },
     { label: "Past reports", to: ROUTES.PROFILE_PAST_REPORTS, countKey: "pastReports" },
-    { label: "Activity history", to: ROUTES.PROFILE_HISTORY, countKey: "history" },
+    { label: "Activity history", to: ROUTES.PROFILE_HISTORY },
 ];
 
 export const PROFILE_PAGE_COPY = {
     configs: {
-        title: "Profile",
+        title: "Configs",
         subtitle: "Your account, saved test configs, and report history in one place.",
         formTitle: "Create a new config",
         formDescription: "Fill the details to begin flow testing.",
@@ -27,7 +27,7 @@ export const PROFILE_PAGE_COPY = {
         subtitle: "Test runs from your scenario sessions. Mandatory checks decide certification.",
     },
     history: {
-        title: "History",
+        title: "Activity history",
         subtitle:
             "View and manage your previous sessions. Check reports or resume a past session anytime.",
         searchLabel: "Enter subscriber details",

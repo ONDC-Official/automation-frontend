@@ -98,7 +98,10 @@ const ProtocolPlayGround = () => {
         if (config && config.meta) {
             const { domain, version, flowId } = config.meta;
             // Auto-save to the new storage system
-            saveConfig(domain, version, flowId, config);
+            const saved = saveConfig(domain, version, flowId, config);
+            if (!saved) {
+                toast.error("Auto-save failed — your latest changes may not survive a refresh");
+            }
         }
     }, []);
 
@@ -126,9 +129,9 @@ const ProtocolPlayGround = () => {
         autoSaveConfig(workingConfig);
     }
 
-    const updateStepMock = (stepId: string, property: string, value: string) => {
+    const updateStepMock = (stepId: string, property: string, value: string): { ok: boolean } => {
         const current = playgroundState;
-        if (!current) return;
+        if (!current) return { ok: false };
         if (
             property === "generate" ||
             property === "validate" ||
@@ -141,7 +144,7 @@ const ProtocolPlayGround = () => {
                 value = JSON.parse(value);
             } catch (e) {
                 console.error("Invalid JSON value:", e);
-                return;
+                return { ok: false };
             }
         }
         const newSteps = getGroupSteps(current, stepGroup).map((step) => {
@@ -158,6 +161,7 @@ const ProtocolPlayGround = () => {
         });
         const newConfig = setGroupSteps(current, stepGroup, newSteps);
         setCurrentConfig(newConfig);
+        return { ok: true };
     };
 
     type TransactionHistoryEntry = MockPlaygroundConfigType["transaction_history"][number];

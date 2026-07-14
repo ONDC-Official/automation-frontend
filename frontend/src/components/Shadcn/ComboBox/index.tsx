@@ -55,6 +55,7 @@ export const ComboBox = <T extends FieldValues>({
                         disabled={disabled}
                     >
                         <ComboboxInput
+                            ref={field.ref}
                             className="w-full"
                             placeholder={placeholder ?? "Select a value"}
                             disabled={disabled}

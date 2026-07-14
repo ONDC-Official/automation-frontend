@@ -42,13 +42,15 @@ const SupportedActionsView: FC<SupportedActionsViewProps> = ({ supportedActions 
                 </p>
                 <div className="flex items-center gap-2 w-full sm:w-auto">
                     <ViewToggle view={view} onChange={setView} />
-                    <GuideSearchInput
-                        value={search}
-                        onChange={setSearch}
-                        accent="sky"
-                        placeholder="Filter actions…"
-                        className="sm:w-72"
-                    />
+                    {view === "cards" && (
+                        <GuideSearchInput
+                            value={search}
+                            onChange={setSearch}
+                            accent="sky"
+                            placeholder="Filter actions…"
+                            className="sm:w-72"
+                        />
+                    )}
                 </div>
             </div>
 

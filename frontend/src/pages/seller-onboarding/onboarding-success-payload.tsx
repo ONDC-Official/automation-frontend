@@ -7,6 +7,7 @@ import {
 } from "@heroicons/react/24/outline";
 
 import { Button } from "@components/Shadcn/Button";
+import { ConfirmDialog } from "@components/Shadcn/Dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@components/Shadcn/Tabs";
 import { useClipboard } from "@hooks/useClipboard";
 
@@ -30,6 +31,7 @@ const OnboardingSuccessPayload: React.FC<OnboardingSuccessPayloadProps> = ({
         !Array.isArray(onSearchPayload);
 
     const [activeTab, setActiveTab] = useState(isMultiDomain ? "domain-0" : "1");
+    const [isBackConfirmOpen, setIsBackConfirmOpen] = useState(false);
 
     const handleCopy = (text: string) => {
         void copyToClipboard(text);
@@ -230,7 +232,7 @@ const OnboardingSuccessPayload: React.FC<OnboardingSuccessPayloadProps> = ({
                 </div>
 
                 <div className="mt-8 text-center space-x-4">
-                    <Button variant="outline" size="lg" onClick={onBack}>
+                    <Button variant="outline" size="lg" onClick={() => setIsBackConfirmOpen(true)}>
                         Back to Dashboard
                     </Button>
                     {isMultiDomain && (
@@ -250,6 +252,20 @@ const OnboardingSuccessPayload: React.FC<OnboardingSuccessPayloadProps> = ({
                     )}
                 </div>
             </div>
+
+            <ConfirmDialog
+                open={isBackConfirmOpen}
+                onOpenChange={setIsBackConfirmOpen}
+                title="Back to Dashboard"
+                description="Going back to the dashboard will discard the generated payload. Make sure you've copied or downloaded it first. This action cannot be undone."
+                confirmText="Back to Dashboard"
+                cancelText="Cancel"
+                danger
+                onConfirm={() => {
+                    setIsBackConfirmOpen(false);
+                    onBack();
+                }}
+            />
         </div>
     );
 };

@@ -30,6 +30,13 @@ export interface GuideTableProps<T> {
      * which happens whenever the caller's search/filter recomputes it.
      */
     pagination?: { pageSize: number };
+    /**
+     * Optional override for what triggers a page-1 reset. Defaults to `rows`.
+     * Pass a value that only changes when the underlying dataset changes (not
+     * on local UI state like expand/collapse) if `rows` is recomputed for
+     * reasons other than a dataset change.
+     */
+    paginationResetKey?: unknown;
 }
 
 const DENSITY_CLASSES = {
@@ -59,16 +66,21 @@ function GuideTable<T>({
     toolbar,
     footer,
     pagination,
+    paginationResetKey,
 }: GuideTableProps<T>) {
     const densityClasses = DENSITY_CLASSES[density];
     const isScrollable = !pagination;
 
     const [page, setPage] = useState(1);
 
-    // Reset to page 1 whenever the (already filtered) row set changes.
+    // Reset to page 1 whenever the dataset changes — `paginationResetKey` when
+    // the caller supplies one (so purely-local recomputes of `rows`, e.g. an
+    // expand/collapse toggle, don't bounce the user back to page 1), otherwise
+    // `rows` itself.
+    const resetKey = paginationResetKey ?? rows;
     useEffect(() => {
         setPage(1);
-    }, [rows]);
+    }, [resetKey]);
 
     const pageSize = pagination?.pageSize ?? rows.length;
     const totalPages = pagination ? Math.max(1, Math.ceil(rows.length / pageSize)) : 1;

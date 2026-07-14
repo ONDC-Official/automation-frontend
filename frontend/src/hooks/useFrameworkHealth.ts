@@ -53,7 +53,6 @@ export const useFrameworkHealth = () => {
 
     const runApiServiceCheck = useCallback(async () => {
         setIsRunning(true);
-        setReport(null);
         try {
             const result = await triggerGetApiServiceHealth();
             if (result.error) throw result.error;
@@ -61,8 +60,13 @@ export const useFrameworkHealth = () => {
             setLastChecked(new Date());
             toast.success("Health check completed!");
         } catch (error: unknown) {
-            const msg = (error as { message?: string }).message || "Health check failed";
-            toast.error(msg);
+            const { status, data } = (error ?? {}) as {
+                status?: number | string;
+                data?: { message?: string };
+            };
+            toast.error(
+                `Health check failed (${status ?? "unknown"}): ${data?.message ?? "please try again"}`
+            );
             console.error("Framework health check error:", error);
         } finally {
             setIsRunning(false);

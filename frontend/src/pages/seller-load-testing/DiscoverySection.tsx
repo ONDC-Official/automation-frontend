@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useState } from "react";
 import { Button } from "@components/Shadcn/Button";
+import { ConfirmDialog } from "@components/Shadcn/Dialog";
 import Spinner from "@components/Shadcn/Spinner";
 import { Textarea } from "@/components/Shadcn/TextArea/text-area";
 import type { DiscoverySectionProps } from "@pages/seller-load-testing/types";
@@ -21,11 +22,22 @@ const DiscoverySection: React.FC<DiscoverySectionProps> = ({
         editedJson,
         jsonError,
         discoveryResponse,
+        isPayloadEdited,
         handleGeneratePayload,
         handleStartDiscovery,
         handleEditedJsonChange,
         handleCancel,
     } = useDiscoverySection({ sessionId, onDiscoveryComplete });
+
+    const [isCancelConfirmOpen, setIsCancelConfirmOpen] = useState(false);
+
+    const requestCancel = () => {
+        if (isPayloadEdited) {
+            setIsCancelConfirmOpen(true);
+            return;
+        }
+        handleCancel();
+    };
 
     return (
         <div className="mt-6 rounded-2xl border border-sky-100 bg-white overflow-hidden">
@@ -88,7 +100,12 @@ const DiscoverySection: React.FC<DiscoverySectionProps> = ({
 
                 {payload && showButtons && (
                     <div className="flex items-center gap-3 mt-4">
-                        <Button type="button" isLoading={isStarting} onClick={handleStartDiscovery}>
+                        <Button
+                            type="button"
+                            isLoading={isStarting}
+                            disabled={!!jsonError}
+                            onClick={handleStartDiscovery}
+                        >
                             {isStarting ? (
                                 <>
                                     <Spinner className="size-4" />
@@ -101,7 +118,7 @@ const DiscoverySection: React.FC<DiscoverySectionProps> = ({
                         <Button
                             type="button"
                             variant="ghost"
-                            onClick={handleCancel}
+                            onClick={requestCancel}
                             className="px-4 py-2 text-sm font-medium text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
                         >
                             Cancel
@@ -122,6 +139,20 @@ const DiscoverySection: React.FC<DiscoverySectionProps> = ({
                     </div>
                 )}
             </div>
+
+            <ConfirmDialog
+                open={isCancelConfirmOpen}
+                onOpenChange={setIsCancelConfirmOpen}
+                title="Discard edited payload?"
+                description="You have unsaved edits to this payload. Cancelling now will discard them. This action cannot be undone."
+                confirmText="Discard"
+                cancelText="Keep editing"
+                danger
+                onConfirm={() => {
+                    setIsCancelConfirmOpen(false);
+                    handleCancel();
+                }}
+            />
         </div>
     );
 };

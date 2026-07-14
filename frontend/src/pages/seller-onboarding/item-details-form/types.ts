@@ -2,7 +2,7 @@ import type { ItemDetails, SellerOnboardingData } from "@pages/seller-onboarding
 
 export interface ItemDetailsFormProps {
     initialData: SellerOnboardingData;
-    onNext: (data: Partial<SellerOnboardingData>) => void;
+    onNext: (data: Partial<SellerOnboardingData>) => void | Promise<void>;
     onPrevious: () => void;
 }
 
