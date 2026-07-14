@@ -52,7 +52,7 @@ const Scenario = () => {
     const [isFormSubmitted, setIsFormSubmitted] = useState(false);
     const [domains, setDomains] = useState<IDomain[]>([]);
     const { sessionId: contextSessionId } = useSession();
-    const { user } = useAuth();
+    const { user, token } = useAuth();
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const dispatch = useAppDispatch();
@@ -145,49 +145,65 @@ const Scenario = () => {
         setIsFormSubmitted(false);
     };
 
-    const fetchFormFieldData = async (): Promise<IDomain[]> => {
-        try {
-            const result = await triggerGetScenarioFormData();
-            const fetchedDomains: IDomain[] = result.data?.domain || [];
-            setDomains(fetchedDomains);
-            return fetchedDomains;
-        } catch (e) {
-            console.error("error while fetching form field data", e);
-            return [];
-        }
-    };
-
-    const fetchAndApplyPreferences = async (): Promise<Record<string, IScenarioFormData>> => {
-        try {
-            const result = await triggerGetScenarioPreferences();
-            const raw = result.data as Record<string, ISavedPrefAPI> | undefined;
-            if (!raw) return {};
-
-            const mapped: Record<string, IScenarioFormData> = {};
-            Object.entries(raw).forEach(([key, val]) => {
-                mapped[key] = {
-                    subscriberUrl: val.subscriber_url,
-                    domain: val.domain,
-                    version: val.version,
-                    usecaseId: val.usecase_id,
-                    npType: val.np_type,
-                    env: val.env,
-                };
-            });
-            setSavedPreferences(mapped);
-            return mapped;
-        } catch {
-            console.warn("Could not fetch saved preferences, possibly not logged in");
-            return {};
-        }
-    };
-
     useEffect(() => {
         dispatch(pruneExpiredSessions());
-        Promise.all([fetchFormFieldData(), fetchAndApplyPreferences()]).finally(() =>
-            setIsInitializing(false)
-        );
-    }, []);
+
+        let cancelled = false;
+
+        const initFormData = async () => {
+            setIsInitializing(true);
+            try {
+                try {
+                    const result = await triggerGetScenarioFormData();
+                    if (cancelled) return;
+                    setDomains(result.data?.domain || []);
+                } catch (e) {
+                    console.error("error while fetching form field data", e);
+                    if (!cancelled) setDomains([]);
+                }
+
+                if (!token) {
+                    if (!cancelled) setSavedPreferences({});
+                    return;
+                }
+
+                try {
+                    // unwrap() rejects on error; avoids applying stale cache data after logout
+                    const raw = (await triggerGetScenarioPreferences().unwrap()) as
+                        | Record<string, ISavedPrefAPI>
+                        | undefined;
+                    if (cancelled) return;
+                    if (!raw) {
+                        setSavedPreferences({});
+                        return;
+                    }
+
+                    const mapped: Record<string, IScenarioFormData> = {};
+                    Object.entries(raw).forEach(([key, val]) => {
+                        mapped[key] = {
+                            subscriberUrl: val.subscriber_url,
+                            domain: val.domain,
+                            version: val.version,
+                            usecaseId: val.usecase_id,
+                            npType: val.np_type,
+                            env: val.env,
+                        };
+                    });
+                    setSavedPreferences(mapped);
+                } catch {
+                    console.warn("Could not fetch saved preferences, possibly not logged in");
+                    if (!cancelled) setSavedPreferences({});
+                }
+            } finally {
+                if (!cancelled) setIsInitializing(false);
+            }
+        };
+
+        void initFormData();
+        return () => {
+            cancelled = true;
+        };
+    }, [token, dispatch, triggerGetScenarioFormData, triggerGetScenarioPreferences]);
 
     const fetchSessionData = (sessId: string) => {
         triggerGetSessionById({ sessionId: sessId })
@@ -293,6 +309,11 @@ const Scenario = () => {
                                     </div>
                                 ) : (
                                     <NewSessionForm
+                                        key={
+                                            Object.keys(savedPreferences).length > 0
+                                                ? "prefs"
+                                                : "manual"
+                                        }
                                         domains={domains}
                                         savedPreferences={savedPreferences}
                                         initialSavedConfigKey={initialSavedConfigKey}

@@ -1,3 +1,4 @@
+export { mainApi } from "./mainApi";
 export * from "./endpoints/configForm";
 export * from "./endpoints/userProfile";
 export * from "./endpoints/dbBackOffice";
