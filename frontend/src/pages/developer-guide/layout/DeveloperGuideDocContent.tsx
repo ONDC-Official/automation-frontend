@@ -6,14 +6,14 @@ import TableOfContents from "@components/TableOfContents";
 import { scrollToSectionWithOffset } from "@components/TableOfContents/scrollToSection";
 import { stripMarkdownTableOfContents } from "@utils/markdownToc";
 import { docUsesSidebarSections } from "./docsWithSidebarSections";
-import { useDeveloperGuideNav } from "./DeveloperGuideNav";
+import { useDeveloperGuideShell } from "./DeveloperGuideNav";
 
 const TOC_TOP = 100;
 
 const DeveloperGuideDocContent: FC = () => {
     const { slug } = useParams<{ slug: string }>();
     const { hash } = useLocation();
-    const { navSidebarOpen } = useDeveloperGuideNav();
+    const { navSidebarOpen, docs } = useDeveloperGuideShell();
     const usesSidebarSections = docUsesSidebarSections(slug);
 
     const {
@@ -33,11 +33,13 @@ const DeveloperGuideDocContent: FC = () => {
 
     const title = useMemo(() => {
         if (!slug) return "";
+        const matchedDoc = docs.find((doc) => doc.slug === slug);
+        if (matchedDoc) return matchedDoc.label;
         return slug
             .split("-")
             .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
             .join(" ");
-    }, [slug]);
+    }, [slug, docs]);
 
     const displayContent = useMemo(
         () => (usesSidebarSections ? stripMarkdownTableOfContents(content) : content),
@@ -46,7 +48,7 @@ const DeveloperGuideDocContent: FC = () => {
 
     if (isLoading) {
         return (
-            <div className="px-6 md:px-10 py-10">
+            <div className="p-4">
                 <div className="max-w-3xl space-y-4 animate-pulse">
                     <div className="h-8 bg-slate-200 rounded w-1/3" />
                     <div className="h-4 bg-slate-100 rounded w-full" />
@@ -59,7 +61,7 @@ const DeveloperGuideDocContent: FC = () => {
 
     if (isError) {
         return (
-            <div className="px-6 md:px-10 py-16 text-center">
+            <div className="p-4 py-16 text-center">
                 <p className="text-slate-500 text-sm">
                     Failed to load documentation. Refresh the page to try again.
                 </p>

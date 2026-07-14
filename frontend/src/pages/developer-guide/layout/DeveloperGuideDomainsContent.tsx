@@ -15,12 +15,11 @@ import { Input } from "@components/Shadcn/Input";
 
 const DeveloperGuideDomainsContent: FC = () => {
     const navigate = useNavigate();
-    const { builds, loadError, collapseNavSidebar } = useDeveloperGuideShell();
+    const { builds, loadError } = useDeveloperGuideShell();
     const [domainSearch, setDomainSearch] = useState("");
 
     const handleUseCaseClick = (dom: BuildEntry, versionKey: string, usecaseLabel: string) => {
         if (!isUseCaseEnabled(dom, usecaseLabel)) return;
-        collapseNavSidebar();
         navigate(getDeveloperGuideUseCasePath(dom.key, versionKey, usecaseLabel));
     };
 

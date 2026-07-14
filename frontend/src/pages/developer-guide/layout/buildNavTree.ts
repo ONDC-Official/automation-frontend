@@ -15,7 +15,7 @@ function useCaseNavLink(
     node: Extract<NavNode, { type: "link" }>
 ): Extract<NavNode, { type: "link" }> {
     if (node.disabled) return node;
-    return { ...node, showArrow: true, collapseOnNavigate: true };
+    return { ...node, showArrow: true };
 }
 
 function buildDocNavWithSections(doc: DocMeta, markdown: string): NavNode {

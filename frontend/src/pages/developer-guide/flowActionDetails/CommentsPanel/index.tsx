@@ -315,6 +315,7 @@ const CommentsPanel: FC<CommentsPanelProps> = ({
                                     onCancelReply={cancelReply}
                                     onReplyTextChange={handleReplyTextChange}
                                     onSubmitReply={addReply}
+                                    showPath
                                 />
                             ))}
 

@@ -39,18 +39,20 @@ const ValidationErrorsPanel: FC<IValidationErrorsPanelProps> = ({
 
     return (
         <div
-            className={`border-t-2 flex flex-col overflow-hidden w-full h-full bg-red-50 ${
-                isExpanded ? "flex-1 min-h-0 border-none" : "shrink-0 max-h-[220px] border-red-400"
+            className={`border-t-2 flex flex-col overflow-hidden w-full h-full bg-destructive/10 ${
+                isExpanded
+                    ? "flex-1 min-h-0 border-none"
+                    : "shrink-0 max-h-[220px] border-destructive/60"
             }`}
         >
             <div
-                className={`px-6 py-3 flex items-center justify-between gap-4 shrink-0 bg-red-50 ${
-                    isExpanded ? "border-b border-red-500" : ""
+                className={`px-6 py-3 flex items-center justify-between gap-4 shrink-0 bg-destructive/10 ${
+                    isExpanded ? "border-b border-destructive" : ""
                 }`}
             >
                 <div className="flex items-center gap-2 min-w-0">
-                    <ExclamationTriangleIcon className="h-5 w-5 text-error-500 shrink-0" />
-                    <p className="text-body-2 font-bold text-error-500 truncate">
+                    <ExclamationTriangleIcon className="h-5 w-5 text-destructive shrink-0" />
+                    <p className="text-body-2 font-bold text-destructive truncate">
                         Validation errors found
                     </p>
                 </div>
@@ -78,7 +80,7 @@ const ValidationErrorsPanel: FC<IValidationErrorsPanelProps> = ({
                 )}
             </div>
 
-            <div className="px-6 overflow-y-auto custom-scrollbar bg-red-50 flex-1 min-h-0">
+            <div className="px-6 overflow-y-auto custom-scrollbar bg-destructive/10 flex-1 min-h-0">
                 {isExpanded ? (
                     errors.map((error, index) => (
                         <ErrorItem key={`${error.code}-${error.path}-${index}`} error={error} />

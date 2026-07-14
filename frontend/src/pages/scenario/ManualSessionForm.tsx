@@ -6,6 +6,7 @@ import { DomainVersionUsecaseFields } from "@pages/scenario/DomainVersionUsecase
 import { trackSchemaValidationForm } from "@pages/scenario/helpers";
 import { SessionFormActions } from "@pages/scenario/SessionFormActions";
 import { IManualSessionFormProps } from "@pages/scenario/types";
+import { getDomainDisplayLabel } from "@pages/developer-guide/domainGrouping";
 
 export const ManualSessionForm = ({
     domains,
@@ -84,7 +85,10 @@ export const ManualSessionForm = ({
                         usecaseOptions={usecaseOptions}
                         watchedDomain={watchedDomain}
                         watchedVersion={watchedVersion}
-                        domainOptions={domains.map((d) => d.key)}
+                        domainOptions={domains.map((d) => ({
+                            label: getDomainDisplayLabel(d.key),
+                            value: d.key,
+                        }))}
                         onDomainChange={onDomainChange}
                         onVersionChange={onVersionChange}
                     />

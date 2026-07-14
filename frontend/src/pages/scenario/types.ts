@@ -9,6 +9,7 @@ import {
 } from "react-hook-form";
 import { IDomain, IDomainVersion } from "@pages/schema-validation/types";
 import { Flow } from "@/types/flow-types";
+import type { ComboBoxOptionInput } from "@components/Shadcn/ComboBox/combo-box-options";
 
 export type INewSessionFormValues = IScenarioFormData & {
     config?: string;
@@ -128,7 +129,7 @@ export type IDomainVersionUsecaseFieldsProps<
     watchedVersion: string;
     onDomainChange?: (domain: string) => void;
     onVersionChange: (version: string) => void;
-    domainOptions?: string[];
+    domainOptions?: ComboBoxOptionInput[];
 };
 
 export type ISessionFormActionsProps = {

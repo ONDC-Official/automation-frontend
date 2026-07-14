@@ -1,3 +1,5 @@
+import { DOMAIN_FRIENDLY_NAMES } from "@constants/common";
+
 import type { BuildEntry } from "./types";
 import { isDomainEnabled } from "./utils";
 
@@ -33,6 +35,16 @@ const DOMAIN_FAMILY_TITLES: Record<string, string> = {
 export function getDomainFamilyLabel(familyKey: string): string {
     const key = familyKey.toUpperCase();
     return DOMAIN_FAMILY_TITLES[key] ?? familyKey;
+}
+
+/** User-friendly name for a domain code, falling back to its family name (e.g. LOG10 → "Logistics") when no specific name is mapped. */
+export function getDomainFriendlyName(domainKey: string): string {
+    return DOMAIN_FRIENDLY_NAMES[domainKey] ?? getDomainFamilyLabel(getDomainFamilyKey(domainKey));
+}
+
+/** Consistent "Friendly Name (CODE)" label for a domain code, e.g. "Grocery (ONDC:RET10)". */
+export function getDomainDisplayLabel(domainKey: string): string {
+    return `${getDomainFriendlyName(domainKey)} (${domainKey})`;
 }
 
 export interface DomainFamilyGroup {
