@@ -1,4 +1,4 @@
-import { FC, useState } from "react";
+import { FC, useEffect, useState } from "react";
 import { Button } from "@components/Shadcn/Button";
 import { ROUTES } from "@constants/routes";
 import { useNavigate } from "react-router-dom";
@@ -8,6 +8,16 @@ const HeroInfo: FC = () => {
     const navigate = useNavigate();
     const { user } = useAuth();
     const [isRedirecting, setIsRedirecting] = useState(false);
+
+    useEffect(() => {
+        // `window.location.href` is a full navigation, so this state survives
+        // only via the browser's back-forward cache. `pageshow` fires on both
+        // a fresh load and a bfcache restore, so it's the reliable place to
+        // clear a "redirecting" flag that a normal re-render can't reach.
+        const handlePageShow = () => setIsRedirecting(false);
+        window.addEventListener("pageshow", handlePageShow);
+        return () => window.removeEventListener("pageshow", handlePageShow);
+    }, []);
 
     const handleStartBuilding = () => {
         if (user) {
