@@ -24,6 +24,11 @@ export interface ISessionState {
     /** Per-session flow filter tags; keyed by sessionId for redux-persist. */
     flowFilterTagsBySessionId: Record<string, string[]>;
     flowFormDialogLockCount: number;
+    /**
+     * True while Start/Stop has updated local activeFlow but the server cache may
+     * still be stale. Poll fetches must not overwrite activeFlow until this clears.
+     */
+    activeFlowLifecycleInFlight: boolean;
 }
 
 const initialState: ISessionState = {
@@ -40,6 +45,7 @@ const initialState: ISessionState = {
     experimentalMode: false,
     flowFilterTagsBySessionId: {},
     flowFormDialogLockCount: 0,
+    activeFlowLifecycleInFlight: false,
 };
 
 function clearFlowRuntimeFields(state: ISessionState) {
@@ -52,6 +58,7 @@ function clearFlowRuntimeFields(state: ISessionState) {
     state.metadata = SESSION_EMPTY_METADATA;
     state.activeCallClickedToggle = false;
     state.flowFormDialogLockCount = 0;
+    state.activeFlowLifecycleInFlight = false;
 }
 
 const sessionSlice = createSlice({
@@ -65,6 +72,21 @@ const sessionSlice = createSlice({
         setActiveFlowId: (state, action: PayloadAction<string | null>) => {
             if (state.activeFlowId === action.payload) return;
             state.activeFlowId = action.payload;
+        },
+        /**
+         * Optimistic local activeFlow for sessionCache consumers (DisplayFlow, effects).
+         * Keeps sessionData.activeFlow aligned with activeFlowId without waiting for a poll.
+         */
+        patchSessionActiveFlow: (state, action: PayloadAction<string | null>) => {
+            if (!state.sessionData) return;
+            if (state.sessionData.activeFlow === action.payload) return;
+            state.sessionData.activeFlow = action.payload;
+        },
+        beginActiveFlowLifecycle: (state) => {
+            state.activeFlowLifecycleInFlight = true;
+        },
+        endActiveFlowLifecycle: (state) => {
+            state.activeFlowLifecycleInFlight = false;
         },
         setSessionData: (state, action: PayloadAction<SessionCache | null>) => {
             if (state.sessionData === action.payload) return;
@@ -140,6 +162,9 @@ const sessionSlice = createSlice({
 export const {
     setSessionId,
     setActiveFlowId,
+    patchSessionActiveFlow,
+    beginActiveFlowLifecycle,
+    endActiveFlowLifecycle,
     setSessionData,
     setSelectedTab,
     setRequestData,
@@ -159,6 +184,9 @@ export const {
 
 export const selectIsFlowFormDialogOpen = (state: { session: ISessionState }) =>
     state.session.flowFormDialogLockCount > 0;
+
+export const selectActiveFlowLifecycleInFlight = (state: { session: ISessionState }) =>
+    state.session.activeFlowLifecycleInFlight;
 
 export const selectFlowFilterTags =
     (sessionId: string) =>

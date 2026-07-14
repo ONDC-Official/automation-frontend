@@ -106,16 +106,18 @@ export const useScenarioPreferences = () => {
 
     const fetchSavedPreferences = useCallback(async () => {
         try {
-            const result = await triggerGetScenarioPreferences();
-            const raw = result.data;
-            if (!raw) return;
+            const raw = await triggerGetScenarioPreferences().unwrap();
+            if (!raw) {
+                setSavedPrefs({});
+                return;
+            }
             const mapped: Record<string, ScenarioPreferences> = {};
             Object.entries(raw).forEach(([key, val]) => {
                 mapped[key] = fromAPI(val as ScenarioPreferencesAPI, key);
             });
             setSavedPrefs(mapped);
         } catch {
-            // No saved preferences yet
+            setSavedPrefs({});
         }
     }, [triggerGetScenarioPreferences]);
 
