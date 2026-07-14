@@ -23,7 +23,7 @@ const CommentComposer: FC<CommentComposerProps> = ({ value, onChange, onSubmit }
                 variant="ghost"
                 onClick={onSubmit}
                 disabled={!value.trim()}
-                className="px-4 py-2 text-sm font-medium text-white bg-sky-500 rounded-xl hover:bg-sky-600 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-xs"
+                className="px-4 py-2 text-sm font-medium text-white bg-sky-500 rounded-xl hover:bg-sky-600 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-xs"
             >
                 Post
             </Button>
