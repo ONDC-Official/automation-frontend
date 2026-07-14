@@ -3,6 +3,7 @@ import { ChevronRightIcon } from "@heroicons/react/24/outline";
 import GithubMarkdown from "@components/GithubMarkdown";
 import { cn } from "@/lib/utils";
 import { Button } from "@components/Shadcn/Button";
+import { stripRedundantMarkdownHorizontalRules } from "@utils/markdownToc";
 import GuideTabs from "./shared/components/GuideTabs";
 import CommentsPanel from "./flowActionDetails/CommentsPanel";
 import { useDocsSectionSelection } from "./DocsViewer/useDocsSectionSelection";
@@ -36,6 +37,9 @@ const DocsViewer: FC<DocsViewerProps> = ({ docs, useCaseId, domain, version }) =
     });
 
     const content = docs[activeDocSlug] ?? "";
+    // Domain docs often use `# Section` + `---` while GithubMarkdown already draws
+    // border-b on headings — strip those rules so they don't stack as a double line.
+    const displayContent = useMemo(() => stripRedundantMarkdownHorizontalRules(content), [content]);
     const commentScope = useMemo(
         () =>
             useCaseId && activeDocSlug && domain && version
@@ -94,8 +98,23 @@ const DocsViewer: FC<DocsViewerProps> = ({ docs, useCaseId, domain, version }) =
                             activeSectionId={selectedSectionId}
                         /> */}
 
-                        <div className="flex-1 min-w-0 overflow-auto py-6 px-6">
-                            <GithubMarkdown content={content} onSectionClick={selectSection} />
+                        {/*
+                          Domains like LAMF use `# Title` + `---` + `# 1. Overview` (both h1).
+                          Stripping heading-adjacent --- leaves h1+h1; space them so Overview
+                          isn't glued to the title rule. Scoped to DocsViewer only.
+                        */}
+                        <div
+                            className={cn(
+                                "flex-1 min-w-0 overflow-auto py-8 px-6",
+                                "[&_h1+h1]:mt-2"
+                                // "[&_h1+h2]:mt-8",
+                                // "[&_h2+h2]:mt-8"
+                            )}
+                        >
+                            <GithubMarkdown
+                                content={displayContent}
+                                onSectionClick={selectSection}
+                            />
                         </div>
                     </div>
                 </div>
