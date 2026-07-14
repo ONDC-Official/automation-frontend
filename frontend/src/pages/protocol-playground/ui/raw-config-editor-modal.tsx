@@ -53,7 +53,7 @@ export const RawConfigEditorModal = ({
                 </div>
 
                 {error ? (
-                    <div className="mx-4 mt-3 rounded-lg border border-error-500/40 bg-error-50 px-3 py-2 text-sm text-error-500">
+                    <div className="mx-4 mt-3 rounded-lg border border-error-500/40 bg-error-50 px-3 py-2 text-sm whitespace-pre-line text-error-500">
                         {error}
                     </div>
                 ) : null}

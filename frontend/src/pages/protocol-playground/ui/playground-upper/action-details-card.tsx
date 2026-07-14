@@ -5,6 +5,7 @@ import {
     IDetailField,
 } from "@pages/protocol-playground/ui/playground-upper/types";
 import { ActionButton } from "@pages/protocol-playground/ui/playground-upper/action-button";
+import { DeleteConfirmationForm } from "@pages/protocol-playground/ui/from-contents";
 import { CheckIcon } from "@heroicons/react/24/solid";
 import {
     ArrowLeftIcon,
@@ -22,6 +23,22 @@ const ActionDetailsCard = ({
     onDeleteAction,
     playgroundContext,
 }: IActionDetailsCardProps) => {
+    const handleResetClick = () => {
+        if (!playgroundContext) return;
+        const { openModal, closeModal } = playgroundContext.useModal;
+        openModal(
+            <DeleteConfirmationForm
+                title="Confirm Reset"
+                description="Are you sure you want to reset this step? All downstream transaction history will be cleared. This action cannot be undone."
+                onConfirm={() => {
+                    playgroundContext.resetTransactionHistory(action.id);
+                    closeModal();
+                }}
+                onCancel={closeModal}
+            />
+        );
+    };
+
     const fields: IDetailField[] = [
         {
             label: "Owner",
@@ -120,7 +137,7 @@ const ActionDetailsCard = ({
                     <ActionButton
                         icon={<ArrowPathIcon className="size-3.5" />}
                         label="Reset"
-                        onClick={() => playgroundContext?.resetTransactionHistory(action.id)}
+                        onClick={handleResetClick}
                     />
                 </div>
 

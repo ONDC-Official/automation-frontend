@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useForm, useFieldArray, Controller, Path } from "react-hook-form";
 import { toast } from "sonner";
 import { FaPlus, FaTrash, FaBox, FaEdit } from "react-icons/fa";
@@ -13,6 +13,7 @@ import {
     DialogFooter,
     DialogHeader,
     DialogTitle,
+    ConfirmDialog,
 } from "@components/Shadcn/Dialog";
 import { Button } from "@components/Shadcn/Button";
 import Spinner from "@components/Shadcn/Spinner";
@@ -81,6 +82,15 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
         variantIndex: null,
     });
     const [editingVariant, setEditingVariant] = useState<ItemVariant | null>(null);
+    const [pendingRemoveVariant, setPendingRemoveVariant] = useState<{
+        itemIndex: number;
+        variantIndex: number;
+    } | null>(null);
+    const initialVariantFormValuesRef = useRef<Record<string, string>>({});
+    const [isEditVariantConfirmOpen, setIsEditVariantConfirmOpen] = useState(false);
+    const [pendingCloseCreateVariantIndex, setPendingCloseCreateVariantIndex] = useState<
+        number | null
+    >(null);
     const [variantFormValues, setVariantFormValues] = useState<Record<string, string>>({});
     const [variantFormErrors, setVariantFormErrors] = useState<Record<string, string>>({});
     const updateVariantField = (key: string, value: string) => {
@@ -367,7 +377,7 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
         }
     };
 
-    const onSubmit = (data: FormData) => {
+    const onSubmit = async (data: FormData) => {
         // Prepare items with their variants
         const itemsWithVariants = data.items.map((item, index) => {
             const variants = itemVariants[index] || [];
@@ -382,8 +392,7 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
             items: itemsWithVariants,
         };
 
-        onNext(finalData);
-        toast.success("Item details saved successfully!");
+        await onNext(finalData);
     };
     // Variant functions
     const getAvailableAttributesForVariants = (itemIndex: number) => {
@@ -533,7 +542,7 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
         }
 
         // Set form initial values
-        setVariantFormValues({
+        const initialValues = {
             name: variant.name ?? "",
             short_desc:
                 variant.short_desc ||
@@ -554,7 +563,9 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
             minimum_count: variant.minimum_count ?? "",
             ...variant.variantCombination,
             ...variant.attributes,
-        });
+        };
+        setVariantFormValues(initialValues);
+        initialVariantFormValuesRef.current = initialValues;
         setVariantFormErrors({});
     };
 
@@ -684,6 +695,36 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
         setEditingVariant(null);
         setVariantFormValues({});
         setVariantFormErrors({});
+    };
+
+    const isEditVariantDirty = () =>
+        JSON.stringify(variantFormValues) !== JSON.stringify(initialVariantFormValuesRef.current);
+
+    const requestCloseEditVariant = () => {
+        if (isEditVariantDirty()) {
+            setIsEditVariantConfirmOpen(true);
+            return;
+        }
+        handleCancelEditVariant();
+    };
+
+    const closeCreateVariantModal = (index: number) => {
+        setShowVariantModal((prev) => ({
+            ...prev,
+            [index]: false,
+        }));
+        setSelectedVariantAttributes((prev) => ({
+            ...prev,
+            [index]: [],
+        }));
+    };
+
+    const requestCloseCreateVariantModal = (index: number) => {
+        if ((selectedVariantAttributes[index] ?? []).length > 0) {
+            setPendingCloseCreateVariantIndex(index);
+            return;
+        }
+        closeCreateVariantModal(index);
     };
 
     // Consumer Care functions
@@ -903,6 +944,9 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                                                                     ...prev,
                                                                     [index]: [],
                                                                 })
+                                                            );
+                                                            toast.info(
+                                                                "Category and attribute selections were reset because Domain changed"
                                                             );
                                                         }}
                                                     />
@@ -1310,6 +1354,9 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                                                         setValue(
                                                             `items.${index}.category` as Path<FormData>,
                                                             ""
+                                                        );
+                                                        toast.info(
+                                                            "Category selection was reset because Store changed"
                                                         );
                                                     }}
                                                 />
@@ -2625,7 +2672,10 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                                                                 type="button"
                                                                 variant="ghost"
                                                                 onClick={() =>
-                                                                    removeVariant(index, vIdx)
+                                                                    setPendingRemoveVariant({
+                                                                        itemIndex: index,
+                                                                        variantIndex: vIdx,
+                                                                    })
                                                                 }
                                                                 className="h-auto text-red-500 hover:text-red-700 p-1 rounded hover:bg-red-50"
                                                                 title="Remove variant"
@@ -2699,14 +2749,7 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                     open={showVariantModal[index] || false}
                     onOpenChange={(open) => {
                         if (!open) {
-                            setShowVariantModal((prev) => ({
-                                ...prev,
-                                [index]: false,
-                            }));
-                            setSelectedVariantAttributes((prev) => ({
-                                ...prev,
-                                [index]: [],
-                            }));
+                            requestCloseCreateVariantModal(index);
                         }
                     }}
                 >
@@ -2875,16 +2918,7 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                         <DialogFooter>
                             <Button
                                 variant="outline"
-                                onClick={() => {
-                                    setShowVariantModal((prev) => ({
-                                        ...prev,
-                                        [index]: false,
-                                    }));
-                                    setSelectedVariantAttributes((prev) => ({
-                                        ...prev,
-                                        [index]: [],
-                                    }));
-                                }}
+                                onClick={() => requestCloseCreateVariantModal(index)}
                             >
                                 Cancel
                             </Button>
@@ -2901,7 +2935,7 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
             {/* Edit Variant Modal */}
             <Dialog
                 open={editVariantModal.visible}
-                onOpenChange={(open) => !open && handleCancelEditVariant()}
+                onOpenChange={(open) => !open && requestCloseEditVariant()}
             >
                 <DialogContent className="max-w-[800px]">
                     <DialogHeader>
@@ -3366,13 +3400,62 @@ const ItemDetailsForm: React.FC<ItemDetailsFormProps> = ({ initialData, onNext, 
                         </div>
                     )}
                     <DialogFooter>
-                        <Button variant="outline" onClick={handleCancelEditVariant}>
+                        <Button variant="outline" onClick={requestCloseEditVariant}>
                             Cancel
                         </Button>
                         <Button onClick={handleSaveVariant}>Save Changes</Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
+
+            <ConfirmDialog
+                open={isEditVariantConfirmOpen}
+                onOpenChange={(open) => !open && setIsEditVariantConfirmOpen(false)}
+                title="Discard variant edits?"
+                description="You have unsaved changes to this variant. Closing now will discard them. This action cannot be undone."
+                confirmText="Discard"
+                cancelText="Keep editing"
+                danger
+                onConfirm={() => {
+                    setIsEditVariantConfirmOpen(false);
+                    handleCancelEditVariant();
+                }}
+            />
+
+            <ConfirmDialog
+                open={pendingCloseCreateVariantIndex !== null}
+                onOpenChange={(open) => !open && setPendingCloseCreateVariantIndex(null)}
+                title="Discard variant selections?"
+                description="You have unsaved attribute selections for this item. Closing now will discard them. This action cannot be undone."
+                confirmText="Discard"
+                cancelText="Keep editing"
+                danger
+                onConfirm={() => {
+                    if (pendingCloseCreateVariantIndex !== null) {
+                        closeCreateVariantModal(pendingCloseCreateVariantIndex);
+                    }
+                    setPendingCloseCreateVariantIndex(null);
+                }}
+            />
+
+            <ConfirmDialog
+                open={!!pendingRemoveVariant}
+                onOpenChange={(open) => !open && setPendingRemoveVariant(null)}
+                title="Remove variant"
+                description="Are you sure you want to remove this variant? This action cannot be undone."
+                confirmText="Remove"
+                cancelText="Cancel"
+                danger
+                onConfirm={() => {
+                    if (pendingRemoveVariant) {
+                        removeVariant(
+                            pendingRemoveVariant.itemIndex,
+                            pendingRemoveVariant.variantIndex
+                        );
+                    }
+                    setPendingRemoveVariant(null);
+                }}
+            />
         </div>
     );
 };

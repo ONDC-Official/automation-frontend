@@ -1,8 +1,11 @@
+import { useState } from "react";
+import { useFormState } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 
 import { Card } from "@components/Shadcn/Card";
 import { Button } from "@components/Shadcn/Button";
 import { ComboBox } from "@components/Shadcn/ComboBox";
+import { ConfirmDialog } from "@components/Shadcn/Dialog";
 import { FieldGroup } from "@components/Shadcn/TextField/field";
 import { TextField } from "@components/Shadcn/TextField";
 import { ROUTES } from "@constants/routes";
@@ -29,6 +32,16 @@ export const NewConfigForm = ({
 }: INewConfigFormProps) => {
     const navigate = useNavigate();
     const copy = PROFILE_PAGE_COPY.configs;
+    const { isDirty } = useFormState({ control });
+    const [isNavConfirmOpen, setIsNavConfirmOpen] = useState(false);
+
+    const requestPastReportNav = () => {
+        if (isDirty || editingKey) {
+            setIsNavConfirmOpen(true);
+            return;
+        }
+        navigate(ROUTES.PROFILE_PAST_REPORTS);
+    };
 
     return (
         <Card title={copy.formTitle} description={copy.formDescription}>
@@ -98,11 +111,7 @@ export const NewConfigForm = ({
                     <Button type="submit" disabled={isSaving} isLoading={isSaving}>
                         {editingKey ? "Update" : "Submit"}
                     </Button>
-                    <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => navigate(ROUTES.PROFILE_PAST_REPORTS)}
-                    >
+                    <Button type="button" variant="outline" onClick={requestPastReportNav}>
                         Past Report
                     </Button>
                     {editingKey ? (
@@ -112,6 +121,20 @@ export const NewConfigForm = ({
                     ) : null}
                 </div>
             </form>
+
+            <ConfirmDialog
+                open={isNavConfirmOpen}
+                onOpenChange={setIsNavConfirmOpen}
+                title="Discard unsaved changes?"
+                description="Navigating to Past Reports will discard your unsaved changes to this config. This action cannot be undone."
+                confirmText="Discard"
+                cancelText="Keep editing"
+                danger
+                onConfirm={() => {
+                    setIsNavConfirmOpen(false);
+                    navigate(ROUTES.PROFILE_PAST_REPORTS);
+                }}
+            />
         </Card>
     );
 };

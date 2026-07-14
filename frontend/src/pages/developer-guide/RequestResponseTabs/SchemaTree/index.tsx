@@ -60,6 +60,10 @@ const SchemaTree: FC<SchemaTreeProps> = ({ schema, spec, showRequiredColumn = tr
         [schema, spec, isExpanded]
     );
 
+    // Identifies the dataset independent of expand/collapse state, so toggling
+    // a row doesn't bounce pagination back to page 1.
+    const paginationResetKey = useMemo(() => ({ schema, spec }), [schema, spec]);
+
     const columns = useMemo(
         () => buildSchemaColumns(showRequiredColumn, toggleRow),
         [showRequiredColumn, toggleRow]
@@ -85,6 +89,7 @@ const SchemaTree: FC<SchemaTreeProps> = ({ schema, spec, showRequiredColumn = tr
             shadow="xs"
             rounded="xl"
             pagination={{ pageSize: PAGE_SIZE }}
+            paginationResetKey={paginationResetKey}
             toolbar={
                 <div className="flex items-center justify-between">
                     <span className="text-body-2 font-semibold font-mono tracking-normal">

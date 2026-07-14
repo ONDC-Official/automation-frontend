@@ -124,10 +124,13 @@ export const VALIDATION_MESSAGES = {
     EMPTY_PAYLOAD: "Add payload for the request",
     ARRAY_NOT_SUPPORTED: "Array of payloads not supported",
     INVALID_PAYLOAD: "Invalid payload",
-    MISSING_ACTION: "action missing from context",
+    MISSING_ACTION:
+        "Select an action before validating — this is a domain/version selection issue, not a payload error.",
     DOMAIN_NOT_ACTIVE:
-        "Domain or version not yet active. To check the list of active domain visit home page.",
+        "Select an active domain and version before validating — this is a domain/version selection issue, not a payload error.",
     VALIDATION_ERROR: "Something went wrong",
+    NETWORK_ERROR: "We couldn't reach the server. Check your connection and try again.",
+    SERVER_ERROR: "The server encountered an error while validating this payload.",
 };
 
 /** JSON paths used to highlight client validation errors in the editor */

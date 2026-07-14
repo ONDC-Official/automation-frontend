@@ -11,6 +11,7 @@ export default function FlowTestingWrapper() {
     const [searchParams] = useSearchParams();
     const [flows, setFlows] = useState<Flow[]>([]);
     const [loading, setLoading] = useState(true);
+    const [fetchFailed, setFetchFailed] = useState(false);
 
     const sessionId = searchParams.get("sessionId");
     const subscriberUrl = searchParams.get("subscriberUrl");
@@ -20,6 +21,7 @@ export default function FlowTestingWrapper() {
     const fetchSessionData = useCallback(async () => {
         try {
             setLoading(true);
+            setFetchFailed(false);
             const response = await triggerGetSessionById({ sessionId: sessionId ?? "" }).unwrap();
             const flowConfigs = (response as { flowConfigs?: Record<string, Flow> }).flowConfigs;
 
@@ -31,6 +33,7 @@ export default function FlowTestingWrapper() {
         } catch (error: unknown) {
             console.error("Error fetching session data:", error);
             toast.error("Failed to load session data");
+            setFetchFailed(true);
         } finally {
             setLoading(false);
         }
@@ -75,9 +78,13 @@ export default function FlowTestingWrapper() {
         <div className="flex min-h-screen items-center justify-center bg-surface-page">
             <div className="text-center">
                 <DocumentTextIcon className="mx-auto mb-4 size-16 text-alert-500" />
-                <h2 className="mb-2 text-h5 font-semibold text-text-primary">No Flows Found</h2>
+                <h2 className="mb-2 text-h5 font-semibold text-text-primary">
+                    {fetchFailed ? "Couldn't Load Flows" : "No Flows Found"}
+                </h2>
                 <p className="text-body-2 text-text-secondary">
-                    No flow configurations found for this session.
+                    {fetchFailed
+                        ? "We couldn't load this session's flow data. Please try again."
+                        : "No flow configurations found for this session."}
                 </p>
             </div>
         </div>

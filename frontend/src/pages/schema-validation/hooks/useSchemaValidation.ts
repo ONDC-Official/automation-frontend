@@ -178,7 +178,14 @@ export const useSchemaValidation = (): IUseSchemaValidationReturn => {
             }
         } catch (error) {
             console.error("Validation error:", error);
-            showValidationErrors([buildValidationError("VALIDATION_ERROR")]);
+            const status = (error as { status?: number | string } | undefined)?.status;
+            if (typeof status === "string") {
+                showValidationErrors([buildValidationError("NETWORK_ERROR")]);
+            } else if (typeof status === "number" && status >= 500) {
+                showValidationErrors([buildValidationError("SERVER_ERROR")]);
+            } else {
+                showValidationErrors([buildValidationError("VALIDATION_ERROR")]);
+            }
         } finally {
             setIsLoading(false);
         }

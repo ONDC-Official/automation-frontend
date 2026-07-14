@@ -54,7 +54,13 @@ export const useDbBackOffice = () => {
 
     const fetchPayloadData = useCallback(async () => {
         if (!fetchParams.domain || !fetchParams.version) {
-            toast.error("Domain and Version are required");
+            const missing =
+                !fetchParams.domain && !fetchParams.version
+                    ? "Domain and Version are required"
+                    : !fetchParams.domain
+                      ? "Domain is required"
+                      : "Version is required";
+            toast.error(missing);
             return;
         }
 
@@ -70,7 +76,13 @@ export const useDbBackOffice = () => {
             });
             toast.success("Data fetched successfully!");
         } catch (error: unknown) {
-            toast.error((error as { message?: string }).message || "Failed to fetch data");
+            const { status, data } = (error ?? {}) as {
+                status?: number | string;
+                data?: { message?: string };
+            };
+            toast.error(
+                `Fetch failed (${status ?? "unknown"}): ${data?.message ?? "check domain/version"}`
+            );
             console.error("Fetch error:", error);
         } finally {
             setIsLoading(false);
@@ -85,7 +97,7 @@ export const useDbBackOffice = () => {
             domain: "",
             version: "",
             page: "",
-            action: "",
+            action: "any",
         });
     }, []);
 

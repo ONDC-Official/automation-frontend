@@ -18,7 +18,7 @@ export type ProfileCountKey = "configs" | "pastReports" | "history";
 export interface IProfileNavItem {
     label: string;
     to: string;
-    countKey: ProfileCountKey;
+    countKey?: ProfileCountKey;
 }
 
 export interface IProfileSidebarProps {

@@ -25,7 +25,7 @@ const PickYourPath: FC = () => (
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
                 {pathCards.map((card) => (
-                    <Card key={card.label} variant="interactive" className="h-full">
+                    <Card key={card.label} className="h-full">
                         <p className="text-brand-normal text-caption-1 font-semibold mb-4">
                             {card.label}
                         </p>

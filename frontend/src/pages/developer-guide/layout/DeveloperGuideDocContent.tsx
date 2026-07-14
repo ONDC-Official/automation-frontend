@@ -61,7 +61,7 @@ const DeveloperGuideDocContent: FC = () => {
         return (
             <div className="px-6 md:px-10 py-16 text-center">
                 <p className="text-slate-500 text-sm">
-                    Failed to load documentation. Please try again.
+                    Failed to load documentation. Refresh the page to try again.
                 </p>
             </div>
         );

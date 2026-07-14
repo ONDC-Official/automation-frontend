@@ -7,6 +7,8 @@ export const FooterSocialLinks = () => (
             <a
                 key={social.name}
                 href={social.href}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="text-n-0 hover:text-brand-light transition-colors"
                 aria-label={social.name}
                 onClick={() => trackEvent(social.analytics)}

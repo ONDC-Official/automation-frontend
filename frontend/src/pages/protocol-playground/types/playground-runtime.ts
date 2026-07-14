@@ -18,7 +18,7 @@ export interface PlaygroundRuntimeValue {
     setDirtyConfig: Dispatch<SetStateAction<boolean>>;
     currentState: "editing" | "running";
     setCurrentState: Dispatch<SetStateAction<"editing" | "running">>;
-    updateStepMock: (stepId: string, property: string, value: string) => void;
+    updateStepMock: (stepId: string, property: string, value: string) => { ok: boolean };
     activeApi: string | undefined;
     setActiveApi: Dispatch<SetStateAction<string | undefined>>;
     stepGroup: StepGroup;

@@ -99,7 +99,12 @@ const Scenario = () => {
             const currentUrl = window.location.origin;
             const newTabUrl = `${currentUrl}/flow-testing?sessionId=${sessionID}&subscriberUrl=${encodeURIComponent(data.subscriberUrl)}&role=${data.npType}`;
             if (newTab) {
-                window.open(newTabUrl, "_blank");
+                const newWindow = window.open(newTabUrl, "_blank");
+                if (!newWindow) {
+                    toast.error(
+                        "Your browser blocked the popup. Please allow popups for this site and try again."
+                    );
+                }
             } else {
                 window.location.href = newTabUrl;
             }

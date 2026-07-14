@@ -1,4 +1,4 @@
-import { FC } from "react";
+import { FC, useEffect, useState } from "react";
 import { Button } from "@components/Shadcn/Button";
 import { ROUTES } from "@constants/routes";
 import { useNavigate } from "react-router-dom";
@@ -7,6 +7,17 @@ import { useAuth } from "@hooks/useAuth";
 const HeroInfo: FC = () => {
     const navigate = useNavigate();
     const { user } = useAuth();
+    const [isRedirecting, setIsRedirecting] = useState(false);
+
+    useEffect(() => {
+        // `window.location.href` is a full navigation, so this state survives
+        // only via the browser's back-forward cache. `pageshow` fires on both
+        // a fresh load and a bfcache restore, so it's the reliable place to
+        // clear a "redirecting" flag that a normal re-render can't reach.
+        const handlePageShow = () => setIsRedirecting(false);
+        window.addEventListener("pageshow", handlePageShow);
+        return () => window.removeEventListener("pageshow", handlePageShow);
+    }, []);
 
     const handleStartBuilding = () => {
         if (user) {
@@ -14,6 +25,7 @@ const HeroInfo: FC = () => {
             return;
         }
 
+        setIsRedirecting(true);
         const backendUrl = import.meta.env.VITE_DEVELOPER_GUIDE_BACKEND_URL;
         window.location.href = `${backendUrl}/login`;
     };
@@ -31,7 +43,7 @@ const HeroInfo: FC = () => {
                 testing full flows, get ONDC-ready quicker!
             </p>
             <div className="flex flex-wrap gap-4">
-                <Button size="lg" onClick={handleStartBuilding}>
+                <Button size="lg" onClick={handleStartBuilding} isLoading={isRedirecting}>
                     Start Building
                 </Button>
                 <Button

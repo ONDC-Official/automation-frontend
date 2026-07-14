@@ -1,4 +1,5 @@
 import React from "react";
+import { toast } from "sonner";
 import { useStartPreorderRunMutation, useGetRunStatusQuery } from "@store/api";
 import type { RunMetricsData, StageMetric } from "@pages/seller-load-testing/types";
 
@@ -72,8 +73,9 @@ export const usePreorderLoadTest = ({ sessionId }: UsePreorderLoadTestParams) =>
 
     React.useEffect(() => {
         if (!runPoll || !runStatusIsError) return;
-        setRunPoll((prev) => (prev ? { ...prev, pollingInterval: 0 } : prev));
-        setIsStarting(false);
+        // A single failed poll doesn't mean the run stopped server-side — keep
+        // polling on the existing schedule instead of freezing progress here.
+        console.error("Error polling run status; will keep retrying");
     }, [runStatusIsError, runPoll]);
 
     const handleStartLoadTest = async () => {
@@ -86,7 +88,9 @@ export const usePreorderLoadTest = ({ sessionId }: UsePreorderLoadTestParams) =>
                 runId: preorderRes.run_id,
                 pollingInterval: 2000,
             });
-        } catch {
+        } catch (error) {
+            console.error("Error starting load test:", error);
+            toast.error("Failed to start load test");
             setIsStarting(false);
         }
     };
