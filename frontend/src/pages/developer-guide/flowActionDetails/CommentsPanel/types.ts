@@ -30,5 +30,7 @@ export interface CommentsPanelProps {
     version?: string;
     /** Human-readable label for the selected anchor (e.g. section title). */
     selectionLabel?: string;
+    /** Resolves a comment's anchor path to a human-readable label (e.g. section title), when available. */
+    resolvePathLabel?: (path: string) => string | undefined;
     emptySelectionMessage?: string;
 }

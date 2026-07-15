@@ -10,8 +10,7 @@ import { ChatComposer } from "./ChatComposer";
 import { ChatMessageList } from "./ChatMessageList";
 import { LockedBanner } from "./LockedBanner";
 import { ToolInspectorModal } from "./inspector/ToolInspectorModal";
-
-const IS_DEV = import.meta.env.VITE_ENVIRONMENT === "development";
+import { isDev } from "@/types/environment";
 
 interface AIChatPanelProps {
     actionId: string | undefined;
@@ -60,7 +59,7 @@ export function AIChatPanel({
                     >
                         Clear chat
                     </Button>
-                    {IS_DEV && (
+                    {isDev && (
                         <Button
                             type="button"
                             variant="ghost"
@@ -99,7 +98,7 @@ export function AIChatPanel({
                 </>
             )}
 
-            {IS_DEV && (
+            {isDev && (
                 <ToolInspectorModal
                     isOpen={inspectorOpen}
                     onClose={() => setInspectorOpen(false)}

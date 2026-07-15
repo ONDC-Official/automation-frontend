@@ -1,4 +1,5 @@
 import { ComboBox } from "@components/Shadcn/ComboBox";
+import type { ComboBoxOptionInput } from "@components/Shadcn/ComboBox/combo-box-options";
 import { TextField } from "@components/Shadcn/TextField";
 import type {
     IFlowFieldsProps,
@@ -34,7 +35,7 @@ interface IOptionOrTextFieldProps {
     control: Control<IStarterFormValues>;
     name: FieldPath<IStarterFormValues>;
     label: string;
-    options: string[];
+    options: ComboBoxOptionInput[];
     comboPlaceholder: string;
     textPlaceholder: string;
     required?: boolean;

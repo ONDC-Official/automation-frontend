@@ -61,10 +61,10 @@ const CodeEditor: FC<CodeEditorProps> = ({
                     type="button"
                     variant="ghost"
                     onClick={onCopy}
-                    className="gap-1 rounded px-2 py-0.5 text-body-2 font-semibold text-foreground transition-colors hover:bg-slate-700 hover:text-white"
+                    className="gap-1 rounded px-2 py-0.5 text-body-2 font-semibold bg-brand-normal text-n-0 transition-colors hover:bg-brand-normal-hover hover:text-n-0"
                     aria-label="Copy code to clipboard"
                 >
-                    <ClipboardDocumentIcon className="h-4 w-4" />
+                    <ClipboardDocumentIcon className="size-4" />
                     Copy Code
                 </Button>
             </div>

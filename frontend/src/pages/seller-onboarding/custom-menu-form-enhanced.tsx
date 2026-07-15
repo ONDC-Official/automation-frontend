@@ -26,6 +26,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@components/Shadcn/Tabs";
 import { Card } from "@pages/seller-onboarding/components/LegacyCardTag";
 import TextField from "@components/Shadcn/TextField";
+import { TextAreaField } from "@components/Shadcn/TextArea";
 import { Input } from "@components/Shadcn/Input";
 import { SellerOnboardingData } from "@pages/seller-onboarding";
 import { weekDays } from "@constants/common";
@@ -763,7 +764,7 @@ const CustomMenuFormEnhanced = ({
                                                     }}
                                                 />
 
-                                                <TextField
+                                                <TextAreaField
                                                     label="Long Description"
                                                     placeholder="Enter Long Description"
                                                     name={`menu.${index}.longDescription`}

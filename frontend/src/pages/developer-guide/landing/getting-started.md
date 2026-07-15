@@ -1,7 +1,5 @@
 # Getting Started with Developer Guide
 
-This section helps you quickly understand how to explore ONDC protocol flows, starting with the **Unified Credit** use case.
-
 ## 1. Pick a use case
 
 Start with the **Unified Credit** use case under the active domain. This is the reference implementation for exploring end-to-end flows.

@@ -220,6 +220,7 @@ export interface IScenarioPreferencesFormState {
     domains: IDomain[];
     savedPrefs: Record<string, ScenarioPreferences>;
     isSaving: boolean;
+    isDeleting: boolean;
     isFetching: boolean;
     editingKey: string | null;
 }

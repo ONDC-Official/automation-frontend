@@ -63,12 +63,21 @@ export function useNewSessionForm({
     // );
 
     useEffect(() => {
-        if (initialSavedConfigKey && savedPreferences[initialSavedConfigKey]) {
-            setSelectedSavedConfigKey(initialSavedConfigKey);
-            setSavedUsecaseId(savedPreferences[initialSavedConfigKey].usecaseId ?? "");
+        if (!initialSavedConfigKey) return;
+        const pref = savedPreferences[initialSavedConfigKey];
+        if (!pref) return;
+        setSelectedSavedConfigKey(initialSavedConfigKey);
+        setSavedUsecaseId(pref.usecaseId ?? "");
+    }, [initialSavedConfigKey, savedPreferences]);
+
+    // Only force the saved-config view when the URL config key changes —
+    // never when savedPreferences merely gets a new object identity, and
+    // never after the user has already chosen "Fill manually".
+    useEffect(() => {
+        if (initialSavedConfigKey) {
             setShowManualForm(false);
         }
-    }, [initialSavedConfigKey, savedPreferences]);
+    }, [initialSavedConfigKey]);
 
     const handleDomainChange = (domain: string) => {
         setValue("version", "");

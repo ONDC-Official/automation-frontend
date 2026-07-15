@@ -1,7 +1,12 @@
 import { useCallback, useEffect, useRef } from "react";
 import { useAppDispatch, useAppSelector } from "@store/hooks";
 import { useAuth } from "@hooks/useAuth";
-import { selectIsLoginPending, setLoginPending } from "@store/slices/authSlice";
+import { persistor } from "@store/index";
+import {
+    selectIsLoginPending,
+    setLoginPending,
+    setPostLoginRedirect,
+} from "@store/slices/authSlice";
 
 const LOGIN_PENDING_TIMEOUT_MS = 5 * 60 * 1000;
 
@@ -18,6 +23,11 @@ export const useGitHubLogin = () => {
         dispatch(setLoginPending(false));
     }, [dispatch]);
 
+    const clearAbandonedLogin = useCallback(() => {
+        dispatch(setLoginPending(false));
+        dispatch(setPostLoginRedirect(null));
+    }, [dispatch]);
+
     const resetPendingLoginIfAbandoned = useCallback(() => {
         if (!isLoginRedirecting || isStartingLoginRef.current) {
             return;
@@ -28,16 +38,23 @@ export const useGitHubLogin = () => {
             return;
         }
 
-        clearPendingLogin();
-    }, [clearPendingLogin, isLoginRedirecting, token, user]);
+        clearAbandonedLogin();
+    }, [clearAbandonedLogin, isLoginRedirecting, token, user]);
 
-    const startLogin = useCallback(() => {
-        isStartingLoginRef.current = true;
-        dispatch(setLoginPending(true));
+    const startLogin = useCallback(
+        (redirectTo?: string) => {
+            isStartingLoginRef.current = true;
+            dispatch(setPostLoginRedirect(redirectTo ?? null));
+            dispatch(setLoginPending(true));
 
-        const backendUrl = import.meta.env.VITE_DEVELOPER_GUIDE_BACKEND_URL;
-        window.location.href = `${backendUrl}/login`;
-    }, [dispatch]);
+            const backendUrl = import.meta.env.VITE_DEVELOPER_GUIDE_BACKEND_URL;
+            // Persist before the full-page OAuth hop — otherwise postLoginRedirect can be lost.
+            void persistor.flush().finally(() => {
+                window.location.href = `${backendUrl}/login`;
+            });
+        },
+        [dispatch]
+    );
 
     // Option B: keep the overlay through outbound redirect + inbound exchange/getMe
     // until the profile is actually ready — not merely when the token lands.
@@ -83,9 +100,9 @@ export const useGitHubLogin = () => {
             return;
         }
 
-        const timeoutId = window.setTimeout(clearPendingLogin, LOGIN_PENDING_TIMEOUT_MS);
+        const timeoutId = window.setTimeout(clearAbandonedLogin, LOGIN_PENDING_TIMEOUT_MS);
         return () => window.clearTimeout(timeoutId);
-    }, [clearPendingLogin, isLoginRedirecting]);
+    }, [clearAbandonedLogin, isLoginRedirecting]);
 
     return { startLogin, isLoginRedirecting };
 };

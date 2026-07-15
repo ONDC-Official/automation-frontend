@@ -261,7 +261,7 @@ const MultiImageUpload: React.FC<MultiImageUploadProps> = ({
                             multiple
                             name={`${folder}-images`}
                             onChange={handleFileChange}
-                            className="h-auto w-full cursor-pointer text-sm text-gray-500 file:mr-4 file:rounded-md file:border-0 file:bg-sky-50 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-sky-700 hover:file:bg-sky-100 transition-colors"
+                            className="flex h-9.5 w-full cursor-pointer items-center text-sm text-gray-500 file:mr-4 file:inline-flex file:h-7 file:items-center file:rounded-md file:border-0 file:bg-sky-50 file:px-4 file:py-0 file:text-sm file:font-semibold file:text-sky-700 hover:file:bg-sky-100 transition-colors"
                         />
                     </div>
                 ) : (

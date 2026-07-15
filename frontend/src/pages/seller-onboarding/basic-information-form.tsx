@@ -3,6 +3,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
 import TextField, { LabelWithToolTip } from "@components/Shadcn/TextField";
+import { TextAreaField } from "@components/Shadcn/TextArea";
 import { ComboBoxMultiControl } from "@components/Shadcn/ComboBox";
 import { Button } from "@components/Shadcn/Button";
 import { SellerOnboardingData } from "@pages/seller-onboarding";
@@ -178,23 +179,6 @@ const BasicInformationForm = ({ initialData, onNext }: BasicInformationFormProps
                         // },
                     }}
                 />
-                <TextField
-                    control={control}
-                    label="Long Description"
-                    placeholder="Enter Long Description"
-                    name="long_desc"
-                    required="Long Description is required"
-                    validations={{
-                        minLength: {
-                            value: 20,
-                            message: "Long description must be at least 20 characters",
-                        },
-                        maxLength: {
-                            value: 1000,
-                            message: "Long description cannot exceed 1000 characters",
-                        },
-                    }}
-                />
 
                 <TextField
                     control={control}
@@ -213,6 +197,26 @@ const BasicInformationForm = ({ initialData, onNext }: BasicInformationFormProps
                         },
                     }}
                 />
+
+                <div className="md:col-span-2">
+                    <TextAreaField
+                        control={control}
+                        label="Long Description"
+                        placeholder="Enter Long Description"
+                        name="long_desc"
+                        required="Long Description is required"
+                        validations={{
+                            minLength: {
+                                value: 20,
+                                message: "Long description must be at least 20 characters",
+                            },
+                            maxLength: {
+                                value: 1000,
+                                message: "Long description cannot exceed 1000 characters",
+                            },
+                        }}
+                    />
+                </div>
 
                 <div className="md:col-span-2">
                     <MultiImageUpload

@@ -67,7 +67,7 @@ const ACK_RESPONSE_V2: JsonSchemaObject = {
                                 properties: {
                                     display: {
                                         description:
-                                            "Indicates the display properties of the tag group. If display is set to false, then the group will not be displayed. If it is set to true, it should be displayed. However, group-level display properties can be overriden by individual tag-level display property. As this schema is purely for catalog display purposes, it is not recommended to send this value during search.",
+                                            "Indicates the display properties of the tag group. If display is set to false, then the group will not be displayed. If it is set to true, it should be displayed. However, group-level display properties can be overridden by individual tag-level display property. As this schema is purely for catalog display purposes, it is not recommended to send this value during search.",
                                         type: "boolean",
                                         default: true,
                                     },

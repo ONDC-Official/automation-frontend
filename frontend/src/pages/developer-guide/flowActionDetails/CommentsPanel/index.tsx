@@ -33,6 +33,7 @@ const CommentsPanel: FC<CommentsPanelProps> = ({
     domain,
     version,
     selectionLabel,
+    resolvePathLabel,
     emptySelectionMessage = DEFAULT_EMPTY_SELECTION_MESSAGE,
 }) => {
     const commentScope = resolveCommentScope(commentScopeProp, {
@@ -315,6 +316,8 @@ const CommentsPanel: FC<CommentsPanelProps> = ({
                                     onCancelReply={cancelReply}
                                     onReplyTextChange={handleReplyTextChange}
                                     onSubmitReply={addReply}
+                                    showPath
+                                    pathLabel={resolvePathLabel?.(thread.path)}
                                 />
                             ))}
 
