@@ -179,7 +179,7 @@ const components: Components = {
     },
     blockquote({ children }) {
         return (
-            <blockquote className="my-4 pl-4 border-l-4 border-border bg-muted py-3 pr-3 rounded-r-lg text-muted-foreground italic">
+            <blockquote className="mt-3 mb-2 rounded-lg bg-alert-50 px-4 py-3 text-[12px] font-regular text-n-300 not-italic dark:bg-alert-500/10 dark:text-n-60 [&_p]:m-0 [&_p]:text-[12px] [&_p]:text-n-300 [&_p]:dark:text-n-60">
                 {children}
             </blockquote>
         );
@@ -188,7 +188,7 @@ const components: Components = {
         return (
             <h1
                 id={id}
-                className="text-2xl font-bold text-foreground pb-2 border-b border-border scroll-mt-24"
+                className="text-2xl font-bold text-foreground mb-3 pb-2 border-b border-border scroll-mt-24"
             >
                 {children}
             </h1>
@@ -198,7 +198,7 @@ const components: Components = {
         return (
             <h2
                 id={id}
-                className="text-xl font-semibold text-foreground py-2 border-b border-border scroll-mt-24"
+                className="text-xl font-semibold text-foreground mt-8 mb-3 pb-2 border-b border-border scroll-mt-24"
             >
                 {children}
             </h2>
@@ -206,14 +206,14 @@ const components: Components = {
     },
     h3({ children, id }) {
         return (
-            <h3 id={id} className="text-base font-semibold text-foreground mt-5 mb-2 scroll-mt-24">
+            <h3 id={id} className="text-base font-semibold text-foreground mt-6 mb-2 scroll-mt-24">
                 {children}
             </h3>
         );
     },
     h4({ children, id }) {
         return (
-            <h4 id={id} className="text-sm font-semibold text-foreground mt-4 mb-1.5 scroll-mt-24">
+            <h4 id={id} className="text-sm font-semibold text-foreground mt-5 mb-1.5 scroll-mt-24">
                 {children}
             </h4>
         );
@@ -252,7 +252,8 @@ const components: Components = {
         return <p className="my-3 text-foreground leading-relaxed">{children}</p>;
     },
     hr() {
-        return <hr className="my-6 border-border" />;
+        // Spacing-only break — no visible rule (heading borders were removed for cleaner docs UI)
+        return <hr className="my-6 border-0" aria-hidden />;
     },
     img({ src, alt }) {
         return (
@@ -365,7 +366,7 @@ const GithubMarkdown: FC<GithubMarkdownProps> = memo(function GithubMarkdown({
     }, [onSectionClick, renderHeadingAction]);
 
     return (
-        <div className="github-markdown text-foreground">
+        <div className="github-markdown text-foreground [&_blockquote+h2]:mt-4">
             <ReactMarkdown
                 remarkPlugins={[remarkGfm]}
                 rehypePlugins={[

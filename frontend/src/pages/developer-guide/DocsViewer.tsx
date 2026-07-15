@@ -45,8 +45,8 @@ const DocsViewer: FC<DocsViewerProps> = ({ docs, useCaseId, domain, version }) =
     );
 
     const content = docs[activeDocSlug] ?? "";
-    // Domain docs often use `# Section` + `---` while GithubMarkdown already draws
-    // border-b on headings — strip those rules so they don't stack as a double line.
+    // Domain docs often use `# Section` + `---` — strip those so they don't leave
+    // uneven empty gaps under titles.
     const displayContent = useMemo(() => stripRedundantMarkdownHorizontalRules(content), [content]);
     const commentScope = useMemo(
         () =>
@@ -89,11 +89,11 @@ const DocsViewer: FC<DocsViewerProps> = ({ docs, useCaseId, domain, version }) =
                         aria-label={
                             rightPanelOpen ? "Collapse comments panel" : "Expand comments panel"
                         }
-                        className="absolute top-5 right-3 z-10 flex items-center justify-center w-7 h-7 rounded-full bg-white dark:bg-surface-elevated border border-slate-200 dark:border-border-default shadow-sm hover:bg-slate-50 dark:hover:bg-surface-muted transition-colors"
+                        className="absolute top-5 right-3 z-10 flex items-center justify-center w-7 h-7 rounded-full bg-white dark:bg-surface-elevated border border-slate-200 dark:border-border-default shadow-sm hover:bg-slate-50 dark:hover:bg-surface-muted transition-none"
                     >
                         <ChevronRightIcon
                             className={cn(
-                                "w-3 h-3 text-slate-400 transition-transform duration-300 ease-in-out",
+                                "w-3 h-3 text-slate-400 transition-transform duration-300 ease-in-out motion-reduce:transition-none",
                                 rightPanelOpen ? "" : "rotate-180"
                             )}
                         />

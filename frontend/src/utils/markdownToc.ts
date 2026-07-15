@@ -63,8 +63,9 @@ function nearestNonEmptyLine(lines: string[], from: number, direction: -1 | 1): 
 }
 
 /**
- * Removes standalone `---` rules that sit next to headings.
- * GithubMarkdown already draws `border-b` on h1/h2, so those rules render as a double divider.
+ * Removes standalone `---` rules next to headings.
+ * Docs render headings without underlines; keeping those rules leaves uneven empty gaps
+ * (and used to stack with heading border-b). Mid-content breaks are left alone.
  */
 export function stripRedundantMarkdownHorizontalRules(markdown: string): string {
     const lines = markdown.split("\n");

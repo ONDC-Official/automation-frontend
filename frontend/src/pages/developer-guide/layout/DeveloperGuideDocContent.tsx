@@ -6,7 +6,10 @@ import GithubMarkdown from "@components/GithubMarkdown";
 import TableOfContents from "@components/TableOfContents";
 import { Button } from "@components/Shadcn/Button";
 import { cn } from "@/lib/utils";
-import { stripMarkdownTableOfContents } from "@utils/markdownToc";
+import {
+    stripMarkdownTableOfContents,
+    stripRedundantMarkdownHorizontalRules,
+} from "@utils/markdownToc";
 import { buildGeneralDocCommentScope } from "@/types/comment-scope";
 import { docUsesSidebarSections } from "./docsWithSidebarSections";
 import CommentsPanel from "../flowActionDetails/CommentsPanel";
@@ -50,10 +53,12 @@ const DeveloperGuideDocContent: FC = () => {
         setRightPanelOpen,
     });
 
-    const displayContent = useMemo(
-        () => (usesSidebarSections ? stripMarkdownTableOfContents(content) : content),
-        [content, usesSidebarSections]
-    );
+    // GitHub md often uses `# Title` / `## Section` + `---` — strip heading-adjacent
+    // rules so they don't leave empty vertical gaps under titles.
+    const displayContent = useMemo(() => {
+        const withoutToc = usesSidebarSections ? stripMarkdownTableOfContents(content) : content;
+        return stripRedundantMarkdownHorizontalRules(withoutToc);
+    }, [content, usesSidebarSections]);
 
     if (isLoading) {
         return (
