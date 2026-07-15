@@ -29,16 +29,11 @@ type NodeContext = {
     value?: unknown;
 };
 
-type JsonViewRowProps = Omit<
-    React.HTMLAttributes<HTMLDivElement>,
-    "onMouseEnter" | "onMouseLeave"
-> & {
-    className?: string;
-    // Loosened to optional-argument so `pin`/`unpin` (below) can re-trigger these outside of a
-    // real mouse event, e.g. `rowProps.onMouseEnter?.()`.
-    onMouseEnter?: (e?: React.MouseEvent<HTMLDivElement>) => void;
-    onMouseLeave?: (e?: React.MouseEvent<HTMLDivElement>) => void;
-};
+type JsonViewRowProps = React.HTMLAttributes<HTMLDivElement>;
+
+/** Synthetic event for pin/unpin — library hover handlers expect a MouseEvent, but we re-fire
+ *  them outside a real pointer interaction to keep row tools mounted. */
+const SYNTHETIC_ROW_MOUSE_EVENT = {} as React.MouseEvent<HTMLDivElement>;
 
 /** Lets a row action (e.g. the comment trigger) keep the row's hover-only tools — like the
  *  built-in copy icon — mounted for as long as it needs, even after the cursor leaves the row. */
@@ -176,11 +171,11 @@ const JsonFieldRow: React.FC<{
     );
     const pin = useCallback(() => {
         isPinnedRef.current = true;
-        rowProps.onMouseEnter?.();
+        rowProps.onMouseEnter?.(SYNTHETIC_ROW_MOUSE_EVENT);
     }, [rowProps]);
     const unpin = useCallback(() => {
         isPinnedRef.current = false;
-        if (!isHoveringRef.current) rowProps.onMouseLeave?.();
+        if (!isHoveringRef.current) rowProps.onMouseLeave?.(SYNTHETIC_ROW_MOUSE_EVENT);
     }, [rowProps]);
 
     return (
