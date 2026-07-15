@@ -124,7 +124,7 @@ const FlowActionDetails: FC<FlowActionDetailsProps> = ({
     }, [setRightPanelTab]);
 
     const { renderFieldCommentAction, commentsRefreshKey } = useInlineCommentJsonField({
-        commentScope,
+        commentScope: commentScope ?? undefined,
         selectPath,
         onPosted: handleFieldCommentPosted,
     });
