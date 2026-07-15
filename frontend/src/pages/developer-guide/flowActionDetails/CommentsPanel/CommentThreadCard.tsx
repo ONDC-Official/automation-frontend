@@ -45,47 +45,16 @@ const CommentThreadCard: FC<CommentThreadCardProps> = ({
     >
         {showPath && (
             <span
-                className={`inline-flex items-center px-2 py-0.5 mb-2 rounded-md bg-sky-500/10 text-sky-700 dark:text-sky-300 text-xs break-all ${
+                className={`inline-flex max-w-full items-center px-2 py-0.5 mb-2 rounded-md bg-sky-500/10 text-sky-700 dark:text-sky-300 text-xs break-all ${
                     pathLabel ? "font-medium" : "font-mono"
                 }`}
             >
                 {pathLabel ?? thread.path}
             </span>
         )}
-        <div className="flex items-start justify-between gap-2">
-            <p className="text-sm text-slate-800 leading-relaxed whitespace-pre-wrap flex-1 min-w-0">
-                {thread.text}
-            </p>
-            <div className="flex items-center gap-1 shrink-0 opacity-80 hover:opacity-100">
-                <Button
-                    type="button"
-                    variant="ghost"
-                    onClick={() => onToggleResolved(thread.id)}
-                    disabled={!isLoggedIn}
-                    className="p-1.5 rounded-lg text-slate-400 hover:text-sky-600 hover:bg-sky-500/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    title={thread.resolved ? "Reopen" : "Resolve"}
-                >
-                    {thread.resolved ? (
-                        <span className="text-[10px] font-medium uppercase text-emerald-600 dark:text-emerald-400">
-                            Resolved
-                        </span>
-                    ) : (
-                        <span className="text-[10px] font-medium uppercase">Resolve</span>
-                    )}
-                </Button>
-                {isLoggedIn && (
-                    <Button
-                        type="button"
-                        variant="ghost"
-                        onClick={() => onDelete(thread.id)}
-                        className="p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-500/10 transition-colors"
-                        title="Delete"
-                    >
-                        <IconDelete className="w-4 h-4" />
-                    </Button>
-                )}
-            </div>
-        </div>
+        <p className="text-sm text-slate-800 leading-relaxed whitespace-pre-wrap w-full">
+            {thread.text}
+        </p>
         <p className="text-xs text-emerald-700 dark:text-emerald-400 mt-2">
             {thread.author} · {formatDateTime(thread.createdAt)}
         </p>
@@ -105,9 +74,9 @@ const CommentThreadCard: FC<CommentThreadCardProps> = ({
             </div>
         )}
 
-        {!thread.resolved && (
-            <div className="mt-3">
-                {isReplying ? (
+        {isLoggedIn && (
+            <div className="mt-3 space-y-2">
+                {!thread.resolved && isReplying && (
                     <div className="rounded-xl bg-slate-50/80 dark:bg-surface-muted/80 p-2">
                         <Textarea
                             value={replyText}
@@ -137,18 +106,48 @@ const CommentThreadCard: FC<CommentThreadCardProps> = ({
                             </Button>
                         </div>
                     </div>
-                ) : (
-                    isLoggedIn && (
+                )}
+
+                <div className="flex items-center justify-between gap-2">
+                    <div>
+                        {!thread.resolved && !isReplying && (
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                onClick={() => onStartReply(thread.id)}
+                                className="text-xs font-medium text-sky-600 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300"
+                            >
+                                Reply
+                            </Button>
+                        )}
+                    </div>
+                    <div className="flex items-center gap-1 shrink-0">
                         <Button
                             type="button"
                             variant="ghost"
-                            onClick={() => onStartReply(thread.id)}
-                            className="text-xs font-medium text-sky-600 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300"
+                            onClick={() => onToggleResolved(thread.id)}
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-sky-600 hover:bg-sky-500/10 transition-colors"
+                            title={thread.resolved ? "Reopen" : "Resolve"}
                         >
-                            Reply
+                            {thread.resolved ? (
+                                <span className="text-[10px] font-medium uppercase text-emerald-600 dark:text-emerald-400">
+                                    Resolved
+                                </span>
+                            ) : (
+                                <span className="text-[10px] font-medium uppercase">Resolve</span>
+                            )}
                         </Button>
-                    )
-                )}
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            onClick={() => onDelete(thread.id)}
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-500/10 transition-colors"
+                            title="Delete"
+                        >
+                            <IconDelete className="w-4 h-4" />
+                        </Button>
+                    </div>
+                </div>
             </div>
         )}
     </div>
