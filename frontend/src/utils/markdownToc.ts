@@ -1,3 +1,5 @@
+import GithubSlugger, { slug as slugify } from "github-slugger";
+
 export interface MarkdownTocEntry {
     level: 2 | 3;
     text: string;
@@ -39,12 +41,9 @@ export function extractNestedMarkdownToc(markdown: string): NestedMarkdownTocSec
     return nested;
 }
 
+/** Matches the id `rehype-slug` (via `github-slugger`) assigns to the actual heading in GithubMarkdown. */
 export function slugifyHeading(text: string): string {
-    return text
-        .toLowerCase()
-        .replace(/[^\w\s-]/g, "")
-        .trim()
-        .replace(/\s+/g, "-");
+    return slugify(text);
 }
 
 const TABLE_OF_CONTENTS_HEADING = /^##\s+table of contents\s*$/i;
@@ -118,11 +117,14 @@ export function stripMarkdownTableOfContents(markdown: string): string {
 
 export function extractMarkdownToc(markdown: string): MarkdownTocEntry[] {
     const toc: MarkdownTocEntry[] = [];
+    // A shared slugger (reset per document) so repeated heading text is de-duped
+    // ("-1", "-2", ...) the same way `rehype-slug` de-dupes ids on the rendered headings.
+    const slugger = new GithubSlugger();
     for (const line of markdown.split("\n")) {
         const h2 = /^## (.+)/.exec(line);
         const h3 = /^### (.+)/.exec(line);
-        if (h2) toc.push({ level: 2, text: h2[1].trim(), id: slugifyHeading(h2[1].trim()) });
-        else if (h3) toc.push({ level: 3, text: h3[1].trim(), id: slugifyHeading(h3[1].trim()) });
+        if (h2) toc.push({ level: 2, text: h2[1].trim(), id: slugger.slug(h2[1].trim()) });
+        else if (h3) toc.push({ level: 3, text: h3[1].trim(), id: slugger.slug(h3[1].trim()) });
     }
     return toc;
 }

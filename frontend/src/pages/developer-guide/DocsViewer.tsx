@@ -1,4 +1,4 @@
-import { type FC, useMemo } from "react";
+import { type FC, useCallback, useMemo } from "react";
 import { ChevronRightIcon } from "@heroicons/react/24/outline";
 import GithubMarkdown from "@components/GithubMarkdown";
 import { cn } from "@/lib/utils";
@@ -31,10 +31,16 @@ const DocsViewer: FC<DocsViewerProps> = ({ docs, useCaseId, domain, version }) =
         selectSection,
         rightPanelOpen,
         setRightPanelOpen,
+        toc,
     } = useDocsSectionSelection({
         docSlugs: slugs,
         docs,
     });
+
+    const resolveSectionLabel = useCallback(
+        (sectionId: string) => toc.find((entry) => entry.id === sectionId)?.text,
+        [toc]
+    );
 
     const content = docs[activeDocSlug] ?? "";
     // Domain docs often use `# Section` + `---` while GithubMarkdown already draws
@@ -134,6 +140,7 @@ const DocsViewer: FC<DocsViewerProps> = ({ docs, useCaseId, domain, version }) =
                                     selectedPath={selectedSectionId}
                                     commentScope={commentScope}
                                     selectionLabel={selectedSectionLabel}
+                                    resolvePathLabel={resolveSectionLabel}
                                     emptySelectionMessage="Select a section to add comments."
                                 />
                             )}

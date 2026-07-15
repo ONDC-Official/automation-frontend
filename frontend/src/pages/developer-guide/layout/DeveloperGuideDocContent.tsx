@@ -6,14 +6,12 @@ import TableOfContents from "@components/TableOfContents";
 import { scrollToSectionWithOffset } from "@components/TableOfContents/scrollToSection";
 import { stripMarkdownTableOfContents } from "@utils/markdownToc";
 import { docUsesSidebarSections } from "./docsWithSidebarSections";
-import { useDeveloperGuideShell } from "./DeveloperGuideNav";
 
 const TOC_TOP = 100;
 
 const DeveloperGuideDocContent: FC = () => {
     const { slug } = useParams<{ slug: string }>();
     const { hash } = useLocation();
-    const { navSidebarOpen, docs } = useDeveloperGuideShell();
     const usesSidebarSections = docUsesSidebarSections(slug);
 
     const {
@@ -30,16 +28,6 @@ const DeveloperGuideDocContent: FC = () => {
         });
         return () => cancelAnimationFrame(frame);
     }, [hash, usesSidebarSections]);
-
-    const title = useMemo(() => {
-        if (!slug) return "";
-        const matchedDoc = docs.find((doc) => doc.slug === slug);
-        if (matchedDoc) return matchedDoc.label;
-        return slug
-            .split("-")
-            .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-            .join(" ");
-    }, [slug, docs]);
 
     const displayContent = useMemo(
         () => (usesSidebarSections ? stripMarkdownTableOfContents(content) : content),
@@ -71,11 +59,6 @@ const DeveloperGuideDocContent: FC = () => {
 
     return (
         <div className="p-4">
-            {!navSidebarOpen ? null : (
-                <div>
-                    <h1 className="text-2xl font-bold text-slate-900 tracking-tight">{title}</h1>
-                </div>
-            )}
             <div className="flex gap-6 items-start">
                 {!usesSidebarSections && (
                     <TableOfContents

@@ -18,6 +18,8 @@ interface CommentThreadCardProps {
     onSubmitReply: (id: string) => void;
     /** Show which key/path this comment is attached to (e.g. in an unfiltered "All Comments" list). */
     showPath?: boolean;
+    /** Human-readable label for `thread.path` (e.g. section title), shown instead of the raw path when available. */
+    pathLabel?: string;
 }
 
 const CommentThreadCard: FC<CommentThreadCardProps> = ({
@@ -32,6 +34,7 @@ const CommentThreadCard: FC<CommentThreadCardProps> = ({
     onReplyTextChange,
     onSubmitReply,
     showPath = false,
+    pathLabel,
 }) => (
     <div
         className={`p-4 rounded-2xl border shadow-xs transition-all ${
@@ -41,8 +44,12 @@ const CommentThreadCard: FC<CommentThreadCardProps> = ({
         }`}
     >
         {showPath && (
-            <span className="inline-flex items-center px-2 py-0.5 mb-2 rounded-md bg-sky-500/10 text-sky-700 dark:text-sky-300 text-xs font-mono break-all">
-                {thread.path}
+            <span
+                className={`inline-flex items-center px-2 py-0.5 mb-2 rounded-md bg-sky-500/10 text-sky-700 dark:text-sky-300 text-xs break-all ${
+                    pathLabel ? "font-medium" : "font-mono"
+                }`}
+            >
+                {pathLabel ?? thread.path}
             </span>
         )}
         <div className="flex items-start justify-between gap-2">

@@ -169,6 +169,9 @@ const FlowActionDetails: FC<FlowActionDetailsProps> = ({
                         onExpand={() => setExpanded(true)}
                         isExpanded={expanded}
                         onCollapse={() => setExpanded(false)}
+                        // Reserves room for the absolutely-positioned right-panel
+                        // toggle above, which overlaps the toolbar's right edge.
+                        toolbarClassName="pr-12"
                     />
                     <Button
                         variant="ghost"
