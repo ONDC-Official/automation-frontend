@@ -123,7 +123,7 @@ const CommentThreadCard: FC<CommentThreadCardProps> = ({
                                 variant="ghost"
                                 onClick={() => onSubmitReply(thread.id)}
                                 disabled={!replyText.trim()}
-                                className="px-3 py-1.5 text-xs font-medium text-white bg-sky-500 rounded-lg hover:bg-sky-600 disabled:opacity-40"
+                                className="px-3 py-1.5 text-xs font-medium bg-brand-normal text-n-0 rounded-lg hover:bg-brand-normal-hover hover:text-n-0 disabled:opacity-40 transition-colors"
                             >
                                 Reply
                             </Button>

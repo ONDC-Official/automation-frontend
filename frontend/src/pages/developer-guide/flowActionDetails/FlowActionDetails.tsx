@@ -174,9 +174,9 @@ const FlowActionDetails: FC<FlowActionDetailsProps> = ({
                         toolbarClassName="pr-12"
                     />
                     <Button
-                        variant="ghost"
+                        variant="default"
                         onClick={() => void copyToClipboard(JSON.stringify(exampleValue, null, 2))}
-                        className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white text-sm rounded-lg shadow-lg"
+                        className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-2 px-4 py-2 text-white text-sm rounded-lg shadow-lg"
                     >
                         <DocumentDuplicateIcon className="w-4 h-4" />
                         Copy

@@ -33,7 +33,7 @@ const MdFileRender: FC<MdFileRenderProps> = ({
         >
             <header
                 className={
-                    isGuide ? "mb-6" : "border-b border-border bg-muted px-6 pb-4 pt-6 md:px-8"
+                    isGuide ? "mb-3" : "border-b border-border bg-muted px-6 pb-4 pt-6 md:px-8"
                 }
             >
                 <h1 className="text-2xl font-bold tracking-tight text-n-900 dark:text-n-0">
@@ -64,7 +64,7 @@ const MdFileRender: FC<MdFileRenderProps> = ({
                 <div
                     className={
                         isGuide
-                            ? "prose prose-slate max-w-none flex-1 min-w-0 [&_h2]:mt-8! [&_h2]:mb-2! [&_h2]:border-0! [&_h2]:pb-0! [&_h2]:text-xl! [&_h2]:font-semibold! [&_h2]:text-brand-normal! [&_h2:first-of-type]:mt-0! [&_p]:text-n-900 [&_p]:dark:text-n-0"
+                            ? "prose prose-slate max-w-none flex-1 min-w-0 [&_h2]:mb-2! [&_h2]:border-0! [&_h2]:pb-0! [&_h2]:text-xl! [&_h2]:font-semibold! [&_h2]:text-brand-normal! [&_h2:first-of-type]:mt-0! [&_p]:text-n-900 [&_p]:dark:text-n-0"
                             : "flex-1 min-w-0 px-3 py-3 md:px-4"
                     }
                 >
