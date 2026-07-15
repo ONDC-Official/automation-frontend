@@ -8,6 +8,7 @@ import GuideTabs from "./shared/components/GuideTabs";
 import CommentsPanel from "./flowActionDetails/CommentsPanel";
 import { useDocsSectionSelection } from "./DocsViewer/useDocsSectionSelection";
 import { buildDocumentCommentScope } from "./DocsViewer/utils";
+import { useInlineCommentHeading } from "./shared/hooks/useInlineCommentHeading";
 
 interface DocsViewerProps {
     docs: Record<string, string>;
@@ -53,6 +54,12 @@ const DocsViewer: FC<DocsViewerProps> = ({ docs, useCaseId, domain, version }) =
                 : undefined,
         [useCaseId, activeDocSlug, domain, version]
     );
+
+    const { renderHeadingAction, commentsRefreshKey } = useInlineCommentHeading({
+        commentScope,
+        selectSection,
+        setRightPanelOpen,
+    });
 
     if (slugs.length === 0) {
         return (
@@ -120,6 +127,7 @@ const DocsViewer: FC<DocsViewerProps> = ({ docs, useCaseId, domain, version }) =
                             <GithubMarkdown
                                 content={displayContent}
                                 onSectionClick={selectSection}
+                                renderHeadingAction={renderHeadingAction}
                             />
                         </div>
                     </div>
@@ -137,6 +145,7 @@ const DocsViewer: FC<DocsViewerProps> = ({ docs, useCaseId, domain, version }) =
                         <div className="flex-1 min-h-0 overflow-y-auto">
                             {commentScope && (
                                 <CommentsPanel
+                                    key={commentsRefreshKey}
                                     selectedPath={selectedSectionId}
                                     commentScope={commentScope}
                                     selectionLabel={selectedSectionLabel}

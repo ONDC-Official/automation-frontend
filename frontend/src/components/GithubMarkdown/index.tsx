@@ -17,6 +17,8 @@ import { Button } from "@/components/Shadcn/Button";
 interface GithubMarkdownProps {
     content: string;
     onSectionClick?: (id: string) => void;
+    /** Rendered next to a clickable heading (visible on hover/focus); e.g. an inline "add comment" trigger. */
+    renderHeadingAction?: (id: string) => React.ReactNode;
 }
 
 // Recursively extracts text from React children for copy
@@ -259,11 +261,42 @@ const components: Components = {
     },
 };
 
-const GithubMarkdown: FC<GithubMarkdownProps> = ({ content, onSectionClick }) => {
+const GithubMarkdown: FC<GithubMarkdownProps> = ({
+    content,
+    onSectionClick,
+    renderHeadingAction,
+}) => {
     const markdownComponents = useMemo<Components>(() => {
         if (!onSectionClick) return components;
+
+        // rehype-autolink-headings already wraps every heading level (h1-h4) in an
+        // `<a href="#id">`, so clicking any of them already navigates/selects via the
+        // hash-sync effect in useDocsSectionSelection. This just gives that same
+        // already-clickable heading a place to hang the hover action (e.g. comment icon).
+        const headingAction = (id?: string) =>
+            id && renderHeadingAction ? (
+                <span
+                    className="shrink-0 opacity-0 scale-95 group-hover/heading:opacity-100 group-hover/heading:scale-100 group-focus-within/heading:opacity-100 group-focus-within/heading:scale-100 focus-within:opacity-100 focus-within:scale-100 transition-all duration-150"
+                    onClick={(e: React.MouseEvent) => e.stopPropagation()}
+                    onKeyDown={(e: React.KeyboardEvent) => e.stopPropagation()}
+                >
+                    {renderHeadingAction(id)}
+                </span>
+            ) : null;
+
         return {
             ...components,
+            h1({ children, id }) {
+                return (
+                    <h1
+                        id={id}
+                        className="group/heading flex items-center gap-2 text-2xl font-bold text-foreground pb-2 border-b border-border scroll-mt-24"
+                    >
+                        <span className="min-w-0">{children}</span>
+                        {headingAction(id)}
+                    </h1>
+                );
+            },
             h2({ children, id }) {
                 return (
                     <h2
@@ -277,14 +310,37 @@ const GithubMarkdown: FC<GithubMarkdownProps> = ({ content, onSectionClick }) =>
                                 onSectionClick(id);
                             }
                         }}
-                        className="text-xl font-semibold text-foreground py-2 border-b border-border scroll-mt-24 cursor-pointer hover:text-sky-700 dark:hover:text-sky-400 transition-colors"
+                        className="group/heading flex items-center gap-2 text-xl font-semibold text-foreground py-2 border-b border-border scroll-mt-24 cursor-pointer hover:text-sky-700 dark:hover:text-sky-400 transition-colors"
                     >
-                        {children}
+                        <span className="min-w-0">{children}</span>
+                        {headingAction(id)}
                     </h2>
                 );
             },
+            h3({ children, id }) {
+                return (
+                    <h3
+                        id={id}
+                        className="group/heading flex items-center gap-2 text-base font-semibold text-foreground mt-5 mb-2 scroll-mt-24"
+                    >
+                        <span className="min-w-0">{children}</span>
+                        {headingAction(id)}
+                    </h3>
+                );
+            },
+            h4({ children, id }) {
+                return (
+                    <h4
+                        id={id}
+                        className="group/heading flex items-center gap-2 text-sm font-semibold text-foreground mt-4 mb-1.5 scroll-mt-24"
+                    >
+                        <span className="min-w-0">{children}</span>
+                        {headingAction(id)}
+                    </h4>
+                );
+            },
         };
-    }, [onSectionClick]);
+    }, [onSectionClick, renderHeadingAction]);
 
     return (
         <div className="github-markdown text-foreground">

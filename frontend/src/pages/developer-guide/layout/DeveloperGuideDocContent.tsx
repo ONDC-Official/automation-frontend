@@ -1,17 +1,20 @@
-import { FC, useEffect, useMemo } from "react";
-import { useLocation, useParams } from "react-router-dom";
+import { FC, useCallback, useMemo } from "react";
+import { useParams } from "react-router-dom";
+import { ChevronRightIcon } from "@heroicons/react/24/outline";
 import { useGetGithubDocContentQuery } from "@store/api";
 import GithubMarkdown from "@components/GithubMarkdown";
 import TableOfContents from "@components/TableOfContents";
-import { scrollToSectionWithOffset } from "@components/TableOfContents/scrollToSection";
+import { Button } from "@components/Shadcn/Button";
+import { cn } from "@/lib/utils";
 import { stripMarkdownTableOfContents } from "@utils/markdownToc";
+import { buildGeneralDocCommentScope } from "@/types/comment-scope";
 import { docUsesSidebarSections } from "./docsWithSidebarSections";
-
-const TOC_TOP = 100;
+import CommentsPanel from "../flowActionDetails/CommentsPanel";
+import { useDocsSectionSelection } from "../DocsViewer/useDocsSectionSelection";
+import { useInlineCommentHeading } from "../shared/hooks/useInlineCommentHeading";
 
 const DeveloperGuideDocContent: FC = () => {
     const { slug } = useParams<{ slug: string }>();
-    const { hash } = useLocation();
     const usesSidebarSections = docUsesSidebarSections(slug);
 
     const {
@@ -20,14 +23,32 @@ const DeveloperGuideDocContent: FC = () => {
         isError,
     } = useGetGithubDocContentQuery(slug ?? "", { skip: !slug });
 
-    useEffect(() => {
-        if (!usesSidebarSections || !hash) return;
-        const id = hash.slice(1);
-        const frame = requestAnimationFrame(() => {
-            scrollToSectionWithOffset(id, TOC_TOP);
-        });
-        return () => cancelAnimationFrame(frame);
-    }, [hash, usesSidebarSections]);
+    const docSlugs = useMemo(() => (slug ? [slug] : []), [slug]);
+    const docsRecord = useMemo(() => (slug ? { [slug]: content } : {}), [slug, content]);
+    const {
+        selectedSectionId,
+        selectedSectionLabel,
+        selectSection,
+        rightPanelOpen,
+        setRightPanelOpen,
+        toc,
+        tocOffset,
+    } = useDocsSectionSelection({ docSlugs, docs: docsRecord });
+
+    const resolveSectionLabel = useCallback(
+        (sectionId: string) => toc.find((entry) => entry.id === sectionId)?.text,
+        [toc]
+    );
+
+    const commentScope = useMemo(
+        () => (slug ? buildGeneralDocCommentScope(slug) : undefined),
+        [slug]
+    );
+    const { renderHeadingAction, commentsRefreshKey } = useInlineCommentHeading({
+        commentScope,
+        selectSection,
+        setRightPanelOpen,
+    });
 
     const displayContent = useMemo(
         () => (usesSidebarSections ? stripMarkdownTableOfContents(content) : content),
@@ -59,35 +80,87 @@ const DeveloperGuideDocContent: FC = () => {
 
     return (
         <div className="p-4">
-            <div className="flex gap-6 items-start">
+            <div className="flex gap-6 items-stretch min-h-[60vh]">
                 {!usesSidebarSections && (
                     <TableOfContents
                         content={content}
                         className="hidden xl:block w-56 shrink-0 self-start sticky overflow-y-auto"
                         style={{
-                            top: TOC_TOP,
-                            maxHeight: `calc(100vh - ${TOC_TOP}px)`,
+                            top: tocOffset,
+                            maxHeight: `calc(100vh - ${tocOffset}px)`,
                         }}
-                        offset={TOC_TOP}
+                        offset={tocOffset}
+                        onSectionClick={selectSection}
+                        activeSectionId={selectedSectionId}
                     />
                 )}
-                {/* Doc-route only: GitHub md uses --- dividers that stack with heading border-b. */}
-                <div
-                    className={[
-                        "flex-1 min-w-0 max-w-none",
-                        // Avoid double rule under title (h1 border-b + following ---)
-                        "[&_h1:has(+hr)]:border-b-0!",
-                        "[&_h1:has(+hr)]:pb-0!",
-                        // Equalize space above/below ## titles between --- and border-b
-                        "[&_hr:has(+h2)]:mt-8!",
-                        "[&_hr:has(+h2)]:mb-0!",
-                        "[&_hr+h2]:mt-0!",
-                        "[&_hr+h2]:pt-3!",
-                        "[&_hr+h2]:pb-3!",
-                    ].join(" ")}
-                >
-                    <GithubMarkdown content={displayContent} />
+                <div className="flex-1 min-w-0 relative">
+                    {commentScope && (
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            onClick={() => setRightPanelOpen(!rightPanelOpen)}
+                            title={
+                                rightPanelOpen ? "Collapse comments panel" : "Expand comments panel"
+                            }
+                            aria-label={
+                                rightPanelOpen ? "Collapse comments panel" : "Expand comments panel"
+                            }
+                            className="absolute top-0 right-0 z-10 flex items-center justify-center w-7 h-7 rounded-full bg-white dark:bg-surface-elevated border border-slate-200 dark:border-border-default shadow-sm hover:bg-slate-50 dark:hover:bg-surface-muted transition-colors"
+                        >
+                            <ChevronRightIcon
+                                className={cn(
+                                    "w-3 h-3 text-slate-400 transition-transform duration-300 ease-in-out",
+                                    rightPanelOpen ? "" : "rotate-180"
+                                )}
+                            />
+                        </Button>
+                    )}
+                    {/* Doc-route only: GitHub md uses --- dividers that stack with heading border-b. */}
+                    <div
+                        className={[
+                            "max-w-none",
+                            // Avoid double rule under title (h1 border-b + following ---)
+                            "[&_h1:has(+hr)]:border-b-0!",
+                            "[&_h1:has(+hr)]:pb-0!",
+                            // Equalize space above/below ## titles between --- and border-b
+                            "[&_hr:has(+h2)]:mt-8!",
+                            "[&_hr:has(+h2)]:mb-0!",
+                            "[&_hr+h2]:mt-0!",
+                            "[&_hr+h2]:pt-3!",
+                            "[&_hr+h2]:pb-3!",
+                        ].join(" ")}
+                    >
+                        <GithubMarkdown
+                            content={displayContent}
+                            onSectionClick={selectSection}
+                            renderHeadingAction={renderHeadingAction}
+                        />
+                    </div>
                 </div>
+                {commentScope && (
+                    <div
+                        className={cn(
+                            "shrink-0 overflow-hidden transition-[max-width,opacity] duration-300 ease-in-out",
+                            rightPanelOpen
+                                ? "max-w-80 opacity-100"
+                                : "max-w-0 opacity-0 pointer-events-none"
+                        )}
+                    >
+                        <div className="w-80 h-full flex flex-col min-h-0 rounded-lg bg-white dark:bg-surface-elevated border border-slate-200 dark:border-border-default overflow-hidden">
+                            <div className="flex-1 min-h-0 overflow-y-auto">
+                                <CommentsPanel
+                                    key={commentsRefreshKey}
+                                    selectedPath={selectedSectionId}
+                                    commentScope={commentScope}
+                                    selectionLabel={selectedSectionLabel}
+                                    resolvePathLabel={resolveSectionLabel}
+                                    emptySelectionMessage="Select a section to add comments."
+                                />
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );

@@ -1,4 +1,4 @@
-import { FC } from "react";
+import { FC, ReactNode } from "react";
 import GithubMarkdown from "@components/GithubMarkdown";
 import TableOfContents from "@components/TableOfContents";
 
@@ -12,6 +12,8 @@ interface MdFileRenderProps {
     showTableOfContents?: boolean;
     /** Developer guide pages use a flat layout without card chrome. */
     variant?: "card" | "guide";
+    onSectionClick?: (id: string) => void;
+    renderHeadingAction?: (id: string) => ReactNode;
 }
 
 const MdFileRender: FC<MdFileRenderProps> = ({
@@ -20,6 +22,8 @@ const MdFileRender: FC<MdFileRenderProps> = ({
     mdData,
     showTableOfContents = true,
     variant = "card",
+    onSectionClick,
+    renderHeadingAction,
 }) => {
     const isGuide = variant === "guide";
 
@@ -68,7 +72,11 @@ const MdFileRender: FC<MdFileRenderProps> = ({
                             : "flex-1 min-w-0 px-3 py-3 md:px-4"
                     }
                 >
-                    <GithubMarkdown content={mdData} />
+                    <GithubMarkdown
+                        content={mdData}
+                        onSectionClick={onSectionClick}
+                        renderHeadingAction={renderHeadingAction}
+                    />
                 </div>
             </div>
         </section>
