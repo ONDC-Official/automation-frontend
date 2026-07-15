@@ -4,7 +4,7 @@
 @import "tailwindcss";
 
 @theme {
-    --breakpoint-nav: 1024px;
+    --breakpoint-nav: 1084px;
     --z-index-55: 55;
     --z-index-60: 60;
     --z-index-70: 70;
