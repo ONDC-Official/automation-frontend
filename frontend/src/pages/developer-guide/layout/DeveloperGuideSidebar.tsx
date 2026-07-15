@@ -1,4 +1,4 @@
-import { FC, useEffect, useMemo, useState } from "react";
+import { FC, useMemo, useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { ChevronDownIcon } from "@heroicons/react/24/outline";
 import { Button } from "@/components/Shadcn/Button";
@@ -247,16 +247,6 @@ const NavGroupItem: FC<{
         () => nodeHasActiveDescendant(node, location.pathname, location.hash),
         [node, location.pathname, location.hash]
     );
-    const [open, setOpen] = useState(() => {
-        if (isDeveloperGuideLanding && depth === 0) {
-            return false;
-        }
-        return node.defaultOpen ?? (depth < 1 || hasActiveChild);
-    });
-
-    useEffect(() => {
-        if (searchQuery.trim()) setOpen(true);
-    }, [searchQuery]);
 
     const inset = rowInset(depth);
     const { pathname: linkPath, hash: linkHash } = parseNavPath(node.path ?? "");
@@ -266,16 +256,24 @@ const NavGroupItem: FC<{
         : groupPathActive;
     const headerRowActive = headerActive && !hasActiveChild;
 
-    useEffect(() => {
-        if (searchQuery.trim()) return;
+    const isSearching = Boolean(searchQuery.trim());
+    /** Whether the route/search currently requires this group open, regardless of manual toggles. */
+    const routeDrivenOpen = isSearching
+        ? true
+        : isDeveloperGuideLanding && depth === 0
+          ? false
+          : hasActiveChild || headerActive;
 
-        if (isDeveloperGuideLanding && depth === 0) {
-            setOpen(false);
-            return;
-        }
+    const [open, setOpen] = useState(routeDrivenOpen);
+    const [appliedRouteDrivenOpen, setAppliedRouteDrivenOpen] = useState(routeDrivenOpen);
 
-        setOpen(hasActiveChild || headerActive);
-    }, [hasActiveChild, headerActive, searchQuery, isDeveloperGuideLanding, depth, node.id]);
+    // Adjust `open` during render (not in an effect) when the route/search-driven value
+    // changes: React re-renders with the corrected state before committing to the DOM, so
+    // the previous (stale) open/closed state is never painted — no post-mount flicker.
+    if (routeDrivenOpen !== appliedRouteDrivenOpen) {
+        setAppliedRouteDrivenOpen(routeDrivenOpen);
+        setOpen(routeDrivenOpen);
+    }
 
     const isMainNode = depth === 0;
     const mainSectionActive = isMainNode && (headerActive || hasActiveChild);

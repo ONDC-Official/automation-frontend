@@ -8,6 +8,7 @@ import GuideTabs from "./shared/components/GuideTabs";
 import CommentsPanel from "./flowActionDetails/CommentsPanel";
 import { useDocsSectionSelection } from "./DocsViewer/useDocsSectionSelection";
 import { buildDocumentCommentScope } from "./DocsViewer/utils";
+import { useInlineCommentHeading } from "./shared/hooks/useInlineCommentHeading";
 
 interface DocsViewerProps {
     docs: Record<string, string>;
@@ -32,6 +33,7 @@ const DocsViewer: FC<DocsViewerProps> = ({ docs, useCaseId, domain, version }) =
         rightPanelOpen,
         setRightPanelOpen,
         toc,
+        tocOffset,
     } = useDocsSectionSelection({
         docSlugs: slugs,
         docs,
@@ -43,8 +45,8 @@ const DocsViewer: FC<DocsViewerProps> = ({ docs, useCaseId, domain, version }) =
     );
 
     const content = docs[activeDocSlug] ?? "";
-    // Domain docs often use `# Section` + `---` while GithubMarkdown already draws
-    // border-b on headings — strip those rules so they don't stack as a double line.
+    // Domain docs often use `# Section` + `---` — strip those so they don't leave
+    // uneven empty gaps under titles.
     const displayContent = useMemo(() => stripRedundantMarkdownHorizontalRules(content), [content]);
     const commentScope = useMemo(
         () =>
@@ -53,6 +55,12 @@ const DocsViewer: FC<DocsViewerProps> = ({ docs, useCaseId, domain, version }) =
                 : undefined,
         [useCaseId, activeDocSlug, domain, version]
     );
+
+    const { renderHeadingAction, commentsRefreshKey } = useInlineCommentHeading({
+        commentScope,
+        selectSection,
+        setRightPanelOpen,
+    });
 
     if (slugs.length === 0) {
         return (
@@ -81,11 +89,11 @@ const DocsViewer: FC<DocsViewerProps> = ({ docs, useCaseId, domain, version }) =
                         aria-label={
                             rightPanelOpen ? "Collapse comments panel" : "Expand comments panel"
                         }
-                        className="absolute top-5 right-3 z-10 flex items-center justify-center w-7 h-7 rounded-full bg-white dark:bg-surface-elevated border border-slate-200 dark:border-border-default shadow-sm hover:bg-slate-50 dark:hover:bg-surface-muted transition-colors"
+                        className="absolute top-5 right-3 z-10 flex items-center justify-center w-7 h-7 rounded-full bg-white dark:bg-surface-elevated border border-slate-200 dark:border-border-default shadow-sm hover:bg-slate-50 dark:hover:bg-surface-muted transition-none"
                     >
                         <ChevronRightIcon
                             className={cn(
-                                "w-3 h-3 text-slate-400 transition-transform duration-300 ease-in-out",
+                                "w-3 h-3 text-slate-400 transition-transform duration-300 ease-in-out motion-reduce:transition-none",
                                 rightPanelOpen ? "" : "rotate-180"
                             )}
                         />
@@ -120,6 +128,7 @@ const DocsViewer: FC<DocsViewerProps> = ({ docs, useCaseId, domain, version }) =
                             <GithubMarkdown
                                 content={displayContent}
                                 onSectionClick={selectSection}
+                                renderHeadingAction={renderHeadingAction}
                             />
                         </div>
                     </div>
@@ -127,24 +136,24 @@ const DocsViewer: FC<DocsViewerProps> = ({ docs, useCaseId, domain, version }) =
 
                 <div
                     className={cn(
-                        "shrink-0 overflow-hidden transition-[max-width,margin-left,opacity] duration-300 ease-in-out",
+                        "shrink-0 self-start sticky overflow-hidden transition-[max-width,margin-left,opacity] duration-300 ease-in-out",
                         rightPanelOpen
                             ? "max-w-80 ml-4 opacity-100"
                             : "max-w-0 ml-0 opacity-0 pointer-events-none"
                     )}
+                    style={{ top: tocOffset, height: `calc(100vh - ${tocOffset}px)` }}
                 >
-                    <div className="w-80 h-full flex flex-col min-h-0 rounded-lg bg-white dark:bg-surface-elevated overflow-hidden">
-                        <div className="flex-1 min-h-0 overflow-y-auto">
-                            {commentScope && (
-                                <CommentsPanel
-                                    selectedPath={selectedSectionId}
-                                    commentScope={commentScope}
-                                    selectionLabel={selectedSectionLabel}
-                                    resolvePathLabel={resolveSectionLabel}
-                                    emptySelectionMessage="Select a section to add comments."
-                                />
-                            )}
-                        </div>
+                    <div className="w-80 h-full">
+                        {commentScope && (
+                            <CommentsPanel
+                                key={commentsRefreshKey}
+                                selectedPath={selectedSectionId}
+                                commentScope={commentScope}
+                                selectionLabel={selectedSectionLabel}
+                                resolvePathLabel={resolveSectionLabel}
+                                emptySelectionMessage="Select a section to add comments."
+                            />
+                        )}
                     </div>
                 </div>
             </div>

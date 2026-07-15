@@ -4,8 +4,7 @@ import { useTheme } from "@/theme/hooks/useTheme";
 import { MoonIcon, SunIcon } from "@heroicons/react/20/solid";
 
 export const ThemeToggle = () => {
-    const { isDark, toggleTheme } = useTheme();
-    const Icon = isDark ? SunIcon : MoonIcon;
+    const { toggleTheme } = useTheme();
 
     return (
         <Button
@@ -18,7 +17,9 @@ export const ThemeToggle = () => {
                 "dark:border-border-default dark:bg-surface-elevated"
             )}
         >
-            <Icon className="size-4 text-brand-normal" />
+            {/* Visibility follows `.dark` (same tick as the view transition), not Redux isDark */}
+            <SunIcon className="hidden size-4 text-alert-500 dark:block" />
+            <MoonIcon className="size-4 text-brand-normal dark:hidden" />
         </Button>
     );
 };

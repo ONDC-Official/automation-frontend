@@ -1,4 +1,5 @@
 import { type FC, useState, useCallback, useMemo, useEffect } from "react";
+import { ExclamationTriangleIcon } from "@heroicons/react/24/outline";
 import {
     useLazyGetCommentsQuery,
     useCreateCommentMutation,
@@ -7,6 +8,7 @@ import {
     useDeleteCommentMutation,
 } from "@store/api";
 import { useAuth } from "@hooks/useAuth";
+import { ConfirmDialog } from "@components/Shadcn/Dialog";
 import {
     commentScopeToCreatePayload,
     commentScopeToListParams,
@@ -23,6 +25,8 @@ import { DEFAULT_COMMENT_AUTHOR } from "./constants";
 import type { CommentThread, CommentsPanelProps } from "./types";
 
 const DEFAULT_EMPTY_SELECTION_MESSAGE = "Select a key in the JSON tree to add comments.";
+
+type PendingDelete = { kind: "comment"; id: string } | { kind: "reply"; id: string };
 
 const CommentsPanel: FC<CommentsPanelProps> = ({
     selectedPath,
@@ -73,6 +77,8 @@ const CommentsPanel: FC<CommentsPanelProps> = ({
     const [newCommentText, setNewCommentText] = useState("");
     const [replyTextByThreadId, setReplyTextByThreadId] = useState<Record<string, string>>({});
     const [replyingToId, setReplyingToId] = useState<string | null>(null);
+    const [pendingDelete, setPendingDelete] = useState<PendingDelete | null>(null);
+    const [isDeleting, setIsDeleting] = useState(false);
     const [triggerGetComments] = useLazyGetCommentsQuery();
     const [createComment] = useCreateCommentMutation();
     const [replyToComment] = useReplyToCommentMutation();
@@ -84,6 +90,8 @@ const CommentsPanel: FC<CommentsPanelProps> = ({
         setNewCommentText("");
         setReplyTextByThreadId({});
         setReplyingToId(null);
+        setPendingDelete(null);
+        setIsDeleting(false);
     }, scopeDeps);
 
     const {
@@ -202,34 +210,69 @@ const CommentsPanel: FC<CommentsPanelProps> = ({
         [isLoggedIn, threads, useApi, commentScope, mutate, setThreads]
     );
 
-    const deleteThread = useCallback(
-        async (threadId: string) => {
+    const requestDeleteThread = useCallback(
+        (threadId: string) => {
             if (!isLoggedIn) return;
-            if (useApi && commentScope) {
-                await mutate(() => deleteComment(threadId).unwrap(), "Failed to delete comment");
-            } else {
-                setThreads((prev) => prev.filter((t) => t.id !== threadId));
-            }
+            setPendingDelete({ kind: "comment", id: threadId });
         },
-        [isLoggedIn, useApi, commentScope, mutate, setThreads]
+        [isLoggedIn]
     );
 
-    const deleteReply = useCallback(
-        async (replyId: string) => {
+    const requestDeleteReply = useCallback(
+        (replyId: string) => {
             if (!isLoggedIn) return;
-            if (useApi && commentScope) {
-                await mutate(() => deleteComment(replyId).unwrap(), "Failed to delete reply");
+            setPendingDelete({ kind: "reply", id: replyId });
+        },
+        [isLoggedIn]
+    );
+
+    const closeConfirmDelete = useCallback(() => {
+        if (isDeleting) return;
+        setPendingDelete(null);
+    }, [isDeleting]);
+
+    const confirmDeleteAction = useCallback(async () => {
+        if (!pendingDelete || isDeleting || !isLoggedIn) return;
+
+        setIsDeleting(true);
+        try {
+            let succeeded = true;
+            if (pendingDelete.kind === "comment") {
+                if (useApi && commentScope) {
+                    succeeded = await mutate(
+                        () => deleteComment(pendingDelete.id).unwrap(),
+                        "Failed to delete comment"
+                    );
+                } else {
+                    setThreads((prev) => prev.filter((t) => t.id !== pendingDelete.id));
+                }
+            } else if (useApi && commentScope) {
+                succeeded = await mutate(
+                    () => deleteComment(pendingDelete.id).unwrap(),
+                    "Failed to delete reply"
+                );
             } else {
                 setThreads((prev) =>
                     prev.map((t) => ({
                         ...t,
-                        replies: t.replies.filter((r) => r.id !== replyId),
+                        replies: t.replies.filter((r) => r.id !== pendingDelete.id),
                     }))
                 );
             }
-        },
-        [isLoggedIn, useApi, commentScope, mutate, setThreads]
-    );
+            if (succeeded) setPendingDelete(null);
+        } finally {
+            setIsDeleting(false);
+        }
+    }, [
+        pendingDelete,
+        isDeleting,
+        isLoggedIn,
+        useApi,
+        commentScope,
+        mutate,
+        deleteComment,
+        setThreads,
+    ]);
 
     const handleReplyTextChange = useCallback((threadId: string, value: string) => {
         setReplyTextByThreadId((prev) => ({ ...prev, [threadId]: value }));
@@ -238,6 +281,9 @@ const CommentsPanel: FC<CommentsPanelProps> = ({
     const cancelReply = useCallback(() => {
         setReplyingToId(null);
     }, []);
+
+    const isDeletingComment = pendingDelete?.kind === "comment";
+    const deleteTargetLabel = isDeletingComment ? "comment" : "reply";
 
     const filteredThreads = threads;
     const hasSelection = selectedPath != null;
@@ -305,8 +351,8 @@ const CommentsPanel: FC<CommentsPanelProps> = ({
                                                 replyText={replyTextByThreadId[thread.id] ?? ""}
                                                 isReplying={replyingToId === thread.id}
                                                 onToggleResolved={toggleResolved}
-                                                onDelete={deleteThread}
-                                                onDeleteReply={deleteReply}
+                                                onDelete={requestDeleteThread}
+                                                onDeleteReply={requestDeleteReply}
                                                 onStartReply={setReplyingToId}
                                                 onCancelReply={cancelReply}
                                                 onReplyTextChange={handleReplyTextChange}
@@ -334,8 +380,8 @@ const CommentsPanel: FC<CommentsPanelProps> = ({
                                     replyText={replyTextByThreadId[thread.id] ?? ""}
                                     isReplying={replyingToId === thread.id}
                                     onToggleResolved={toggleResolved}
-                                    onDelete={deleteThread}
-                                    onDeleteReply={deleteReply}
+                                    onDelete={requestDeleteThread}
+                                    onDeleteReply={requestDeleteReply}
                                     onStartReply={setReplyingToId}
                                     onCancelReply={cancelReply}
                                     onReplyTextChange={handleReplyTextChange}
@@ -349,6 +395,28 @@ const CommentsPanel: FC<CommentsPanelProps> = ({
                         </>
                     )}
                 </div>
+
+                <ConfirmDialog
+                    open={!!pendingDelete}
+                    onOpenChange={(open) => !open && closeConfirmDelete()}
+                    title={
+                        <span className="flex items-center gap-2">
+                            <ExclamationTriangleIcon className="size-5 text-error-500" />
+                            Delete {deleteTargetLabel}
+                        </span>
+                    }
+                    description={
+                        <>
+                            Are you sure you want to delete this {deleteTargetLabel}? This action
+                            cannot be undone.
+                        </>
+                    }
+                    confirmText="Delete"
+                    cancelText="Cancel"
+                    danger
+                    isLoading={isDeleting}
+                    onConfirm={() => void confirmDeleteAction()}
+                />
             </>
         </GuideAsyncPanel>
     );

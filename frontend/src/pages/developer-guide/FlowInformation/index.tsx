@@ -120,12 +120,12 @@ const FlowInformation: FC<FlowInformationProps> = ({
                                     size="icon"
                                     onClick={() => setSidebarOpen((prev) => !prev)}
                                     title={sidebarOpen ? "Collapse sidebar" : "Expand sidebar"}
-                                    className={`absolute top-4 z-20 -translate-x-1/2 flex items-center justify-center w-5 h-9 rounded-full bg-white dark:bg-surface-elevated border border-slate-200 dark:border-border-default shadow-sm hover:bg-slate-50 dark:hover:bg-surface-muted transition-[left] duration-300 ease-in-out ${
+                                    className={`absolute top-4 z-20 -translate-x-1/2 flex items-center justify-center w-5 h-9 rounded-full bg-white dark:bg-surface-elevated border border-slate-200 dark:border-border-default shadow-sm hover:bg-slate-50 dark:hover:bg-surface-muted transition-[left] duration-300 ease-in-out motion-reduce:transition-none ${
                                         sidebarOpen ? "left-96" : "left-0"
                                     }`}
                                 >
                                     <ChevronLeftIcon
-                                        className={`w-3 h-3 text-slate-400 transition-transform duration-300 ease-in-out ${
+                                        className={`w-3 h-3 text-slate-400 transition-transform duration-300 ease-in-out motion-reduce:transition-none ${
                                             sidebarOpen ? "" : "rotate-180"
                                         }`}
                                     />

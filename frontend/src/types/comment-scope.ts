@@ -72,6 +72,24 @@ export function isFlowCommentScope(scope: CommentScope): scope is FlowCommentSco
     return scope.kind === "flow";
 }
 
+// Developer-guide pages like "Getting Started" or the general documentation guides (About
+// ONDC, Key Concepts, ...) aren't tied to any specific domain/version/use-case. `document_slug`
+// alone gives per-page uniqueness, so these constants just need to stay stable and distinct
+// from real domain scopes — they're never shown to the user.
+const GENERAL_DOCS_DOMAIN = "general";
+const GENERAL_DOCS_VERSION = "v1";
+const GENERAL_DOCS_USE_CASE_ID = "developer-guide";
+
+/** Comment scope for static developer-guide pages with no domain/version/use-case of their own. */
+export function buildGeneralDocCommentScope(documentSlug: string): DocumentCommentScope {
+    return buildDocumentCommentScope(
+        GENERAL_DOCS_DOMAIN,
+        GENERAL_DOCS_VERSION,
+        GENERAL_DOCS_USE_CASE_ID,
+        documentSlug
+    );
+}
+
 export interface CommentListParams {
     use_case_id?: string;
     flow_id?: string;

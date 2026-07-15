@@ -1,25 +1,42 @@
-import { FC, useEffect, useMemo } from "react";
-import { useLocation } from "react-router-dom";
+import { FC, useCallback, useMemo } from "react";
+import { ChevronRightIcon } from "@heroicons/react/24/outline";
 import gettingStartedContent from "../landing/getting-started.md?raw";
 import MdFileRender from "@components/MdFileRender";
-import { scrollToSectionWithOffset } from "@components/TableOfContents/scrollToSection";
+import { Button } from "@components/Shadcn/Button";
+import { cn } from "@/lib/utils";
+import { buildGeneralDocCommentScope } from "@/types/comment-scope";
+import CommentsPanel from "../flowActionDetails/CommentsPanel";
+import { useDocsSectionSelection } from "../DocsViewer/useDocsSectionSelection";
+import { useInlineCommentHeading } from "../shared/hooks/useInlineCommentHeading";
 
-// Matches the sticky header offset used by the sibling doc content view (DeveloperGuideDocContent).
-const TOC_TOP = 100;
+const GETTING_STARTED_SLUG = "getting-started";
 
 const DeveloperGuideGettingStartedContent: FC = () => {
-    const { hash } = useLocation();
-
     const mdData = useMemo(() => gettingStartedContent.replace(/^#\s+.+\n+/, ""), []);
 
-    useEffect(() => {
-        if (!hash) return;
-        const id = hash.slice(1);
-        const frame = requestAnimationFrame(() => {
-            scrollToSectionWithOffset(id, TOC_TOP);
-        });
-        return () => cancelAnimationFrame(frame);
-    }, [hash]);
+    const docSlugs = useMemo(() => [GETTING_STARTED_SLUG], []);
+    const docsRecord = useMemo(() => ({ [GETTING_STARTED_SLUG]: mdData }), [mdData]);
+    const {
+        selectedSectionId,
+        selectedSectionLabel,
+        selectSection,
+        rightPanelOpen,
+        setRightPanelOpen,
+        toc,
+        tocOffset,
+    } = useDocsSectionSelection({ docSlugs, docs: docsRecord });
+
+    const resolveSectionLabel = useCallback(
+        (sectionId: string) => toc.find((entry) => entry.id === sectionId)?.text,
+        [toc]
+    );
+
+    const commentScope = useMemo(() => buildGeneralDocCommentScope(GETTING_STARTED_SLUG), []);
+    const { renderHeadingAction, commentsRefreshKey } = useInlineCommentHeading({
+        commentScope,
+        selectSection,
+        setRightPanelOpen,
+    });
 
     return (
         <div className="p-4">
@@ -30,13 +47,56 @@ const DeveloperGuideGettingStartedContent: FC = () => {
                     documentation page.
                 </span>
             </div>
-            <MdFileRender
-                variant="guide"
-                title="Getting Started"
-                description="This section helps you quickly understand how to explore ONDC protocol flows, starting with the Unified Credit use case."
-                mdData={mdData}
-                showTableOfContents={false}
-            />
+            <div className="flex gap-6 items-stretch min-h-[60vh]">
+                <div className="flex-1 min-w-0 relative">
+                    <Button
+                        type="button"
+                        variant="ghost"
+                        onClick={() => setRightPanelOpen(!rightPanelOpen)}
+                        title={rightPanelOpen ? "Collapse comments panel" : "Expand comments panel"}
+                        aria-label={
+                            rightPanelOpen ? "Collapse comments panel" : "Expand comments panel"
+                        }
+                        className="absolute top-0 right-0 z-10 flex items-center justify-center w-7 h-7 rounded-full bg-white dark:bg-surface-elevated border border-slate-200 dark:border-border-default shadow-sm hover:bg-slate-50 dark:hover:bg-surface-muted transition-colors"
+                    >
+                        <ChevronRightIcon
+                            className={cn(
+                                "w-3 h-3 text-slate-400 transition-transform duration-300 ease-in-out",
+                                rightPanelOpen ? "" : "rotate-180"
+                            )}
+                        />
+                    </Button>
+                    <MdFileRender
+                        variant="guide"
+                        title="Getting Started"
+                        description="This section helps you quickly understand how to explore ONDC protocol flows, starting with the Unified Credit use case."
+                        mdData={mdData}
+                        showTableOfContents={false}
+                        onSectionClick={selectSection}
+                        renderHeadingAction={renderHeadingAction}
+                    />
+                </div>
+                <div
+                    className={cn(
+                        "shrink-0 self-start sticky overflow-hidden transition-[max-width,opacity] duration-300 ease-in-out",
+                        rightPanelOpen
+                            ? "max-w-80 opacity-100"
+                            : "max-w-0 opacity-0 pointer-events-none"
+                    )}
+                    style={{ top: tocOffset, height: `calc(100vh - ${tocOffset}px)` }}
+                >
+                    <div className="w-80 h-full">
+                        <CommentsPanel
+                            key={commentsRefreshKey}
+                            selectedPath={selectedSectionId}
+                            commentScope={commentScope}
+                            selectionLabel={selectedSectionLabel}
+                            resolvePathLabel={resolveSectionLabel}
+                            emptySelectionMessage="Select a section to add comments."
+                        />
+                    </div>
+                </div>
+            </div>
         </div>
     );
 };
