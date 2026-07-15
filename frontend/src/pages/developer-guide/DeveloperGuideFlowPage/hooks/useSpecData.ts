@@ -12,7 +12,9 @@ import type { OpenAPISpecification, FlowEntry } from "../../types";
  * every subsequent visit/tab-switch resolves instantly from the store with no refetch or spinner.
  */
 export function useSpecData(domainKey: string, versionKey: string, slug: string) {
-    const { data: builds = [], isLoading: buildsLoading } = useGetBuildsQuery();
+    // `DeveloperGuideShell` blocks its `<Outlet/>` (this page) from mounting until builds have
+    // resolved, so a second builds-loading flag here would always be false — only `data` is needed.
+    const { data: builds = [] } = useGetBuildsQuery();
 
     const apiUsecase = useMemo(
         () => getUsecaseLabelFromBuilds(builds, domainKey, versionKey, slug) ?? slug,
@@ -54,7 +56,7 @@ export function useSpecData(domainKey: string, versionKey: string, slug: string)
         return { ...specFromQuery, "x-docs": fallbackDocs };
     }, [specFromQuery, specHasDocs, fallbackDocs]);
 
-    const isLoading = buildsLoading || (hasRoute && specLoading);
+    const isLoading = hasRoute && specLoading;
     const notFound = specError;
 
     const flows: FlowEntry[] = useMemo(() => specData?.["x-flows"] ?? [], [specData]);

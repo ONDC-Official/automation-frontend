@@ -3,7 +3,7 @@ import { FunctionToggleProps } from "@pages/auth-header/code-snippets/types";
 import { Button } from "@/components/Shadcn/Button";
 
 const inactiveClass =
-    "bg-n-20 text-n-300 hover:bg-n-30 dark:bg-surface-muted dark:text-n-60 dark:hover:bg-surface-elevated";
+    "bg-n-20 text-n-300 hover:bg-brand-light-hover hover:text-n-300 dark:bg-surface-muted dark:text-n-60 dark:hover:bg-brand-normal/20 dark:hover:text-n-60";
 
 const FunctionToggle: FC<FunctionToggleProps> = ({ functionType, onFunctionTypeChange }) => (
     <div className="flex flex-wrap gap-2">
@@ -12,7 +12,9 @@ const FunctionToggle: FC<FunctionToggleProps> = ({ functionType, onFunctionTypeC
             variant="ghost"
             onClick={() => onFunctionTypeChange("generate")}
             className={`rounded-lg px-4 py-2 font-medium transition-all ${
-                functionType === "generate" ? "bg-success-500 text-n-0" : inactiveClass
+                functionType === "generate"
+                    ? "bg-success-500 text-n-0 hover:bg-success-500 hover:text-n-0"
+                    : inactiveClass
             }`}
             aria-pressed={functionType === "generate"}
             aria-label="Generate Header function"
@@ -24,7 +26,9 @@ const FunctionToggle: FC<FunctionToggleProps> = ({ functionType, onFunctionTypeC
             variant="ghost"
             onClick={() => onFunctionTypeChange("verify")}
             className={`rounded-lg px-4 py-2 font-medium transition-all ${
-                functionType === "verify" ? "bg-brand-normal text-n-0" : inactiveClass
+                functionType === "verify"
+                    ? "bg-brand-normal text-n-0 hover:bg-brand-normal hover:text-n-0"
+                    : inactiveClass
             }`}
             aria-pressed={functionType === "verify"}
             aria-label="Verify Header function"

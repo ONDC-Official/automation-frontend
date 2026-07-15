@@ -12,6 +12,8 @@ export interface IPathLink {
     label: string;
     href: string;
     external?: boolean;
+    /** When true, unauthenticated clicks start GitHub login then return to `href`. */
+    requiresAuth?: boolean;
 }
 
 export interface IPathCard {

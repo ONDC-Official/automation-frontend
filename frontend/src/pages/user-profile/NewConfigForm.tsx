@@ -108,7 +108,7 @@ export const NewConfigForm = ({
                     />
                 </FieldGroup>
                 <div className="pt-4 flex items-center gap-3 flex-wrap">
-                    <Button type="submit" disabled={isSaving} isLoading={isSaving}>
+                    <Button type="submit" disabled={isSaving}>
                         {editingKey ? "Update" : "Submit"}
                     </Button>
                     <Button type="button" variant="outline" onClick={requestPastReportNav}>

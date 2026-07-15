@@ -73,6 +73,7 @@ interface JsonViewerProps {
     isExpanded?: boolean;
     onCollapse?: () => void;
     invertTheme?: boolean;
+    toolbarClassName?: string;
 }
 
 const JsonViewer: React.FC<JsonViewerProps> = ({
@@ -82,6 +83,7 @@ const JsonViewer: React.FC<JsonViewerProps> = ({
     invertTheme = false,
     onExpand: _onExpand,
     isExpanded: _isExpanded,
+    toolbarClassName,
 }) => {
     const location = useLocation();
     const isDeveloperGuide = location.pathname.includes("developer-guide");
@@ -95,6 +97,7 @@ const JsonViewer: React.FC<JsonViewerProps> = ({
             showFullscreen={isDeveloperGuide}
             invertTheme={invertTheme}
             className={cn("min-h-full rounded-md")}
+            toolbarClassName={toolbarClassName}
             enableClipboard={true}
             noResultsText="No results for"
         >

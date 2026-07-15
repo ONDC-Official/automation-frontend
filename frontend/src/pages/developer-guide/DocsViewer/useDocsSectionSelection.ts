@@ -2,6 +2,8 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocation, useSearchParams } from "react-router-dom";
 import { scrollToSectionWithOffset } from "@components/TableOfContents/scrollToSection";
 import { extractMarkdownToc } from "@utils/markdownToc";
+import { useAppDispatch, useAppSelector } from "@store/hooks";
+import { setCommentsPanelOpen } from "@store/slices/devGuideShellSlice";
 
 const TOC_TOP = 100;
 
@@ -27,8 +29,8 @@ export function useDocsSectionSelection({ docSlugs, docs }: UseDocsSectionSelect
         () => searchParams.get("attr") ?? (hash ? hash.slice(1) : null)
     );
 
-    const commentsPanelOpen = searchParams.get("panel") === "comments";
-    const [rightPanelOpen, setRightPanelOpenState] = useState(commentsPanelOpen);
+    const dispatch = useAppDispatch();
+    const rightPanelOpen = useAppSelector((state) => state.devGuideShell.commentsPanelOpen);
 
     const toc = useMemo(() => extractMarkdownToc(content), [content]);
 
@@ -132,24 +134,10 @@ export function useDocsSectionSelection({ docSlugs, docs }: UseDocsSectionSelect
 
     const setRightPanelOpen = useCallback(
         (open: boolean) => {
-            setRightPanelOpenState(open);
-            setSearchParams(
-                (prev) => {
-                    const next = new URLSearchParams(prev);
-                    if (open) next.set("panel", "comments");
-                    else next.delete("panel");
-                    return next;
-                },
-                { replace: true }
-            );
+            dispatch(setCommentsPanelOpen(open));
         },
-        [setSearchParams]
+        [dispatch]
     );
-
-    // Open panel when panel=comments is in URL
-    useEffect(() => {
-        setRightPanelOpenState(commentsPanelOpen);
-    }, [commentsPanelOpen]);
 
     return {
         activeDocSlug,

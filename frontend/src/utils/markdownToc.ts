@@ -1,3 +1,5 @@
+import GithubSlugger, { slug as slugify } from "github-slugger";
+
 export interface MarkdownTocEntry {
     level: 2 | 3;
     text: string;
@@ -39,15 +41,55 @@ export function extractNestedMarkdownToc(markdown: string): NestedMarkdownTocSec
     return nested;
 }
 
+/** Matches the id `rehype-slug` (via `github-slugger`) assigns to the actual heading in GithubMarkdown. */
 export function slugifyHeading(text: string): string {
-    return text
-        .toLowerCase()
-        .replace(/[^\w\s-]/g, "")
-        .trim()
-        .replace(/\s+/g, "-");
+    return slugify(text);
 }
 
 const TABLE_OF_CONTENTS_HEADING = /^##\s+table of contents\s*$/i;
+const MARKDOWN_HEADING = /^#{1,6}\s+\S/;
+const THEMATIC_BREAK = /^---$/;
+
+function isMarkdownHeading(line: string): boolean {
+    return MARKDOWN_HEADING.test(line.trim());
+}
+
+function nearestNonEmptyLine(lines: string[], from: number, direction: -1 | 1): string | undefined {
+    for (let i = from; i >= 0 && i < lines.length; i += direction) {
+        const trimmed = lines[i].trim();
+        if (trimmed !== "") return trimmed;
+    }
+    return undefined;
+}
+
+/**
+ * Removes standalone `---` rules that sit next to headings.
+ * GithubMarkdown already draws `border-b` on h1/h2, so those rules render as a double divider.
+ */
+export function stripRedundantMarkdownHorizontalRules(markdown: string): string {
+    const lines = markdown.split("\n");
+    const kept: string[] = [];
+
+    for (let i = 0; i < lines.length; i++) {
+        if (!THEMATIC_BREAK.test(lines[i].trim())) {
+            kept.push(lines[i]);
+            continue;
+        }
+
+        const previous = nearestNonEmptyLine(kept, kept.length - 1, -1);
+        const next = nearestNonEmptyLine(lines, i + 1, 1);
+        if (
+            (previous !== undefined && isMarkdownHeading(previous)) ||
+            (next !== undefined && isMarkdownHeading(next))
+        ) {
+            continue;
+        }
+
+        kept.push(lines[i]);
+    }
+
+    return kept.join("\n");
+}
 
 /** Removes the in-document "## Table of Contents" block (through the next h2). */
 export function stripMarkdownTableOfContents(markdown: string): string {
@@ -75,11 +117,14 @@ export function stripMarkdownTableOfContents(markdown: string): string {
 
 export function extractMarkdownToc(markdown: string): MarkdownTocEntry[] {
     const toc: MarkdownTocEntry[] = [];
+    // A shared slugger (reset per document) so repeated heading text is de-duped
+    // ("-1", "-2", ...) the same way `rehype-slug` de-dupes ids on the rendered headings.
+    const slugger = new GithubSlugger();
     for (const line of markdown.split("\n")) {
         const h2 = /^## (.+)/.exec(line);
         const h3 = /^### (.+)/.exec(line);
-        if (h2) toc.push({ level: 2, text: h2[1].trim(), id: slugifyHeading(h2[1].trim()) });
-        else if (h3) toc.push({ level: 3, text: h3[1].trim(), id: slugifyHeading(h3[1].trim()) });
+        if (h2) toc.push({ level: 2, text: h2[1].trim(), id: slugger.slug(h2[1].trim()) });
+        else if (h3) toc.push({ level: 3, text: h3[1].trim(), id: slugger.slug(h3[1].trim()) });
     }
     return toc;
 }

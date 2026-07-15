@@ -154,7 +154,7 @@ const RET11NestedSelectForm = ({
             }
 
             if (!payload?.message?.catalog?.["bpp/providers"]) {
-                throw new Error("Providers not presnt");
+                throw new Error("Providers not present");
             }
 
             const catalogProviders = (parsedText as OnSearchPayload).message.catalog[

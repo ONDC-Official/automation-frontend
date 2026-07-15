@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, type ReactNode } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import RenderFlows from "@components/DomainFlowRunner/RenderFlows";
@@ -266,84 +266,86 @@ const Scenario = () => {
         };
     }, []);
 
-    const Body = () => {
-        switch (flowStepNum) {
-            case 1:
-                if (!flows) return <Spinner />;
-                return (
-                    <RenderFlows
-                        flows={flows}
-                        subUrl={subscriberUrl}
-                        sessionId={session}
-                        newSession={newSession}
-                    />
-                );
-            case 2:
-                if (!session) return <Spinner />;
-                return <ReportPage sessionId={session} report={report} setStep={setFlowStepNum} />;
-            case 0:
-            default:
-                return (
-                    <div className="flex w-full flex-col gap-6">
-                        <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(280px,2fr)_minmax(0,3fr)]">
-                            <Accordion title="Scenario Testing" steps={SCENARIO_GUIDE_STEPS} />
+    // Render via a switch expression (not a nested component) so parent
+    // re-renders — e.g. isFormSubmitted toggling — don't remount the form
+    // and wipe local state like showManualForm.
+    let body: ReactNode;
+    switch (flowStepNum) {
+        case 1:
+            body = !flows ? (
+                <Spinner />
+            ) : (
+                <RenderFlows
+                    flows={flows}
+                    subUrl={subscriberUrl}
+                    sessionId={session}
+                    newSession={newSession}
+                />
+            );
+            break;
+        case 2:
+            body = !session ? (
+                <Spinner />
+            ) : (
+                <ReportPage sessionId={session} report={report} setStep={setFlowStepNum} />
+            );
+            break;
+        case 0:
+        default:
+            body = (
+                <div className="flex w-full flex-col gap-6">
+                    <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(280px,2fr)_minmax(0,3fr)]">
+                        <Accordion title="Scenario Testing" steps={SCENARIO_GUIDE_STEPS} />
 
-                            <Card
-                                title="Create a new Session"
-                                description="Fill the details to begin flow testing."
-                                headerAction={
-                                    !user ? (
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={handleCreateConfigClick}
-                                        >
-                                            Create config in profile
-                                        </Button>
-                                    ) : undefined
-                                }
-                            >
-                                {isInitializing ? (
-                                    <div className="flex items-center justify-center">
-                                        <Spinner />
-                                    </div>
-                                ) : (
-                                    <NewSessionForm
-                                        key={
-                                            Object.keys(savedPreferences).length > 0
-                                                ? "prefs"
-                                                : "manual"
-                                        }
-                                        domains={domains}
-                                        savedPreferences={savedPreferences}
-                                        initialSavedConfigKey={initialSavedConfigKey}
-                                        isSubmitting={isFormSubmitted}
-                                        onSubmit={onSubmitHandler}
-                                    />
-                                )}
-                            </Card>
-                        </div>
-
-                        <PreviousSessionsPanel
-                            sessions={existingSessions}
-                            onSessionsChange={setExistingSessions}
-                            onOpenSession={(selectedSession) =>
-                                openSessionInNewTab(
-                                    selectedSession.sessionId,
-                                    selectedSession.subscriberUrl,
-                                    selectedSession.role
-                                )
+                        <Card
+                            title="Create a new Session"
+                            description="Fill the details to begin flow testing."
+                            headerAction={
+                                !user ? (
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={handleCreateConfigClick}
+                                    >
+                                        Create config in profile
+                                    </Button>
+                                ) : undefined
                             }
-                        />
+                        >
+                            {isInitializing ? (
+                                <div className="flex items-center justify-center">
+                                    <Spinner />
+                                </div>
+                            ) : (
+                                <NewSessionForm
+                                    domains={domains}
+                                    savedPreferences={savedPreferences}
+                                    initialSavedConfigKey={initialSavedConfigKey}
+                                    isSubmitting={isFormSubmitted}
+                                    onSubmit={onSubmitHandler}
+                                />
+                            )}
+                        </Card>
                     </div>
-                );
-        }
-    };
+
+                    <PreviousSessionsPanel
+                        sessions={existingSessions}
+                        onSessionsChange={setExistingSessions}
+                        onOpenSession={(selectedSession) =>
+                            openSessionInNewTab(
+                                selectedSession.sessionId,
+                                selectedSession.subscriberUrl,
+                                selectedSession.role
+                            )
+                        }
+                    />
+                </div>
+            );
+    }
+
     return (
         <div className="w-full">
-            <div className="mx-auto px-20 py-6">
-                <Body />
-            </div>
+            <div className="mx-auto px-20 py-6">{body}</div>
         </div>
     );
 };

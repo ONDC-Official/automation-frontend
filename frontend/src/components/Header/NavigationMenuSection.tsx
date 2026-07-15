@@ -16,7 +16,7 @@ export const NavigationMenuSection = ({ inDrawer = false }: { inDrawer?: boolean
 
     return (
         <NavigationMenu viewport={false} className="max-w-none flex-1 justify-start">
-            <NavigationMenuList className="justify-start gap-1">
+            <NavigationMenuList className="justify-start gap-0.5">
                 {navLinks.map((link) => (
                     <NavigationMenuNavItem
                         key={link.label}

@@ -1,6 +1,7 @@
 import { ExclamationTriangleIcon } from "@heroicons/react/24/outline";
 
 import Spinner from "@components/Shadcn/Spinner";
+import LoadingOverlay from "@components/Shadcn/LoadingOverlay";
 import { ConfirmDialog } from "@components/Shadcn/Dialog";
 import { PROFILE_PAGE_COPY } from "@pages/user-profile/constants";
 import { NewConfigForm } from "@pages/user-profile/NewConfigForm";
@@ -22,6 +23,7 @@ export const ConfigsSection = () => {
         handleVersionChange,
         savedPrefs,
         isSaving,
+        isDeleting,
         isFetching,
         editingKey,
         handleEdit,
@@ -36,9 +38,12 @@ export const ConfigsSection = () => {
 
     const configCount = Object.keys(savedPrefs).length;
     const copy = PROFILE_PAGE_COPY.configs;
+    const showOverlay = isSaving || isDeleting;
 
     return (
-        <div className="min-w-0 flex-1 min-h-full p-6">
+        <div className="min-w-0 flex-1 min-h-full py-6">
+            {showOverlay ? <LoadingOverlay /> : null}
+
             <ProfilePageHeader
                 title={copy.title}
                 subtitle={copy.subtitle}
@@ -46,8 +51,9 @@ export const ConfigsSection = () => {
             />
 
             {isFetching ? (
-                <div className="flex items-center justify-center py-16">
-                    <Spinner className="size-8" />
+                <div className="flex flex-col items-center justify-center py-16 text-text-secondary">
+                    <Spinner className="size-8 mb-3" />
+                    <p className="text-body-2 font-medium">Loading configurations…</p>
                 </div>
             ) : (
                 <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 items-start">
@@ -97,6 +103,7 @@ export const ConfigsSection = () => {
                 confirmText="Delete"
                 cancelText="Cancel"
                 danger
+                isLoading={isDeleting}
                 onConfirm={confirmDeleteAction}
             />
         </div>

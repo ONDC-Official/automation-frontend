@@ -1,8 +1,14 @@
 export function getRevealTargets(root: HTMLElement): HTMLElement[] {
     const direct = [...root.children] as HTMLElement[];
 
-    // Single page root → animate its section children instead of one blob
-    if (direct.length === 1 && direct[0].children.length > 0) {
+    // Single page root → animate its section children instead of one blob. Skip elements
+    // opting out (e.g. LoadingOverlay) so the reveal animation doesn't reach in and hijack
+    // an already-animating descendant's `animation` property (spinners, etc).
+    if (
+        direct.length === 1 &&
+        direct[0].children.length > 0 &&
+        !direct[0].hasAttribute("data-reveal-skip")
+    ) {
         return [...direct[0].children] as HTMLElement[];
     }
 
