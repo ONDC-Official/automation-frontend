@@ -1,4 +1,4 @@
-import React, { useCallback, useRef } from "react";
+import React, { useCallback, useRef, useSyncExternalStore } from "react";
 import JsonView from "@uiw/react-json-view";
 import { useLocation } from "react-router-dom";
 import { SelectedType } from "@pages/protocol-playground/ui/types";
@@ -29,11 +29,6 @@ type NodeContext = {
     value?: unknown;
 };
 
-/** True for object/array nodes — these render via a different internal path (no `JsonView.Row`
- *  wrapper), so their comment action has to be attached in `KeyName` instead, right after the key. */
-const isContainerValue = (value: unknown): boolean =>
-    typeof value === "object" && value !== null && !(value instanceof Date);
-
 type JsonViewRowProps = Omit<
     React.HTMLAttributes<HTMLDivElement>,
     "onMouseEnter" | "onMouseLeave"
@@ -52,12 +47,56 @@ export interface RowHoverActions {
     unpin: () => void;
 }
 
-/** Container-node triggers aren't tied to the library's hover-only copy icon (see below), so
- *  there's nothing to pin. */
+/** Object/array nodes render via `NestedOpen`, not `JsonView.Row`, so there's no row-level
+ *  onMouseEnter/onMouseLeave we can reach to keep the built-in copy icon mounted — pin/unpin
+ *  are no-ops for those. */
 const NOOP_ROW_HOVER: RowHoverActions = { pin: () => {}, unpin: () => {} };
 
 type JsonViewKeyNameProps = React.HTMLAttributes<HTMLSpanElement> & {
     className?: string;
+};
+
+type JsonViewCountInfoExtraProps = React.HTMLAttributes<HTMLSpanElement> & {
+    className?: string;
+};
+
+/**
+ * Bridges "is this object/array key hovered" from `JsonView.KeyName` to the trailing comment
+ * trigger rendered via `JsonView.CountInfoExtra` — the two render independently for the same
+ * node (siblings in both the React tree and, ultimately, the DOM), so there's no shared
+ * ancestor/descendant relationship a CSS `group`/`peer` selector can hang off. Confirmed by
+ * inspection: the key's own `<span>` (from `KeyNameComp`) is nested one level deeper than the
+ * row's actual flat sibling group — inside a wrapper `KayName` renders around the quote marks —
+ * while `CountInfoExtra`'s trigger sits directly in that flat group. They share a *grandparent*,
+ * not a parent, which every CSS sibling/descendant combinator requires. Plain JS + a
+ * `useSyncExternalStore` subscription sidesteps that entirely.
+ */
+interface ContainerHoverStore {
+    isHovered: (key: object) => boolean;
+    setHovered: (key: object, value: boolean) => void;
+    subscribe: (key: object, listener: () => void) => () => void;
+}
+
+const createContainerHoverStore = (): ContainerHoverStore => {
+    const hovered = new WeakMap<object, boolean>();
+    const listeners = new WeakMap<object, Set<() => void>>();
+    return {
+        isHovered: (key) => hovered.get(key) ?? false,
+        setHovered: (key, value) => {
+            if (hovered.get(key) === value) return;
+            hovered.set(key, value);
+            listeners.get(key)?.forEach((listener) => listener());
+        },
+        subscribe: (key, listener) => {
+            let set = listeners.get(key);
+            if (!set) {
+                set = new Set();
+                listeners.set(key, set);
+            }
+            set.add(listener);
+            return () => set.delete(listener);
+        },
+    };
 };
 
 const getSelectedClass = (
@@ -179,6 +218,38 @@ const JsonFieldRow: React.FC<{
     );
 };
 
+/**
+ * The comment trigger for object/array rows, rendered via `JsonView.CountInfoExtra` (see
+ * `JsonViewer` below) so it lands at the end of the row next to the built-in copy icon, matching
+ * leaf rows. Visibility is driven by `ContainerHoverStore` rather than CSS, since there's no
+ * shared ancestor to hang a `group`/`peer` hover selector off (see that store's comment) —
+ * `JsonView.KeyName` reports hover state into the store keyed by the node's own object identity,
+ * and this component subscribes to that same key.
+ */
+const ContainerCommentTrigger: React.FC<{
+    path: string;
+    hoverKey: object;
+    hoverStore: ContainerHoverStore;
+    renderFieldCommentAction: NonNullable<JsonViewerProps["renderFieldCommentAction"]>;
+}> = ({ path, hoverKey, hoverStore, renderFieldCommentAction }) => {
+    const isHovered = useSyncExternalStore(
+        useCallback((listener) => hoverStore.subscribe(hoverKey, listener), [hoverStore, hoverKey]),
+        useCallback(() => hoverStore.isHovered(hoverKey), [hoverStore, hoverKey])
+    );
+
+    return (
+        <span
+            className={cn(
+                "ml-1 inline-flex align-middle transition-opacity focus-within:opacity-100 has-data-[state=open]:opacity-100",
+                isHovered ? "opacity-100" : "opacity-0"
+            )}
+            onClick={(e) => e.stopPropagation()}
+        >
+            {renderFieldCommentAction(path, NOOP_ROW_HOVER)}
+        </span>
+    );
+};
+
 const JsonViewer: React.FC<JsonViewerProps> = ({
     data,
     isSelected,
@@ -191,6 +262,18 @@ const JsonViewer: React.FC<JsonViewerProps> = ({
 }) => {
     const location = useLocation();
     const isDeveloperGuide = location.pathname.includes("developer-guide");
+
+    // Object/array nodes reach `JsonView.CountInfoExtra` (see below) with only `{ value, keyName }`
+    // in context — no `keys`, so `derivePathFromNode` can't recover the full ancestor chain there.
+    // `JsonView.KeyName` renders earlier for the same node with full context, so it stashes the
+    // correct path here (keyed by the node's own object identity) for `CountInfoExtra` to read.
+    // Safe because `NestedOpen`'s children are a fixed, ordered array — KeyName always precedes
+    // CountInfoExtra in the same render pass — though that ordering is an internal detail of
+    // `@uiw/react-json-view`, not a documented contract.
+    const containerPathByValueRef = useRef(new WeakMap<object, string>());
+    // See `ContainerHoverStore`'s comment: bridges "is this key hovered" from `JsonView.KeyName`
+    // to the trailing trigger rendered via `JsonView.CountInfoExtra`, since no CSS selector can.
+    const containerHoverStoreRef = useRef(createContainerHoverStore());
 
     return (
         <AppJsonViewer
@@ -210,22 +293,50 @@ const JsonViewer: React.FC<JsonViewerProps> = ({
                 render={(props: JsonViewKeyNameProps, ctx: NodeContext) => {
                     const path = derivePathFromNode(ctx);
                     const selectedClass = getSelectedClass(isSelected, path);
-                    // Object/array nodes (e.g. `"descriptor": {...}`) render via `NestedOpen`, not
-                    // `JsonView.Row` — this is the only override point their key name passes
-                    // through, so the comment trigger lands right after the key text here instead
-                    // of next to the copy icon at the end of the line (there's no hook for that).
-                    const isContainer = isContainerValue(ctx?.value);
+
+                    if (renderFieldCommentAction && ctx?.value && typeof ctx.value === "object") {
+                        containerPathByValueRef.current.set(ctx.value as object, path);
+                    }
+
+                    const isContainer = !!(
+                        renderFieldCommentAction &&
+                        ctx?.value &&
+                        typeof ctx.value === "object"
+                    );
+                    const containerHoverKey = isContainer ? (ctx.value as object) : undefined;
 
                     return (
                         <span
                             {...props}
                             title={path}
-                            className={cn(
-                                props.className,
-                                "cursor-pointer",
-                                selectedClass,
-                                renderFieldCommentAction && isContainer && "group/containerkey"
-                            )}
+                            className={cn(props.className, "cursor-pointer", selectedClass)}
+                            ref={(el: HTMLSpanElement | null) => {
+                                if (!el || !containerHoverKey) return;
+                                // Two DOM levels up from this span is the row's real hover
+                                // boundary — the flat row element that also directly contains
+                                // the trailing comment trigger — so entering/leaving anywhere in
+                                // that shared box (key, copy icon, or comment icon) fires once,
+                                // instead of dropping hover the instant the cursor leaves just
+                                // the key text on its way to the icons.
+                                const row = el.parentElement?.parentElement;
+                                if (!row) return;
+                                const handleEnter = () =>
+                                    containerHoverStoreRef.current.setHovered(
+                                        containerHoverKey,
+                                        true
+                                    );
+                                const handleLeave = () =>
+                                    containerHoverStoreRef.current.setHovered(
+                                        containerHoverKey,
+                                        false
+                                    );
+                                row.addEventListener("mouseenter", handleEnter);
+                                row.addEventListener("mouseleave", handleLeave);
+                                return () => {
+                                    row.removeEventListener("mouseenter", handleEnter);
+                                    row.removeEventListener("mouseleave", handleLeave);
+                                };
+                            }}
                             onClick={(e) => {
                                 e.stopPropagation();
                                 const key = String(ctx?.keyName ?? "");
@@ -234,15 +345,32 @@ const JsonViewer: React.FC<JsonViewerProps> = ({
                             }}
                         >
                             {props.children}
-                            {renderFieldCommentAction && isContainer && (
-                                <span
-                                    className="ml-1 inline-flex align-middle opacity-0 group-hover/containerkey:opacity-100 focus-within:opacity-100 has-data-[state=open]:opacity-100 transition-opacity"
-                                    onClick={(e) => e.stopPropagation()}
-                                >
-                                    {renderFieldCommentAction(path, NOOP_ROW_HOVER)}
-                                </span>
-                            )}
                         </span>
+                    );
+                }}
+            />
+            {/* Object/array rows only: `CountInfoExtra` sits right before the built-in `Copied`
+                icon in `NestedOpen`'s render order, and is the one override point positioned at
+                the *end* of the row rather than next to the key — so the trigger lands in the
+                same visual slot (adjacent to the copy icon) as it does on leaf rows below,
+                instead of up by the key. */}
+            <JsonView.CountInfoExtra
+                as="span"
+                render={(_props: JsonViewCountInfoExtraProps, ctx: NodeContext) => {
+                    if (!renderFieldCommentAction || !ctx?.value || typeof ctx.value !== "object") {
+                        return undefined;
+                    }
+                    const hoverKey = ctx.value as object;
+                    const path =
+                        containerPathByValueRef.current.get(hoverKey) ?? derivePathFromNode(ctx);
+
+                    return (
+                        <ContainerCommentTrigger
+                            path={path}
+                            hoverKey={hoverKey}
+                            hoverStore={containerHoverStoreRef.current}
+                            renderFieldCommentAction={renderFieldCommentAction}
+                        />
                     );
                 }}
             />
