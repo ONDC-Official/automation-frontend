@@ -23,6 +23,7 @@ const DeveloperGuideGettingStartedContent: FC = () => {
         rightPanelOpen,
         setRightPanelOpen,
         toc,
+        tocOffset,
     } = useDocsSectionSelection({ docSlugs, docs: docsRecord });
 
     const resolveSectionLabel = useCallback(
@@ -77,23 +78,22 @@ const DeveloperGuideGettingStartedContent: FC = () => {
                 </div>
                 <div
                     className={cn(
-                        "shrink-0 overflow-hidden transition-[max-width,opacity] duration-300 ease-in-out",
+                        "shrink-0 self-start sticky overflow-hidden transition-[max-width,opacity] duration-300 ease-in-out",
                         rightPanelOpen
                             ? "max-w-80 opacity-100"
                             : "max-w-0 opacity-0 pointer-events-none"
                     )}
+                    style={{ top: tocOffset, height: `calc(100vh - ${tocOffset}px)` }}
                 >
-                    <div className="w-80 h-full flex flex-col min-h-0 rounded-lg bg-white dark:bg-surface-elevated border border-slate-200 dark:border-border-default overflow-hidden">
-                        <div className="flex-1 min-h-0 overflow-y-auto">
-                            <CommentsPanel
-                                key={commentsRefreshKey}
-                                selectedPath={selectedSectionId}
-                                commentScope={commentScope}
-                                selectionLabel={selectedSectionLabel}
-                                resolvePathLabel={resolveSectionLabel}
-                                emptySelectionMessage="Select a section to add comments."
-                            />
-                        </div>
+                    <div className="w-80 h-full">
+                        <CommentsPanel
+                            key={commentsRefreshKey}
+                            selectedPath={selectedSectionId}
+                            commentScope={commentScope}
+                            selectionLabel={selectedSectionLabel}
+                            resolvePathLabel={resolveSectionLabel}
+                            emptySelectionMessage="Select a section to add comments."
+                        />
                     </div>
                 </div>
             </div>

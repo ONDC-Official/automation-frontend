@@ -13,6 +13,8 @@ import CommentsPanel from "./CommentsPanel";
 import NotesPanel from "./NotesPanel";
 import { getLeafRowsForApi, getValueAtPath, type RawTableAction } from "./attributePanelUtils";
 import { Button } from "@components/Shadcn/Button";
+import { resolveCommentScope } from "@/types/comment-scope";
+import { useInlineCommentJsonField } from "./useInlineCommentJsonField";
 
 type RightPanelTab = "attributes" | "comments" | "notes";
 
@@ -88,9 +90,8 @@ const FlowActionDetails: FC<FlowActionDetailsProps> = ({
         [setSearchParams]
     );
 
-    const handleKeyClick = useCallback(
-        (path: string, _k: string, e: MouseEvent) => {
-            e.stopPropagation();
+    const selectPath = useCallback(
+        (path: string) => {
             setSelectedPathState(path);
             setSearchParams(
                 (prev) => {
@@ -103,6 +104,30 @@ const FlowActionDetails: FC<FlowActionDetailsProps> = ({
         },
         [setSearchParams]
     );
+
+    const handleKeyClick = useCallback(
+        (path: string, _k: string, e: MouseEvent) => {
+            e.stopPropagation();
+            selectPath(path);
+        },
+        [selectPath]
+    );
+
+    const commentScope = useMemo(
+        () => resolveCommentScope(undefined, { useCaseId, flowId, actionApi, domain, version }),
+        [useCaseId, flowId, actionApi, domain, version]
+    );
+
+    const handleFieldCommentPosted = useCallback(() => {
+        setRightPanelOpen(true);
+        setRightPanelTab("comments");
+    }, [setRightPanelTab]);
+
+    const { renderFieldCommentAction, commentsRefreshKey } = useInlineCommentJsonField({
+        commentScope,
+        selectPath,
+        onPosted: handleFieldCommentPosted,
+    });
 
     const isSelected = useCallback(
         (path: string) => ({
@@ -172,6 +197,7 @@ const FlowActionDetails: FC<FlowActionDetailsProps> = ({
                         // Reserves room for the absolutely-positioned right-panel
                         // toggle above, which overlaps the toolbar's right edge.
                         toolbarClassName="pr-12"
+                        renderFieldCommentAction={renderFieldCommentAction}
                     />
                     <Button
                         variant="default"
@@ -216,6 +242,7 @@ const FlowActionDetails: FC<FlowActionDetailsProps> = ({
                         )}
                         {rightPanelTab === "comments" && (
                             <CommentsPanel
+                                key={commentsRefreshKey}
                                 selectedPath={selectedPath}
                                 actionApi={actionApi}
                                 useCaseId={useCaseId}

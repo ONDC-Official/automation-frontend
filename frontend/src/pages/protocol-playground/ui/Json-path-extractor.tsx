@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback, useRef } from "react";
 import JsonView from "@uiw/react-json-view";
 import { useLocation } from "react-router-dom";
 import { SelectedType } from "@pages/protocol-playground/ui/types";
@@ -26,11 +26,35 @@ const appendPathSegment = (basePath: string, key: string | number): string => {
 type NodeContext = {
     keyName?: string | number;
     keys?: Array<string | number>;
+    value?: unknown;
 };
 
-type JsonViewRowProps = React.HTMLAttributes<HTMLDivElement> & {
+/** True for object/array nodes — these render via a different internal path (no `JsonView.Row`
+ *  wrapper), so their comment action has to be attached in `KeyName` instead, right after the key. */
+const isContainerValue = (value: unknown): boolean =>
+    typeof value === "object" && value !== null && !(value instanceof Date);
+
+type JsonViewRowProps = Omit<
+    React.HTMLAttributes<HTMLDivElement>,
+    "onMouseEnter" | "onMouseLeave"
+> & {
     className?: string;
+    // Loosened to optional-argument so `pin`/`unpin` (below) can re-trigger these outside of a
+    // real mouse event, e.g. `rowProps.onMouseEnter?.()`.
+    onMouseEnter?: (e?: React.MouseEvent<HTMLDivElement>) => void;
+    onMouseLeave?: (e?: React.MouseEvent<HTMLDivElement>) => void;
 };
+
+/** Lets a row action (e.g. the comment trigger) keep the row's hover-only tools — like the
+ *  built-in copy icon — mounted for as long as it needs, even after the cursor leaves the row. */
+export interface RowHoverActions {
+    pin: () => void;
+    unpin: () => void;
+}
+
+/** Container-node triggers aren't tied to the library's hover-only copy icon (see below), so
+ *  there's nothing to pin. */
+const NOOP_ROW_HOVER: RowHoverActions = { pin: () => {}, unpin: () => {} };
 
 type JsonViewKeyNameProps = React.HTMLAttributes<HTMLSpanElement> & {
     className?: string;
@@ -74,7 +98,86 @@ interface JsonViewerProps {
     onCollapse?: () => void;
     invertTheme?: boolean;
     toolbarClassName?: string;
+    /** Renders an inline action (e.g. a comment trigger) next to a field's built-in copy icon. */
+    renderFieldCommentAction?: (path: string, rowHover: RowHoverActions) => React.ReactNode;
 }
+
+/**
+ * A single row's `div`, split out from the inline `JsonView.Row` render prop so it can use hooks:
+ * it tracks real hover state itself so `renderFieldCommentAction` can "pin" the row's tools-visible
+ * state (which otherwise fully unmounts the built-in copy icon on mouse-leave) for as long as its
+ * own popover is open — without pinning, the copy icon disappearing out from under an
+ * open popover shifts the trigger left and makes the popover jump.
+ */
+const JsonFieldRow: React.FC<{
+    rowProps: JsonViewRowProps;
+    path: string;
+    selectedClass: string;
+    keyName: string | number | undefined;
+    handleKeyClick: JsonViewerProps["handleKeyClick"];
+    renderFieldCommentAction?: (path: string, rowHover: RowHoverActions) => React.ReactNode;
+}> = ({ rowProps, path, selectedClass, keyName, handleKeyClick, renderFieldCommentAction }) => {
+    const isHoveringRef = useRef(false);
+    const isPinnedRef = useRef(false);
+
+    const handleMouseEnter = useCallback(
+        (e: React.MouseEvent<HTMLDivElement>) => {
+            isHoveringRef.current = true;
+            rowProps.onMouseEnter?.(e);
+        },
+        [rowProps]
+    );
+    const handleMouseLeave = useCallback(
+        (e: React.MouseEvent<HTMLDivElement>) => {
+            isHoveringRef.current = false;
+            if (isPinnedRef.current) return;
+            rowProps.onMouseLeave?.(e);
+        },
+        [rowProps]
+    );
+    const pin = useCallback(() => {
+        isPinnedRef.current = true;
+        rowProps.onMouseEnter?.();
+    }, [rowProps]);
+    const unpin = useCallback(() => {
+        isPinnedRef.current = false;
+        if (!isHoveringRef.current) rowProps.onMouseLeave?.();
+    }, [rowProps]);
+
+    return (
+        <div
+            {...rowProps}
+            title={path}
+            className={cn(
+                rowProps.className,
+                "cursor-pointer",
+                selectedClass,
+                renderFieldCommentAction && "group/jsonfield"
+            )}
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
+            onClick={(e) => {
+                const key = String(keyName ?? "");
+                handleKeyClick(path, key, e as React.MouseEvent);
+                rowProps.onClick?.(e);
+            }}
+        >
+            {rowProps.children}
+            {renderFieldCommentAction && (
+                <span
+                    // Mirrors GithubMarkdown's heading-comment trigger: hidden until the row
+                    // is hovered/focused, and kept visible via has-data-[state=open] while its
+                    // popover is open (the popover portals to document.body, so the cursor
+                    // leaving this row would otherwise hide the trigger mid-interaction).
+                    className="ml-1 inline-flex align-middle opacity-0 group-hover/jsonfield:opacity-100 focus-within:opacity-100 has-data-[state=open]:opacity-100 transition-opacity"
+                    onClick={(e) => e.stopPropagation()}
+                >
+                    {renderFieldCommentAction(path, { pin, unpin })}
+                </span>
+            )}
+        </div>
+    );
+};
 
 const JsonViewer: React.FC<JsonViewerProps> = ({
     data,
@@ -84,6 +187,7 @@ const JsonViewer: React.FC<JsonViewerProps> = ({
     onExpand: _onExpand,
     isExpanded: _isExpanded,
     toolbarClassName,
+    renderFieldCommentAction,
 }) => {
     const location = useLocation();
     const isDeveloperGuide = location.pathname.includes("developer-guide");
@@ -106,19 +210,39 @@ const JsonViewer: React.FC<JsonViewerProps> = ({
                 render={(props: JsonViewKeyNameProps, ctx: NodeContext) => {
                     const path = derivePathFromNode(ctx);
                     const selectedClass = getSelectedClass(isSelected, path);
+                    // Object/array nodes (e.g. `"descriptor": {...}`) render via `NestedOpen`, not
+                    // `JsonView.Row` — this is the only override point their key name passes
+                    // through, so the comment trigger lands right after the key text here instead
+                    // of next to the copy icon at the end of the line (there's no hook for that).
+                    const isContainer = isContainerValue(ctx?.value);
 
                     return (
                         <span
                             {...props}
                             title={path}
-                            className={cn(props.className, "cursor-pointer", selectedClass)}
+                            className={cn(
+                                props.className,
+                                "cursor-pointer",
+                                selectedClass,
+                                renderFieldCommentAction && isContainer && "group/containerkey"
+                            )}
                             onClick={(e) => {
                                 e.stopPropagation();
                                 const key = String(ctx?.keyName ?? "");
                                 handleKeyClick(path, key, e as React.MouseEvent);
                                 props.onClick?.(e);
                             }}
-                        />
+                        >
+                            {props.children}
+                            {renderFieldCommentAction && isContainer && (
+                                <span
+                                    className="ml-1 inline-flex align-middle opacity-0 group-hover/containerkey:opacity-100 focus-within:opacity-100 has-data-[state=open]:opacity-100 transition-opacity"
+                                    onClick={(e) => e.stopPropagation()}
+                                >
+                                    {renderFieldCommentAction(path, NOOP_ROW_HOVER)}
+                                </span>
+                            )}
+                        </span>
                     );
                 }}
             />
@@ -129,15 +253,13 @@ const JsonViewer: React.FC<JsonViewerProps> = ({
                     const selectedClass = getSelectedClass(isSelected, path);
 
                     return (
-                        <div
-                            {...props}
-                            title={path}
-                            className={cn(props.className, "cursor-pointer", selectedClass)}
-                            onClick={(e) => {
-                                const key = String(ctx?.keyName ?? "");
-                                handleKeyClick(path, key, e as React.MouseEvent);
-                                props.onClick?.(e);
-                            }}
+                        <JsonFieldRow
+                            rowProps={props}
+                            path={path}
+                            selectedClass={selectedClass}
+                            keyName={ctx?.keyName}
+                            handleKeyClick={handleKeyClick}
+                            renderFieldCommentAction={renderFieldCommentAction}
                         />
                     );
                 }}

@@ -33,6 +33,7 @@ const DocsViewer: FC<DocsViewerProps> = ({ docs, useCaseId, domain, version }) =
         rightPanelOpen,
         setRightPanelOpen,
         toc,
+        tocOffset,
     } = useDocsSectionSelection({
         docSlugs: slugs,
         docs,
@@ -135,25 +136,24 @@ const DocsViewer: FC<DocsViewerProps> = ({ docs, useCaseId, domain, version }) =
 
                 <div
                     className={cn(
-                        "shrink-0 overflow-hidden transition-[max-width,margin-left,opacity] duration-300 ease-in-out",
+                        "shrink-0 self-start sticky overflow-hidden transition-[max-width,margin-left,opacity] duration-300 ease-in-out",
                         rightPanelOpen
                             ? "max-w-80 ml-4 opacity-100"
                             : "max-w-0 ml-0 opacity-0 pointer-events-none"
                     )}
+                    style={{ top: tocOffset, height: `calc(100vh - ${tocOffset}px)` }}
                 >
-                    <div className="w-80 h-full flex flex-col min-h-0 rounded-lg bg-white dark:bg-surface-elevated overflow-hidden">
-                        <div className="flex-1 min-h-0 overflow-y-auto">
-                            {commentScope && (
-                                <CommentsPanel
-                                    key={commentsRefreshKey}
-                                    selectedPath={selectedSectionId}
-                                    commentScope={commentScope}
-                                    selectionLabel={selectedSectionLabel}
-                                    resolvePathLabel={resolveSectionLabel}
-                                    emptySelectionMessage="Select a section to add comments."
-                                />
-                            )}
-                        </div>
+                    <div className="w-80 h-full">
+                        {commentScope && (
+                            <CommentsPanel
+                                key={commentsRefreshKey}
+                                selectedPath={selectedSectionId}
+                                commentScope={commentScope}
+                                selectionLabel={selectedSectionLabel}
+                                resolvePathLabel={resolveSectionLabel}
+                                emptySelectionMessage="Select a section to add comments."
+                            />
+                        )}
                     </div>
                 </div>
             </div>

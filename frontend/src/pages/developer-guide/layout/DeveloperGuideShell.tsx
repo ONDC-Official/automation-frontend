@@ -1,5 +1,5 @@
 import { FC, useCallback, useEffect, useMemo, useState } from "react";
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 import { ArrowLeftIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import DeveloperGuideCollapsedNavBar from "./DeveloperGuideCollapsedNavBar";
 import DeveloperGuideNavBackButton from "./DeveloperGuideNavBackButton";
@@ -15,6 +15,7 @@ import { useDevGuideShellServerState } from "@store/selectors/devGuideSelectors"
 import { NAV_STATUS_LABEL, NAV_STATUS_STYLES, type NavStatus } from "../shared/statusPlaceholders";
 import { Button } from "@components/Shadcn/Button";
 import Input from "@components/Shadcn/Input";
+import { ROUTES } from "@constants/routes";
 
 const STATUS_LEGEND_ORDER: NavStatus[] = ["released", "drafted", "to-be-deprecated", "deprecated"];
 
@@ -39,6 +40,7 @@ const DeveloperGuideShellMain: FC = () => (
 
 const DeveloperGuideShell: FC = () => {
     const dispatch = useAppDispatch();
+    const location = useLocation();
     const navSidebarOpen = useAppSelector((state) => state.devGuideShell.navSidebarOpen);
     const toggleNavSidebar = useCallback(() => dispatch(toggleNavSidebarAction()), [dispatch]);
     const { navTree, isLoading, loadError, isNavEnriching } = useDevGuideShellServerState();
@@ -54,6 +56,17 @@ const DeveloperGuideShell: FC = () => {
         () => filterNavTree(navTree, searchQuery),
         [navTree, searchQuery]
     );
+
+    // The bare `/developer-guide` index route immediately client-redirects to Getting Started
+    // (see Routes/index.tsx) via <Navigate>, whose effect only fires after the first paint —
+    // and only once <Outlet> has actually rendered it, so <Outlet> must keep rendering
+    // unconditionally here or the redirect can never fire. Mounting the *sidebar* for that
+    // instantaneous pathname would show every section collapsed for one frame before the
+    // redirect flips it open, so only the sidebar tree is held back until it resolves.
+    const isPendingIndexRedirect =
+        (location.pathname === ROUTES.DEVELOPER_GUIDE ||
+            location.pathname === `${ROUTES.DEVELOPER_GUIDE}/`) &&
+        !location.hash;
 
     if (isLoading) {
         return <LoadingOverlay />;
@@ -110,7 +123,7 @@ const DeveloperGuideShell: FC = () => {
                             <p className="px-2 py-4 text-sm text-red-600 dark:text-red-400">
                                 {loadError}
                             </p>
-                        ) : (
+                        ) : isPendingIndexRedirect ? null : (
                             <DeveloperGuideSidebar
                                 nodes={filteredNavTree}
                                 searchQuery={searchQuery}

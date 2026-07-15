@@ -24,17 +24,21 @@ function findScrollableAncestor(el: HTMLElement): HTMLElement | null {
  * internal `overflow-y: auto` content pane if one exists in the ancestor
  * chain, otherwise the window — instead of assuming the document scrolls.
  *
- * No-ops when the section is already comfortably visible, so repeated or
- * already-in-view navigation doesn't cause a jump at all.
+ * No-ops when the section is already comfortably visible, so passive
+ * mount/hash-sync effects don't cause a jump. Pass `force: true` for a
+ * deliberate user action (e.g. clicking a heading), which should always
+ * reposition the target under the sticky header regardless of where it
+ * currently sits in the viewport.
  */
-export function scrollToSectionWithOffset(id: string, offset: number, comfortGap = 16): void {
+export function scrollToSectionWithOffset(id: string, offset: number, force = false): void {
     const el = document.getElementById(id);
     if (!el) return;
 
+    const comfortGap = 16;
     const rect = el.getBoundingClientRect();
     const hiddenBehindStickyHeader = rect.top < offset + comfortGap;
     const belowViewport = rect.top > window.innerHeight - comfortGap;
-    if (!hiddenBehindStickyHeader && !belowViewport) return;
+    if (!force && !hiddenBehindStickyHeader && !belowViewport) return;
 
     const delta = rect.top - offset - comfortGap;
     const scrollContainer = findScrollableAncestor(el);

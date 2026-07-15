@@ -1,34 +1,32 @@
 import { useState, type FC } from "react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/Shadcn/Popover";
-import { Button } from "@/components/Shadcn/Button";
-import CommentComposer from "../flowActionDetails/CommentsPanel/CommentComposer";
+import { Button } from "@components/Shadcn/Button";
+import CommentComposer from "./CommentsPanel/CommentComposer";
 import { IconComment } from "../shared/icons";
 
-interface HeadingCommentTriggerProps {
-    sectionId: string;
+interface JsonFieldCommentTriggerProps {
+    path: string;
     isLoggedIn: boolean;
-    onSubmit: (sectionId: string, text: string) => Promise<boolean>;
-    /** Called after the comment is successfully posted, so the caller can select the section and reveal it in the sidebar. */
-    onPosted: (sectionId: string) => void;
-    /** Whether this heading's popover is the currently-open one — owned by the caller so only one heading stays open at a time. */
+    onSubmit: (path: string, text: string) => Promise<boolean>;
+    /** Called after the comment is successfully posted, so the caller can select the field and reveal it in the sidebar. */
+    onPosted: (path: string) => void;
+    /** Whether this field's popover is the currently-open one — owned by the caller so only one field stays open at a time. */
     open: boolean;
-    /** Requests that this heading's popover open/close — the caller is the single source of truth for `open`. */
+    /** Requests that this field's popover open/close — the caller is the single source of truth for `open` (and keeps the row's built-in copy icon mounted while open via pin/unpin). */
     onOpenChange: (open: boolean) => void;
 }
 
 /**
- * Hover-revealed heading affordance that opens a popover reusing the same comment-creation flow
- * as the sidebar. Auth state and the create-comment mutation live one level up (shared across
- * every heading on the page) rather than here, since this renders once per heading — submitting
- * state stays local (rather than the mutation hook's own `isLoading`) so posting from one
- * heading doesn't change `onSubmit`'s identity and force every other heading to remount.
+ * Icon-only, hover-revealed affordance rendered next to the JSON tree's built-in copy icon.
+ * Reuses the same popover + comment-creation flow as the developer-guide heading comment
+ * trigger (`HeadingCommentTrigger`), just anchored to a JSON path instead of a section id.
  *
  * `open` is fully controlled by the caller (no local open state here): the caller tracks a single
- * "which heading is open" id, so switching headings is one state update — the old one's `open`
- * prop and the new one's flip in the same render, with no effect round-trip in between.
+ * "which field is open" path, so switching fields is one state update — the old one's `open` prop
+ * and the new one's flip in the same render, with no effect round-trip in between.
  */
-const HeadingCommentTrigger: FC<HeadingCommentTriggerProps> = ({
-    sectionId,
+const JsonFieldCommentTrigger: FC<JsonFieldCommentTriggerProps> = ({
+    path,
     isLoggedIn,
     onSubmit,
     onPosted,
@@ -50,12 +48,12 @@ const HeadingCommentTrigger: FC<HeadingCommentTriggerProps> = ({
         if (!comment) return;
         setError(null);
         setIsSubmitting(true);
-        const ok = await onSubmit(sectionId, comment);
+        const ok = await onSubmit(path, comment);
         setIsSubmitting(false);
         if (ok) {
             setText("");
             onOpenChange(false);
-            onPosted(sectionId);
+            onPosted(path);
         } else {
             setError("Failed to post comment");
         }
@@ -67,19 +65,27 @@ const HeadingCommentTrigger: FC<HeadingCommentTriggerProps> = ({
                 <Button
                     type="button"
                     variant="ghost"
+                    size="icon-xs"
                     title="Add comment"
-                    aria-label="Add comment to this section"
-                    className="inline-flex items-center gap-1 h-6 pl-1.5 pr-2 rounded-full text-xs font-medium bg-sky-500/10 border border-sky-500/20 text-sky-600 hover:bg-sky-500 hover:text-white hover:border-sky-500 dark:bg-sky-500/15 dark:border-sky-500/30 dark:text-sky-300 dark:hover:bg-sky-500 dark:hover:text-white shadow-sm transition-colors"
+                    aria-label="Add comment to this field"
+                    onClick={(e) => e.stopPropagation()}
+                    className="inline-flex items-center justify-center rounded text-(--w-rjv-copied-color,currentColor)"
                 >
                     <IconComment className="w-3.5 h-3.5" />
-                    Comment
                 </Button>
             </PopoverTrigger>
-            <PopoverContent align="start" className="w-80 max-h-[70vh] overflow-y-auto">
+            <PopoverContent
+                align="start"
+                className="w-80 max-h-[70vh] overflow-y-auto"
+                onClick={(e) => e.stopPropagation()}
+            >
                 <div className="px-4 py-2.5 border-b border-slate-200 dark:border-border-default bg-slate-50/70 dark:bg-surface-muted/40">
                     <h3 className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
                         Add Comment
                     </h3>
+                    <p className="mt-1 text-xs font-mono text-slate-400 truncate" title={path}>
+                        {path}
+                    </p>
                 </div>
                 {isLoggedIn ? (
                     <>
@@ -102,4 +108,4 @@ const HeadingCommentTrigger: FC<HeadingCommentTriggerProps> = ({
     );
 };
 
-export default HeadingCommentTrigger;
+export default JsonFieldCommentTrigger;

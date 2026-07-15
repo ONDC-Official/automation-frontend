@@ -1,4 +1,4 @@
-import { type FC, useState, useEffect, useMemo } from "react";
+import { type FC, memo, useState, useEffect, useMemo } from "react";
 import React from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -261,11 +261,11 @@ const components: Components = {
     },
 };
 
-const GithubMarkdown: FC<GithubMarkdownProps> = ({
+const GithubMarkdown: FC<GithubMarkdownProps> = memo(function GithubMarkdown({
     content,
     onSectionClick,
     renderHeadingAction,
-}) => {
+}) {
     const markdownComponents = useMemo<Components>(() => {
         if (!onSectionClick) return components;
 
@@ -276,7 +276,12 @@ const GithubMarkdown: FC<GithubMarkdownProps> = ({
         const headingAction = (id?: string) =>
             id && renderHeadingAction ? (
                 <span
-                    className="shrink-0 opacity-0 scale-95 group-hover/heading:opacity-100 group-hover/heading:scale-100 group-focus-within/heading:opacity-100 group-focus-within/heading:scale-100 focus-within:opacity-100 focus-within:scale-100 transition-all duration-150"
+                    // `has-[[data-state=open]]` keeps this visible while the popover is open even
+                    // though the mouse has left `.group/heading` — Radix portals PopoverContent to
+                    // document.body, so moving the cursor into it exits the group-hover/focus-within
+                    // DOM subtree, and without this the trigger would shrink back to opacity-0/scale-95
+                    // mid-interaction, shifting its anchor rect and making the popover jump sideways.
+                    className="shrink-0 opacity-0 scale-95 group-hover/heading:opacity-100 group-hover/heading:scale-100 group-focus-within/heading:opacity-100 group-focus-within/heading:scale-100 focus-within:opacity-100 focus-within:scale-100 has-data-[state=open]:opacity-100 has-data-[state=open]:scale-100 transition-all duration-150"
                     onClick={(e: React.MouseEvent) => e.stopPropagation()}
                     onKeyDown={(e: React.KeyboardEvent) => e.stopPropagation()}
                 >
@@ -284,13 +289,36 @@ const GithubMarkdown: FC<GithubMarkdownProps> = ({
                 </span>
             ) : null;
 
+        // Same click/keyboard handling for every heading level: prevent the wrapping anchor's
+        // native (instant) hash jump and go through `onSectionClick` instead, which drives the
+        // app's smooth-scroll. Previously only h2 had this, so clicking an h1/h3/h4 heading (most
+        // headings in FAQ-style docs) fell through to the native jump and felt instant/jarring.
+        const headingClickProps = (id?: string) =>
+            id
+                ? {
+                      role: "button" as const,
+                      tabIndex: 0,
+                      onClick: (e: React.MouseEvent) => {
+                          e.preventDefault();
+                          onSectionClick(id);
+                      },
+                      onKeyDown: (e: React.KeyboardEvent) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                              e.preventDefault();
+                              onSectionClick(id);
+                          }
+                      },
+                  }
+                : {};
+
         return {
             ...components,
             h1({ children, id }) {
                 return (
                     <h1
                         id={id}
-                        className="group/heading flex items-center gap-2 text-2xl font-bold text-foreground pb-2 border-b border-border scroll-mt-24"
+                        {...headingClickProps(id)}
+                        className="group/heading flex items-center gap-2 text-2xl font-bold text-foreground pb-2 border-b border-border scroll-mt-24 cursor-pointer"
                     >
                         <span className="min-w-0">{children}</span>
                         {headingAction(id)}
@@ -301,15 +329,7 @@ const GithubMarkdown: FC<GithubMarkdownProps> = ({
                 return (
                     <h2
                         id={id}
-                        role={id ? "button" : undefined}
-                        tabIndex={id ? 0 : undefined}
-                        onClick={() => id && onSectionClick(id)}
-                        onKeyDown={(e) => {
-                            if (id && (e.key === "Enter" || e.key === " ")) {
-                                e.preventDefault();
-                                onSectionClick(id);
-                            }
-                        }}
+                        {...headingClickProps(id)}
                         className="group/heading flex items-center gap-2 text-xl font-semibold text-foreground py-2 border-b border-border scroll-mt-24 cursor-pointer hover:text-sky-700 dark:hover:text-sky-400 transition-colors"
                     >
                         <span className="min-w-0">{children}</span>
@@ -321,7 +341,8 @@ const GithubMarkdown: FC<GithubMarkdownProps> = ({
                 return (
                     <h3
                         id={id}
-                        className="group/heading flex items-center gap-2 text-base font-semibold text-foreground mt-5 mb-2 scroll-mt-24"
+                        {...headingClickProps(id)}
+                        className="group/heading flex items-center gap-2 text-base font-semibold text-foreground mt-5 mb-2 scroll-mt-24 cursor-pointer hover:text-sky-700 dark:hover:text-sky-400 transition-colors"
                     >
                         <span className="min-w-0">{children}</span>
                         {headingAction(id)}
@@ -332,7 +353,8 @@ const GithubMarkdown: FC<GithubMarkdownProps> = ({
                 return (
                     <h4
                         id={id}
-                        className="group/heading flex items-center gap-2 text-sm font-semibold text-foreground mt-4 mb-1.5 scroll-mt-24"
+                        {...headingClickProps(id)}
+                        className="group/heading flex items-center gap-2 text-sm font-semibold text-foreground mt-4 mb-1.5 scroll-mt-24 cursor-pointer hover:text-sky-700 dark:hover:text-sky-400 transition-colors"
                     >
                         <span className="min-w-0">{children}</span>
                         {headingAction(id)}
@@ -357,6 +379,6 @@ const GithubMarkdown: FC<GithubMarkdownProps> = ({
             </ReactMarkdown>
         </div>
     );
-};
+});
 
 export default GithubMarkdown;
