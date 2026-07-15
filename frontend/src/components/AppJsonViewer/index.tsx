@@ -49,9 +49,12 @@ const AppJsonViewer = ({
         () => ({
             ...(effectiveTheme === "dark" ? githubDarkTheme : githubLightTheme),
             ...(transparentBackground ? { "--w-rjv-background-color": "transparent" } : {}),
+            // Fullscreen gets slightly larger type + line-height for large-display readability;
+            // embedded is untouched since this spreads an empty object when isFullscreen is false.
+            ...(isFullscreen ? { fontSize: 14, lineHeight: 1.6 } : {}),
             ...(style || {}),
         }),
-        [effectiveTheme, transparentBackground, style]
+        [effectiveTheme, transparentBackground, isFullscreen, style]
     );
     const expandAll = () => {
         setCollapsed(false);
@@ -92,7 +95,13 @@ const AppJsonViewer = ({
                     onToggleFullscreen={() => setIsFullscreen((v) => !v)}
                 />
             )}
-            <div className={cn("overflow-auto flex-1 px-1 py-1", viewerWrapperClassName)}>
+            <div
+                className={cn(
+                    "flex-1 overflow-auto",
+                    isFullscreen ? "px-6 py-5" : "px-1 py-1",
+                    viewerWrapperClassName
+                )}
+            >
                 <JsonView
                     key={viewerKey}
                     value={filteredValue as object}
@@ -100,6 +109,7 @@ const AppJsonViewer = ({
                     collapsed={collapsed}
                     displayDataTypes={displayDataTypes}
                     shortenTextAfterLength={shortenTextAfterLength}
+                    indentWidth={isFullscreen ? 22 : undefined}
                     {...jsonViewProps}
                 >
                     {children}
@@ -113,8 +123,16 @@ const AppJsonViewer = ({
     if (isFullscreen && showFullscreen) {
         return (
             <div className="fixed inset-0 z-50 bg-slate-100 dark:bg-surface-page flex flex-col">
-                <div className="flex-1 min-h-0 p-6 overflow-auto flex items-center justify-center">
-                    <div className={cn("h-full w-full mx-20", containerClassName)}>
+                <div className="flex-1 min-h-0 flex justify-center overflow-hidden px-4 py-4 sm:px-8 sm:py-6 lg:px-12 lg:py-8">
+                    <div
+                        className={cn(
+                            "flex h-full w-full max-w-[1800px] flex-col overflow-hidden rounded-xl border shadow-2xl",
+                            invertTheme
+                                ? "border-gray-700 bg-gray-900 text-gray-100"
+                                : "border-slate-200 bg-white text-slate-700 dark:border-border-default dark:bg-surface-elevated",
+                            containerClassName
+                        )}
+                    >
                         {viewerContent}
                     </div>
                 </div>

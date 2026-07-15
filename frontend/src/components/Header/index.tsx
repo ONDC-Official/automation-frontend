@@ -59,7 +59,7 @@ const Header = () => (
                         </DrawerContent>
                     </Drawer>
 
-                    <div className="hidden items-center gap-2 nav:flex">
+                    <div className="hidden items-center gap-2 nav:flex nav:gap-3">
                         <UserProfileSection />
                         <ThemeToggle />
                     </div>
