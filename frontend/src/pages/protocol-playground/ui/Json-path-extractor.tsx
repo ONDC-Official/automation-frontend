@@ -240,7 +240,10 @@ const ContainerCommentTrigger: React.FC<{
     return (
         <span
             className={cn(
-                "ml-1 inline-flex align-middle transition-opacity focus-within:opacity-100 has-data-[state=open]:opacity-100",
+                // `CountInfoExtra` renders before the built-in copy icon in the DOM (`Copied`),
+                // but the row is a flex container (`NestedOpen`), so `order-1` visually moves
+                // this after it — standardizing on copy-then-comment without touching DOM order.
+                "order-1 ml-1 inline-flex align-middle transition-opacity focus-within:opacity-100 has-data-[state=open]:opacity-100",
                 isHovered ? "opacity-100" : "opacity-0"
             )}
             onClick={(e) => e.stopPropagation()}
