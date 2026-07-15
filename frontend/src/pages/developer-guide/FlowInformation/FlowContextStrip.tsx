@@ -4,19 +4,35 @@ import type { FlowEntry } from "../types";
 interface FlowContextStripProps {
     flow: FlowEntry;
     action: string;
+    /** Shown as a chip next to the domain chip only while the action selector sidebar is collapsed, since the selected action is otherwise not visible anywhere. */
+    actionLabel?: string;
+    sidebarOpen: boolean;
 }
 
 /** Minimal one-line flow context (name, version/domain, tags) shown above an action's detail — the full FlowDetailsAndSummary is reserved for when no action is selected yet. */
-const FlowContextStrip: FC<FlowContextStripProps> = ({ flow, action }) => {
+const FlowContextStrip: FC<FlowContextStripProps> = ({
+    flow,
+    action,
+    actionLabel,
+    sidebarOpen,
+}) => {
     const flowName = flow.flowId.split("_").join(" ");
     const description = flow.config?.steps.find((step) => step.action_id === action)?.description;
 
     return (
         <div className="border-b border-slate-200 dark:border-border-default pb-4">
-            <div className="flex items-start justify-between gap-4">
-                <span className="font-semibold text-slate-800 dark:text-slate-100">{flowName}</span>
+            <div className="grid grid-cols-[60%_40%] items-start gap-4">
+                <span className="font-semibold text-slate-800 dark:text-slate-100 wrap-break-word">
+                    {flowName}
+                </span>
 
                 <div className="flex flex-wrap items-center justify-end gap-1.5">
+                    {!sidebarOpen && actionLabel && (
+                        <span className="inline-flex items-center rounded-full px-3 py-1 bg-sky-50 text-sky-700 text-[11px] font-semibold leading-none dark:bg-sky-500/10 dark:text-sky-300">
+                            {actionLabel}
+                        </span>
+                    )}
+
                     {(flow.domain || flow.version) && (
                         <span className="inline-flex items-center rounded-full px-3 py-1 bg-sky-50 text-sky-700 text-[11px] font-semibold leading-none dark:bg-sky-500/10 dark:text-sky-300">
                             {flow.domain}
