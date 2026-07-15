@@ -35,63 +35,85 @@ const AppJsonViewerToolbar = ({
     onCollapseAll,
     onDownload,
     onToggleFullscreen,
-}: ToolbarProps) => (
-    <div
-        className={cn(
-            "flex items-center gap-2 px-4 py-2.5 border-b backdrop-blur-xs overflow-x-auto",
-            invertTheme
-                ? "border-gray-700 bg-gray-800"
-                : "border-slate-200 bg-brand-light dark:bg-surface-elevated/90",
-            toolbarClassName
-        )}
-    >
-        {showSearch && (
-            <SearchField
-                value={searchTerm}
-                onChange={(e) => onSearchTermChange(e.target.value)}
-                placeholder={searchPlaceholder}
-                containerClassName="w-44 shrink-0"
-                className={cn(
-                    "h-8 text-[12px] font-mono",
-                    invertTheme &&
-                        "bg-gray-900! border-gray-700! text-gray-100! placeholder:text-gray-500!"
-                )}
-            />
-        )}
-        {showExpandCollapse && (
-            <>
-                <Button variant="outline" size="sm" onClick={onExpandAll}>
-                    Expand All
-                </Button>
-                <Button variant="outline" size="sm" onClick={onCollapseAll}>
-                    Collapse All
-                </Button>
-            </>
-        )}
-        {(showDownload || showFullscreen) && (
-            <div className="flex items-center gap-1.5 shrink-0 pl-2 border-l border-slate-200">
-                {showDownload && (
-                    <Button size="sm" onClick={onDownload}>
-                        Download
+}: ToolbarProps) => {
+    // Fullscreen keeps search pinned left (growing with available space, for comfortable
+    // typing) and the action buttons pinned right via `ml-auto`, wrapping onto their own row
+    // instead of clipping when the viewport is too narrow to fit everything on one line — the
+    // embedded toolbar keeps its original compact, left-packed, non-wrapping layout untouched.
+    const controlSize = isFullscreen ? "default" : "sm";
+    const iconSize = isFullscreen ? "icon" : "icon-sm";
+
+    return (
+        <div
+            className={cn(
+                "flex items-center border-b backdrop-blur-xs",
+                isFullscreen
+                    ? "flex-wrap gap-x-3 gap-y-2 px-4 py-3 sm:gap-4 sm:px-6 sm:py-3.5"
+                    : "gap-2 px-4 py-2.5 overflow-x-auto",
+                invertTheme
+                    ? "border-gray-700 bg-gray-800"
+                    : "border-slate-200 bg-brand-light dark:bg-surface-elevated/90",
+                toolbarClassName
+            )}
+        >
+            {showSearch && (
+                <SearchField
+                    value={searchTerm}
+                    onChange={(e) => onSearchTermChange(e.target.value)}
+                    placeholder={searchPlaceholder}
+                    containerClassName={cn(
+                        isFullscreen ? "flex-1 min-w-[180px] max-w-md" : "w-44 shrink-0"
+                    )}
+                    className={cn(
+                        "font-mono",
+                        isFullscreen ? "h-9 text-[13px]" : "h-8 text-[12px]",
+                        invertTheme &&
+                            "bg-gray-900! border-gray-700! text-gray-100! placeholder:text-gray-500!"
+                    )}
+                />
+            )}
+            {showExpandCollapse && (
+                <>
+                    <Button variant="outline" size={controlSize} onClick={onExpandAll}>
+                        Expand All
                     </Button>
-                )}
-                {showFullscreen && (
-                    <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon-sm"
-                        onClick={onToggleFullscreen}
-                    >
-                        {isFullscreen ? (
-                            <ArrowsPointingInIcon className="size-4" />
-                        ) : (
-                            <ArrowsPointingOutIcon className="size-4" />
-                        )}
+                    <Button variant="outline" size={controlSize} onClick={onCollapseAll}>
+                        Collapse All
                     </Button>
-                )}
-            </div>
-        )}
-    </div>
-);
+                </>
+            )}
+            {(showDownload || showFullscreen) && (
+                <div
+                    className={cn(
+                        "flex items-center shrink-0 border-l",
+                        isFullscreen ? "gap-2 pl-4 ml-auto" : "gap-1.5 pl-2",
+                        invertTheme ? "border-gray-700" : "border-slate-200",
+                        isFullscreen && !invertTheme && "dark:border-border-default"
+                    )}
+                >
+                    {showDownload && (
+                        <Button size={controlSize} onClick={onDownload}>
+                            Download
+                        </Button>
+                    )}
+                    {showFullscreen && (
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            size={iconSize}
+                            onClick={onToggleFullscreen}
+                        >
+                            {isFullscreen ? (
+                                <ArrowsPointingInIcon className="size-4" />
+                            ) : (
+                                <ArrowsPointingOutIcon className="size-4" />
+                            )}
+                        </Button>
+                    )}
+                </div>
+            )}
+        </div>
+    );
+};
 
 export default AppJsonViewerToolbar;

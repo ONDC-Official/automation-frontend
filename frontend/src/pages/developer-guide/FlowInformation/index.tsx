@@ -137,6 +137,10 @@ const FlowInformation: FC<FlowInformationProps> = ({
                                         <FlowContextStrip
                                             flow={selectedFlowData}
                                             action={selectedFlowAction}
+                                            actionLabel={
+                                                selectedStep?.action_label ?? selectedStep?.api
+                                            }
+                                            sidebarOpen={sidebarOpen}
                                         />
                                     )}
 
