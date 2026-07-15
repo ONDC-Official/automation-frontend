@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { useLocation, useSearchParams } from "react-router-dom";
+import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { scrollToSectionWithOffset } from "@components/TableOfContents/scrollToSection";
 import { extractMarkdownToc } from "@utils/markdownToc";
 import { useAppDispatch, useAppSelector } from "@store/hooks";
@@ -16,18 +16,33 @@ export function useDocsSectionSelection({ docSlugs, docs }: UseDocsSectionSelect
     const [searchParams, setSearchParams] = useSearchParams();
     const { hash } = useLocation();
 
+    // react-router's `setSearchParams`/`navigate` are recreated whenever the location changes
+    // (they close over the current value), so a `useCallback` that lists them as deps gets a new
+    // identity on every navigation — including the ones these callbacks themselves trigger. Route
+    // calls through refs so `selectSection`/`setActiveDocSlug` stay referentially stable.
+    const setSearchParamsRef = useRef(setSearchParams);
+    setSearchParamsRef.current = setSearchParams;
+
+    const navigate = useNavigate();
+    const navigateRef = useRef(navigate);
+    navigateRef.current = navigate;
+
+    // Only multi-doc surfaces (e.g. DocsViewer's domain tabs) need a `doc` query param to say
+    // which tab is active; single-doc pages already get that from the route's `:slug`.
+    const isMultiDoc = docSlugs.length > 1;
     const defaultDocSlug = docSlugs[0] ?? "";
     const urlDocSlug = searchParams.get("doc");
     const activeDocSlug = useMemo(() => {
-        if (urlDocSlug && docSlugs.includes(urlDocSlug)) return urlDocSlug;
+        if (isMultiDoc && urlDocSlug && docSlugs.includes(urlDocSlug)) return urlDocSlug;
         return defaultDocSlug;
-    }, [urlDocSlug, docSlugs, defaultDocSlug]);
+    }, [isMultiDoc, urlDocSlug, docSlugs, defaultDocSlug]);
 
     const content = docs[activeDocSlug] ?? "";
 
-    const [selectedSectionId, setSelectedSectionIdState] = useState<string | null>(
-        () => searchParams.get("attr") ?? (hash ? hash.slice(1) : null)
-    );
+    // The selected section is just the URL hash — no separate `attr` query param. Keeping two
+    // representations of "which section is selected" in sync was the source of the visible
+    // jump/flicker on every heading click; the hash alone is exactly what preprod uses.
+    const selectedSectionId = hash ? hash.slice(1) : null;
 
     const dispatch = useAppDispatch();
     const rightPanelOpen = useAppSelector((state) => state.devGuideShell.commentsPanelOpen);
@@ -39,15 +54,9 @@ export function useDocsSectionSelection({ docSlugs, docs }: UseDocsSectionSelect
         return toc.find((entry) => entry.id === selectedSectionId)?.text;
     }, [selectedSectionId, toc]);
 
-    // Keep selection in sync with URL (clears when attr is dropped on route change).
+    // Keep doc param in sync with active slug (multi-doc surfaces only)
     useEffect(() => {
-        const attr = searchParams.get("attr");
-        setSelectedSectionIdState(attr ?? (hash ? hash.slice(1) : null));
-    }, [searchParams, hash]);
-
-    // Keep doc param in sync with active slug
-    useEffect(() => {
-        if (!activeDocSlug) return;
+        if (!isMultiDoc || !activeDocSlug) return;
         setSearchParams(
             (prev) => {
                 if (prev.get("doc") === activeDocSlug) return prev;
@@ -57,7 +66,7 @@ export function useDocsSectionSelection({ docSlugs, docs }: UseDocsSectionSelect
             },
             { replace: true }
         );
-    }, [activeDocSlug, setSearchParams]);
+    }, [isMultiDoc, activeDocSlug, setSearchParams]);
 
     // Scroll to hash on mount / hash change
     useEffect(() => {
@@ -69,68 +78,28 @@ export function useDocsSectionSelection({ docSlugs, docs }: UseDocsSectionSelect
         return () => cancelAnimationFrame(frame);
     }, [hash, content]);
 
-    // Sync attr from hash when hash changes
-    useEffect(() => {
-        if (!hash) return;
-        const id = hash.slice(1);
-        setSelectedSectionIdState(id);
-        setSearchParams(
+    const setActiveDocSlug = useCallback((slug: string) => {
+        setSearchParamsRef.current(
             (prev) => {
-                if (prev.get("attr") === id) return prev;
                 const next = new URLSearchParams(prev);
-                next.set("attr", id);
+                next.set("doc", slug);
                 return next;
             },
             { replace: true }
         );
-    }, [hash, setSearchParams]);
+    }, []);
 
-    // Scroll to attr on content load when attr is set without hash
-    useEffect(() => {
-        const attr = searchParams.get("attr");
-        if (!attr || hash) return;
-        const frame = requestAnimationFrame(() => {
-            scrollToSectionWithOffset(attr, TOC_TOP);
-        });
-        return () => cancelAnimationFrame(frame);
-    }, [content, hash, searchParams]);
-
-    const setActiveDocSlug = useCallback(
-        (slug: string) => {
-            setSearchParams(
-                (prev) => {
-                    const next = new URLSearchParams(prev);
-                    next.set("doc", slug);
-                    next.delete("attr");
-                    return next;
-                },
-                { replace: true }
-            );
-            setSelectedSectionIdState(null);
-        },
-        [setSearchParams]
-    );
-
-    const selectSection = useCallback(
-        (sectionId: string) => {
-            setSelectedSectionIdState(sectionId);
-            setSearchParams(
-                (prev) => {
-                    const next = new URLSearchParams(prev);
-                    next.set("attr", sectionId);
-                    return next;
-                },
-                { replace: true }
-            );
-            window.history.replaceState(
-                null,
-                "",
-                `${window.location.pathname}${window.location.search}#${sectionId}`
-            );
-            scrollToSectionWithOffset(sectionId, TOC_TOP);
-        },
-        [setSearchParams]
-    );
+    const selectSection = useCallback((sectionId: string) => {
+        navigateRef.current(
+            {
+                pathname: window.location.pathname,
+                search: window.location.search,
+                hash: `#${sectionId}`,
+            },
+            { replace: true }
+        );
+        scrollToSectionWithOffset(sectionId, TOC_TOP, true);
+    }, []);
 
     const setRightPanelOpen = useCallback(
         (open: boolean) => {

@@ -1,10 +1,9 @@
 import { useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@hooks/useAuth";
 import { useGitHubLogin } from "@hooks/useGitHubLogin";
 import { ROUTES } from "@constants/routes";
 import { Button } from "@components/Shadcn/Button";
-import LoadingOverlay from "@components/Shadcn/LoadingOverlay";
 import GitHubIcon from "@assets/svgs/GitHubIcon";
 import { UserProfileMenu } from "@components/Header/UserProfileMenu";
 import { trackEvent } from "@utils/analytics";
@@ -12,6 +11,7 @@ import { cn } from "@/lib/utils";
 
 export const UserProfileSection = ({ inDrawer = false }: { inDrawer?: boolean }) => {
     const navigate = useNavigate();
+    const location = useLocation();
     const { user, logout } = useAuth();
     const { startLogin, isLoginRedirecting } = useGitHubLogin();
 
@@ -22,8 +22,8 @@ export const UserProfileSection = ({ inDrawer = false }: { inDrawer?: boolean })
             label: user ? "PROFILE" : "LOGIN",
         });
 
-        startLogin();
-    }, [startLogin, user]);
+        startLogin(`${location.pathname}${location.search}${location.hash}`);
+    }, [location.hash, location.pathname, location.search, startLogin, user]);
 
     const handleLogout = useCallback(() => {
         try {
@@ -71,8 +71,6 @@ export const UserProfileSection = ({ inDrawer = false }: { inDrawer?: boolean })
                     Login with GitHub
                 </Button>
             )}
-
-            {isLoginRedirecting ? <LoadingOverlay /> : null}
         </div>
     );
 };

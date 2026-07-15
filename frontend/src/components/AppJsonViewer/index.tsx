@@ -1,4 +1,5 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 import JsonView from "@uiw/react-json-view";
 import { githubDarkTheme } from "@uiw/react-json-view/githubDark";
 import { githubLightTheme } from "@uiw/react-json-view/githubLight";
@@ -42,6 +43,19 @@ const AppJsonViewer = ({
     const [collapsed, setCollapsed] = useState(false);
     const [viewerKey, setViewerKey] = useState(0);
     const [isFullscreen, setIsFullscreen] = useState(false);
+    // Portaled to body (or the fullscreen element) so ancestor transforms — e.g. PageReveal's
+    // `page-reveal-child` — cannot turn `position: fixed` into a content-area-relative overlay
+    // that leaves the app header / breadcrumbs uncovered. Same pattern as LoadingOverlay.
+    const [portalTarget, setPortalTarget] = useState<Element>(
+        () => document.fullscreenElement ?? document.body
+    );
+    useEffect(() => {
+        if (!isFullscreen) return;
+        const update = () => setPortalTarget(document.fullscreenElement ?? document.body);
+        update();
+        document.addEventListener("fullscreenchange", update);
+        return () => document.removeEventListener("fullscreenchange", update);
+    }, [isFullscreen]);
     const showToolbarSection =
         showToolbar || showSearch || showExpandCollapse || showDownload || showFullscreen;
     const filteredValue = useMemo(() => filterJsonBySearch(value, searchTerm), [value, searchTerm]);
@@ -121,8 +135,11 @@ const AppJsonViewer = ({
         </>
     );
     if (isFullscreen && showFullscreen) {
-        return (
-            <div className="fixed inset-0 z-50 bg-slate-100 dark:bg-surface-page flex flex-col">
+        return createPortal(
+            <div
+                data-reveal-skip
+                className="fixed inset-0 z-50 bg-slate-100 dark:bg-surface-page flex flex-col"
+            >
                 <div className="flex-1 min-h-0 flex justify-center overflow-hidden px-4 py-4 sm:px-8 sm:py-6 lg:px-12 lg:py-8">
                     <div
                         className={cn(
@@ -136,7 +153,8 @@ const AppJsonViewer = ({
                         {viewerContent}
                     </div>
                 </div>
-            </div>
+            </div>,
+            portalTarget
         );
     }
     return (

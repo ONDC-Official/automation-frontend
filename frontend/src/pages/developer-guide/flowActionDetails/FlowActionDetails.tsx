@@ -13,6 +13,8 @@ import CommentsPanel from "./CommentsPanel";
 import NotesPanel from "./NotesPanel";
 import { getLeafRowsForApi, getValueAtPath, type RawTableAction } from "./attributePanelUtils";
 import { Button } from "@components/Shadcn/Button";
+import { resolveCommentScope } from "@/types/comment-scope";
+import { useInlineCommentJsonField } from "./useInlineCommentJsonField";
 
 type RightPanelTab = "attributes" | "comments" | "notes";
 
@@ -88,9 +90,8 @@ const FlowActionDetails: FC<FlowActionDetailsProps> = ({
         [setSearchParams]
     );
 
-    const handleKeyClick = useCallback(
-        (path: string, _k: string, e: MouseEvent) => {
-            e.stopPropagation();
+    const selectPath = useCallback(
+        (path: string) => {
             setSelectedPathState(path);
             setSearchParams(
                 (prev) => {
@@ -103,6 +104,30 @@ const FlowActionDetails: FC<FlowActionDetailsProps> = ({
         },
         [setSearchParams]
     );
+
+    const handleKeyClick = useCallback(
+        (path: string, _k: string, e: MouseEvent) => {
+            e.stopPropagation();
+            selectPath(path);
+        },
+        [selectPath]
+    );
+
+    const commentScope = useMemo(
+        () => resolveCommentScope(undefined, { useCaseId, flowId, actionApi, domain, version }),
+        [useCaseId, flowId, actionApi, domain, version]
+    );
+
+    const handleFieldCommentPosted = useCallback(() => {
+        setRightPanelOpen(true);
+        setRightPanelTab("comments");
+    }, [setRightPanelTab]);
+
+    const { renderFieldCommentAction, commentsRefreshKey } = useInlineCommentJsonField({
+        commentScope,
+        selectPath,
+        onPosted: handleFieldCommentPosted,
+    });
 
     const isSelected = useCallback(
         (path: string) => ({
@@ -152,11 +177,11 @@ const FlowActionDetails: FC<FlowActionDetailsProps> = ({
                     onClick={() => setRightPanelOpen((v) => !v)}
                     title={rightPanelOpen ? "Collapse details panel" : "Expand details panel"}
                     aria-label={rightPanelOpen ? "Collapse details panel" : "Expand details panel"}
-                    className="absolute top-5 right-3 z-10 flex items-center justify-center w-7 h-7 rounded-full bg-white dark:bg-surface-elevated border border-slate-200 dark:border-border-default shadow-sm hover:bg-slate-50 dark:hover:bg-surface-muted transition-colors"
+                    className="absolute top-5 right-3 z-10 flex items-center justify-center w-7 h-7 rounded-full bg-white dark:bg-surface-elevated border border-slate-200 dark:border-border-default shadow-sm hover:bg-slate-50 dark:hover:bg-surface-muted transition-none"
                 >
                     <ChevronRightIcon
                         className={cn(
-                            "w-3 h-3 text-slate-400 transition-transform duration-300 ease-in-out",
+                            "w-3 h-3 text-slate-400 transition-transform duration-300 ease-in-out motion-reduce:transition-none",
                             rightPanelOpen ? "" : "rotate-180"
                         )}
                     />
@@ -172,6 +197,7 @@ const FlowActionDetails: FC<FlowActionDetailsProps> = ({
                         // Reserves room for the absolutely-positioned right-panel
                         // toggle above, which overlaps the toolbar's right edge.
                         toolbarClassName="pr-12"
+                        renderFieldCommentAction={renderFieldCommentAction}
                     />
                     <Button
                         variant="default"
@@ -187,7 +213,7 @@ const FlowActionDetails: FC<FlowActionDetailsProps> = ({
             {/* Section 3 — outer wrapper max-width transitions (inner stays fixed-width → no content reflow → no jerk) */}
             <div
                 className={cn(
-                    "shrink-0 overflow-hidden transition-[max-width,margin-left,opacity] duration-300 ease-in-out",
+                    "shrink-0 overflow-hidden transition-[max-width,margin-left,opacity] duration-300 ease-in-out motion-reduce:transition-none",
                     rightPanelOpen
                         ? "max-w-80 ml-4 opacity-100"
                         : "max-w-0 ml-0 opacity-0 pointer-events-none"
@@ -216,6 +242,7 @@ const FlowActionDetails: FC<FlowActionDetailsProps> = ({
                         )}
                         {rightPanelTab === "comments" && (
                             <CommentsPanel
+                                key={commentsRefreshKey}
                                 selectedPath={selectedPath}
                                 actionApi={actionApi}
                                 useCaseId={useCaseId}

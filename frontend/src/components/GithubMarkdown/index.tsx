@@ -1,4 +1,4 @@
-import { type FC, useState, useEffect, useMemo } from "react";
+import { type FC, memo, useState, useEffect, useMemo } from "react";
 import React from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -17,6 +17,8 @@ import { Button } from "@/components/Shadcn/Button";
 interface GithubMarkdownProps {
     content: string;
     onSectionClick?: (id: string) => void;
+    /** Rendered next to a clickable heading (visible on hover/focus); e.g. an inline "add comment" trigger. */
+    renderHeadingAction?: (id: string) => React.ReactNode;
 }
 
 // Recursively extracts text from React children for copy
@@ -177,7 +179,7 @@ const components: Components = {
     },
     blockquote({ children }) {
         return (
-            <blockquote className="my-4 pl-4 border-l-4 border-border bg-muted py-3 pr-3 rounded-r-lg text-muted-foreground italic">
+            <blockquote className="mt-3 mb-2 rounded-lg bg-alert-50 px-4 py-3 text-[12px] font-regular text-n-300 not-italic dark:bg-alert-500/10 dark:text-n-60 [&_p]:m-0 [&_p]:text-[12px] [&_p]:text-n-300 [&_p]:dark:text-n-60">
                 {children}
             </blockquote>
         );
@@ -186,7 +188,7 @@ const components: Components = {
         return (
             <h1
                 id={id}
-                className="text-2xl font-bold text-foreground pb-2 border-b border-border scroll-mt-24"
+                className="text-2xl font-bold text-foreground mb-3 pb-2 border-b border-border scroll-mt-24"
             >
                 {children}
             </h1>
@@ -196,7 +198,7 @@ const components: Components = {
         return (
             <h2
                 id={id}
-                className="text-xl font-semibold text-foreground py-2 border-b border-border scroll-mt-24"
+                className="text-xl font-semibold text-foreground mt-8 mb-3 pb-2 border-b border-border scroll-mt-24"
             >
                 {children}
             </h2>
@@ -204,14 +206,14 @@ const components: Components = {
     },
     h3({ children, id }) {
         return (
-            <h3 id={id} className="text-base font-semibold text-foreground mt-5 mb-2 scroll-mt-24">
+            <h3 id={id} className="text-base font-semibold text-foreground mt-6 mb-2 scroll-mt-24">
                 {children}
             </h3>
         );
     },
     h4({ children, id }) {
         return (
-            <h4 id={id} className="text-sm font-semibold text-foreground mt-4 mb-1.5 scroll-mt-24">
+            <h4 id={id} className="text-sm font-semibold text-foreground mt-5 mb-1.5 scroll-mt-24">
                 {children}
             </h4>
         );
@@ -250,7 +252,8 @@ const components: Components = {
         return <p className="my-3 text-foreground leading-relaxed">{children}</p>;
     },
     hr() {
-        return <hr className="my-6 border-border" />;
+        // Spacing-only break — no visible rule (heading borders were removed for cleaner docs UI)
+        return <hr className="my-6 border-0" aria-hidden />;
     },
     img({ src, alt }) {
         return (
@@ -259,35 +262,111 @@ const components: Components = {
     },
 };
 
-const GithubMarkdown: FC<GithubMarkdownProps> = ({ content, onSectionClick }) => {
+const GithubMarkdown: FC<GithubMarkdownProps> = memo(function GithubMarkdown({
+    content,
+    onSectionClick,
+    renderHeadingAction,
+}) {
     const markdownComponents = useMemo<Components>(() => {
         if (!onSectionClick) return components;
+
+        // rehype-autolink-headings already wraps every heading level (h1-h4) in an
+        // `<a href="#id">`, so clicking any of them already navigates/selects via the
+        // hash-sync effect in useDocsSectionSelection. This just gives that same
+        // already-clickable heading a place to hang the hover action (e.g. comment icon).
+        const headingAction = (id?: string) =>
+            id && renderHeadingAction ? (
+                <span
+                    // `has-[[data-state=open]]` keeps this visible while the popover is open even
+                    // though the mouse has left `.group/heading` — Radix portals PopoverContent to
+                    // document.body, so moving the cursor into it exits the group-hover/focus-within
+                    // DOM subtree, and without this the trigger would shrink back to opacity-0/scale-95
+                    // mid-interaction, shifting its anchor rect and making the popover jump sideways.
+                    className="shrink-0 opacity-0 scale-95 group-hover/heading:opacity-100 group-hover/heading:scale-100 group-focus-within/heading:opacity-100 group-focus-within/heading:scale-100 focus-within:opacity-100 focus-within:scale-100 has-data-[state=open]:opacity-100 has-data-[state=open]:scale-100 transition-all duration-150"
+                    onClick={(e: React.MouseEvent) => e.stopPropagation()}
+                    onKeyDown={(e: React.KeyboardEvent) => e.stopPropagation()}
+                >
+                    {renderHeadingAction(id)}
+                </span>
+            ) : null;
+
+        // Same click/keyboard handling for every heading level: prevent the wrapping anchor's
+        // native (instant) hash jump and go through `onSectionClick` instead, which drives the
+        // app's smooth-scroll. Previously only h2 had this, so clicking an h1/h3/h4 heading (most
+        // headings in FAQ-style docs) fell through to the native jump and felt instant/jarring.
+        const headingClickProps = (id?: string) =>
+            id
+                ? {
+                      role: "button" as const,
+                      tabIndex: 0,
+                      onClick: (e: React.MouseEvent) => {
+                          e.preventDefault();
+                          onSectionClick(id);
+                      },
+                      onKeyDown: (e: React.KeyboardEvent) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                              e.preventDefault();
+                              onSectionClick(id);
+                          }
+                      },
+                  }
+                : {};
+
         return {
             ...components,
+            h1({ children, id }) {
+                return (
+                    <h1
+                        id={id}
+                        {...headingClickProps(id)}
+                        className="group/heading flex items-center gap-2 text-2xl font-bold text-foreground pb-2 border-b border-border scroll-mt-24 cursor-pointer"
+                    >
+                        <span className="min-w-0">{children}</span>
+                        {headingAction(id)}
+                    </h1>
+                );
+            },
             h2({ children, id }) {
                 return (
                     <h2
                         id={id}
-                        role={id ? "button" : undefined}
-                        tabIndex={id ? 0 : undefined}
-                        onClick={() => id && onSectionClick(id)}
-                        onKeyDown={(e) => {
-                            if (id && (e.key === "Enter" || e.key === " ")) {
-                                e.preventDefault();
-                                onSectionClick(id);
-                            }
-                        }}
-                        className="text-xl font-semibold text-foreground py-2 border-b border-border scroll-mt-24 cursor-pointer hover:text-sky-700 dark:hover:text-sky-400 transition-colors"
+                        {...headingClickProps(id)}
+                        className="group/heading flex items-center gap-2 text-xl font-semibold text-foreground py-2 border-b border-border scroll-mt-24 cursor-pointer hover:text-sky-700 dark:hover:text-sky-400 transition-colors"
                     >
-                        {children}
+                        <span className="min-w-0">{children}</span>
+                        {headingAction(id)}
                     </h2>
                 );
             },
+            h3({ children, id }) {
+                return (
+                    <h3
+                        id={id}
+                        {...headingClickProps(id)}
+                        className="group/heading flex items-center gap-2 text-base font-semibold text-foreground mt-5 mb-2 scroll-mt-24 cursor-pointer hover:text-sky-700 dark:hover:text-sky-400 transition-colors"
+                    >
+                        <span className="min-w-0">{children}</span>
+                        {headingAction(id)}
+                    </h3>
+                );
+            },
+            h4({ children, id }) {
+                return (
+                    <h4
+                        id={id}
+                        {...headingClickProps(id)}
+                        className="group/heading flex items-center gap-2 text-sm font-semibold text-foreground mt-4 mb-1.5 scroll-mt-24 cursor-pointer hover:text-sky-700 dark:hover:text-sky-400 transition-colors"
+                    >
+                        <span className="min-w-0">{children}</span>
+                        {headingAction(id)}
+                    </h4>
+                );
+            },
         };
-    }, [onSectionClick]);
+    }, [onSectionClick, renderHeadingAction]);
 
     return (
-        <div className="github-markdown text-foreground">
+        <div className="github-markdown text-foreground [&_blockquote+h2]:mt-4">
             <ReactMarkdown
                 remarkPlugins={[remarkGfm]}
                 rehypePlugins={[
@@ -301,6 +380,6 @@ const GithubMarkdown: FC<GithubMarkdownProps> = ({ content, onSectionClick }) =>
             </ReactMarkdown>
         </div>
     );
-};
+});
 
 export default GithubMarkdown;

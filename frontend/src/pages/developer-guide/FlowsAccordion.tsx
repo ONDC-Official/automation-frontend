@@ -102,7 +102,7 @@ const FlowsAccordion: FC<FlowsAccordionProps> = ({
                 variant="ghost"
                 onClick={() => handleStepClick(flowId, actionId)}
                 disabled={isTransitioning}
-                className={`h-auto w-full min-w-0 flex-col items-stretch px-3 py-2.5 rounded-lg border font-normal text-left transition-all duration-200 ${
+                className={`h-auto w-full min-w-0 flex-col items-stretch px-3 py-2.5 rounded-lg border font-normal text-left transition-[border-color,box-shadow] duration-200 ${
                     isSelected || isTransitioning
                         ? "border-sky-400 dark:border-sky-500 ring-2 ring-sky-100 dark:ring-sky-500/20 bg-white dark:bg-surface-elevated shadow-sm"
                         : "border-slate-200 bg-white dark:bg-surface-elevated hover:border-slate-300 hover:shadow-xs"
@@ -132,7 +132,7 @@ const FlowsAccordion: FC<FlowsAccordionProps> = ({
                             </svg>
                         )}
 
-                        <span className="min-w-0 flex-1 text-body-2 font-medium text-slate-800 break-words [overflow-wrap:anywhere] whitespace-normal">
+                        <span className="min-w-0 flex-1 text-body-2 font-medium text-slate-800 wrap-anywhere whitespace-normal">
                             {step.action_label ?? step.api}
                         </span>
                     </div>
@@ -154,24 +154,24 @@ const FlowsAccordion: FC<FlowsAccordionProps> = ({
                 return (
                     <div
                         key={flowIndex}
-                        className="bg-white dark:bg-surface-elevated rounded-xl shadow-sm hover:shadow-md overflow-hidden transition-all duration-300 border border-slate-200"
+                        className="bg-white dark:bg-surface-elevated rounded-xl shadow-sm hover:shadow-md overflow-hidden transition-shadow duration-300 border border-slate-200"
                     >
                         <Button
                             onClick={() => toggleFlow(flowIndex)}
                             type="button"
                             variant="ghost"
-                            className="h-auto w-full rounded-none p-4 font-normal text-left cursor-pointer bg-white dark:bg-surface-elevated hover:bg-slate-50 dark:hover:bg-surface-muted transition-colors duration-200 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-sky-400/60"
+                            className="h-auto w-full rounded-none p-4 font-normal text-left cursor-pointer bg-white dark:bg-surface-elevated hover:bg-slate-50 dark:hover:bg-surface-muted transition-none focus:outline-hidden focus-visible:ring-2 focus-visible:ring-sky-400/60"
                             aria-expanded={isOpen}
                         >
                             <div className="grid w-full min-w-0 grid-cols-[minmax(0,1fr)_auto] items-start gap-3">
                                 <div className="min-w-0">
-                                    <div className="text-body-1 font-semibold text-gray-900 break-words [overflow-wrap:anywhere] whitespace-normal leading-8">
+                                    <div className="text-body-1 font-semibold text-gray-900 wrap-anywhere whitespace-normal leading-8">
                                         {flowName}
                                     </div>
 
                                     {flow.description && (
                                         <p
-                                            className={`mt-1 text-[12px] leading-5 text-slate-500 break-words [overflow-wrap:anywhere] whitespace-normal ${
+                                            className={`mt-1 text-[12px] leading-5 text-slate-500 wrap-anywhere whitespace-normal ${
                                                 isOpen ? "" : "line-clamp-2"
                                             }`}
                                         >
@@ -189,7 +189,7 @@ const FlowsAccordion: FC<FlowsAccordionProps> = ({
                         </Button>
 
                         <div
-                            className={`grid transition-all duration-300 ease-in-out ${
+                            className={`grid transition-[grid-template-rows] duration-300 ease-in-out motion-reduce:transition-none ${
                                 isOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
                             }`}
                         >
