@@ -214,6 +214,23 @@ const CommentsPanel: FC<CommentsPanelProps> = ({
         [isLoggedIn, useApi, commentScope, mutate, setThreads]
     );
 
+    const deleteReply = useCallback(
+        async (replyId: string) => {
+            if (!isLoggedIn) return;
+            if (useApi && commentScope) {
+                await mutate(() => deleteComment(replyId).unwrap(), "Failed to delete reply");
+            } else {
+                setThreads((prev) =>
+                    prev.map((t) => ({
+                        ...t,
+                        replies: t.replies.filter((r) => r.id !== replyId),
+                    }))
+                );
+            }
+        },
+        [isLoggedIn, useApi, commentScope, mutate, setThreads]
+    );
+
     const handleReplyTextChange = useCallback((threadId: string, value: string) => {
         setReplyTextByThreadId((prev) => ({ ...prev, [threadId]: value }));
     }, []);
@@ -289,10 +306,16 @@ const CommentsPanel: FC<CommentsPanelProps> = ({
                                                 isReplying={replyingToId === thread.id}
                                                 onToggleResolved={toggleResolved}
                                                 onDelete={deleteThread}
+                                                onDeleteReply={deleteReply}
                                                 onStartReply={setReplyingToId}
                                                 onCancelReply={cancelReply}
                                                 onReplyTextChange={handleReplyTextChange}
                                                 onSubmitReply={addReply}
+                                                showPath
+                                                pathLabel={
+                                                    selectionLabel ??
+                                                    resolvePathLabel?.(thread.path)
+                                                }
                                             />
                                         ))}
                                 </div>
@@ -312,6 +335,7 @@ const CommentsPanel: FC<CommentsPanelProps> = ({
                                     isReplying={replyingToId === thread.id}
                                     onToggleResolved={toggleResolved}
                                     onDelete={deleteThread}
+                                    onDeleteReply={deleteReply}
                                     onStartReply={setReplyingToId}
                                     onCancelReply={cancelReply}
                                     onReplyTextChange={handleReplyTextChange}
