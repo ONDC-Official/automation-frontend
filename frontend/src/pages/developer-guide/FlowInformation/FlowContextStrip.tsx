@@ -21,18 +21,19 @@ const FlowContextStrip: FC<FlowContextStripProps> = ({
 
     return (
         <div className="border-b border-slate-200 dark:border-border-default pb-4">
-            <div className="grid grid-cols-[60%_40%] items-start gap-4">
-                <span className="font-semibold text-slate-800 dark:text-slate-100 wrap-break-word">
-                    {flowName}
-                </span>
-
-                <div className="flex flex-wrap items-center justify-end gap-1.5">
+            <div className="grid grid-cols-[60%_40%] items-start gap-4 ">
+                <div className="flex items-center gap-2">
+                    <span className="font-semibold text-slate-800 dark:text-slate-100 wrap-break-word">
+                        {flowName}
+                    </span>
                     {!sidebarOpen && actionLabel && (
                         <span className="inline-flex items-center rounded-full px-3 py-1 bg-sky-50 text-sky-700 text-[11px] font-semibold leading-none dark:bg-sky-500/10 dark:text-sky-300">
                             {actionLabel}
                         </span>
                     )}
+                </div>
 
+                <div className="flex flex-wrap pr-4 items-center justify-end gap-1.5">
                     {(flow.domain || flow.version) && (
                         <span className="inline-flex items-center rounded-full px-3 py-1 bg-sky-50 text-sky-700 text-[11px] font-semibold leading-none dark:bg-sky-500/10 dark:text-sky-300">
                             {flow.domain}
