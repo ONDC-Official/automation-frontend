@@ -23,5 +23,9 @@ export const supportInfoItems: SupportInfoItem[] = [
 ];
 
 export const COMMUNITY_CALL_URL = "https://meet.google.com/bpo-pwwh-fja";
-export const ONE_ON_ONE_URL = "mailto:team@ondc.org?subject=%5BWorkbench%5D%201-on-1%20Session";
+export const RETAIL_LOGISTIC_CALL_URL = "https://meet.google.com/bpo-pwwh-fja";
+export const MOBILITY_TRV_CALL_URL =
+    "https://calendar.google.com/calendar/u/0/appointments/schedules/AcZssZ18en13q2kUAJkiJXLB_S_xi4SH6bl95kkZCqaLyuGbSAv-bdCJW8h5qq14BN0ZF6VOoly0O6O7";
+export const FIS_CALL_URL =
+    "https://calendar.google.com/calendar/u/0/appointments/schedules/AcZssZ0LncntVAYA3Tp9gtqfRZ7SfkeuY5h9A0UqKHq7i1dy4ltqvEVZfSzwXYc0R9uvtpXBt78m-m7j";
 export const TICKET_URL = "https://github.com/ONDC-Official/automation-framework/issues/new";
