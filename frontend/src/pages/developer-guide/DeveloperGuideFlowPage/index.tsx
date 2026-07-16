@@ -7,7 +7,7 @@ import FlowInformation from "../FlowInformation";
 import DocsViewer from "../DocsViewer";
 import ErrorCodesTable from "../ErrorCodesTable";
 import SupportedActionsView from "../SupportedActionsView";
-import ChangelogView from "../ChangelogView";
+// import ChangelogView from "../ChangelogView";
 import { useDeveloperGuideNav } from "../layout/DeveloperGuideNav";
 import FlowPageHeader from "./FlowPageHeader";
 import { useDeveloperGuideFlowPageData } from "./useDeveloperGuideFlowPageData";
@@ -34,7 +34,7 @@ const DeveloperGuideFlowPage: FC = () => {
         supportedActions,
         hasErrorCodes,
         hasSupportedActions,
-        lazyChangelog,
+        // lazyChangelog,
         changelogLoading,
         apiUsecase,
     } = useDeveloperGuideFlowPageData();
@@ -138,10 +138,10 @@ const DeveloperGuideFlowPage: FC = () => {
                                     version={versionKey}
                                 />
                             ))}
-                        {activeView === "changelog" &&
+                        {/* {activeView === "changelog" &&
                             (changelogLoading ? null : (
                                 <ChangelogView changelogs={lazyChangelog || []} />
-                            ))}
+                            ))} */}
                     </div>
                 )}
             </div>

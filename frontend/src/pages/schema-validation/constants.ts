@@ -2,9 +2,9 @@
  * Constants for the Schema Validation page
  */
 
+import type { IAccordionStep } from "@components/Shadcn/Accordion/types";
 import { availableDomains } from "@constants/common";
 import { getDomainFriendlyName } from "@pages/developer-guide/domainGrouping";
-import { ISchemaGuideStepDefinition } from "@pages/schema-validation/types";
 
 /**
  * Example JSON payload shown in the schema guide accordion
@@ -36,21 +36,19 @@ export const EXAMPLE_PAYLOAD = `{
   }
 }`;
 
-/** Human-readable list of supported domains for the guide */
-export const domainSummary = availableDomains
-    .map(
-        (domain) =>
-            `${getDomainFriendlyName(domain.code)} (${domain.code}, Version: ${domain.version})`
-    )
-    .join(" / ");
+/** Supported domains shown as bullets in the schema guide accordion */
+export const domainGuideItems = availableDomains.map(
+    (domain) => `${getDomainFriendlyName(domain.code)} (${domain.code}, Version: ${domain.version})`
+);
 
 /** Step definitions for the schema validation how-to accordion */
-export const SCHEMA_GUIDE_STEPS: ISchemaGuideStepDefinition[] = [
+export const SCHEMA_GUIDE_STEPS: IAccordionStep[] = [
     {
         key: "1",
         label: "1. Workbench is Currently available for the following domains",
-        description: `${domainSummary} — others coming soon.`,
-        descriptionType: "text",
+        items: domainGuideItems,
+        description: "Others coming soon.",
+        descriptionType: "list",
     },
     {
         key: "2",

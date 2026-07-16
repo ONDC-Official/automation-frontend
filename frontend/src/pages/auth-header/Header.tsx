@@ -23,7 +23,7 @@ const Header: FC<HeaderProps> = ({ tabs, embedded = false }) => (
                     <p className="max-w-2xl text-body-1 leading-relaxed text-n-300 dark:text-n-60">
                         ONDC uses a cryptographic signature scheme to authenticate API requests
                         between network participants. The authorization header contains a digital
-                        signature created using BLAKE-512 hashing and Ed25519 elliptic curve
+                        signature created using BLAKE2b-512 hashing and Ed25519 elliptic curve
                         signatures.
                     </p>
                 </div>

@@ -40,16 +40,18 @@ const SupportCard: FC<{ card: ISupportChannelCard }> = ({ card }) => (
                 ))}
             </div>
         </CardContent>
-        <CardFooter className="mt-6 p-0">
-            <Button asChild className={card.ctaClassName}>
-                <a
-                    href={card.ctaHref}
-                    target={card.ctaExternal ? "_blank" : undefined}
-                    rel={card.ctaExternal ? "noopener noreferrer" : undefined}
-                >
-                    {card.ctaLabel}
-                </a>
-            </Button>
+        <CardFooter className={`mt-6 flex gap-2 p-0 ${card.ctas.length > 1 ? "flex-row" : ""}`}>
+            {card.ctas.map((cta) => (
+                <Button key={cta.label} asChild className={cta.className}>
+                    <a
+                        href={cta.href}
+                        target={cta.external ? "_blank" : undefined}
+                        rel={cta.external ? "noopener noreferrer" : undefined}
+                    >
+                        {cta.label}
+                    </a>
+                </Button>
+            ))}
         </CardFooter>
     </Card>
 );

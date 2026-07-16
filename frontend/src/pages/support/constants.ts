@@ -1,5 +1,11 @@
 import { ISupportChannelCard, ISupportHowItWorksStep } from "@pages/support/types";
-import { COMMUNITY_CALL_URL, ONE_ON_ONE_URL, TICKET_URL } from "@constants/support";
+import {
+    COMMUNITY_CALL_URL,
+    FIS_CALL_URL,
+    MOBILITY_TRV_CALL_URL,
+    RETAIL_LOGISTIC_CALL_URL,
+    TICKET_URL,
+} from "@constants/support";
 
 export const supportChannelCards: ISupportChannelCard[] = [
     {
@@ -17,10 +23,14 @@ export const supportChannelCards: ISupportChannelCard[] = [
             { label: "Time", value: "10:00 AM - 11:00 AM" },
             { label: "Format", value: "Google Meet" },
         ],
-        ctaLabel: "Join Next Community Call",
-        ctaHref: COMMUNITY_CALL_URL,
-        ctaExternal: true,
-        ctaClassName: "w-full bg-success-500 text-n-0 hover:bg-green-600 hover:text-n-0",
+        ctas: [
+            {
+                label: "Join Next Community Call",
+                href: COMMUNITY_CALL_URL,
+                external: true,
+                className: "w-full bg-success-500 text-n-0 hover:bg-green-600 hover:text-n-0",
+            },
+        ],
     },
     {
         key: "one-on-one",
@@ -38,10 +48,27 @@ export const supportChannelCards: ISupportChannelCard[] = [
             { label: "Format", value: "Meet" },
             { label: "Response", value: "24 hrs" },
         ],
-        ctaLabel: "Book a 1-on-1 Session",
-        ctaHref: ONE_ON_ONE_URL,
-        ctaExternal: true,
-        ctaClassName: "w-full bg-brand-normal text-n-0 hover:bg-brand-normal-hover hover:text-n-0",
+        ctas: [
+            {
+                label: "Retail/Logistic",
+                href: RETAIL_LOGISTIC_CALL_URL,
+                external: true,
+                className: "flex-1 bg-brand-dark text-n-0 hover:bg-brand-dark-hover hover:text-n-0",
+            },
+            {
+                label: "Mobility / TRV",
+                href: MOBILITY_TRV_CALL_URL,
+                external: true,
+                className: "flex-1 bg-alert-500 text-n-0 hover:bg-alert-800 hover:text-n-0",
+            },
+            {
+                label: "FIS",
+                href: FIS_CALL_URL,
+                external: true,
+                className:
+                    "flex-1 bg-brand-light text-brand-normal hover:bg-brand-light-active hover:text-brand-normal-hover",
+            },
+        ],
     },
     {
         key: "raise-ticket",
@@ -55,10 +82,14 @@ export const supportChannelCards: ISupportChannelCard[] = [
             "Track status and updates in one place",
         ],
         stats: [{ label: "Platform", value: "GitHub" }],
-        ctaLabel: "Raise a New Ticket",
-        ctaHref: TICKET_URL,
-        ctaExternal: true,
-        ctaClassName: "w-full bg-error-500 text-n-0 hover:bg-error-800 hover:text-n-0",
+        ctas: [
+            {
+                label: "Raise a New Ticket",
+                href: TICKET_URL,
+                external: true,
+                className: "w-full bg-error-500 text-n-0 hover:bg-error-800 hover:text-n-0",
+            },
+        ],
     },
 ];
 
