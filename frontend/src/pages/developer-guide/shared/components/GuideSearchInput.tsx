@@ -6,12 +6,12 @@ import Input from "@components/Shadcn/Input";
 import { Button } from "@components/Shadcn/Button";
 
 const inputVariants = cva(
-    "w-full rounded-xl border border-slate-200 bg-white dark:bg-surface-elevated pl-10 pr-10 py-2.5 text-sm text-slate-800 placeholder-slate-400 shadow-xs transition focus:outline-hidden focus:border-current",
+    "w-full rounded-xl border border-n-30 dark:border-border-default bg-n-0 dark:bg-surface-elevated pl-10 pr-10 py-2.5 text-body-2 text-n-800 dark:text-n-0 placeholder-n-300 dark:placeholder-n-60 shadow-xs transition focus:outline-hidden focus:border-current",
     {
         variants: {
             accent: {
-                sky: "focus:ring-2 focus:ring-sky-400/30 focus:border-sky-400",
-                rose: "focus:ring-2 focus:ring-rose-400/30 focus:border-rose-400",
+                sky: "focus:ring-2 focus:ring-brand-light-active focus:border-brand-normal",
+                rose: "focus:ring-2 focus:ring-error-50 focus:border-error-500",
             },
         },
         defaultVariants: { accent: "sky" },
@@ -33,7 +33,7 @@ const GuideSearchInput: FC<GuideSearchInputProps> = ({
     accent,
     className,
 }) => (
-    <div className={cn("relative w-1/5", className)}>
+    <div className={cn("relative", className)}>
         <Input
             type="text"
             value={value}
@@ -41,13 +41,13 @@ const GuideSearchInput: FC<GuideSearchInputProps> = ({
             placeholder={placeholder}
             className={inputVariants({ accent })}
         />
-        <IconSearch className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+        <IconSearch className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-n-300 dark:text-n-60" />
         {value.trim().length > 0 && (
             <Button
                 variant="ghost"
                 onClick={() => onChange("")}
                 aria-label="Clear search"
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-n-300 hover:text-n-600 dark:text-n-60 dark:hover:text-n-0 transition"
             >
                 <IconClear className="h-4 w-4" />
             </Button>

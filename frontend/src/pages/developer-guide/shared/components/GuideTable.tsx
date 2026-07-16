@@ -42,12 +42,12 @@ export interface GuideTableProps<T> {
 const DENSITY_CLASSES = {
     compact: {
         table: "text-xs",
-        th: "px-3 py-2 font-semibold text-[11px] text-slate-500 uppercase tracking-wider",
+        th: "px-3 py-2 font-semibold text-caption-2 text-n-300 dark:text-n-60 uppercase tracking-wider",
         td: "px-3 py-2 align-top",
     },
     spacious: {
         table: "text-left",
-        th: "px-5 py-3.5 font-semibold text-xs text-slate-500 uppercase tracking-widest",
+        th: "px-5 py-3.5 font-semibold text-caption-2 text-n-300 dark:text-n-60 uppercase tracking-widest",
         td: "px-5 py-4 align-top",
     },
 };
@@ -92,13 +92,13 @@ function GuideTable<T>({
     return (
         <div
             className={cn(
-                "border border-slate-200 bg-white dark:bg-surface-elevated overflow-hidden px-5 py-4",
+                "border border-n-30 dark:border-border-default bg-n-0 dark:bg-surface-elevated overflow-hidden px-6 py-5",
                 rounded === "2xl" ? "rounded-2xl" : "rounded-xl",
                 shadow === "md" ? "shadow-md" : "shadow-xs"
             )}
         >
             {toolbar && (
-                <div className="bg-sky-50/60 dark:bg-sky-500/10 border-b border-slate-200 px-4 py-3  rounded-t-lg mb-4">
+                <div className="bg-n-10 dark:bg-surface-muted border border-n-30 dark:border-border-default px-4 py-3 rounded-xl mb-4">
                     {toolbar}
                 </div>
             )}
@@ -109,7 +109,7 @@ function GuideTable<T>({
                 <table className={cn("min-w-full table-fixed", densityClasses.table)}>
                     <thead
                         className={cn(
-                            "bg-slate-50 dark:bg-surface-muted border-b-2 border-slate-200",
+                            "bg-n-10 dark:bg-surface-muted border-b border-n-30 dark:border-border-default",
                             isScrollable && "sticky top-0 z-10"
                         )}
                     >
@@ -124,7 +124,7 @@ function GuideTable<T>({
                             ))}
                         </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-100">
+                    <tbody className="divide-y divide-n-20 dark:divide-border-default">
                         {displayedRows.map((row, index) => (
                             <tr key={rowKey(row, index)} className={rowClassName?.(row, index)}>
                                 {columns.map((col) => (

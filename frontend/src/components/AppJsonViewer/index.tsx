@@ -140,7 +140,7 @@ const AppJsonViewer = ({
                 data-reveal-skip
                 className="fixed inset-0 z-50 bg-slate-100 dark:bg-surface-page flex flex-col"
             >
-                <div className="flex-1 min-h-0 flex justify-center overflow-hidden px-4 py-4 sm:px-8 sm:py-6 lg:px-12 lg:py-8">
+                <div className="flex-1 min-h-0 flex justify-center overflow-hidden p-5">
                     <div
                         className={cn(
                             "flex h-full w-full max-w-[1800px] flex-col overflow-hidden rounded-xl border shadow-2xl",
