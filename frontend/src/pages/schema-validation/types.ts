@@ -59,13 +59,6 @@ export interface IUseSchemaValidationReturn {
     collapseValidationErrors: () => void;
 }
 
-export interface ISchemaGuideStepDefinition {
-    key: string;
-    label: string;
-    description?: string;
-    descriptionType?: "text" | "code";
-}
-
 /**
  * Result of a client-side validation step before the API call.
  */
