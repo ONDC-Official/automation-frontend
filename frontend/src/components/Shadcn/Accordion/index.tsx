@@ -29,6 +29,21 @@ const Accordion = ({ title, steps }: IAccordionProps) => (
                                 <pre className="bg-n-800 text-n-0 p-4 rounded-lg overflow-x-auto text-caption-1 font-mono dark:bg-n-900">
                                     <code>{step.description}</code>
                                 </pre>
+                            ) : step.descriptionType === "list" && step.items?.length ? (
+                                <div>
+                                    <div className="max-h-48 overflow-y-auto custom-scrollbar pr-1">
+                                        <ul className="list-disc space-y-1.5 pl-5 text-body-2 text-n-500 dark:text-n-60">
+                                            {step.items.map((item) => (
+                                                <li key={item}>{item}</li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                    {step.description ? (
+                                        <p className="mt-2 text-body-2 text-n-500 dark:text-n-60">
+                                            {step.description}
+                                        </p>
+                                    ) : null}
+                                </div>
                             ) : (
                                 <p className="text-body-2 text-n-500 dark:text-n-60">
                                     {step.description}

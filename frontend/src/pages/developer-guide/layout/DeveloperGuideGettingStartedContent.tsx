@@ -69,7 +69,7 @@ const DeveloperGuideGettingStartedContent: FC = () => {
                     <MdFileRender
                         variant="guide"
                         title="Getting Started"
-                        description="This section helps you quickly understand how to explore ONDC protocol flows, starting with the Unified Credit use case."
+                        description="This section helps you quickly understand how to explore ONDC protocol flows, starting with the LAMF use case."
                         mdData={mdData}
                         showTableOfContents={false}
                         onSectionClick={selectSection}

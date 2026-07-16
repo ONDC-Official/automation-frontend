@@ -22,7 +22,26 @@ function formatSlug(slug: string): string {
 }
 
 const DocsViewer: FC<DocsViewerProps> = ({ docs, useCaseId, domain, version }) => {
-    const slugs = useMemo(() => Object.keys(docs), [docs]);
+    /**
+     * Frontend filter check to ensure "Release Notes" and "References" (including spelling variations)
+     * are excluded from the documentation tabs and details pane for all domains/use cases.
+     */
+    const filteredDocs = useMemo(() => {
+        if (!docs) return {};
+        return Object.keys(docs).reduce<Record<string, string>>((acc, key) => {
+            const normalized = key.toLowerCase().replace(/[-_]/g, " ").trim();
+            if (
+                normalized !== "release notes" &&
+                normalized !== "references" &&
+                normalized !== "refrences"
+            ) {
+                acc[key] = docs[key];
+            }
+            return acc;
+        }, {});
+    }, [docs]);
+
+    const slugs = useMemo(() => Object.keys(filteredDocs), [filteredDocs]);
 
     const {
         activeDocSlug,
@@ -36,7 +55,7 @@ const DocsViewer: FC<DocsViewerProps> = ({ docs, useCaseId, domain, version }) =
         tocOffset,
     } = useDocsSectionSelection({
         docSlugs: slugs,
-        docs,
+        docs: filteredDocs,
     });
 
     const resolveSectionLabel = useCallback(
@@ -44,7 +63,7 @@ const DocsViewer: FC<DocsViewerProps> = ({ docs, useCaseId, domain, version }) =
         [toc]
     );
 
-    const content = docs[activeDocSlug] ?? "";
+    const content = filteredDocs[activeDocSlug] ?? "";
     // Domain docs often use `# Section` + `---` — strip those so they don't leave
     // uneven empty gaps under titles.
     const displayContent = useMemo(() => stripRedundantMarkdownHorizontalRules(content), [content]);
@@ -72,7 +91,7 @@ const DocsViewer: FC<DocsViewerProps> = ({ docs, useCaseId, domain, version }) =
 
     return (
         <div className="flex flex-col gap-3">
-            {slugs.length > 1 && (
+            {slugs.length >= 1 && (
                 <GuideTabs
                     active={activeDocSlug}
                     onChange={setActiveDocSlug}

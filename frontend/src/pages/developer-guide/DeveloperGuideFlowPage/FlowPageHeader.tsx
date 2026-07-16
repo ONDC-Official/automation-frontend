@@ -69,7 +69,7 @@ const FlowPageHeader: FC<FlowPageHeaderProps> = ({
                     { id: "flows", label: "Flows", visible: true },
                     { id: "error-codes", label: "Error Codes", visible: hasErrorCodes },
                     { id: "supported-actions", label: "Actions", visible: hasSupportedActions },
-                    { id: "changelog", label: "Changelog", visible: true },
+                    // { id: "changelog", label: "Changelog", visible: true },
                 ] satisfies GuideTabItem<TopLevelView>[]
             }
         />
