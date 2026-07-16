@@ -1,5 +1,5 @@
 // Code snippets for Auth Header Generation and Verification
-// All implementations use BLAKE-512 hashing and Ed25519 signatures
+// All implementations use BLAKE2B-512 hashing and Ed25519 signatures
 
 export const codeSnippets = {
     python: {
@@ -9,7 +9,7 @@ export const codeSnippets = {
                               subscriber_id: str, unique_key_id: str) -> tuple[str, str]:
     """
     Create ONDC authorization header from raw JSON payload string.
-    Uses BLAKE-512 for hashing and Ed25519 for signing.
+    Uses BLAKE2B-512 for hashing and Ed25519 for signing.
     """
     if not isinstance(payload, str):
         raise ValueError("payload must be a string, not dict or other type")
@@ -22,7 +22,7 @@ export const codeSnippets = {
     digest = base64.b64encode(hash_obj.digest()).decode()
     
     # Create signing string
-    signing_string = f"(created): {current_time}\\n(expires): {current_time + ttl}\\ndigest: BLAKE-512={digest}"
+    signing_string = f"(created): {current_time}\\n(expires): {current_time + ttl}\\ndigest: BLAKE2B-512={digest}"
     
     # Decode private key and sign
     private_key_bytes = base64.b64decode(private_key)
@@ -55,7 +55,7 @@ export const codeSnippets = {
     digest = base64.b64encode(hash_obj.digest()).decode()
     
     # Create signing string
-    signing_string = f"(created): {created}\\n(expires): {expires}\\ndigest: BLAKE-512={digest}"
+    signing_string = f"(created): {created}\\n(expires): {expires}\\ndigest: BLAKE2B-512={digest}"
     
     # Verify signature
     public_key_bytes = base64.b64decode(public_key)
@@ -82,7 +82,7 @@ export const codeSnippets = {
     digest := base64.StdEncoding.EncodeToString(hash[:])
 
     // Create signing string
-    signingString := fmt.Sprintf("(created): %d\\n(expires): %d\\ndigest: BLAKE-512=%s", 
+    signingString := fmt.Sprintf("(created): %d\\n(expires): %d\\ndigest: BLAKE2B-512=%s", 
         currentTime, currentTime+ttl, digest)
 
     // Decode private key
@@ -132,7 +132,7 @@ export const codeSnippets = {
     digest := base64.StdEncoding.EncodeToString(hash[:])
 
     // Create signing string
-    signingString := fmt.Sprintf("(created): %s\\n(expires): %s\\ndigest: BLAKE-512=%s", 
+    signingString := fmt.Sprintf("(created): %s\\n(expires): %s\\ndigest: BLAKE2B-512=%s", 
         created, expires, digest)
 
     // Verify signature
@@ -166,7 +166,7 @@ export const codeSnippets = {
     
     // Create signing string
     String signingString = String.format(
-        "(created): %d\\n(expires): %d\\ndigest: BLAKE-512=%s",
+        "(created): %d\\n(expires): %d\\ndigest: BLAKE2B-512=%s",
         currentTime, currentTime + ttl, digestBase64);
     
     // Sign with Ed25519
@@ -214,7 +214,7 @@ export const codeSnippets = {
     
     // Create signing string
     String signingString = String.format(
-        "(created): %d\\n(expires): %d\\ndigest: BLAKE-512=%s",
+        "(created): %d\\n(expires): %d\\ndigest: BLAKE2B-512=%s",
         created, expires, digestBase64);
     
     // Verify signature
@@ -248,7 +248,7 @@ export const codeSnippets = {
     // Create signing string
     const signingString = \`(created): \${created}
 (expires): \${expires}
-digest: BLAKE-512=\${digestBase64}\`;
+digest: BLAKE2B-512=\${digestBase64}\`;
 
     // Sign with Ed25519
     const privateKeyBytes = sodium.from_base64(privateKey, sodium.base64_variants.ORIGINAL);
@@ -285,7 +285,7 @@ digest: BLAKE-512=\${digestBase64}\`;
     // Create signing string
     const signingString = \`(created): \${created}
 (expires): \${expires}
-digest: BLAKE-512=\${digestBase64}\`;
+digest: BLAKE2B-512=\${digestBase64}\`;
 
     // Verify signature
     const publicKeyBytes = sodium.from_base64(publicKey, sodium.base64_variants.ORIGINAL);
@@ -314,7 +314,7 @@ digest: BLAKE-512=\${digestBase64}\`;
     
     // Create signing string
     $signingString = sprintf(
-        "(created): %d\\n(expires): %d\\ndigest: BLAKE-512=%s",
+        "(created): %d\\n(expires): %d\\ndigest: BLAKE2B-512=%s",
         $currentTime, $currentTime + $ttl, $digestBase64
     );
     
@@ -355,7 +355,7 @@ digest: BLAKE-512=\${digestBase64}\`;
     
     // Create signing string
     $signingString = sprintf(
-        "(created): %d\\n(expires): %d\\ndigest: BLAKE-512=%s",
+        "(created): %d\\n(expires): %d\\ndigest: BLAKE2B-512=%s",
         $created, $expires, $digestBase64
     );
     

@@ -27,7 +27,7 @@ export const recommendedCards: RecommendedCardConfig[] = [
         title: "Auth Tools",
         subtitle: "Generate & Verify ONDC Headers",
         description:
-            "Generate and verify ONDC authorization headers using BLAKE-512 hashing and Ed25519 signing.",
+            "Generate and verify ONDC authorization headers using BLAKE2B-512 hashing and Ed25519 signing.",
         icon: <KeyIcon className="w-5 h-5 text-sky-600 dark:text-sky-400" />,
     },
 ];

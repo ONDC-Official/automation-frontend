@@ -3,6 +3,13 @@ export interface ISupportChannelStat {
     value: string;
 }
 
+export interface ISupportChannelCta {
+    label: string;
+    href: string;
+    external?: boolean;
+    className: string;
+}
+
 export interface ISupportChannelCard {
     key: string;
     eyebrow: string;
@@ -10,10 +17,7 @@ export interface ISupportChannelCard {
     title: string;
     features: string[];
     stats: ISupportChannelStat[];
-    ctaLabel: string;
-    ctaHref: string;
-    ctaExternal?: boolean;
-    ctaClassName: string;
+    ctas: ISupportChannelCta[];
 }
 
 export interface ISupportHowItWorksStep {

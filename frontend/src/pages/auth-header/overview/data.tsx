@@ -119,7 +119,7 @@ export const AI_PROMPT = `Generate two functions for ONDC authorization header c
 3. Hash the EXACT payload string using BLAKE2b-512 (64 bytes output)
 4. Base64 encode the hash to create digest
 5. Create signing string in this EXACT format:
-   "(created): {timestamp}\\n(expires): {timestamp + ttl}\\ndigest: BLAKE-512={digest}"
+   "(created): {timestamp}\\n(expires): {timestamp + ttl}\\ndigest: BLAKE2B-512={digest}"
 6. Sign the signing string using Ed25519 with the private key
 7. Base64 encode the signature
 8. Return authorization header in this format:
@@ -162,7 +162,7 @@ Please provide complete, production-ready code with error handling.`;
 
 export const SIGNING_STRING_FORMAT = `(created): {unix_timestamp}
 (expires): {unix_timestamp + ttl}
-digest: BLAKE-512={base64_hash}`;
+digest: BLAKE2B-512={base64_hash}`;
 
 export const AUTH_HEADER_FORMAT = `Signature keyId="{subscriber_id}|{unique_key_id}|ed25519",
 algorithm="ed25519",

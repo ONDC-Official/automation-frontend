@@ -6,7 +6,7 @@ const OverviewSection: FC = () => (
         <p className="text-gray-700 leading-relaxed">
             ONDC uses a cryptographic signature scheme to authenticate API requests between network
             participants. The authorization header contains a digital signature created using{" "}
-            <strong>BLAKE-512</strong> hashing and <strong>Ed25519</strong> elliptic curve
+            <strong>BLAKE2B-512</strong> hashing and <strong>Ed25519</strong> elliptic curve
             signatures.
         </p>
     </div>
