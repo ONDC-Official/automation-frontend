@@ -27,13 +27,7 @@ import DeveloperGuideDomainsContent from "@pages/developer-guide/layout/Develope
 import DeveloperGuideDocContent from "@pages/developer-guide/layout/DeveloperGuideDocContent";
 import ValidationsPage from "@pages/developer-guide/ValidationsPage";
 import PageReveal from "./page-reveal";
-import { isDev } from "@/types/environment";
-
 const page = (children: ReactNode) => <PageReveal>{children}</PageReveal>;
-
-/** Developer Guide is only available in development; redirect to home in production */
-const DeveloperGuideWrapper = ({ children }: { children: React.ReactNode }) =>
-    isDev ? <>{children}</> : <Navigate to={ROUTES.HOME} replace />;
 
 const Routes = () => (
     <RouterRoutes>
@@ -56,14 +50,7 @@ const Routes = () => (
         <Route path={ROUTES.AUTH_HEADER} element={page(<AuthHeader />)} />
         <Route path={ROUTES.SELLER_LOAD_TESTING} element={page(<SellerLoadTesting />)} />
         <Route path={ROUTES.FRAMEWORK_HEALTH} element={page(<FrameworkHealthPage />)} />
-        <Route
-            path={ROUTES.DEVELOPER_GUIDE}
-            element={
-                <DeveloperGuideWrapper>
-                    <DeveloperGuideShell />
-                </DeveloperGuideWrapper>
-            }
-        >
+        <Route path={ROUTES.DEVELOPER_GUIDE} element={<DeveloperGuideShell />}>
             <Route
                 index
                 element={
@@ -80,10 +67,7 @@ const Routes = () => (
             <Route path="docs/:slug" element={page(<DeveloperGuideDocContent />)} />
             <Route path=":domain/:version/:useCase" element={page(<DeveloperGuideFlowPage />)} />
         </Route>
-        <Route
-            path={ROUTES.DEVELOPER_GUIDE_VALIDATIONS}
-            element={<DeveloperGuideWrapper>{page(<ValidationsPage />)}</DeveloperGuideWrapper>}
-        />
+        <Route path={ROUTES.DEVELOPER_GUIDE_VALIDATIONS} element={page(<ValidationsPage />)} />
         <Route path="*" element={page(<NotFoundPage />)} />
     </RouterRoutes>
 );
