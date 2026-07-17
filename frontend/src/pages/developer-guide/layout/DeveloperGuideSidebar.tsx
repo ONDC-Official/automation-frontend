@@ -312,7 +312,7 @@ const NavGroupItem: FC<{
                                 aria-label={open ? "Collapse section" : "Expand section"}
                             >
                                 <ChevronDownIcon
-                                    className={`h-3.5 w-3.5 transition-transform duration-150 ${open ? "" : "-rotate-90"}`}
+                                    className={`h-3.5 w-3.5 transition-transform duration-300 ease-in-out ${open ? "" : "-rotate-90"}`}
                                 />
                             </Button>
                         ) : (
@@ -348,7 +348,7 @@ const NavGroupItem: FC<{
                     >
                         <span className="flex h-3.5 w-3.5 shrink-0 items-center justify-center">
                             <ChevronDownIcon
-                                className={`h-3.5 w-3.5 transition-transform duration-150 ${open ? "" : "-rotate-90"}`}
+                                className={`h-3.5 w-3.5 transition-transform duration-300 ease-in-out ${open ? "" : "-rotate-90"}`}
                             />
                         </span>
                         <span className={`min-w-0 flex-1 py-1 pr-3 wrap-break-word ${headerClass}`}>
@@ -370,18 +370,26 @@ const NavGroupItem: FC<{
                     </div>
                 </div>
             )}
-            {open && (
-                <div className={`relative ${depth === 0 ? "mt-2 mb-1" : "mt-2"}`}>
-                    {hasChildren && <GroupDescentConnector depth={depth} />}
-                    {node.children.map((child, index) => (
-                        <NavTreeItem
-                            key={child.id}
-                            node={child}
-                            depth={depth + 1}
-                            searchQuery={searchQuery}
-                            isLastSibling={index === node.children.length - 1}
-                        />
-                    ))}
+            {hasChildren && (
+                <div
+                    className={`grid transition-[grid-template-rows] duration-300 ease-in-out ${
+                        open ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
+                    }`}
+                >
+                    <div className="min-h-0 overflow-hidden" inert={!open} aria-hidden={!open}>
+                        <div className={`relative ${depth === 0 ? "mt-2 mb-1" : "mt-2"}`}>
+                            <GroupDescentConnector depth={depth} />
+                            {node.children.map((child, index) => (
+                                <NavTreeItem
+                                    key={child.id}
+                                    node={child}
+                                    depth={depth + 1}
+                                    searchQuery={searchQuery}
+                                    isLastSibling={index === node.children.length - 1}
+                                />
+                            ))}
+                        </div>
+                    </div>
                 </div>
             )}
             {!isLastSibling && (

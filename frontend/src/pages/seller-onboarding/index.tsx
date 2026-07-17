@@ -433,7 +433,7 @@ const SellerOnboarding = () => {
     return (
         <div className="min-h-screen bg-gray-50">
             <div className="bg-white shadow-xs border-b">
-                <div className="mx-auto px-20 py-6">
+                <div className="mx-auto px-5 sm:px-8 md:px-10 lg:px-15 xl:px-20 py-6">
                     <h1 className="text-3xl font-bold text-transparent bg-linear-to-r from-sky-600 to-sky-400 bg-clip-text">
                         Seller Onboarding
                     </h1>
@@ -443,7 +443,7 @@ const SellerOnboarding = () => {
                 </div>
             </div>
 
-            <div className="mx-auto px-20 py-8">
+            <div className="mx-auto px-5 sm:px-8 md:px-10 lg:px-15 xl:px-20 py-8">
                 <div className="mb-8">
                     <Stepper steps={steps} currentStep={currentStep} />
                 </div>

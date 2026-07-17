@@ -3,6 +3,7 @@ import { Button } from "@components/Shadcn/Button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@components/Shadcn/Card/card";
 import type { ISupportChannelCard } from "@pages/support/types";
 import { ArrowRightIcon } from "@heroicons/react/20/solid";
+import { ArrowTopRightOnSquareIcon } from "@heroicons/react/24/outline";
 
 const SupportCard: FC<{ card: ISupportChannelCard }> = ({ card }) => (
     <Card variant="default" className="h-full">
@@ -49,6 +50,7 @@ const SupportCard: FC<{ card: ISupportChannelCard }> = ({ card }) => (
                         rel={cta.external ? "noopener noreferrer" : undefined}
                     >
                         {cta.label}
+                        {cta.external && <ArrowTopRightOnSquareIcon className="size-4 shrink-0" />}
                     </a>
                 </Button>
             ))}

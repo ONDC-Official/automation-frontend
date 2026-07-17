@@ -34,7 +34,10 @@ export const authApi = devGuideApi.injectEndpoints({
                     const isFreshOAuthLogin =
                         hasOAuthCallbackCode() || oauthExchangeCompletedThisPageLoad;
                     if (isFreshOAuthLogin && data.ok && data.user) {
-                        toast.success("Login successful!");
+                        toast.success("Login successful!", {
+                            description: "You're signed in and ready to go.",
+                            position: "top-right",
+                        });
                     }
 
                     dispatch(setLoginPending(false));

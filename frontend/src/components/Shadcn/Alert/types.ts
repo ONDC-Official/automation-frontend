@@ -7,5 +7,6 @@ export interface IAlertProps extends VariantProps<typeof alertVariants> {
     message: ReactNode;
     description?: ReactNode;
     showIcon?: boolean;
+    onClose?: () => void;
     className?: string;
 }

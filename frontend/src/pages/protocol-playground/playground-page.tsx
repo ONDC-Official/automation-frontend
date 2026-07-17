@@ -293,7 +293,7 @@ const PlaygroundPage = () => {
                 </div>
                 <div
                     ref={splitRef}
-                    className={`flex min-h-0 flex-1 items-stretch px-15 xl:px-0 pb-4 pt-2 ${isFullscreen ? "overflow-hidden" : ""}`}
+                    className={`flex min-h-0 flex-1 items-stretch pb-4 pt-2 ${isFullscreen ? "overflow-hidden" : ""}`}
                 >
                     <LeftSideView width={leftPanelWidth} activeApi={activeApi} />
                     <ResizeDivider onStartDragging={startDragging} onNudge={nudgeLeftPercent} />
