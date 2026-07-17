@@ -11,7 +11,7 @@ const HistoryPage = () => {
     }
 
     return (
-        <div className="min-h-[calc(100vh-4rem)] bg-surface-elevated px-20">
+        <div className="min-h-[calc(100vh-4rem)] bg-surface-elevated px-5 sm:px-8 md:px-10 lg:px-15 xl:px-20">
             <ActivityHistorySection />
         </div>
     );

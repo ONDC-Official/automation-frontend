@@ -73,4 +73,4 @@ export const LS_KEY = "flowTestingSessions";
 export const SESSIONS_PER_PAGE = 4;
 
 export const SCENARIO_TIP_BANNER_MESSAGE =
-    "Tip: Allow pop-ups for this site in your browser settings, they are blocked by default and required for the new tabs to open.";
+    "Allow pop-ups for this site in your browser settings, they are blocked by default and required for the new tabs to open.";

@@ -23,7 +23,7 @@ const Header = () => (
             </div>
         )}
         <div className="border-b border-n-30 bg-n-0 dark:border-border-default dark:bg-black">
-            <nav className="relative mx-auto flex h-16 items-center px-20">
+            <nav className="relative mx-auto flex h-16 items-center px-5 sm:px-8 md:px-10 lg:px-15 xl:px-20">
                 <Logo />
 
                 <div className="mx-5 hidden h-8 w-px shrink-0 bg-n-30 dark:bg-border-default nav:block" />

@@ -1,6 +1,7 @@
 import { FC } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRightIcon } from "@heroicons/react/20/solid";
+import { ArrowTopRightOnSquareIcon } from "@heroicons/react/24/outline";
 import {
     Card,
     CardContent,
@@ -20,7 +21,11 @@ const SupportCard: FC<SupportCardProps> = ({ card }) => {
     const linkContent = (
         <span className="inline-flex items-center gap-1.5 text-brand-normal text-body-2 font-semibold group-hover:gap-2 transition-all">
             {card.linkLabel}
-            <ArrowRightIcon className="size-4" />
+            {card.external ? (
+                <ArrowTopRightOnSquareIcon className="size-4 shrink-0" aria-hidden />
+            ) : (
+                <ArrowRightIcon className="size-4 shrink-0" aria-hidden />
+            )}
         </span>
     );
 

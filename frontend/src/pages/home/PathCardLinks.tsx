@@ -1,6 +1,7 @@
 import { FC, MouseEvent } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRightIcon } from "@heroicons/react/20/solid";
+import { ArrowTopRightOnSquareIcon } from "@heroicons/react/24/outline";
 
 import { useAuth } from "@hooks/useAuth";
 import { useGitHubLogin } from "@hooks/useGitHubLogin";
@@ -38,7 +39,13 @@ const PathCardLinks: FC<PathCardLinksProps> = ({ links }) => {
                             className={linkClassName}
                         >
                             <ArrowRightIcon className="size-4 text-brand-normal shrink-0 group-hover:translate-x-0.5 transition-transform" />
-                            {link.label}
+                            <span className="inline-flex items-center gap-1">
+                                {link.label}
+                                <ArrowTopRightOnSquareIcon
+                                    className="size-3.5 shrink-0"
+                                    aria-hidden
+                                />
+                            </span>
                         </a>
                     ) : (
                         <Link

@@ -4,13 +4,15 @@ import {
     ExclamationTriangleIcon,
     InformationCircleIcon,
     XCircleIcon,
+    XMarkIcon,
 } from "@heroicons/react/24/outline";
 
+import { Button } from "@components/Shadcn/Button";
 import { cn } from "@/lib/utils";
 
 import type { IAlertProps } from "./types";
 
-export const alertVariants = cva("flex gap-3 rounded-lg border p-4 text-sm", {
+export const alertVariants = cva("flex gap-3 rounded-lg border px-4 text-sm items-center", {
     variants: {
         variant: {
             info: "border-brand-light-active bg-brand-light text-brand-normal",
@@ -42,6 +44,7 @@ export const Alert = ({
     message,
     description,
     showIcon = true,
+    onClose,
     className,
 }: IAlertProps) => {
     const Icon = iconByVariant[variant ?? "info"];
@@ -53,6 +56,18 @@ export const Alert = ({
                 <div className="font-medium">{message}</div>
                 {description && <div className="text-current/80">{description}</div>}
             </div>
+            {onClose && (
+                <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={onClose}
+                    className="size-8 shrink-0 text-current opacity-70 hover:bg-transparent hover:opacity-100"
+                    aria-label="Dismiss alert"
+                >
+                    <XMarkIcon className="size-5" />
+                </Button>
+            )}
         </div>
     );
 };

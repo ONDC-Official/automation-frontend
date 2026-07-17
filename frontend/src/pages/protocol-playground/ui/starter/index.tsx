@@ -59,7 +59,7 @@ export const StarterScreen = () => {
     };
 
     return (
-        <div className="flex min-h-full w-full justify-center px-4 py-10">
+        <div className="flex min-h-full w-full justify-center mx-auto py-10">
             <div className="w-full max-w-2xl">
                 <div className="rounded-2xl border border-n-30 bg-surface-elevated px-6 py-7 shadow-sm dark:border-border-default sm:px-8">
                     <header className="flex flex-col gap-1">

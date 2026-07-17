@@ -43,7 +43,7 @@ export const Avatar = ({ user, onLogout }: IUserProfileMenu) => (
             <DropdownMenuSeparator />
             <DropdownMenuItem
                 onClick={onLogout}
-                className="text-error-500 focus:text-brand-normal [&_svg]:text-error-500 cursor-pointer"
+                className="text-error-500 focus:text-brand-normal dark:focus:text-red-400 [&_svg]:text-error-500 dark:focus:[&_svg]:text-red-400 cursor-pointer"
             >
                 <ArrowLeftStartOnRectangleIcon className="size-4" />
                 Logout

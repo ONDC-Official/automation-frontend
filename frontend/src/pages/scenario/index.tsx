@@ -1,7 +1,8 @@
-import { useState, useEffect, useMemo, type ReactNode } from "react";
+import { useState, useEffect, useLayoutEffect, useMemo, type ReactNode } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import RenderFlows from "@components/DomainFlowRunner/RenderFlows";
+import Alert from "@components/Shadcn/Alert";
 import Card from "@components/Shadcn/Card";
 import Accordion from "@components/Shadcn/Accordion";
 import { ReportPage } from "@pages/scenario/ReportPage";
@@ -28,13 +29,13 @@ import {
     useLazyGetSessionByIdQuery,
 } from "@store/api";
 import { useAuth } from "@hooks/useAuth";
+import { useGitHubLogin } from "@hooks/useGitHubLogin";
 import { IScenarioFormData, ISessionResponse, ISavedPrefAPI } from "@pages/scenario/types";
 import { openSessionInNewTab } from "@pages/scenario/helpers";
 import NewSessionForm from "@pages/scenario/NewSessionForm";
 import Spinner from "@components/Shadcn/Spinner";
 import { SCENARIO_GUIDE_STEPS, SCENARIO_TIP_BANNER_MESSAGE } from "@pages/scenario/constants";
 import { Button } from "@components/Shadcn/Button";
-import { InformationCircleIcon } from "@heroicons/react/24/outline";
 import { ROUTES } from "@constants/routes";
 
 const Scenario = () => {
@@ -53,6 +54,7 @@ const Scenario = () => {
     const [domains, setDomains] = useState<IDomain[]>([]);
     const { sessionId: contextSessionId } = useSession();
     const { user, token } = useAuth();
+    const { startLogin, isLoginRedirecting } = useGitHubLogin();
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const dispatch = useAppDispatch();
@@ -68,6 +70,7 @@ const Scenario = () => {
     const setExistingSessions = (sessions: IFlowTestingSessionEntry[]) =>
         dispatch(setSessions(sessions));
     const [isInitializing, setIsInitializing] = useState(true);
+    const [isTipVisible, setIsTipVisible] = useState(true);
     const [savedPreferences, setSavedPreferences] = useState<Record<string, IScenarioFormData>>({});
     const initialSavedConfigKey = searchParams.get("config") ?? "";
     const [triggerGetScenarioFormData] = useLazyGetScenarioFormDataQuery();
@@ -235,8 +238,7 @@ const Scenario = () => {
             return;
         }
 
-        const backendUrl = import.meta.env.VITE_DEVELOPER_GUIDE_BACKEND_URL;
-        window.location.href = `${backendUrl}/login`;
+        startLogin(ROUTES.PROFILE);
     };
 
     useEffect(() => {
@@ -251,18 +253,20 @@ const Scenario = () => {
         }
     }, [flowStepNum, session]);
 
-    useEffect(() => {
-        const id = setTimeout(() => {
-            toast(SCENARIO_TIP_BANNER_MESSAGE, {
-                duration: Infinity,
-                style: { alignItems: "flex-start" },
-                position: "top-right",
-                icon: <InformationCircleIcon className="size-5 text-brand-normal" />,
-            });
-        }, 0);
+    // Open at the top on refresh so the tip alert is in view: the browser's native
+    // scroll restoration fires after mount and would re-scroll to the old position,
+    // so disable it while this page is mounted. On unmount, reset to the browser
+    // default ("auto") rather than a captured previous value — after a refresh here
+    // the entry is already "manual", and restoring that would leak manual mode to
+    // every other page in the tab.
+    useLayoutEffect(() => {
+        if (!("scrollRestoration" in window.history)) {
+            return;
+        }
+        window.history.scrollRestoration = "manual";
+        window.scrollTo({ top: 0, left: 0 });
         return () => {
-            clearTimeout(id);
-            toast.dismiss();
+            window.history.scrollRestoration = "auto";
         };
     }, []);
 
@@ -301,15 +305,15 @@ const Scenario = () => {
                             title="Create a new Session"
                             description="Fill the details to begin flow testing."
                             headerAction={
-                                !user ? (
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={handleCreateConfigClick}
-                                    >
-                                        Create config in profile
-                                    </Button>
-                                ) : undefined
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={handleCreateConfigClick}
+                                    isLoading={isLoginRedirecting}
+                                    disabled={isInitializing || isLoginRedirecting}
+                                >
+                                    Create profile config
+                                </Button>
                             }
                         >
                             {isInitializing ? (
@@ -345,7 +349,17 @@ const Scenario = () => {
 
     return (
         <div className="w-full">
-            <div className="mx-auto px-20 py-6">{body}</div>
+            <div className="mx-auto px-5 sm:px-8 md:px-10 lg:px-15 xl:px-20 py-6">
+                {isTipVisible && (
+                    <Alert
+                        variant="warning"
+                        message={SCENARIO_TIP_BANNER_MESSAGE}
+                        onClose={() => setIsTipVisible(false)}
+                        className="mb-6"
+                    />
+                )}
+                {body}
+            </div>
         </div>
     );
 };

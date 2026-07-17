@@ -5,7 +5,7 @@ import SupportInfoGrid from "@pages/home/SupportInfoGrid";
 
 const SupportSection: FC = () => (
     <section className="bg-n-0 dark:bg-surface-page py-16 lg:py-20">
-        <div className="mx-auto px-20">
+        <div className="mx-auto px-5 sm:px-8 md:px-10 lg:px-15 xl:px-20">
             <SectionLabel label="// SUPPORT" />
             <h2 className="text-h3 lg:text-h3 font-bold text-n-800 dark:text-n-0 mb-3">
                 Need help? We&apos;ve got you.

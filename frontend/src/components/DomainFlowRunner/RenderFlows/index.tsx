@@ -448,7 +448,7 @@ function RenderFlows({ flows, subUrl, sessionId, newSession }: IRenderFlowsProps
             />
 
             <div className="flex min-h-screen w-full flex-1 flex-col bg-surface-page">
-                <div className="space-y-3 py-6 px-15 xl:px-0">
+                <div className="space-y-3 py-6">
                     {sessionData ? (
                         <div className="flex flex-col gap-3">
                             <InfoSection
@@ -589,7 +589,7 @@ function RenderFlows({ flows, subUrl, sessionId, newSession }: IRenderFlowsProps
                     )}
                 </div>
 
-                <div className="grid flex-1 grid-cols-1 gap-4 px-15 xl:px-0 pb-4 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
+                <div className="grid flex-1 grid-cols-1 gap-4 pb-4 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
                     <div className="min-w-0 flex flex-col gap-3 overflow-y-auto">
                         {filteredFlows.map((flow: Flow) => (
                             <FlowRunAccordion

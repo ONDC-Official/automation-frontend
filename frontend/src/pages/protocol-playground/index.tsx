@@ -380,7 +380,7 @@ const ProtocolPlayGround = () => {
 
     return (
         <PlaygroundRuntimeProvider value={playgroundRuntime}>
-            <div className="flex h-full min-h-0 w-full flex-1 flex-col px-20 mx-auto">
+            <div className="flex h-full min-h-0 w-full flex-1 flex-col px-5 sm:px-8 md:px-10 lg:px-15 xl:px-20 mx-auto">
                 <Body workbenchFlow={workbenchFlow} />
             </div>
             <PlaygroundModal isOpen={popupOpen} onClose={closeModal} className={modalClassName}>
