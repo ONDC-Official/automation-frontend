@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@components/Shadcn/Button";
 import { ROUTES } from "@constants/routes";
+import { useAuth } from "@hooks/useAuth";
 import { ISessionFormActionsProps } from "@pages/scenario/types";
 
 export const SessionFormActions = ({
@@ -12,6 +13,7 @@ export const SessionFormActions = ({
     className = "flex items-center gap-3 pt-2",
 }: ISessionFormActionsProps) => {
     const navigate = useNavigate();
+    const { user } = useAuth();
 
     return (
         <div className={className}>
@@ -22,13 +24,15 @@ export const SessionFormActions = ({
             >
                 {isSubmitting ? "Creating..." : "Submit"}
             </Button>
-            <Button
-                type="button"
-                variant="outline"
-                onClick={() => navigate(ROUTES.PROFILE_HISTORY)}
-            >
-                Past Report
-            </Button>
+            {user && (
+                <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => navigate(ROUTES.PROFILE_HISTORY)}
+                >
+                    Past Report
+                </Button>
+            )}
             {extraActions}
         </div>
     );

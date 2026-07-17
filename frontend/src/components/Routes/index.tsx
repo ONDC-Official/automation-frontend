@@ -8,14 +8,14 @@ import PastReportsSection from "@pages/user-profile/PastReportsSection";
 import ActivityHistorySection from "@pages/user-profile/ActivityHistorySection";
 import HistoryPage from "@pages/history";
 import ProtocolPlayGround from "@pages/protocol-playground";
-import DBBackOffice from "@pages/db-back-office";
+// import DBBackOffice from "@pages/db-back-office";
 import FlowTestingWrapper from "@pages/flow-testing";
 import NotFoundPage from "@components/NotFound";
 import ScenarioPage from "@pages/scenario";
 import HomePage from "@pages/home";
 import SupportPage from "@pages/support";
-import SellerLoadTesting from "@pages/seller-load-testing";
-import AuthHeader from "@pages/auth-header";
+// import SellerLoadTesting from "@pages/seller-load-testing";
+// import AuthHeader from "@pages/auth-header";
 import FrameworkHealthPage from "@pages/framework-health";
 import { ROUTES } from "@constants/routes";
 import DeveloperGuideFlowPage from "@pages/developer-guide/DeveloperGuideFlowPage";
@@ -46,9 +46,9 @@ const Routes = () => (
         <Route path={ROUTES.SELLER_ONBOARDING} element={page(<SellerOnboarding />)} />
         <Route path={ROUTES.PLAYGROUND} element={page(<ProtocolPlayGround />)} />
         <Route path={ROUTES.HISTORY} element={page(<HistoryPage />)} />
-        <Route path={ROUTES.DB_BACK_OFFICE} element={page(<DBBackOffice />)} />
-        <Route path={ROUTES.AUTH_HEADER} element={page(<AuthHeader />)} />
-        <Route path={ROUTES.SELLER_LOAD_TESTING} element={page(<SellerLoadTesting />)} />
+        {/* <Route path={ROUTES.DB_BACK_OFFICE} element={page(<DBBackOffice />)} /> */}
+        {/* <Route path={ROUTES.AUTH_HEADER} element={page(<AuthHeader />)} /> */}
+        {/* <Route path={ROUTES.SELLER_LOAD_TESTING} element={page(<SellerLoadTesting />)} /> */}
         <Route path={ROUTES.FRAMEWORK_HEALTH} element={page(<FrameworkHealthPage />)} />
         <Route path={ROUTES.DEVELOPER_GUIDE} element={<DeveloperGuideShell />}>
             <Route

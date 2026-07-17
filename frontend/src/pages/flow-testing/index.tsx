@@ -89,7 +89,7 @@ export default function FlowTestingWrapper() {
             </div>
         </div>
     ) : (
-        <div className="px-20 mx-auto w-full min-h-screen bg-surface-page">
+        <div className="mx-auto px-5 sm:px-8 md:px-10 lg:px-15 xl:px-20 w-full min-h-screen bg-surface-page">
             <RenderFlows
                 flows={flows}
                 subUrl={decodeURIComponent(subscriberUrl)}

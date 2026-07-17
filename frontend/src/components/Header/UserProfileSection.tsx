@@ -1,8 +1,8 @@
 import { useCallback } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
+import { toast } from "sonner";
 import { useAuth } from "@hooks/useAuth";
 import { useGitHubLogin } from "@hooks/useGitHubLogin";
-import { ROUTES } from "@constants/routes";
 import { Button } from "@components/Shadcn/Button";
 import GitHubIcon from "@assets/svgs/GitHubIcon";
 import { UserProfileMenu } from "@components/Header/UserProfileMenu";
@@ -10,7 +10,6 @@ import { trackEvent } from "@utils/analytics";
 import { cn } from "@/lib/utils";
 
 export const UserProfileSection = ({ inDrawer = false }: { inDrawer?: boolean }) => {
-    const navigate = useNavigate();
     const location = useLocation();
     const { user, logout } = useAuth();
     const { startLogin, isLoginRedirecting } = useGitHubLogin();
@@ -28,12 +27,14 @@ export const UserProfileSection = ({ inDrawer = false }: { inDrawer?: boolean })
     const handleLogout = useCallback(() => {
         try {
             logout();
+            toast.success("Log out successful!", {
+                description: "You've been securely signed out.",
+                position: "top-right",
+            });
         } catch (error) {
             console.error("Logout failed:", error);
-        } finally {
-            navigate(ROUTES.HOME);
         }
-    }, [navigate, logout]);
+    }, [logout]);
 
     return (
         <div
