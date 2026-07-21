@@ -63,7 +63,10 @@ export default function TRV11InitMetroForm({ submitEvent }: ITRV11InitMetroFormP
                 id: item.itemId,
                 quantity: {
                     selected: {
-                        count: item.count,
+                        count:
+                            typeof item.count === "number"
+                                ? item.count
+                                : parseInt(String(item.count), 10) || 1,
                     },
                 },
             })),
