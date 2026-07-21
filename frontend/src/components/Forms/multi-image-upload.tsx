@@ -23,7 +23,7 @@ interface MultiImageUploadProps {
     defaultImageUrl?: string;
     allowUrlInput?: boolean;
 }
-const baseUrl = new URL(import.meta.env.VITE_BASE_URL).origin;
+const baseUrl = new URL(import.meta.env.VITE_BASE_URL ?? window.location.origin).origin;
 const MultiImageUpload: React.FC<MultiImageUploadProps> = ({
     label,
     labelInfo = "",
