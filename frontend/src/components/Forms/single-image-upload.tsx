@@ -20,7 +20,7 @@ interface SingleImageUploadProps {
     allowUrlInput?: boolean;
 }
 
-const baseUrl = new URL(import.meta.env.VITE_BASE_URL).origin;
+const baseUrl = new URL(import.meta.env.VITE_BASE_URL ?? window.location.origin).origin;
 const SingleImageUpload: React.FC<SingleImageUploadProps> = ({
     label,
     labelInfo = "",
