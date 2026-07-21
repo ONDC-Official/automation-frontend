@@ -11,7 +11,6 @@ interface ImportMetaEnv {
     readonly VITE_DB_SERVICE_API_KEY?: string;
     readonly VITE_CHATBOT_MCP_BASE_URL?: string;
     readonly VITE_FRONTENT_URL?: string;
-    /** `"false"` disables Developer Guide UI/routes; unset or any other value enables it. */
     readonly VITE_ENABLE_DEV_GUIDE?: string;
 }
 
