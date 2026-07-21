@@ -5,7 +5,7 @@ import axios from "../utils/axios";
 import logger from "@ondc/automation-logger";
 import { upsertSessionInDb } from "./dbService";
 const SESSION_EXPIRY = 3600 * 48; // 48 hour
-const EXPECTATION_EXPIRY = 3 * 60 * 60 * 1000; // 5 minutes
+const EXPECTATION_EXPIRY = 3 * 60 * 60 * 1000; // 3 hour
 
 export const createSessionService = async (
   sessionId: string,
