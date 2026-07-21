@@ -19,6 +19,7 @@ import {
     type PayloadResponse,
 } from "@store/api";
 import { openDevGuide } from "@utils/dev-guide-url-gen";
+import { isDevGuideEnabled } from "@/types/environment";
 
 export default function PairedCard({
     pairedStep,
@@ -172,25 +173,27 @@ function StepDisplay({ step, flowId }: { step: MappedStep; flowId: string }) {
                                 <Badge variant="secondary">unsolicited</Badge>
                             ) : null}
 
-                            <Button
-                                type="button"
-                                variant="ghost"
-                                size="xs"
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    if (!sessionData) return;
-                                    openDevGuide({
-                                        domain: sessionData.domain,
-                                        version: sessionData.version,
-                                        useCase: sessionData.usecaseId,
-                                        flowId,
-                                        actionId: step.actionId,
-                                    });
-                                }}
-                                className="h-auto rounded-md bg-brand-light px-2 py-0.5 text-caption-1 font-semibold text-brand-normal hover:bg-brand-light-hover dark:bg-brand-dark/30 dark:hover:bg-brand-dark/50"
-                            >
-                                Docs
-                            </Button>
+                            {isDevGuideEnabled ? (
+                                <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="xs"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        if (!sessionData) return;
+                                        openDevGuide({
+                                            domain: sessionData.domain,
+                                            version: sessionData.version,
+                                            useCase: sessionData.usecaseId,
+                                            flowId,
+                                            actionId: step.actionId,
+                                        });
+                                    }}
+                                    className="h-auto rounded-md bg-brand-light px-2 py-0.5 text-caption-1 font-semibold text-brand-normal hover:bg-brand-light-hover dark:bg-brand-dark/30 dark:hover:bg-brand-dark/50"
+                                >
+                                    Docs
+                                </Button>
+                            ) : null}
 
                             {step.description ? (
                                 <TooltipHint content={step.description}>

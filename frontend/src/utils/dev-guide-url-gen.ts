@@ -3,6 +3,8 @@
  * Uses VITE_BASE_URL as the app origin so links work across environments.
  */
 
+import { isDevGuideEnabled } from "@/types/environment";
+
 export interface DevGuideUrlOptions {
     domain: string;
     version: string;
@@ -50,5 +52,6 @@ export function buildDevGuideUrl({
 
 /** Open the Developer Guide in a new tab. Convenience wrapper around buildDevGuideUrl. */
 export function openDevGuide(options: DevGuideUrlOptions): void {
+    if (!isDevGuideEnabled) return;
     window.open(buildDevGuideUrl(options), "_blank", "noopener,noreferrer");
 }

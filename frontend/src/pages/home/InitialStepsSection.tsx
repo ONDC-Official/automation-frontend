@@ -3,11 +3,17 @@ import { Link } from "react-router-dom";
 import { ArrowTopRightOnSquareIcon } from "@heroicons/react/24/outline";
 import { quickSteps } from "@pages/home/constants";
 import { QuickStepBadge } from "@pages/home/QuickStepBadge";
+import { cn } from "@/lib/utils";
 
 const IntialStepsSection: FC = () => (
     <section className="border-y border-n-30 bg-n-0 dark:bg-surface-page dark:border-border-default">
         <div className="mx-auto py-8 px-5 sm:px-8 md:px-10 lg:px-15 xl:px-20">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-10">
+            <div
+                className={cn(
+                    "grid grid-cols-1 sm:grid-cols-2 gap-8 lg:gap-10",
+                    quickSteps.length === 3 ? "lg:grid-cols-3" : "lg:grid-cols-4"
+                )}
+            >
                 {quickSteps.map((step) => (
                     <div key={step.number} className="group relative flex items-start gap-3">
                         <QuickStepBadge number={step.number} />

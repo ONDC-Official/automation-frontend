@@ -26,7 +26,9 @@ import DeveloperGuideGeneralContent from "@pages/developer-guide/layout/Develope
 import DeveloperGuideDomainsContent from "@pages/developer-guide/layout/DeveloperGuideDomainsContent";
 import DeveloperGuideDocContent from "@pages/developer-guide/layout/DeveloperGuideDocContent";
 import ValidationsPage from "@pages/developer-guide/ValidationsPage";
+import { isDevGuideEnabled } from "@/types/environment";
 import PageReveal from "./page-reveal";
+
 const page = (children: ReactNode) => <PageReveal>{children}</PageReveal>;
 
 const Routes = () => (
@@ -50,24 +52,37 @@ const Routes = () => (
         {/* <Route path={ROUTES.AUTH_HEADER} element={page(<AuthHeader />)} /> */}
         {/* <Route path={ROUTES.SELLER_LOAD_TESTING} element={page(<SellerLoadTesting />)} /> */}
         <Route path={ROUTES.FRAMEWORK_HEALTH} element={page(<FrameworkHealthPage />)} />
-        <Route path={ROUTES.DEVELOPER_GUIDE} element={<DeveloperGuideShell />}>
-            <Route
-                index
-                element={
-                    <Navigate
-                        to={`${ROUTES.DEVELOPER_GUIDE_GETTING_STARTED}#1-pick-a-use-case`}
-                        replace
+        {isDevGuideEnabled ? (
+            <>
+                <Route path={ROUTES.DEVELOPER_GUIDE} element={<DeveloperGuideShell />}>
+                    <Route
+                        index
+                        element={
+                            <Navigate
+                                to={`${ROUTES.DEVELOPER_GUIDE_GETTING_STARTED}#1-pick-a-use-case`}
+                                replace
+                            />
+                        }
                     />
-                }
-            />
-            <Route path="getting-started" element={page(<DeveloperGuideGettingStartedContent />)} />
-            <Route path="general" element={page(<DeveloperGuideGeneralContent />)} />
-            <Route path="domains" element={page(<DeveloperGuideDomainsContent />)} />
-            <Route path="auth-tools" element={page(<DeveloperGuideAuthToolsContent />)} />
-            <Route path="docs/:slug" element={page(<DeveloperGuideDocContent />)} />
-            <Route path=":domain/:version/:useCase" element={page(<DeveloperGuideFlowPage />)} />
-        </Route>
-        <Route path={ROUTES.DEVELOPER_GUIDE_VALIDATIONS} element={page(<ValidationsPage />)} />
+                    <Route
+                        path="getting-started"
+                        element={page(<DeveloperGuideGettingStartedContent />)}
+                    />
+                    <Route path="general" element={page(<DeveloperGuideGeneralContent />)} />
+                    <Route path="domains" element={page(<DeveloperGuideDomainsContent />)} />
+                    <Route path="auth-tools" element={page(<DeveloperGuideAuthToolsContent />)} />
+                    <Route path="docs/:slug" element={page(<DeveloperGuideDocContent />)} />
+                    <Route
+                        path=":domain/:version/:useCase"
+                        element={page(<DeveloperGuideFlowPage />)}
+                    />
+                </Route>
+                <Route
+                    path={ROUTES.DEVELOPER_GUIDE_VALIDATIONS}
+                    element={page(<ValidationsPage />)}
+                />
+            </>
+        ) : null}
         <Route path="*" element={page(<NotFoundPage />)} />
     </RouterRoutes>
 );

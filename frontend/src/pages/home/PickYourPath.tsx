@@ -10,6 +10,7 @@ import {
 import SectionLabel from "@components/SectionLabel";
 import { pathCards } from "@pages/home/constants";
 import PathCardLinks from "@pages/home/PathCardLinks";
+import { cn } from "@/lib/utils";
 
 const PickYourPath: FC = () => (
     <section className="bg-n-0 dark:bg-surface-page py-16 lg:py-20">
@@ -23,7 +24,12 @@ const PickYourPath: FC = () => (
                 here&apos;s where to begin.
             </p>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
+            <div
+                className={cn(
+                    "grid grid-cols-1 gap-6 items-stretch",
+                    pathCards.length === 2 ? "md:grid-cols-2" : "md:grid-cols-3"
+                )}
+            >
                 {pathCards.map((card) => (
                     <Card key={card.label} className="h-full">
                         <p className="text-brand-normal text-caption-1 font-semibold mb-4">

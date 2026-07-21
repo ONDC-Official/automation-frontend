@@ -4,6 +4,7 @@ import { ROUTES } from "@constants/routes";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@hooks/useAuth";
 import { useGitHubLogin } from "@hooks/useGitHubLogin";
+import { isDevGuideEnabled } from "@/types/environment";
 
 const HeroInfo: FC = () => {
     const navigate = useNavigate();
@@ -35,13 +36,15 @@ const HeroInfo: FC = () => {
                 <Button size="lg" onClick={handleStartBuilding} isLoading={isLoginRedirecting}>
                     Start Building
                 </Button>
-                <Button
-                    size="lg"
-                    variant="outline"
-                    onClick={() => navigate(ROUTES.DEVELOPER_GUIDE)}
-                >
-                    Read Documentation
-                </Button>
+                {isDevGuideEnabled ? (
+                    <Button
+                        size="lg"
+                        variant="outline"
+                        onClick={() => navigate(ROUTES.DEVELOPER_GUIDE)}
+                    >
+                        Read Documentation
+                    </Button>
+                ) : null}
             </div>
         </div>
     );
