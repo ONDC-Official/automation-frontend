@@ -1,8 +1,9 @@
 import { ROUTES } from "@constants/routes";
 import { INavLink } from "@components/Header/types";
 import { cn } from "@/lib/utils";
+import { isDevGuideEnabled } from "@/types/environment";
 
-export const navLinks: INavLink[] = [
+const allNavLinks: INavLink[] = [
     {
         label: "Home",
         href: ROUTES.HOME,
@@ -62,6 +63,9 @@ export const navLinks: INavLink[] = [
     },
 ];
 
+export const navLinks: INavLink[] = isDevGuideEnabled
+    ? allNavLinks
+    : allNavLinks.filter((link) => link.href !== ROUTES.DEVELOPER_GUIDE);
 export const mobileDrawerNavClassName = cn(
     "flex flex-col p-4 pt-6",
     "[&_[data-slot=navigation-menu]]:w-full [&_[data-slot=navigation-menu]]:max-w-none [&_[data-slot=navigation-menu]]:flex-col [&_[data-slot=navigation-menu]]:items-stretch [&_[data-slot=navigation-menu]]:justify-start",
