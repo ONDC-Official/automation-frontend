@@ -13,6 +13,7 @@ import CommentsPanel from "./CommentsPanel";
 import NotesPanel from "./NotesPanel";
 import { getLeafRowsForApi, getValueAtPath, type RawTableAction } from "./attributePanelUtils";
 import { Button } from "@components/Shadcn/Button";
+import { TooltipHint } from "@components/Shadcn/Tooltip";
 import { resolveCommentScope } from "@/types/comment-scope";
 import { useInlineCommentJsonField } from "./useInlineCommentJsonField";
 
@@ -37,6 +38,8 @@ interface FlowActionDetailsProps {
     version?: string;
     /** Validation table data keyed by action name. Loaded lazily from API. */
     validationTableData?: Record<string, ValidationTableAction> | null;
+    /** When true, the JSON viewer and details panel use a 70/30 width split. */
+    isFullscreen?: boolean;
 }
 
 const FlowActionDetails: FC<FlowActionDetailsProps> = ({
@@ -49,6 +52,7 @@ const FlowActionDetails: FC<FlowActionDetailsProps> = ({
     domain,
     version,
     validationTableData,
+    isFullscreen = false,
 }) => {
     const [searchParams, setSearchParams] = useSearchParams();
 
@@ -168,32 +172,47 @@ const FlowActionDetails: FC<FlowActionDetailsProps> = ({
     );
 
     const root = (
-        <div className="flex items-stretch h-full">
-            {/* Section 2 — JSON viewer; toggle floats inside at top-right */}
-            <div className="flex-1 min-w-0 flex flex-col min-h-0 overflow-hidden border border-slate-200 dark:border-border-default rounded-lg bg-white dark:bg-surface-elevated relative">
-                <Button
-                    variant="ghost"
-                    onClick={() => setRightPanelOpen((v) => !v)}
-                    title={rightPanelOpen ? "Collapse details panel" : "Expand details panel"}
-                    aria-label={rightPanelOpen ? "Collapse details panel" : "Expand details panel"}
-                    className="absolute top-5 right-3 z-10 flex items-center justify-center w-7 h-7 rounded-full bg-white dark:bg-surface-elevated border border-slate-200 dark:border-border-default shadow-sm hover:bg-slate-50 dark:hover:bg-surface-muted transition-none"
-                >
-                    <ChevronRightIcon
-                        className={cn(
-                            "w-3 h-3 text-slate-400 transition-transform duration-300 ease-in-out motion-reduce:transition-none",
-                            rightPanelOpen ? "" : "rotate-180"
-                        )}
-                    />
-                </Button>
+        <div
+            className={cn(
+                "items-stretch h-full",
+                isFullscreen && rightPanelOpen ? "grid grid-cols-[7fr_3fr] gap-4" : "flex"
+            )}
+        >
+            {/* Section 2 — JSON viewer; panel toggle lives in the toolbar's right action group */}
+            <div
+                className={cn(
+                    "flex flex-col min-h-0 overflow-hidden border border-slate-200 dark:border-border-default rounded-lg bg-white dark:bg-surface-elevated relative",
+                    isFullscreen && rightPanelOpen ? "min-w-0" : "flex-1 min-w-0"
+                )}
+            >
                 <div className="flex-1 min-h-0 overflow-auto p-2 relative group">
                     <JsonViewer
                         data={exampleValue as ComponentProps<typeof JsonViewer>["data"]}
                         isSelected={isSelected}
                         handleKeyClick={handleKeyClick}
-                        // Reserves room for the absolutely-positioned right-panel
-                        // toggle above, which overlaps the toolbar's right edge.
-                        toolbarClassName="pr-12"
                         renderFieldCommentAction={renderFieldCommentAction}
+                        toolbarEnd={
+                            <TooltipHint
+                                content={rightPanelOpen ? "Expand panel" : "Collapse panel"}
+                                side="bottom"
+                            >
+                                <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="icon-sm"
+                                    className="text-slate-700 hover:bg-white/70 dark:text-n-20 dark:hover:bg-surface-muted dark:hover:text-n-60"
+                                    onClick={() => setRightPanelOpen((v) => !v)}
+                                    aria-label={rightPanelOpen ? "Expand panel" : "Collapse panel"}
+                                >
+                                    <ChevronRightIcon
+                                        className={cn(
+                                            "size-4 transition-transform duration-300 ease-in-out motion-reduce:transition-none",
+                                            rightPanelOpen ? "" : "rotate-180"
+                                        )}
+                                    />
+                                </Button>
+                            </TooltipHint>
+                        }
                     />
                     <Button
                         variant="default"
@@ -209,13 +228,25 @@ const FlowActionDetails: FC<FlowActionDetailsProps> = ({
             {/* Section 3 — outer wrapper max-width transitions (inner stays fixed-width → no content reflow → no jerk) */}
             <div
                 className={cn(
-                    "shrink-0 overflow-hidden transition-[max-width,margin-left,opacity] duration-300 ease-in-out motion-reduce:transition-none",
-                    rightPanelOpen
-                        ? "max-w-80 ml-4 opacity-100"
-                        : "max-w-0 ml-0 opacity-0 pointer-events-none"
+                    "overflow-hidden transition-[max-width,margin-left,opacity] duration-300 ease-in-out motion-reduce:transition-none",
+                    isFullscreen
+                        ? rightPanelOpen
+                            ? "min-w-0 opacity-100"
+                            : "w-0 max-w-0 opacity-0 pointer-events-none"
+                        : cn(
+                              "shrink-0",
+                              rightPanelOpen
+                                  ? "max-w-80 ml-4 opacity-100"
+                                  : "max-w-0 ml-0 opacity-0 pointer-events-none"
+                          )
                 )}
             >
-                <div className="w-80 h-full flex flex-col min-h-0 border border-slate-200 dark:border-border-default rounded-lg bg-white dark:bg-surface-elevated shadow-sm overflow-hidden">
+                <div
+                    className={cn(
+                        "h-full flex flex-col min-h-0 border border-slate-200 dark:border-border-default rounded-lg bg-white dark:bg-surface-elevated shadow-sm overflow-hidden",
+                        isFullscreen ? "w-full" : "w-80"
+                    )}
+                >
                     <div className="px-4 pt-3 pb-2 shrink-0">
                         <GuideTabs<RightPanelTab>
                             tabs={RIGHT_PANEL_TABS}

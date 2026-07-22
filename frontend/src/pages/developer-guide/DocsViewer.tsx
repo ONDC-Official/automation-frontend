@@ -1,14 +1,15 @@
-import { type FC, useCallback, useMemo } from "react";
-import { ChevronRightIcon } from "@heroicons/react/24/outline";
+import { type FC, useMemo } from "react";
+// import { ChevronRightIcon } from "@heroicons/react/24/outline";
 import GithubMarkdown from "@components/GithubMarkdown";
 import { cn } from "@/lib/utils";
-import { Button } from "@components/Shadcn/Button";
+// import { Button } from "@components/Shadcn/Button";
 import { stripRedundantMarkdownHorizontalRules } from "@utils/markdownToc";
 import GuideTabs from "./shared/components/GuideTabs";
-import CommentsPanel from "./flowActionDetails/CommentsPanel";
+// Comments feature: enabled only under Flow → Example Payload (domain > usecase > version).
+// import CommentsPanel from "./flowActionDetails/CommentsPanel";
 import { useDocsSectionSelection } from "./DocsViewer/useDocsSectionSelection";
-import { buildDocumentCommentScope } from "./DocsViewer/utils";
-import { useInlineCommentHeading } from "./shared/hooks/useInlineCommentHeading";
+// import { buildDocumentCommentScope } from "./DocsViewer/utils";
+// import { useInlineCommentHeading } from "./shared/hooks/useInlineCommentHeading";
 
 interface DocsViewerProps {
     docs: Record<string, string>;
@@ -21,7 +22,9 @@ function formatSlug(slug: string): string {
     return slug.replace(/[-_]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
-const DocsViewer: FC<DocsViewerProps> = ({ docs, useCaseId, domain, version }) => {
+// useCaseId / domain / version are retained on the props type for the commented-out
+// comments wiring below (re-enable with Flow → Example Payload as the only active surface).
+const DocsViewer: FC<DocsViewerProps> = ({ docs }) => {
     /**
      * Frontend filter check to ensure "Release Notes" and "References" (including spelling variations)
      * are excluded from the documentation tabs and details pane for all domains/use cases.
@@ -46,40 +49,40 @@ const DocsViewer: FC<DocsViewerProps> = ({ docs, useCaseId, domain, version }) =
     const {
         activeDocSlug,
         setActiveDocSlug,
-        selectedSectionId,
-        selectedSectionLabel,
+        // selectedSectionId,
+        // selectedSectionLabel,
         selectSection,
-        rightPanelOpen,
-        setRightPanelOpen,
-        toc,
-        tocOffset,
+        // rightPanelOpen,
+        // setRightPanelOpen,
+        // toc,
+        // tocOffset,
     } = useDocsSectionSelection({
         docSlugs: slugs,
         docs: filteredDocs,
     });
 
-    const resolveSectionLabel = useCallback(
-        (sectionId: string) => toc.find((entry) => entry.id === sectionId)?.text,
-        [toc]
-    );
+    // const resolveSectionLabel = useCallback(
+    //     (sectionId: string) => toc.find((entry) => entry.id === sectionId)?.text,
+    //     [toc]
+    // );
 
     const content = filteredDocs[activeDocSlug] ?? "";
     // Domain docs often use `# Section` + `---` — strip those so they don't leave
     // uneven empty gaps under titles.
     const displayContent = useMemo(() => stripRedundantMarkdownHorizontalRules(content), [content]);
-    const commentScope = useMemo(
-        () =>
-            useCaseId && activeDocSlug && domain && version
-                ? buildDocumentCommentScope(domain, version, useCaseId, activeDocSlug)
-                : undefined,
-        [useCaseId, activeDocSlug, domain, version]
-    );
+    // const commentScope = useMemo(
+    //     () =>
+    //         useCaseId && activeDocSlug && domain && version
+    //             ? buildDocumentCommentScope(domain, version, useCaseId, activeDocSlug)
+    //             : undefined,
+    //     [useCaseId, activeDocSlug, domain, version]
+    // );
 
-    const { renderHeadingAction, commentsRefreshKey } = useInlineCommentHeading({
-        commentScope,
-        selectSection,
-        setRightPanelOpen,
-    });
+    // const { renderHeadingAction, commentsRefreshKey } = useInlineCommentHeading({
+    //     commentScope,
+    //     selectSection,
+    //     setRightPanelOpen,
+    // });
 
     if (slugs.length === 0) {
         return (
@@ -101,7 +104,8 @@ const DocsViewer: FC<DocsViewerProps> = ({ docs, useCaseId, domain, version }) =
 
             <div className="flex items-stretch min-h-[60vh]">
                 <div className="flex-1 min-w-0 flex flex-col min-h-0 overflow-hidden border border-slate-200 dark:border-border-default rounded-lg bg-white dark:bg-surface-elevated relative">
-                    <Button
+                    {/* Comments panel toggle — disabled outside Flow → Example Payload */}
+                    {/* <Button
                         variant="ghost"
                         onClick={() => setRightPanelOpen(!rightPanelOpen)}
                         title={rightPanelOpen ? "Collapse comments panel" : "Expand comments panel"}
@@ -116,7 +120,7 @@ const DocsViewer: FC<DocsViewerProps> = ({ docs, useCaseId, domain, version }) =
                                 rightPanelOpen ? "" : "rotate-180"
                             )}
                         />
-                    </Button>
+                    </Button> */}
 
                     <div className="flex flex-1 min-h-0 overflow-hidden">
                         {/* <TableOfContents
@@ -147,13 +151,14 @@ const DocsViewer: FC<DocsViewerProps> = ({ docs, useCaseId, domain, version }) =
                             <GithubMarkdown
                                 content={displayContent}
                                 onSectionClick={selectSection}
-                                renderHeadingAction={renderHeadingAction}
+                                // renderHeadingAction={renderHeadingAction}
                             />
                         </div>
                     </div>
                 </div>
 
-                <div
+                {/* Comments sidebar — disabled outside Flow → Example Payload */}
+                {/* <div
                     className={cn(
                         "shrink-0 self-start sticky overflow-hidden transition-[max-width,margin-left,opacity] duration-300 ease-in-out",
                         rightPanelOpen
@@ -174,7 +179,7 @@ const DocsViewer: FC<DocsViewerProps> = ({ docs, useCaseId, domain, version }) =
                             />
                         )}
                     </div>
-                </div>
+                </div> */}
             </div>
         </div>
     );

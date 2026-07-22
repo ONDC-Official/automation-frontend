@@ -1,13 +1,14 @@
-import { FC, useCallback, useMemo } from "react";
-import { ChevronRightIcon } from "@heroicons/react/24/outline";
+import { FC, useMemo } from "react";
+// import { ChevronRightIcon } from "@heroicons/react/24/outline";
 import gettingStartedContent from "../landing/getting-started.md?raw";
 import MdFileRender from "@components/MdFileRender";
-import { Button } from "@components/Shadcn/Button";
-import { cn } from "@/lib/utils";
-import { buildGeneralDocCommentScope } from "@/types/comment-scope";
-import CommentsPanel from "../flowActionDetails/CommentsPanel";
+// import { Button } from "@components/Shadcn/Button";
+// import { cn } from "@/lib/utils";
+// Comments feature: enabled only under Flow → Example Payload (domain > usecase > version).
+// import { buildGeneralDocCommentScope } from "@/types/comment-scope";
+// import CommentsPanel from "../flowActionDetails/CommentsPanel";
 import { useDocsSectionSelection } from "../DocsViewer/useDocsSectionSelection";
-import { useInlineCommentHeading } from "../shared/hooks/useInlineCommentHeading";
+// import { useInlineCommentHeading } from "../shared/hooks/useInlineCommentHeading";
 
 const GETTING_STARTED_SLUG = "getting-started";
 
@@ -17,26 +18,26 @@ const DeveloperGuideGettingStartedContent: FC = () => {
     const docSlugs = useMemo(() => [GETTING_STARTED_SLUG], []);
     const docsRecord = useMemo(() => ({ [GETTING_STARTED_SLUG]: mdData }), [mdData]);
     const {
-        selectedSectionId,
-        selectedSectionLabel,
+        // selectedSectionId,
+        // selectedSectionLabel,
         selectSection,
-        rightPanelOpen,
-        setRightPanelOpen,
-        toc,
-        tocOffset,
+        // rightPanelOpen,
+        // setRightPanelOpen,
+        // toc,
+        // tocOffset,
     } = useDocsSectionSelection({ docSlugs, docs: docsRecord });
 
-    const resolveSectionLabel = useCallback(
-        (sectionId: string) => toc.find((entry) => entry.id === sectionId)?.text,
-        [toc]
-    );
+    // const resolveSectionLabel = useCallback(
+    //     (sectionId: string) => toc.find((entry) => entry.id === sectionId)?.text,
+    //     [toc]
+    // );
 
-    const commentScope = useMemo(() => buildGeneralDocCommentScope(GETTING_STARTED_SLUG), []);
-    const { renderHeadingAction, commentsRefreshKey } = useInlineCommentHeading({
-        commentScope,
-        selectSection,
-        setRightPanelOpen,
-    });
+    // const commentScope = useMemo(() => buildGeneralDocCommentScope(GETTING_STARTED_SLUG), []);
+    // const { renderHeadingAction, commentsRefreshKey } = useInlineCommentHeading({
+    //     commentScope,
+    //     selectSection,
+    //     setRightPanelOpen,
+    // });
 
     return (
         <div className="p-4">
@@ -49,7 +50,8 @@ const DeveloperGuideGettingStartedContent: FC = () => {
             </div>
             <div className="flex gap-6 items-stretch min-h-[60vh]">
                 <div className="flex-1 min-w-0 relative">
-                    <Button
+                    {/* Comments panel toggle — disabled outside Flow → Example Payload */}
+                    {/* <Button
                         type="button"
                         variant="ghost"
                         onClick={() => setRightPanelOpen(!rightPanelOpen)}
@@ -65,7 +67,7 @@ const DeveloperGuideGettingStartedContent: FC = () => {
                                 rightPanelOpen ? "" : "rotate-180"
                             )}
                         />
-                    </Button>
+                    </Button> */}
                     <MdFileRender
                         variant="guide"
                         title="Getting Started"
@@ -73,10 +75,11 @@ const DeveloperGuideGettingStartedContent: FC = () => {
                         mdData={mdData}
                         showTableOfContents={false}
                         onSectionClick={selectSection}
-                        renderHeadingAction={renderHeadingAction}
+                        // renderHeadingAction={renderHeadingAction}
                     />
                 </div>
-                <div
+                {/* Comments sidebar — disabled outside Flow → Example Payload */}
+                {/* <div
                     className={cn(
                         "shrink-0 self-start sticky overflow-hidden transition-[max-width,opacity] duration-300 ease-in-out",
                         rightPanelOpen
@@ -95,7 +98,7 @@ const DeveloperGuideGettingStartedContent: FC = () => {
                             emptySelectionMessage="Select a section to add comments."
                         />
                     </div>
-                </div>
+                </div> */}
             </div>
         </div>
     );

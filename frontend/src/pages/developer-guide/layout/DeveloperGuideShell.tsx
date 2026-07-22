@@ -1,6 +1,6 @@
 import { FC, useCallback, useEffect, useMemo, useState } from "react";
 import { Outlet, useLocation } from "react-router-dom";
-import { ArrowLeftIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
+import { Bars3BottomLeftIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import DeveloperGuideCollapsedNavBar from "./DeveloperGuideCollapsedNavBar";
 import DeveloperGuideNavBackButton from "./DeveloperGuideNavBackButton";
 import LoadingOverlay from "@components/Shadcn/LoadingOverlay";
@@ -104,7 +104,7 @@ const DeveloperGuideShell: FC = () => {
                                     aria-label="Collapse navigation"
                                     title="Collapse navigation"
                                 >
-                                    <ArrowLeftIcon className="size-4" aria-hidden />
+                                    <Bars3BottomLeftIcon className="size-4" aria-hidden />
                                 </Button>
                             </div>
                             <div className="relative mt-3">

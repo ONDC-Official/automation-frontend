@@ -1,6 +1,14 @@
-import type { FlowStep, StepDisplayItem } from "../types";
-import { getActionId } from "../utils";
-import type { FlowExample, FlowInformationSection } from "./types";
+import type {
+    FlowStep,
+    StepDisplayItem,
+    FlowDetailBlock,
+    FlowEntry,
+} from "@pages/developer-guide/types";
+import { getActionId } from "@pages/developer-guide/utils";
+import type {
+    FlowExample,
+    FlowInformationSection,
+} from "@pages/developer-guide/FlowInformation/types";
 
 /** Pairs up request/response steps (e.g. search + on_search) for display; unpaired steps stand alone. */
 export function buildStepDisplayItems(steps: FlowStep[]): StepDisplayItem[] {
@@ -87,5 +95,39 @@ export function resolveDefaultSection(
     if (hasExampleObject) return "preview";
     if (hasStep) return "request";
     if (hasXValidations) return "x-validations";
-    return "preview";
+    return "sequence";
+}
+
+function collectMermaidBlocks(details: FlowDetailBlock[] | undefined): string[] {
+    if (!details?.length) return [];
+    return details
+        .map((d) => d.mermaid?.trim())
+        .filter((m): m is string => !!m && m.includes("sequenceDiagram"));
+}
+
+function normalizeMermaid(source: string): string {
+    const trimmed = source.trim();
+    return trimmed.startsWith("sequenceDiagram") ? trimmed : `sequenceDiagram\n${trimmed}`;
+}
+
+function joinMermaidBlocks(blocks: string[]): string | null {
+    if (blocks.length === 0) return null;
+    // Mermaid allows only one diagram root — keep the first authored block.
+    return normalizeMermaid(blocks[0]);
+}
+
+/**
+ * Resolve authored Mermaid for the Details "Sequence Diagram" tab.
+ * Only returns diagrams supplied by the spec (`details[].mermaid`); no client-side fallback.
+ */
+export function resolveSequenceMermaid(
+    flow: FlowEntry | undefined,
+    step: FlowStep | undefined
+): string | null {
+    if (!flow) return null;
+
+    const fromStep = joinMermaidBlocks(collectMermaidBlocks(step?.details));
+    if (fromStep) return fromStep;
+
+    return joinMermaidBlocks(collectMermaidBlocks(flow.config?.details));
 }

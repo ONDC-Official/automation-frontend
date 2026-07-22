@@ -21,4 +21,6 @@ export type AppJsonViewerProps = Omit<React.ComponentProps<typeof JsonView>, "va
     searchPlaceholder?: string;
     downloadFileName?: string;
     noResultsText?: string;
+    /** Extra controls rendered at the end of the toolbar's right-side action group. */
+    toolbarEnd?: React.ReactNode;
 };

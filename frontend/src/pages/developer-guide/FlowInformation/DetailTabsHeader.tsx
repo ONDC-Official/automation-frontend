@@ -23,6 +23,11 @@ const DetailTabsHeader: FC<DetailTabsHeaderProps> = ({
         tabs={
             [
                 {
+                    id: "sequence",
+                    label: "Sequence Diagram",
+                    visible: true,
+                },
+                {
                     id: "preview",
                     label: "Example Payload",
                     visible: hasExampleObject,

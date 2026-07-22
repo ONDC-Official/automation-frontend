@@ -93,6 +93,12 @@ export interface MockExample {
     payload?: unknown;
 }
 
+/** Optional prose + Mermaid sequence diagram attached to a flow or step. */
+export interface FlowDetailBlock {
+    description?: string;
+    mermaid?: string;
+}
+
 export interface FlowStep {
     summary?: string;
     api: string;
@@ -102,9 +108,7 @@ export interface FlowStep {
     unsolicited?: boolean;
     owner?: string;
     description?: string;
-    details?: Array<{
-        description?: string;
-    }>;
+    details?: FlowDetailBlock[];
     reference?: string;
     example?: {
         summary?: string;
@@ -143,7 +147,7 @@ export interface FlowConfig {
     summary?: string;
     steps: FlowStep[];
     helperLib?: string;
-    details?: Array<{ description?: string }>;
+    details?: FlowDetailBlock[];
     reference?: string;
     [key: string]: unknown;
 }
