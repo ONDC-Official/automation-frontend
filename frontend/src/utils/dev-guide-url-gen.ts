@@ -15,7 +15,7 @@ export interface DevGuideUrlOptions {
     /** Optional: pre-select a specific action step */
     actionId?: string;
     /** Optional: top-level tab to open, defaults to "flows" */
-    view?: "flows" | "error-codes" | "supported-actions" | "docs" | "changelog";
+    view?: "flows" | "error-codes" | "docs" | "changelog";
 }
 
 /**
