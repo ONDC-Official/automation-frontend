@@ -4,6 +4,8 @@ import { getActionId } from "./utils";
 import { buildStepDisplayItems } from "./FlowInformation/utils";
 import { ChevronDownIcon, ArrowsRightLeftIcon } from "@heroicons/react/24/outline";
 import { Button } from "@/components/Shadcn/Button";
+import OwnerPill from "./shared/components/OwnerPill";
+import { cn } from "@/lib/utils";
 
 interface FlowsAccordionProps {
     flows: FlowEntry[];
@@ -108,11 +110,11 @@ const FlowsAccordion: FC<FlowsAccordionProps> = ({
                         : "border-slate-200 bg-white dark:bg-surface-elevated hover:border-slate-300 hover:shadow-xs"
                 }`}
             >
-                <div className="flex items-start justify-between gap-2">
-                    <div className="flex items-start gap-2 min-w-0 flex-1">
+                <div className="flex w-full min-w-0 items-center justify-between gap-2">
+                    <div className="flex min-w-0 items-center gap-2">
                         {isTransitioning && (
                             <svg
-                                className="shrink-0 h-3.5 w-3.5 animate-spin text-sky-500 dark:text-sky-400 mt-0.5"
+                                className="size-3.5 shrink-0 animate-spin text-sky-500 dark:text-sky-400"
                                 fill="none"
                                 viewBox="0 0 24 24"
                             >
@@ -132,14 +134,43 @@ const FlowsAccordion: FC<FlowsAccordionProps> = ({
                             </svg>
                         )}
 
-                        <span className="min-w-0 flex-1 text-body-2 font-medium text-slate-800 wrap-anywhere whitespace-normal">
+                        <span className="min-w-0 text-body-2 font-medium text-slate-800 wrap-anywhere whitespace-normal">
                             {step.action_label ?? step.api}
                         </span>
                     </div>
+
+                    <OwnerPill
+                        owner={step.owner}
+                        className="shrink-0 px-1 py-px text-[9px] leading-none"
+                    />
                 </div>
             </Button>
         );
     };
+
+    const renderStepperBullet = (isActive: boolean, isFirst: boolean, isLast: boolean) => (
+        <div
+            className="relative flex w-4 shrink-0 items-center justify-center self-stretch"
+            aria-hidden
+        >
+            {/* Upper segment: covers the row gap and connects down to this bullet */}
+            {!isFirst && (
+                <span className="absolute -top-2.5 bottom-1/2 left-1/2 w-px -translate-x-1/2 bg-slate-200 dark:bg-slate-700" />
+            )}
+            {/* Lower segment: from this bullet through the row gap to the next */}
+            {!isLast && (
+                <span className="absolute top-1/2 -bottom-2.5 left-1/2 w-px -translate-x-1/2 bg-slate-200 dark:bg-slate-700" />
+            )}
+            <span
+                className={cn(
+                    "relative z-10 size-2.5 shrink-0 rounded-full border-2",
+                    isActive
+                        ? "border-sky-500 bg-sky-500"
+                        : "border-slate-300 bg-white dark:border-slate-600 dark:bg-surface-elevated"
+                )}
+            />
+        </div>
+    );
 
     return (
         <div className="space-y-3">
@@ -197,6 +228,9 @@ const FlowsAccordion: FC<FlowsAccordionProps> = ({
                                 <div className="px-4 pb-4 pt-2 border-t border-slate-100 bg-slate-50/40 overflow-y-auto">
                                     <div className="flex flex-col gap-2.5 mt-2">
                                         {displayItems.map((item, itemIdx) => {
+                                            const isFirst = itemIdx === 0;
+                                            const isLast = itemIdx === displayItems.length - 1;
+
                                             if (item.type === "pair") {
                                                 const reqActionId = getActionId(item.request);
                                                 const resActionId = getActionId(item.response);
@@ -209,24 +243,34 @@ const FlowsAccordion: FC<FlowsAccordionProps> = ({
                                                     isSelectedFlow &&
                                                     selectedFlowAction === resActionId;
 
+                                                const isGroupActive =
+                                                    isReqSelected || isResSelected;
+
                                                 return (
                                                     <div
                                                         key={itemIdx}
-                                                        className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] gap-3 items-center"
+                                                        className="flex items-center gap-2.5"
                                                     >
-                                                        {renderStepButton(
-                                                            item.request,
-                                                            flowId,
-                                                            isReqSelected
+                                                        {renderStepperBullet(
+                                                            isGroupActive,
+                                                            isFirst,
+                                                            isLast
                                                         )}
+                                                        <div className="grid min-w-0 flex-1 grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] gap-3 items-center">
+                                                            {renderStepButton(
+                                                                item.request,
+                                                                flowId,
+                                                                isReqSelected
+                                                            )}
 
-                                                        <ArrowsIcon />
+                                                            <ArrowsIcon />
 
-                                                        {renderStepButton(
-                                                            item.response,
-                                                            flowId,
-                                                            isResSelected
-                                                        )}
+                                                            {renderStepButton(
+                                                                item.response,
+                                                                flowId,
+                                                                isResSelected
+                                                            )}
+                                                        </div>
                                                     </div>
                                                 );
                                             }
@@ -238,12 +282,22 @@ const FlowsAccordion: FC<FlowsAccordionProps> = ({
                                                 selectedFlowAction === stepActionId;
 
                                             return (
-                                                <div key={itemIdx} className="w-full">
-                                                    {renderStepButton(
-                                                        item.step,
-                                                        flowId,
-                                                        isSelected
+                                                <div
+                                                    key={itemIdx}
+                                                    className="flex items-center gap-2.5"
+                                                >
+                                                    {renderStepperBullet(
+                                                        isSelected,
+                                                        isFirst,
+                                                        isLast
                                                     )}
+                                                    <div className="min-w-0 flex-1">
+                                                        {renderStepButton(
+                                                            item.step,
+                                                            flowId,
+                                                            isSelected
+                                                        )}
+                                                    </div>
                                                 </div>
                                             );
                                         })}

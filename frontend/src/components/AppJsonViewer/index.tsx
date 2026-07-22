@@ -28,6 +28,7 @@ const AppJsonViewer = ({
     shortenTextAfterLength = 0,
     containerClassName,
     toolbarClassName,
+    toolbarEnd,
     viewerWrapperClassName,
     ...jsonViewProps
 }: AppJsonViewerProps) => {
@@ -57,11 +58,18 @@ const AppJsonViewer = ({
         return () => document.removeEventListener("fullscreenchange", update);
     }, [isFullscreen]);
     const showToolbarSection =
-        showToolbar || showSearch || showExpandCollapse || showDownload || showFullscreen;
+        showToolbar ||
+        showSearch ||
+        showExpandCollapse ||
+        showDownload ||
+        showFullscreen ||
+        Boolean(toolbarEnd);
     const filteredValue = useMemo(() => filterJsonBySearch(value, searchTerm), [value, searchTerm]);
     const themedStyle = useMemo(
         () => ({
             ...(effectiveTheme === "dark" ? githubDarkTheme : githubLightTheme),
+            // Brick-red string values (githubLight defaults to navy `#032f62`).
+            ...(effectiveTheme === "light" ? { "--w-rjv-type-string-color": "#a31515" } : {}),
             ...(transparentBackground ? { "--w-rjv-background-color": "transparent" } : {}),
             // Fullscreen gets slightly larger type + line-height for large-display readability;
             // embedded is untouched since this spreads an empty object when isFullscreen is false.
@@ -102,6 +110,7 @@ const AppJsonViewer = ({
                     isFullscreen={isFullscreen}
                     invertTheme={invertTheme}
                     toolbarClassName={toolbarClassName}
+                    toolbarEnd={toolbarEnd}
                     onSearchTermChange={setSearchTerm}
                     onExpandAll={expandAll}
                     onCollapseAll={collapseAll}

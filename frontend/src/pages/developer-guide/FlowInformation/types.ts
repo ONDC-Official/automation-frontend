@@ -1,6 +1,11 @@
 import type { OpenAPISpecification, FlowEntry } from "../types";
 
-export type FlowInformationSection = "preview" | "x-validations" | "request" | "response";
+export type FlowInformationSection =
+    | "sequence"
+    | "preview"
+    | "x-validations"
+    | "request"
+    | "response";
 
 export interface FlowInformationProps {
     data: OpenAPISpecification;

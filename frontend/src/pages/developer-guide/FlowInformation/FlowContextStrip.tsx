@@ -1,14 +1,14 @@
 import { FC } from "react";
 import { ArrowsPointingInIcon, ArrowsPointingOutIcon } from "@heroicons/react/24/outline";
 import { Button } from "@components/Shadcn/Button";
+import { TooltipHint } from "@components/Shadcn/Tooltip";
 import type { FlowEntry } from "../types";
 
 interface FlowContextStripProps {
     flow: FlowEntry;
     action: string;
-    /** Shown as a chip next to the domain chip only while the action selector sidebar is collapsed, since the selected action is otherwise not visible anywhere. */
+    /** Selected action shown as a chip next to the flow name. */
     actionLabel?: string;
-    sidebarOpen: boolean;
     isFullscreen?: boolean;
     onToggleFullscreen?: () => void;
 }
@@ -21,7 +21,6 @@ const FlowContextStrip: FC<FlowContextStripProps> = ({
     flow,
     action,
     actionLabel,
-    sidebarOpen,
     isFullscreen = false,
     onToggleFullscreen,
 }) => {
@@ -30,12 +29,10 @@ const FlowContextStrip: FC<FlowContextStripProps> = ({
 
     return (
         <div className="border-b border-slate-200 dark:border-border-default pb-4">
-            <div className="grid grid-cols-[60%_40%] items-start gap-4 ">
+            <div className="grid grid-cols-[60%_40%] items-center gap-4 ">
                 <div className="flex items-center gap-2">
                     <span className="font-semibold text-slate-800 wrap-break-word">{flowName}</span>
-                    {!sidebarOpen && actionLabel && (
-                        <span className={chipClassName}>{actionLabel}</span>
-                    )}
+                    {actionLabel && <span className={chipClassName}>{actionLabel}</span>}
                 </div>
 
                 <div className="flex flex-wrap pr-4 items-center justify-end gap-1.5">
@@ -48,20 +45,24 @@ const FlowContextStrip: FC<FlowContextStripProps> = ({
                     )}
 
                     {onToggleFullscreen && (
-                        <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon-sm"
-                            onClick={onToggleFullscreen}
-                            aria-label={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
-                            title={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
+                        <TooltipHint
+                            content={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
+                            side="bottom"
                         >
-                            {isFullscreen ? (
-                                <ArrowsPointingInIcon className="size-4" />
-                            ) : (
-                                <ArrowsPointingOutIcon className="size-4" />
-                            )}
-                        </Button>
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon-sm"
+                                onClick={onToggleFullscreen}
+                                aria-label={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
+                            >
+                                {isFullscreen ? (
+                                    <ArrowsPointingInIcon className="size-4" />
+                                ) : (
+                                    <ArrowsPointingOutIcon className="size-4" />
+                                )}
+                            </Button>
+                        </TooltipHint>
                     )}
 
                     {/* {flow.tags.length > 0 &&

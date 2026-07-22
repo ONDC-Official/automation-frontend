@@ -14,7 +14,7 @@ interface UseFlowDetailSectionParams {
 }
 
 /**
- * Owns the "Details" tab state (preview/request/response/x-validations)
+ * Owns the "Details" tab state (sequence/preview/request/response/x-validations)
  * and keeps it in sync with the `tab` URL param. Mounting of the heavy
  * FlowActionDetails/JsonViewer tree is deferred via useDeferredReveal so the
  * loader paints first.
@@ -39,6 +39,7 @@ export function useFlowDetailSection({
 
     useEffect(() => {
         const validSections: FlowInformationSection[] = [
+            "sequence",
             "preview",
             "x-validations",
             "request",

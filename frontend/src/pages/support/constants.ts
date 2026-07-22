@@ -47,30 +47,32 @@ export const supportChannelCards: ISupportChannelCard[] = [
         ],
         ctas: [
             {
-                label: "Retail/Logistic",
+                label: "Retail/Logistics",
                 href: RETAIL_LOGISTIC_CALL_URL,
                 external: true,
-                className: "flex-1 bg-brand-dark text-n-0 hover:bg-brand-dark-hover hover:text-n-0",
+                className:
+                    "w-full bg-brand-normal text-n-0 hover:bg-brand-normal-hover hover:text-n-0",
             },
             {
-                label: "TRV",
+                label: "Mobility/Travel/Tourism",
                 href: MOBILITY_TRV_CALL_URL,
                 external: true,
-                className: "flex-1 bg-alert-500 text-n-0 hover:bg-alert-800 hover:text-n-0",
+                className:
+                    "w-full bg-brand-normal text-n-0 hover:bg-brand-normal-hover hover:text-n-0",
             },
             {
-                label: "FIS",
+                label: "Financial Services",
                 href: FIS_CALL_URL,
                 external: true,
                 className:
-                    "flex-1 bg-brand-light text-brand-normal hover:bg-brand-light-active hover:text-brand-normal-hover",
+                    "w-full bg-brand-normal text-n-0 hover:bg-brand-normal-hover hover:text-n-0",
             },
         ],
     },
     {
         key: "community-call",
         eyebrow: "Open to all network participants",
-        eyebrowClassName: "text-brand-normal",
+        eyebrowClassName: "text-success-500",
         title: "Community Call",
         features: [
             "Bi-weekly open sessions for all network participants",

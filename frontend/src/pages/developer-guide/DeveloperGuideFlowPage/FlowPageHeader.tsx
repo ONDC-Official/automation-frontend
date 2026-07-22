@@ -1,7 +1,7 @@
 import { type FC, type ReactNode } from "react";
 import GuidePageHeader from "../shared/components/GuidePageHeader";
 import GuideTabs, { type GuideTabItem } from "../shared/components/GuideTabs";
-import type { TopLevelView } from "./types";
+import { VIEW_LABEL, type TopLevelView } from "./types";
 
 interface FlowPageHeaderProps {
     activeView: TopLevelView;
@@ -18,8 +18,8 @@ function getPageTitle(
     switch (activeView) {
         case "docs":
             return {
-                title: "Documents",
-                description: "Reference documentation for this use case.",
+                title: VIEW_LABEL.docs,
+                description: "Understand the product and use case before exploring flows.",
             };
         case "flows":
             return {
@@ -58,7 +58,7 @@ const FlowPageHeader: FC<FlowPageHeaderProps> = ({
             onChange={onViewChange}
             tabs={
                 [
-                    { id: "docs", label: "Documents", visible: true },
+                    { id: "docs", label: VIEW_LABEL.docs, visible: true },
                     { id: "flows", label: "Flows", visible: true },
                     { id: "error-codes", label: "Error Codes", visible: hasErrorCodes },
                     // { id: "changelog", label: "Changelog", visible: true },

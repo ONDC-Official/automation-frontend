@@ -1,7 +1,8 @@
 import { useMemo } from "react";
-import type { FlowEntry, ValidationTableAction } from "../types";
-import { getActionId } from "../utils";
-import { getExamplesFromStep } from "./utils";
+import type { FlowEntry, ValidationTableAction } from "@pages/developer-guide/types";
+import { getActionId } from "@/pages/developer-guide/utils";
+import { getExamplesFromStep } from "@/pages/developer-guide/FlowInformation/utils";
+import { resolveSequenceMermaid } from "@/pages/developer-guide/FlowInformation/utils";
 
 /**
  * Resolves the currently-selected flow/step and the values derived from it
@@ -26,6 +27,11 @@ export function useSelectedFlowStep(
         typeof examplePayload === "object" &&
         !Array.isArray(examplePayload);
 
+    const sequenceMermaid = useMemo(
+        () => resolveSequenceMermaid(selectedFlowData, selectedStep),
+        [selectedFlowData, selectedStep]
+    );
+
     const apiForValidations = selectedStep?.api ?? selectedFlowAction;
     const selectedValidations = validationTable ? validationTable[apiForValidations] : undefined;
     const hasXValidations = !!selectedValidations;
@@ -39,6 +45,7 @@ export function useSelectedFlowStep(
         selectedExample,
         examplePayload,
         hasExampleObject,
+        sequenceMermaid,
         selectedValidations,
         hasXValidations,
         hasTabs,

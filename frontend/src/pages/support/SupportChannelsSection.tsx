@@ -15,7 +15,7 @@ const SupportChannelsSection: FC = () => (
                 escalations.
             </p>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 grid-rows-[auto_auto_auto_1fr_auto]">
                 {supportChannelCards.map((card) => (
                     <SupportChannelCard key={card.key} card={card} />
                 ))}

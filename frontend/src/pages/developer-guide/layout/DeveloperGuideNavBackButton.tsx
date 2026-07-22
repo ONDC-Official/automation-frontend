@@ -1,5 +1,5 @@
 import { FC } from "react";
-import { ArrowRightIcon } from "@heroicons/react/24/outline";
+import { Bars3BottomRightIcon } from "@heroicons/react/24/outline";
 import { Button } from "@components/Shadcn/Button";
 import { cn } from "@/lib/utils";
 import { useDeveloperGuideNav } from "./DeveloperGuideNav";
@@ -24,7 +24,7 @@ const DeveloperGuideNavBackButton: FC<DeveloperGuideNavBackButtonProps> = ({ cla
             aria-label="Open navigation"
             title="Open navigation"
         >
-            <ArrowRightIcon className="size-4" aria-hidden />
+            <Bars3BottomRightIcon className="size-4" aria-hidden />
         </Button>
     );
 };

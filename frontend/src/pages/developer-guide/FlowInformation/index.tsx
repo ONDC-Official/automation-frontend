@@ -8,6 +8,7 @@ import ValidationsTable from "../ValidationsTable";
 import { RequestTab, ResponseTab } from "../RequestResponseTabs";
 import DetailTabsHeader from "./DetailTabsHeader";
 import ExampleSelector from "./ExampleSelector";
+import SequenceDiagramPanel from "./SequenceDiagramPanel";
 import { useFlowDetailSection } from "./useFlowDetailSection";
 import { useValidationTable } from "./useValidationTable";
 import { useSelectedFlowStep } from "./useSelectedFlowStep";
@@ -46,6 +47,7 @@ const FlowInformation: FC<FlowInformationProps> = ({
         examples,
         examplePayload,
         hasExampleObject,
+        sequenceMermaid,
         selectedValidations,
         hasXValidations,
         hasTabs,
@@ -133,7 +135,6 @@ const FlowInformation: FC<FlowInformationProps> = ({
                     flow={selectedFlowData}
                     action={selectedFlowAction}
                     actionLabel={selectedStep?.action_label ?? selectedStep?.api}
-                    sidebarOpen={sidebarOpen}
                     isFullscreen={isFullscreen}
                     onToggleFullscreen={toggleFullscreen}
                 />
@@ -148,6 +149,10 @@ const FlowInformation: FC<FlowInformationProps> = ({
             />
 
             <div className="flex-1 min-h-0 flex flex-col mt-4">
+                {activeSection === "sequence" && (
+                    <SequenceDiagramPanel mermaidSource={sequenceMermaid} />
+                )}
+
                 {activeSection === "preview" && hasExampleObject && (
                     <div className="flex-1 min-h-0 flex flex-col gap-3">
                         {examples.length > 1 && (
@@ -169,6 +174,7 @@ const FlowInformation: FC<FlowInformationProps> = ({
                                     domain={domain}
                                     version={version}
                                     validationTableData={validationTable}
+                                    isFullscreen={isFullscreen}
                                 />
                             ) : (
                                 <div className="h-full flex items-center justify-center">
@@ -210,7 +216,7 @@ const FlowInformation: FC<FlowInformationProps> = ({
 
                     {hasTabs && (
                         <div className="border-t border-slate-200 dark:border-border-default">
-                            <div className="relative flex items-start gap-0 mt-4 mb-4">
+                            <div className="relative flex items-start gap-0 mt-2 mb-4">
                                 {/* Left pane: flows accordion/sidebar — fixed across tab changes */}
                                 {!isFullscreen && (
                                     <>
