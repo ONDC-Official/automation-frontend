@@ -59,21 +59,19 @@ const DetailRow: FC<{ label: string; value: ReactNode; chip?: boolean }> = ({
 );
 
 /**
- * Flat "JSON Path / Required / Usage / Owner / Type" field list shared by
+ * Flat "JSON Path / Required / Owner / Type" field list shared by
  * AttributeSection, EnumSection and TagSection. Each row pairs a chip label
  * with its value, rather than a boxed grid card or plain key/value text.
  */
 export const DetailsList: FC<{
     jsonPath: string;
     required?: string;
-    usage?: string;
     owner?: string;
     type?: string;
-}> = ({ jsonPath, required, usage, owner, type }) => (
+}> = ({ jsonPath, required, owner, type }) => (
     <div>
         <DetailRow label="JSON Path" value={jsonPath} chip />
         <DetailRow label="Required" value={formatRequired(required)} />
-        <DetailRow label="Usage" value={usage ?? DASH} />
         <DetailRow label="Owner" value={owner ?? DASH} />
         <DetailRow label="Type" value={type ?? DASH} chip />
     </div>

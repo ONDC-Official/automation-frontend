@@ -8,7 +8,6 @@ export const AttributeSection: FC<{ attrs: AttributeDetails }> = ({ attrs }) => 
         <DetailsList
             jsonPath={attrs.jsonPath}
             required={attrs.required}
-            usage={attrs.usage}
             owner={attrs.owner}
             type={attrs.type}
         />

@@ -13,7 +13,6 @@ export const TagSection: FC<{ attrs: TagDetails }> = ({ attrs }) => {
             <DetailsList
                 jsonPath={attrs.jsonPath}
                 required={attrs.attributeInfo?.required}
-                usage={attrs.attributeInfo?.usage}
                 owner={attrs.attributeInfo?.owner}
                 type={attrs.attributeInfo?.type}
             />

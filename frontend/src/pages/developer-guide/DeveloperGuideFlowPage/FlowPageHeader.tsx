@@ -6,7 +6,6 @@ import type { TopLevelView } from "./types";
 interface FlowPageHeaderProps {
     activeView: TopLevelView;
     hasErrorCodes: boolean;
-    hasSupportedActions: boolean;
     errorCodesCount?: number;
     onViewChange: (view: TopLevelView) => void;
 }
@@ -35,11 +34,6 @@ function getPageTitle(
                         ? `${errorCodesCount} error code${errorCodesCount === 1 ? "" : "s"}`
                         : "Error codes for this use case.",
             };
-        case "supported-actions":
-            return {
-                title: "Actions",
-                description: "Supported actions and their relationships for this use case.",
-            };
         case "changelog":
             return {
                 title: "Changelog",
@@ -53,7 +47,6 @@ function getPageTitle(
 const FlowPageHeader: FC<FlowPageHeaderProps> = ({
     activeView,
     hasErrorCodes,
-    hasSupportedActions,
     errorCodesCount,
     onViewChange,
 }) => {
@@ -68,7 +61,6 @@ const FlowPageHeader: FC<FlowPageHeaderProps> = ({
                     { id: "docs", label: "Documents", visible: true },
                     { id: "flows", label: "Flows", visible: true },
                     { id: "error-codes", label: "Error Codes", visible: hasErrorCodes },
-                    { id: "supported-actions", label: "Actions", visible: hasSupportedActions },
                     // { id: "changelog", label: "Changelog", visible: true },
                 ] satisfies GuideTabItem<TopLevelView>[]
             }

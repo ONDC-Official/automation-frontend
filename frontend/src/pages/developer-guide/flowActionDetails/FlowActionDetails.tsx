@@ -59,7 +59,6 @@ const FlowActionDetails: FC<FlowActionDetailsProps> = ({
     const [selectedPath, setSelectedPathState] = useState<string | null>(
         () => searchParams.get("attr") ?? null
     );
-    const [expanded, setExpanded] = useState(false);
     const [rightPanelOpen, setRightPanelOpen] = useState(true);
     const { copyToClipboard } = useClipboard();
 
@@ -191,9 +190,6 @@ const FlowActionDetails: FC<FlowActionDetailsProps> = ({
                         data={exampleValue as ComponentProps<typeof JsonViewer>["data"]}
                         isSelected={isSelected}
                         handleKeyClick={handleKeyClick}
-                        onExpand={() => setExpanded(true)}
-                        isExpanded={expanded}
-                        onCollapse={() => setExpanded(false)}
                         // Reserves room for the absolutely-positioned right-panel
                         // toggle above, which overlaps the toolbar's right edge.
                         toolbarClassName="pr-12"
@@ -237,7 +233,6 @@ const FlowActionDetails: FC<FlowActionDetailsProps> = ({
                                 actionApi={actionApi}
                                 stepApi={stepApi}
                                 useCaseId={useCaseId}
-                                isExpanded={expanded}
                             />
                         )}
                         {rightPanelTab === "comments" && (
@@ -267,24 +262,6 @@ const FlowActionDetails: FC<FlowActionDetailsProps> = ({
         </div>
     );
 
-    if (expanded) {
-        return (
-            <div className="fixed inset-0 z-50 bg-slate-100 dark:bg-surface-page flex flex-col">
-                <div className="flex justify-end gap-2 px-4 py-2.5 border-b border-slate-200 bg-white dark:bg-surface-elevated shadow-xs">
-                    <Button
-                        variant="ghost"
-                        onClick={() => setExpanded(false)}
-                        className="px-4 py-2 text-sm font-medium text-slate-700 bg-slate-200 dark:bg-surface-muted rounded-lg hover:bg-slate-300 dark:hover:bg-surface-elevated transition-colors focus:outline-hidden focus:ring-2 focus:ring-sky-400 focus:ring-offset-2"
-                    >
-                        Exit fullscreen
-                    </Button>
-                </div>
-                <div className="flex-1 min-h-0 p-6 overflow-auto flex items-center justify-center">
-                    <div className="h-full w-full mx-20">{root}</div>
-                </div>
-            </div>
-        );
-    }
     return root;
 };
 

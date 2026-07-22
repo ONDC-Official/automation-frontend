@@ -1,4 +1,6 @@
 import { FC } from "react";
+import { ArrowsPointingInIcon, ArrowsPointingOutIcon } from "@heroicons/react/24/outline";
+import { Button } from "@components/Shadcn/Button";
 import type { FlowEntry } from "../types";
 
 interface FlowContextStripProps {
@@ -7,6 +9,8 @@ interface FlowContextStripProps {
     /** Shown as a chip next to the domain chip only while the action selector sidebar is collapsed, since the selected action is otherwise not visible anywhere. */
     actionLabel?: string;
     sidebarOpen: boolean;
+    isFullscreen?: boolean;
+    onToggleFullscreen?: () => void;
 }
 
 const chipClassName =
@@ -18,6 +22,8 @@ const FlowContextStrip: FC<FlowContextStripProps> = ({
     action,
     actionLabel,
     sidebarOpen,
+    isFullscreen = false,
+    onToggleFullscreen,
 }) => {
     const flowName = flow.flowId.split("_").join(" ");
     const description = flow.config?.steps.find((step) => step.action_id === action)?.description;
@@ -39,6 +45,23 @@ const FlowContextStrip: FC<FlowContextStripProps> = ({
                             {flow.domain && flow.version && " · "}
                             {flow.version && `v${flow.version}`}
                         </span>
+                    )}
+
+                    {onToggleFullscreen && (
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon-sm"
+                            onClick={onToggleFullscreen}
+                            aria-label={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
+                            title={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
+                        >
+                            {isFullscreen ? (
+                                <ArrowsPointingInIcon className="size-4" />
+                            ) : (
+                                <ArrowsPointingOutIcon className="size-4" />
+                            )}
+                        </Button>
                     )}
 
                     {/* {flow.tags.length > 0 &&

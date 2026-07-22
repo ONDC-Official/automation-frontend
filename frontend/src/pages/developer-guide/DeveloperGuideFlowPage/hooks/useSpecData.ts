@@ -5,7 +5,7 @@ import type { OpenAPISpecification, FlowEntry } from "../../types";
 
 /**
  * Owns builds/spec/docs data for the resolved domain/version/use case route, plus the data
- * derived from the loaded spec (flows, error codes, supported actions).
+ * derived from the loaded spec (flows, error codes).
  *
  * Reads entirely from the RTK Query cache (which lives in Redux). The dev-guide endpoints are
  * configured with a long `keepUnusedDataFor`, so the first visit to a use case fetches once and
@@ -61,10 +61,7 @@ export function useSpecData(domainKey: string, versionKey: string, slug: string)
 
     const flows: FlowEntry[] = useMemo(() => specData?.["x-flows"] ?? [], [specData]);
     const errorCodes = specData?.["x-errorcodes"];
-    const supportedActions = specData?.["x-supported-actions"];
     const hasErrorCodes = !!errorCodes?.code?.length;
-    const hasSupportedActions =
-        !!supportedActions && Object.keys(supportedActions.supportedActions ?? {}).length > 0;
 
     const usecaseLabel = useMemo(() => {
         if (!builds.length) return null;
@@ -80,9 +77,7 @@ export function useSpecData(domainKey: string, versionKey: string, slug: string)
         notFound,
         flows,
         errorCodes,
-        supportedActions,
         hasErrorCodes,
-        hasSupportedActions,
         apiUsecase,
         usecaseLabel,
         resetForNewRoute,
