@@ -10,14 +10,16 @@ export const SearchField = ({
     className,
     containerClassName,
     placeholder = "Search",
+    ref,
     ...inputProps
 }: ISearchFieldProps) => {
     const fieldId = id ?? inputProps.name ?? "search-field";
 
     const input = (
-        <div className={cn("relative min-w-[200px]", containerClassName)}>
+        <div className={cn("relative min-w-50", containerClassName)}>
             <MagnifyingGlassIcon className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-n-80 dark:text-n-60" />
             <Input
+                ref={ref}
                 id={fieldId}
                 type="text"
                 placeholder={placeholder}

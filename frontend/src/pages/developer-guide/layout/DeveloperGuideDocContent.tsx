@@ -1,20 +1,21 @@
-import { FC, useCallback, useMemo } from "react";
+import { FC, useMemo } from "react";
+// import { ChevronRightIcon } from "@heroicons/react/24/outline";
 import { useParams } from "react-router-dom";
-import { ChevronRightIcon } from "@heroicons/react/24/outline";
 import { useGetGithubDocContentQuery } from "@store/api";
 import GithubMarkdown from "@components/GithubMarkdown";
 import TableOfContents from "@components/TableOfContents";
-import { Button } from "@components/Shadcn/Button";
-import { cn } from "@/lib/utils";
+// import { Button } from "@components/Shadcn/Button";
+// import { cn } from "@/lib/utils";
 import {
     stripMarkdownTableOfContents,
     stripRedundantMarkdownHorizontalRules,
 } from "@utils/markdownToc";
-import { buildGeneralDocCommentScope } from "@/types/comment-scope";
+// Comments feature: enabled only under Flow → Example Payload (domain > usecase > version).
+// import { buildGeneralDocCommentScope } from "@/types/comment-scope";
 import { docUsesSidebarSections } from "./docsWithSidebarSections";
-import CommentsPanel from "../flowActionDetails/CommentsPanel";
+// import CommentsPanel from "../flowActionDetails/CommentsPanel";
 import { useDocsSectionSelection } from "../DocsViewer/useDocsSectionSelection";
-import { useInlineCommentHeading } from "../shared/hooks/useInlineCommentHeading";
+// import { useInlineCommentHeading } from "../shared/hooks/useInlineCommentHeading";
 
 const DeveloperGuideDocContent: FC = () => {
     const { slug } = useParams<{ slug: string }>();
@@ -30,28 +31,28 @@ const DeveloperGuideDocContent: FC = () => {
     const docsRecord = useMemo(() => (slug ? { [slug]: content } : {}), [slug, content]);
     const {
         selectedSectionId,
-        selectedSectionLabel,
+        // selectedSectionLabel,
         selectSection,
-        rightPanelOpen,
-        setRightPanelOpen,
-        toc,
+        // rightPanelOpen,
+        // setRightPanelOpen,
+        // toc,
         tocOffset,
     } = useDocsSectionSelection({ docSlugs, docs: docsRecord });
 
-    const resolveSectionLabel = useCallback(
-        (sectionId: string) => toc.find((entry) => entry.id === sectionId)?.text,
-        [toc]
-    );
+    // const resolveSectionLabel = useCallback(
+    //     (sectionId: string) => toc.find((entry) => entry.id === sectionId)?.text,
+    //     [toc]
+    // );
 
-    const commentScope = useMemo(
-        () => (slug ? buildGeneralDocCommentScope(slug) : undefined),
-        [slug]
-    );
-    const { renderHeadingAction, commentsRefreshKey } = useInlineCommentHeading({
-        commentScope,
-        selectSection,
-        setRightPanelOpen,
-    });
+    // const commentScope = useMemo(
+    //     () => (slug ? buildGeneralDocCommentScope(slug) : undefined),
+    //     [slug]
+    // );
+    // const { renderHeadingAction, commentsRefreshKey } = useInlineCommentHeading({
+    //     commentScope,
+    //     selectSection,
+    //     setRightPanelOpen,
+    // });
 
     // GitHub md often uses `# Title` / `## Section` + `---` — strip heading-adjacent
     // rules so they don't leave empty vertical gaps under titles.
@@ -100,7 +101,8 @@ const DeveloperGuideDocContent: FC = () => {
                     />
                 )}
                 <div className="flex-1 min-w-0 relative">
-                    {commentScope && (
+                    {/* Comments panel toggle — disabled outside Flow → Example Payload */}
+                    {/* {commentScope && (
                         <Button
                             type="button"
                             variant="ghost"
@@ -120,7 +122,7 @@ const DeveloperGuideDocContent: FC = () => {
                                 )}
                             />
                         </Button>
-                    )}
+                    )} */}
                     {/* Doc-route only: GitHub md uses --- dividers that stack with heading border-b. */}
                     <div
                         className={[
@@ -139,11 +141,12 @@ const DeveloperGuideDocContent: FC = () => {
                         <GithubMarkdown
                             content={displayContent}
                             onSectionClick={selectSection}
-                            renderHeadingAction={renderHeadingAction}
+                            // renderHeadingAction={renderHeadingAction}
                         />
                     </div>
                 </div>
-                {commentScope && (
+                {/* Comments sidebar — disabled outside Flow → Example Payload */}
+                {/* {commentScope && (
                     <div
                         className={cn(
                             "shrink-0 self-start sticky overflow-hidden transition-[max-width,opacity] duration-300 ease-in-out",
@@ -164,7 +167,7 @@ const DeveloperGuideDocContent: FC = () => {
                             />
                         </div>
                     </div>
-                )}
+                )} */}
             </div>
         </div>
     );

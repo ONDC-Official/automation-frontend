@@ -132,6 +132,7 @@ interface JsonViewerProps {
     onCollapse?: () => void;
     invertTheme?: boolean;
     toolbarClassName?: string;
+    toolbarEnd?: React.ReactNode;
     /** Renders an inline action (e.g. a comment trigger) next to a field's built-in copy icon. */
     renderFieldCommentAction?: (path: string, rowHover: RowHoverActions) => React.ReactNode;
 }
@@ -256,6 +257,7 @@ const JsonViewer: React.FC<JsonViewerProps> = ({
     onExpand: _onExpand,
     isExpanded: _isExpanded,
     toolbarClassName,
+    toolbarEnd,
     renderFieldCommentAction,
 }) => {
     const location = useLocation();
@@ -282,6 +284,7 @@ const JsonViewer: React.FC<JsonViewerProps> = ({
             invertTheme={invertTheme}
             className={cn("min-h-full rounded-md")}
             toolbarClassName={toolbarClassName}
+            toolbarEnd={toolbarEnd}
             enableClipboard={true}
             noResultsText="No results for"
         >

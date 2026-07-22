@@ -33,18 +33,19 @@ const HeroInfo: FC = () => {
                 testing full flows, get ONDC-ready quicker!
             </p>
             <div className="flex flex-wrap gap-4">
-                <Button size="lg" onClick={handleStartBuilding} isLoading={isLoginRedirecting}>
-                    Start Building
-                </Button>
                 {isDevGuideEnabled ? (
-                    <Button
-                        size="lg"
-                        variant="outline"
-                        onClick={() => navigate(ROUTES.DEVELOPER_GUIDE)}
-                    >
+                    <Button size="lg" onClick={() => navigate(ROUTES.DEVELOPER_GUIDE)}>
                         Read Documentation
                     </Button>
                 ) : null}
+                <Button
+                    size="lg"
+                    variant="outline"
+                    onClick={handleStartBuilding}
+                    isLoading={isLoginRedirecting}
+                >
+                    Start Building
+                </Button>
             </div>
         </div>
     );

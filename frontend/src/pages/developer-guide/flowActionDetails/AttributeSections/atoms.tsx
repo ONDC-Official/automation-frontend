@@ -1,4 +1,5 @@
 import { FC, type ReactNode } from "react";
+import OwnerPill from "../../shared/components/OwnerPill";
 import { DASH } from "../attributePanelUtils";
 
 // ─── Shared UI atoms ──────────────────────────────────────────────────────────
@@ -72,7 +73,10 @@ export const DetailsList: FC<{
     <div>
         <DetailRow label="JSON Path" value={jsonPath} chip />
         <DetailRow label="Required" value={formatRequired(required)} />
-        <DetailRow label="Owner" value={owner ?? DASH} />
+        <DetailRow
+            label="Owner"
+            value={owner && owner !== DASH ? <OwnerPill owner={owner} /> : DASH}
+        />
         <DetailRow label="Type" value={type ?? DASH} chip />
     </div>
 );

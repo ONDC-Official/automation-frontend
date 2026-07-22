@@ -3,7 +3,7 @@ export type TopLevelView = "flows" | "error-codes" | "docs" | "changelog";
 export const TOP_LEVEL_VIEWS: TopLevelView[] = ["flows", "error-codes", "docs", "changelog"];
 
 export const VIEW_LABEL: Record<TopLevelView, string> = {
-    docs: "Documents",
+    docs: "Product Understanding",
     flows: "Flows",
     "error-codes": "Error Codes",
     changelog: "Changelog",
