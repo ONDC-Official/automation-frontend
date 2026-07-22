@@ -1,4 +1,5 @@
-import { type FC, useCallback, useState } from "react";
+import { type FC, useCallback, useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import FlowDetailsAndSummary from "../FlowDetailsAndSummary";
 import FlowContextStrip from "./FlowContextStrip";
 import { FlowActionDetails } from "../flowActionDetails";
@@ -14,6 +15,7 @@ import FlowsSidebar from "./FlowsSidebar";
 import type { FlowInformationProps } from "./types";
 import { ChevronLeftIcon } from "@heroicons/react/24/outline";
 import { Button } from "@components/Shadcn/Button";
+import { cn } from "@/lib/utils";
 
 const FlowInformation: FC<FlowInformationProps> = ({
     data,
@@ -29,6 +31,13 @@ const FlowInformation: FC<FlowInformationProps> = ({
 
     const [selectedExampleIndex, setSelectedExampleIndex] = useState(0);
     const [sidebarOpen, setSidebarOpen] = useState(true);
+    const [isFullscreen, setIsFullscreen] = useState(false);
+    // Portaled to body (or the browser fullscreen element) so ancestor transforms — e.g.
+    // PageReveal's `page-reveal-child` — cannot turn `position: fixed` into a content-area-
+    // relative overlay. Same pattern as AppJsonViewer / LoadingOverlay.
+    const [portalTarget, setPortalTarget] = useState<Element>(
+        () => document.fullscreenElement ?? document.body
+    );
 
     const isEmpty = !selectedFlow;
     const {
@@ -58,9 +67,33 @@ const FlowInformation: FC<FlowInformationProps> = ({
         onSectionReset: resetExampleIndex,
     });
 
+    const toggleFullscreen = useCallback(() => setIsFullscreen((v) => !v), []);
+
+    useEffect(() => {
+        if (!isFullscreen) return;
+        const update = () => setPortalTarget(document.fullscreenElement ?? document.body);
+        update();
+        document.addEventListener("fullscreenchange", update);
+        return () => document.removeEventListener("fullscreenchange", update);
+    }, [isFullscreen]);
+
+    useEffect(() => {
+        if (!isFullscreen) return;
+        const onKeyDown = (e: KeyboardEvent) => {
+            if (e.key === "Escape") setIsFullscreen(false);
+        };
+        document.addEventListener("keydown", onKeyDown);
+        return () => document.removeEventListener("keydown", onKeyDown);
+    }, [isFullscreen]);
+
+    // Leave fullscreen when the selected action changes so the overlay doesn't outlive its content.
+    useEffect(() => {
+        setIsFullscreen(false);
+    }, [selectedFlowAction]);
+
     if (isEmpty) {
         return (
-            <div className="flex flex-col items-center justify-center min-h-[480px] text-center px-8 py-16">
+            <div className="flex flex-col items-center justify-center min-h-120 text-center px-8 py-16">
                 <div className="rounded-2xl bg-slate-100 p-10 mb-6 ring-1 ring-slate-200/50">
                     <svg
                         className="mx-auto h-14 w-14 text-slate-400"
@@ -88,6 +121,79 @@ const FlowInformation: FC<FlowInformationProps> = ({
 
     const hasSelectedAction = !!(selectedFlowAction && selectedStep);
 
+    const detailPane = selectedFlowAction && selectedStep && (
+        <div
+            className={cn(
+                "flex flex-col min-h-0",
+                isFullscreen ? "h-full w-full" : "flex-1 min-w-0 pl-4"
+            )}
+        >
+            {selectedFlowData && (
+                <FlowContextStrip
+                    flow={selectedFlowData}
+                    action={selectedFlowAction}
+                    actionLabel={selectedStep?.action_label ?? selectedStep?.api}
+                    sidebarOpen={sidebarOpen}
+                    isFullscreen={isFullscreen}
+                    onToggleFullscreen={toggleFullscreen}
+                />
+            )}
+
+            <DetailTabsHeader
+                activeSection={activeSection}
+                onChange={handleSectionChange}
+                hasExampleObject={hasExampleObject}
+                hasStep={!!selectedStep}
+                hasXValidations={hasXValidations}
+            />
+
+            <div className="flex-1 min-h-0 flex flex-col mt-4">
+                {activeSection === "preview" && hasExampleObject && (
+                    <div className="flex-1 min-h-0 flex flex-col gap-3">
+                        {examples.length > 1 && (
+                            <ExampleSelector
+                                examples={examples}
+                                selectedIndex={selectedExampleIndex}
+                                onChange={setSelectedExampleIndex}
+                            />
+                        )}
+                        <div className="flex-1 min-h-0">
+                            {showPreviewDetails ? (
+                                <FlowActionDetails
+                                    exampleValue={examplePayload as object}
+                                    actionApi={selectedFlowAction}
+                                    stepApi={selectedStep.api}
+                                    spec={data}
+                                    useCaseId={selectedFlowData?.usecase}
+                                    flowId={selectedFlowData?.flowId ?? selectedFlow}
+                                    domain={domain}
+                                    version={version}
+                                    validationTableData={validationTable}
+                                />
+                            ) : (
+                                <div className="h-full flex items-center justify-center">
+                                    <Spinner className="size-8 text-brand-normal" />
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                )}
+
+                {activeSection === "request" && selectedStep && (
+                    <RequestTab spec={data} api={selectedStep.api ?? selectedFlowAction} />
+                )}
+
+                {activeSection === "response" && selectedStep && (
+                    <ResponseTab spec={data} api={selectedStep.api ?? selectedFlowAction} />
+                )}
+
+                {activeSection === "x-validations" && hasXValidations && selectedValidations && (
+                    <ValidationsTable validations={selectedValidations} />
+                )}
+            </div>
+        </div>
+    );
+
     return (
         <div className="mt-4 space-y-0 w-full">
             {selectedFlowData && !hasSelectedAction && (
@@ -106,110 +212,49 @@ const FlowInformation: FC<FlowInformationProps> = ({
                         <div className="border-t border-slate-200 dark:border-border-default">
                             <div className="relative flex items-start gap-0 mt-4 mb-4">
                                 {/* Left pane: flows accordion/sidebar — fixed across tab changes */}
-                                <FlowsSidebar
-                                    flows={flows}
-                                    selectedFlow={selectedFlow}
-                                    setSelectedFlow={setSelectedFlow}
-                                    selectedFlowAction={selectedFlowAction}
-                                    setSelectedFlowAction={setSelectedFlowAction}
-                                    sidebarOpen={sidebarOpen}
-                                />
-
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    onClick={() => setSidebarOpen((prev) => !prev)}
-                                    title={sidebarOpen ? "Collapse sidebar" : "Expand sidebar"}
-                                    className={`absolute top-4 z-20 -translate-x-1/2 flex items-center justify-center w-5 h-9 rounded-full bg-white dark:bg-surface-elevated border border-slate-200 dark:border-border-default shadow-sm hover:bg-slate-50 dark:hover:bg-surface-muted transition-[left] duration-300 ease-in-out motion-reduce:transition-none ${
-                                        sidebarOpen ? "left-96" : "left-0"
-                                    }`}
-                                >
-                                    <ChevronLeftIcon
-                                        className={`w-3 h-3 text-slate-400 transition-transform duration-300 ease-in-out motion-reduce:transition-none ${
-                                            sidebarOpen ? "" : "rotate-180"
-                                        }`}
-                                    />
-                                </Button>
-
-                                {/* Right pane: section tabs header + the content area that changes per tab */}
-                                <div className="flex-1 min-w-0 min-h-0 flex flex-col pl-4">
-                                    {selectedFlowData && (
-                                        <FlowContextStrip
-                                            flow={selectedFlowData}
-                                            action={selectedFlowAction}
-                                            actionLabel={
-                                                selectedStep?.action_label ?? selectedStep?.api
-                                            }
+                                {!isFullscreen && (
+                                    <>
+                                        <FlowsSidebar
+                                            flows={flows}
+                                            selectedFlow={selectedFlow}
+                                            setSelectedFlow={setSelectedFlow}
+                                            selectedFlowAction={selectedFlowAction}
+                                            setSelectedFlowAction={setSelectedFlowAction}
                                             sidebarOpen={sidebarOpen}
                                         />
-                                    )}
 
-                                    <DetailTabsHeader
-                                        activeSection={activeSection}
-                                        onChange={handleSectionChange}
-                                        hasExampleObject={hasExampleObject}
-                                        hasStep={!!selectedStep}
-                                        hasXValidations={hasXValidations}
-                                    />
-
-                                    <div className="flex-1 min-h-0 flex flex-col mt-4">
-                                        {activeSection === "preview" && hasExampleObject && (
-                                            <div className="flex-1 min-h-0 flex flex-col gap-3">
-                                                {examples.length > 1 && (
-                                                    <ExampleSelector
-                                                        examples={examples}
-                                                        selectedIndex={selectedExampleIndex}
-                                                        onChange={setSelectedExampleIndex}
-                                                    />
-                                                )}
-                                                <div className="flex-1 min-h-0">
-                                                    {showPreviewDetails ? (
-                                                        <FlowActionDetails
-                                                            exampleValue={examplePayload as object}
-                                                            actionApi={selectedFlowAction}
-                                                            stepApi={selectedStep.api}
-                                                            spec={data}
-                                                            useCaseId={selectedFlowData?.usecase}
-                                                            flowId={
-                                                                selectedFlowData?.flowId ??
-                                                                selectedFlow
-                                                            }
-                                                            domain={domain}
-                                                            version={version}
-                                                            validationTableData={validationTable}
-                                                        />
-                                                    ) : (
-                                                        <div className="h-full flex items-center justify-center">
-                                                            <Spinner className="size-8 text-brand-normal" />
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        )}
-
-                                        {activeSection === "request" && selectedStep && (
-                                            <RequestTab
-                                                spec={data}
-                                                api={selectedStep.api ?? selectedFlowAction}
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            onClick={() => setSidebarOpen((prev) => !prev)}
+                                            title={
+                                                sidebarOpen ? "Collapse sidebar" : "Expand sidebar"
+                                            }
+                                            className={`absolute top-4 z-20 -translate-x-1/2 flex items-center justify-center w-5 h-9 rounded-full bg-white dark:bg-surface-elevated border border-slate-200 dark:border-border-default shadow-sm hover:bg-slate-50 dark:hover:bg-surface-muted transition-[left] duration-300 ease-in-out motion-reduce:transition-none ${
+                                                sidebarOpen ? "left-96" : "left-0"
+                                            }`}
+                                        >
+                                            <ChevronLeftIcon
+                                                className={`w-3 h-3 text-slate-400 transition-transform duration-300 ease-in-out motion-reduce:transition-none ${
+                                                    sidebarOpen ? "" : "rotate-180"
+                                                }`}
                                             />
-                                        )}
+                                        </Button>
+                                    </>
+                                )}
 
-                                        {activeSection === "response" && selectedStep && (
-                                            <ResponseTab
-                                                spec={data}
-                                                api={selectedStep.api ?? selectedFlowAction}
-                                            />
-                                        )}
-
-                                        {activeSection === "x-validations" &&
-                                            hasXValidations &&
-                                            selectedValidations && (
-                                                <ValidationsTable
-                                                    validations={selectedValidations}
-                                                />
-                                            )}
-                                    </div>
-                                </div>
+                                {/* Right pane: title/badge + section tabs + content */}
+                                {isFullscreen
+                                    ? createPortal(
+                                          <div
+                                              data-reveal-skip
+                                              className="fixed inset-0 z-50 bg-white dark:bg-surface-page flex flex-col p-4 md:p-6 overflow-hidden"
+                                          >
+                                              {detailPane}
+                                          </div>,
+                                          portalTarget
+                                      )
+                                    : detailPane}
                             </div>
                         </div>
                     )}

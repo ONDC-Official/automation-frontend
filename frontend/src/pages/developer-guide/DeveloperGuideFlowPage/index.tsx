@@ -6,7 +6,6 @@ import { ROUTES } from "@constants/routes";
 import FlowInformation from "../FlowInformation";
 import DocsViewer from "../DocsViewer";
 import ErrorCodesTable from "../ErrorCodesTable";
-import SupportedActionsView from "../SupportedActionsView";
 // import ChangelogView from "../ChangelogView";
 import { useDeveloperGuideNav } from "../layout/DeveloperGuideNav";
 import FlowPageHeader from "./FlowPageHeader";
@@ -31,9 +30,7 @@ const DeveloperGuideFlowPage: FC = () => {
         notFound,
         flows,
         errorCodes,
-        supportedActions,
         hasErrorCodes,
-        hasSupportedActions,
         // lazyChangelog,
         changelogLoading,
         apiUsecase,
@@ -78,7 +75,6 @@ const DeveloperGuideFlowPage: FC = () => {
             <FlowPageHeader
                 activeView={activeView}
                 hasErrorCodes={hasErrorCodes}
-                hasSupportedActions={hasSupportedActions}
                 errorCodesCount={errorCodes?.code.length}
                 onViewChange={handleViewChange}
             />
@@ -113,14 +109,6 @@ const DeveloperGuideFlowPage: FC = () => {
                             ) : (
                                 <p className="text-slate-500 text-center py-12">
                                     No error codes available.
-                                </p>
-                            ))}
-                        {activeView === "supported-actions" &&
-                            (hasSupportedActions && supportedActions ? (
-                                <SupportedActionsView supportedActions={supportedActions} />
-                            ) : (
-                                <p className="text-slate-500 text-center py-12">
-                                    No actions available.
                                 </p>
                             ))}
                         {activeView === "docs" &&

@@ -279,7 +279,6 @@ const JsonViewer: React.FC<JsonViewerProps> = ({
             showSearch={true}
             showExpandCollapse={true}
             showDownload={isDeveloperGuide}
-            showFullscreen={isDeveloperGuide}
             invertTheme={invertTheme}
             className={cn("min-h-full rounded-md")}
             toolbarClassName={toolbarClassName}
