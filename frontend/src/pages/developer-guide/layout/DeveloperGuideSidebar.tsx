@@ -321,6 +321,12 @@ const NavGroupItem: FC<{
                         <NavLink
                             to={node.path}
                             end
+                            onClick={() => {
+                                // Match chevron behavior: label also toggles expand/collapse.
+                                // Needed when route-driven open is already true — navigating to
+                                // the same URL won't re-sync `open`, so a closed group would stay closed.
+                                if (hasChildren) setOpen((prev) => !prev);
+                            }}
                             className={() =>
                                 [
                                     "group/header flex-1 min-w-0 py-1 pr-3 text-left transition-colors rounded-md flex items-center gap-1",

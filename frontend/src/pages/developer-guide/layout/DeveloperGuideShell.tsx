@@ -3,9 +3,9 @@ import { Outlet, useLocation } from "react-router-dom";
 import { Bars3BottomLeftIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import DeveloperGuideCollapsedNavBar from "./DeveloperGuideCollapsedNavBar";
 import DeveloperGuideNavBackButton from "./DeveloperGuideNavBackButton";
-import LoadingOverlay from "@components/Shadcn/LoadingOverlay";
 import { filterNavTree } from "./filterNavTree";
 import DeveloperGuideSidebar from "./DeveloperGuideSidebar";
+import DeveloperGuidePageSkeleton from "./DeveloperGuidePageSkeleton";
 import { useAppDispatch, useAppSelector } from "@store/hooks";
 import {
     resetDevGuideShell,
@@ -69,7 +69,7 @@ const DeveloperGuideShell: FC = () => {
         !location.hash;
 
     if (isLoading) {
-        return <LoadingOverlay />;
+        return <DeveloperGuidePageSkeleton />;
     }
 
     return (

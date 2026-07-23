@@ -68,7 +68,11 @@ const TabsContent = ({
 }: React.ComponentProps<typeof TabsPrimitive.Content>) => (
     <TabsPrimitive.Content
         data-slot="tabs-content"
-        className={cn("flex-1 outline-none data-[state=inactive]:hidden", className)}
+        className={cn(
+            "flex-1 outline-none data-[state=inactive]:hidden",
+            "data-[state=active]:animate-in data-[state=active]:fade-in-0 data-[state=active]:duration-200",
+            className
+        )}
         {...props}
     />
 );

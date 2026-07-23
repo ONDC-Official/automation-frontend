@@ -1,6 +1,5 @@
-import { FC } from "react";
+import { FC, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import LoadingOverlay from "@components/Shadcn/LoadingOverlay";
 import { Button } from "@/components/Shadcn/Button";
 import { ROUTES } from "@constants/routes";
 import FlowInformation from "../FlowInformation";
@@ -8,8 +7,11 @@ import DocsViewer from "../DocsViewer";
 import ErrorCodesTable from "../ErrorCodesTable";
 // import ChangelogView from "../ChangelogView";
 import { useDeveloperGuideNav } from "../layout/DeveloperGuideNav";
+import GuideContentSkeleton from "../shared/components/GuideContentSkeleton";
+import GuideTabFade from "../shared/components/GuideTabFade";
 import FlowPageHeader from "./FlowPageHeader";
 import { useDeveloperGuideFlowPageData } from "./useDeveloperGuideFlowPageData";
+import type { TopLevelView } from "./types";
 
 const DeveloperGuideFlowPage: FC = () => {
     const navigate = useNavigate();
@@ -32,14 +34,20 @@ const DeveloperGuideFlowPage: FC = () => {
         errorCodes,
         hasErrorCodes,
         // lazyChangelog,
-        changelogLoading,
+        // changelogLoading,
         apiUsecase,
     } = useDeveloperGuideFlowPageData();
 
     const handleBack = () => navigate(ROUTES.DEVELOPER_GUIDE);
 
+    const tabOrder = useMemo(() => {
+        const order: TopLevelView[] = ["docs", "flows"];
+        if (hasErrorCodes) order.push("error-codes");
+        return order;
+    }, [hasErrorCodes]);
+
     if (isLoading) {
-        return <LoadingOverlay />;
+        return <GuideContentSkeleton />;
     }
 
     if (notFound || !domainKey || !versionKey || !slug) {
@@ -71,7 +79,6 @@ const DeveloperGuideFlowPage: FC = () => {
         <div
             className={`relative bg-white dark:bg-surface-page flex flex-col ${inShell ? "min-h-0" : "min-h-screen"}`}
         >
-            {changelogLoading && <LoadingOverlay />}
             <FlowPageHeader
                 activeView={activeView}
                 hasErrorCodes={hasErrorCodes}
@@ -80,58 +87,64 @@ const DeveloperGuideFlowPage: FC = () => {
             />
 
             <div className="grow flex items-start gap-0 relative">
-                {activeView === "flows" ? (
-                    <div className="flex-1 min-w-0 px-4">
-                        {specData && flows.length > 0 ? (
-                            <FlowInformation
-                                data={specData}
-                                flows={flows}
-                                selectedFlow={selectedFlow}
-                                setSelectedFlow={setSelectedFlow}
-                                selectedFlowAction={selectedFlowAction}
-                                setSelectedFlowAction={setSelectedFlowAction}
-                                domain={domainKey}
-                                version={versionKey}
-                            />
-                        ) : (
-                            <div className="w-full flex items-center justify-center min-h-[50vh]">
-                                <p className="text-slate-500 font-medium">
-                                    No flows available for this use case.
-                                </p>
-                            </div>
-                        )}
-                    </div>
-                ) : (
-                    <div className="flex-1 min-w-0 p-4 w-full">
-                        {activeView === "error-codes" &&
-                            (hasErrorCodes && errorCodes ? (
-                                <ErrorCodesTable errorCodes={errorCodes} />
-                            ) : (
-                                <p className="text-slate-500 text-center py-12">
-                                    No error codes available.
-                                </p>
-                            ))}
-                        {activeView === "docs" &&
-                            (isDocsEmpty ? (
-                                <div className="rounded-xl border border-slate-200 bg-slate-50 dark:bg-surface-muted py-12 text-center">
-                                    <p className="text-sm text-slate-400">
-                                        No documentation available.
-                                    </p>
-                                </div>
-                            ) : (
-                                <DocsViewer
-                                    docs={docs}
-                                    useCaseId={apiUsecase ?? slug}
+                <GuideTabFade
+                    activeKey={activeView}
+                    tabOrder={tabOrder}
+                    className="flex min-w-0 flex-1 items-start"
+                >
+                    {activeView === "flows" ? (
+                        <div className="flex-1 min-w-0 px-4">
+                            {specData && flows.length > 0 ? (
+                                <FlowInformation
+                                    data={specData}
+                                    flows={flows}
+                                    selectedFlow={selectedFlow}
+                                    setSelectedFlow={setSelectedFlow}
+                                    selectedFlowAction={selectedFlowAction}
+                                    setSelectedFlowAction={setSelectedFlowAction}
                                     domain={domainKey}
                                     version={versionKey}
                                 />
-                            ))}
-                        {/* {activeView === "changelog" &&
+                            ) : (
+                                <div className="w-full flex items-center justify-center min-h-[50vh]">
+                                    <p className="text-slate-500 font-medium">
+                                        No flows available for this use case.
+                                    </p>
+                                </div>
+                            )}
+                        </div>
+                    ) : (
+                        <div className="flex-1 min-w-0 p-4 w-full">
+                            {activeView === "error-codes" &&
+                                (hasErrorCodes && errorCodes ? (
+                                    <ErrorCodesTable errorCodes={errorCodes} />
+                                ) : (
+                                    <p className="text-slate-500 text-center py-12">
+                                        No error codes available.
+                                    </p>
+                                ))}
+                            {activeView === "docs" &&
+                                (isDocsEmpty ? (
+                                    <div className="rounded-xl border border-slate-200 bg-slate-50 dark:bg-surface-muted py-12 text-center">
+                                        <p className="text-sm text-slate-400">
+                                            No documentation available.
+                                        </p>
+                                    </div>
+                                ) : (
+                                    <DocsViewer
+                                        docs={docs}
+                                        useCaseId={apiUsecase ?? slug}
+                                        domain={domainKey}
+                                        version={versionKey}
+                                    />
+                                ))}
+                            {/* {activeView === "changelog" &&
                             (changelogLoading ? null : (
                                 <ChangelogView changelogs={lazyChangelog || []} />
                             ))} */}
-                    </div>
-                )}
+                        </div>
+                    )}
+                </GuideTabFade>
             </div>
         </div>
     );
