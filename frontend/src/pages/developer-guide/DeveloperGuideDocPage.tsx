@@ -6,6 +6,7 @@ import { useGetGithubDocContentQuery } from "@store/api";
 import GithubMarkdown from "@components/GithubMarkdown";
 import TableOfContents from "@components/TableOfContents";
 import GuideCard from "./shared/components/GuideCard";
+import GuideContentSkeleton from "./shared/components/GuideContentSkeleton";
 import { Button } from "@/components/Shadcn/Button";
 
 // Fixed site header is 86px (2px gradient bar + 84px nav).
@@ -57,17 +58,7 @@ const DeveloperGuideDocPage = () => {
             </div>
 
             {isLoading ? (
-                <div className="container mx-auto px-6 py-16 flex justify-center">
-                    <div className="w-full max-w-4xl space-y-4 animate-pulse">
-                        <div className="h-7 bg-slate-200 rounded w-1/3" />
-                        <div className="h-3.5 bg-slate-100 rounded w-full" />
-                        <div className="h-3.5 bg-slate-100 rounded w-5/6" />
-                        <div className="h-3.5 bg-slate-100 rounded w-4/6" />
-                        <div className="h-28 bg-slate-100 rounded w-full mt-4" />
-                        <div className="h-3.5 bg-slate-100 rounded w-full" />
-                        <div className="h-3.5 bg-slate-100 rounded w-5/6" />
-                    </div>
-                </div>
+                <GuideContentSkeleton />
             ) : isError ? (
                 <div className="container mx-auto px-6 py-16 text-center">
                     <p className="text-slate-500 text-sm">

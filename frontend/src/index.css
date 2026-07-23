@@ -176,6 +176,59 @@
     animation: page-enter 0.22s ease-in forwards;
 }
 
+/* Developer Guide tab section slides (see GuideTabFade) */
+@keyframes guide-section-slide-out-forward {
+    from {
+        transform: translateX(0);
+    }
+    to {
+        transform: translateX(-100%);
+    }
+}
+
+@keyframes guide-section-slide-in-forward {
+    from {
+        transform: translateX(100%);
+    }
+    to {
+        transform: translateX(0);
+    }
+}
+
+@keyframes guide-section-slide-out-back {
+    from {
+        transform: translateX(0);
+    }
+    to {
+        transform: translateX(100%);
+    }
+}
+
+@keyframes guide-section-slide-in-back {
+    from {
+        transform: translateX(-100%);
+    }
+    to {
+        transform: translateX(0);
+    }
+}
+
+.guide-section-slide-out-forward {
+    animation: guide-section-slide-out-forward 375ms ease-in-out forwards;
+}
+
+.guide-section-slide-in-forward {
+    animation: guide-section-slide-in-forward 375ms ease-in-out forwards;
+}
+
+.guide-section-slide-out-back {
+    animation: guide-section-slide-out-back 375ms ease-in-out forwards;
+}
+
+.guide-section-slide-in-back {
+    animation: guide-section-slide-in-back 375ms ease-in-out forwards;
+}
+
 @media (prefers-reduced-motion: reduce) {
     ::view-transition-old(root),
     ::view-transition-new(root) {
@@ -192,6 +245,13 @@
     }
 
     .page-reveal-child.is-revealed {
+        animation: none;
+    }
+
+    .guide-section-slide-out-forward,
+    .guide-section-slide-in-forward,
+    .guide-section-slide-out-back,
+    .guide-section-slide-in-back {
         animation: none;
     }
 }

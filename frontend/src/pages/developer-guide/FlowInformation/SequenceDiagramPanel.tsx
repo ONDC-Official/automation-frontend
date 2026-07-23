@@ -76,8 +76,10 @@ const SequenceDiagramPanel: FC<SequenceDiagramPanelProps> = ({ mermaidSource }) 
 
     if (loading) {
         return (
-            <div className="flex-1 min-h-60 flex items-center justify-center">
-                <Spinner className="size-8 text-brand-normal" />
+            <div className="relative w-full flex-1 min-h-[calc(100vh-14rem)] rounded-xl border border-slate-200 dark:border-border-default bg-white dark:bg-surface-elevated">
+                <div className="absolute inset-0 flex items-center justify-center">
+                    <Spinner className="size-8 text-brand-normal" />
+                </div>
             </div>
         );
     }

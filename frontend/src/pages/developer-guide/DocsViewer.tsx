@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 // import { Button } from "@components/Shadcn/Button";
 import { stripRedundantMarkdownHorizontalRules } from "@utils/markdownToc";
 import GuideTabs from "./shared/components/GuideTabs";
+import GuideTabFade from "./shared/components/GuideTabFade";
 // Comments feature: enabled only under Flow → Example Payload (domain > usecase > version).
 // import CommentsPanel from "./flowActionDetails/CommentsPanel";
 import { useDocsSectionSelection } from "./DocsViewer/useDocsSectionSelection";
@@ -140,7 +141,9 @@ const DocsViewer: FC<DocsViewerProps> = ({ docs }) => {
                           Stripping heading-adjacent --- leaves h1+h1; space them so Overview
                           isn't glued to the title rule. Scoped to DocsViewer only.
                         */}
-                        <div
+                        <GuideTabFade
+                            activeKey={activeDocSlug}
+                            tabOrder={slugs}
                             className={cn(
                                 "flex-1 min-w-0 overflow-auto py-8 px-6",
                                 "[&_h1+h1]:mt-2"
@@ -153,7 +156,7 @@ const DocsViewer: FC<DocsViewerProps> = ({ docs }) => {
                                 onSectionClick={selectSection}
                                 // renderHeadingAction={renderHeadingAction}
                             />
-                        </div>
+                        </GuideTabFade>
                     </div>
                 </div>
 

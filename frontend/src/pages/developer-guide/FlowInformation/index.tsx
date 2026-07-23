@@ -1,4 +1,4 @@
-import { type FC, useCallback, useEffect, useState } from "react";
+import { type FC, useCallback, useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import FlowDetailsAndSummary from "../FlowDetailsAndSummary";
 import FlowContextStrip from "./FlowContextStrip";
@@ -13,7 +13,8 @@ import { useFlowDetailSection } from "./useFlowDetailSection";
 import { useValidationTable } from "./useValidationTable";
 import { useSelectedFlowStep } from "./useSelectedFlowStep";
 import FlowsSidebar from "./FlowsSidebar";
-import type { FlowInformationProps } from "./types";
+import type { FlowInformationProps, FlowInformationSection } from "./types";
+import GuideTabFade from "../shared/components/GuideTabFade";
 import { ChevronLeftIcon } from "@heroicons/react/24/outline";
 import { Button } from "@components/Shadcn/Button";
 import { cn } from "@/lib/utils";
@@ -63,9 +64,6 @@ const FlowInformation: FC<FlowInformationProps> = ({
 
     const { activeSection, showPreviewDetails, handleSectionChange } = useFlowDetailSection({
         selectedFlowAction,
-        hasExampleObject,
-        hasStep: !!selectedStep,
-        hasXValidations,
         onSectionReset: resetExampleIndex,
     });
 
@@ -92,6 +90,16 @@ const FlowInformation: FC<FlowInformationProps> = ({
     useEffect(() => {
         setIsFullscreen(false);
     }, [selectedFlowAction]);
+
+    const detailTabOrder = useMemo(() => {
+        const order: FlowInformationSection[] = ["sequence"];
+        if (hasExampleObject) order.push("preview");
+        if (selectedStep) {
+            order.push("request", "response");
+        }
+        if (hasXValidations) order.push("x-validations");
+        return order;
+    }, [hasExampleObject, selectedStep, hasXValidations]);
 
     if (isEmpty) {
         return (
@@ -148,7 +156,11 @@ const FlowInformation: FC<FlowInformationProps> = ({
                 hasXValidations={hasXValidations}
             />
 
-            <div className="flex-1 min-h-0 flex flex-col mt-4">
+            <GuideTabFade
+                activeKey={activeSection}
+                tabOrder={detailTabOrder}
+                className="mt-4 flex min-h-0 flex-1 flex-col"
+            >
                 {activeSection === "sequence" && (
                     <SequenceDiagramPanel mermaidSource={sequenceMermaid} />
                 )}
@@ -177,8 +189,10 @@ const FlowInformation: FC<FlowInformationProps> = ({
                                     isFullscreen={isFullscreen}
                                 />
                             ) : (
-                                <div className="h-full flex items-center justify-center">
-                                    <Spinner className="size-8 text-brand-normal" />
+                                <div className="relative w-full min-h-[calc(100vh-14rem)]">
+                                    <div className="absolute inset-0 flex items-center justify-center">
+                                        <Spinner className="size-8 text-brand-normal" />
+                                    </div>
                                 </div>
                             )}
                         </div>
@@ -196,7 +210,7 @@ const FlowInformation: FC<FlowInformationProps> = ({
                 {activeSection === "x-validations" && hasXValidations && selectedValidations && (
                     <ValidationsTable validations={selectedValidations} />
                 )}
-            </div>
+            </GuideTabFade>
         </div>
     );
 

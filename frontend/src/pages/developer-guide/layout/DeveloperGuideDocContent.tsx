@@ -15,6 +15,7 @@ import {
 import { docUsesSidebarSections } from "./docsWithSidebarSections";
 // import CommentsPanel from "../flowActionDetails/CommentsPanel";
 import { useDocsSectionSelection } from "../DocsViewer/useDocsSectionSelection";
+import GuideContentSkeleton from "../shared/components/GuideContentSkeleton";
 // import { useInlineCommentHeading } from "../shared/hooks/useInlineCommentHeading";
 
 const DeveloperGuideDocContent: FC = () => {
@@ -62,16 +63,7 @@ const DeveloperGuideDocContent: FC = () => {
     }, [content, usesSidebarSections]);
 
     if (isLoading) {
-        return (
-            <div className="p-4">
-                <div className="max-w-3xl space-y-4 animate-pulse">
-                    <div className="h-8 bg-slate-200 rounded w-1/3" />
-                    <div className="h-4 bg-slate-100 rounded w-full" />
-                    <div className="h-4 bg-slate-100 rounded w-5/6" />
-                    <div className="h-32 bg-slate-100 rounded w-full mt-4" />
-                </div>
-            </div>
-        );
+        return <GuideContentSkeleton />;
     }
 
     if (isError) {
