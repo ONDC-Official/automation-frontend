@@ -37,8 +37,10 @@ const RequestTab: FC<RequestTabProps> = ({ spec, api }) => {
                 {schema ? (
                     view === "schema" ? (
                         !schemaReady ? (
-                            <div className="flex items-center justify-center h-40">
-                                <Spinner className="size-8 text-brand-normal" />
+                            <div className="relative w-full min-h-[calc(100vh-16rem)]">
+                                <div className="absolute inset-0 flex items-center justify-center">
+                                    <Spinner className="size-8 text-brand-normal" />
+                                </div>
                             </div>
                         ) : (
                             <SchemaTree schema={schema} spec={spec} showRequiredColumn={false} />
@@ -50,7 +52,7 @@ const RequestTab: FC<RequestTabProps> = ({ spec, api }) => {
                             maxHeightClass="max-h-150"
                         >
                             {!rawReady ? (
-                                <div className="flex items-center justify-center h-40">
+                                <div className="flex items-center justify-center min-h-40">
                                     <Spinner className="size-8 text-brand-normal" />
                                 </div>
                             ) : deepSchema ? (

@@ -8,6 +8,7 @@ export type { GuideTableColumn } from "./GuideTable";
 export { default as GuideTablePagination } from "./GuideTablePagination";
 export { default as GuideTabs } from "./GuideTabs";
 export type { GuideTabItem } from "./GuideTabs";
+export { default as GuideTabFade } from "./GuideTabFade";
 export { default as GuidePageHeader } from "./GuidePageHeader";
 export { default as OwnerPill, resolveOwnerAlias } from "./OwnerPill";
 export type { OwnerAlias } from "./OwnerPill";

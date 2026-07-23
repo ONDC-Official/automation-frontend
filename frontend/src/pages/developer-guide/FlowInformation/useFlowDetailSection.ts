@@ -6,9 +6,6 @@ import { resolveDefaultSection } from "./utils";
 
 interface UseFlowDetailSectionParams {
     selectedFlowAction: string;
-    hasExampleObject: boolean;
-    hasStep: boolean;
-    hasXValidations: boolean;
     /** Called when the section resets to a default (e.g. on action change) so the caller can reset its own example index. */
     onSectionReset: () => void;
 }
@@ -21,13 +18,10 @@ interface UseFlowDetailSectionParams {
  */
 export function useFlowDetailSection({
     selectedFlowAction,
-    hasExampleObject,
-    hasStep,
-    hasXValidations,
     onSectionReset,
 }: UseFlowDetailSectionParams) {
     const [searchParams, setSearchParams] = useSearchParams();
-    const [activeSection, setActiveSection] = useState<FlowInformationSection>("preview");
+    const [activeSection, setActiveSection] = useState<FlowInformationSection>("sequence");
     const isFirstActionEffect = useRef(true);
     const {
         visible: showPreviewDetails,
@@ -66,7 +60,7 @@ export function useFlowDetailSection({
             return;
         }
 
-        const defaultSection = resolveDefaultSection(hasExampleObject, hasStep, hasXValidations);
+        const defaultSection = resolveDefaultSection();
 
         setActiveSection(defaultSection);
         onSectionReset();
@@ -90,9 +84,6 @@ export function useFlowDetailSection({
         scheduleShowDetails,
         hidePreviewDetails,
         urlTab,
-        hasExampleObject,
-        hasStep,
-        hasXValidations,
         setSearchParams,
         onSectionReset,
     ]);

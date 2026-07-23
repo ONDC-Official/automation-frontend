@@ -368,63 +368,70 @@ export default function ProtocolHTMLForm({
             setIsSubmitting(true);
             setError(null);
 
-            // Decide encoding: default url-encoded; fallback to multipart if file fields exist
-            // Only use FormData when enctype is explicitly multipart.
-            // File inputs are handled inline (as text) in the urlencoded path below.
+            // Decide encoding: default url-encoded; multipart when enctype says so.
+            // Nested FormData cannot go through the JSON `{ link, data }` proxy
+            // (JSON.stringify(FormData) === "{}"), so multipart uses a plain object
+            // with the same field rules as the old FormData.append path.
             const hasFile = (parsed.enctype || "").toLowerCase().includes("multipart");
 
             let res: AxiosResponse<unknown, unknown>;
             if (hasFile) {
-                const fd = new FormData();
+                const payload: Record<string, string | string[]> = {};
+                const append = (name: string, value: string) => {
+                    const existing = payload[name];
+                    if (existing === undefined) {
+                        payload[name] = value;
+                    } else if (Array.isArray(existing)) {
+                        existing.push(value);
+                    } else {
+                        payload[name] = [existing, value];
+                    }
+                };
+
                 for (const f of parsed.fields) {
                     const val = values[f.name];
                     if (f.kind === "checkbox-single") {
                         if (val === true) {
-                            const v = (f as CheckboxSingleField).valueAttr ?? "on";
-                            fd.append(f.name, v);
+                            append(f.name, (f as CheckboxSingleField).valueAttr ?? "on");
                         }
                     } else if (f.kind === "checkbox-group") {
                         const arr = (val as string[]) || [];
-                        for (const item of arr) fd.append(f.name, item);
+                        for (const item of arr) append(f.name, item);
                     } else if (f.kind === "radio-group") {
-                        if (typeof val === "string" && val !== "") fd.append(f.name, val);
+                        if (typeof val === "string" && val !== "") append(f.name, val);
                     } else if (f.kind === "select") {
                         if ((f as SelectField).multiple) {
                             const arr = (val as string[]) || [];
-                            for (const item of arr) fd.append(f.name, item);
+                            for (const item of arr) append(f.name, item);
                         } else if (typeof val === "string") {
-                            fd.append(f.name, val);
+                            append(f.name, val);
                         }
                     } else if (f.kind === "file") {
-                        const v = values[f.name];
-                        if (Array.isArray(v)) {
-                            for (const file of v) fd.append(f.name, file as File);
-                        } else if (v instanceof File) {
-                            fd.append(f.name, v);
+                        // Binary cannot cross the JSON proxy; filenames only
+                        // (the previous FormData File appends were already dropped
+                        // by JSON serialization).
+                        if (Array.isArray(val)) {
+                            for (const file of val) append(f.name, (file as File)?.name ?? "");
+                        } else if (val instanceof File) {
+                            append(f.name, val.name);
                         }
                     } else if (
                         f.kind === "hidden" ||
                         f.kind === "textlike" ||
                         f.kind === "textarea"
                     ) {
-                        if (val != null) fd.append(f.name, String(val));
+                        if (val != null) append(f.name, String(val));
                     }
                 }
 
-                // res = await fetch(parsed.action || window.location.href, {
-                // 	method: parsed.method,
-                // 	body: fd,
-                // });
-                {
-                    const submitData = await htmlFormSubmitMutation({
-                        link: parsed.action || window.location.href,
-                        data: fd,
-                    }).unwrap();
-                    res = { data: submitData, headers: undefined } as unknown as AxiosResponse<
-                        unknown,
-                        unknown
-                    >;
-                }
+                const submitData = await htmlFormSubmitMutation({
+                    link: parsed.action || window.location.href,
+                    data: payload,
+                }).unwrap();
+                res = { data: submitData, headers: undefined } as unknown as AxiosResponse<
+                    unknown,
+                    unknown
+                >;
             } else {
                 const params = new URLSearchParams();
                 for (const f of parsed.fields) {
@@ -457,16 +464,14 @@ export default function ProtocolHTMLForm({
                     }
                 }
 
-                {
-                    const submitData = await htmlFormSubmitMutation({
-                        link: parsed.action || window.location.href,
-                        data: params.toString(),
-                    }).unwrap();
-                    res = { data: submitData, headers: undefined } as unknown as AxiosResponse<
-                        unknown,
-                        unknown
-                    >;
-                }
+                const submitData = await htmlFormSubmitMutation({
+                    link: parsed.action || window.location.href,
+                    data: params.toString(),
+                }).unwrap();
+                res = { data: submitData, headers: undefined } as unknown as AxiosResponse<
+                    unknown,
+                    unknown
+                >;
             }
             // Parse response
             const rawCt =

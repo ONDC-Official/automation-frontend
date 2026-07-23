@@ -4,6 +4,7 @@ import { DocumentDuplicateIcon, ChevronRightIcon } from "@heroicons/react/24/out
 import { useClipboard } from "@hooks/useClipboard";
 import { cn } from "@/lib/utils";
 import GuideTabs, { type GuideTabItem } from "../shared/components/GuideTabs";
+import GuideTabFade from "../shared/components/GuideTabFade";
 import JsonViewer from "@pages/protocol-playground/ui/Json-path-extractor";
 import { SelectedType } from "@pages/protocol-playground/ui/types";
 import type { OpenAPISpecification, ValidationTableAction } from "../types";
@@ -255,38 +256,44 @@ const FlowActionDetails: FC<FlowActionDetailsProps> = ({
                         />
                     </div>
                     <div className="flex-1 min-h-0 overflow-y-auto">
-                        {rightPanelTab === "attributes" && (
-                            <AttributesPanel
-                                attributes={attributes}
-                                validations={validations}
-                                rawTableRows={rawTableRows}
-                                spec={spec}
-                                actionApi={actionApi}
-                                stepApi={stepApi}
-                                useCaseId={useCaseId}
-                            />
-                        )}
-                        {rightPanelTab === "comments" && (
-                            <CommentsPanel
-                                key={commentsRefreshKey}
-                                selectedPath={selectedPath}
-                                actionApi={actionApi}
-                                useCaseId={useCaseId}
-                                flowId={flowId}
-                                domain={domain}
-                                version={version}
-                            />
-                        )}
-                        {rightPanelTab === "notes" && (
-                            <NotesPanel
-                                selectedPath={selectedPath}
-                                actionApi={actionApi}
-                                useCaseId={useCaseId}
-                                flowId={flowId}
-                                domain={domain}
-                                version={version}
-                            />
-                        )}
+                        <GuideTabFade
+                            activeKey={rightPanelTab}
+                            tabOrder={RIGHT_PANEL_TABS.map((tab) => tab.id)}
+                            className="h-full"
+                        >
+                            {rightPanelTab === "attributes" && (
+                                <AttributesPanel
+                                    attributes={attributes}
+                                    validations={validations}
+                                    rawTableRows={rawTableRows}
+                                    spec={spec}
+                                    actionApi={actionApi}
+                                    stepApi={stepApi}
+                                    useCaseId={useCaseId}
+                                />
+                            )}
+                            {rightPanelTab === "comments" && (
+                                <CommentsPanel
+                                    key={commentsRefreshKey}
+                                    selectedPath={selectedPath}
+                                    actionApi={actionApi}
+                                    useCaseId={useCaseId}
+                                    flowId={flowId}
+                                    domain={domain}
+                                    version={version}
+                                />
+                            )}
+                            {rightPanelTab === "notes" && (
+                                <NotesPanel
+                                    selectedPath={selectedPath}
+                                    actionApi={actionApi}
+                                    useCaseId={useCaseId}
+                                    flowId={flowId}
+                                    domain={domain}
+                                    version={version}
+                                />
+                            )}
+                        </GuideTabFade>
                     </div>
                 </div>
             </div>

@@ -86,15 +86,8 @@ export function getExamplesFromStep(step: FlowStep | undefined): FlowExample[] {
     return [];
 }
 
-/** Picks the default Details tab for a newly-selected action, in priority order. */
-export function resolveDefaultSection(
-    hasExampleObject: boolean,
-    hasStep: boolean,
-    hasXValidations: boolean
-): FlowInformationSection {
-    if (hasExampleObject) return "preview";
-    if (hasStep) return "request";
-    if (hasXValidations) return "x-validations";
+/** Default Details tab for a newly-selected action. */
+export function resolveDefaultSection(): FlowInformationSection {
     return "sequence";
 }
 

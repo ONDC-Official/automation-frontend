@@ -5,6 +5,7 @@ import ValidationsTable from "./ValidationsTable";
 import Spinner from "@components/Shadcn/Spinner";
 import { Button } from "@/components/Shadcn/Button";
 import GuideTabs, { type GuideTabItem } from "./shared/components/GuideTabs";
+import GuideTabFade from "./shared/components/GuideTabFade";
 import GuideHeader from "./shared/components/GuideHeader";
 
 const ValidationsPage: FC = () => {
@@ -106,7 +107,9 @@ const ValidationsPage: FC = () => {
                     </div>
                 )}
                 {!loading && !error && selectedValidations && (
-                    <ValidationsTable validations={selectedValidations} />
+                    <GuideTabFade activeKey={selectedAction} tabOrder={sortedActions}>
+                        <ValidationsTable validations={selectedValidations} />
+                    </GuideTabFade>
                 )}
             </div>
         </div>
