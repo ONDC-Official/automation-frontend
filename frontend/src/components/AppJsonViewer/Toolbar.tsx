@@ -24,8 +24,8 @@ type ToolbarProps = {
     toolbarClassName?: string;
     toolbarEnd?: ReactNode;
     onSearchTermChange: (value: string) => void;
-    onExpandAll: () => void;
-    onCollapseAll: () => void;
+    isFullyExpanded: boolean;
+    onToggleExpandCollapse: () => void;
     onDownload: () => void;
     onToggleFullscreen: () => void;
 };
@@ -50,8 +50,8 @@ const AppJsonViewerToolbar = ({
     toolbarClassName,
     toolbarEnd,
     onSearchTermChange,
-    onExpandAll,
-    onCollapseAll,
+    isFullyExpanded,
+    onToggleExpandCollapse,
     onDownload,
     onToggleFullscreen,
 }: ToolbarProps) => {
@@ -156,32 +156,25 @@ const AppJsonViewerToolbar = ({
 
             <div className="flex shrink-0 items-center gap-1">
                 {showExpandCollapse && (
-                    <>
-                        <TooltipHint content="Expand All" side="bottom">
-                            <Button
-                                type="button"
-                                variant="ghost"
-                                size={iconSize}
-                                aria-label="Expand All"
-                                className={toolbarIconClass}
-                                onClick={onExpandAll}
-                            >
-                                <ChevronDoubleDownIcon className="size-4" />
-                            </Button>
-                        </TooltipHint>
-                        <TooltipHint content="Collapse All" side="bottom">
-                            <Button
-                                type="button"
-                                variant="ghost"
-                                size={iconSize}
-                                aria-label="Collapse All"
-                                className={toolbarIconClass}
-                                onClick={onCollapseAll}
-                            >
+                    <TooltipHint
+                        content={isFullyExpanded ? "Collapse All" : "Expand All"}
+                        side="bottom"
+                    >
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            size={iconSize}
+                            aria-label={isFullyExpanded ? "Collapse All" : "Expand All"}
+                            className={toolbarIconClass}
+                            onClick={onToggleExpandCollapse}
+                        >
+                            {isFullyExpanded ? (
                                 <ChevronDoubleUpIcon className="size-4" />
-                            </Button>
-                        </TooltipHint>
-                    </>
+                            ) : (
+                                <ChevronDoubleDownIcon className="size-4" />
+                            )}
+                        </Button>
+                    </TooltipHint>
                 )}
                 {showDownload && (
                     <TooltipHint content="Download" side="bottom">

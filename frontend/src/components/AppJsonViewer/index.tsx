@@ -78,12 +78,8 @@ const AppJsonViewer = ({
         }),
         [effectiveTheme, transparentBackground, isFullscreen, style]
     );
-    const expandAll = () => {
-        setCollapsed(false);
-        setViewerKey((k) => k + 1);
-    };
-    const collapseAll = () => {
-        setCollapsed(true);
+    const toggleExpandCollapse = () => {
+        setCollapsed((prev) => !prev);
         setViewerKey((k) => k + 1);
     };
     const handleDownload = () => {
@@ -112,8 +108,8 @@ const AppJsonViewer = ({
                     toolbarClassName={toolbarClassName}
                     toolbarEnd={toolbarEnd}
                     onSearchTermChange={setSearchTerm}
-                    onExpandAll={expandAll}
-                    onCollapseAll={collapseAll}
+                    isFullyExpanded={!collapsed}
+                    onToggleExpandCollapse={toggleExpandCollapse}
                     onDownload={handleDownload}
                     onToggleFullscreen={() => setIsFullscreen((v) => !v)}
                 />
