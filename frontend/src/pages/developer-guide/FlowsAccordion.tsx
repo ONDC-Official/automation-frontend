@@ -148,23 +148,38 @@ const FlowsAccordion: FC<FlowsAccordionProps> = ({
         );
     };
 
-    const renderStepperBullet = (isActive: boolean, isFirst: boolean, isLast: boolean) => (
+    const renderStepperBullet = (
+        isReached: boolean,
+        isPast: boolean,
+        isFirst: boolean,
+        isLast: boolean
+    ) => (
         <div
             className="relative flex w-4 shrink-0 items-center justify-center self-stretch"
             aria-hidden
         >
             {/* Upper segment: covers the row gap and connects down to this bullet */}
             {!isFirst && (
-                <span className="absolute -top-2.5 bottom-1/2 left-1/2 w-px -translate-x-1/2 bg-slate-200 dark:bg-slate-700" />
+                <span
+                    className={cn(
+                        "absolute -top-2.5 bottom-1/2 left-1/2 w-px -translate-x-1/2",
+                        isReached ? "bg-sky-500" : "bg-slate-200 dark:bg-slate-700"
+                    )}
+                />
             )}
             {/* Lower segment: from this bullet through the row gap to the next */}
             {!isLast && (
-                <span className="absolute top-1/2 -bottom-2.5 left-1/2 w-px -translate-x-1/2 bg-slate-200 dark:bg-slate-700" />
+                <span
+                    className={cn(
+                        "absolute top-1/2 -bottom-2.5 left-1/2 w-px -translate-x-1/2",
+                        isPast ? "bg-sky-500" : "bg-slate-200 dark:bg-slate-700"
+                    )}
+                />
             )}
             <span
                 className={cn(
                     "relative z-10 size-2.5 shrink-0 rounded-full border-2",
-                    isActive
+                    isReached
                         ? "border-sky-500 bg-sky-500"
                         : "border-slate-300 bg-white dark:border-slate-600 dark:bg-surface-elevated"
                 )}
@@ -181,6 +196,17 @@ const FlowsAccordion: FC<FlowsAccordionProps> = ({
                 const steps = flow.config?.steps ?? [];
                 const displayItems = buildStepDisplayItems(steps);
                 const flowName = flow.flowId.split("_").join(" ");
+                const selectedItemIndex = isSelectedFlow
+                    ? displayItems.findIndex((item) => {
+                          if (item.type === "pair") {
+                              return (
+                                  selectedFlowAction === getActionId(item.request) ||
+                                  selectedFlowAction === getActionId(item.response)
+                              );
+                          }
+                          return selectedFlowAction === getActionId(item.step);
+                      })
+                    : -1;
 
                 return (
                     <div
@@ -230,6 +256,12 @@ const FlowsAccordion: FC<FlowsAccordionProps> = ({
                                         {displayItems.map((item, itemIdx) => {
                                             const isFirst = itemIdx === 0;
                                             const isLast = itemIdx === displayItems.length - 1;
+                                            const isReached =
+                                                selectedItemIndex >= 0 &&
+                                                itemIdx <= selectedItemIndex;
+                                            const isPast =
+                                                selectedItemIndex >= 0 &&
+                                                itemIdx < selectedItemIndex;
 
                                             if (item.type === "pair") {
                                                 const reqActionId = getActionId(item.request);
@@ -243,16 +275,14 @@ const FlowsAccordion: FC<FlowsAccordionProps> = ({
                                                     isSelectedFlow &&
                                                     selectedFlowAction === resActionId;
 
-                                                const isGroupActive =
-                                                    isReqSelected || isResSelected;
-
                                                 return (
                                                     <div
                                                         key={itemIdx}
                                                         className="flex items-center gap-2.5"
                                                     >
                                                         {renderStepperBullet(
-                                                            isGroupActive,
+                                                            isReached,
+                                                            isPast,
                                                             isFirst,
                                                             isLast
                                                         )}
@@ -287,7 +317,8 @@ const FlowsAccordion: FC<FlowsAccordionProps> = ({
                                                     className="flex items-center gap-2.5"
                                                 >
                                                     {renderStepperBullet(
-                                                        isSelected,
+                                                        isReached,
+                                                        isPast,
                                                         isFirst,
                                                         isLast
                                                     )}
