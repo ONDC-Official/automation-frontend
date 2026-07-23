@@ -135,7 +135,9 @@ const FlowInformation: FC<FlowInformationProps> = ({
         <div
             className={cn(
                 "flex flex-col min-h-0",
-                isFullscreen ? "h-full w-full" : "flex-1 min-w-0 pl-4"
+                isFullscreen
+                    ? "h-full w-full"
+                    : "flex-1 min-w-0 pl-4 sticky top-4 self-start h-[calc(100vh-6rem)] overflow-hidden"
             )}
         >
             {selectedFlowData && (
