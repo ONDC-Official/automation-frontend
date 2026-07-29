@@ -136,6 +136,14 @@ export default function Ret10GrocerySelectForm({ submitEvent }: IRet10GrocerySel
 
                         <TextField
                             control={control}
+                            name="bpp_id"
+                            label="Enter BPP ID"
+                            placeholder="Enter BPP ID"
+                            required
+                        />
+
+                        <TextField
+                            control={control}
                             name="city_code"
                             label="Enter City Code"
                             placeholder="Enter city code"
@@ -299,6 +307,7 @@ function validateFormData(data: IFormData): {
     const errors: string[] = [];
 
     const fieldsToValidate = [
+        "bpp_id",
         "provider",
         "location_gps",
         "location_pin_code",
@@ -361,7 +370,7 @@ export function validateFormDataRET11(
 } {
     const errors: string[] = [];
 
-    const fieldsToValidate = ["provider", "location_gps", "location_pin_code"] as const;
+    const fieldsToValidate = ["bpp_id", "provider", "location_gps", "location_pin_code"] as const;
     for (const key of fieldsToValidate) {
         if (data[key] === undefined || data[key] === null || data[key] === "") {
             errors.push(`Field ${key} cannot be empty.`);
