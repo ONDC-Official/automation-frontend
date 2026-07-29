@@ -34,6 +34,7 @@ export interface IOnSearchPayload {
 }
 
 export type IFormValues = {
+    bpp_id: string;
     city_code: string;
     provider: string;
     provider_location: string[];
@@ -47,6 +48,7 @@ export type IFormValues = {
 } & Partial<Record<IOfferKey, boolean>>;
 
 export type IFormData = {
+    bpp_id: string;
     city_code: string;
     provider: string;
     provider_location: string[];
@@ -60,6 +62,7 @@ export type IFormData = {
 } & Partial<Record<IOfferKey, boolean>>;
 
 export type IFormDataRET11 = {
+    bpp_id: string;
     provider: string;
     provider_location: string[];
     location_gps: string;
@@ -71,6 +74,7 @@ export interface IRet10GrocerySelectFormProps {
 }
 
 export const DEFAULT_FORM_VALUES: IFormValues = {
+    bpp_id: "",
     city_code: "",
     provider: "",
     provider_location: [],

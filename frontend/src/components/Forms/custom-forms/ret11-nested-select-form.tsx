@@ -43,6 +43,7 @@ export interface SelectedItem {
 }
 
 type FormValues = {
+    bpp_id: string;
     provider: string;
     provider_location: string[];
     location_gps: string;
@@ -77,6 +78,7 @@ const RET11NestedSelectForm = ({
 
     const { control, handleSubmit, watch } = useForm<FormValues>({
         defaultValues: {
+            bpp_id: "",
             provider: "",
             provider_location: [],
             location_gps: "",
@@ -308,6 +310,13 @@ const RET11NestedSelectForm = ({
                                 </div>
                             );
                         })}
+
+                        <TextField
+                            control={control}
+                            name="bpp_id"
+                            label="Enter BPP ID"
+                            placeholder="Enter BPP ID"
+                        />
 
                         {providerOptions.length > 0 ? (
                             <Controller
