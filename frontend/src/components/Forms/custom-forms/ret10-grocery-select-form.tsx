@@ -50,12 +50,26 @@ export default function Ret10GrocerySelectForm({ submitEvent }: IRet10GrocerySel
         providers.find((provider) => provider.id === selectedProvider)?.locations ?? [];
 
     const onSubmit = async (data: IFormValues) => {
-        const { valid, errors } = validateFormData(data);
+        const normalizedData: IFormValues = {
+            ...data,
+            items: data.items.map((item) => ({
+                ...item,
+                quantity:
+                    typeof item.quantity === "number"
+                        ? item.quantity
+                        : parseInt(String(item.quantity), 10) || 1,
+            })),
+        };
+
+        const { valid, errors } = validateFormData(normalizedData);
         if (!valid) {
             toast.error(`Form validation failed: ${errors[0]}`);
             return;
         }
-        await submitEvent({ jsonPath: {}, formData: data as unknown as Record<string, string> });
+        await submitEvent({
+            jsonPath: {},
+            formData: normalizedData as unknown as Record<string, string>,
+        });
     };
 
     const handlePaste = (data: unknown) => {
