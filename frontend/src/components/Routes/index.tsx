@@ -51,7 +51,8 @@ const Routes = () => (
         {/* <Route path={ROUTES.DB_BACK_OFFICE} element={page(<DBBackOffice />)} /> */}
         {/* <Route path={ROUTES.AUTH_HEADER} element={page(<AuthHeader />)} /> */}
         {/* <Route path={ROUTES.SELLER_LOAD_TESTING} element={page(<SellerLoadTesting />)} /> */}
-        <Route path={ROUTES.FRAMEWORK_HEALTH} element={page(<FrameworkHealthPage />)} />
+        {/* <Route path={ROUTES.FRAMEWORK_HEALTH} element={page(<FrameworkHealthPage />)} /> */}
+        <Route path={ROUTES.LIVE_STATUS} element={page(<FrameworkHealthPage />)} />
         {isDevGuideEnabled ? (
             <>
                 <Route path={ROUTES.DEVELOPER_GUIDE} element={<DeveloperGuideShell />}>
@@ -59,7 +60,7 @@ const Routes = () => (
                         index
                         element={
                             <Navigate
-                                to={`${ROUTES.DEVELOPER_GUIDE_GETTING_STARTED}#1-pick-a-use-case`}
+                                to={`${ROUTES.DEVELOPER_GUIDE_GETTING_STARTED}#start-with-a-use-case`}
                                 replace
                             />
                         }

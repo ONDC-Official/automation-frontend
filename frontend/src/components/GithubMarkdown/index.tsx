@@ -4,7 +4,6 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
 import rehypeSlug from "rehype-slug";
-import rehypeAutolinkHeadings from "rehype-autolink-headings";
 import type { Components } from "react-markdown";
 import { useClipboard } from "@hooks/useClipboard";
 import {
@@ -188,7 +187,7 @@ const components: Components = {
         return (
             <h1
                 id={id}
-                className="text-2xl font-bold text-foreground mb-3 pb-2 border-b border-border scroll-mt-24"
+                className="text-2xl font-bold text-brand-normal mb-3 pb-2 border-b border-border scroll-mt-24"
             >
                 {children}
             </h1>
@@ -198,7 +197,7 @@ const components: Components = {
         return (
             <h2
                 id={id}
-                className="text-xl font-semibold text-foreground mt-8 mb-3 pb-2 border-b border-border scroll-mt-24"
+                className="text-xl font-semibold text-brand-normal mt-8 mb-3 pb-2 border-b border-border scroll-mt-24"
             >
                 {children}
             </h2>
@@ -206,14 +205,20 @@ const components: Components = {
     },
     h3({ children, id }) {
         return (
-            <h3 id={id} className="text-base font-semibold text-foreground mt-6 mb-2 scroll-mt-24">
+            <h3
+                id={id}
+                className="text-base font-semibold text-brand-normal mt-6 mb-2 scroll-mt-24"
+            >
                 {children}
             </h3>
         );
     },
     h4({ children, id }) {
         return (
-            <h4 id={id} className="text-sm font-semibold text-foreground mt-5 mb-1.5 scroll-mt-24">
+            <h4
+                id={id}
+                className="text-sm font-semibold text-brand-normal mt-5 mb-1.5 scroll-mt-24"
+            >
                 {children}
             </h4>
         );
@@ -268,14 +273,12 @@ const GithubMarkdown: FC<GithubMarkdownProps> = memo(function GithubMarkdown({
     renderHeadingAction,
 }) {
     const markdownComponents = useMemo<Components>(() => {
-        if (!onSectionClick) return components;
+        // Plain headings by default. Only customize when a hover action (e.g. comment) needs a
+        // slot beside the title — never style headings as links (no pointer, underline, or sky color).
+        if (!onSectionClick || !renderHeadingAction) return components;
 
-        // rehype-autolink-headings already wraps every heading level (h1-h4) in an
-        // `<a href="#id">`, so clicking any of them already navigates/selects via the
-        // hash-sync effect in useDocsSectionSelection. This just gives that same
-        // already-clickable heading a place to hang the hover action (e.g. comment icon).
         const headingAction = (id?: string) =>
-            id && renderHeadingAction ? (
+            id ? (
                 <span
                     // `has-[[data-state=open]]` keeps this visible while the popover is open even
                     // though the mouse has left `.group/heading` — Radix portals PopoverContent to
@@ -290,24 +293,11 @@ const GithubMarkdown: FC<GithubMarkdownProps> = memo(function GithubMarkdown({
                 </span>
             ) : null;
 
-        // Same click/keyboard handling for every heading level: prevent the wrapping anchor's
-        // native (instant) hash jump and go through `onSectionClick` instead, which drives the
-        // app's smooth-scroll. Previously only h2 had this, so clicking an h1/h3/h4 heading (most
-        // headings in FAQ-style docs) fell through to the native jump and felt instant/jarring.
         const headingClickProps = (id?: string) =>
             id
                 ? {
-                      role: "button" as const,
-                      tabIndex: 0,
-                      onClick: (e: React.MouseEvent) => {
-                          e.preventDefault();
+                      onClick: () => {
                           onSectionClick(id);
-                      },
-                      onKeyDown: (e: React.KeyboardEvent) => {
-                          if (e.key === "Enter" || e.key === " ") {
-                              e.preventDefault();
-                              onSectionClick(id);
-                          }
                       },
                   }
                 : {};
@@ -319,7 +309,7 @@ const GithubMarkdown: FC<GithubMarkdownProps> = memo(function GithubMarkdown({
                     <h1
                         id={id}
                         {...headingClickProps(id)}
-                        className="group/heading flex items-center gap-2 text-2xl font-bold text-foreground pb-2 border-b border-border scroll-mt-24 cursor-pointer"
+                        className="group/heading flex items-center gap-2 text-2xl font-bold text-brand-normal mb-3 pb-2 border-b border-border scroll-mt-24"
                     >
                         <span className="min-w-0">{children}</span>
                         {headingAction(id)}
@@ -331,7 +321,7 @@ const GithubMarkdown: FC<GithubMarkdownProps> = memo(function GithubMarkdown({
                     <h2
                         id={id}
                         {...headingClickProps(id)}
-                        className="group/heading flex items-center gap-2 text-xl font-semibold text-foreground py-2 border-b border-border scroll-mt-24 cursor-pointer hover:text-sky-700 dark:hover:text-sky-400 transition-colors"
+                        className="group/heading flex items-center gap-2 text-xl font-semibold text-brand-normal mt-8 mb-3 pb-2 border-b border-border scroll-mt-24"
                     >
                         <span className="min-w-0">{children}</span>
                         {headingAction(id)}
@@ -343,7 +333,7 @@ const GithubMarkdown: FC<GithubMarkdownProps> = memo(function GithubMarkdown({
                     <h3
                         id={id}
                         {...headingClickProps(id)}
-                        className="group/heading flex items-center gap-2 text-base font-semibold text-foreground mt-5 mb-2 scroll-mt-24 cursor-pointer hover:text-sky-700 dark:hover:text-sky-400 transition-colors"
+                        className="group/heading flex items-center gap-2 text-base font-semibold text-brand-normal mt-6 mb-2 scroll-mt-24"
                     >
                         <span className="min-w-0">{children}</span>
                         {headingAction(id)}
@@ -355,7 +345,7 @@ const GithubMarkdown: FC<GithubMarkdownProps> = memo(function GithubMarkdown({
                     <h4
                         id={id}
                         {...headingClickProps(id)}
-                        className="group/heading flex items-center gap-2 text-sm font-semibold text-foreground mt-4 mb-1.5 scroll-mt-24 cursor-pointer hover:text-sky-700 dark:hover:text-sky-400 transition-colors"
+                        className="group/heading flex items-center gap-2 text-sm font-semibold text-brand-normal mt-5 mb-1.5 scroll-mt-24"
                     >
                         <span className="min-w-0">{children}</span>
                         {headingAction(id)}
@@ -369,11 +359,7 @@ const GithubMarkdown: FC<GithubMarkdownProps> = memo(function GithubMarkdown({
         <div className="github-markdown text-foreground [&_blockquote+h2]:mt-4">
             <ReactMarkdown
                 remarkPlugins={[remarkGfm]}
-                rehypePlugins={[
-                    rehypeSlug,
-                    [rehypeAutolinkHeadings, { behavior: "wrap" }],
-                    rehypeHighlight,
-                ]}
+                rehypePlugins={[rehypeSlug, rehypeHighlight]}
                 components={markdownComponents}
             >
                 {content}

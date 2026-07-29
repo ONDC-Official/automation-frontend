@@ -271,11 +271,22 @@ export interface ValidationTableSection {
 
 // ─── API Response Types ───────────────────────────────────────────────────────
 
+/**
+ * Lifecycle status for a domain version / use case in Developer Guide.
+ * Optional today — when Automation DB starts returning it, frontend prefers
+ * this over the local ENUM fallback in `statusPlaceholders.ts`.
+ */
+export type BuildLifecycleStatus = "released" | "drafted" | "to-be-deprecated" | "deprecated";
+
 export interface BuildEntry {
     key: string;
     version: Array<{
         key: string;
         usecase: string[];
+        /** Version-level status from backend when available. */
+        status?: BuildLifecycleStatus | string;
+        /** Optional per-use-case status from backend when available. */
+        usecaseStatus?: Record<string, BuildLifecycleStatus | string>;
     }>;
 }
 

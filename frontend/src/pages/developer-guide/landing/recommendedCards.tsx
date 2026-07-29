@@ -17,9 +17,9 @@ export const recommendedCards: RecommendedCardConfig[] = [
     {
         id: RECOMMENDED_CARD_IDS.GETTING_STARTED,
         title: "Getting Started",
-        subtitle: "Start with a use case",
+        subtitle: "Explore a reference use case",
         description:
-            "New to the developer guide? Walk through a real use case and explore all request/response flows step by step.",
+            "New to the developer guide? Open a reference use case, inspect flows and payloads, then jump into Auth Tools or Schema Validation.",
         icon: <BookOpenIcon className="w-5 h-5 text-sky-600 dark:text-sky-400" />,
     },
     {

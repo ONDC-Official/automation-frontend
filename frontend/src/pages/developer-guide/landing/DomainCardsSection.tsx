@@ -6,35 +6,49 @@ import type { DomainFamilyGroup } from "../domainGrouping";
 import { getDomainFamilyLabel, getDomainShortLabel, groupBuildsByFamily } from "../domainGrouping";
 import type { DomainCardsSectionProps } from "./types";
 import { Button } from "@/components/Shadcn/Button";
+import { resolveNavStatus, NAV_STATUS_STYLES } from "../shared/statusPlaceholders";
 
 interface UseCaseEntry {
     dom: BuildEntry;
     verKey: string;
     label: string;
-    domainLabel: string;
 }
 
-function collectUseCases(
-    family: DomainFamilyGroup,
+interface DomainUseCaseGroup {
+    domainLabel: string;
+    useCases: UseCaseEntry[];
+}
+
+function collectUseCasesForDomain(
+    dom: BuildEntry,
     isUseCaseEnabled: (dom: BuildEntry, usecaseLabel: string) => boolean
 ): UseCaseEntry[] {
-    return family.domains
-        .flatMap((dom) =>
-            (dom.version ?? []).flatMap((ver) =>
-                (ver.usecase ?? []).map((label) => ({
-                    dom,
-                    verKey: ver.key,
-                    label,
-                    domainLabel: getDomainShortLabel(dom.key),
-                }))
-            )
+    return (dom.version ?? [])
+        .flatMap((ver) =>
+            (ver.usecase ?? []).map((label) => ({
+                dom,
+                verKey: ver.key,
+                label,
+            }))
         )
         .sort((a, b) => {
             const aEn = isUseCaseEnabled(a.dom, a.label);
             const bEn = isUseCaseEnabled(b.dom, b.label);
             if (aEn !== bEn) return aEn ? -1 : 1;
-            return a.label.localeCompare(b.label);
+            return a.label.localeCompare(b.label) || a.verKey.localeCompare(b.verKey);
         });
+}
+
+function collectUseCasesByDomain(
+    family: DomainFamilyGroup,
+    isUseCaseEnabled: (dom: BuildEntry, usecaseLabel: string) => boolean
+): DomainUseCaseGroup[] {
+    return family.domains
+        .map((dom) => ({
+            domainLabel: getDomainShortLabel(dom.key),
+            useCases: collectUseCasesForDomain(dom, isUseCaseEnabled),
+        }))
+        .filter((group) => group.useCases.length > 0);
 }
 
 const DomainFamilyAccordion: FC<{
@@ -49,8 +63,44 @@ const DomainFamilyAccordion: FC<{
     const enabled = family.domains.some(isDomainEnabled);
     const familyTitle = getDomainFamilyLabel(family.familyKey);
     const domainLabels = family.domains.map((d) => getDomainShortLabel(d.key));
-    const useCases = collectUseCases(family, isUseCaseEnabled);
-    const showDomainBadge = family.domains.length > 1;
+    const domainGroups = collectUseCasesByDomain(family, isUseCaseEnabled);
+    const useCaseCount = domainGroups.reduce((sum, g) => sum + g.useCases.length, 0);
+    const showDomainSections = domainGroups.length > 1;
+
+    const renderUseCaseChip = ({ dom, verKey, label }: UseCaseEntry) => {
+        const clickable = isUseCaseEnabled(dom, label);
+        const ver = dom.version?.find((v) => v.key === verKey);
+        const status = resolveNavStatus({
+            domainKey: dom.key,
+            versionKey: verKey,
+            usecaseLabel: label,
+            backendStatus: ver?.usecaseStatus?.[label] ?? ver?.status,
+        });
+        const statusStyle = NAV_STATUS_STYLES[status];
+        return (
+            <Button
+                key={`${dom.key}-${verKey}-${label}`}
+                type="button"
+                variant="ghost"
+                disabled={!clickable}
+                onClick={() => clickable && onUseCaseClick(dom, verKey, label)}
+                className={`gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border transition-colors duration-150 ${
+                    clickable
+                        ? "bg-white dark:bg-surface-elevated text-sky-700 dark:text-sky-300 border-sky-200 dark:border-sky-500/30 hover:bg-sky-50 dark:hover:bg-sky-500/10 hover:border-sky-300 dark:hover:border-sky-500/50 hover:shadow-xs cursor-pointer shadow-xs"
+                        : "bg-slate-50 text-slate-400 border-slate-100 cursor-not-allowed"
+                }`}
+            >
+                {label}
+                <span
+                    className={`rounded-full px-1.5 py-0.5 font-mono text-caption-2-size font-bold ${
+                        clickable ? statusStyle : "bg-slate-100 text-slate-300"
+                    }`}
+                >
+                    v{verKey}
+                </span>
+            </Button>
+        );
+    };
 
     return (
         <section
@@ -118,7 +168,7 @@ const DomainFamilyAccordion: FC<{
                             ? domainLabels.join(" · ")
                             : (domainLabels[0] ?? family.label)}
                         {" · "}
-                        {useCases.length} use case{useCases.length !== 1 ? "s" : ""}
+                        {useCaseCount} use case{useCaseCount !== 1 ? "s" : ""}
                     </p>
                 </div>
 
@@ -145,47 +195,26 @@ const DomainFamilyAccordion: FC<{
             >
                 <div className="overflow-hidden border-t border-sky-100 dark:border-sky-500/30">
                     <div
-                        className={`px-5 py-4 flex flex-wrap gap-2 transition-opacity duration-150 ${
+                        className={`px-5 py-4 transition-opacity duration-150 ${
                             open ? "opacity-100" : "opacity-0"
-                        }`}
+                        } ${showDomainSections ? "flex flex-col gap-4" : "flex flex-wrap gap-2"}`}
                     >
-                        {useCases.map(({ dom, verKey, label, domainLabel }) => {
-                            const clickable = isUseCaseEnabled(dom, label);
-                            return (
-                                <Button
-                                    key={`${dom.key}-${verKey}-${label}`}
-                                    type="button"
-                                    variant="ghost"
-                                    disabled={!clickable}
-                                    onClick={() => clickable && onUseCaseClick(dom, verKey, label)}
-                                    className={`gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border transition-colors duration-150 ${
-                                        clickable
-                                            ? "bg-white dark:bg-surface-elevated text-sky-700 dark:text-sky-300 border-sky-200 dark:border-sky-500/30 hover:bg-sky-50 dark:hover:bg-sky-500/10 hover:border-sky-300 dark:hover:border-sky-500/50 hover:shadow-xs cursor-pointer shadow-xs"
-                                            : "bg-slate-50 text-slate-400 border-slate-100 cursor-not-allowed"
-                                    }`}
-                                >
-                                    {label}
-                                    {showDomainBadge && (
-                                        <span
-                                            className={`font-mono text-[10px] px-1 py-0.5 rounded ${
-                                                clickable
-                                                    ? "bg-sky-50 dark:bg-sky-500/10 text-sky-500 dark:text-sky-400"
-                                                    : "bg-slate-100 text-slate-300"
-                                            }`}
-                                        >
-                                            {domainLabel}
-                                        </span>
-                                    )}
-                                    <span
-                                        className={`font-mono text-[11px] ${
-                                            clickable ? "text-sky-400" : "text-slate-300"
-                                        }`}
-                                    >
-                                        v{verKey}
-                                    </span>
-                                </Button>
-                            );
-                        })}
+                        {showDomainSections
+                            ? domainGroups.map(({ domainLabel, useCases }) => (
+                                  <div key={domainLabel} className="flex flex-col gap-2">
+                                      <h4 className="text-[11px] font-bold uppercase tracking-wide text-sky-600 dark:text-sky-400">
+                                          {domainLabel}
+                                          <span className="ml-1.5 font-medium normal-case tracking-normal text-slate-400">
+                                              {useCases.length} use case
+                                              {useCases.length !== 1 ? "s" : ""}
+                                          </span>
+                                      </h4>
+                                      <div className="flex flex-wrap gap-2">
+                                          {useCases.map(renderUseCaseChip)}
+                                      </div>
+                                  </div>
+                              ))
+                            : domainGroups[0]?.useCases.map(renderUseCaseChip)}
                     </div>
                 </div>
             </div>

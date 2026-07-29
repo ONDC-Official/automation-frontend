@@ -217,7 +217,7 @@ const FlowInformation: FC<FlowInformationProps> = ({
     );
 
     return (
-        <div className="mt-4 space-y-0 w-full">
+        <div className="space-y-0 w-full">
             {selectedFlowData && !hasSelectedAction && (
                 <div className="mb-6">
                     <FlowDetailsAndSummary flow={selectedFlowData} />
@@ -231,7 +231,7 @@ const FlowInformation: FC<FlowInformationProps> = ({
                     </div> */}
 
                     {hasTabs && (
-                        <div className="border-t border-slate-200 dark:border-border-default">
+                        <div className="border-slate-200 dark:border-border-default">
                             <div className="relative flex items-start gap-0 mt-2 mb-4">
                                 {/* Left pane: flows accordion/sidebar — fixed across tab changes */}
                                 {!isFullscreen && (
@@ -253,7 +253,7 @@ const FlowInformation: FC<FlowInformationProps> = ({
                                                 sidebarOpen ? "Collapse sidebar" : "Expand sidebar"
                                             }
                                             className={`absolute top-4 z-20 -translate-x-1/2 flex items-center justify-center w-5 h-9 rounded-full bg-white dark:bg-surface-elevated border border-slate-200 dark:border-border-default shadow-sm hover:bg-slate-50 dark:hover:bg-surface-muted transition-[left] duration-300 ease-in-out motion-reduce:transition-none ${
-                                                sidebarOpen ? "left-96" : "left-0"
+                                                sidebarOpen ? "left-80" : "left-0"
                                             }`}
                                         >
                                             <ChevronLeftIcon

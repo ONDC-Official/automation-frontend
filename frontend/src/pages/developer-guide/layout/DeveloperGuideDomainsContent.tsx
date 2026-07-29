@@ -12,6 +12,11 @@ import { isDomainEnabled, isUseCaseEnabled } from "../utils";
 import { useDeveloperGuideShell } from "./DeveloperGuideNav";
 import DomainCardsSection from "../landing/DomainCardsSection";
 import { Input } from "@components/Shadcn/Input";
+import {
+    NAV_STATUS_LABEL,
+    NAV_STATUS_STYLES,
+    NAV_STATUS_VALUES,
+} from "../shared/statusPlaceholders";
 
 const DeveloperGuideDomainsContent: FC = () => {
     const navigate = useNavigate();
@@ -97,6 +102,29 @@ const DeveloperGuideDomainsContent: FC = () => {
                     isUseCaseEnabled={isUseCaseEnabled}
                     onUseCaseClick={handleUseCaseClick}
                 />
+
+                <aside
+                    className="mt-8 rounded-lg border border-slate-200 dark:border-border-default bg-slate-50 dark:bg-surface-muted px-4 py-3"
+                    aria-label="Version status legend"
+                >
+                    <p className="text-sm font-semibold text-slate-800 dark:text-text-primary mb-1">
+                        Note
+                    </p>
+                    <p className="text-sm text-slate-600 dark:text-text-secondary mb-3 leading-relaxed">
+                        Version pills in the navigation use these colors to indicate lifecycle
+                        status:
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                        {NAV_STATUS_VALUES.map((status) => (
+                            <span
+                                key={status}
+                                className={`rounded-full px-2.5 py-1.5 text-caption-2-size font-semibold leading-none ${NAV_STATUS_STYLES[status]}`}
+                            >
+                                {NAV_STATUS_LABEL[status]}
+                            </span>
+                        ))}
+                    </div>
+                </aside>
             </div>
         </div>
     );

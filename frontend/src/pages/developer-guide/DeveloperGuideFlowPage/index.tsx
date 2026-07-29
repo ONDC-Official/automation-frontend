@@ -114,7 +114,7 @@ const DeveloperGuideFlowPage: FC = () => {
                             )}
                         </div>
                     ) : (
-                        <div className="flex-1 min-w-0 p-4 w-full">
+                        <div className="flex-1 min-w-0 px-4 w-full">
                             {activeView === "error-codes" &&
                                 (hasErrorCodes && errorCodes ? (
                                     <ErrorCodesTable errorCodes={errorCodes} />

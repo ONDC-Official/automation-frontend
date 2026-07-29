@@ -50,12 +50,26 @@ export default function Ret10GrocerySelectForm({ submitEvent }: IRet10GrocerySel
         providers.find((provider) => provider.id === selectedProvider)?.locations ?? [];
 
     const onSubmit = async (data: IFormValues) => {
-        const { valid, errors } = validateFormData(data);
+        const normalizedData: IFormValues = {
+            ...data,
+            items: data.items.map((item) => ({
+                ...item,
+                quantity:
+                    typeof item.quantity === "number"
+                        ? item.quantity
+                        : parseInt(String(item.quantity), 10) || 1,
+            })),
+        };
+
+        const { valid, errors } = validateFormData(normalizedData);
         if (!valid) {
             toast.error(`Form validation failed: ${errors[0]}`);
             return;
         }
-        await submitEvent({ jsonPath: {}, formData: data as unknown as Record<string, string> });
+        await submitEvent({
+            jsonPath: {},
+            formData: normalizedData as unknown as Record<string, string>,
+        });
     };
 
     const handlePaste = (data: unknown) => {
@@ -133,6 +147,14 @@ export default function Ret10GrocerySelectForm({ submitEvent }: IRet10GrocerySel
                                 )}
                             />
                         )}
+
+                        <TextField
+                            control={control}
+                            name="bpp_id"
+                            label="Enter BPP ID"
+                            placeholder="Enter BPP ID"
+                            required
+                        />
 
                         <TextField
                             control={control}
@@ -299,6 +321,7 @@ function validateFormData(data: IFormData): {
     const errors: string[] = [];
 
     const fieldsToValidate = [
+        "bpp_id",
         "provider",
         "location_gps",
         "location_pin_code",
@@ -361,7 +384,7 @@ export function validateFormDataRET11(
 } {
     const errors: string[] = [];
 
-    const fieldsToValidate = ["provider", "location_gps", "location_pin_code"] as const;
+    const fieldsToValidate = ["bpp_id", "provider", "location_gps", "location_pin_code"] as const;
     for (const key of fieldsToValidate) {
         if (data[key] === undefined || data[key] === null || data[key] === "") {
             errors.push(`Field ${key} cannot be empty.`);

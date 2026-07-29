@@ -21,10 +21,10 @@ const FlowsSidebar: FC<FlowsSidebarProps> = ({
 }) => (
     <div
         className={`sticky top-4 self-start shrink-0 overflow-hidden h-[calc(100vh-6rem)] transition-[width] duration-300 ease-in-out ${
-            sidebarOpen ? "w-96" : "w-0"
+            sidebarOpen ? "w-80" : "w-0"
         }`}
     >
-        <aside className="h-full w-96 overflow-y-auto dark:bg-surface-page">
+        <aside className="h-full w-80 overflow-y-auto dark:bg-surface-page">
             <FlowsAccordion
                 flows={flows}
                 selectedFlow={selectedFlow}
