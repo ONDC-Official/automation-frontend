@@ -1,7 +1,12 @@
 import { ROUTES, getDeveloperGuideDocPath, getDeveloperGuideUseCasePath } from "@constants/routes";
 import { extractNestedMarkdownToc, stripHeadingNumberPrefix } from "@utils/markdownToc";
 import type { BuildEntry, DocMeta } from "../types";
-import { groupBuildsByFamily, getDomainFamilyLabel, getDomainShortLabel } from "../domainGrouping";
+import {
+    groupBuildsByFamily,
+    getDomainDisplayLabel,
+    getDomainFamilyLabel,
+    getDomainFriendlyName,
+} from "../domainGrouping";
 import { isDomainEnabled, sortDocsByPreferredSequence } from "../utils";
 import { GETTING_STARTED_SECTIONS } from "../landing/getting-started-sections";
 import { resolveNavStatus } from "../shared/statusPlaceholders";
@@ -136,12 +141,13 @@ export function buildNavTree(
 
     function buildDomainGroupNode(dom: BuildEntry): NavNode {
         const enabled = isDomainEnabled(dom);
+        const displayLabel = getDomainDisplayLabel(dom.key);
         return {
             id: `domain-${dom.key}`,
-            label: getDomainShortLabel(dom.key),
+            label: displayLabel,
             type: "group" as const,
             defaultOpen: enabled,
-            searchText: dom.key,
+            searchText: `${displayLabel} ${getDomainFriendlyName(dom.key)} ${dom.key}`,
             children: buildUseCaseNodes(dom),
         };
     }
@@ -151,24 +157,14 @@ export function buildNavTree(
         const familyEnabled = family.domains.some(isDomainEnabled);
         const familyTitle = getDomainFamilyLabel(family.familyKey);
 
-        if (family.domains.length === 1) {
-            const dom = family.domains[0];
-            return {
-                id: `family-${family.familyKey}`,
-                label: familyTitle,
-                type: "group" as const,
-                defaultOpen: familyEnabled,
-                searchText: `${familyTitle} ${family.familyKey} ${dom.key}`,
-                children: buildUseCaseNodes(dom),
-            };
-        }
-
         return {
             id: `family-${family.familyKey}`,
             label: familyTitle,
             type: "group" as const,
             defaultOpen: familyEnabled,
-            searchText: `${familyTitle} ${family.familyKey} ${family.domains.map((d) => d.key).join(" ")}`,
+            searchText: `${familyTitle} ${family.familyKey} ${family.domains
+                .map((d) => `${getDomainDisplayLabel(d.key)} ${d.key}`)
+                .join(" ")}`,
             children: family.domains.map(buildDomainGroupNode),
         };
     });

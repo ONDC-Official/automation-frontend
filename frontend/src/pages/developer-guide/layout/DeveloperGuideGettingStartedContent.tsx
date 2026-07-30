@@ -23,6 +23,7 @@ import DeveloperGuideGuideCard from "./DeveloperGuideGuideCard";
 import CommentsPanel from "../flowActionDetails/CommentsPanel";
 import { useDocsSectionSelection } from "../DocsViewer/useDocsSectionSelection";
 import { useInlineCommentHeading } from "../shared/hooks/useInlineCommentHeading";
+import { getDomainDisplayLabel } from "../domainGrouping";
 
 const GETTING_STARTED_SLUG = "getting-started";
 
@@ -127,8 +128,8 @@ const DeveloperGuideGettingStartedContent: FC = () => {
     };
 
     const referencePathHint = referenceUseCase
-        ? `For eg. API Reference by Domain → Financial Services → FIS12 → ${referenceUseCase.label}`
-        : "API Reference by Domain → Financial Services → FIS12 → LAMF";
+        ? `For eg. API Reference by Domain → Financial Services → ${getDomainDisplayLabel(referenceUseCase.domainKey)} → ${referenceUseCase.label}`
+        : "API Reference by Domain → Financial Services → Credit (FIS12) → LAMF";
 
     const commonPaths: PathCard[] = [
         {

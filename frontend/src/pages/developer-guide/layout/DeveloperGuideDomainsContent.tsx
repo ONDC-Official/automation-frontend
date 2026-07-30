@@ -7,7 +7,11 @@ import {
 } from "@heroicons/react/24/outline";
 import { getDeveloperGuideUseCasePath } from "@constants/routes";
 import type { BuildEntry } from "../types";
-import { groupBuildsByFamily } from "../domainGrouping";
+import {
+    groupBuildsByFamily,
+    getDomainDisplayLabel,
+    getDomainFriendlyName,
+} from "../domainGrouping";
 import { isDomainEnabled, isUseCaseEnabled } from "../utils";
 import { useDeveloperGuideShell } from "./DeveloperGuideNav";
 import DomainCardsSection from "../landing/DomainCardsSection";
@@ -41,7 +45,9 @@ const DeveloperGuideDomainsContent: FC = () => {
                     (dom) =>
                         family.label.toLowerCase().includes(q) ||
                         family.familyKey.toLowerCase().includes(q) ||
-                        dom.key.toLowerCase().includes(q)
+                        dom.key.toLowerCase().includes(q) ||
+                        getDomainFriendlyName(dom.key).toLowerCase().includes(q) ||
+                        getDomainDisplayLabel(dom.key).toLowerCase().includes(q)
                 ),
             }))
             .filter((family) => family.domains.length > 0);
@@ -79,7 +85,8 @@ const DeveloperGuideDomainsContent: FC = () => {
                                 All domains
                             </p>
                             <p className="text-xs text-slate-500 mb-0">
-                                Related domains are grouped (e.g. FIS12, FIS13 under FIS)
+                                Related domains are grouped (e.g. Credit, Insurance under Financial
+                                Services)
                             </p>
                         </div>
                     </div>

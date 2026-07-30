@@ -3,7 +3,11 @@ import { ChevronDownIcon } from "@heroicons/react/24/outline";
 import { IconSearch } from "../shared/icons";
 import type { BuildEntry } from "../types";
 import type { DomainFamilyGroup } from "../domainGrouping";
-import { getDomainFamilyLabel, getDomainShortLabel, groupBuildsByFamily } from "../domainGrouping";
+import {
+    getDomainDisplayLabel,
+    getDomainFamilyLabel,
+    groupBuildsByFamily,
+} from "../domainGrouping";
 import type { DomainCardsSectionProps } from "./types";
 import { Button } from "@/components/Shadcn/Button";
 import { resolveNavStatus, NAV_STATUS_STYLES } from "../shared/statusPlaceholders";
@@ -45,7 +49,7 @@ function collectUseCasesByDomain(
 ): DomainUseCaseGroup[] {
     return family.domains
         .map((dom) => ({
-            domainLabel: getDomainShortLabel(dom.key),
+            domainLabel: getDomainDisplayLabel(dom.key),
             useCases: collectUseCasesForDomain(dom, isUseCaseEnabled),
         }))
         .filter((group) => group.useCases.length > 0);
@@ -62,7 +66,7 @@ const DomainFamilyAccordion: FC<{
     const [open, setOpen] = useState(false);
     const enabled = family.domains.some(isDomainEnabled);
     const familyTitle = getDomainFamilyLabel(family.familyKey);
-    const domainLabels = family.domains.map((d) => getDomainShortLabel(d.key));
+    const domainLabels = family.domains.map((d) => getDomainDisplayLabel(d.key));
     const domainGroups = collectUseCasesByDomain(family, isUseCaseEnabled);
     const useCaseCount = domainGroups.reduce((sum, g) => sum + g.useCases.length, 0);
     const showDomainSections = domainGroups.length > 1;
@@ -202,9 +206,9 @@ const DomainFamilyAccordion: FC<{
                         {showDomainSections
                             ? domainGroups.map(({ domainLabel, useCases }) => (
                                   <div key={domainLabel} className="flex flex-col gap-2">
-                                      <h4 className="text-[11px] font-bold uppercase tracking-wide text-sky-600 dark:text-sky-400">
+                                      <h4 className="text-[11px] font-bold tracking-wide text-sky-600 dark:text-sky-400">
                                           {domainLabel}
-                                          <span className="ml-1.5 font-medium normal-case tracking-normal text-slate-400">
+                                          <span className="ml-1.5 font-medium tracking-normal text-slate-400">
                                               {useCases.length} use case
                                               {useCases.length !== 1 ? "s" : ""}
                                           </span>
