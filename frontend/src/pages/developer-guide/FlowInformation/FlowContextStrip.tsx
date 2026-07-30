@@ -7,7 +7,7 @@ import type { FlowEntry } from "../types";
 interface FlowContextStripProps {
     flow: FlowEntry;
     action: string;
-    /** Selected action shown as a chip next to the flow name. */
+    /** Selected action shown as a chip inside the step description container. */
     actionLabel?: string;
     isFullscreen?: boolean;
     onToggleFullscreen?: () => void;
@@ -27,12 +27,13 @@ const FlowContextStrip: FC<FlowContextStripProps> = ({
     const flowName = flow.flowId.split("_").join(" ");
     const description = flow.config?.steps.find((step) => step.action_id === action)?.description;
 
+    const flowDescription = flow.description?.trim();
+
     return (
         <div className="border-b border-slate-200 dark:border-border-default pb-4">
             <div className="grid grid-cols-[60%_40%] items-center gap-4 ">
                 <div className="flex items-center gap-2">
                     <span className="font-semibold text-slate-800 wrap-break-word">{flowName}</span>
-                    {actionLabel && <span className={chipClassName}>{actionLabel}</span>}
                 </div>
 
                 <div className="flex flex-wrap pr-4 items-center justify-end gap-1.5">
@@ -74,10 +75,19 @@ const FlowContextStrip: FC<FlowContextStripProps> = ({
                 </div>
             </div>
 
-            {description && (
-                <p className="mt-2 rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600 dark:border-border-default dark:bg-surface-elevated">
-                    {description}
+            {flowDescription && (
+                <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
+                    {flowDescription}
                 </p>
+            )}
+
+            {(actionLabel || description) && (
+                <div className="mt-2 space-y-2 rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-border-default dark:bg-surface-elevated">
+                    {actionLabel && <span className={chipClassName}>{actionLabel}</span>}
+                    {description && (
+                        <p className="text-sm text-slate-600 dark:text-slate-400">{description}</p>
+                    )}
+                </div>
             )}
         </div>
     );

@@ -61,8 +61,6 @@ function GuideTable<T>({
     maxHeight = "720px",
     density = "spacious",
     emptyState,
-    rounded = "2xl",
-    shadow = "md",
     toolbar,
     footer,
     pagination,
@@ -91,14 +89,12 @@ function GuideTable<T>({
 
     return (
         <div
-            className={cn(
-                "border border-n-30 dark:border-border-default bg-n-0 dark:bg-surface-elevated overflow-hidden px-6 py-5",
-                rounded === "2xl" ? "rounded-2xl" : "rounded-xl",
-                shadow === "md" ? "shadow-md" : "shadow-xs"
-            )}
+            className={
+                "border-n-30 dark:border-border-default bg-n-0 dark:bg-surface-elevated overflow-hidden py-2 rounded-xl"
+            }
         >
             {toolbar && (
-                <div className="bg-n-10 dark:bg-surface-muted border border-n-30 dark:border-border-default px-4 py-3 rounded-xl mb-4">
+                <div className="bg-n-10 dark:bg-surface-muted border border-n-30 dark:border-border-default p-2 rounded-xl mb-4">
                     {toolbar}
                 </div>
             )}

@@ -1,13 +1,15 @@
 import { ROUTES, getDeveloperGuideDocPath, getDeveloperGuideUseCasePath } from "@constants/routes";
-import {
-    extractNestedMarkdownToc,
-    extractMarkdownToc,
-    stripHeadingNumberPrefix,
-} from "@utils/markdownToc";
+import { extractNestedMarkdownToc, stripHeadingNumberPrefix } from "@utils/markdownToc";
 import type { BuildEntry, DocMeta } from "../types";
-import { groupBuildsByFamily, getDomainFamilyLabel, getDomainShortLabel } from "../domainGrouping";
+import {
+    groupBuildsByFamily,
+    getDomainDisplayLabel,
+    getDomainFamilyLabel,
+    getDomainFriendlyName,
+} from "../domainGrouping";
 import { isDomainEnabled, sortDocsByPreferredSequence } from "../utils";
-import gettingStartedContent from "../landing/getting-started.md?raw";
+import { GETTING_STARTED_SECTIONS } from "../landing/getting-started-sections";
+import { resolveNavStatus } from "../shared/statusPlaceholders";
 import type { NavNode } from "./navTypes";
 import { DOCS_WITH_SIDEBAR_SECTIONS } from "./docsWithSidebarSections";
 
@@ -65,20 +67,18 @@ function buildDocNavWithSections(doc: DocMeta, markdown: string): NavNode {
 }
 
 function buildGettingStartedNav(): NavNode {
-    const sectionLinks: NavNode[] = extractMarkdownToc(gettingStartedContent)
-        .filter((entry) => entry.level === 2)
-        .map((entry) => ({
-            id: `getting-started-${entry.id}`,
-            label: stripHeadingNumberPrefix(entry.text),
-            type: "link" as const,
-            path: `${ROUTES.DEVELOPER_GUIDE_GETTING_STARTED}#${entry.id}`,
-            searchText: entry.text,
-        }));
+    const sectionLinks: NavNode[] = GETTING_STARTED_SECTIONS.map((section) => ({
+        id: `getting-started-${section.id}`,
+        label: section.label,
+        type: "link" as const,
+        path: `${ROUTES.DEVELOPER_GUIDE_GETTING_STARTED}#${section.id}`,
+        searchText: section.label,
+    }));
 
     const defaultGettingStartedPath =
         sectionLinks.length > 0
             ? (sectionLinks[0] as Extract<NavNode, { type: "link" }>).path
-            : `${ROUTES.DEVELOPER_GUIDE_GETTING_STARTED}#1-pick-a-use-case`;
+            : `${ROUTES.DEVELOPER_GUIDE_GETTING_STARTED}#${GETTING_STARTED_SECTIONS[0].id}`;
 
     return {
         id: "getting-started",
@@ -110,6 +110,7 @@ export function buildNavTree(
                 (ver.usecase ?? []).map((label) => ({
                     verKey: ver.key,
                     label,
+                    backendStatus: ver.usecaseStatus?.[label] ?? ver.status,
                 }))
             )
             .sort((a, b) => {
@@ -118,7 +119,7 @@ export function buildNavTree(
                 if (aEn !== bEn) return aEn ? -1 : 1;
                 return a.label.localeCompare(b.label) || a.verKey.localeCompare(b.verKey);
             })
-            .map(({ verKey, label }) => {
+            .map(({ verKey, label, backendStatus }) => {
                 const clickable = isUseCaseEnabled(dom, label);
                 return useCaseNavLink({
                     id: `usecase-${dom.key}-${verKey}-${label}`,
@@ -128,18 +129,25 @@ export function buildNavTree(
                     path: getDeveloperGuideUseCasePath(dom.key, verKey, label),
                     disabled: !clickable,
                     searchText: `${dom.key} ${label} v${verKey}`,
+                    status: resolveNavStatus({
+                        domainKey: dom.key,
+                        versionKey: verKey,
+                        usecaseLabel: label,
+                        backendStatus,
+                    }),
                 });
             });
     }
 
     function buildDomainGroupNode(dom: BuildEntry): NavNode {
         const enabled = isDomainEnabled(dom);
+        const displayLabel = getDomainDisplayLabel(dom.key);
         return {
             id: `domain-${dom.key}`,
-            label: getDomainShortLabel(dom.key),
+            label: displayLabel,
             type: "group" as const,
             defaultOpen: enabled,
-            searchText: dom.key,
+            searchText: `${displayLabel} ${getDomainFriendlyName(dom.key)} ${dom.key}`,
             children: buildUseCaseNodes(dom),
         };
     }
@@ -149,24 +157,14 @@ export function buildNavTree(
         const familyEnabled = family.domains.some(isDomainEnabled);
         const familyTitle = getDomainFamilyLabel(family.familyKey);
 
-        if (family.domains.length === 1) {
-            const dom = family.domains[0];
-            return {
-                id: `family-${family.familyKey}`,
-                label: familyTitle,
-                type: "group" as const,
-                defaultOpen: familyEnabled,
-                searchText: `${familyTitle} ${family.familyKey} ${dom.key}`,
-                children: buildUseCaseNodes(dom),
-            };
-        }
-
         return {
             id: `family-${family.familyKey}`,
             label: familyTitle,
             type: "group" as const,
             defaultOpen: familyEnabled,
-            searchText: `${familyTitle} ${family.familyKey} ${family.domains.map((d) => d.key).join(" ")}`,
+            searchText: `${familyTitle} ${family.familyKey} ${family.domains
+                .map((d) => `${getDomainDisplayLabel(d.key)} ${d.key}`)
+                .join(" ")}`,
             children: family.domains.map(buildDomainGroupNode),
         };
     });

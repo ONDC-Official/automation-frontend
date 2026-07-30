@@ -16,7 +16,7 @@ interface FlowsAccordionProps {
 }
 
 const ArrowsIcon = () => (
-    <ArrowsRightLeftIcon className="w-4 h-4 text-slate-400 shrink-0" aria-hidden />
+    <ArrowsRightLeftIcon className="size-3 text-slate-400 shrink-0" aria-hidden />
 );
 
 const FlowsAccordion: FC<FlowsAccordionProps> = ({
@@ -93,7 +93,16 @@ const FlowsAccordion: FC<FlowsAccordionProps> = ({
         setSelectedFlowAction(actionId);
     };
 
-    const renderStepButton = (step: FlowStep, flowId: string, isSelected: boolean) => {
+    const renderStepButton = (
+        step: FlowStep,
+        flowId: string,
+        isSelected: boolean,
+        options: {
+            /** Pair rows: start keeps label+pill grouped; used with row-level space-between. */
+            contentAlign?: "start" | "end" | "between";
+        } = {}
+    ) => {
+        const { contentAlign = "between" } = options;
         const actionId = getActionId(step);
         const isTransitioning = transitioningAction === actionId;
 
@@ -104,17 +113,25 @@ const FlowsAccordion: FC<FlowsAccordionProps> = ({
                 variant="ghost"
                 onClick={() => handleStepClick(flowId, actionId)}
                 disabled={isTransitioning}
-                className={`h-auto w-full min-w-0 flex-col items-stretch px-3 py-2.5 rounded-lg border font-normal text-left transition-[border-color,box-shadow] duration-200 ${
+                className={cn(
+                    "h-auto w-full min-w-0 flex-col items-stretch px-2 py-2 rounded-lg border font-normal text-left transition-[border-color,box-shadow] duration-200",
                     isSelected || isTransitioning
                         ? "border-sky-400 dark:border-sky-500 ring-2 ring-sky-100 dark:ring-sky-500/20 bg-white dark:bg-surface-elevated shadow-sm"
                         : "border-slate-200 bg-white dark:bg-surface-elevated hover:border-slate-300 hover:shadow-xs"
-                }`}
+                )}
             >
-                <div className="flex w-full min-w-0 items-center justify-between gap-2">
-                    <div className="flex min-w-0 items-center gap-2">
+                <div
+                    className={cn(
+                        "flex w-full min-w-0 items-center gap-1",
+                        contentAlign === "end" && "justify-end",
+                        contentAlign === "start" && "justify-start",
+                        contentAlign === "between" && "justify-between"
+                    )}
+                >
+                    <div className="flex min-w-0 items-center gap-1">
                         {isTransitioning && (
                             <svg
-                                className="size-3.5 shrink-0 animate-spin text-sky-500 dark:text-sky-400"
+                                className="size-3 shrink-0 animate-spin text-sky-500 dark:text-sky-400"
                                 fill="none"
                                 viewBox="0 0 24 24"
                             >
@@ -134,14 +151,14 @@ const FlowsAccordion: FC<FlowsAccordionProps> = ({
                             </svg>
                         )}
 
-                        <span className="min-w-0 text-body-2 font-medium text-slate-800 wrap-anywhere whitespace-normal">
+                        <span className="min-w-0 text-[11px] font-medium leading-tight text-slate-800 whitespace-nowrap">
                             {step.action_label ?? step.api}
                         </span>
                     </div>
 
                     <OwnerPill
                         owner={step.owner}
-                        className="shrink-0 px-1 py-px text-[9px] leading-none"
+                        className="shrink-0 px-1 py-px text-[8px] leading-none"
                     />
                 </div>
             </Button>
@@ -222,19 +239,9 @@ const FlowsAccordion: FC<FlowsAccordionProps> = ({
                         >
                             <div className="grid w-full min-w-0 grid-cols-[minmax(0,1fr)_auto] items-start gap-3">
                                 <div className="min-w-0">
-                                    <div className="text-body-1 font-semibold text-gray-900 wrap-anywhere whitespace-normal leading-8">
+                                    <div className="text-body-2 font-semibold text-gray-900 wrap-anywhere whitespace-normal leading-5">
                                         {flowName}
                                     </div>
-
-                                    {flow.description && (
-                                        <p
-                                            className={`mt-1 text-[12px] leading-5 text-slate-500 wrap-anywhere whitespace-normal ${
-                                                isOpen ? "" : "line-clamp-2"
-                                            }`}
-                                        >
-                                            {flow.description}
-                                        </p>
-                                    )}
                                 </div>
 
                                 <ChevronDownIcon
@@ -286,19 +293,23 @@ const FlowsAccordion: FC<FlowsAccordionProps> = ({
                                                             isFirst,
                                                             isLast
                                                         )}
-                                                        <div className="grid min-w-0 flex-1 grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] gap-3 items-center">
+                                                        <div className="grid min-w-0 flex-1 grid-cols-[minmax(0,1fr)_1.25rem_minmax(0,1fr)] items-center gap-x-2.5">
                                                             {renderStepButton(
                                                                 item.request,
                                                                 flowId,
-                                                                isReqSelected
+                                                                isReqSelected,
+                                                                { contentAlign: "between" }
                                                             )}
 
-                                                            <ArrowsIcon />
+                                                            <span className="flex items-center justify-center">
+                                                                <ArrowsIcon />
+                                                            </span>
 
                                                             {renderStepButton(
                                                                 item.response,
                                                                 flowId,
-                                                                isResSelected
+                                                                isResSelected,
+                                                                { contentAlign: "between" }
                                                             )}
                                                         </div>
                                                     </div>
@@ -326,7 +337,8 @@ const FlowsAccordion: FC<FlowsAccordionProps> = ({
                                                         {renderStepButton(
                                                             item.step,
                                                             flowId,
-                                                            isSelected
+                                                            isSelected,
+                                                            { contentAlign: "between" }
                                                         )}
                                                     </div>
                                                 </div>

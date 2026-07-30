@@ -23,7 +23,7 @@ function getPageTitle(
             };
         case "flows":
             return {
-                title: "Flows",
+                title: VIEW_LABEL.flows,
                 description: "Browse and test the flows for this use case.",
             };
         case "error-codes":
@@ -59,8 +59,8 @@ const FlowPageHeader: FC<FlowPageHeaderProps> = ({
             tabs={
                 [
                     { id: "docs", label: VIEW_LABEL.docs, visible: true },
-                    { id: "flows", label: "Flows", visible: true },
-                    { id: "error-codes", label: "Error Codes", visible: hasErrorCodes },
+                    { id: "flows", label: VIEW_LABEL.flows, visible: true },
+                    { id: "error-codes", label: VIEW_LABEL["error-codes"], visible: hasErrorCodes },
                     // { id: "changelog", label: "Changelog", visible: true },
                 ] satisfies GuideTabItem<TopLevelView>[]
             }

@@ -22,12 +22,23 @@ export const domainOptions = [
 /** User-friendly names for domain codes that don't have a family-wide grouping (e.g. RET has per-category names above). */
 export const DOMAIN_FRIENDLY_NAMES: Record<string, string> = {
     ...Object.fromEntries(domainOptions.map((option) => [option.value, option.key])),
-    "ONDC:TRV10": "Ride Hailing",
-    "ONDC:TRV11": "Metro",
-    "ONDC:TRV12": "Intercity",
-    "ONDC:TRV13": "Hotel",
-    "ONDC:FIS12": "Lending",
+    // Financial Services
+    "ONDC:FIS10": "Gift Cards",
+    "ONDC:FIS12": "Credit",
     "ONDC:FIS13": "Insurance",
+    "ONDC:FIS14": "Investment",
+    // Mobility Transit and Tourism
+    "ONDC:TRV10": "Ride Hailing",
+    "ONDC:TRV11": "Unreserved Travel Ticketing",
+    "ONDC:TRV12": "Reserved Travel Ticketing",
+    "ONDC:TRV13": "Accommodation/ Hotel Booking",
+    "ONDC:TRV14": "Experiences",
+    // Logistics
+    "nic2004:60232": "Logistics",
+    "ONDC:LOG10": "P2P Logistics",
+    "ONDC:LOG11": "P2H2P Logistics",
+    // Network Services
+    "ONDC:NTS10": "RSF",
 };
 
 export const Types = [

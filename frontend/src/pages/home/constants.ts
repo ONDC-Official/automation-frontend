@@ -190,7 +190,7 @@ export const supportCards: ISupportCard[] = [
         description:
             "Monitor real-time platform health, scheduled maintenance, and historical uptime.",
         linkLabel: "Check status",
-        href: ROUTES.FRAMEWORK_HEALTH,
+        href: ROUTES.LIVE_HEALTHCHECK_STATUS,
         Icon: SmartPhoneGraphIcon,
     },
 ];
@@ -203,12 +203,12 @@ export const supportInfoItems: ISupportInfoItem[] = [
     },
     {
         label: "RESPONSE · NORMAL",
-        title: "Within 4 business hours",
+        title: "Within 8 business hours",
         subtitle: "Raise issues via GitHub for the fastest turnaround time.",
     },
     {
         label: "RESPONSE · CRITICAL",
-        title: "Within 2 business hours",
+        title: "Within 4 business hours",
         subtitle: "Production blockers and network-wide issues are prioritised.",
     },
 ];

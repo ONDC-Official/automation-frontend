@@ -12,12 +12,12 @@ export const supportInfoItems: SupportInfoItem[] = [
     },
     {
         label: "RESPONSE · NORMAL",
-        title: "Within 4 business hours",
+        title: "Within 8 business hours",
         subtitle: "Raise issues via GitHub for the fastest turnaround time.",
     },
     {
         label: "RESPONSE · CRITICAL",
-        title: "Within 2 business hours",
+        title: "Within 4 business hours",
         subtitle: "Production blockers and network-wide issues are prioritised.",
     },
 ];
