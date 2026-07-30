@@ -16,8 +16,7 @@ export const HOW_TO_GUIDES = [
         id: "schema-validation",
         title: "Schema Validation",
         description: "See how to validate request and response payloads against domain schemas.",
-        videoUrl:
-            "https://drive.google.com/file/d/1W8Pgv494Kqqbn6GVJL01lzSjrsdA8blV/view?usp=sharing",
+        videoUrl: "https://drive.google.com/file/d/1W8Pgv494Kqqbn6GVJL01lzSjrsdA8blV/preview",
     },
 ] as const;
 
