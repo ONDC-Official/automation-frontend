@@ -12,25 +12,9 @@ import {
     toggleNavSidebar as toggleNavSidebarAction,
 } from "@store/slices/devGuideShellSlice";
 import { useDevGuideShellServerState } from "@store/selectors/devGuideSelectors";
-import { NAV_STATUS_LABEL, NAV_STATUS_STYLES, type NavStatus } from "../shared/statusPlaceholders";
 import { Button } from "@components/Shadcn/Button";
 import Input from "@components/Shadcn/Input";
 import { ROUTES } from "@constants/routes";
-
-const STATUS_LEGEND_ORDER: NavStatus[] = ["released", "drafted", "to-be-deprecated", "deprecated"];
-
-const StatusLegend: FC = () => (
-    <div className="flex flex-wrap gap-1.5 mt-2" aria-label="Version status legend">
-        {STATUS_LEGEND_ORDER.map((status) => (
-            <span
-                key={status}
-                className={`rounded-full px-2 py-2 text-caption-2-size font-semibold leading-none ${NAV_STATUS_STYLES[status]}`}
-            >
-                {NAV_STATUS_LABEL[status]}
-            </span>
-        ))}
-    </div>
-);
 
 const DeveloperGuideShellMain: FC = () => (
     <main className="flex-1 min-w-0">
@@ -117,7 +101,6 @@ const DeveloperGuideShell: FC = () => {
                                     className="w-full pl-10 pr-3.5 py-2.5 text-sm bg-white dark:bg-surface-elevated border border-slate-200 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-sky-100 dark:focus:ring-sky-500/20 focus:border-sky-300 placeholder-slate-400 text-slate-800 shadow-xs [&::-webkit-search-cancel-button]:cursor-pointer"
                                 />
                             </div>
-                            <StatusLegend />
                             {isNavEnriching ? (
                                 <p className="mt-2 text-xs text-slate-400">Loading docs…</p>
                             ) : null}

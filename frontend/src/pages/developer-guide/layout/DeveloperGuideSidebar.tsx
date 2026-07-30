@@ -6,7 +6,7 @@ import { ROUTES } from "@constants/routes";
 import type { NavNode, DeveloperGuideSidebarProps } from "./navTypes";
 import { isNavGroup, isNavLink } from "./navTypes";
 import { parseNavPath, isNavLinkActive, isNavGroupPathActive } from "./navMatch";
-import { getNavStatus, NAV_STATUS_LABEL, NAV_STATUS_STYLES } from "../shared/statusPlaceholders";
+import { NAV_STATUS_LABEL, NAV_STATUS_STYLES } from "../shared/statusPlaceholders";
 
 const TREE_INDENT_STEP = 20;
 const TREE_COLUMN_OFFSET = -4;
@@ -217,8 +217,8 @@ const NavLinkItem: FC<{
 
                     {node.suffix && (
                         <span
-                            title={NAV_STATUS_LABEL[getNavStatus(node.id)]}
-                            className={`shrink-0 rounded-full px-2.5 py-2 text-caption-2-size font-bold tracking-tighter leading-none ${NAV_STATUS_STYLES[getNavStatus(node.id)]}`}
+                            title={NAV_STATUS_LABEL[node.status ?? "released"]}
+                            className={`shrink-0 rounded-full px-2.5 py-2 text-caption-2-size font-bold tracking-tighter leading-none ${NAV_STATUS_STYLES[node.status ?? "released"]}`}
                         >
                             {node.suffix}
                         </span>

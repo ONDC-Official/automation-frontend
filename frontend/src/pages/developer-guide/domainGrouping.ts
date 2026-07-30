@@ -27,11 +27,12 @@ export function getDomainFamilyKey(domainKey: string): string {
 const DOMAIN_FAMILY_TITLES: Record<string, string> = {
     FIS: "Financial Services",
     LOG: "Logistics",
-    TRV: "Mobility Transit and Travel",
+    TRV: "Mobility Transit and Tourism",
     RET: "Retail",
+    NTS: "Network Services",
 };
 
-/** Display title for a domain family (e.g. FIS → "FIS - Financial Services"). */
+/** Display title for a domain family (e.g. FIS → "Financial Services"). */
 export function getDomainFamilyLabel(familyKey: string): string {
     const key = familyKey.toUpperCase();
     return DOMAIN_FAMILY_TITLES[key] ?? familyKey;
@@ -42,9 +43,9 @@ export function getDomainFriendlyName(domainKey: string): string {
     return DOMAIN_FRIENDLY_NAMES[domainKey] ?? getDomainFamilyLabel(getDomainFamilyKey(domainKey));
 }
 
-/** Consistent "Friendly Name (CODE)" label for a domain code, e.g. "Grocery (ONDC:RET10)". */
+/** Consistent "Friendly Name (CODE)" label, e.g. "Grocery (RET10)". */
 export function getDomainDisplayLabel(domainKey: string): string {
-    return `${getDomainFriendlyName(domainKey)} (${domainKey})`;
+    return `${getDomainFriendlyName(domainKey)} (${getDomainShortLabel(domainKey)})`;
 }
 
 export interface DomainFamilyGroup {

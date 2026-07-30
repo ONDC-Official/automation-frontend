@@ -1,226 +1,125 @@
 import { FC } from "react";
+import { PlayCircleIcon, SignalIcon } from "@heroicons/react/24/outline";
 import { useFrameworkHealth } from "@hooks/useFrameworkHealth";
-import { Button } from "@/components/Shadcn/Button";
-import LoginForm from "./LoginForm";
+import { Badge } from "@components/Shadcn/Badge";
+import { Button } from "@components/Shadcn/Button";
+import Spinner from "@components/Shadcn/Spinner";
+import { cn } from "@/lib/utils";
 import HealthReport from "./HealthReport";
 
 interface TestCard {
     id: string;
     title: string;
+    subtitle: string;
     description: string;
     action: () => void;
     isRunning: boolean;
+    actionLabel: string;
     icon: React.ReactNode;
 }
 
 const FrameworkHealthPage: FC = () => {
-    const {
-        isAuthenticated,
-        isAuthLoading,
-        credentials,
-        setCredentials,
-        handleLogin,
-        handleLogout,
-        isRunning,
-        report,
-        lastChecked,
-        runApiServiceCheck,
-    } = useFrameworkHealth();
-
-    if (!isAuthenticated) {
-        return (
-            <LoginForm
-                credentials={credentials}
-                isLoading={isAuthLoading}
-                onCredentialsChange={setCredentials}
-                onLogin={handleLogin}
-            />
-        );
-    }
+    const { isRunning, report, lastChecked, runApiServiceCheck } = useFrameworkHealth();
 
     const testCards: TestCard[] = [
         {
             id: "api-service",
             title: "API Services",
+            subtitle: "Domain & version health",
             description:
                 "Runs a test search request against every domain & version registered in the config service and reports which are returning 200.",
             action: runApiServiceCheck,
             isRunning: isRunning,
-            icon: (
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={1.5}
-                        d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01M3.055 11A9 9 0 0112 3a9 9 0 018.945 8M6.166 13.804A5.5 5.5 0 0112 12a5.5 5.5 0 015.834 1.804"
-                    />
-                </svg>
-            ),
+            actionLabel: "Test API Services",
+            icon: <SignalIcon className="size-5 text-brand-normal" aria-hidden />,
         },
         // Future tests can be added here as additional cards
     ];
 
     return (
-        <div className="min-h-screen bg-linear-to-br from-sky-50 via-white to-blue-50">
-            {/* Header */}
-            <div className="border-b border-sky-100 bg-white/80 backdrop-blur-xs sticky top-0 z-10">
-                <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-linear-to-br from-sky-500 to-blue-600 flex items-center justify-center shrink-0">
-                            <svg
-                                className="w-4 h-4 text-white"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                            >
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                                />
-                            </svg>
-                        </div>
-                        <span className="font-semibold text-gray-800">Framework Health</span>
-                    </div>
-                    <Button
-                        type="button"
-                        variant="ghost"
-                        onClick={handleLogout}
-                        className="text-sm text-gray-500 hover:text-gray-800 transition-colors gap-1.5"
-                    >
-                        <svg
-                            className="w-4 h-4"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                        >
-                            <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-                            />
-                        </svg>
-                        Logout
-                    </Button>
-                </div>
-            </div>
-
-            <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10">
-                {/* Page intro */}
-                <div>
-                    <h1 className="text-3xl font-bold bg-linear-to-r from-sky-600 to-blue-600 bg-clip-text text-transparent">
-                        Health Dashboard
+        <div className="min-h-[calc(100vh-4rem)] bg-white dark:bg-surface-page">
+            <div className="mx-auto px-5 sm:px-8 md:px-10 lg:px-15 xl:px-20 pt-6 pb-8 space-y-10">
+                <header className="mb-6">
+                    <h1 className="mb-3 text-3xl font-bold leading-tight tracking-tight text-brand-normal dark:text-n-0 md:text-4xl">
+                        Healthcheck Dashboard
                     </h1>
-                    <p className="text-gray-500 mt-1 text-sm">
+                    <p className="text-body-1 text-n-300 dark:text-n-60">
                         Run health checks across ONDC framework services. Each card below represents
                         an independent test suite — click to run it.
                     </p>
-                </div>
+                </header>
 
-                {/* Test cards */}
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                    {testCards.map((card) => (
-                        <div
-                            key={card.id}
-                            className="bg-white border border-sky-100 rounded-2xl p-5 flex flex-col gap-4 hover:border-sky-300 hover:shadow-md transition-all shadow-xs"
-                        >
-                            <div className="flex items-start justify-between gap-3">
-                                <div className="w-10 h-10 rounded-xl bg-linear-to-br from-sky-500/10 to-blue-500/10 border border-sky-200 flex items-center justify-center text-sky-600 shrink-0">
-                                    {card.icon}
-                                </div>
-                                {report && card.id === "api-service" && (
-                                    <span
-                                        className={`text-xs font-medium px-2 py-0.5 rounded-full ${
-                                            report.summary.totalUnhealthy === 0
-                                                ? "bg-emerald-100 text-emerald-700"
-                                                : "bg-red-100 text-red-700"
-                                        }`}
-                                    >
-                                        {report.summary.totalUnhealthy === 0
-                                            ? "All OK"
-                                            : `${report.summary.totalUnhealthy} failing`}
-                                    </span>
+                <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 sm:gap-6 mb-6">
+                    {testCards.map((card) => {
+                        const statusBadge =
+                            report && card.id === "api-service" ? (
+                                <Badge
+                                    variant={
+                                        report.summary.totalUnhealthy === 0 ? "success" : "error"
+                                    }
+                                >
+                                    {report.summary.totalUnhealthy === 0
+                                        ? "All OK"
+                                        : `${report.summary.totalUnhealthy} failing`}
+                                </Badge>
+                            ) : null;
+
+                        return (
+                            <article
+                                key={card.id}
+                                className={cn(
+                                    "group relative flex h-full min-w-0 flex-col gap-5 overflow-hidden rounded-2xl border border-n-40 bg-white p-6 dark:border-n-60 dark:bg-surface-elevated",
+                                    "transition-all duration-200 hover:border-brand-normal/40 hover:shadow-lg hover:shadow-brand-normal/10 dark:hover:border-brand-normal/30 dark:hover:shadow-brand-normal/5"
                                 )}
-                            </div>
-                            <div className="flex-1">
-                                <h3 className="font-semibold text-gray-800 text-base">
-                                    {card.title}
-                                </h3>
-                                <p className="text-gray-500 text-sm mt-1 leading-relaxed">
-                                    {card.description}
-                                </p>
-                            </div>
-                            <Button
-                                type="button"
-                                variant="ghost"
-                                onClick={card.action}
-                                disabled={card.isRunning}
-                                className="w-full py-2.5 px-4 rounded-lg bg-linear-to-r from-sky-500 to-blue-500 hover:from-sky-600 hover:to-blue-600 text-white text-sm font-medium transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed gap-2"
                             >
-                                {card.isRunning ? (
-                                    <>
-                                        <svg
-                                            className="animate-spin h-4 w-4"
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            fill="none"
-                                            viewBox="0 0 24 24"
-                                        >
-                                            <circle
-                                                className="opacity-25"
-                                                cx="12"
-                                                cy="12"
-                                                r="10"
-                                                stroke="currentColor"
-                                                strokeWidth="4"
-                                            />
-                                            <path
-                                                className="opacity-75"
-                                                fill="currentColor"
-                                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                                            />
-                                        </svg>
-                                        Running…
-                                    </>
-                                ) : (
-                                    <>
-                                        <svg
-                                            className="w-4 h-4"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            viewBox="0 0 24 24"
-                                        >
-                                            <path
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                strokeWidth={2}
-                                                d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"
-                                            />
-                                            <path
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                strokeWidth={2}
-                                                d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                                            />
-                                        </svg>
-                                        Test API Services
-                                    </>
-                                )}
-                            </Button>
-                        </div>
-                    ))}
+                                <div className="absolute inset-x-0 top-0 h-0.75 rounded-t-2xl bg-linear-to-r from-brand-normal to-brand-normal/70 opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
+
+                                <div className="flex items-start justify-between gap-3">
+                                    <div className="flex size-11 shrink-0 items-center justify-center rounded-xl border border-n-40 bg-brand-light transition-colors duration-200 group-hover:bg-brand-light-active dark:border-n-60 dark:bg-brand-normal/10 dark:group-hover:bg-brand-normal/20">
+                                        {card.icon}
+                                    </div>
+                                    {statusBadge}
+                                </div>
+
+                                <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+                                    <h2 className="mb-1 text-base font-bold text-n-900 transition-colors duration-200 group-hover:text-brand-normal dark:text-n-0">
+                                        {card.title}
+                                    </h2>
+                                    <p className="mb-2 text-caption-2-size font-semibold uppercase tracking-wide text-brand-normal">
+                                        {card.subtitle}
+                                    </p>
+                                    <p className="mb-5 flex-1 text-body-2 leading-relaxed text-n-300 dark:text-n-60">
+                                        {card.description}
+                                    </p>
+                                    <Button
+                                        className="w-full"
+                                        onClick={card.action}
+                                        disabled={card.isRunning}
+                                        isLoading={card.isRunning}
+                                    >
+                                        {card.isRunning ? (
+                                            "Running…"
+                                        ) : (
+                                            <>
+                                                <PlayCircleIcon className="size-4" aria-hidden />
+                                                {card.actionLabel}
+                                            </>
+                                        )}
+                                    </Button>
+                                </div>
+                            </article>
+                        );
+                    })}
                 </div>
 
-                {/* Running notice */}
                 {isRunning && (
-                    <div className="bg-white border border-sky-200 rounded-2xl p-6 flex items-center gap-4 shadow-xs">
-                        <div className="relative shrink-0">
-                            <div className="w-10 h-10 rounded-full border-2 border-sky-500 border-t-transparent animate-spin" />
-                        </div>
+                    <div className="flex items-center gap-4 rounded-2xl border border-n-40 bg-brand-light/40 px-6 py-5 dark:border-n-60 dark:bg-surface-elevated">
+                        <Spinner className="size-8 shrink-0 text-brand-normal" />
                         <div>
-                            <p className="text-gray-800 font-medium">Health check in progress…</p>
-                            <p className="text-gray-500 text-sm mt-0.5">
+                            <p className="text-body-1 font-medium text-n-900 dark:text-n-0">
+                                Health check in progress…
+                            </p>
+                            <p className="mt-0.5 text-body-2 text-n-300 dark:text-n-60">
                                 Sending test requests to all registered domain/version combinations.
                                 This may take up to 5 minutes.
                             </p>
@@ -228,15 +127,16 @@ const FrameworkHealthPage: FC = () => {
                     </div>
                 )}
 
-                {/* Report */}
                 {report && !isRunning && (
-                    <div className="space-y-4">
-                        <div className="flex items-center gap-3">
-                            <h2 className="text-xl font-semibold text-gray-800">Results</h2>
-                            <div className="flex-1 h-px bg-sky-100" />
+                    <section className="space-y-5">
+                        <div>
+                            <h2 className="text-xl font-semibold text-brand-normal">Results</h2>
+                            <p className="mt-1 text-body-2 text-n-300 dark:text-n-60">
+                                Domain and version health from the latest API Services check.
+                            </p>
                         </div>
                         <HealthReport report={report} lastChecked={lastChecked} />
-                    </div>
+                    </section>
                 )}
             </div>
         </div>

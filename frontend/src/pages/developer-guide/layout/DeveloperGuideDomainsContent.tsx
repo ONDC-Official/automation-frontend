@@ -7,11 +7,20 @@ import {
 } from "@heroicons/react/24/outline";
 import { getDeveloperGuideUseCasePath } from "@constants/routes";
 import type { BuildEntry } from "../types";
-import { groupBuildsByFamily } from "../domainGrouping";
+import {
+    groupBuildsByFamily,
+    getDomainDisplayLabel,
+    getDomainFriendlyName,
+} from "../domainGrouping";
 import { isDomainEnabled, isUseCaseEnabled } from "../utils";
 import { useDeveloperGuideShell } from "./DeveloperGuideNav";
 import DomainCardsSection from "../landing/DomainCardsSection";
 import { Input } from "@components/Shadcn/Input";
+import {
+    NAV_STATUS_LABEL,
+    NAV_STATUS_STYLES,
+    NAV_STATUS_VALUES,
+} from "../shared/statusPlaceholders";
 
 const DeveloperGuideDomainsContent: FC = () => {
     const navigate = useNavigate();
@@ -36,7 +45,9 @@ const DeveloperGuideDomainsContent: FC = () => {
                     (dom) =>
                         family.label.toLowerCase().includes(q) ||
                         family.familyKey.toLowerCase().includes(q) ||
-                        dom.key.toLowerCase().includes(q)
+                        dom.key.toLowerCase().includes(q) ||
+                        getDomainFriendlyName(dom.key).toLowerCase().includes(q) ||
+                        getDomainDisplayLabel(dom.key).toLowerCase().includes(q)
                 ),
             }))
             .filter((family) => family.domains.length > 0);
@@ -74,7 +85,8 @@ const DeveloperGuideDomainsContent: FC = () => {
                                 All domains
                             </p>
                             <p className="text-xs text-slate-500 mb-0">
-                                Related domains are grouped (e.g. FIS12, FIS13 under FIS)
+                                Related domains are grouped (e.g. Credit, Insurance under Financial
+                                Services)
                             </p>
                         </div>
                     </div>
@@ -97,6 +109,29 @@ const DeveloperGuideDomainsContent: FC = () => {
                     isUseCaseEnabled={isUseCaseEnabled}
                     onUseCaseClick={handleUseCaseClick}
                 />
+
+                <aside
+                    className="mt-8 rounded-lg border border-slate-200 dark:border-border-default bg-slate-50 dark:bg-surface-muted px-4 py-3"
+                    aria-label="Version status legend"
+                >
+                    <p className="text-sm font-semibold text-slate-800 dark:text-text-primary mb-1">
+                        Note
+                    </p>
+                    <p className="text-sm text-slate-600 dark:text-text-secondary mb-3 leading-relaxed">
+                        Version pills in the navigation use these colors to indicate lifecycle
+                        status:
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                        {NAV_STATUS_VALUES.map((status) => (
+                            <span
+                                key={status}
+                                className={`rounded-full px-2.5 py-1.5 text-caption-2-size font-semibold leading-none ${NAV_STATUS_STYLES[status]}`}
+                            >
+                                {NAV_STATUS_LABEL[status]}
+                            </span>
+                        ))}
+                    </div>
+                </aside>
             </div>
         </div>
     );

@@ -12,9 +12,9 @@ import {
 const FAMILY_LABELS: Record<string, string> = {
     FIS: "Financial Services",
     LOG: "Logistics",
-    TRV: "Mobility Transit and Travel",
+    TRV: "Mobility Transit and Tourism",
     RET: "Retail",
-    NTS: "Reconciliation (NTS)",
+    NTS: "Network Services",
 };
 
 function formatWord(word: string): string {

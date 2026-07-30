@@ -1,3 +1,5 @@
+import type { BuildLifecycleStatus } from "./developerGuide.types";
+
 export type NavNode =
     | {
           id: string;
@@ -21,6 +23,8 @@ export type NavNode =
           /** Show a trailing chevron to indicate navigation. */
           showArrow?: boolean;
           searchText?: string;
+          /** Resolved lifecycle status for version pills (backend → ENUM → released). */
+          status?: BuildLifecycleStatus;
       };
 
 export function isNavGroup(node: NavNode): node is Extract<NavNode, { type: "group" }> {

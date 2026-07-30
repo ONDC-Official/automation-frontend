@@ -145,7 +145,7 @@ const DocsViewer: FC<DocsViewerProps> = ({ docs }) => {
                             activeKey={activeDocSlug}
                             tabOrder={slugs}
                             className={cn(
-                                "flex-1 min-w-0 overflow-auto py-8 px-6",
+                                "flex-1 min-w-0 overflow-auto p-4",
                                 "[&_h1+h1]:mt-2"
                                 // "[&_h1+h2]:mt-8",
                                 // "[&_h2+h2]:mt-8"
