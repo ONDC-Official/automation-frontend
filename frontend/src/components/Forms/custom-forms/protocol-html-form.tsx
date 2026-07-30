@@ -427,6 +427,7 @@ export default function ProtocolHTMLForm({
                 const submitData = await htmlFormSubmitMutation({
                     link: parsed.action || window.location.href,
                     data: payload,
+                    enctype: parsed.enctype ?? undefined,
                 }).unwrap();
                 res = { data: submitData, headers: undefined } as unknown as AxiosResponse<
                     unknown,
@@ -467,6 +468,7 @@ export default function ProtocolHTMLForm({
                 const submitData = await htmlFormSubmitMutation({
                     link: parsed.action || window.location.href,
                     data: params.toString(),
+                    enctype: "application/x-www-form-urlencoded",
                 }).unwrap();
                 res = { data: submitData, headers: undefined } as unknown as AxiosResponse<
                     unknown,
