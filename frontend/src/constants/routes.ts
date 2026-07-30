@@ -18,7 +18,7 @@ export const ROUTES = {
     ROOT: "/",
     AUTH_HEADER: "/auth-header",
     FRAMEWORK_HEALTH: "/framework-health",
-    LIVE_STATUS: "/live-status",
+    LIVE_HEALTHCHECK_STATUS: "/live-healthcheck-status",
     SUPPORT: "/support",
     DEVELOPER_GUIDE: "/developer-guide",
     DEVELOPER_GUIDE_GETTING_STARTED: "/developer-guide/getting-started",

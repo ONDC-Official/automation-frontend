@@ -52,7 +52,7 @@ const Routes = () => (
         {/* <Route path={ROUTES.AUTH_HEADER} element={page(<AuthHeader />)} /> */}
         {/* <Route path={ROUTES.SELLER_LOAD_TESTING} element={page(<SellerLoadTesting />)} /> */}
         {/* <Route path={ROUTES.FRAMEWORK_HEALTH} element={page(<FrameworkHealthPage />)} /> */}
-        <Route path={ROUTES.LIVE_STATUS} element={page(<FrameworkHealthPage />)} />
+        <Route path={ROUTES.LIVE_HEALTHCHECK_STATUS} element={page(<FrameworkHealthPage />)} />
         {isDevGuideEnabled ? (
             <>
                 <Route path={ROUTES.DEVELOPER_GUIDE} element={<DeveloperGuideShell />}>

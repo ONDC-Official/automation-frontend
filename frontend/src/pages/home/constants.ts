@@ -190,7 +190,7 @@ export const supportCards: ISupportCard[] = [
         description:
             "Monitor real-time platform health, scheduled maintenance, and historical uptime.",
         linkLabel: "Check status",
-        href: ROUTES.LIVE_STATUS,
+        href: ROUTES.LIVE_HEALTHCHECK_STATUS,
         Icon: SmartPhoneGraphIcon,
     },
 ];
