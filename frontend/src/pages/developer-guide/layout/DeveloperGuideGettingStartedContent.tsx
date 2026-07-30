@@ -429,7 +429,7 @@ const DeveloperGuideGettingStartedContent: FC = () => {
                                     <div className="aspect-video bg-n-20 dark:bg-surface-muted">
                                         <iframe
                                             title={`${guide.title} walkthrough`}
-                                            src={`https://drive.google.com/file/d/${guide.driveFileId}/preview`}
+                                            src={guide.videoUrl}
                                             className="size-full border-0"
                                             allow="autoplay"
                                             allowFullScreen

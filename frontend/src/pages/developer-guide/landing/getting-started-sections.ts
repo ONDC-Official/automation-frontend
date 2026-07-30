@@ -16,8 +16,8 @@ export const HOW_TO_GUIDES = [
         id: "schema-validation",
         title: "Schema Validation",
         description: "See how to validate request and response payloads against domain schemas.",
-        /** Google Drive file id from a share link: /file/d/<id>/view */
-        driveFileId: "1ontZ6dhnQ6orAJ21HAZGbrY6twctfMKq",
+        videoUrl:
+            "https://drive.google.com/file/d/1W8Pgv494Kqqbn6GVJL01lzSjrsdA8blV/view?usp=sharing",
     },
 ] as const;
 
