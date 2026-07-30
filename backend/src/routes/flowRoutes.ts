@@ -59,9 +59,36 @@ router.post(
 );
 router.post("/external-form", async (req, res) => {
 	try {
-		const { link, data } = req.body;
-		const exRes = await axios.post(link, data);
-		logger.info("Submission response", exRes);
+		const { link, data, enctype } = req.body as {
+			link: string;
+			data: unknown;
+			enctype?: string;
+		};
+		const ct = (enctype || "").toLowerCase();
+
+		let forwardBody: unknown;
+		const headers: Record<string, string> = {};
+
+		if (ct.includes("multipart/form-data")) {
+			const fd = new FormData();
+			const record = (data ?? {}) as Record<string, string | string[]>;
+			for (const [key, value] of Object.entries(record)) {
+				if (Array.isArray(value)) {
+					for (const v of value) fd.append(key, v);
+				} else {
+					fd.append(key, String(value));
+				}
+			}
+			forwardBody = fd;
+		} else if (ct.includes("application/x-www-form-urlencoded")) {
+			forwardBody = data;
+			headers["Content-Type"] = "application/x-www-form-urlencoded";
+		} else {
+			forwardBody = data;
+		}
+
+		const exRes = await axios.post(link, forwardBody, { headers });
+		logger.info("Submission response", { status: exRes.status, url: link });
 		res.status(exRes.status).send(exRes.data);
 	} catch (e) {
 		logger.error("GATE WAY ERROR", {}, e);
