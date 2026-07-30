@@ -7,6 +7,18 @@ export const GETTING_STARTED_SECTIONS = [
     { id: "common-paths", label: "Common paths" },
     { id: "start-exploring", label: "Start exploring" },
     { id: "more-resources", label: "More resources" },
+    { id: "how-to", label: "How to" },
+] as const;
+
+/** Walkthrough videos shown under the How to section. */
+export const HOW_TO_GUIDES = [
+    {
+        id: "schema-validation",
+        title: "Schema Validation",
+        description: "See how to validate request and response payloads against domain schemas.",
+        /** Google Drive file id from a share link: /file/d/<id>/view */
+        driveFileId: "1ontZ6dhnQ6orAJ21HAZGbrY6twctfMKq",
+    },
 ] as const;
 
 export type GettingStartedSectionId = (typeof GETTING_STARTED_SECTIONS)[number]["id"];

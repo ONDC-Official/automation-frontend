@@ -11,10 +11,11 @@ import {
 } from "@heroicons/react/24/outline";
 import { Button } from "@components/Shadcn/Button";
 import { cn } from "@/lib/utils";
-import { ROUTES, getDeveloperGuideUseCasePath } from "@constants/routes";
+import { ROUTES, getDeveloperGuideDocPath, getDeveloperGuideUseCasePath } from "@constants/routes";
 import { buildGeneralDocCommentScope } from "@/types/comment-scope";
 import {
     GETTING_STARTED_SECTIONS,
+    HOW_TO_GUIDES,
     findReferenceUseCase,
 } from "../landing/getting-started-sections";
 import { useDeveloperGuideShell } from "./DeveloperGuideNav";
@@ -223,6 +224,26 @@ const DeveloperGuideGettingStartedContent: FC = () => {
                         Learn how to explore ONDC protocol flows in the Developer Guide — starting
                         with a reference use case, then moving into payloads, schemas, and tools.
                     </p>
+                    <h2 className="mt-6 mb-2 text-xl font-semibold text-brand-normal">
+                        Learn about ONDC
+                    </h2>
+                    <p className="max-w-6xl text-body-1 text-n-300 dark:text-n-60">
+                        ONDC is an open, interoperable network for digital commerce — it lets buyer
+                        and seller apps discover, transact, and fulfill across platforms through a
+                        shared protocol, without locking either side into a single app.
+                    </p>
+                    <Button
+                        type="button"
+                        className="mt-4"
+                        onClick={() => navigate(getDeveloperGuideDocPath("about-ondc"))}
+                    >
+                        Know more
+                    </Button>
+                    <p className="mt-4 max-w-6xl text-body-1 text-n-300 dark:text-n-60">
+                        To start with ONDC, the sections below will guide you through how a
+                        developer finds the information they need — and walk you through how things
+                        work, step by step.
+                    </p>
                 </div>
             </header>
 
@@ -377,6 +398,45 @@ const DeveloperGuideGettingStartedContent: FC = () => {
                                 </li>
                             ))}
                         </ul>
+                    </section>
+
+                    <section id={GETTING_STARTED_SECTIONS[4].id} className="scroll-mt-24">
+                        <SectionHeading
+                            sectionId={GETTING_STARTED_SECTIONS[4].id}
+                            label={GETTING_STARTED_SECTIONS[4].label}
+                            onSelect={selectSection}
+                            headingAction={renderHeadingAction(GETTING_STARTED_SECTIONS[4].id)}
+                        />
+                        <p className="mb-5 max-w-2xl text-body-2 leading-relaxed text-n-300 dark:text-n-60">
+                            Short walkthroughs of how different screens and flows work in the
+                            Workbench.
+                        </p>
+                        <div className="space-y-6">
+                            {HOW_TO_GUIDES.map((guide) => (
+                                <div
+                                    key={guide.id}
+                                    className="overflow-hidden rounded-2xl border border-n-40 dark:border-n-60"
+                                >
+                                    <div className="border-b border-n-40 px-5 py-4 dark:border-n-60">
+                                        <p className="mb-1 text-base font-semibold text-n-900 dark:text-n-0">
+                                            {guide.title}
+                                        </p>
+                                        <p className="mb-0 text-body-2 leading-relaxed text-n-300 dark:text-n-60">
+                                            {guide.description}
+                                        </p>
+                                    </div>
+                                    <div className="aspect-video bg-n-20 dark:bg-surface-muted">
+                                        <iframe
+                                            title={`${guide.title} walkthrough`}
+                                            src={`https://drive.google.com/file/d/${guide.driveFileId}/preview`}
+                                            className="size-full border-0"
+                                            allow="autoplay"
+                                            allowFullScreen
+                                        />
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
                     </section>
                 </div>
 
