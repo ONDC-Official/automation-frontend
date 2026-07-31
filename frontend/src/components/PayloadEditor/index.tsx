@@ -26,10 +26,10 @@ const PayloadEditor = ({
         >
             <div
                 className={cn(
-                    "relative flex flex-col overflow-hidden transition-all duration-300 ease-out",
+                    "relative min-h-0 flex-1 overflow-hidden transition-all duration-300 ease-out",
                     isValidationPanelExpanded
-                        ? "pointer-events-none max-h-0 min-h-0 flex-none opacity-0"
-                        : "h-full min-h-0 flex-1"
+                        ? "pointer-events-none max-h-0 opacity-0"
+                        : "max-h-full opacity-100"
                 )}
             >
                 <CodeEditor
@@ -43,9 +43,10 @@ const PayloadEditor = ({
 
             <div
                 className={cn(
+                    "flex flex-col overflow-hidden transition-all duration-300 ease-out",
                     isValidationPanelExpanded
-                        ? "flex h-full min-h-0 flex-1 flex-col overflow-hidden bg-red-50 dark:bg-error-500/10"
-                        : "shrink-0"
+                        ? "min-h-0 max-h-full flex-1 bg-destructive/10"
+                        : "max-h-55 shrink-0"
                 )}
             >
                 <ValidationErrorsPanel
