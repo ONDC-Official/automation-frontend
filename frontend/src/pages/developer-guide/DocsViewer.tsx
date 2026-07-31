@@ -1,16 +1,15 @@
-import { type FC, useMemo } from "react";
-// import { ChevronRightIcon } from "@heroicons/react/24/outline";
+import { type FC, useCallback, useMemo } from "react";
+import { ChevronRightIcon } from "@heroicons/react/24/outline";
 import GithubMarkdown from "@components/GithubMarkdown";
 import { cn } from "@/lib/utils";
-// import { Button } from "@components/Shadcn/Button";
+import { Button } from "@components/Shadcn/Button";
 import { stripRedundantMarkdownHorizontalRules } from "@utils/markdownToc";
 import GuideTabs from "./shared/components/GuideTabs";
 import GuideTabFade from "./shared/components/GuideTabFade";
-// Comments feature: enabled only under Flow → Example Payload (domain > usecase > version).
-// import CommentsPanel from "./flowActionDetails/CommentsPanel";
+import CommentsPanel from "./flowActionDetails/CommentsPanel";
 import { useDocsSectionSelection } from "./DocsViewer/useDocsSectionSelection";
-// import { buildDocumentCommentScope } from "./DocsViewer/utils";
-// import { useInlineCommentHeading } from "./shared/hooks/useInlineCommentHeading";
+import { buildDocumentCommentScope } from "./DocsViewer/utils";
+import { useInlineCommentHeading } from "./shared/hooks/useInlineCommentHeading";
 
 interface DocsViewerProps {
     docs: Record<string, string>;
@@ -23,9 +22,7 @@ function formatSlug(slug: string): string {
     return slug.replace(/[-_]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
-// useCaseId / domain / version are retained on the props type for the commented-out
-// comments wiring below (re-enable with Flow → Example Payload as the only active surface).
-const DocsViewer: FC<DocsViewerProps> = ({ docs }) => {
+const DocsViewer: FC<DocsViewerProps> = ({ docs, useCaseId, domain, version }) => {
     /**
      * Frontend filter check to ensure "Release Notes" and "References" (including spelling variations)
      * are excluded from the documentation tabs and details pane for all domains/use cases.
@@ -50,40 +47,39 @@ const DocsViewer: FC<DocsViewerProps> = ({ docs }) => {
     const {
         activeDocSlug,
         setActiveDocSlug,
-        // selectedSectionId,
-        // selectedSectionLabel,
+        selectedSectionId,
+        selectedSectionLabel,
         selectSection,
-        // rightPanelOpen,
-        // setRightPanelOpen,
-        // toc,
-        // tocOffset,
+        rightPanelOpen,
+        setRightPanelOpen,
+        toc,
     } = useDocsSectionSelection({
         docSlugs: slugs,
         docs: filteredDocs,
     });
 
-    // const resolveSectionLabel = useCallback(
-    //     (sectionId: string) => toc.find((entry) => entry.id === sectionId)?.text,
-    //     [toc]
-    // );
+    const resolveSectionLabel = useCallback(
+        (sectionId: string) => toc.find((entry) => entry.id === sectionId)?.text,
+        [toc]
+    );
 
     const content = filteredDocs[activeDocSlug] ?? "";
     // Domain docs often use `# Section` + `---` — strip those so they don't leave
     // uneven empty gaps under titles.
     const displayContent = useMemo(() => stripRedundantMarkdownHorizontalRules(content), [content]);
-    // const commentScope = useMemo(
-    //     () =>
-    //         useCaseId && activeDocSlug && domain && version
-    //             ? buildDocumentCommentScope(domain, version, useCaseId, activeDocSlug)
-    //             : undefined,
-    //     [useCaseId, activeDocSlug, domain, version]
-    // );
+    const commentScope = useMemo(
+        () =>
+            useCaseId && activeDocSlug && domain && version
+                ? buildDocumentCommentScope(domain, version, useCaseId, activeDocSlug)
+                : undefined,
+        [useCaseId, activeDocSlug, domain, version]
+    );
 
-    // const { renderHeadingAction, commentsRefreshKey } = useInlineCommentHeading({
-    //     commentScope,
-    //     selectSection,
-    //     setRightPanelOpen,
-    // });
+    const { renderHeadingAction, commentsRefreshKey } = useInlineCommentHeading({
+        commentScope,
+        selectSection,
+        setRightPanelOpen,
+    });
 
     if (slugs.length === 0) {
         return (
@@ -105,8 +101,7 @@ const DocsViewer: FC<DocsViewerProps> = ({ docs }) => {
 
             <div className="flex items-stretch min-h-[60vh]">
                 <div className="flex-1 min-w-0 flex flex-col min-h-0 overflow-hidden border border-slate-200 dark:border-border-default rounded-lg bg-white dark:bg-surface-elevated relative">
-                    {/* Comments panel toggle — disabled outside Flow → Example Payload */}
-                    {/* <Button
+                    <Button
                         variant="ghost"
                         onClick={() => setRightPanelOpen(!rightPanelOpen)}
                         title={rightPanelOpen ? "Collapse comments panel" : "Expand comments panel"}
@@ -121,21 +116,9 @@ const DocsViewer: FC<DocsViewerProps> = ({ docs }) => {
                                 rightPanelOpen ? "" : "rotate-180"
                             )}
                         />
-                    </Button> */}
+                    </Button>
 
                     <div className="flex flex-1 min-h-0 overflow-hidden">
-                        {/* <TableOfContents
-                            content={content}
-                            className="hidden lg:block w-56 shrink-0 self-start sticky overflow-y-auto border-r border-slate-200 dark:border-border-default p-3"
-                            style={{
-                                top: tocOffset,
-                                maxHeight: `calc(100vh - ${tocOffset}px)`,
-                            }}
-                            offset={tocOffset}
-                            onSectionClick={selectSection}
-                            activeSectionId={selectedSectionId}
-                        /> */}
-
                         {/*
                           Domains like LAMF use `# Title` + `---` + `# 1. Overview` (both h1).
                           Stripping heading-adjacent --- leaves h1+h1; space them so Overview
@@ -154,21 +137,20 @@ const DocsViewer: FC<DocsViewerProps> = ({ docs }) => {
                             <GithubMarkdown
                                 content={displayContent}
                                 onSectionClick={selectSection}
-                                // renderHeadingAction={renderHeadingAction}
+                                renderHeadingAction={renderHeadingAction}
                             />
                         </GuideTabFade>
                     </div>
                 </div>
 
-                {/* Comments sidebar — disabled outside Flow → Example Payload */}
-                {/* <div
+                {/* Stretch with the content card — sticky+top is wrong here because GuideTabFade's overflow-hidden becomes the sticky containing block and offsets the panel downward. */}
+                <div
                     className={cn(
-                        "shrink-0 self-start sticky overflow-hidden transition-[max-width,margin-left,opacity] duration-300 ease-in-out",
+                        "shrink-0 overflow-hidden transition-[max-width,margin-left,opacity] duration-300 ease-in-out",
                         rightPanelOpen
                             ? "max-w-80 ml-4 opacity-100"
                             : "max-w-0 ml-0 opacity-0 pointer-events-none"
                     )}
-                    style={{ top: tocOffset, height: `calc(100vh - ${tocOffset}px)` }}
                 >
                     <div className="w-80 h-full">
                         {commentScope && (
@@ -182,7 +164,7 @@ const DocsViewer: FC<DocsViewerProps> = ({ docs }) => {
                             />
                         )}
                     </div>
-                </div> */}
+                </div>
             </div>
         </div>
     );

@@ -10,13 +10,28 @@ export const GETTING_STARTED_SECTIONS = [
     { id: "how-to", label: "How to" },
 ] as const;
 
-/** Walkthrough videos shown under the How to section. */
+/** Walkthrough videos shown under the How to section.
+ * Use Google Drive file `/preview` URLs (exported MP4s), not Google Vids
+ * project `/edit` links — Vids projects are not iframe-embeddable.
+ */
 export const HOW_TO_GUIDES = [
     {
         id: "schema-validation",
         title: "Schema Validation",
         description: "See how to validate request and response payloads against domain schemas.",
-        videoUrl: "https://drive.google.com/file/d/1W8Pgv494Kqqbn6GVJL01lzSjrsdA8blV/preview",
+        videoUrl: "https://drive.google.com/file/d/1Ab74E7vctRJUBk_pn9X82WGuAsTjVm3I/preview",
+    },
+    {
+        id: "scenario-testing",
+        title: "Scenario Testing",
+        description: "See how to run and walk through end-to-end scenario testing flows.",
+        videoUrl: "https://drive.google.com/file/d/1o7RRKjNwLKJ0vwmofA99cQgmkr-6LLTL/preview",
+    },
+    {
+        id: "protocol-playground",
+        title: "Protocol Playground",
+        description: "See how to explore and experiment with protocol flows in the playground.",
+        videoUrl: "https://drive.google.com/file/d/1OdOyDqiqlN46LTNz1AqYVkQcdKPfPRbm/preview",
     },
 ] as const;
 
