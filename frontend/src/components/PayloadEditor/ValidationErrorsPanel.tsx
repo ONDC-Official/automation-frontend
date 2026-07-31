@@ -39,10 +39,10 @@ const ValidationErrorsPanel: FC<IValidationErrorsPanelProps> = ({
 
     return (
         <div
-            className={`border-t-2 flex flex-col overflow-hidden w-full h-full bg-destructive/10 ${
+            className={`border-t-2 flex flex-col overflow-hidden w-full h-full bg-red-50 dark:bg-error-500/10 ${
                 isExpanded
                     ? "flex-1 min-h-0 border-none"
-                    : "shrink-0 max-h-[220px] border-destructive/60"
+                    : "shrink-0 max-h-55 border-destructive/60"
             }`}
         >
             <div
