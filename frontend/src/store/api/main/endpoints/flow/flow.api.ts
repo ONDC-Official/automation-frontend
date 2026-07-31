@@ -163,11 +163,14 @@ export const flowApi = mainApi.injectEndpoints({
                 }
             },
         }),
-        htmlFormSubmit: builder.mutation<unknown, { link: string; data: unknown }>({
-            query: ({ link, data }) => ({
+        htmlFormSubmit: builder.mutation<
+            unknown,
+            { link: string; data: unknown; enctype?: string }
+        >({
+            query: ({ link, data, enctype }) => ({
                 url: API_ROUTES.FLOW.EXTERNAL_FORM,
                 method: "POST",
-                data: { link, data },
+                data: { link, data, enctype },
             }),
         }),
         updateCustomFlow: builder.mutation<unknown, { sessionId: string; flow: unknown }>({

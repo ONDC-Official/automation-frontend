@@ -186,6 +186,7 @@ export default function ProtocolHTMLFormMulti({
             const submitData = await htmlFormSubmitMutation({
                 link: parsed.action || window.location.href,
                 data: arrayPayload,
+                enctype: parsed.enctype ?? undefined,
             }).unwrap();
             const res = { data: submitData, headers: undefined } as unknown as AxiosResponse<
                 unknown,
