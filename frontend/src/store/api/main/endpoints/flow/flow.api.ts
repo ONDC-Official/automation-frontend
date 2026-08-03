@@ -173,6 +173,14 @@ export const flowApi = mainApi.injectEndpoints({
                 data: { link, data, enctype },
             }),
         }),
+        // Fetch a seller-hosted xInput form's raw HTML through the backend proxy.
+        htmlFormFetch: builder.query<string, { link: string }>({
+            query: ({ link }) => ({
+                url: API_ROUTES.FLOW.EXTERNAL_FORM,
+                method: "GET",
+                params: { link },
+            }),
+        }),
         updateCustomFlow: builder.mutation<unknown, { sessionId: string; flow: unknown }>({
             query: ({ sessionId, flow }) => ({
                 url: API_ROUTES.FLOW.CUSTOM_FLOW,
@@ -230,6 +238,7 @@ export const {
     useLazyGeocodePlaceQuery,
     useNewFlowMutation,
     useHtmlFormSubmitMutation,
+    useHtmlFormFetchQuery,
     useUpdateCustomFlowMutation,
     useGetActionsMutation,
     useGenerateReportMutation,
