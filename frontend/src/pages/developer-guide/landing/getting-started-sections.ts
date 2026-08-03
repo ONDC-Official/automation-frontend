@@ -1,7 +1,7 @@
 import type { BuildEntry } from "../types";
 import { isUseCaseEnabled } from "../utils";
 
-/** Sidebar + in-page section anchors for Getting Started (Stripe-style hub). */
+/** Sidebar + in-page section anchors for Getting Started (Stripe-style hub) */
 export const GETTING_STARTED_SECTIONS = [
     { id: "understanding-ondc", label: "Understanding ONDC" },
     { id: "learn-about-ondc", label: "Learn about ONDC" },
