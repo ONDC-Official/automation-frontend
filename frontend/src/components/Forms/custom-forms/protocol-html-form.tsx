@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { queryJsonPath } from "@utils/jsonpath-query";
 import { AxiosResponse } from "axios";
 
@@ -21,7 +21,7 @@ import type {
     IProtocolHtmlFormProps,
 } from "../types/protocol-html-form-types";
 
-import { useHtmlFormSubmitMutation } from "@store/api";
+import { useHtmlFormSubmitMutation, useHtmlFormFetchQuery } from "@store/api";
 // --- Helper: label resolution -------------------------------------------------
 
 function getLabelForInput(input: Element, formEl: HTMLFormElement): string | undefined {
@@ -232,68 +232,119 @@ export function parseFormHtml(formHtml: string): ParsedForm {
     return { method, action, enctype, fields };
 }
 
+// --- Helper: build initial field values (+ back-fill hidden fields from URL query params) ---
+// queryParams comes from the seller form URL (e.g. ?transactionId=…); many seller forms ship a
+// hidden field with an EMPTY value expecting it to be populated from the query string.
+
+function buildInitialValues(
+    fields: AnyField[],
+    queryParams: Record<string, string> = {}
+): ValueState {
+    const v: ValueState = {};
+    for (const f of fields) {
+        switch (f.kind) {
+            case "hidden": {
+                const hf = f as HiddenField;
+                v[f.name] =
+                    hf.value || queryParams[f.name] || queryParams[f.name.toLowerCase()] || "";
+                break;
+            }
+            case "textlike": {
+                const tf = f as TextLikeField;
+                v[f.name] = tf.defaultValue ?? "";
+                break;
+            }
+            case "textarea": {
+                const ta = f as TextareaField;
+                v[f.name] = ta.defaultValue ?? "";
+                break;
+            }
+            case "select": {
+                const sel = f as SelectField;
+                const selected = sel.options.filter((o) => o.selected).map((o) => o.value);
+                v[f.name] = sel.multiple ? selected : (selected[0] ?? "");
+                break;
+            }
+            case "radio-group": {
+                const rg = f as RadioGroupField;
+                v[f.name] = rg.options.find((o) => o.checked)?.value ?? "";
+                break;
+            }
+            case "checkbox-single": {
+                const cs = f as CheckboxSingleField;
+                v[f.name] = !!cs.checked;
+                break;
+            }
+            case "checkbox-group": {
+                const cg = f as CheckboxGroupField;
+                v[f.name] = cg.options.filter((o) => o.checked).map((o) => o.value);
+                break;
+            }
+            case "file": {
+                v[f.name] = null; // File or File[]
+                break;
+            }
+        }
+    }
+    return v;
+}
+
 export default function ProtocolHTMLForm({
     submitEvent,
     referenceData,
     HtmlFormConfigInFlow,
 }: IProtocolHtmlFormProps) {
+    // Resolve the seller form URL (only used when htmlSource === "url")
+    const formUrl = useMemo<string>(() => {
+        const value = queryJsonPath(
+            { reference_data: referenceData },
+            HtmlFormConfigInFlow.urlReference || ""
+        )[0];
+        return typeof value === "string" ? value : "";
+    }, [referenceData, HtmlFormConfigInFlow.urlReference]);
+
+    const useUrl = HtmlFormConfigInFlow.htmlSource === "url" && !!formUrl;
+
+    // Fetch the seller-hosted form HTML through the backend proxy (browser can't, due to CORS)
+    const {
+        data: fetchedHtml,
+        isFetching: isFetchingForm,
+        error: fetchError,
+    } = useHtmlFormFetchQuery({ link: formUrl }, { skip: !useUrl });
+
+    // HTML source: fetched seller form (url mode) or embedded reference_data (default)
     const formHtml = useMemo<string>(() => {
+        if (useUrl) return typeof fetchedHtml === "string" ? fetchedHtml : "";
         const value = queryJsonPath(
             { reference_data: referenceData },
             HtmlFormConfigInFlow.reference || ""
         )[0];
         return typeof value === "string" ? value : "";
-    }, [referenceData, HtmlFormConfigInFlow.reference]);
+    }, [useUrl, fetchedHtml, referenceData, HtmlFormConfigInFlow.reference]);
+
+    // Query params carried on the seller URL, used to back-fill empty hidden fields
+    const urlParams = useMemo<Record<string, string>>(() => {
+        if (!useUrl || !formUrl) return {};
+        try {
+            return Object.fromEntries(new URL(formUrl).searchParams);
+        } catch {
+            return {};
+        }
+    }, [useUrl, formUrl]);
 
     // Parse once per formHtml
     const parsed = useMemo<ParsedForm>(() => parseFormHtml(formHtml), [formHtml]);
     const [htmlFormSubmitMutation] = useHtmlFormSubmitMutation();
 
-    // Build initial state from defaults/selected
-    const [values, setValues] = useState<ValueState>(() => {
-        const v: ValueState = {};
-        for (const f of parsed.fields) {
-            switch (f.kind) {
-                case "hidden":
-                    v[f.name] = f.value;
-                    break;
-                case "textlike":
-                    v[f.name] = f.defaultValue ?? "";
-                    break;
-                case "textarea":
-                    v[f.name] = f.defaultValue ?? "";
-                    break;
-                case "select": {
-                    const sel = f as SelectField;
-                    const selected = sel.options.filter((o) => o.selected).map((o) => o.value);
-                    v[f.name] = sel.multiple ? selected : (selected[0] ?? "");
-                    break;
-                }
-                case "radio-group": {
-                    const rg = f as RadioGroupField;
-                    const selected = rg.options.find((o) => o.checked)?.value ?? "";
-                    v[f.name] = selected;
-                    break;
-                }
-                case "checkbox-single": {
-                    const cs = f as CheckboxSingleField;
-                    v[f.name] = !!cs.checked;
-                    break;
-                }
-                case "checkbox-group": {
-                    const cg = f as CheckboxGroupField;
-                    const selected = cg.options.filter((o) => o.checked).map((o) => o.value);
-                    v[f.name] = selected;
-                    break;
-                }
-                case "file": {
-                    v[f.name] = null; // File or File[]
-                    break;
-                }
-            }
-        }
-        return v;
-    });
+    // Build initial state from defaults/selected (+ query-param back-fill for hidden fields)
+    const [values, setValues] = useState<ValueState>(() =>
+        buildInitialValues(parsed.fields, urlParams)
+    );
+
+    // In url mode the form arrives asynchronously — rebuild values once it parses.
+    useEffect(() => {
+        setValues(buildInitialValues(parsed.fields, urlParams));
+    }, [formHtml]);
 
     const [submissionId, setSubmissionId] = useState<string | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -581,6 +632,17 @@ export default function ProtocolHTMLForm({
             }
         >
             <div className="space-y-4 rounded-lg border border-border-default p-4">
+                {useUrl && isFetchingForm && (
+                    <p className="text-sm text-text-secondary">Loading form from seller…</p>
+                )}
+                {useUrl && fetchError && (
+                    <div className="rounded-md border border-destructive/30 bg-destructive/5 p-3">
+                        <span className="font-medium text-destructive wrap-break-word">
+                            Failed to load seller form
+                            {formUrl ? ` (${formUrl})` : ""}.
+                        </span>
+                    </div>
+                )}
                 <div className="grid grid-cols-1 gap-4">
                     {parsed.fields.map((field, index) => (
                         <div key={`${field.name}-${index}`}>
