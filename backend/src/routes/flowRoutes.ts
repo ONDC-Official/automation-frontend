@@ -120,7 +120,8 @@ router.get("/external-form", async (req, res) => {
 	try {
 		const link = String(req.query.link || "");
 		if (!isAllowedFormUrl(link)) {
-			return res.status(400).send("INVALID OR DISALLOWED FORM URL");
+			res.status(400).send("INVALID OR DISALLOWED FORM URL");
+			return;
 		}
 		const exRes = await axios.get(link, { responseType: "text" });
 		res.status(exRes.status).type("html").send(exRes.data);
