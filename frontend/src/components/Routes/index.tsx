@@ -60,7 +60,7 @@ const Routes = () => (
                         index
                         element={
                             <Navigate
-                                to={`${ROUTES.DEVELOPER_GUIDE_GETTING_STARTED}#start-with-a-use-case`}
+                                to={`${ROUTES.DEVELOPER_GUIDE_GETTING_STARTED}#understanding-ondc`}
                                 replace
                             />
                         }
