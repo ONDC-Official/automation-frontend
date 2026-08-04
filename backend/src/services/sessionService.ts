@@ -187,6 +187,23 @@ export const updateSessionService = async (
   }
 };
 
+const removeFlowFromSession = (
+  session: SessionCache,
+  flowId: string,
+): string | undefined => {
+  const transactionId = session.flowMap[flowId];
+  if (transactionId) {
+    const index = session.transactionIds.indexOf(transactionId);
+    if (index > -1) {
+      session.transactionIds.splice(index, 1);
+    }
+  }
+  // delete so JSON.stringify omits the key (undefined would also omit, but
+  // leave no ambiguity for concurrent readers)
+  delete session.flowMap[flowId];
+  return transactionId;
+};
+
 export const clearFlowService = async (
   sessionId: string,
   flowId: string,
@@ -200,19 +217,45 @@ export const clearFlowService = async (
 
     const session: SessionCache = JSON.parse(sessionData);
     logger.debug(JSON.stringify(session));
-    const transactionId = session.flowMap[flowId];
-    if (transactionId) {
-      const index = session.transactionIds.indexOf(transactionId);
-      if (index > -1) {
-        session.transactionIds.splice(index, 1);
-      }
-    }
-    session.flowMap[flowId] = undefined;
+    const transactionId = removeFlowFromSession(session, flowId);
+
     await RedisService.setKey(
       sessionId,
       JSON.stringify(session),
       SESSION_EXPIRY,
     );
+
+    // Best-effort: drop cached transaction so a stale flowMap cannot resume it
+    if (transactionId) {
+      try {
+        await RedisService.deleteKey(transactionId);
+      } catch (deleteError: any) {
+        logger.warning(
+          `Failed to delete transaction cache for ${transactionId}`,
+          loggerMeta,
+          deleteError,
+        );
+      }
+    }
+
+    // Concurrent session updates (e.g. stop writing activeFlow) can overwrite
+    // this clear via read-modify-write. Re-check and re-apply once if needed.
+    const verifyRaw = await RedisService.getKey(sessionId);
+    if (verifyRaw) {
+      const verified: SessionCache = JSON.parse(verifyRaw);
+      if (verified.flowMap?.[flowId]) {
+        logger.warning(
+          `Flow ${flowId} reappeared after clear; re-applying clear`,
+          loggerMeta,
+        );
+        removeFlowFromSession(verified, flowId);
+        await RedisService.setKey(
+          sessionId,
+          JSON.stringify(verified),
+          SESSION_EXPIRY,
+        );
+      }
+    }
   } catch (e: any) {
     logger.error("Error clearing flow", loggerMeta, e);
     throw new Error("Error clearing flow");

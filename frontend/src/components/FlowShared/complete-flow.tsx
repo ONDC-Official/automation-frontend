@@ -15,6 +15,7 @@ import {
     deleteExpectation,
     getCompletePayload,
     getMappedFlow,
+    getSessionCache,
     newFlow,
     proceedFlow,
     requestForFlowPermission,
@@ -39,7 +40,7 @@ interface AccordionProps {
     setSideView: React.Dispatch<unknown>;
     subUrl: string;
     onFlowStop: () => void;
-    onFlowClear: () => void;
+    onFlowClear: (flowId: string) => void;
 }
 
 export function Accordion({
@@ -70,9 +71,11 @@ export function Accordion({
     const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     useEffect(() => {
-        const executedFlowId = Object.keys(
+        const executedFlowId = Object.entries(
             (sessionCache?.flowMap as Record<string, string | null>) || {}
-        );
+        )
+            .filter(([, txId]) => Boolean(txId))
+            .map(([id]) => id);
 
         if (executedFlowId.includes(flow.id) && sessionCache) {
             getCurrentState(sessionCache);
@@ -140,11 +143,24 @@ export function Accordion({
     const startFlow = async () => {
         try {
             if (!sessionCache) return;
-            const canStart = await canStartFlow(sessionCache, mappedFlow);
+
+            // Always decide resume vs new from the latest server session so a
+            // just-cleared flow never resumes from a stale React cache.
+            let latestSession = sessionCache;
+            try {
+                latestSession = await getSessionCache(sessionId);
+            } catch (refreshError) {
+                console.error(
+                    "Failed to refresh session before start; using cached session",
+                    refreshError
+                );
+            }
+
+            const canStart = await canStartFlow(latestSession, mappedFlow);
 
             if (!canStart) return;
             setActiveFlow(flow.id);
-            const given = sessionCache.flowMap[flow.id];
+            const given = latestSession.flowMap?.[flow.id];
             if (given) {
                 toast.info("Resuming the flow!");
                 await proceedFlow(sessionId, given);
@@ -311,10 +327,19 @@ export function Accordion({
                                 action: `Stopped a flow: ${flow.id}`,
                             });
                             e.stopPropagation(); // Prevent accordion toggle
+                            try {
+                                // Persist stop before clearing local activeFlow so
+                                // Clear is not available while a stale putCacheData
+                                // can still overwrite a concurrent clearFlow write.
+                                await deleteExpectation(sessionId, subUrl);
+                                await putCacheData({ activeFlow: "NONE" }, sessionId);
+                            } catch (stopError) {
+                                console.error("Error while stopping flow", stopError);
+                                toast.error("Error while stopping flow");
+                                return;
+                            }
                             setActiveFlow(null);
                             setIsOpen(false);
-                            await deleteExpectation(sessionId, subUrl);
-                            putCacheData({ activeFlow: "NONE" }, sessionId);
                             onFlowStop();
                         }}
                     />
@@ -330,16 +355,23 @@ export function Accordion({
                                 action: `Cleared a flow: ${flow.id}`,
                             });
                             e.stopPropagation();
-                            setMappedFlow({
+                            const resetMappedFlow = {
                                 sequence: getSequenceFromFlow(
                                     sessionCache?.flowConfigs[flow.id] ?? flow,
                                     sessionCache,
                                     activeFlow
                                 ),
                                 missedSteps: [],
-                            });
-                            await clearFlowData(sessionId, flow.id);
-                            onFlowClear();
+                            };
+                            setMappedFlow(resetMappedFlow);
+                            // Optimistically drop the flow from the parent session
+                            // cache so Start cannot resume from a stale flowMap.
+                            onFlowClear(flow.id);
+                            try {
+                                await clearFlowData(sessionId, flow.id);
+                            } catch {
+                                // clearFlowData already toasts; parent will refresh
+                            }
                         }}
                     />
                 )}

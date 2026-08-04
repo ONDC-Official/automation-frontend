@@ -111,7 +111,18 @@ export const clearFlowData = async (sessionId: string, flowId: string) => {
     } catch (e) {
         toast.error("Error clearing flow");
         console.error(e);
+        throw e;
     }
+};
+
+/** Fetch the latest session cache from the backend. */
+export const getSessionCache = async (sessionId: string): Promise<SessionCache> => {
+    const response = await apiClient.get<SessionCache>(API_ROUTES.SESSIONS.BASE, {
+        params: {
+            session_id: sessionId,
+        },
+    });
+    return response.data;
 };
 
 export const getCompletePayload = async <TReq = unknown, TRes = unknown>(

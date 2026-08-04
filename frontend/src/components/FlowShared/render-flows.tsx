@@ -420,10 +420,26 @@ function RenderFlows({
         filteredFlows = flows;
     }
 
-    const handleClearFlow = () => {
+    const handleClearFlow = (flowId: string) => {
         setRequestData(EMPTY_RECORD);
         setResponseData(EMPTY_RECORD);
         setMetadata(EMPTY_METADATA);
+        // Drop the cleared flow from local session cache immediately so Start
+        // cannot resume from a stale flowMap while the server refresh is in flight.
+        setCacheSessionData((prev) => {
+            if (!prev?.flowMap) return prev;
+            const clearedTxId = prev.flowMap[flowId];
+            const nextFlowMap = { ...prev.flowMap };
+            delete nextFlowMap[flowId];
+            const nextTransactionIds = clearedTxId
+                ? prev.transactionIds.filter((id) => id !== clearedTxId)
+                : prev.transactionIds;
+            return {
+                ...prev,
+                flowMap: nextFlowMap,
+                transactionIds: nextTransactionIds,
+            };
+        });
         fetchSessionData();
     };
 
@@ -694,7 +710,7 @@ function RenderFlows({
                                     setSideView={setSideView as unknown as React.Dispatch<unknown>}
                                     subUrl={subUrl}
                                     onFlowStop={() => setIsFlowStopped(true)}
-                                    onFlowClear={() => handleClearFlow()}
+                                    onFlowClear={handleClearFlow}
                                 />
                             ))}
                         </div>
