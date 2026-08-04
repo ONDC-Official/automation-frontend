@@ -158,7 +158,12 @@ export const openReportInNewTab = (decodedHtml: string, sessionId: string) => {
         return;
     }
 
-    // Step 2: Write a clean shell with header and iframe
+    // Step 2: Determine if it is a Pramaan report (Mochawesome)
+    const isPramaan = decodedHtml.includes("mochawesome");
+    const buttonId = isPramaan ? "downloadHtmlBtn" : "downloadPdfBtn";
+    const buttonText = isPramaan ? "⬇ Download HTML Report" : "Download as PDF";
+
+    // Step 3: Write a clean shell with header and iframe
     newTab.document.open();
     newTab.document.write(`
       <!DOCTYPE html>
@@ -226,7 +231,7 @@ export const openReportInNewTab = (decodedHtml: string, sessionId: string) => {
               WORKBENCH
             </span>
           </div>
-          <button id="downloadPdfBtn">Download as PDF</button>
+          <button id="${buttonId}">${buttonText}</button>
         </header>
         <iframe id="reportFrame"></iframe>
       </body>
@@ -246,10 +251,22 @@ export const openReportInNewTab = (decodedHtml: string, sessionId: string) => {
         iframeDoc.write(decodedHtml);
         iframeDoc.close();
 
-        // Step 4: Handle PDF download
-        const downloadBtn = newTab.document.getElementById("downloadPdfBtn");
+        // Step 4: Handle download action based on report type
+        const downloadBtn = newTab.document.getElementById(buttonId);
         downloadBtn?.addEventListener("click", () => {
-            iframe.contentWindow?.print();
+            if (isPramaan) {
+                const blob = new Blob([decodedHtml], { type: "text/html" });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = `Report_${sessionId}.html`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            } else {
+                iframe.contentWindow?.print();
+            }
         });
     };
 };
