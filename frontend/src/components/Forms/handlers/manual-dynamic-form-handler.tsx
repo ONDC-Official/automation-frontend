@@ -37,7 +37,7 @@ export default function ManualDynamicFormHandler({
     transactionId,
 }: ManualDynamicFormHandlerProps) {
     // Completion is keyed by transaction_id (api-service GET /callback writes
-    // form_completed:{transaction_id}).
+    // form_completed:{transaction_id})
 
     const [status, setStatus] = useState<"waiting" | "completed" | "error" | "timeout">("waiting");
     const [errorMessage, setErrorMessage] = useState<string>("");
