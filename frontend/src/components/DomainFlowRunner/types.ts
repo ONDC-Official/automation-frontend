@@ -16,6 +16,10 @@ export interface IFlowRunAccordionProps {
     onFlowClear: (flowId: string) => void;
     /** Refetch session after the clear API finishes. */
     onFlowClearSettled: (flowId: string) => void;
+    /** True after Clear until the next Start creates a brand-new flow. */
+    shouldForceFreshStart: (flowId: string) => boolean;
+    /** Call after a forced fresh Start succeeds so later Starts can resume again. */
+    onFreshStartConsumed: (flowId: string) => void;
 }
 
 export interface IRenderFlowsProps {

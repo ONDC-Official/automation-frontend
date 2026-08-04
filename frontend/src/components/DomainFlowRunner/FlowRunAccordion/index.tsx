@@ -49,6 +49,8 @@ export function FlowRunAccordion({
     onFlowStop,
     onFlowClear,
     onFlowClearSettled,
+    shouldForceFreshStart,
+    onFreshStartConsumed,
 }: IFlowRunAccordionProps) {
     const [inputPopUp, setInputPopUp] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
@@ -221,8 +223,8 @@ export function FlowRunAccordion({
         setIsBusy(false);
 
         try {
-            // Always decide resume vs new from the latest server session so a
-            // just-cleared flow never resumes from a stale React/Redux cache.
+            // Refresh for canStart / server truth, but Clear intent wins over a stale
+            // server flowMap (late GETs can reintroduce the mapping after Clear).
             let latestSession = sessionCache;
             try {
                 const refreshed = await triggerGetSessionById({ sessionId }).unwrap();
@@ -241,11 +243,22 @@ export function FlowRunAccordion({
                 return;
             }
 
-            const given = latestSession.flowMap?.[flow.id];
-            if (given) {
+            const forceFresh = shouldForceFreshStart(flow.id) || !sessionCache.flowMap?.[flow.id];
+            const serverTx = latestSession.flowMap?.[flow.id];
+            const localTx = sessionCache.flowMap?.[flow.id];
+
+            if (!forceFresh && (serverTx || localTx)) {
                 toast.info("Resuming the flow!");
-                await proceedFlow({ sessionId, transactionId: given }).unwrap();
+                await proceedFlow({
+                    sessionId,
+                    transactionId: (serverTx || localTx) as string,
+                }).unwrap();
             } else {
+                // Server may still carry the old mapping after Clear — clear again so
+                // the new transaction is the only one, then start fresh (NACK vs uncleared peer).
+                if (serverTx) {
+                    await clearFlowData({ sessionId, flowId: flow.id });
+                }
                 const txId = uuidv4();
                 const result = await newFlow({ sessionId, flowId: flow.id, transactionId: txId });
                 const data = result.data;
@@ -255,6 +268,7 @@ export function FlowRunAccordion({
                     setActiveFormTitle(flow.title ?? flow.id);
                     setInputPopUp(true);
                 }
+                onFreshStartConsumed(flow.id);
             }
             if (gen !== lifecycleGenRef.current) return;
             await putCacheData({ data: { activeFlow: flow.id }, sessionId });
