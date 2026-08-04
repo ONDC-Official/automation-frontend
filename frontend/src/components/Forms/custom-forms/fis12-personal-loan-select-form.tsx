@@ -5,7 +5,6 @@ import { toast } from "sonner";
 
 import { ComboBoxControl } from "@/components/Shadcn/ComboBox";
 import { Button } from "@/components/Shadcn/Button";
-import TextField from "@/components/Shadcn/TextField";
 import { FieldLabel } from "@/components/Shadcn/TextField/field";
 import PayloadEditor from "@/components/PayloadEditor/PastePayloadModal";
 import FormDialogShell from "@/components/Forms/form-dialog-shell";
@@ -428,53 +427,6 @@ export default function FIS12PersonalLoanSelectForm({
                             </div>
                         )}
 
-                        {/* x-input form details */}
-                        {hasXInput && selectedItem?.xinput && (
-                            <div className={sectionCls}>
-                                <FieldLabel className="font-semibold uppercase tracking-wide">
-                                    x-Input Form Details
-                                </FieldLabel>
-
-                                {/* Read-only form ID info */}
-                                <div className="rounded-md border border-border-default bg-surface-muted/30 px-3 py-2 text-xs">
-                                    <p className="text-text-secondary">
-                                        Form ID:{" "}
-                                        <span className="font-mono font-medium text-text-primary">
-                                            {selectedItem.xinput.formId}
-                                        </span>
-                                    </p>
-                                    {selectedItem.xinput.url && (
-                                        <p className="mt-1 truncate text-text-secondary">
-                                            URL:{" "}
-                                            <a
-                                                href={selectedItem.xinput.url}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="text-brand-normal underline"
-                                            >
-                                                {selectedItem.xinput.url}
-                                            </a>
-                                        </p>
-                                    )}
-                                </div>
-
-                                <TextField
-                                    control={control}
-                                    name="formSubmissionId"
-                                    label="Form Submission ID"
-                                    required
-                                    placeholder={`e.g. ${selectedItem.xinput.formId}_SUBMISSION_ID`}
-                                    rules={{ required: "Submission ID is required for this item" }}
-                                />
-                                <p className="text-xs text-text-secondary">
-                                    This is the{" "}
-                                    <span className="font-mono">form_response.submission_id</span>{" "}
-                                    returned after the customer completes the x-input form at the
-                                    BPP URL.
-                                </p>
-                            </div>
-                        )}
-
                         {/* Payload preview */}
                         {selectedItem && (
                             <div className="rounded-md border border-border-default bg-surface-muted/20 p-3">
@@ -488,24 +440,6 @@ export default function FIS12PersonalLoanSelectForm({
                                             items: [
                                                 {
                                                     id: watchedItemId,
-                                                    ...(hasXInput && selectedItem.xinput
-                                                        ? {
-                                                              xinput: {
-                                                                  form: {
-                                                                      id: selectedItem.xinput
-                                                                          .formId,
-                                                                  },
-                                                                  form_response: {
-                                                                      status: "SUCCESS",
-                                                                      submission_id:
-                                                                          watch(
-                                                                              "formSubmissionId"
-                                                                          ) ||
-                                                                          `${selectedItem.xinput.formId}_SUBMISSION_ID`,
-                                                                  },
-                                                              },
-                                                          }
-                                                        : {}),
                                                 },
                                             ],
                                         },
