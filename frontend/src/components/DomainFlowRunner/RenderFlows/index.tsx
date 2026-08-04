@@ -352,20 +352,35 @@ function RenderFlows({ flows, subUrl, sessionId, newSession }: IRenderFlowsProps
         filteredFlows = flows;
     }
 
-    const handleClearFlow = useCallback(() => {
-        setRequestData(SESSION_EMPTY_RECORD);
-        setResponseData(SESSION_EMPTY_RECORD);
-        setMetadata(SESSION_EMPTY_METADATA);
-        fetchSessionData();
-    }, [setRequestData, setResponseData, setMetadata, fetchSessionData]);
+    const handleClearFlow = useCallback(
+        (flowId: string) => {
+            setRequestData(SESSION_EMPTY_RECORD);
+            setResponseData(SESSION_EMPTY_RECORD);
+            setMetadata(SESSION_EMPTY_METADATA);
+            // Drop the cleared flow from local session cache immediately so Start
+            // cannot resume from a stale flowMap while the server refresh is in flight.
+            setSessionData((prev) => {
+                if (!prev?.flowMap) return prev;
+                const clearedTxId = prev.flowMap[flowId];
+                const nextFlowMap = { ...prev.flowMap };
+                delete nextFlowMap[flowId];
+                const nextTransactionIds = clearedTxId
+                    ? prev.transactionIds.filter((id) => id !== clearedTxId)
+                    : prev.transactionIds;
+                return {
+                    ...prev,
+                    flowMap: nextFlowMap,
+                    transactionIds: nextTransactionIds,
+                };
+            });
+            fetchSessionData();
+        },
+        [setRequestData, setResponseData, setMetadata, setSessionData, fetchSessionData]
+    );
 
     const handleFlowStop = useCallback(() => {
         setIsFlowStopped(true);
     }, []);
-
-    const handleFlowClear = useCallback(() => {
-        handleClearFlow();
-    }, [handleClearFlow]);
 
     const openSettings = () => {
         setSettingsDraft({
@@ -602,7 +617,7 @@ function RenderFlows({ flows, subUrl, sessionId, newSession }: IRenderFlowsProps
                                 setSideView={setSideView as React.Dispatch<unknown>}
                                 subUrl={subUrl}
                                 onFlowStop={handleFlowStop}
-                                onFlowClear={handleFlowClear}
+                                onFlowClear={handleClearFlow}
                             />
                         ))}
                     </div>

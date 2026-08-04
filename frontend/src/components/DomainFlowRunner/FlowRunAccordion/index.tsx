@@ -10,6 +10,7 @@ import {
     useDeleteExpectationMutation,
     useLazyGetCompletePayloadQuery,
     useLazyGetMappedFlowQuery,
+    useLazyGetSessionByIdQuery,
     useNewFlowMutation,
     useProceedFlowMutation,
     usePutCacheDataMutation,
@@ -84,6 +85,7 @@ export function FlowRunAccordion({
     const [deleteExpectation] = useDeleteExpectationMutation();
     const [triggerGetCompletePayload] = useLazyGetCompletePayloadQuery();
     const [triggerGetMappedFlow] = useLazyGetMappedFlowQuery();
+    const [triggerGetSessionById] = useLazyGetSessionByIdQuery();
     const [newFlow] = useNewFlowMutation();
     const [proceedFlow] = useProceedFlowMutation();
     const [putCacheData] = usePutCacheDataMutation();
@@ -215,14 +217,27 @@ export function FlowRunAccordion({
         setIsBusy(false);
 
         try {
-            const canStart = await canStartFlow(sessionCache, mappedFlow);
+            // Always decide resume vs new from the latest server session so a
+            // just-cleared flow never resumes from a stale React/Redux cache.
+            let latestSession = sessionCache;
+            try {
+                const refreshed = await triggerGetSessionById({ sessionId }).unwrap();
+                latestSession = refreshed as SessionCache;
+            } catch (refreshError) {
+                console.error(
+                    "Failed to refresh session before start; using cached session",
+                    refreshError
+                );
+            }
+
+            const canStart = await canStartFlow(latestSession, mappedFlow);
             if (gen !== lifecycleGenRef.current) return;
             if (!canStart) {
                 revertActiveFlow(previousActive);
                 return;
             }
 
-            const given = sessionCache.flowMap[flow.id];
+            const given = latestSession.flowMap?.[flow.id];
             if (given) {
                 toast.info("Resuming the flow!");
                 await proceedFlow({ sessionId, transactionId: given }).unwrap();
@@ -283,29 +298,31 @@ export function FlowRunAccordion({
         applyOptimisticActiveFlow(null);
         setIsOpen(false);
         onFlowStop();
-        setIsBusy(false);
 
         try {
             trackEvent({
                 category: "SCENARIO_TESTING-FLOWS",
                 action: `Stopped a flow: ${flow.id}`,
             });
-            // Fire deleteExpectation without blocking the UI; cache write is awaited so
-            // the lifecycle lock covers the window where polls could still see the old activeFlow.
+            // Persist stop before enabling Clear so a concurrent clearFlow write
+            // cannot be overwritten by a late putCacheData RMW of the session.
             void deleteExpectation({ sessionId, subscriberUrl: subUrl });
             await putCacheData({ data: { activeFlow: "NONE" }, sessionId });
         } catch (err) {
             console.error(err);
+            toast.error("Error while stopping flow");
         } finally {
             if (gen === lifecycleGenRef.current) {
                 endActiveFlowLifecycle();
             }
+            setIsBusy(false);
         }
     };
 
     const handleClearClick = async (e: React.MouseEvent<HTMLButtonElement>) => {
         e.stopPropagation();
-        if (isBusy) return;
+        // Block Clear while Stop/Start is still persisting session state.
+        if (isBusy || lifecycleInFlight) return;
         setIsBusy(true);
         try {
             trackEvent({
@@ -320,8 +337,10 @@ export function FlowRunAccordion({
                 ),
                 missedSteps: [],
             });
-            onFlowClear();
-            void clearFlowData({ sessionId, flowId: flow.id });
+            // Optimistically drop the flow from the parent session cache so Start
+            // cannot resume from a stale flowMap.
+            onFlowClear(flow.id);
+            await clearFlowData({ sessionId, flowId: flow.id });
         } finally {
             setIsBusy(false);
         }

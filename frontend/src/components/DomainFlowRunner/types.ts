@@ -12,7 +12,7 @@ export interface IFlowRunAccordionProps {
     setSideView: React.Dispatch<unknown>;
     subUrl: string;
     onFlowStop: () => void;
-    onFlowClear: () => void;
+    onFlowClear: (flowId: string) => void;
 }
 
 export interface IRenderFlowsProps {
