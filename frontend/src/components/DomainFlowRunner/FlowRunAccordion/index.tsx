@@ -48,6 +48,7 @@ export function FlowRunAccordion({
     subUrl,
     onFlowStop,
     onFlowClear,
+    onFlowClearSettled,
 }: IFlowRunAccordionProps) {
     const [inputPopUp, setInputPopUp] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
@@ -70,6 +71,7 @@ export function FlowRunAccordion({
     const activeFlowRef = useRef(activeFlow);
     activeFlowRef.current = activeFlow;
     const lifecycleGenRef = useRef(0);
+    const isClearingRef = useRef(false);
 
     const {
         isFlowFormDialogOpen,
@@ -150,6 +152,8 @@ export function FlowRunAccordion({
     // Refresh mapped-flow for flows that already have a transaction — do not touch activeFlow here.
     const flowMapEntry = sessionCache?.flowMap?.[flow.id];
     useEffect(() => {
+        // Skip while Clear is resetting — a stale session poll must not rehydrate progress.
+        if (isClearingRef.current) return;
         if (flowMapEntry && sessionCache) {
             void getCurrentState(sessionCache);
         }
@@ -322,8 +326,9 @@ export function FlowRunAccordion({
     const handleClearClick = async (e: React.MouseEvent<HTMLButtonElement>) => {
         e.stopPropagation();
         // Block Clear while Stop/Start is still persisting session state.
-        if (isBusy || lifecycleInFlight) return;
+        if (isBusy || lifecycleInFlight || isClearingRef.current) return;
         setIsBusy(true);
+        isClearingRef.current = true;
         try {
             trackEvent({
                 category: "SCENARIO_TESTING-FLOWS",
@@ -338,10 +343,12 @@ export function FlowRunAccordion({
                 missedSteps: [],
             });
             // Optimistically drop the flow from the parent session cache so Start
-            // cannot resume from a stale flowMap.
+            // cannot resume from a stale flowMap and progress cannot rehydrate.
             onFlowClear(flow.id);
             await clearFlowData({ sessionId, flowId: flow.id });
+            onFlowClearSettled(flow.id);
         } finally {
+            isClearingRef.current = false;
             setIsBusy(false);
         }
     };

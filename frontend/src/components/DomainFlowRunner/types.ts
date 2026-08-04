@@ -12,7 +12,10 @@ export interface IFlowRunAccordionProps {
     setSideView: React.Dispatch<unknown>;
     subUrl: string;
     onFlowStop: () => void;
+    /** Optimistically drop local flowMap entry — do not refetch yet. */
     onFlowClear: (flowId: string) => void;
+    /** Refetch session after the clear API finishes. */
+    onFlowClearSettled: (flowId: string) => void;
 }
 
 export interface IRenderFlowsProps {
