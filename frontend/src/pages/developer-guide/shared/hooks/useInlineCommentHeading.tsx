@@ -32,7 +32,7 @@ export function useInlineCommentHeading({
     const [commentsRefreshKey, setCommentsRefreshKey] = useState(0);
     // Single source of truth for which heading's popover is open: `HeadingCommentTrigger`
     // is a fully controlled `open` prop, so switching headings is one state update that
-    // closes the old one and opens the new one in the same render — no effect round-trip.
+    // closes the old one and opens the new one in the same render — no effect round-trip
     const [openSectionId, setOpenSectionId] = useState<string | null>(null);
 
     const handleInlineCommentPosted = useCallback(

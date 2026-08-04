@@ -69,6 +69,11 @@ export interface FormFieldConfigType {
     default?: string | string[] | number | boolean | null;
     display?: boolean;
     reference?: string;
+    // HTML_FORM source: "reference" (default) reads embedded HTML from reference_data via `reference`;
+    // "url" fetches the live seller form HTML from the URL resolved by `urlReference`.
+    htmlSource?: "reference" | "url";
+    // JSONPath into reference_data that resolves to the seller form URL (items[*].xinput.form.url).
+    urlReference?: string;
     schema?: RJSFSchema;
     required?: boolean;
 }

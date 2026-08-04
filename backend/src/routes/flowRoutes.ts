@@ -95,6 +95,41 @@ router.post("/external-form", async (req, res) => {
 		res.status(500).send("GATEWAY ERROR");
 	}
 });
+
+// Reject non-http(s) schemes and private / loopback / link-local hosts so the
+// proxy below can't be abused to reach internal services (SSRF) with a URL that
+// arrived from a network payload (items[*].xinput.form.url).
+function isAllowedFormUrl(link: string): boolean {
+	try {
+		const u = new URL(link);
+		if (u.protocol !== "http:" && u.protocol !== "https:") return false;
+		const host = u.hostname.toLowerCase();
+		if (host === "localhost" || host === "0.0.0.0" || host === "::1" || host.endsWith(".local")) return false;
+		if (/^127\./.test(host) || /^10\./.test(host) || /^192\.168\./.test(host)) return false;
+		if (/^172\.(1[6-9]|2\d|3[01])\./.test(host)) return false;
+		if (/^169\.254\./.test(host)) return false;
+		return true;
+	} catch {
+		return false;
+	}
+}
+
+// Fetch a seller-hosted xInput form's raw HTML server-side (browser can't due to CORS).
+//   GET /flow/external-form?link=<encoded form url>  ->  text/html
+router.get("/external-form", async (req, res) => {
+	try {
+		const link = String(req.query.link || "");
+		if (!isAllowedFormUrl(link)) {
+			res.status(400).send("INVALID OR DISALLOWED FORM URL");
+			return;
+		}
+		const exRes = await axios.get(link, { responseType: "text" });
+		res.status(exRes.status).type("html").send(exRes.data);
+	} catch (e) {
+		logger.error("FORM FETCH ERROR", {}, e);
+		res.status(502).send("GATEWAY ERROR");
+	}
+});
 router.post("/custom-flow", otelTracing( 'body.session_id'), updateFlow)
 router.post("/actions", otelTracing("body.domain", "body.version"), getActions)
 
