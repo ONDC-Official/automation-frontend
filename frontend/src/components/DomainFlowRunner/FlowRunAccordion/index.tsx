@@ -10,6 +10,7 @@ import {
     useDeleteExpectationMutation,
     useLazyGetCompletePayloadQuery,
     useLazyGetMappedFlowQuery,
+    useLazyGetSessionByIdQuery,
     useNewFlowMutation,
     useProceedFlowMutation,
     usePutCacheDataMutation,
@@ -47,6 +48,9 @@ export function FlowRunAccordion({
     subUrl,
     onFlowStop,
     onFlowClear,
+    onFlowClearSettled,
+    shouldForceFreshStart,
+    onFreshStartConsumed,
 }: IFlowRunAccordionProps) {
     const [inputPopUp, setInputPopUp] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
@@ -69,6 +73,7 @@ export function FlowRunAccordion({
     const activeFlowRef = useRef(activeFlow);
     activeFlowRef.current = activeFlow;
     const lifecycleGenRef = useRef(0);
+    const isClearingRef = useRef(false);
 
     const {
         isFlowFormDialogOpen,
@@ -84,6 +89,7 @@ export function FlowRunAccordion({
     const [deleteExpectation] = useDeleteExpectationMutation();
     const [triggerGetCompletePayload] = useLazyGetCompletePayloadQuery();
     const [triggerGetMappedFlow] = useLazyGetMappedFlowQuery();
+    const [triggerGetSessionById] = useLazyGetSessionByIdQuery();
     const [newFlow] = useNewFlowMutation();
     const [proceedFlow] = useProceedFlowMutation();
     const [putCacheData] = usePutCacheDataMutation();
@@ -148,6 +154,8 @@ export function FlowRunAccordion({
     // Refresh mapped-flow for flows that already have a transaction — do not touch activeFlow here.
     const flowMapEntry = sessionCache?.flowMap?.[flow.id];
     useEffect(() => {
+        // Skip while Clear is resetting — a stale session poll must not rehydrate progress.
+        if (isClearingRef.current) return;
         if (flowMapEntry && sessionCache) {
             void getCurrentState(sessionCache);
         }
@@ -215,18 +223,42 @@ export function FlowRunAccordion({
         setIsBusy(false);
 
         try {
-            const canStart = await canStartFlow(sessionCache, mappedFlow);
+            // Refresh for canStart / server truth, but Clear intent wins over a stale
+            // server flowMap (late GETs can reintroduce the mapping after Clear).
+            let latestSession = sessionCache;
+            try {
+                const refreshed = await triggerGetSessionById({ sessionId }).unwrap();
+                latestSession = refreshed as SessionCache;
+            } catch (refreshError) {
+                console.error(
+                    "Failed to refresh session before start; using cached session",
+                    refreshError
+                );
+            }
+
+            const canStart = await canStartFlow(latestSession, mappedFlow);
             if (gen !== lifecycleGenRef.current) return;
             if (!canStart) {
                 revertActiveFlow(previousActive);
                 return;
             }
 
-            const given = sessionCache.flowMap[flow.id];
-            if (given) {
+            const forceFresh = shouldForceFreshStart(flow.id) || !sessionCache.flowMap?.[flow.id];
+            const serverTx = latestSession.flowMap?.[flow.id];
+            const localTx = sessionCache.flowMap?.[flow.id];
+
+            if (!forceFresh && (serverTx || localTx)) {
                 toast.info("Resuming the flow!");
-                await proceedFlow({ sessionId, transactionId: given }).unwrap();
+                await proceedFlow({
+                    sessionId,
+                    transactionId: (serverTx || localTx) as string,
+                }).unwrap();
             } else {
+                // Server may still carry the old mapping after Clear — clear again so
+                // the new transaction is the only one, then start fresh (NACK vs uncleared peer).
+                if (serverTx) {
+                    await clearFlowData({ sessionId, flowId: flow.id });
+                }
                 const txId = uuidv4();
                 const result = await newFlow({ sessionId, flowId: flow.id, transactionId: txId });
                 const data = result.data;
@@ -236,6 +268,7 @@ export function FlowRunAccordion({
                     setActiveFormTitle(flow.title ?? flow.id);
                     setInputPopUp(true);
                 }
+                onFreshStartConsumed(flow.id);
             }
             if (gen !== lifecycleGenRef.current) return;
             await putCacheData({ data: { activeFlow: flow.id }, sessionId });
@@ -283,30 +316,33 @@ export function FlowRunAccordion({
         applyOptimisticActiveFlow(null);
         setIsOpen(false);
         onFlowStop();
-        setIsBusy(false);
 
         try {
             trackEvent({
                 category: "SCENARIO_TESTING-FLOWS",
                 action: `Stopped a flow: ${flow.id}`,
             });
-            // Fire deleteExpectation without blocking the UI; cache write is awaited so
-            // the lifecycle lock covers the window where polls could still see the old activeFlow.
+            // Persist stop before enabling Clear so a concurrent clearFlow write
+            // cannot be overwritten by a late putCacheData RMW of the session.
             void deleteExpectation({ sessionId, subscriberUrl: subUrl });
             await putCacheData({ data: { activeFlow: "NONE" }, sessionId });
         } catch (err) {
             console.error(err);
+            toast.error("Error while stopping flow");
         } finally {
             if (gen === lifecycleGenRef.current) {
                 endActiveFlowLifecycle();
             }
+            setIsBusy(false);
         }
     };
 
     const handleClearClick = async (e: React.MouseEvent<HTMLButtonElement>) => {
         e.stopPropagation();
-        if (isBusy) return;
+        // Block Clear while Stop/Start is still persisting session state.
+        if (isBusy || lifecycleInFlight || isClearingRef.current) return;
         setIsBusy(true);
+        isClearingRef.current = true;
         try {
             trackEvent({
                 category: "SCENARIO_TESTING-FLOWS",
@@ -320,9 +356,13 @@ export function FlowRunAccordion({
                 ),
                 missedSteps: [],
             });
-            onFlowClear();
-            void clearFlowData({ sessionId, flowId: flow.id });
+            // Optimistically drop the flow from the parent session cache so Start
+            // cannot resume from a stale flowMap and progress cannot rehydrate.
+            onFlowClear(flow.id);
+            await clearFlowData({ sessionId, flowId: flow.id });
+            onFlowClearSettled(flow.id);
         } finally {
+            isClearingRef.current = false;
             setIsBusy(false);
         }
     };
