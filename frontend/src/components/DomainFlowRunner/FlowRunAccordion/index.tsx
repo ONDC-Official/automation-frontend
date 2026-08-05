@@ -228,7 +228,7 @@ export function FlowRunAccordion({
             let latestSession = sessionCache;
             try {
                 const refreshed = await triggerGetSessionById({ sessionId }).unwrap();
-                latestSession = refreshed as SessionCache;
+                latestSession = refreshed as unknown as SessionCache;
             } catch (refreshError) {
                 console.error(
                     "Failed to refresh session before start; using cached session",
