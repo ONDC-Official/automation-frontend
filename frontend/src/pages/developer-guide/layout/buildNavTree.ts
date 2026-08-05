@@ -121,6 +121,7 @@ export function buildNavTree(
             })
             .map(({ verKey, label, backendStatus }) => {
                 const clickable = isUseCaseEnabled(dom, label);
+                const status = resolveNavStatus(backendStatus);
                 return useCaseNavLink({
                     id: `usecase-${dom.key}-${verKey}-${label}`,
                     label,
@@ -129,12 +130,7 @@ export function buildNavTree(
                     path: getDeveloperGuideUseCasePath(dom.key, verKey, label),
                     disabled: !clickable,
                     searchText: `${dom.key} ${label} v${verKey}`,
-                    status: resolveNavStatus({
-                        domainKey: dom.key,
-                        versionKey: verKey,
-                        usecaseLabel: label,
-                        backendStatus,
-                    }),
+                    ...(status ? { status } : {}),
                 });
             });
     }
