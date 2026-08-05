@@ -1,11 +1,12 @@
 import { API_ROUTES } from "@services/apiRoutes";
-import type {
-    BuildEntry,
-    SpecResponse,
-    OpenAPISpecification,
-    FlowEntry,
-    ValidationTableSection,
-    ChangelogEntry,
+import {
+    normalizeBuildEntries,
+    type BuildEntry,
+    type SpecResponse,
+    type OpenAPISpecification,
+    type FlowEntry,
+    type ValidationTableSection,
+    type ChangelogEntry,
 } from "@/types/apiShared/developerGuide";
 import { mainApi } from "@store/api/main/mainApi";
 import type { IGetSpecParams } from "./types";
@@ -130,7 +131,7 @@ export const specApi = mainApi.injectEndpoints({
                 url: API_ROUTES.DEV_GUIDE.BUILDS,
                 method: "GET",
             }),
-            transformResponse: (response: BuildEntry[]) => response ?? [],
+            transformResponse: (response: unknown) => normalizeBuildEntries(response),
             providesTags: ["Build"],
             keepUnusedDataFor: DEV_GUIDE_CACHE_SECONDS,
         }),
