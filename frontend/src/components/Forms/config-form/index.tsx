@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { useSession } from "@hooks/useSession";
 import { toast } from "sonner";
 import { DatePicker } from "@components/Shadcn/DatePicker";
@@ -60,6 +61,7 @@ import TRV11200MteroStartEndStopSelectionForm from "@components/Forms/custom-for
 import TRV11Metro210CommonItemFulfillmentSelectionForm from "@components/Forms/custom-forms/trv11-210-common-item-fulfillment-select-form";
 import ManualIdOverride from "@components/Forms/custom-forms/manual-id-override";
 import { FormConfigType, FormFieldConfigType } from "@components/Forms/config-form/types";
+import type { IFormContractContext } from "@components/Forms/utils/resolve-form-contract";
 import FIS12PersonalLoanSelectForm from "@components/Forms/custom-forms/fis12-personal-loan-select-form";
 
 export type { FormConfigType, FormFieldConfigType } from "@components/Forms/config-form/types";
@@ -76,6 +78,19 @@ export const FormConfig = ({
     flowId?: string;
 }) => {
     const { sessionId, sessionData } = useSession();
+
+    // Live transaction id for this flow, injected into the seller form's hidden transactionId field.
+    const flowTransactionId = (flowId && sessionData?.flowMap?.[flowId]) || undefined;
+
+    // Domain + hints the HTML_FORM components use to look up this form's contract. Memoised so the
+    // downstream validation memo does not re-run on every render.
+    const formContractContext = useMemo<IFormContractContext>(
+        () => ({
+            domain: sessionData?.domain,
+            hints: [sessionData?.usecaseId, sessionData?.activeFlow, flowId],
+        }),
+        [sessionData?.domain, sessionData?.usecaseId, sessionData?.activeFlow, flowId]
+    );
 
     const onSubmit = async (data: Record<string, string>) => {
         if (sessionData?.activeFlow === "RTO_PLUS_PART_CANCELLATION") {
@@ -243,6 +258,8 @@ export const FormConfig = ({
             HtmlFormConfigInFlow: formConfig.find(
                 (field) => field.type === "HTML_FORM"
             ) as FormFieldConfigType,
+            contractContext: formContractContext,
+            transactionId: flowTransactionId,
         });
     }
 

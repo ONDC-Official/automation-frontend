@@ -1,6 +1,8 @@
 import { ICheckboxOption } from "@components/Shadcn/Checkbox";
 import { RJSFSchema } from "@rjsf/utils";
 
+import type { IExpectedField } from "@components/Forms/utils/html-form-contract";
+
 export interface FormFieldConfigType {
     name: string;
     label: string;
@@ -74,6 +76,9 @@ export interface FormFieldConfigType {
     htmlSource?: "reference" | "url";
     // JSONPath into reference_data that resolves to the seller form URL (items[*].xinput.form.url).
     urlReference?: string;
+    formIdReference?: string;
+    expectedFields?: IExpectedField[];
+    expectedFieldsRef?: string;
     schema?: RJSFSchema;
     required?: boolean;
 }
