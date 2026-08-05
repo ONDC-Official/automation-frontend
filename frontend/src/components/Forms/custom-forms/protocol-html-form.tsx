@@ -5,6 +5,22 @@ import { AxiosResponse } from "axios";
 import { Button } from "@components/Shadcn/Button";
 import FormDialogShell from "@components/Forms/form-dialog-shell";
 import ProtocolHtmlFieldRenderer from "./protocol-html-field-renderer";
+import FormContractIssues from "./form-contract-issues";
+import {
+    validateFormContract,
+    type IFormContractIssue,
+} from "@components/Forms/utils/html-form-contract";
+import {
+    contractResolutionIssues,
+    describeResolvedContract,
+    resolveFormContract,
+} from "@components/Forms/utils/resolve-form-contract";
+import {
+    isDiscreteField,
+    resolveHiddenValues,
+    validateFieldValue,
+    validateFormValues,
+} from "@components/Forms/utils/html-form-values";
 import type {
     BaseField,
     TextLikeField,
@@ -45,12 +61,15 @@ function getLabelForInput(input: Element, formEl: HTMLFormElement): string | und
 
 export function parseFormHtml(formHtml: string): ParsedForm {
     const doc = new DOMParser().parseFromString(formHtml, "text/html");
-    const formEl = doc.querySelector("form") as HTMLFormElement | null;
+    const formEls = doc.querySelectorAll("form");
+    const formEl = formEls[0] as HTMLFormElement | undefined;
     if (!formEl) {
         return {
             method: "GET",
             action: "",
             fields: [],
+            hasForm: false,
+            formCount: 0,
         };
     }
 
@@ -142,6 +161,8 @@ export function parseFormHtml(formHtml: string): ParsedForm {
             max: input.getAttribute("max") ?? undefined,
             step: input.getAttribute("step") ?? undefined,
             pattern: input.getAttribute("pattern") ?? undefined,
+            minLength: input.getAttribute("minlength") ?? undefined,
+            maxLength: input.getAttribute("maxlength") ?? undefined,
         } as TextLikeField);
     }
 
@@ -159,6 +180,8 @@ export function parseFormHtml(formHtml: string): ParsedForm {
             defaultValue: ta.value ?? ta.textContent ?? "",
             placeholder: ta.getAttribute("placeholder") ?? undefined,
             rows: ta.hasAttribute("rows") ? Number(ta.getAttribute("rows")) : undefined,
+            minLength: ta.getAttribute("minlength") ?? undefined,
+            maxLength: ta.getAttribute("maxlength") ?? undefined,
         } as TextareaField);
     }
 
@@ -229,24 +252,23 @@ export function parseFormHtml(formHtml: string): ParsedForm {
         }
     }
 
-    return { method, action, enctype, fields };
+    return { method, action, enctype, fields, hasForm: true, formCount: formEls.length };
 }
 
-// --- Helper: build initial field values (+ back-fill hidden fields from URL query params) ---
-// queryParams comes from the seller form URL (e.g. ?transactionId=…); many seller forms ship a
-// hidden field with an EMPTY value expecting it to be populated from the query string.
+// --- Helper: build initial field values --------------------------------------------------------
+// hiddenValues carries the resolved value for every hidden field (see resolveHiddenValues): the
+// session's transaction id and the xinput form id override whatever placeholder the HTML declared,
+// and anything else falls back to the declared value or a matching form-URL query param.
 
 function buildInitialValues(
     fields: AnyField[],
-    queryParams: Record<string, string> = {}
+    hiddenValues: Record<string, string> = {}
 ): ValueState {
     const v: ValueState = {};
     for (const f of fields) {
         switch (f.kind) {
             case "hidden": {
-                const hf = f as HiddenField;
-                v[f.name] =
-                    hf.value || queryParams[f.name] || queryParams[f.name.toLowerCase()] || "";
+                v[f.name] = hiddenValues[f.name] ?? (f as HiddenField).value ?? "";
                 break;
             }
             case "textlike": {
@@ -293,6 +315,8 @@ export default function ProtocolHTMLForm({
     submitEvent,
     referenceData,
     HtmlFormConfigInFlow,
+    contractContext,
+    transactionId,
 }: IProtocolHtmlFormProps) {
     // Resolve the seller form URL (only used when htmlSource === "url")
     const formUrl = useMemo<string>(() => {
@@ -336,20 +360,87 @@ export default function ProtocolHTMLForm({
     const parsed = useMemo<ParsedForm>(() => parseFormHtml(formHtml), [formHtml]);
     const [htmlFormSubmitMutation] = useHtmlFormSubmitMutation();
 
-    // Build initial state from defaults/selected (+ query-param back-fill for hidden fields)
+    // The xinput form id sits next to the form url in reference_data, so derive its path from
+    // urlReference (…xinput.form.url → …xinput.form.id) unless the flow points at it explicitly.
+    const formId = useMemo<string>(() => {
+        const reference =
+            HtmlFormConfigInFlow.formIdReference ||
+            (HtmlFormConfigInFlow.urlReference || "").replace(/\.url$/, ".id");
+        if (!reference) return "";
+        const value = queryJsonPath({ reference_data: referenceData }, reference)[0];
+        return typeof value === "string" ? value : "";
+    }, [referenceData, HtmlFormConfigInFlow.formIdReference, HtmlFormConfigInFlow.urlReference]);
+
+    // Protocol-owned hidden fields: the session's transaction id and the real form id replace the
+    // placeholders seller forms ship (`FO1`, stale UUIDs), so the seller receives the live values.
+    const hiddenValues = useMemo(
+        () =>
+            resolveHiddenValues(parsed.fields, {
+                ids: {
+                    transactionId: transactionId || urlParams.transaction_id,
+                    formId: formId || urlParams.form_id || urlParams.formId,
+                },
+                urlParams,
+            }),
+        [parsed, transactionId, formId, urlParams]
+    );
+
+    // Which form is this step showing? Resolved per form name, so each form gets its own contract.
+    const resolvedContract = useMemo(
+        () => resolveFormContract(HtmlFormConfigInFlow, { formUrl, context: contractContext }),
+        [HtmlFormConfigInFlow, formUrl, contractContext]
+    );
+
+    // Contract validation: is the form the flow expected actually what the seller returned?
+    // Skipped while the fetch is in flight or has failed — those states have their own messages.
+    const contractIssues = useMemo<IFormContractIssue[]>(() => {
+        if (useUrl && (isFetchingForm || fetchError)) return [];
+        return [
+            ...contractResolutionIssues(resolvedContract),
+            ...validateFormContract({
+                parsed,
+                formHtml,
+                expectedFields: resolvedContract.expectedFields,
+                hiddenValues,
+                isUrlSource: useUrl,
+            }),
+        ];
+    }, [parsed, formHtml, resolvedContract, hiddenValues, useUrl, isFetchingForm, fetchError]);
+
+    // Build initial state from defaults/selected, with hidden fields already resolved
     const [values, setValues] = useState<ValueState>(() =>
-        buildInitialValues(parsed.fields, urlParams)
+        buildInitialValues(parsed.fields, hiddenValues)
     );
 
     // In url mode the form arrives asynchronously — rebuild values once it parses.
     useEffect(() => {
-        setValues(buildInitialValues(parsed.fields, urlParams));
-    }, [formHtml]);
+        setValues(buildInitialValues(parsed.fields, hiddenValues));
+    }, [parsed]);
+
+    // The transaction/form ids can resolve after the form has parsed. Patch just the hidden fields
+    // so a late-arriving id still reaches the seller, without discarding what the tester has typed.
+    useEffect(() => {
+        setValues((prev) => ({ ...prev, ...hiddenValues }));
+    }, [hiddenValues]);
 
     const [submissionId, setSubmissionId] = useState<string | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+
+    // Applies (or clears) the error for a single field.
+    const setFieldError = (name: string, message?: string) => {
+        setFieldErrors((prev) => {
+            if (!message) {
+                if (!prev[name]) return prev;
+                const next = { ...prev };
+                delete next[name];
+                return next;
+            }
+            if (prev[name] === message) return prev;
+            return { ...prev, [name]: message };
+        });
+    };
 
     // Change handlers
     const setField = (name: string, val: unknown) => {
@@ -357,52 +448,28 @@ export default function ProtocolHTMLForm({
             ...prev,
             [name]: val as ValueState[string],
         }));
-        // Clear field error when user starts typing
-        if (fieldErrors[name]) {
-            setFieldErrors((prev) => {
-                const newErrors = { ...prev };
-                delete newErrors[name];
-                return newErrors;
-            });
+
+        const field = parsed.fields.find((candidate) => candidate.name === name);
+        // Discrete controls change in one step, so re-check them immediately with the incoming value
+        // (state is not settled yet). Free-text fields are re-checked on blur instead.
+        if (field && isDiscreteField(field)) {
+            setFieldError(name, validateFieldValue(field, val as ValueState[string]));
+            return;
         }
+        setFieldError(name, undefined);
     };
 
-    // Validation function
+    // Re-check a free-text field once the tester leaves it.
+    const handleFieldBlur = (name: string) => {
+        const field = parsed.fields.find((candidate) => candidate.name === name);
+        if (!field) return;
+        setFieldError(name, validateFieldValue(field, values[name]));
+    };
+
     const validateForm = (): boolean => {
-        const errors: Record<string, string> = {};
-
-        for (const field of parsed.fields) {
-            if (field.required) {
-                const value = values[field.name];
-
-                // Check if field is empty or invalid
-                if (field.kind === "textlike" || field.kind === "textarea") {
-                    if (!value || (typeof value === "string" && value.trim() === "")) {
-                        errors[field.name] = `${field.label || field.name} is required`;
-                    }
-                } else if (field.kind === "select") {
-                    if (!value || (typeof value === "string" && value === "")) {
-                        errors[field.name] = `${field.label || field.name} is required`;
-                    }
-                } else if (field.kind === "radio-group") {
-                    if (!value || (typeof value === "string" && value === "")) {
-                        errors[field.name] = `${field.label || field.name} is required`;
-                    }
-                } else if (field.kind === "checkbox-group") {
-                    if (!value || !Array.isArray(value) || value.length === 0) {
-                        errors[field.name] = `${field.label || field.name} is required`;
-                    }
-                } else if (field.kind === "file") {
-                    if (!value || (Array.isArray(value) && value.length === 0)) {
-                        errors[field.name] = `${field.label || field.name} is required`;
-                    }
-                }
-            }
-        }
-
+        const errors = validateFormValues(parsed.fields, values);
         setFieldErrors(errors);
-        const isValid = Object.keys(errors).length === 0;
-        return isValid;
+        return Object.keys(errors).length === 0;
     };
 
     // Submit the rebuilt form
@@ -411,7 +478,7 @@ export default function ProtocolHTMLForm({
         const isValid = validateForm();
 
         if (!isValid) {
-            setError("Please fill in all required fields");
+            setError("Please correct the highlighted fields");
             return;
         }
 
@@ -643,6 +710,10 @@ export default function ProtocolHTMLForm({
                         </span>
                     </div>
                 )}
+                <FormContractIssues
+                    issues={contractIssues}
+                    contractSummary={describeResolvedContract(resolvedContract)}
+                />
                 <div className="grid grid-cols-1 gap-4">
                     {parsed.fields.map((field, index) => (
                         <div key={`${field.name}-${index}`}>
@@ -650,6 +721,7 @@ export default function ProtocolHTMLForm({
                                 field={field}
                                 value={values[field.name]}
                                 onValueChange={(nextValue) => setField(field.name, nextValue)}
+                                onBlur={() => handleFieldBlur(field.name)}
                                 error={fieldErrors[field.name]}
                             />
                         </div>
@@ -659,7 +731,7 @@ export default function ProtocolHTMLForm({
                 {errorCount > 0 && (
                     <div className="rounded-md border border-destructive/30 bg-destructive/5 p-3">
                         <p className="text-sm font-medium text-destructive">
-                            Please fill in {errorCount} required field
+                            Please correct {errorCount} field
                             {errorCount > 1 ? "s" : ""}:
                         </p>
                         <ul className="mt-1 list-inside list-disc text-sm text-destructive">

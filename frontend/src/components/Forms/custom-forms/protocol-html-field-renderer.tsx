@@ -21,6 +21,8 @@ export interface IProtocolHtmlFieldRendererProps {
     field: AnyField;
     value: ValueState[string];
     onValueChange: (value: ValueState[string]) => void;
+    /** Called when a free-text control loses focus, so its value can be re-checked. */
+    onBlur?: () => void;
     error?: string;
     radioNameSuffix?: string;
 }
@@ -29,6 +31,7 @@ export const ProtocolHtmlFieldRenderer = ({
     field,
     value,
     onValueChange,
+    onBlur,
     error,
     radioNameSuffix = "",
 }: IProtocolHtmlFieldRendererProps) => {
@@ -55,6 +58,7 @@ export const ProtocolHtmlFieldRenderer = ({
                         name={field.name}
                         value={textValue}
                         onChange={(event) => onValueChange(event.target.value)}
+                        onBlur={onBlur}
                         placeholder={textField.placeholder}
                         required={field.required}
                         disabled={field.disabled}
@@ -78,6 +82,7 @@ export const ProtocolHtmlFieldRenderer = ({
                         name={field.name}
                         value={textValue}
                         onChange={(event) => onValueChange(event.target.value)}
+                        onBlur={onBlur}
                         placeholder={textareaField.placeholder}
                         rows={textareaField.rows ?? 4}
                         required={field.required}
@@ -157,13 +162,17 @@ export const ProtocolHtmlFieldRenderer = ({
         case "checkbox-single": {
             const checked = Boolean(value);
             return (
-                <label className="flex cursor-pointer items-center gap-2 text-sm font-medium text-text-primary">
-                    <Checkbox
-                        checked={checked}
-                        onCheckedChange={(nextChecked) => onValueChange(nextChecked === true)}
-                    />
-                    <span>{labelText}</span>
-                </label>
+                <Field data-invalid={!!error}>
+                    <label className="flex cursor-pointer items-center gap-2 text-sm font-medium text-text-primary">
+                        <Checkbox
+                            checked={checked}
+                            onCheckedChange={(nextChecked) => onValueChange(nextChecked === true)}
+                            aria-invalid={!!error}
+                        />
+                        <span>{labelText}</span>
+                    </label>
+                    {error && <FieldError>{error}</FieldError>}
+                </Field>
             );
         }
         case "checkbox-group": {
