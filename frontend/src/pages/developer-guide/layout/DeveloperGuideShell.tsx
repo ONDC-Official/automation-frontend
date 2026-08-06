@@ -6,6 +6,8 @@ import DeveloperGuideNavBackButton from "./DeveloperGuideNavBackButton";
 import { filterNavTree } from "./filterNavTree";
 import DeveloperGuideSidebar from "./DeveloperGuideSidebar";
 import DeveloperGuidePageSkeleton from "./DeveloperGuidePageSkeleton";
+import VersionStatusLegend from "./VersionStatusLegend";
+
 import { useAppDispatch, useAppSelector } from "@store/hooks";
 import {
     resetDevGuideShell,
@@ -105,7 +107,7 @@ const DeveloperGuideShell: FC = () => {
                                 <p className="mt-2 text-xs text-slate-400">Loading docs…</p>
                             ) : null}
                         </div>
-                        <div className="min-h-0 flex-1 overflow-y-auto px-4 pt-1 pb-10 scrollbar-none">
+                        <div className="min-h-0 flex-1 overflow-y-auto px-4 pt-1 pb-4 scrollbar-none">
                             {loadError ? (
                                 <p className="px-2 py-4 text-sm text-red-600 dark:text-red-400">
                                     {loadError}
@@ -117,6 +119,7 @@ const DeveloperGuideShell: FC = () => {
                                 />
                             )}
                         </div>
+                        <VersionStatusLegend />
                     </div>
                 </aside>
 
