@@ -318,16 +318,35 @@ export default function ProtocolHTMLForm({
     contractContext,
     transactionId,
 }: IProtocolHtmlFormProps) {
-    // Resolve the seller form URL (only used when htmlSource === "url")
-    const formUrl = useMemo<string>(() => {
+    // Value the step's `reference` points at. Normally embedded HTML, but when the upstream
+    // service saved the xinput.form.url without fetching it, it is the seller URL itself.
+    const referencedValue = useMemo<string>(() => {
         const value = queryJsonPath(
             { reference_data: referenceData },
-            HtmlFormConfigInFlow.urlReference || ""
+            HtmlFormConfigInFlow.reference || ""
         )[0];
         return typeof value === "string" ? value : "";
-    }, [referenceData, HtmlFormConfigInFlow.urlReference]);
+    }, [referenceData, HtmlFormConfigInFlow.reference]);
 
-    const useUrl = HtmlFormConfigInFlow.htmlSource === "url" && !!formUrl;
+    // Resolve the seller form URL: explicit url mode uses `urlReference`; otherwise auto-detect a
+    // URL sitting where HTML was expected and fetch it instead of parsing the URL string as HTML.
+    const formUrl = useMemo<string>(() => {
+        if (HtmlFormConfigInFlow.htmlSource === "url") {
+            const value = queryJsonPath(
+                { reference_data: referenceData },
+                HtmlFormConfigInFlow.urlReference || ""
+            )[0];
+            return typeof value === "string" ? value : "";
+        }
+        return /^https?:\/\/\S+$/i.test(referencedValue.trim()) ? referencedValue.trim() : "";
+    }, [
+        referenceData,
+        HtmlFormConfigInFlow.htmlSource,
+        HtmlFormConfigInFlow.urlReference,
+        referencedValue,
+    ]);
+
+    const useUrl = !!formUrl;
 
     // Fetch the seller-hosted form HTML through the backend proxy (browser can't, due to CORS)
     const {
@@ -339,12 +358,8 @@ export default function ProtocolHTMLForm({
     // HTML source: fetched seller form (url mode) or embedded reference_data (default)
     const formHtml = useMemo<string>(() => {
         if (useUrl) return typeof fetchedHtml === "string" ? fetchedHtml : "";
-        const value = queryJsonPath(
-            { reference_data: referenceData },
-            HtmlFormConfigInFlow.reference || ""
-        )[0];
-        return typeof value === "string" ? value : "";
-    }, [useUrl, fetchedHtml, referenceData, HtmlFormConfigInFlow.reference]);
+        return referencedValue;
+    }, [useUrl, fetchedHtml, referencedValue]);
 
     // Query params carried on the seller URL, used to back-fill empty hidden fields
     const urlParams = useMemo<Record<string, string>>(() => {
