@@ -1,5 +1,6 @@
 import { SubmitEventParams } from "@/types/flow-types";
 import { FormFieldConfigType } from "../config-form";
+import type { IFormContractContext } from "../utils/resolve-form-contract";
 
 export interface IBaseField {
     kind:
@@ -20,6 +21,8 @@ export interface IBaseField {
     max?: string | number;
     step?: string | number;
     pattern?: string;
+    minLength?: string | number;
+    maxLength?: string | number;
 }
 
 export type ITextLikeField = IBaseField & {
@@ -101,6 +104,10 @@ export type IParsedForm = {
     action: string;
     enctype?: string | null;
     fields: IAnyField[];
+    /** False when the HTML contained no <form> element at all (method/action are then defaults). */
+    hasForm: boolean;
+    /** Number of <form> elements in the document; only the first one is parsed. */
+    formCount: number;
 };
 
 export type IValueState = Record<
@@ -112,6 +119,10 @@ export interface IProtocolHtmlFormProps {
     submitEvent: (data: SubmitEventParams) => Promise<void>;
     referenceData?: Record<string, unknown>;
     HtmlFormConfigInFlow: FormFieldConfigType;
+    /** Session domain + hints used to resolve this form's contract in FORM_CONTRACTS. */
+    contractContext?: IFormContractContext;
+    /** Live transaction id for the flow, injected into the form's hidden transactionId field. */
+    transactionId?: string;
 }
 
 export type BaseField = IBaseField;

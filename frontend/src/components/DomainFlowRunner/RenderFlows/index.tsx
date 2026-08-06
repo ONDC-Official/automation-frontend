@@ -89,6 +89,14 @@ function RenderFlows({ flows, subUrl, sessionId, newSession }: IRenderFlowsProps
 
     const activeFlowRef = useRef<string | null>(activeFlowId);
     const sessionDataPrimedRef = useRef(false);
+    // Bumped on Clear so in-flight session GETs from before Clear cannot restore flowMap.
+    const sessionFetchGenRef = useRef(0);
+    // Flows cleared locally but whose DELETE may not yet be visible to session GETs.
+    // Session polls must not restore these flowMap entries (that snaps progress back).
+    const pendingClearedFlowIdsRef = useRef<Set<string>>(new Set());
+    // Survives until the next Start creates a new flow — prevents resume from a stale
+    // server flowMap after Clear (intermittent when a late GET reintroduces the mapping).
+    const forceFreshStartFlowIdsRef = useRef<Set<string>>(new Set());
     const [difficultyCache, setDifficultyCache] = useState<SessionCache["sessionDifficulty"]>(
         {} as SessionCache["sessionDifficulty"]
     );
@@ -115,6 +123,9 @@ function RenderFlows({ flows, subUrl, sessionId, newSession }: IRenderFlowsProps
     useEffect(() => {
         dispatch(initializeFlowPage(sessionId));
         sessionDataPrimedRef.current = false;
+        sessionFetchGenRef.current += 1;
+        pendingClearedFlowIdsRef.current.clear();
+        forceFreshStartFlowIdsRef.current.clear();
         return () => {
             dispatch(resetFlowRuntime());
         };
@@ -238,15 +249,51 @@ function RenderFlows({ flows, subUrl, sessionId, newSession }: IRenderFlowsProps
 
     const fetchSessionData = useCallback(
         (options?: { force?: boolean }) => {
+            const fetchGen = sessionFetchGenRef.current;
             triggerGetSessionById({ sessionId })
                 .unwrap()
                 .then((data) => {
+                    // Drop responses that started before a Clear — they can reintroduce
+                    // the old flowMap and make the next Start resume instead of NACK.
+                    if (fetchGen !== sessionFetchGenRef.current) {
+                        return;
+                    }
+
                     let response = data as unknown as SessionCache;
                     // While Start/Stop has written local activeFlow but Redis may still be
                     // stale, keep the optimistic value so a concurrent poll cannot snap the UI back.
                     const { activeFlowLifecycleInFlight, activeFlowId } = store.getState().session;
                     if (activeFlowLifecycleInFlight) {
                         response = { ...response, activeFlow: activeFlowId };
+                    }
+
+                    // Keep cleared flows out of local session state until a fresh Start
+                    // consumes the clear — covers both in-flight DELETE lag and late GETs.
+                    const blockedFlowIds = new Set([
+                        ...pendingClearedFlowIdsRef.current,
+                        ...forceFreshStartFlowIdsRef.current,
+                    ]);
+                    if (blockedFlowIds.size > 0 && response.flowMap) {
+                        const nextFlowMap = { ...response.flowMap };
+                        let nextTransactionIds = [...(response.transactionIds ?? [])];
+                        for (const flowId of blockedFlowIds) {
+                            if (!nextFlowMap[flowId]) {
+                                pendingClearedFlowIdsRef.current.delete(flowId);
+                                continue;
+                            }
+                            const clearedTxId = nextFlowMap[flowId];
+                            delete nextFlowMap[flowId];
+                            if (clearedTxId) {
+                                nextTransactionIds = nextTransactionIds.filter(
+                                    (id) => id !== clearedTxId
+                                );
+                            }
+                        }
+                        response = {
+                            ...response,
+                            flowMap: nextFlowMap,
+                            transactionIds: nextTransactionIds,
+                        };
                     }
 
                     setDifficultyCache(response.sessionDifficulty);
@@ -267,6 +314,7 @@ function RenderFlows({ flows, subUrl, sessionId, newSession }: IRenderFlowsProps
                     apiCallFailCount.current = 0;
                 })
                 .catch((e: unknown) => {
+                    if (fetchGen !== sessionFetchGenRef.current) return;
                     console.error("Error while fetching session: ", e);
                     apiCallFailCount.current += 1;
                 });
@@ -352,20 +400,59 @@ function RenderFlows({ flows, subUrl, sessionId, newSession }: IRenderFlowsProps
         filteredFlows = flows;
     }
 
-    const handleClearFlow = useCallback(() => {
-        setRequestData(SESSION_EMPTY_RECORD);
-        setResponseData(SESSION_EMPTY_RECORD);
-        setMetadata(SESSION_EMPTY_METADATA);
-        fetchSessionData();
-    }, [setRequestData, setResponseData, setMetadata, fetchSessionData]);
+    const handleClearFlow = useCallback(
+        (flowId: string) => {
+            // Invalidate in-flight session GETs and pin this flow to "fresh start only"
+            // until Start creates a new transaction.
+            sessionFetchGenRef.current += 1;
+            pendingClearedFlowIdsRef.current.add(flowId);
+            forceFreshStartFlowIdsRef.current.add(flowId);
+            setRequestData(SESSION_EMPTY_RECORD);
+            setResponseData(SESSION_EMPTY_RECORD);
+            setMetadata(SESSION_EMPTY_METADATA);
+            // Drop the cleared flow from local session cache immediately so Start
+            // cannot resume from a stale flowMap, and so progress cannot rehydrate
+            // via the flowMapEntry → getCurrentState effect. Do NOT refetch yet —
+            // a GET before DELETE settles would restore the old mapping and snap
+            // the progress bar back (requiring a second Clear click).
+            setSessionData((prev) => {
+                if (!prev?.flowMap) return prev;
+                const clearedTxId = prev.flowMap[flowId];
+                const nextFlowMap = { ...prev.flowMap };
+                delete nextFlowMap[flowId];
+                const nextTransactionIds = clearedTxId
+                    ? prev.transactionIds.filter((id) => id !== clearedTxId)
+                    : prev.transactionIds;
+                return {
+                    ...prev,
+                    flowMap: nextFlowMap,
+                    transactionIds: nextTransactionIds,
+                };
+            });
+        },
+        [setRequestData, setResponseData, setMetadata, setSessionData]
+    );
+
+    const handleClearFlowSettled = useCallback(
+        (_flowId: string) => {
+            fetchSessionData({ force: true });
+        },
+        [fetchSessionData]
+    );
+
+    const shouldForceFreshStart = useCallback(
+        (flowId: string) => forceFreshStartFlowIdsRef.current.has(flowId),
+        []
+    );
+
+    const handleFreshStartConsumed = useCallback((flowId: string) => {
+        forceFreshStartFlowIdsRef.current.delete(flowId);
+        pendingClearedFlowIdsRef.current.delete(flowId);
+    }, []);
 
     const handleFlowStop = useCallback(() => {
         setIsFlowStopped(true);
     }, []);
-
-    const handleFlowClear = useCallback(() => {
-        handleClearFlow();
-    }, [handleClearFlow]);
 
     const openSettings = () => {
         setSettingsDraft({
@@ -602,7 +689,10 @@ function RenderFlows({ flows, subUrl, sessionId, newSession }: IRenderFlowsProps
                                 setSideView={setSideView as React.Dispatch<unknown>}
                                 subUrl={subUrl}
                                 onFlowStop={handleFlowStop}
-                                onFlowClear={handleFlowClear}
+                                onFlowClear={handleClearFlow}
+                                onFlowClearSettled={handleClearFlowSettled}
+                                shouldForceFreshStart={shouldForceFreshStart}
+                                onFreshStartConsumed={handleFreshStartConsumed}
                             />
                         ))}
                     </div>

@@ -10,7 +10,11 @@ import {
 } from "../domainGrouping";
 import type { DomainCardsSectionProps } from "./types";
 import { Button } from "@/components/Shadcn/Button";
-import { resolveNavStatus, NAV_STATUS_STYLES } from "../shared/statusPlaceholders";
+import {
+    resolveNavStatus,
+    NAV_STATUS_LABEL,
+    NAV_STATUS_STYLES,
+} from "../shared/statusPlaceholders";
 
 interface UseCaseEntry {
     dom: BuildEntry;
@@ -74,13 +78,12 @@ const DomainFamilyAccordion: FC<{
     const renderUseCaseChip = ({ dom, verKey, label }: UseCaseEntry) => {
         const clickable = isUseCaseEnabled(dom, label);
         const ver = dom.version?.find((v) => v.key === verKey);
-        const status = resolveNavStatus({
-            domainKey: dom.key,
-            versionKey: verKey,
-            usecaseLabel: label,
-            backendStatus: ver?.usecaseStatus?.[label] ?? ver?.status,
-        });
-        const statusStyle = NAV_STATUS_STYLES[status];
+        const status = resolveNavStatus(ver?.usecaseStatus?.[label] ?? ver?.status);
+        const versionClass = !clickable
+            ? "bg-slate-100 text-slate-300"
+            : status
+              ? NAV_STATUS_STYLES[status]
+              : "bg-transparent text-slate-400";
         return (
             <Button
                 key={`${dom.key}-${verKey}-${label}`}
@@ -96,9 +99,8 @@ const DomainFamilyAccordion: FC<{
             >
                 {label}
                 <span
-                    className={`rounded-full px-1.5 py-0.5 font-mono text-caption-2-size font-bold ${
-                        clickable ? statusStyle : "bg-slate-100 text-slate-300"
-                    }`}
+                    title={status ? NAV_STATUS_LABEL[status] : undefined}
+                    className={`rounded-full px-1.5 py-0.5 font-mono text-caption-2-size font-bold ${versionClass}`}
                 >
                     v{verKey}
                 </span>

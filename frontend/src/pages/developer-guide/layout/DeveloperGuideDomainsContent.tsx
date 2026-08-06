@@ -109,7 +109,6 @@ const DeveloperGuideDomainsContent: FC = () => {
                     isUseCaseEnabled={isUseCaseEnabled}
                     onUseCaseClick={handleUseCaseClick}
                 />
-
                 <aside
                     className="mt-8 rounded-lg border border-slate-200 dark:border-border-default bg-slate-50 dark:bg-surface-muted px-4 py-3"
                     aria-label="Version status legend"
@@ -118,8 +117,8 @@ const DeveloperGuideDomainsContent: FC = () => {
                         Note
                     </p>
                     <p className="text-sm text-slate-600 dark:text-text-secondary mb-3 leading-relaxed">
-                        Version pills in the navigation use these colors to indicate lifecycle
-                        status:
+                        Version pills in the sidebar navigation use these colors to indicate
+                        documentation lifecycle status:
                     </p>
                     <div className="flex flex-wrap gap-2">
                         {NAV_STATUS_VALUES.map((status) => (

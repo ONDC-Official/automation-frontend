@@ -23,7 +23,7 @@ export type NavNode =
           /** Show a trailing chevron to indicate navigation. */
           showArrow?: boolean;
           searchText?: string;
-          /** Resolved lifecycle status for version pills (backend → ENUM → released). */
+          /** Lifecycle status from available-builds; omit when API has none. */
           status?: BuildLifecycleStatus;
       };
 
