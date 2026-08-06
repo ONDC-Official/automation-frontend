@@ -19,7 +19,7 @@ export const NAV_STATUS_VALUES: readonly NavStatus[] = [
 
 export const NAV_STATUS_LABEL: Record<NavStatus, string> = {
     released: "Released",
-    drafted: "Drafted",
+    drafted: "Draft",
     "to-be-deprecated": "To Be Deprecated",
     deprecated: "Deprecated",
 };
