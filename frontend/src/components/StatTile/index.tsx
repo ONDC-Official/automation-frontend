@@ -1,6 +1,6 @@
 import { Minus, TrendingDown, TrendingUp } from "lucide-react";
 import { Card, CardContent } from "@components/Shadcn/Card/card";
-import { cn } from "@pages/business-dashboard/lib/utils";
+import { cn } from "@/lib/utils";
 import { statDeltaVariants, statValueVariants } from "./variants";
 import type { IProps } from "./types";
 

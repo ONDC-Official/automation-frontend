@@ -1,8 +1,8 @@
 import { useCallback, useMemo, useState } from "react";
 
-import type { IRange } from "@pages/business-dashboard/components/DateRangePicker";
+import type { IRange } from "@components/DateRangePicker";
 import { useSessionStats } from "@pages/business-dashboard/hooks/useSessionStats";
-import { isoDaysAgo, toIsoDate } from "@pages/business-dashboard/lib/utils";
+import { isoDaysAgo, toIsoDate } from "@/lib/utils";
 import { searchParamsFromFilters } from "@pages/business-dashboard/lib/sessionFilters";
 import type { SessionFilters } from "@pages/business-dashboard/services/types";
 import { DEFAULT_RANGE_DAYS, MAX_DOMAIN_BARS } from "./constants";

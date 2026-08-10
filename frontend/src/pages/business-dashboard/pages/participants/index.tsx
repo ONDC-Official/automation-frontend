@@ -1,9 +1,9 @@
 import { Download, RefreshCw, RotateCcw, Search } from "lucide-react";
 
 import { Button } from "@components/Shadcn/Button";
-import DateRangePicker from "@pages/business-dashboard/components/DateRangePicker";
+import DateRangePicker from "@components/DateRangePicker";
 import { Input } from "@components/Shadcn/Input";
-import PageHeader from "@pages/business-dashboard/components/PageHeader";
+import PageHeader from "@components/PageHeader";
 import Pagination from "@pages/business-dashboard/components/Pagination";
 import Select, {
     SelectContent,

@@ -1,4 +1,4 @@
-import { cn } from "@pages/business-dashboard/lib/utils";
+import { cn } from "@/lib/utils";
 import type { IProps } from "./types";
 
 const PageHeader = ({ title, description, actions, className }: IProps) => (

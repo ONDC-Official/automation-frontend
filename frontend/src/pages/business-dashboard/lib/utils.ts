@@ -54,16 +54,3 @@ export function formatDay(value: string | null | undefined) {
         month: "short",
     }).format(date);
 }
-
-/** A Date as `YYYY-MM-DD`, the wire format every date filter uses. */
-export function toIsoDate(date: Date) {
-    const offsetMs = date.getTimezoneOffset() * 60_000;
-    return new Date(date.getTime() - offsetMs).toISOString().slice(0, 10);
-}
-
-/** `YYYY-MM-DD` for `daysAgo` days before today. */
-export function isoDaysAgo(daysAgo: number) {
-    const date = new Date();
-    date.setDate(date.getDate() - daysAgo);
-    return toIsoDate(date);
-}

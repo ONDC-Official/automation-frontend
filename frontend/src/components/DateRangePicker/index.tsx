@@ -8,7 +8,7 @@ import DropdownMenu, {
     DropdownMenuTrigger,
 } from "@pages/business-dashboard/components/DropdownMenu";
 import { Input } from "@components/Shadcn/Input";
-import { cn, isoDaysAgo, toIsoDate } from "@pages/business-dashboard/lib/utils";
+import { cn, isoDaysAgo, toIsoDate } from "@/lib/utils";
 import { RANGE_PRESETS } from "./constants";
 import type { IProps, IRange } from "./types";
 

@@ -2,7 +2,7 @@ import { RefreshCw, Search, User } from "lucide-react";
 
 import { Button } from "@components/Shadcn/Button";
 import { Input } from "@components/Shadcn/Input";
-import PageHeader from "@pages/business-dashboard/components/PageHeader";
+import PageHeader from "@components/PageHeader";
 import Pagination from "@pages/business-dashboard/components/Pagination";
 import { useReportsPage } from "./useReportsPage";
 import ReportViewer from "./ReportViewer";

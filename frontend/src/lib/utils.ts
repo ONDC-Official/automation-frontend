@@ -30,3 +30,21 @@ const twMerge = extendTailwindMerge({
 export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
 }
+
+/**
+ * Local-calendar `YYYY-MM-DD`. Deliberately not `toISOString().slice(0,10)`
+ * on the raw date: that is UTC, so anyone east or west of it gets a range
+ * starting on the wrong day.
+ */
+/** A Date as `YYYY-MM-DD`, the wire format every date filter uses. */
+export function toIsoDate(date: Date) {
+    const offsetMs = date.getTimezoneOffset() * 60_000;
+    return new Date(date.getTime() - offsetMs).toISOString().slice(0, 10);
+}
+
+/** `YYYY-MM-DD` for `daysAgo` days before today. */
+export function isoDaysAgo(daysAgo: number) {
+    const date = new Date();
+    date.setDate(date.getDate() - daysAgo);
+    return toIsoDate(date);
+}

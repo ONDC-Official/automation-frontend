@@ -3,7 +3,7 @@ import { ROUTES } from "@constants/routes";
 import { Download, ListFilter } from "lucide-react";
 
 import { Button } from "@components/Shadcn/Button";
-import PageHeader from "@pages/business-dashboard/components/PageHeader";
+import PageHeader from "@components/PageHeader";
 import { useExportPage } from "./useExportPage";
 import ColumnPicker from "./ColumnPicker";
 import ExportPreview from "./ExportPreview";

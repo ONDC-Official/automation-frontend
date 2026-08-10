@@ -3,8 +3,8 @@ import { ROUTES } from "@constants/routes";
 import { ListFilter, RefreshCw } from "lucide-react";
 
 import { Button } from "@components/Shadcn/Button";
-import DateRangePicker from "@pages/business-dashboard/components/DateRangePicker";
-import PageHeader from "@pages/business-dashboard/components/PageHeader";
+import DateRangePicker from "@components/DateRangePicker";
+import PageHeader from "@components/PageHeader";
 import { useOverviewPage } from "./useOverviewPage";
 import DomainBreakdownChart from "./DomainBreakdownChart";
 import KpiRow from "./KpiRow";

@@ -13,7 +13,7 @@ import {
     searchParamsFromNpFilters,
     withoutNpPaging,
 } from "@pages/business-dashboard/lib/npFilters";
-import type { IRange } from "@pages/business-dashboard/components/DateRangePicker";
+import type { IRange } from "@components/DateRangePicker";
 import type { NpFilters } from "@pages/business-dashboard/services/types";
 
 export function useParticipantsPage() {
