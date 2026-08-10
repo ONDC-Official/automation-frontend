@@ -3,7 +3,7 @@ import { ROUTES } from "@constants/routes";
 import { TriangleAlert } from "lucide-react";
 
 import { Badge } from "@components/Shadcn/Badge";
-import EmptyState from "@pages/business-dashboard/components/EmptyState";
+import EmptyState from "@components/EmptyState";
 import Sheet, {
     SheetBody,
     SheetContent,
@@ -72,7 +72,7 @@ const ParticipantDetailSheet = ({
                         <EmptyState
                             icon={TriangleAlert}
                             title="Could not load this participant"
-                            description={errorMessage ?? "The dashboard API did not respond."}
+                            message={errorMessage ?? "The dashboard API did not respond."}
                         />
                     )}
 

@@ -1,11 +1,7 @@
 import { CheckCircle2, CircleDashed, TriangleAlert, XCircle } from "lucide-react";
 import { Badge } from "@components/Shadcn/Badge";
-import Card, {
-    CardContent,
-    CardHeader,
-    CardTitle,
-} from "@pages/business-dashboard/components/Card";
-import EmptyState from "@pages/business-dashboard/components/EmptyState";
+import { Card, CardContent, CardHeader, CardTitle } from "@components/Shadcn/Card/card";
+import EmptyState from "@components/EmptyState";
 import JsonViewer from "@pages/business-dashboard/components/JsonViewer";
 import Sheet, {
     SheetBody,
@@ -62,7 +58,7 @@ const SessionDetailSheet = ({ sessionId, detail, isLoading, isError, onClose }: 
                     <EmptyState
                         icon={TriangleAlert}
                         title="Could not load this session"
-                        description="The detail endpoint did not respond. The row data above is what the list returned."
+                        message="The detail endpoint did not respond. The row data above is what the list returned."
                     />
                 )}
 

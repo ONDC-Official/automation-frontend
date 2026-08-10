@@ -1,12 +1,13 @@
 import { FilterX, TriangleAlert } from "lucide-react";
 import { Badge } from "@components/Shadcn/Badge";
-import Card, {
+import {
+    Card,
     CardContent,
     CardDescription,
     CardHeader,
     CardTitle,
-} from "@pages/business-dashboard/components/Card";
-import EmptyState from "@pages/business-dashboard/components/EmptyState";
+} from "@components/Shadcn/Card/card";
+import EmptyState from "@components/EmptyState";
 import {
     Table,
     TableBody,
@@ -105,7 +106,7 @@ const ExportPreview = ({
                 <EmptyState
                     icon={TriangleAlert}
                     title="Could not preview this slice"
-                    description={errorMessage ?? "The dashboard API did not respond."}
+                    message={errorMessage ?? "The dashboard API did not respond."}
                 />
             ) : isLoading ? (
                 <div className="bg-muted h-40 w-full animate-pulse rounded-lg" />
@@ -113,7 +114,7 @@ const ExportPreview = ({
                 <EmptyState
                     icon={FilterX}
                     title="Nothing to export"
-                    description="No session matches these filters. Adjust them on the Sessions page and come back."
+                    message="No session matches these filters. Adjust them on the Sessions page and come back."
                 />
             ) : (
                 <div className="border-border rounded-lg border">

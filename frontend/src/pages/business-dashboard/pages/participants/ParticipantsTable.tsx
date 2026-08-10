@@ -1,7 +1,7 @@
 import { ArrowDown, ArrowUp, SearchX, TriangleAlert } from "lucide-react";
 
 import { Badge } from "@components/Shadcn/Badge";
-import EmptyState from "@pages/business-dashboard/components/EmptyState";
+import EmptyState from "@components/EmptyState";
 import {
     Table,
     TableBody,
@@ -50,8 +50,7 @@ const ParticipantsTable = ({
             <EmptyState
                 icon={TriangleAlert}
                 title="Could not load participants"
-                description={errorMessage ?? "The dashboard API did not respond."}
-                className="border-border bg-card rounded-lg border"
+                message={errorMessage ?? "The dashboard API did not respond."}
             />
         );
     }
@@ -61,8 +60,7 @@ const ParticipantsTable = ({
             <EmptyState
                 icon={SearchX}
                 title="No participants match these filters"
-                description="Widen the date range or clear a filter to see more."
-                className="border-border bg-card rounded-lg border"
+                message="Widen the date range or clear a filter to see more."
             />
         );
     }

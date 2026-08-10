@@ -1,7 +1,7 @@
 import { FileSearch, TriangleAlert } from "lucide-react";
 import { Badge } from "@components/Shadcn/Badge";
 import { Button } from "@components/Shadcn/Button";
-import EmptyState from "@pages/business-dashboard/components/EmptyState";
+import EmptyState from "@components/EmptyState";
 import {
     Table,
     TableBody,
@@ -41,8 +41,7 @@ const ReportsTable = ({ rows, isLoading, isError, errorMessage, onOpenReport }: 
             <EmptyState
                 icon={TriangleAlert}
                 title="Could not load reports"
-                description={errorMessage ?? "The dashboard API did not respond."}
-                className="border-border bg-card rounded-lg border"
+                message={errorMessage ?? "The dashboard API did not respond."}
             />
         );
     }
@@ -54,8 +53,7 @@ const ReportsTable = ({ rows, isLoading, isError, errorMessage, onOpenReport }: 
             <EmptyState
                 icon={FileSearch}
                 title="No reports found"
-                description="No generated report matches this search. Reports appear once an automation run finishes."
-                className="border-border bg-card rounded-lg border"
+                message="No generated report matches this search. Reports appear once an automation run finishes."
             />
         );
     }

@@ -1,5 +1,5 @@
 import { Minus, TrendingDown, TrendingUp } from "lucide-react";
-import Card, { CardContent } from "@pages/business-dashboard/components/Card";
+import { Card, CardContent } from "@components/Shadcn/Card/card";
 import { cn } from "@pages/business-dashboard/lib/utils";
 import { statDeltaVariants, statValueVariants } from "./variants";
 import type { IProps } from "./types";

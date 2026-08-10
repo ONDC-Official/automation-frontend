@@ -1,5 +1,5 @@
 import { ArrowDown, ArrowUp, SearchX, TriangleAlert } from "lucide-react";
-import EmptyState from "@pages/business-dashboard/components/EmptyState";
+import EmptyState from "@components/EmptyState";
 import { Table, TableBody, TableHead, TableHeader, TableRow } from "@components/Shadcn/Table/table";
 import { cn } from "@pages/business-dashboard/lib/utils";
 import type { SessionRow as SessionRowType } from "@pages/business-dashboard/services/types";
@@ -36,8 +36,7 @@ const SessionsTable = ({
             <EmptyState
                 icon={TriangleAlert}
                 title="Could not load sessions"
-                description={errorMessage ?? "The dashboard API did not respond."}
-                className="border-border bg-card rounded-lg border"
+                message={errorMessage ?? "The dashboard API did not respond."}
             />
         );
     }
@@ -47,8 +46,7 @@ const SessionsTable = ({
             <EmptyState
                 icon={SearchX}
                 title="No sessions match these filters"
-                description="Widen the date range or clear a filter to see more."
-                className="border-border bg-card rounded-lg border"
+                message="Widen the date range or clear a filter to see more."
             />
         );
     }

@@ -1,12 +1,12 @@
 import { Check, Lock } from "lucide-react";
 import { Button } from "@components/Shadcn/Button";
-import Card, {
-    CardAction,
+import {
+    Card,
     CardContent,
     CardDescription,
     CardHeader,
     CardTitle,
-} from "@pages/business-dashboard/components/Card";
+} from "@components/Shadcn/Card/card";
 import { cn } from "@pages/business-dashboard/lib/utils";
 import { COLUMN_GROUPS, EXPORT_COLUMNS, LOCKED_COLUMN_IDS } from "./constants";
 
@@ -20,12 +20,14 @@ interface IProps {
 const ColumnPicker = ({ selected, onToggleColumn, onSelectAll, onSelectDefaults }: IProps) => (
     <Card>
         <CardHeader>
-            <CardTitle>Columns</CardTitle>
-            <CardDescription>
-                {selected.length} of {EXPORT_COLUMNS.length} columns, written in this order.
-            </CardDescription>
-            <CardAction>
-                <div className="flex items-center gap-1">
+            <div className="flex items-start justify-between gap-3">
+                <div className="flex min-w-0 flex-col gap-1">
+                    <CardTitle>Columns</CardTitle>
+                    <CardDescription>
+                        {selected.length} of {EXPORT_COLUMNS.length} columns, written in this order.
+                    </CardDescription>
+                </div>
+                <div className="flex shrink-0 items-center gap-1">
                     <Button variant="ghost" size="sm" onClick={onSelectDefaults}>
                         Defaults
                     </Button>
@@ -33,7 +35,7 @@ const ColumnPicker = ({ selected, onToggleColumn, onSelectAll, onSelectDefaults 
                         Select all
                     </Button>
                 </div>
-            </CardAction>
+            </div>
         </CardHeader>
 
         <CardContent className="flex flex-col gap-4">

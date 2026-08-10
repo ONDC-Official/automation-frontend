@@ -1,10 +1,11 @@
 import { Activity } from "lucide-react";
-import Card, {
+import {
+    Card,
     CardContent,
     CardDescription,
     CardHeader,
     CardTitle,
-} from "@pages/business-dashboard/components/Card";
+} from "@components/Shadcn/Card/card";
 import { Button } from "@components/Shadcn/Button";
 import FormPasswordInput from "@pages/business-dashboard/components/FormPasswordInput";
 import { useLogin } from "@pages/business-dashboard/hooks/useAuth";

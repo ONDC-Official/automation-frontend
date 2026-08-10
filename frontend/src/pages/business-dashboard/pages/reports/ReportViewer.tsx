@@ -1,6 +1,6 @@
 import { Download, TriangleAlert } from "lucide-react";
 import { Button } from "@components/Shadcn/Button";
-import EmptyState from "@pages/business-dashboard/components/EmptyState";
+import EmptyState from "@components/EmptyState";
 import Sheet, {
     SheetBody,
     SheetContent,
@@ -55,7 +55,7 @@ const ReportViewer = ({
                     <EmptyState
                         icon={TriangleAlert}
                         title="Could not load this report"
-                        description={errorMessage ?? "The report blob did not come back."}
+                        message={errorMessage ?? "The report blob did not come back."}
                     />
                 )}
 
