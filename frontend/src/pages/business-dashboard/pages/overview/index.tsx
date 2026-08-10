@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { ROUTES } from "@constants/routes";
-import { Download, ListFilter, RefreshCw } from "lucide-react";
+import { ListFilter, RefreshCw } from "lucide-react";
 
 import Button from "@pages/business-dashboard/components/Button";
 import DateRangePicker from "@pages/business-dashboard/components/DateRangePicker";
@@ -24,9 +24,6 @@ const Overview = () => {
         isError,
         errorMessage,
         onRefresh,
-        isGeneratingReport,
-        canDownloadReport,
-        onDownloadReport,
     } = useOverviewPage();
 
     return (
@@ -45,15 +42,6 @@ const Overview = () => {
                         >
                             <RefreshCw />
                             Refresh
-                        </Button>
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            disabled={!canDownloadReport || isGeneratingReport}
-                            onClick={() => void onDownloadReport()}
-                        >
-                            <Download />
-                            {isGeneratingReport ? "Building…" : "Download report"}
                         </Button>
                         <Button size="sm" asChild>
                             <Link

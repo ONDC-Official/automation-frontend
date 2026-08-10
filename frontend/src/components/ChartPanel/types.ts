@@ -11,10 +11,10 @@ export type ChartType = "line" | "area" | "bar" | "stacked-bar";
 export type ChartTone = "pass" | "fail";
 
 /**
- * A chart row. Deliberately just "an object": panels feed their own domain
- * types straight in, and an `interface` from `services/types.ts` gets no
- * implicit index signature, so a `Record<string, …>` here would force every
- * caller to launder its types. `xKey`/`series[].key` index into it.
+ * A chart row. Deliberately just "an object": panels feed their own domain types
+ * straight in, and an `interface` gets no implicit index signature, so a
+ * `Record<string, …>` here would force every caller to launder its types.
+ * `xKey`/`series[].key` index into it.
  */
 export type ChartDatum = object;
 
@@ -31,7 +31,7 @@ export interface ISeries {
     tone?: ChartTone;
 }
 
-export interface IProps<TDatum extends ChartDatum = ChartDatum> {
+export interface IChartPanelProps<TDatum extends ChartDatum = ChartDatum> {
     title: string;
     description?: string;
     data: readonly TDatum[];

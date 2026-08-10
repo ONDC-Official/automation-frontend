@@ -1,4 +1,4 @@
-import Chart from "@pages/business-dashboard/components/Chart";
+import ChartPanel from "@components/ChartPanel";
 import { formatDay, formatNumber } from "@pages/business-dashboard/lib/utils";
 import type { SessionStatsResponse } from "@pages/business-dashboard/services/types";
 import { TREND_SERIES } from "./constants";
@@ -11,7 +11,7 @@ interface IProps {
 }
 
 const SessionsTrendChart = ({ data, isLoading, isError, errorMessage }: IProps) => (
-    <Chart
+    <ChartPanel
         title="Flow outcomes per day"
         description="Passed and failed flows, stacked by the day the session was created."
         type="stacked-bar"

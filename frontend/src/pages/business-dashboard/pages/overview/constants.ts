@@ -1,9 +1,9 @@
-import type { ISeries } from "@pages/business-dashboard/components/Chart";
+import type { ISeries } from "@components/ChartPanel";
 
 export const DEFAULT_RANGE_DAYS = 29;
 
 /**
- * Panel configs. A new chart on this page is a new entry here plus a `<Chart>`
+ * Panel configs. A new chart on this page is a new entry here plus a `<ChartPanel>`
  * driven by it — never new chart code.
  *
  * Passed/failed *mean* good and bad, so they wear the reserved status scale.
