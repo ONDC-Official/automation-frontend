@@ -2,7 +2,7 @@ import { useCallback, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 
-import { useExportSessions } from "@pages/business-dashboard/hooks/useExport";
+import { useExportDashboardSessionsMutation } from "@pages/business-dashboard/hooks/useExport";
 import { useSessions } from "@pages/business-dashboard/hooks/useSessions";
 import {
     filtersFromSearchParams,
@@ -28,7 +28,7 @@ export function useExportPage() {
         limit: PREVIEW_LIMIT,
     });
 
-    const { mutate, isPending } = useExportSessions();
+    const [mutate, { isLoading: isPending }] = useExportDashboardSessionsMutation();
 
     /** Selection follows EXPORT_COLUMNS order, so the CSV column order is stable. */
     const columns = useMemo(
@@ -54,14 +54,10 @@ export function useExportPage() {
     const onSelectDefaults = useCallback(() => setSelected(DEFAULT_COLUMN_IDS), []);
 
     const onDownload = useCallback(() => {
-        mutate(
-            { filters: withoutPaging(filters), columns },
-            {
-                onSuccess: () => toast.success("CSV downloaded"),
-                onError: (error) =>
-                    toast.error(error.message || "The export could not be generated"),
-            }
-        );
+        mutate({ filters: withoutPaging(filters), columns })
+            .unwrap()
+            .then(() => toast.success("CSV downloaded"))
+            .catch((error) => toast.error(error?.message || "The export could not be generated"));
     }, [mutate, filters, columns]);
 
     return {

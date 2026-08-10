@@ -2,7 +2,7 @@ import { useCallback, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 
-import { useExportParticipants } from "@pages/business-dashboard/hooks/useExport";
+import { useExportDashboardParticipantsMutation } from "@pages/business-dashboard/hooks/useExport";
 import { useParticipant, useParticipants } from "@pages/business-dashboard/hooks/useParticipants";
 import { DEFAULT_LIMIT, DEFAULT_PAGE } from "@pages/business-dashboard/lib/sessionFilters";
 import {
@@ -87,21 +87,17 @@ export function useParticipantsPage() {
         });
     }, [commit, filters.limit]);
 
-    const { mutate: exportCsv, isPending: isDownloading } = useExportParticipants();
+    const [exportCsv, { isLoading: isDownloading }] = useExportDashboardParticipantsMutation();
 
     /**
      * Downloads the whole filtered set, not the visible page — `filters` still
      * carries the sort, so the file arrives in the order on screen.
      */
     const onDownloadCsv = useCallback(() => {
-        exportCsv(
-            { filters },
-            {
-                onSuccess: () => toast.success("CSV downloaded"),
-                onError: (error) =>
-                    toast.error(error.message || "The export could not be generated"),
-            }
-        );
+        exportCsv({ filters })
+            .unwrap()
+            .then(() => toast.success("CSV downloaded"))
+            .catch((error) => toast.error(error?.message || "The export could not be generated"));
     }, [exportCsv, filters]);
 
     const rows = useMemo(() => listQuery.data?.data ?? [], [listQuery.data]);

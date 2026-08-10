@@ -1,34 +1,25 @@
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
-import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-import httpClient from "@pages/business-dashboard/services/httpClient";
-import type { ApiError } from "@pages/business-dashboard/services/httpClient";
-import type { LoginRequest, MeResponse } from "@pages/business-dashboard/services/types";
+import {
+    dashboardApi,
+    useDashboardLoginMutation,
+    useDashboardLogoutMutation,
+    useGetDashboardMeQuery,
+} from "@store/api";
 import { useAppDispatch } from "@store/hooks";
 import { signedIn, signedOut } from "@store/slices/businessDashboardSlice";
 import { DASHBOARD_ROOT } from "@pages/business-dashboard/constants";
-import { useGet } from "./useGet";
-import { usePost } from "./usePost";
-
-export const authKeys = {
-    all: ["auth"] as const,
-    me: ["auth", "me"] as const,
-};
+import type { LoginRequest } from "@pages/business-dashboard/services/types";
+import type { IAxiosBaseQueryError } from "@store/api";
 
 /**
  * `GET /dashboard/auth/me`. The session is an httpOnly cookie the browser cannot
  * read, so this is the only way to learn whether it is still valid.
  */
-export function useMe() {
-    return useGet<MeResponse>(
-        authKeys.me,
-        async () => (await httpClient.get<MeResponse>("/auth/me")).data,
-        { retry: false, staleTime: 30_000 }
-    );
-}
+export const useMe = () => useGetDashboardMeQuery();
 
 /**
  * Reconciles the persisted flag with the server's answer, so a cookie that
@@ -45,10 +36,11 @@ export function useSyncSession() {
             dispatch(data.authenticated ? signedIn() : signedOut());
             return;
         }
-        // Only an authoritative rejection ends the session. A network failure or a
-        // 5xx means we do not know, and bouncing to /login on a flaky connection
-        // would be worse than leaving the persisted flag alone.
-        if (error && (error.status === 401 || error.status === 403)) {
+        // Only an authoritative rejection ends the session. A network failure or
+        // a 5xx means we do not know, and bouncing to the password card on a
+        // flaky connection would be worse than leaving the persisted flag alone.
+        const status = (error as IAxiosBaseQueryError | undefined)?.status;
+        if (status === 401 || status === 403) {
             dispatch(signedOut());
         }
     }, [data, error, dispatch]);
@@ -56,9 +48,13 @@ export function useSyncSession() {
     return query;
 }
 
-/** `POST /auth/login` — 204 plus a `Set-Cookie`; nothing to read off the body. */
+/**
+ * `POST /dashboard/auth/login` — 204 plus a `Set-Cookie`; nothing to read off
+ * the body.
+ */
 export function useLogin() {
     const dispatch = useAppDispatch();
+    const [login] = useDashboardLoginMutation();
     const {
         register,
         handleSubmit,
@@ -66,24 +62,20 @@ export function useLogin() {
         formState: { errors, isSubmitting },
     } = useForm<LoginRequest>({ defaultValues: { password: "" } });
 
-    const { mutateAsync } = usePost<void, LoginRequest>(
-        async (values) => {
-            await httpClient.post("/auth/login", values);
-        },
-        { invalidates: [authKeys.me] }
-    );
-
     const onSubmit = handleSubmit(async (values) => {
         try {
-            await mutateAsync(values);
+            await login(values).unwrap();
             dispatch(signedIn());
             toast.success("Signed in");
-            // No navigation: the shell gates in place, so signing in reveals whatever
-            // dashboard URL the user actually asked for.
+            // No navigation: the shell gates in place, so signing in reveals
+            // whatever dashboard URL the user actually asked for.
         } catch (error) {
-            const { status, message } = error as ApiError;
+            const { status, message } = (error ?? {}) as IAxiosBaseQueryError;
             setError("root", {
-                message: status === 401 || status === 403 ? "That password is not right." : message,
+                message:
+                    status === 401 || status === 403
+                        ? "That password is not right."
+                        : (message ?? "Something went wrong"),
             });
         }
     });
@@ -91,24 +83,29 @@ export function useLogin() {
     return { register, onSubmit, errors, isSubmitting };
 }
 
-/** `POST /auth/logout` — clears the cookie server-side and the cache client-side. */
+/**
+ * `POST /dashboard/auth/logout` — clears the cookie server-side and the cached
+ * dashboard data client-side.
+ */
 export function useLogout() {
     const navigate = useNavigate();
     const dispatch = useAppDispatch();
-    const queryClient = useQueryClient();
+    const [logoutRequest, { isLoading: isPending }] = useDashboardLogoutMutation();
 
-    const { mutate, isPending } = usePost<void, void>(async () => {
-        await httpClient.post("/auth/logout");
-    });
-
-    const logout = () =>
-        mutate(undefined, {
-            onSettled: () => {
+    const logout = () => {
+        void logoutRequest()
+            .unwrap()
+            .catch(() => {
+                // As far as this browser is concerned the session is over either
+                // way; failing to reach the server must not strand the user on a
+                // dashboard it can no longer load.
+            })
+            .finally(() => {
                 dispatch(signedOut());
-                queryClient.clear();
+                dispatch(dashboardApi.util.resetApiState());
                 navigate(DASHBOARD_ROOT, { replace: true });
-            },
-        });
+            });
+    };
 
     return { logout, isPending };
 }

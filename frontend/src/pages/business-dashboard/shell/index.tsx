@@ -1,5 +1,4 @@
 import { Outlet } from "react-router-dom";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 import { TooltipProvider } from "@pages/business-dashboard/components/Tooltip";
 import { useSyncSession } from "@pages/business-dashboard/hooks/useAuth";
@@ -8,16 +7,6 @@ import { selectDashboardAuthenticated } from "@store/slices/businessDashboardSli
 import AuthGate from "./AuthGate";
 import MobileNav from "./MobileNav";
 import Sidebar from "./Sidebar";
-
-/**
- * One client for the dashboard subtree. The rest of the workbench fetches
- * through RTK Query, so this stays scoped here rather than going up to App.
- */
-const queryClient = new QueryClient({
-    defaultOptions: {
-        queries: { refetchOnWindowFocus: false, retry: 1, staleTime: 5_000 },
-    },
-});
 
 const ShellBody = () => {
     // Reconciles the persisted auth flag with GET /dashboard/auth/me once per mount.
@@ -52,13 +41,11 @@ const ShellBody = () => {
  * theme state of its own.
  */
 const DashboardShell = () => (
-    <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
-            <div className="bd-root bg-background text-foreground flex min-h-[calc(100svh-4rem)] flex-col">
-                <ShellBody />
-            </div>
-        </TooltipProvider>
-    </QueryClientProvider>
+    <TooltipProvider>
+        <div className="bd-root bg-background text-foreground flex min-h-[calc(100svh-4rem)] flex-col">
+            <ShellBody />
+        </div>
+    </TooltipProvider>
 );
 
 export default DashboardShell;
