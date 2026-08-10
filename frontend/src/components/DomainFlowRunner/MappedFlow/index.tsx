@@ -139,13 +139,13 @@ export default function DisplayFlow({
     // --- Real-Time Ride Map Integration ------------------------------------
     // The map UI now lives in the right-panel "Application" tab (RideMapTab). Here we only need to
     // know whether the tracking phase is active, to stop the flow engine auto-proceeding the ride
-    // states — the seller drives on_status/on_update manually from the map. Tracking activates only
+    // states — the seller drives on_status manually from the map. Tracking activates only
     // once the driver is assigned AND the initial location is shared (a track/on_track step is
     // COMPLETE) — NOT at on_confirm, so pre-assignment steps (e.g. the unsolicited on_update driver
     // assignment in "assign driver post on_confirm" flows) still auto-proceed normally.
     // IMPORTANT: this engine override must apply ONLY for the ride-map domain/version (TRV10 2.1.0).
     // For every other domain `trackingActive` stays false, so the normal auto-proceed behaviour of
-    // track/on_track/on_status/on_update/status is fully preserved and their flows are unaffected.
+    // track/on_track/on_status/status is fully preserved and their flows are unaffected.
     const trackingActive =
         isRideMapEnabled(sessionData?.domain, sessionData?.version) && isTrackingActive(mappedFlow);
 
@@ -208,7 +208,8 @@ export default function DisplayFlow({
         // track/on_track complete), it is fully manual — do NOT auto-open/auto-submit input for
         // track/on_track/on_status/etc. The seller advances these via the map controls.
         // (Pre-tracking steps like the on_update driver assignment and on_track_on_assign are not
-        // suppressed — tracking only activates once they complete.)
+        // suppressed — tracking only activates once they complete. on_update is outside the set
+        // entirely, so an on_update carrying its own form still opens its dialog.)
         if (trackingActive && isTrackingPhaseStep(target?.actionType)) return;
         // Extra steps must be advanced via triggerExtra (carries `trigger_extra`); use the step's
         // actionId as the trigger key. Undefined => sequence step => proceedFlow.
