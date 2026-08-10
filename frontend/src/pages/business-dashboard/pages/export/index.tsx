@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { ROUTES } from "@constants/routes";
 import { Download, ListFilter } from "lucide-react";
 
-import Button from "@pages/business-dashboard/components/Button";
+import { Button } from "@components/Shadcn/Button";
 import PageHeader from "@pages/business-dashboard/components/PageHeader";
 import { useExportPage } from "./useExportPage";
 import ColumnPicker from "./ColumnPicker";

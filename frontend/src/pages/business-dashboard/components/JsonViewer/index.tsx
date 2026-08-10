@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { Check, ChevronsDownUp, ChevronsUpDown, Copy, Search } from "lucide-react";
-import Button from "@pages/business-dashboard/components/Button";
-import Input from "@pages/business-dashboard/components/Input";
+import { Button } from "@components/Shadcn/Button";
+import { Input } from "@components/Shadcn/Input";
 import { cn } from "@pages/business-dashboard/lib/utils";
 import Node from "./Node";
 import { entriesOf, pathsMatching, pathsToDepth } from "./utils";

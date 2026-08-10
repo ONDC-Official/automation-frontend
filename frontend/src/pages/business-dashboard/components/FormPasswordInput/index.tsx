@@ -1,6 +1,6 @@
 import { useId, useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
-import Input from "@pages/business-dashboard/components/Input";
+import { Input } from "@components/Shadcn/Input";
 import { cn } from "@pages/business-dashboard/lib/utils";
 import type { IProps } from "./types";
 

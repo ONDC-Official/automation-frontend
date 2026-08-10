@@ -1,7 +1,7 @@
 import { RotateCcw, Search } from "lucide-react";
-import Button from "@pages/business-dashboard/components/Button";
+import { Button } from "@components/Shadcn/Button";
 import DateRangePicker from "@pages/business-dashboard/components/DateRangePicker";
-import Input from "@pages/business-dashboard/components/Input";
+import { Input } from "@components/Shadcn/Input";
 import Select, {
     SelectContent,
     SelectItem,

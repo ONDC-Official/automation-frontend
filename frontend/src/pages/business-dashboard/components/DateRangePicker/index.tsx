@@ -1,5 +1,5 @@
 import { CalendarDays, Check } from "lucide-react";
-import Button from "@pages/business-dashboard/components/Button";
+import { Button } from "@components/Shadcn/Button";
 import DropdownMenu, {
     DropdownMenuContent,
     DropdownMenuItem,
@@ -7,7 +7,7 @@ import DropdownMenu, {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@pages/business-dashboard/components/DropdownMenu";
-import Input from "@pages/business-dashboard/components/Input";
+import { Input } from "@components/Shadcn/Input";
 import { cn, isoDaysAgo, toIsoDate } from "@pages/business-dashboard/lib/utils";
 import { RANGE_PRESETS } from "./constants";
 import type { IProps, IRange } from "./types";

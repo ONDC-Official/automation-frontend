@@ -8,13 +8,13 @@ import type { FlowSummaryEntry, SessionResult } from "@pages/business-dashboard/
 export function badgeVariantForResult(result: SessionResult | null) {
     switch (result) {
         case "PASS":
-            return "pass" as const;
+            return "success" as const;
         case "FAIL":
-            return "fail" as const;
+            return "error" as const;
         case "MIXED":
-            return "pending" as const;
+            return "alert" as const;
         default:
-            return "muted" as const;
+            return "secondary" as const;
     }
 }
 

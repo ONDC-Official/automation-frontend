@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { ROUTES } from "@constants/routes";
 import { TriangleAlert } from "lucide-react";
 
-import Badge from "@pages/business-dashboard/components/Badge";
+import { Badge } from "@components/Shadcn/Badge";
 import EmptyState from "@pages/business-dashboard/components/EmptyState";
 import Sheet, {
     SheetBody,
@@ -11,13 +11,14 @@ import Sheet, {
     SheetHeader,
     SheetTitle,
 } from "@pages/business-dashboard/components/Sheet";
-import Table, {
+import {
+    Table,
     TableBody,
     TableCell,
     TableHead,
     TableHeader,
     TableRow,
-} from "@pages/business-dashboard/components/Table";
+} from "@components/Shadcn/Table/table";
 import { formatDateTime, formatNumber, formatPercent } from "@pages/business-dashboard/lib/utils";
 import type { ParticipantDetail, ParticipantRow } from "@pages/business-dashboard/services/types";
 import { judgedSummary, passRateTone } from "./utils";
@@ -142,7 +143,7 @@ const ParticipantDetailSheet = ({
                                     </Badge>
                                 ))}
                                 {row.versions.map((version) => (
-                                    <Badge key={version} variant="muted">
+                                    <Badge key={version} variant="secondary">
                                         v{version}
                                     </Badge>
                                 ))}

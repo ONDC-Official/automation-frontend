@@ -6,10 +6,10 @@ import type { ParticipantRow } from "@pages/business-dashboard/services/types";
  * and must stay on the neutral token.
  */
 export function passRateTone(passRate: number | null | undefined) {
-    if (passRate === null || passRate === undefined) return "muted" as const;
-    if (passRate >= 0.9) return "pass" as const;
-    if (passRate >= 0.7) return "pending" as const;
-    return "fail" as const;
+    if (passRate === null || passRate === undefined) return "secondary" as const;
+    if (passRate >= 0.9) return "success" as const;
+    if (passRate >= 0.7) return "alert" as const;
+    return "error" as const;
 }
 
 /**

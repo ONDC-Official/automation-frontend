@@ -1,5 +1,5 @@
 import { FilterX, TriangleAlert } from "lucide-react";
-import Badge from "@pages/business-dashboard/components/Badge";
+import { Badge } from "@components/Shadcn/Badge";
 import Card, {
     CardContent,
     CardDescription,
@@ -7,13 +7,14 @@ import Card, {
     CardTitle,
 } from "@pages/business-dashboard/components/Card";
 import EmptyState from "@pages/business-dashboard/components/EmptyState";
-import Table, {
+import {
+    Table,
     TableBody,
     TableCell,
     TableHead,
     TableHeader,
     TableRow,
-} from "@pages/business-dashboard/components/Table";
+} from "@components/Shadcn/Table/table";
 import { formatDateTime, formatNumber, formatPercent } from "@pages/business-dashboard/lib/utils";
 import type { SessionFilters, SessionRow } from "@pages/business-dashboard/services/types";
 import { EXPORT_COLUMNS, PREVIEW_LIMIT } from "./constants";
@@ -60,7 +61,7 @@ const ActiveFilters = ({ filters }: { filters: SessionFilters }) => {
 
     if (entries.length === 0) {
         return (
-            <Badge variant="muted">
+            <Badge variant="secondary">
                 <FilterX />
                 No filters — the whole collection
             </Badge>

@@ -1,6 +1,6 @@
 import { Outlet } from "react-router-dom";
 
-import { TooltipProvider } from "@pages/business-dashboard/components/Tooltip";
+import { TooltipProvider } from "@components/Shadcn/Tooltip";
 import { useSyncSession } from "@pages/business-dashboard/hooks/useAuth";
 import { useAppSelector } from "@store/hooks";
 import { selectDashboardAuthenticated } from "@store/slices/businessDashboardSlice";

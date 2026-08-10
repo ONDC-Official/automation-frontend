@@ -5,7 +5,7 @@ import Card, {
     CardHeader,
     CardTitle,
 } from "@pages/business-dashboard/components/Card";
-import Button from "@pages/business-dashboard/components/Button";
+import { Button } from "@components/Shadcn/Button";
 import FormPasswordInput from "@pages/business-dashboard/components/FormPasswordInput";
 import { useLogin } from "@pages/business-dashboard/hooks/useAuth";
 import { APP_NAME, APP_TAGLINE } from "@pages/business-dashboard/constants";

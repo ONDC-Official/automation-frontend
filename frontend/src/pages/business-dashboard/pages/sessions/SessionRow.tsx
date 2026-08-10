@@ -1,6 +1,6 @@
 import { Check, Minus } from "lucide-react";
-import Badge from "@pages/business-dashboard/components/Badge";
-import { TableCell, TableRow } from "@pages/business-dashboard/components/Table";
+import { Badge } from "@components/Shadcn/Badge";
+import { TableCell, TableRow } from "@components/Shadcn/Table/table";
 import { formatDateTime, formatPercent } from "@pages/business-dashboard/lib/utils";
 import type { SessionRow as SessionRowType } from "@pages/business-dashboard/services/types";
 import { badgeVariantForResult, resultLabel } from "./utils";

@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { ROUTES } from "@constants/routes";
 import { ListFilter, RefreshCw } from "lucide-react";
 
-import Button from "@pages/business-dashboard/components/Button";
+import { Button } from "@components/Shadcn/Button";
 import DateRangePicker from "@pages/business-dashboard/components/DateRangePicker";
 import PageHeader from "@pages/business-dashboard/components/PageHeader";
 import { useOverviewPage } from "./useOverviewPage";

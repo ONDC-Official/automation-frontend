@@ -1,7 +1,7 @@
 import { RefreshCw, Search, User } from "lucide-react";
 
-import Button from "@pages/business-dashboard/components/Button";
-import Input from "@pages/business-dashboard/components/Input";
+import { Button } from "@components/Shadcn/Button";
+import { Input } from "@components/Shadcn/Input";
 import PageHeader from "@pages/business-dashboard/components/PageHeader";
 import Pagination from "@pages/business-dashboard/components/Pagination";
 import { useReportsPage } from "./useReportsPage";

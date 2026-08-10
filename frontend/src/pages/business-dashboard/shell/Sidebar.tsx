@@ -1,7 +1,7 @@
 import { NavLink } from "react-router-dom";
 import { Activity, LogOut } from "lucide-react";
-import Button from "@pages/business-dashboard/components/Button";
-import Tooltip from "@pages/business-dashboard/components/Tooltip";
+import { Button } from "@components/Shadcn/Button";
+import { TooltipHint as Tooltip } from "@components/Shadcn/Tooltip";
 import { useLogout } from "@pages/business-dashboard/hooks/useAuth";
 import { cn } from "@pages/business-dashboard/lib/utils";
 import { APP_NAME, APP_TAGLINE, DASHBOARD_ROOT, NAV } from "@pages/business-dashboard/constants";

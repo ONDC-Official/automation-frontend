@@ -1,5 +1,5 @@
 import { Check, Lock } from "lucide-react";
-import Button from "@pages/business-dashboard/components/Button";
+import { Button } from "@components/Shadcn/Button";
 import Card, {
     CardAction,
     CardContent,

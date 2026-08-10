@@ -1,14 +1,15 @@
 import { ArrowDown, ArrowUp, SearchX, TriangleAlert } from "lucide-react";
 
-import Badge from "@pages/business-dashboard/components/Badge";
+import { Badge } from "@components/Shadcn/Badge";
 import EmptyState from "@pages/business-dashboard/components/EmptyState";
-import Table, {
+import {
+    Table,
     TableBody,
     TableCell,
     TableHead,
     TableHeader,
     TableRow,
-} from "@pages/business-dashboard/components/Table";
+} from "@components/Shadcn/Table/table";
 import {
     cn,
     formatDateTime,
@@ -159,7 +160,7 @@ const ParticipantsTable = ({
                                       {row.firstPayloadAt ? (
                                           formatDateTime(row.firstPayloadAt)
                                       ) : (
-                                          <Badge variant="muted">Never</Badge>
+                                          <Badge variant="secondary">Never</Badge>
                                       )}
                                   </TableCell>
 

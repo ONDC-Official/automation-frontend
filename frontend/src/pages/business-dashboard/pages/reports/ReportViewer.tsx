@@ -1,5 +1,5 @@
 import { Download, TriangleAlert } from "lucide-react";
-import Button from "@pages/business-dashboard/components/Button";
+import { Button } from "@components/Shadcn/Button";
 import EmptyState from "@pages/business-dashboard/components/EmptyState";
 import Sheet, {
     SheetBody,

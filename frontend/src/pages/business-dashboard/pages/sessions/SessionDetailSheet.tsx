@@ -1,5 +1,5 @@
 import { CheckCircle2, CircleDashed, TriangleAlert, XCircle } from "lucide-react";
-import Badge from "@pages/business-dashboard/components/Badge";
+import { Badge } from "@components/Shadcn/Badge";
 import Card, {
     CardContent,
     CardHeader,
@@ -14,11 +14,7 @@ import Sheet, {
     SheetHeader,
     SheetTitle,
 } from "@pages/business-dashboard/components/Sheet";
-import Tabs, {
-    TabsContent,
-    TabsList,
-    TabsTrigger,
-} from "@pages/business-dashboard/components/Tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@components/Shadcn/Tabs";
 import { formatDateTime } from "@pages/business-dashboard/lib/utils";
 import type { SessionDetails } from "@pages/business-dashboard/services/types";
 import FlowSummaryCard from "./FlowSummaryCard";
@@ -83,16 +79,10 @@ const SessionDetailSheet = ({ sessionId, detail, isLoading, isError, onClose }: 
 
                 {detail && (
                     <Tabs defaultValue="overview" className="pt-4">
-                        <TabsList variant="underline">
-                            <TabsTrigger variant="underline" value="overview">
-                                Overview
-                            </TabsTrigger>
-                            <TabsTrigger variant="underline" value="flows">
-                                Flows
-                            </TabsTrigger>
-                            <TabsTrigger variant="underline" value="raw">
-                                Raw JSON
-                            </TabsTrigger>
+                        <TabsList variant="line">
+                            <TabsTrigger value="overview">Overview</TabsTrigger>
+                            <TabsTrigger value="flows">Flows</TabsTrigger>
+                            <TabsTrigger value="raw">Raw JSON</TabsTrigger>
                         </TabsList>
 
                         <TabsContent value="overview" className="flex flex-col gap-3">
@@ -116,7 +106,11 @@ const SessionDetailSheet = ({ sessionId, detail, isLoading, isError, onClose }: 
                                             </dt>
                                             <dd>
                                                 <Badge
-                                                    variant={detail.reportExists ? "pass" : "muted"}
+                                                    variant={
+                                                        detail.reportExists
+                                                            ? "success"
+                                                            : "secondary"
+                                                    }
                                                 >
                                                     {detail.reportExists ? "Generated" : "None"}
                                                 </Badge>
@@ -164,11 +158,11 @@ const FlowMapCard = ({ flowMap }: { flowMap: SessionDetails["flowMap"] }) => {
                 ) : (
                     <>
                         <div className="flex items-center gap-2 text-xs">
-                            <Badge variant="pass">
+                            <Badge variant="success">
                                 <CheckCircle2 />
                                 {passed} passed
                             </Badge>
-                            <Badge variant="fail">
+                            <Badge variant="error">
                                 <XCircle />
                                 {failed} failed
                             </Badge>
@@ -180,7 +174,7 @@ const FlowMapCard = ({ flowMap }: { flowMap: SessionDetails["flowMap"] }) => {
                                     className="flex items-center justify-between gap-3 py-1.5 text-sm"
                                 >
                                     <span className="truncate font-mono text-xs">{flowId}</span>
-                                    <Badge variant={result === "PASS" ? "pass" : "fail"}>
+                                    <Badge variant={result === "PASS" ? "success" : "error"}>
                                         {result === "PASS" ? <CheckCircle2 /> : <XCircle />}
                                         {result}
                                     </Badge>
@@ -220,7 +214,7 @@ const FlowListCard = ({ detail }: { detail: SessionDetails }) => {
                                         {flow.payloads?.length ?? 0} payloads
                                     </span>
                                     <Badge
-                                        variant={flow.status === "COMPLETED" ? "pass" : "pending"}
+                                        variant={flow.status === "COMPLETED" ? "success" : "alert"}
                                     >
                                         {flow.status === "COMPLETED" ? (
                                             <CheckCircle2 />

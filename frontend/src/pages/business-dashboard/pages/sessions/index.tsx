@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { ROUTES } from "@constants/routes";
 import { Download, RefreshCw } from "lucide-react";
 
-import Button from "@pages/business-dashboard/components/Button";
+import { Button } from "@components/Shadcn/Button";
 import PageHeader from "@pages/business-dashboard/components/PageHeader";
 import { useSessionsPage } from "./useSessionsPage";
 import FilterBar from "./FilterBar";
