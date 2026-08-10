@@ -1,6 +1,6 @@
-import Chart from "@dashboard/components/Chart";
-import { formatDay, formatNumber } from "@dashboard/lib/utils";
-import type { SessionStatsResponse } from "@dashboard/services/types";
+import Chart from "@pages/business-dashboard/components/Chart";
+import { formatDay, formatNumber } from "@pages/business-dashboard/lib/utils";
+import type { SessionStatsResponse } from "@pages/business-dashboard/services/types";
 import { TREND_SERIES } from "./constants";
 
 interface IProps {

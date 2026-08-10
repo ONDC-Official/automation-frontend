@@ -1,12 +1,12 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import Button from "@dashboard/components/Button";
+import Button from "@pages/business-dashboard/components/Button";
 import Select, {
     SelectContent,
     SelectItem,
     SelectTrigger,
     SelectValue,
-} from "@dashboard/components/Select";
-import { cn, formatNumber } from "@dashboard/lib/utils";
+} from "@pages/business-dashboard/components/Select";
+import { cn, formatNumber } from "@pages/business-dashboard/lib/utils";
 import { DEFAULT_LIMIT_OPTIONS } from "./constants";
 import type { IProps } from "./types";
 

@@ -1,13 +1,13 @@
 import { Download, TriangleAlert } from "lucide-react";
-import Button from "@dashboard/components/Button";
-import EmptyState from "@dashboard/components/EmptyState";
+import Button from "@pages/business-dashboard/components/Button";
+import EmptyState from "@pages/business-dashboard/components/EmptyState";
 import Sheet, {
     SheetBody,
     SheetContent,
     SheetDescription,
     SheetHeader,
     SheetTitle,
-} from "@dashboard/components/Sheet";
+} from "@pages/business-dashboard/components/Sheet";
 
 interface IProps {
     testId: string | null;

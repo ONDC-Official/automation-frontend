@@ -8,10 +8,10 @@ import Card, {
     CardHeader,
     CardTitle,
     CardContent,
-} from "@dashboard/components/Card";
-import Button from "@dashboard/components/Button";
-import EmptyState from "@dashboard/components/EmptyState";
-import { cn } from "@dashboard/lib/utils";
+} from "@pages/business-dashboard/components/Card";
+import Button from "@pages/business-dashboard/components/Button";
+import EmptyState from "@pages/business-dashboard/components/EmptyState";
+import { cn } from "@pages/business-dashboard/lib/utils";
 import ChartLegend from "./ChartLegend";
 import ChartPlot from "./ChartPlot";
 import ChartTable from "./ChartTable";

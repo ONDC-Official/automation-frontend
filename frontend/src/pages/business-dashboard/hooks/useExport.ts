@@ -1,6 +1,9 @@
-import httpClient from "@dashboard/services/httpClient";
-import { compactParams, filenameFromContentDisposition } from "@dashboard/lib/queryParams";
-import type { NpFilters, SessionFilters } from "@dashboard/services/types";
+import httpClient from "@pages/business-dashboard/services/httpClient";
+import {
+    compactParams,
+    filenameFromContentDisposition,
+} from "@pages/business-dashboard/lib/queryParams";
+import type { NpFilters, SessionFilters } from "@pages/business-dashboard/services/types";
 import { usePost } from "./usePost";
 
 export const exportKeys = {

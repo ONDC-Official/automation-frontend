@@ -27,12 +27,12 @@ import DeveloperGuideDomainsContent from "@pages/developer-guide/layout/Develope
 import DeveloperGuideDocContent from "@pages/developer-guide/layout/DeveloperGuideDocContent";
 import ValidationsPage from "@pages/developer-guide/ValidationsPage";
 import { isDevGuideEnabled } from "@/types/environment";
-import DashboardShell from "@dashboard/shell";
-import BusinessOverview from "@dashboard/pages/overview";
-import BusinessSessions from "@dashboard/pages/sessions";
-import BusinessParticipants from "@dashboard/pages/participants";
-import BusinessReports from "@dashboard/pages/reports";
-import BusinessExport from "@dashboard/pages/export";
+import DashboardShell from "@pages/business-dashboard/shell";
+import BusinessOverview from "@pages/business-dashboard/pages/overview";
+import BusinessSessions from "@pages/business-dashboard/pages/sessions";
+import BusinessParticipants from "@pages/business-dashboard/pages/participants";
+import BusinessReports from "@pages/business-dashboard/pages/reports";
+import BusinessExport from "@pages/business-dashboard/pages/export";
 import PageReveal from "./page-reveal";
 
 const page = (children: ReactNode) => <PageReveal>{children}</PageReveal>;

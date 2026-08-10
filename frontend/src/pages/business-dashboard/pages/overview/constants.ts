@@ -1,4 +1,4 @@
-import type { ISeries } from "@dashboard/components/Chart";
+import type { ISeries } from "@pages/business-dashboard/components/Chart";
 
 export const DEFAULT_RANGE_DAYS = 29;
 

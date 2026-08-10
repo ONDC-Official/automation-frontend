@@ -1,6 +1,9 @@
-import httpClient from "@dashboard/services/httpClient";
-import { compactParams } from "@dashboard/lib/queryParams";
-import type { SessionFilters, SessionStatsResponse } from "@dashboard/services/types";
+import httpClient from "@pages/business-dashboard/services/httpClient";
+import { compactParams } from "@pages/business-dashboard/lib/queryParams";
+import type {
+    SessionFilters,
+    SessionStatsResponse,
+} from "@pages/business-dashboard/services/types";
 import { useGet } from "./useGet";
 
 export const statsKeys = {

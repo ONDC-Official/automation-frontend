@@ -1,13 +1,13 @@
 import { Check, Lock } from "lucide-react";
-import Button from "@dashboard/components/Button";
+import Button from "@pages/business-dashboard/components/Button";
 import Card, {
     CardAction,
     CardContent,
     CardDescription,
     CardHeader,
     CardTitle,
-} from "@dashboard/components/Card";
-import { cn } from "@dashboard/lib/utils";
+} from "@pages/business-dashboard/components/Card";
+import { cn } from "@pages/business-dashboard/lib/utils";
 import { COLUMN_GROUPS, EXPORT_COLUMNS, LOCKED_COLUMN_IDS } from "./constants";
 
 interface IProps {

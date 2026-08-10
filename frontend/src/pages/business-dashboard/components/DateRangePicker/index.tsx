@@ -1,14 +1,14 @@
 import { CalendarDays, Check } from "lucide-react";
-import Button from "@dashboard/components/Button";
+import Button from "@pages/business-dashboard/components/Button";
 import DropdownMenu, {
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuLabel,
     DropdownMenuSeparator,
     DropdownMenuTrigger,
-} from "@dashboard/components/DropdownMenu";
-import Input from "@dashboard/components/Input";
-import { cn, isoDaysAgo, toIsoDate } from "@dashboard/lib/utils";
+} from "@pages/business-dashboard/components/DropdownMenu";
+import Input from "@pages/business-dashboard/components/Input";
+import { cn, isoDaysAgo, toIsoDate } from "@pages/business-dashboard/lib/utils";
 import { RANGE_PRESETS } from "./constants";
 import type { IProps, IRange } from "./types";
 

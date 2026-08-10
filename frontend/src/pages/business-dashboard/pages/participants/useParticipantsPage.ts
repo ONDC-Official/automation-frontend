@@ -2,9 +2,9 @@ import { useCallback, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 
-import { useExportParticipants } from "@dashboard/hooks/useExport";
-import { useParticipant, useParticipants } from "@dashboard/hooks/useParticipants";
-import { DEFAULT_LIMIT, DEFAULT_PAGE } from "@dashboard/lib/sessionFilters";
+import { useExportParticipants } from "@pages/business-dashboard/hooks/useExport";
+import { useParticipant, useParticipants } from "@pages/business-dashboard/hooks/useParticipants";
+import { DEFAULT_LIMIT, DEFAULT_PAGE } from "@pages/business-dashboard/lib/sessionFilters";
 import {
     DEFAULT_NP_ORDER,
     DEFAULT_NP_SORT,
@@ -12,9 +12,9 @@ import {
     npFiltersFromSearchParams,
     searchParamsFromNpFilters,
     withoutNpPaging,
-} from "@dashboard/lib/npFilters";
-import type { IRange } from "@dashboard/components/DateRangePicker";
-import type { NpFilters } from "@dashboard/services/types";
+} from "@pages/business-dashboard/lib/npFilters";
+import type { IRange } from "@pages/business-dashboard/components/DateRangePicker";
+import type { NpFilters } from "@pages/business-dashboard/services/types";
 
 export function useParticipantsPage() {
     const [searchParams, setSearchParams] = useSearchParams();

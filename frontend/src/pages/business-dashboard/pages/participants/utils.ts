@@ -1,4 +1,4 @@
-import type { ParticipantRow } from "@dashboard/services/types";
+import type { ParticipantRow } from "@pages/business-dashboard/services/types";
 
 /**
  * Pass rate wears the reserved status scale, but only once something has been

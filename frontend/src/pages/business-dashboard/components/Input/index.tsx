@@ -1,5 +1,5 @@
 import type { ComponentProps } from "react";
-import { cn } from "@dashboard/lib/utils";
+import { cn } from "@pages/business-dashboard/lib/utils";
 
 const Input = ({ className, type, ...props }: ComponentProps<"input">) => (
     <input

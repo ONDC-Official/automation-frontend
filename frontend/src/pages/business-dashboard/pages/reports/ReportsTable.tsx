@@ -1,16 +1,16 @@
 import { FileSearch, TriangleAlert } from "lucide-react";
-import Badge from "@dashboard/components/Badge";
-import Button from "@dashboard/components/Button";
-import EmptyState from "@dashboard/components/EmptyState";
+import Badge from "@pages/business-dashboard/components/Badge";
+import Button from "@pages/business-dashboard/components/Button";
+import EmptyState from "@pages/business-dashboard/components/EmptyState";
 import Table, {
     TableBody,
     TableCell,
     TableHead,
     TableHeader,
     TableRow,
-} from "@dashboard/components/Table";
-import { formatDateTime, formatNumber, formatPercent } from "@dashboard/lib/utils";
-import type { Report } from "@dashboard/services/types";
+} from "@pages/business-dashboard/components/Table";
+import { formatDateTime, formatNumber, formatPercent } from "@pages/business-dashboard/lib/utils";
+import type { Report } from "@pages/business-dashboard/services/types";
 
 interface IProps {
     rows: Report[];

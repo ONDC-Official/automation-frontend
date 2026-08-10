@@ -23,7 +23,7 @@ export interface ApiError {
  * neither wants nor accepts. The hooks below also depend on the ApiError shape
  * normalised here.
  *
- * Nothing outside `@dashboard/hooks/` imports this file.
+ * Nothing outside `@pages/business-dashboard/hooks/` imports this file.
  */
 const httpClient = axios.create({
     baseURL: `${import.meta.env.VITE_BACKEND_URL}/dashboard`,

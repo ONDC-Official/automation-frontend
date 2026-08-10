@@ -1,6 +1,10 @@
-import Card, { CardContent, CardHeader, CardTitle } from "@dashboard/components/Card";
-import { formatNumber } from "@dashboard/lib/utils";
-import type { FlowSummaryEntry } from "@dashboard/services/types";
+import Card, {
+    CardContent,
+    CardHeader,
+    CardTitle,
+} from "@pages/business-dashboard/components/Card";
+import { formatNumber } from "@pages/business-dashboard/lib/utils";
+import type { FlowSummaryEntry } from "@pages/business-dashboard/services/types";
 import { FLOW_SUMMARY_TAGS } from "./constants";
 import { flowSummaryRows } from "./utils";
 

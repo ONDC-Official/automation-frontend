@@ -1,9 +1,9 @@
 import { RefreshCw, Search, User } from "lucide-react";
 
-import Button from "@dashboard/components/Button";
-import Input from "@dashboard/components/Input";
-import PageHeader from "@dashboard/components/PageHeader";
-import Pagination from "@dashboard/components/Pagination";
+import Button from "@pages/business-dashboard/components/Button";
+import Input from "@pages/business-dashboard/components/Input";
+import PageHeader from "@pages/business-dashboard/components/PageHeader";
+import Pagination from "@pages/business-dashboard/components/Pagination";
 import { useReportsPage } from "./useReportsPage";
 import ReportViewer from "./ReportViewer";
 import ReportsTable from "./ReportsTable";

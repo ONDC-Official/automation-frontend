@@ -1,10 +1,10 @@
 import { NavLink } from "react-router-dom";
 import { Activity, LogOut } from "lucide-react";
-import Button from "@dashboard/components/Button";
-import Tooltip from "@dashboard/components/Tooltip";
-import { useLogout } from "@dashboard/hooks/useAuth";
-import { cn } from "@dashboard/lib/utils";
-import { APP_NAME, APP_TAGLINE, DASHBOARD_ROOT, NAV } from "@dashboard/constants";
+import Button from "@pages/business-dashboard/components/Button";
+import Tooltip from "@pages/business-dashboard/components/Tooltip";
+import { useLogout } from "@pages/business-dashboard/hooks/useAuth";
+import { cn } from "@pages/business-dashboard/lib/utils";
+import { APP_NAME, APP_TAGLINE, DASHBOARD_ROOT, NAV } from "@pages/business-dashboard/constants";
 
 /**
  * The standalone app had a theme toggle here; the workbench header already owns

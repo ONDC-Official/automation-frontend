@@ -4,7 +4,7 @@ import {
     type QueryKey,
     type UseMutationOptions,
 } from "@tanstack/react-query";
-import type { ApiError } from "@dashboard/services/httpClient";
+import type { ApiError } from "@pages/business-dashboard/services/httpClient";
 
 interface PostOptions<TData, TVariables> extends Omit<
     UseMutationOptions<TData, ApiError, TVariables>,

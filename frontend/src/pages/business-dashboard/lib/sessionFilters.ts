@@ -1,4 +1,4 @@
-import type { SessionFilters, SessionResult } from "@dashboard/services/types";
+import type { SessionFilters, SessionResult } from "@pages/business-dashboard/services/types";
 import { compactParams } from "./queryParams";
 
 export const DEFAULT_PAGE = 1;

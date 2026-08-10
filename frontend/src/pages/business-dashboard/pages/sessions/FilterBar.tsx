@@ -1,14 +1,18 @@
 import { RotateCcw, Search } from "lucide-react";
-import Button from "@dashboard/components/Button";
-import DateRangePicker from "@dashboard/components/DateRangePicker";
-import Input from "@dashboard/components/Input";
+import Button from "@pages/business-dashboard/components/Button";
+import DateRangePicker from "@pages/business-dashboard/components/DateRangePicker";
+import Input from "@pages/business-dashboard/components/Input";
 import Select, {
     SelectContent,
     SelectItem,
     SelectTrigger,
     SelectValue,
-} from "@dashboard/components/Select";
-import type { SessionFacets, SessionFilters, SessionResult } from "@dashboard/services/types";
+} from "@pages/business-dashboard/components/Select";
+import type {
+    SessionFacets,
+    SessionFilters,
+    SessionResult,
+} from "@pages/business-dashboard/services/types";
 import { ANY_VALUE, REPORT_OPTIONS, RESULT_OPTIONS } from "./constants";
 
 interface IProps {

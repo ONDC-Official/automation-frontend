@@ -2,9 +2,12 @@ import { useCallback, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 
-import { useExportSessions } from "@dashboard/hooks/useExport";
-import { useSessions } from "@dashboard/hooks/useSessions";
-import { filtersFromSearchParams, withoutPaging } from "@dashboard/lib/sessionFilters";
+import { useExportSessions } from "@pages/business-dashboard/hooks/useExport";
+import { useSessions } from "@pages/business-dashboard/hooks/useSessions";
+import {
+    filtersFromSearchParams,
+    withoutPaging,
+} from "@pages/business-dashboard/lib/sessionFilters";
 import { DEFAULT_COLUMN_IDS, EXPORT_COLUMNS, LOCKED_COLUMN_IDS, PREVIEW_LIMIT } from "./constants";
 
 export function useExportPage() {

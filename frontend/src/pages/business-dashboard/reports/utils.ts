@@ -1,4 +1,4 @@
-import { formatDay } from "@dashboard/lib/utils";
+import { formatDay } from "@pages/business-dashboard/lib/utils";
 
 /** Either bound may be open — the date picker allows an unbounded window. */
 export interface IReportRange {

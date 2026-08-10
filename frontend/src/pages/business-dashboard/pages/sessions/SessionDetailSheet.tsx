@@ -1,18 +1,26 @@
 import { CheckCircle2, CircleDashed, TriangleAlert, XCircle } from "lucide-react";
-import Badge from "@dashboard/components/Badge";
-import Card, { CardContent, CardHeader, CardTitle } from "@dashboard/components/Card";
-import EmptyState from "@dashboard/components/EmptyState";
-import JsonViewer from "@dashboard/components/JsonViewer";
+import Badge from "@pages/business-dashboard/components/Badge";
+import Card, {
+    CardContent,
+    CardHeader,
+    CardTitle,
+} from "@pages/business-dashboard/components/Card";
+import EmptyState from "@pages/business-dashboard/components/EmptyState";
+import JsonViewer from "@pages/business-dashboard/components/JsonViewer";
 import Sheet, {
     SheetBody,
     SheetContent,
     SheetDescription,
     SheetHeader,
     SheetTitle,
-} from "@dashboard/components/Sheet";
-import Tabs, { TabsContent, TabsList, TabsTrigger } from "@dashboard/components/Tabs";
-import { formatDateTime } from "@dashboard/lib/utils";
-import type { SessionDetails } from "@dashboard/services/types";
+} from "@pages/business-dashboard/components/Sheet";
+import Tabs, {
+    TabsContent,
+    TabsList,
+    TabsTrigger,
+} from "@pages/business-dashboard/components/Tabs";
+import { formatDateTime } from "@pages/business-dashboard/lib/utils";
+import type { SessionDetails } from "@pages/business-dashboard/services/types";
 import FlowSummaryCard from "./FlowSummaryCard";
 import { flowMapTotals } from "./utils";
 

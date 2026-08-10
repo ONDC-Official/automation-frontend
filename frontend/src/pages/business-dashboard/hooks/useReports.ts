@@ -1,7 +1,11 @@
-import httpClient from "@dashboard/services/httpClient";
-import { compactParams } from "@dashboard/lib/queryParams";
-import type { ApiError } from "@dashboard/services/httpClient";
-import type { ReportBlob, ReportFilters, ReportListResponse } from "@dashboard/services/types";
+import httpClient from "@pages/business-dashboard/services/httpClient";
+import { compactParams } from "@pages/business-dashboard/lib/queryParams";
+import type { ApiError } from "@pages/business-dashboard/services/httpClient";
+import type {
+    ReportBlob,
+    ReportFilters,
+    ReportListResponse,
+} from "@pages/business-dashboard/services/types";
 import { useGet } from "./useGet";
 
 export const reportKeys = {

@@ -6,7 +6,7 @@ import {
     PRINT_INK,
     PRINT_MUTED,
     PRINT_SURFACE,
-} from "@dashboard/components/Chart/constants";
+} from "@pages/business-dashboard/components/Chart/constants";
 
 /** A4 portrait at 72dpi, less the page margin — the drawable width for a chart. */
 export const PAGE_MARGIN = 36;

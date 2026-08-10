@@ -4,11 +4,11 @@ import Card, {
     CardDescription,
     CardHeader,
     CardTitle,
-} from "@dashboard/components/Card";
-import Button from "@dashboard/components/Button";
-import FormPasswordInput from "@dashboard/components/FormPasswordInput";
-import { useLogin } from "@dashboard/hooks/useAuth";
-import { APP_NAME, APP_TAGLINE } from "@dashboard/constants";
+} from "@pages/business-dashboard/components/Card";
+import Button from "@pages/business-dashboard/components/Button";
+import FormPasswordInput from "@pages/business-dashboard/components/FormPasswordInput";
+import { useLogin } from "@pages/business-dashboard/hooks/useAuth";
+import { APP_NAME, APP_TAGLINE } from "@pages/business-dashboard/constants";
 
 /**
  * Shown in place of the dashboard when the session cookie is missing or stale.

@@ -1,5 +1,5 @@
 import type { ComponentProps } from "react";
-import { cn } from "@dashboard/lib/utils";
+import { cn } from "@pages/business-dashboard/lib/utils";
 
 const Table = ({ className, ...props }: ComponentProps<"table">) => (
     <div data-slot="table-container" className="w-full overflow-x-auto">

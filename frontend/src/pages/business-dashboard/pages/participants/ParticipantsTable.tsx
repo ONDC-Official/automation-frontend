@@ -1,16 +1,21 @@
 import { ArrowDown, ArrowUp, SearchX, TriangleAlert } from "lucide-react";
 
-import Badge from "@dashboard/components/Badge";
-import EmptyState from "@dashboard/components/EmptyState";
+import Badge from "@pages/business-dashboard/components/Badge";
+import EmptyState from "@pages/business-dashboard/components/EmptyState";
 import Table, {
     TableBody,
     TableCell,
     TableHead,
     TableHeader,
     TableRow,
-} from "@dashboard/components/Table";
-import { cn, formatDateTime, formatNumber, formatPercent } from "@dashboard/lib/utils";
-import type { ParticipantRow } from "@dashboard/services/types";
+} from "@pages/business-dashboard/components/Table";
+import {
+    cn,
+    formatDateTime,
+    formatNumber,
+    formatPercent,
+} from "@pages/business-dashboard/lib/utils";
+import type { ParticipantRow } from "@pages/business-dashboard/services/types";
 import { TABLE_COLUMNS } from "./constants";
 import { passRateTone } from "./utils";
 

@@ -1,7 +1,11 @@
 import { useCallback, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 
-import { useSession, useSessionFacets, useSessions } from "@dashboard/hooks/useSessions";
+import {
+    useSession,
+    useSessionFacets,
+    useSessions,
+} from "@pages/business-dashboard/hooks/useSessions";
 import {
     DEFAULT_LIMIT,
     DEFAULT_ORDER,
@@ -11,8 +15,8 @@ import {
     hasActiveFilters,
     searchParamsFromFilters,
     withoutPaging,
-} from "@dashboard/lib/sessionFilters";
-import type { SessionFilters } from "@dashboard/services/types";
+} from "@pages/business-dashboard/lib/sessionFilters";
+import type { SessionFilters } from "@pages/business-dashboard/services/types";
 
 export function useSessionsPage() {
     const [searchParams, setSearchParams] = useSearchParams();

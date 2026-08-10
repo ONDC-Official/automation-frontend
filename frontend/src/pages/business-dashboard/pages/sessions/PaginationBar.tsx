@@ -1,4 +1,4 @@
-import Pagination from "@dashboard/components/Pagination";
+import Pagination from "@pages/business-dashboard/components/Pagination";
 
 interface IProps {
     page: number;

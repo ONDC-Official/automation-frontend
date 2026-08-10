@@ -1,7 +1,7 @@
 import type { ComponentProps } from "react";
 import { Slot } from "radix-ui";
 import type { VariantProps } from "class-variance-authority";
-import { cn } from "@dashboard/lib/utils";
+import { cn } from "@pages/business-dashboard/lib/utils";
 import { buttonVariants } from "./variants";
 
 interface IProps extends ComponentProps<"button">, VariantProps<typeof buttonVariants> {

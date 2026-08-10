@@ -1,8 +1,13 @@
 import { ArrowDown, ArrowUp, SearchX, TriangleAlert } from "lucide-react";
-import EmptyState from "@dashboard/components/EmptyState";
-import Table, { TableBody, TableHead, TableHeader, TableRow } from "@dashboard/components/Table";
-import { cn } from "@dashboard/lib/utils";
-import type { SessionRow as SessionRowType } from "@dashboard/services/types";
+import EmptyState from "@pages/business-dashboard/components/EmptyState";
+import Table, {
+    TableBody,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from "@pages/business-dashboard/components/Table";
+import { cn } from "@pages/business-dashboard/lib/utils";
+import type { SessionRow as SessionRowType } from "@pages/business-dashboard/services/types";
 import SessionRow from "./SessionRow";
 import { TABLE_COLUMNS } from "./constants";
 

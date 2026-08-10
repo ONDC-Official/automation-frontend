@@ -1,21 +1,21 @@
 import { FilterX, TriangleAlert } from "lucide-react";
-import Badge from "@dashboard/components/Badge";
+import Badge from "@pages/business-dashboard/components/Badge";
 import Card, {
     CardContent,
     CardDescription,
     CardHeader,
     CardTitle,
-} from "@dashboard/components/Card";
-import EmptyState from "@dashboard/components/EmptyState";
+} from "@pages/business-dashboard/components/Card";
+import EmptyState from "@pages/business-dashboard/components/EmptyState";
 import Table, {
     TableBody,
     TableCell,
     TableHead,
     TableHeader,
     TableRow,
-} from "@dashboard/components/Table";
-import { formatDateTime, formatNumber, formatPercent } from "@dashboard/lib/utils";
-import type { SessionFilters, SessionRow } from "@dashboard/services/types";
+} from "@pages/business-dashboard/components/Table";
+import { formatDateTime, formatNumber, formatPercent } from "@pages/business-dashboard/lib/utils";
+import type { SessionFilters, SessionRow } from "@pages/business-dashboard/services/types";
 import { EXPORT_COLUMNS, PREVIEW_LIMIT } from "./constants";
 
 interface IProps {

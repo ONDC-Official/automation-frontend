@@ -1,4 +1,4 @@
-import type { FlowSummaryEntry, SessionResult } from "@dashboard/services/types";
+import type { FlowSummaryEntry, SessionResult } from "@pages/business-dashboard/services/types";
 
 /**
  * Maps the server's `result` onto a badge variant. Nothing is derived here —

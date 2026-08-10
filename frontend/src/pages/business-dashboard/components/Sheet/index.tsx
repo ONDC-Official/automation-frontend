@@ -1,7 +1,7 @@
 import type { ComponentProps } from "react";
 import { Dialog as SheetPrimitive } from "radix-ui";
 import { X } from "lucide-react";
-import { cn } from "@dashboard/lib/utils";
+import { cn } from "@pages/business-dashboard/lib/utils";
 
 const Sheet = SheetPrimitive.Root;
 

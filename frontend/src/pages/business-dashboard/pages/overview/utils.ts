@@ -1,5 +1,5 @@
-import { toIsoDate } from "@dashboard/lib/utils";
-import type { SessionStatsResponse } from "@dashboard/services/types";
+import { toIsoDate } from "@pages/business-dashboard/lib/utils";
+import type { SessionStatsResponse } from "@pages/business-dashboard/services/types";
 
 type DayPoint = SessionStatsResponse["byDay"][number];
 

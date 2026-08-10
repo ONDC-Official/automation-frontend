@@ -2,24 +2,24 @@ import { Link } from "react-router-dom";
 import { ROUTES } from "@constants/routes";
 import { TriangleAlert } from "lucide-react";
 
-import Badge from "@dashboard/components/Badge";
-import EmptyState from "@dashboard/components/EmptyState";
+import Badge from "@pages/business-dashboard/components/Badge";
+import EmptyState from "@pages/business-dashboard/components/EmptyState";
 import Sheet, {
     SheetBody,
     SheetContent,
     SheetDescription,
     SheetHeader,
     SheetTitle,
-} from "@dashboard/components/Sheet";
+} from "@pages/business-dashboard/components/Sheet";
 import Table, {
     TableBody,
     TableCell,
     TableHead,
     TableHeader,
     TableRow,
-} from "@dashboard/components/Table";
-import { formatDateTime, formatNumber, formatPercent } from "@dashboard/lib/utils";
-import type { ParticipantDetail, ParticipantRow } from "@dashboard/services/types";
+} from "@pages/business-dashboard/components/Table";
+import { formatDateTime, formatNumber, formatPercent } from "@pages/business-dashboard/lib/utils";
+import type { ParticipantDetail, ParticipantRow } from "@pages/business-dashboard/services/types";
 import { judgedSummary, passRateTone } from "./utils";
 
 interface IProps {

@@ -1,7 +1,7 @@
 import type { ComponentProps } from "react";
 import { DropdownMenu as DropdownMenuPrimitive } from "radix-ui";
 import { Check } from "lucide-react";
-import { cn } from "@dashboard/lib/utils";
+import { cn } from "@pages/business-dashboard/lib/utils";
 
 const DropdownMenu = DropdownMenuPrimitive.Root;
 

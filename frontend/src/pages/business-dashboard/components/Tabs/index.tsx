@@ -1,7 +1,7 @@
 import type { ComponentProps } from "react";
 import { Tabs as TabsPrimitive } from "radix-ui";
 import type { VariantProps } from "class-variance-authority";
-import { cn } from "@dashboard/lib/utils";
+import { cn } from "@pages/business-dashboard/lib/utils";
 import { tabsListVariants, tabsTriggerVariants } from "./variants";
 
 const Tabs = ({ className, ...props }: ComponentProps<typeof TabsPrimitive.Root>) => (

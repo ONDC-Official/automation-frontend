@@ -5,10 +5,10 @@ import {
     LINE_WIDTH,
     PRINT_GRID,
     PRINT_MUTED,
-} from "@dashboard/components/Chart/constants";
-import { buildGeometry, stripBandKey } from "@dashboard/components/Chart/geometry";
-import { printColorForSeries } from "@dashboard/components/Chart/utils";
-import type { ChartDatum, ChartType, ISeries } from "@dashboard/components/Chart";
+} from "@pages/business-dashboard/components/Chart/constants";
+import { buildGeometry, stripBandKey } from "@pages/business-dashboard/components/Chart/geometry";
+import { printColorForSeries } from "@pages/business-dashboard/components/Chart/utils";
+import type { ChartDatum, ChartType, ISeries } from "@pages/business-dashboard/components/Chart";
 
 interface IProps {
     data: readonly ChartDatum[];

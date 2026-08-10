@@ -2,8 +2,8 @@ import { Link } from "react-router-dom";
 import { ROUTES } from "@constants/routes";
 import { Download, ListFilter } from "lucide-react";
 
-import Button from "@dashboard/components/Button";
-import PageHeader from "@dashboard/components/PageHeader";
+import Button from "@pages/business-dashboard/components/Button";
+import PageHeader from "@pages/business-dashboard/components/PageHeader";
 import { useExportPage } from "./useExportPage";
 import ColumnPicker from "./ColumnPicker";
 import ExportPreview from "./ExportPreview";

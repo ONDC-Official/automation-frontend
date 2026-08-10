@@ -1,5 +1,5 @@
 import { Inbox } from "lucide-react";
-import { cn } from "@dashboard/lib/utils";
+import { cn } from "@pages/business-dashboard/lib/utils";
 import type { IProps } from "./types";
 
 const EmptyState = ({ title, description, icon: Icon = Inbox, action, className }: IProps) => (

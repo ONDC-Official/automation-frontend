@@ -1,16 +1,16 @@
 import { Download, RefreshCw, RotateCcw, Search } from "lucide-react";
 
-import Button from "@dashboard/components/Button";
-import DateRangePicker from "@dashboard/components/DateRangePicker";
-import Input from "@dashboard/components/Input";
-import PageHeader from "@dashboard/components/PageHeader";
-import Pagination from "@dashboard/components/Pagination";
+import Button from "@pages/business-dashboard/components/Button";
+import DateRangePicker from "@pages/business-dashboard/components/DateRangePicker";
+import Input from "@pages/business-dashboard/components/Input";
+import PageHeader from "@pages/business-dashboard/components/PageHeader";
+import Pagination from "@pages/business-dashboard/components/Pagination";
 import Select, {
     SelectContent,
     SelectItem,
     SelectTrigger,
     SelectValue,
-} from "@dashboard/components/Select";
+} from "@pages/business-dashboard/components/Select";
 import { ANY_VALUE, NP_TYPE_OPTIONS } from "./constants";
 import ParticipantDetailSheet from "./ParticipantDetailSheet";
 import ParticipantsTable from "./ParticipantsTable";

@@ -1,17 +1,17 @@
 import { Document, Page, Text, View } from "@react-pdf/renderer";
 
-import { read } from "@dashboard/components/Chart/geometry";
-import { printColorForSeries } from "@dashboard/components/Chart/utils";
-import type { ChartDatum, ChartType, ISeries } from "@dashboard/components/Chart";
+import { read } from "@pages/business-dashboard/components/Chart/geometry";
+import { printColorForSeries } from "@pages/business-dashboard/components/Chart/utils";
+import type { ChartDatum, ChartType, ISeries } from "@pages/business-dashboard/components/Chart";
 import {
     formatCompact,
     formatDateTime,
     formatDay,
     formatNumber,
     formatPercent,
-} from "@dashboard/lib/utils";
-import type { SessionStatsResponse } from "@dashboard/services/types";
-import { DOMAIN_SERIES, TREND_SERIES } from "@dashboard/pages/overview/constants";
+} from "@pages/business-dashboard/lib/utils";
+import type { SessionStatsResponse } from "@pages/business-dashboard/services/types";
+import { DOMAIN_SERIES, TREND_SERIES } from "@pages/business-dashboard/pages/overview/constants";
 import ReportChart from "./ReportChart";
 import { CHART_HEIGHT, CONTENT_WIDTH, styles } from "./styles";
 import { describeRange, type IReportRange } from "./utils";

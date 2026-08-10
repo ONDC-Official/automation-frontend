@@ -1,6 +1,6 @@
 import { NavLink } from "react-router-dom";
-import { cn } from "@dashboard/lib/utils";
-import { DASHBOARD_ROOT, NAV } from "@dashboard/constants";
+import { cn } from "@pages/business-dashboard/lib/utils";
+import { DASHBOARD_ROOT, NAV } from "@pages/business-dashboard/constants";
 
 /** Below `md` the sidebar is hidden, so the nav collapses into a bar. */
 const MobileNav = () => (

@@ -1,7 +1,7 @@
 import { useId, useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
-import Input from "@dashboard/components/Input";
-import { cn } from "@dashboard/lib/utils";
+import Input from "@pages/business-dashboard/components/Input";
+import { cn } from "@pages/business-dashboard/lib/utils";
 import type { IProps } from "./types";
 
 const FormPasswordInput = ({ label, registration, error, hint, className, ...props }: IProps) => {

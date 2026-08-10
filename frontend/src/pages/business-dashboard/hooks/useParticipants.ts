@@ -1,10 +1,10 @@
-import httpClient from "@dashboard/services/httpClient";
-import { compactParams } from "@dashboard/lib/queryParams";
+import httpClient from "@pages/business-dashboard/services/httpClient";
+import { compactParams } from "@pages/business-dashboard/lib/queryParams";
 import type {
     NpFilters,
     ParticipantDetail,
     ParticipantListResponse,
-} from "@dashboard/services/types";
+} from "@pages/business-dashboard/services/types";
 import { useGet } from "./useGet";
 
 export const participantKeys = {

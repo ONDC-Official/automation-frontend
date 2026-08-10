@@ -4,7 +4,7 @@ import Table, {
     TableHead,
     TableHeader,
     TableRow,
-} from "@dashboard/components/Table";
+} from "@pages/business-dashboard/components/Table";
 import type { ChartDatum, ISeries } from "./types";
 
 interface IProps {

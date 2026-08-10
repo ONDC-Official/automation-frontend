@@ -1,8 +1,8 @@
 import { Outlet } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
-import { TooltipProvider } from "@dashboard/components/Tooltip";
-import { useSyncSession } from "@dashboard/hooks/useAuth";
+import { TooltipProvider } from "@pages/business-dashboard/components/Tooltip";
+import { useSyncSession } from "@pages/business-dashboard/hooks/useAuth";
 import { useAppSelector } from "@store/hooks";
 import { selectDashboardAuthenticated } from "@store/slices/businessDashboardSlice";
 import AuthGate from "./AuthGate";

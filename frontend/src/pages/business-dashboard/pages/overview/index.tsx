@@ -2,9 +2,9 @@ import { Link } from "react-router-dom";
 import { ROUTES } from "@constants/routes";
 import { Download, ListFilter, RefreshCw } from "lucide-react";
 
-import Button from "@dashboard/components/Button";
-import DateRangePicker from "@dashboard/components/DateRangePicker";
-import PageHeader from "@dashboard/components/PageHeader";
+import Button from "@pages/business-dashboard/components/Button";
+import DateRangePicker from "@pages/business-dashboard/components/DateRangePicker";
+import PageHeader from "@pages/business-dashboard/components/PageHeader";
 import { useOverviewPage } from "./useOverviewPage";
 import DomainBreakdownChart from "./DomainBreakdownChart";
 import KpiRow from "./KpiRow";

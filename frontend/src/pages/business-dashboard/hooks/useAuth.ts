@@ -4,12 +4,12 @@ import { useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-import httpClient from "@dashboard/services/httpClient";
-import type { ApiError } from "@dashboard/services/httpClient";
-import type { LoginRequest, MeResponse } from "@dashboard/services/types";
+import httpClient from "@pages/business-dashboard/services/httpClient";
+import type { ApiError } from "@pages/business-dashboard/services/httpClient";
+import type { LoginRequest, MeResponse } from "@pages/business-dashboard/services/types";
 import { useAppDispatch } from "@store/hooks";
 import { signedIn, signedOut } from "@store/slices/businessDashboardSlice";
-import { DASHBOARD_ROOT } from "@dashboard/constants";
+import { DASHBOARD_ROOT } from "@pages/business-dashboard/constants";
 import { useGet } from "./useGet";
 import { usePost } from "./usePost";
 

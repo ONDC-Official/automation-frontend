@@ -1,7 +1,7 @@
 import type { ComponentProps } from "react";
 import { Select as SelectPrimitive } from "radix-ui";
 import { Check, ChevronDown } from "lucide-react";
-import { cn } from "@dashboard/lib/utils";
+import { cn } from "@pages/business-dashboard/lib/utils";
 
 const Select = SelectPrimitive.Root;
 

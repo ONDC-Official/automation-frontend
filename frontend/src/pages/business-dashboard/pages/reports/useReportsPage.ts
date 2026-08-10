@@ -1,8 +1,8 @@
 import { useCallback, useMemo, useState } from "react";
 
-import { useReport, useReports } from "@dashboard/hooks/useReports";
-import { DEFAULT_LIMIT, DEFAULT_PAGE } from "@dashboard/lib/sessionFilters";
-import type { ReportFilters } from "@dashboard/services/types";
+import { useReport, useReports } from "@pages/business-dashboard/hooks/useReports";
+import { DEFAULT_LIMIT, DEFAULT_PAGE } from "@pages/business-dashboard/lib/sessionFilters";
+import type { ReportFilters } from "@pages/business-dashboard/services/types";
 import { decodeReportHtml } from "./utils";
 
 export function useReportsPage() {

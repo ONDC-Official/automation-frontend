@@ -1,5 +1,5 @@
 import { useQuery, type QueryKey, type UseQueryOptions } from "@tanstack/react-query";
-import type { ApiError } from "@dashboard/services/httpClient";
+import type { ApiError } from "@pages/business-dashboard/services/httpClient";
 
 export function useGet<TData>(
     key: QueryKey,

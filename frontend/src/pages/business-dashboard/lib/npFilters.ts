@@ -1,6 +1,10 @@
-import { compactParams } from "@dashboard/lib/queryParams";
-import { DEFAULT_LIMIT, DEFAULT_PAGE, MAX_LIMIT } from "@dashboard/lib/sessionFilters";
-import type { NpFilters } from "@dashboard/services/types";
+import { compactParams } from "@pages/business-dashboard/lib/queryParams";
+import {
+    DEFAULT_LIMIT,
+    DEFAULT_PAGE,
+    MAX_LIMIT,
+} from "@pages/business-dashboard/lib/sessionFilters";
+import type { NpFilters } from "@pages/business-dashboard/services/types";
 
 /**
  * URL <-> filter translation for the participants page, mirroring

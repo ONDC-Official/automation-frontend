@@ -1,6 +1,6 @@
 import type { ComponentProps, ReactNode } from "react";
 import { Tooltip as TooltipPrimitive } from "radix-ui";
-import { cn } from "@dashboard/lib/utils";
+import { cn } from "@pages/business-dashboard/lib/utils";
 
 export const TooltipProvider = ({
     delayDuration = 200,

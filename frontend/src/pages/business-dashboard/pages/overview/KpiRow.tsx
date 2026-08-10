@@ -1,7 +1,7 @@
 import { CircleCheck, FileText, Layers, XCircle } from "lucide-react";
-import StatTile from "@dashboard/components/StatTile";
-import { formatCompact, formatPercent } from "@dashboard/lib/utils";
-import type { SessionStatsResponse } from "@dashboard/services/types";
+import StatTile from "@pages/business-dashboard/components/StatTile";
+import { formatCompact, formatPercent } from "@pages/business-dashboard/lib/utils";
+import type { SessionStatsResponse } from "@pages/business-dashboard/services/types";
 
 interface IProps {
     totals?: SessionStatsResponse["totals"];

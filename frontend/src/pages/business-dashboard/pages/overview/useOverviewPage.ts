@@ -1,11 +1,11 @@
 import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
 
-import type { IRange } from "@dashboard/components/DateRangePicker";
-import { useSessionStats } from "@dashboard/hooks/useSessionStats";
-import { isoDaysAgo, toIsoDate } from "@dashboard/lib/utils";
-import { searchParamsFromFilters } from "@dashboard/lib/sessionFilters";
-import type { SessionFilters } from "@dashboard/services/types";
+import type { IRange } from "@pages/business-dashboard/components/DateRangePicker";
+import { useSessionStats } from "@pages/business-dashboard/hooks/useSessionStats";
+import { isoDaysAgo, toIsoDate } from "@pages/business-dashboard/lib/utils";
+import { searchParamsFromFilters } from "@pages/business-dashboard/lib/sessionFilters";
+import type { SessionFilters } from "@pages/business-dashboard/services/types";
 import { DEFAULT_RANGE_DAYS, MAX_DOMAIN_BARS } from "./constants";
 import { bucketLabel, fillDayGaps } from "./utils";
 
@@ -68,7 +68,8 @@ export function useOverviewPage() {
     const onDownloadReport = useCallback(async () => {
         setIsGeneratingReport(true);
         try {
-            const { downloadOverviewReport } = await import("@dashboard/reports/generate");
+            const { downloadOverviewReport } =
+                await import("@pages/business-dashboard/reports/generate");
             await downloadOverviewReport({
                 range,
                 totals,

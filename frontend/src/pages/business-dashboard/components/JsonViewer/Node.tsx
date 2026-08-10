@@ -1,5 +1,5 @@
 import { ChevronDown, ChevronRight } from "lucide-react";
-import { cn } from "@dashboard/lib/utils";
+import { cn } from "@pages/business-dashboard/lib/utils";
 import { jsonValueVariants } from "./variants";
 import { entriesOf, isBranch, kindOf, matchesSearch, summarise } from "./utils";
 import type { INodeProps } from "./types";
