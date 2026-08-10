@@ -26,6 +26,12 @@ export const ROUTES = {
     DEVELOPER_GUIDE_DOMAINS: "/developer-guide/domains",
     DEVELOPER_GUIDE_AUTH_TOOLS: "/developer-guide/auth-tools",
     SELLER_LOAD_TESTING: "/seller-load-testing",
+    /** Business dashboard — analytics over test sessions, participants and reports. */
+    BUSINESS: "/business",
+    BUSINESS_SESSIONS: "/business/sessions",
+    BUSINESS_PARTICIPANTS: "/business/participants",
+    BUSINESS_REPORTS: "/business/reports",
+    BUSINESS_EXPORT: "/business/export",
     /** Use case flow: domain and version are URL-encoded if needed; useCase is slug e.g. personal_loan */
     DEVELOPER_GUIDE_USE_CASE: "/developer-guide/:domain/:version/:useCase",
     /** General developer doc page, slug matches filename in GitHub docs/developer-docs */

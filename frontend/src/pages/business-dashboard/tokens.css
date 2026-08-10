@@ -1,0 +1,111 @@
+/* ---------------------------------------------------------------------------
+   Business dashboard tokens.
+
+   Only what the workbench does not already define. The dashboard's semantic
+   colours — background, card, primary, border, ring, and the whole --radius
+   scale — are deliberately NOT redeclared here: styles/tokens.css already
+   provides every one of them, so dropping the dashboard's greyscale versions
+   makes it inherit the workbench brand palette instead of fighting it.
+
+   What is left is genuinely dashboard-only: the categorical chart slots, the
+   status scale, and the sidebar surface.
+
+   The --chart-* slots are the validated categorical palette from the dataviz
+   skill (fixed slot order, never cycled), stepped separately for each surface:
+   light validated against the card surface #ffffff, dark against #171717.
+   Light mode sits in the sub-3:1 contrast relief band, which is why the
+   Chart component always ships a legend, a tooltip and a table view.
+--------------------------------------------------------------------------- */
+
+:root {
+    /* Categorical chart slots — fixed order, assigned in sequence, never cycled. */
+    --chart-1: #2a78d6;
+    --chart-2: #eb6834;
+    --chart-3: #1baf7a;
+    --chart-4: #eda100;
+    --chart-5: #e87ba4;
+
+    /* Chart chrome: recessive hairlines, one step off the surface. */
+    --chart-grid: oklch(0.93 0 0);
+    --chart-axis: oklch(0.84 0 0);
+
+    /* Status scale — reserved meaning, never reused as a series colour.
+
+       --status-*         MARK  — chart fills, meter fills, icons.  >= 3:1 vs the card surface.
+       --status-*-subtle  FILL  — the badge background.
+       --status-*-ink     TEXT  — any status-coloured text. >= 4.5:1 against BOTH
+
+     with an icon + label and never carries meaning alone. */
+    --status-pass: #009966;
+    --status-pass-subtle: #d0fae5;
+    --status-pass-ink: #087c57;
+    --status-pending: #e17100;
+    --status-pending-subtle: #fef3c6;
+    --status-pending-ink: #986106;
+    --status-fail: #e7000b;
+    --status-fail-subtle: #ffe2e2;
+    --status-fail-ink: #b63b39;
+
+    --sidebar: oklch(0.985 0 0);
+    --sidebar-foreground: oklch(0.145 0 0);
+    --sidebar-border: oklch(0.922 0 0);
+    --sidebar-accent: oklch(0.97 0 0);
+    --sidebar-accent-foreground: oklch(0.205 0 0);
+    --sidebar-ring: oklch(0.708 0 0);
+}
+
+.dark {
+    /* Same hues, re-stepped for the dark surface — not an automatic flip. */
+    --chart-1: #3987e5;
+    --chart-2: #d95926;
+    --chart-3: #199e70;
+    --chart-4: #c98500;
+    --chart-5: #d55181;
+
+    --chart-grid: oklch(1 0 0 / 10%);
+    --chart-axis: oklch(1 0 0 / 20%);
+
+    /* Re-stepped for the dark surface, not flipped. The previous dark pair sat at
+     deuteranopia. These sit at L 0.61/0.65 and measure ΔE 10.5. */
+    --status-pass: #089b6d;
+    --status-pass-subtle: #093725;
+    --status-pass-ink: #0eac79;
+    --status-pending: #c8800d;
+    --status-pending-subtle: #432a08;
+    --status-pending-ink: #d0860b;
+    --status-fail: #fd393f;
+    --status-fail-subtle: #4e2020;
+    --status-fail-ink: #ee6e67;
+
+    --sidebar: oklch(0.205 0 0);
+    --sidebar-foreground: oklch(0.985 0 0);
+    --sidebar-border: oklch(1 0 0 / 12%);
+    --sidebar-accent: oklch(0.269 0 0);
+    --sidebar-accent-foreground: oklch(0.985 0 0);
+    --sidebar-ring: oklch(0.556 0 0);
+}
+
+@theme inline {
+    --color-chart-1: var(--chart-1);
+    --color-chart-2: var(--chart-2);
+    --color-chart-3: var(--chart-3);
+    --color-chart-4: var(--chart-4);
+    --color-chart-5: var(--chart-5);
+    --color-chart-axis: var(--chart-axis);
+    --color-chart-grid: var(--chart-grid);
+    --color-sidebar: var(--sidebar);
+    --color-sidebar-accent: var(--sidebar-accent);
+    --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+    --color-sidebar-border: var(--sidebar-border);
+    --color-sidebar-foreground: var(--sidebar-foreground);
+    --color-sidebar-ring: var(--sidebar-ring);
+    --color-status-fail: var(--status-fail);
+    --color-status-fail-ink: var(--status-fail-ink);
+    --color-status-fail-subtle: var(--status-fail-subtle);
+    --color-status-pass: var(--status-pass);
+    --color-status-pass-ink: var(--status-pass-ink);
+    --color-status-pass-subtle: var(--status-pass-subtle);
+    --color-status-pending: var(--status-pending);
+    --color-status-pending-ink: var(--status-pending-ink);
+    --color-status-pending-subtle: var(--status-pending-subtle);
+}

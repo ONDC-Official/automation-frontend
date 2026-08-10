@@ -27,6 +27,12 @@ import DeveloperGuideDomainsContent from "@pages/developer-guide/layout/Develope
 import DeveloperGuideDocContent from "@pages/developer-guide/layout/DeveloperGuideDocContent";
 import ValidationsPage from "@pages/developer-guide/ValidationsPage";
 import { isDevGuideEnabled } from "@/types/environment";
+import DashboardShell from "@dashboard/shell";
+import BusinessOverview from "@dashboard/pages/overview";
+import BusinessSessions from "@dashboard/pages/sessions";
+import BusinessParticipants from "@dashboard/pages/participants";
+import BusinessReports from "@dashboard/pages/reports";
+import BusinessExport from "@dashboard/pages/export";
 import PageReveal from "./page-reveal";
 
 const page = (children: ReactNode) => <PageReveal>{children}</PageReveal>;
@@ -53,6 +59,15 @@ const Routes = () => (
         {/* <Route path={ROUTES.SELLER_LOAD_TESTING} element={page(<SellerLoadTesting />)} /> */}
         {/* <Route path={ROUTES.FRAMEWORK_HEALTH} element={page(<FrameworkHealthPage />)} /> */}
         <Route path={ROUTES.LIVE_HEALTHCHECK_STATUS} element={page(<FrameworkHealthPage />)} />
+        {/* Business dashboard. The shell owns its data providers and its own
+            shared-password gate; the backend enforces the session regardless. */}
+        <Route path={ROUTES.BUSINESS} element={<DashboardShell />}>
+            <Route index element={<BusinessOverview />} />
+            <Route path="sessions" element={<BusinessSessions />} />
+            <Route path="participants" element={<BusinessParticipants />} />
+            <Route path="reports" element={<BusinessReports />} />
+            <Route path="export" element={<BusinessExport />} />
+        </Route>
         {isDevGuideEnabled ? (
             <>
                 <Route path={ROUTES.DEVELOPER_GUIDE} element={<DeveloperGuideShell />}>

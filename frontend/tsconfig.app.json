@@ -26,7 +26,8 @@
             "@constants/*": ["./src/constants/*"],
             "@services/*": ["./src/services/*"],
             "@store/*": ["./src/store/*"],
-            "@assets/*": ["./src/assets/*"]
+            "@assets/*": ["./src/assets/*"],
+            "@dashboard/*": ["./src/pages/business-dashboard/*"]
         },
 
         /* Linting */

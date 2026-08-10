@@ -1,6 +1,7 @@
 @import "tw-animate-css";
 @import "./styles/tokens.css";
 @import "./styles/typography.css";
+@import "./pages/business-dashboard/tokens.css";
 @import "tailwindcss";
 
 @theme {
