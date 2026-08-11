@@ -1,4 +1,5 @@
 import { IFooterLinks, ISocialLink } from "@components/Footer/types";
+import { ROUTES } from "@constants/routes";
 import GitHubIcon from "@assets/svgs/GitHubIcon";
 import LinkedInIcon from "@assets/svgs/LinkedInIcon";
 
@@ -37,6 +38,14 @@ export const footerLinks: IFooterLinks = {
             name: "Join ONDC",
             href: "https://ondc.org/ondc-how-to-join/",
             analytics: { category: "FOOTER", action: "Clicked on 'Join ONDC'" },
+        },
+        {
+            name: "Business Dashboard",
+            href: ROUTES.BUSINESS,
+            analytics: {
+                category: "FOOTER",
+                action: "Clicked on 'Business Dashboard'",
+            },
         },
     ],
 };

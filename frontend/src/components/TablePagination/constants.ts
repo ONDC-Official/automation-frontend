@@ -1,0 +1,1 @@
+export const DEFAULT_LIMIT_OPTIONS = [25, 50, 100, 200];

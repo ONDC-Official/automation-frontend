@@ -123,7 +123,7 @@ export default function RideMapTab({ flowId }: { flowId: string | null }) {
 
     // `code` is the RIDE_* fulfillment-state code (the button values are the codes themselves).
     // Each state change advances the flow through the NORMAL proceed API: the next pending
-    // tracking-phase sequence step (on_status/on_update) is dispatched by passing its actionId as
+    // ride-state sequence step (on_status) is dispatched by passing its actionId as
     // `inputs.id` — no trigger_extra. Returns true only when the step was actually dispatched to
     // the buyer — callers gate the driver animation on this so movement never starts before the
     // buyer is updated.
@@ -279,7 +279,7 @@ export default function RideMapTab({ flowId }: { flowId: string | null }) {
     };
 
     // Enroute → animate to pickup → auto Arrived. Started → animate to drop → auto End+Completed.
-    // The driver animation starts ONLY after the on_status/on_update is acknowledged (sendRideState
+    // The driver animation starts ONLY after the on_status is acknowledged (sendRideState
     // returns true) — i.e. the buyer has actually been updated. A failed/undelivered send aborts.
     const handleRideState = async (code: string) => {
         if (code === "RIDE_ENROUTE_PICKUP") {

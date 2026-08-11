@@ -345,15 +345,17 @@ export function nextPendingRideState(mappedFlow: FlowMap): RideState | undefined
 }
 
 /**
- * The actionId of the next not-yet-complete tracking-phase step (on_status/on_update) in the
- * sequence — passed as `inputs.id` to the normal proceed API so the flow engine dispatches that
- * step (manual steps require `inputs.id === actionId`).
+ * The actionId of the next not-yet-complete ride-state step (`on_status`) in the sequence —
+ * passed as `inputs.id` to the normal proceed API so the flow engine dispatches that step
+ * (manual steps require `inputs.id === actionId`).
+ *
+ * `on_update` is not matched: the map has no control for those, so it must not claim to drive
+ * them. Note the engine dispatches whichever step is actually next in the sequence, so an
+ * intervening on_update still receives the press — it just isn't named here.
  */
 export function nextPendingTrackingActionId(mappedFlow: FlowMap): string | undefined {
     const step = (mappedFlow.sequence ?? []).find(
-        (s) =>
-            (s.actionType === "on_status" || s.actionType === "on_update") &&
-            s.status !== "COMPLETE"
+        (s) => s.actionType === "on_status" && s.status !== "COMPLETE"
     );
     return step?.actionId;
 }
@@ -372,8 +374,15 @@ export function currentRideState(mappedFlow: FlowMap): string | undefined {
     return state;
 }
 
-/** Step types that belong to the tracking phase (after on_confirm) and must NOT auto-proceed. */
-const TRACKING_PHASE_TYPES = new Set(["track", "on_track", "on_status", "on_update", "status"]);
+/**
+ * Step types that belong to the tracking phase (after on_confirm) and must NOT auto-proceed.
+ *
+ * `on_update` is deliberately absent. It used to carry the RIDE_ENDED notification, but every
+ * RIDE_* progression step is an `on_status` now, so no on_update is a map-driven ride state:
+ * the remaining ones are pre-tracking driver assignment or responses to an `update`. Keeping it
+ * here suppressed the input dialog of any on_update that legitimately carries its own form.
+ */
+const TRACKING_PHASE_TYPES = new Set(["track", "on_track", "on_status", "status"]);
 export const isTrackingPhaseStep = (actionType?: string): boolean =>
     !!actionType && TRACKING_PHASE_TYPES.has(actionType);
 
