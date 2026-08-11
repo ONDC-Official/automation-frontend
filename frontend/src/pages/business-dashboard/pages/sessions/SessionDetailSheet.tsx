@@ -1,15 +1,16 @@
-import { CheckCircle2, CircleDashed, TriangleAlert, XCircle } from "lucide-react";
+import { CheckCircle2, CircleDashed, TriangleAlert, XCircle, X } from "lucide-react";
 import { Badge } from "@components/Shadcn/Badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@components/Shadcn/Card/card";
 import EmptyState from "@components/EmptyState";
-import JsonViewer from "@pages/business-dashboard/components/JsonViewer";
-import Sheet, {
-    SheetBody,
-    SheetContent,
-    SheetDescription,
-    SheetHeader,
-    SheetTitle,
-} from "@pages/business-dashboard/components/Sheet";
+import AppJsonViewer from "@components/AppJsonViewer";
+import {
+    Drawer,
+    DrawerClose,
+    DrawerContent,
+    DrawerDescription,
+    DrawerHeader,
+    DrawerTitle,
+} from "@components/Shadcn/Drawer/drawer";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@components/Shadcn/Tabs";
 import { formatDateTime } from "@pages/business-dashboard/lib/utils";
 import type { SessionDetails } from "@pages/business-dashboard/services/types";
@@ -39,21 +40,22 @@ const META_FIELDS = [
 ] as const;
 
 const SessionDetailSheet = ({ sessionId, detail, isLoading, isError, onClose }: IProps) => (
-    <Sheet
+    <Drawer
+        direction="right"
         open={Boolean(sessionId)}
         onOpenChange={(open) => {
             if (!open) onClose();
         }}
     >
-        <SheetContent>
-            <SheetHeader>
-                <SheetTitle className="font-mono text-sm break-all">{sessionId}</SheetTitle>
-                <SheetDescription>
+        <DrawerContent className="data-[vaul-drawer-direction=right]:sm:max-w-2xl">
+            <DrawerHeader>
+                <DrawerTitle className="font-mono text-sm break-all">{sessionId}</DrawerTitle>
+                <DrawerDescription>
                     Flows, per-flow verdicts and the raw stored document.
-                </SheetDescription>
-            </SheetHeader>
+                </DrawerDescription>
+            </DrawerHeader>
 
-            <SheetBody>
+            <div className="flex flex-1 flex-col overflow-y-auto px-4 pb-4">
                 {isError && (
                     <EmptyState
                         icon={TriangleAlert}
@@ -125,17 +127,28 @@ const SessionDetailSheet = ({ sessionId, detail, isLoading, isError, onClose }: 
                         </TabsContent>
 
                         <TabsContent value="raw">
-                            <JsonViewer
-                                data={detail}
-                                initialDepth={1}
-                                maxHeightClassName="max-h-[60vh]"
+                            <AppJsonViewer
+                                value={detail}
+                                collapsed={1}
+                                showToolbar
+                                showSearch
+                                showExpandCollapse
+                                showDownload
+                                downloadFileName={`${sessionId}.json`}
+                                viewerWrapperClassName="max-h-[60vh] overflow-auto"
                             />
                         </TabsContent>
                     </Tabs>
                 )}
-            </SheetBody>
-        </SheetContent>
-    </Sheet>
+            </div>
+            <DrawerClose
+                aria-label="Close"
+                className="text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:ring-ring/50 absolute top-4 right-4 rounded-sm p-1 transition-colors focus-visible:ring-[3px] focus-visible:outline-none"
+            >
+                <X className="size-4" />
+            </DrawerClose>
+        </DrawerContent>
+    </Drawer>
 );
 
 const FlowMapCard = ({ flowMap }: { flowMap: SessionDetails["flowMap"] }) => {

@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@components/Shadcn/Card/card";
-import { formatNumber } from "@pages/business-dashboard/lib/utils";
+import { formatNumber } from "@/lib/utils";
 import type { FlowSummaryEntry } from "@pages/business-dashboard/services/types";
 import { FLOW_SUMMARY_TAGS } from "./constants";
 import { flowSummaryRows } from "./utils";

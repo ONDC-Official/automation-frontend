@@ -1,4 +1,4 @@
-import Pagination from "@pages/business-dashboard/components/Pagination";
+import TablePagination from "@components/TablePagination";
 
 interface IProps {
     page: number;
@@ -19,7 +19,7 @@ const PaginationBar = ({
     onPageChange,
     onLimitChange,
 }: IProps) => (
-    <Pagination
+    <TablePagination
         page={page}
         totalPages={totalPages}
         total={total}

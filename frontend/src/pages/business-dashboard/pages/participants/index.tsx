@@ -4,13 +4,14 @@ import { Button } from "@components/Shadcn/Button";
 import DateRangePicker from "@components/DateRangePicker";
 import { Input } from "@components/Shadcn/Input";
 import PageHeader from "@components/PageHeader";
-import Pagination from "@pages/business-dashboard/components/Pagination";
-import Select, {
+import TablePagination from "@components/TablePagination";
+import {
+    Select,
     SelectContent,
     SelectItem,
     SelectTrigger,
     SelectValue,
-} from "@pages/business-dashboard/components/Select";
+} from "@components/Shadcn/Select/select";
 import { ANY_VALUE, NP_TYPE_OPTIONS } from "./constants";
 import ParticipantDetailSheet from "./ParticipantDetailSheet";
 import ParticipantsTable from "./ParticipantsTable";
@@ -130,7 +131,7 @@ const Participants = () => {
                 onSortChange={onSortChange}
             />
 
-            <Pagination
+            <TablePagination
                 page={page}
                 totalPages={totalPages}
                 total={total}

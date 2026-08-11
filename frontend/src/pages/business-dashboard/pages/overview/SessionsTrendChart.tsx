@@ -1,5 +1,6 @@
 import ChartPanel from "@components/ChartPanel";
-import { formatDay, formatNumber } from "@pages/business-dashboard/lib/utils";
+import { formatNumber } from "@/lib/utils";
+import { formatDay } from "@pages/business-dashboard/lib/utils";
 import type { SessionStatsResponse } from "@pages/business-dashboard/services/types";
 import { TREND_SERIES } from "./constants";
 

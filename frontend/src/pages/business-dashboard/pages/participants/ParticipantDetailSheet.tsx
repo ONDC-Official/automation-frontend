@@ -1,16 +1,17 @@
 import { Link } from "react-router-dom";
 import { ROUTES } from "@constants/routes";
-import { TriangleAlert } from "lucide-react";
+import { TriangleAlert, X } from "lucide-react";
 
 import { Badge } from "@components/Shadcn/Badge";
 import EmptyState from "@components/EmptyState";
-import Sheet, {
-    SheetBody,
-    SheetContent,
-    SheetDescription,
-    SheetHeader,
-    SheetTitle,
-} from "@pages/business-dashboard/components/Sheet";
+import {
+    Drawer,
+    DrawerClose,
+    DrawerContent,
+    DrawerDescription,
+    DrawerHeader,
+    DrawerTitle,
+} from "@components/Shadcn/Drawer/drawer";
 import {
     Table,
     TableBody,
@@ -19,7 +20,8 @@ import {
     TableHeader,
     TableRow,
 } from "@components/Shadcn/Table/table";
-import { formatDateTime, formatNumber, formatPercent } from "@pages/business-dashboard/lib/utils";
+import { formatNumber } from "@/lib/utils";
+import { formatDateTime, formatPercent } from "@pages/business-dashboard/lib/utils";
 import type { ParticipantDetail, ParticipantRow } from "@pages/business-dashboard/services/types";
 import { judgedSummary, passRateTone } from "./utils";
 
@@ -53,21 +55,22 @@ const ParticipantDetailSheet = ({
     const row = detail ?? fallback;
 
     return (
-        <Sheet
+        <Drawer
+            direction="right"
             open={Boolean(host)}
             onOpenChange={(open) => {
                 if (!open) onClose();
             }}
         >
-            <SheetContent className="sm:max-w-3xl">
-                <SheetHeader>
-                    <SheetTitle className="font-mono text-sm break-all">{host}</SheetTitle>
-                    <SheetDescription>
+            <DrawerContent className="data-[vaul-drawer-direction=right]:sm:max-w-3xl">
+                <DrawerHeader>
+                    <DrawerTitle className="font-mono text-sm break-all">{host}</DrawerTitle>
+                    <DrawerDescription>
                         {row ? judgedSummary(row) : "Loading participant…"}
-                    </SheetDescription>
-                </SheetHeader>
+                    </DrawerDescription>
+                </DrawerHeader>
 
-                <SheetBody className="flex flex-col gap-4 pt-4">
+                <div className="flex-1 overflow-y-auto px-4 pb-4 flex flex-col gap-4 pt-4">
                     {isError && (
                         <EmptyState
                             icon={TriangleAlert}
@@ -244,9 +247,15 @@ const ParticipantDetailSheet = ({
                             failures.
                         </p>
                     )}
-                </SheetBody>
-            </SheetContent>
-        </Sheet>
+                </div>
+                <DrawerClose
+                    aria-label="Close"
+                    className="text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:ring-ring/50 absolute top-4 right-4 rounded-sm p-1 transition-colors focus-visible:ring-[3px] focus-visible:outline-none"
+                >
+                    <X className="size-4" />
+                </DrawerClose>
+            </DrawerContent>
+        </Drawer>
     );
 };
 

@@ -48,3 +48,9 @@ export function isoDaysAgo(daysAgo: number) {
     date.setDate(date.getDate() - daysAgo);
     return toIsoDate(date);
 }
+
+/** 1284 -> "1,284". Used for axis ticks and table figures. */
+export function formatNumber(value: number | null | undefined) {
+    if (value === null || value === undefined || Number.isNaN(value)) return "—";
+    return new Intl.NumberFormat("en-IN").format(value);
+}

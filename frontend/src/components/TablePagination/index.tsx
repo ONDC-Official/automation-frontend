@@ -1,16 +1,26 @@
-import { ChevronLeft, ChevronRight } from "lucide-react";
-import { Button } from "@components/Shadcn/Button";
-import Select, {
+import { Pagination } from "@components/Shadcn/Pagination";
+import {
+    Select,
     SelectContent,
     SelectItem,
     SelectTrigger,
     SelectValue,
-} from "@pages/business-dashboard/components/Select";
-import { cn, formatNumber } from "@pages/business-dashboard/lib/utils";
+} from "@components/Shadcn/Select/select";
+import { cn, formatNumber } from "@/lib/utils";
 import { DEFAULT_LIMIT_OPTIONS } from "./constants";
 import type { IProps } from "./types";
 
-const Pagination = ({
+/**
+ * Row summary + rows-per-page + page navigation for a paginated table.
+ *
+ * The navigation itself is the app's own Pagination; this adds the two things
+ * it does not carry — the "1–50 of 1,284" summary and the page-size control —
+ * which a data table needs and a page-link strip does not.
+ *
+ * Note that Pagination renders nothing when there is a single page, so on a
+ * short result set only the summary and the page-size control remain.
+ */
+const TablePagination = ({
     page,
     totalPages,
     total,
@@ -26,7 +36,7 @@ const Pagination = ({
 
     return (
         <div
-            data-slot="pagination"
+            data-slot="table-pagination"
             className={cn("flex flex-wrap items-center justify-between gap-3 text-sm", className)}
         >
             <p className="text-muted-foreground">
@@ -56,32 +66,15 @@ const Pagination = ({
                     </div>
                 )}
 
-                <div className="flex items-center gap-1">
-                    <Button
-                        variant="outline"
-                        size="icon"
-                        aria-label="Previous page"
-                        disabled={disabled || page <= 1}
-                        onClick={() => onPageChange(page - 1)}
-                    >
-                        <ChevronLeft />
-                    </Button>
-                    <span className="text-muted-foreground min-w-24 text-center">
-                        Page {formatNumber(page)} of {formatNumber(Math.max(totalPages, 1))}
-                    </span>
-                    <Button
-                        variant="outline"
-                        size="icon"
-                        aria-label="Next page"
-                        disabled={disabled || page >= totalPages}
-                        onClick={() => onPageChange(page + 1)}
-                    >
-                        <ChevronRight />
-                    </Button>
-                </div>
+                <Pagination
+                    currentPage={page}
+                    totalPages={Math.max(totalPages, 1)}
+                    onPageChange={onPageChange}
+                    className="px-0 py-0"
+                />
             </div>
         </div>
     );
 };
 
-export default Pagination;
+export default TablePagination;

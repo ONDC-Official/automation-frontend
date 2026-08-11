@@ -1,5 +1,5 @@
 import ChartPanel from "@components/ChartPanel";
-import { formatNumber } from "@pages/business-dashboard/lib/utils";
+import { formatNumber } from "@/lib/utils";
 import type { SessionStatsResponse } from "@pages/business-dashboard/services/types";
 import { DOMAIN_SERIES, MAX_DOMAIN_BARS } from "./constants";
 

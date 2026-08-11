@@ -6,12 +6,6 @@ export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
 }
 
-/** 1284 -> "1,284". Used for axis ticks and table figures. */
-export function formatNumber(value: number | null | undefined) {
-    if (value === null || value === undefined || Number.isNaN(value)) return "—";
-    return new Intl.NumberFormat("en-IN").format(value);
-}
-
 /** 1284 -> "1.3K". For stat tiles, where the exact digit count is noise. */
 export function formatCompact(value: number | null | undefined) {
     if (value === null || value === undefined || Number.isNaN(value)) return "—";

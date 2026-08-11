@@ -1,12 +1,13 @@
 import { CalendarDays, Check } from "lucide-react";
 import { Button } from "@components/Shadcn/Button";
-import DropdownMenu, {
+import {
+    DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuLabel,
     DropdownMenuSeparator,
     DropdownMenuTrigger,
-} from "@pages/business-dashboard/components/DropdownMenu";
+} from "@components/Shadcn/DropDownMenu/dropdown-menu";
 import { Input } from "@components/Shadcn/Input";
 import { cn, isoDaysAgo, toIsoDate } from "@/lib/utils";
 import { RANGE_PRESETS } from "./constants";

@@ -3,7 +3,7 @@ import { RefreshCw, Search, User } from "lucide-react";
 import { Button } from "@components/Shadcn/Button";
 import { Input } from "@components/Shadcn/Input";
 import PageHeader from "@components/PageHeader";
-import Pagination from "@pages/business-dashboard/components/Pagination";
+import TablePagination from "@components/TablePagination";
 import { useReportsPage } from "./useReportsPage";
 import ReportViewer from "./ReportViewer";
 import ReportsTable from "./ReportsTable";
@@ -84,7 +84,7 @@ const Reports = () => {
                 onOpenReport={onOpenReport}
             />
 
-            <Pagination
+            <TablePagination
                 page={page}
                 totalPages={totalPages}
                 total={total}

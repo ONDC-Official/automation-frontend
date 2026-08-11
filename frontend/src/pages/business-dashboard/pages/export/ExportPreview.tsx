@@ -16,7 +16,8 @@ import {
     TableHeader,
     TableRow,
 } from "@components/Shadcn/Table/table";
-import { formatDateTime, formatNumber, formatPercent } from "@pages/business-dashboard/lib/utils";
+import { formatNumber } from "@/lib/utils";
+import { formatDateTime, formatPercent } from "@pages/business-dashboard/lib/utils";
 import type { SessionFilters, SessionRow } from "@pages/business-dashboard/services/types";
 import { EXPORT_COLUMNS, PREVIEW_LIMIT } from "./constants";
 

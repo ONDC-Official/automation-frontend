@@ -10,12 +10,8 @@ import {
     TableHeader,
     TableRow,
 } from "@components/Shadcn/Table/table";
-import {
-    cn,
-    formatDateTime,
-    formatNumber,
-    formatPercent,
-} from "@pages/business-dashboard/lib/utils";
+import { formatNumber } from "@/lib/utils";
+import { cn, formatDateTime, formatPercent } from "@pages/business-dashboard/lib/utils";
 import type { ParticipantRow } from "@pages/business-dashboard/services/types";
 import { TABLE_COLUMNS } from "./constants";
 import { passRateTone } from "./utils";

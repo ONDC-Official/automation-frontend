@@ -2,12 +2,13 @@ import { RotateCcw, Search } from "lucide-react";
 import { Button } from "@components/Shadcn/Button";
 import DateRangePicker from "@components/DateRangePicker";
 import { Input } from "@components/Shadcn/Input";
-import Select, {
+import {
+    Select,
     SelectContent,
     SelectItem,
     SelectTrigger,
     SelectValue,
-} from "@pages/business-dashboard/components/Select";
+} from "@components/Shadcn/Select/select";
 import type {
     SessionFacets,
     SessionFilters,
