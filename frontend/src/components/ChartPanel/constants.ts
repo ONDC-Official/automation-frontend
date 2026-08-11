@@ -2,7 +2,7 @@
  * The categorical slots, in fixed order. Series take slot 1, 2, 3… in the order
  * they are declared and the order is NEVER cycled — a sixth series folds into
  * "Other", becomes a facet, or the panel is split. Validated with the dataviz
- * palette validator against both surfaces (see pages/business-dashboard/tokens.css).
+ * palette validator against both surfaces (see styles/tokens.css).
  */
 export const CHART_SLOT_VARS = [
     "var(--chart-1)",
