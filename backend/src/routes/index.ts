@@ -16,6 +16,7 @@ import devGuideRoutes from "./devGuideRoutes";
 import aiProxyRoutes from "./aiProxyRoutes";
 import scenarioPreferencesRoutes from "./scenarioPreferencesRoutes";
 import reportsRoutes from "./reportsRoutes";
+import dashboardRoutes from "./dashboardRoutes"; // Import business dashboard routes
 const router = Router();
 
 // Mount session-related routes
@@ -24,6 +25,8 @@ router.use("/flow", flowRoutes);
 
 router.use("/unit", unitRoutes);
 router.use("/db", dbRoutes);
+// Business dashboard: shared-password auth + read-only proxy onto automation-db
+router.use("/dashboard", dashboardRoutes);
 router.use("/config", configRoutes);
 router.use("/seller", sellerRoutes); // Add seller routes
 router.use("/images", imageRoutes); // Add image routes
