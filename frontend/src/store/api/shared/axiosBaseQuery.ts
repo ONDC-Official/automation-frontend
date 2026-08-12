@@ -18,7 +18,7 @@ export interface IAxiosBaseQueryError {
 
 export const axiosBaseQuery =
     (instance: AxiosInstance): BaseQueryFn<IAxiosBaseQueryArgs, unknown, IAxiosBaseQueryError> =>
-    async ({ url, method = "GET", data, params, timeout }) => {
+    async ({ url, method = "GET", data, params, timeout }, { signal }) => {
         try {
             const result = await instance.request({
                 url,
@@ -26,6 +26,16 @@ export const axiosBaseQuery =
                 data,
                 params,
                 timeout,
+                // RTK Query aborts this when the query args change or the last
+                // subscriber goes away. Without forwarding it, a superseded
+                // request still ran to completion holding one of the browser's
+                // ~6 connections per host, so the request the user is actually
+                // waiting on could queue behind results already thrown away.
+                //
+                // An abort rejects with code ERR_CANCELED and lands in the catch
+                // below; RTK Query discards the result of a request it aborted,
+                // so it never reaches the UI.
+                signal,
             });
 
             return { data: result.data };

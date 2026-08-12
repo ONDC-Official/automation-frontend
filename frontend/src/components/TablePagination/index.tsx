@@ -1,4 +1,5 @@
 import { Pagination } from "@components/Shadcn/Pagination";
+import Spinner from "@components/Shadcn/Spinner";
 import {
     Select,
     SelectContent,
@@ -39,8 +40,11 @@ const TablePagination = ({
             data-slot="table-pagination"
             className={cn("flex flex-wrap items-center justify-between gap-3 text-sm", className)}
         >
-            <p className="text-muted-foreground">
+            <p className="text-muted-foreground flex items-center gap-2">
                 {formatNumber(firstRow)}–{formatNumber(lastRow)} of {formatNumber(total)}
+                {/* The pending cue sits on the summary because that is where the
+                    counts the user is waiting on will change. */}
+                {disabled && <Spinner className="size-3.5" />}
             </p>
 
             <div className="flex items-center gap-3">
@@ -70,6 +74,7 @@ const TablePagination = ({
                     currentPage={page}
                     totalPages={Math.max(totalPages, 1)}
                     onPageChange={onPageChange}
+                    disabled={disabled}
                     className="px-0 py-0"
                 />
             </div>
