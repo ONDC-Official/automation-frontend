@@ -17,9 +17,13 @@ import type { NpFilters } from "@pages/business-dashboard/services/types";
  */
 
 /** Client mirror of the server whitelist, so a hand-edited URL degrades to the
- *  default sort instead of 400-ing. */
+ *  default sort instead of 400-ing. The first four are the row's compound
+ *  identity, and so double as the server's paging tiebreaker. */
 export const NP_SORTABLE_FIELDS = [
     "host",
+    "npType",
+    "domain",
+    "version",
     "sessions",
     "firstSessionAt",
     "lastSessionAt",
@@ -33,6 +37,15 @@ export const NP_SORTABLE_FIELDS = [
 
 export const DEFAULT_NP_SORT = "sessions";
 export const DEFAULT_NP_ORDER = "desc" as const;
+
+/**
+ * Wire value for a slice that recorded no role / domain / version.
+ *
+ * Mirrors NP_NULL_SENTINEL in automation-db/src/utils/npFilters.ts. Needed
+ * because compactParams drops null and "" before they are ever sent, so a blank
+ * slice has no other way to travel as a filter.
+ */
+export const NP_NULL_SENTINEL = "__none__";
 
 export function npFiltersFromSearchParams(params: URLSearchParams): NpFilters {
     const read = (key: string) => params.get(key) || undefined;
@@ -85,5 +98,19 @@ export function withoutNpPaging(filters: NpFilters): NpFilters {
     void limit;
     void sort;
     void order;
+    return rest;
+}
+
+/**
+ * Filters for the shared `/api/sessions/facets` endpoint.
+ *
+ * `q` is dropped deliberately: on the sessions endpoint that facets belong to
+ * it is a partial *sessionId* match, while this page means a partial *host* by
+ * it. Passing it through would narrow every dropdown by a string that matches
+ * no session id.
+ */
+export function npFacetFilters(filters: NpFilters): NpFilters {
+    const { q, ...rest } = withoutNpPaging(filters);
+    void q;
     return rest;
 }

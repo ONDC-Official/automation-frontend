@@ -14,7 +14,7 @@ import { formatNumber } from "@/lib/utils";
 import { cn, formatDateTime, formatPercent } from "@pages/business-dashboard/lib/utils";
 import type { ParticipantRow } from "@pages/business-dashboard/services/types";
 import { TABLE_COLUMNS } from "./constants";
-import { passRateTone } from "./utils";
+import { participantKey, passRateTone, selectionOf } from "./utils";
 
 interface IProps {
     rows: ParticipantRow[];
@@ -23,8 +23,10 @@ interface IProps {
     isLoading: boolean;
     isError: boolean;
     errorMessage?: string;
-    selectedHost: string | null;
-    onSelectHost: (host: string) => void;
+    /** A row is a host/role/domain/version slice, so the host alone no longer
+     *  identifies the selected one. */
+    selectedKey: string | null;
+    onSelectRow: (row: ParticipantRow) => void;
     onSortChange: (sortKey: string) => void;
 }
 
@@ -37,8 +39,8 @@ const ParticipantsTable = ({
     isLoading,
     isError,
     errorMessage,
-    selectedHost,
-    onSelectHost,
+    selectedKey,
+    onSelectRow,
     onSortChange,
 }: IProps) => {
     if (isError) {
@@ -111,80 +113,93 @@ const ParticipantsTable = ({
                                   ))}
                               </TableRow>
                           ))
-                        : rows.map((row) => (
-                              <TableRow
-                                  key={row.host}
-                                  role="button"
-                                  tabIndex={0}
-                                  data-state={row.host === selectedHost ? "selected" : undefined}
-                                  className="cursor-pointer"
-                                  onClick={() => onSelectHost(row.host)}
-                                  onKeyDown={(event) => {
-                                      if (event.key === "Enter" || event.key === " ") {
-                                          event.preventDefault();
-                                          onSelectHost(row.host);
-                                      }
-                                  }}
-                              >
-                                  <TableCell className="font-medium break-all">
-                                      {row.host}
-                                  </TableCell>
+                        : rows.map((row) => {
+                              const rowKey = participantKey(selectionOf(row));
 
-                                  <TableCell>
-                                      <div className="flex flex-wrap gap-1">
-                                          {row.npTypes.map((npType) => (
-                                              <Badge key={npType} variant="outline">
-                                                  {npType}
-                                              </Badge>
-                                          ))}
-                                      </div>
-                                  </TableCell>
+                              return (
+                                  <TableRow
+                                      key={rowKey}
+                                      role="button"
+                                      tabIndex={0}
+                                      aria-label={`Open ${row.host} as ${row.npType ?? "no role"}`}
+                                      data-state={rowKey === selectedKey ? "selected" : undefined}
+                                      className="cursor-pointer"
+                                      onClick={() => onSelectRow(row)}
+                                      onKeyDown={(event) => {
+                                          if (event.key === "Enter" || event.key === " ") {
+                                              event.preventDefault();
+                                              onSelectRow(row);
+                                          }
+                                      }}
+                                  >
+                                      <TableCell className="font-medium break-all">
+                                          {row.host}
+                                      </TableCell>
 
-                                  <TableCell className="text-right tabular-nums">
-                                      {formatNumber(row.sessions)}
-                                  </TableCell>
+                                      {/* One role, one domain, one version per row — the
+                        split is what makes First payload below answerable. */}
+                                      <TableCell>
+                                          {row.npType ? (
+                                              <Badge variant="outline">{row.npType}</Badge>
+                                          ) : (
+                                              "—"
+                                          )}
+                                      </TableCell>
 
-                                  <TableCell className="whitespace-nowrap">
-                                      {formatDateTime(row.firstSessionAt)}
-                                  </TableCell>
+                                      <TableCell className="whitespace-nowrap">
+                                          {row.domain ?? "—"}
+                                      </TableCell>
 
-                                  <TableCell className="whitespace-nowrap">
-                                      {/* null means they created a session but never sent us a
-                        payload — a real state, never rendered as a zero date. */}
-                                      {row.firstPayloadAt ? (
-                                          formatDateTime(row.firstPayloadAt)
-                                      ) : (
-                                          <Badge variant="secondary">Never</Badge>
-                                      )}
-                                  </TableCell>
+                                      <TableCell className="whitespace-nowrap">
+                                          {row.version ?? "—"}
+                                      </TableCell>
 
-                                  <TableCell className="text-right tabular-nums">
-                                      {formatNumber(row.flowsAttempted)}
-                                  </TableCell>
+                                      <TableCell className="text-right tabular-nums">
+                                          {formatNumber(row.sessions)}
+                                      </TableCell>
 
-                                  <TableCell className="text-right tabular-nums">
-                                      {formatNumber(row.flowsJudged)}
-                                  </TableCell>
+                                      <TableCell className="whitespace-nowrap">
+                                          {formatDateTime(row.firstSessionAt)}
+                                      </TableCell>
 
-                                  {/* Judged but never passed, so these two always sum back to
-                      the column on their left. */}
-                                  <TableCell className="text-right tabular-nums">
-                                      {formatNumber(row.flowsPassed)}
-                                  </TableCell>
+                                      <TableCell className="whitespace-nowrap">
+                                          {/* null means they created a session but never sent us
+                            a payload — a real state, never rendered as a zero date. */}
+                                          {row.firstPayloadAt ? (
+                                              formatDateTime(row.firstPayloadAt)
+                                          ) : (
+                                              <Badge variant="secondary">Never</Badge>
+                                          )}
+                                      </TableCell>
 
-                                  <TableCell className="text-right tabular-nums">
-                                      {formatNumber(row.flowsFailed)}
-                                  </TableCell>
+                                      <TableCell className="text-right tabular-nums">
+                                          {formatNumber(row.flowsAttempted)}
+                                      </TableCell>
 
-                                  <TableCell className="text-right">
-                                      {/* A participant with nothing judged is unmeasured, not
-                        failing, so it never wears the fail tone. */}
-                                      <Badge variant={passRateTone(row.passRate)}>
-                                          {formatPercent(row.passRate)}
-                                      </Badge>
-                                  </TableCell>
-                              </TableRow>
-                          ))}
+                                      <TableCell className="text-right tabular-nums">
+                                          {formatNumber(row.flowsJudged)}
+                                      </TableCell>
+
+                                      {/* Judged but never passed, so these two always sum back
+                          to the column on their left. */}
+                                      <TableCell className="text-right tabular-nums">
+                                          {formatNumber(row.flowsPassed)}
+                                      </TableCell>
+
+                                      <TableCell className="text-right tabular-nums">
+                                          {formatNumber(row.flowsFailed)}
+                                      </TableCell>
+
+                                      <TableCell className="text-right">
+                                          {/* A participant with nothing judged is unmeasured, not
+                            failing, so it never wears the fail tone. */}
+                                          <Badge variant={passRateTone(row.passRate)}>
+                                              {formatPercent(row.passRate)}
+                                          </Badge>
+                                      </TableCell>
+                                  </TableRow>
+                              );
+                          })}
                 </TableBody>
             </Table>
         </div>

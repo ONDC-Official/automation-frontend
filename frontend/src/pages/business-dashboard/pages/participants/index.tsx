@@ -12,6 +12,8 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@components/Shadcn/Select/select";
+import FacetSelect from "@pages/business-dashboard/components/FacetSelect";
+import { NP_NULL_SENTINEL } from "@pages/business-dashboard/lib/npFilters";
 import { ANY_VALUE, NP_TYPE_OPTIONS } from "./constants";
 import ParticipantDetailSheet from "./ParticipantDetailSheet";
 import ParticipantsTable from "./ParticipantsTable";
@@ -32,13 +34,16 @@ const Participants = () => {
         isError,
         errorMessage,
         onRefresh,
-        selectedHost,
+        facets,
+        isFacetsLoading,
+        selection,
+        selectedKey,
         detail,
         selectedRow,
         isDetailLoading,
         isDetailError,
         detailErrorMessage,
-        onSelectHost,
+        onSelectRow,
         onCloseDetail,
         onFilterChange,
         onRangeChange,
@@ -54,7 +59,7 @@ const Participants = () => {
         <div className="flex flex-col gap-4">
             <PageHeader
                 title="Participants"
-                description="Who has been testing against the stack, and since when. Every figure describes the current filter — narrow the dates and “first seen” means first in that window."
+                description="One row per participant, role and domain+version — a host that tested as both BAP and BPP appears twice. Every figure describes the current filter, so narrowing the dates makes “first” mean first in that window."
                 actions={
                     <>
                         <DateRangePicker value={range} onChange={onRangeChange} />
@@ -111,6 +116,32 @@ const Participants = () => {
                     </SelectContent>
                 </Select>
 
+                {/* Splitting by domain and version multiplies the row count, so
+                    these two are how the table stays navigable. The facets come
+                    from the sessions endpoint, which excludes blanks from every
+                    dimension — hence the explicit "None recorded" option, which
+                    is the only way to reach the rows the table renders as “—”.
+                    That endpoint also does not apply EXCLUDED_HOSTS, so a domain
+                    seen only on workbench-proxied sessions can be offered here
+                    and select nothing. */}
+                <FacetSelect
+                    label="Any domain"
+                    value={filters.domain}
+                    options={facets?.domains ?? []}
+                    disabled={isFacetsLoading}
+                    extraOptions={[{ value: NP_NULL_SENTINEL, label: "None recorded" }]}
+                    onChange={(domain) => onFilterChange({ domain })}
+                />
+
+                <FacetSelect
+                    label="Any version"
+                    value={filters.version}
+                    options={facets?.versions ?? []}
+                    disabled={isFacetsLoading}
+                    extraOptions={[{ value: NP_NULL_SENTINEL, label: "None recorded" }]}
+                    onChange={(version) => onFilterChange({ version })}
+                />
+
                 {isFiltered && (
                     <Button variant="ghost" size="sm" onClick={onReset}>
                         <RotateCcw />
@@ -126,8 +157,8 @@ const Participants = () => {
                 isLoading={isLoading}
                 isError={isError}
                 errorMessage={errorMessage}
-                selectedHost={selectedHost}
-                onSelectHost={onSelectHost}
+                selectedKey={selectedKey}
+                onSelectRow={onSelectRow}
                 onSortChange={onSortChange}
             />
 
@@ -142,7 +173,7 @@ const Participants = () => {
             />
 
             <ParticipantDetailSheet
-                host={selectedHost}
+                selection={selection}
                 detail={detail}
                 fallback={selectedRow}
                 isLoading={isDetailLoading}

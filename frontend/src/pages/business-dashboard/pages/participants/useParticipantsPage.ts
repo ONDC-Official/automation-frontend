@@ -4,21 +4,25 @@ import { toast } from "sonner";
 
 import { useExportDashboardParticipantsMutation } from "@pages/business-dashboard/hooks/useExport";
 import { useParticipant, useParticipants } from "@pages/business-dashboard/hooks/useParticipants";
+import { useSessionFacets } from "@pages/business-dashboard/hooks/useSessions";
 import { DEFAULT_LIMIT, DEFAULT_PAGE } from "@pages/business-dashboard/lib/sessionFilters";
 import {
     DEFAULT_NP_ORDER,
     DEFAULT_NP_SORT,
     hasActiveNpFilters,
+    NP_NULL_SENTINEL,
+    npFacetFilters,
     npFiltersFromSearchParams,
     searchParamsFromNpFilters,
     withoutNpPaging,
 } from "@pages/business-dashboard/lib/npFilters";
 import type { IRange } from "@components/DateRangePicker";
-import type { NpFilters } from "@pages/business-dashboard/services/types";
+import type { NpFilters, ParticipantRow } from "@pages/business-dashboard/services/types";
+import { participantKey, selectionOf, type ParticipantSelection } from "./utils";
 
 export function useParticipantsPage() {
     const [searchParams, setSearchParams] = useSearchParams();
-    const [selectedHost, setSelectedHost] = useState<string | null>(null);
+    const [selection, setSelection] = useState<ParticipantSelection | null>(null);
 
     // Filters live in the URL, so a filtered view is a shareable link — the same
     // contract the Sessions page keeps. No second copy in state.
@@ -29,10 +33,33 @@ export function useParticipantsPage() {
     );
 
     const listQuery = useParticipants(filters);
-    // The drill-down describes the same slice, so it takes the filters without
-    // paging — page 3 of the list says nothing about one participant's totals.
-    const detailFilters = useMemo(() => withoutNpPaging(filters), [filters]);
-    const detailQuery = useParticipant(selectedHost, detailFilters);
+
+    // Domain and version are session dimensions, so the sessions facets endpoint
+    // already offers exactly the right options — no participants-specific one is
+    // needed. npFacetFilters is what keeps this page's host search out of it.
+    const facetsQuery = useSessionFacets(npFacetFilters(filters));
+
+    /**
+     * The drill-down describes the row that was clicked, not everything the
+     * host ever ran. Paging goes — page 3 of the list says nothing about one
+     * row's totals — and the three identity fields are pinned on top.
+     *
+     * Those three are a pre-group match on the server, so pinning them leaves
+     * the grouped set holding exactly one row for this host, and scopes the
+     * drawer's recent sessions and flow verdicts to the same slice for free.
+     */
+    const detailFilters = useMemo<NpFilters>(() => {
+        const base = withoutNpPaging(filters);
+        if (!selection) return base;
+        return {
+            ...base,
+            npType: selection.npType ?? NP_NULL_SENTINEL,
+            domain: selection.domain ?? NP_NULL_SENTINEL,
+            version: selection.version ?? NP_NULL_SENTINEL,
+        };
+    }, [filters, selection]);
+
+    const detailQuery = useParticipant(selection?.host ?? null, detailFilters);
 
     const commit = useCallback(
         (next: NpFilters) => {
@@ -102,9 +129,11 @@ export function useParticipantsPage() {
 
     const rows = useMemo(() => listQuery.data?.data ?? [], [listQuery.data]);
 
+    const selectedKey = useMemo(() => (selection ? participantKey(selection) : null), [selection]);
+
     const selectedRow = useMemo(
-        () => rows.find((row) => row.host === selectedHost) ?? null,
-        [rows, selectedHost]
+        () => rows.find((row) => participantKey(selectionOf(row)) === selectedKey) ?? null,
+        [rows, selectedKey]
     );
 
     return {
@@ -126,15 +155,19 @@ export function useParticipantsPage() {
         errorMessage: listQuery.error?.message,
         onRefresh: listQuery.refetch,
 
-        selectedHost,
+        facets: facetsQuery.data,
+        isFacetsLoading: facetsQuery.isLoading,
+
+        selection,
+        selectedKey,
         // The list row shows instantly while the detail fetch is in flight.
         detail: detailQuery.data ?? null,
         selectedRow,
         isDetailLoading: detailQuery.isLoading,
         isDetailError: detailQuery.isError,
         detailErrorMessage: detailQuery.error?.message,
-        onSelectHost: setSelectedHost,
-        onCloseDetail: () => setSelectedHost(null),
+        onSelectRow: (row: ParticipantRow) => setSelection(selectionOf(row)),
+        onCloseDetail: () => setSelection(null),
 
         onFilterChange,
         onRangeChange: onRangeChange,

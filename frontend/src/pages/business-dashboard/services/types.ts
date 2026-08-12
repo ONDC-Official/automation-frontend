@@ -193,8 +193,9 @@ export interface NpFilters {
 }
 
 /**
- * `GET /api/sessions/participants` — one Network Participant, keyed by the host
- * of its subscriber URL (`npId` / `context.bap_uri` / `context.bpp_uri`).
+ * `GET /api/sessions/participants` — one Network Participant in one role on one
+ * domain+version, keyed by the host of its subscriber URL (`npId` /
+ * `context.bap_uri` / `context.bpp_uri`).
  *
  * mirrors: SessionDetailsRepository.ts — ParticipantRow
  *
@@ -203,12 +204,16 @@ export interface NpFilters {
  */
 export interface ParticipantRow {
     host: string;
-    /** A host may have acted as both sides across different sessions. */
-    npTypes: string[];
-    /** The raw subscriber URLs that collapsed into this host. */
+    /**
+     * One role, one domain and one version per row: a host that acted as both
+     * sides, or spanned domains, appears once per combination. Null is a real
+     * value — "ran sessions with none recorded" — never "unknown".
+     */
+    npType: string | null;
+    domain: string | null;
+    version: string | null;
+    /** The raw subscriber URLs that collapsed into this row. */
     npIds: string[];
-    domains: string[];
-    versions: string[];
     sessions: number;
     firstSessionAt: string | null;
     lastSessionAt: string | null;

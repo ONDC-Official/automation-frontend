@@ -2,6 +2,7 @@ import { RotateCcw, Search } from "lucide-react";
 import { Button } from "@components/Shadcn/Button";
 import DateRangePicker from "@components/DateRangePicker";
 import { Input } from "@components/Shadcn/Input";
+import FacetSelect from "@pages/business-dashboard/components/FacetSelect";
 import {
     Select,
     SelectContent,
@@ -24,42 +25,6 @@ interface IProps {
     onFilterChange: (patch: Partial<SessionFilters>) => void;
     onReset: () => void;
 }
-
-interface IFacetSelectProps {
-    label: string;
-    value?: string;
-    options: string[];
-    disabled: boolean;
-    onChange: (value: string | undefined) => void;
-}
-
-const FacetSelect = ({ label, value, options, disabled, onChange }: IFacetSelectProps) => {
-    // Facets narrow to the active selection, so a dimension's own filter can
-    // exclude every other value — and, depending on how the server computes it,
-    // possibly the selected one too. Union the selection back in so the control
-    // always shows what is selected and can always be cleared.
-    const items = value && !options.includes(value) ? [value, ...options] : options;
-
-    return (
-        <Select
-            value={value ?? ANY_VALUE}
-            disabled={disabled}
-            onValueChange={(next) => onChange(next === ANY_VALUE ? undefined : next)}
-        >
-            <SelectTrigger className="w-44" aria-label={label}>
-                <SelectValue placeholder={label} />
-            </SelectTrigger>
-            <SelectContent>
-                <SelectItem value={ANY_VALUE}>{label}</SelectItem>
-                {items.map((option) => (
-                    <SelectItem key={option} value={option}>
-                        {option}
-                    </SelectItem>
-                ))}
-            </SelectContent>
-        </Select>
-    );
-};
 
 /** One filter row above the table, mirrored into the URL by `useSessionsPage`. */
 const FilterBar = ({
