@@ -23,10 +23,11 @@ import {
 import { formatNumber } from "@/lib/utils";
 import { formatDateTime, formatPercent } from "@pages/business-dashboard/lib/utils";
 import type { ParticipantDetail, ParticipantRow } from "@pages/business-dashboard/services/types";
-import { judgedSummary, passRateTone } from "./utils";
+import { judgedSummary, passRateTone, sliceLabel, type ParticipantSelection } from "./utils";
 
 interface IProps {
-    host: string | null;
+    /** The clicked slice, which is what everything below describes. */
+    selection: ParticipantSelection | null;
     detail: ParticipantDetail | null;
     /** The list row, shown immediately while the detail fetch is in flight. */
     fallback: ParticipantRow | null;
@@ -44,7 +45,7 @@ const Figure = ({ label, value }: { label: string; value: string }) => (
 );
 
 const ParticipantDetailSheet = ({
-    host,
+    selection,
     detail,
     fallback,
     isLoading,
@@ -57,15 +58,20 @@ const ParticipantDetailSheet = ({
     return (
         <Drawer
             direction="right"
-            open={Boolean(host)}
+            open={Boolean(selection)}
             onOpenChange={(open) => {
                 if (!open) onClose();
             }}
         >
             <DrawerContent className="data-[vaul-drawer-direction=right]:sm:max-w-3xl">
                 <DrawerHeader>
-                    <DrawerTitle className="font-mono text-sm break-all">{host}</DrawerTitle>
+                    <DrawerTitle className="font-mono text-sm break-all">
+                        {selection?.host}
+                    </DrawerTitle>
+                    {/* The slice, not just the host: two rows of one participant
+                        would otherwise open drawers with identical headers. */}
                     <DrawerDescription>
+                        {selection ? `${sliceLabel(selection)} — ` : ""}
                         {row ? judgedSummary(row) : "Loading participant…"}
                     </DrawerDescription>
                 </DrawerHeader>
@@ -113,19 +119,23 @@ const ParticipantDetailSheet = ({
                                 </div>
                                 <div>
                                     <dt className="text-muted-foreground text-xs">Role</dt>
-                                    <dd className="flex flex-wrap gap-1">
-                                        {row.npTypes.map((npType) => (
-                                            <Badge key={npType} variant="outline">
-                                                {npType}
-                                            </Badge>
-                                        ))}
+                                    <dd>
+                                        <Badge variant="outline">{row.npType ?? "—"}</Badge>
                                     </dd>
+                                </div>
+                                <div>
+                                    <dt className="text-muted-foreground text-xs">Domain</dt>
+                                    <dd>{row.domain ?? "—"}</dd>
+                                </div>
+                                <div>
+                                    <dt className="text-muted-foreground text-xs">Version</dt>
+                                    <dd>{row.version ?? "—"}</dd>
                                 </div>
                             </dl>
 
                             <div>
                                 <p className="text-muted-foreground mb-1.5 text-xs">
-                                    Subscriber URLs collapsed into this participant
+                                    Subscriber URLs collapsed into this row
                                 </p>
                                 <ul className="flex flex-col gap-1">
                                     {row.npIds.map((npId) => (
@@ -137,19 +147,6 @@ const ParticipantDetailSheet = ({
                                         </li>
                                     ))}
                                 </ul>
-                            </div>
-
-                            <div className="flex flex-wrap gap-1">
-                                {row.domains.map((domain) => (
-                                    <Badge key={domain} variant="secondary">
-                                        {domain}
-                                    </Badge>
-                                ))}
-                                {row.versions.map((version) => (
-                                    <Badge key={version} variant="secondary">
-                                        v{version}
-                                    </Badge>
-                                ))}
                             </div>
                         </>
                     )}
