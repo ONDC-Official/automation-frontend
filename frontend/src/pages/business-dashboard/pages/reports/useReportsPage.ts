@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from "react";
 
 import { useReport, useReports } from "@pages/business-dashboard/hooks/useReports";
+import { useStableQueryData } from "@pages/business-dashboard/hooks/useStableQueryData";
 import { DEFAULT_LIMIT, DEFAULT_PAGE } from "@pages/business-dashboard/lib/sessionFilters";
 import type { ReportFilters } from "@pages/business-dashboard/services/types";
 import { decodeReportHtml } from "./utils";
@@ -19,7 +20,10 @@ export function useReportsPage() {
     const listQuery = useReports(filters);
     const blobQuery = useReport(openTestId);
 
-    const rows = useMemo(() => listQuery.data?.data ?? [], [listQuery.data]);
+    // Keeps the page on screen while the next one loads; see the hook for why.
+    const stable = useStableQueryData(listQuery.data);
+
+    const rows = useMemo(() => stable?.data ?? [], [stable]);
 
     const onSearch = useCallback(
         (q: string) =>
@@ -72,12 +76,14 @@ export function useReportsPage() {
     return {
         filters,
         rows,
-        total: listQuery.data?.total ?? 0,
-        page: listQuery.data?.page ?? filters.page ?? DEFAULT_PAGE,
-        limit: listQuery.data?.limit ?? filters.limit ?? DEFAULT_LIMIT,
-        totalPages: listQuery.data?.totalPages ?? 0,
-        isLoading: listQuery.isLoading,
-        isFetching: listQuery.isFetching,
+        total: stable?.total ?? 0,
+        page: stable?.page ?? filters.page ?? DEFAULT_PAGE,
+        limit: stable?.limit ?? filters.limit ?? DEFAULT_LIMIT,
+        totalPages: stable?.totalPages ?? 0,
+        // Cold start only; a page or filter change lands in isPending instead,
+        // with the previous rows still on screen.
+        isLoading: listQuery.isLoading && !stable,
+        isPending: listQuery.isFetching,
         isError: listQuery.isError,
         errorMessage: listQuery.error?.message,
         onRefresh: listQuery.refetch,

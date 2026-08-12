@@ -23,7 +23,7 @@ const Sessions = () => {
         limit,
         totalPages,
         isLoading,
-        isFetching,
+        isPending,
         isError,
         errorMessage,
         onRefresh,
@@ -50,7 +50,7 @@ const Sessions = () => {
                         <Button
                             variant="outline"
                             size="sm"
-                            disabled={isFetching}
+                            isLoading={isPending}
                             onClick={() => onRefresh()}
                         >
                             <RefreshCw />
@@ -80,6 +80,7 @@ const Sessions = () => {
                 sort={filters.sort}
                 order={filters.order}
                 isLoading={isLoading}
+                isPending={isPending}
                 isError={isError}
                 errorMessage={errorMessage}
                 selectedSessionId={selectedSessionId}
@@ -92,7 +93,7 @@ const Sessions = () => {
                 totalPages={totalPages}
                 total={total}
                 limit={limit}
-                isFetching={isFetching}
+                isFetching={isPending}
                 onPageChange={onPageChange}
                 onLimitChange={onLimitChange}
             />

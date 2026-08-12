@@ -11,6 +11,9 @@ interface IProps {
     sort?: string;
     order?: "asc" | "desc";
     isLoading: boolean;
+    /** A request is in flight over rows already on screen — a page or filter
+     *  change, rather than a cold load. */
+    isPending?: boolean;
     isError: boolean;
     errorMessage?: string;
     selectedSessionId: string | null;
@@ -25,6 +28,7 @@ const SessionsTable = ({
     sort,
     order,
     isLoading,
+    isPending,
     isError,
     errorMessage,
     selectedSessionId,
@@ -52,7 +56,15 @@ const SessionsTable = ({
     }
 
     return (
-        <div className="border-border bg-card rounded-lg border">
+        <div
+            aria-busy={isPending || undefined}
+            className={cn(
+                "border-border bg-card rounded-lg border transition-opacity",
+                // Rows stay readable but visibly not-current, and stop taking
+                // clicks that would land on data about to be replaced.
+                isPending && "pointer-events-none opacity-60"
+            )}
+        >
             <Table>
                 <TableHeader>
                     <TableRow>

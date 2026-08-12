@@ -23,6 +23,9 @@ interface IProps {
     isLoading: boolean;
     isError: boolean;
     errorMessage?: string;
+    /** A request is in flight over rows already on screen — a page or filter
+     *  change, rather than a cold load. */
+    isPending?: boolean;
     /** A row is a host/role/domain/version slice, so the host alone no longer
      *  identifies the selected one. */
     selectedKey: string | null;
@@ -37,6 +40,7 @@ const ParticipantsTable = ({
     sort,
     order,
     isLoading,
+    isPending,
     isError,
     errorMessage,
     selectedKey,
@@ -64,7 +68,16 @@ const ParticipantsTable = ({
     }
 
     return (
-        <div className="border-border bg-card rounded-lg border">
+        <div
+            aria-busy={isPending || undefined}
+            className={cn(
+                "border-border bg-card rounded-lg border transition-opacity",
+                // Rows stay readable but visibly not-current. Pointer events go
+                // with them, so a click cannot land on a row that is about to be
+                // replaced by the response already on its way.
+                isPending && "pointer-events-none opacity-60"
+            )}
+        >
             <Table>
                 <TableHeader>
                     <TableRow>

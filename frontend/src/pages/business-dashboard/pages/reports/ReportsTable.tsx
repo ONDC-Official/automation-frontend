@@ -11,12 +11,15 @@ import {
     TableRow,
 } from "@components/Shadcn/Table/table";
 import { formatNumber } from "@/lib/utils";
-import { formatDateTime, formatPercent } from "@pages/business-dashboard/lib/utils";
+import { cn, formatDateTime, formatPercent } from "@pages/business-dashboard/lib/utils";
 import type { Report } from "@pages/business-dashboard/services/types";
 
 interface IProps {
     rows: Report[];
     isLoading: boolean;
+    /** A request is in flight over rows already on screen — a page or filter
+     *  change, rather than a cold load. */
+    isPending?: boolean;
     isError: boolean;
     errorMessage?: string;
     onOpenReport: (testId: string) => void;
@@ -36,7 +39,14 @@ const COLUMNS = [
 
 const SKELETON_ROWS = 6;
 
-const ReportsTable = ({ rows, isLoading, isError, errorMessage, onOpenReport }: IProps) => {
+const ReportsTable = ({
+    rows,
+    isLoading,
+    isPending,
+    isError,
+    errorMessage,
+    onOpenReport,
+}: IProps) => {
     if (isError) {
         return (
             <EmptyState
@@ -60,7 +70,15 @@ const ReportsTable = ({ rows, isLoading, isError, errorMessage, onOpenReport }: 
     }
 
     return (
-        <div className="border-border bg-card rounded-lg border">
+        <div
+            aria-busy={isPending || undefined}
+            className={cn(
+                "border-border bg-card rounded-lg border transition-opacity",
+                // Rows stay readable but visibly not-current, and stop taking
+                // clicks that would land on data about to be replaced.
+                isPending && "pointer-events-none opacity-60"
+            )}
+        >
             <Table>
                 <TableHeader>
                     <TableRow>

@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { useExportDashboardParticipantsMutation } from "@pages/business-dashboard/hooks/useExport";
 import { useParticipant, useParticipants } from "@pages/business-dashboard/hooks/useParticipants";
 import { useSessionFacets } from "@pages/business-dashboard/hooks/useSessions";
+import { useStableQueryData } from "@pages/business-dashboard/hooks/useStableQueryData";
 import { DEFAULT_LIMIT, DEFAULT_PAGE } from "@pages/business-dashboard/lib/sessionFilters";
 import {
     DEFAULT_NP_ORDER,
@@ -36,8 +37,10 @@ export function useParticipantsPage() {
 
     // Domain and version are session dimensions, so the sessions facets endpoint
     // already offers exactly the right options — no participants-specific one is
-    // needed. npFacetFilters is what keeps this page's host search out of it.
+    // needed. npFacetFilters is what keeps this page's host search, and its
+    // blank-slice sentinel, out of a query that understands neither.
     const facetsQuery = useSessionFacets(npFacetFilters(filters));
+    const stableFacets = useStableQueryData(facetsQuery.data);
 
     /**
      * The drill-down describes the row that was clicked, not everything the
@@ -61,58 +64,67 @@ export function useParticipantsPage() {
 
     const detailQuery = useParticipant(selection?.host ?? null, detailFilters);
 
+    /**
+     * Merges a patch over the filters currently in the address bar and writes
+     * the whole set back.
+     *
+     * The merge base is `window.location.search`, deliberately not the
+     * `filters` this render closed over. react-router commits URL state inside
+     * a React transition, so a second change made before the first has
+     * committed would otherwise merge over a stale snapshot and silently clobber
+     * the first — picking a role right after typing in the search box would drop
+     * one of the two. Reading the live URL makes each commit last-write-wins on
+     * its own key instead of on the whole query string.
+     */
     const commit = useCallback(
-        (next: NpFilters) => {
-            setSearchParams(searchParamsFromNpFilters(next), { replace: true });
+        (patch: Partial<NpFilters>) => {
+            const live = npFiltersFromSearchParams(new URLSearchParams(window.location.search));
+            setSearchParams(searchParamsFromNpFilters({ ...live, ...patch }), { replace: true });
         },
         [setSearchParams]
     );
 
     /** Any filter change resets to page 1 — page 7 of the old slice is meaningless. */
     const onFilterChange = useCallback(
-        (patch: Partial<NpFilters>) => {
-            commit({ ...filters, ...patch, page: DEFAULT_PAGE });
-        },
-        [commit, filters]
+        (patch: Partial<NpFilters>) => commit({ ...patch, page: DEFAULT_PAGE }),
+        [commit]
     );
 
     const onRangeChange = useCallback(
-        (range: IRange) =>
-            commit({
-                ...filters,
-                from: range.from,
-                to: range.to,
-                page: DEFAULT_PAGE,
-            }),
-        [commit, filters]
+        (range: IRange) => commit({ from: range.from, to: range.to, page: DEFAULT_PAGE }),
+        [commit]
     );
 
-    const onPageChange = useCallback(
-        (page: number) => commit({ ...filters, page }),
-        [commit, filters]
-    );
+    const onPageChange = useCallback((page: number) => commit({ page }), [commit]);
 
     const onLimitChange = useCallback(
-        (limit: number) => commit({ ...filters, limit, page: DEFAULT_PAGE }),
-        [commit, filters]
+        (limit: number) => commit({ limit, page: DEFAULT_PAGE }),
+        [commit]
     );
 
     const onSortChange = useCallback(
         (sort: string) => {
             const order = filters.sort === sort && filters.order === "desc" ? "asc" : "desc";
-            commit({ ...filters, sort, order, page: DEFAULT_PAGE });
+            commit({ sort, order, page: DEFAULT_PAGE });
         },
-        [commit, filters]
+        [commit, filters.sort, filters.order]
     );
 
+    /**
+     * Clears every filter. This one REPLACES rather than merging — `commit`
+     * merges over the live URL, so a patch could never remove a key.
+     */
     const onReset = useCallback(() => {
-        commit({
-            page: DEFAULT_PAGE,
-            limit: filters.limit,
-            sort: DEFAULT_NP_SORT,
-            order: DEFAULT_NP_ORDER,
-        });
-    }, [commit, filters.limit]);
+        setSearchParams(
+            searchParamsFromNpFilters({
+                page: DEFAULT_PAGE,
+                limit: filters.limit,
+                sort: DEFAULT_NP_SORT,
+                order: DEFAULT_NP_ORDER,
+            }),
+            { replace: true }
+        );
+    }, [setSearchParams, filters.limit]);
 
     const [exportCsv, { isLoading: isDownloading }] = useExportDashboardParticipantsMutation();
 
@@ -127,7 +139,10 @@ export function useParticipantsPage() {
             .catch((error) => toast.error(error?.message || "The export could not be generated"));
     }, [exportCsv, filters]);
 
-    const rows = useMemo(() => listQuery.data?.data ?? [], [listQuery.data]);
+    // Keeps the page on screen while the next one loads; see the hook for why.
+    const stable = useStableQueryData(listQuery.data);
+
+    const rows = useMemo(() => stable?.data ?? [], [stable]);
 
     const selectedKey = useMemo(() => (selection ? participantKey(selection) : null), [selection]);
 
@@ -145,18 +160,24 @@ export function useParticipantsPage() {
         isFiltered: hasActiveNpFilters(filters),
 
         rows,
-        total: listQuery.data?.total ?? 0,
-        page: listQuery.data?.page ?? filters.page ?? DEFAULT_PAGE,
-        limit: listQuery.data?.limit ?? filters.limit ?? DEFAULT_LIMIT,
-        totalPages: listQuery.data?.totalPages ?? 0,
-        isLoading: listQuery.isLoading,
-        isFetching: listQuery.isFetching,
+        total: stable?.total ?? 0,
+        page: stable?.page ?? filters.page ?? DEFAULT_PAGE,
+        limit: stable?.limit ?? filters.limit ?? DEFAULT_LIMIT,
+        totalPages: stable?.totalPages ?? 0,
+        // Cold start only — there is genuinely nothing to show yet, so the
+        // skeleton is honest. A page or filter change now lands in isPending
+        // instead, with the previous rows still on screen.
+        isLoading: listQuery.isLoading && !stable,
+        isPending: listQuery.isFetching,
         isError: listQuery.isError,
         errorMessage: listQuery.error?.message,
         onRefresh: listQuery.refetch,
 
-        facets: facetsQuery.data,
-        isFacetsLoading: facetsQuery.isLoading,
+        facets: stableFacets,
+        // Only the very first facets load disables the dropdowns. Re-keying them
+        // on every role change used to grey Domain and Version out until the
+        // round trip finished, which read as the filter bar being broken.
+        isFacetsLoading: facetsQuery.isLoading && !stableFacets,
 
         selection,
         selectedKey,
