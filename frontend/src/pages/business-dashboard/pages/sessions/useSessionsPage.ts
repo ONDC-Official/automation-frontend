@@ -16,6 +16,7 @@ import {
     searchParamsFromFilters,
     withoutPaging,
 } from "@pages/business-dashboard/lib/sessionFilters";
+import { useStableQueryData } from "@pages/business-dashboard/hooks/useStableQueryData";
 import type { SessionFilters } from "@pages/business-dashboard/services/types";
 
 export function useSessionsPage() {
@@ -36,49 +37,63 @@ export function useSessionsPage() {
     const facetsQuery = useSessionFacets(withoutPaging(filters));
     const detailQuery = useSession(selectedSessionId);
 
+    /**
+     * Merges a patch over the filters currently in the address bar and writes
+     * the whole set back.
+     *
+     * The merge base is `window.location.search`, deliberately not the `filters`
+     * this render closed over: react-router commits URL state inside a React
+     * transition, so a second change made before the first has committed would
+     * merge over a stale snapshot and silently clobber it.
+     */
     const commit = useCallback(
-        (next: SessionFilters) => {
-            setSearchParams(searchParamsFromFilters(next), { replace: true });
+        (patch: Partial<SessionFilters>) => {
+            const live = filtersFromSearchParams(new URLSearchParams(window.location.search));
+            setSearchParams(searchParamsFromFilters({ ...live, ...patch }), { replace: true });
         },
         [setSearchParams]
     );
 
     /** Any filter change resets to page 1 — page 7 of the old slice is meaningless. */
     const onFilterChange = useCallback(
-        (patch: Partial<SessionFilters>) => {
-            commit({ ...filters, ...patch, page: DEFAULT_PAGE });
-        },
-        [commit, filters]
+        (patch: Partial<SessionFilters>) => commit({ ...patch, page: DEFAULT_PAGE }),
+        [commit]
     );
 
-    const onPageChange = useCallback(
-        (page: number) => commit({ ...filters, page }),
-        [commit, filters]
-    );
+    const onPageChange = useCallback((page: number) => commit({ page }), [commit]);
 
     const onLimitChange = useCallback(
-        (limit: number) => commit({ ...filters, limit, page: DEFAULT_PAGE }),
-        [commit, filters]
+        (limit: number) => commit({ limit, page: DEFAULT_PAGE }),
+        [commit]
     );
 
     const onSortChange = useCallback(
         (sort: string) => {
             const order = filters.sort === sort && filters.order === "desc" ? "asc" : "desc";
-            commit({ ...filters, sort, order, page: DEFAULT_PAGE });
+            commit({ sort, order, page: DEFAULT_PAGE });
         },
-        [commit, filters]
+        [commit, filters.sort, filters.order]
     );
 
+    /** Clears every filter, so this REPLACES — a patch through `commit` could
+     *  never remove a key. */
     const onReset = useCallback(() => {
-        commit({
-            page: DEFAULT_PAGE,
-            limit: filters.limit,
-            sort: DEFAULT_SORT,
-            order: DEFAULT_ORDER,
-        });
-    }, [commit, filters.limit]);
+        setSearchParams(
+            searchParamsFromFilters({
+                page: DEFAULT_PAGE,
+                limit: filters.limit,
+                sort: DEFAULT_SORT,
+                order: DEFAULT_ORDER,
+            }),
+            { replace: true }
+        );
+    }, [setSearchParams, filters.limit]);
 
-    const rows = useMemo(() => sessionsQuery.data?.data ?? [], [sessionsQuery.data]);
+    // Keeps the page on screen while the next one loads; see the hook for why.
+    const stable = useStableQueryData(sessionsQuery.data);
+    const stableFacets = useStableQueryData(facetsQuery.data);
+
+    const rows = useMemo(() => stable?.data ?? [], [stable]);
 
     const selectedRow = useMemo(
         () => rows.find((row) => row.sessionId === selectedSessionId) ?? null,
@@ -89,17 +104,21 @@ export function useSessionsPage() {
         filters,
         /** the live query string, handed to the Export page so it opens the same slice */
         exportSearch: serialised,
-        facets: facetsQuery.data,
-        isFacetsLoading: facetsQuery.isLoading,
+        facets: stableFacets,
+        // Only the very first load disables the dropdowns; re-keying them on
+        // every filter change used to grey them out mid-interaction.
+        isFacetsLoading: facetsQuery.isLoading && !stableFacets,
         isFiltered: hasActiveFilters(filters),
 
         rows,
-        total: sessionsQuery.data?.total ?? 0,
-        page: sessionsQuery.data?.page ?? filters.page ?? DEFAULT_PAGE,
-        limit: sessionsQuery.data?.limit ?? filters.limit ?? DEFAULT_LIMIT,
-        totalPages: sessionsQuery.data?.totalPages ?? 0,
-        isLoading: sessionsQuery.isLoading,
-        isFetching: sessionsQuery.isFetching,
+        total: stable?.total ?? 0,
+        page: stable?.page ?? filters.page ?? DEFAULT_PAGE,
+        limit: stable?.limit ?? filters.limit ?? DEFAULT_LIMIT,
+        totalPages: stable?.totalPages ?? 0,
+        // Cold start only; a page or filter change lands in isPending instead,
+        // with the previous rows still on screen.
+        isLoading: sessionsQuery.isLoading && !stable,
+        isPending: sessionsQuery.isFetching,
         isError: sessionsQuery.isError,
         errorMessage: sessionsQuery.error?.message,
         onRefresh: sessionsQuery.refetch,

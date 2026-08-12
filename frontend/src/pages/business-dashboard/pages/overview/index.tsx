@@ -37,7 +37,7 @@ const Overview = () => {
                         <Button
                             variant="outline"
                             size="sm"
-                            disabled={isFetching}
+                            isLoading={isFetching}
                             onClick={() => onRefresh()}
                         >
                             <RefreshCw />
