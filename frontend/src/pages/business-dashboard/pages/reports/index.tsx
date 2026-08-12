@@ -1,8 +1,8 @@
-import { RefreshCw, Search, User } from "lucide-react";
+import { RefreshCw, User } from "lucide-react";
 
 import { Button } from "@components/Shadcn/Button";
-import { Input } from "@components/Shadcn/Input";
 import PageHeader from "@components/PageHeader";
+import SearchInput from "@pages/business-dashboard/components/SearchInput";
 import TablePagination from "@components/TablePagination";
 import { useReportsPage } from "./useReportsPage";
 import ReportViewer from "./ReportViewer";
@@ -17,7 +17,7 @@ const Reports = () => {
         limit,
         totalPages,
         isLoading,
-        isFetching,
+        isPending,
         isError,
         errorMessage,
         onRefresh,
@@ -44,7 +44,7 @@ const Reports = () => {
                     <Button
                         variant="outline"
                         size="sm"
-                        disabled={isFetching}
+                        isLoading={isPending}
                         onClick={() => onRefresh()}
                     >
                         <RefreshCw />
@@ -54,31 +54,26 @@ const Reports = () => {
             />
 
             <div className="border-border bg-card flex flex-wrap items-center gap-2 rounded-lg border p-3">
-                <div className="relative min-w-56 flex-1">
-                    <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2" />
-                    <Input
-                        value={filters.q ?? ""}
-                        onChange={(event) => onSearch(event.target.value)}
-                        placeholder="Search test id"
-                        aria-label="Search test id"
-                        className="pl-8"
-                    />
-                </div>
-                <div className="relative min-w-56">
-                    <User className="text-muted-foreground pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2" />
-                    <Input
-                        value={filters.userId ?? ""}
-                        onChange={(event) => onUserFilter(event.target.value)}
-                        placeholder="Filter by user id"
-                        aria-label="Filter by user id"
-                        className="pl-8"
-                    />
-                </div>
+                <SearchInput
+                    value={filters.q}
+                    placeholder="Search test id"
+                    label="Search test id"
+                    onChange={(q) => onSearch(q ?? "")}
+                />
+                <SearchInput
+                    value={filters.userId}
+                    placeholder="Filter by user id"
+                    label="Filter by user id"
+                    icon={User}
+                    className="flex-none"
+                    onChange={(userId) => onUserFilter(userId ?? "")}
+                />
             </div>
 
             <ReportsTable
                 rows={rows}
                 isLoading={isLoading}
+                isPending={isPending}
                 isError={isError}
                 errorMessage={errorMessage}
                 onOpenReport={onOpenReport}
@@ -89,7 +84,7 @@ const Reports = () => {
                 totalPages={totalPages}
                 total={total}
                 limit={limit}
-                disabled={isFetching}
+                disabled={isPending}
                 onPageChange={onPageChange}
                 onLimitChange={onLimitChange}
             />

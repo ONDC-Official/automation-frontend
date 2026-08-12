@@ -104,13 +104,27 @@ export function withoutNpPaging(filters: NpFilters): NpFilters {
 /**
  * Filters for the shared `/api/sessions/facets` endpoint.
  *
- * `q` is dropped deliberately: on the sessions endpoint that facets belong to
- * it is a partial *sessionId* match, while this page means a partial *host* by
- * it. Passing it through would narrow every dropdown by a string that matches
- * no session id.
+ * Two things are stripped, because that endpoint is parsed by `parseSessionQuery`
+ * and not by the participants' own `parseNpQuery`:
+ *
+ * - `q`, which there is a partial *sessionId* match while this page means a
+ *   partial *host* by it. Passing it would narrow every dropdown by a string
+ *   that matches no session id.
+ * - `NP_NULL_SENTINEL`, which only `parseNpQuery` translates back to "no value
+ *   recorded". `parseSessionQuery` would match the literal string `__none__`,
+ *   find nothing, and empty every dropdown — so selecting "None recorded" for
+ *   Domain would wipe out the Version options too.
  */
 export function npFacetFilters(filters: NpFilters): NpFilters {
-    const { q, ...rest } = withoutNpPaging(filters);
+    const { q, npType, domain, version, ...rest } = withoutNpPaging(filters);
     void q;
-    return rest;
+
+    const realValue = (value?: string) => (value === NP_NULL_SENTINEL ? undefined : value);
+
+    return {
+        ...rest,
+        npType: realValue(npType),
+        domain: realValue(domain),
+        version: realValue(version),
+    };
 }

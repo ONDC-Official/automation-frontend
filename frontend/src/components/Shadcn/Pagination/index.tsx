@@ -14,6 +14,7 @@ export const Pagination = ({
     currentPage,
     totalPages,
     onPageChange,
+    disabled,
     className,
 }: PaginationProps) =>
     totalPages <= 1 ? null : (
@@ -23,7 +24,7 @@ export const Pagination = ({
         >
             <PaginationLink
                 aria-label="Previous page"
-                disabled={currentPage <= 1}
+                disabled={disabled || currentPage <= 1}
                 onClick={() => onPageChange(currentPage - 1)}
                 className={navButtonClass}
             >
@@ -40,6 +41,7 @@ export const Pagination = ({
                         ) : (
                             <PaginationLink
                                 isActive={currentPage === page}
+                                disabled={disabled}
                                 onClick={() => onPageChange(page)}
                                 className={cn(
                                     "size-9 rounded-lg text-sm font-medium shadow-none",
@@ -57,7 +59,7 @@ export const Pagination = ({
 
             <PaginationLink
                 aria-label="Next page"
-                disabled={currentPage >= totalPages}
+                disabled={disabled || currentPage >= totalPages}
                 onClick={() => onPageChange(currentPage + 1)}
                 className={navButtonClass}
             >

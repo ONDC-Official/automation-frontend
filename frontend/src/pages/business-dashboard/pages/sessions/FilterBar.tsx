@@ -1,8 +1,9 @@
-import { RotateCcw, Search } from "lucide-react";
+import { RotateCcw } from "lucide-react";
 import { Button } from "@components/Shadcn/Button";
 import DateRangePicker from "@components/DateRangePicker";
-import { Input } from "@components/Shadcn/Input";
 import FacetSelect from "@pages/business-dashboard/components/FacetSelect";
+import SearchInput from "@pages/business-dashboard/components/SearchInput";
+import { useOptimisticValue } from "@pages/business-dashboard/hooks/useOptimisticValue";
 import {
     Select,
     SelectContent,
@@ -26,6 +27,50 @@ interface IProps {
     onReset: () => void;
 }
 
+/**
+ * A filter select over a fixed option list.
+ *
+ * Local-echoes its value for the same reason FacetSelect does: Radix drops a
+ * pick that equals the currently rendered value, and the URL those values come
+ * from commits inside a React transition, so the rendered value lags.
+ */
+const OptionSelect = ({
+    value,
+    options,
+    label,
+    className,
+    onChange,
+}: {
+    value: string;
+    options: ReadonlyArray<{ value: string; label: string }>;
+    label: string;
+    className: string;
+    onChange: (value: string) => void;
+}) => {
+    const [selected, setSelected] = useOptimisticValue(value);
+
+    return (
+        <Select
+            value={selected}
+            onValueChange={(next) => {
+                setSelected(next);
+                onChange(next);
+            }}
+        >
+            <SelectTrigger className={className} aria-label={label}>
+                <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+                {options.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                    </SelectItem>
+                ))}
+            </SelectContent>
+        </Select>
+    );
+};
+
 /** One filter row above the table, mirrored into the URL by `useSessionsPage`. */
 const FilterBar = ({
     filters,
@@ -39,16 +84,12 @@ const FilterBar = ({
         data-slot="filter-bar"
         className="border-border bg-card flex flex-wrap items-center gap-2 rounded-lg border p-3"
     >
-        <div className="relative min-w-56 flex-1">
-            <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2" />
-            <Input
-                value={filters.q ?? ""}
-                onChange={(event) => onFilterChange({ q: event.target.value || undefined })}
-                placeholder="Search session id"
-                aria-label="Search session id"
-                className="pl-8"
-            />
-        </div>
+        <SearchInput
+            value={filters.q}
+            placeholder="Search session id"
+            label="Search session id"
+            onChange={(q) => onFilterChange({ q })}
+        />
 
         <DateRangePicker
             value={{ from: filters.from, to: filters.to }}
@@ -87,45 +128,29 @@ const FilterBar = ({
             onChange={(sessionType) => onFilterChange({ sessionType })}
         />
 
-        <Select
+        <OptionSelect
             value={filters.result ?? ANY_VALUE}
-            onValueChange={(value) =>
+            options={RESULT_OPTIONS}
+            label="Result"
+            className="w-36"
+            onChange={(value) =>
                 onFilterChange({
                     result: value === ANY_VALUE ? undefined : (value as SessionResult),
                 })
             }
-        >
-            <SelectTrigger className="w-36" aria-label="Result">
-                <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-                {RESULT_OPTIONS.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                    </SelectItem>
-                ))}
-            </SelectContent>
-        </Select>
+        />
 
-        <Select
+        <OptionSelect
             value={filters.reportExists === undefined ? ANY_VALUE : String(filters.reportExists)}
-            onValueChange={(value) =>
+            options={REPORT_OPTIONS}
+            label="Report state"
+            className="w-44"
+            onChange={(value) =>
                 onFilterChange({
                     reportExists: value === ANY_VALUE ? undefined : value === "true",
                 })
             }
-        >
-            <SelectTrigger className="w-44" aria-label="Report state">
-                <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-                {REPORT_OPTIONS.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                    </SelectItem>
-                ))}
-            </SelectContent>
-        </Select>
+        />
 
         <Button
             variant="ghost"
