@@ -320,11 +320,13 @@ export default function ProtocolHTMLForm({
 }: IProtocolHtmlFormProps) {
     // Value the step's `reference` points at. Normally embedded HTML, but when the upstream
     // service saved the xinput.form.url without fetching it, it is the seller URL itself.
+    // Session-saved keys hold jsonpath.query results (arrays), so unwrap to the first string.
     const referencedValue = useMemo<string>(() => {
-        const value = queryJsonPath(
+        const raw = queryJsonPath(
             { reference_data: referenceData },
             HtmlFormConfigInFlow.reference || ""
         )[0];
+        const value = Array.isArray(raw) ? raw.find((v) => typeof v === "string") : raw;
         return typeof value === "string" ? value : "";
     }, [referenceData, HtmlFormConfigInFlow.reference]);
 
@@ -332,10 +334,11 @@ export default function ProtocolHTMLForm({
     // URL sitting where HTML was expected and fetch it instead of parsing the URL string as HTML.
     const formUrl = useMemo<string>(() => {
         if (HtmlFormConfigInFlow.htmlSource === "url") {
-            const value = queryJsonPath(
+            const raw = queryJsonPath(
                 { reference_data: referenceData },
                 HtmlFormConfigInFlow.urlReference || ""
             )[0];
+            const value = Array.isArray(raw) ? raw.find((v) => typeof v === "string") : raw;
             return typeof value === "string" ? value : "";
         }
         return /^https?:\/\/\S+$/i.test(referencedValue.trim()) ? referencedValue.trim() : "";

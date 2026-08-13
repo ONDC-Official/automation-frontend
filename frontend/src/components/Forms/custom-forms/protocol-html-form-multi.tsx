@@ -76,10 +76,12 @@ export default function ProtocolHTMLFormMulti({
     HtmlFormConfigInFlow,
 }: Props) {
     const formHtml = useMemo<string>(() => {
-        const value = queryJsonPath(
+        const raw = queryJsonPath(
             { reference_data: referenceData },
             HtmlFormConfigInFlow.reference || ""
         )[0];
+        // Session-saved keys hold jsonpath.query results (arrays), so unwrap to the first string.
+        const value = Array.isArray(raw) ? raw.find((v) => typeof v === "string") : raw;
         return typeof value === "string" ? value : "";
     }, [referenceData, HtmlFormConfigInFlow.reference]);
 
