@@ -63,6 +63,7 @@ import ManualIdOverride from "@components/Forms/custom-forms/manual-id-override"
 import { FormConfigType, FormFieldConfigType } from "@components/Forms/config-form/types";
 import type { IFormContractContext } from "@components/Forms/utils/resolve-form-contract";
 import FIS12PersonalLoanSelectForm from "@components/Forms/custom-forms/fis12-personal-loan-select-form";
+import TRV11200MetroSelectForm from "../custom-forms/trv11-200-select-form";
 
 export type { FormConfigType, FormFieldConfigType } from "@components/Forms/config-form/types";
 
@@ -282,6 +283,9 @@ export const FormConfig = ({
 
     if (formConfig.find((field) => field.type === "trv11_select")) {
         return <TRV11SelectForm submitEvent={submitEvent} />;
+    }
+    if (formConfig.find((field) => field.type === "trv11_200_metro_select")) {
+        return <TRV11200MetroSelectForm submitEvent={submitEvent} />;
     }
 
     if (formConfig.find((field) => field.type === "trv11_201_partial_select")) {
