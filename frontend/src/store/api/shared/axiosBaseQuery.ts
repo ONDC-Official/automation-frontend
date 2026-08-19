@@ -8,6 +8,10 @@ export interface IAxiosBaseQueryArgs {
     data?: unknown;
     params?: AxiosRequestConfig["params"];
     timeout?: number;
+    // Per-request headers, for the one caller whose credential cannot live on
+    // the instance: the MCP session viewer reads a different engine on every
+    // visit, so its token arrives with the request rather than with the client.
+    headers?: AxiosRequestConfig["headers"];
 }
 
 export interface IAxiosBaseQueryError {
@@ -18,7 +22,7 @@ export interface IAxiosBaseQueryError {
 
 export const axiosBaseQuery =
     (instance: AxiosInstance): BaseQueryFn<IAxiosBaseQueryArgs, unknown, IAxiosBaseQueryError> =>
-    async ({ url, method = "GET", data, params, timeout }, { signal }) => {
+    async ({ url, method = "GET", data, params, timeout, headers }, { signal }) => {
         try {
             const result = await instance.request({
                 url,
@@ -26,6 +30,7 @@ export const axiosBaseQuery =
                 data,
                 params,
                 timeout,
+                headers,
                 // RTK Query aborts this when the query args change or the last
                 // subscriber goes away. Without forwarding it, a superseded
                 // request still ran to completion holding one of the browser's

@@ -10,6 +10,7 @@ import HistoryPage from "@pages/history";
 import ProtocolPlayGround from "@pages/protocol-playground";
 // import DBBackOffice from "@pages/db-back-office";
 import FlowTestingWrapper from "@pages/flow-testing";
+import McpSessionPage from "@pages/mcp-session";
 import NotFoundPage from "@components/NotFound";
 import ScenarioPage from "@pages/scenario";
 import HomePage from "@pages/home";
@@ -46,6 +47,11 @@ const Routes = () => (
         <Route path={ROUTES.SCENARIO} element={page(<ScenarioPage />)} />
         {/* ROUTES.FLOW_TESTING is for Flow testing through URL parameters not via scenario testing page */}
         <Route path={ROUTES.FLOW_TESTING} element={page(<FlowTestingWrapper />)} />
+        {/* Read-only viewer for a session on an ondc-mcp engine. Reached only
+            by the link that engine hands out, so it has no nav entry — and
+            unguarded like FLOW_TESTING, because the token in the link is what
+            authorises the reader against their own engine, not against us. */}
+        <Route path={ROUTES.MCP_SESSION} element={page(<McpSessionPage />)} />
         <Route path={ROUTES.PROFILE} element={<UserProfile />}>
             <Route index element={page(<ConfigsSection />)} />
             <Route path="past-reports" element={page(<PastReportsSection />)} />

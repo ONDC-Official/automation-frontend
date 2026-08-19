@@ -15,6 +15,7 @@ import githubDocsApi from "@store/api/githubDocs/githubDocsApi";
 import loadTestApi from "@store/api/loadTest/loadTestApi";
 import mainApi from "@store/api/main/mainApi";
 import dashboardApi from "@store/api/dashboard/dashboardApi";
+import engineApi from "@store/api/engine/engineApi";
 import sessionSlice from "@store/slices/sessionSlice";
 import themeSlice from "@store/slices/themeSlice";
 import sessionHistorySlice from "@store/slices/sessionHistorySlice";
@@ -43,6 +44,7 @@ const localPersist = (key: string) => ({ key, storage });
 const rootReducer = combineReducers({
     [mainApi.reducerPath]: mainApi.reducer,
     [dashboardApi.reducerPath]: dashboardApi.reducer,
+    [engineApi.reducerPath]: engineApi.reducer,
     [devGuideApi.reducerPath]: devGuideApi.reducer,
     [githubDocsApi.reducerPath]: githubDocsApi.reducer,
     [loadTestApi.reducerPath]: loadTestApi.reducer,
@@ -88,7 +90,8 @@ export const createAppStore = (preloadedState?: Partial<RootState>) =>
                 dashboardApi.middleware,
                 devGuideApi.middleware,
                 githubDocsApi.middleware,
-                loadTestApi.middleware
+                loadTestApi.middleware,
+                engineApi.middleware
             ),
         devTools: import.meta.env.DEV,
         preloadedState,
