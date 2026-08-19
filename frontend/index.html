@@ -18,7 +18,14 @@
             }
             gtag("js", new Date());
 
-            gtag("config", "G-JEZFPTBKF0");
+            // The MCP session viewer receives an engine token in the URL
+            // fragment, and GA4 reports `page_location` as
+            // `document.location.href` — fragment included. Never configure
+            // analytics on that route: it would ship somebody else's
+            // credential to a third party.
+            if (!window.location.pathname.startsWith("/mcp-session")) {
+                gtag("config", "G-JEZFPTBKF0");
+            }
         </script>
     </head>
     <body>

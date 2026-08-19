@@ -7,6 +7,14 @@ export const ROUTES = {
     SCHEMA: "/schema-validation",
     SCENARIO: "/scenario",
     FLOW_TESTING: "/flow-testing",
+    /**
+     * Read-only viewer for a session on an `ondc-mcp` engine.
+     *
+     * Reached only by a link the engine hands out, so it is deliberately not
+     * in the header nav — without an engine there is nothing to show. Its
+     * parameters arrive in the URL *fragment*, never the query string.
+     */
+    MCP_SESSION: "/mcp-session",
     LOGIN: "/login",
     PROFILE: "/profile",
     PROFILE_PAST_REPORTS: "/profile/past-reports",
