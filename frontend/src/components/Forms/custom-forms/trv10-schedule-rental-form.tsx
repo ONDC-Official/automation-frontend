@@ -20,11 +20,6 @@ type FormValues = {
     start_district: string;
     start_country_code: string;
     start_area_code: string;
-    end_address: string;
-    end_city_code: string;
-    end_district: string;
-    end_country_code: string;
-    end_area_code: string;
 };
 
 export default function TRV10ScheduleRentalForm({
@@ -44,11 +39,6 @@ export default function TRV10ScheduleRentalForm({
             start_district: "Bangalore",
             start_country_code: "IND",
             start_area_code: "560001",
-            end_address: "MG Road, Bengaluru",
-            end_city_code: "std:080",
-            end_district: "Bangalore",
-            end_country_code: "IND",
-            end_area_code: "560001",
         },
     });
 
@@ -83,16 +73,6 @@ export default function TRV10ScheduleRentalForm({
                         "$.message.intent.fulfillment.stops[?(@.type=='START')].location.country.code",
                     start_area_code:
                         "$.message.intent.fulfillment.stops[?(@.type=='START')].location.area_code",
-                    end_address:
-                        "$.message.intent.fulfillment.stops[?(@.type=='END')].location.address",
-                    end_city_code:
-                        "$.message.intent.fulfillment.stops[?(@.type=='END')].location.city.code",
-                    end_district:
-                        "$.message.intent.fulfillment.stops[?(@.type=='END')].location.district",
-                    end_country_code:
-                        "$.message.intent.fulfillment.stops[?(@.type=='END')].location.country.code",
-                    end_area_code:
-                        "$.message.intent.fulfillment.stops[?(@.type=='END')].location.area_code",
                 },
                 formData: formattedData as unknown as Record<string, string>,
             });
@@ -180,52 +160,6 @@ export default function TRV10ScheduleRentalForm({
                             control={control}
                             name="start_area_code"
                             label="Pickup Area Code"
-                            placeholder="560001"
-                            required
-                        />
-                    </div>
-                </div>
-
-                <div className="border border-muted-foreground/20 rounded-lg p-4 mt-6 space-y-4">
-                    <h3 className="text-sm font-bold text-foreground">Drop (End) Location Details</h3>
-                    
-                    <TextField
-                        control={control}
-                        name="end_address"
-                        label="Drop Address"
-                        placeholder="MG Road, Bengaluru"
-                        required
-                    />
-                    
-                    <div className="grid grid-cols-2 gap-4">
-                        <TextField
-                            control={control}
-                            name="end_city_code"
-                            label="Drop City Code"
-                            placeholder="std:080"
-                            required
-                        />
-                        <TextField
-                            control={control}
-                            name="end_district"
-                            label="Drop District"
-                            placeholder="Bangalore"
-                            required
-                        />
-                    </div>
-                    
-                    <div className="grid grid-cols-2 gap-4">
-                        <TextField
-                            control={control}
-                            name="end_country_code"
-                            label="Drop Country Code"
-                            placeholder="IND"
-                            required
-                        />
-                        <TextField
-                            control={control}
-                            name="end_area_code"
-                            label="Drop Area Code"
                             placeholder="560001"
                             required
                         />
