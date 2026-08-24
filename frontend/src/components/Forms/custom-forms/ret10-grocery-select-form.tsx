@@ -40,14 +40,14 @@ export default function Ret10GrocerySelectForm({ submitEvent }: IRet10GrocerySel
     });
 
     const [providerOptions, setProviderOptions] = useState<string[]>([]);
-    const [itemOptions, setItemOptions] = useState<string[]>([]);
-    const [locationOptions, setLocationOptions] = useState<string[]>([]);
     const [offerOptions, setOfferOptions] = useState<string[]>([]);
     const [providers, setProviders] = useState<ICatalogProvider[]>([]);
 
     const selectedProvider = watch("provider");
-    const providerLocations =
-        providers.find((provider) => provider.id === selectedProvider)?.locations ?? [];
+    const currentProvider = providers.find((provider) => provider.id === selectedProvider);
+    const providerLocations = currentProvider?.locations ?? [];
+    const itemOptions = currentProvider?.items.map((item) => item.id) ?? [];
+    const locationOptions = providerLocations.map((location) => location.id);
 
     const onSubmit = async (data: IFormValues) => {
         const normalizedData: IFormValues = {
@@ -78,12 +78,6 @@ export default function Ret10GrocerySelectForm({ submitEvent }: IRet10GrocerySel
             setProviders(catalogProviders);
 
             setProviderOptions(catalogProviders.map((provider) => provider.id));
-
-            const provider = catalogProviders[0];
-            if (provider) {
-                setItemOptions(provider.items.map((item) => item.id));
-                setLocationOptions(provider.locations.map((location) => location.id));
-            }
 
             const offers = catalogProviders
                 .flatMap((provider) => provider.offers || [])

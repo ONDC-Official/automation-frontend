@@ -15,6 +15,11 @@ type FormValues = {
     city_code: string;
     start_gps: string;
     scheduled_time: string;
+    start_address: string;
+    start_city_code: string;
+    start_district: string;
+    start_country_code: string;
+    start_area_code: string;
 };
 
 export default function TRV10ScheduleRentalForm({
@@ -29,6 +34,11 @@ export default function TRV10ScheduleRentalForm({
             city_code: "",
             start_gps: "",
             scheduled_time: "",
+            start_address: "MG Road, Bengaluru",
+            start_city_code: "std:080",
+            start_district: "Bangalore",
+            start_country_code: "IND",
+            start_area_code: "560001",
         },
     });
 
@@ -53,6 +63,16 @@ export default function TRV10ScheduleRentalForm({
                         "$.message.intent.fulfillment.stops[?(@.type=='START')].location.gps",
                     scheduled_time:
                         "$.message.intent.fulfillment.stops[?(@.type=='START')].time.timestamp",
+                    start_address:
+                        "$.message.intent.fulfillment.stops[?(@.type=='START')].location.address",
+                    start_city_code:
+                        "$.message.intent.fulfillment.stops[?(@.type=='START')].location.city.code",
+                    start_district:
+                        "$.message.intent.fulfillment.stops[?(@.type=='START')].location.district",
+                    start_country_code:
+                        "$.message.intent.fulfillment.stops[?(@.type=='START')].location.country.code",
+                    start_area_code:
+                        "$.message.intent.fulfillment.stops[?(@.type=='START')].location.area_code",
                 },
                 formData: formattedData as unknown as Record<string, string>,
             });
@@ -81,22 +101,70 @@ export default function TRV10ScheduleRentalForm({
                     className="mb-0"
                 />
 
-                <TextField control={control} name="city_code" label="Enter city code" required />
+                <div className="space-y-4">
+                    <TextField control={control} name="city_code" label="Enter city code" required />
 
-                <TextField
-                    control={control}
-                    name="start_gps"
-                    label="Enter start gps coordinates"
-                    placeholder="12.9716,77.5946"
-                    required
-                />
+                    <TextField
+                        control={control}
+                        name="start_gps"
+                        label="Enter start gps coordinates"
+                        placeholder="12.9716,77.5946"
+                        required
+                    />
 
-                <DateTimePicker
-                    control={control}
-                    name="scheduled_time"
-                    label="Enter Time (24-hour format)"
-                    required
-                />
+                    <DateTimePicker
+                        control={control}
+                        name="scheduled_time"
+                        label="Enter Time (24-hour format)"
+                        required
+                    />
+                </div>
+
+                <div className="border border-muted-foreground/20 rounded-lg p-4 mt-6 space-y-4">
+                    <h3 className="text-sm font-bold text-foreground">Pickup (Start) Location Details</h3>
+                    
+                    <TextField
+                        control={control}
+                        name="start_address"
+                        label="Pickup Address"
+                        placeholder="MG Road, Bengaluru"
+                        required
+                    />
+                    
+                    <div className="grid grid-cols-2 gap-4">
+                        <TextField
+                            control={control}
+                            name="start_city_code"
+                            label="Pickup City Code"
+                            placeholder="std:080"
+                            required
+                        />
+                        <TextField
+                            control={control}
+                            name="start_district"
+                            label="Pickup District"
+                            placeholder="Bangalore"
+                            required
+                        />
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-4">
+                        <TextField
+                            control={control}
+                            name="start_country_code"
+                            label="Pickup Country Code"
+                            placeholder="IND"
+                            required
+                        />
+                        <TextField
+                            control={control}
+                            name="start_area_code"
+                            label="Pickup Area Code"
+                            placeholder="560001"
+                            required
+                        />
+                    </div>
+                </div>
             </FormDialogShell>
         </>
     );

@@ -305,7 +305,7 @@ function AutoToggle({
     );
 }
 
-function getStatusStyles(
+export function getStatusStyles(
     status:
         | "ERROR"
         | "SUCCESS"
@@ -372,7 +372,7 @@ function getCount(step: MappedStep) {
     return step.status === "COMPLETE" ? (step.payloads?.payloads.length ?? 0) : 0;
 }
 
-function getCountStyles(count: number) {
+export function getCountStyles(count: number) {
     if (count === 1)
         return "border-n-30 bg-surface-elevated text-text-secondary dark:border-border-default";
     if (count <= 3)
