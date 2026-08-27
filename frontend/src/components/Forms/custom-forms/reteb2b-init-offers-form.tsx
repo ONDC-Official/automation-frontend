@@ -575,7 +575,6 @@ export default function ReteB2BInitOffersForm({ submitEvent }: IReteB2BInitOffer
         }
         if (form.type === "new") {
             if (
-                !form.customer_id ||
                 !form.phone_number ||
                 !form.email ||
                 !form.tax_number ||

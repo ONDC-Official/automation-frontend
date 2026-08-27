@@ -30,7 +30,7 @@ export default function Ret10GrocerySelectForm({ submitEvent }: IRet10GrocerySel
     const [errorWhilePaste, setErrorWhilePaste] = useState("");
     const [isDataPasted, setIsDataPasted] = useState(false);
 
-    const { control, handleSubmit, watch } = useForm<IFormValues>({
+    const { control, handleSubmit, watch, setValue, getValues } = useForm<IFormValues>({
         defaultValues: DEFAULT_FORM_VALUES,
     });
 
@@ -48,6 +48,16 @@ export default function Ret10GrocerySelectForm({ submitEvent }: IRet10GrocerySel
     const providerLocations = currentProvider?.locations ?? [];
     const itemOptions = currentProvider?.items.map((item) => item.id) ?? [];
     const locationOptions = providerLocations.map((location) => location.id);
+
+    // Item / location options are provider-scoped; clear dependents so a stale value
+    // from the previous provider cannot remain selected against the new options list.
+    const clearProviderDependents = () => {
+        setValue("provider_location", []);
+        getValues("items").forEach((_, index) => {
+            setValue(`items.${index}.itemId`, "");
+            setValue(`items.${index}.location`, "");
+        });
+    };
 
     const onSubmit = async (data: IFormValues) => {
         const normalizedData: IFormValues = {
@@ -134,7 +144,10 @@ export default function Ret10GrocerySelectForm({ submitEvent }: IRet10GrocerySel
                                     <ComboBoxControl
                                         label="Select Provider Id"
                                         value={field.value}
-                                        onValueChange={field.onChange}
+                                        onValueChange={(value) => {
+                                            field.onChange(value);
+                                            clearProviderDependents();
+                                        }}
                                         options={toComboOptions(providerOptions)}
                                         placeholder="Select provider..."
                                     />
