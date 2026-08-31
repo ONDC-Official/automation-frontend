@@ -36,13 +36,7 @@ export const GLOSSARY_TERMS = [
         id: "use-case",
         term: "Use case",
         definition:
-            "A specific product or scenario inside a domain. For example, under Credit (FIS12) you may see use cases such as LAMF, Personal Loan, or Gold Loan — each with its own documents, flows, and error codes.",
-    },
-    {
-        id: "lamf",
-        term: "LAMF",
-        definition:
-            "Loan Against Mutual Funds — a Credit (FIS12) use case where a borrower takes a loan secured against mutual fund holdings.",
+            "A specific product or scenario inside a domain. For example, under Credit (FIS12) you may see use cases such as Personal Loan or Gold Loan — each with its own documents, flows, and error codes.",
     },
     {
         id: "bap",
