@@ -10,8 +10,9 @@ import {
 } from "@heroicons/react/24/outline";
 import { Button } from "@components/Shadcn/Button";
 import { cn } from "@/lib/utils";
-import { ROUTES, getDeveloperGuideDocPath, getDeveloperGuideUseCasePath } from "@constants/routes";
+import { ROUTES, getDeveloperGuideDocPath } from "@constants/routes";
 import { buildGeneralDocCommentScope } from "@/types/comment-scope";
+import { QuickStepBadge } from "@pages/home/QuickStepBadge";
 import {
     GETTING_STARTED_SECTIONS,
     GLOSSARY_TERMS,
@@ -41,8 +42,9 @@ interface PathCard {
     onClick: () => void;
 }
 
-interface ResourceLink {
+interface ExploreStep {
     id: string;
+    number: string;
     title: string;
     description: string;
 }
@@ -112,20 +114,6 @@ const DeveloperGuideGettingStartedContent: FC = () => {
 
     const referenceUseCase = useMemo(() => findReferenceUseCase(builds), [builds]);
 
-    const openReferenceUseCase = () => {
-        if (!referenceUseCase) {
-            navigate(ROUTES.DEVELOPER_GUIDE_DOMAINS);
-            return;
-        }
-        navigate(
-            getDeveloperGuideUseCasePath(
-                referenceUseCase.domainKey,
-                referenceUseCase.versionKey,
-                referenceUseCase.label
-            )
-        );
-    };
-
     const referencePathHint = referenceUseCase
         ? `API Reference by Domain → Financial Services → ${getDomainDisplayLabel(referenceUseCase.domainKey)} → ${referenceUseCase.label}`
         : "API Reference by Domain → Financial Services → Credit (FIS12) → LAMF";
@@ -160,25 +148,29 @@ const DeveloperGuideGettingStartedContent: FC = () => {
         },
     ];
 
-    const exploreSteps: ResourceLink[] = [
+    const exploreSteps: ExploreStep[] = [
         {
             id: "product-understanding",
+            number: "01",
             title: "Read Documents",
             description: "Get domain and use-case context before you dig into protocol calls.",
         },
         {
             id: "browse-flows",
+            number: "02",
             title: "Browse Flows",
             description: "Select a flow, then an action, to walk the sequence of protocol calls.",
         },
         {
             id: "inspect-payloads",
+            number: "03",
             title: "Inspect payloads and schemas",
             description:
                 "Review example payloads, request/response schemas, validations, and key attributes.",
         },
         {
             id: "capture-notes",
+            number: "04",
             title: "Capture notes as you go",
             description:
                 "Record edge cases, error handling, and partner-specific behavior while reviewing examples.",
@@ -261,12 +253,6 @@ const DeveloperGuideGettingStartedContent: FC = () => {
                     </section>
 
                     <section id={GETTING_STARTED_SECTIONS[1].id} className="scroll-mt-24">
-                        <SectionHeading
-                            sectionId={GETTING_STARTED_SECTIONS[1].id}
-                            label={GETTING_STARTED_SECTIONS[1].label}
-                            onSelect={selectSection}
-                            headingAction={renderHeadingAction(GETTING_STARTED_SECTIONS[1].id)}
-                        />
                         <p className="max-w-6xl text-body-1 leading-relaxed text-n-300 dark:text-n-60">
                             ONDC is an open, interoperable network for digital commerce — it lets
                             buyer and seller apps discover, transact, and fulfill across platforms
@@ -308,8 +294,12 @@ const DeveloperGuideGettingStartedContent: FC = () => {
                             explore for every other domain. Please check the API Reference by Domain
                             section from the sidebar to get the list of all the usecases.
                         </p>
-                        <Button type="button" className="mt-4" onClick={openReferenceUseCase}>
-                            Open Usecase
+                        <Button
+                            type="button"
+                            className="mt-4"
+                            onClick={() => navigate(ROUTES.DEVELOPER_GUIDE_DOMAINS)}
+                        >
+                            Open API Reference
                         </Button>
                     </section>
 
@@ -347,18 +337,21 @@ const DeveloperGuideGettingStartedContent: FC = () => {
                         <p className="mb-5 max-w-2xl text-body-2 leading-relaxed text-n-300 dark:text-n-60">
                             Once a use case is open, work through it in this order.
                         </p>
-                        <ul className="divide-y divide-n-40 rounded-2xl border border-n-40 dark:divide-n-60 dark:border-n-60">
+                        <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4 lg:gap-10">
                             {exploreSteps.map((step) => (
-                                <li key={step.id} className="px-5 py-4">
-                                    <p className="mb-1 text-base font-semibold text-n-900 dark:text-n-0">
-                                        {step.title}
-                                    </p>
-                                    <p className="mb-0 text-body-2 leading-relaxed text-n-300 dark:text-n-60">
-                                        {step.description}
-                                    </p>
-                                </li>
+                                <div key={step.id} className="flex items-start gap-3">
+                                    <QuickStepBadge number={step.number} />
+                                    <div className="min-w-0 flex-1 pt-0.5">
+                                        <h3 className="text-body-1 font-semibold text-n-800 dark:text-n-0">
+                                            {step.title}
+                                        </h3>
+                                        <p className="mt-1 text-body-2 text-n-300 dark:text-n-60">
+                                            {step.description}
+                                        </p>
+                                    </div>
+                                </div>
                             ))}
-                        </ul>
+                        </div>
                     </section>
 
                     <section id={GETTING_STARTED_SECTIONS[5].id} className="scroll-mt-24">
