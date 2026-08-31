@@ -299,7 +299,7 @@ const DeveloperGuideGettingStartedContent: FC = () => {
                             className="mt-4"
                             onClick={() => navigate(ROUTES.DEVELOPER_GUIDE_DOMAINS)}
                         >
-                            Open API Reference
+                            Open API References By Domains
                         </Button>
                     </section>
 
