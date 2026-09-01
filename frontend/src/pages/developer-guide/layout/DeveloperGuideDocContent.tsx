@@ -11,7 +11,11 @@ import {
     stripRedundantMarkdownHorizontalRules,
 } from "@utils/markdownToc";
 import { buildGeneralDocCommentScope } from "@/types/comment-scope";
-import { docUsesSidebarSections } from "./docsWithSidebarSections";
+import {
+    docShowsInPageToc,
+    docStripsEmbeddedToc,
+    docUsesSidebarSections,
+} from "./docsWithSidebarSections";
 import CommentsPanel from "../flowActionDetails/CommentsPanel";
 import { useDocsSectionSelection } from "../DocsViewer/useDocsSectionSelection";
 import GuideContentSkeleton from "../shared/components/GuideContentSkeleton";
@@ -19,6 +23,8 @@ import { useInlineCommentHeading } from "../shared/hooks/useInlineCommentHeading
 
 const DeveloperGuideDocContent: FC = () => {
     const { slug } = useParams<{ slug: string }>();
+    const showsInPageToc = docShowsInPageToc(slug);
+    const stripsEmbeddedToc = docStripsEmbeddedToc(slug);
     const usesSidebarSections = docUsesSidebarSections(slug);
 
     const {
@@ -57,9 +63,9 @@ const DeveloperGuideDocContent: FC = () => {
     // GitHub md often uses `# Title` / `## Section` + `---` — strip heading-adjacent
     // rules so they don't leave empty vertical gaps under titles.
     const displayContent = useMemo(() => {
-        const withoutToc = usesSidebarSections ? stripMarkdownTableOfContents(content) : content;
+        const withoutToc = stripsEmbeddedToc ? stripMarkdownTableOfContents(content) : content;
         return stripRedundantMarkdownHorizontalRules(withoutToc);
-    }, [content, usesSidebarSections]);
+    }, [content, stripsEmbeddedToc]);
 
     if (isLoading) {
         return <GuideContentSkeleton />;
@@ -78,7 +84,7 @@ const DeveloperGuideDocContent: FC = () => {
     return (
         <div className="p-4">
             <div className="flex gap-6 items-stretch min-h-[60vh]">
-                {!usesSidebarSections && (
+                {showsInPageToc && (
                     <TableOfContents
                         content={content}
                         className="hidden xl:block w-56 shrink-0 self-start sticky overflow-y-auto"
@@ -117,15 +123,34 @@ const DeveloperGuideDocContent: FC = () => {
                     <div
                         className={[
                             "max-w-none",
-                            // Avoid double rule under title (h1 border-b + following ---)
-                            "[&_h1:has(+hr)]:border-b-0!",
-                            "[&_h1:has(+hr)]:pb-0!",
-                            // Equalize space above/below ## titles between --- and border-b
-                            "[&_hr:has(+h2)]:mt-8!",
-                            "[&_hr:has(+h2)]:mb-0!",
-                            "[&_hr+h2]:mt-0!",
-                            "[&_hr+h2]:pt-3!",
-                            "[&_hr+h2]:pb-3!",
+                            usesSidebarSections
+                                ? [
+                                      // FAQ docs: no divider lines — use vertical rhythm instead (Stripe-style)
+                                      "[&_h1]:border-b-0!",
+                                      "[&_h1]:pb-0!",
+                                      "[&_h1]:mb-6!",
+                                      "[&_h2]:mt-12!",
+                                      "[&_h2:first-of-type]:mt-0!",
+                                      "[&_h2]:border-b-0!",
+                                      "[&_h2]:pb-0!",
+                                      "[&_h2]:mb-3!",
+                                      "[&_h3]:mt-10!",
+                                      "[&_h2+_h3]:mt-5!",
+                                      "[&_h3]:mb-3!",
+                                      "[&_h3+_p]:mt-0!",
+                                      "[&_pre]:my-4!",
+                                  ].join(" ")
+                                : [
+                                      // Avoid double rule under title (h1 border-b + following ---)
+                                      "[&_h1:has(+hr)]:border-b-0!",
+                                      "[&_h1:has(+hr)]:pb-0!",
+                                      // Equalize space above/below ## titles between --- and border-b
+                                      "[&_hr:has(+h2)]:mt-8!",
+                                      "[&_hr:has(+h2)]:mb-0!",
+                                      "[&_hr+h2]:mt-0!",
+                                      "[&_hr+h2]:pt-3!",
+                                      "[&_hr+h2]:pb-3!",
+                                  ].join(" "),
                         ].join(" ")}
                     >
                         <GithubMarkdown

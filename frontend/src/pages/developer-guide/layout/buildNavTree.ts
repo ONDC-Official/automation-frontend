@@ -8,16 +8,23 @@ import {
     getDomainFriendlyName,
 } from "../domainGrouping";
 import { isDomainEnabled, sortDocsByPreferredSequence } from "../utils";
-import { GETTING_STARTED_SECTIONS } from "../landing/getting-started-sections";
 import { resolveNavStatus } from "../shared/statusPlaceholders";
 import type { NavNode } from "./navTypes";
+import { isNavGroup } from "./navTypes";
 import { DOCS_WITH_SIDEBAR_SECTIONS } from "./docsWithSidebarSections";
 
-function useCaseNavLink(
-    node: Extract<NavNode, { type: "link" }>
-): Extract<NavNode, { type: "link" }> {
-    if (node.disabled) return node;
-    return { ...node, showArrow: true };
+/** Hide the leading chevron on leaf nodes (links and groups with no children). */
+function isNavLeaf(node: NavNode): boolean {
+    return !isNavGroup(node) || node.children.length === 0;
+}
+
+function applyLeafNodeNoIcon(node: NavNode): NavNode {
+    if (isNavGroup(node)) {
+        const children = node.children.map(applyLeafNodeNoIcon);
+        const updated = { ...node, children };
+        return isNavLeaf(updated) ? { ...updated, showArrow: false as const } : updated;
+    }
+    return { ...node, showArrow: false as const };
 }
 
 function buildDocNavWithSections(doc: DocMeta, markdown: string): NavNode {
@@ -67,26 +74,14 @@ function buildDocNavWithSections(doc: DocMeta, markdown: string): NavNode {
 }
 
 function buildGettingStartedNav(): NavNode {
-    const sectionLinks: NavNode[] = GETTING_STARTED_SECTIONS.map((section) => ({
-        id: `getting-started-${section.id}`,
-        label: section.label,
-        type: "link" as const,
-        path: `${ROUTES.DEVELOPER_GUIDE_GETTING_STARTED}#${section.id}`,
-        searchText: section.label,
-    }));
-
-    const defaultGettingStartedPath =
-        sectionLinks.length > 0
-            ? (sectionLinks[0] as Extract<NavNode, { type: "link" }>).path
-            : `${ROUTES.DEVELOPER_GUIDE_GETTING_STARTED}#${GETTING_STARTED_SECTIONS[0].id}`;
-
     return {
         id: "getting-started",
         label: "Getting Started",
         type: "group",
-        path: defaultGettingStartedPath,
-        defaultOpen: true,
-        children: sectionLinks,
+        path: ROUTES.DEVELOPER_GUIDE_GETTING_STARTED,
+        defaultOpen: false,
+        searchText: "getting started ondc learn use case glossary",
+        children: [],
     };
 }
 
@@ -122,7 +117,7 @@ export function buildNavTree(
             .map(({ verKey, label, backendStatus }) => {
                 const clickable = isUseCaseEnabled(dom, label);
                 const status = resolveNavStatus(backendStatus);
-                return useCaseNavLink({
+                return {
                     id: `usecase-${dom.key}-${verKey}-${label}`,
                     label,
                     suffix: `v${verKey}`,
@@ -131,7 +126,7 @@ export function buildNavTree(
                     disabled: !clickable,
                     searchText: `${dom.key} ${label} v${verKey}`,
                     ...(status ? { status } : {}),
-                });
+                };
             });
     }
 
@@ -204,7 +199,7 @@ export function buildNavTree(
     if (domainChildren.length > 0) {
         tree.push({
             id: "domains",
-            label: "API Reference by Domain",
+            label: "Explore by Domain",
             type: "group",
             path: ROUTES.DEVELOPER_GUIDE_DOMAINS,
             defaultOpen: true,
@@ -213,5 +208,5 @@ export function buildNavTree(
         });
     }
 
-    return tree;
+    return tree.map(applyLeafNodeNoIcon);
 }
