@@ -19,7 +19,3 @@ export interface DeveloperGuideGuideCardProps {
     onClick?: () => void;
     className?: string;
 }
-
-export interface DeveloperGuideNavBackButtonProps {
-    className?: string;
-}

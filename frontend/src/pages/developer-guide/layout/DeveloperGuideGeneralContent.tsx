@@ -1,6 +1,6 @@
 import { FC, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { DocumentTextIcon, KeyIcon, Square3Stack3DIcon } from "@heroicons/react/24/outline";
+import { DocumentTextIcon, KeyIcon } from "@heroicons/react/24/outline";
 import { ROUTES, getDeveloperGuideDocPath } from "@constants/routes";
 import { useDeveloperGuideShell } from "./DeveloperGuideNav";
 import DeveloperGuideGuideCard from "./DeveloperGuideGuideCard";
@@ -39,13 +39,9 @@ const DeveloperGuideGeneralContent: FC = () => {
     return (
         <div className="min-h-full bg-white dark:bg-surface-page">
             <header className="border-b border-n-40 bg-white dark:border-n-60 dark:bg-surface-elevated">
-                <div className="p-4">
-                    <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-n-40 bg-brand-light px-3 py-1.5 text-caption-2-size font-semibold uppercase tracking-widest text-brand-normal dark:border-n-60 dark:bg-brand-normal/10">
-                        <Square3Stack3DIcon className="h-2.75 w-2.75" aria-hidden />
-                        General documentation
-                    </div>
+                <div className="p-8">
                     <h1 className="mb-4 text-3xl font-bold leading-tight tracking-tight text-n-900 dark:text-n-0 md:text-4xl">
-                        Guides &amp; <span className="text-brand-normal">reference</span>
+                        General &amp; <span className="text-brand-normal">Documentation</span>
                     </h1>
                     <p className="max-w-2xl text-body-1 leading-relaxed text-n-300 dark:text-n-60">
                         Core concepts and tools for ONDC integration — authentication helpers,
@@ -54,7 +50,7 @@ const DeveloperGuideGeneralContent: FC = () => {
                 </div>
             </header>
 
-            <div className="p-4">
+            <div className="p-8">
                 <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-6 xl:grid-cols-3">
                     {guideCards.map((card) => (
                         <DeveloperGuideGuideCard

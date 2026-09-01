@@ -663,7 +663,7 @@ export default function ReteB2BSelectForm({ submitEvent }: IReteB2BSelectFormPro
                                             className="flex flex-wrap items-end gap-2 rounded-lg border border-border-default p-3"
                                         >
                                             <ComboBoxControl
-                                                className="min-w-[140px] flex-1"
+                                                className="min-w-35 flex-1"
                                                 label="Item"
                                                 value={item.itemId}
                                                 onValueChange={(value) =>
@@ -687,7 +687,7 @@ export default function ReteB2BSelectForm({ submitEvent }: IReteB2BSelectFormPro
                                                 />
                                             </FormField>
                                             <ComboBoxControl
-                                                className="min-w-[120px] flex-1"
+                                                className="min-w-30 flex-1"
                                                 label="Location"
                                                 value={item.location}
                                                 onValueChange={(value) =>
@@ -701,7 +701,7 @@ export default function ReteB2BSelectForm({ submitEvent }: IReteB2BSelectFormPro
                                                 placeholder="Location"
                                             />
                                             <ComboBoxControl
-                                                className="min-w-[120px] flex-1"
+                                                className="min-w-30 flex-1"
                                                 label="Fulfillment"
                                                 value={item.fulfillment_id}
                                                 onValueChange={(value) =>
@@ -764,7 +764,7 @@ export default function ReteB2BSelectForm({ submitEvent }: IReteB2BSelectFormPro
                                                     <span className="text-sm text-foreground">
                                                         {offer.id} ({offer.descriptor.code})
                                                         {validationError && (
-                                                            <span className="ml-2 text-[10px] text-destructive italic uppercase">
+                                                            <span className="ml-2 text-caption-2-size text-destructive italic uppercase">
                                                                 [{validationError}]
                                                             </span>
                                                         )}
