@@ -16,19 +16,27 @@ export interface IUserInputFormData {
 export interface IFormProps {
     submitEvent: (payload: {
         jsonPath: Record<string, unknown>;
-        formData: { data: string };
+        formData: {
+            user_inputs: IUserInputFormData;
+        };
     }) => Promise<void>;
 }
 
-// Generates dynamic initial values: start_time = NOW, end_time = NOW + 2 Days
+// Format Date object to HTML5 datetime-local string (YYYY-MM-DDTHH:mm)
+const formatForDateTimeInput = (date: Date): string => {
+    const tzOffset = date.getTimezoneOffset() * 60000;
+    return new Date(date.getTime() - tzOffset).toISOString().slice(0, 16);
+};
+
+// Default values: city_code = "std:080", collected_by = "BPP", start_time = NOW, end_time = NOW + 2 Days
 const getInitialDefaults = () => {
     const now = new Date();
     const twoDaysLater = new Date(now.getTime() + 2 * 24 * 60 * 60 * 1000);
 
     return {
         city_code: "std:080",
-        start_time: now.toISOString(),
-        end_time: twoDaysLater.toISOString(),
+        start_time: formatForDateTimeInput(now),
+        end_time: formatForDateTimeInput(twoDaysLater),
         collected_by: "BPP",
     };
 };
@@ -39,28 +47,30 @@ export default function TRV14SearchIncrementalPullForm({ submitEvent }: IFormPro
     });
 
     const onSubmit = async (data: IUserInputFormData) => {
-        const convertToISO = (dateString: string): string => {
-            if (!dateString) return "";
+        // Formats datetime-local inputs back to standard ISO 8601 strings
+        const convertToISO = (dateTimeLocalStr: string): string => {
+            if (!dateTimeLocalStr) return "";
             try {
-                return new Date(dateString).toISOString();
+                return new Date(dateTimeLocalStr).toISOString();
             } catch (error: unknown) {
                 const err = error as Error;
-                console.error("Invalid date format:", err.message, dateString);
-                return dateString;
+                console.error("Invalid date format:", err.message, dateTimeLocalStr);
+                return dateTimeLocalStr;
             }
         };
 
-        const payloadData = {
+        const userInputsPayload: IUserInputFormData = {
             city_code: data.city_code,
             start_time: convertToISO(data.start_time),
             end_time: convertToISO(data.end_time),
             collected_by: data.collected_by,
         };
 
+        // Returned with user_inputs nested inside formData
         await submitEvent({
             jsonPath: {},
             formData: {
-                data: JSON.stringify(payloadData),
+                user_inputs: userInputsPayload,
             },
         });
     };
@@ -82,7 +92,7 @@ export default function TRV14SearchIncrementalPullForm({ submitEvent }: IFormPro
             >
                 <h3 className="font-semibold text-text-primary">Required Parameters</h3>
 
-                {/* Fully editable text input pre-filled with std:080 */}
+                {/* Editable City Code pre-filled with std:080 */}
                 <TextField
                     control={control}
                     name="city_code"
@@ -92,24 +102,27 @@ export default function TRV14SearchIncrementalPullForm({ submitEvent }: IFormPro
                     rules={{ required: "City code is required" }}
                 />
 
+                {/* Interactive Calendar Date & Time picker for Start Time */}
                 <TextField
                     control={control}
                     name="start_time"
                     label="Start Time"
+                    type="datetime-local"
                     required
-                    placeholder="ISO Date Time"
                     rules={{ required: "Start time is required" }}
                 />
 
+                {/* Interactive Calendar Date & Time picker for End Time */}
                 <TextField
                     control={control}
                     name="end_time"
                     label="End Time"
+                    type="datetime-local"
                     required
-                    placeholder="ISO Date Time"
                     rules={{ required: "End time is required" }}
                 />
 
+                {/* Dropdown for Collected By pre-selected to BPP */}
                 <Controller
                     name="collected_by"
                     control={control}
