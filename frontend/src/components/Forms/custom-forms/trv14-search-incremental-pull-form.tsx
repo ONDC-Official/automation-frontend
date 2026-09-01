@@ -11,23 +11,24 @@ export interface IUserInputFormData {
     start_time: string;
     end_time: string;
     collected_by: string;
+    [key: string]: unknown; // Added index signature to resolve TS2322
 }
 
 export interface IFormProps {
     submitEvent: (payload: {
         jsonPath: Record<string, unknown>;
-        formData: IUserInputFormData;
+        formData: Record<string, unknown>; // Aligned with SubmitEventParams expected by parent component
     }) => Promise<void>;
 }
 
-// Formats Date object to HTML5 datetime-local string (YYYY-MM-DDTHH:mm)
+// Format Date object to HTML5 datetime-local input string (YYYY-MM-DDTHH:mm)
 const formatForDateTimeInput = (date: Date): string => {
     const tzOffset = date.getTimezoneOffset() * 60000;
     return new Date(date.getTime() - tzOffset).toISOString().slice(0, 16);
 };
 
 // Default values setup
-const getInitialDefaults = () => {
+const getInitialDefaults = (): IUserInputFormData => {
     const now = new Date();
     const twoDaysLater = new Date(now.getTime() + 2 * 24 * 60 * 60 * 1000);
 
@@ -56,14 +57,13 @@ export default function TRV14SearchIncrementalPullForm({ submitEvent }: IFormPro
             }
         };
 
-        const payloadData: IUserInputFormData = {
+        const payloadData: Record<string, unknown> = {
             city_code: data.city_code,
             start_time: convertToISO(data.start_time),
             end_time: convertToISO(data.end_time),
             collected_by: data.collected_by,
         };
 
-        // Pass payloadData directly as formData
         await submitEvent({
             jsonPath: {},
             formData: payloadData,
@@ -122,7 +122,7 @@ export default function TRV14SearchIncrementalPullForm({ submitEvent }: IFormPro
                         <ComboBoxControl
                             label="Collected By"
                             required
-                            value={field.value}
+                            value={field.value as string}
                             onValueChange={field.onChange}
                             options={collectedByOptions}
                             placeholder="Select collected_by"
