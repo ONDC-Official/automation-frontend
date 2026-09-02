@@ -50,7 +50,7 @@ const GuidePageHeader: FC<GuidePageHeaderProps> = ({
             </div>
         )}
 
-        {tabs && <div className="px-4">{tabs}</div>}
+        {tabs && <div className="px-4 md:px-12 mb-4">{tabs}</div>}
     </GuideHeader>
 );
 
