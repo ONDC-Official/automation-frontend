@@ -64,6 +64,7 @@ import { FormConfigType, FormFieldConfigType } from "@components/Forms/config-fo
 import type { IFormContractContext } from "@components/Forms/utils/resolve-form-contract";
 import FIS12PersonalLoanSelectForm from "@components/Forms/custom-forms/fis12-personal-loan-select-form";
 import TRV11200MetroSelectForm from "../custom-forms/trv11-200-select-form";
+import TRV14SearchIncrementalPullForm from "../custom-forms/trv14-search-incremental-pull-form";
 
 export type { FormConfigType, FormFieldConfigType } from "@components/Forms/config-form/types";
 
@@ -388,6 +389,10 @@ export const FormConfig = ({
                 flowId={flowId}
             />
         );
+    }
+
+    if (formConfig.find((field) => field.type === "trv14_search_incremental_pull_form")) {
+        return <TRV14SearchIncrementalPullForm submitEvent={submitEvent} />;
     }
 
     // manual_id: a step that just needs a manual trigger. Its schema fixes `id` to the action, so

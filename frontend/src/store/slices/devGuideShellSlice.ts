@@ -7,7 +7,7 @@ export interface IDevGuideShellState {
 
 const initialState: IDevGuideShellState = {
     navSidebarOpen: true,
-    commentsPanelOpen: true,
+    commentsPanelOpen: false,
 };
 
 const devGuideShellSlice = createSlice({
