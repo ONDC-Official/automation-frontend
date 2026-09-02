@@ -91,7 +91,7 @@ const DocsViewer: FC<DocsViewerProps> = ({ docs, useCaseId, domain, version }) =
 
     return (
         <div className="flex flex-col gap-3">
-            {slugs.length >= 1 && (
+            {slugs.length > 1 && (
                 <GuideTabs
                     active={activeDocSlug}
                     onChange={setActiveDocSlug}

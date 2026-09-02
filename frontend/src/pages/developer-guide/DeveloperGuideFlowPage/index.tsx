@@ -10,6 +10,7 @@ import { useDeveloperGuideNav } from "../layout/DeveloperGuideNav";
 import GuideContentSkeleton from "../shared/components/GuideContentSkeleton";
 import GuideTabFade from "../shared/components/GuideTabFade";
 import FlowPageHeader from "./FlowPageHeader";
+import { resolveUseCaseDocs } from "../content/resolveUseCaseDocs";
 import { useDeveloperGuideFlowPageData } from "./useDeveloperGuideFlowPageData";
 import type { TopLevelView } from "./types";
 
@@ -46,6 +47,12 @@ const DeveloperGuideFlowPage: FC = () => {
         return order;
     }, [hasErrorCodes]);
 
+    const displayDocs = useMemo(
+        () => resolveUseCaseDocs(domainKey, versionKey, slug, apiUsecase, specData?.["x-docs"]),
+        [domainKey, versionKey, slug, apiUsecase, specData]
+    );
+    const isDocsEmpty = !displayDocs || Object.keys(displayDocs).length === 0;
+
     if (isLoading) {
         return <GuideContentSkeleton />;
     }
@@ -72,9 +79,6 @@ const DeveloperGuideFlowPage: FC = () => {
         );
     }
 
-    const docs = specData?.["x-docs"];
-    const isDocsEmpty = !docs || Object.keys(docs).length === 0;
-
     return (
         <div
             className={`relative bg-white dark:bg-surface-page flex flex-col ${inShell ? "min-h-0" : "min-h-screen"}`}
@@ -93,7 +97,7 @@ const DeveloperGuideFlowPage: FC = () => {
                     className="flex min-w-0 flex-1 items-start"
                 >
                     {activeView === "flows" ? (
-                        <div className="flex-1 min-w-0 px-4">
+                        <div className="flex-1 min-w-0 px-4 md:px-12">
                             {specData && flows.length > 0 ? (
                                 <FlowInformation
                                     data={specData}
@@ -114,7 +118,7 @@ const DeveloperGuideFlowPage: FC = () => {
                             )}
                         </div>
                     ) : (
-                        <div className="flex-1 min-w-0 px-4 w-full">
+                        <div className="flex-1 min-w-0 px-4 md:px-12 w-full">
                             {activeView === "error-codes" &&
                                 (hasErrorCodes && errorCodes ? (
                                     <ErrorCodesTable errorCodes={errorCodes} />
@@ -132,7 +136,7 @@ const DeveloperGuideFlowPage: FC = () => {
                                     </div>
                                 ) : (
                                     <DocsViewer
-                                        docs={docs}
+                                        docs={displayDocs}
                                         useCaseId={apiUsecase ?? slug}
                                         domain={domainKey}
                                         version={versionKey}
