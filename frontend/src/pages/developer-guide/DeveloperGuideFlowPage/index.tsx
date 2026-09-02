@@ -47,10 +47,7 @@ const DeveloperGuideFlowPage: FC = () => {
         return order;
     }, [hasErrorCodes]);
 
-    const displayDocs = useMemo(
-        () => resolveUseCaseDocs(domainKey, versionKey, slug, apiUsecase, specData?.["x-docs"]),
-        [domainKey, versionKey, slug, apiUsecase, specData]
-    );
+    const displayDocs = useMemo(() => resolveUseCaseDocs(specData?.["x-docs"]), [specData]);
     const isDocsEmpty = !displayDocs || Object.keys(displayDocs).length === 0;
 
     if (isLoading) {

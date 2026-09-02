@@ -47,6 +47,7 @@ export function slugifyHeading(text: string): string {
 }
 
 const TABLE_OF_CONTENTS_HEADING = /^##\s+table of contents\s*$/i;
+const ON_THIS_PAGE_HEADING = /^##\s+on this page\s*$/i;
 const MARKDOWN_HEADING = /^#{1,6}\s+\S/;
 const THEMATIC_BREAK = /^---$/;
 
@@ -92,16 +93,15 @@ export function stripRedundantMarkdownHorizontalRules(markdown: string): string 
     return kept.join("\n");
 }
 
-/** Removes the in-document "## Table of Contents" block (through the next h2). */
-export function stripMarkdownTableOfContents(markdown: string): string {
+function stripEmbeddedDocNavSection(markdown: string, headingPattern: RegExp): string {
     const lines = markdown.split("\n");
-    const startIdx = lines.findIndex((line) => TABLE_OF_CONTENTS_HEADING.test(line.trim()));
+    const startIdx = lines.findIndex((line) => headingPattern.test(line.trim()));
     if (startIdx === -1) return markdown;
 
     let endIdx = startIdx + 1;
     while (endIdx < lines.length) {
         const trimmed = lines[endIdx].trim();
-        if (/^##\s+/.test(trimmed) && !TABLE_OF_CONTENTS_HEADING.test(trimmed)) break;
+        if (/^##\s+/.test(trimmed) && !headingPattern.test(trimmed)) break;
         endIdx++;
     }
 
@@ -114,6 +114,16 @@ export function stripMarkdownTableOfContents(markdown: string): string {
     }
 
     return result.join("\n");
+}
+
+/** Removes the in-document "## On this page" block (through the next h2). */
+export function stripMarkdownOnThisPage(markdown: string): string {
+    return stripEmbeddedDocNavSection(markdown, ON_THIS_PAGE_HEADING);
+}
+
+/** Removes the in-document "## Table of Contents" block (through the next h2). */
+export function stripMarkdownTableOfContents(markdown: string): string {
+    return stripEmbeddedDocNavSection(markdown, TABLE_OF_CONTENTS_HEADING);
 }
 
 export function extractMarkdownToc(markdown: string): MarkdownTocEntry[] {
