@@ -56,6 +56,7 @@ import TRV11InitMetroForm from "@components/Forms/custom-forms/trv11-init-metro-
 import FIS14MutualFundSelectForm from "@components/Forms/custom-forms/fis14-mutual-fund-select-form";
 import FIS14MutualFundRedemptionSelectForm from "@components/Forms/custom-forms/fis14-mutual-fund-redemption-select-form";
 import FIS14MutualFundSIPSelectForm from "@components/Forms/custom-forms/fis14-mutual-fund-sip-select-form";
+import FIS14MutualFundCartSIPSelectForm from "@components/Forms/custom-forms/fis14-mutual-fund-cart-sip-select-form";
 import RetINVLInitOffersForm from "@components/Forms/custom-forms/retinvl-init-offers-form";
 import TRV11200MteroStartEndStopSelectionForm from "@components/Forms/custom-forms/trv11-200-start-end-stop-selection-form";
 import TRV11Metro210CommonItemFulfillmentSelectionForm from "@components/Forms/custom-forms/trv11-210-common-item-fulfillment-select-form";
@@ -379,6 +380,11 @@ export const FormConfig = ({
     }
     if (formConfig.find((field) => field.type === "fis14_mf_sip_select")) {
         return <FIS14MutualFundSIPSelectForm submitEvent={submitEvent} formConfig={formConfig} />;
+    }
+    if (formConfig.find((field) => field.type === "fis14_mf_cart_sip_select")) {
+        return (
+            <FIS14MutualFundCartSIPSelectForm submitEvent={submitEvent} formConfig={formConfig} />
+        );
     }
 
     if (formConfig.find((field) => field.type === "trv11_210_common_item_fulfillment_select")) {
