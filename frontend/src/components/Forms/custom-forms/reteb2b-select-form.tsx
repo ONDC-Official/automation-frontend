@@ -4,7 +4,8 @@ import { toast } from "sonner";
 
 import { ComboBoxControl } from "@components/Shadcn/ComboBox";
 import { Button } from "@components/Shadcn/Button";
-import { Checkbox } from "@components/Shadcn/Checkbox";
+// Available Offers UI temporarily disabled — restore with the section below.
+// import { Checkbox } from "@components/Shadcn/Checkbox";
 import { Input } from "@components/Shadcn/Input";
 import { Field, FieldLabel } from "@components/Shadcn/TextField/field";
 import PayloadEditor from "@components/PayloadEditor/PastePayloadModal";
@@ -474,19 +475,24 @@ export default function ReteB2BSelectForm({ submitEvent }: IReteB2BSelectFormPro
         setForm({ ...form, items: updatedItems, available_offers: [] });
     };
 
-    const toggleOffer = (offerId: string) => {
-        const selected = form.available_offers || [];
-        if (selected.includes(offerId)) {
-            setForm({ ...form, available_offers: selected.filter((id) => id !== offerId) });
-        } else {
-            const error = getOfferValidationMessage(offerId);
-            if (error) {
-                toast.error(error);
-                return;
-            }
-            setForm({ ...form, available_offers: [...selected, offerId] });
-        }
-    };
+    // Available Offers UI temporarily disabled — restore with the section below.
+    // const toggleOffer = (offerId: string) => {
+    //     const selected = form.available_offers || [];
+    //     if (selected.includes(offerId)) {
+    //         setForm({ ...form, available_offers: selected.filter((id) => id !== offerId) });
+    //     } else {
+    //         const error = getOfferValidationMessage(offerId);
+    //         if (error) {
+    //             toast.error(error);
+    //             return;
+    //         }
+    //         setForm({ ...form, available_offers: [...selected, offerId] });
+    //     }
+    // };
+
+    // Keep offer state/helpers alive for easy restore of the Available Offers UI.
+    void offers;
+    void getOfferValidationMessage;
 
     const submit = async () => {
         if (!selectedProviderId) {
@@ -498,8 +504,8 @@ export default function ReteB2BSelectForm({ submitEvent }: IReteB2BSelectFormPro
             return;
         }
         if (form.type === "new") {
+            // customer_id is only collected for existing retailers
             if (
-                !form.customer_id ||
                 !form.phone_number ||
                 !form.email ||
                 !form.tax_number ||
@@ -732,6 +738,8 @@ export default function ReteB2BSelectForm({ submitEvent }: IReteB2BSelectFormPro
                                     </Button>
                                 </div>
 
+                                {/* Available Offers — temporarily disabled (not required for this form).
+                                    Restore by uncommenting this block, toggleOffer, and the Checkbox import.
                                 {offers.length > 0 && (
                                     <Field className="space-y-2 rounded-lg border border-border-default p-3">
                                         <FieldLabel className="font-semibold">
@@ -774,6 +782,7 @@ export default function ReteB2BSelectForm({ submitEvent }: IReteB2BSelectFormPro
                                         })}
                                     </Field>
                                 )}
+                                */}
                             </>
                         )}
                     </div>
