@@ -701,10 +701,6 @@ export default function FIS14MutualFundCartSIPSelectForm({
                                 placeholder="e.g. E52432"
                                 rules={{
                                     required: "Required",
-                                    pattern: {
-                                        value: /^[A-Za-z][0-9]{5,7}$/,
-                                        message: "Must be a valid EUIN number (e.g. E52432)",
-                                    },
                                 }}
                             />
                             <div className="flex items-center justify-between pt-1">
