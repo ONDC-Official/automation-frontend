@@ -113,10 +113,11 @@ export default function FIS14MutualFundCartSIPSelectForm({
     const watchedSipDay = watch("sipDay");
 
     const selectedProvider = catalog?.providers.find((p) => p.id === watchedProviderId);
-    const planItems = selectedProvider?.items.filter((i) => i.fulfillmentIds.length > 0) ?? [];
+    const planItems = selectedProvider?.items ?? [];
+    const availableFulfillments = selectedProvider?.fulfillments ?? [];
 
-    const sipFulfillments = (selectedProvider?.fulfillments ?? []).filter((f) => f.type === "SIP");
-    const selectedFulfillment = sipFulfillments.find((f) => f.id === watchedFulfillmentId);
+    const selectedFulfillment = availableFulfillments.find((f) => f.id === watchedFulfillmentId);
+    const isSip = selectedFulfillment?.type === "SIP";
     const thresholds = selectedFulfillment?.thresholds ?? {};
 
     const frequencyLabel =
@@ -127,7 +128,7 @@ export default function FIS14MutualFundCartSIPSelectForm({
               : (thresholds.frequency ?? "");
 
     const frequencyPreview =
-        selectedFulfillment && watchedInstallments && watchedStartDate
+        isSip && selectedFulfillment && watchedInstallments && watchedStartDate
             ? buildFrequency(
                   thresholds.frequency ?? "P1M",
                   watchedStartDate,
@@ -153,15 +154,17 @@ export default function FIS14MutualFundCartSIPSelectForm({
                         name: i.descriptor?.name ?? i.id,
                         fulfillmentIds: i.fulfillment_ids ?? [],
                     })),
-                fulfillments: (p.fulfillments ?? [])
-                    .filter((f) => f.type === "SIP")
-                    .map((f) => ({ id: f.id, type: f.type, thresholds: parseThresholds(f.tags) })),
+                fulfillments: (p.fulfillments ?? []).map((f) => ({
+                    id: f.id,
+                    type: f.type,
+                    thresholds: parseThresholds(f.tags),
+                })),
             }));
 
             setCatalog({ providers });
             setValue("providerId", providers[0]?.id ?? "");
-            setValue("fulfillmentId", "");
-            toast.success(`Loaded ${providers.length} provider(s) — SIP fulfillments only`);
+            setValue("fulfillmentId", providers[0]?.fulfillments[0]?.id ?? "");
+            toast.success(`Loaded ${providers.length} provider(s) from catalog`);
             setIsPayloadEditorActive(false);
         } catch (err) {
             toast.error("Invalid on_search payload");
@@ -192,45 +195,70 @@ export default function FIS14MutualFundCartSIPSelectForm({
             return;
         }
 
-        const frequency = buildFrequency(
-            thresholds.frequency ?? "P1M",
-            data.startDate,
-            data.installments,
-            data.sipDay
-        );
         const agentCreds = data.agentCreds.filter((c) => c.id || c.type);
 
-        const fulfillmentObj: Record<string, unknown> = {
-            id: data.fulfillmentId,
-            type: "SIP",
-            customer: {
-                person: {
-                    id: data.customerPersonId,
-                    ...(data.folioId ? { creds: [{ id: data.folioId, type: "FOLIO" }] } : {}),
-                },
-            },
-            stops: [{ time: { schedule: { frequency } } }],
-        };
-
-        if (data.agentPersonId || agentCreds.length) {
-            fulfillmentObj.agent = {
-                ...(data.agentPersonId ? { person: { id: data.agentPersonId } } : {}),
-                ...(agentCreds.length ? { organization: { creds: agentCreds } } : {}),
-            };
+        // Collect all used fulfillments
+        const usedFulfillmentIds = new Set<string>();
+        if (data.fulfillmentId) {
+            usedFulfillmentIds.add(data.fulfillmentId);
         }
+        validCartItems.forEach((row) => {
+            if (row.fulfillmentId) {
+                usedFulfillmentIds.add(row.fulfillmentId);
+            }
+        });
+
+        const fulfillmentsPayload = Array.from(usedFulfillmentIds).map((fulId) => {
+            const fulObj = availableFulfillments.find((f) => f.id === fulId);
+            const isFulSip = fulObj?.type === "SIP";
+            const fulThresholds = fulObj?.thresholds ?? {};
+
+            const fObj: Record<string, unknown> = {
+                id: fulId,
+                type: fulObj?.type ?? "SIP",
+                customer: {
+                    person: {
+                        id: data.customerPersonId,
+                        ...(data.folioId ? { creds: [{ id: data.folioId, type: "FOLIO" }] } : {}),
+                    },
+                },
+            };
+
+            if (isFulSip && data.startDate && data.installments) {
+                const frequency = buildFrequency(
+                    fulThresholds.frequency ?? "P1M",
+                    data.startDate,
+                    data.installments,
+                    data.sipDay
+                );
+                fObj.stops = [{ time: { schedule: { frequency } } }];
+            }
+
+            if (data.agentPersonId || agentCreds.length) {
+                fObj.agent = {
+                    ...(data.agentPersonId ? { person: { id: data.agentPersonId } } : {}),
+                    ...(agentCreds.length ? { organization: { creds: agentCreds } } : {}),
+                };
+            }
+
+            return fObj;
+        });
 
         const selectPayload = {
             message: {
                 order: {
                     provider: { id: data.providerId },
-                    items: validCartItems.map((row) => ({
-                        id: row.itemId,
-                        quantity: {
-                            selected: { measure: { value: row.amount, unit: "INR" } },
-                        },
-                        fulfillment_ids: [data.fulfillmentId],
-                    })),
-                    fulfillments: [fulfillmentObj],
+                    items: validCartItems.map((row) => {
+                        const targetFulfillmentId = row.fulfillmentId || data.fulfillmentId;
+                        return {
+                            id: row.itemId,
+                            quantity: {
+                                selected: { measure: { value: row.amount, unit: "INR" } },
+                            },
+                            fulfillment_ids: targetFulfillmentId ? [targetFulfillmentId] : [],
+                        };
+                    }),
+                    fulfillments: fulfillmentsPayload,
                     tags: [
                         {
                             display: false,
@@ -281,11 +309,15 @@ export default function FIS14MutualFundCartSIPSelectForm({
         label: `${i.name} (${i.id})`,
     }));
 
-    const sipFulfillmentOptions = sipFulfillments.map((f) => ({
+    const fulfillmentOptions = availableFulfillments.map((f) => ({
         value: f.id,
-        label: `${f.id} — ${f.type} (${f.thresholds.frequency ?? "?"}${
-            f.thresholds.frequencyDayType ? ` · ${f.thresholds.frequencyDayType}` : ""
-        })`,
+        label: `${f.id} — ${f.type}${
+            f.thresholds.frequency
+                ? ` (${f.thresholds.frequency}${
+                      f.thresholds.frequencyDayType ? ` · ${f.thresholds.frequencyDayType}` : ""
+                  })`
+                : ""
+        }`,
     }));
 
     const sipDayOptions = (
@@ -467,10 +499,10 @@ export default function FIS14MutualFundCartSIPSelectForm({
                             </Button>
                         </div>
 
-                        {/* SIP Fulfillment */}
+                        {/* Fulfillment */}
                         <div className={sectionClassName}>
                             <FieldLabel className="font-semibold uppercase tracking-wide">
-                                SIP Fulfillment
+                                Fulfillment
                             </FieldLabel>
                             <Controller
                                 name="fulfillmentId"
@@ -478,7 +510,7 @@ export default function FIS14MutualFundCartSIPSelectForm({
                                 rules={{ required: "Required" }}
                                 render={({ field }) => (
                                     <ComboBoxControl
-                                        label="SIP Fulfillment"
+                                        label="Primary Fulfillment"
                                         required
                                         value={field.value}
                                         onValueChange={(value) => {
@@ -486,10 +518,10 @@ export default function FIS14MutualFundCartSIPSelectForm({
                                             setValue("installments", "");
                                             setValue("sipDay", "");
                                         }}
-                                        options={sipFulfillmentOptions}
+                                        options={fulfillmentOptions}
                                         placeholder={
                                             selectedProvider
-                                                ? "Select SIP fulfillment"
+                                                ? "Select fulfillment"
                                                 : "Select a provider first"
                                         }
                                         disabled={!selectedProvider}
@@ -501,7 +533,7 @@ export default function FIS14MutualFundCartSIPSelectForm({
                             {selectedFulfillment && (
                                 <div className="space-y-1 rounded-md border border-border-default bg-surface-muted/40 p-3 text-xs text-text-secondary">
                                     <p className="mb-1 font-semibold text-text-primary">
-                                        SIP Thresholds
+                                        Fulfillment Details ({selectedFulfillment.type})
                                     </p>
                                     <div className="grid grid-cols-2 gap-x-4 gap-y-0.5">
                                         {frequencyLabel && (
@@ -537,7 +569,7 @@ export default function FIS14MutualFundCartSIPSelectForm({
                                         )}
                                         {thresholds.frequencyDates && (
                                             <p className="col-span-2">
-                                                Valid SIP Dates: {thresholds.frequencyDates}
+                                                Valid Dates: {thresholds.frequencyDates}
                                             </p>
                                         )}
                                     </div>
@@ -545,8 +577,8 @@ export default function FIS14MutualFundCartSIPSelectForm({
                             )}
                         </div>
 
-                        {/* SIP Schedule */}
-                        {selectedFulfillment && (
+                        {/* SIP Schedule (Only for SIP fulfillments) */}
+                        {isSip && selectedFulfillment && (
                             <div className={sectionClassName}>
                                 <FieldLabel className="font-semibold uppercase tracking-wide">
                                     SIP Schedule
@@ -670,8 +702,8 @@ export default function FIS14MutualFundCartSIPSelectForm({
                                 rules={{
                                     required: "Required",
                                     pattern: {
-                                        value: /^[A-Za-z]{4}[0-9]{7}$/,
-                                        message: "Must be a valid character EUIN (e.g. E52432)",
+                                        value: /^[A-Za-z][0-9]{5,7}$/,
+                                        message: "Must be a valid EUIN number (e.g. E52432)",
                                     },
                                 }}
                             />

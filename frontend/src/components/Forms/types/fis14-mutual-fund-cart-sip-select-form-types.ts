@@ -82,6 +82,7 @@ export interface IAgentCred {
 export interface ICartItemRow {
     itemId: string;
     amount: string;
+    fulfillmentId?: string;
 }
 
 /** Form values for the Cart SIP Select form. */

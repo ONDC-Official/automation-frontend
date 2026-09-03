@@ -413,10 +413,6 @@ export default function FIS14MutualFundRedemptionSelectForm({
                                 placeholder="e.g. E52432"
                                 rules={{
                                     required: "Required",
-                                    pattern: {
-                                        value: /^[A-Za-z]{4}[0-9]{7}$/,
-                                        message: "Must start with euin: prefix (e.g. E52432)",
-                                    },
                                 }}
                                 errors={errors}
                             />
