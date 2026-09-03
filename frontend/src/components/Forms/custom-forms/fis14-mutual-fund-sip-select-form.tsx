@@ -572,8 +572,15 @@ export default function FIS14MutualFundSIPSelectForm({
                                 name="customerPersonId"
                                 label="Customer PAN ID"
                                 required
-                                placeholder="e.g. pan:arrpp7771n"
-                                rules={{ required: "Required" }}
+                                placeholder="e.g. ARRPP7771N"
+                                rules={{
+                                    required: "Required",
+                                    pattern: {
+                                        value: /^[A-Za-z]{5}[0-9]{4}[A-Za-z]$/,
+                                        message:
+                                            "Must be a valid 10-character PAN (e.g. ABCDE1234F)",
+                                    },
+                                }}
                             />
                             <TextField
                                 control={control}
@@ -598,8 +605,14 @@ export default function FIS14MutualFundSIPSelectForm({
                                 name="agentPersonId"
                                 label="Agent EUIN"
                                 required
-                                placeholder="e.g. euin:E52432"
-                                rules={{ required: "Required" }}
+                                placeholder="e.g. E52432"
+                                rules={{
+                                    required: "Required",
+                                    pattern: {
+                                        value: /^[A-Za-z]{4}[0-9]{7}$/,
+                                        message: "Must be a valid character EUIN (e.g. E52432)",
+                                    },
+                                }}
                             />
                             <div className="flex items-center justify-between pt-1">
                                 <p className="text-xs font-semibold uppercase tracking-wide text-text-secondary">
