@@ -608,10 +608,6 @@ export default function FIS14MutualFundSIPSelectForm({
                                 placeholder="e.g. E52432"
                                 rules={{
                                     required: "Required",
-                                    pattern: {
-                                        value: /^[A-Za-z]{4}[0-9]{7}$/,
-                                        message: "Must be a valid character EUIN (e.g. E52432)",
-                                    },
                                 }}
                             />
                             <div className="flex items-center justify-between pt-1">
