@@ -380,7 +380,15 @@ export default function FIS14MutualFundRedemptionSelectForm({
                                 name="customerPersonId"
                                 label="Customer PAN ID"
                                 required="Required"
-                                placeholder="e.g. pan:ARRPP7771N"
+                                placeholder="e.g. ARRPP7771N"
+                                rules={{
+                                    required: "Required",
+                                    pattern: {
+                                        value: /^[A-Za-z]{5}[0-9]{4}[A-Za-z]$/,
+                                        message:
+                                            "Must start with pan: prefix followed by valid 10-character PAN (e.g. pan:ABCDE1234F)",
+                                    },
+                                }}
                                 errors={errors}
                             />
                             <TextField
@@ -402,7 +410,14 @@ export default function FIS14MutualFundRedemptionSelectForm({
                                 name="agentPersonId"
                                 label="Agent EUIN ID"
                                 required="Required"
-                                placeholder="e.g. euin:E52432"
+                                placeholder="e.g. E52432"
+                                rules={{
+                                    required: "Required",
+                                    pattern: {
+                                        value: /^[A-Za-z]{4}[0-9]{7}$/,
+                                        message: "Must start with euin: prefix (e.g. E52432)",
+                                    },
+                                }}
                                 errors={errors}
                             />
                             <div className="flex items-center justify-between pt-1">
