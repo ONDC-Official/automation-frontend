@@ -14,10 +14,12 @@ import {
     isRideEnded,
     phaseToLabel,
     parseGps,
+    progressAlong,
     haversineMeters,
     type LatLng,
     type RideMapData,
 } from "@components/DomainFlowRunner/RideMapUtils";
+import { useSmoothedDriver } from "./useSmoothedDriver";
 import {
     RideTimeline,
     RideInfoCard,
@@ -27,6 +29,14 @@ import {
 } from "@components/DomainFlowRunner/RideMapOverlays";
 import { TRACK_POLL_MS, TRACK_TOKEN_RE } from "./constants";
 import { TrackShell, TrackMessage } from "./ui/TrackShell";
+
+/** A leg of the journey the driver is travelling, with metrics for the ETA panel. */
+type Segment = {
+    geometry: LatLng[];
+    distance?: number;
+    duration?: number;
+    target: "pickup" | "destination";
+};
 
 /**
  * Public live map for one ride.
@@ -40,6 +50,10 @@ import { TrackShell, TrackMessage } from "./ui/TrackShell";
  * runner; this page never proceeds a step, never fires `trigger_extra`, and
  * hands `MapPanel` no state controls. A viewer pressing anything here would be
  * acting as a provider they are not.
+ *
+ * Unlike the runner, this page only ever *observes* movement, so the marker is
+ * interpolated between fixes (see `useSmoothedDriver`) rather than driven by a
+ * local animation.
  *
  * The token is derived, not granted — it authorises nothing, so anyone with the
  * link can watch the ride. That is the intended behaviour of a share link, and
@@ -61,12 +75,9 @@ export default function TrackPage() {
         isTracking: false,
         hasLocations: false,
     });
-    const [tripRoute, setTripRoute] = useState<LatLng[] | null>(null);
-    const [activeRoute, setActiveRoute] = useState<{
-        geometry: LatLng[];
-        distance?: number;
-        duration?: number;
-    } | null>(null);
+    // Mirrors the workbench's own segment shape so the same overlays can read it.
+    const [tripRoute, setTripRoute] = useState<Segment | null>(null);
+    const [activeRoute, setActiveRoute] = useState<Segment | null>(null);
     const [phaseTimes, setPhaseTimes] = useState<Record<string, string>>({});
     const [lastUpdate, setLastUpdate] = useState<number | undefined>(undefined);
     const [everLoaded, setEverLoaded] = useState(false);
@@ -120,7 +131,32 @@ export default function TrackPage() {
         };
     }, [mappedFlow]);
 
-    // Road-following pickup → destination path, refetched when the stops change.
+    // Road-following segment between two "lat, lng" points, with distance/duration
+    // for the ETA panel. Falls back to a straight line so the map still shows the
+    // trip when OSRM is unavailable.
+    const buildSegment = async (
+        fromGps: string,
+        toGps: string,
+        target: "pickup" | "destination"
+    ): Promise<Segment | null> => {
+        const res = (await triggerGetRoute({ from: fromGps, to: toGps })).data;
+        if (res?.geometry?.length) {
+            return {
+                geometry: res.geometry,
+                distance: res.distance,
+                duration: res.duration,
+                target,
+            };
+        }
+        const from = parseGps(fromGps);
+        const to = parseGps(toGps);
+        if (!from || !to) return null;
+        const dist = haversineMeters(from, to);
+        return { geometry: [from, to], distance: dist, duration: dist / 11.1, target };
+    };
+
+    // The full pickup → destination trip, drawn as a persistent base beneath the
+    // active segment. Refetched only when the stops themselves change.
     useEffect(() => {
         const { pickupGps, dropGps } = rideMap;
         if (!pickupGps || !dropGps) {
@@ -128,31 +164,42 @@ export default function TrackPage() {
             return;
         }
         let cancelled = false;
-        (async () => {
-            const res = (await triggerGetRoute({ from: pickupGps, to: dropGps })).data;
-            if (cancelled) return;
-            if (res?.geometry?.length) {
-                setTripRoute(res.geometry);
-                setActiveRoute({
-                    geometry: res.geometry,
-                    distance: res.distance,
-                    duration: res.duration,
-                });
-                return;
-            }
-            // OSRM unavailable — fall back to a straight line so the map still
-            // shows the trip rather than nothing.
-            const from = parseGps(pickupGps);
-            const to = parseGps(dropGps);
-            if (!from || !to) return;
-            const dist = haversineMeters(from, to);
-            setTripRoute([from, to]);
-            setActiveRoute({ geometry: [from, to], distance: dist, duration: dist / 11.1 });
-        })();
+        buildSegment(pickupGps, dropGps, "destination").then((seg) => {
+            if (!cancelled && seg) setTripRoute(seg);
+        });
         return () => {
             cancelled = true;
         };
     }, [rideMap.pickupGps, rideMap.dropGps]);
+
+    // The segment the driver is currently travelling, mirroring the workbench:
+    // driver → pickup while enroute, pickup → destination once the ride starts.
+    // Built once per phase from the first fix seen in it — rebuilding on every
+    // driver update would mean an OSRM call per poll, and the marker interpolates
+    // along this geometry anyway.
+    const enrouteBuiltRef = useRef(false);
+    useEffect(() => {
+        if (phase !== "RIDE_ENROUTE_PICKUP") {
+            enrouteBuiltRef.current = false;
+            return;
+        }
+        const { driverGps, pickupGps } = rideMap;
+        if (enrouteBuiltRef.current || !driverGps || !pickupGps) return;
+        enrouteBuiltRef.current = true;
+        let cancelled = false;
+        buildSegment(driverGps, pickupGps, "pickup").then((seg) => {
+            if (!cancelled && seg) setActiveRoute(seg);
+        });
+        return () => {
+            cancelled = true;
+        };
+    }, [phase, rideMap.driverGps, rideMap.pickupGps]);
+
+    // Every other phase travels the trip route.
+    useEffect(() => {
+        if (phase === "RIDE_ENROUTE_PICKUP" || !tripRoute) return;
+        setActiveRoute(tripRoute);
+    }, [phase, tripRoute]);
 
     // Record when each ride state was first seen, for the timeline.
     useEffect(() => {
@@ -174,6 +221,24 @@ export default function TrackPage() {
     }, [finished]);
     const agoSec =
         lastUpdate != null ? Math.max(0, Math.round((Date.now() - lastUpdate) / 1000)) : undefined;
+
+    // Glide between observed fixes along the active segment, so the marker follows
+    // the road instead of teleporting once per poll. Freshness above still counts
+    // from the real fix, not from the animation.
+    const smoothedDriverGps = useSmoothedDriver(
+        rideMap.driverGps,
+        activeRoute?.geometry,
+        TRACK_POLL_MS
+    );
+
+    // Fraction of the active segment covered — drives the two-tone polyline and the
+    // ETA bar. Read from the smoothed position so both advance with the marker.
+    const progress = activeRoute
+        ? progressAlong(activeRoute.geometry, parseGps(smoothedDriverGps))
+        : 0;
+
+    // ETA is meaningful only while the driver is actually travelling a leg.
+    const showEta = !!activeRoute && (phase === "RIDE_ENROUTE_PICKUP" || phase === "RIDE_STARTED");
 
     if (!tokenLooksValid) {
         return (
@@ -289,25 +354,25 @@ export default function TrackPage() {
                     distanceM={activeRoute?.distance}
                     durationS={activeRoute?.duration}
                 />
-            ) : (
+            ) : showEta ? (
                 <RideInfoPanel
-                    targetLabel="to destination"
+                    targetLabel={activeRoute?.target === "pickup" ? "to pickup" : "to destination"}
                     totalDistanceM={activeRoute?.distance}
                     totalDurationS={activeRoute?.duration}
-                    progress={0}
+                    progress={progress}
                 />
-            )}
+            ) : null}
 
             <MapPanel
                 pickupGps={rideMap.pickupGps}
                 dropGps={rideMap.dropGps}
-                driverGps={rideMap.driverGps}
+                driverGps={smoothedDriverGps}
                 phaseLabel={phaseToLabel(phase)}
                 interactive={false}
                 locked={isRideEnded(phase)}
-                route={tripRoute ?? undefined}
-                tripRoute={tripRoute ?? undefined}
-                progress={0}
+                route={activeRoute?.geometry ?? tripRoute?.geometry}
+                tripRoute={tripRoute?.geometry}
+                progress={progress}
                 fitKey={`${rideMap.pickupGps ?? ""}|${rideMap.dropGps ?? ""}`}
             />
         </TrackShell>
