@@ -11,5 +11,12 @@
 export const TRACK_TOKEN_RE =
     /^[A-Za-z0-9_-]+\.[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
 
-/** Matches the workbench runner's own poll cadence (RideMapTab). */
-export const TRACK_POLL_MS = 4000;
+/**
+ * How often the page asks for new ride state.
+ *
+ * Matched to the seller's `on_track` cadence rather than the workbench runner's
+ * 4s poll: the driver animation emits a fix every 2s, so polling any slower
+ * discards half of them and doubles the distance the marker has to estimate
+ * between corrections.
+ */
+export const TRACK_POLL_MS = 2000;
