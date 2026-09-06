@@ -14,6 +14,7 @@ import {
 } from "../controllers/flowController";
 import validateRequiredParams from "../middlewares/generic";
 import otelTracing from "../services/tracing-service";
+import { getSessionService } from "../services/sessionService";
 import axios from "axios";
 import logger from "@ondc/automation-logger";
 const router = Router();
@@ -132,6 +133,67 @@ router.get("/external-form", async (req, res) => {
 });
 router.post("/custom-flow", otelTracing( 'body.session_id'), updateFlow)
 router.post("/actions", otelTracing("body.domain", "body.version"), getActions)
+
+/**
+ * Resolve a public ride-tracking token into the ids the tracking page needs.
+ *
+ *   GET /flow/track-context?token=<64 hex>
+ *
+ * The token is the session id followed by the transaction id with dashes
+ * stripped — minted by the BPP's on_track generator (`createTrackingURL` in the
+ * TRV10 flow helperLib) and delivered to the buyer as `message.tracking.url`.
+ *
+ * This is deliberately the only seam between the link and the ids: swapping the
+ * derived token for a random, Redis-backed one later changes this handler and
+ * the flow helper, and nothing else.
+ *
+ * NOTE: the token is derived, not granted — it authorizes nothing, and anyone
+ * holding the link can view the ride. Same exposure as the seller-hosted xInput
+ * form URLs, which carry both ids in the query string.
+ *
+ * Returns: { session_id, transaction_id, domain, version }
+ */
+const TRACK_TOKEN_RE = /^[0-9a-f]{64}$/;
+
+/** Re-insert UUID dashes into a 32-char hex string (8-4-4-4-12). */
+const unpackUuid = (hex: string): string =>
+	`${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(
+		16,
+		20
+	)}-${hex.slice(20)}`;
+
+router.get("/track-context", async (req, res) => {
+	const token = String(req.query.token || "").toLowerCase();
+	if (!TRACK_TOKEN_RE.test(token)) {
+		res.status(400).send({ message: "Invalid tracking link" });
+		return;
+	}
+
+	const sessionId = unpackUuid(token.slice(0, 32));
+	const transactionId = unpackUuid(token.slice(32));
+
+	try {
+		const session = await getSessionService(sessionId);
+		// The token pairs a session with a transaction; make sure the transaction
+		// actually belongs to it, so a known session id can't be combined with an
+		// arbitrary transaction id.
+		if (!session?.transactionIds?.includes(transactionId)) {
+			res.status(404).send({ message: "Tracking link not found" });
+			return;
+		}
+		res.status(200).send({
+			session_id: sessionId,
+			transaction_id: transactionId,
+			domain: session.domain,
+			version: session.version,
+		});
+	} catch (e) {
+		// getSessionService throws for both "not found" and Redis failures; the
+		// public page must not distinguish them.
+		logger.error("Error resolving tracking token", {}, e);
+		res.status(404).send({ message: "Tracking link not found" });
+	}
+});
 
 /**
  * Road-following route proxy for the ride map (Real-Time Ride Map Integration).
