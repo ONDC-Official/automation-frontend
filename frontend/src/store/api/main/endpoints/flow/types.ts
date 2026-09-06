@@ -28,3 +28,11 @@ export interface GeocodeResult {
     lat: number;
     lng: number;
 }
+
+/** What a public ride-tracking token resolves to (`GET /flow/track-context`). */
+export interface TrackContextResponse {
+    session_id: string;
+    transaction_id: string;
+    domain: string;
+    version: string;
+}
