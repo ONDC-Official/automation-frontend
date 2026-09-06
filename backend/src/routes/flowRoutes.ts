@@ -137,11 +137,15 @@ router.post("/actions", otelTracing("body.domain", "body.version"), getActions)
 /**
  * Resolve a public ride-tracking token into the ids the tracking page needs.
  *
- *   GET /flow/track-context?token=<64 hex>
+ *   GET /flow/track-context?token=<sessionId>.<transactionId>
  *
- * The token is the session id followed by the transaction id with dashes
- * stripped — minted by the BPP's on_track generator (`createTrackingURL` in the
- * TRV10 flow helperLib) and delivered to the buyer as `message.tracking.url`.
+ * Both ids appear verbatim, separated by a dot. Session ids come from
+ * express-session via uid-safe — URL-safe base64, so `[A-Za-z0-9_-]` and NOT
+ * hex — while the transaction id is a UUID. Neither alphabet contains a dot,
+ * which is what makes the split unambiguous without fixed widths.
+ *
+ * Minted by the BPP's on_track generator (`createTrackingURL` in the TRV10 flow
+ * helperLib) and delivered to the buyer as `message.tracking.url`.
  *
  * This is deliberately the only seam between the link and the ids: swapping the
  * derived token for a random, Redis-backed one later changes this handler and
@@ -153,24 +157,18 @@ router.post("/actions", otelTracing("body.domain", "body.version"), getActions)
  *
  * Returns: { session_id, transaction_id, domain, version }
  */
-const TRACK_TOKEN_RE = /^[0-9a-f]{64}$/;
-
-/** Re-insert UUID dashes into a 32-char hex string (8-4-4-4-12). */
-const unpackUuid = (hex: string): string =>
-	`${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(
-		16,
-		20
-	)}-${hex.slice(20)}`;
+const TRACK_TOKEN_RE =
+	/^([A-Za-z0-9_-]+)\.([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$/;
 
 router.get("/track-context", async (req, res) => {
-	const token = String(req.query.token || "").toLowerCase();
-	if (!TRACK_TOKEN_RE.test(token)) {
+	// Session ids are case-sensitive, so the token must not be normalised.
+	const match = TRACK_TOKEN_RE.exec(String(req.query.token || ""));
+	if (!match) {
 		res.status(400).send({ message: "Invalid tracking link" });
 		return;
 	}
 
-	const sessionId = unpackUuid(token.slice(0, 32));
-	const transactionId = unpackUuid(token.slice(32));
+	const [, sessionId, transactionId] = match;
 
 	try {
 		const session = await getSessionService(sessionId);
