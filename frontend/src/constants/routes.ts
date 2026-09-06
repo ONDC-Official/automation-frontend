@@ -15,6 +15,17 @@ export const ROUTES = {
      * parameters arrive in the URL *fragment*, never the query string.
      */
     MCP_SESSION: "/mcp-session",
+    /**
+     * Public, read-only live map for one ride.
+     *
+     * Reached only by the link the provider (BPP) puts in `message.tracking.url`
+     * on on_track, so it is deliberately not in the header nav — without a token
+     * there is no ride to show. `:token` is 64 hex characters: the session id
+     * followed by the transaction id, dashes stripped.
+     */
+    TRACK: "/track/:token",
+    /** Prefix of {@link ROUTES.TRACK}, for matching without the param. */
+    TRACK_PREFIX: "/track/",
     LOGIN: "/login",
     PROFILE: "/profile",
     PROFILE_PAST_REPORTS: "/profile/past-reports",
@@ -65,6 +76,17 @@ export function getDeveloperGuideDocPath(slug: string): string {
 export function getDeveloperGuideValidationsPath(domain: string, version: string): string {
     const enc = encodeURIComponent;
     return `/validations/developer-guide/${enc(domain)}/${enc(version)}`;
+}
+
+/**
+ * Routes that render without the workbench chrome (header/footer).
+ *
+ * These are pages handed to someone outside the workbench by a link — a rider
+ * following a tracking URL is not operating the app, and the nav would only
+ * offer them tools they have no use for.
+ */
+export function isChromelessRoute(pathname: string): boolean {
+    return pathname.startsWith(ROUTES.TRACK_PREFIX);
 }
 
 /**
