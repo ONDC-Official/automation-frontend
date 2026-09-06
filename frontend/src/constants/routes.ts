@@ -20,8 +20,8 @@ export const ROUTES = {
      *
      * Reached only by the link the provider (BPP) puts in `message.tracking.url`
      * on on_track, so it is deliberately not in the header nav — without a token
-     * there is no ride to show. `:token` is 64 hex characters: the session id
-     * followed by the transaction id, dashes stripped.
+     * there is no ride to show. `:token` is `<sessionId>.<transactionId>`, both
+     * verbatim; a dot appears in neither id's alphabet.
      */
     TRACK: "/track/:token",
     /** Prefix of {@link ROUTES.TRACK}, for matching without the param. */

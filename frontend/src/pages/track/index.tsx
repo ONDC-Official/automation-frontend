@@ -180,7 +180,7 @@ export default function TrackPage() {
             <TrackShell>
                 <TrackMessage
                     title="This tracking link isn't valid"
-                    detail="Check that you copied the whole link — it ends in 64 characters."
+                    detail="Check that you copied the whole link — it's easy to miss the end."
                 />
             </TrackShell>
         );
