@@ -204,7 +204,9 @@ export function validateFormContract({
     if (expectedFields?.length) {
         const byName = new Map<string, AnyField>();
         for (const field of parsed.fields) {
+            const baseName = field.name.replace(/\[\d+\]$/, "");
             if (!byName.has(field.name)) byName.set(field.name, field);
+            if (!byName.has(baseName)) byName.set(baseName, field);
         }
 
         for (const expected of expectedFields) {
@@ -250,7 +252,13 @@ export function validateFormContract({
         const expectedNames = new Set(expectedFields.map((expected) => expected.name));
         for (const field of parsed.fields) {
             // Hidden fields are plumbing (transaction ids etc.), not part of the authored contract.
-            if (field.kind === "hidden" || expectedNames.has(field.name)) continue;
+            const baseName = field.name.replace(/\[\d+\]$/, "");
+            if (
+                field.kind === "hidden" ||
+                expectedNames.has(field.name) ||
+                expectedNames.has(baseName)
+            )
+                continue;
             add(
                 "extra-field",
                 "warning",

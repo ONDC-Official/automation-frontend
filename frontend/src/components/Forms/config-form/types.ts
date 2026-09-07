@@ -59,6 +59,7 @@ export interface FormFieldConfigType {
         | "fis14_mutul_fund_select"
         | "fis14_mf_redemption_select"
         | "fis14_mf_sip_select"
+        | "fis14_mf_cart_sip_select"
         | "insurance_select"
         | "manual_id"
         | "trv11_200_metro_select"

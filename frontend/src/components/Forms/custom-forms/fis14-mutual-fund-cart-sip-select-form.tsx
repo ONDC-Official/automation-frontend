@@ -18,15 +18,16 @@ import type {
     IThresholdInfo,
     IParsedProvider,
     ICatalogData,
-    IFormValues,
-    IFIS14MutualFundSIPSelectFormProps,
-} from "../types/fis14-mutual-fund-sip-select-form-types";
+    ICartFormValues,
+    IFIS14MutualFundCartSIPSelectFormProps,
+} from "../types/fis14-mutual-fund-cart-sip-select-form-types";
+
+// ─── Utilities ────────────────────────────────────────────────────────────────
 
 function parseThresholds(tags?: IRawTag[]): IThresholdInfo {
-    const thresholdTag = tags?.find((t) => t.descriptor?.code === "THRESHOLDS");
-    if (!thresholdTag) return {};
-    const get = (code: string) =>
-        thresholdTag.list?.find((e) => e.descriptor?.code === code)?.value;
+    const tag = tags?.find((t) => t.descriptor?.code === "THRESHOLDS");
+    if (!tag) return {};
+    const get = (code: string) => tag.list?.find((e) => e.descriptor?.code === code)?.value;
     return {
         frequency: get("FREQUENCY"),
         frequencyDates: get("FREQUENCY_DATES"),
@@ -56,11 +57,13 @@ function buildFrequency(
     return `R${installments}/${date}/${freq}`;
 }
 
-export default function FIS14MutualFundSIPSelectForm({
+// ─── Component ────────────────────────────────────────────────────────────────
+
+export default function FIS14MutualFundCartSIPSelectForm({
     submitEvent,
     formConfig = [],
-}: IFIS14MutualFundSIPSelectFormProps) {
-    const extraFields = formConfig.filter((f) => f.type !== "fis14_mf_sip_select");
+}: IFIS14MutualFundCartSIPSelectFormProps) {
+    const extraFields = formConfig.filter((f) => f.type !== "fis14_mf_cart_sip_select");
     const [isPayloadEditorActive, setIsPayloadEditorActive] = useState(false);
     const [catalog, setCatalog] = useState<ICatalogData | null>(null);
     const [extraData, setExtraData] = useState<Record<string, string>>(
@@ -74,12 +77,11 @@ export default function FIS14MutualFundSIPSelectForm({
         watch,
         setValue,
         formState: { errors },
-    } = useForm<IFormValues>({
+    } = useForm<ICartFormValues>({
         defaultValues: {
             providerId: "",
-            itemId: "",
             fulfillmentId: "",
-            amount: "",
+            cartItems: [{ itemId: "", amount: "" }],
             installments: "",
             startDate: "",
             sipDay: "",
@@ -87,29 +89,35 @@ export default function FIS14MutualFundSIPSelectForm({
             folioId: "",
             agentPersonId: "",
             agentCreds: [{ id: "", type: "" }],
-            staticTermsUrl: "https://buyerapp.com/legal/ondc:fis14/static_terms?v=0.1",
+            staticTermsUrl: "https://buyer.setu.gov.in/legal/ondc:fis14/static_terms?v=0.1",
         },
     });
 
-    const { fields, append, remove } = useFieldArray({ control, name: "agentCreds" });
+    const {
+        fields: cartItemFields,
+        append: appendCartItem,
+        remove: removeCartItem,
+    } = useFieldArray({ control, name: "cartItems" });
 
+    const {
+        fields: agentCredFields,
+        append: appendAgentCred,
+        remove: removeAgentCred,
+    } = useFieldArray({ control, name: "agentCreds" });
+
+    // ── Watched values ──
     const watchedProviderId = watch("providerId");
-    const watchedItemId = watch("itemId");
     const watchedFulfillmentId = watch("fulfillmentId");
     const watchedInstallments = watch("installments");
     const watchedStartDate = watch("startDate");
     const watchedSipDay = watch("sipDay");
-    const watchedAmount = watch("amount");
 
     const selectedProvider = catalog?.providers.find((p) => p.id === watchedProviderId);
-    const planItems = selectedProvider?.items.filter((i) => i.fulfillmentIds.length > 0) ?? [];
-    const selectedItem = planItems.find((i) => i.id === watchedItemId);
+    const planItems = selectedProvider?.items ?? [];
+    const availableFulfillments = selectedProvider?.fulfillments ?? [];
 
-    const sipFulfillments = (selectedProvider?.fulfillments ?? []).filter(
-        (f) =>
-            f.type === "SIP" && (selectedItem ? selectedItem.fulfillmentIds.includes(f.id) : true)
-    );
-    const selectedFulfillment = sipFulfillments.find((f) => f.id === watchedFulfillmentId);
+    const selectedFulfillment = availableFulfillments.find((f) => f.id === watchedFulfillmentId);
+    const isSip = selectedFulfillment?.type === "SIP";
     const thresholds = selectedFulfillment?.thresholds ?? {};
 
     const frequencyLabel =
@@ -120,7 +128,7 @@ export default function FIS14MutualFundSIPSelectForm({
               : (thresholds.frequency ?? "");
 
     const frequencyPreview =
-        selectedFulfillment && watchedInstallments && watchedStartDate
+        isSip && selectedFulfillment && watchedInstallments && watchedStartDate
             ? buildFrequency(
                   thresholds.frequency ?? "P1M",
                   watchedStartDate,
@@ -129,6 +137,7 @@ export default function FIS14MutualFundSIPSelectForm({
               )
             : null;
 
+    // ── Paste handler ──
     const handlePaste = (payload: unknown) => {
         try {
             const raw = payload as IOnSearchPayload;
@@ -145,16 +154,17 @@ export default function FIS14MutualFundSIPSelectForm({
                         name: i.descriptor?.name ?? i.id,
                         fulfillmentIds: i.fulfillment_ids ?? [],
                     })),
-                fulfillments: (p.fulfillments ?? [])
-                    .filter((f) => f.type === "SIP")
-                    .map((f) => ({ id: f.id, type: f.type, thresholds: parseThresholds(f.tags) })),
+                fulfillments: (p.fulfillments ?? []).map((f) => ({
+                    id: f.id,
+                    type: f.type,
+                    thresholds: parseThresholds(f.tags),
+                })),
             }));
 
             setCatalog({ providers });
             setValue("providerId", providers[0]?.id ?? "");
-            setValue("itemId", "");
-            setValue("fulfillmentId", "");
-            toast.success(`Loaded ${providers.length} provider(s) — SIP fulfillments only`);
+            setValue("fulfillmentId", providers[0]?.fulfillments[0]?.id ?? "");
+            toast.success(`Loaded ${providers.length} provider(s) from catalog`);
             setIsPayloadEditorActive(false);
         } catch (err) {
             toast.error("Invalid on_search payload");
@@ -162,9 +172,16 @@ export default function FIS14MutualFundSIPSelectForm({
         }
     };
 
-    const onSubmit = async (data: IFormValues) => {
+    // ── Submit ──
+    const onSubmit = async (data: ICartFormValues) => {
         if (!catalog) {
             toast.error("Paste an on_search payload first");
+            return;
+        }
+
+        const validCartItems = data.cartItems.filter((r) => r.itemId && r.amount);
+        if (validCartItems.length === 0) {
+            toast.error("Add at least one cart item");
             return;
         }
 
@@ -178,46 +195,70 @@ export default function FIS14MutualFundSIPSelectForm({
             return;
         }
 
-        const frequency = buildFrequency(
-            thresholds.frequency ?? "P1M",
-            data.startDate,
-            data.installments,
-            data.sipDay
-        );
         const agentCreds = data.agentCreds.filter((c) => c.id || c.type);
 
-        const fulfillmentObj: Record<string, unknown> = {
-            id: data.fulfillmentId,
-            type: "SIP",
-            customer: {
-                person: {
-                    id: data.customerPersonId,
-                    ...(data.folioId ? { creds: [{ id: data.folioId, type: "FOLIO" }] } : {}),
-                },
-            },
-            stops: [{ time: { schedule: { frequency } } }],
-        };
-
-        if (data.agentPersonId || agentCreds.length) {
-            fulfillmentObj.agent = {
-                ...(data.agentPersonId ? { person: { id: data.agentPersonId } } : {}),
-                ...(agentCreds.length ? { organization: { creds: agentCreds } } : {}),
-            };
+        // Collect all used fulfillments
+        const usedFulfillmentIds = new Set<string>();
+        if (data.fulfillmentId) {
+            usedFulfillmentIds.add(data.fulfillmentId);
         }
+        validCartItems.forEach((row) => {
+            if (row.fulfillmentId) {
+                usedFulfillmentIds.add(row.fulfillmentId);
+            }
+        });
+
+        const fulfillmentsPayload = Array.from(usedFulfillmentIds).map((fulId) => {
+            const fulObj = availableFulfillments.find((f) => f.id === fulId);
+            const isFulSip = fulObj?.type === "SIP";
+            const fulThresholds = fulObj?.thresholds ?? {};
+
+            const fObj: Record<string, unknown> = {
+                id: fulId,
+                type: fulObj?.type ?? "SIP",
+                customer: {
+                    person: {
+                        id: data.customerPersonId,
+                        ...(data.folioId ? { creds: [{ id: data.folioId, type: "FOLIO" }] } : {}),
+                    },
+                },
+            };
+
+            if (isFulSip && data.startDate && data.installments) {
+                const frequency = buildFrequency(
+                    fulThresholds.frequency ?? "P1M",
+                    data.startDate,
+                    data.installments,
+                    data.sipDay
+                );
+                fObj.stops = [{ time: { schedule: { frequency } } }];
+            }
+
+            if (data.agentPersonId || agentCreds.length) {
+                fObj.agent = {
+                    ...(data.agentPersonId ? { person: { id: data.agentPersonId } } : {}),
+                    ...(agentCreds.length ? { organization: { creds: agentCreds } } : {}),
+                };
+            }
+
+            return fObj;
+        });
 
         const selectPayload = {
             message: {
                 order: {
                     provider: { id: data.providerId },
-                    items: [
-                        {
-                            id: data.itemId,
+                    items: validCartItems.map((row) => {
+                        const targetFulfillmentId = row.fulfillmentId || data.fulfillmentId;
+                        return {
+                            id: row.itemId,
                             quantity: {
-                                selected: { measure: { value: data.amount, unit: "INR" } },
+                                selected: { measure: { value: row.amount, unit: "INR" } },
                             },
-                        },
-                    ],
-                    fulfillments: [fulfillmentObj],
+                            fulfillment_ids: targetFulfillmentId ? [targetFulfillmentId] : [],
+                        };
+                    }),
+                    fulfillments: fulfillmentsPayload,
                     tags: [
                         {
                             display: false,
@@ -248,30 +289,35 @@ export default function FIS14MutualFundSIPSelectForm({
         extraFields.forEach((f) => {
             extraFieldsData[f.name] = extraData[f.name] ?? "";
         });
+
         await submitEvent({
             jsonPath: {},
             formData: { data: JSON.stringify(selectPayload), ...extraFieldsData },
         });
     };
 
+    // ── UI helpers ──
     const sectionClassName =
         "space-y-3 rounded-lg border border-border-default bg-surface-muted/20 p-4";
     const badge = "inline-block rounded-full px-2 py-0.5 text-xs font-semibold";
 
     const providerOptions =
-        catalog?.providers.map((provider) => ({
-            value: provider.id,
-            label: `${provider.name} (${provider.id})`,
-        })) ?? [];
+        catalog?.providers.map((p) => ({ value: p.id, label: `${p.name} (${p.id})` })) ?? [];
 
-    const planItemOptions = planItems.map((item) => ({
-        value: item.id,
-        label: `${item.name} (${item.id})`,
+    const planItemOptions = planItems.map((i) => ({
+        value: i.id,
+        label: `${i.name} (${i.id})`,
     }));
 
-    const sipFulfillmentOptions = sipFulfillments.map((fulfillment) => ({
-        value: fulfillment.id,
-        label: `${fulfillment.id} — ${fulfillment.type} (${fulfillment.thresholds.frequency ?? "?"}${fulfillment.thresholds.frequencyDayType ? ` · ${fulfillment.thresholds.frequencyDayType}` : ""})`,
+    const fulfillmentOptions = availableFulfillments.map((f) => ({
+        value: f.id,
+        label: `${f.id} — ${f.type}${
+            f.thresholds.frequency
+                ? ` (${f.thresholds.frequency}${
+                      f.thresholds.frequencyDayType ? ` · ${f.thresholds.frequencyDayType}` : ""
+                  })`
+                : ""
+        }`,
     }));
 
     const sipDayOptions = (
@@ -279,8 +325,9 @@ export default function FIS14MutualFundSIPSelectForm({
         "1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28"
     )
         .split(",")
-        .map((day) => ({ value: day.trim(), label: day.trim() }));
+        .map((d) => ({ value: d.trim(), label: d.trim() }));
 
+    // ── Render ──
     return (
         <>
             {isPayloadEditorActive && (
@@ -292,11 +339,12 @@ export default function FIS14MutualFundSIPSelectForm({
 
             <FormDialogShell
                 onSubmit={handleSubmit(onSubmit)}
-                footer={catalog ? <Button type="submit">Submit SIP Select</Button> : null}
+                footer={catalog ? <Button type="submit">Submit Cart SIP Select</Button> : null}
             >
+                {/* Header */}
                 <div className="space-y-1">
                     <p className="text-sm font-semibold text-text-primary">
-                        Mutual Fund SIP Select (FIS14)
+                        Mutual Fund Cart SIP Select (FIS14)
                     </p>
                     <p
                         className={cn(
@@ -305,7 +353,7 @@ export default function FIS14MutualFundSIPSelectForm({
                         )}
                     >
                         {catalog
-                            ? `${catalog.providers.length} provider(s) loaded`
+                            ? `${catalog.providers.length} provider(s) loaded — add multiple items for cart flows`
                             : "Paste on_search payload to begin"}
                     </p>
                 </div>
@@ -317,6 +365,7 @@ export default function FIS14MutualFundSIPSelectForm({
 
                 {catalog && (
                     <div className="space-y-4">
+                        {/* Provider */}
                         <div className={sectionClassName}>
                             <FieldLabel className="font-semibold uppercase tracking-wide">
                                 Provider
@@ -332,7 +381,6 @@ export default function FIS14MutualFundSIPSelectForm({
                                         value={field.value}
                                         onValueChange={(value) => {
                                             field.onChange(value);
-                                            setValue("itemId", "");
                                             setValue("fulfillmentId", "");
                                         }}
                                         options={providerOptions}
@@ -343,39 +391,118 @@ export default function FIS14MutualFundSIPSelectForm({
                             />
                         </div>
 
+                        {/* Cart Items */}
                         <div className={sectionClassName}>
-                            <FieldLabel className="font-semibold uppercase tracking-wide">
-                                Scheme Plan
-                            </FieldLabel>
-                            <Controller
-                                name="itemId"
-                                control={control}
-                                rules={{ required: "Required" }}
-                                render={({ field }) => (
-                                    <ComboBoxControl
-                                        label="Scheme Plan Item"
-                                        required
-                                        value={field.value}
-                                        onValueChange={(value) => {
-                                            field.onChange(value);
-                                            setValue("fulfillmentId", "");
-                                        }}
-                                        options={planItemOptions}
-                                        placeholder={
-                                            selectedProvider
-                                                ? "Select scheme plan"
-                                                : "Select a provider first"
-                                        }
-                                        disabled={!selectedProvider}
-                                        error={errors.itemId?.message}
-                                    />
-                                )}
-                            />
+                            <div className="flex items-center justify-between">
+                                <FieldLabel className="font-semibold uppercase tracking-wide">
+                                    Cart Items
+                                </FieldLabel>
+                                <span className="text-xs text-text-secondary">
+                                    {cartItemFields.length} item
+                                    {cartItemFields.length !== 1 ? "s" : ""}
+                                </span>
+                            </div>
+
+                            <p className="text-xs text-text-secondary">
+                                Add two or more scheme plans to test Cart flows. Each item shares
+                                the SIP fulfillment below.
+                            </p>
+
+                            <div className="space-y-3">
+                                {cartItemFields.map((field, index) => (
+                                    <div
+                                        key={field.id}
+                                        className="rounded-md border border-border-default bg-surface-muted/30 p-3 space-y-2"
+                                    >
+                                        <div className="flex items-center justify-between mb-1">
+                                            <p className="text-xs font-semibold text-text-primary">
+                                                Item {index + 1}
+                                            </p>
+                                            {cartItemFields.length > 1 && (
+                                                <Button
+                                                    type="button"
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="size-6 text-destructive hover:text-destructive"
+                                                    onClick={() => removeCartItem(index)}
+                                                >
+                                                    <TrashIcon className="size-3.5" />
+                                                </Button>
+                                            )}
+                                        </div>
+
+                                        <Controller
+                                            name={`cartItems.${index}.itemId`}
+                                            control={control}
+                                            rules={{ required: "Required" }}
+                                            render={({ field: f }) => (
+                                                <ComboBoxControl
+                                                    label="Scheme Plan Item"
+                                                    required
+                                                    value={f.value}
+                                                    onValueChange={f.onChange}
+                                                    options={planItemOptions}
+                                                    placeholder={
+                                                        selectedProvider
+                                                            ? "Select scheme plan"
+                                                            : "Select a provider first"
+                                                    }
+                                                    disabled={!selectedProvider}
+                                                    error={
+                                                        (
+                                                            errors.cartItems?.[index] as {
+                                                                itemId?: { message?: string };
+                                                            }
+                                                        )?.itemId?.message
+                                                    }
+                                                />
+                                            )}
+                                        />
+
+                                        <TextField
+                                            control={control}
+                                            name={`cartItems.${index}.amount`}
+                                            label="SIP Amount (INR)"
+                                            type="number"
+                                            required
+                                            placeholder={`e.g. ${thresholds.amountMin ?? "5000"}`}
+                                            rules={{
+                                                required: "Required",
+                                                min: thresholds.amountMin
+                                                    ? {
+                                                          value: Number(thresholds.amountMin),
+                                                          message: `Min ₹${thresholds.amountMin}`,
+                                                      }
+                                                    : undefined,
+                                                max: thresholds.amountMax
+                                                    ? {
+                                                          value: Number(thresholds.amountMax),
+                                                          message: `Max ₹${thresholds.amountMax}`,
+                                                      }
+                                                    : undefined,
+                                            }}
+                                        />
+                                    </div>
+                                ))}
+                            </div>
+
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                className="gap-1 w-full"
+                                onClick={() => appendCartItem({ itemId: "", amount: "" })}
+                                disabled={!selectedProvider}
+                            >
+                                <PlusIcon className="size-3" />
+                                Add Cart Item
+                            </Button>
                         </div>
 
+                        {/* Fulfillment */}
                         <div className={sectionClassName}>
                             <FieldLabel className="font-semibold uppercase tracking-wide">
-                                SIP Fulfillment
+                                Fulfillment
                             </FieldLabel>
                             <Controller
                                 name="fulfillmentId"
@@ -383,7 +510,7 @@ export default function FIS14MutualFundSIPSelectForm({
                                 rules={{ required: "Required" }}
                                 render={({ field }) => (
                                     <ComboBoxControl
-                                        label="SIP Fulfillment"
+                                        label="Primary Fulfillment"
                                         required
                                         value={field.value}
                                         onValueChange={(value) => {
@@ -391,21 +518,22 @@ export default function FIS14MutualFundSIPSelectForm({
                                             setValue("installments", "");
                                             setValue("sipDay", "");
                                         }}
-                                        options={sipFulfillmentOptions}
+                                        options={fulfillmentOptions}
                                         placeholder={
-                                            selectedItem
-                                                ? "Select SIP fulfillment"
-                                                : "Select scheme plan first"
+                                            selectedProvider
+                                                ? "Select fulfillment"
+                                                : "Select a provider first"
                                         }
-                                        disabled={!selectedItem}
+                                        disabled={!selectedProvider}
                                         error={errors.fulfillmentId?.message}
                                     />
                                 )}
                             />
+
                             {selectedFulfillment && (
                                 <div className="space-y-1 rounded-md border border-border-default bg-surface-muted/40 p-3 text-xs text-text-secondary">
                                     <p className="mb-1 font-semibold text-text-primary">
-                                        SIP Thresholds
+                                        Fulfillment Details ({selectedFulfillment.type})
                                     </p>
                                     <div className="grid grid-cols-2 gap-x-4 gap-y-0.5">
                                         {frequencyLabel && (
@@ -441,7 +569,7 @@ export default function FIS14MutualFundSIPSelectForm({
                                         )}
                                         {thresholds.frequencyDates && (
                                             <p className="col-span-2">
-                                                Valid SIP Dates: {thresholds.frequencyDates}
+                                                Valid Dates: {thresholds.frequencyDates}
                                             </p>
                                         )}
                                     </div>
@@ -449,34 +577,12 @@ export default function FIS14MutualFundSIPSelectForm({
                             )}
                         </div>
 
-                        {selectedFulfillment && (
+                        {/* SIP Schedule (Only for SIP fulfillments) */}
+                        {isSip && selectedFulfillment && (
                             <div className={sectionClassName}>
                                 <FieldLabel className="font-semibold uppercase tracking-wide">
                                     SIP Schedule
                                 </FieldLabel>
-                                <TextField
-                                    control={control}
-                                    name="amount"
-                                    label="SIP Amount (INR)"
-                                    type="number"
-                                    required
-                                    placeholder={`e.g. ${thresholds.amountMin ?? "5000"}`}
-                                    rules={{
-                                        required: "Required",
-                                        min: thresholds.amountMin
-                                            ? {
-                                                  value: Number(thresholds.amountMin),
-                                                  message: `Min ₹${thresholds.amountMin}`,
-                                              }
-                                            : undefined,
-                                        max: thresholds.amountMax
-                                            ? {
-                                                  value: Number(thresholds.amountMax),
-                                                  message: `Max ₹${thresholds.amountMax}`,
-                                              }
-                                            : undefined,
-                                    }}
-                                />
                                 <TextField
                                     control={control}
                                     name="installments"
@@ -545,24 +651,10 @@ export default function FIS14MutualFundSIPSelectForm({
                                         </p>
                                     </div>
                                 )}
-                                {watchedAmount && watchedInstallments && (
-                                    <div className="rounded-md bg-surface-muted/40 p-2 text-xs text-text-secondary">
-                                        <span className="font-semibold">Cumulative Total:</span> ₹
-                                        {(
-                                            Number(watchedAmount) * Number(watchedInstallments)
-                                        ).toLocaleString()}
-                                        {thresholds.cumulativeAmountMin &&
-                                            Number(watchedAmount) * Number(watchedInstallments) <
-                                                Number(thresholds.cumulativeAmountMin) && (
-                                                <span className="ml-2 text-destructive">
-                                                    Below min ₹{thresholds.cumulativeAmountMin}
-                                                </span>
-                                            )}
-                                    </div>
-                                )}
                             </div>
                         )}
 
+                        {/* Customer */}
                         <div className={sectionClassName}>
                             <FieldLabel className="font-semibold uppercase tracking-wide">
                                 Customer
@@ -594,6 +686,7 @@ export default function FIS14MutualFundSIPSelectForm({
                             </p>
                         </div>
 
+                        {/* Agent */}
                         <div className={sectionClassName}>
                             <div className="flex items-center justify-between">
                                 <FieldLabel className="font-semibold uppercase tracking-wide">
@@ -619,13 +712,13 @@ export default function FIS14MutualFundSIPSelectForm({
                                     variant="outline"
                                     size="sm"
                                     className="gap-1"
-                                    onClick={() => append({ id: "", type: "" })}
+                                    onClick={() => appendAgentCred({ id: "", type: "" })}
                                 >
                                     <PlusIcon className="size-3" />
                                     Add Cred
                                 </Button>
                             </div>
-                            {fields.map((field, index) => (
+                            {agentCredFields.map((field, index) => (
                                 <div key={field.id} className="flex items-end gap-2">
                                     <div className="flex-1">
                                         <TextField
@@ -647,13 +740,13 @@ export default function FIS14MutualFundSIPSelectForm({
                                             rules={{ required: "Required" }}
                                         />
                                     </div>
-                                    {fields.length > 1 && (
+                                    {agentCredFields.length > 1 && (
                                         <Button
                                             type="button"
                                             variant="ghost"
                                             size="icon"
                                             className="mb-1 text-destructive hover:text-destructive"
-                                            onClick={() => remove(index)}
+                                            onClick={() => removeAgentCred(index)}
                                         >
                                             <TrashIcon className="size-4" />
                                         </Button>
@@ -662,6 +755,7 @@ export default function FIS14MutualFundSIPSelectForm({
                             ))}
                         </div>
 
+                        {/* BAP Terms */}
                         <div className={sectionClassName}>
                             <FieldLabel className="font-semibold uppercase tracking-wide">
                                 BAP Terms
@@ -677,6 +771,7 @@ export default function FIS14MutualFundSIPSelectForm({
                             </p>
                         </div>
 
+                        {/* Extra fields */}
                         {extraFields.length > 0 && (
                             <div className={sectionClassName}>
                                 <FieldLabel className="font-semibold uppercase tracking-wide">
