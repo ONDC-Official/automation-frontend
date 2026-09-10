@@ -5,7 +5,7 @@ export default function MockDynamicForm({
     onSubmit,
 }: {
     htmlForm: string;
-    onSubmit: (formData: Record<string, any>) => void;
+    onSubmit: (formData: Record<string, unknown>) => void;
 }) {
     const formRef = useRef<HTMLDivElement>(null);
 
@@ -21,7 +21,7 @@ export default function MockDynamicForm({
                 formElement.addEventListener("submit", (e) => {
                     e.preventDefault();
                     const formData = new FormData(formElement);
-                    const data: Record<string, any> = {};
+                    const data: Record<string, unknown> = {};
                     formData.forEach((value, key) => {
                         data[key] = value;
                     });
@@ -34,7 +34,7 @@ export default function MockDynamicForm({
     return <div ref={formRef} />;
 }
 
-function injectDefaultStyles(formElement: HTMLFormElement) {
+export function injectDefaultStyles(formElement: HTMLFormElement) {
     // Style the form container itself
     if (!formElement.hasAttribute("style") && !formElement.hasAttribute("class")) {
         Object.assign(formElement.style, {
