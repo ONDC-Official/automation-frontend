@@ -33,6 +33,10 @@ export const usePlaygroundActions = () => {
         let newStep;
         if (stepType === "form" && (api === "dynamic_form" || api === "html_form")) {
             newStep = new MockRunner(currentConfig).getDefaultStep(api, actionId, api);
+        } else if (stepType === "form" && api === "html_form_multi") {
+            // No dedicated template for the multi variant — scaffold from html_form
+            // (same formHtml shape); the api stays html_form_multi.
+            newStep = new MockRunner(currentConfig).getDefaultStep(api, actionId, "html_form");
         } else {
             newStep = new MockRunner(currentConfig).getDefaultStep(api, actionId);
         }
