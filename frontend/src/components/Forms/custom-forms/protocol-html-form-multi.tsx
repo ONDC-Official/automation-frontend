@@ -11,6 +11,8 @@ import ProtocolHtmlFieldRenderer from "./protocol-html-field-renderer";
 import { cn } from "@/lib/utils";
 import { useHtmlFormSubmitMutation, useHtmlFormFetchQuery } from "@store/api";
 import { parseFormHtml } from "./protocol-html-form";
+import FormContractIssues from "./form-contract-issues";
+import { validateFormContract, IFormContractIssue } from "../utils/html-form-contract";
 import {
     ParsedForm,
     AnyField,
@@ -120,6 +122,17 @@ export default function ProtocolHTMLFormMulti({
     }, [useUrl, fetchedHtml, referencedValue]);
 
     const parsed = useMemo<ParsedForm>(() => parseFormHtml(formHtml), [formHtml]);
+
+    // Same structural sanity check the single-form component runs — makes an empty
+    // reference_data / failed fetch visible instead of silently rendering no fields.
+    const contractIssues = useMemo<IFormContractIssue[]>(() => {
+        if (useUrl && (isFetchingForm || fetchError)) return [];
+        return validateFormContract({
+            parsed,
+            formHtml,
+            isUrlSource: useUrl,
+        });
+    }, [parsed, formHtml, useUrl, isFetchingForm, fetchError]);
 
     const hiddenFields = useMemo(() => parsed.fields.filter((f) => f.kind === "hidden"), [parsed]);
     const visibleFields = useMemo(() => parsed.fields.filter((f) => f.kind !== "hidden"), [parsed]);
@@ -325,6 +338,7 @@ export default function ProtocolHTMLFormMulti({
                         </span>
                     </div>
                 )}
+                <FormContractIssues issues={contractIssues} />
                 {entries.map((entry, entryIdx) => {
                     const entryErrors = fieldErrors[entryIdx] || {};
                     const entryErrorCount = Object.keys(entryErrors).length;
