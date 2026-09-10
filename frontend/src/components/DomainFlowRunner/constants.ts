@@ -91,12 +91,10 @@ export const keyDetailsMapping: Record<string, { label: string; info: string }> 
         label: "Protocol Validation",
         info: "Validates payloads against protocol-level schema and rules.",
     },
-    //Asked to remove this from the UI, commented out in case we need to add it back
-
-    // useGateway: {
-    //     label: "Use Gateway",
-    //     info: "Routes requests through gateway before reaching target participants.",
-    // },
+    useGateway: {
+        label: "Use Gateway",
+        info: "Routes requests through gateway before reaching target participants.",
+    },
     headerValidaton: {
         label: "Header Validation",
         info: "Verifies required request headers and their expected values.",
@@ -133,13 +131,7 @@ export const SESSION_VALIDATION_DEFAULTS: FilteredDifficultyCache = {
     useTunnelForFIS: false,
 };
 
-// useGateway is hidden from the settings UI on request; the value still lives in the session cache
-export const SKIP_DIFFICULTY_ITEMS = [
-    "stopAfterFirstNack",
-    "sensitiveTTL",
-    "timeValidations",
-    "useGateway",
-];
+export const SKIP_DIFFICULTY_ITEMS = ["stopAfterFirstNack", "sensitiveTTL", "timeValidations"];
 
 export const FLOW_ACTION_VARIANT_STYLES: Record<IFlowActionButtonProps["variant"], string> = {
     play: "bg-brand-light text-brand-normal hover:!bg-brand-light hover:!text-brand-normal hover:opacity-80 dark:bg-brand-dark/30 dark:hover:!bg-brand-dark/30 dark:hover:!text-brand-normal",
