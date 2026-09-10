@@ -24,8 +24,6 @@ export const FlowSettingsModal = ({
     onSave,
     flowTags,
     isSaving,
-    domain,
-    version,
 }: IFlowSettingsModalProps) => {
     if (!draft) return null;
 
@@ -76,8 +74,7 @@ export const FlowSettingsModal = ({
                                             },
                                         })
                                     }
-                                    domain={domain}
-                                    version={version}
+                                    singleColumn
                                 />
                             </CollapsibleSection>
 

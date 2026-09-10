@@ -532,8 +532,6 @@ function RenderFlows({ flows, subUrl, sessionId, newSession }: IRenderFlowsProps
                 onSave={handleSettingsSave}
                 flowTags={flowTags}
                 isSaving={isSettingsSaving}
-                domain={sessionData?.domain}
-                version={sessionData?.version}
             />
 
             <div className="flex min-h-screen w-full flex-1 flex-col bg-surface-page">

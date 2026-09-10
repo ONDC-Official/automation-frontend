@@ -108,8 +108,6 @@ export interface IFlowSettingsPanelProps {
     sessionDifficulty: FilteredDifficultyCache;
     onSessionDifficultyChange: (key: string, value: boolean) => void;
     singleColumn?: boolean;
-    domain?: string;
-    version?: string;
 }
 
 export type SettingsDraft = {
@@ -127,8 +125,6 @@ export interface IFlowSettingsModalProps {
     onSave: () => Promise<void>;
     flowTags: string[];
     isSaving: boolean;
-    domain?: string;
-    version?: string;
 }
 
 export interface IGuideModalProps {
