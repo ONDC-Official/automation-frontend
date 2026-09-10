@@ -129,7 +129,11 @@ function StepDisplay({ step, flowId }: { step: MappedStep; flowId: string }) {
     if (isInactive) {
         statusStyles.messageText = "INACTIVE";
     }
-    const isFormType = ["HTML_FORM", "HTML_FORM_MULTI", "DYNAMIC_FORM"].includes(step.actionType);
+    // Case-insensitive: the mock-runner's flow conversion emits uppercase types for its
+    // known form apis but passes html_form_multi through lowercase.
+    const isFormType = ["HTML_FORM", "HTML_FORM_MULTI", "DYNAMIC_FORM"].includes(
+        (step.actionType || "").toUpperCase()
+    );
     const apiCount = getCount(step);
 
     const showAutoToggle =

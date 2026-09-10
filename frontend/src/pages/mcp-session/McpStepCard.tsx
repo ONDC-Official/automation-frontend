@@ -77,7 +77,10 @@ function StepFace({
             "border-purple-200 bg-linear-to-br from-purple-50 to-purple-100/80 shadow-xs shadow-purple-100 dark:from-purple-950 dark:to-purple-900/40";
     }
 
-    const isFormType = ["HTML_FORM", "HTML_FORM_MULTI", "DYNAMIC_FORM"].includes(step.actionType);
+    // Case-insensitive: the mock-runner passes html_form_multi through lowercase.
+    const isFormType = ["HTML_FORM", "HTML_FORM_MULTI", "DYNAMIC_FORM"].includes(
+        (step.actionType || "").toUpperCase()
+    );
     const stepInput = step.input;
     const hasInput = Array.isArray(stepInput) ? stepInput.length > 0 : stepInput != null;
     const apiCount = countPayloads(step);
