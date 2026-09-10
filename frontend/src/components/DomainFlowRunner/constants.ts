@@ -133,6 +133,12 @@ export const SESSION_VALIDATION_DEFAULTS: FilteredDifficultyCache = {
 
 export const SKIP_DIFFICULTY_ITEMS = ["stopAfterFirstNack", "sensitiveTTL", "timeValidations"];
 
+export const isGatewayToggleAvailable = (domain?: string, version?: string): boolean => {
+    if (!domain || !version) return false;
+    const normalizedDomain = domain.toUpperCase().replace(/^ONDC:/, "");
+    return normalizedDomain === "TRV10" && version === "2.1.0";
+};
+
 export const FLOW_ACTION_VARIANT_STYLES: Record<IFlowActionButtonProps["variant"], string> = {
     play: "bg-brand-light text-brand-normal hover:!bg-brand-light hover:!text-brand-normal hover:opacity-80 dark:bg-brand-dark/30 dark:hover:!bg-brand-dark/30 dark:hover:!text-brand-normal",
     stop: "bg-error-50 text-error-500 hover:!bg-error-50 hover:!text-error-500 hover:opacity-80 dark:bg-error-500/15 dark:hover:!bg-error-500/15 dark:hover:!text-error-500",
