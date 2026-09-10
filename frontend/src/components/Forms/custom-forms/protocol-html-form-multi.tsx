@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { queryJsonPath } from "@utils/jsonpath-query";
 import { AxiosResponse } from "axios";
 import { PlusIcon, TrashIcon } from "@heroicons/react/24/outline";
@@ -9,7 +9,7 @@ import { SubmitEventParams } from "@/types/flow-types";
 import { FormFieldConfigType } from "@components/Forms/config-form/types";
 import ProtocolHtmlFieldRenderer from "./protocol-html-field-renderer";
 import { cn } from "@/lib/utils";
-import { useHtmlFormSubmitMutation } from "@store/api";
+import { useHtmlFormSubmitMutation, useHtmlFormFetchQuery } from "@store/api";
 import { parseFormHtml } from "./protocol-html-form";
 import {
     ParsedForm,
@@ -75,7 +75,9 @@ export default function ProtocolHTMLFormMulti({
     referenceData,
     HtmlFormConfigInFlow,
 }: Props) {
-    const formHtml = useMemo<string>(() => {
+    // Value the step's `reference` points at: embedded HTML, or (when the upstream
+    // service saved the seller's xinput.form.url without fetching it) the URL itself.
+    const referencedValue = useMemo<string>(() => {
         const raw = queryJsonPath(
             { reference_data: referenceData },
             HtmlFormConfigInFlow.reference || ""
@@ -85,6 +87,38 @@ export default function ProtocolHTMLFormMulti({
         return typeof value === "string" ? value : "";
     }, [referenceData, HtmlFormConfigInFlow.reference]);
 
+    // Auto-detect a seller URL sitting where HTML was expected and fetch it via the
+    // backend proxy (browser can't, due to CORS) — mirrors ProtocolHTMLForm's url mode.
+    const formUrl = useMemo<string>(() => {
+        if (HtmlFormConfigInFlow.htmlSource === "url") {
+            const raw = queryJsonPath(
+                { reference_data: referenceData },
+                HtmlFormConfigInFlow.urlReference || ""
+            )[0];
+            const value = Array.isArray(raw) ? raw.find((v) => typeof v === "string") : raw;
+            return typeof value === "string" ? value : "";
+        }
+        return /^https?:\/\/\S+$/i.test(referencedValue.trim()) ? referencedValue.trim() : "";
+    }, [
+        referenceData,
+        HtmlFormConfigInFlow.htmlSource,
+        HtmlFormConfigInFlow.urlReference,
+        referencedValue,
+    ]);
+
+    const useUrl = !!formUrl;
+
+    const {
+        data: fetchedHtml,
+        isFetching: isFetchingForm,
+        error: fetchError,
+    } = useHtmlFormFetchQuery({ link: formUrl }, { skip: !useUrl });
+
+    const formHtml = useMemo<string>(() => {
+        if (useUrl) return typeof fetchedHtml === "string" ? fetchedHtml : "";
+        return referencedValue;
+    }, [useUrl, fetchedHtml, referencedValue]);
+
     const parsed = useMemo<ParsedForm>(() => parseFormHtml(formHtml), [formHtml]);
 
     const hiddenFields = useMemo(() => parsed.fields.filter((f) => f.kind === "hidden"), [parsed]);
@@ -92,6 +126,23 @@ export default function ProtocolHTMLFormMulti({
 
     const [entries, setEntries] = useState<ValueState[]>(() => [createDefaultEntry(visibleFields)]);
     const [fieldErrors, setFieldErrors] = useState<Record<string, string>[]>([{}]);
+
+    // In url mode the form arrives asynchronously — rebuild the entry template once it parses.
+    useEffect(() => {
+        setEntries([createDefaultEntry(visibleFields)]);
+        setFieldErrors([{}]);
+    }, [formHtml]);
+
+    // Query params carried on the seller URL, used to back-fill empty hidden fields
+    // (sellers ship e.g. an empty hidden transactionId expecting it from the query string).
+    const urlParams = useMemo<Record<string, string>>(() => {
+        if (!useUrl || !formUrl) return {};
+        try {
+            return Object.fromEntries(new URL(formUrl).searchParams);
+        } catch {
+            return {};
+        }
+    }, [useUrl, formUrl]);
     const [submissionId, setSubmissionId] = useState<string | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -170,7 +221,9 @@ export default function ProtocolHTMLFormMulti({
             const arrayPayload: Record<string, unknown> = {};
 
             for (const f of hiddenFields) {
-                arrayPayload[f.name] = (f as { value: string }).value;
+                const own = (f as { value: string }).value;
+                arrayPayload[f.name] =
+                    own || urlParams[f.name] || urlParams[f.name.toLowerCase()] || "";
             }
 
             for (const f of visibleFields) {
@@ -262,6 +315,16 @@ export default function ProtocolHTMLFormMulti({
             }
         >
             <div className="space-y-4">
+                {useUrl && isFetchingForm && (
+                    <p className="text-sm text-text-secondary">Loading form from seller…</p>
+                )}
+                {useUrl && fetchError && (
+                    <div className="rounded-md border border-destructive/30 bg-destructive/5 p-3">
+                        <span className="font-medium text-destructive wrap-break-word">
+                            Failed to load seller form{formUrl ? ` (${formUrl})` : ""}.
+                        </span>
+                    </div>
+                )}
                 {entries.map((entry, entryIdx) => {
                     const entryErrors = fieldErrors[entryIdx] || {};
                     const entryErrorCount = Object.keys(entryErrors).length;

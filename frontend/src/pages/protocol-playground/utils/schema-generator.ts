@@ -14,7 +14,7 @@ import {
 } from "@pages/protocol-playground/utils/json-path-extractor";
 
 /** Form steps carry no real ONDC payload — skip them. */
-const SKIPPED_APIS = new Set(["html_form", "dynamic_form"]);
+const SKIPPED_APIS = new Set(["html_form", "dynamic_form", "html_form_multi"]);
 
 interface ContextLike {
     version?: unknown;

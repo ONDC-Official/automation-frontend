@@ -24,6 +24,7 @@ export const LeftSideView = (props: { width: string; activeApi?: string }) => {
     const isForm =
         stepData?.api === "dynamic_form" ||
         stepData?.api === "html_form" ||
+        stepData?.api === "html_form_multi" ||
         stepData?.api === "DYNAMIC_FORM";
 
     const tabs = isForm ? PLAYGROUND_LEFT_TABS_FORM : PLAYGROUND_LEFT_TABS;
