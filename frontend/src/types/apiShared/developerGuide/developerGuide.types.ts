@@ -238,6 +238,7 @@ export interface OpenAPISpecification {
     "x-errorcodes"?: ErrorCodes;
     "x-supported-actions"?: SupportedActions;
     "x-docs"?: Record<string, string>;
+    "x-figma"?: string;
     "x-changelog"?: ChangelogEntry[];
 }
 
