@@ -5,6 +5,7 @@ import { ROUTES } from "@constants/routes";
 import FlowInformation from "../FlowInformation";
 import DocsViewer from "../DocsViewer";
 import ErrorCodesTable from "../ErrorCodesTable";
+import ReferenceImplementationView from "../ReferenceImplementationView";
 // import ChangelogView from "../ChangelogView";
 import { useDeveloperGuideNav } from "../layout/DeveloperGuideNav";
 import GuideContentSkeleton from "../shared/components/GuideContentSkeleton";
@@ -42,7 +43,7 @@ const DeveloperGuideFlowPage: FC = () => {
     const handleBack = () => navigate(ROUTES.DEVELOPER_GUIDE);
 
     const tabOrder = useMemo(() => {
-        const order: TopLevelView[] = ["docs", "flows"];
+        const order: TopLevelView[] = ["docs", "reference-implementation", "flows"];
         if (hasErrorCodes) order.push("error-codes");
         return order;
     }, [hasErrorCodes]);
@@ -116,6 +117,9 @@ const DeveloperGuideFlowPage: FC = () => {
                         </div>
                     ) : (
                         <div className="flex-1 min-w-0 px-4 md:px-12 w-full">
+                            {activeView === "reference-implementation" && (
+                                <ReferenceImplementationView />
+                            )}
                             {activeView === "error-codes" &&
                                 (hasErrorCodes && errorCodes ? (
                                     <ErrorCodesTable errorCodes={errorCodes} />
