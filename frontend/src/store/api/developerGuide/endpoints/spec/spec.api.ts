@@ -106,7 +106,8 @@ function specResponseToOpenAPI(
                   }
                 : undefined,
         "x-docs": docs,
-        "x-figma": str(meta.figma, undefined),
+        "x-figma":
+            str(meta.figma, undefined) || (docs?.["figma"] ? docs["figma"].trim() : undefined),
     };
 }
 

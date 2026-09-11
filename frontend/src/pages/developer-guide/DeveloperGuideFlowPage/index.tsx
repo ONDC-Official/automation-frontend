@@ -42,7 +42,7 @@ const DeveloperGuideFlowPage: FC = () => {
 
     const handleBack = () => navigate(ROUTES.DEVELOPER_GUIDE);
 
-    const figmaUrl = specData?.["x-figma"];
+    const figmaUrl = specData?.["x-figma"] || specData?.["x-docs"]?.["figma"]?.trim();
     const hasFigma = !!figmaUrl;
 
     const tabOrder = useMemo(() => {
