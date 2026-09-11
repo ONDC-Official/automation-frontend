@@ -1,4 +1,4 @@
-import { FC, useMemo } from "react";
+import { FC, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/Shadcn/Button";
 import { ROUTES } from "@constants/routes";
@@ -42,14 +42,30 @@ const DeveloperGuideFlowPage: FC = () => {
 
     const handleBack = () => navigate(ROUTES.DEVELOPER_GUIDE);
 
+    const figmaUrl = specData?.["x-figma"];
+    const hasFigma = !!figmaUrl;
+
     const tabOrder = useMemo(() => {
-        const order: TopLevelView[] = ["docs", "reference-implementation", "flows"];
+        const order: TopLevelView[] = ["docs"];
+        if (hasFigma) order.push("reference-implementation");
+        order.push("flows");
         if (hasErrorCodes) order.push("error-codes");
         return order;
-    }, [hasErrorCodes]);
+    }, [hasErrorCodes, hasFigma]);
 
     const displayDocs = useMemo(() => resolveUseCaseDocs(specData?.["x-docs"]), [specData]);
     const isDocsEmpty = !displayDocs || Object.keys(displayDocs).length === 0;
+
+    /** Intercept view change: open Figma in a new tab for reference-implementation. */
+    const onViewChange = useCallback(
+        (view: TopLevelView) => {
+            if (view === "reference-implementation" && figmaUrl) {
+                window.open(figmaUrl, "_blank", "noopener,noreferrer");
+            }
+            handleViewChange(view);
+        },
+        [handleViewChange, figmaUrl]
+    );
 
     if (isLoading) {
         return <GuideContentSkeleton />;
@@ -84,8 +100,9 @@ const DeveloperGuideFlowPage: FC = () => {
             <FlowPageHeader
                 activeView={activeView}
                 hasErrorCodes={hasErrorCodes}
+                hasFigma={hasFigma}
                 errorCodesCount={errorCodes?.code.length}
-                onViewChange={handleViewChange}
+                onViewChange={onViewChange}
             />
 
             <div className="grow flex items-start gap-0 relative">
@@ -117,8 +134,8 @@ const DeveloperGuideFlowPage: FC = () => {
                         </div>
                     ) : (
                         <div className="flex-1 min-w-0 px-4 md:px-12 w-full">
-                            {activeView === "reference-implementation" && (
-                                <ReferenceImplementationView />
+                            {activeView === "reference-implementation" && figmaUrl && (
+                                <ReferenceImplementationView figmaUrl={figmaUrl} />
                             )}
                             {activeView === "error-codes" &&
                                 (hasErrorCodes && errorCodes ? (
