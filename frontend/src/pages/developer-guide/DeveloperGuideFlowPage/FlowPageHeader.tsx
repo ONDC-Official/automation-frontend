@@ -6,6 +6,7 @@ import { VIEW_LABEL, type TopLevelView } from "./types";
 interface FlowPageHeaderProps {
     activeView: TopLevelView;
     hasErrorCodes: boolean;
+    hasFigma: boolean;
     errorCodesCount?: number;
     onViewChange: (view: TopLevelView) => void;
 }
@@ -20,6 +21,11 @@ function getPageTitle(
             return {
                 title: VIEW_LABEL.docs,
                 description: "Understand the product and use case before exploring flows.",
+            };
+        case "reference-implementation":
+            return {
+                title: VIEW_LABEL["reference-implementation"],
+                description: "Explore visual specs, UI flows, and wireframes on Figma.",
             };
         case "flows":
             return {
@@ -47,6 +53,7 @@ function getPageTitle(
 const FlowPageHeader: FC<FlowPageHeaderProps> = ({
     activeView,
     hasErrorCodes,
+    hasFigma,
     errorCodesCount,
     onViewChange,
 }) => {
@@ -59,6 +66,11 @@ const FlowPageHeader: FC<FlowPageHeaderProps> = ({
             tabs={
                 [
                     { id: "docs", label: VIEW_LABEL.docs, visible: true },
+                    {
+                        id: "reference-implementation",
+                        label: VIEW_LABEL["reference-implementation"],
+                        visible: hasFigma,
+                    },
                     { id: "flows", label: VIEW_LABEL.flows, visible: true },
                     { id: "error-codes", label: VIEW_LABEL["error-codes"], visible: hasErrorCodes },
                     // { id: "changelog", label: "Changelog", visible: true },
