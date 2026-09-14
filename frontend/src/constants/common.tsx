@@ -24,7 +24,10 @@ export const DOMAIN_FRIENDLY_NAMES: Record<string, string> = {
     ...Object.fromEntries(domainOptions.map((option) => [option.value, option.key])),
     // Financial Services
     "ONDC:FIS10": "Gift Cards",
-    "ONDC:FIS12": "Credit",
+    "ONDC:FIS12": "Personal and Gold loan",
+    "ONDC:FIS12:BL": "Business loan",
+    "ONDC:FIS12:SL": "Secured loan",
+    "ONDC:FIS12:PF": "Purchase Finance",
     "ONDC:FIS13": "Insurance",
     "ONDC:FIS14": "Investment",
     // Mobility Transit and Tourism
