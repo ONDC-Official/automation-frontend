@@ -1,4 +1,4 @@
-import { FC, useCallback, useMemo } from "react";
+import { FC, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/Shadcn/Button";
 import { ROUTES } from "@constants/routes";
@@ -56,17 +56,6 @@ const DeveloperGuideFlowPage: FC = () => {
     const displayDocs = useMemo(() => resolveUseCaseDocs(specData?.["x-docs"]), [specData]);
     const isDocsEmpty = !displayDocs || Object.keys(displayDocs).length === 0;
 
-    /** Intercept view change: open Figma in a new tab for reference-implementation. */
-    const onViewChange = useCallback(
-        (view: TopLevelView) => {
-            if (view === "reference-implementation" && figmaUrl) {
-                window.open(figmaUrl, "_blank", "noopener,noreferrer");
-            }
-            handleViewChange(view);
-        },
-        [handleViewChange, figmaUrl]
-    );
-
     if (isLoading) {
         return <GuideContentSkeleton />;
     }
@@ -102,7 +91,7 @@ const DeveloperGuideFlowPage: FC = () => {
                 hasErrorCodes={hasErrorCodes}
                 hasFigma={hasFigma}
                 errorCodesCount={errorCodes?.code.length}
-                onViewChange={onViewChange}
+                onViewChange={handleViewChange}
             />
 
             <div className="grow flex items-start gap-0 relative">
