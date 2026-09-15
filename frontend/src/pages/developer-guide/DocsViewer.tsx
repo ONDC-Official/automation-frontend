@@ -24,24 +24,54 @@ function formatSlug(slug: string): string {
 
 const DocsViewer: FC<DocsViewerProps> = ({ docs, useCaseId, domain, version }) => {
     /**
-     * Frontend filter check to ensure "Release Notes" and "References" (including spelling variations)
-     * are excluded from the documentation tabs and details pane for all domains/use cases.
+     * Frontend filter check to:
+     * 1. Exclude non-content doc tabs ("Release Notes", "References", "Figma").
+     * 2. Filter doc tabs by active useCaseId if multiple use-case docs co-exist in the spec (e.g. gold-loans vs personal-loans).
      */
     const filteredDocs = useMemo(() => {
         if (!docs) return {};
-        return Object.keys(docs).reduce<Record<string, string>>((acc, key) => {
+
+        const contentEntries = Object.entries(docs).filter(([key]) => {
             const normalized = key.toLowerCase().replace(/[-_]/g, " ").trim();
-            if (
+            return (
                 normalized !== "release notes" &&
                 normalized !== "references" &&
                 normalized !== "refrences" &&
                 normalized !== "figma"
+            );
+        });
+
+        if (contentEntries.length <= 1) {
+            return Object.fromEntries(contentEntries);
+        }
+
+        const cleanStr = (str: string) => str.toLowerCase().replace(/[^a-z0-9]/g, "");
+        const activeKey = cleanStr(useCaseId || "");
+
+        const matchingEntries = contentEntries.filter(([key]) => {
+            const docKeyClean = cleanStr(key);
+            if (
+                docKeyClean === activeKey ||
+                docKeyClean === `${activeKey}s` ||
+                activeKey === `${docKeyClean}s`
             ) {
-                acc[key] = docs[key];
+                return true;
             }
-            return acc;
-        }, {});
-    }, [docs]);
+            const docWords = key.toLowerCase().split(/[-_\s]+/);
+            const useCaseWords = (useCaseId || "").toLowerCase().split(/[-_\s]+/);
+            const firstUseCaseWord = useCaseWords[0];
+            if (firstUseCaseWord && firstUseCaseWord.length > 2) {
+                return docWords.includes(firstUseCaseWord);
+            }
+            return false;
+        });
+
+        if (matchingEntries.length > 0) {
+            return Object.fromEntries(matchingEntries);
+        }
+
+        return Object.fromEntries(contentEntries);
+    }, [docs, useCaseId]);
 
     const slugs = useMemo(() => Object.keys(filteredDocs), [filteredDocs]);
 
