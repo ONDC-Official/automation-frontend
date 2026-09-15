@@ -5,6 +5,7 @@ import { ROUTES } from "@constants/routes";
 import FlowInformation from "../FlowInformation";
 import DocsViewer from "../DocsViewer";
 import ErrorCodesTable from "../ErrorCodesTable";
+import ReferenceImplementationView from "../ReferenceImplementationView";
 // import ChangelogView from "../ChangelogView";
 import { useDeveloperGuideNav } from "../layout/DeveloperGuideNav";
 import GuideContentSkeleton from "../shared/components/GuideContentSkeleton";
@@ -41,11 +42,16 @@ const DeveloperGuideFlowPage: FC = () => {
 
     const handleBack = () => navigate(ROUTES.DEVELOPER_GUIDE);
 
+    const figmaUrl = specData?.["x-figma"] || specData?.["x-docs"]?.["figma"]?.trim();
+    const hasFigma = !!figmaUrl;
+
     const tabOrder = useMemo(() => {
-        const order: TopLevelView[] = ["docs", "flows"];
+        const order: TopLevelView[] = ["docs"];
+        if (hasFigma) order.push("reference-implementation");
+        order.push("flows");
         if (hasErrorCodes) order.push("error-codes");
         return order;
-    }, [hasErrorCodes]);
+    }, [hasErrorCodes, hasFigma]);
 
     const displayDocs = useMemo(() => resolveUseCaseDocs(specData?.["x-docs"]), [specData]);
     const isDocsEmpty = !displayDocs || Object.keys(displayDocs).length === 0;
@@ -83,6 +89,7 @@ const DeveloperGuideFlowPage: FC = () => {
             <FlowPageHeader
                 activeView={activeView}
                 hasErrorCodes={hasErrorCodes}
+                hasFigma={hasFigma}
                 errorCodesCount={errorCodes?.code.length}
                 onViewChange={handleViewChange}
             />
@@ -116,6 +123,9 @@ const DeveloperGuideFlowPage: FC = () => {
                         </div>
                     ) : (
                         <div className="flex-1 min-w-0 px-4 md:px-12 w-full">
+                            {activeView === "reference-implementation" && figmaUrl && (
+                                <ReferenceImplementationView figmaUrl={figmaUrl} />
+                            )}
                             {activeView === "error-codes" &&
                                 (hasErrorCodes && errorCodes ? (
                                     <ErrorCodesTable errorCodes={errorCodes} />

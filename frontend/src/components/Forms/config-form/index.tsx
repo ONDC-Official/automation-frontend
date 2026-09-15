@@ -252,6 +252,7 @@ export const FormConfig = ({
             HtmlFormConfigInFlow: formConfig.find(
                 (field) => field.type === "HTML_FORM_MULTI"
             ) as FormFieldConfigType,
+            transactionId: flowTransactionId,
         });
     }
     if (formConfig.find((field) => field.type === "HTML_FORM")) {

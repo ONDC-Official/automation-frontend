@@ -34,7 +34,8 @@ const DocsViewer: FC<DocsViewerProps> = ({ docs, useCaseId, domain, version }) =
             if (
                 normalized !== "release notes" &&
                 normalized !== "references" &&
-                normalized !== "refrences"
+                normalized !== "refrences" &&
+                normalized !== "figma"
             ) {
                 acc[key] = docs[key];
             }

@@ -13,6 +13,7 @@ import { useHtmlFormSubmitMutation, useHtmlFormFetchQuery } from "@store/api";
 import { parseFormHtml } from "./protocol-html-form";
 import FormContractIssues from "./form-contract-issues";
 import { validateFormContract, IFormContractIssue } from "../utils/html-form-contract";
+import { resolveHiddenValues } from "../utils/html-form-values";
 import {
     ParsedForm,
     AnyField,
@@ -70,12 +71,14 @@ type Props = {
     submitEvent: (data: SubmitEventParams) => Promise<void>;
     referenceData?: Record<string, unknown>;
     HtmlFormConfigInFlow: FormFieldConfigType;
+    transactionId?: string;
 };
 
 export default function ProtocolHTMLFormMulti({
     submitEvent,
     referenceData,
     HtmlFormConfigInFlow,
+    transactionId,
 }: Props) {
     // Value the step's `reference` points at: embedded HTML, or (when the upstream
     // service saved the seller's xinput.form.url without fetching it) the URL itself.
@@ -116,12 +119,48 @@ export default function ProtocolHTMLFormMulti({
         error: fetchError,
     } = useHtmlFormFetchQuery({ link: formUrl }, { skip: !useUrl });
 
+    // Query params carried on the seller URL, used to back-fill empty hidden fields
+    // (sellers ship e.g. an empty hidden transactionId expecting it from the query string).
+    const urlParams = useMemo<Record<string, string>>(() => {
+        if (!useUrl || !formUrl) return {};
+        try {
+            return Object.fromEntries(new URL(formUrl).searchParams);
+        } catch {
+            return {};
+        }
+    }, [useUrl, formUrl]);
+
     const formHtml = useMemo<string>(() => {
         if (useUrl) return typeof fetchedHtml === "string" ? fetchedHtml : "";
         return referencedValue;
     }, [useUrl, fetchedHtml, referencedValue]);
 
     const parsed = useMemo<ParsedForm>(() => parseFormHtml(formHtml), [formHtml]);
+
+    // The xinput form id sits next to the form url in reference_data, so derive its path from
+    // urlReference (…xinput.form.url → …xinput.form.id) unless the flow points at it explicitly.
+    const formId = useMemo<string>(() => {
+        const reference =
+            HtmlFormConfigInFlow.formIdReference ||
+            (HtmlFormConfigInFlow.urlReference || "").replace(/\.url$/, ".id");
+        if (!reference) return "";
+        const value = queryJsonPath({ reference_data: referenceData }, reference)[0];
+        return typeof value === "string" ? value : "";
+    }, [referenceData, HtmlFormConfigInFlow.formIdReference, HtmlFormConfigInFlow.urlReference]);
+
+    // Protocol-owned hidden fields: the session's transaction id and the real form id replace the
+    // placeholders seller forms ship, so the seller receives the live values (same as the single form).
+    const hiddenValues = useMemo(
+        () =>
+            resolveHiddenValues(parsed.fields, {
+                ids: {
+                    transactionId: transactionId || urlParams.transaction_id,
+                    formId: formId || urlParams.form_id || urlParams.formId,
+                },
+                urlParams,
+            }),
+        [parsed, transactionId, formId, urlParams]
+    );
 
     // Same structural sanity check the single-form component runs — makes an empty
     // reference_data / failed fetch visible instead of silently rendering no fields.
@@ -130,9 +169,10 @@ export default function ProtocolHTMLFormMulti({
         return validateFormContract({
             parsed,
             formHtml,
+            hiddenValues,
             isUrlSource: useUrl,
         });
-    }, [parsed, formHtml, useUrl, isFetchingForm, fetchError]);
+    }, [parsed, formHtml, hiddenValues, useUrl, isFetchingForm, fetchError]);
 
     const hiddenFields = useMemo(() => parsed.fields.filter((f) => f.kind === "hidden"), [parsed]);
     const visibleFields = useMemo(() => parsed.fields.filter((f) => f.kind !== "hidden"), [parsed]);
@@ -146,16 +186,6 @@ export default function ProtocolHTMLFormMulti({
         setFieldErrors([{}]);
     }, [formHtml]);
 
-    // Query params carried on the seller URL, used to back-fill empty hidden fields
-    // (sellers ship e.g. an empty hidden transactionId expecting it from the query string).
-    const urlParams = useMemo<Record<string, string>>(() => {
-        if (!useUrl || !formUrl) return {};
-        try {
-            return Object.fromEntries(new URL(formUrl).searchParams);
-        } catch {
-            return {};
-        }
-    }, [useUrl, formUrl]);
     const [submissionId, setSubmissionId] = useState<string | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -234,9 +264,7 @@ export default function ProtocolHTMLFormMulti({
             const arrayPayload: Record<string, unknown> = {};
 
             for (const f of hiddenFields) {
-                const own = (f as { value: string }).value;
-                arrayPayload[f.name] =
-                    own || urlParams[f.name] || urlParams[f.name.toLowerCase()] || "";
+                arrayPayload[f.name] = hiddenValues[f.name] ?? "";
             }
 
             for (const f of visibleFields) {

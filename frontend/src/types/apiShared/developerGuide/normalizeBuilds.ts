@@ -79,11 +79,46 @@ function normalizeUsecaseStatusMap(
     return Object.keys(out).length > 0 ? out : undefined;
 }
 
+const GIFT_CARD_DOMAIN_KEY = "ONDC:FIS10";
+
+function sortGiftCardDomainLast(entries: BuildEntry[]): BuildEntry[] {
+    return [...entries].sort((a, b) => {
+        const aIsGiftCard = a.key === GIFT_CARD_DOMAIN_KEY;
+        const bIsGiftCard = b.key === GIFT_CARD_DOMAIN_KEY;
+        if (aIsGiftCard === bIsGiftCard) return 0;
+        return aIsGiftCard ? 1 : -1;
+    });
+}
+
 /** Convert available-builds wire payload into the BuildEntry shape used by the app. */
 export function normalizeBuildEntries(raw: unknown): BuildEntry[] {
-    if (!Array.isArray(raw)) return [];
+    const rawClone = JSON.parse(JSON.stringify(raw));
 
-    return raw
+    if (!Array.isArray(rawClone)) return [];
+
+    for (const entry of rawClone) {
+        if (entry?.key === "ONDC:FIS12") {
+            entry.version = entry.version.filter(
+                (ver: { key: string }) => ver.key === "2.0.3" || ver.key === "2.2.1"
+            );
+        }
+        // else if (entry?.key === "ONDC:FIS12:PF") {
+        //     entry.version = [
+        //         ...entry.version,
+        //         (raw as unknown[])
+        //             ?.find(
+        //                 (entry): entry is RawBuildEntry =>
+        //                     !!entry &&
+        //                     typeof entry === "object" &&
+        //                     "key" in entry &&
+        //                     (entry as RawBuildEntry).key === "ONDC:FIS12"
+        //             )
+        //             ?.version?.find((ver: { key: string }) => ver.key === "2.2.1"),
+        //     ];
+        // }
+    }
+
+    const normalized = rawClone
         .filter((entry): entry is RawBuildEntry => !!entry && typeof entry === "object")
         .map((entry) => ({
             key: typeof entry.key === "string" ? entry.key : "",
@@ -101,4 +136,6 @@ export function normalizeBuildEntries(raw: unknown): BuildEntry[] {
             }),
         }))
         .filter((entry) => entry.key.length > 0);
+
+    return sortGiftCardDomainLast(normalized);
 }
