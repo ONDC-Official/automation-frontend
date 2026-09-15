@@ -92,7 +92,7 @@ const FlowInformation: FC<FlowInformationProps> = ({
     }, [selectedFlowAction]);
 
     const detailTabOrder = useMemo(() => {
-        const order: FlowInformationSection[] = ["sequence"];
+        const order: FlowInformationSection[] = ["preview"]; // setting default preview as there is no sequence diagram
         if (hasExampleObject) order.push("preview");
         if (selectedStep) {
             order.push("request", "response");
