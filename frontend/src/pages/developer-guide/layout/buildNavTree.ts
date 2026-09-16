@@ -101,30 +101,32 @@ export function buildNavTree(
 
     function buildUseCaseNodes(dom: BuildEntry): NavNode[] {
         return (dom.version ?? [])
-            .flatMap((ver) =>
-                (ver.usecase ?? []).map((label) => ({
+            .flatMap((ver) => {
+                const targetDomainKey = (ver as { domainKey?: string }).domainKey ?? dom.key;
+                return (ver.usecase ?? []).map((label) => ({
+                    domainKey: targetDomainKey,
                     verKey: ver.key,
                     label,
                     backendStatus: ver.usecaseStatus?.[label] ?? ver.status,
-                }))
-            )
+                }));
+            })
             .sort((a, b) => {
                 const aEn = isUseCaseEnabled(dom, a.label);
                 const bEn = isUseCaseEnabled(dom, b.label);
                 if (aEn !== bEn) return aEn ? -1 : 1;
                 return a.label.localeCompare(b.label) || a.verKey.localeCompare(b.verKey);
             })
-            .map(({ verKey, label, backendStatus }) => {
+            .map(({ domainKey, verKey, label, backendStatus }) => {
                 const clickable = isUseCaseEnabled(dom, label);
                 const status = resolveNavStatus(backendStatus);
                 return {
-                    id: `usecase-${dom.key}-${verKey}-${label}`,
+                    id: `usecase-${domainKey}-${verKey}-${label}`,
                     label,
                     suffix: `v${verKey}`,
                     type: "link" as const,
-                    path: getDeveloperGuideUseCasePath(dom.key, verKey, label),
+                    path: getDeveloperGuideUseCasePath(domainKey, verKey, label),
                     disabled: !clickable,
-                    searchText: `${dom.key} ${label} v${verKey}`,
+                    searchText: `${domainKey} ${label} v${verKey}`,
                     ...(status ? { status } : {}),
                 };
             });
