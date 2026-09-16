@@ -64,9 +64,8 @@ const FlowActionDetails: FC<FlowActionDetailsProps> = ({
     const [selectedPath, setSelectedPathState] = useState<string | null>(
         () => searchParams.get("attr") ?? null
     );
-    const [rightPanelOpen, setRightPanelOpen] = useState(false);
+    const [rightPanelOpen, setRightPanelOpen] = useState(() => searchParams.get("attr") !== null);
     const { copyToClipboard } = useClipboard();
-
     useEffect(() => {
         const attr = searchParams.get("attr");
         setSelectedPathState(attr);
@@ -112,9 +111,27 @@ const FlowActionDetails: FC<FlowActionDetailsProps> = ({
     const handleKeyClick = useCallback(
         (path: string, _k: string, e: MouseEvent) => {
             e.stopPropagation();
-            selectPath(path);
+            // Selecting a key should reveal its details: open the collapsed side panel on the
+            // Details tab. If the panel is already open (e.g. on Comments), keep the user's tab.
+            const openingPanel = !rightPanelOpen;
+            setSelectedPathState(path);
+            if (openingPanel) {
+                setRightPanelTabState("attributes");
+                setRightPanelOpen(true);
+            }
+            // Single URL update: two setSearchParams calls in one handler race — the second's
+            // `prev` is the pre-navigation URL, so it would drop the `attr` written by the first.
+            setSearchParams(
+                (prev) => {
+                    const next = new URLSearchParams(prev);
+                    next.set("attr", path);
+                    if (openingPanel) next.set("panel", "attributes");
+                    return next;
+                },
+                { replace: true }
+            );
         },
-        [selectPath]
+        [rightPanelOpen, setSearchParams]
     );
 
     const commentScope = useMemo(

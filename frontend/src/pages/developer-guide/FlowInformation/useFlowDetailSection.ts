@@ -21,7 +21,7 @@ export function useFlowDetailSection({
     onSectionReset,
 }: UseFlowDetailSectionParams) {
     const [searchParams, setSearchParams] = useSearchParams();
-    const [activeSection, setActiveSection] = useState<FlowInformationSection>("sequence");
+    const [activeSection, setActiveSection] = useState<FlowInformationSection>("preview");
     const isFirstActionEffect = useRef(true);
     const {
         visible: showPreviewDetails,
