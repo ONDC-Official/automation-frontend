@@ -99,6 +99,24 @@ export function buildNavTree(
     });
     const sortedDocs = sortDocsByPreferredSequence(docs);
 
+    /** Preferred sequence for Credit (FIS12) use cases: PL, GL, BL, LAMF, PF.
+     * Matched by keyword so label variants ("PERSONAL LOAN", "Personal Loan v2") still rank;
+     * unmatched use cases fall after these, in the default enabled/alphabetical order. */
+    const CREDIT_USECASE_MATCHERS: RegExp[] = [
+        /PERSONAL/i,
+        /GOLD/i,
+        /BUSINESS/i,
+        /LAMF|MUTUAL/i,
+        /PURCHASE/i,
+    ];
+    function creditUseCaseRank(label: string): number {
+        const idx = CREDIT_USECASE_MATCHERS.findIndex((re) => re.test(label));
+        return idx === -1 ? CREDIT_USECASE_MATCHERS.length : idx;
+    }
+    function isCreditDomain(dom: BuildEntry): boolean {
+        return getDomainFriendlyName(dom.key) === "Credit";
+    }
+
     function buildUseCaseNodes(dom: BuildEntry): NavNode[] {
         return (dom.version ?? [])
             .flatMap((ver) => {
@@ -111,6 +129,10 @@ export function buildNavTree(
                 }));
             })
             .sort((a, b) => {
+                if (isCreditDomain(dom)) {
+                    const rankDiff = creditUseCaseRank(a.label) - creditUseCaseRank(b.label);
+                    if (rankDiff !== 0) return rankDiff;
+                }
                 const aEn = isUseCaseEnabled(dom, a.label);
                 const bEn = isUseCaseEnabled(dom, b.label);
                 if (aEn !== bEn) return aEn ? -1 : 1;
