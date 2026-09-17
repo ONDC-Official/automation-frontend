@@ -282,7 +282,9 @@ export default function ProtocolHTMLFormMulti({
             const submitData = await htmlFormSubmitMutation({
                 link: parsed.action || window.location.href,
                 data: arrayPayload,
-                enctype: parsed.enctype ?? undefined,
+                // text/html-multi forms submit as multipart/form-data (per the xinput spec);
+                // the proxy appends each array item as a repeated field of the same name.
+                enctype: "multipart/form-data",
             }).unwrap();
             const res = { data: submitData, headers: undefined } as unknown as AxiosResponse<
                 unknown,
