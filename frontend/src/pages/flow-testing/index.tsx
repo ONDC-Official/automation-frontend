@@ -4,8 +4,46 @@ import { toast } from "sonner";
 import { DocumentTextIcon, ExclamationTriangleIcon } from "@heroicons/react/24/outline";
 import RenderFlows from "@components/DomainFlowRunner/RenderFlows";
 import Spinner from "@components/Shadcn/Spinner";
-import { useLazyGetSessionByIdQuery } from "@store/api";
+import { useLazyGetFlowsQuery, useLazyGetSessionByIdQuery } from "@store/api";
 import { Flow } from "@/types/flow-types";
+
+type SessionFlowResponse = {
+    flowConfigs?: Record<string, Flow>;
+    domain?: string;
+    version?: string;
+    usecaseId?: string;
+};
+
+/** Session Redis can lose flow.tags during a run; restore from config for filters. */
+async function hydrateFlowTagsFromConfig(
+    flows: Flow[],
+    session: SessionFlowResponse,
+    fetchFlows: ReturnType<typeof useLazyGetFlowsQuery>[0]
+): Promise<Flow[]> {
+    const hasTags = flows.some((f) => (f.tags?.length ?? 0) > 0);
+    if (hasTags || !session.domain || !session.version || !session.usecaseId) {
+        return flows;
+    }
+
+    try {
+        const configResponse = await fetchFlows({
+            domain: session.domain,
+            version: session.version,
+            usecase: session.usecaseId,
+        }).unwrap();
+        const configFlows = configResponse?.data?.flows ?? [];
+        const tagsById = new Map(
+            configFlows.map((f) => [f.id, f.tags as string[] | undefined] as const)
+        );
+        return flows.map((flow) => {
+            const tags = tagsById.get(flow.id);
+            return tags?.length ? { ...flow, tags: tags as Flow["tags"] } : flow;
+        });
+    } catch (error) {
+        console.error("Failed to hydrate flow tags from config", error);
+        return flows;
+    }
+}
 
 export default function FlowTestingWrapper() {
     const [searchParams] = useSearchParams();
@@ -17,16 +55,24 @@ export default function FlowTestingWrapper() {
     const subscriberUrl = searchParams.get("subscriberUrl");
     const role = searchParams.get("role");
     const [triggerGetSessionById] = useLazyGetSessionByIdQuery();
+    const [triggerGetFlows] = useLazyGetFlowsQuery();
 
     const fetchSessionData = useCallback(async () => {
         try {
             setLoading(true);
             setFetchFailed(false);
-            const response = await triggerGetSessionById({ sessionId: sessionId ?? "" }).unwrap();
-            const flowConfigs = (response as { flowConfigs?: Record<string, Flow> }).flowConfigs;
+            const response = (await triggerGetSessionById({
+                sessionId: sessionId ?? "",
+            }).unwrap()) as SessionFlowResponse;
+            const flowConfigs = response.flowConfigs;
 
             if (flowConfigs) {
-                setFlows(Object.values(flowConfigs));
+                const flowList = await hydrateFlowTagsFromConfig(
+                    Object.values(flowConfigs),
+                    response,
+                    triggerGetFlows
+                );
+                setFlows(flowList);
             } else {
                 toast.error("No flow configurations found in session");
             }
@@ -37,7 +83,7 @@ export default function FlowTestingWrapper() {
         } finally {
             setLoading(false);
         }
-    }, [sessionId, triggerGetSessionById]);
+    }, [sessionId, triggerGetSessionById, triggerGetFlows]);
 
     useEffect(() => {
         if (!sessionId || !subscriberUrl || !role) {

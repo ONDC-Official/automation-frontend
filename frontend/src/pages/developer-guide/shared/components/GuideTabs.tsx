@@ -43,7 +43,7 @@ const GuideTabs = <T extends string = string>({
                         <TabsTrigger
                             key={tab.id}
                             value={tab.id}
-                            className="flex-none px-0 pt-2.5 pb-1 text-body-2 font-medium"
+                            className="flex-none !px-0 pt-2.5 pb-1 text-body-2 font-medium"
                         >
                             {Icon && <Icon className="size-3.5 shrink-0" aria-hidden />}
                             {tab.label}

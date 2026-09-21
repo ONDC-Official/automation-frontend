@@ -34,6 +34,7 @@ import {
     CompletionSummary,
     RideStatusPanel,
 } from "@components/DomainFlowRunner/RideMapOverlays";
+import { TrackingLinkPill } from "@components/DomainFlowRunner/TrackingLinkPill";
 
 const POLL_MS = 4000;
 
@@ -543,6 +544,10 @@ export default function RideMapTab({ flowId }: { flowId: string | null }) {
                     </div>
                 )}
             </div>
+
+            {/* The link the provider handed the buyer on on_track — copy it or
+                open the public map exactly as a rider would see it. */}
+            {rideMap.trackingUrl ? <TrackingLinkPill url={rideMap.trackingUrl} /> : null}
 
             {/* ① Status timeline */}
             <RideTimeline currentState={phase} times={phaseTimes} />

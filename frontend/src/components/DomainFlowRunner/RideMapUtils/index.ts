@@ -42,6 +42,8 @@ export interface RideMapData {
     driver?: RideDriver;
     vehicle?: RideVehicle;
     fare?: RideFare;
+    /** Provider-issued public tracking link from `message.tracking.url` on on_track. */
+    trackingUrl?: string;
 }
 
 /**
@@ -500,6 +502,23 @@ function findTrackingGps(obj: unknown): string | undefined {
     return undefined;
 }
 
+/**
+ * The provider-issued live tracking link, from `message.tracking.url` on an
+ * on_track payload. Optional in the protocol, so absent on flows that do not
+ * emit it and whenever the provider could not resolve an origin for it.
+ */
+function findTrackingUrl(obj: unknown): string | undefined {
+    const rec = asRecord(obj);
+    if (!rec) return undefined;
+    const url = asRecord(rec.tracking)?.url;
+    if (typeof url === "string" && url) return url;
+    for (const v of Object.values(rec)) {
+        const found = findTrackingUrl(v);
+        if (found) return found;
+    }
+    return undefined;
+}
+
 /** First value found under `key` anywhere in the object tree. */
 function findByKey(obj: unknown, key: string): unknown {
     const rec = asRecord(obj);
@@ -736,6 +755,7 @@ export async function deriveRideMapData(
     const orderReq = await fetchReq(latestPayloadIdAcross(lists, ORDER_ACTIONS), cache);
 
     const driverGps = findTrackingGps(trackReq);
+    const trackingUrl = findTrackingUrl(trackReq);
     // Ride state / order status / error from the latest order payload; fall back to confirmation.
     const phase = findRidePhase(orderReq) ?? findRidePhase(confirmReq);
     const orderStatus = findOrderStatus(orderReq) ?? findOrderStatus(confirmReq);
@@ -760,5 +780,6 @@ export async function deriveRideMapData(
         driver,
         vehicle,
         fare,
+        trackingUrl,
     };
 }

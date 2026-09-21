@@ -3,7 +3,13 @@ import { API_ROUTES } from "@services/apiRoutes";
 import { FlowMap } from "@/types/flow-state-type";
 import { TransactionCache } from "@/types/session-types";
 import { mainApi } from "@store/api/main/mainApi";
-import type { IFlowResponse, IActionsResponse, RouteResponse, GeocodeResult } from "./types";
+import type {
+    IFlowResponse,
+    IActionsResponse,
+    RouteResponse,
+    GeocodeResult,
+    TrackContextResponse,
+} from "./types";
 
 export const flowApi = mainApi.injectEndpoints({
     endpoints: (builder) => ({
@@ -121,6 +127,15 @@ export const flowApi = mainApi.injectEndpoints({
                 params: { from, to },
             }),
         }),
+        // Resolves the token in a public tracking link. Fetched once per page load —
+        // the ids it returns don't change for the life of the transaction.
+        getTrackContext: builder.query<TrackContextResponse, { token: string }>({
+            query: ({ token }) => ({
+                url: API_ROUTES.FLOW.TRACK_CONTEXT,
+                method: "GET",
+                params: { token },
+            }),
+        }),
         // Never throws (matches old geocodePlace) — callers should read `result.data ?? []`.
         geocodePlace: builder.query<GeocodeResult[], { q: string }>({
             query: ({ q }) => ({
@@ -235,6 +250,7 @@ export const {
     useProceedFlowMutation,
     useTriggerExtraMutation,
     useLazyGetRouteQuery,
+    useGetTrackContextQuery,
     useLazyGeocodePlaceQuery,
     useNewFlowMutation,
     useHtmlFormSubmitMutation,

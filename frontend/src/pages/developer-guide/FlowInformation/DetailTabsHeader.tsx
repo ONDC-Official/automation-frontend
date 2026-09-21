@@ -22,11 +22,11 @@ const DetailTabsHeader: FC<DetailTabsHeaderProps> = ({
         onChange={onChange}
         tabs={
             [
-                {
-                    id: "sequence",
-                    label: "Sequence Diagram",
-                    visible: true,
-                },
+                // {
+                //     id: "sequence",
+                //     label: "Sequence Diagram",
+                //     visible: true,
+                // },// commenting Sequence Diagram as there is not diagrams available
                 {
                     id: "preview",
                     label: "Example Payload",

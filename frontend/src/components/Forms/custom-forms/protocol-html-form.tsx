@@ -504,14 +504,17 @@ export default function ProtocolHTMLForm({
             setIsSubmitting(true);
             setError(null);
 
-            // Decide encoding: default url-encoded; multipart when enctype says so.
-            // Nested FormData cannot go through the JSON `{ link, data }` proxy
-            // (JSON.stringify(FormData) === "{}"), so multipart uses a plain object
-            // with the same field rules as the old FormData.append path.
-            const hasFile = (parsed.enctype || "").toLowerCase().includes("multipart");
+            // Decide encoding: multipart/form-data by default (per the xinput spec, text/html
+            // forms are submitted with Content-Type: multipart/form-data); url-encoded only
+            // when the form explicitly declares it. Nested FormData cannot go through the
+            // JSON `{ link, data }` proxy (JSON.stringify(FormData) === "{}"), so multipart
+            // uses a plain object the backend proxy rebuilds into FormData.
+            const useMultipart = !(parsed.enctype || "")
+                .toLowerCase()
+                .includes("application/x-www-form-urlencoded");
 
             let res: AxiosResponse<unknown, unknown>;
-            if (hasFile) {
+            if (useMultipart) {
                 const payload: Record<string, string | string[]> = {};
                 const append = (name: string, value: string) => {
                     const existing = payload[name];
@@ -563,7 +566,7 @@ export default function ProtocolHTMLForm({
                 const submitData = await htmlFormSubmitMutation({
                     link: parsed.action || window.location.href,
                     data: payload,
-                    enctype: parsed.enctype ?? undefined,
+                    enctype: "multipart/form-data",
                 }).unwrap();
                 res = { data: submitData, headers: undefined } as unknown as AxiosResponse<
                     unknown,

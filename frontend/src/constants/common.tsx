@@ -25,6 +25,9 @@ export const DOMAIN_FRIENDLY_NAMES: Record<string, string> = {
     // Financial Services
     "ONDC:FIS10": "Gift Cards",
     "ONDC:FIS12": "Credit",
+    "ONDC:FIS12:BL": "Credit",
+    "ONDC:FIS12:SL": "Credit",
+    "ONDC:FIS12:PF": "Credit",
     "ONDC:FIS13": "Insurance",
     "ONDC:FIS14": "Investment",
     // Mobility Transit and Tourism

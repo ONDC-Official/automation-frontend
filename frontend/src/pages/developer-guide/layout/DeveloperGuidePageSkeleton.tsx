@@ -32,10 +32,7 @@ const DeveloperGuidePageSkeleton: FC = () => (
             </aside>
 
             <div className="relative flex min-w-0 flex-1 flex-col">
-                <div className="flex h-11 shrink-0 items-center border-b border-slate-200 bg-slate-100 px-4 dark:border-border-default dark:bg-surface-muted">
-                    <Skeleton className="h-3.5 w-64 max-w-[70%]" />
-                </div>
-                <div className="flex-1 space-y-4 px-6 py-8 sm:px-8">
+                <div className="flex-1 space-y-4 px-4 py-8 md:px-6">
                     <Skeleton className="h-8 w-48 max-w-[50%]" />
                     <Skeleton className="h-3.5 w-72 max-w-full" />
                     <div className="space-y-3 pt-4">

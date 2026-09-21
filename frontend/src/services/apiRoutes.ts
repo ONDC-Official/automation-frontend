@@ -18,6 +18,10 @@ export const API_ROUTES = {
         ACTIONS: "/flow/actions",
         ROUTE: "/flow/route",
         GEOCODE: "/flow/geocode",
+        // Resolves a public ride-tracking token into { session_id, transaction_id,
+        // domain, version }. The token is minted seller-side and reaches the buyer
+        // as `message.tracking.url` on on_track.
+        TRACK_CONTEXT: "/flow/track-context",
         REPORT: "/flow/report",
         VALIDATE: (action: string) => `/flow/validate/${action}`,
     },
