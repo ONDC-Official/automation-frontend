@@ -99,32 +99,56 @@ export function buildNavTree(
     });
     const sortedDocs = sortDocsByPreferredSequence(docs);
 
+    /** Preferred sequence for Credit (FIS12) use cases: PL, GL, BL, LAMF, PF.
+     * Matched by keyword so label variants ("PERSONAL LOAN", "Personal Loan v2") still rank;
+     * unmatched use cases fall after these, in the default enabled/alphabetical order. */
+    const CREDIT_USECASE_MATCHERS: RegExp[] = [
+        /PERSONAL/i,
+        /GOLD/i,
+        /BUSINESS/i,
+        /LAMF|MUTUAL/i,
+        /PURCHASE/i,
+    ];
+    function creditUseCaseRank(label: string): number {
+        const idx = CREDIT_USECASE_MATCHERS.findIndex((re) => re.test(label));
+        return idx === -1 ? CREDIT_USECASE_MATCHERS.length : idx;
+    }
+    function isCreditDomain(dom: BuildEntry): boolean {
+        return getDomainFriendlyName(dom.key) === "Credit";
+    }
+
     function buildUseCaseNodes(dom: BuildEntry): NavNode[] {
         return (dom.version ?? [])
-            .flatMap((ver) =>
-                (ver.usecase ?? []).map((label) => ({
+            .flatMap((ver) => {
+                const targetDomainKey = (ver as { domainKey?: string }).domainKey ?? dom.key;
+                return (ver.usecase ?? []).map((label) => ({
+                    domainKey: targetDomainKey,
                     verKey: ver.key,
                     label,
                     backendStatus: ver.usecaseStatus?.[label] ?? ver.status,
-                }))
-            )
+                }));
+            })
             .sort((a, b) => {
+                if (isCreditDomain(dom)) {
+                    const rankDiff = creditUseCaseRank(a.label) - creditUseCaseRank(b.label);
+                    if (rankDiff !== 0) return rankDiff;
+                }
                 const aEn = isUseCaseEnabled(dom, a.label);
                 const bEn = isUseCaseEnabled(dom, b.label);
                 if (aEn !== bEn) return aEn ? -1 : 1;
                 return a.label.localeCompare(b.label) || a.verKey.localeCompare(b.verKey);
             })
-            .map(({ verKey, label, backendStatus }) => {
+            .map(({ domainKey, verKey, label, backendStatus }) => {
                 const clickable = isUseCaseEnabled(dom, label);
                 const status = resolveNavStatus(backendStatus);
                 return {
-                    id: `usecase-${dom.key}-${verKey}-${label}`,
+                    id: `usecase-${domainKey}-${verKey}-${label}`,
                     label,
                     suffix: `v${verKey}`,
                     type: "link" as const,
-                    path: getDeveloperGuideUseCasePath(dom.key, verKey, label),
+                    path: getDeveloperGuideUseCasePath(domainKey, verKey, label),
                     disabled: !clickable,
-                    searchText: `${dom.key} ${label} v${verKey}`,
+                    searchText: `${domainKey} ${label} v${verKey}`,
                     ...(status ? { status } : {}),
                 };
             });

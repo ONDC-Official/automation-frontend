@@ -13,7 +13,7 @@ export const footerLinks: IFooterLinks = {
     ],
     developers: [
         {
-            name: "API Documentation",
+            name: "Workbench API Docs",
             href: "https://github.com/ONDC-Official/automation-framework",
             analytics: {
                 category: "FOOTER",

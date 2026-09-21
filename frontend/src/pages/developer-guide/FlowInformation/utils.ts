@@ -88,7 +88,7 @@ export function getExamplesFromStep(step: FlowStep | undefined): FlowExample[] {
 
 /** Default Details tab for a newly-selected action. */
 export function resolveDefaultSection(): FlowInformationSection {
-    return "sequence";
+    return "preview";
 }
 
 function collectMermaidBlocks(details: FlowDetailBlock[] | undefined): string[] {
