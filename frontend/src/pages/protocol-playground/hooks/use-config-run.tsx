@@ -8,6 +8,7 @@ import { createFlowSessionWithPlayground } from "@pages/protocol-playground/util
 import { useCreatePlaygroundSessionMutation } from "@store/api";
 import { GetRequestEndpoint } from "@components/DomainFlowRunner/utils/get-request-endpoint";
 import MockDynamicForm from "@pages/protocol-playground/ui/components/mock-dynamic-form";
+import MockDynamicFormMulti from "@pages/protocol-playground/ui/components/mock-dynamic-form-multi";
 import { PlaygroundSchemaFormShell } from "@pages/protocol-playground/ui/playground-schema-form-shell";
 import { v4 as uuidv4 } from "uuid";
 import { configForGroup, getGroupSteps } from "@pages/protocol-playground/utils/step-group";
@@ -176,7 +177,13 @@ export const useConfigRun = () => {
         }
         const currentStep = steps[currentIndex];
 
-        if (currentStep.api === "dynamic_form" || currentStep.api === "html_form") {
+        if (
+            currentStep.api === "dynamic_form" ||
+            currentStep.api === "html_form" ||
+            currentStep.api === "html_form_multi"
+        ) {
+            const FormComponent =
+                currentStep.api === "html_form_multi" ? MockDynamicFormMulti : MockDynamicForm;
             const htmlForm64 = currentStep.mock.formHtml;
             if (!htmlForm64) {
                 toast.error("No form HTML provided for dynamic_form action");
@@ -206,7 +213,7 @@ export const useConfigRun = () => {
                 };
                 modal.openModal(
                     <PlaygroundSchemaFormShell title="Fill the form">
-                        <MockDynamicForm htmlForm={htmlForm} onSubmit={handleFormSubmit} />
+                        <FormComponent htmlForm={htmlForm} onSubmit={handleFormSubmit} />
                     </PlaygroundSchemaFormShell>,
                     { className: "max-w-xl" }
                 );
@@ -389,7 +396,13 @@ export const useConfigRun = () => {
             return;
         }
 
-        if (step.api === "dynamic_form" || step.api === "html_form") {
+        if (
+            step.api === "dynamic_form" ||
+            step.api === "html_form" ||
+            step.api === "html_form_multi"
+        ) {
+            const FormComponent =
+                step.api === "html_form_multi" ? MockDynamicFormMulti : MockDynamicForm;
             const htmlForm64 = step.mock.formHtml;
             if (!htmlForm64) {
                 toast.error("No form HTML provided for this form step");
@@ -398,7 +411,7 @@ export const useConfigRun = () => {
             const htmlForm = MockRunner.decodeBase64(htmlForm64);
             modal.openModal(
                 <PlaygroundSchemaFormShell title="Fill the form">
-                    <MockDynamicForm
+                    <FormComponent
                         htmlForm={htmlForm}
                         onSubmit={async (formData: FormValues) => {
                             modal.closeModal();

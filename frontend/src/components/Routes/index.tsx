@@ -11,6 +11,7 @@ import ProtocolPlayGround from "@pages/protocol-playground";
 // import DBBackOffice from "@pages/db-back-office";
 import FlowTestingWrapper from "@pages/flow-testing";
 import McpSessionPage from "@pages/mcp-session";
+import TrackPage from "@pages/track";
 import NotFoundPage from "@components/NotFound";
 import ScenarioPage from "@pages/scenario";
 import HomePage from "@pages/home";
@@ -52,6 +53,11 @@ const Routes = () => (
             unguarded like FLOW_TESTING, because the token in the link is what
             authorises the reader against their own engine, not against us. */}
         <Route path={ROUTES.MCP_SESSION} element={page(<McpSessionPage />)} />
+        {/* Public live ride map. Reached only by the link the provider puts in
+            message.tracking.url on on_track, so it has no nav entry — and it is
+            unguarded on purpose: the link is what a rider is given, and holding
+            it is what lets them watch. Renders without workbench chrome. */}
+        <Route path={ROUTES.TRACK} element={page(<TrackPage />)} />
         <Route path={ROUTES.PROFILE} element={<UserProfile />}>
             <Route index element={page(<ConfigsSection />)} />
             <Route path="past-reports" element={page(<PastReportsSection />)} />

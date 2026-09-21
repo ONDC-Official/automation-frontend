@@ -83,6 +83,7 @@ export const ComboBoxMultiControl = ({
                 multiple
                 items={items}
                 value={value}
+                itemToStringLabel={getLabel}
                 onValueChange={(next) => onValueChange?.(Array.isArray(next) ? next : [])}
                 disabled={disabled}
             >

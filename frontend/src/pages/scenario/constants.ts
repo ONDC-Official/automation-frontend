@@ -30,7 +30,7 @@ export const SCENARIO_GUIDE_STEPS: IAccordionStep[] = [
     },
     {
         key: "5",
-        label: "5. Select App Type:",
+        label: "5. Select Your Role:",
         description: `Select BAP if you are testing as a Buyer NP, or BPP if you are testing as a Seller NP. If you are a Buyer NP, Workbench acts as Seller NP and you receive requests at ${workbenchBaseUrl}/<domain>/<version>/seller (e.g. ${workbenchBaseUrl}/ONDC:RET11/1.2.5/seller). If you are a Seller NP, Workbench acts as Buyer NP and you receive requests at ${workbenchBaseUrl}/<domain>/<version>/buyer.`,
     },
     {

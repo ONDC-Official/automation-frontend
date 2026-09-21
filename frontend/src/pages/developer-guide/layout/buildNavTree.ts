@@ -8,16 +8,23 @@ import {
     getDomainFriendlyName,
 } from "../domainGrouping";
 import { isDomainEnabled, sortDocsByPreferredSequence } from "../utils";
-import { GETTING_STARTED_SECTIONS } from "../landing/getting-started-sections";
 import { resolveNavStatus } from "../shared/statusPlaceholders";
 import type { NavNode } from "./navTypes";
+import { isNavGroup } from "./navTypes";
 import { DOCS_WITH_SIDEBAR_SECTIONS } from "./docsWithSidebarSections";
 
-function useCaseNavLink(
-    node: Extract<NavNode, { type: "link" }>
-): Extract<NavNode, { type: "link" }> {
-    if (node.disabled) return node;
-    return { ...node, showArrow: true };
+/** Hide the leading chevron on leaf nodes (links and groups with no children). */
+function isNavLeaf(node: NavNode): boolean {
+    return !isNavGroup(node) || node.children.length === 0;
+}
+
+function applyLeafNodeNoIcon(node: NavNode): NavNode {
+    if (isNavGroup(node)) {
+        const children = node.children.map(applyLeafNodeNoIcon);
+        const updated = { ...node, children };
+        return isNavLeaf(updated) ? { ...updated, showArrow: false as const } : updated;
+    }
+    return { ...node, showArrow: false as const };
 }
 
 function buildDocNavWithSections(doc: DocMeta, markdown: string): NavNode {
@@ -67,26 +74,14 @@ function buildDocNavWithSections(doc: DocMeta, markdown: string): NavNode {
 }
 
 function buildGettingStartedNav(): NavNode {
-    const sectionLinks: NavNode[] = GETTING_STARTED_SECTIONS.map((section) => ({
-        id: `getting-started-${section.id}`,
-        label: section.label,
-        type: "link" as const,
-        path: `${ROUTES.DEVELOPER_GUIDE_GETTING_STARTED}#${section.id}`,
-        searchText: section.label,
-    }));
-
-    const defaultGettingStartedPath =
-        sectionLinks.length > 0
-            ? (sectionLinks[0] as Extract<NavNode, { type: "link" }>).path
-            : `${ROUTES.DEVELOPER_GUIDE_GETTING_STARTED}#${GETTING_STARTED_SECTIONS[0].id}`;
-
     return {
         id: "getting-started",
         label: "Getting Started",
         type: "group",
-        path: defaultGettingStartedPath,
-        defaultOpen: true,
-        children: sectionLinks,
+        path: ROUTES.DEVELOPER_GUIDE_GETTING_STARTED,
+        defaultOpen: false,
+        searchText: "getting started ondc learn use case glossary",
+        children: [],
     };
 }
 
@@ -104,34 +99,58 @@ export function buildNavTree(
     });
     const sortedDocs = sortDocsByPreferredSequence(docs);
 
+    /** Preferred sequence for Credit (FIS12) use cases: PL, GL, BL, LAMF, PF.
+     * Matched by keyword so label variants ("PERSONAL LOAN", "Personal Loan v2") still rank;
+     * unmatched use cases fall after these, in the default enabled/alphabetical order. */
+    const CREDIT_USECASE_MATCHERS: RegExp[] = [
+        /PERSONAL/i,
+        /GOLD/i,
+        /BUSINESS/i,
+        /LAMF|MUTUAL/i,
+        /PURCHASE/i,
+    ];
+    function creditUseCaseRank(label: string): number {
+        const idx = CREDIT_USECASE_MATCHERS.findIndex((re) => re.test(label));
+        return idx === -1 ? CREDIT_USECASE_MATCHERS.length : idx;
+    }
+    function isCreditDomain(dom: BuildEntry): boolean {
+        return getDomainFriendlyName(dom.key) === "Credit";
+    }
+
     function buildUseCaseNodes(dom: BuildEntry): NavNode[] {
         return (dom.version ?? [])
-            .flatMap((ver) =>
-                (ver.usecase ?? []).map((label) => ({
+            .flatMap((ver) => {
+                const targetDomainKey = (ver as { domainKey?: string }).domainKey ?? dom.key;
+                return (ver.usecase ?? []).map((label) => ({
+                    domainKey: targetDomainKey,
                     verKey: ver.key,
                     label,
                     backendStatus: ver.usecaseStatus?.[label] ?? ver.status,
-                }))
-            )
+                }));
+            })
             .sort((a, b) => {
+                if (isCreditDomain(dom)) {
+                    const rankDiff = creditUseCaseRank(a.label) - creditUseCaseRank(b.label);
+                    if (rankDiff !== 0) return rankDiff;
+                }
                 const aEn = isUseCaseEnabled(dom, a.label);
                 const bEn = isUseCaseEnabled(dom, b.label);
                 if (aEn !== bEn) return aEn ? -1 : 1;
                 return a.label.localeCompare(b.label) || a.verKey.localeCompare(b.verKey);
             })
-            .map(({ verKey, label, backendStatus }) => {
+            .map(({ domainKey, verKey, label, backendStatus }) => {
                 const clickable = isUseCaseEnabled(dom, label);
                 const status = resolveNavStatus(backendStatus);
-                return useCaseNavLink({
-                    id: `usecase-${dom.key}-${verKey}-${label}`,
+                return {
+                    id: `usecase-${domainKey}-${verKey}-${label}`,
                     label,
                     suffix: `v${verKey}`,
                     type: "link" as const,
-                    path: getDeveloperGuideUseCasePath(dom.key, verKey, label),
+                    path: getDeveloperGuideUseCasePath(domainKey, verKey, label),
                     disabled: !clickable,
-                    searchText: `${dom.key} ${label} v${verKey}`,
+                    searchText: `${domainKey} ${label} v${verKey}`,
                     ...(status ? { status } : {}),
-                });
+                };
             });
     }
 
@@ -204,7 +223,7 @@ export function buildNavTree(
     if (domainChildren.length > 0) {
         tree.push({
             id: "domains",
-            label: "API Reference by Domain",
+            label: "Explore by Domain",
             type: "group",
             path: ROUTES.DEVELOPER_GUIDE_DOMAINS,
             defaultOpen: true,
@@ -213,5 +232,5 @@ export function buildNavTree(
         });
     }
 
-    return tree;
+    return tree.map(applyLeafNodeNoIcon);
 }

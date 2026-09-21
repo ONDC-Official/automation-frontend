@@ -91,9 +91,12 @@ export const ManualSessionForm = ({
                     <ComboBox
                         control={control}
                         name="npType"
-                        label="Select App Type"
-                        options={["BAP", "BPP"]}
-                        placeholder="App Type"
+                        label="Select Your Role"
+                        options={[
+                            { label: "Buyer App (BAP)", value: "BAP" },
+                            { label: "Seller App (BPP)", value: "BPP" },
+                        ]}
+                        placeholder="Select your role"
                         required
                         onValueChange={(value) => trackSchemaValidationForm("Added np type", value)}
                     />

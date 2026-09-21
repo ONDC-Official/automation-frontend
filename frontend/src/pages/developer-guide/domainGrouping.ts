@@ -45,13 +45,39 @@ export function getDomainFriendlyName(domainKey: string): string {
 
 /** Consistent "Friendly Name (CODE)" label, e.g. "Grocery (RET10)". */
 export function getDomainDisplayLabel(domainKey: string): string {
-    return `${getDomainFriendlyName(domainKey)} (${getDomainShortLabel(domainKey)})`;
+    // return `${getDomainFriendlyName(domainKey)} (${getDomainShortLabel(domainKey)})`;
+    return `${getDomainFriendlyName(domainKey)}`;
 }
 
 export interface DomainFamilyGroup {
     familyKey: string;
     label: string;
     domains: BuildEntry[];
+}
+
+function consolidateSameNameDomains(domains: BuildEntry[]): BuildEntry[] {
+    const map = new Map<string, BuildEntry>();
+
+    for (const dom of domains) {
+        const friendlyName = getDomainFriendlyName(dom.key);
+        const existing = map.get(friendlyName);
+
+        const versionWithDomain = (dom.version ?? []).map((ver) => ({
+            ...ver,
+            domainKey: (ver as { domainKey?: string }).domainKey ?? dom.key,
+        }));
+
+        if (existing) {
+            existing.version = [...existing.version, ...versionWithDomain];
+        } else {
+            map.set(friendlyName, {
+                key: dom.key,
+                version: versionWithDomain,
+            });
+        }
+    }
+
+    return [...map.values()];
 }
 
 export function groupBuildsByFamily(builds: BuildEntry[]): DomainFamilyGroup[] {
@@ -75,7 +101,11 @@ export function groupBuildsByFamily(builds: BuildEntry[]): DomainFamilyGroup[] {
         .map((family) => ({
             ...family,
             label: getDomainFamilyLabel(family.familyKey),
-            domains: [...family.domains].sort((a, b) => a.key.localeCompare(b.key)),
+            domains: consolidateSameNameDomains(family.domains).sort((a, b) => {
+                if (a.key === "ONDC:FIS10") return 1;
+                if (b.key === "ONDC:FIS10") return -1;
+                return a.key.localeCompare(b.key);
+            }),
         }))
         .sort((a, b) => {
             const aEn = a.domains.some(isDomainEnabled);

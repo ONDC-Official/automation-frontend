@@ -46,6 +46,7 @@ export const ComboBox = <T extends FieldValues>({
                     <ShadCnComboBox
                         items={items}
                         value={field.value || null}
+                        itemToStringLabel={getLabel}
                         onValueChange={(value) => {
                             field.onChange(value ?? "");
                             if (value) {

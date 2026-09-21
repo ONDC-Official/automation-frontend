@@ -1,11 +1,26 @@
-/** Doc slugs whose section headings appear in the shell sidebar instead of an in-page TOC. */
-export const DOCS_WITH_SIDEBAR_SECTIONS = new Set([
+/** Doc slugs whose section headings appear in the shell sidebar. */
+export const DOCS_WITH_SIDEBAR_SECTIONS = new Set(["ondc-FAQs"]);
+
+/** General docs shown as a single shell link with no section navigation anywhere. */
+export const DOCS_WITH_FLAT_CONTENT = new Set([
     "about-ondc",
     "network-observability",
-    "ondc-FAQs",
     "registry-gateway",
 ]);
 
 export function docUsesSidebarSections(slug: string | undefined): boolean {
     return slug !== undefined && DOCS_WITH_SIDEBAR_SECTIONS.has(slug);
+}
+
+export function docUsesFlatContent(slug: string | undefined): boolean {
+    return slug !== undefined && DOCS_WITH_FLAT_CONTENT.has(slug);
+}
+
+export function docShowsInPageToc(slug: string | undefined): boolean {
+    if (!slug) return false;
+    return !docUsesSidebarSections(slug) && !docUsesFlatContent(slug);
+}
+
+export function docStripsEmbeddedToc(slug: string | undefined): boolean {
+    return docUsesSidebarSections(slug) || docUsesFlatContent(slug);
 }

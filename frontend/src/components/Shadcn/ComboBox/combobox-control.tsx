@@ -55,6 +55,7 @@ export const ComboBoxControl = ({
             <Combobox
                 items={items}
                 value={value || null}
+                itemToStringLabel={getLabel}
                 onValueChange={(next) => onValueChange?.(next ?? "")}
                 disabled={disabled}
             >

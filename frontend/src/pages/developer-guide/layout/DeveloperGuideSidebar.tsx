@@ -8,34 +8,9 @@ import { isNavGroup, isNavLink } from "./navTypes";
 import { parseNavPath, isNavLinkActive, isNavGroupPathActive } from "./navMatch";
 import { NAV_STATUS_LABEL, NAV_STATUS_STYLES } from "../shared/statusPlaceholders";
 
-const TREE_INDENT_STEP = 20;
-const TREE_COLUMN_OFFSET = -4;
-const TREE_ROW_GAP = 0;
-/** Matches `py-2` row padding — trunk anchors to the vertical center of each row. */
-const TREE_ROW_HALF_HEIGHT = 12;
-const TREE_ELBOW_RADIUS = 6;
-const CHEVRON_ICON_SIZE = 14;
-/** Equal clearance between tree lines and the chevron on the left and below. */
-const TREE_ICON_GAP = 4;
+const TREE_INDENT_STEP = 14;
 
-const treeColumnX = (depth: number) => TREE_COLUMN_OFFSET + depth * TREE_INDENT_STEP;
-const rowInset = (depth: number) => 8 + depth * TREE_INDENT_STEP;
-/** Horizontal elbow stops before the chevron slot with uniform spacing. */
-const treeElbowEnd = (depth: number) => rowInset(depth) - TREE_ICON_GAP;
-
-const chevronHalf = CHEVRON_ICON_SIZE / 2;
-/** Vertical descent from below the chevron down to the first child row center. */
-const groupDescentStyle = (depth: number) => {
-    const top = -(TREE_ROW_HALF_HEIGHT - chevronHalf - TREE_ICON_GAP + TREE_ROW_GAP);
-    return {
-        left: treeColumnX(depth + 1),
-        top,
-        height: TREE_ROW_HALF_HEIGHT - top,
-    };
-};
-
-const TREE_LINE_COLOR = "bg-n-300 dark:bg-text-secondary";
-const TREE_LINE_BORDER = "border-n-300 dark:border-text-secondary";
+const rowInset = (depth: number) => 12 + depth * TREE_INDENT_STEP;
 
 const navTextDefault = "text-n-300 dark:text-text-secondary";
 const navTextSelected = "text-n-900 dark:text-text-primary";
@@ -56,68 +31,6 @@ const ChevronSlot: FC<{ showChevron?: boolean; rotated?: boolean }> = ({
         <span className="w-3.5 h-3.5 shrink-0" aria-hidden />
     );
 
-/** Vertical stem from below an expanded group chevron to the first child row only. */
-const GroupDescentConnector: FC<{ depth: number }> = ({ depth }) => (
-    <span
-        aria-hidden="true"
-        className={`pointer-events-none absolute z-0 w-px ${TREE_LINE_COLOR}`}
-        style={groupDescentStyle(depth)}
-    />
-);
-
-/** Connects sibling rows at the same depth; skips through expanded child subtrees. */
-const InterSiblingTrunk: FC<{ depth: number; spansSubtree: boolean }> = ({
-    depth,
-    spansSubtree,
-}) => {
-    if (depth === 0) return null;
-
-    return (
-        <span
-            aria-hidden="true"
-            className={`pointer-events-none absolute z-0 w-px ${TREE_LINE_COLOR}`}
-            style={
-                spansSubtree
-                    ? {
-                          left: treeColumnX(depth),
-                          top: "100%",
-                          height: TREE_ROW_GAP,
-                      }
-                    : {
-                          left: treeColumnX(depth),
-                          top: TREE_ROW_HALF_HEIGHT,
-                          height: `calc(100% - ${TREE_ROW_HALF_HEIGHT}px + ${TREE_ROW_GAP}px)`,
-                      }
-            }
-        />
-    );
-};
-
-/** Elbow from the parent column to the row indent; last sibling gets a rounded end cap. */
-const TreeConnectors: FC<{
-    depth: number;
-    isLastSibling: boolean;
-}> = ({ depth, isLastSibling }) => {
-    if (depth === 0) return null;
-
-    const x = treeColumnX(depth);
-    const width = Math.max(treeElbowEnd(depth) - x, 0);
-
-    return (
-        <span
-            aria-hidden="true"
-            className={`pointer-events-none absolute z-0 border-l border-b ${TREE_LINE_BORDER}`}
-            style={{
-                left: x,
-                top: -TREE_ROW_GAP,
-                width,
-                height: `calc(50% + ${TREE_ROW_GAP}px)`,
-                borderBottomLeftRadius: isLastSibling ? TREE_ELBOW_RADIUS : 0,
-            }}
-        />
-    );
-};
-
 function nodeContainsActivePath(node: NavNode, pathname: string, hash: string): boolean {
     if (isNavLink(node)) {
         return isNavLinkActive(node, pathname, hash);
@@ -136,7 +49,7 @@ function nodeHasActiveDescendant(
 
 const linkClass = ({ isActive, depth }: { isActive: boolean; depth: number }) => {
     const base =
-        "flex flex-1 items-center gap-1 min-w-0 text-left py-1 pr-3 text-[13px] leading-snug transition-colors";
+        "flex flex-1 items-center gap-1 min-w-0 text-left py-1.5 pr-3 text-[13px] leading-snug transition-colors";
     const rounding = depth === 0 ? mainNodeShell : "rounded-lg";
 
     if (depth === 0) {
@@ -153,8 +66,7 @@ const linkClass = ({ isActive, depth }: { isActive: boolean; depth: number }) =>
 const NavLinkItem: FC<{
     node: Extract<NavNode, { type: "link" }>;
     depth: number;
-    isLastSibling: boolean;
-}> = ({ node, depth, isLastSibling }) => {
+}> = ({ node, depth }) => {
     const location = useLocation();
 
     const { pathname: linkPath, hash: linkHash } = parseNavPath(node.path);
@@ -169,16 +81,14 @@ const NavLinkItem: FC<{
 
     if (node.disabled) {
         return (
-            <div className="relative w-full min-w-0">
-                <TreeConnectors depth={depth} isLastSibling={isLastSibling} />
-
+            <div className="w-full min-w-0">
                 <div
-                    className={`relative z-10 flex w-full min-w-0 items-center gap-1 text-[13px] ${navTextDefault} cursor-not-allowed`}
+                    className={`flex w-full min-w-0 items-center gap-1 text-[13px] ${navTextDefault} cursor-not-allowed`}
                     style={{ paddingLeft: inset }}
                 >
                     <ChevronSlot />
 
-                    <span className="flex-1 min-w-0 py-1 pr-3 wrap-break-word">{node.label}</span>
+                    <span className="flex-1 min-w-0 py-1.5 pr-3 wrap-break-word">{node.label}</span>
 
                     {node.suffix && (
                         <span className={`shrink-0 font-mono text-[11px] ${navTextDefault}`}>
@@ -186,18 +96,14 @@ const NavLinkItem: FC<{
                         </span>
                     )}
                 </div>
-
-                {!isLastSibling && <InterSiblingTrunk depth={depth} spansSubtree={false} />}
             </div>
         );
     }
 
     return (
-        <div className={`relative w-full min-w-0${depth === 0 ? " mb-1" : ""}`}>
-            <TreeConnectors depth={depth} isLastSibling={isLastSibling} />
-
+        <div className="w-full min-w-0">
             <div
-                className={`relative z-10 flex w-full min-w-0 items-center gap-1 ${navTextDefault}`}
+                className={`flex w-full min-w-0 items-center gap-1 ${navTextDefault}`}
                 style={{ paddingLeft: inset }}
             >
                 <ChevronSlot showChevron={node.showArrow} rotated />
@@ -229,8 +135,6 @@ const NavLinkItem: FC<{
                     )}
                 </NavLink>
             </div>
-
-            {!isLastSibling && <InterSiblingTrunk depth={depth} spansSubtree={false} />}
         </div>
     );
 };
@@ -239,8 +143,7 @@ const NavGroupItem: FC<{
     node: Extract<NavNode, { type: "group" }>;
     depth: number;
     searchQuery: string;
-    isLastSibling: boolean;
-}> = ({ node, depth, searchQuery, isLastSibling }) => {
+}> = ({ node, depth, searchQuery }) => {
     const hasChildren = node.children.length > 0;
     const location = useLocation();
     const isDeveloperGuideLanding =
@@ -296,16 +199,10 @@ const NavGroupItem: FC<{
     } ${mainSectionActive ? mainNodeSelectedBg : ""}`;
 
     return (
-        <div
-            className={`relative ${depth === 0 ? "mb-1 first:mt-0 not-first:mt-2" : "w-full min-w-0"}`}
-        >
+        <div className={`relative ${depth === 0 ? "first:mt-0 not-first:mt-3" : "w-full min-w-0"}`}>
             {node.path ? (
-                <div className="relative w-full min-w-0">
-                    <TreeConnectors depth={depth} isLastSibling={isLastSibling} />
-                    <div
-                        className={`relative z-10 ${rowShellClass}`}
-                        style={{ paddingLeft: inset }}
-                    >
+                <div className="w-full min-w-0">
+                    <div className={rowShellClass} style={{ paddingLeft: inset }}>
                         {hasChildren ? (
                             <Button
                                 type="button"
@@ -315,12 +212,17 @@ const NavGroupItem: FC<{
                                 aria-expanded={open}
                                 aria-label={open ? "Collapse section" : "Expand section"}
                             >
-                                <ChevronDownIcon
-                                    className={`h-3.5 w-3.5 transition-transform duration-300 ease-in-out ${open ? "" : "-rotate-90"}`}
-                                />
+                                {node.showArrow !== false && (
+                                    <ChevronDownIcon
+                                        className={`h-3.5 w-3.5 transition-transform duration-300 ease-in-out ${open ? "" : "-rotate-90"}`}
+                                    />
+                                )}
                             </Button>
                         ) : (
-                            <ChevronSlot />
+                            <ChevronSlot
+                                showChevron={node.showArrow !== false && Boolean(node.path)}
+                                rotated
+                            />
                         )}
                         <NavLink
                             to={node.path}
@@ -333,7 +235,7 @@ const NavGroupItem: FC<{
                             }}
                             className={() =>
                                 [
-                                    "group/header flex-1 min-w-0 py-1 pr-3 text-left transition-colors rounded-md flex items-center gap-1",
+                                    "group/header flex-1 min-w-0 py-1.5 pr-3 text-left transition-colors rounded-md flex items-center gap-1",
                                     headerClass,
                                     headerRowActive
                                         ? `${navTextSelected} font-semibold`
@@ -347,34 +249,35 @@ const NavGroupItem: FC<{
                     </div>
                 </div>
             ) : hasChildren ? (
-                <div className="relative w-full min-w-0">
-                    <TreeConnectors depth={depth} isLastSibling={isLastSibling} />
+                <div className="w-full min-w-0">
                     <Button
                         type="button"
                         variant="ghost"
                         onClick={() => setOpen((prev) => !prev)}
-                        className={`relative z-10 w-full h-auto rounded-none p-0 has-[>svg]:px-0 font-normal whitespace-normal ${rowShellClass} text-left`}
+                        className={`w-full h-auto rounded-none p-0 has-[>svg]:px-0 font-normal whitespace-normal ${rowShellClass} text-left`}
                         style={{ paddingLeft: inset }}
                     >
                         <span className="flex h-3.5 w-3.5 shrink-0 items-center justify-center">
-                            <ChevronDownIcon
-                                className={`h-3.5 w-3.5 transition-transform duration-300 ease-in-out ${open ? "" : "-rotate-90"}`}
-                            />
+                            {node.showArrow !== false && (
+                                <ChevronDownIcon
+                                    className={`h-3.5 w-3.5 transition-transform duration-300 ease-in-out ${open ? "" : "-rotate-90"}`}
+                                />
+                            )}
                         </span>
-                        <span className={`min-w-0 flex-1 py-1 pr-3 wrap-break-word ${headerClass}`}>
+                        <span
+                            className={`min-w-0 flex-1 py-1.5 pr-3 wrap-break-word ${headerClass}`}
+                        >
                             {node.label}
                         </span>
                     </Button>
                 </div>
             ) : (
-                <div className="relative w-full min-w-0">
-                    <TreeConnectors depth={depth} isLastSibling={isLastSibling} />
-                    <div
-                        className={`relative z-10 ${rowShellClass}`}
-                        style={{ paddingLeft: inset }}
-                    >
+                <div className="w-full min-w-0">
+                    <div className={rowShellClass} style={{ paddingLeft: inset }}>
                         <ChevronSlot />
-                        <span className={`min-w-0 flex-1 py-1 pr-3 wrap-break-word ${headerClass}`}>
+                        <span
+                            className={`min-w-0 flex-1 py-1.5 pr-3 wrap-break-word ${headerClass}`}
+                        >
                             {node.label}
                         </span>
                     </div>
@@ -387,23 +290,18 @@ const NavGroupItem: FC<{
                     }`}
                 >
                     <div className="min-h-0 overflow-hidden" inert={!open} aria-hidden={!open}>
-                        <div className={`relative ${depth === 0 ? "mt-2 mb-1" : "mt-2"}`}>
-                            <GroupDescentConnector depth={depth} />
-                            {node.children.map((child, index) => (
+                        <div className="mt-1 space-y-0.5">
+                            {node.children.map((child) => (
                                 <NavTreeItem
                                     key={child.id}
                                     node={child}
                                     depth={depth + 1}
                                     searchQuery={searchQuery}
-                                    isLastSibling={index === node.children.length - 1}
                                 />
                             ))}
                         </div>
                     </div>
                 </div>
-            )}
-            {!isLastSibling && (
-                <InterSiblingTrunk depth={depth} spansSubtree={open && hasChildren} />
             )}
         </div>
     );
@@ -413,21 +311,13 @@ const NavTreeItem: FC<{
     node: NavNode;
     depth: number;
     searchQuery: string;
-    isLastSibling: boolean;
-}> = ({ node, depth, searchQuery, isLastSibling }) => {
+}> = ({ node, depth, searchQuery }) => {
     if (isNavLink(node)) {
-        return <NavLinkItem node={node} depth={depth} isLastSibling={isLastSibling} />;
+        return <NavLinkItem node={node} depth={depth} />;
     }
 
     if (isNavGroup(node)) {
-        return (
-            <NavGroupItem
-                node={node}
-                depth={depth}
-                searchQuery={searchQuery}
-                isLastSibling={isLastSibling}
-            />
-        );
+        return <NavGroupItem node={node} depth={depth} searchQuery={searchQuery} />;
     }
 
     return null;
@@ -441,15 +331,9 @@ const DeveloperGuideSidebar: FC<DeveloperGuideSidebarProps> = ({ nodes, searchQu
     }
 
     return (
-        <nav className={`py-2 space-y-1 ${navTextDefault}`} aria-label="Developer guide navigation">
-            {nodes.map((node, index) => (
-                <NavTreeItem
-                    key={node.id}
-                    node={node}
-                    depth={0}
-                    searchQuery={searchQuery}
-                    isLastSibling={index === nodes.length - 1}
-                />
+        <nav className={`py-2 ${navTextDefault}`} aria-label="Developer guide navigation">
+            {nodes.map((node) => (
+                <NavTreeItem key={node.id} node={node} depth={0} searchQuery={searchQuery} />
             ))}
         </nav>
     );
