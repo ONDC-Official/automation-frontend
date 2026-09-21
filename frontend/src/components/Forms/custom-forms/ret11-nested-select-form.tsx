@@ -25,6 +25,7 @@ type OfferKey = `offers_${string}`;
 export type CatalogProvider = {
     id: string;
     locations: CatalogLocation[];
+    offers?: { id: string }[];
 };
 
 type OnSearchPayload = {
@@ -52,14 +53,7 @@ type FormValues = {
     available_offers: { offerId: string }[];
 } & Partial<Record<OfferKey, boolean>>;
 
-const OFFER_OPTIONS = [
-    { value: "discp60", label: "60% Discount (discp60)" },
-    { value: "flat150", label: "Flat ₹150 Off (flat150)" },
-    { value: "slab1", label: "15% Bulk Slab (slab1)" },
-    { value: "slab2", label: "10% High Volume (slab2)" },
-    { value: "freebie1", label: "Free Gift (freebie1)" },
-    { value: "buy2get3", label: "Buy 2 Get 3 (buy2get3)" },
-];
+
 
 type ItemList = Record<string, string>;
 type CategoryList = Record<
@@ -114,6 +108,11 @@ const RET11NestedSelectForm = ({
 
     const selectedProvider = watch("provider");
     const hasCatalogData = catalogData != null;
+    const currentProvider = providers.find((p) => p.id === selectedProvider);
+    const offerOptions = (currentProvider?.offers || []).map((offer) => ({
+        value: offer.id,
+        label: offer.id,
+    }));
 
     const onSubmit = async (data: FormValues) => {
         const { valid, errors } = validateFormDataRET11(data, items);
@@ -463,7 +462,7 @@ const RET11NestedSelectForm = ({
                                                     label={`Offer ${index + 1}`}
                                                     value={value}
                                                     onValueChange={onChange}
-                                                    options={OFFER_OPTIONS}
+                                                    options={offerOptions}
                                                     placeholder="Select Offer"
                                                 />
                                             )}
