@@ -99,6 +99,10 @@ export const keyDetailsMapping: Record<string, { label: string; info: string }> 
         label: "Header Validation",
         info: "Verifies required request headers and their expected values.",
     },
+    useTunnelForFIS: {
+        label: "Use Tunnel",
+        info: "Uses the FIS tunnel path for request/response execution.",
+    },
     useGzip: {
         label: "Use Gzip",
         info: "Enables gzip compression for payload transfer.",
@@ -111,10 +115,6 @@ export const keyDetailsMapping: Record<string, { label: string; info: string }> 
         label: "Use Care(IGM)",
         info: "Enables IGM care flow specific checks for supported scenarios.",
     },
-    useTunnelForFIS: {
-        label: "Use Tunnel",
-        info: "Uses the FIS tunnel path for request/response execution.",
-    },
     totalDifficulty: {
         label: "Total Difficulty",
         info: "Represents combined score based on enabled difficulty settings.",
@@ -125,10 +125,10 @@ export const SESSION_VALIDATION_DEFAULTS: FilteredDifficultyCache = {
     protocolValidations: true,
     useGateway: true,
     headerValidaton: true,
+    useTunnelForFIS: false,
     useGzip: false,
     encryptionValidation: false,
     useCare: false,
-    useTunnelForFIS: false,
 };
 
 export const SKIP_DIFFICULTY_ITEMS = ["stopAfterFirstNack", "sensitiveTTL", "timeValidations"];
