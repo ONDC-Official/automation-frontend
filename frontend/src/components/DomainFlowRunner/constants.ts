@@ -101,7 +101,7 @@ export const keyDetailsMapping: Record<string, { label: string; info: string }> 
     },
     useTunnelForFIS: {
         label: "Use Tunnel",
-        info: "Uses the FIS tunnel path for request/response execution.",
+        info: "Uses the ONDC tunnel path for request/response execution.",
     },
     useGzip: {
         label: "Use Gzip",
