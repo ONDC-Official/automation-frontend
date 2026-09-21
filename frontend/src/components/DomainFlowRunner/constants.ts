@@ -112,7 +112,7 @@ export const keyDetailsMapping: Record<string, { label: string; info: string }> 
         info: "Enables IGM care flow specific checks for supported scenarios.",
     },
     useTunnelForFIS: {
-        label: "Use Tunnel(FIS)",
+        label: "Use Tunnel",
         info: "Uses the FIS tunnel path for request/response execution.",
     },
     totalDifficulty: {
