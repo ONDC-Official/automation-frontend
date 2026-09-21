@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { MinusIcon, PlusIcon } from "@heroicons/react/24/outline";
-import { Controller, useForm } from "react-hook-form";
+import { Controller, useForm, useFieldArray } from "react-hook-form";
 import { toast } from "sonner";
 
 import { ComboBoxControl } from "@components/Shadcn/ComboBox";
@@ -37,6 +37,7 @@ type OnSearchPayload = {
 
 export interface SelectedItem {
     id: string;
+    quantity: number;
     customisations: string[];
     relation: Record<string, string>;
     lastCustomisation?: string[];
@@ -48,7 +49,17 @@ type FormValues = {
     provider_location: string[];
     location_gps: string;
     location_pin_code: string;
+    available_offers: { offerId: string }[];
 } & Partial<Record<OfferKey, boolean>>;
+
+const OFFER_OPTIONS = [
+    { value: "discp60", label: "60% Discount (discp60)" },
+    { value: "flat150", label: "Flat ₹150 Off (flat150)" },
+    { value: "slab1", label: "15% Bulk Slab (slab1)" },
+    { value: "slab2", label: "10% High Volume (slab2)" },
+    { value: "freebie1", label: "Free Gift (freebie1)" },
+    { value: "buy2get3", label: "Buy 2 Get 3 (buy2get3)" },
+];
 
 type ItemList = Record<string, string>;
 type CategoryList = Record<
@@ -73,7 +84,7 @@ const RET11NestedSelectForm = ({
     submitEvent,
 }: ItemCustomisationSelectorProps) => {
     const [items, setItems] = useState<SelectedItem[]>([
-        { id: "", customisations: [], relation: {} },
+        { id: "", quantity: 1, customisations: [], relation: {} },
     ]);
 
     const { control, handleSubmit, watch } = useForm<FormValues>({
@@ -83,7 +94,13 @@ const RET11NestedSelectForm = ({
             provider_location: [],
             location_gps: "",
             location_pin_code: "",
+            available_offers: [],
         },
+    });
+
+    const { fields: offerFields, append: appendOffer, remove: removeOffer } = useFieldArray({
+        control,
+        name: "available_offers",
     });
 
     const [catalogData, setCatalogData] = useState<unknown | null>(null);
@@ -120,7 +137,7 @@ const RET11NestedSelectForm = ({
 
     const handleItemChange = (index: number, value: string) => {
         const updated = [...items];
-        updated[index] = { id: value, customisations: [], relation: {} };
+        updated[index] = { id: value, quantity: 1, customisations: [], relation: {} };
         setItems(updated);
     };
 
@@ -139,7 +156,7 @@ const RET11NestedSelectForm = ({
     };
 
     const addItem = () => {
-        setItems((prev) => [...prev, { id: "", customisations: [], relation: {} }]);
+        setItems((prev) => [...prev, { id: "", quantity: 1, customisations: [], relation: {} }]);
     };
 
     const removeItem = (index: number) => {
@@ -271,6 +288,20 @@ const RET11NestedSelectForm = ({
                                             value: itemId,
                                         }))}
                                     />
+
+                                    <Field>
+                                        <FieldLabel>Quantity</FieldLabel>
+                                        <Input
+                                            type="number"
+                                            min={1}
+                                            value={item.quantity}
+                                            onChange={(e) => {
+                                                const updated = [...items];
+                                                updated[index].quantity = parseInt(e.target.value) || 1;
+                                                setItems(updated);
+                                            }}
+                                        />
+                                    </Field>
 
                                     {item.id && (
                                         <>
@@ -404,6 +435,52 @@ const RET11NestedSelectForm = ({
                             name="location_pin_code"
                             label="Delivery Pin Code"
                         />
+
+                        <div className="space-y-4 rounded-lg border border-border-default bg-surface-muted/20 p-4">
+                            <div className="flex items-center justify-between">
+                                <LabelWithToolTip labelInfo="" label="Available Offers" />
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => appendOffer({ offerId: "" })}
+                                    disabled={offerFields.length >= 5}
+                                >
+                                    <PlusIcon className="mr-1 size-4" />
+                                    Add Offer
+                                </Button>
+                            </div>
+                            <p className="text-sm text-text-secondary">Click 'Add Offer' to apply promotions</p>
+                            
+                            {offerFields.map((field, index) => (
+                                <div key={field.id} className="relative mt-2 flex items-end gap-2">
+                                    <div className="flex-1">
+                                        <Controller
+                                            name={`available_offers.${index}.offerId`}
+                                            control={control}
+                                            render={({ field: { value, onChange } }) => (
+                                                <ComboBoxControl
+                                                    label={`Offer ${index + 1}`}
+                                                    value={value}
+                                                    onValueChange={onChange}
+                                                    options={OFFER_OPTIONS}
+                                                    placeholder="Select Offer"
+                                                />
+                                            )}
+                                        />
+                                    </div>
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="icon"
+                                        className="mb-1 text-destructive hover:text-destructive"
+                                        onClick={() => removeOffer(index)}
+                                    >
+                                        <MinusIcon className="size-4" />
+                                    </Button>
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 ) : (
                     <p className="rounded-md border border-border-default bg-surface-muted/30 p-3 text-sm text-text-secondary">
