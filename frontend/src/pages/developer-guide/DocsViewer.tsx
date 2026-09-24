@@ -2,6 +2,7 @@ import { type FC, useCallback, useMemo } from "react";
 import { ChevronRightIcon } from "@heroicons/react/24/outline";
 import GithubMarkdown from "@components/GithubMarkdown";
 import { cn } from "@/lib/utils";
+import { COMMENTS_PANEL_TOGGLE_CLASS } from "./shared/styles";
 import { Button } from "@components/Shadcn/Button";
 import { stripRedundantMarkdownHorizontalRules } from "@utils/markdownToc";
 import GuideTabs from "./shared/components/GuideTabs";
@@ -139,7 +140,7 @@ const DocsViewer: FC<DocsViewerProps> = ({ docs, useCaseId, domain, version }) =
                         aria-label={
                             rightPanelOpen ? "Collapse comments panel" : "Expand comments panel"
                         }
-                        className="absolute top-5 right-3 z-10 flex items-center justify-center w-7 h-7 rounded-full bg-white dark:bg-surface-elevated border border-slate-200 dark:border-border-default shadow-sm hover:bg-slate-50 dark:hover:bg-surface-muted transition-none"
+                        className={cn(COMMENTS_PANEL_TOGGLE_CLASS, "absolute top-5 right-3 z-10")}
                     >
                         <ChevronRightIcon
                             className={cn(

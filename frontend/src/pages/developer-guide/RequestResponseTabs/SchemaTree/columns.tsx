@@ -37,7 +37,7 @@ export function buildSchemaColumns(
                     ) : (
                         <span className="shrink-0 inline-block w-3.5" aria-hidden="true" />
                     )}
-                    <span className="font-mono text-body-1 text-slate-800">{row.name}</span>
+                    <span className="font-mono text-body-2 text-slate-800">{row.name}</span>
                     {row.hasChildren && (
                         <span className="ml-1 text-caption-2-size text-slate-400 font-mono">
                             {`{${row.childCount}}`}

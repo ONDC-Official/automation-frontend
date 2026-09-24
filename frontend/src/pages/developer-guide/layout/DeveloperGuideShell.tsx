@@ -79,7 +79,7 @@ const DeveloperGuideShell: FC = () => {
                                 </div>
                                 <div className="px-4 pt-3 pb-0">
                                     <p className="text-xs text-slate-500 leading-relaxed">
-                                        ONDC integration reference
+                                        ONDC Integration Reference
                                     </p>
                                     <div className="relative mt-3">
                                         <MagnifyingGlassIcon className="w-3.5 h-3.5 absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-900 dark:text-neutral-400 pointer-events-none" />

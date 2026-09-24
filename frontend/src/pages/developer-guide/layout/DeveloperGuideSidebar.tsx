@@ -124,7 +124,7 @@ const NavLinkItem: FC<{
                     {node.suffix && (
                         <span
                             title={node.status ? NAV_STATUS_LABEL[node.status] : undefined}
-                            className={`shrink-0 rounded-full px-2.5 py-2 text-caption-2-size font-bold tracking-tighter leading-none ${
+                            className={`shrink-0 rounded-full px-2.5 py-1 text-caption-2-size font-bold tracking-tighter leading-none ${
                                 node.status
                                     ? NAV_STATUS_STYLES[node.status]
                                     : "bg-transparent text-slate-400 dark:text-slate-500"
