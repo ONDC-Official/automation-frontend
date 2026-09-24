@@ -51,7 +51,7 @@ const ResponseTab: FC<ResponseTabProps> = ({ spec, api }) => {
                         <CodeBlock
                             language="JSON"
                             code={deepSchema ? JSON.stringify(deepSchema, null, 2) : ""}
-                            maxHeightClass="max-h-150"
+                            maxHeightClass="max-h-[calc(100vh-13.5rem)]"
                         >
                             {!rawReady ? (
                                 <div className="flex items-center justify-center h-40">
@@ -107,7 +107,7 @@ const ResponseTab: FC<ResponseTabProps> = ({ spec, api }) => {
                     <CodeBlock
                         language="JSON"
                         code={JSON.stringify(selectedExample.payload, null, 2)}
-                        maxHeightClass="max-h-150"
+                        maxHeightClass="max-h-[calc(100vh-13.5rem)]"
                     >
                         <AppJsonViewer
                             value={selectedExample.payload as object}

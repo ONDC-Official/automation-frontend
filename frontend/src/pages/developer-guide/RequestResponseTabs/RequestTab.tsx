@@ -49,7 +49,7 @@ const RequestTab: FC<RequestTabProps> = ({ spec, api }) => {
                         <CodeBlock
                             language="JSON"
                             code={deepSchema ? JSON.stringify(deepSchema, null, 2) : ""}
-                            maxHeightClass="max-h-150"
+                            maxHeightClass="max-h-[calc(100vh-13.5rem)]"
                         >
                             {!rawReady ? (
                                 <div className="flex items-center justify-center min-h-40">
