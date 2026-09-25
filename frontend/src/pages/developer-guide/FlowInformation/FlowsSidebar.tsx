@@ -1,5 +1,5 @@
 import { type FC } from "react";
-import FlowsAccordion from "../FlowsAccordion";
+import FlowsHierarchyAccordion from "../FlowsHierarchyAccordion";
 import type { FlowEntry } from "../types";
 
 interface FlowsSidebarProps {
@@ -25,13 +25,21 @@ const FlowsSidebar: FC<FlowsSidebarProps> = ({
         }`}
     >
         <aside className="h-full w-80 overflow-y-auto dark:bg-surface-page">
-            <FlowsAccordion
+            <FlowsHierarchyAccordion
                 flows={flows}
                 selectedFlow={selectedFlow}
                 selectedFlowAction={selectedFlowAction}
                 setSelectedFlow={setSelectedFlow}
                 setSelectedFlowAction={setSelectedFlowAction}
             />
+
+            {/* <FlowsAccordion
+                    flows={flows}
+                    selectedFlow={selectedFlow}
+                    selectedFlowAction={selectedFlowAction}
+                    setSelectedFlow={setSelectedFlow}
+                    setSelectedFlowAction={setSelectedFlowAction}
+                /> */}
         </aside>
     </div>
 );
