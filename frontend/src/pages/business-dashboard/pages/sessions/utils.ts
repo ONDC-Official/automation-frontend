@@ -39,12 +39,19 @@ export function flowSummaryRows(
     return [...known, ...extra];
 }
 
-/** Counts PASS/FAIL entries in `flowMap` for the detail sheet's summary line. */
-export function flowMapTotals(flowMap: Record<string, "PASS" | "FAIL"> | null | undefined) {
+/**
+ * Counts `flowMap` entries for the detail sheet's summary line.
+ *
+ * Typed as an open `string` map rather than the `FlowResult` union on purpose:
+ * the stored field is unvalidated (`Schema.Types.Mixed` upstream), and older
+ * documents carry a literal "RUN" written by a workbench bug. Such a value is
+ * neither a pass nor a failure, so it gets its own bucket instead of being
+ * silently dropped — `passed + failed + unknown === entries.length` always, and
+ * the card can say so rather than implying the flows were judged.
+ */
+export function flowMapTotals(flowMap: Record<string, string> | null | undefined) {
     const entries = Object.entries(flowMap ?? {});
-    return {
-        entries,
-        passed: entries.filter(([, result]) => result === "PASS").length,
-        failed: entries.filter(([, result]) => result === "FAIL").length,
-    };
+    const passed = entries.filter(([, result]) => result === "PASS").length;
+    const failed = entries.filter(([, result]) => result === "FAIL").length;
+    return { entries, passed, failed, unknown: entries.length - passed - failed };
 }

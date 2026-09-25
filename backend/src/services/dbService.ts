@@ -221,7 +221,11 @@ export const upsertSessionInDb = async (
     usecaseId?: string,
     domain?: string;
     version?: string;
-    flowMap?:any;
+    // No `flowMap` here, on purpose. automation-db's `SessionDetails.flowMap` is a
+    // per-flow verdict map (`flowId -> "PASS" | "FAIL"`) written solely by the report
+    // service. This BFF has no verdicts to report, and the field it would naturally
+    // reach for — `SessionCache.flowMap` — is `flowId -> transactionId`, an entirely
+    // different thing. Leaving this un-declared turns that mix-up into a compile error.
   }
 ) => {
   const config: AxiosRequestConfig = {
