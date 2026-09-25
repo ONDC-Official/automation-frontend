@@ -46,7 +46,8 @@ const DENSITY_CLASSES = {
         td: "px-3 py-2 align-top",
     },
     spacious: {
-        table: "text-left",
+        // text-body-2 (14px) — match the guide's body copy instead of inheriting the 16px base.
+        table: "text-left text-body-2",
         th: "px-5 py-3.5 font-semibold text-caption-2 text-n-300 dark:text-n-60 uppercase tracking-widest",
         td: "px-5 py-4 align-top",
     },

@@ -163,7 +163,7 @@ const FlowInformation: FC<FlowInformationProps> = ({
                 "flex flex-col min-h-0",
                 isFullscreen
                     ? "h-full flex-1 min-w-0 pl-4"
-                    : "flex-1 min-w-0 pl-4 sticky top-4 self-start h-[calc(100vh-6rem)] overflow-hidden"
+                    : "flex-1 min-w-0 pl-4 sticky top-4 self-start h-[calc(100vh-3.5rem)] overflow-hidden"
             )}
         >
             {selectedFlowData && (

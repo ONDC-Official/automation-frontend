@@ -20,7 +20,7 @@ const FlowsSidebar: FC<FlowsSidebarProps> = ({
     sidebarOpen,
 }) => (
     <div
-        className={`sticky top-4 self-start shrink-0 overflow-hidden h-[calc(100vh-6rem)] transition-[width] duration-300 ease-in-out ${
+        className={`sticky top-4 self-start shrink-0 overflow-hidden h-[calc(100vh-3.5rem)] transition-[width] duration-300 ease-in-out ${
             sidebarOpen ? "w-80" : "w-0"
         }`}
     >
