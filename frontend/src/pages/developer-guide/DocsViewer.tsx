@@ -1,4 +1,5 @@
 import { type FC, useCallback, useMemo } from "react";
+import { useSearchParams } from "react-router-dom";
 import { ChevronRightIcon } from "@heroicons/react/24/outline";
 import GithubMarkdown from "@components/GithubMarkdown";
 import { cn } from "@/lib/utils";
@@ -9,6 +10,8 @@ import GuideTabs from "./shared/components/GuideTabs";
 import GuideTabFade from "./shared/components/GuideTabFade";
 import CommentsPanel from "./flowActionDetails/CommentsPanel";
 import { useDocsSectionSelection } from "./DocsViewer/useDocsSectionSelection";
+import { buildApiCallLinkMap, normalizeApiToken } from "./DocsViewer/apiCallLinks";
+import type { FlowEntry } from "./types";
 import { buildDocumentCommentScope } from "./DocsViewer/utils";
 import { useInlineCommentHeading } from "./shared/hooks/useInlineCommentHeading";
 
@@ -17,13 +20,16 @@ interface DocsViewerProps {
     useCaseId: string;
     domain: string;
     version: string;
+    /** When provided, inline-code API mentions (e.g. `/search`) link to the matching
+     * call in the API Walkthrough. */
+    flows?: FlowEntry[];
 }
 
 function formatSlug(slug: string): string {
     return slug.replace(/[-_]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
-const DocsViewer: FC<DocsViewerProps> = ({ docs, useCaseId, domain, version }) => {
+const DocsViewer: FC<DocsViewerProps> = ({ docs, useCaseId, domain, version, flows }) => {
     /**
      * Frontend filter check to:
      * 1. Exclude non-content doc tabs ("Release Notes", "References", "Figma").
@@ -107,6 +113,39 @@ const DocsViewer: FC<DocsViewerProps> = ({ docs, useCaseId, domain, version }) =
         [useCaseId, activeDocSlug, domain, version]
     );
 
+    const [, setSearchParams] = useSearchParams();
+    const apiLinkMap = useMemo(() => (flows?.length ? buildApiCallLinkMap(flows) : null), [flows]);
+    const resolveInlineCodeLink = useCallback(
+        (code: string) => {
+            if (!apiLinkMap) return null;
+            const token = normalizeApiToken(code);
+            const target = token ? apiLinkMap.get(token) : undefined;
+            if (!target) return null;
+            return () => {
+                // Drop the docs section anchor before leaving, same as handleViewChange.
+                if (window.location.hash) {
+                    window.history.replaceState(
+                        null,
+                        "",
+                        `${window.location.pathname}${window.location.search}`
+                    );
+                }
+                setSearchParams((prev) => {
+                    const next = new URLSearchParams(prev);
+                    next.set("view", "flows");
+                    next.set("flow", target.flowId);
+                    next.set("action", target.actionId);
+                    // Params owned by the docs view.
+                    next.delete("doc");
+                    next.delete("attr");
+                    next.delete("panel");
+                    return next;
+                });
+            };
+        },
+        [apiLinkMap, setSearchParams]
+    );
+
     const { renderHeadingAction, commentsRefreshKey } = useInlineCommentHeading({
         commentScope,
         selectSection,
@@ -170,6 +209,7 @@ const DocsViewer: FC<DocsViewerProps> = ({ docs, useCaseId, domain, version }) =
                                 content={displayContent}
                                 onSectionClick={selectSection}
                                 renderHeadingAction={renderHeadingAction}
+                                resolveInlineCodeLink={resolveInlineCodeLink}
                             />
                         </GuideTabFade>
                     </div>
