@@ -77,22 +77,76 @@ export function parseFormHtml(formHtml: string): ParsedForm {
     const action = formEl.getAttribute("action") || "";
     const enctype = formEl.getAttribute("enctype");
 
-    // Collect candidates
-    const inputs = Array.from(formEl.querySelectorAll("input"));
-    const textareas = Array.from(formEl.querySelectorAll("textarea"));
-    const selects = Array.from(formEl.querySelectorAll("select"));
+    // Single pass over all controls in document order so rendered fields keep
+    // the sequence the seller authored in the HTML. Radio/checkbox inputs that
+    // share a name become one grouped field, anchored at the slot of the
+    // group's first occurrence (reserved during the pass, filled in after).
+    const controls = Array.from(formEl.querySelectorAll("input, textarea, select"));
 
-    // Group radios/checkboxes by name
-    const radioMap = new Map<string, HTMLInputElement[]>();
-    const checkboxMap = new Map<string, HTMLInputElement[]>();
+    const radioMap = new Map<string, { index: number; radios: HTMLInputElement[] }>();
+    const checkboxMap = new Map<string, { index: number; boxes: HTMLInputElement[] }>();
 
     const fields: AnyField[] = [];
 
-    // First pass: handle inputs except radio/checkbox (they’re grouped later)
-    for (const input of inputs) {
-        const type = (input.getAttribute("type") || "text").toLowerCase();
-        const name = input.getAttribute("name") || "";
+    const supportedTypes = new Set([
+        "text",
+        "password",
+        "email",
+        "number",
+        "date",
+        "datetime-local",
+        "month",
+        "time",
+        "url",
+        "tel",
+        "search",
+    ]);
+
+    for (const el of controls) {
+        const name = el.getAttribute("name") || "";
         if (!name) continue;
+        const tag = el.tagName.toLowerCase();
+
+        if (tag === "textarea") {
+            const ta = el as HTMLTextAreaElement;
+            fields.push({
+                kind: "textarea",
+                name,
+                label: getLabelForInput(ta, formEl),
+                required: ta.hasAttribute("required"),
+                disabled: ta.hasAttribute("disabled"),
+                id: ta.id || null,
+                defaultValue: ta.value ?? ta.textContent ?? "",
+                placeholder: ta.getAttribute("placeholder") ?? undefined,
+                rows: ta.hasAttribute("rows") ? Number(ta.getAttribute("rows")) : undefined,
+                minLength: ta.getAttribute("minlength") ?? undefined,
+                maxLength: ta.getAttribute("maxlength") ?? undefined,
+            } as TextareaField);
+            continue;
+        }
+
+        if (tag === "select") {
+            const sel = el as HTMLSelectElement;
+            const options = Array.from(sel.querySelectorAll("option")).map((opt) => ({
+                value: opt.getAttribute("value") ?? opt.textContent ?? "",
+                label: opt.textContent ?? "",
+                selected: opt.hasAttribute("selected"),
+            }));
+            fields.push({
+                kind: "select",
+                name,
+                label: getLabelForInput(sel, formEl),
+                required: sel.hasAttribute("required"),
+                disabled: sel.hasAttribute("disabled"),
+                id: sel.id || null,
+                multiple: sel.hasAttribute("multiple"),
+                options,
+            } as SelectField);
+            continue;
+        }
+
+        const input = el as HTMLInputElement;
+        const type = (input.getAttribute("type") || "text").toLowerCase();
 
         const common: Partial<BaseField> = {
             name,
@@ -103,16 +157,24 @@ export function parseFormHtml(formHtml: string): ParsedForm {
         };
 
         if (type === "radio") {
-            const arr = radioMap.get(name) || [];
-            arr.push(input);
-            radioMap.set(name, arr);
+            const entry = radioMap.get(name);
+            if (entry) {
+                entry.radios.push(input);
+            } else {
+                radioMap.set(name, { index: fields.length, radios: [input] });
+                fields.push(null as unknown as AnyField); // reserved, filled in below
+            }
             continue;
         }
 
         if (type === "checkbox") {
-            const arr = checkboxMap.get(name) || [];
-            arr.push(input);
-            checkboxMap.set(name, arr);
+            const entry = checkboxMap.get(name);
+            if (entry) {
+                entry.boxes.push(input);
+            } else {
+                checkboxMap.set(name, { index: fields.length, boxes: [input] });
+                fields.push(null as unknown as AnyField); // reserved, filled in below
+            }
             continue;
         }
 
@@ -135,20 +197,6 @@ export function parseFormHtml(formHtml: string): ParsedForm {
             continue;
         }
 
-        // Text-like inputs
-        const supportedTypes = new Set([
-            "text",
-            "password",
-            "email",
-            "number",
-            "date",
-            "datetime-local",
-            "month",
-            "time",
-            "url",
-            "tel",
-            "search",
-        ]);
         const inputType = supportedTypes.has(type) ? (type as TextLikeField["inputType"]) : "text";
 
         fields.push({
@@ -166,50 +214,10 @@ export function parseFormHtml(formHtml: string): ParsedForm {
         } as TextLikeField);
     }
 
-    // Textareas
-    for (const ta of textareas) {
-        const name = ta.getAttribute("name") || "";
-        if (!name) continue;
-        fields.push({
-            kind: "textarea",
-            name,
-            label: getLabelForInput(ta, formEl),
-            required: ta.hasAttribute("required"),
-            disabled: ta.hasAttribute("disabled"),
-            id: ta.id || null,
-            defaultValue: ta.value ?? ta.textContent ?? "",
-            placeholder: ta.getAttribute("placeholder") ?? undefined,
-            rows: ta.hasAttribute("rows") ? Number(ta.getAttribute("rows")) : undefined,
-            minLength: ta.getAttribute("minlength") ?? undefined,
-            maxLength: ta.getAttribute("maxlength") ?? undefined,
-        } as TextareaField);
-    }
-
-    // Selects
-    for (const sel of selects) {
-        const name = sel.getAttribute("name") || "";
-        if (!name) continue;
-        const options = Array.from(sel.querySelectorAll("option")).map((opt) => ({
-            value: opt.getAttribute("value") ?? opt.textContent ?? "",
-            label: opt.textContent ?? "",
-            selected: opt.hasAttribute("selected"),
-        }));
-        fields.push({
-            kind: "select",
-            name,
-            label: getLabelForInput(sel, formEl),
-            required: sel.hasAttribute("required"),
-            disabled: sel.hasAttribute("disabled"),
-            id: sel.id || null,
-            multiple: sel.hasAttribute("multiple"),
-            options,
-        } as SelectField);
-    }
-
-    // Radios as groups
-    for (const [name, radios] of radioMap.entries()) {
+    // Fill radio groups into their reserved slots
+    for (const [name, { index, radios }] of radioMap.entries()) {
         const label = radios.map((r) => getLabelForInput(r, formEl)).find(Boolean);
-        fields.push({
+        fields[index] = {
             kind: "radio-group",
             name,
             label,
@@ -220,14 +228,14 @@ export function parseFormHtml(formHtml: string): ParsedForm {
                 label: getLabelForInput(r, formEl),
                 checked: r.hasAttribute("checked"),
             })),
-        } as RadioGroupField);
+        } as RadioGroupField;
     }
 
-    // Checkboxes: single vs group
-    for (const [name, boxes] of checkboxMap.entries()) {
+    // Fill checkboxes into their reserved slots: single vs group
+    for (const [name, { index, boxes }] of checkboxMap.entries()) {
         if (boxes.length === 1) {
             const box = boxes[0];
-            fields.push({
+            fields[index] = {
                 kind: "checkbox-single",
                 name,
                 label: getLabelForInput(box, formEl),
@@ -235,9 +243,9 @@ export function parseFormHtml(formHtml: string): ParsedForm {
                 id: box.id || null,
                 valueAttr: box.getAttribute("value") ?? "on",
                 checked: box.hasAttribute("checked"),
-            } as CheckboxSingleField);
+            } as CheckboxSingleField;
         } else {
-            fields.push({
+            fields[index] = {
                 kind: "checkbox-group",
                 name,
                 label: boxes.map((b) => getLabelForInput(b, formEl)).find(Boolean),
@@ -248,7 +256,7 @@ export function parseFormHtml(formHtml: string): ParsedForm {
                     label: getLabelForInput(b, formEl),
                     checked: b.hasAttribute("checked"),
                 })),
-            } as CheckboxGroupField);
+            } as CheckboxGroupField;
         }
     }
 

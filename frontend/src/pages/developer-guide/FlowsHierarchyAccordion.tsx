@@ -1,10 +1,11 @@
-import { FC, useEffect, useMemo, useState } from "react";
+import { FC, Fragment, useEffect, useMemo, useState } from "react";
 import {
     ArrowTurnDownRightIcon,
     ArrowsRightLeftIcon,
     ChevronDownIcon,
 } from "@heroicons/react/24/outline";
 import { Button } from "@/components/Shadcn/Button";
+import { Switch } from "@/components/Shadcn/Switch/switch";
 import { cn } from "@/lib/utils";
 import type { FlowEntry, FlowStep, StepDisplayItem } from "./types";
 import { getActionId } from "./utils";
@@ -13,6 +14,11 @@ import {
     buildFlowHierarchies,
     type FlowHierarchyGroup,
 } from "./FlowInformation/flowHierarchyPreview";
+import {
+    annotateSimplifiedItems,
+    getSimplifiedGroups,
+    type SimplifiedItemAnnotation,
+} from "./FlowInformation/simplifiedFlowView";
 
 interface FlowsHierarchyAccordionProps {
     flows: FlowEntry[];
@@ -32,6 +38,25 @@ const FlowsHierarchyAccordion: FC<FlowsHierarchyAccordionProps> = ({
     setSelectedFlowAction,
 }) => {
     const groups: FlowHierarchyGroup[] = useMemo(() => buildFlowHierarchies(flows), [flows]);
+
+    // "API Reference" toggle: off (default) shows the simplified, user-friendly
+    // names for the main-path steps covered by a simplified-view config; on shows
+    // the existing API-call UI. The toggle only renders when a config matches
+    // these flows (e.g. FIS12 Personal Loan) — other use cases are unaffected.
+    const [showApiReference, setShowApiReference] = useState(false);
+
+    const simplifiedAnnotations = useMemo(() => {
+        const map = new Map<string, SimplifiedItemAnnotation[]>();
+        for (const group of groups) {
+            if (!group.isExplicitPrimary) continue;
+            const configGroups = getSimplifiedGroups(group.primary);
+            if (!configGroups) continue;
+            const annotations = annotateSimplifiedItems(group.primaryItems, configGroups);
+            if (annotations) map.set(group.primary.flowId, annotations);
+        }
+        return map;
+    }, [groups]);
+    const hasSimplifiedView = simplifiedAnnotations.size > 0;
 
     const [openGroupId, setOpenGroupId] = useState<string | null>(null);
     const [openSecondaryId, setOpenSecondaryId] = useState<string | null>(null);
@@ -146,44 +171,123 @@ const FlowsHierarchyAccordion: FC<FlowsHierarchyAccordionProps> = ({
         return getActionId(item.step) === actionId;
     };
 
-    const stepRows = (flowId: string, items: StepDisplayItem[], withStepper = false) => {
+    // User-friendly rows shown in place of the API-call buttons while the
+    // "API Reference" toggle is off. Same selection behavior as stepButton — the
+    // rows only swap the label, so clicking still opens the API call details.
+    const simplifiedStepRows = (
+        flowId: string,
+        item: StepDisplayItem,
+        labels: Record<string, string>
+    ) => {
+        const steps = item.type === "pair" ? [item.request, item.response] : [item.step];
+        return (
+            <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+                {steps.map((step) => {
+                    const actionId = getActionId(step);
+                    const isSelected = selectedFlow === flowId && selectedFlowAction === actionId;
+                    return (
+                        <Button
+                            key={actionId}
+                            type="button"
+                            variant="ghost"
+                            onClick={() => selectStep(flowId, step)}
+                            className={cn(
+                                "h-auto w-full min-w-0 justify-start px-2 py-2 rounded-lg border font-normal text-left transition-[border-color,box-shadow] duration-200",
+                                isSelected
+                                    ? "border-sky-400 dark:border-sky-500 ring-2 ring-sky-100 dark:ring-sky-500/20 bg-white dark:bg-surface-elevated shadow-sm"
+                                    : "border-slate-200 bg-white dark:bg-surface-elevated hover:border-slate-300 hover:shadow-xs"
+                            )}
+                        >
+                            <span className="min-w-0 text-[11px] font-medium leading-tight text-slate-800 dark:text-n-10 whitespace-normal text-left">
+                                {labels[step.api] ?? step.action_label ?? step.api}
+                            </span>
+                        </Button>
+                    );
+                })}
+            </div>
+        );
+    };
+
+    const stepRows = (
+        flowId: string,
+        items: StepDisplayItem[],
+        withStepper = false,
+        annotations?: SimplifiedItemAnnotation[] | null
+    ) => {
         const selectedItemIndex =
             withStepper && selectedFlow === flowId
                 ? items.findIndex((item) => itemMatchesAction(item, selectedFlowAction))
                 : -1;
         return (
             <div className="flex flex-col gap-2.5 pt-2.5">
-                {items.map((item, i) => (
-                    <div key={i} className="flex min-w-0 items-center gap-2.5">
-                        {withStepper &&
-                            stepperBullet(
-                                selectedItemIndex >= 0 && i <= selectedItemIndex,
-                                selectedItemIndex >= 0 && i < selectedItemIndex,
-                                i === 0,
-                                i === items.length - 1
+                {items.map((item, i) => {
+                    const annotation = annotations?.[i];
+                    const simplifiedLabels =
+                        !showApiReference && annotation?.stepLabels ? annotation.stepLabels : null;
+                    return (
+                        <Fragment key={i}>
+                            {annotation?.heading && (
+                                <div
+                                    className={cn(
+                                        "text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:text-n-40",
+                                        i > 0 && "pt-1"
+                                    )}
+                                >
+                                    {annotation.heading}
+                                </div>
                             )}
-                        {item.type === "pair" ? (
-                            <div className="grid min-w-0 flex-1 grid-cols-[minmax(0,1fr)_1.25rem_minmax(0,1fr)] items-center gap-x-2.5">
-                                {stepButton(flowId, item.request)}
-                                <span className="flex items-center justify-center">
-                                    <ArrowsRightLeftIcon
-                                        className="size-3 shrink-0 text-slate-400"
-                                        aria-hidden
-                                    />
-                                </span>
-                                {stepButton(flowId, item.response)}
+                            <div className="flex min-w-0 items-center gap-2.5">
+                                {withStepper &&
+                                    stepperBullet(
+                                        selectedItemIndex >= 0 && i <= selectedItemIndex,
+                                        selectedItemIndex >= 0 && i < selectedItemIndex,
+                                        i === 0,
+                                        i === items.length - 1
+                                    )}
+                                {simplifiedLabels ? (
+                                    simplifiedStepRows(flowId, item, simplifiedLabels)
+                                ) : item.type === "pair" ? (
+                                    <div className="grid min-w-0 flex-1 grid-cols-[minmax(0,1fr)_1.25rem_minmax(0,1fr)] items-center gap-x-2.5">
+                                        {stepButton(flowId, item.request)}
+                                        <span className="flex items-center justify-center">
+                                            <ArrowsRightLeftIcon
+                                                className="size-3 shrink-0 text-slate-400"
+                                                aria-hidden
+                                            />
+                                        </span>
+                                        {stepButton(flowId, item.response)}
+                                    </div>
+                                ) : (
+                                    <div className="min-w-0 flex-1">
+                                        {stepButton(flowId, item.step)}
+                                    </div>
+                                )}
                             </div>
-                        ) : (
-                            <div className="min-w-0 flex-1">{stepButton(flowId, item.step)}</div>
-                        )}
-                    </div>
-                ))}
+                        </Fragment>
+                    );
+                })}
             </div>
         );
     };
 
     return (
         <div className="space-y-3">
+            {hasSimplifiedView && (
+                <div className="sticky top-0 z-20  flex items-center gap-2 bg-white px-1 py-2 dark:bg-surface-page">
+                    <Switch
+                        id="dev-guide-api-reference"
+                        size="sm"
+                        checked={showApiReference}
+                        onCheckedChange={setShowApiReference}
+                    />
+                    <label
+                        htmlFor="dev-guide-api-reference"
+                        className="cursor-pointer text-[12px] font-medium text-slate-700 dark:text-n-20"
+                    >
+                        API Reference
+                    </label>
+                </div>
+            )}
             {groups.map((group) => {
                 const groupId = group.primary.flowId;
                 const isGroupOpen = openGroupId === groupId;
@@ -291,7 +395,12 @@ const FlowsHierarchyAccordion: FC<FlowsHierarchyAccordionProps> = ({
 
                                 {/* Primary flow's full call sequence, with stepper rail */}
                                 <div className="px-4 pb-3">
-                                    {stepRows(groupId, group.primaryItems, true)}
+                                    {stepRows(
+                                        groupId,
+                                        group.primaryItems,
+                                        true,
+                                        simplifiedAnnotations.get(groupId)
+                                    )}
                                 </div>
 
                                 {/* ── Secondary flows: nested under the primary's calls ── */}
