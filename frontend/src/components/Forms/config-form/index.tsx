@@ -269,7 +269,12 @@ export const FormConfig = ({
 
     // Default: GenericForm
     if (formConfig.find((field) => field.type === "trv10_select")) {
-        return <TRV10SelectForm submitEvent={submitEvent} />;
+        return (
+            <TRV10SelectForm
+                submitEvent={submitEvent}
+                flowName={sessionData?.activeFlow ?? undefined}
+            />
+        );
     }
 
     if (formConfig.find((field) => field.type === "trv10_schedule")) {
