@@ -46,6 +46,7 @@ function specResponseToOpenAPI(
         usecase: str(f.usecase, ""),
         tags: Array.isArray(f.tags) ? f.tags : [],
         description: str(f.description, ""),
+        meta: f.meta ?? null,
         config: f.config ?? { steps: [] },
     }));
 

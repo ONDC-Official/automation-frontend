@@ -152,6 +152,35 @@ export interface FlowConfig {
     [key: string]: unknown;
 }
 
+/** Role of a flow in the walkthrough hierarchy (current authoring schema). */
+export type FlowMetaType = "PREREQUISITE" | "PRIMARY" | "SECONDARY";
+
+/** Authoring metadata from the flow index YAML (`flows[].meta`).
+ * Current schema: `type` + `secondary_flows` (on the primary) + `hide_actions`/
+ * `visible_actions` (on secondaries). Older schemas (`is_secondary`/`parent_flow`,
+ * `secondary_of`/`secondary_start`) remain supported for already-ingested builds. */
+export interface FlowMeta {
+    /** Role: PREREQUISITE (shown above the primary's calls), PRIMARY, or SECONDARY. */
+    type?: FlowMetaType | string;
+    /** Display order within the use case. */
+    order?: number;
+    /** On a PRIMARY: flowIds of its secondary flows, in display order. */
+    secondary_flows?: string[];
+    /** On a SECONDARY: action_ids to exclude from its call list. */
+    hide_actions?: string[];
+    /** On a SECONDARY: explicit action_ids to show (in flow order); wins over hide_actions. */
+    visible_actions?: string[];
+    /** Legacy schema: whether this flow is a secondary/variant. */
+    is_secondary?: boolean;
+    /** Legacy schema: flowId of the primary flow this is a secondary of. */
+    parent_flow?: string;
+    /** Legacy schema: flowId of the primary flow this flow is a secondary/variant of. */
+    secondary_of?: string;
+    /** Legacy schema: action_id(s) from which this secondary flow's own calls begin. */
+    secondary_start?: string[];
+    [key: string]: unknown;
+}
+
 export interface FlowEntry {
     domain?: string;
     version?: string;
@@ -160,6 +189,7 @@ export interface FlowEntry {
     usecase: string;
     tags: string[];
     description: string;
+    meta?: FlowMeta | null;
     config: FlowConfig;
 }
 
