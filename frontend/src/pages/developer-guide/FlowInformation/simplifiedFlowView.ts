@@ -143,7 +143,7 @@ const SIMPLIFIED_FLOW_CONFIGS: SimplifiedFlowConfig[] = [
             Personal_Loan_missed_emi_payment_Offline: [
                 {
                     stepLabels: {
-                        update: "Notify borrower of missed EMI",
+                        update: "Request of missed EMI",
                         on_update: "Receive missed EMI payment request with payment URL",
                     },
                 },
@@ -162,7 +162,7 @@ const SIMPLIFIED_FLOW_CONFIGS: SimplifiedFlowConfig[] = [
             Personal_Loan_Missed_EMI_Single_Redirection: [
                 {
                     stepLabels: {
-                        update: "Notify borrower of missed EMI",
+                        update: "Request of missed EMI",
                         on_update: "Receive missed EMI payment request with payment URL",
                     },
                 },
