@@ -338,6 +338,359 @@ const SIMPLIFIED_FLOW_CONFIGS: SimplifiedFlowConfig[] = [
             },
         ],
     },
+
+    // ════════════════════════════════════════════════════════════════
+    // Gold Loan  (ONDC:FIS12)
+    // ════════════════════════════════════════════════════════════════
+    {
+        domain: "ONDC:FIS12",
+        usecase: "Gold Loan",
+        groups: [
+            {
+                heading: "Product Discovery",
+                stepLabels: {
+                    search: "Search for Gold Loan products",
+                    on_search: "Receive Gold Loan product catalogue",
+                },
+            },
+            {
+                heading: "Application Submission",
+                stepLabels: {
+                    html_form: "Submit the Gold Loan application form",
+                },
+            },
+            {
+                heading: "Offer Generation & Selection",
+                stepLabels: {
+                    select: "Select a Gold Loan offer",
+                    on_select: "Receive the Gold Loan offer quote",
+                },
+            },
+            {
+                heading: "Branch Selection",
+                stepLabels: {
+                    select: "Select a branch for loan processing",
+                    on_select: "Receive branch selection confirmation",
+                },
+            },
+            {
+                heading: "Order Status",
+                stepLabels: {
+                    status: "Check the Gold Loan order status",
+                    on_status: "Receive the Gold Loan order status update",
+                },
+            },
+            {
+                heading: "Loan Confirmation",
+                stepLabels: {
+                    confirm: "Confirm the Gold Loan booking",
+                    on_confirm: "Receive the confirmed Gold Loan order",
+                },
+            },
+        ],
+    },
+
+    // ════════════════════════════════════════════════════════════════
+    // Credit Card  (ONDC:FIS12)
+    // ════════════════════════════════════════════════════════════════
+    {
+        domain: "ONDC:FIS12",
+        usecase: "Credit Card",
+        groups: [
+            {
+                heading: "Product Discovery",
+                stepLabels: {
+                    search: "Search for Credit Card products",
+                    on_search: "Receive Credit Card product catalogue",
+                },
+            },
+            {
+                heading: "Application Submission",
+                stepLabels: {
+                    html_form: "Submit the Credit Card application form",
+                },
+            },
+            {
+                heading: "Offer Generation & Selection",
+                stepLabels: {
+                    select: "Select a Credit Card offer",
+                    on_select: "Receive the Credit Card offer details",
+                },
+            },
+            {
+                heading: "Order Status Check",
+                stepLabels: {
+                    status: "Check the Credit Card application status",
+                    on_status: "Receive the Credit Card application status update",
+                },
+            },
+            {
+                heading: "Order Confirmation",
+                stepLabels: {
+                    confirm: "Confirm the Credit Card order",
+                    on_confirm: "Receive the confirmed Credit Card order",
+                },
+            },
+        ],
+    },
+
+    // ════════════════════════════════════════════════════════════════
+    // Loan Against Mutual Funds  (ONDC:FIS12:SL)
+    // ════════════════════════════════════════════════════════════════
+    {
+        domain: "ONDC:FIS12:SL",
+        usecase: "Loan Against Mutual Funds",
+        preferredFlowId: "lamf_credit_line_with_mfc_single_redirection",
+        groups: [
+            {
+                heading: "Loan Services Discovery",
+                stepLabels: {
+                    search: "Search for Loan Against Mutual Funds services",
+                    on_search: "Receive LAMF product catalogue",
+                },
+            },
+            {
+                heading: "Offer Selection",
+                stepLabels: {
+                    select: "Select a LAMF Credit Line offer",
+                    on_select: "Receive the LAMF Credit Line offer quote",
+                },
+            },
+            {
+                heading: "Status Updates",
+                stepLabels: {
+                    on_status: "Receive loan processing status update",
+                },
+            },
+            {
+                heading: "Loan Processing (Single Redirection)",
+                stepLabels: {
+                    dynamic_form: "Payment Link Redirection",
+                },
+            },
+            {
+                heading: "Additional Step Required",
+                stepLabels: {
+                    select: "Provide additional details for loan processing",
+                    on_select: "Receive updated loan terms",
+                },
+            },
+            {
+                heading: "Loan Confirmation (Credit Line Creation / Disbursement)",
+                stepLabels: {
+                    on_confirm: "Receive the confirmed and disbursed LAMF Credit Line order",
+                },
+            },
+            {
+                heading: "Dashboard Retrieval",
+                stepLabels: {
+                    status: "Retrieve credit line dashboard",
+                    on_status: "Receive credit line dashboard data",
+                },
+            },
+        ],
+        flowGroups: {
+            // ── Master Search (prerequisite) ─────────────────────────────
+            master_search: [
+                {
+                    heading: "Loan Services Discovery",
+                    stepLabels: {
+                        search: "Search for Loan Against Mutual Funds services",
+                        on_search: "Receive LAMF product catalogue",
+                    },
+                },
+            ],
+            // ── Credit Line – Drawdown ────────────────────────────────────
+            lamf_credit_line_drawdown_with_mfc_single_redirection: [
+                {
+                    heading: "Drawdown Initiation",
+                    stepLabels: {
+                        init: "Initiate a drawdown request",
+                        on_init: "Receive drawdown initiation confirmation",
+                    },
+                },
+                {
+                    heading: "Drawdown Confirmation",
+                    stepLabels: {
+                        confirm: "Confirm the drawdown",
+                        on_confirm: "Receive drawdown confirmed with disbursement details",
+                    },
+                },
+                {
+                    heading: "Drawdown Status",
+                    stepLabels: {
+                        on_update: "Receive drawdown disbursement status update",
+                    },
+                },
+                {
+                    stepLabels: {
+                        on_update: "Receive updated credit line account summary",
+                    },
+                },
+            ],
+            // ── Credit Line – Foreclosure ────────────────────────────────
+            lamf_credit_line_foreclosure_with_mfc_single_redirection: [
+                {
+                    heading: "Foreclosure Request",
+                    stepLabels: {
+                        update: "Request foreclosure of the credit line",
+                        on_update: "Receive foreclosure payment request with payment URL",
+                    },
+                },
+                {
+                    stepLabels: {
+                        dynamic_form: "Payment Link Redirection",
+                    },
+                },
+                {
+                    stepLabels: {
+                        on_update: "Receive foreclosure payment confirmation and closure status",
+                    },
+                },
+            ],
+            // ── Credit Line – Pre-Part Payment ───────────────────────────
+            lamf_credit_line_prepart_with_mfc_single_redirection: [
+                {
+                    heading: "Pre-Part Payment Request",
+                    stepLabels: {
+                        update: "Request a partial prepayment of the credit line",
+                        on_update: "Receive prepayment request with payment URL",
+                    },
+                },
+                {
+                    stepLabels: {
+                        dynamic_form: "Payment Link Redirection",
+                    },
+                },
+                {
+                    stepLabels: {
+                        on_update: "Receive prepayment confirmation and revised terms status",
+                    },
+                },
+            ],
+            // ── Credit Line – IGM ────────────────────────────────────────
+            "lamf_credit_line_with_mfc_single_redirection_with_igm_1.0.0": [
+                {
+                    heading: "Issue & Grievance Management",
+                    stepLabels: {
+                        issue: "Raise an issue or grievance",
+                        on_issue: "Receive issue raised acknowledgement",
+                    },
+                },
+                {
+                    stepLabels: {
+                        issue_status: "Check the issue resolution status",
+                        on_issue_status: "Receive the issue status update",
+                    },
+                },
+                {
+                    stepLabels: {
+                        on_issue_status: "Receive the issue resolution and closure",
+                    },
+                },
+                {
+                    stepLabels: {
+                        issue: "Escalate or reopen the grievance",
+                    },
+                },
+            ],
+            // ── Term Loan ────────────────────────────────────────────────
+            lamf_term_loan_with_mfc_single_redirection: [
+                {
+                    heading: "Loan Services Discovery",
+                    stepLabels: {
+                        search: "Search for LAMF Term Loan services",
+                        on_search: "Receive LAMF Term Loan catalogue",
+                    },
+                },
+                {
+                    heading: "Offer Selection",
+                    stepLabels: {
+                        select: "Select a LAMF Term Loan offer",
+                        on_select: "Receive the LAMF Term Loan offer quote",
+                    },
+                },
+                {
+                    heading: "Status Updates",
+                    stepLabels: {
+                        on_status: "Receive loan processing status update",
+                    },
+                },
+                {
+                    heading: "Loan Processing (Single Redirection)",
+                    stepLabels: {
+                        dynamic_form: "Payment Link Redirection",
+                    },
+                },
+                {
+                    heading: "Loan Confirmation (Term Loan Disbursement)",
+                    stepLabels: {
+                        on_confirm: "Receive the confirmed and disbursed LAMF Term Loan order",
+                    },
+                },
+            ],
+            // ── Term Loan – Foreclosure ──────────────────────────────────
+            lamf_term_loan_foreclosure_with_mfc_single_redirection: [
+                {
+                    heading: "Foreclosure Request",
+                    stepLabels: {
+                        on_update: "Receive foreclosure settlement amount",
+                        update: "Request foreclosure of the term loan",
+                    },
+                },
+                {
+                    stepLabels: {
+                        on_update: "Receive foreclosure payment request with payment URL",
+                    },
+                },
+                {
+                    stepLabels: {
+                        on_update: "Receive foreclosure payment confirmation and loan closure",
+                    },
+                },
+            ],
+            // ── Term Loan – Pre-Part Payment ─────────────────────────────
+            lamf_term_loan_prepart_with_mfc_single_redirection: [
+                {
+                    heading: "Pre-Part Payment Request",
+                    stepLabels: {
+                        on_update: "Receive prepayment settlement amount",
+                        update: "Request a partial prepayment of the term loan",
+                    },
+                },
+                {
+                    stepLabels: {
+                        on_update: "Receive prepayment request with payment URL",
+                    },
+                },
+                {
+                    stepLabels: {
+                        on_update: "Receive prepayment confirmation and revised loan terms",
+                    },
+                },
+            ],
+            // ── Term Loan – Missed EMI ───────────────────────────────────
+            lamf_term_loan_missed_emi_with_mfc_single_redirection: [
+                {
+                    heading: "Missed EMI Payment",
+                    stepLabels: {
+                        on_update: "Receive missed EMI penalty details",
+                        update: "Request of missed EMI",
+                    },
+                },
+                {
+                    stepLabels: {
+                        on_update: "Receive missed EMI payment request with payment URL",
+                    },
+                },
+                {
+                    stepLabels: {
+                        on_update: "Receive missed EMI payment confirmation and account status",
+                    },
+                },
+            ],
+        },
+    },
 ];
 
 const normalize = (s: string | undefined) =>
