@@ -147,6 +147,7 @@ const DeveloperGuideFlowPage: FC = () => {
                                         useCaseId={apiUsecase ?? slug}
                                         domain={domainKey}
                                         version={versionKey}
+                                        flows={flows}
                                     />
                                 ))}
                             {/* {activeView === "changelog" &&
