@@ -149,6 +149,7 @@ export function buildNavTree(
                     path: getDeveloperGuideUseCasePath(domainKey, verKey, label),
                     disabled: !clickable,
                     searchText: `${domainKey} ${label} v${verKey}`,
+                    isDomainUseCaseLink: true,
                     ...(status ? { status } : {}),
                 };
             });

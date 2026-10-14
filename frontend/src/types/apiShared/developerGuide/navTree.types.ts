@@ -25,6 +25,8 @@ export type NavNode =
           searchText?: string;
           /** Lifecycle status from available-builds; omit when API has none. */
           status?: BuildLifecycleStatus;
+          /** Marks a domain+version use-case leaf under "Explore by Domain" (not its domain/family ancestors). */
+          isDomainUseCaseLink?: boolean;
       };
 
 export function isNavGroup(node: NavNode): node is Extract<NavNode, { type: "group" }> {

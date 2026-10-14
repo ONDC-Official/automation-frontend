@@ -30,6 +30,24 @@ const DeveloperGuideShell: FC = () => {
     const { navTree, isLoading, loadError, isNavEnriching } = useDevGuideShellServerState();
     const [searchQuery, setSearchQuery] = useState("");
 
+    // Matches the `duration-300` on the aside's width transition below. The full sidebar
+    // content stays mounted until that transition finishes, so it gets clipped away smoothly
+    // by the shrinking width instead of instantly popping to the collapsed view mid-animation.
+    const SIDEBAR_COLLAPSE_TRANSITION_MS = 200;
+    const [renderOpenContent, setRenderOpenContent] = useState(navSidebarOpen);
+
+    useEffect(() => {
+        if (navSidebarOpen) {
+            setRenderOpenContent(true);
+            return;
+        }
+        const timeout = setTimeout(
+            () => setRenderOpenContent(false),
+            SIDEBAR_COLLAPSE_TRANSITION_MS
+        );
+        return () => clearTimeout(timeout);
+    }, [navSidebarOpen]);
+
     useEffect(() => {
         return () => {
             dispatch(resetDevGuideShell());
@@ -64,7 +82,7 @@ const DeveloperGuideShell: FC = () => {
                         navSidebarOpen ? "w-full lg:w-72" : "w-full lg:w-11"
                     }`}
                 >
-                    {navSidebarOpen ? (
+                    {renderOpenContent ? (
                         /* Fixed inner width so content doesn't reflow while the width animates */
                         <div className="flex min-h-0 flex-1 flex-col lg:w-72 lg:shrink-0">
                             <div className="shrink-0">
