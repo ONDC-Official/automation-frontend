@@ -14,6 +14,7 @@ import { buildApiCallLinkMap, normalizeApiToken } from "./DocsViewer/apiCallLink
 import type { FlowEntry } from "./types";
 import { buildDocumentCommentScope } from "./DocsViewer/utils";
 import { useInlineCommentHeading } from "./shared/hooks/useInlineCommentHeading";
+import { isAdditionalResourcesSlug } from "./content/resolveUseCaseDocs";
 
 interface DocsViewerProps {
     docs: Record<string, string>;
@@ -32,7 +33,8 @@ function formatSlug(slug: string): string {
 const DocsViewer: FC<DocsViewerProps> = ({ docs, useCaseId, domain, version, flows }) => {
     /**
      * Frontend filter check to:
-     * 1. Exclude non-content doc tabs ("Release Notes", "References", "Figma").
+     * 1. Exclude non-content doc tabs ("Release Notes", "Figma") and the docs shown
+     *    in the Additional Resources tab instead (see `isAdditionalResourcesSlug`).
      * 2. Filter doc tabs by active useCaseId if multiple use-case docs co-exist in the spec (e.g. gold-loans vs personal-loans).
      */
     const filteredDocs = useMemo(() => {
@@ -44,7 +46,8 @@ const DocsViewer: FC<DocsViewerProps> = ({ docs, useCaseId, domain, version, flo
                 normalized !== "release notes" &&
                 normalized !== "references" &&
                 normalized !== "refrences" &&
-                normalized !== "figma"
+                normalized !== "figma" &&
+                !isAdditionalResourcesSlug(key)
             );
         });
 

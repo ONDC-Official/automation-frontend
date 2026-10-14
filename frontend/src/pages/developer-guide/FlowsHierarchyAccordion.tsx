@@ -326,6 +326,12 @@ const FlowsHierarchyAccordion: FC<FlowsHierarchyAccordionProps> = ({
     // Shared toggle bar rendered at the top of both views.
     const toggleBar = hasSimplifiedView && (
         <div className="sticky top-0 z-20 flex items-center gap-2 bg-white px-1 py-2 dark:bg-surface-page">
+            <label
+                htmlFor="dev-guide-api-reference"
+                className="cursor-pointer text-[12px] font-medium text-slate-700 dark:text-n-20"
+            >
+                API References
+            </label>
             <Switch
                 id="dev-guide-api-reference"
                 size="sm"
@@ -336,7 +342,7 @@ const FlowsHierarchyAccordion: FC<FlowsHierarchyAccordionProps> = ({
                 htmlFor="dev-guide-api-reference"
                 className="cursor-pointer text-[12px] font-medium text-slate-700 dark:text-n-20"
             >
-                API Reference
+                Business Illustration
             </label>
         </div>
     );
@@ -620,7 +626,7 @@ const FlowsHierarchyAccordion: FC<FlowsHierarchyAccordionProps> = ({
                                 </span>
                                 {group.isExplicitPrimary && (
                                     <span className="shrink-0 rounded-full bg-sky-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-sky-700 dark:bg-sky-500/15 dark:text-sky-300">
-                                        Main Path
+                                        Primary Path
                                     </span>
                                 )}
                             </span>
