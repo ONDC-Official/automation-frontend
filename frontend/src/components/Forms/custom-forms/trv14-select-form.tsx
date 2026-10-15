@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { PlusIcon } from "@heroicons/react/24/outline";
 import { toast } from "sonner";
 
 import { ComboBoxControl } from "@components/Shadcn/ComboBox";
 import { Button } from "@components/Shadcn/Button";
+import { DateTimePicker } from "@components/Shadcn/DateTimePicker";
 import TextField from "@components/Shadcn/TextField";
 import PayloadEditor from "@components/PayloadEditor/PastePayloadModal";
 import FormDialogShell from "@components/Forms/form-dialog-shell";
@@ -17,8 +18,26 @@ import type {
     ITRVSelectFormProps,
 } from "../types/trv-select-form-types";
 
+interface ITimeRange {
+    start?: string;
+    end?: string;
+}
+
+interface IFulfillmentTime {
+    timestamp?: string;
+    range?: ITimeRange;
+    [key: string]: unknown;
+}
+
 interface ITRV14FormValues extends IFormValues {
     city_code?: string;
+    time?: {
+        timestamp?: string;
+        range?: {
+            start?: string;
+            end?: string;
+        };
+    };
 }
 
 const FLOWS_WITH_ADD_ITEM_BUTTON: string[] = [
@@ -26,6 +45,17 @@ const FLOWS_WITH_ADD_ITEM_BUTTON: string[] = [
     "purchase_journey_without_form_Multiple_Tickets",
     "user_cancellation_partial",
 ];
+
+const formatToISO = (value?: string): string => {
+    if (!value) return "";
+    try {
+        const date = new Date(value);
+        if (isNaN(date.getTime())) return value;
+        return date.toISOString();
+    } catch {
+        return value;
+    }
+};
 
 export default function TRV14SelectForm({ submitEvent, flowId }: ITRVSelectFormProps) {
     const [isPayloadEditorActive, setIsPayloadEditorActive] = useState(false);
@@ -41,6 +71,13 @@ export default function TRV14SelectForm({ submitEvent, flowId }: ITRVSelectFormP
             city_code: "std:080",
             items: [{ itemId: "", count: 1, addOns: [], addOnsQuantity: 1 }],
             fulfillmentId: "",
+            time: {
+                timestamp: new Date().toISOString(),
+                range: {
+                    start: new Date().toISOString(),
+                    end: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
+                },
+            },
         },
     });
 
@@ -51,6 +88,57 @@ export default function TRV14SelectForm({ submitEvent, flowId }: ITRVSelectFormP
 
     const selectedItems = watch("items");
     const selectedItemIds = selectedItems.map((item) => item.itemId).filter((id) => id !== "");
+    const selectedFulfillmentId = watch("fulfillmentId");
+
+    const selectedFulfillment = fulfillmentOptions.find((f) => f.id === selectedFulfillmentId);
+
+    const startStop = selectedFulfillment?.stops?.find(
+        (stop) => stop.type?.trim().toLowerCase() === "start"
+    );
+
+    const timeObj = startStop?.time as IFulfillmentTime | undefined;
+
+    const hasTimestamp = Boolean(
+        timeObj && (timeObj.timestamp !== undefined || "timestamp" in timeObj)
+    );
+    const hasRange = Boolean(timeObj && (timeObj.range !== undefined || "range" in timeObj));
+
+    const lastFulfillmentIdRef = useRef<string | null>(null);
+
+    useEffect(() => {
+        const fulfillmentKey = selectedFulfillment ? selectedFulfillment.id : "";
+        if (fulfillmentKey !== lastFulfillmentIdRef.current) {
+            lastFulfillmentIdRef.current = fulfillmentKey;
+            if (!selectedFulfillment) {
+                setValue("time.timestamp", "");
+                setValue("time.range.start", "");
+                setValue("time.range.end", "");
+                return;
+            }
+
+            const stop = selectedFulfillment.stops?.find(
+                (s) => s.type?.trim().toLowerCase() === "start"
+            );
+            const t = stop?.time as IFulfillmentTime | undefined;
+
+            if (t?.timestamp !== undefined || (t && "timestamp" in t)) {
+                setValue("time.timestamp", new Date().toISOString());
+                setValue("time.range.start", "");
+                setValue("time.range.end", "");
+            } else if (t?.range !== undefined || (t && "range" in t)) {
+                setValue("time.timestamp", "");
+                setValue("time.range.start", new Date().toISOString());
+                setValue(
+                    "time.range.end",
+                    new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString()
+                );
+            } else {
+                setValue("time.timestamp", "");
+                setValue("time.range.start", "");
+                setValue("time.range.end", "");
+            }
+        }
+    }, [selectedFulfillment, setValue]);
 
     const filteredFulfillmentOptions =
         selectedItemIds.length === 0
@@ -78,8 +166,39 @@ export default function TRV14SelectForm({ submitEvent, flowId }: ITRVSelectFormP
     }));
 
     const onSubmit = async (data: ITRV14FormValues) => {
-        const selectedFulfillment = fulfillmentOptions.find((f) => f.id === data.fulfillmentId);
-        const output = {
+        let timeData:
+            | { timestamp: string }
+            | { range: { start: string; end: string } }
+            | undefined = undefined;
+
+        if (hasTimestamp) {
+            const rawTimestamp = data.time?.timestamp || new Date().toISOString();
+            const isoTimestamp = formatToISO(rawTimestamp);
+            if (!isoTimestamp) {
+                toast.error("Please select a timestamp");
+                return;
+            }
+            timeData = { timestamp: isoTimestamp };
+        } else if (hasRange) {
+            const rawStart = data.time?.range?.start || new Date().toISOString();
+            const rawEnd =
+                data.time?.range?.end ||
+                new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString();
+            const isoStart = formatToISO(rawStart);
+            const isoEnd = formatToISO(rawEnd);
+            if (!isoStart || !isoEnd) {
+                toast.error("Please select both start and end range times");
+                return;
+            }
+            timeData = {
+                range: {
+                    start: isoStart,
+                    end: isoEnd,
+                },
+            };
+        }
+
+        const output: Record<string, unknown> = {
             provider: data.provider,
             city_code: data.city_code,
             items: data.items.map((item) => ({
@@ -98,6 +217,7 @@ export default function TRV14SelectForm({ submitEvent, flowId }: ITRVSelectFormP
                       },
                   ]
                 : [],
+            ...(timeData ? { time: timeData } : {}),
         };
         await submitEvent({
             jsonPath: {},
@@ -384,6 +504,43 @@ export default function TRV14SelectForm({ submitEvent, flowId }: ITRVSelectFormP
                         </p>
                     )}
                 </div>
+
+                {hasTimestamp && (
+                    <div className="space-y-3 rounded-lg border border-border-default p-3">
+                        <DateTimePicker
+                            control={control}
+                            name="time.timestamp"
+                            id="fulfillment-time-timestamp"
+                            label="Timestamp"
+                            placeholder="Select timestamp"
+                            required
+                        />
+                    </div>
+                )}
+
+                {hasRange && (
+                    <div className="space-y-3 rounded-lg border border-border-default p-3">
+                        <h4 className="text-sm font-semibold text-text-primary">
+                            Fulfillment Time Range
+                        </h4>
+                        <DateTimePicker
+                            control={control}
+                            name="time.range.start"
+                            id="fulfillment-time-range-start"
+                            label="Start Time"
+                            placeholder="Select start date and time"
+                            required
+                        />
+                        <DateTimePicker
+                            control={control}
+                            name="time.range.end"
+                            id="fulfillment-time-range-end"
+                            label="End Time"
+                            placeholder="Select end date and time"
+                            required
+                        />
+                    </div>
+                )}
             </FormDialogShell>
         </>
     );
