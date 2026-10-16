@@ -303,6 +303,68 @@ const FlowsHierarchyAccordion: FC<FlowsHierarchyAccordionProps> = ({
         );
     };
 
+    // PREREQUISITE flows: collapsible sub-cards shown above a primary's calls,
+    // shared by both the Journey View and the API Reference View.
+    const renderPrerequisites = (prerequisites: FlowHierarchyGroup["prerequisites"]) =>
+        prerequisites.length > 0 && (
+            <div className="px-4 pb-2 pt-2.5 space-y-1.5">
+                {prerequisites.map((prereq) => {
+                    const prereqId = prereq.flow.flowId;
+                    const isOpen = openPrereqId === prereqId;
+                    const prereqGroups = getSimplifiedGroups(prereq.flow);
+                    const prereqAnnotations = prereqGroups
+                        ? annotateSimplifiedItems(prereq.items, prereqGroups)
+                        : null;
+                    return (
+                        <div
+                            key={prereqId}
+                            className="rounded-lg border border-slate-200 dark:border-border-default bg-white dark:bg-surface-elevated overflow-hidden"
+                        >
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                onClick={() => setOpenPrereqId(isOpen ? null : prereqId)}
+                                aria-expanded={isOpen}
+                                className="h-auto w-full justify-between gap-2 rounded-none px-3 py-2 font-normal text-left hover:bg-slate-50 dark:hover:bg-surface-muted"
+                            >
+                                <span className="flex min-w-0 flex-col items-start gap-1">
+                                    <span className="min-w-0 text-[12px] font-medium text-slate-800 dark:text-n-10 wrap-anywhere whitespace-normal leading-4">
+                                        {flowTitle(prereqId)}
+                                    </span>
+                                    <span className="shrink-0 rounded-full bg-violet-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-violet-700 dark:bg-violet-500/15 dark:text-violet-300">
+                                        Prerequisite
+                                    </span>
+                                </span>
+                                <span className="flex shrink-0 items-center gap-1.5">
+                                    <span className="rounded-full bg-slate-100 px-1.5 py-0.5 text-[9px] font-semibold text-slate-500 dark:bg-surface-muted dark:text-n-40">
+                                        {prereq.stepCount} calls
+                                    </span>
+                                    <ChevronDownIcon
+                                        className={cn(
+                                            "size-3.5 text-slate-400 transition-transform duration-300",
+                                            isOpen && "rotate-180"
+                                        )}
+                                    />
+                                </span>
+                            </Button>
+                            <div
+                                className={cn(
+                                    "grid transition-[grid-template-rows] duration-300 ease-in-out motion-reduce:transition-none",
+                                    isOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
+                                )}
+                            >
+                                <div className="overflow-hidden">
+                                    <div className="px-8 pb-2.5 pt-0.5">
+                                        {stepRows(prereqId, prereq.items, false, prereqAnnotations)}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    );
+                })}
+            </div>
+        );
+
     // Shared toggle bar rendered at the top of both views.
     const toggleBar = hasSimplifiedView && (
         <div className="sticky top-0 z-20 flex items-center gap-2 bg-white px-1 py-2 dark:bg-surface-page">
@@ -471,6 +533,8 @@ const FlowsHierarchyAccordion: FC<FlowsHierarchyAccordionProps> = ({
                                     {journeyGroup.primary.usecase ?? flowTitle(flowId)}
                                 </p>
                             </div>
+                            {renderPrerequisites(journeyGroup.prerequisites)}
+
                             <div className="px-4 pb-4">
                                 {stepRows(
                                     flowId,
@@ -618,66 +682,7 @@ const FlowsHierarchyAccordion: FC<FlowsHierarchyAccordionProps> = ({
                         >
                             <div className="overflow-hidden">
                                 {/* PREREQUISITE flows: collapsible, above the primary's calls */}
-                                {group.prerequisites.length > 0 && (
-                                    <div className="px-4 pb-2 space-y-1.5 pt-2.5">
-                                        {group.prerequisites.map((prereq) => {
-                                            const prereqId = prereq.flow.flowId;
-                                            const isOpen = openPrereqId === prereqId;
-                                            return (
-                                                <div
-                                                    key={prereqId}
-                                                    className="rounded-lg border border-slate-200 dark:border-border-default bg-white dark:bg-surface-elevated overflow-hidden"
-                                                >
-                                                    <Button
-                                                        type="button"
-                                                        variant="ghost"
-                                                        onClick={() =>
-                                                            setOpenPrereqId(
-                                                                isOpen ? null : prereqId
-                                                            )
-                                                        }
-                                                        aria-expanded={isOpen}
-                                                        className="h-auto w-full justify-between gap-2 rounded-none px-3 py-2 font-normal text-left hover:bg-slate-50 dark:hover:bg-surface-muted"
-                                                    >
-                                                        <span className="flex min-w-0 flex-col items-start gap-1">
-                                                            <span className="min-w-0 text-[12px] font-medium text-slate-800 dark:text-n-10 wrap-anywhere whitespace-normal leading-4">
-                                                                {flowTitle(prereqId)}
-                                                            </span>
-                                                            <span className="shrink-0 rounded-full bg-violet-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-violet-700 dark:bg-violet-500/15 dark:text-violet-300">
-                                                                Prerequisite
-                                                            </span>
-                                                        </span>
-                                                        <span className="flex shrink-0 items-center gap-1.5">
-                                                            <span className="rounded-full bg-slate-100 px-1.5 py-0.5 text-[9px] font-semibold text-slate-500 dark:bg-surface-muted dark:text-n-40">
-                                                                {prereq.stepCount} calls
-                                                            </span>
-                                                            <ChevronDownIcon
-                                                                className={cn(
-                                                                    "size-3.5 text-slate-400 transition-transform duration-300",
-                                                                    isOpen && "rotate-180"
-                                                                )}
-                                                            />
-                                                        </span>
-                                                    </Button>
-                                                    <div
-                                                        className={cn(
-                                                            "grid transition-[grid-template-rows] duration-300 ease-in-out motion-reduce:transition-none",
-                                                            isOpen
-                                                                ? "grid-rows-[1fr]"
-                                                                : "grid-rows-[0fr]"
-                                                        )}
-                                                    >
-                                                        <div className="overflow-hidden">
-                                                            <div className="px-8 pb-2.5 pt-0.5">
-                                                                {stepRows(prereqId, prereq.items)}
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
-                                )}
+                                {renderPrerequisites(group.prerequisites)}
 
                                 {/* Primary flow's full call sequence, with stepper rail */}
                                 <div className="px-4 pb-3">
