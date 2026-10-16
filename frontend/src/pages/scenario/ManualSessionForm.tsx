@@ -6,6 +6,7 @@ import { DomainVersionUsecaseFields } from "@pages/scenario/DomainVersionUsecase
 import { trackSchemaValidationForm } from "@pages/scenario/helpers";
 import { SessionFormActions } from "@pages/scenario/SessionFormActions";
 import { IManualSessionFormProps } from "@pages/scenario/types";
+import { getScenarioDomainLabel } from "@pages/scenario/constants";
 
 export const ManualSessionForm = ({
     domains,
@@ -84,7 +85,10 @@ export const ManualSessionForm = ({
                         usecaseOptions={usecaseOptions}
                         watchedDomain={watchedDomain}
                         watchedVersion={watchedVersion}
-                        domainOptions={domains.map((d) => d.key)}
+                        domainOptions={domains.map((d) => ({
+                            value: d.key,
+                            label: getScenarioDomainLabel(d.key),
+                        }))}
                         onDomainChange={onDomainChange}
                         onVersionChange={onVersionChange}
                     />

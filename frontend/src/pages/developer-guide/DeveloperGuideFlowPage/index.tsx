@@ -6,12 +6,13 @@ import FlowInformation from "../FlowInformation";
 import DocsViewer from "../DocsViewer";
 import ErrorCodesTable from "../ErrorCodesTable";
 import ReferenceImplementationView from "../ReferenceImplementationView";
-// import ChangelogView from "../ChangelogView";
+import ChangelogView from "../ChangelogView";
+import AdditionalResourcesView from "../AdditionalResourcesView";
 import { useDeveloperGuideNav } from "../layout/DeveloperGuideNav";
 import GuideContentSkeleton from "../shared/components/GuideContentSkeleton";
 import GuideTabFade from "../shared/components/GuideTabFade";
 import FlowPageHeader from "./FlowPageHeader";
-import { resolveUseCaseDocs } from "../content/resolveUseCaseDocs";
+import { resolveUseCaseDocs, resolveAdditionalResourcesDocs } from "../content/resolveUseCaseDocs";
 import { useDeveloperGuideFlowPageData } from "./useDeveloperGuideFlowPageData";
 import type { TopLevelView } from "./types";
 
@@ -35,8 +36,8 @@ const DeveloperGuideFlowPage: FC = () => {
         flows,
         errorCodes,
         hasErrorCodes,
-        // lazyChangelog,
-        // changelogLoading,
+        lazyChangelog,
+        changelogLoading,
         apiUsecase,
     } = useDeveloperGuideFlowPageData();
 
@@ -45,16 +46,25 @@ const DeveloperGuideFlowPage: FC = () => {
     const figmaUrl = specData?.["x-figma"] || specData?.["x-docs"]?.["figma"]?.trim();
     const hasFigma = !!figmaUrl;
 
+    const displayDocs = useMemo(() => resolveUseCaseDocs(specData?.["x-docs"]), [specData]);
+    const isDocsEmpty = !displayDocs || Object.keys(displayDocs).length === 0;
+
+    const additionalResourcesDocs = useMemo(
+        () => resolveAdditionalResourcesDocs(specData?.["x-docs"], apiUsecase ?? slug),
+        [specData, apiUsecase, slug]
+    );
+    const hasAdditionalResources =
+        !!additionalResourcesDocs && Object.keys(additionalResourcesDocs).length > 0;
+
     const tabOrder = useMemo(() => {
         const order: TopLevelView[] = ["docs"];
         if (hasFigma) order.push("reference-implementation");
         order.push("flows");
+        if (hasAdditionalResources) order.push("resources");
         if (hasErrorCodes) order.push("error-codes");
+        order.push("changelog");
         return order;
-    }, [hasErrorCodes, hasFigma]);
-
-    const displayDocs = useMemo(() => resolveUseCaseDocs(specData?.["x-docs"]), [specData]);
-    const isDocsEmpty = !displayDocs || Object.keys(displayDocs).length === 0;
+    }, [hasErrorCodes, hasFigma, hasAdditionalResources]);
 
     if (isLoading) {
         return <GuideContentSkeleton />;
@@ -90,6 +100,7 @@ const DeveloperGuideFlowPage: FC = () => {
                 activeView={activeView}
                 hasErrorCodes={hasErrorCodes}
                 hasFigma={hasFigma}
+                hasAdditionalResources={hasAdditionalResources}
                 errorCodesCount={errorCodes?.code.length}
                 onViewChange={handleViewChange}
             />
@@ -150,10 +161,20 @@ const DeveloperGuideFlowPage: FC = () => {
                                         flows={flows}
                                     />
                                 ))}
-                            {/* {activeView === "changelog" &&
-                            (changelogLoading ? null : (
-                                <ChangelogView changelogs={lazyChangelog || []} />
-                            ))} */}
+                            {activeView === "resources" &&
+                                (hasAdditionalResources && additionalResourcesDocs ? (
+                                    <AdditionalResourcesView docs={additionalResourcesDocs} />
+                                ) : (
+                                    <div className="rounded-xl border border-slate-200 bg-slate-50 dark:bg-surface-muted py-12 text-center">
+                                        <p className="text-sm text-slate-400">
+                                            No additional resources available.
+                                        </p>
+                                    </div>
+                                ))}
+                            {activeView === "changelog" &&
+                                (changelogLoading ? null : (
+                                    <ChangelogView changelogs={lazyChangelog || []} />
+                                ))}
                         </div>
                     )}
                 </GuideTabFade>
