@@ -129,12 +129,15 @@ const DeveloperGuideShell: FC = () => {
                             <VersionStatusLegend />
                         </div>
                     ) : (
-                        <div className="flex h-11 min-h-11 shrink-0 items-center border-b border-slate-200 px-4 lg:h-auto lg:min-h-0 lg:w-full lg:flex-1 lg:items-start lg:justify-center lg:border-b-0 lg:px-0 lg:pt-3 dark:border-border-default">
-                            <DeveloperGuideNavSidebarToggle
-                                sidebarOpen={false}
-                                onClick={toggleNavSidebar}
-                            />
-                        </div>
+                        <>
+                            <div className="flex h-11 min-h-11 shrink-0 border-b border-slate-200 px-4 lg:h-auto lg:min-h-0 lg:w-full lg:flex-1 lg:border-b-0 lg:px-0 dark:border-border-default" />
+                            <div className="fixed left-2 top-20 z-30">
+                                <DeveloperGuideNavSidebarToggle
+                                    sidebarOpen={false}
+                                    onClick={toggleNavSidebar}
+                                />
+                            </div>
+                        </>
                     )}
                 </aside>
 
