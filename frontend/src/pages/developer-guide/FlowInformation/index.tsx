@@ -15,8 +15,6 @@ import { useSelectedFlowStep } from "./useSelectedFlowStep";
 import FlowsSidebar from "./FlowsSidebar";
 import type { FlowInformationProps, FlowInformationSection } from "./types";
 import GuideTabFade from "../shared/components/GuideTabFade";
-import { ChevronLeftIcon } from "@heroicons/react/24/outline";
-import { Button } from "@components/Shadcn/Button";
 import { cn } from "@/lib/utils";
 
 const FlowInformation: FC<FlowInformationProps> = ({
@@ -32,7 +30,7 @@ const FlowInformation: FC<FlowInformationProps> = ({
     const validationTable = useValidationTable(domain, version);
 
     const [selectedExampleIndex, setSelectedExampleIndex] = useState(0);
-    const [sidebarOpen, setSidebarOpen] = useState(true);
+    const [sidebarOpen] = useState(true);
     const [isFullscreen, setIsFullscreen] = useState(false);
     // Portaled to body (or the browser fullscreen element) so ancestor transforms — e.g.
     // PageReveal's `page-reveal-child` — cannot turn `position: fixed` into a content-area-
@@ -138,22 +136,6 @@ const FlowInformation: FC<FlowInformationProps> = ({
                 setSelectedFlowAction={setSelectedFlowAction}
                 sidebarOpen={sidebarOpen}
             />
-
-            <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setSidebarOpen((prev) => !prev)}
-                title={sidebarOpen ? "Collapse sidebar" : "Expand sidebar"}
-                className={`absolute top-4 z-20 -translate-x-1/2 flex items-center justify-center w-5 h-9 rounded-full bg-white dark:bg-surface-elevated border border-slate-200 dark:border-border-default shadow-sm hover:bg-slate-50 dark:hover:bg-surface-muted transition-[left] duration-300 ease-in-out motion-reduce:transition-none ${
-                    sidebarOpen ? "left-80" : "left-0"
-                }`}
-            >
-                <ChevronLeftIcon
-                    className={`w-3 h-3 text-slate-400 transition-transform duration-300 ease-in-out motion-reduce:transition-none ${
-                        sidebarOpen ? "" : "rotate-180"
-                    }`}
-                />
-            </Button>
         </>
     );
 

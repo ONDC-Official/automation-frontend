@@ -372,7 +372,7 @@ const FlowsHierarchyAccordion: FC<FlowsHierarchyAccordionProps> = ({
                 htmlFor="dev-guide-api-reference"
                 className="cursor-pointer text-[12px] font-medium text-slate-700 dark:text-n-20"
             >
-                API References
+                Business Illustration
             </label>
             <Switch
                 id="dev-guide-api-reference"
@@ -384,7 +384,7 @@ const FlowsHierarchyAccordion: FC<FlowsHierarchyAccordionProps> = ({
                 htmlFor="dev-guide-api-reference"
                 className="cursor-pointer text-[12px] font-medium text-slate-700 dark:text-n-20"
             >
-                Business Illustration
+                API References
             </label>
         </div>
     );
@@ -516,117 +516,144 @@ const FlowsHierarchyAccordion: FC<FlowsHierarchyAccordionProps> = ({
                         }
                     }
 
+                    const isJourneyOpen = openGroupId === flowId;
+
                     return (
                         <div
                             key={flowId}
                             className="rounded-xl border border-slate-200 dark:border-border-default bg-white dark:bg-surface-elevated shadow-sm overflow-hidden"
                         >
-                            <div className="px-4 pt-4 pb-1">
-                                <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-n-40 mb-1">
-                                    {journeyGroup.isExplicitPrimary
-                                        ? isPreferred
-                                            ? "Full Journey · Recommended"
-                                            : "Full Journey"
-                                        : "Flow"}
-                                </p>
-                                <p className="text-body-2 font-semibold text-gray-900 dark:text-n-10 leading-5">
-                                    {journeyGroup.primary.usecase ?? flowTitle(flowId)}
-                                </p>
-                            </div>
-                            {renderPrerequisites(journeyGroup.prerequisites)}
+                            {/* ── Journey header: toggles the whole card, same as API Reference ── */}
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                onClick={() => setOpenGroupId(isJourneyOpen ? null : flowId)}
+                                aria-expanded={isJourneyOpen}
+                                className="h-auto w-full justify-between gap-2 rounded-none px-4 pt-4 pb-1 font-normal text-left hover:bg-slate-50 dark:hover:bg-surface-muted"
+                            >
+                                <span className="flex min-w-0 flex-col items-start">
+                                    <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-n-40 mb-1">
+                                        {journeyGroup.isExplicitPrimary
+                                            ? isPreferred
+                                                ? "Full Journey · Recommended"
+                                                : "Full Journey"
+                                            : "Flow"}
+                                    </span>
+                                    <span className="min-w-0 text-body-2 font-semibold text-gray-900 dark:text-n-10 wrap-anywhere whitespace-normal leading-5">
+                                        {journeyGroup.primary.usecase ?? flowTitle(flowId)}
+                                    </span>
+                                </span>
+                                <ChevronDownIcon
+                                    className={cn(
+                                        "size-4 shrink-0 text-slate-400 transition-transform duration-300",
+                                        isJourneyOpen && "rotate-180"
+                                    )}
+                                />
+                            </Button>
 
-                            <div className="px-4 pb-4">
-                                {stepRows(
-                                    flowId,
-                                    journeyGroup.primaryItems,
-                                    true,
-                                    annotations,
-                                    injectNodes.size > 0 ? injectNodes : undefined
+                            <div
+                                className={cn(
+                                    "grid transition-[grid-template-rows] duration-300 ease-in-out motion-reduce:transition-none",
+                                    isJourneyOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
                                 )}
-                            </div>
+                            >
+                                <div className="overflow-hidden">
+                                    {renderPrerequisites(journeyGroup.prerequisites)}
 
-                            {/* Alternate paths inside the same card, below the main steps */}
-                            {journeyGroup.secondaries.length > 0 && (
-                                <div className="border-t border-slate-100 dark:border-border-default px-4 pb-3">
-                                    <p className="pt-3 pb-1.5 text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-n-40">
-                                        Servicing Flows
-                                    </p>
-                                    <div className="space-y-1.5">
-                                        {journeyGroup.secondaries.map((secondary) => {
-                                            const secId = secondary.flow.flowId;
-                                            const isOpen = openJourneySecondaryId === secId;
-                                            return (
-                                                <div
-                                                    key={secId}
-                                                    className="rounded-lg border border-slate-200 dark:border-border-default bg-white dark:bg-surface-elevated overflow-hidden"
-                                                >
-                                                    <Button
-                                                        type="button"
-                                                        variant="ghost"
-                                                        onClick={() =>
-                                                            setOpenJourneySecondaryId(
-                                                                isOpen ? null : secId
-                                                            )
-                                                        }
-                                                        aria-expanded={isOpen}
-                                                        className="h-auto w-full justify-between gap-2 rounded-none px-3 py-2.5 font-normal text-left hover:bg-slate-50 dark:hover:bg-surface-muted"
-                                                    >
-                                                        <span className="flex min-w-0 flex-col items-start gap-1">
-                                                            <span className="min-w-0 text-[11px] font-medium text-slate-800 dark:text-n-10 wrap-anywhere whitespace-normal leading-4">
-                                                                {shortSecondaryName(
-                                                                    secondary.flow,
-                                                                    usecaseName
-                                                                )}
-                                                            </span>
-                                                            <span className="shrink-0 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-amber-700 dark:bg-amber-500/15 dark:text-amber-300">
-                                                                Servicing Flow
-                                                            </span>
-                                                        </span>
-                                                        <span className="flex shrink-0 items-center gap-1.5">
-                                                            <ChevronDownIcon
+                                    <div className="px-4 pb-4 pt-2.5">
+                                        {stepRows(
+                                            flowId,
+                                            journeyGroup.primaryItems,
+                                            true,
+                                            annotations,
+                                            injectNodes.size > 0 ? injectNodes : undefined
+                                        )}
+                                    </div>
+
+                                    {/* Alternate paths inside the same card, below the main steps */}
+                                    {journeyGroup.secondaries.length > 0 && (
+                                        <div className="border-t border-slate-100 dark:border-border-default px-4 pb-3">
+                                            <p className="pt-3 pb-1.5 text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-n-40">
+                                                Servicing Flows
+                                            </p>
+                                            <div className="space-y-1.5">
+                                                {journeyGroup.secondaries.map((secondary) => {
+                                                    const secId = secondary.flow.flowId;
+                                                    const isOpen = openJourneySecondaryId === secId;
+                                                    return (
+                                                        <div
+                                                            key={secId}
+                                                            className="rounded-lg border border-slate-200 dark:border-border-default bg-white dark:bg-surface-elevated overflow-hidden"
+                                                        >
+                                                            <Button
+                                                                type="button"
+                                                                variant="ghost"
+                                                                onClick={() =>
+                                                                    setOpenJourneySecondaryId(
+                                                                        isOpen ? null : secId
+                                                                    )
+                                                                }
+                                                                aria-expanded={isOpen}
+                                                                className="h-auto w-full justify-between gap-2 rounded-none px-3 py-2.5 font-normal text-left hover:bg-slate-50 dark:hover:bg-surface-muted"
+                                                            >
+                                                                <span className="flex min-w-0 flex-col items-start gap-1">
+                                                                    <span className="min-w-0 text-[11px] font-medium text-slate-800 dark:text-n-10 wrap-anywhere whitespace-normal leading-4">
+                                                                        {shortSecondaryName(
+                                                                            secondary.flow,
+                                                                            usecaseName
+                                                                        )}
+                                                                    </span>
+                                                                    <span className="shrink-0 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-amber-700 dark:bg-amber-500/15 dark:text-amber-300">
+                                                                        Servicing Flow
+                                                                    </span>
+                                                                </span>
+                                                                <span className="flex shrink-0 items-center gap-1.5">
+                                                                    <ChevronDownIcon
+                                                                        className={cn(
+                                                                            "size-3.5 text-slate-400 transition-transform duration-300",
+                                                                            isOpen && "rotate-180"
+                                                                        )}
+                                                                    />
+                                                                </span>
+                                                            </Button>
+                                                            <div
                                                                 className={cn(
-                                                                    "size-3.5 text-slate-400 transition-transform duration-300",
-                                                                    isOpen && "rotate-180"
+                                                                    "grid transition-[grid-template-rows] duration-300 ease-in-out motion-reduce:transition-none",
+                                                                    isOpen
+                                                                        ? "grid-rows-[1fr]"
+                                                                        : "grid-rows-[0fr]"
                                                                 )}
-                                                            />
-                                                        </span>
-                                                    </Button>
-                                                    <div
-                                                        className={cn(
-                                                            "grid transition-[grid-template-rows] duration-300 ease-in-out motion-reduce:transition-none",
-                                                            isOpen
-                                                                ? "grid-rows-[1fr]"
-                                                                : "grid-rows-[0fr]"
-                                                        )}
-                                                    >
-                                                        <div className="overflow-hidden">
-                                                            <div className="px-3 pb-3 pt-0.5">
-                                                                {stepRows(
-                                                                    secId,
-                                                                    secondary.items,
-                                                                    false,
-                                                                    (() => {
-                                                                        const secGroups =
-                                                                            getSimplifiedGroups(
-                                                                                secondary.flow
-                                                                            );
-                                                                        return secGroups
-                                                                            ? annotateSimplifiedItems(
-                                                                                  secondary.items,
-                                                                                  secGroups
-                                                                              )
-                                                                            : null;
-                                                                    })()
-                                                                )}
+                                                            >
+                                                                <div className="overflow-hidden">
+                                                                    <div className="px-3 pb-3 pt-0.5">
+                                                                        {stepRows(
+                                                                            secId,
+                                                                            secondary.items,
+                                                                            false,
+                                                                            (() => {
+                                                                                const secGroups =
+                                                                                    getSimplifiedGroups(
+                                                                                        secondary.flow
+                                                                                    );
+                                                                                return secGroups
+                                                                                    ? annotateSimplifiedItems(
+                                                                                          secondary.items,
+                                                                                          secGroups
+                                                                                      )
+                                                                                    : null;
+                                                                            })()
+                                                                        )}
+                                                                    </div>
+                                                                </div>
                                                             </div>
                                                         </div>
-                                                    </div>
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
-                            )}
+                            </div>
                         </div>
                     );
                 })}
