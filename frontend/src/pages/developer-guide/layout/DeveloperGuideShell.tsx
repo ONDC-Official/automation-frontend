@@ -130,8 +130,11 @@ const DeveloperGuideShell: FC = () => {
                         </div>
                     ) : (
                         <>
-                            <div className="flex h-11 min-h-11 shrink-0 border-b border-slate-200 px-4 lg:h-auto lg:min-h-0 lg:w-full lg:flex-1 lg:border-b-0 lg:px-0 dark:border-border-default" />
-                            <div className="fixed left-2 top-20 z-30">
+                            <div
+                                className="flex h-11 min-h-11 shrink-0 border-b border-slate-200 px-4 lg:h-auto lg:min-h-0 lg:w-full lg:flex-1 lg:border-b-0 lg:px-0 dark:border-border-default"
+                                onClick={toggleNavSidebar}
+                            />
+                            <div className="fixed left-2 top-90 z-30">
                                 <DeveloperGuideNavSidebarToggle
                                     sidebarOpen={false}
                                     onClick={toggleNavSidebar}

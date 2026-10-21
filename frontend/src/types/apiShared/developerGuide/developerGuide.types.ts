@@ -153,14 +153,16 @@ export interface FlowConfig {
 }
 
 /** Role of a flow in the walkthrough hierarchy (current authoring schema). */
-export type FlowMetaType = "PREREQUISITE" | "PRIMARY" | "SECONDARY";
+export type FlowMetaType = "PREREQUISITE" | "PRIMARY" | "SECONDARY" | "OPTIONAL";
 
 /** Authoring metadata from the flow index YAML (`flows[].meta`).
  * Current schema: `type` + `secondary_flows` (on the primary) + `hide_actions`/
  * `visible_actions` (on secondaries). Older schemas (`is_secondary`/`parent_flow`,
  * `secondary_of`/`secondary_start`) remain supported for already-ingested builds. */
 export interface FlowMeta {
-    /** Role: PREREQUISITE (shown above the primary's calls), PRIMARY, or SECONDARY. */
+    /** Role: PREREQUISITE (shown above the primary's calls), PRIMARY, SECONDARY,
+     * or OPTIONAL (excluded from the API Walkthrough flows list entirely —
+     * still ingested/available, just not shown as its own card anywhere). */
     type?: FlowMetaType | string;
     /** Display order within the use case. */
     order?: number;
@@ -194,7 +196,7 @@ export interface FlowDisplaySection {
 }
 
 /** A flow injected inline within another flow's Journey View, anchored to one of
- * that flow's sections and rendered as a collapsible "optional" card. */
+ * that flow's sections and rendered as a collapsible "optional"/"alternative" card. */
 export interface FlowDisplayInline {
     /** flowId of the flow to inject. */
     flow: string;
@@ -205,6 +207,10 @@ export interface FlowDisplayInline {
     label?: string;
     /** Section names to omit when rendering the injected flow's own sections. */
     skip_sections?: string[];
+    /** Badge/semantics for the injected card: "optional" (a skippable extra
+     * step, violet badge) or "alternative" (a different path through the same
+     * stage, sky-blue "Alternative Path" badge). Defaults to "optional". */
+    kind?: "optional" | "alternative";
 }
 
 /** Backend-authored Journey View presentation metadata for a flow (`meta.display`). */

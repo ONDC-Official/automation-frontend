@@ -1,4 +1,4 @@
-import React, { FC, Fragment, useEffect, useMemo, useState } from "react";
+import React, { FC, Fragment, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import {
     ArrowTurnDownRightIcon,
     ArrowsRightLeftIcon,
@@ -34,6 +34,53 @@ interface FlowsHierarchyAccordionProps {
 }
 
 const flowTitle = (flowId: string) => flowId.split("_").join(" ");
+
+const AccordionFlowDescription: FC<{ text: string }> = ({ text }) => {
+    const [expanded, setExpanded] = useState(false);
+    const [canExpand, setCanExpand] = useState(false);
+    const textRef = useRef<HTMLSpanElement>(null);
+
+    useLayoutEffect(() => {
+        const el = textRef.current;
+        if (!el) return;
+        setCanExpand(el.scrollHeight > el.clientHeight + 1);
+    }, [text]);
+
+    const toggle = (e: React.SyntheticEvent) => {
+        e.stopPropagation();
+        setExpanded((v) => !v);
+    };
+
+    return (
+        <span className="flex flex-col items-start gap-0.5">
+            <span
+                ref={textRef}
+                className={cn(
+                    "whitespace-normal text-xs font-normal leading-snug text-slate-500 dark:text-n-40",
+                    !expanded && "line-clamp-2"
+                )}
+            >
+                {text}
+            </span>
+            {(canExpand || expanded) && (
+                <span
+                    role="button"
+                    tabIndex={0}
+                    onClick={toggle}
+                    onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            toggle(e);
+                        }
+                    }}
+                    className="text-[11px] font-semibold text-sky-600 hover:text-sky-700 dark:text-sky-400 dark:hover:text-sky-300 cursor-pointer"
+                >
+                    {expanded ? "Show less" : "… Learn more"}
+                </span>
+            )}
+        </span>
+    );
+};
 
 const FlowsHierarchyAccordion: FC<FlowsHierarchyAccordionProps> = ({
     flows,
@@ -420,6 +467,7 @@ const FlowsHierarchyAccordion: FC<FlowsHierarchyAccordionProps> = ({
                 {toggleBar}
                 {journeyGroupOrder.map((journeyGroup) => {
                     const flowId = journeyGroup.primary.flowId;
+                    const flowDescription = journeyGroup.primary.description;
                     const annotations = simplifiedAnnotations.get(flowId) ?? null;
                     const usecaseName = journeyGroup.primary.usecase ?? "";
                     const isPreferred = journeyGroup.primary.meta?.display?.preferred === true;
@@ -452,9 +500,17 @@ const FlowsHierarchyAccordion: FC<FlowsHierarchyAccordionProps> = ({
                                 : null;
                             const inlineId = inlineFlow.flowId;
                             const isOpen = openInlineFlowId === inlineId;
+                            const isAlternative = cfg.kind === "alternative";
                             const node = (
                                 <div key={inlineId} className="space-y-1.5 mt-2">
-                                    <div className="rounded-lg border border-violet-200 dark:border-violet-800 bg-white dark:bg-surface-elevated overflow-hidden">
+                                    <div
+                                        className={cn(
+                                            "rounded-lg border bg-white dark:bg-surface-elevated overflow-hidden",
+                                            isAlternative
+                                                ? "border-sky-200 dark:border-sky-800"
+                                                : "border-violet-200 dark:border-violet-800"
+                                        )}
+                                    >
                                         <Button
                                             type="button"
                                             variant="ghost"
@@ -462,14 +518,28 @@ const FlowsHierarchyAccordion: FC<FlowsHierarchyAccordionProps> = ({
                                                 setOpenInlineFlowId(isOpen ? null : inlineId)
                                             }
                                             aria-expanded={isOpen}
-                                            className="h-auto w-full justify-between gap-2 rounded-none px-3 py-2.5 font-normal text-left hover:bg-violet-50/60 dark:hover:bg-violet-950/20"
+                                            className={cn(
+                                                "h-auto w-full justify-between gap-4 rounded-none px-3 py-2.5 font-normal text-left",
+                                                isAlternative
+                                                    ? "hover:bg-sky-50/60 dark:hover:bg-sky-950/20"
+                                                    : "hover:bg-violet-50/60 dark:hover:bg-violet-950/20"
+                                            )}
                                         >
                                             <span className="flex min-w-0 flex-col items-start gap-1">
                                                 <span className="min-w-0 text-[11px] font-medium text-slate-800 dark:text-n-10 wrap-anywhere whitespace-normal leading-4">
                                                     {cfg.label ?? flowTitle(inlineId)}
                                                 </span>
-                                                <span className="shrink-0 rounded-full bg-violet-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-violet-700 dark:bg-violet-500/15 dark:text-violet-300">
-                                                    Optional Step
+                                                <span
+                                                    className={cn(
+                                                        "shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider",
+                                                        isAlternative
+                                                            ? "bg-sky-100 text-sky-700 dark:bg-sky-500/15 dark:text-sky-300"
+                                                            : "bg-violet-100 text-violet-700 dark:bg-violet-500/15 dark:text-violet-300"
+                                                    )}
+                                                >
+                                                    {isAlternative
+                                                        ? "Alternative Path"
+                                                        : "Optional Step"}
                                                 </span>
                                             </span>
                                             <span className="flex shrink-0 items-center gap-1.5">
@@ -529,10 +599,10 @@ const FlowsHierarchyAccordion: FC<FlowsHierarchyAccordionProps> = ({
                                 variant="ghost"
                                 onClick={() => setOpenGroupId(isJourneyOpen ? null : flowId)}
                                 aria-expanded={isJourneyOpen}
-                                className="h-auto w-full justify-between gap-2 rounded-none px-4 pt-4 pb-1 font-normal text-left hover:bg-slate-50 dark:hover:bg-surface-muted"
+                                className="h-auto w-full items-start justify-between gap-2 rounded-none px-4 pt-4 pb-4 font-normal text-left hover:bg-slate-50 dark:hover:bg-surface-muted"
                             >
-                                <span className="flex min-w-0 flex-col items-start">
-                                    <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-n-40 mb-1">
+                                <span className="flex min-w-0 flex-col items-start gap-1.5">
+                                    <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-n-40">
                                         {journeyGroup.isExplicitPrimary
                                             ? isPreferred
                                                 ? "Full Journey · Recommended"
@@ -542,13 +612,18 @@ const FlowsHierarchyAccordion: FC<FlowsHierarchyAccordionProps> = ({
                                     <span className="min-w-0 text-body-2 font-semibold text-gray-900 dark:text-n-10 wrap-anywhere whitespace-normal leading-5">
                                         {journeyGroup.primary.usecase ?? flowTitle(flowId)}
                                     </span>
-                                </span>
-                                <ChevronDownIcon
-                                    className={cn(
-                                        "size-4 shrink-0 text-slate-400 transition-transform duration-300",
-                                        isJourneyOpen && "rotate-180"
+                                    {flowDescription && (
+                                        <AccordionFlowDescription text={flowDescription} />
                                     )}
-                                />
+                                </span>
+                                <span className="flex shrink-0 items-center mt-4">
+                                    <ChevronDownIcon
+                                        className={cn(
+                                            "size-4 text-slate-400 transition-transform duration-300",
+                                            isJourneyOpen && "rotate-180"
+                                        )}
+                                    />
+                                </span>
                             </Button>
 
                             <div
@@ -660,13 +735,13 @@ const FlowsHierarchyAccordion: FC<FlowsHierarchyAccordionProps> = ({
             </div>
         );
     }
-
     // ── API Reference View: toggle ON (or no simplified config) ──────────────
     return (
         <div className="space-y-3">
             {toggleBar}
             {groups.map((group) => {
                 const groupId = group.primary.flowId;
+                const groupDesc = group.primary.description;
                 const isGroupOpen = openGroupId === groupId;
                 const hasSecondaries = group.secondaries.length > 0;
 
@@ -681,24 +756,27 @@ const FlowsHierarchyAccordion: FC<FlowsHierarchyAccordionProps> = ({
                             variant="ghost"
                             onClick={() => setOpenGroupId(isGroupOpen ? null : groupId)}
                             aria-expanded={isGroupOpen}
-                            className="h-auto w-full justify-between gap-2 rounded-none p-4 pb-3 font-normal text-left hover:bg-slate-50 dark:hover:bg-surface-muted"
+                            className="h-auto w-full items-start justify-between gap-2 rounded-none p-4 pb-3 font-normal text-left hover:bg-slate-50 dark:hover:bg-surface-muted"
                         >
                             <span className="flex min-w-0 flex-col items-start gap-2">
                                 <span className="min-w-0 text-body-2 font-semibold text-gray-900 dark:text-n-10 wrap-anywhere whitespace-normal leading-5">
                                     {flowTitle(groupId)}
                                 </span>
+                                {groupDesc && <AccordionFlowDescription text={groupDesc} />}
                                 {group.isExplicitPrimary && (
                                     <span className="shrink-0 rounded-full bg-sky-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-sky-700 dark:bg-sky-500/15 dark:text-sky-300">
                                         Primary Path
                                     </span>
                                 )}
                             </span>
-                            <ChevronDownIcon
-                                className={cn(
-                                    "size-4 shrink-0 text-slate-400 transition-transform duration-300",
-                                    isGroupOpen && "rotate-180"
-                                )}
-                            />
+                            <span className="flex shrink-0 items-center mt-0.5">
+                                <ChevronDownIcon
+                                    className={cn(
+                                        "size-4 text-slate-400 transition-transform duration-300",
+                                        isGroupOpen && "rotate-180"
+                                    )}
+                                />
+                            </span>
                         </Button>
 
                         <div
