@@ -16,6 +16,7 @@ import { PlusIcon, TrashIcon } from "@heroicons/react/24/outline";
 import { Button } from "@components/Shadcn/Button";
 import FormDialogShell from "@components/Forms/form-dialog-shell";
 import GpsWidget from "@components/Forms/GpsMapPicker";
+import { resolveEnvPlaceholders } from "@utils/env-placeholders";
 
 import "./rsjs.css";
 
@@ -151,7 +152,7 @@ function CustomArrayFieldTemplate(props: ArrayFieldTemplateProps) {
 
 export { PLAYGROUND_RJSF_FORM_ID };
 export default function JsonSchemaForm({
-    schema,
+    schema: rawSchema,
     formData,
     onSubmit,
     onChange,
@@ -162,6 +163,12 @@ export default function JsonSchemaForm({
     const [isLoading, setIsLoading] = useState(false);
     const isFlowVariant = variant === "flow";
     const formId = isFlowVariant ? FLOW_RJSF_FORM_ID : PLAYGROUND_RJSF_FORM_ID;
+
+    // Spec defaults may carry {{API_SERVICE_URL}} / {{API_SERVICE_HOST}}; fill them for this environment.
+    const schema = useMemo(
+        () => resolveEnvPlaceholders(rawSchema, import.meta.env.VITE_BASE_URL),
+        [rawSchema]
+    );
 
     const handleSubmit = async ({ formData: nextFormData }: FormChangeEvent) => {
         setIsLoading(true);
