@@ -64,7 +64,7 @@ const FlowActionDetails: FC<FlowActionDetailsProps> = ({
     const [selectedPath, setSelectedPathState] = useState<string | null>(
         () => searchParams.get("attr") ?? null
     );
-    const [rightPanelOpen, setRightPanelOpen] = useState(() => searchParams.get("attr") !== null);
+    const [rightPanelOpen, setRightPanelOpen] = useState(true);
     const { copyToClipboard } = useClipboard();
     useEffect(() => {
         const attr = searchParams.get("attr");
