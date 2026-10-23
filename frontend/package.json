@@ -47,6 +47,7 @@
         "genson-js": "^0.0.8",
         "github-slugger": "^2.0.0",
         "highlight.js": "^11.11.1",
+        "json-schema-to-typescript-lite": "^15.0.0",
         "json-to-yaml-ref": "^1.0.4",
         "jsonpath-plus": "^10.4.0",
         "leaflet": "^1.9.4",

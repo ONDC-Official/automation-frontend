@@ -45,6 +45,7 @@ const allNavLinks: INavLink[] = [
         subMenu: [
             { label: "Seller Onboarding", href: ROUTES.SELLER_ONBOARDING },
             { label: "Protocol Playground", href: ROUTES.PLAYGROUND },
+            { label: "Protocol Studio", href: ROUTES.STUDIO },
         ],
         analytics: {
             category: "NAV",

@@ -1,0 +1,2504 @@
+/* Protocol Studio editor: frosted-glass panels floating over a graph canvas.
+   Scoped to .studio-editor. Every colour is drawn from the app's tokens
+   (src/styles/tokens.css): the light set is the default and `.dark` (on <html>,
+   set by the app theme) overrides it, so the editor follows the app theme.
+   Layout metrics mirror ui/editor/constants.ts. */
+
+.studio-editor {
+    /* Canvas */
+    --studio-bg: var(--color-n-20);
+    --studio-glow-1: rgb(0 129 204 / 0.09);
+    --studio-glow-2: rgb(0 129 204 / 0.05);
+    --studio-vignette: rgb(9 30 66 / 0.07);
+    --studio-grid-minor: rgb(9 30 66 / 0.06);
+    --studio-grid-major: rgb(9 30 66 / 0.12);
+
+    /* Glass */
+    --studio-glass-tint: rgb(255 255 255 / 0.72);
+    --studio-glass-tint-strong: rgb(255 255 255 / 0.86);
+    --studio-glass-sheen: rgb(255 255 255 / 0.5);
+    --studio-glass-sheen-2: rgb(255 255 255 / 0.3);
+    --studio-glass-shadow:
+        0 18px 40px -20px rgb(9 30 66 / 0.25), 0 6px 14px -8px rgb(9 30 66 / 0.12),
+        0 0 0 1px var(--border-default);
+    --studio-glass-inset: inset 0 1px 0 rgb(255 255 255 / 0.9), inset 0 -1px 0 rgb(9 30 66 / 0.04);
+    --studio-rim: linear-gradient(
+        140deg,
+        rgb(255 255 255 / 1),
+        rgb(255 255 255 / 0.4) 28%,
+        rgb(255 255 255 / 0) 55%
+    );
+
+    /* Text */
+    --studio-text: var(--text-primary);
+    --studio-text-dim: var(--text-secondary);
+    --studio-text-faint: var(--color-n-100);
+    --studio-hairline: var(--border-default);
+    --studio-tint: rgb(9 30 66 / 0.06);
+    --studio-tint-strong: rgb(9 30 66 / 0.18);
+
+    /* Brand + status */
+    --studio-accent: var(--color-brand-normal);
+    --studio-accent-ink: var(--color-brand-normal);
+    --studio-accent-soft: var(--color-brand-light);
+    --studio-accent-border: var(--color-brand-light-active);
+    --studio-accent-ring: rgb(0 129 204 / 0.5);
+    --studio-accent-glow: rgb(0 129 204 / 0.35);
+    --studio-ok: var(--status-pass-ink);
+    --studio-warn: var(--status-pending-ink);
+    --studio-error: var(--status-fail-ink);
+
+    /* Controls and surfaces */
+    --studio-key-bg: linear-gradient(180deg, var(--color-n-0), var(--color-n-10));
+    --studio-key-bg-hover: linear-gradient(180deg, var(--color-n-0), var(--color-n-20));
+    --studio-key-border: var(--border-default);
+    --studio-key-shadow: inset 0 1px 0 var(--color-n-0), 0 1px 2px rgb(9 30 66 / 0.08);
+    --studio-key-shadow-pressed: inset 0 1px 2px rgb(9 30 66 / 0.14);
+    --studio-chip-bg: var(--color-brand-light);
+    --studio-well-bg: var(--surface-elevated);
+    --studio-well-shadow:
+        inset 0 1px 2px rgb(9 30 66 / 0.06), inset 0 0 0 1px var(--border-default);
+    --studio-field-bg: var(--surface-elevated);
+    --studio-bubble-bg: var(--surface-muted);
+
+    /* Metrics */
+    --studio-radius: 16px;
+    --studio-gap: 10px;
+    --studio-header-h: 52px;
+    --studio-dock-bar-h: 40px;
+    /* Written at runtime by useDragResize / the editor root. */
+    --studio-inspector-w: 440px;
+    --studio-explorer-w: 300px;
+    /* The explorer's width on screen: the rail while collapsed. Set by the editor root. */
+    --studio-explorer-visible: var(--studio-explorer-w);
+    --studio-dock-h: 260px;
+    --studio-dock-visible: var(--studio-dock-bar-h);
+    --studio-mono: var(--font-mono);
+    --studio-blur: blur(16px) saturate(170%);
+    --studio-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+
+    color: var(--studio-text);
+    /* Faint brand light behind the grid, so the glass has something to bend. */
+    background:
+        radial-gradient(1100px 620px at 18% 12%, var(--studio-glow-1), transparent 62%),
+        radial-gradient(900px 560px at 82% 88%, var(--studio-glow-2), transparent 60%),
+        var(--studio-bg);
+}
+
+.dark .studio-editor {
+    --studio-bg: var(--color-dark-page);
+    --studio-glow-1: rgb(0 129 204 / 0.14);
+    --studio-glow-2: rgb(0 129 204 / 0.07);
+    --studio-vignette: rgb(0 0 0 / 0.55);
+    --studio-grid-minor: rgb(255 255 255 / 0.045);
+    --studio-grid-major: rgb(255 255 255 / 0.1);
+
+    --studio-glass-tint: rgb(20 20 20 / 0.6);
+    --studio-glass-tint-strong: rgb(20 20 20 / 0.78);
+    --studio-glass-sheen: rgb(255 255 255 / 0.09);
+    --studio-glass-sheen-2: rgb(255 255 255 / 0.05);
+    --studio-glass-shadow:
+        0 30px 60px -20px rgb(0 0 0 / 0.75), 0 10px 24px -12px rgb(0 0 0 / 0.6),
+        0 0 0 1px rgb(0 0 0 / 0.35);
+    --studio-glass-inset:
+        inset 0 1px 0 rgb(255 255 255 / 0.16), inset 0 -1px 0 rgb(0 0 0 / 0.5),
+        inset 0 0 0 1px rgb(255 255 255 / 0.04), inset 0 0 30px rgb(255 255 255 / 0.025);
+    --studio-rim: linear-gradient(
+        140deg,
+        rgb(255 255 255 / 0.5),
+        rgb(255 255 255 / 0.08) 28%,
+        rgb(255 255 255 / 0) 55%,
+        rgb(255 255 255 / 0.06) 78%,
+        rgb(255 255 255 / 0.22)
+    );
+
+    --studio-text-faint: var(--color-n-200);
+    --studio-tint: rgb(255 255 255 / 0.08);
+    --studio-tint-strong: rgb(255 255 255 / 0.14);
+
+    --studio-accent-ink: var(--color-sky-300);
+    --studio-accent-soft: rgb(0 129 204 / 0.16);
+    --studio-accent-border: rgb(0 129 204 / 0.45);
+    --studio-accent-glow: rgb(0 129 204 / 0.55);
+
+    --studio-key-bg: linear-gradient(180deg, rgb(255 255 255 / 0.09), rgb(255 255 255 / 0.025));
+    --studio-key-bg-hover: linear-gradient(
+        180deg,
+        rgb(255 255 255 / 0.13),
+        rgb(255 255 255 / 0.04)
+    );
+    --studio-key-border: rgb(255 255 255 / 0.07);
+    --studio-key-shadow:
+        inset 0 1px 0 rgb(255 255 255 / 0.12), inset 0 -1px 0 rgb(0 0 0 / 0.35),
+        0 1px 0 rgb(0 0 0 / 0.45), 0 4px 10px -4px rgb(0 0 0 / 0.6);
+    --studio-key-shadow-pressed: inset 0 1px 3px rgb(0 0 0 / 0.5);
+    --studio-chip-bg: var(--surface-muted);
+    --studio-well-bg: rgb(0 0 0 / 0.5);
+    --studio-well-shadow:
+        inset 0 2px 6px rgb(0 0 0 / 0.6), inset 0 0 0 1px rgb(255 255 255 / 0.045),
+        0 1px 0 rgb(255 255 255 / 0.05);
+    --studio-field-bg: rgb(0 0 0 / 0.3);
+}
+
+/* ─── Frosted glass ────────────────────────────────────────────────────────────
+   Every visual layer sits on ::before. An element with a backdrop-filter becomes
+   a Backdrop Root, so the filter cannot also live on the panel; and inset shadows
+   on the panel would paint beneath a negative-z child. The panel itself only
+   carries the outer drop shadow. Panels must be positioned. */
+
+.studio-glass {
+    isolation: isolate;
+    border-radius: var(--studio-radius);
+    box-shadow: var(--studio-glass-shadow);
+}
+
+.studio-glass::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    pointer-events: none;
+    background:
+        radial-gradient(120% 80% at 0% 0%, var(--studio-glass-sheen), transparent 45%),
+        linear-gradient(180deg, var(--studio-glass-sheen-2), transparent 40%),
+        var(--studio-glass-tint);
+    box-shadow: var(--studio-glass-inset);
+    -webkit-backdrop-filter: var(--studio-blur);
+    backdrop-filter: var(--studio-blur);
+}
+
+/* 1px specular rim: bright top-left, fading round the edge. */
+.studio-glass::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    pointer-events: none;
+    background: var(--studio-rim);
+    -webkit-mask:
+        linear-gradient(#000 0 0) content-box,
+        linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask:
+        linear-gradient(#000 0 0) content-box,
+        linear-gradient(#000 0 0);
+    mask-composite: exclude;
+}
+
+/* ─── Panels ───────────────────────────────────────────────────────────────── */
+
+.studio-header {
+    position: absolute;
+    z-index: 30;
+    top: var(--studio-gap);
+    left: var(--studio-gap);
+    right: var(--studio-gap);
+    height: var(--studio-header-h);
+}
+
+.studio-inspector {
+    position: absolute;
+    z-index: 20;
+    top: calc(var(--studio-header-h) + var(--studio-gap) * 2);
+    right: var(--studio-gap);
+    bottom: var(--studio-gap);
+    width: var(--studio-inspector-w);
+    transition: width 0.26s var(--studio-ease);
+}
+
+.studio-inspector[data-maximized] {
+    width: calc(100% - var(--studio-gap) * 2);
+}
+
+.studio-explorer {
+    position: absolute;
+    z-index: 20;
+    top: calc(var(--studio-header-h) + var(--studio-gap) * 2);
+    left: var(--studio-gap);
+    bottom: var(--studio-gap);
+    width: var(--studio-explorer-visible);
+    transition:
+        width 0.24s var(--studio-ease),
+        opacity 0.2s ease;
+}
+
+.studio-dock {
+    position: absolute;
+    z-index: 10;
+    left: calc(var(--studio-explorer-visible) + var(--studio-gap) * 2);
+    bottom: var(--studio-gap);
+    right: calc(var(--studio-inspector-w) + var(--studio-gap) * 2);
+    height: var(--studio-dock-visible);
+    border-radius: 14px;
+    transition:
+        left 0.24s var(--studio-ease),
+        height 0.24s var(--studio-ease),
+        opacity 0.2s ease;
+}
+
+.studio-editor[data-inspector-max] .studio-dock,
+.studio-editor[data-inspector-max] .studio-explorer {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.studio-editor[data-resizing] {
+    user-select: none;
+}
+
+.studio-editor[data-resizing="x"] {
+    cursor: col-resize;
+}
+
+.studio-editor[data-resizing="y"] {
+    cursor: row-resize;
+}
+
+.studio-editor[data-resizing] .studio-inspector,
+.studio-editor[data-resizing] .studio-explorer,
+.studio-editor[data-resizing] .studio-dock,
+.studio-editor[data-resizing] .studio-canvas-area,
+.studio-editor[data-resizing] .react-flow__panel.top.left {
+    transition: none;
+}
+
+/* ─── Resize handles: they sit in the gap beside the panel they resize ─────── */
+
+.studio-handle {
+    position: absolute;
+    z-index: 5;
+    touch-action: none;
+    outline: none;
+}
+
+.studio-handle::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    border-radius: 999px;
+    background: var(--studio-tint-strong);
+    transform: translate(-50%, -50%);
+    transition:
+        background 0.15s,
+        box-shadow 0.15s;
+}
+
+.studio-handle-x {
+    top: 0;
+    bottom: 0;
+    left: calc(var(--studio-gap) * -1);
+    width: var(--studio-gap);
+    cursor: col-resize;
+}
+
+.studio-handle-x::before {
+    width: 3px;
+    height: 44px;
+}
+
+/* The explorer's handle: same bar, in the gap on its right. */
+.studio-handle-x-end {
+    top: 0;
+    bottom: 0;
+    right: calc(var(--studio-gap) * -1);
+    width: var(--studio-gap);
+    cursor: col-resize;
+}
+
+.studio-handle-x-end::before {
+    width: 3px;
+    height: 44px;
+}
+
+.studio-handle-y {
+    left: 0;
+    right: 0;
+    top: calc(var(--studio-gap) * -1);
+    height: var(--studio-gap);
+    cursor: row-resize;
+}
+
+.studio-handle-y::before {
+    width: 44px;
+    height: 3px;
+}
+
+.studio-handle:hover::before,
+.studio-handle:focus-visible::before,
+.studio-editor[data-resizing="x"] .studio-handle-x::before,
+.studio-editor[data-resizing="x"] .studio-handle-x-end::before,
+.studio-editor[data-resizing="y"] .studio-handle-y::before {
+    background: var(--studio-accent);
+    box-shadow: 0 0 12px 2px var(--studio-accent-glow);
+}
+
+/* ─── Canvas ───────────────────────────────────────────────────────────────── */
+
+.studio-editor .react-flow {
+    --xy-background-color: transparent;
+}
+
+.studio-vignette {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: radial-gradient(
+        ellipse 85% 75% at 50% 50%,
+        transparent 55%,
+        var(--studio-vignette) 100%
+    );
+}
+
+/* The part of the canvas not covered by panels. */
+.studio-canvas-area {
+    position: absolute;
+    top: calc(var(--studio-header-h) + var(--studio-gap) * 2);
+    left: calc(var(--studio-explorer-visible) + var(--studio-gap) * 2);
+    right: calc(var(--studio-inspector-w) + var(--studio-gap) * 2);
+    bottom: calc(var(--studio-dock-visible) + var(--studio-gap) * 2);
+    pointer-events: none;
+    transition:
+        left 0.24s var(--studio-ease),
+        bottom 0.24s var(--studio-ease);
+}
+
+.studio-empty-hint {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    text-align: center;
+}
+
+.studio-empty-hint-title {
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 16px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--studio-text-dim);
+}
+
+.studio-empty-hint-sub {
+    font-size: 12px;
+    line-height: 16px;
+    color: var(--studio-text-faint);
+}
+
+/* React Flow chrome: specificity beats the library's own .react-flow__panel rules. */
+.studio-editor .react-flow__panel.top.left {
+    top: calc(var(--studio-header-h) + var(--studio-gap) * 2);
+    left: calc(var(--studio-explorer-visible) + var(--studio-gap) * 2);
+    margin: 0;
+    transition: left 0.24s var(--studio-ease);
+}
+
+.studio-editor .react-flow__panel.react-flow__controls {
+    overflow: hidden;
+    border: 1px solid var(--studio-key-border);
+    border-radius: 12px;
+    background: var(--studio-glass-tint-strong);
+    box-shadow: var(--studio-key-shadow);
+    -webkit-backdrop-filter: var(--studio-blur);
+    backdrop-filter: var(--studio-blur);
+}
+
+.studio-editor .react-flow__controls-button {
+    width: 30px;
+    height: 30px;
+    color: var(--studio-text-dim);
+    background: var(--studio-key-bg);
+    border-bottom: 1px solid var(--studio-hairline);
+}
+
+/* Tidy up: a heroicon, drawn with strokes rather than the library icons' fill. */
+.studio-editor .react-flow__controls-button.studio-tidy svg {
+    max-width: 14px;
+    max-height: 14px;
+    fill: none;
+}
+
+.studio-editor .react-flow__controls-button:disabled {
+    cursor: default;
+    opacity: 0.4;
+}
+
+.studio-editor .react-flow__controls-button:last-child {
+    border-bottom: none;
+}
+
+.studio-editor .react-flow__controls-button:hover {
+    color: var(--studio-accent-ink);
+    background: var(--studio-key-bg-hover);
+}
+
+.studio-editor .react-flow__controls-button svg {
+    max-width: 12px;
+    max-height: 12px;
+    fill: currentColor;
+}
+
+/* ─── Keycaps: top-lit, press down 1px, brand-tinted when active ───────────── */
+
+.studio-key {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    height: 32px;
+    padding: 0 10px;
+    border: 1px solid var(--studio-key-border);
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 16px;
+    white-space: nowrap;
+    color: var(--studio-text-dim);
+    background: var(--studio-key-bg);
+    box-shadow: var(--studio-key-shadow);
+    cursor: pointer;
+    user-select: none;
+    transition:
+        color 0.15s,
+        background 0.15s,
+        border-color 0.15s,
+        box-shadow 0.15s,
+        transform 0.08s;
+}
+
+.studio-key svg {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+}
+
+.studio-key:hover:not(:disabled) {
+    color: var(--studio-text);
+    background: var(--studio-key-bg-hover);
+}
+
+.studio-key:active:not(:disabled) {
+    transform: translateY(1px);
+    box-shadow: var(--studio-key-shadow-pressed);
+}
+
+.studio-key:focus-visible {
+    outline: 3px solid var(--studio-accent-ring);
+    outline-offset: 1px;
+}
+
+.studio-key[data-active],
+.studio-key[data-active]:hover:not(:disabled) {
+    color: var(--studio-accent-ink);
+    border-color: var(--studio-accent-border);
+    background: var(--studio-accent-soft);
+}
+
+.studio-key:disabled {
+    opacity: 0.4;
+    cursor: default;
+}
+
+.studio-key-icon {
+    width: 32px;
+    padding: 0;
+}
+
+.studio-key-sm {
+    height: 28px;
+}
+
+.studio-key-sm.studio-key-icon {
+    width: 28px;
+}
+
+.studio-key-xs {
+    height: 24px;
+    padding: 0 8px;
+}
+
+.studio-key-xs.studio-key-icon {
+    width: 24px;
+}
+
+.studio-key-xs svg {
+    width: 14px;
+    height: 14px;
+}
+
+/* ─── Header bits ──────────────────────────────────────────────────────────── */
+
+/* Same as v1's toolbar title. */
+.studio-title {
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 24px;
+    letter-spacing: 0.025em;
+    text-transform: uppercase;
+    color: var(--studio-accent-ink);
+}
+
+.studio-divider {
+    align-self: stretch;
+    width: 1px;
+    margin: 12px 2px;
+    background: linear-gradient(transparent, var(--studio-hairline), transparent);
+}
+
+/* Read-outs, like v1's toolbar meta chips. */
+.studio-chip {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: 6px;
+    max-width: 260px;
+    height: 26px;
+    padding: 0 8px;
+    border-radius: 8px;
+    font-size: 12px;
+    line-height: 16px;
+    background: var(--studio-chip-bg);
+}
+
+.studio-chip[data-shrink] {
+    flex-shrink: 1;
+    min-width: 72px;
+}
+
+.studio-chip-label {
+    flex-shrink: 0;
+    font-size: 10px;
+    font-weight: 600;
+    line-height: 12px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--studio-text-dim);
+}
+
+.studio-chip-value {
+    overflow: hidden;
+    font-family: var(--studio-mono);
+    font-weight: 500;
+    color: var(--studio-text);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Types chip: what step code is typed against (spec APIs + a use case's session). */
+.studio-types {
+    gap: 5px;
+    padding-right: 3px;
+}
+
+.studio-types-open {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    height: 20px;
+    padding: 0 4px;
+    margin-left: -4px;
+    border-radius: 5px;
+}
+
+.studio-types-open:hover {
+    background: var(--studio-key-bg-hover);
+}
+
+.studio-types-dot {
+    width: 6px;
+    height: 6px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: var(--studio-text-faint);
+}
+
+.studio-types-dot[data-status="ready"] {
+    background: var(--studio-ok);
+}
+
+.studio-types-dot[data-status="unavailable"] {
+    background: var(--studio-warn);
+}
+
+.studio-types-select {
+    max-width: 150px;
+    height: 20px;
+    padding: 0 2px;
+    border: none;
+    border-radius: 5px;
+    font-family: var(--studio-mono);
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--studio-text);
+    background: transparent;
+    cursor: pointer;
+}
+
+.studio-types-select:hover:not(:disabled) {
+    background: var(--studio-key-bg-hover);
+}
+
+.studio-types-download {
+    display: grid;
+    place-items: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 5px;
+    color: var(--studio-text-dim);
+}
+
+.studio-types-download:hover:not(:disabled) {
+    color: var(--studio-text);
+    background: var(--studio-key-bg-hover);
+}
+
+.studio-types-download:disabled {
+    opacity: 0.4;
+}
+
+.studio-types-download svg {
+    width: 13px;
+    height: 13px;
+}
+
+/* Under a TypeScript file: whether it compiles to runnable JavaScript. */
+.studio-compile {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px 6px;
+    border-top: 1px solid var(--studio-hairline);
+    font-size: 11px;
+    line-height: 14px;
+    color: var(--studio-text-dim);
+}
+
+.studio-compile-dot {
+    width: 6px;
+    height: 6px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: var(--studio-text-faint);
+}
+
+.studio-compile[data-tone="ok"] .studio-compile-dot {
+    background: var(--studio-ok);
+}
+
+.studio-compile[data-tone="warn"] .studio-compile-dot {
+    background: var(--studio-warn);
+}
+
+.studio-compile[data-tone="error"] {
+    color: var(--studio-error);
+}
+
+.studio-compile[data-tone="error"] .studio-compile-dot {
+    background: var(--studio-error);
+}
+
+/* Utility menu: drops down on hover, or while anything in it has focus. The
+   pop's top padding bridges the gap to the key, so the pointer can cross it. */
+.studio-menu {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.studio-menu-pop {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    z-index: 1;
+    padding-top: 8px;
+    visibility: hidden;
+    opacity: 0;
+    transform: translateY(-4px);
+    transition:
+        opacity 0.15s ease,
+        transform 0.15s var(--studio-ease),
+        visibility 0s linear 0.15s;
+}
+
+.studio-menu:hover .studio-menu-pop,
+.studio-menu:focus-within .studio-menu-pop {
+    visibility: visible;
+    opacity: 1;
+    transform: none;
+    transition:
+        opacity 0.15s ease,
+        transform 0.15s var(--studio-ease),
+        visibility 0s;
+}
+
+.studio-menu:hover > .studio-key,
+.studio-menu:focus-within > .studio-key {
+    color: var(--studio-text);
+    background: var(--studio-key-bg-hover);
+}
+
+.studio-menu-list {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 232px;
+    padding: 6px;
+    border-radius: 12px;
+}
+
+.studio-menu-item {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 10px;
+    border-radius: 8px;
+    text-align: left;
+    color: var(--studio-text-dim);
+    cursor: pointer;
+    transition:
+        color 0.15s,
+        background 0.15s;
+}
+
+.studio-menu-item svg {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+    color: var(--studio-text-faint);
+}
+
+.studio-menu-item:hover,
+.studio-menu-item:focus-visible {
+    color: var(--studio-text);
+    background: var(--studio-tint);
+    outline: none;
+}
+
+.studio-menu-item:hover svg,
+.studio-menu-item:focus-visible svg {
+    color: var(--studio-accent-ink);
+}
+
+.studio-menu-item-label {
+    font-size: 12.5px;
+    font-weight: 500;
+    line-height: 16px;
+    color: var(--studio-text);
+}
+
+.studio-menu-item-hint {
+    font-size: 11px;
+    line-height: 14px;
+    color: var(--studio-text-faint);
+}
+
+/* ─── Code popup (helpers.ts, raw config.json) ─────────────────────────────── */
+
+.studio-dialog-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    background: rgb(9 30 66 / 0.28);
+    -webkit-backdrop-filter: blur(2px);
+    backdrop-filter: blur(2px);
+    animation: studio-fade-in 0.15s ease;
+}
+
+.studio-code-dialog {
+    position: fixed;
+    z-index: 51;
+    top: 50%;
+    left: 50%;
+    display: flex;
+    flex-direction: column;
+    width: min(1040px, calc(100vw - 48px));
+    height: min(760px, calc(100vh - 48px));
+    transform: translate(-50%, -50%);
+    animation: studio-pop-in 0.18s var(--studio-ease);
+    outline: none;
+}
+
+/* Browser fullscreen: the popup alone fills the screen. Its backdrop is the
+   canvas colour, since the frosted panel has nothing behind it to blur. */
+.studio-code-dialog:fullscreen {
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 0;
+    transform: none;
+    background: var(--studio-bg);
+}
+
+.studio-code-dialog-icon {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+    color: var(--studio-accent-ink);
+}
+
+.studio-code-dialog-title {
+    font-family: var(--studio-mono);
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 20px;
+    color: var(--studio-text);
+}
+
+@keyframes studio-fade-in {
+    from {
+        opacity: 0;
+    }
+}
+
+@keyframes studio-pop-in {
+    from {
+        opacity: 0;
+        transform: translate(-50%, -48%) scale(0.98);
+    }
+}
+
+/* ─── Shared text + surfaces ───────────────────────────────────────────────── */
+
+/* Same as the app's SectionLabel, without its margin. */
+.studio-eyebrow {
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 16px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--studio-accent-ink);
+}
+
+.studio-accent-ink {
+    color: var(--studio-accent-ink);
+}
+
+.studio-text {
+    color: var(--studio-text);
+}
+
+.studio-text-dim {
+    color: var(--studio-text-dim);
+}
+
+.studio-text-faint {
+    color: var(--studio-text-faint);
+}
+
+.studio-mono {
+    font-family: var(--studio-mono);
+}
+
+.studio-hairline-b {
+    border-bottom: 1px solid var(--studio-hairline);
+}
+
+.studio-hairline-t {
+    border-top: 1px solid var(--studio-hairline);
+}
+
+.studio-badge {
+    flex-shrink: 0;
+    padding: 2px 8px;
+    border: 1px dashed var(--studio-tint-strong);
+    border-radius: 999px;
+    font-family: var(--studio-mono);
+    font-size: 11px;
+    line-height: 16px;
+    color: var(--studio-text-faint);
+}
+
+.studio-count {
+    min-width: 18px;
+    padding: 0 5px;
+    border-radius: 999px;
+    font-family: var(--studio-mono);
+    font-size: 11px;
+    line-height: 16px;
+    color: var(--studio-text-dim);
+    background: var(--studio-tint);
+}
+
+/* Recessed well that code and logs sit in. */
+.studio-well {
+    position: relative;
+    overflow: hidden;
+    border-radius: 12px;
+    background: var(--studio-well-bg);
+    box-shadow: var(--studio-well-shadow);
+}
+
+.studio-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    font-size: 12px;
+    color: var(--studio-text-faint);
+}
+
+/* ─── Inspector file picker: three rows of files in a recessed tray ──────────
+   Row 1 is the step's functions, row 2 its data, row 3 the config; a rule sets
+   the config row apart from the step rows. Each row's files share its width,
+   and the selected file is a raised key, like a segmented control. */
+
+.studio-filepicker {
+    container: studio-files / inline-size;
+    display: flex;
+    flex-shrink: 0;
+    flex-direction: column;
+    gap: 1px;
+    margin: 0 12px;
+    padding: 2px;
+    border-radius: 8px;
+    background: var(--studio-tint);
+    box-shadow: inset 0 0 0 1px var(--studio-hairline);
+}
+
+.studio-filerow {
+    display: flex;
+    gap: 2px;
+}
+
+.studio-filerow[data-group="config"] {
+    padding-top: 2px;
+    border-top: 1px solid var(--studio-hairline);
+}
+
+.studio-file {
+    display: inline-flex;
+    /* Equal shares, so the two-file rows line up with each other. */
+    flex: 1 1 0;
+    min-width: 0;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    height: 22px;
+    padding: 0 9px;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    font-family: var(--studio-mono);
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 16px;
+    color: var(--studio-text-dim);
+    cursor: pointer;
+    user-select: none;
+    transition:
+        color 0.15s,
+        background 0.15s,
+        border-color 0.15s,
+        box-shadow 0.15s;
+}
+
+/* Three files share the top row: each grows from its own width instead, so
+   requirements.js keeps the room it needs at the default inspector width. */
+.studio-filerow[data-group="functions"] .studio-file {
+    flex-basis: auto;
+}
+
+.studio-file svg {
+    width: 13px;
+    height: 13px;
+    flex-shrink: 0;
+    color: var(--studio-text-faint);
+    transition: color 0.15s;
+}
+
+.studio-file:hover:not([data-state="active"]) {
+    color: var(--studio-text);
+    background: var(--studio-tint);
+}
+
+.studio-file:hover:not([data-state="active"]) svg {
+    color: var(--studio-text-dim);
+}
+
+.studio-file[data-state="active"] {
+    color: var(--studio-text);
+    border-color: var(--studio-key-border);
+    background: var(--studio-key-bg);
+    box-shadow: var(--studio-key-shadow);
+}
+
+.studio-file[data-state="active"] svg {
+    color: var(--studio-accent-ink);
+}
+
+.studio-file:focus-visible {
+    outline: 2px solid var(--studio-accent-ring);
+    outline-offset: 1px;
+}
+
+.studio-file-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.studio-file-ext {
+    color: var(--studio-text-faint);
+}
+
+.studio-file[data-state="active"] .studio-file-ext {
+    color: var(--studio-text-dim);
+}
+
+/* A narrow inspector: drop the extensions and tighten the keys, so every name
+   still fits whole down to the inspector's minimum width. */
+@container studio-files (width < 400px) {
+    .studio-file {
+        gap: 4px;
+        padding: 0 6px;
+        font-size: 11px;
+    }
+
+    .studio-file svg {
+        width: 12px;
+        height: 12px;
+    }
+
+    .studio-file-ext {
+        display: none;
+    }
+}
+
+/* ─── Explorer: view switcher ──────────────────────────────────────────────────
+   The inspector's file tray, as one row of three views, beside the collapse key. */
+
+.studio-explorer-head {
+    container: studio-explorer-head / inline-size;
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: 6px;
+    margin: 12px 12px 0;
+}
+
+/* A narrow explorer keeps the icons and drops the view names (they stay as tooltips). */
+@container studio-explorer-head (width < 270px) {
+    .studio-segment-label {
+        display: none;
+    }
+}
+
+/* Collapsed: a column of icon keys, like the dock's bar turned on its side. */
+.studio-explorer-rail {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 0;
+}
+
+.studio-explorer-rail .studio-key {
+    position: relative;
+}
+
+.studio-rail-divider {
+    width: 20px;
+    height: 1px;
+    margin: 2px 0;
+    background: var(--studio-hairline);
+}
+
+.studio-rail-badge {
+    position: absolute;
+    top: -5px;
+    right: -6px;
+    min-width: 16px;
+    padding: 0 4px;
+    font-size: 10px;
+    line-height: 15px;
+    color: var(--studio-text);
+    background: var(--studio-key-bg);
+    box-shadow: inset 0 0 0 1px var(--studio-key-border);
+}
+
+.studio-segmented {
+    display: flex;
+    flex-shrink: 0;
+    gap: 2px;
+    padding: 2px;
+    border-radius: 8px;
+    background: var(--studio-tint);
+    box-shadow: inset 0 0 0 1px var(--studio-hairline);
+}
+
+.studio-segment {
+    display: inline-flex;
+    flex: 1 1 0;
+    min-width: 0;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    height: 26px;
+    padding: 0 8px;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 16px;
+    white-space: nowrap;
+    color: var(--studio-text-dim);
+    cursor: pointer;
+    user-select: none;
+    transition:
+        color 0.15s,
+        background 0.15s,
+        border-color 0.15s,
+        box-shadow 0.15s;
+}
+
+.studio-segment svg {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+    color: var(--studio-text-faint);
+    transition: color 0.15s;
+}
+
+.studio-segment:hover:not([data-state="active"]) {
+    color: var(--studio-text);
+    background: var(--studio-tint);
+}
+
+.studio-segment[data-state="active"] {
+    color: var(--studio-text);
+    border-color: var(--studio-key-border);
+    background: var(--studio-key-bg);
+    box-shadow: var(--studio-key-shadow);
+}
+
+.studio-segment[data-state="active"] svg {
+    color: var(--studio-accent-ink);
+}
+
+.studio-segment:focus-visible {
+    outline: 2px solid var(--studio-accent-ring);
+    outline-offset: 1px;
+}
+
+.studio-explorer-toolbar {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 14px 6px;
+}
+
+.studio-explorer-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    height: 100%;
+    padding: 24px;
+    text-align: center;
+}
+
+.studio-explorer-empty-icon {
+    width: 28px;
+    height: 28px;
+    margin-bottom: 4px;
+    color: var(--studio-text-faint);
+}
+
+.studio-explorer-empty .studio-key {
+    margin-top: 8px;
+}
+
+/* ─── Explorer: flows tree ─────────────────────────────────────────────────── */
+
+.studio-tree {
+    min-height: 0;
+    flex: 1;
+    overflow: auto;
+    padding: 0 6px 10px;
+}
+
+.studio-tree-flow {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    height: 30px;
+    padding-right: 4px;
+    border-radius: 7px;
+    transition: background 0.15s;
+}
+
+.studio-tree-flow:hover {
+    background: var(--studio-tint);
+}
+
+.studio-tree-twisty,
+.studio-tree-remove {
+    display: grid;
+    flex-shrink: 0;
+    place-items: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 5px;
+    color: var(--studio-text-faint);
+    transition:
+        color 0.15s,
+        background 0.15s,
+        opacity 0.15s;
+}
+
+.studio-tree-twisty svg {
+    width: 12px;
+    height: 12px;
+    transition: transform 0.15s var(--studio-ease);
+}
+
+.studio-tree-twisty svg[data-open] {
+    transform: rotate(90deg);
+}
+
+.studio-tree-twisty:hover {
+    color: var(--studio-text);
+}
+
+.studio-tree-flow-label {
+    display: flex;
+    flex: 1;
+    min-width: 0;
+    align-items: center;
+    gap: 6px;
+    height: 100%;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--studio-text);
+    text-align: left;
+}
+
+.studio-tree-flow-label svg {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+    color: var(--studio-text-faint);
+}
+
+.studio-tree-flow[data-active] .studio-tree-flow-label svg {
+    color: var(--studio-accent-ink);
+}
+
+/* Remove only shows on hover, so the tree stays quiet. */
+.studio-tree-remove {
+    opacity: 0;
+}
+
+.studio-tree-remove svg {
+    width: 13px;
+    height: 13px;
+}
+
+.studio-tree-flow:hover .studio-tree-remove,
+.studio-tree-remove:focus-visible {
+    opacity: 1;
+}
+
+.studio-tree-remove:hover {
+    color: var(--studio-error);
+    background: var(--studio-tint);
+}
+
+.studio-tree-action {
+    position: relative;
+    display: flex;
+    width: 100%;
+    align-items: center;
+    gap: 6px;
+    height: 26px;
+    padding: 0 8px 0 28px;
+    border-radius: 6px;
+    font-size: 12px;
+    color: var(--studio-text-dim);
+    text-align: left;
+    transition:
+        color 0.15s,
+        background 0.15s;
+}
+
+/* Indent guide under the flow's twisty. */
+.studio-tree-action::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 11px;
+    width: 1px;
+    background: var(--studio-hairline);
+}
+
+.studio-tree-action:hover {
+    color: var(--studio-text);
+    background: var(--studio-tint);
+}
+
+.studio-tree-action[data-selected] {
+    color: var(--studio-text);
+    background: var(--studio-accent-soft);
+    box-shadow: inset 0 0 0 1px var(--studio-accent-border);
+}
+
+.studio-tree-index {
+    width: 14px;
+    flex-shrink: 0;
+    font-family: var(--studio-mono);
+    font-size: 10.5px;
+    color: var(--studio-text-faint);
+    text-align: right;
+}
+
+.studio-tree-direction {
+    width: 12px;
+    height: 12px;
+    flex-shrink: 0;
+    color: var(--studio-accent-ink);
+}
+
+.studio-tree-action[data-response] .studio-tree-direction {
+    color: var(--studio-ok);
+}
+
+.studio-tree-twisty:focus-visible,
+.studio-tree-remove:focus-visible,
+.studio-tree-flow-label:focus-visible,
+.studio-tree-action:focus-visible,
+.studio-result-row:focus-visible,
+.studio-toggle:focus-visible {
+    outline: 2px solid var(--studio-accent-ring);
+    outline-offset: -1px;
+    border-radius: 6px;
+}
+
+/* BAP sends requests, BPP answers them: the same blue / green as the arrows. */
+.studio-owner {
+    flex-shrink: 0;
+    padding: 0 5px;
+    border-radius: 4px;
+    font-family: var(--studio-mono);
+    font-size: 9.5px;
+    font-weight: 600;
+    line-height: 15px;
+    letter-spacing: 0.04em;
+    color: var(--studio-text-dim);
+    background: var(--studio-tint);
+}
+
+.studio-owner[data-owner="BAP"] {
+    color: var(--studio-accent-ink);
+    background: var(--studio-accent-soft);
+}
+
+.studio-owner[data-owner="BPP"] {
+    color: var(--studio-ok);
+    background: color-mix(in srgb, var(--studio-ok) 14%, transparent);
+}
+
+/* ─── Explorer: search ─────────────────────────────────────────────────────── */
+
+.studio-search {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    height: 30px;
+    padding: 0 4px 0 9px;
+    border-radius: 7px;
+    background: var(--studio-field-bg);
+    box-shadow: inset 0 0 0 1px var(--studio-hairline);
+    transition: box-shadow 0.15s;
+}
+
+.studio-search:focus-within {
+    box-shadow:
+        inset 0 0 0 1px var(--studio-accent),
+        0 0 0 3px var(--studio-accent-ring);
+}
+
+.studio-search > svg {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+    color: var(--studio-text-faint);
+}
+
+.studio-search-input {
+    min-width: 0;
+    flex: 1;
+    height: 100%;
+    font-size: 12.5px;
+    color: var(--studio-text);
+    background: transparent;
+    outline: none;
+}
+
+.studio-search-input::placeholder {
+    color: var(--studio-text-faint);
+}
+
+.studio-search-input:disabled {
+    cursor: default;
+}
+
+.studio-toggle {
+    display: grid;
+    flex-shrink: 0;
+    place-items: center;
+    min-width: 22px;
+    height: 22px;
+    padding: 0 4px;
+    border: 1px solid transparent;
+    border-radius: 5px;
+    font-family: var(--studio-mono);
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--studio-text-faint);
+    transition:
+        color 0.15s,
+        background 0.15s,
+        border-color 0.15s;
+}
+
+.studio-toggle:hover {
+    color: var(--studio-text);
+    background: var(--studio-tint);
+}
+
+.studio-toggle[aria-pressed="true"] {
+    color: var(--studio-accent-ink);
+    border-color: var(--studio-accent-border);
+    background: var(--studio-accent-soft);
+}
+
+.studio-search-summary {
+    margin-top: 6px;
+    font-size: 11px;
+    line-height: 15px;
+    color: var(--studio-text-faint);
+}
+
+.studio-search-summary[data-error] {
+    color: var(--studio-error);
+}
+
+.studio-result + .studio-result {
+    margin-top: 4px;
+}
+
+/* The file stays visible while its matches scroll under it. */
+.studio-result-head {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    height: 26px;
+    padding: 0 8px;
+    border-radius: 6px;
+    font-size: 12px;
+    color: var(--studio-text);
+    background: var(--studio-glass-tint-strong);
+}
+
+.studio-result-head svg {
+    width: 13px;
+    height: 13px;
+    flex-shrink: 0;
+    color: var(--studio-accent-ink);
+}
+
+.studio-result-location {
+    min-width: 0;
+    flex: 1;
+    overflow: hidden;
+    font-size: 11.5px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--studio-text-faint);
+}
+
+.studio-result-row {
+    display: flex;
+    width: 100%;
+    align-items: baseline;
+    gap: 8px;
+    padding: 3px 8px 3px 10px;
+    border-radius: 5px;
+    font-family: var(--studio-mono);
+    font-size: 11.5px;
+    line-height: 17px;
+    color: var(--studio-text-dim);
+    text-align: left;
+    transition:
+        color 0.15s,
+        background 0.15s;
+}
+
+.studio-result-row:hover {
+    color: var(--studio-text);
+    background: var(--studio-tint);
+}
+
+.studio-result-line {
+    width: 3ch;
+    flex-shrink: 0;
+    text-align: right;
+    color: var(--studio-text-faint);
+}
+
+.studio-result-text {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: pre;
+}
+
+.studio-result-mark {
+    padding: 0 1px;
+    border-radius: 2px;
+    color: var(--studio-text);
+    background: color-mix(in srgb, var(--studio-warn) 28%, transparent);
+    box-shadow: inset 0 -1px 0 var(--studio-warn);
+}
+
+/* ─── Graph: Blueprint nodes and wires ───────────────────────────────────────
+   After Unreal's Blueprint editor: a dark node body under a header tinted by
+   kind, exec pins (▶) that wires run between, and a row per property set.
+   Metrics mirror BP in graph/layout.ts. The body stays dark in both themes, as
+   Blueprint's does; only the wires change, so they read on either canvas. */
+
+.studio-editor {
+    --bp-body: rgb(24 27 33 / 0.94);
+    --bp-body-edge: rgb(0 0 0 / 0.55);
+    --bp-text: rgb(240 242 245);
+    --bp-text-dim: rgb(240 242 245 / 0.62);
+    --bp-select: #f5a524;
+    --bp-exec: rgb(240 242 245);
+    --bp-wire-exec: rgb(58 65 80);
+
+    --bp-request: #2f7fd8;
+    --bp-callback: #2f9e5b;
+    --bp-unsolicited: #8b55d6;
+    --bp-on_demand: #d4861c;
+    --bp-form: #c2477a;
+    /* Flow control, like Blueprint's Branch / Switch nodes: a slate header. */
+    --bp-decision: #5f6b80;
+
+    --bp-wire-response: #3fbf6f;
+    --bp-wire-optional: rgb(140 148 160);
+    --bp-wire-branch: #e0b22e;
+    --bp-wire-on_demand: #e08a1c;
+    --bp-wire-form: #d0548a;
+    --bp-wire-error: #e5484d;
+    --bp-wire-terminal: #9a3b3b;
+    --bp-wire-mount: #2fb8c6;
+}
+
+.dark .studio-editor {
+    --bp-wire-exec: rgb(232 235 240);
+}
+
+.bp-node {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    --bp-kind: var(--bp-request);
+    border-radius: 9px;
+    background: var(--bp-body);
+    box-shadow:
+        0 0 0 1px var(--bp-body-edge),
+        inset 0 1px 0 rgb(255 255 255 / 0.06),
+        0 14px 30px -14px rgb(0 0 0 / 0.65);
+    color: var(--bp-text);
+    cursor: grab;
+    transition: box-shadow 0.15s;
+}
+
+.bp-node:active {
+    cursor: grabbing;
+}
+
+.bp-node[data-kind="callback"] {
+    --bp-kind: var(--bp-callback);
+}
+.bp-node[data-kind="unsolicited"] {
+    --bp-kind: var(--bp-unsolicited);
+}
+.bp-node[data-kind="on_demand"] {
+    --bp-kind: var(--bp-on_demand);
+}
+.bp-node[data-kind="form"] {
+    --bp-kind: var(--bp-form);
+}
+.bp-node[data-kind="decision"] {
+    --bp-kind: var(--bp-decision);
+}
+
+/* A decision's signature, opposite its In pin. */
+.bp-decide-sig {
+    overflow: hidden;
+    max-width: 70%;
+    font-family: var(--studio-mono);
+    font-size: 10px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* A decision's cases: one row each, its out pin at the right-hand end. */
+.bp-case-row {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    height: 24px;
+    padding: 0 28px 0 11px;
+    font-family: var(--studio-mono);
+    font-size: 11px;
+    color: var(--bp-text-dim);
+}
+
+.bp-case-row[data-wired] {
+    color: var(--bp-text);
+}
+
+.bp-case-value {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.bp-node:hover {
+    box-shadow:
+        0 0 0 1px rgb(255 255 255 / 0.35),
+        inset 0 1px 0 rgb(255 255 255 / 0.06),
+        0 14px 30px -14px rgb(0 0 0 / 0.65);
+}
+
+.bp-node[data-selected] {
+    box-shadow:
+        0 0 0 2px var(--bp-select),
+        0 0 18px -2px color-mix(in srgb, var(--bp-select) 55%, transparent),
+        0 14px 30px -14px rgb(0 0 0 / 0.65);
+}
+
+/* An optional node: skipping it is fine, so its outline is broken. */
+.bp-node[data-optional]::after {
+    content: "";
+    position: absolute;
+    inset: -4px;
+    border: 1.5px dashed rgb(255 255 255 / 0.28);
+    border-radius: 12px;
+    pointer-events: none;
+}
+
+.bp-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 40px;
+    padding: 0 9px 0 8px;
+    border-radius: 9px 9px 0 0;
+    background:
+        linear-gradient(180deg, rgb(255 255 255 / 0.16), transparent 55%),
+        linear-gradient(
+            90deg,
+            var(--bp-kind) 0%,
+            color-mix(in srgb, var(--bp-kind) 55%, transparent) 65%,
+            color-mix(in srgb, var(--bp-kind) 18%, transparent) 100%
+        );
+    box-shadow: inset 0 -1px 0 rgb(0 0 0 / 0.45);
+}
+
+.bp-head-icon {
+    display: grid;
+    flex-shrink: 0;
+    place-items: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    background: rgb(0 0 0 / 0.28);
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.12);
+}
+
+.bp-head-icon svg {
+    width: 13px;
+    height: 13px;
+}
+
+.bp-title {
+    overflow: hidden;
+    font-family: var(--studio-mono);
+    font-size: 12.5px;
+    font-weight: 700;
+    line-height: 16px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-shadow: 0 1px 2px rgb(0 0 0 / 0.6);
+}
+
+.bp-sub {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    overflow: hidden;
+    font-size: 10px;
+    line-height: 14px;
+    white-space: nowrap;
+    color: rgb(255 255 255 / 0.72);
+}
+
+.bp-sub-id {
+    overflow: hidden;
+    font-family: var(--studio-mono);
+    text-overflow: ellipsis;
+}
+
+.bp-flag {
+    padding: 0 4px;
+    border-radius: 3px;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    background: rgb(0 0 0 / 0.3);
+}
+
+.studio-editor .bp-owner,
+.studio-editor .bp-owner[data-owner] {
+    color: #fff;
+    background: rgb(0 0 0 / 0.32);
+}
+
+.bp-exec-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 28px;
+    padding: 0 28px;
+    font-size: 11px;
+    color: var(--bp-text-dim);
+}
+
+.bp-pin-label-out {
+    color: var(--bp-text);
+}
+
+/* Exec pins: Blueprint's ▶, hollow until a wire is attached. Sit inside the body. */
+.studio-editor .react-flow__handle.bp-exec {
+    width: 13px;
+    height: 13px;
+    min-width: 0;
+    min-height: 0;
+    border: none;
+    border-radius: 0;
+    background: var(--bp-exec);
+    clip-path: polygon(0 0, 55% 0, 100% 50%, 55% 100%, 0 100%);
+    transform: translate(0, -50%);
+    cursor: crosshair;
+    transition: transform 0.12s;
+}
+
+.studio-editor .react-flow__handle.bp-exec::after {
+    content: "";
+    position: absolute;
+    inset: 2px;
+    background: var(--bp-body);
+    clip-path: inherit;
+}
+
+.studio-editor .react-flow__handle.bp-exec[data-wired]::after,
+.studio-editor .react-flow__handle.bp-exec.connectingto::after,
+.studio-editor .react-flow__handle.bp-exec:hover::after {
+    display: none;
+}
+
+.studio-editor .react-flow__handle-left.bp-exec {
+    left: 9px;
+}
+
+.studio-editor .react-flow__handle-right.bp-exec {
+    right: 9px;
+    left: auto;
+}
+
+.studio-editor .react-flow__handle.bp-exec:hover {
+    transform: translate(0, -50%) scale(1.25);
+}
+
+.studio-editor .react-flow__handle.bp-exec.connectingto.valid {
+    background: var(--bp-select);
+}
+
+/* Property rows: a coloured pin dot, a label, the value. */
+.bp-row {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    height: 20px;
+    padding: 0 10px 0 11px;
+    font-size: 10.5px;
+    --bp-tone: rgb(170 178 190);
+}
+
+.bp-row[data-tone="response"] {
+    --bp-tone: var(--bp-wire-response);
+}
+.bp-row[data-tone="guard"] {
+    --bp-tone: var(--bp-wire-branch);
+}
+.bp-row[data-tone="effect"] {
+    --bp-tone: #4fa3ff;
+}
+.bp-row[data-tone="repeat"] {
+    --bp-tone: var(--bp-wire-mount);
+}
+.bp-row[data-tone="error"],
+.bp-row[data-tone="nack"] {
+    --bp-tone: var(--bp-wire-error);
+}
+
+.bp-dot {
+    width: 8px;
+    height: 8px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: var(--bp-tone);
+    box-shadow: 0 0 6px -1px var(--bp-tone);
+}
+
+.bp-row-label {
+    flex-shrink: 0;
+    color: var(--bp-text-dim);
+}
+
+.bp-row-value {
+    min-width: 0;
+    margin-left: auto;
+    overflow: hidden;
+    font-family: var(--studio-mono);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--bp-text);
+}
+
+/* Wires: thick beziers, coloured by kind; a loose (non-mandated) wire is dashed. */
+.studio-editor .react-flow__edge.bp-edge {
+    --bp-wire: var(--bp-wire-exec);
+}
+.studio-editor .react-flow__edge.bp-edge-response {
+    --bp-wire: var(--bp-wire-response);
+}
+.studio-editor .react-flow__edge.bp-edge-optional {
+    --bp-wire: var(--bp-wire-optional);
+}
+.studio-editor .react-flow__edge.bp-edge-branch {
+    --bp-wire: var(--bp-wire-branch);
+}
+.studio-editor .react-flow__edge.bp-edge-on_demand {
+    --bp-wire: var(--bp-wire-on_demand);
+}
+.studio-editor .react-flow__edge.bp-edge-form {
+    --bp-wire: var(--bp-wire-form);
+}
+.studio-editor .react-flow__edge.bp-edge-error {
+    --bp-wire: var(--bp-wire-error);
+}
+.studio-editor .react-flow__edge.bp-edge-terminal {
+    --bp-wire: var(--bp-wire-terminal);
+}
+.studio-editor .react-flow__edge.bp-edge-mount {
+    --bp-wire: var(--bp-wire-mount);
+}
+
+.studio-editor .react-flow__edge.bp-edge .react-flow__edge-path {
+    stroke: var(--bp-wire);
+    stroke-width: 2.5;
+    cursor: pointer;
+    transition: stroke-width 0.12s;
+}
+
+.studio-editor .react-flow__edge.bp-edge-optional .react-flow__edge-path,
+.studio-editor .react-flow__edge.bp-edge-loose .react-flow__edge-path {
+    stroke-dasharray: 7 5;
+}
+
+.studio-editor .react-flow__edge.bp-edge:hover .react-flow__edge-path {
+    stroke-width: 3.5;
+}
+
+.studio-editor .react-flow__edge.bp-edge-selected .react-flow__edge-path {
+    stroke-width: 3.5;
+    filter: drop-shadow(0 0 4px var(--bp-select));
+}
+
+.studio-editor .react-flow__connection-path {
+    stroke: var(--bp-wire-exec);
+    stroke-dasharray: 6 4;
+}
+
+.bp-edge-label {
+    position: absolute;
+    padding: 1px 6px;
+    border-radius: 999px;
+    font-family: var(--studio-mono);
+    font-size: 9.5px;
+    font-weight: 600;
+    line-height: 14px;
+    letter-spacing: 0.03em;
+    color: var(--bp-text);
+    background: var(--bp-body);
+    box-shadow: 0 0 0 1px var(--bp-label-ring, rgb(255 255 255 / 0.2));
+    pointer-events: none;
+    white-space: nowrap;
+}
+
+.bp-edge-label[data-kind="response"] {
+    --bp-label-ring: var(--bp-wire-response);
+}
+.bp-edge-label[data-kind="branch"] {
+    --bp-label-ring: var(--bp-wire-branch);
+}
+.bp-edge-label[data-kind="on_demand"] {
+    --bp-label-ring: var(--bp-wire-on_demand);
+}
+.bp-edge-label[data-kind="form"] {
+    --bp-label-ring: var(--bp-wire-form);
+}
+.bp-edge-label[data-kind="error"] {
+    --bp-label-ring: var(--bp-wire-error);
+}
+.bp-edge-label[data-kind="terminal"] {
+    --bp-label-ring: var(--bp-wire-terminal);
+}
+.bp-edge-label[data-kind="mount"] {
+    --bp-label-ring: var(--bp-wire-mount);
+}
+.bp-edge-label[data-selected] {
+    box-shadow: 0 0 0 1.5px var(--bp-select);
+}
+
+.bp-edge-label-loose {
+    margin-left: 3px;
+    font-weight: 400;
+    color: var(--bp-text-dim);
+}
+
+/* ─── Graph menu: right-click "All actions" popup ──────────────────────────── */
+
+.bp-menu {
+    position: absolute;
+    z-index: 40;
+    display: flex;
+    flex-direction: column;
+    width: 300px;
+    max-height: min(500px, calc(100% - 16px), calc(100vh - 120px));
+    animation: bp-menu-in 0.12s var(--studio-ease);
+    outline: none;
+}
+
+@keyframes bp-menu-in {
+    from {
+        opacity: 0;
+        transform: translateY(-4px) scale(0.98);
+    }
+}
+
+.bp-menu-head {
+    padding: 10px 12px 6px;
+}
+
+.bp-menu-title {
+    overflow: hidden;
+    font-family: var(--studio-mono);
+    font-size: 12.5px;
+    font-weight: 600;
+    line-height: 16px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--studio-text);
+}
+
+.bp-menu-sub {
+    font-size: 11px;
+    line-height: 14px;
+    color: var(--studio-text-faint);
+}
+
+.bp-menu-search {
+    margin: 2px 8px 6px;
+}
+
+.bp-menu-body {
+    min-height: 0;
+    flex: 1;
+    overflow: auto;
+    padding: 0 6px 6px;
+}
+
+.bp-menu-empty {
+    padding: 12px 8px;
+    font-size: 12px;
+    color: var(--studio-text-faint);
+}
+
+.bp-menu-section + .bp-menu-section {
+    margin-top: 4px;
+    padding-top: 4px;
+    border-top: 1px solid var(--studio-hairline);
+}
+
+.bp-menu-section-title {
+    padding: 4px 8px 3px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--studio-text-faint);
+}
+
+.bp-menu-item {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    gap: 8px;
+    height: 28px;
+    padding: 0 8px 0 5px;
+    border-radius: 7px;
+    text-align: left;
+    color: var(--studio-text-dim);
+    --bp-swatch: var(--studio-tint-strong);
+}
+
+.bp-menu-item[data-active] {
+    color: var(--studio-text);
+    background: var(--studio-accent-soft);
+    box-shadow: inset 0 0 0 1px var(--studio-accent-border);
+}
+
+.bp-menu-item:disabled {
+    cursor: default;
+    opacity: 0.5;
+}
+
+.bp-menu-item[data-tone="request"] {
+    --bp-swatch: var(--bp-request);
+}
+.bp-menu-item[data-tone="callback"],
+.bp-menu-item[data-tone="response"] {
+    --bp-swatch: var(--bp-callback);
+}
+.bp-menu-item[data-tone="unsolicited"] {
+    --bp-swatch: var(--bp-unsolicited);
+}
+.bp-menu-item[data-tone="on_demand"] {
+    --bp-swatch: var(--bp-on_demand);
+}
+.bp-menu-item[data-tone="form"] {
+    --bp-swatch: var(--bp-form);
+}
+.bp-menu-item[data-tone="decision"] {
+    --bp-swatch: var(--bp-decision);
+}
+.bp-menu-item[data-tone="next"] {
+    --bp-swatch: var(--bp-wire-exec);
+}
+.bp-menu-item[data-tone="optional"] {
+    --bp-swatch: var(--bp-wire-optional);
+}
+.bp-menu-item[data-tone="branch"] {
+    --bp-swatch: var(--bp-wire-branch);
+}
+.bp-menu-item[data-tone="error"],
+.bp-menu-item[data-tone="danger"] {
+    --bp-swatch: var(--bp-wire-error);
+}
+.bp-menu-item[data-tone="terminal"] {
+    --bp-swatch: var(--bp-wire-terminal);
+}
+.bp-menu-item[data-tone="mount"] {
+    --bp-swatch: var(--bp-wire-mount);
+}
+
+.bp-menu-item[data-tone="danger"] .bp-menu-label {
+    color: var(--studio-error);
+}
+
+.bp-menu-swatch {
+    display: grid;
+    flex-shrink: 0;
+    place-items: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 5px;
+    color: #fff;
+    background: var(--bp-swatch);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.25);
+}
+
+.bp-menu-item[data-tone="neutral"] .bp-menu-swatch,
+.bp-menu-item:not([data-tone]) .bp-menu-swatch {
+    color: var(--studio-text-dim);
+    background: var(--studio-tint);
+    box-shadow: inset 0 0 0 1px var(--studio-hairline);
+}
+
+.bp-menu-swatch svg {
+    width: 12px;
+    height: 12px;
+}
+
+.bp-menu-label {
+    flex-shrink: 0;
+    max-width: 62%;
+    overflow: hidden;
+    font-family: var(--studio-mono);
+    font-size: 12px;
+    font-weight: 500;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--studio-text);
+}
+
+.bp-menu-hint {
+    min-width: 0;
+    margin-left: auto;
+    overflow: hidden;
+    font-size: 10.5px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--studio-text-faint);
+}
+
+.bp-menu-check {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+    color: var(--studio-accent-ink);
+}
+
+/* ─── Inspector: node / wire properties ───────────────────────────────────── */
+
+.bp-props-well {
+    overflow: auto;
+}
+
+.bp-props {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 12px 12px 16px;
+}
+
+.bp-props-empty {
+    padding: 16px;
+    font-size: 12px;
+    color: var(--studio-text-faint);
+}
+
+.bp-props-section {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.bp-props-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px 10px;
+}
+
+.bp-field {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.bp-field[data-wide] {
+    grid-column: span 2;
+}
+
+.bp-field-label {
+    font-family: var(--studio-mono);
+    font-size: 10.5px;
+    color: var(--studio-text-faint);
+}
+
+.bp-field-error {
+    font-size: 11px;
+    color: var(--studio-error);
+}
+
+.bp-input {
+    width: 100%;
+    min-width: 0;
+    padding: 5px 8px;
+    border-radius: 6px;
+    font-size: 12.5px;
+    line-height: 18px;
+    color: var(--studio-text);
+    background: var(--studio-field-bg);
+    box-shadow: inset 0 0 0 1px var(--studio-hairline);
+    outline: none;
+    transition: box-shadow 0.15s;
+}
+
+textarea.bp-input {
+    resize: vertical;
+}
+
+.bp-input::placeholder {
+    color: var(--studio-text-faint);
+}
+
+.bp-input:focus {
+    box-shadow:
+        inset 0 0 0 1px var(--studio-accent),
+        0 0 0 3px var(--studio-accent-ring);
+}
+
+.bp-input[aria-invalid="true"] {
+    box-shadow: inset 0 0 0 1px var(--studio-error);
+}
+
+.bp-json {
+    font-size: 11.5px;
+}
+
+.bp-check {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 2px 7px;
+    padding: 4px 0;
+    font-size: 12px;
+    color: var(--studio-text);
+    cursor: pointer;
+}
+
+.bp-check > span:first-of-type {
+    font-family: var(--studio-mono);
+}
+
+.bp-check input {
+    accent-color: var(--studio-accent);
+}
+
+.bp-check-hint {
+    flex-basis: 100%;
+    padding-left: 20px;
+    font-size: 10.5px;
+    line-height: 14px;
+    color: var(--studio-text-faint);
+}
+
+.bp-props-delete {
+    align-self: flex-start;
+    gap: 6px;
+    color: var(--studio-error);
+}
+
+.studio-filerow[data-group="node"] {
+    padding-bottom: 2px;
+    border-bottom: 1px solid var(--studio-hairline);
+}
+
+/* ─── Explorer: nodes list ─────────────────────────────────────────────────── */
+
+.bp-tree-item {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+}
+
+.studio-tree-action.bp-tree-row {
+    min-width: 0;
+    flex: 1;
+    padding-left: 6px;
+}
+
+.studio-tree-action.bp-tree-row::before {
+    display: none;
+}
+
+.bp-tree-kind {
+    display: grid;
+    flex-shrink: 0;
+    place-items: center;
+    width: 18px;
+    height: 18px;
+    border-radius: 5px;
+    color: #fff;
+    background: var(--bp-request);
+}
+
+.bp-tree-row[data-kind="callback"] .bp-tree-kind {
+    background: var(--bp-callback);
+}
+.bp-tree-row[data-kind="unsolicited"] .bp-tree-kind {
+    background: var(--bp-unsolicited);
+}
+.bp-tree-row[data-kind="on_demand"] .bp-tree-kind {
+    background: var(--bp-on_demand);
+}
+.bp-tree-row[data-kind="form"] .bp-tree-kind {
+    background: var(--bp-form);
+}
+.bp-tree-row[data-kind="decision"] .bp-tree-kind {
+    background: var(--bp-decision);
+}
+
+/* A decision's cases in the inspector: name, where its wire goes, remove. */
+.bp-cases {
+    grid-column: span 2;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.bp-cases > .studio-key-sm {
+    align-self: flex-start;
+    gap: 6px;
+}
+
+.bp-case-edit > .studio-key {
+    margin-top: 18px;
+}
+
+.bp-case-edit {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+    align-items: start;
+    gap: 8px;
+}
+
+.bp-case-target {
+    overflow: hidden;
+    padding-top: 22px;
+    font-family: var(--studio-mono);
+    font-size: 11.5px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--studio-text-dim);
+}
+
+.bp-case-target[data-unwired] {
+    color: var(--studio-warn);
+}
+
+.bp-props-note {
+    font-size: 11.5px;
+    line-height: 16px;
+    color: var(--studio-text-faint);
+}
+
+.bp-tree-kind svg {
+    width: 11px;
+    height: 11px;
+}
+
+.bp-tree-item:hover .bp-tree-remove {
+    opacity: 1;
+}
+
+/* ─── Dock: console + chat ─────────────────────────────────────────────────── */
+
+.studio-level {
+    flex-shrink: 0;
+    width: 7ch;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.studio-level[data-level="info"] {
+    color: var(--studio-accent-ink);
+}
+
+.studio-level[data-level="success"] {
+    color: var(--studio-ok);
+}
+
+.studio-level[data-level="warn"] {
+    color: var(--studio-warn);
+}
+
+.studio-level[data-level="error"] {
+    color: var(--studio-error);
+}
+
+.studio-bubble {
+    width: fit-content;
+    max-width: 80%;
+    padding: 7px 12px;
+    border-radius: 12px;
+    font-size: 14px;
+    line-height: 20px;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.studio-bubble[data-role="user"] {
+    margin-left: auto;
+    border-bottom-right-radius: 4px;
+    color: var(--color-n-0);
+    background: var(--studio-accent);
+}
+
+.studio-bubble[data-role="assistant"] {
+    border-bottom-left-radius: 4px;
+    color: var(--studio-text);
+    background: var(--studio-bubble-bg);
+    box-shadow: inset 0 0 0 1px var(--studio-hairline);
+}
+
+/* The app's Input: hairline border, 3px brand ring on focus. */
+.studio-input {
+    min-height: 36px;
+    max-height: 120px;
+    padding: 7px 12px;
+    border-radius: 6px;
+    font-size: 14px;
+    line-height: 20px;
+    color: var(--studio-text);
+    background: var(--studio-field-bg);
+    box-shadow: inset 0 0 0 1px var(--studio-hairline);
+    outline: none;
+    resize: none;
+    transition: box-shadow 0.15s;
+}
+
+.studio-input::placeholder {
+    color: var(--studio-text-faint);
+}
+
+.studio-input:focus {
+    box-shadow:
+        inset 0 0 0 1px var(--studio-accent),
+        0 0 0 3px var(--studio-accent-ring);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .studio-inspector,
+    .studio-dock,
+    .studio-canvas-area,
+    .studio-key {
+        transition: none;
+    }
+
+    .bp-menu {
+        animation: none;
+    }
+}

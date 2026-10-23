@@ -8,6 +8,7 @@ import PastReportsSection from "@pages/user-profile/PastReportsSection";
 import ActivityHistorySection from "@pages/user-profile/ActivityHistorySection";
 import HistoryPage from "@pages/history";
 import ProtocolPlayGround from "@pages/protocol-playground";
+import ProtocolStudio from "@pages/protocol-studio";
 // import DBBackOffice from "@pages/db-back-office";
 import FlowTestingWrapper from "@pages/flow-testing";
 import McpSessionPage from "@pages/mcp-session";
@@ -65,6 +66,10 @@ const Routes = () => (
         </Route>
         <Route path={ROUTES.SELLER_ONBOARDING} element={page(<SellerOnboarding />)} />
         <Route path={ROUTES.PLAYGROUND} element={page(<ProtocolPlayGround />)} />
+        {/* Not wrapped in page(): PageReveal is keyed by pathname, so moving from
+            the Studio starter to /studio/editor would remount the page and drop
+            its in-memory config. The page wraps its starter in PageReveal itself. */}
+        <Route path={`${ROUTES.STUDIO}/*`} element={<ProtocolStudio />} />
         <Route path={ROUTES.HISTORY} element={page(<HistoryPage />)} />
         {/* <Route path={ROUTES.DB_BACK_OFFICE} element={page(<DBBackOffice />)} /> */}
         {/* <Route path={ROUTES.AUTH_HEADER} element={page(<AuthHeader />)} /> */}

@@ -6,7 +6,7 @@ import Footer from "@components/Footer";
 import Routes from "@components/Routes";
 import { useAppSelector } from "@store/hooks";
 import { selectAuthToken, selectIsLoginPending } from "@store/slices/authSlice";
-import { isChromelessRoute } from "@constants/routes";
+import { isChromelessRoute, isFooterlessRoute } from "@constants/routes";
 import { isDev } from "@/types/environment";
 
 /** True while the OAuth callback query param is still on the URL (pre-exchange). */
@@ -28,6 +28,7 @@ const Layout = () => {
     // Link-only pages shown to people outside the workbench render bare — no
     // nav, no footer, and none of the top padding that clears a fixed header.
     const chromeless = isChromelessRoute(location.pathname);
+    const footerless = chromeless || isFooterlessRoute(location.pathname);
 
     return (
         <div className="flex min-h-svh flex-col bg-surface-page text-text-primary">
@@ -41,7 +42,7 @@ const Layout = () => {
                 {suppressPageContent ? null : <Routes />}
             </div>
 
-            {suppressPageContent || chromeless ? null : <Footer />}
+            {suppressPageContent || footerless ? null : <Footer />}
 
             {showLoginOverlay ? <LoadingOverlay /> : null}
 
