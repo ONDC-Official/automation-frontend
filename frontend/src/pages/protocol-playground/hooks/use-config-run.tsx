@@ -47,6 +47,10 @@ export const useConfigRun = () => {
                         playgroundContext.config?.meta?.domain,
                         playgroundContext.config?.meta?.version
                     )}
+                    tokenContext={{
+                        domain: playgroundContext.config?.meta?.domain,
+                        version: playgroundContext.config?.meta?.version,
+                    }}
                 />
             </PlaygroundSchemaFormShell>,
             { className: "max-w-xl" }
