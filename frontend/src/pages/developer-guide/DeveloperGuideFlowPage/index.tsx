@@ -6,13 +6,18 @@ import FlowInformation from "../FlowInformation";
 import DocsViewer from "../DocsViewer";
 import ErrorCodesTable from "../ErrorCodesTable";
 import ReferenceImplementationView from "../ReferenceImplementationView";
-import ChangelogView from "../ChangelogView";
+// import ChangelogView from "../ChangelogView";
+import GithubMarkdown from "@components/GithubMarkdown";
 import AdditionalResourcesView from "../AdditionalResourcesView";
 import { useDeveloperGuideNav } from "../layout/DeveloperGuideNav";
 import GuideContentSkeleton from "../shared/components/GuideContentSkeleton";
 import GuideTabFade from "../shared/components/GuideTabFade";
 import FlowPageHeader from "./FlowPageHeader";
-import { resolveUseCaseDocs, resolveAdditionalResourcesDocs } from "../content/resolveUseCaseDocs";
+import {
+    resolveUseCaseDocs,
+    resolveAdditionalResourcesDocs,
+    resolveChangelogDoc,
+} from "../content/resolveUseCaseDocs";
 import { useDeveloperGuideFlowPageData } from "./useDeveloperGuideFlowPageData";
 import type { TopLevelView } from "./types";
 
@@ -36,8 +41,8 @@ const DeveloperGuideFlowPage: FC = () => {
         flows,
         errorCodes,
         hasErrorCodes,
-        lazyChangelog,
-        changelogLoading,
+        // lazyChangelog, changelogLoading — unused now that Changelog renders the
+        // "release notes" doc instead of the structured x-changelog JSON.
         apiUsecase,
     } = useDeveloperGuideFlowPageData();
 
@@ -56,6 +61,7 @@ const DeveloperGuideFlowPage: FC = () => {
     const hasAdditionalResources =
         !!additionalResourcesDocs && Object.keys(additionalResourcesDocs).length > 0;
 
+    const changelogDoc = useMemo(() => resolveChangelogDoc(specData?.["x-docs"]), [specData]);
     const tabOrder = useMemo(() => {
         const order: TopLevelView[] = ["docs"];
         if (hasFigma) order.push("reference-implementation");
@@ -172,8 +178,14 @@ const DeveloperGuideFlowPage: FC = () => {
                                     </div>
                                 ))}
                             {activeView === "changelog" &&
-                                (changelogLoading ? null : (
-                                    <ChangelogView changelogs={lazyChangelog || []} />
+                                (changelogDoc ? (
+                                    <GithubMarkdown content={changelogDoc} />
+                                ) : (
+                                    <div className="rounded-xl border border-slate-200 bg-slate-50 dark:bg-surface-muted py-12 text-center">
+                                        <p className="text-sm text-slate-400">
+                                            No changelog available.
+                                        </p>
+                                    </div>
                                 ))}
                         </div>
                     )}
