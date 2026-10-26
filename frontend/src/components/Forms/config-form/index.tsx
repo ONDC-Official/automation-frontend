@@ -445,6 +445,12 @@ export const FormConfig = ({
                 schema={schema}
                 onSubmit={onSubmitSchema}
                 mapEnabled={isRideMapEnabled(sessionData?.domain, sessionData?.version)}
+                tokenContext={{
+                    npType: sessionData?.npType,
+                    subscriberUrl: sessionData?.subscriberUrl,
+                    domain: sessionData?.domain,
+                    version: sessionData?.version,
+                }}
             />
         );
     }
