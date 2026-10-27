@@ -60,4 +60,42 @@ export function resolveAdditionalResourcesDocs(
     );
 }
 
-export { isAdditionalResourcesSlug };
+/** The Changelog tab's markdown comes from the backend as a single shared doc
+ * per domain/version — the canonical filename going forward is
+ * `changelogs.md`. Matched by normalizing (lowercased, `-`/`_` → space) so
+ * minor naming variance still resolves; "changelog"/"release notes" are kept
+ * as fallbacks for specs authored before this filename was settled on.
+ * DocsViewer's `filteredDocs` excludes this slug from the normal docs tabs,
+ * so it never leaks into Use Case Brief. */
+const CHANGELOG_SLUGS = new Set(["changelogs", "changelog", "release notes"]);
+
+/** Legacy per-use-case convention (`<usecase-slug>-changelog`, e.g.
+ * `business-loan-changelog`) some older specs still ship. No longer used to
+ * resolve Changelog tab *content* (the canonical `changelogs.md` doc is the
+ * only source now), but still excluded from the normal docs tabs so a
+ * leftover file doesn't show up as its own Use Case Brief tab. */
+const LEGACY_PER_USE_CASE_SUFFIX = "-changelog";
+
+function isCanonicalChangelogSlug(slug: string): boolean {
+    return CHANGELOG_SLUGS.has(slug.toLowerCase().replace(/[-_]/g, " ").trim());
+}
+
+/** True for the canonical changelog doc or a legacy per-use-case one — used by
+ * `DocsViewer` to keep both out of the normal docs tabs list (same as
+ * `isAdditionalResourcesSlug`). */
+function isChangelogSlug(slug: string): boolean {
+    return (
+        isCanonicalChangelogSlug(slug) || slug.toLowerCase().endsWith(LEGACY_PER_USE_CASE_SUFFIX)
+    );
+}
+
+/** Resolve the Changelog tab's markdown doc from API spec data, if present. */
+export function resolveChangelogDoc(
+    apiDocs: Record<string, string> | undefined
+): string | undefined {
+    if (!apiDocs) return undefined;
+    const entry = Object.entries(apiDocs).find(([slug]) => isCanonicalChangelogSlug(slug));
+    return entry ? prepareDocContent(entry[1]) : undefined;
+}
+
+export { isAdditionalResourcesSlug, isChangelogSlug };
