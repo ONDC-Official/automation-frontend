@@ -193,6 +193,11 @@ export interface FlowMeta {
 export interface FlowDisplaySection {
     name: string;
     actions: Record<string, string>;
+    /** Render this section as a collapsible "Optional Step" card inline within
+     * the flow's own step sequence (same badge/behavior as an `inline` card),
+     * instead of a plain heading — for a step that belongs to this flow itself
+     * but is skippable, e.g. a manual-review redirection. */
+    optional?: boolean;
 }
 
 /** A flow injected inline within another flow's Journey View, anchored to one of

@@ -82,6 +82,188 @@ const AccordionFlowDescription: FC<{ text: string }> = ({ text }) => {
     );
 };
 
+// ─── Shared collapsible-card primitives ─────────────────────────────────────
+// Every accordion card in this file (prerequisite, inline, optional-step
+// segment, servicing-flow secondary, primary) shares the same chevron +
+// grid-rows collapse + badge-pill shapes. Centralizing them here keeps every
+// card visually/behaviorally consistent — e.g. the chevron is always wrapped
+// in its own span so Shadcn Button's `has-[>svg]:px-3` base style never
+// silently shrinks a header's padding (see FlowsHierarchyAccordion padding
+// fixes earlier this file's history).
+
+const Chevron: FC<{ isOpen: boolean; size?: "sm" | "md" }> = ({ isOpen, size = "sm" }) => (
+    <ChevronDownIcon
+        className={cn(
+            size === "md" ? "size-4" : "size-3.5",
+            "text-slate-400 transition-transform duration-300",
+            isOpen && "rotate-180"
+        )}
+    />
+);
+
+const BADGE_COLOR_CLASS = {
+    violet: "bg-violet-100 text-violet-700 dark:bg-violet-500/15 dark:text-violet-300",
+    sky: "bg-sky-100 text-sky-700 dark:bg-sky-500/15 dark:text-sky-300",
+    amber: "bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300",
+} as const;
+
+const Badge: FC<{ color: keyof typeof BADGE_COLOR_CLASS; children: React.ReactNode }> = ({
+    color,
+    children,
+}) => (
+    <span
+        className={cn(
+            "shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider",
+            BADGE_COLOR_CLASS[color]
+        )}
+    >
+        {children}
+    </span>
+);
+
+const CountChip: FC<{ children: React.ReactNode }> = ({ children }) => (
+    <span className="rounded-full bg-slate-100 px-1.5 py-0.5 text-[9px] font-semibold text-slate-500 dark:bg-surface-muted dark:text-n-40">
+        {children}
+    </span>
+);
+
+/** The `grid-rows-[0fr]` → `grid-rows-[1fr]` collapse trick, shared by every
+ * accordion body in this file (it animates height without a measured pixel
+ * value). */
+const CollapsiblePanel: FC<{ isOpen: boolean; children: React.ReactNode }> = ({
+    isOpen,
+    children,
+}) => (
+    <div
+        className={cn(
+            "grid transition-[grid-template-rows] duration-300 ease-in-out motion-reduce:transition-none",
+            isOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
+        )}
+    >
+        <div className="overflow-hidden">{children}</div>
+    </div>
+);
+
+const CARD_BORDER_CLASS = {
+    slate: "border-slate-200 dark:border-border-default",
+    violet: "border-violet-200 dark:border-violet-800",
+    sky: "border-sky-200 dark:border-sky-800",
+} as const;
+
+interface CollapsibleCardProps {
+    isOpen: boolean;
+    onToggle: () => void;
+    borderColor?: keyof typeof CARD_BORDER_CLASS;
+    /** Extra classes on the outer card wrapper (e.g. "min-w-0 flex-1" when the
+     * card sits alongside a stepper bullet instead of standing alone). */
+    wrapperClassName?: string;
+    /** Extra/overriding classes on the header Button — gap/padding/hover color. */
+    headerClassName?: string;
+    bodyClassName?: string;
+    /** Icon shown before the title/badge stack (e.g. a "nested under" arrow). */
+    leading?: React.ReactNode;
+    titleClassName?: string;
+    title: React.ReactNode;
+    badge?: React.ReactNode;
+    /** Rendered before the chevron inside the same trailing group (e.g. a count chip). */
+    trailing?: React.ReactNode;
+    children: React.ReactNode;
+}
+
+const CollapsibleCard: FC<CollapsibleCardProps> = ({
+    isOpen,
+    onToggle,
+    borderColor = "slate",
+    wrapperClassName,
+    headerClassName,
+    bodyClassName = "px-3 pb-3 pt-0.5",
+    leading,
+    titleClassName = "text-[11px]",
+    title,
+    badge,
+    trailing,
+    children,
+}) => {
+    const titleBlock = (
+        <span className="flex min-w-0 flex-col items-start gap-1">
+            <span
+                className={cn(
+                    "min-w-0 font-medium text-slate-800 dark:text-n-10 wrap-anywhere whitespace-normal leading-4",
+                    titleClassName
+                )}
+            >
+                {title}
+            </span>
+            {badge}
+        </span>
+    );
+
+    return (
+        <div
+            className={cn(
+                "rounded-lg border bg-white dark:bg-surface-elevated overflow-hidden",
+                CARD_BORDER_CLASS[borderColor],
+                wrapperClassName
+            )}
+        >
+            <Button
+                type="button"
+                variant="ghost"
+                onClick={onToggle}
+                aria-expanded={isOpen}
+                className={cn(
+                    "h-auto w-full justify-between gap-2 rounded-none px-3 font-normal text-left hover:bg-slate-50 dark:hover:bg-surface-muted",
+                    headerClassName
+                )}
+            >
+                {leading ? (
+                    <span className="flex min-w-0 items-start gap-2">
+                        {leading}
+                        {titleBlock}
+                    </span>
+                ) : (
+                    titleBlock
+                )}
+                <span className="flex shrink-0 items-center gap-1.5">
+                    {trailing}
+                    <Chevron isOpen={isOpen} />
+                </span>
+            </Button>
+            <CollapsiblePanel isOpen={isOpen}>
+                <div className={bodyClassName}>{children}</div>
+            </CollapsiblePanel>
+        </div>
+    );
+};
+
+/** The outer shell shared by both "primary" cards (Journey view's "Full
+ * Journey" card and API Reference's primary-flow card) — same rounded-xl
+ * wrapper, toggle button, and collapse panel; only the header content and
+ * body differ per view. */
+const PrimaryCardShell: FC<{
+    isOpen: boolean;
+    onToggle: () => void;
+    headerClassName: string;
+    header: React.ReactNode;
+    children: React.ReactNode;
+}> = ({ isOpen, onToggle, headerClassName, header, children }) => (
+    <div className="rounded-xl border border-slate-200 dark:border-border-default bg-white dark:bg-surface-elevated shadow-sm overflow-hidden">
+        <Button
+            type="button"
+            variant="ghost"
+            onClick={onToggle}
+            aria-expanded={isOpen}
+            className={cn(
+                "h-auto w-full items-start justify-between gap-2 rounded-none font-normal text-left hover:bg-slate-50 dark:hover:bg-surface-muted",
+                headerClassName
+            )}
+        >
+            {header}
+        </Button>
+        <CollapsiblePanel isOpen={isOpen}>{children}</CollapsiblePanel>
+    </div>
+);
+
 const FlowsHierarchyAccordion: FC<FlowsHierarchyAccordionProps> = ({
     flows,
     selectedFlow,
@@ -137,6 +319,7 @@ const FlowsHierarchyAccordion: FC<FlowsHierarchyAccordionProps> = ({
     const [openPrereqId, setOpenPrereqId] = useState<string | null>(null);
     const [openJourneySecondaryId, setOpenJourneySecondaryId] = useState<string | null>(null);
     const [openInlineFlowId, setOpenInlineFlowId] = useState<string | null>(null);
+    const [openOptionalGroupId, setOpenOptionalGroupId] = useState<string | null>(null);
 
     const flowsById = useMemo(() => new Map(flows.map((f) => [f.flowId, f])), [flows]);
 
@@ -286,6 +469,39 @@ const FlowsHierarchyAccordion: FC<FlowsHierarchyAccordionProps> = ({
         );
     };
 
+    // Renders one display item's row (stepper bullet + button/pair), used both
+    // for the normal sequence and for the content inside an optional-step card.
+    const renderStepItemRow = (
+        flowId: string,
+        item: StepDisplayItem,
+        annotation: SimplifiedItemAnnotation | undefined,
+        bullet: React.ReactNode
+    ) => {
+        const simplifiedLabels =
+            !showApiReference && annotation?.stepLabels ? annotation.stepLabels : null;
+        return (
+            <div className="flex min-w-0 items-center gap-2.5">
+                {bullet}
+                {simplifiedLabels ? (
+                    simplifiedStepRows(flowId, item, simplifiedLabels)
+                ) : item.type === "pair" ? (
+                    <div className="grid min-w-0 flex-1 grid-cols-[minmax(0,1fr)_1.25rem_minmax(0,1fr)] items-center gap-x-2.5">
+                        {stepButton(flowId, item.request)}
+                        <span className="flex items-center justify-center">
+                            <ArrowsRightLeftIcon
+                                className="size-3 shrink-0 text-slate-400"
+                                aria-hidden
+                            />
+                        </span>
+                        {stepButton(flowId, item.response)}
+                    </div>
+                ) : (
+                    <div className="min-w-0 flex-1">{stepButton(flowId, item.step)}</div>
+                )}
+            </div>
+        );
+    };
+
     const stepRows = (
         flowId: string,
         items: StepDisplayItem[],
@@ -297,57 +513,98 @@ const FlowsHierarchyAccordion: FC<FlowsHierarchyAccordionProps> = ({
             withStepper && selectedFlow === flowId
                 ? items.findIndex((item) => itemMatchesAction(item, selectedFlowAction))
                 : -1;
-        return (
-            <div className="flex flex-col gap-2.5 pt-2.5">
-                {items.map((item, i) => {
-                    const annotation = annotations?.[i];
-                    const simplifiedLabels =
-                        !showApiReference && annotation?.stepLabels ? annotation.stepLabels : null;
-                    return (
-                        <Fragment key={i}>
-                            {annotation?.heading && (
-                                <div
-                                    className={cn(
-                                        "text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:text-n-40",
-                                        i > 0 && "pt-1"
-                                    )}
-                                >
-                                    {annotation.heading}
-                                </div>
-                            )}
-                            <div className="flex min-w-0 items-center gap-2.5">
-                                {withStepper &&
-                                    stepperBullet(
-                                        selectedItemIndex >= 0 && i <= selectedItemIndex,
-                                        selectedItemIndex >= 0 && i < selectedItemIndex,
-                                        i === 0,
-                                        i === items.length - 1
-                                    )}
-                                {simplifiedLabels ? (
-                                    simplifiedStepRows(flowId, item, simplifiedLabels)
-                                ) : item.type === "pair" ? (
-                                    <div className="grid min-w-0 flex-1 grid-cols-[minmax(0,1fr)_1.25rem_minmax(0,1fr)] items-center gap-x-2.5">
-                                        {stepButton(flowId, item.request)}
-                                        <span className="flex items-center justify-center">
-                                            <ArrowsRightLeftIcon
-                                                className="size-3 shrink-0 text-slate-400"
-                                                aria-hidden
-                                            />
-                                        </span>
-                                        {stepButton(flowId, item.response)}
-                                    </div>
-                                ) : (
-                                    <div className="min-w-0 flex-1">
-                                        {stepButton(flowId, item.step)}
-                                    </div>
+
+        const nodes: React.ReactNode[] = [];
+        let i = 0;
+        while (i < items.length) {
+            const item = items[i];
+            const annotation = annotations?.[i];
+
+            // A run of consecutive items flagged `optional` (meta.display.sections[].optional)
+            // renders as one collapsible "Optional Step" card — same badge/behavior as an
+            // `inline` card, but for steps that belong to this flow's own sequence.
+            if (annotation?.optional) {
+                const start = i;
+                let end = i;
+                while (end < items.length && annotations?.[end]?.optional) end++;
+                const segmentItems = items.slice(start, end);
+                const segmentAnnotations = annotations?.slice(start, end) ?? [];
+                const heading = annotation.heading ?? "Optional Step";
+                const groupKey = `${flowId}::optional::${start}`;
+                const isOpen =
+                    openOptionalGroupId === groupKey ||
+                    (selectedFlow === flowId &&
+                        segmentItems.some((it) => itemMatchesAction(it, selectedFlowAction)));
+
+                nodes.push(
+                    <Fragment key={groupKey}>
+                        <div className="flex min-w-0 items-center gap-2.5">
+                            {withStepper &&
+                                stepperBullet(
+                                    selectedItemIndex >= 0 && start <= selectedItemIndex,
+                                    selectedItemIndex >= 0 && start < selectedItemIndex,
+                                    start === 0,
+                                    end === items.length
                                 )}
-                            </div>
-                            {injectAfter?.get(i)}
-                        </Fragment>
-                    );
-                })}
-            </div>
-        );
+                            <CollapsibleCard
+                                isOpen={isOpen}
+                                onToggle={() => setOpenOptionalGroupId(isOpen ? null : groupKey)}
+                                borderColor="violet"
+                                wrapperClassName="min-w-0 flex-1"
+                                headerClassName="py-2.5 hover:bg-violet-50/60 dark:hover:bg-violet-950/20"
+                                bodyClassName="flex flex-col gap-2.5 px-3 pb-3 pt-0.5"
+                                title={heading}
+                                badge={<Badge color="violet">Optional Step</Badge>}
+                            >
+                                {segmentItems.map((segItem, segIdx) =>
+                                    renderStepItemRow(
+                                        flowId,
+                                        segItem,
+                                        segmentAnnotations[segIdx],
+                                        null
+                                    )
+                                )}
+                            </CollapsibleCard>
+                        </div>
+                        {injectAfter?.get(end - 1)}
+                    </Fragment>
+                );
+                i = end;
+                continue;
+            }
+
+            nodes.push(
+                <Fragment key={i}>
+                    {annotation?.heading && (
+                        <div
+                            className={cn(
+                                "text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:text-n-40",
+                                i > 0 && "pt-1"
+                            )}
+                        >
+                            {annotation.heading}
+                        </div>
+                    )}
+                    {renderStepItemRow(
+                        flowId,
+                        item,
+                        annotation,
+                        withStepper
+                            ? stepperBullet(
+                                  selectedItemIndex >= 0 && i <= selectedItemIndex,
+                                  selectedItemIndex >= 0 && i < selectedItemIndex,
+                                  i === 0,
+                                  i === items.length - 1
+                              )
+                            : null
+                    )}
+                    {injectAfter?.get(i)}
+                </Fragment>
+            );
+            i++;
+        }
+
+        return <div className="flex flex-col gap-2.5 pt-2.5">{nodes}</div>;
     };
 
     // Inline flows injected within a primary's items, anchored to one of its
@@ -384,63 +641,25 @@ const FlowsHierarchyAccordion: FC<FlowsHierarchyAccordionProps> = ({
             const isAlternative = cfg.kind === "alternative";
             const node = (
                 <div key={inlineId} className="space-y-1.5 mt-2">
-                    <div
-                        className={cn(
-                            "rounded-lg border bg-white dark:bg-surface-elevated overflow-hidden",
+                    <CollapsibleCard
+                        isOpen={isOpen}
+                        onToggle={() => setOpenInlineFlowId(isOpen ? null : inlineId)}
+                        borderColor={isAlternative ? "sky" : "violet"}
+                        headerClassName={cn(
+                            "gap-4 py-2.5",
                             isAlternative
-                                ? "border-sky-200 dark:border-sky-800"
-                                : "border-violet-200 dark:border-violet-800"
+                                ? "hover:bg-sky-50/60 dark:hover:bg-sky-950/20"
+                                : "hover:bg-violet-50/60 dark:hover:bg-violet-950/20"
                         )}
+                        title={cfg.label ?? flowTitle(inlineId)}
+                        badge={
+                            <Badge color={isAlternative ? "sky" : "violet"}>
+                                {isAlternative ? "Alternative Path" : "Optional Step"}
+                            </Badge>
+                        }
                     >
-                        <Button
-                            type="button"
-                            variant="ghost"
-                            onClick={() => setOpenInlineFlowId(isOpen ? null : inlineId)}
-                            aria-expanded={isOpen}
-                            className={cn(
-                                "h-auto w-full justify-between gap-4 rounded-none px-3 py-2.5 font-normal text-left",
-                                isAlternative
-                                    ? "hover:bg-sky-50/60 dark:hover:bg-sky-950/20"
-                                    : "hover:bg-violet-50/60 dark:hover:bg-violet-950/20"
-                            )}
-                        >
-                            <span className="flex min-w-0 flex-col items-start gap-1">
-                                <span className="min-w-0 text-[11px] font-medium text-slate-800 dark:text-n-10 wrap-anywhere whitespace-normal leading-4">
-                                    {cfg.label ?? flowTitle(inlineId)}
-                                </span>
-                                <span
-                                    className={cn(
-                                        "shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider",
-                                        isAlternative
-                                            ? "bg-sky-100 text-sky-700 dark:bg-sky-500/15 dark:text-sky-300"
-                                            : "bg-violet-100 text-violet-700 dark:bg-violet-500/15 dark:text-violet-300"
-                                    )}
-                                >
-                                    {isAlternative ? "Alternative Path" : "Optional Step"}
-                                </span>
-                            </span>
-                            <span className="flex shrink-0 items-center gap-1.5">
-                                <ChevronDownIcon
-                                    className={cn(
-                                        "size-3.5 text-slate-400 transition-transform duration-300",
-                                        isOpen && "rotate-180"
-                                    )}
-                                />
-                            </span>
-                        </Button>
-                        <div
-                            className={cn(
-                                "grid transition-[grid-template-rows] duration-300 ease-in-out motion-reduce:transition-none",
-                                isOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
-                            )}
-                        >
-                            <div className="overflow-hidden">
-                                <div className="px-3 pb-3 pt-0.5">
-                                    {stepRows(inlineId, inlineItems, false, inlineAnnotations)}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                        {stepRows(inlineId, inlineItems, false, inlineAnnotations)}
+                    </CollapsibleCard>
                 </div>
             );
             const existing = injectNodes.get(targetIdx);
@@ -472,50 +691,19 @@ const FlowsHierarchyAccordion: FC<FlowsHierarchyAccordionProps> = ({
                         ? annotateSimplifiedItems(prereq.items, prereqGroups)
                         : null;
                     return (
-                        <div
+                        <CollapsibleCard
                             key={prereqId}
-                            className="rounded-lg border border-slate-200 dark:border-border-default bg-white dark:bg-surface-elevated overflow-hidden"
+                            isOpen={isOpen}
+                            onToggle={() => setOpenPrereqId(isOpen ? null : prereqId)}
+                            headerClassName="py-2"
+                            bodyClassName="px-8 pb-2.5 pt-0.5"
+                            titleClassName="text-[12px]"
+                            title={flowTitle(prereqId)}
+                            badge={<Badge color="violet">Prerequisite</Badge>}
+                            trailing={<CountChip>{prereq.stepCount} calls</CountChip>}
                         >
-                            <Button
-                                type="button"
-                                variant="ghost"
-                                onClick={() => setOpenPrereqId(isOpen ? null : prereqId)}
-                                aria-expanded={isOpen}
-                                className="h-auto w-full justify-between gap-2 rounded-none px-3 py-2 font-normal text-left hover:bg-slate-50 dark:hover:bg-surface-muted"
-                            >
-                                <span className="flex min-w-0 flex-col items-start gap-1">
-                                    <span className="min-w-0 text-[12px] font-medium text-slate-800 dark:text-n-10 wrap-anywhere whitespace-normal leading-4">
-                                        {flowTitle(prereqId)}
-                                    </span>
-                                    <span className="shrink-0 rounded-full bg-violet-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-violet-700 dark:bg-violet-500/15 dark:text-violet-300">
-                                        Prerequisite
-                                    </span>
-                                </span>
-                                <span className="flex shrink-0 items-center gap-1.5">
-                                    <span className="rounded-full bg-slate-100 px-1.5 py-0.5 text-[9px] font-semibold text-slate-500 dark:bg-surface-muted dark:text-n-40">
-                                        {prereq.stepCount} calls
-                                    </span>
-                                    <ChevronDownIcon
-                                        className={cn(
-                                            "size-3.5 text-slate-400 transition-transform duration-300",
-                                            isOpen && "rotate-180"
-                                        )}
-                                    />
-                                </span>
-                            </Button>
-                            <div
-                                className={cn(
-                                    "grid transition-[grid-template-rows] duration-300 ease-in-out motion-reduce:transition-none",
-                                    isOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
-                                )}
-                            >
-                                <div className="overflow-hidden">
-                                    <div className="px-8 pb-2.5 pt-0.5">
-                                        {stepRows(prereqId, prereq.items, false, prereqAnnotations)}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                            {stepRows(prereqId, prereq.items, false, prereqAnnotations)}
+                        </CollapsibleCard>
                     );
                 })}
             </div>
@@ -589,147 +777,97 @@ const FlowsHierarchyAccordion: FC<FlowsHierarchyAccordionProps> = ({
                     const isJourneyOpen = openGroupId === flowId;
 
                     return (
-                        <div
+                        <PrimaryCardShell
                             key={flowId}
-                            className="rounded-xl border border-slate-200 dark:border-border-default bg-white dark:bg-surface-elevated shadow-sm overflow-hidden"
+                            isOpen={isJourneyOpen}
+                            onToggle={() => setOpenGroupId(isJourneyOpen ? null : flowId)}
+                            headerClassName="px-4 pt-4 pb-4"
+                            header={
+                                <>
+                                    <span className="flex min-w-0 flex-col items-start gap-1.5">
+                                        <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-n-40">
+                                            {journeyGroup.isExplicitPrimary
+                                                ? isPreferred
+                                                    ? "Full Journey · Recommended"
+                                                    : "Full Journey"
+                                                : "Flow"}
+                                        </span>
+                                        <span className="min-w-0 text-body-2 font-semibold text-gray-900 dark:text-n-10 wrap-anywhere whitespace-normal leading-5">
+                                            {journeyGroup.primary.usecase ?? flowTitle(flowId)}
+                                        </span>
+                                        {flowDescription && (
+                                            <AccordionFlowDescription text={flowDescription} />
+                                        )}
+                                    </span>
+                                    <span className="flex shrink-0 items-center mt-4">
+                                        <Chevron isOpen={isJourneyOpen} size="md" />
+                                    </span>
+                                </>
+                            }
                         >
-                            {/* ── Journey header: toggles the whole card, same as API Reference ── */}
-                            <Button
-                                type="button"
-                                variant="ghost"
-                                onClick={() => setOpenGroupId(isJourneyOpen ? null : flowId)}
-                                aria-expanded={isJourneyOpen}
-                                className="h-auto w-full items-start justify-between gap-2 rounded-none px-4 pt-4 pb-4 font-normal text-left hover:bg-slate-50 dark:hover:bg-surface-muted"
-                            >
-                                <span className="flex min-w-0 flex-col items-start gap-1.5">
-                                    <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-n-40">
-                                        {journeyGroup.isExplicitPrimary
-                                            ? isPreferred
-                                                ? "Full Journey · Recommended"
-                                                : "Full Journey"
-                                            : "Flow"}
-                                    </span>
-                                    <span className="min-w-0 text-body-2 font-semibold text-gray-900 dark:text-n-10 wrap-anywhere whitespace-normal leading-5">
-                                        {journeyGroup.primary.usecase ?? flowTitle(flowId)}
-                                    </span>
-                                    {flowDescription && (
-                                        <AccordionFlowDescription text={flowDescription} />
-                                    )}
-                                </span>
-                                <span className="flex shrink-0 items-center mt-4">
-                                    <ChevronDownIcon
-                                        className={cn(
-                                            "size-4 text-slate-400 transition-transform duration-300",
-                                            isJourneyOpen && "rotate-180"
-                                        )}
-                                    />
-                                </span>
-                            </Button>
+                            {renderPrerequisites(journeyGroup.prerequisites)}
 
-                            <div
-                                className={cn(
-                                    "grid transition-[grid-template-rows] duration-300 ease-in-out motion-reduce:transition-none",
-                                    isJourneyOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
+                            <div className="px-4 pb-4 pt-2.5">
+                                {stepRows(
+                                    flowId,
+                                    journeyGroup.primaryItems,
+                                    true,
+                                    annotations,
+                                    injectNodes.size > 0 ? injectNodes : undefined
                                 )}
-                            >
-                                <div className="overflow-hidden">
-                                    {renderPrerequisites(journeyGroup.prerequisites)}
-
-                                    <div className="px-4 pb-4 pt-2.5">
-                                        {stepRows(
-                                            flowId,
-                                            journeyGroup.primaryItems,
-                                            true,
-                                            annotations,
-                                            injectNodes.size > 0 ? injectNodes : undefined
-                                        )}
-                                    </div>
-
-                                    {/* Alternate paths inside the same card, below the main steps */}
-                                    {journeyGroup.secondaries.length > 0 && (
-                                        <div className="border-t border-slate-100 dark:border-border-default px-4 pb-3">
-                                            <p className="pt-3 pb-1.5 text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-n-40">
-                                                Servicing Flows
-                                            </p>
-                                            <div className="space-y-1.5">
-                                                {journeyGroup.secondaries.map((secondary) => {
-                                                    const secId = secondary.flow.flowId;
-                                                    const isOpen = openJourneySecondaryId === secId;
-                                                    return (
-                                                        <div
-                                                            key={secId}
-                                                            className="rounded-lg border border-slate-200 dark:border-border-default bg-white dark:bg-surface-elevated overflow-hidden"
-                                                        >
-                                                            <Button
-                                                                type="button"
-                                                                variant="ghost"
-                                                                onClick={() =>
-                                                                    setOpenJourneySecondaryId(
-                                                                        isOpen ? null : secId
-                                                                    )
-                                                                }
-                                                                aria-expanded={isOpen}
-                                                                className="h-auto w-full justify-between gap-2 rounded-none px-3 py-2.5 font-normal text-left hover:bg-slate-50 dark:hover:bg-surface-muted"
-                                                            >
-                                                                <span className="flex min-w-0 flex-col items-start gap-1">
-                                                                    <span className="min-w-0 text-[11px] font-medium text-slate-800 dark:text-n-10 wrap-anywhere whitespace-normal leading-4">
-                                                                        {shortSecondaryName(
-                                                                            secondary.flow,
-                                                                            usecaseName
-                                                                        )}
-                                                                    </span>
-                                                                    <span className="shrink-0 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-amber-700 dark:bg-amber-500/15 dark:text-amber-300">
-                                                                        Servicing Flow
-                                                                    </span>
-                                                                </span>
-                                                                <span className="flex shrink-0 items-center gap-1.5">
-                                                                    <ChevronDownIcon
-                                                                        className={cn(
-                                                                            "size-3.5 text-slate-400 transition-transform duration-300",
-                                                                            isOpen && "rotate-180"
-                                                                        )}
-                                                                    />
-                                                                </span>
-                                                            </Button>
-                                                            <div
-                                                                className={cn(
-                                                                    "grid transition-[grid-template-rows] duration-300 ease-in-out motion-reduce:transition-none",
-                                                                    isOpen
-                                                                        ? "grid-rows-[1fr]"
-                                                                        : "grid-rows-[0fr]"
-                                                                )}
-                                                            >
-                                                                <div className="overflow-hidden">
-                                                                    <div className="px-3 pb-3 pt-0.5">
-                                                                        {stepRows(
-                                                                            secId,
-                                                                            secondary.items,
-                                                                            false,
-                                                                            (() => {
-                                                                                const secGroups =
-                                                                                    getSimplifiedGroups(
-                                                                                        secondary.flow
-                                                                                    );
-                                                                                return secGroups
-                                                                                    ? annotateSimplifiedItems(
-                                                                                          secondary.items,
-                                                                                          secGroups
-                                                                                      )
-                                                                                    : null;
-                                                                            })()
-                                                                        )}
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    );
-                                                })}
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
                             </div>
-                        </div>
+
+                            {/* Alternate paths inside the same card, below the main steps */}
+                            {journeyGroup.secondaries.length > 0 && (
+                                <div className="border-t border-slate-100 dark:border-border-default px-4 pb-3">
+                                    <p className="pt-3 pb-1.5 text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-n-40">
+                                        Servicing Flows
+                                    </p>
+                                    <div className="space-y-1.5">
+                                        {journeyGroup.secondaries.map((secondary) => {
+                                            const secId = secondary.flow.flowId;
+                                            const isOpen = openJourneySecondaryId === secId;
+                                            return (
+                                                <CollapsibleCard
+                                                    key={secId}
+                                                    isOpen={isOpen}
+                                                    onToggle={() =>
+                                                        setOpenJourneySecondaryId(
+                                                            isOpen ? null : secId
+                                                        )
+                                                    }
+                                                    headerClassName="py-2.5"
+                                                    title={shortSecondaryName(
+                                                        secondary.flow,
+                                                        usecaseName
+                                                    )}
+                                                    badge={
+                                                        <Badge color="amber">Servicing Flow</Badge>
+                                                    }
+                                                >
+                                                    {stepRows(
+                                                        secId,
+                                                        secondary.items,
+                                                        false,
+                                                        (() => {
+                                                            const secGroups = getSimplifiedGroups(
+                                                                secondary.flow
+                                                            );
+                                                            return secGroups
+                                                                ? annotateSimplifiedItems(
+                                                                      secondary.items,
+                                                                      secGroups
+                                                                  )
+                                                                : null;
+                                                        })()
+                                                    )}
+                                                </CollapsibleCard>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            )}
+                        </PrimaryCardShell>
                     );
                 })}
             </div>
@@ -751,133 +889,92 @@ const FlowsHierarchyAccordion: FC<FlowsHierarchyAccordionProps> = ({
                 const injectNodes = buildInlineNodes(group.primary, groupAnnotations);
 
                 return (
-                    <div
+                    <PrimaryCardShell
                         key={groupId}
-                        className="rounded-xl border border-slate-200 dark:border-border-default bg-white dark:bg-surface-elevated shadow-sm overflow-hidden"
-                    >
-                        {/* ── Primary flow header: toggles the whole card ── */}
-                        <Button
-                            type="button"
-                            variant="ghost"
-                            onClick={() => setOpenGroupId(isGroupOpen ? null : groupId)}
-                            aria-expanded={isGroupOpen}
-                            className="h-auto w-full items-start justify-between gap-2 rounded-none p-4 pb-3 font-normal text-left hover:bg-slate-50 dark:hover:bg-surface-muted"
-                        >
-                            <span className="flex min-w-0 flex-col items-start gap-2">
-                                <span className="min-w-0 text-body-2 font-semibold text-gray-900 dark:text-n-10 wrap-anywhere whitespace-normal leading-5">
-                                    {flowTitle(groupId)}
-                                </span>
-                                {groupDesc && <AccordionFlowDescription text={groupDesc} />}
-                                {group.isExplicitPrimary && (
-                                    <span className="shrink-0 rounded-full bg-sky-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-sky-700 dark:bg-sky-500/15 dark:text-sky-300">
-                                        Primary Path
+                        isOpen={isGroupOpen}
+                        onToggle={() => setOpenGroupId(isGroupOpen ? null : groupId)}
+                        headerClassName="p-4 pb-3"
+                        header={
+                            <>
+                                <span className="flex min-w-0 flex-col items-start gap-2">
+                                    <span className="min-w-0 text-body-2 font-semibold text-gray-900 dark:text-n-10 wrap-anywhere whitespace-normal leading-5">
+                                        {flowTitle(groupId)}
                                     </span>
-                                )}
-                            </span>
-                            <span className="flex shrink-0 items-center mt-0.5">
-                                <ChevronDownIcon
-                                    className={cn(
-                                        "size-4 text-slate-400 transition-transform duration-300",
-                                        isGroupOpen && "rotate-180"
+                                    {groupDesc && <AccordionFlowDescription text={groupDesc} />}
+                                    {group.isExplicitPrimary && (
+                                        <Badge color="sky">Primary Path</Badge>
                                     )}
-                                />
-                            </span>
-                        </Button>
+                                </span>
+                                <span className="flex shrink-0 items-center mt-0.5">
+                                    <Chevron isOpen={isGroupOpen} size="md" />
+                                </span>
+                            </>
+                        }
+                    >
+                        {/* PREREQUISITE flows: collapsible, above the primary's calls */}
+                        {renderPrerequisites(group.prerequisites)}
 
-                        <div
-                            className={cn(
-                                "grid transition-[grid-template-rows] duration-300 ease-in-out motion-reduce:transition-none",
-                                isGroupOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
+                        {/* Primary flow's full call sequence, with stepper rail */}
+                        <div className="px-4 pb-3">
+                            {stepRows(
+                                groupId,
+                                group.primaryItems,
+                                true,
+                                groupAnnotations,
+                                injectNodes.size > 0 ? injectNodes : undefined
                             )}
-                        >
-                            <div className="overflow-hidden">
-                                {/* PREREQUISITE flows: collapsible, above the primary's calls */}
-                                {renderPrerequisites(group.prerequisites)}
-
-                                {/* Primary flow's full call sequence, with stepper rail */}
-                                <div className="px-4 pb-3">
-                                    {stepRows(
-                                        groupId,
-                                        group.primaryItems,
-                                        true,
-                                        groupAnnotations,
-                                        injectNodes.size > 0 ? injectNodes : undefined
-                                    )}
-                                </div>
-
-                                {/* ── Secondary flows: nested under the primary's calls ── */}
-                                {hasSecondaries && (
-                                    <div className="px-4 pb-3 space-y-1.5">
-                                        {group.secondaries.map((secondary) => {
-                                            const secondaryId = secondary.flow.flowId;
-                                            const isOpen = openSecondaryId === secondaryId;
-                                            return (
-                                                <div
-                                                    key={secondaryId}
-                                                    className="rounded-lg border border-slate-200 dark:border-border-default bg-white dark:bg-surface-elevated overflow-hidden"
-                                                >
-                                                    <Button
-                                                        type="button"
-                                                        variant="ghost"
-                                                        onClick={() =>
-                                                            setOpenSecondaryId(
-                                                                isOpen ? null : secondaryId
-                                                            )
-                                                        }
-                                                        aria-expanded={isOpen}
-                                                        className="h-auto w-full justify-between gap-2 rounded-none px-3 py-2 font-normal text-left hover:bg-slate-50 dark:hover:bg-surface-muted"
-                                                    >
-                                                        <span className="flex min-w-0 items-start gap-2">
-                                                            <ArrowTurnDownRightIcon
-                                                                className="mt-0.5 size-3.5 shrink-0 text-slate-400 dark:text-n-40"
-                                                                aria-hidden
-                                                            />
-                                                            <span className="flex min-w-0 flex-col items-start gap-1">
-                                                                <span className="min-w-0 text-[12px] font-medium text-slate-800 dark:text-n-10 wrap-anywhere whitespace-normal leading-4">
-                                                                    {flowTitle(secondaryId)}
-                                                                </span>
-                                                                <span className="shrink-0 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-amber-700 dark:bg-amber-500/15 dark:text-amber-300">
-                                                                    Servicing Flow
-                                                                </span>
-                                                            </span>
-                                                        </span>
-                                                        <span className="flex shrink-0 items-center gap-1.5">
-                                                            <span className="rounded-full bg-slate-100 px-1.5 py-0.5 text-[9px] font-semibold text-slate-500 dark:bg-surface-muted dark:text-n-40">
-                                                                {secondary.stepCount} calls
-                                                            </span>
-                                                            <ChevronDownIcon
-                                                                className={cn(
-                                                                    "size-3.5 text-slate-400 transition-transform duration-300",
-                                                                    isOpen && "rotate-180"
-                                                                )}
-                                                            />
-                                                        </span>
-                                                    </Button>
-                                                    <div
-                                                        className={cn(
-                                                            "grid transition-[grid-template-rows] duration-300 ease-in-out motion-reduce:transition-none",
-                                                            isOpen
-                                                                ? "grid-rows-[1fr]"
-                                                                : "grid-rows-[0fr]"
-                                                        )}
-                                                    >
-                                                        <div className="overflow-hidden">
-                                                            <div className="px-3 pb-2.5 pt-0.5">
-                                                                {stepRows(
-                                                                    secondaryId,
-                                                                    secondary.items
-                                                                )}
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
-                                )}
-                            </div>
                         </div>
-                    </div>
+
+                        {/* ── Secondary flows: nested under the primary's calls ── */}
+                        {hasSecondaries && (
+                            <div className="px-4 pb-3 space-y-1.5">
+                                {group.secondaries.map((secondary) => {
+                                    const secondaryId = secondary.flow.flowId;
+                                    const isOpen = openSecondaryId === secondaryId;
+                                    return (
+                                        <CollapsibleCard
+                                            key={secondaryId}
+                                            isOpen={isOpen}
+                                            onToggle={() =>
+                                                setOpenSecondaryId(isOpen ? null : secondaryId)
+                                            }
+                                            headerClassName="py-2"
+                                            bodyClassName="px-3 pb-2.5 pt-0.5"
+                                            titleClassName="text-[12px]"
+                                            leading={
+                                                <ArrowTurnDownRightIcon
+                                                    className="mt-0.5 size-3.5 shrink-0 text-slate-400 dark:text-n-40"
+                                                    aria-hidden
+                                                />
+                                            }
+                                            title={flowTitle(secondaryId)}
+                                            badge={<Badge color="amber">Servicing Flow</Badge>}
+                                            trailing={
+                                                <CountChip>{secondary.stepCount} calls</CountChip>
+                                            }
+                                        >
+                                            {stepRows(
+                                                secondaryId,
+                                                secondary.items,
+                                                false,
+                                                (() => {
+                                                    const secGroups = getSimplifiedGroups(
+                                                        secondary.flow
+                                                    );
+                                                    return secGroups
+                                                        ? annotateSimplifiedItems(
+                                                              secondary.items,
+                                                              secGroups
+                                                          )
+                                                        : null;
+                                                })()
+                                            )}
+                                        </CollapsibleCard>
+                                    );
+                                })}
+                            </div>
+                        )}
+                    </PrimaryCardShell>
                 );
             })}
         </div>
