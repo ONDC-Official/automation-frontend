@@ -224,3 +224,19 @@ export interface IScenarioPreferencesFormState {
     isFetching: boolean;
     editingKey: string | null;
 }
+
+export interface IMcpConsentDialogProps {
+    open: boolean;
+    onOpenChange: (open: boolean) => void;
+    onConfirm: () => void;
+    isSubmitting: boolean;
+    /** The server has moved past the consent version this build bundles. */
+    isConsentStale: boolean;
+}
+
+export interface IMcpKeyRevealDialogProps {
+    /** The plaintext key. Non-null only while the reveal is open. */
+    keyValue: string | null;
+    expiresAt: string | null;
+    onDone: () => void;
+}

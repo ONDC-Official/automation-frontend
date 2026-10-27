@@ -12,8 +12,15 @@ export function filterNavTree(nodes: NavNode[], query: string): NavNode[] {
                 .filter((child): child is NavNode => child !== null);
             const labelMatches = node.label.toLowerCase().includes(q);
             const searchMatches = (node.searchText ?? "").toLowerCase().includes(q);
-            if (filteredChildren.length > 0 || labelMatches || searchMatches) {
+            if (filteredChildren.length > 0) {
                 return { ...node, children: filteredChildren, defaultOpen: true };
+            }
+            // The group itself matches but none of its children do (e.g. searching "retail"
+            // matches the Retail family/domain, whose use-case labels don't contain the word).
+            // Keep the ORIGINAL children so the matched group stays expandable/navigable —
+            // stripping them rendered an inert, unclickable row.
+            if (labelMatches || searchMatches) {
+                return { ...node, children: node.children, defaultOpen: true };
             }
             return null;
         }

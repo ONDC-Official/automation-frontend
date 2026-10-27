@@ -107,6 +107,15 @@ export const API_ROUTES = {
         FLOW_DATA: "/reports/flow-data",
     },
 
+    /**
+     * MCP API key (user-management). One key per user, so every verb shares one
+     * path. The key is returned by POST exactly once and is never readable
+     * again — GET returns metadata only.
+     */
+    MCP_KEY: {
+        BASE: "/user/mcp-key",
+    },
+
     HEALTH: {
         API_SERVICE: "/health/api-service",
     },

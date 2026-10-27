@@ -8,6 +8,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { Button } from "@components/Shadcn/Button";
 import { cn } from "@/lib/utils";
+import { COMMENTS_PANEL_TOGGLE_CLASS } from "../shared/styles";
 import { ROUTES, getDeveloperGuideDocPath } from "@constants/routes";
 import { buildGeneralDocCommentScope } from "@/types/comment-scope";
 import { QuickStepBadge } from "@pages/home/QuickStepBadge";
@@ -113,8 +114,8 @@ const DeveloperGuideGettingStartedContent: FC = () => {
     const referenceUseCase = useMemo(() => findReferenceUseCase(builds), [builds]);
 
     const referencePathHint = referenceUseCase
-        ? `API Reference by Domain → Financial Services → ${getDomainDisplayLabel(referenceUseCase.domainKey)} → ${referenceUseCase.label}`
-        : "API Reference by Domain → Financial Services → Credit (FIS12) → LAMF";
+        ? `Explore by domain → Financial Services → ${getDomainDisplayLabel(referenceUseCase.domainKey)} → ${referenceUseCase.label}`
+        : "Explore by domain → Financial Services → Credit (FIS12) → LAMF";
 
     const commonPaths: PathCard[] = [
         {
@@ -182,7 +183,7 @@ const DeveloperGuideGettingStartedContent: FC = () => {
                     <div className="w-full pt-8 px-8">
                         <div className="mb-4 flex items-center justify-between gap-4">
                             <h1 className="text-3xl font-bold leading-tight tracking-tight text-n-900 dark:text-n-0 md:text-4xl">
-                                Getting <span className="text-brand-normal">started</span>
+                                Getting <span className="text-brand-normal">Started</span>
                             </h1>
                             <Button
                                 type="button"
@@ -198,11 +199,11 @@ const DeveloperGuideGettingStartedContent: FC = () => {
                                         ? "Collapse comments panel"
                                         : "Expand comments panel"
                                 }
-                                className="flex size-7 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-white shadow-sm transition-colors hover:bg-slate-50 dark:border-border-default dark:bg-surface-elevated dark:hover:bg-surface-muted"
+                                className={COMMENTS_PANEL_TOGGLE_CLASS}
                             >
                                 <ChevronRightIcon
                                     className={cn(
-                                        "size-3 text-slate-400 transition-transform duration-300 ease-in-out",
+                                        "size-3 text-slate-700 transition-transform duration-300 ease-in-out",
                                         rightPanelOpen ? "" : "rotate-180"
                                     )}
                                 />
@@ -267,17 +268,17 @@ const DeveloperGuideGettingStartedContent: FC = () => {
                             headingAction={renderHeadingAction(GETTING_STARTED_SECTIONS[2].id)}
                         />
                         <p className="w-full text-body-1 leading-relaxed text-n-300 dark:text-n-60">
-                            Open any usecase as your reference use case from the sidebar under{" "}
+                            Open any use case as your reference use case from the sidebar under{" "}
                             <strong className="font-semibold text-n-900 dark:text-n-0">
-                                API Reference by Domain
+                                Explore by domain
                             </strong>
-                            . For eg.{" "}
+                            . For example{" "}
                             <strong className="font-semibold text-n-900 dark:text-n-0">
                                 {referencePathHint}
                             </strong>
-                            . To understand it completely after the usecase, walk through the
+                            . To understand it completely after the use case, walk through the
                             sections of Documents, Flows, and Error Codes. The same way, you can
-                            explore for every other domain. Please check the API Reference by Domain
+                            explore for every other domain. Please check the Explore by domain
                             section from the sidebar to get the list of all the usecases.
                         </p>
                         <Button

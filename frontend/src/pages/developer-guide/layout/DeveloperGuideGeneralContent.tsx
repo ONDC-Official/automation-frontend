@@ -41,7 +41,7 @@ const DeveloperGuideGeneralContent: FC = () => {
             <header className="border-b border-n-40 bg-white dark:border-n-60 dark:bg-surface-elevated">
                 <div className="p-8">
                     <h1 className="mb-4 text-3xl font-bold leading-tight tracking-tight text-n-900 dark:text-n-0 md:text-4xl">
-                        General &amp; <span className="text-brand-normal">Documentation</span>
+                        General <span className="text-brand-normal">Documentation</span>
                     </h1>
                     <p className="max-w-2xl text-body-1 leading-relaxed text-n-300 dark:text-n-60">
                         Core concepts and tools for ONDC integration — authentication helpers,

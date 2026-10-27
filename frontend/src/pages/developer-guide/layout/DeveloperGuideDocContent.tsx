@@ -6,6 +6,7 @@ import GithubMarkdown from "@components/GithubMarkdown";
 import TableOfContents from "@components/TableOfContents";
 import { Button } from "@components/Shadcn/Button";
 import { cn } from "@/lib/utils";
+import { COMMENTS_PANEL_TOGGLE_CLASS } from "../shared/styles";
 import {
     stripMarkdownTableOfContents,
     stripRedundantMarkdownHorizontalRules,
@@ -109,7 +110,10 @@ const DeveloperGuideDocContent: FC = () => {
                             aria-label={
                                 rightPanelOpen ? "Collapse comments panel" : "Expand comments panel"
                             }
-                            className="absolute top-0 right-0 z-10 flex items-center justify-center w-7 h-7 rounded-full bg-white dark:bg-surface-elevated border border-slate-200 dark:border-border-default shadow-sm hover:bg-slate-50 dark:hover:bg-surface-muted transition-colors"
+                            className={cn(
+                                COMMENTS_PANEL_TOGGLE_CLASS,
+                                "absolute top-0 right-0 z-10"
+                            )}
                         >
                             <ChevronRightIcon
                                 className={cn(

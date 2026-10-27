@@ -151,8 +151,21 @@ const SessionDetailSheet = ({ sessionId, detail, isLoading, isError, onClose }: 
     </Drawer>
 );
 
+/**
+ * A verdict the stored map is allowed to express. Anything else is legacy
+ * pollution, shown as "Unrecorded" rather than painted as a failure — the raw
+ * value is deliberately not rendered, since printing it verbatim is how "RUN"
+ * ended up on screen looking like a verdict in the first place.
+ */
+const verdictBadge = (result: string) => {
+    if (result === "PASS")
+        return { variant: "success" as const, icon: CheckCircle2, label: "PASS" };
+    if (result === "FAIL") return { variant: "error" as const, icon: XCircle, label: "FAIL" };
+    return { variant: "secondary" as const, icon: null, label: "Unrecorded" };
+};
+
 const FlowMapCard = ({ flowMap }: { flowMap: SessionDetails["flowMap"] }) => {
-    const { entries, passed, failed } = flowMapTotals(flowMap);
+    const { entries, passed, failed, unknown } = flowMapTotals(flowMap);
 
     return (
         <Card>
@@ -175,20 +188,24 @@ const FlowMapCard = ({ flowMap }: { flowMap: SessionDetails["flowMap"] }) => {
                                 <XCircle />
                                 {failed} failed
                             </Badge>
+                            {unknown > 0 && <Badge variant="secondary">{unknown} unrecorded</Badge>}
                         </div>
                         <ul className="divide-border flex flex-col divide-y">
-                            {entries.map(([flowId, result]) => (
-                                <li
-                                    key={flowId}
-                                    className="flex items-center justify-between gap-3 py-1.5 text-sm"
-                                >
-                                    <span className="truncate font-mono text-xs">{flowId}</span>
-                                    <Badge variant={result === "PASS" ? "success" : "error"}>
-                                        {result === "PASS" ? <CheckCircle2 /> : <XCircle />}
-                                        {result}
-                                    </Badge>
-                                </li>
-                            ))}
+                            {entries.map(([flowId, result]) => {
+                                const { variant, icon: Icon, label } = verdictBadge(result);
+                                return (
+                                    <li
+                                        key={flowId}
+                                        className="flex items-center justify-between gap-3 py-1.5 text-sm"
+                                    >
+                                        <span className="truncate font-mono text-xs">{flowId}</span>
+                                        <Badge variant={variant}>
+                                            {Icon ? <Icon /> : null}
+                                            {label}
+                                        </Badge>
+                                    </li>
+                                );
+                            })}
                         </ul>
                     </>
                 )}

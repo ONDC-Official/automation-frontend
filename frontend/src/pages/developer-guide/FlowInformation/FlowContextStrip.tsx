@@ -24,16 +24,18 @@ const FlowContextStrip: FC<FlowContextStripProps> = ({
     isFullscreen = false,
     onToggleFullscreen,
 }) => {
-    const flowName = flow.flowId.split("_").join(" ");
+    // const flowName = flow.flowId.split("_").join(" ");
     const description = flow.config?.steps.find((step) => step.action_id === action)?.description;
 
-    const flowDescription = flow.description?.trim();
+    // const flowDescription = flow.description?.trim();
 
     return (
         <div className="border-b border-slate-200 dark:border-border-default pb-4">
             <div className="grid grid-cols-[60%_40%] items-center gap-4 ">
                 <div className="flex items-center gap-2">
-                    <span className="font-semibold text-slate-800 wrap-break-word">{flowName}</span>
+                    {/* <span className="font-semibold text-slate-800 dark:text-n-10 wrap-break-word">
+                        {flowName}
+                    </span> */}
                 </div>
 
                 <div className="flex flex-wrap pr-4 items-center justify-end gap-1.5">
@@ -75,11 +77,7 @@ const FlowContextStrip: FC<FlowContextStripProps> = ({
                 </div>
             </div>
 
-            {flowDescription && (
-                <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
-                    {flowDescription}
-                </p>
-            )}
+            {/* {flowDescription && <TruncatedFlowDescription text={flowDescription} />} */}
 
             {(actionLabel || description) && (
                 <div className="mt-2 space-y-2 rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-border-default dark:bg-surface-elevated">

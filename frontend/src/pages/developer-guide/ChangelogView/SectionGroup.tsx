@@ -3,10 +3,14 @@ import type { ChangeSection } from "../types";
 import { IconChevronDown } from "../shared/icons";
 import { ChangeRow } from "./ChangeRow";
 import { Button } from "@components/Shadcn/Button";
+import { formatDateOnly } from "../shared/utils/formatDateTime";
 
-export const SectionGroup: FC<{ section: ChangeSection }> = ({ section }) => {
+export const SectionGroup: FC<{ section: ChangeSection; generatedAt?: string }> = ({
+    section,
+    generatedAt,
+}) => {
     const [collapsed, setCollapsed] = useState(false);
-
+    const dateLabel = formatDateOnly(generatedAt);
     const counts = {
         added: section.entries.filter((e) => e.kind === "added").length,
         modified: section.entries.filter((e) => e.kind === "modified").length,
@@ -44,7 +48,17 @@ export const SectionGroup: FC<{ section: ChangeSection }> = ({ section }) => {
                         )}
                     </div>
                 </div>
-                <span className="text-xs text-slate-400">{section.totalChanges} changes</span>
+                <div className="flex items-center gap-2 shrink-0">
+                    {dateLabel && (
+                        <span
+                            className="text-xs text-slate-400"
+                            title="Date this change was recorded"
+                        >
+                            {dateLabel}
+                        </span>
+                    )}
+                    <span className="text-xs text-slate-400">{section.totalChanges} changes</span>
+                </div>
             </Button>
 
             {!collapsed && (

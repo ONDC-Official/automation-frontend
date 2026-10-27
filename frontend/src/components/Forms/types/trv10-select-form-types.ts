@@ -21,6 +21,7 @@ export interface IFormItem {
     count: number;
     addOns: IAddOnSelection[];
     providerid: string;
+    price?: string;
 }
 
 export interface IFormValues {
@@ -53,9 +54,10 @@ export interface IOnSearchPayload {
 
 export interface ITRV10SelectFormProps {
     submitEvent: (data: SubmitEventParams) => Promise<void>;
+    flowName?: string;
 }
 
 export const DEFAULT_FORM_VALUES: IFormValues = {
     provider: "",
-    items: [{ itemId: "", count: 1, addOns: [], providerid: "" }],
+    items: [{ itemId: "", count: 1, addOns: [], providerid: "", price: "" }],
 };

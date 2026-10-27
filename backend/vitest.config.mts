@@ -9,6 +9,12 @@ export default defineConfig({
 				import.meta.dirname,
 				"src/__tests__/stubs/logger.ts"
 			),
+			// The real cache lib connects to Redis at import time, and is a private
+			// package that is not always installed.
+			"@ondc/ondc-automation-cache-lib": path.resolve(
+				import.meta.dirname,
+				"src/__tests__/stubs/cacheLib.ts"
+			),
 		},
 	},
 	test: {

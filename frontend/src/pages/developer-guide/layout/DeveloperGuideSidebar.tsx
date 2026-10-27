@@ -7,6 +7,7 @@ import type { NavNode, DeveloperGuideSidebarProps } from "./navTypes";
 import { isNavGroup, isNavLink } from "./navTypes";
 import { parseNavPath, isNavLinkActive, isNavGroupPathActive } from "./navMatch";
 import { NAV_STATUS_LABEL, NAV_STATUS_STYLES } from "../shared/statusPlaceholders";
+import { useDeveloperGuideNav } from "./DeveloperGuideNav";
 
 const TREE_INDENT_STEP = 14;
 
@@ -68,6 +69,7 @@ const NavLinkItem: FC<{
     depth: number;
 }> = ({ node, depth }) => {
     const location = useLocation();
+    const { closeNavSidebar } = useDeveloperGuideNav();
 
     const { pathname: linkPath, hash: linkHash } = parseNavPath(node.path);
 
@@ -111,6 +113,9 @@ const NavLinkItem: FC<{
                 <NavLink
                     to={node.path}
                     end={useEnd}
+                    onClick={() => {
+                        if (node.isDomainUseCaseLink) closeNavSidebar();
+                    }}
                     className={({ isActive: routerActive }) =>
                         linkClass({
                             isActive: resolveIsActive(routerActive),
@@ -124,7 +129,7 @@ const NavLinkItem: FC<{
                     {node.suffix && (
                         <span
                             title={node.status ? NAV_STATUS_LABEL[node.status] : undefined}
-                            className={`shrink-0 rounded-full px-2.5 py-2 text-caption-2-size font-bold tracking-tighter leading-none ${
+                            className={`shrink-0 rounded-full px-2.5 py-1 text-caption-2-size font-bold tracking-tighter leading-none ${
                                 node.status
                                     ? NAV_STATUS_STYLES[node.status]
                                     : "bg-transparent text-slate-400 dark:text-slate-500"

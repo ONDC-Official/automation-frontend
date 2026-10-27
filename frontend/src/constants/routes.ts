@@ -30,6 +30,8 @@ export const ROUTES = {
     PROFILE: "/profile",
     PROFILE_PAST_REPORTS: "/profile/past-reports",
     PROFILE_HISTORY: "/profile/history",
+    /** Issue, inspect and revoke the user's MCP API key. */
+    PROFILE_MCP_KEY: "/profile/mcp-key",
     SELLER_ONBOARDING: "/seller-onboarding",
     PLAYGROUND: "/playground",
     HISTORY: "/history",

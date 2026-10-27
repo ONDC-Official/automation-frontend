@@ -6,6 +6,7 @@ import UserProfile from "@pages/user-profile";
 import ConfigsSection from "@pages/user-profile/ConfigsSection";
 import PastReportsSection from "@pages/user-profile/PastReportsSection";
 import ActivityHistorySection from "@pages/user-profile/ActivityHistorySection";
+import McpKeySection from "@pages/user-profile/McpKeySection";
 import HistoryPage from "@pages/history";
 import ProtocolPlayGround from "@pages/protocol-playground";
 // import DBBackOffice from "@pages/db-back-office";
@@ -62,6 +63,7 @@ const Routes = () => (
             <Route index element={page(<ConfigsSection />)} />
             <Route path="past-reports" element={page(<PastReportsSection />)} />
             <Route path="history" element={page(<ActivityHistorySection />)} />
+            <Route path="mcp-key" element={page(<McpKeySection />)} />
         </Route>
         <Route path={ROUTES.SELLER_ONBOARDING} element={page(<SellerOnboarding />)} />
         <Route path={ROUTES.PLAYGROUND} element={page(<ProtocolPlayGround />)} />

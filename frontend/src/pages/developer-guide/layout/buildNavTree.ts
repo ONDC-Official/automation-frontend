@@ -149,21 +149,50 @@ export function buildNavTree(
                     path: getDeveloperGuideUseCasePath(domainKey, verKey, label),
                     disabled: !clickable,
                     searchText: `${domainKey} ${label} v${verKey}`,
+                    isDomainUseCaseLink: true,
                     ...(status ? { status } : {}),
                 };
             });
     }
 
+    /** Sachet (micro) insurance use cases, nested under one "Sachet Insurance" parent group
+     * inside the Insurance domain; Health and Motor stay as its siblings. */
+    const SACHET_USECASE_RE = /ACCIDENTAL|HOSPICASH|TRANSIT/i;
+    function isInsuranceDomain(dom: BuildEntry): boolean {
+        return getDomainFriendlyName(dom.key) === "Insurance";
+    }
+
     function buildDomainGroupNode(dom: BuildEntry): NavNode {
         const enabled = isDomainEnabled(dom);
         const displayLabel = getDomainDisplayLabel(dom.key);
+        let children = buildUseCaseNodes(dom);
+
+        if (isInsuranceDomain(dom)) {
+            const sachet = children.filter((n) => SACHET_USECASE_RE.test(n.label));
+            if (sachet.length > 0) {
+                children = [
+                    ...children.filter((n) => !SACHET_USECASE_RE.test(n.label)),
+                    {
+                        id: `domain-${dom.key}-sachet`,
+                        label: "Sachet Insurance",
+                        type: "group" as const,
+                        defaultOpen: false,
+                        searchText: `Sachet Insurance ${dom.key} ${sachet
+                            .map((n) => n.label)
+                            .join(" ")}`,
+                        children: sachet,
+                    },
+                ];
+            }
+        }
+
         return {
             id: `domain-${dom.key}`,
             label: displayLabel,
             type: "group" as const,
             defaultOpen: enabled,
             searchText: `${displayLabel} ${getDomainFriendlyName(dom.key)} ${dom.key}`,
-            children: buildUseCaseNodes(dom),
+            children,
         };
     }
 

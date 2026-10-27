@@ -18,6 +18,9 @@ interface GithubMarkdownProps {
     onSectionClick?: (id: string) => void;
     /** Rendered next to a clickable heading (visible on hover/focus); e.g. an inline "add comment" trigger. */
     renderHeadingAction?: (id: string) => React.ReactNode;
+    /** Given an inline-code token, return a click handler to render it as a link
+     * (e.g. `/search` → jump to that API call), or null to keep plain code. */
+    resolveInlineCodeLink?: (code: string) => (() => void) | null;
 }
 
 // Recursively extracts text from React children for copy
@@ -271,11 +274,46 @@ const GithubMarkdown: FC<GithubMarkdownProps> = memo(function GithubMarkdown({
     content,
     onSectionClick,
     renderHeadingAction,
+    resolveInlineCodeLink,
 }) {
     const markdownComponents = useMemo<Components>(() => {
+        const base: Components = resolveInlineCodeLink
+            ? {
+                  ...components,
+                  code({ className, children }) {
+                      const str = String(children);
+                      if (className || str.includes("\n")) {
+                          return (
+                              <code className={`${className ?? ""} font-mono text-sm text-inherit`}>
+                                  {children}
+                              </code>
+                          );
+                      }
+                      const onClick = resolveInlineCodeLink(str);
+                      if (onClick) {
+                          return (
+                              <button
+                                  type="button"
+                                  onClick={onClick}
+                                  title="Open this API call in the API Walkthrough"
+                                  className="cursor-pointer rounded border border-sky-200 bg-sky-50 px-1.5 py-0.5 font-mono text-[0.85em] text-sky-700 underline-offset-2 transition-colors hover:border-sky-300 hover:bg-sky-100 hover:underline dark:border-sky-500/30 dark:bg-sky-500/10 dark:text-sky-300 dark:hover:bg-sky-500/20"
+                              >
+                                  {children}
+                              </button>
+                          );
+                      }
+                      return (
+                          <code className="rounded border border-border bg-muted px-1.5 py-0.5 font-mono text-[0.85em] text-foreground">
+                              {children}
+                          </code>
+                      );
+                  },
+              }
+            : components;
+
         // Plain headings by default. Only customize when a hover action (e.g. comment) needs a
         // slot beside the title — never style headings as links (no pointer, underline, or sky color).
-        if (!onSectionClick || !renderHeadingAction) return components;
+        if (!onSectionClick || !renderHeadingAction) return base;
 
         const headingAction = (id?: string) =>
             id ? (
@@ -303,7 +341,7 @@ const GithubMarkdown: FC<GithubMarkdownProps> = memo(function GithubMarkdown({
                 : {};
 
         return {
-            ...components,
+            ...base,
             h1({ children, id }) {
                 return (
                     <h1
@@ -353,7 +391,7 @@ const GithubMarkdown: FC<GithubMarkdownProps> = memo(function GithubMarkdown({
                 );
             },
         };
-    }, [onSectionClick, renderHeadingAction]);
+    }, [onSectionClick, renderHeadingAction, resolveInlineCodeLink]);
 
     return (
         <div className="github-markdown text-foreground [&_blockquote+h2]:mt-4">

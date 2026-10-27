@@ -17,7 +17,8 @@ import type {
     ITRV10SelectFormProps,
 } from "../types/trv10-select-form-types";
 
-export default function TRV10SelectForm({ submitEvent }: ITRV10SelectFormProps) {
+export default function TRV10SelectForm({ submitEvent, flowName }: ITRV10SelectFormProps) {
+    const isPreOrderBidFlow = flowName?.includes("Schedule_Trip_With_Pre_Order_Bid") || false;
     const [isPayloadEditorActive, setIsPayloadEditorActive] = useState(false);
     const [errorWhilePaste, setErrorWhilePaste] = useState("");
     const [itemOptions, setItemOptions] = useState<IExtractedItem[]>([]);
@@ -26,7 +27,7 @@ export default function TRV10SelectForm({ submitEvent }: ITRV10SelectFormProps) 
     const { control, handleSubmit, watch, setValue, getValues } = useForm<IFormValues>({
         defaultValues: {
             provider: "",
-            items: [{ itemId: "", count: 1, addOns: [], providerid: "" }],
+            items: [{ itemId: "", count: 1, addOns: [], providerid: "", price: "" }],
         },
     });
 
@@ -47,6 +48,7 @@ export default function TRV10SelectForm({ submitEvent }: ITRV10SelectFormProps) 
             ...data,
             items: data.items.map((item) => ({
                 ...item,
+                price: item.price,
                 addOns: item.addOns.map((addon) => ({
                     id: addon.id,
                     quantity: addon.quantity,
@@ -196,6 +198,16 @@ export default function TRV10SelectForm({ submitEvent }: ITRV10SelectFormProps) 
                                 />
                             )}
 
+                            {isPreOrderBidFlow && (
+                                <TextField
+                                    control={control}
+                                    name={`items.${index}.price`}
+                                    label="Pre-Order Bid Price"
+                                    type="number"
+                                    placeholder="Enter pre bid price"
+                                />
+                            )}
+
                             {selectedExtracted && selectedExtracted.addOns.length > 0 && (
                                 <div className="space-y-2">
                                     <ComboBoxControl
@@ -272,7 +284,9 @@ export default function TRV10SelectForm({ submitEvent }: ITRV10SelectFormProps) 
                         type="button"
                         variant="outline"
                         size="sm"
-                        onClick={() => append({ itemId: "", count: 1, addOns: [], providerid: "" })}
+                        onClick={() =>
+                            append({ itemId: "", count: 1, addOns: [], providerid: "", price: "" })
+                        }
                     >
                         <PlusIcon className="size-4" />
                         Add Item

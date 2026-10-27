@@ -169,16 +169,22 @@ export const updateSessionService = async (
       JSON.stringify(session),
       SESSION_EXPIRY,
     );
-    session.flowMap = Object.keys(session.flowMap).reduce(
-      (acc: any, key: string) => {
-        acc[key] = "RUN";
-        return acc;
-      },
-      {},
-    );
+    // Deliberately does NOT write flowMap.
+    //
+    // Two different things share that name. `SessionCache.flowMap` (above, and
+    // in interfaces/newSessionData.ts) is `flowId -> transactionId`. automation-db's
+    // `SessionDetails.flowMap` is `flowId -> "PASS" | "FAIL"` — a per-flow verdict
+    // map owned by the report service. They are not interchangeable: stamping the
+    // cache's keys into the verdict field made every merely-started flow count as
+    // a failed one on the business dashboard.
+    //
+    // "This flow was attempted" belongs in `flows[]`, recorded via
+    // POST /api/sessions/flows/:sessionId (see dbService.addFlowToSession).
+    //
+    // The upsert itself stays: it touches `updatedAt`, which the dashboard sorts
+    // and exports on as the session's last-activity signal.
     upsertSessionInDb(sessionId, {
       npType: session.npType,
-      flowMap: session?.flowMap,
     }).catch((e) => logger.error("DB session upsert failed", loggerMeta, e));
     return "Session updated successfully";
   } catch (error: any) {

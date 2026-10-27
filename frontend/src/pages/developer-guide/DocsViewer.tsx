@@ -1,33 +1,41 @@
-import { type FC, useCallback, useMemo } from "react";
+import { type FC, useCallback, useMemo, useRef } from "react";
+import { useSearchParams } from "react-router-dom";
 import { ChevronRightIcon } from "@heroicons/react/24/outline";
 import GithubMarkdown from "@components/GithubMarkdown";
 import { cn } from "@/lib/utils";
+import { COMMENTS_PANEL_TOGGLE_CLASS } from "./shared/styles";
 import { Button } from "@components/Shadcn/Button";
 import { stripRedundantMarkdownHorizontalRules } from "@utils/markdownToc";
 import GuideTabs from "./shared/components/GuideTabs";
 import GuideTabFade from "./shared/components/GuideTabFade";
 import CommentsPanel from "./flowActionDetails/CommentsPanel";
 import { useDocsSectionSelection } from "./DocsViewer/useDocsSectionSelection";
+import {
+    PinnedPageIndex,
+    PageIndexList,
+    buildSectionIndexGroups,
+} from "./shared/components/PinnedPageIndex";
+import { buildApiCallLinkMap, normalizeApiToken } from "./DocsViewer/apiCallLinks";
+import type { FlowEntry } from "./types";
 import { buildDocumentCommentScope } from "./DocsViewer/utils";
 import { useInlineCommentHeading } from "./shared/hooks/useInlineCommentHeading";
+import { isAdditionalResourcesSlug, isChangelogSlug } from "./content/resolveUseCaseDocs";
 
 interface DocsViewerProps {
     docs: Record<string, string>;
     useCaseId: string;
     domain: string;
     version: string;
+    /** When provided, inline-code API mentions (e.g. `/search`) link to the matching
+     * call in the API Walkthrough. */
+    flows?: FlowEntry[];
 }
 
 function formatSlug(slug: string): string {
     return slug.replace(/[-_]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
-const DocsViewer: FC<DocsViewerProps> = ({ docs, useCaseId, domain, version }) => {
-    /**
-     * Frontend filter check to:
-     * 1. Exclude non-content doc tabs ("Release Notes", "References", "Figma").
-     * 2. Filter doc tabs by active useCaseId if multiple use-case docs co-exist in the spec (e.g. gold-loans vs personal-loans).
-     */
+const DocsViewer: FC<DocsViewerProps> = ({ docs, useCaseId, domain, version, flows }) => {
     const filteredDocs = useMemo(() => {
         if (!docs) return {};
 
@@ -37,7 +45,9 @@ const DocsViewer: FC<DocsViewerProps> = ({ docs, useCaseId, domain, version }) =
                 normalized !== "release notes" &&
                 normalized !== "references" &&
                 normalized !== "refrences" &&
-                normalized !== "figma"
+                normalized !== "figma" &&
+                !isAdditionalResourcesSlug(key) &&
+                !isChangelogSlug(key)
             );
         });
 
@@ -81,13 +91,35 @@ const DocsViewer: FC<DocsViewerProps> = ({ docs, useCaseId, domain, version }) =
         selectedSectionId,
         selectedSectionLabel,
         selectSection,
+        selectDocSection,
         rightPanelOpen,
         setRightPanelOpen,
         toc,
+        tocOffset,
     } = useDocsSectionSelection({
         docSlugs: slugs,
         docs: filteredDocs,
     });
+
+    const indexGroups = useMemo(
+        () => buildSectionIndexGroups(filteredDocs, slugs),
+        [filteredDocs, slugs]
+    );
+    const contentRef = useRef<HTMLDivElement>(null);
+
+    const handleIndexItemClick = useCallback(
+        (id: string) => {
+            const owningGroup = indexGroups.find(
+                (group) => group.id === id || group.items.some((item) => item.id === id)
+            );
+            if (owningGroup && owningGroup.slug !== activeDocSlug) {
+                selectDocSection(owningGroup.slug, id);
+            } else {
+                selectSection(id);
+            }
+        },
+        [indexGroups, activeDocSlug, selectDocSection, selectSection]
+    );
 
     const resolveSectionLabel = useCallback(
         (sectionId: string) => toc.find((entry) => entry.id === sectionId)?.text,
@@ -104,6 +136,39 @@ const DocsViewer: FC<DocsViewerProps> = ({ docs, useCaseId, domain, version }) =
                 ? buildDocumentCommentScope(domain, version, useCaseId, activeDocSlug)
                 : undefined,
         [useCaseId, activeDocSlug, domain, version]
+    );
+
+    const [, setSearchParams] = useSearchParams();
+    const apiLinkMap = useMemo(() => (flows?.length ? buildApiCallLinkMap(flows) : null), [flows]);
+    const resolveInlineCodeLink = useCallback(
+        (code: string) => {
+            if (!apiLinkMap) return null;
+            const token = normalizeApiToken(code);
+            const target = token ? apiLinkMap.get(token) : undefined;
+            if (!target) return null;
+            return () => {
+                // Drop the docs section anchor before leaving, same as handleViewChange.
+                if (window.location.hash) {
+                    window.history.replaceState(
+                        null,
+                        "",
+                        `${window.location.pathname}${window.location.search}`
+                    );
+                }
+                setSearchParams((prev) => {
+                    const next = new URLSearchParams(prev);
+                    next.set("view", "flows");
+                    next.set("flow", target.flowId);
+                    next.set("action", target.actionId);
+                    // Params owned by the docs view.
+                    next.delete("doc");
+                    next.delete("attr");
+                    next.delete("panel");
+                    return next;
+                });
+            };
+        },
+        [apiLinkMap, setSearchParams]
     );
 
     const { renderHeadingAction, commentsRefreshKey } = useInlineCommentHeading({
@@ -131,7 +196,10 @@ const DocsViewer: FC<DocsViewerProps> = ({ docs, useCaseId, domain, version }) =
             )}
 
             <div className="flex items-stretch min-h-[60vh]">
-                <div className="flex-1 min-w-0 flex flex-col min-h-0 overflow-hidden border border-slate-200 dark:border-border-default rounded-lg bg-white dark:bg-surface-elevated relative">
+                <div
+                    ref={contentRef}
+                    className="flex-1 min-w-0 flex flex-col min-h-0 overflow-hidden border border-slate-200 dark:border-border-default rounded-lg bg-white dark:bg-surface-elevated relative"
+                >
                     <Button
                         variant="ghost"
                         onClick={() => setRightPanelOpen(!rightPanelOpen)}
@@ -139,7 +207,7 @@ const DocsViewer: FC<DocsViewerProps> = ({ docs, useCaseId, domain, version }) =
                         aria-label={
                             rightPanelOpen ? "Collapse comments panel" : "Expand comments panel"
                         }
-                        className="absolute top-5 right-3 z-10 flex items-center justify-center w-7 h-7 rounded-full bg-white dark:bg-surface-elevated border border-slate-200 dark:border-border-default shadow-sm hover:bg-slate-50 dark:hover:bg-surface-muted transition-none"
+                        className={cn(COMMENTS_PANEL_TOGGLE_CLASS, "absolute top-5 right-3 z-10")}
                     >
                         <ChevronRightIcon
                             className={cn(
@@ -169,10 +237,27 @@ const DocsViewer: FC<DocsViewerProps> = ({ docs, useCaseId, domain, version }) =
                                 content={displayContent}
                                 onSectionClick={selectSection}
                                 renderHeadingAction={renderHeadingAction}
+                                resolveInlineCodeLink={resolveInlineCodeLink}
                             />
                         </GuideTabFade>
                     </div>
                 </div>
+
+                {indexGroups.length > 0 && (
+                    <div className="ml-4 shrink-0 self-start">
+                        <PinnedPageIndex
+                            topOffset={tocOffset}
+                            boundaryRef={contentRef}
+                            className="hidden lg:block w-64"
+                        >
+                            <PageIndexList
+                                groups={indexGroups}
+                                activeId={selectedSectionId ?? ""}
+                                onItemClick={handleIndexItemClick}
+                            />
+                        </PinnedPageIndex>
+                    </div>
+                )}
 
                 {/* Stretch with the content card — sticky+top is wrong here because GuideTabFade's overflow-hidden becomes the sticky containing block and offsets the panel downward. */}
                 <div

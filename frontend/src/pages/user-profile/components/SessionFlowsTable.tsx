@@ -15,7 +15,12 @@ const FlowStatusBadge = ({ status }: { status: FlowStatus }) => {
         PASS: { cls: "bg-success-50 text-success-500 border-success-200", label: "Passed" },
         FAIL: { cls: "bg-error-50 text-error-500 border-error-50", label: "Failed" },
         RUN: { cls: "bg-alert-50 text-alert-800 border-alert-200", label: "Run" },
-        NOT_RUN: { cls: "bg-error-50 text-error-500 border-error-50 rounded", label: "- Not Run" },
+        // Neutral, not error. A flow nobody started is unmeasured, not failed —
+        // wearing the FAIL palette made untouched sessions read as walls of red.
+        NOT_RUN: {
+            cls: "bg-surface-muted text-text-secondary border-border-default",
+            label: "- Not Run",
+        },
     };
     const { cls, label } = config[status] ?? config.NOT_RUN;
 

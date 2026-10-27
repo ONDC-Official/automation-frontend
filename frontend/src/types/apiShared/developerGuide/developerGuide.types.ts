@@ -152,6 +152,76 @@ export interface FlowConfig {
     [key: string]: unknown;
 }
 
+/** Role of a flow in the walkthrough hierarchy (current authoring schema). */
+export type FlowMetaType = "PREREQUISITE" | "PRIMARY" | "SECONDARY" | "OPTIONAL";
+
+/** Authoring metadata from the flow index YAML (`flows[].meta`).
+ * Current schema: `type` + `secondary_flows` (on the primary) + `hide_actions`/
+ * `visible_actions` (on secondaries). Older schemas (`is_secondary`/`parent_flow`,
+ * `secondary_of`/`secondary_start`) remain supported for already-ingested builds. */
+export interface FlowMeta {
+    /** Role: PREREQUISITE (shown above the primary's calls), PRIMARY, SECONDARY,
+     * or OPTIONAL (excluded from the API Walkthrough flows list entirely —
+     * still ingested/available, just not shown as its own card anywhere). */
+    type?: FlowMetaType | string;
+    /** Display order within the use case. */
+    order?: number;
+    /** On a PRIMARY: flowIds of its secondary flows, in display order. */
+    secondary_flows?: string[];
+    /** On a SECONDARY: action_ids to exclude from its call list. */
+    hide_actions?: string[];
+    /** On a SECONDARY: explicit action_ids to show (in flow order); wins over hide_actions. */
+    visible_actions?: string[];
+    /** Legacy schema: whether this flow is a secondary/variant. */
+    is_secondary?: boolean;
+    /** Legacy schema: flowId of the primary flow this is a secondary of. */
+    parent_flow?: string;
+    /** Legacy schema: flowId of the primary flow this flow is a secondary/variant of. */
+    secondary_of?: string;
+    /** Legacy schema: action_id(s) from which this secondary flow's own calls begin. */
+    secondary_start?: string[];
+    /** Business-name display config for this flow's steps (API Walkthrough's
+     * "Business Illustration" toggle). PRIMARY flows typically group actions into
+     * named `sections`; SECONDARY flows (smaller call sets) typically provide a
+     * flat `actions` map instead. */
+    display?: FlowDisplayMeta;
+    [key: string]: unknown;
+}
+
+/** One named grouping of API calls in a flow's `meta.display.sections`,
+ * e.g. "Product Discovery" with its covered action ids → business labels. */
+export interface FlowDisplaySection {
+    name: string;
+    actions: Record<string, string>;
+}
+
+/** A flow injected inline within another flow's Journey View, anchored to one of
+ * that flow's sections and rendered as a collapsible "optional"/"alternative" card. */
+export interface FlowDisplayInline {
+    /** flowId of the flow to inject. */
+    flow: string;
+    /** Inject this flow's card immediately after the last journey item belonging
+     * to this section name. */
+    after_section: string;
+    /** Title for the collapsible card (defaults to the flowId when omitted). */
+    label?: string;
+    /** Section names to omit when rendering the injected flow's own sections. */
+    skip_sections?: string[];
+    /** Badge/semantics for the injected card: "optional" (a skippable extra
+     * step, violet badge) or "alternative" (a different path through the same
+     * stage, sky-blue "Alternative Path" badge). Defaults to "optional". */
+    kind?: "optional" | "alternative";
+}
+
+/** Backend-authored Journey View presentation metadata for a flow (`meta.display`). */
+export interface FlowDisplayMeta {
+    /** Marks this as the default "Full Journey" flow to show for its use case. */
+    preferred?: boolean;
+    sections?: FlowDisplaySection[];
+    actions?: Record<string, string>;
+    inline?: FlowDisplayInline[];
+}
+
 export interface FlowEntry {
     domain?: string;
     version?: string;
@@ -160,6 +230,7 @@ export interface FlowEntry {
     usecase: string;
     tags: string[];
     description: string;
+    meta?: FlowMeta | null;
     config: FlowConfig;
 }
 
