@@ -4,6 +4,7 @@ export const DOCS_WITH_SIDEBAR_SECTIONS = new Set(["ondc-FAQs"]);
 /** General docs shown as a single shell link with no section navigation anywhere. */
 export const DOCS_WITH_FLAT_CONTENT = new Set([
     "about-ondc",
+    "protocol",
     "network-observability",
     "registry-gateway",
 ]);

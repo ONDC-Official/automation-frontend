@@ -61,7 +61,13 @@ export function isUseCaseEnabled(domain: BuildEntry, _usecaseLabel: string): boo
     return isDomainEnabled(domain);
 }
 
-const PRIORITY_DOC_ORDER = ["about ondc", "registry gateway", "network observability", "faqs"];
+const PRIORITY_DOC_ORDER = [
+    "about ondc",
+    "protocol",
+    "registry gateway",
+    "network observability",
+    "faqs",
+];
 
 function normalizeDocKey(value: string): string {
     return value
