@@ -143,15 +143,22 @@ export const CheckField = ({
     label,
     hint,
     checked,
+    disabled,
     onChange,
 }: {
     label: string;
     hint?: string;
     checked: boolean;
+    disabled?: boolean;
     onChange: (checked: boolean) => void;
 }) => (
-    <label className="bp-check" title={hint}>
-        <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} />
+    <label className="bp-check" title={hint} data-disabled={disabled || undefined}>
+        <input
+            type="checkbox"
+            checked={checked}
+            disabled={disabled}
+            onChange={(e) => onChange(e.target.checked)}
+        />
         <span>{label}</span>
         {hint ? <span className="bp-check-hint">{hint}</span> : null}
     </label>
@@ -160,7 +167,7 @@ export const CheckField = ({
 const toJson = (value: unknown) => (value === undefined ? "" : JSON.stringify(value, null, 2));
 
 /**
- * Free JSON (guards, effects, examples). Applied as soon as it parses; an empty
+ * Free JSON (examples). Applied as soon as it parses; an empty
  * box means "unset". Remount it (key) when the node changes.
  */
 export const JsonField = ({

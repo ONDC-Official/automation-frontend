@@ -1,10 +1,50 @@
 import {
+    ClipboardDocumentCheckIcon,
     CodeBracketSquareIcon,
     CubeTransparentIcon,
+    DocumentTextIcon,
+    MapIcon,
+    ShareIcon,
     WrenchScrewdriverIcon,
 } from "@heroicons/react/24/outline";
 
-import type { CodeDialogFile, HeroIcon } from "@pages/protocol-studio/ui/editor/types";
+import type { CodeDialogFile, HeroIcon, StudioStage } from "@pages/protocol-studio/ui/editor/types";
+
+/**
+ * The four stages, in pipeline order. The header's stage bar lists them left
+ * to right; ⌘1–⌘4 (Ctrl on other platforms) jump between them.
+ */
+export const STAGES: { id: StudioStage; label: string; hint: string; Icon: HeroIcon }[] = [
+    {
+        id: "specification",
+        label: "Specification",
+        hint: "Domain, version, the spec's APIs and types, shared helpers",
+        Icon: DocumentTextIcon,
+    },
+    {
+        id: "protocol",
+        label: "Protocol",
+        hint: "What the protocol permits: nodes, wires, decisions, sub-protocols",
+        Icon: ShareIcon,
+    },
+    {
+        id: "journeys",
+        label: "Journeys",
+        hint: "Mock runs extracted from the protocol: every fork resolved, or asked at run time",
+        Icon: MapIcon,
+    },
+    {
+        id: "review",
+        label: "Review",
+        hint: "Coverage, problems and export",
+        Icon: ClipboardDocumentCheckIcon,
+    },
+];
+
+export const DEFAULT_STAGE: StudioStage = "protocol";
+
+export const isStudioStage = (value: unknown): value is StudioStage =>
+    STAGES.some((stage) => stage.id === value);
 
 /** Layout metrics. Keep in sync with the `--studio-*` defaults in studio-editor.css. */
 export const EDITOR_GAP = 10;

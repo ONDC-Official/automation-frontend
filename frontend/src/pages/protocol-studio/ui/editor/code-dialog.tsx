@@ -68,7 +68,7 @@ export const CodeDialog = ({
                                 </div>
                                 <span className="studio-badge">
                                     {file === "helpers"
-                                        ? "in memory · not saved"
+                                        ? "draft · saved locally"
                                         : file === "types"
                                           ? "generated · read-only"
                                           : "read-only"}

@@ -26,7 +26,7 @@ import type {
 // v1 MockRunner validation); they light up once Studio configs are persisted.
 const COMING_SOON = "Coming soon to Protocol Studio";
 
-export const StudioStarterScreen = ({ onCreate }: IStudioStarterScreenProps) => {
+export const StudioStarterScreen = ({ onCreate, draft, onResume }: IStudioStarterScreenProps) => {
     const { control, handleSubmit, watch, setValue } = useForm<IStudioStarterFormValues>({
         defaultValues: STUDIO_STARTER_FORM_DEFAULTS,
         mode: "onChange",
@@ -72,10 +72,21 @@ export const StudioStarterScreen = ({ onCreate }: IStudioStarterScreenProps) => 
                     </header>
 
                     <div className="mt-5 flex flex-wrap items-center gap-3">
-                        <Button disabled title={COMING_SOON}>
-                            <FolderOpenIcon className="size-4" />
-                            Load Saved
-                        </Button>
+                        {draft && onResume ? (
+                            <Button
+                                type="button"
+                                onClick={onResume}
+                                title={`Saved locally ${new Date(draft.savedAt).toLocaleString()}`}
+                            >
+                                <FolderOpenIcon className="size-4" />
+                                Resume {draft.config.meta.domain} {draft.config.meta.version}
+                            </Button>
+                        ) : (
+                            <Button disabled title={COMING_SOON}>
+                                <FolderOpenIcon className="size-4" />
+                                Load Saved
+                            </Button>
+                        )}
                         <Button
                             type="button"
                             variant="outline"

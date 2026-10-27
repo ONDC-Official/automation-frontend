@@ -22,15 +22,15 @@ type FileLabel = { label: string; Icon: HeroIcon };
 /** Label and icon per searched file, by language: the inspector's tabs, plus helpers.ts from the header. */
 const FILES_BY_LANGUAGE = {
     typescript: new Map<CodeFileId, FileLabel>([
-        ...[...getInspectorTabs("typescript"), ...DECISION_TABS].map(
-            (tab) => [tab.id, tab] as const
-        ),
+        ...[...getInspectorTabs("typescript"), ...DECISION_TABS]
+            .filter((tab) => tab.language !== undefined)
+            .map((tab) => [tab.id as CodeFileId, tab] as const),
         ["helpers", CODE_DIALOG_FILES.helpers],
     ]),
     javascript: new Map<CodeFileId, FileLabel>([
-        ...[...getInspectorTabs("javascript"), ...DECISION_TABS].map(
-            (tab) => [tab.id, tab] as const
-        ),
+        ...[...getInspectorTabs("javascript"), ...DECISION_TABS]
+            .filter((tab) => tab.language !== undefined)
+            .map((tab) => [tab.id as CodeFileId, tab] as const),
         ["helpers", CODE_DIALOG_FILES.helpers],
     ]),
 };

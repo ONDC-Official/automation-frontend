@@ -31,6 +31,7 @@ import playgroundConfigsSlice from "@store/slices/playgroundConfigsSlice";
 import playgroundUiSlice from "@store/slices/playgroundUiSlice";
 import profileShellSlice from "@store/slices/profileShellSlice";
 import businessDashboardSlice from "@store/slices/businessDashboardSlice";
+import studioDraftSlice from "@store/slices/studioDraftSlice";
 import {
     sessionPersistConfig,
     frameworkHealthPersistConfig,
@@ -71,6 +72,7 @@ const rootReducer = combineReducers({
         localPersist("businessDashboard"),
         businessDashboardSlice.reducer
     ),
+    studioDraft: persistReducer(localPersist("studioDraft"), studioDraftSlice.reducer),
     devGuideShell: devGuideShellSlice.reducer,
     profileShell: profileShellSlice.reducer,
 });

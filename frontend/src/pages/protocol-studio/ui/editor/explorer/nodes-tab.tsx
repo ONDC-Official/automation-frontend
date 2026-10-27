@@ -2,12 +2,21 @@ import { useEffect, useRef } from "react";
 import { CubeTransparentIcon, XMarkIcon } from "@heroicons/react/24/outline";
 
 import { NODE_KINDS } from "@pages/protocol-studio/ui/editor/graph/catalog";
+import { getSelectedNodeIds } from "@pages/protocol-studio/ui/editor/graph/selection";
 import type { INodesTabProps } from "@pages/protocol-studio/ui/editor/types";
 
 /** The graph as a list: every node, in the order it was added. Clicking one selects it and brings it into view. */
-export const NodesTab = ({ graph, selection, onSelectNode, onRemoveNode }: INodesTabProps) => {
+export const NodesTab = ({
+    graph,
+    selection,
+    onSelectNode,
+    onRemoveNode,
+    onEnterGroup,
+}: INodesTabProps) => {
     const listRef = useRef<HTMLUListElement>(null);
+    // The row scrolled into view: a single selection's node.
     const selectedId = selection?.type === "node" ? selection.id : null;
+    const selectedIds = new Set(getSelectedNodeIds(selection));
 
     useEffect(() => {
         if (!selectedId) return;
@@ -38,7 +47,7 @@ export const NodesTab = ({ graph, selection, onSelectNode, onRemoveNode }: INode
 
             <ul ref={listRef} className="studio-tree" aria-label="Nodes">
                 {graph.nodes.map((node) => {
-                    const isSelected = node.id === selectedId;
+                    const isSelected = selectedIds.has(node.id);
                     const { Icon, label } = NODE_KINDS[node.kind];
                     return (
                         <li key={node.id} className="bp-tree-item">
@@ -50,13 +59,22 @@ export const NodesTab = ({ graph, selection, onSelectNode, onRemoveNode }: INode
                                 data-selected={isSelected || undefined}
                                 aria-current={isSelected || undefined}
                                 onClick={() => onSelectNode(node.id)}
-                                title={`${label}${node.description ? `\n${node.description}` : ""}`}
+                                onDoubleClick={() => node.group && onEnterGroup?.(node.id)}
+                                title={`${node.group ? `${node.group.name} · double-click to open` : label}${node.description ? `\n${node.description}` : ""}`}
                             >
                                 <span className="bp-tree-kind">
                                     <Icon />
                                 </span>
-                                <span className="studio-mono truncate">{node.id}</span>
-                                {node.decision ? null : (
+                                <span className="studio-mono truncate">
+                                    {node.group ? node.group.name || node.id : node.id}
+                                </span>
+                                {node.decision ? (
+                                    <span className="studio-badge ml-auto">decision</span>
+                                ) : node.group ? (
+                                    <span className="studio-badge ml-auto">
+                                        {node.group.graph.nodes.length} inside
+                                    </span>
+                                ) : (
                                     <span className="studio-owner ml-auto" data-owner={node.owner}>
                                         {node.owner}
                                     </span>

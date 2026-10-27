@@ -74,6 +74,7 @@ export const searchNodes = (
 
     for (const node of nodes) {
         const location = node.id === node.api ? node.id : `${node.id} · ${node.api}`;
+        if (node.group) continue;
         if (node.decision) {
             if (total < SEARCH_MATCH_LIMIT) {
                 add(`${node.id}:decide`, "decide", node.id, node.decision.decide, node.id);

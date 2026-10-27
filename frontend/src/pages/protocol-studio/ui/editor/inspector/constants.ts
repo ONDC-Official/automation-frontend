@@ -1,23 +1,62 @@
 import {
+    AdjustmentsHorizontalIcon,
     BoltIcon,
+    CircleStackIcon,
     CodeBracketIcon,
     ClipboardDocumentListIcon,
     CubeIcon,
+    DocumentCheckIcon,
+    ArrowPathIcon,
+    FingerPrintIcon,
     PencilSquareIcon,
     ShieldCheckIcon,
+    SparklesIcon,
 } from "@heroicons/react/24/outline";
 import type { editor } from "monaco-editor";
 
 import type {
     CodeLanguage,
-    InspectorGroupId,
+    HeroIcon,
     InspectorTab,
+    InspectorTabId,
+    NodeSectionId,
 } from "@pages/protocol-studio/ui/editor/types";
 
-/** The file picker's rows, top to bottom: the step's code, then its data. */
-export const INSPECTOR_GROUPS: { id: InspectorGroupId; label: string }[] = [
-    { id: "functions", label: "Step functions" },
-    { id: "data", label: "Step data" },
+/**
+ * A node's four sections, in the order the segmented control shows them.
+ * Each holds one or more tabs; a section with one tab shows no tab row.
+ */
+export const NODE_SECTIONS: {
+    id: NodeSectionId;
+    label: string;
+    description: string;
+    Icon: HeroIcon;
+}[] = [
+    {
+        id: "definition",
+        label: "Definition",
+        description: "The node's own fields: kind, owner, behaviour, …",
+        Icon: AdjustmentsHorizontalIcon,
+    },
+    {
+        id: "validation",
+        label: "Validation",
+        description:
+            "validator — checks the payload —, match — recognises it — and the api's validations.yaml tests",
+        Icon: ShieldCheckIcon,
+    },
+    {
+        id: "generation",
+        label: "Generation",
+        description: "requirements, generate, defaultPayload and inputs: how the payload is built",
+        Icon: SparklesIcon,
+    },
+    {
+        id: "session",
+        label: "Session",
+        description: "saveData: what this step writes into session data",
+        Icon: CircleStackIcon,
+    },
 ];
 
 /** The step-function tabs' extension and Monaco language, per code language. */
@@ -27,35 +66,60 @@ const CODE_FILE = {
 } as const;
 
 /**
- * Same per-step files as v1's left tabs. helpers.ts and the raw config open
- * from the header. A TypeScript node's functions are `.ts` (typed from the
- * spec); a JavaScript node's, imported from a published flow, stay `.js`.
+ * Same per-step files as v1's left tabs, grouped into the four sections,
+ * plus the two panes (`validations.yaml`, `saveData`). helpers.ts and the raw
+ * config open from the header. A TypeScript node's functions are `.ts` (typed
+ * from the spec); a JavaScript node's, imported from a published flow, stay `.js`.
  */
 export const getInspectorTabs = (codeLanguage: CodeLanguage = "typescript"): InspectorTab[] => {
     const { ext, language } = CODE_FILE[codeLanguage];
     return [
         {
-            id: "generate",
-            label: `generate.${ext}`,
-            description: "Builds the payload this step sends",
-            Icon: BoltIcon,
-            group: "functions",
+            id: "exit",
+            label: `exit.${ext}`,
+            description: "Repeat until: the node runs again until this returns true",
+            Icon: ArrowPathIcon,
+            section: "definition",
             language,
         },
         {
             id: "validate",
-            label: `validate.${ext}`,
-            description: "Checks this step's payload",
+            label: `validator.${ext}`,
+            description: "Checks this step's payload (the validate function)",
             Icon: ShieldCheckIcon,
-            group: "functions",
+            section: "validation",
             language,
+        },
+        {
+            id: "match",
+            label: `match.${ext}`,
+            description:
+                "Whether an incoming payload is this step at all — used where alternatives share an API",
+            Icon: FingerPrintIcon,
+            section: "validation",
+            language,
+        },
+        {
+            id: "validations",
+            label: "validations.yaml",
+            description: "The api's tests from the deployed contract, read-only",
+            Icon: DocumentCheckIcon,
+            section: "validation",
         },
         {
             id: "requirements",
             label: `requirements.${ext}`,
             description: "Decides whether this step can run",
             Icon: ClipboardDocumentListIcon,
-            group: "functions",
+            section: "generation",
+            language,
+        },
+        {
+            id: "generate",
+            label: `generate.${ext}`,
+            description: "Builds the payload this step sends",
+            Icon: BoltIcon,
+            section: "generation",
             language,
         },
         {
@@ -63,7 +127,7 @@ export const getInspectorTabs = (codeLanguage: CodeLanguage = "typescript"): Ins
             label: "defaultPayload.json",
             description: "Starting payload handed to generate",
             Icon: CubeIcon,
-            group: "data",
+            section: "generation",
             language: "json",
         },
         {
@@ -71,8 +135,15 @@ export const getInspectorTabs = (codeLanguage: CodeLanguage = "typescript"): Ins
             label: "inputs.json",
             description: "User inputs this step asks for",
             Icon: PencilSquareIcon,
-            group: "data",
+            section: "generation",
             language: "json",
+        },
+        {
+            id: "saveData",
+            label: "saveData",
+            description: "What this step writes into session data once its payload exists",
+            Icon: CircleStackIcon,
+            section: "session",
         },
     ];
 };
@@ -84,13 +155,23 @@ export const DECISION_TABS: InspectorTab[] = [
         label: "decide.ts",
         description: "Returns the case whose wire is followed",
         Icon: CodeBracketIcon,
-        group: "functions",
+        section: "generation",
         language: "typescript",
     },
 ];
 
 /** The tabs of a new (TypeScript) node. */
 export const INSPECTOR_TABS = getInspectorTabs();
+
+/** The section a tab belongs to; Properties is Definition. */
+export const sectionOf = (tab: InspectorTabId, tabs: InspectorTab[]): NodeSectionId =>
+    tab === "properties" ? "definition" : (tabs.find((t) => t.id === tab)?.section ?? "definition");
+
+/** The tab a section opens on: Properties for Definition, else its first tab. */
+export const firstTabOf = (section: NodeSectionId, tabs: InspectorTab[]): InspectorTabId =>
+    section === "definition"
+        ? "properties"
+        : (tabs.find((t) => t.section === section)?.id ?? "properties");
 
 /** Splits `generate.js` into `generate` and `.js`, so the extension can be dimmed. */
 export const splitFileName = (label: string) => {

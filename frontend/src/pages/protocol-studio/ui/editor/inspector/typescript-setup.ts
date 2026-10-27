@@ -108,6 +108,34 @@ export const createMonacoTranspiler = (
     };
 };
 
+/**
+ * A transpiler for files that have no editor open: each call puts the source
+ * in a throwaway model at `fileName` (so the TypeScript worker sees the same
+ * extra libs step files are checked with), emits, and disposes it. A model
+ * that already exists at that uri (an open tab) is used as it is.
+ */
+export const createMonacoFileTranspiler = (monaco: Monaco): UserCodeTranspilerV2 | null => {
+    const ts = getTypeScript(monaco);
+    if (!ts) return null;
+    return {
+        name: "typescript",
+        version: ts.typescriptVersion,
+        async transpile(source, fileName) {
+            const uri = monaco.Uri.parse(fileName);
+            const existing = monaco.editor.getModel(uri);
+            const model = existing ?? monaco.editor.createModel(source, "typescript", uri);
+            try {
+                if (existing && existing.getValue() !== source) existing.setValue(source);
+                const inner = createMonacoTranspiler(monaco, model);
+                if (!inner) throw new Error("TypeScript isn't available");
+                return await inner.transpile(source, fileName);
+            } finally {
+                if (!existing) model.dispose();
+            }
+        },
+    };
+};
+
 /** Owner of the markers the compile step puts on a model. */
 export const SANDBOX_MARKER_OWNER = "ondc-sandbox";
 

@@ -1,5 +1,6 @@
 import { TrashIcon } from "@heroicons/react/24/outline";
 
+import { getTemplateFiles } from "@pages/protocol-studio/ui/editor/flows/action-files";
 import { API_NODE_KIND_IDS, NODE_KINDS } from "@pages/protocol-studio/ui/editor/graph/catalog";
 import {
     CheckField,
@@ -23,6 +24,9 @@ const KIND_OPTIONS = API_NODE_KIND_IDS.map((kind) => ({
     label: NODE_KINDS[kind].label,
 }));
 
+/** repeat.max when repeat-until is switched on without a cap. */
+const DEFAULT_UNTIL_MAX = 10;
+
 /** `""` → unset, else a whole number. */
 const parseOptionalInt = (text: string): { value?: number; error: string | null } => {
     if (text.trim() === "") return { error: null };
@@ -33,9 +37,15 @@ const parseOptionalInt = (text: string): { value?: number; error: string | null 
 /**
  * The selected node's own fields as a form. Simple fields apply as you type;
  * the id applies on blur / Enter (renaming rewires everything pointing at it);
- * guard / effects / examples are free JSON until their schema settles.
+ * examples are free JSON.
  */
-export const NodeProperties = ({ node, nodes, actions }: INodePropertiesProps) => {
+export const NodeProperties = ({
+    node,
+    nodes,
+    wiredInto,
+    actions,
+    onEditFile,
+}: INodePropertiesProps) => {
     const update = (patch: Parameters<typeof actions.updateNode>[1]) =>
         actions.updateNode(node.id, patch);
     const others = nodes.filter((n) => n.id !== node.id);
@@ -110,6 +120,23 @@ export const NodeProperties = ({ node, nodes, actions }: INodePropertiesProps) =
 
             <PropSection title="Behaviour">
                 <CheckField
+                    label="start"
+                    hint={
+                        wiredInto && !node.start
+                            ? "only a node nothing wires into can start a journey"
+                            : "a journey may begin here"
+                    }
+                    checked={node.start ?? false}
+                    disabled={wiredInto && !node.start}
+                    onChange={(start) => update({ start: start || undefined })}
+                />
+                <CheckField
+                    label="end"
+                    hint="a transaction may finish here, even though wires lead on"
+                    checked={node.end ?? false}
+                    onChange={(end) => update({ end: end || undefined })}
+                />
+                <CheckField
                     label="manual"
                     hint="needs an explicit UI trigger"
                     checked={node.manual ?? false}
@@ -127,6 +154,37 @@ export const NodeProperties = ({ node, nodes, actions }: INodePropertiesProps) =
                     checked={node.repeat !== undefined}
                     onChange={(on) => update({ repeat: on ? { max: "unbounded" } : undefined })}
                 />
+                <CheckField
+                    label="repeat until exit()"
+                    hint="runs again, right after itself, until exit.ts returns true"
+                    checked={node.repeat?.until ?? false}
+                    onChange={(on) => {
+                        if (!on) {
+                            if (node.repeat)
+                                update({ repeat: { ...node.repeat, until: undefined } });
+                            return;
+                        }
+                        update({
+                            repeat: {
+                                ...node.repeat,
+                                // A cap, so a status that never arrives fails the run instead of looping.
+                                max:
+                                    node.repeat && node.repeat.max !== "unbounded"
+                                        ? node.repeat.max
+                                        : DEFAULT_UNTIL_MAX,
+                                until: true,
+                            },
+                        });
+                        if (!(node.files.exit ?? "").trim()) {
+                            actions.updateNodeFile(
+                                node.id,
+                                "exit",
+                                getTemplateFiles(node.api, node.codeLanguage ?? "typescript").exit
+                            );
+                        }
+                        onEditFile("exit");
+                    }}
+                />
                 <TextField
                     label="priority"
                     value={node.priority === undefined ? "" : String(node.priority)}
@@ -141,7 +199,11 @@ export const NodeProperties = ({ node, nodes, actions }: INodePropertiesProps) =
                     <>
                         <TextField
                             label="repeat.max"
-                            hint="A count, or “unbounded”"
+                            hint={
+                                node.repeat.until
+                                    ? "Runs before the exit condition must hold; reaching it fails the run"
+                                    : "A count, or “unbounded”"
+                            }
                             value={String(node.repeat.max)}
                             onCommit={(text) => {
                                 const t = text.trim();
@@ -165,6 +227,7 @@ export const NodeProperties = ({ node, nodes, actions }: INodePropertiesProps) =
                                 update({
                                     repeat: {
                                         max: node.repeat?.max ?? "unbounded",
+                                        ...(node.repeat?.until ? { until: true } : {}),
                                         ...(id === NONE ? {} : { resetOn: id }),
                                     },
                                 })
@@ -221,24 +284,7 @@ export const NodeProperties = ({ node, nodes, actions }: INodePropertiesProps) =
                 />
             </PropSection>
 
-            <PropSection title="State">
-                <JsonField
-                    label="guard"
-                    hint="Predicate over state + session + vault that enables this node"
-                    value={node.guard}
-                    placeholder='{ "state.order": "CREATED" }'
-                    onChange={(guard) => update({ guard })}
-                />
-                <JsonField
-                    label="effects"
-                    hint="A JSON array; any effect makes this node a state transition"
-                    value={node.effects.length > 0 ? node.effects : undefined}
-                    placeholder='[ { "set": "state.order", "to": "ACCEPTED" } ]'
-                    validate={(value) => (Array.isArray(value) ? null : "Effects must be an array")}
-                    onChange={(effects) =>
-                        update({ effects: (effects as unknown[] | undefined) ?? [] })
-                    }
-                />
+            <PropSection title="Examples">
                 <JsonField
                     label="examples"
                     value={node.examples}

@@ -1,14 +1,18 @@
 import {
     ArrowPathRoundedSquareIcon,
     ArrowUturnLeftIcon,
+    ArrowsRightLeftIcon,
     BellAlertIcon,
     DocumentTextIcon,
     PaperAirplaneIcon,
-    ShareIcon,
+    RectangleGroupIcon,
 } from "@heroicons/react/24/outline";
 import type { XYPosition } from "@xyflow/react";
 
-import { getTemplateFiles } from "@pages/protocol-studio/ui/editor/flows/action-files";
+import {
+    getDefaultSaveData,
+    getTemplateFiles,
+} from "@pages/protocol-studio/ui/editor/flows/action-files";
 import { DEFAULT_CASES, getDecideTemplate } from "@pages/protocol-studio/ui/editor/graph/decision";
 import type {
     ActionFiles,
@@ -18,6 +22,7 @@ import type {
     NodeKind,
     NodeOwner,
     NodeTemplate,
+    StudioGraph,
     StudioNode,
 } from "@pages/protocol-studio/ui/editor/types";
 
@@ -58,26 +63,34 @@ export const NODE_KINDS: Record<
     },
     decision: {
         label: "Decision",
-        hint: "decide() picks a branch: from sessionData, or the tester's answer",
+        hint: "The protocol decides from state: decide(sessionData) picks one case",
         owner: "BPP",
-        Icon: ShareIcon,
+        Icon: ArrowsRightLeftIcon,
+    },
+    group: {
+        label: "Group",
+        hint: "A sub-protocol with its own graph inside",
+        owner: "BAP",
+        Icon: RectangleGroupIcon,
     },
 };
 
 export const NODE_KIND_IDS = Object.keys(NODE_KINDS) as NodeKind[];
 
-/** What an API node can be switched to: a decision is a different sort of node, never a kind of call. */
+/** What an API node can be switched to: the control nodes are a different sort of node, never a kind of call. */
 export const API_NODE_KIND_IDS = NODE_KIND_IDS.filter(
-    (kind): kind is ApiNodeKind => kind !== "decision"
+    (kind): kind is ApiNodeKind => kind !== "decision" && kind !== "group"
 );
 
 /** The add-node menu's decision row. */
 export const DECISION_TEMPLATE: NodeTemplate = { kind: "decision", api: "decision", owner: "BPP" };
 
-/** A decision node has no action files of its own: only `decide`. */
-const NO_FILES: ActionFiles = {
+/** A control node has no action files of its own. */
+export const NO_FILES: ActionFiles = {
     generate: "",
     validate: "",
+    match: "",
+    exit: "",
     requirements: "",
     defaultPayload: "",
     inputs: "",
@@ -89,13 +102,13 @@ export const EDGE_KINDS: Record<EdgeKind, { label: string; hint: string }> = {
     optional: { label: "Optional", hint: "May be skipped" },
     branch: {
         label: "Branch",
-        hint: "Out of a decision node: taken when decide() returns its case",
+        hint: "Out of a decision: taken when decide() returns its case",
     },
     on_demand: { label: "On demand", hint: "Available from here, fired by the tester" },
     form: { label: "Form", hint: "Hands over to a form" },
     error: { label: "Error", hint: "An async error path" },
-    terminal: { label: "Terminal", hint: "Ends the journey" },
-    mount: { label: "Mount", hint: "Enters a mounted sub-protocol" },
+    terminal: { label: "Terminal", hint: "Ends the protocol here" },
+    mount: { label: "Mount", hint: "Enters a sub-protocol that can attach at several points" },
 };
 
 export const EDGE_KIND_IDS = Object.keys(EDGE_KINDS) as EdgeKind[];
@@ -121,6 +134,29 @@ export const UNSOLICITED_APIS = ["on_status", "on_update", "on_cancel", "on_trac
 export const ON_DEMAND_APIS = ["status", "track", "update", "cancel", "support", "rating"] as const;
 
 export const FORM_APIS = ["html_form", "dynamic_form"] as const;
+
+/** Ready-made empty groups for the sub-protocols most domains have. */
+export const GROUP_TEMPLATES: { name: string; description: string }[] = [
+    {
+        name: "Cancellation",
+        description:
+            "Either side cancels an order: cancel / on_cancel, the refund and the terminal order state.",
+    },
+    {
+        name: "Issue & grievance (IGM)",
+        description:
+            "The buyer raises an issue after the order; issue / on_issue, status updates and resolution.",
+    },
+    {
+        name: "Settlement",
+        description:
+            "Post-fulfilment settlement between the parties: receiver recon and settlement callbacks.",
+    },
+    {
+        name: "Returns (RTO)",
+        description: "The item comes back: return request, pickup, and the order's return states.",
+    },
+];
 
 export const getCallbackApi = (api: string) => `on_${api}`;
 
@@ -170,13 +206,29 @@ export const getUniqueNodeId = (base: string, taken: ReadonlySet<string>) => {
     return `${clean}_${n}`;
 };
 
-export const createNode = (template: NodeTemplate, id: string, position: XYPosition): StudioNode =>
+/** A group's id from its name: `Seller cancellation` → `seller_cancellation`. */
+export const slugify = (text: string) =>
+    text
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "_")
+        .replace(/^_+|_+$/g, "") || "group";
+
+/** `version` is the spec's, for the default `saveData` (`city_code`'s path differs on 1.x). */
+export const createNode = (
+    template: NodeTemplate,
+    id: string,
+    position: XYPosition,
+    version = "2.0.0"
+): StudioNode =>
     template.kind === "decision"
         ? createDecisionNode(id, position)
-        : createApiNode(template, id, position);
+        : template.kind === "group"
+          ? createGroupNode(id, position, template.api, "")
+          : createApiNode(template, id, position, version);
 
 const createDecisionNode = (id: string, position: XYPosition): StudioNode => {
-    const shape = { mode: "session" as const, cases: DEFAULT_CASES };
+    const shape = { cases: DEFAULT_CASES };
     return {
         id,
         api: "decision",
@@ -186,13 +238,35 @@ const createDecisionNode = (id: string, position: XYPosition): StudioNode => {
         description: "",
         files: NO_FILES,
         codeLanguage: "typescript",
-        effects: [],
         decision: { ...shape, decide: getDecideTemplate(shape) },
         position,
     };
 };
 
-const createApiNode = (template: NodeTemplate, id: string, position: XYPosition): StudioNode => ({
+export const createGroupNode = (
+    id: string,
+    position: XYPosition,
+    name: string,
+    description: string,
+    graph: StudioGraph = { nodes: [], edges: [] }
+): StudioNode => ({
+    id,
+    api: "group",
+    owner: "BAP",
+    kind: "group",
+    responseFor: null,
+    description,
+    files: NO_FILES,
+    group: { name, description, graph },
+    position,
+});
+
+const createApiNode = (
+    template: NodeTemplate,
+    id: string,
+    position: XYPosition,
+    version: string
+): StudioNode => ({
     id,
     api: template.api,
     owner: template.owner,
@@ -201,13 +275,17 @@ const createApiNode = (template: NodeTemplate, id: string, position: XYPosition)
     description: "",
     files: getTemplateFiles(template.api),
     codeLanguage: "typescript",
-    effects: [],
+    // Forms store their submission, not a payload: nothing to extract.
+    ...(template.kind === "form" ? {} : { saveData: getDefaultSaveData(version) }),
     ...(template.manual ? { manual: true } : {}),
     position,
 });
 
+// The session's start time keeps ids unique across reloads: a saved draft still
+// holds the wires of earlier sessions, and a pasted fragment brings in more.
+const EDGE_ID_SESSION = Date.now().toString(36);
 let nextEdgeId = 0;
-export const makeEdgeId = () => `edge-${++nextEdgeId}`;
+export const makeEdgeId = () => `edge-${EDGE_ID_SESSION}-${(++nextEdgeId).toString(36)}`;
 
 /** Whether `to` is `from`'s own callback still waiting for its request (`select` → `on_select`). */
 export const isUnpairedCallbackOf = (from: StudioNode, to: StudioNode) =>
@@ -226,3 +304,6 @@ export const inferEdgeKind = (from: StudioNode, to: StudioNode): EdgeKind => {
     if (to.optional) return "optional";
     return "next";
 };
+
+/** A readable name for a node: a group's name, else its id. */
+export const getNodeTitle = (node: StudioNode) => node.group?.name || node.id;

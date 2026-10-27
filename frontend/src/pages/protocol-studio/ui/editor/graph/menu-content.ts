@@ -1,33 +1,45 @@
 import {
     AdjustmentsHorizontalIcon,
+    ArrowRightEndOnRectangleIcon,
+    ArrowRightStartOnRectangleIcon,
     ArrowsPointingOutIcon,
     BoltIcon,
+    ClipboardDocumentIcon,
+    ClipboardIcon,
     CodeBracketIcon,
+    CursorArrowRaysIcon,
     DocumentDuplicateIcon,
+    FlagIcon,
     LinkSlashIcon,
+    PlayIcon,
+    RectangleGroupIcon,
     RectangleStackIcon,
     ScissorsIcon,
     SparklesIcon,
     Squares2X2Icon,
+    TagIcon,
     TrashIcon,
 } from "@heroicons/react/24/outline";
 import type { XYPosition } from "@xyflow/react";
 
 import {
     API_NODE_KIND_IDS,
-    DECISION_TEMPLATE,
     EDGE_KIND_IDS,
     EDGE_KINDS,
     FORM_APIS,
     getCallbackApi,
     getSuggestedNext,
+    GROUP_TEMPLATES,
     NODE_KINDS,
     ON_DEMAND_APIS,
     REQUEST_APIS,
+    DECISION_TEMPLATE,
     templateFromApi,
     UNSOLICITED_APIS,
 } from "@pages/protocol-studio/ui/editor/graph/catalog";
+import { hasMainWireIntoLevel, isBoundary } from "@pages/protocol-studio/ui/editor/graph/flatten";
 import { BP, getPinPoint } from "@pages/protocol-studio/ui/editor/graph/layout";
+import { formatShortcut } from "@pages/protocol-studio/ui/editor/shortcuts";
 import type {
     GraphMenuItem,
     GraphMenuSection,
@@ -49,18 +61,37 @@ import type {
 export type NodeLink = { nodeId: string; side: "source" | "target"; branchCase?: string };
 
 export interface MenuContext {
+    /** The level the canvas shows. */
     graph: StudioGraph;
+    /** Inside a group (the level has Entry / Exit pins). */
+    inGroup: boolean;
     published: PublishedFlows;
     actions: StudioGraphActions;
     /** Adds a node from `template` at `at`: its top-left, or where its linked pin goes when `link` is set. */
     addNode: (template: NodeTemplate, at: XYPosition, link?: NodeLink) => void;
+    /** Adds an empty group named from a template. */
+    addGroup: (template: { name: string; description: string }, at: XYPosition) => void;
+    /** Opens the "Group nodes…" dialog, with these nodes ticked. */
+    openGroupDialog: (preselected: string[]) => void;
     insertFlow: (flow: PublishedFlow, at: XYPosition) => void;
+    /**
+     * Duplicate / copy / cut a node — or, when it is part of a selection of
+     * several, the whole selection (`selectedNodeIds`).
+     */
     duplicateNode: (nodeId: string) => void;
+    copyNode: (nodeId: string) => void;
+    cutNode: (nodeId: string) => void;
+    selectedNodeIds: readonly string[];
+    /** Pastes the last copy with its top-left at `at`; `canPaste` when there is one. */
+    paste: (at: XYPosition) => void;
+    canPaste: boolean;
+    /** Selects every node on the level. */
+    selectAll: () => void;
     /** Selects the node and opens an inspector tab on it. */
     editNode: (nodeId: string, tab: InspectorTabId) => void;
     selectEdge: (edgeId: string) => void;
     fitView: () => void;
-    /** Lays the whole graph out in tidy columns. */
+    /** Lays the whole level out in tidy columns. */
     tidy: () => void;
 }
 
@@ -74,6 +105,35 @@ const FAN_OUT_STEP = 120;
 
 /** Most suggestions a section shows before it is noise. */
 const SUGGESTION_LIMIT = 6;
+
+/** Duplicate, copy and cut, for a node's menu: on the selection when the node is part of one. */
+const getClipboardItems = (ctx: MenuContext, node: StudioNode): GraphMenuItem[] => {
+    const count = ctx.selectedNodeIds.includes(node.id) ? ctx.selectedNodeIds.length : 1;
+    const what = count > 1 ? ` ${count} nodes` : "";
+    return [
+        {
+            id: "node:duplicate",
+            label: `Duplicate${what}`,
+            hint: formatShortcut("D"),
+            Icon: DocumentDuplicateIcon,
+            onSelect: () => ctx.duplicateNode(node.id),
+        },
+        {
+            id: "node:copy",
+            label: `Copy${what}`,
+            hint: formatShortcut("C"),
+            Icon: ClipboardDocumentIcon,
+            onSelect: () => ctx.copyNode(node.id),
+        },
+        {
+            id: "node:cut",
+            label: `Cut${what}`,
+            hint: formatShortcut("X"),
+            Icon: ScissorsIcon,
+            onSelect: () => ctx.cutNode(node.id),
+        },
+    ];
+};
 
 const templateId = (template: NodeTemplate) =>
     `${template.kind}:${template.api}:${template.responseFor ?? ""}`;
@@ -105,6 +165,7 @@ const getPaneContent = (
 ): MenuContent => {
     const { graph, published } = ctx;
     const linked = link ? graph.nodes.find((node) => node.id === link.nodeId) : undefined;
+    const fromBoundary = link && isBoundary(link.nodeId);
 
     const item = (template: NodeTemplate, hint?: string, label?: string): GraphMenuItem => ({
         id: templateId(template),
@@ -118,7 +179,16 @@ const getPaneContent = (
 
     let suggested: NodeTemplate[];
     if (linked && link?.side === "source") {
+        // A second wire out of a Then pin is an alternative: suggest the same callback again.
         suggested = getSuggestedNext(linked, hasCallback(graph, linked.id));
+        if (linked.kind === "request" && hasCallback(graph, linked.id)) {
+            suggested.unshift({
+                kind: "callback",
+                api: getCallbackApi(linked.api),
+                owner: "BPP",
+                responseFor: linked.id,
+            });
+        }
     } else if (linked) {
         suggested = getSuggestedBefore(linked);
     } else if (graph.nodes.length === 0) {
@@ -137,11 +207,13 @@ const getPaneContent = (
                 .map((template) =>
                     item(
                         template,
-                        template.responseFor
-                            ? `answers ${template.responseFor}`
-                            : graph.nodes.length === 0
-                              ? "start the journey"
-                              : NODE_KINDS[template.kind].hint
+                        template.responseFor && linked && hasCallback(graph, linked.id)
+                            ? `another answer to ${template.responseFor} — an alternative`
+                            : template.responseFor
+                              ? `answers ${template.responseFor}`
+                              : graph.nodes.length === 0
+                                ? "where the protocol starts"
+                                : NODE_KINDS[template.kind].hint
                     )
                 ),
         });
@@ -180,19 +252,44 @@ const getPaneContent = (
             items: FORM_APIS.map((api) => item({ kind: "form", api, owner: "BPP" })),
         },
         {
-            id: "decision",
+            id: "control",
             title: "Flow control",
             items: [
                 {
-                    ...item(DECISION_TEMPLATE, "decide() picks a branch", "Decision"),
-                    keywords: "decision branch switch if enum case session user input choice",
+                    ...item(DECISION_TEMPLATE, "the protocol decides from state", "Decision"),
+                    keywords: "decision switch branch if enum case session state decide protocol",
                 },
             ],
         }
     );
 
-    // A whole published flow only makes sense dropped on its own, not on a wire.
+    // Groups and whole published flows only make sense dropped on their own, not on a wire.
     if (!link) {
+        sections.push({
+            id: "group",
+            title: "Sub-protocol",
+            items: [
+                {
+                    id: "group:new",
+                    label: "Group nodes…",
+                    hint: "collapse nodes on this level into one named block",
+                    tone: "group",
+                    Icon: RectangleGroupIcon,
+                    keywords: "group collapse sub-protocol fold nest",
+                    disabled: graph.nodes.length === 0,
+                    onSelect: () => ctx.openGroupDialog([]),
+                },
+                ...GROUP_TEMPLATES.map((template) => ({
+                    id: `group:${template.name}`,
+                    label: template.name,
+                    hint: "an empty group, named and described",
+                    tone: "group" as const,
+                    Icon: RectangleGroupIcon,
+                    keywords: `group sub-protocol ${template.description}`,
+                    onSelect: () => ctx.addGroup(template, at),
+                })),
+            ],
+        });
         sections.push({
             id: "published",
             title: "Insert a published flow",
@@ -227,11 +324,30 @@ const getPaneContent = (
         });
     }
 
-    if (!link && graph.nodes.length > 0) {
-        sections.push({
-            id: "canvas",
-            title: "Canvas",
-            items: [
+    if (!link && (graph.nodes.length > 0 || ctx.inGroup || ctx.canPaste)) {
+        const items: GraphMenuItem[] = [];
+        if (ctx.canPaste) {
+            items.push({
+                id: "canvas:paste",
+                label: "Paste here",
+                hint: formatShortcut("V"),
+                tone: "neutral",
+                Icon: ClipboardIcon,
+                onSelect: () => ctx.paste(at),
+            });
+        }
+        if (graph.nodes.length > 0) {
+            items.push({
+                id: "canvas:select-all",
+                label: "Select all",
+                hint: formatShortcut("A"),
+                tone: "neutral",
+                Icon: CursorArrowRaysIcon,
+                onSelect: ctx.selectAll,
+            });
+        }
+        if (graph.nodes.length > 0) {
+            items.push(
                 {
                     id: "canvas:tidy",
                     label: "Tidy up layout",
@@ -247,9 +363,21 @@ const getPaneContent = (
                     tone: "neutral",
                     Icon: ArrowsPointingOutIcon,
                     onSelect: ctx.fitView,
-                },
-            ],
-        });
+                }
+            );
+        }
+        if (ctx.inGroup) {
+            items.push({
+                id: "canvas:exit",
+                label: "Leave this group",
+                hint: "back up one level",
+                tone: "neutral",
+                Icon: ArrowRightStartOnRectangleIcon,
+                keywords: "exit up back parent",
+                onSelect: () => ctx.actions.exitToLevel(Number.MAX_SAFE_INTEGER - 1),
+            });
+        }
+        sections.push({ id: "canvas", title: "Canvas", items });
     }
 
     const known = new Set<string>([
@@ -265,8 +393,13 @@ const getPaneContent = (
             ? link?.side === "source"
                 ? `After ${linked.id}`
                 : `Before ${linked.id}`
-            : "Add node",
-        subtitle: linked ? "The new node is wired in" : "Right-click · type to filter",
+            : fromBoundary
+              ? link?.nodeId === "$in"
+                  ? "After Entry"
+                  : "Before Exit"
+              : "Add node",
+        subtitle:
+            linked || fromBoundary ? "The new node is wired in" : "Right-click · type to filter",
         sections,
         searchable: true,
         getQueryItems: (query) =>
@@ -286,7 +419,19 @@ const getNodeContent = (ctx: MenuContext, node: StudioNode): MenuContent => {
     const { graph, actions } = ctx;
     const wired = graph.edges.some((edge) => edge.from === node.id || edge.to === node.id);
     if (node.decision) return getDecisionContent(ctx, node, wired);
-    const next = getSuggestedNext(node, hasCallback(graph, node.id));
+    if (node.group) return getGroupContent(ctx, node, wired);
+    const answered = hasCallback(graph, node.id);
+    const next = getSuggestedNext(node, answered);
+    // A request that already has its callback may get another: an alternative answer.
+    if (node.kind === "request" && answered) {
+        next.unshift({
+            kind: "callback",
+            api: getCallbackApi(node.api),
+            owner: "BPP",
+            responseFor: node.id,
+        });
+    }
+    const fanOut = graph.edges.filter((edge) => edge.from === node.id).length;
 
     const sections: GraphMenuSection[] = [
         {
@@ -296,21 +441,47 @@ const getNodeContent = (ctx: MenuContext, node: StudioNode): MenuContent => {
                 {
                     id: "node:properties",
                     label: "Edit properties",
-                    hint: "kind, guard, effects…",
+                    hint: "kind, owner, behaviour…",
                     Icon: AdjustmentsHorizontalIcon,
                     onSelect: () => ctx.editNode(node.id, "properties"),
                 },
                 {
                     id: "node:generate",
-                    label: "Edit generate.js",
+                    label: "Edit generate",
                     Icon: BoltIcon,
                     onSelect: () => ctx.editNode(node.id, "generate"),
                 },
+                // Only a node nothing wires into may start a journey (unmarking is always allowed).
+                ...(node.start || !hasMainWireIntoLevel(graph, node)
+                    ? [
+                          {
+                              id: "node:start",
+                              label: node.start ? "Unmark as start" : "Mark as start",
+                              hint: "a journey may begin here",
+                              Icon: PlayIcon,
+                              onSelect: () =>
+                                  actions.updateNode(node.id, {
+                                      start: node.start ? undefined : true,
+                                  }),
+                          },
+                      ]
+                    : []),
                 {
-                    id: "node:duplicate",
-                    label: "Duplicate",
-                    Icon: DocumentDuplicateIcon,
-                    onSelect: () => ctx.duplicateNode(node.id),
+                    id: "node:end",
+                    label: node.end ? "Unmark as end" : "Mark as end",
+                    hint: "a transaction may finish here",
+                    Icon: FlagIcon,
+                    onSelect: () =>
+                        actions.updateNode(node.id, { end: node.end ? undefined : true }),
+                },
+                ...getClipboardItems(ctx, node),
+                {
+                    id: "node:group",
+                    label: "Group with…",
+                    hint: "fold this and other nodes into a sub-protocol",
+                    tone: "group",
+                    Icon: RectangleGroupIcon,
+                    onSelect: () => ctx.openGroupDialog([node.id]),
                 },
             ],
         },
@@ -318,16 +489,19 @@ const getNodeContent = (ctx: MenuContext, node: StudioNode): MenuContent => {
 
     if (next.length > 0) {
         // Beside the node, In pin level with its Then pin, below anything already wired out.
-        const fanOut = graph.edges.filter((edge) => edge.from === node.id).length;
         const pin = getPinPoint(node, "source");
         const at = { x: pin.x + BP.gap, y: pin.y + fanOut * FAN_OUT_STEP };
         sections.push({
             id: "next",
-            title: "Add after",
+            title: fanOut > 0 ? "Add an alternative after" : "Add after",
             items: next.map((template) => ({
                 id: `next:${templateId(template)}`,
                 label: template.api,
-                hint: template.responseFor ? "its callback" : "next request",
+                hint: template.responseFor
+                    ? fanOut > 0
+                        ? "another possible answer"
+                        : "its callback"
+                    : "next request",
                 tone: template.kind,
                 Icon: SparklesIcon,
                 onSelect: () => ctx.addNode(template, at, { nodeId: node.id, side: "source" }),
@@ -378,7 +552,7 @@ const getNodeContent = (ctx: MenuContext, node: StudioNode): MenuContent => {
 
     return {
         title: node.api,
-        subtitle: `${node.id} · ${NODE_KINDS[node.kind].label} · ${node.owner}`,
+        subtitle: `${node.id} · ${NODE_KINDS[node.kind].label} · ${node.owner}${fanOut >= 2 ? ` · ${fanOut} alternatives` : ""}`,
         sections,
         searchable: false,
     };
@@ -386,8 +560,8 @@ const getNodeContent = (ctx: MenuContext, node: StudioNode): MenuContent => {
 
 const deleteNodeItem = (ctx: MenuContext, node: StudioNode): GraphMenuItem => ({
     id: "node:delete",
-    label: "Delete node",
-    hint: "Del",
+    label: node.group ? "Delete group" : "Delete node",
+    hint: node.group ? "and everything inside it" : "Del",
     tone: "danger",
     Icon: TrashIcon,
     onSelect: () => ctx.actions.removeNode(node.id),
@@ -395,10 +569,9 @@ const deleteNodeItem = (ctx: MenuContext, node: StudioNode): GraphMenuItem => ({
 
 const getDecisionContent = (ctx: MenuContext, node: StudioNode, wired: boolean): MenuContent => {
     const { actions } = ctx;
-    const decision = node.decision;
     return {
         title: node.id,
-        subtitle: `Decision · ${decision?.mode === "input" ? "user input" : "session"} · ${decision?.cases.length ?? 0} cases`,
+        subtitle: `Decision · ${node.decision?.cases.length ?? 0} cases`,
         searchable: false,
         sections: [
             {
@@ -407,7 +580,7 @@ const getDecisionContent = (ctx: MenuContext, node: StudioNode, wired: boolean):
                 items: [
                     {
                         id: "node:properties",
-                        label: "Edit mode & cases",
+                        label: "Edit cases",
                         Icon: AdjustmentsHorizontalIcon,
                         onSelect: () => ctx.editNode(node.id, "properties"),
                     },
@@ -417,24 +590,69 @@ const getDecisionContent = (ctx: MenuContext, node: StudioNode, wired: boolean):
                         Icon: CodeBracketIcon,
                         onSelect: () => ctx.editNode(node.id, "decide"),
                     },
+                    ...getClipboardItems(ctx, node),
                     {
-                        id: "node:duplicate",
-                        label: "Duplicate",
-                        Icon: DocumentDuplicateIcon,
-                        onSelect: () => ctx.duplicateNode(node.id),
+                        id: "node:group",
+                        label: "Group with…",
+                        tone: "group",
+                        Icon: RectangleGroupIcon,
+                        onSelect: () => ctx.openGroupDialog([node.id]),
                     },
                 ],
             },
             {
-                id: "mode",
-                title: "Decides from",
-                items: (["session", "input"] as const).map((mode) => ({
-                    id: `mode:${mode}`,
-                    label: mode === "session" ? "Session data" : "User input",
-                    hint: mode === "session" ? "decide(sessionData)" : "the tester picks a case",
-                    checked: decision?.mode === mode,
-                    onSelect: () => actions.updateDecision(node.id, { mode }),
-                })),
+                id: "remove",
+                title: "Remove",
+                items: [
+                    {
+                        id: "node:disconnect",
+                        label: "Disconnect all wires",
+                        Icon: LinkSlashIcon,
+                        disabled: !wired,
+                        onSelect: () => actions.disconnectNode(node.id),
+                    },
+                    deleteNodeItem(ctx, node),
+                ],
+            },
+        ],
+    };
+};
+
+const getGroupContent = (ctx: MenuContext, node: StudioNode, wired: boolean): MenuContent => {
+    const { actions } = ctx;
+    const count = node.group?.graph.nodes.length ?? 0;
+    return {
+        title: node.group?.name || node.id,
+        subtitle: `Sub-protocol · ${count} ${count === 1 ? "node" : "nodes"} inside`,
+        searchable: false,
+        sections: [
+            {
+                id: "node",
+                title: "Group",
+                items: [
+                    {
+                        id: "group:enter",
+                        label: "Open the group",
+                        hint: "double-click",
+                        tone: "group",
+                        Icon: ArrowRightEndOnRectangleIcon,
+                        onSelect: () => actions.enterGroup(node.id),
+                    },
+                    {
+                        id: "node:properties",
+                        label: "Edit name & description",
+                        Icon: AdjustmentsHorizontalIcon,
+                        onSelect: () => ctx.editNode(node.id, "properties"),
+                    },
+                    {
+                        id: "group:ungroup",
+                        label: "Ungroup",
+                        hint: "its nodes rejoin this level",
+                        Icon: RectangleGroupIcon,
+                        onSelect: () => actions.ungroup(node.id),
+                    },
+                    ...getClipboardItems(ctx, node),
+                ],
             },
             {
                 id: "remove",
@@ -459,9 +677,15 @@ const getEdgeContent = (ctx: MenuContext, edgeId: string): MenuContent | null =>
     if (!edge) return null;
     const { actions } = ctx;
     const cases = ctx.graph.nodes.find((n) => n.id === edge.from)?.decision?.cases;
+    const siblings = ctx.graph.edges.filter((e) => e.from === edge.from && e.case === edge.case);
+    const isAlternative = !cases && siblings.length >= 2;
     return {
         title: `${edge.from} → ${edge.to}`,
-        subtitle: cases ? `taken on “${edge.case}”` : `${EDGE_KINDS[edge.kind].label} wire`,
+        subtitle: cases
+            ? `taken on “${edge.case}”`
+            : isAlternative
+              ? `${edge.label || "unnamed"} · one of ${siblings.length} alternatives`
+              : `${EDGE_KINDS[edge.kind].label} wire`,
         searchable: false,
         sections: [
             ...(cases
@@ -506,6 +730,13 @@ const getEdgeContent = (ctx: MenuContext, edgeId: string): MenuContent | null =>
                 id: "rules",
                 title: "Rules",
                 items: [
+                    {
+                        id: "edge:label",
+                        label: edge.label ? `Label: ${edge.label}` : "Name this alternative…",
+                        hint: isAlternative ? "journeys are named from it" : "optional label",
+                        Icon: TagIcon,
+                        onSelect: () => ctx.selectEdge(edge.id),
+                    },
                     {
                         id: "edge:mandated",
                         label: "Mandated",

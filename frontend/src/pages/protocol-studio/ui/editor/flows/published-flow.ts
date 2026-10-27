@@ -51,10 +51,28 @@ const getStepKind = (step: FlowStep): NodeKind => {
 const getStepFiles = (step: FlowStep, templates: ActionFiles): ActionFiles => ({
     generate: decodeSource(step.mock?.generate, templates.generate),
     validate: decodeSource(step.mock?.validate, templates.validate),
+    // v1 steps have no recogniser: none, rather than a template that accepts everything.
+    match: "",
+    // Nor an exit condition: a v1 step runs once each time it is reached.
+    exit: "",
     requirements: decodeSource(step.mock?.requirements, templates.requirements),
     defaultPayload: toJsonSource(step.mock?.defaultPayload, templates.defaultPayload),
     inputs: toJsonSource(step.mock?.inputs, templates.inputs),
 });
+
+/** The step's `saveData` map as published, and a form step's HTML, decoded. */
+const getStepSessionFields = (step: FlowStep): Pick<StudioNode, "saveData" | "formHtml"> => {
+    const saveData = step.mock?.saveData;
+    const formHtml = step.mock?.formHtml;
+    return {
+        ...(saveData && typeof saveData === "object"
+            ? { saveData: { ...(saveData as Record<string, string>) } }
+            : {}),
+        ...(typeof formHtml === "string" && formHtml !== ""
+            ? { formHtml: decodeSource(formHtml, "") }
+            : {}),
+    };
+};
 
 /** Requests on the top row, everything answering them dropped a little: a zigzag. */
 const CALLBACK_DROP = 64;
@@ -96,10 +114,10 @@ export const toGraphFragment = (
             usecases: [published.entry.usecase],
             description: step.description ?? "",
             files: getStepFiles(step, templates),
+            ...getStepSessionFields(step),
             // Their code is v1's: JavaScript reading the session as stored.
             codeLanguage: "javascript",
             sessionView: "raw",
-            effects: [],
             position: {
                 x: origin.x + index * (BP.width + BP.gap / 2),
                 y: origin.y + (kind === "request" ? 0 : CALLBACK_DROP),

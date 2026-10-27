@@ -12,6 +12,9 @@ export interface IStudioStarterFormValues {
 
 export interface IStudioStarterScreenProps {
     onCreate: (config: MockPlaygroundConfigV2Type) => void;
+    /** The local draft, when one is saved: shown as a "Resume" option. */
+    draft?: { config: MockPlaygroundConfigV2Type; savedAt: string } | null;
+    onResume?: () => void;
 }
 
 export interface IStudioFlowFieldsProps {

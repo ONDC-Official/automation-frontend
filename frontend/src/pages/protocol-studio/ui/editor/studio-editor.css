@@ -365,6 +365,11 @@
         bottom 0.24s var(--studio-ease);
 }
 
+/* Journeys stage with a journey picked: its path strip sits across the top, so the visible area starts under it. */
+.studio-editor[data-path-strip] .studio-canvas-area {
+    top: calc(var(--studio-header-h) + var(--studio-gap) * 3 + var(--studio-path-h, 112px));
+}
+
 .studio-empty-hint {
     position: absolute;
     inset: 0;
@@ -417,8 +422,9 @@
     border-bottom: 1px solid var(--studio-hairline);
 }
 
-/* Tidy up: a heroicon, drawn with strokes rather than the library icons' fill. */
-.studio-editor .react-flow__controls-button.studio-tidy svg {
+/* Tidy up, undo, redo: heroicons, drawn with strokes rather than the library icons' fill. */
+.studio-editor .react-flow__controls-button.studio-tidy svg,
+.studio-editor .react-flow__controls-button.studio-control-icon svg {
     max-width: 14px;
     max-height: 14px;
     fill: none;
@@ -431,6 +437,18 @@
 
 .studio-editor .react-flow__controls-button:last-child {
     border-bottom: none;
+}
+
+/* ⇧-drag: the box being drawn. */
+.studio-editor .react-flow__selection {
+    border: 1px dashed var(--studio-accent);
+    border-radius: 4px;
+    background: color-mix(in srgb, var(--studio-accent) 10%, transparent);
+}
+
+/* React Flow's frame round a boxed selection would sit over the nodes and eat their clicks; the nodes show their own selection. */
+.studio-editor .react-flow__nodesselection {
+    display: none;
 }
 
 .studio-editor .react-flow__controls-button:hover {
@@ -1000,10 +1018,142 @@
         box-shadow 0.15s;
 }
 
-/* Three files share the top row: each grows from its own width instead, so
-   requirements.js keeps the room it needs at the default inspector width. */
-.studio-filerow[data-group="functions"] .studio-file {
+/* Four files share the Generation row: each grows from its own width instead,
+   so requirements.js keeps the room it needs at the default inspector width. */
+.studio-filerow[data-group="generation"] .studio-file {
     flex-basis: auto;
+}
+
+/* The node's four sections, above the section's file row. */
+.studio-sections {
+    margin: 0 12px 6px;
+}
+
+.studio-segment-xs {
+    height: 20px;
+    padding: 0 7px;
+    font-size: 11px;
+}
+
+/* ─── Validation › validations.yaml (read-only tree) ─── */
+
+.studio-val-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.studio-val-rule {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-left: calc(var(--depth, 0) * 12px);
+    padding: 6px 8px;
+    border-radius: 6px;
+    background: var(--studio-tint);
+    box-shadow: inset 0 0 0 1px var(--studio-hairline);
+    font-size: 12px;
+}
+
+.studio-val-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+}
+
+.studio-val-operands {
+    display: grid;
+    grid-template-columns: max-content minmax(0, 1fr);
+    gap: 2px 10px;
+    margin: 0;
+    font-size: 11.5px;
+}
+
+.studio-val-operands > div {
+    display: contents;
+}
+
+.studio-val-operands dt {
+    color: var(--studio-text-faint);
+}
+
+.studio-val-operands dd {
+    margin: 0;
+    overflow-wrap: anywhere;
+    color: var(--studio-text-dim);
+}
+
+.studio-val-return {
+    margin: 0;
+    padding: 4px 6px;
+    border-radius: 4px;
+    background: var(--studio-field-bg);
+    font-size: 11.5px;
+    color: var(--studio-accent-ink);
+    overflow-wrap: anywhere;
+}
+
+/* ─── Session › saveData table ─── */
+
+.studio-savedata {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+}
+
+.studio-savedata th {
+    padding: 4px 6px;
+    text-align: left;
+    font-family: var(--studio-mono);
+    font-size: 10.5px;
+    font-weight: 500;
+    color: var(--studio-text-faint);
+    border-bottom: 1px solid var(--studio-hairline);
+}
+
+.studio-savedata th:nth-child(2) {
+    width: 56px;
+    text-align: center;
+}
+
+.studio-savedata th:last-child {
+    width: 32px;
+}
+
+.studio-savedata td {
+    padding: 3px 4px;
+    vertical-align: middle;
+}
+
+.studio-savedata td:first-child {
+    width: 38%;
+}
+
+.studio-savedata tr[data-selected] td {
+    background: var(--studio-tint);
+}
+
+.studio-savedata .bp-input {
+    padding: 3px 6px;
+    font-size: 12px;
+}
+
+.studio-savedata-last {
+    max-height: 180px;
+    margin: 4px 0 0;
+    padding: 6px 8px;
+    overflow: auto;
+    border-radius: 6px;
+    background: var(--studio-field-bg);
+    font-size: 11px;
+    line-height: 16px;
+    color: var(--studio-text-dim);
+    white-space: pre-wrap;
+    word-break: break-word;
 }
 
 .studio-file svg {
@@ -1597,6 +1747,7 @@
     --bp-form: #c2477a;
     /* Flow control, like Blueprint's Branch / Switch nodes: a slate header. */
     --bp-decision: #5f6b80;
+    --bp-group: #7c5cbf;
 
     --bp-wire-response: #3fbf6f;
     --bp-wire-optional: rgb(140 148 160);
@@ -1776,6 +1927,13 @@
     background: rgb(0 0 0 / 0.3);
 }
 
+.bp-flag[data-flag="start"] {
+    background: color-mix(in srgb, var(--bp-wire-response) 55%, rgb(0 0 0 / 0.3));
+}
+.bp-flag[data-flag="end"] {
+    background: color-mix(in srgb, #e5484d 55%, rgb(0 0 0 / 0.3));
+}
+
 .studio-editor .bp-owner,
 .studio-editor .bp-owner[data-owner] {
     color: #fff;
@@ -1855,12 +2013,6 @@
 
 .bp-row[data-tone="response"] {
     --bp-tone: var(--bp-wire-response);
-}
-.bp-row[data-tone="guard"] {
-    --bp-tone: var(--bp-wire-branch);
-}
-.bp-row[data-tone="effect"] {
-    --bp-tone: #4fa3ff;
 }
 .bp-row[data-tone="repeat"] {
     --bp-tone: var(--bp-wire-mount);
@@ -2297,6 +2449,13 @@ textarea.bp-input {
     accent-color: var(--studio-accent);
 }
 
+.bp-check[data-disabled] {
+    cursor: not-allowed;
+}
+.bp-check[data-disabled] > span:first-of-type {
+    color: var(--studio-text-faint);
+}
+
 .bp-check-hint {
     flex-basis: 100%;
     padding-left: 20px;
@@ -2501,4 +2660,1192 @@ textarea.bp-input {
     .bp-menu {
         animation: none;
     }
+}
+
+/* ─── Stages: the header's pipeline bar ───────────────────────────────────── */
+
+.studio-stages {
+    display: flex;
+    flex-shrink: 0;
+    align-items: stretch;
+    gap: 2px;
+    height: 36px;
+    padding: 2px;
+    border-radius: 10px;
+    background: var(--studio-tint);
+}
+
+.studio-stage {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 0 10px 0 7px;
+    border-radius: 8px;
+    color: var(--studio-text-dim);
+    transition:
+        background 0.15s,
+        color 0.15s;
+}
+
+.studio-stage:hover {
+    color: var(--studio-text);
+    background: var(--studio-key-bg-hover);
+}
+
+.studio-stage[data-active] {
+    color: var(--studio-text);
+    background: var(--studio-key-bg);
+    box-shadow: var(--studio-key-shadow);
+}
+
+.studio-stage-index {
+    display: grid;
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+    place-items: center;
+    border-radius: 50%;
+    font-size: 9.5px;
+    font-weight: 700;
+    /* The header's inherited 24px line box would overflow the 16px circle and sink the digit. */
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    color: var(--studio-text-faint);
+    background: var(--studio-tint);
+}
+
+.studio-stage[data-active] .studio-stage-index {
+    color: #fff;
+    background: var(--studio-accent);
+}
+
+.studio-stage-icon {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+}
+
+.studio-stage-text {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    line-height: 1.1;
+}
+
+.studio-stage-label {
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.studio-stage-summary {
+    max-width: 150px;
+    overflow: hidden;
+    font-size: 9.5px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--studio-text-faint);
+}
+
+.studio-stage-pill {
+    display: inline-grid;
+    min-width: 16px;
+    height: 16px;
+    place-items: center;
+    padding: 0 5px;
+    border-radius: 999px;
+    font-size: 9.5px;
+    font-weight: 700;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    color: #fff;
+    background: var(--studio-warn);
+}
+
+.studio-stage[data-tone="error"] .studio-stage-pill {
+    background: var(--studio-error);
+}
+
+/* ─── Group drill-in: the floating breadcrumb ─────────────────────────────── */
+
+.studio-breadcrumb {
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    height: 30px;
+    padding: 0 10px 0 8px;
+    transform: translateX(-50%);
+    border-radius: 999px;
+    font-size: 12px;
+    pointer-events: auto;
+}
+
+.studio-breadcrumb-step {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+}
+
+.studio-breadcrumb-step svg {
+    width: 12px;
+    height: 12px;
+    color: var(--studio-text-faint);
+}
+
+.studio-breadcrumb-link {
+    padding: 2px 6px;
+    border-radius: 6px;
+    color: var(--studio-text-dim);
+}
+
+.studio-breadcrumb-link:hover:not(:disabled) {
+    color: var(--studio-text);
+    background: var(--studio-key-bg-hover);
+}
+
+.studio-breadcrumb-link[data-current] {
+    font-weight: 600;
+    color: var(--studio-text);
+}
+
+/* ─── Nodes: forks, groups, boundaries, journey lighting ──────────────────── */
+
+.bp-node[data-kind="group"] {
+    --bp-kind: var(--bp-group);
+}
+
+.bp-fork-badge {
+    padding: 1px 6px;
+    border-radius: 999px;
+    font-family: var(--studio-mono);
+    font-size: 9.5px;
+    font-weight: 700;
+    color: #1a1a1a;
+    background: var(--bp-wire-branch);
+    box-shadow: 0 0 8px -2px var(--bp-wire-branch);
+}
+
+.bp-group-desc {
+    display: -webkit-box;
+    height: 34px;
+    margin: 0 11px;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    font-size: 10.5px;
+    line-height: 17px;
+    color: var(--bp-text-dim);
+}
+
+.bp-group-desc[data-empty] {
+    font-style: italic;
+    color: var(--bp-wire-branch);
+}
+
+.bp-group-stats {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    height: 24px;
+    padding: 0 11px;
+    font-family: var(--studio-mono);
+    font-size: 10px;
+    color: var(--bp-text-dim);
+}
+
+.bp-group::after {
+    content: "";
+    position: absolute;
+    inset: 4px -4px -4px 4px;
+    z-index: -1;
+    border-radius: 9px;
+    background: color-mix(in srgb, var(--bp-body) 70%, var(--bp-group));
+    box-shadow: 0 0 0 1px var(--bp-body-edge);
+    pointer-events: none;
+}
+
+.bp-boundary {
+    cursor: default;
+    background: color-mix(in srgb, var(--bp-body) 80%, transparent);
+}
+
+.bp-boundary .bp-head {
+    background:
+        linear-gradient(180deg, rgb(255 255 255 / 0.1), transparent 55%),
+        repeating-linear-gradient(
+            135deg,
+            color-mix(in srgb, var(--bp-group) 55%, transparent) 0 6px,
+            color-mix(in srgb, var(--bp-group) 25%, transparent) 6px 12px
+        );
+}
+
+/* Journeys stage: the path lit, the rest dimmed, an open fork's options pulsing. */
+.bp-node[data-lit="false"] {
+    opacity: 0.32;
+    filter: saturate(0.4);
+}
+
+.bp-node[data-lit="true"] {
+    box-shadow:
+        0 0 0 2px var(--bp-wire-branch),
+        0 0 22px -4px var(--bp-wire-branch),
+        0 14px 30px -14px rgb(0 0 0 / 0.65);
+}
+
+.studio-editor .react-flow__edge.bp-edge-dim .react-flow__edge-path {
+    opacity: 0.18;
+}
+
+.studio-editor .react-flow__edge.bp-edge-lit .react-flow__edge-path {
+    stroke-width: 3.5;
+    filter: drop-shadow(0 0 5px var(--bp-wire));
+}
+
+.studio-editor .react-flow__edge.bp-edge-pending .react-flow__edge-path {
+    stroke-width: 3.5;
+    stroke-dasharray: 8 6;
+    animation: bp-pending 1.1s linear infinite;
+}
+
+@keyframes bp-pending {
+    to {
+        stroke-dashoffset: -28;
+    }
+}
+
+.studio-canvas[data-readonly] .bp-node {
+    cursor: pointer;
+}
+
+.studio-canvas[data-readonly] .react-flow__handle {
+    pointer-events: none;
+}
+
+.bp-edge-label[data-alternative] {
+    --bp-label-ring: var(--bp-wire-branch);
+    font-weight: 700;
+}
+
+.bp-edge-label[data-unnamed] {
+    font-style: italic;
+    font-weight: 400;
+    color: var(--bp-wire-branch);
+}
+
+.bp-edge-label[data-lit="false"] {
+    opacity: 0.3;
+}
+
+.bp-edge-label[data-pending] {
+    box-shadow:
+        0 0 0 1.5px var(--bp-wire-branch),
+        0 0 12px -2px var(--bp-wire-branch);
+}
+
+.bp-menu-item[data-tone="group"] {
+    --bp-swatch: var(--bp-group);
+}
+
+.bp-tree-row[data-kind="group"] .bp-tree-kind,
+.bp-tree-kind[data-kind="group"] {
+    background: var(--bp-group);
+}
+
+.bp-tree-kind[data-kind="decision"] {
+    background: var(--bp-decision);
+}
+
+/* ─── Problems ────────────────────────────────────────────────────────────── */
+
+.studio-problem {
+    display: flex;
+    width: 100%;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 4px 6px;
+    border-radius: 6px;
+    text-align: left;
+    color: var(--studio-text);
+}
+
+.studio-problem:hover:not(:disabled) {
+    background: var(--studio-tint);
+}
+
+.studio-problem:disabled {
+    cursor: default;
+}
+
+.studio-problem .studio-level {
+    margin-top: 1px;
+}
+
+.studio-count[data-tone="warn"] {
+    color: #1a1a1a;
+    background: var(--studio-warn);
+}
+
+.studio-count[data-tone="error"] {
+    color: #fff;
+    background: var(--studio-error);
+}
+
+/* ─── Form dialogs: group, derive ─────────────────────────────────────────── */
+
+.studio-form-dialog {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    z-index: 50;
+    display: flex;
+    width: min(560px, calc(100% - 40px));
+    max-height: calc(100% - 40px);
+    flex-direction: column;
+    transform: translate(-50%, -50%);
+    outline: none;
+}
+
+.studio-form-dialog-wide {
+    width: min(760px, calc(100% - 40px));
+}
+
+.studio-form-dialog-body {
+    display: flex;
+    min-height: 0;
+    flex: 1;
+    flex-direction: column;
+    gap: 14px;
+    padding: 4px 16px 8px;
+    overflow: auto;
+}
+
+.studio-picklist {
+    max-height: 240px;
+    overflow: auto;
+    padding: 4px;
+}
+
+.studio-picklist-tall {
+    max-height: 420px;
+}
+
+.studio-pick {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 6px;
+    border-radius: 6px;
+    font-size: 12.5px;
+    cursor: pointer;
+}
+
+.studio-pick:hover {
+    background: var(--studio-tint);
+}
+
+.studio-pick input[type="checkbox"] {
+    accent-color: var(--studio-accent);
+}
+
+.studio-candidate {
+    padding: 2px 0 6px;
+    border-bottom: 1px solid var(--studio-hairline);
+}
+
+.studio-candidate:last-child {
+    border-bottom: none;
+}
+
+.studio-candidate[data-exists] {
+    opacity: 0.6;
+}
+
+.studio-candidate-title {
+    flex: 1;
+    min-width: 0;
+    padding: 3px 6px;
+}
+
+.studio-candidate-path {
+    padding: 0 6px 0 32px;
+    font-size: 10.5px;
+    line-height: 15px;
+    color: var(--studio-text-faint);
+    word-break: break-word;
+}
+
+/* ─── Journeys stage ──────────────────────────────────────────────────────── */
+
+.studio-journey-row {
+    display: flex;
+    width: 100%;
+    min-width: 0;
+    flex: 1;
+    align-items: center;
+    gap: 9px;
+    padding: 7px 8px;
+    border-radius: 8px;
+    text-align: left;
+    color: var(--studio-text);
+}
+
+.studio-journey-row:hover {
+    background: var(--studio-tint);
+}
+
+.studio-journey-row[data-selected] {
+    background: var(--studio-accent-soft);
+    box-shadow: inset 0 0 0 1px var(--studio-accent-border);
+}
+
+.studio-journey-open {
+    border: 1px dashed var(--studio-hairline);
+}
+
+.studio-journey-icon {
+    display: grid;
+    width: 26px;
+    height: 26px;
+    flex-shrink: 0;
+    place-items: center;
+    border-radius: 7px;
+    color: var(--studio-accent-ink);
+    background: var(--studio-accent-soft);
+}
+
+.studio-journey-icon svg {
+    width: 15px;
+    height: 15px;
+}
+
+.studio-journey-title {
+    display: block;
+    overflow: hidden;
+    font-size: 12.5px;
+    font-weight: 600;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.studio-journey-sub {
+    display: block;
+    overflow: hidden;
+    font-size: 10.5px;
+    line-height: 14px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--studio-text-faint);
+}
+
+.studio-journey-dot {
+    width: 8px;
+    height: 8px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: var(--studio-ok);
+    box-shadow: 0 0 6px -1px var(--studio-ok);
+}
+
+.studio-journey-dot[data-state="pending"] {
+    background: var(--studio-warn);
+    box-shadow: 0 0 6px -1px var(--studio-warn);
+}
+
+/* The path strip across the top of the canvas, between the two side cards. */
+.studio-path {
+    position: absolute;
+    z-index: 15;
+    top: calc(var(--studio-header-h) + var(--studio-gap) * 2);
+    left: calc(var(--studio-explorer-visible) + var(--studio-gap) * 2);
+    right: calc(var(--studio-inspector-w) + var(--studio-gap) * 2);
+    display: flex;
+    flex-direction: column;
+    border-radius: 14px;
+}
+
+.studio-path-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 14px 0;
+}
+
+.studio-path-title {
+    overflow: hidden;
+    font-size: 13px;
+    font-weight: 600;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.studio-path-row {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    padding: 8px 12px 12px;
+    overflow-x: auto;
+}
+
+.studio-path-item {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: 2px;
+}
+
+.studio-path-arrow {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    color: var(--studio-text-faint);
+}
+
+.studio-path-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 30px;
+    padding: 0 10px 0 8px;
+    border-radius: 8px;
+    font-size: 12px;
+    color: var(--studio-text);
+    background: var(--studio-key-bg);
+    box-shadow: var(--studio-key-shadow);
+    --bp-kind: var(--bp-request);
+}
+
+.studio-path-chip[data-kind="callback"] {
+    --bp-kind: var(--bp-callback);
+}
+.studio-path-chip[data-kind="unsolicited"] {
+    --bp-kind: var(--bp-unsolicited);
+}
+.studio-path-chip[data-kind="on_demand"] {
+    --bp-kind: var(--bp-on_demand);
+}
+.studio-path-chip[data-kind="form"] {
+    --bp-kind: var(--bp-form);
+}
+
+.studio-path-chip svg {
+    width: 13px;
+    height: 13px;
+    color: var(--bp-kind);
+}
+
+.studio-path-chip:hover {
+    background: var(--studio-key-bg-hover);
+}
+
+.studio-path-chip[data-selected] {
+    box-shadow:
+        var(--studio-key-shadow),
+        0 0 0 2px var(--studio-accent);
+}
+
+.studio-path-chip-id {
+    font-size: 10px;
+    color: var(--studio-text-faint);
+}
+
+.studio-fork-card {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    min-width: 160px;
+    padding: 6px 9px 7px;
+    border-radius: 10px;
+    background: var(--studio-well-bg);
+    box-shadow: var(--studio-well-shadow);
+}
+
+.studio-fork-card[data-pending] {
+    box-shadow:
+        var(--studio-well-shadow),
+        0 0 0 1.5px var(--bp-wire-branch),
+        0 0 18px -4px var(--bp-wire-branch);
+    animation: studio-fork-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes studio-fork-pulse {
+    50% {
+        box-shadow:
+            var(--studio-well-shadow),
+            0 0 0 1.5px var(--bp-wire-branch),
+            0 0 4px -2px var(--bp-wire-branch);
+    }
+}
+
+.studio-fork-node {
+    align-self: flex-start;
+    font-family: var(--studio-mono);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--studio-text);
+}
+
+.studio-fork-node:hover {
+    text-decoration: underline;
+}
+
+.studio-fork-chooser {
+    font-size: 10px;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: var(--studio-text-faint);
+}
+
+.studio-fork-options {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px;
+}
+
+.studio-fork-option {
+    padding: 3px 8px;
+    border-radius: 999px;
+    font-size: 11.5px;
+    color: var(--studio-text);
+    background: var(--studio-key-bg);
+    box-shadow: var(--studio-key-shadow);
+}
+
+.studio-fork-option:hover:not([data-static]) {
+    background: var(--studio-key-bg-hover);
+}
+
+.studio-fork-option[data-chosen] {
+    color: #fff;
+    background: var(--studio-accent);
+    box-shadow: none;
+}
+
+.studio-fork-option[data-static] {
+    cursor: default;
+    color: var(--studio-text-dim);
+}
+
+.studio-forks {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.studio-fork-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 2px 10px;
+    padding: 6px 8px;
+    border-radius: 8px;
+    font-size: 11.5px;
+    background: var(--studio-field-bg);
+    box-shadow: inset 0 0 0 1px var(--studio-hairline);
+}
+
+.studio-fork-row > select {
+    grid-column: span 2;
+    margin-top: 2px;
+}
+
+.studio-fork-row[data-off] {
+    opacity: 0.55;
+}
+
+/* Flow preview rows in the dock. */
+.studio-flow-rows {
+    padding: 4px 6px;
+}
+
+.studio-flow-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    height: 28px;
+    padding: 0 8px;
+    border-radius: 6px;
+    font-size: 12px;
+}
+
+.studio-flow-row:hover {
+    background: var(--studio-tint);
+}
+
+.studio-flow-index {
+    width: 20px;
+    flex-shrink: 0;
+    font-family: var(--studio-mono);
+    font-size: 10.5px;
+    color: var(--studio-text-faint);
+    text-align: right;
+}
+
+.studio-flow-api {
+    min-width: 110px;
+    font-weight: 600;
+}
+
+.studio-flow-extra {
+    border-top: 1px dashed var(--studio-hairline);
+    margin-top: 4px;
+    padding-top: 4px;
+}
+
+.studio-badge[data-end="fork"] {
+    color: #1a1a1a;
+    background: var(--studio-warn);
+}
+
+/* ─── Full-page stages: Specification, Review ─────────────────────────────── */
+
+.studio-stage-page {
+    position: absolute;
+    top: calc(var(--studio-header-h) + var(--studio-gap) * 2);
+    right: var(--studio-gap);
+    bottom: var(--studio-gap);
+    left: var(--studio-gap);
+    display: flex;
+    gap: var(--studio-gap);
+    min-height: 0;
+}
+
+.studio-stage-side {
+    position: relative;
+    display: flex;
+    width: 280px;
+    flex-shrink: 0;
+    flex-direction: column;
+}
+
+.studio-stage-main {
+    display: flex;
+    min-width: 0;
+    flex: 1;
+    flex-direction: column;
+    gap: var(--studio-gap);
+    padding-right: 2px;
+    overflow: auto;
+}
+
+.studio-stage-main-wide {
+    max-width: 1280px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.studio-stage-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+    gap: var(--studio-gap);
+}
+
+.studio-card {
+    position: relative;
+    display: flex;
+    flex-shrink: 0;
+    flex-direction: column;
+}
+
+.studio-card-muted {
+    opacity: 0.8;
+}
+
+.studio-card-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px 8px;
+}
+
+.studio-card-head > div:first-child {
+    min-width: 0;
+    flex: 1;
+}
+
+.studio-card-title {
+    overflow: hidden;
+    font-size: 14px;
+    font-weight: 600;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.studio-card-select {
+    width: auto;
+    max-width: 200px;
+}
+
+.studio-card-body {
+    display: flex;
+    min-height: 0;
+    flex-direction: column;
+}
+
+.studio-card-body-tall {
+    height: 320px;
+}
+
+.studio-facts {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    font-size: 12px;
+    color: var(--studio-text-dim);
+}
+
+.studio-facts li {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+
+.studio-api-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+    color: var(--studio-text-faint);
+}
+
+.studio-api-row[data-used] {
+    color: var(--studio-text);
+}
+
+.studio-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 8px;
+}
+
+.studio-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    text-align: left;
+    background: var(--studio-well-bg);
+    box-shadow: var(--studio-well-shadow);
+}
+
+.studio-stat:hover:not(:disabled) {
+    background: var(--studio-key-bg-hover);
+}
+
+.studio-stat:disabled {
+    cursor: default;
+}
+
+.studio-stat-value {
+    font-family: var(--studio-mono);
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 24px;
+}
+
+.studio-stat-label {
+    font-size: 10.5px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--studio-text-faint);
+}
+
+.studio-export-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: var(--studio-well-bg);
+    box-shadow: var(--studio-well-shadow);
+}
+
+.studio-matrix-wrap {
+    overflow: auto;
+    border-radius: 10px;
+    background: var(--studio-well-bg);
+    box-shadow: var(--studio-well-shadow);
+}
+
+.studio-matrix {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+}
+
+.studio-matrix th,
+.studio-matrix td {
+    padding: 5px 10px;
+    border-bottom: 1px solid var(--studio-hairline);
+    text-align: center;
+    white-space: nowrap;
+}
+
+.studio-matrix th {
+    position: sticky;
+    top: 0;
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: var(--studio-text-dim);
+    background: var(--studio-well-bg);
+}
+
+.studio-matrix th span {
+    display: inline-block;
+    max-width: 140px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: bottom;
+}
+
+.studio-matrix-node {
+    text-align: left !important;
+}
+
+.studio-matrix-group td {
+    padding-top: 10px;
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-align: left;
+    text-transform: uppercase;
+    color: var(--studio-text-faint);
+}
+
+.studio-matrix tr[data-unvisited] .studio-matrix-node {
+    color: var(--studio-warn);
+}
+
+.studio-matrix-dot {
+    display: inline-block;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--studio-ok);
+    box-shadow: 0 0 6px -1px var(--studio-ok);
+}
+
+/* ─── Simulation: run status on the canvas, in the flow preview, results ─── */
+
+.bp-node[data-run="done"] {
+    outline: 2px solid var(--studio-ok);
+    outline-offset: 1px;
+}
+
+.bp-node[data-run="failed"] {
+    outline: 2px solid var(--studio-error);
+    outline-offset: 1px;
+}
+
+.bp-node[data-run="running"] {
+    outline: 2px solid var(--studio-accent);
+    outline-offset: 1px;
+    animation: studio-run-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes studio-run-pulse {
+    50% {
+        outline-color: var(--studio-accent-ring);
+    }
+}
+
+.studio-run-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: var(--studio-text-faint);
+}
+
+.studio-run-dot[data-status="done"] {
+    background: var(--studio-ok);
+}
+
+.studio-run-dot[data-status="failed"] {
+    background: var(--studio-error);
+}
+
+.studio-run-dot[data-status="running"] {
+    background: var(--studio-accent);
+    box-shadow: 0 0 0 3px var(--studio-accent-ring);
+}
+
+/* A step a journey skips: on the path, but passed over. */
+.studio-path-chip[data-skipped] {
+    opacity: 0.55;
+    text-decoration: line-through;
+}
+
+/* A skipped (optional) step: present on the path, nothing ran. */
+.studio-run-dot[data-status="skipped"] {
+    background: transparent;
+    box-shadow: inset 0 0 0 1.5px var(--studio-text-faint);
+}
+
+.studio-flow-row[data-status="skipped"] .studio-flow-api {
+    text-decoration: line-through;
+    opacity: 0.7;
+}
+
+/* The run stopped: a decision decided against the journey's expectation. */
+.studio-flow-deviation {
+    border-color: var(--studio-error);
+}
+
+.studio-flow-deviation .studio-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--studio-error);
+}
+
+.studio-flow-deviation .studio-eyebrow svg {
+    width: 12px;
+    height: 12px;
+}
+
+.studio-flow-row[data-clickable] {
+    cursor: pointer;
+}
+
+.studio-flow-row[data-status="failed"] .studio-flow-api {
+    color: var(--studio-error);
+}
+
+.studio-flow-row[data-extra] {
+    opacity: 0.8;
+}
+
+.studio-flow-runto {
+    opacity: 0;
+    transition: opacity 0.15s;
+}
+
+.studio-flow-row:hover .studio-flow-runto {
+    opacity: 1;
+}
+
+.studio-flow-fork {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin: 6px 8px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    background: var(--studio-tint);
+    box-shadow: inset 0 0 0 1px var(--studio-warn);
+}
+
+.studio-chip-action {
+    display: inline-flex;
+    width: 16px;
+    height: 16px;
+    align-items: center;
+    justify-content: center;
+    margin-left: 2px;
+    border-radius: 4px;
+    color: var(--studio-text-faint);
+}
+
+.studio-chip-action:hover {
+    color: var(--studio-text);
+    background: var(--studio-tint);
+}
+
+.studio-chip-action svg {
+    width: 12px;
+    height: 12px;
+}
+
+.studio-badge[data-tone="warn"] {
+    color: #1a1a1a;
+    background: var(--studio-warn);
+}
+
+.studio-check {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    background: var(--studio-tint);
+    box-shadow: inset 0 0 0 1px var(--studio-hairline);
+}
+
+.studio-check[data-tone="ok"] {
+    box-shadow:
+        inset 3px 0 0 var(--studio-ok),
+        inset 0 0 0 1px var(--studio-hairline);
+}
+
+.studio-check[data-tone="error"] {
+    box-shadow:
+        inset 3px 0 0 var(--studio-error),
+        inset 0 0 0 1px var(--studio-hairline);
+}
+
+.studio-check[data-tone="muted"] {
+    color: var(--studio-text-dim);
+}
+
+.studio-run-logs {
+    height: 100%;
+    overflow: auto;
+    padding: 6px 8px;
+}
+
+.studio-run-log {
+    margin: 0 0 4px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-family: var(--studio-mono);
+    font-size: 11.5px;
+    line-height: 16px;
+    white-space: pre-wrap;
+    word-break: break-word;
+    color: var(--studio-text-dim);
+    background: var(--studio-field-bg);
+}
+
+.studio-run-log[data-type="error"] {
+    color: var(--studio-error);
+}
+
+.studio-run-log[data-type="warn"] {
+    color: var(--studio-warn);
+}
+
+.studio-hairline-l {
+    border-left: 1px solid var(--studio-hairline);
+}
+
+.studio-session-keys {
+    display: flex;
+    width: 220px;
+    flex-shrink: 0;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.studio-session-key {
+    display: flex;
+    flex-direction: column;
+    padding: 3px 6px;
+    border-radius: 4px;
+    font-size: 12px;
+}
+
+.studio-session-key:hover {
+    background: var(--studio-tint);
 }

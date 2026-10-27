@@ -10,16 +10,13 @@ import {
 } from "@heroicons/react/24/outline";
 
 import { Badge } from "@components/Shadcn/Badge";
-import { CODE_DIALOG_FILES } from "@pages/protocol-studio/ui/editor/constants";
+import { CODE_DIALOG_FILES, STAGES } from "@pages/protocol-studio/ui/editor/constants";
 import { splitFileName } from "@pages/protocol-studio/ui/editor/inspector/constants";
-import type { HeroIcon, IEditorHeaderBarProps } from "@pages/protocol-studio/ui/editor/types";
-
-interface IHeaderChip {
-    label: string;
-    value: string;
-    /** Long free text (description) may shrink and truncate; the rest keep their width. */
-    shrink?: boolean;
-}
+import type {
+    HeroIcon,
+    IEditorHeaderBarProps,
+    StageStatus,
+} from "@pages/protocol-studio/ui/editor/types";
 
 interface IUtilityItem {
     label: string;
@@ -28,9 +25,23 @@ interface IUtilityItem {
     onSelect: () => void;
 }
 
+const isMac = typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.platform);
+const MOD = isMac ? "⌘" : "Ctrl+";
+
+const pillTone = (status: StageStatus) =>
+    status.errors > 0 ? "error" : status.warnings > 0 ? "warn" : "ok";
+
+/**
+ * The header: back, title, then the **stage bar** — Specification › Protocol
+ * › Journeys › Review, a pipeline read left to right, each stage with a
+ * one-line status — then the config chips, validity, helpers and utilities.
+ */
 export const EditorHeaderBar = ({
     config,
     validity,
+    stage,
+    onStageChange,
+    stageStatus,
     isFullscreen,
     onToggleFullscreen,
     onExit,
@@ -40,16 +51,7 @@ export const EditorHeaderBar = ({
     onDownloadConfig,
     typesControl,
 }: IEditorHeaderBarProps) => {
-    const { meta, transaction_data } = config;
-    const chips: IHeaderChip[] = [
-        { label: "Domain", value: meta.domain },
-        { label: "Version", value: meta.version },
-        ...(meta.use_case_id ? [{ label: "Use case", value: meta.use_case_id }] : []),
-        ...(meta.config_version ? [{ label: "Config", value: meta.config_version }] : []),
-        { label: "Txn", value: transaction_data.transaction_id.slice(0, 8) },
-        { label: "Format", value: meta.playground_version },
-        ...(meta.description ? [{ label: "About", value: meta.description, shrink: true }] : []),
-    ];
+    const { meta } = config;
     const helpersFile = splitFileName(CODE_DIALOG_FILES.helpers.label);
     const utilities: IUtilityItem[] = [
         {
@@ -86,26 +88,49 @@ export const EditorHeaderBar = ({
 
             <div className="flex shrink-0 items-center gap-2">
                 <span className="studio-title">Protocol Studio</span>
+                <span className="studio-chip" title={`${meta.domain} ${meta.version}`}>
+                    <span className="studio-chip-value">{meta.domain}</span>
+                    <span className="studio-chip-label">{meta.version}</span>
+                </span>
             </div>
 
             <span className="studio-divider" aria-hidden="true" />
 
-            <ul
-                className="flex min-w-0 flex-1 items-center gap-1.5 overflow-hidden"
-                aria-label="Config"
-            >
-                {chips.map(({ label, value, shrink }) => (
-                    <li
-                        key={label}
-                        className="studio-chip"
-                        data-shrink={shrink || undefined}
-                        title={`${label}: ${label === "Txn" ? transaction_data.transaction_id : value}`}
-                    >
-                        <span className="studio-chip-label">{label}</span>
-                        <span className="studio-chip-value">{value}</span>
-                    </li>
-                ))}
-            </ul>
+            <nav className="studio-stages" aria-label="Stages">
+                {STAGES.map(({ id, label, hint, Icon }, index) => {
+                    const status = stageStatus[id];
+                    const isActive = id === stage;
+                    return (
+                        <button
+                            key={id}
+                            type="button"
+                            className="studio-stage"
+                            data-active={isActive || undefined}
+                            data-tone={pillTone(status)}
+                            aria-current={isActive ? "step" : undefined}
+                            onClick={() => onStageChange(id)}
+                            title={`${label} · ${hint}\n${MOD}${index + 1}`}
+                        >
+                            <span className="studio-stage-index">{index + 1}</span>
+                            <Icon className="studio-stage-icon" />
+                            <span className="studio-stage-text">
+                                <span className="studio-stage-label">{label}</span>
+                                <span className="studio-stage-summary">{status.summary}</span>
+                            </span>
+                            {status.errors + status.warnings > 0 ? (
+                                <span
+                                    className="studio-stage-pill"
+                                    title={`${status.errors} errors · ${status.warnings} warnings`}
+                                >
+                                    {status.errors > 0 ? status.errors : status.warnings}
+                                </span>
+                            ) : null}
+                        </button>
+                    );
+                })}
+            </nav>
+
+            <span className="min-w-0 flex-1" />
 
             {typesControl}
 

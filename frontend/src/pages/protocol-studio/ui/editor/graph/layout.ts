@@ -1,13 +1,18 @@
 import { Position, type NodeHandle, type XYPosition } from "@xyflow/react";
 
+import { isBoundary } from "@pages/protocol-studio/ui/editor/graph/flatten";
+import { getSelectedNodeIds } from "@pages/protocol-studio/ui/editor/graph/selection";
 import { getCasePin, getPinCase } from "@pages/protocol-studio/ui/editor/graph/decision";
-import type {
-    GraphSelection,
-    PinId,
-    StudioGraph,
-    StudioGraphEdge,
-    StudioGraphNode,
-    StudioNode,
+import {
+    GROUP_IN,
+    GROUP_OUT,
+    type GraphHighlight,
+    type GraphSelection,
+    type PinId,
+    type StudioGraph,
+    type StudioGraphEdge,
+    type StudioGraphNode,
+    type StudioNode,
 } from "@pages/protocol-studio/ui/editor/types";
 
 /**
@@ -23,6 +28,8 @@ export const BP = {
     row: 20,
     /** A decision's case rows, one out pin each. */
     caseRow: 24,
+    /** A collapsed group's body: two lines of description and a stats row. */
+    groupBody: 62,
     padding: 8,
     /** Exec pins: their size, and how far they sit in from the node's side. */
     pin: 13,
@@ -34,7 +41,7 @@ export const BP = {
 /** Where the exec pins sit: the middle of the row under the header. */
 export const EXEC_PIN_TOP = BP.header + BP.execRow / 2;
 
-export type NodeRowTone = "response" | "guard" | "effect" | "repeat" | "error" | "nack" | "meta";
+export type NodeRowTone = "response" | "repeat" | "error" | "nack" | "meta";
 
 export interface NodeRow {
     key: string;
@@ -54,21 +61,19 @@ export const getNodeRows = (node: StudioNode): NodeRow[] => {
             tone: "response",
         });
     }
-    if (node.guard !== undefined) {
-        rows.push({ key: "guard", label: "guard", value: "ƒ predicate", tone: "guard" });
-    }
-    if (node.effects.length > 0) {
-        rows.push({
-            key: "effects",
-            label: "effects",
-            value: String(node.effects.length),
-            tone: "effect",
-        });
-    }
     if (node.repeat) {
         const max = node.repeat.max === "unbounded" ? "∞" : `≤ ${node.repeat.max}`;
         const reset = node.repeat.resetOn ? ` ↺ ${node.repeat.resetOn}` : "";
-        rows.push({ key: "repeat", label: "repeat", value: `${max}${reset}`, tone: "repeat" });
+        rows.push(
+            node.repeat.until
+                ? {
+                      key: "repeat",
+                      label: "↻ until",
+                      value: `exit() · ${max}${reset}`,
+                      tone: "repeat",
+                  }
+                : { key: "repeat", label: "repeat", value: `${max}${reset}`, tone: "repeat" }
+        );
     }
     if (node.error) {
         rows.push({ key: "error", label: "error", value: node.error.code, tone: "error" });
@@ -104,12 +109,19 @@ export const getNodeRows = (node: StudioNode): NodeRow[] => {
 export const getCasePinTop = (index: number) =>
     BP.header + BP.execRow + index * BP.caseRow + BP.caseRow / 2;
 
-/** The height of a node as drawn: its rows, or a decision's cases. */
+/** The height of a node as drawn: its rows, a decision's cases, or a group's body. */
 export const getNodeHeight = (node: StudioNode) =>
     BP.header +
     BP.execRow +
-    (node.decision ? node.decision.cases.length * BP.caseRow : getNodeRows(node).length * BP.row) +
+    (node.decision
+        ? node.decision.cases.length * BP.caseRow
+        : node.group
+          ? BP.groupBody
+          : getNodeRows(node).length * BP.row) +
     BP.padding;
+
+/** A group's boundary pseudo-node: a header and the exec row only. */
+export const BOUNDARY_HEIGHT = BP.header + BP.execRow + BP.padding;
 
 /** Where a pin sits across a node: In on the left, every out pin on the right. */
 export const getPinLeft = (pin: PinId) =>
@@ -149,6 +161,20 @@ export const getPinPoint = (node: StudioNode, side: "source" | "target"): XYPosi
     y: node.position.y + EXEC_PIN_TOP,
 });
 
+/**
+ * Where a group's Entry and Exit pseudo-nodes stand inside it: Entry one
+ * column left of the leftmost node, Exit one column right of the rightmost,
+ * both level with the topmost node. They are not stored; they follow the nodes.
+ */
+export const getBoundaryPositions = (graph: StudioGraph): { in: XYPosition; out: XYPosition } => {
+    const bounds = getGraphBounds(graph);
+    if (!bounds) return { in: { x: 0, y: 0 }, out: { x: (BP.width + BP.gap) * 2, y: 0 } };
+    return {
+        in: { x: bounds.x - BP.width - BP.gap * 1.5, y: bounds.y },
+        out: { x: bounds.x + bounds.width + BP.gap * 1.5, y: bounds.y },
+    };
+};
+
 const handle = (id: PinId, top = EXEC_PIN_TOP): NodeHandle => {
     const isSource = id !== "in";
     return {
@@ -162,9 +188,16 @@ const handle = (id: PinId, top = EXEC_PIN_TOP): NodeHandle => {
     };
 };
 
+export interface BuildGraphOptions {
+    /** Inside a group: draw its Entry / Exit pseudo-nodes and the wires to them. */
+    boundary?: boolean;
+    /** The Journeys stage: light a path, dim the rest. */
+    highlight?: GraphHighlight;
+}
+
 /**
- * React Flow nodes and edges for the graph. Every wire runs exec-out → exec-in;
- * out of a decision, from the pin of the case it is taken on.
+ * React Flow nodes and edges for one level of the graph. Every wire runs
+ * exec-out → exec-in; out of a decision, from the pin of the case it is taken on.
  *
  * Nodes carry their size (`measured`) and pins (`handles`) up front: without
  * them React Flow forgets the pin positions whenever a node object is replaced,
@@ -172,14 +205,30 @@ const handle = (id: PinId, top = EXEC_PIN_TOP): NodeHandle => {
  */
 export const buildGraph = (
     graph: StudioGraph,
-    selection: GraphSelection
+    selection: GraphSelection,
+    options: BuildGraphOptions = {}
 ): { nodes: StudioGraphNode[]; edges: StudioGraphEdge[] } => {
-    const selectedNode = selection?.type === "node" ? selection.id : null;
+    const { boundary, highlight } = options;
+    const selectedNodes = new Set(getSelectedNodeIds(selection));
     const wired = new Set<string>();
+    const fanOut = new Map<string, number>();
     const edges: StudioGraphEdge[] = [];
 
     const byId = new Map(graph.nodes.map((node) => [node.id, node]));
+    const known = (id: string) => byId.has(id) || (boundary && isBoundary(id));
+
+    // How many wires leave each pin: ≥2 is a fork of alternatives.
+    const perPin = new Map<string, number>();
     for (const edge of graph.edges) {
+        const cases = byId.get(edge.from)?.decision?.cases;
+        const pin: PinId = cases && edge.case !== undefined ? getCasePin(edge.case) : "out";
+        const key = `${edge.from}:${pin}`;
+        perPin.set(key, (perPin.get(key) ?? 0) + 1);
+        if (pin === "out") fanOut.set(edge.from, (fanOut.get(edge.from) ?? 0) + 1);
+    }
+
+    for (const edge of graph.edges) {
+        if (!known(edge.from) || !known(edge.to)) continue;
         // Out of a decision a wire leaves its case's pin; one without a live case isn't drawn.
         const cases = byId.get(edge.from)?.decision?.cases;
         if (cases && (edge.case === undefined || !cases.includes(edge.case))) continue;
@@ -187,6 +236,9 @@ export const buildGraph = (
         wired.add(`${edge.from}:${sourcePin}`);
         wired.add(`${edge.to}:in`);
         const isSelected = selection?.type === "edge" && selection.id === edge.id;
+        const isAlternative = !cases && (perPin.get(`${edge.from}:out`) ?? 0) >= 2;
+        const lit = highlight ? highlight.edges.has(edge.id) : undefined;
+        const pending = highlight?.pendingEdges?.has(edge.id) ?? false;
         edges.push({
             id: edge.id,
             source: edge.from,
@@ -199,15 +251,17 @@ export const buildGraph = (
                 `bp-edge-${edge.kind}`,
                 edge.mandated ? "" : "bp-edge-loose",
                 isSelected ? "bp-edge-selected" : "",
+                lit === true ? "bp-edge-lit" : lit === false && !pending ? "bp-edge-dim" : "",
+                pending ? "bp-edge-pending" : "",
             ]
                 .filter(Boolean)
                 .join(" "),
-            data: { edge, isSelected },
+            data: { edge, isSelected, isAlternative, lit, pending },
         });
     }
 
     const nodes: StudioGraphNode[] = [];
-    for (const node of graph.nodes) {
+    const place = (node: StudioNode, extra: Partial<StudioGraphNode> = {}) => {
         const casePins = (node.decision?.cases ?? []).map(getCasePin);
         const pins: PinId[] = node.decision ? ["in", ...casePins] : ["in", "out"];
         const width = BP.width;
@@ -219,16 +273,69 @@ export const buildGraph = (
             width,
             height,
             measured: { width, height },
+            // React Flow's flag too: a drag of a selected node moves the whole selection.
+            selected: selectedNodes.has(node.id),
             handles: [
                 ...pins.filter((id) => getPinCase(id) === null).map((id) => handle(id)),
                 ...casePins.map((id, index) => handle(id, getCasePinTop(index))),
             ],
             data: {
                 node,
-                isSelected: selectedNode === node.id,
+                isSelected: selectedNodes.has(node.id),
                 wired: pins.filter((id) => wired.has(`${node.id}:${id}`)),
+                fanOut: fanOut.get(node.id) ?? 0,
+                lit: highlight ? highlight.nodes.has(node.id) : undefined,
+                ...(highlight?.runStatus?.[node.id]
+                    ? { runStatus: highlight.runStatus[node.id] }
+                    : {}),
             },
+            ...extra,
         });
+    };
+    for (const node of graph.nodes) place(node);
+
+    if (boundary) {
+        const at = getBoundaryPositions(graph);
+        const pseudo = (id: string, side: "in" | "out", position: XYPosition) => {
+            const pins: PinId[] = side === "in" ? ["out"] : ["in"];
+            nodes.push({
+                id,
+                type: "studioNode",
+                position,
+                width: BP.width,
+                height: BOUNDARY_HEIGHT,
+                measured: { width: BP.width, height: BOUNDARY_HEIGHT },
+                draggable: false,
+                selectable: false,
+                handles: pins.map((pin) => handle(pin)),
+                data: {
+                    node: {
+                        id,
+                        api: side === "in" ? "Entry" : "Exit",
+                        owner: "BAP",
+                        kind: "group",
+                        responseFor: null,
+                        description: "",
+                        files: {
+                            generate: "",
+                            validate: "",
+                            match: "",
+                            exit: "",
+                            requirements: "",
+                            defaultPayload: "",
+                            inputs: "",
+                        },
+                        position,
+                    },
+                    isSelected: false,
+                    wired: pins.filter((pin) => wired.has(`${id}:${pin}`)),
+                    fanOut: fanOut.get(id) ?? 0,
+                    boundary: side,
+                },
+            });
+        };
+        pseudo(GROUP_IN, "in", at.in);
+        pseudo(GROUP_OUT, "out", at.out);
     }
 
     return { nodes, edges };

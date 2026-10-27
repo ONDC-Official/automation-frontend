@@ -8,6 +8,7 @@ import {
     type SessionDataSchemaV2,
     type SessionInferenceFlowV2,
     type SessionInferenceReportV2,
+    type SessionInferenceStepV2,
     type SpecDocumentV2,
 } from "@ondc/automation-mock-runner";
 
@@ -68,11 +69,18 @@ export const useSpecTypes = (
     {
         usecase: chosen,
         hint,
+        graphSteps,
     }: {
         /** A picked use case; undefined picks one from `hint` (or the only one). */
         usecase?: string | null;
         /** Free text naming a use case, e.g. the config's `use_case_id`. */
         hint?: string;
+        /**
+         * The protocol graph's own steps (`api`, `action_id`, `saveData`), so
+         * keys authored in Studio type `SessionData` too. Pass a settled value:
+         * every change re-infers the schema.
+         */
+        graphSteps?: SessionInferenceStepV2[];
     } = {}
 ): SpecTypes => {
     const meta = useGetSpecQuery({ domain, version, include: ["meta"] });
@@ -119,10 +127,16 @@ export const useSpecTypes = (
             const api = await generateApiTypesV2(spec);
             let session: SpecTypes["session"] = null;
             let sessionDts = SESSION_TYPES_FALLBACK_DTS_V2;
-            if (flowEntries) {
+            if (flowEntries || graphSteps?.length) {
+                const flowsIn = [
+                    ...(graphSteps?.length
+                        ? [{ flowId: "studio", usecase: usecase ?? undefined, steps: graphSteps }]
+                        : []),
+                    ...((flowEntries ?? []) as unknown as SessionInferenceFlowV2[]),
+                ];
                 session = inferSessionSchemaV2({
                     spec,
-                    flows: flowEntries as unknown as SessionInferenceFlowV2[],
+                    flows: flowsIn,
                     domain,
                     version,
                     usecase: usecase ?? undefined,
@@ -149,7 +163,7 @@ export const useSpecTypes = (
         return () => {
             cancelled = true;
         };
-    }, [spec, flowEntries, meta.isLoading, meta.isError, domain, version, usecase]);
+    }, [spec, flowEntries, graphSteps, meta.isLoading, meta.isError, domain, version, usecase]);
 
     return { ...types, usecases, usecase };
 };

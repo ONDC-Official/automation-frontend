@@ -1,8 +1,8 @@
 import type {
     PinId,
-    StudioDecision,
     StudioEdge,
     StudioNode,
+    StudioDecision,
 } from "@pages/protocol-studio/ui/editor/types";
 
 /** The cases a new decision node starts with. */
@@ -21,26 +21,23 @@ const caseUnion = (cases: string[]) =>
 
 type DecisionShape = Omit<StudioDecision, "decide">;
 
-const decideParams = (decision: DecisionShape, sessionType: string) =>
-    decision.mode === "input"
-        ? `input: ${caseUnion(decision.cases)}, sessionData: ${sessionType}`
-        : `sessionData: ${sessionType}`;
-
-/** A new `decide` for a decision of this mode and these cases. */
-export const getDecideTemplate = (decision: DecisionShape): string => {
-    const union = caseUnion(decision.cases);
-    const isInput = decision.mode === "input";
+/**
+ * A new `decide` for a decision with these cases. A decision is a *protocol*
+ * decision: it reads only what earlier steps saved. Nothing is asked of the
+ * tester here — a choice the protocol cannot make from state is an
+ * alternative (several wires out of one pin), resolved by a journey.
+ */
+export const getDecideTemplate = (shape: DecisionShape): string => {
+    const union = caseUnion(shape.cases);
     return [
         "/**",
-        isInput
-            ? " * Picks the branch to take from the tester's answer."
-            : " * Picks the branch to take, from what earlier steps saved.",
-        ...(isInput ? [" * @param input What the tester picked: one of this node's cases."] : []),
+        " * Picks the case to take, from what earlier steps saved. The protocol",
+        " * decides here: exactly one case is legal given the session so far.",
         " * @param sessionData Values saved by earlier steps (see the session schema).",
         " * @returns One of this node's cases: the wire on that pin is followed.",
         " */",
-        `function decide(${decideParams(decision, "SessionData")}): ${union} {`,
-        `    return ${isInput ? "input" : JSON.stringify(decision.cases[0] ?? "")};`,
+        `function decide(sessionData: SessionData): ${union} {`,
+        `    return ${JSON.stringify(shape.cases[0] ?? "")};`,
         "}",
         "",
     ].join("\n");
@@ -49,15 +46,15 @@ export const getDecideTemplate = (decision: DecisionShape): string => {
 const DECIDE_HEADER = /function\s+decide\s*\(([^)]*)\)\s*(?::\s*[^{]*?)?\s*\{/;
 
 /**
- * Rewrites `decide`'s signature for the decision's mode and cases, keeping
- * the body and the type `sessionData` is given. Code whose header can't be
- * found is left alone: TypeScript then points at the mismatch.
+ * Rewrites `decide`'s return type for the decision's cases, keeping the body
+ * and the type `sessionData` is given. Code whose header can't be found is
+ * left alone: TypeScript then points at the mismatch.
  */
-export const syncDecideSignature = (source: string, decision: DecisionShape): string => {
+export const syncDecideSignature = (source: string, shape: DecisionShape): string => {
     const match = DECIDE_HEADER.exec(source);
     if (!match) return source;
     const sessionType = /sessionData\s*:\s*([A-Za-z_$][\w$]*)/.exec(match[1])?.[1] ?? "SessionData";
-    const header = `function decide(${decideParams(decision, sessionType)}): ${caseUnion(decision.cases)} {`;
+    const header = `function decide(sessionData: ${sessionType}): ${caseUnion(shape.cases)} {`;
     return source.slice(0, match.index) + header + source.slice(match.index + match[0].length);
 };
 
