@@ -23,6 +23,7 @@ export const TABLE_COLUMNS: Array<{
     { label: "Version", sortKey: "version" },
     { label: "Sessions", sortKey: "sessions", align: "right" },
     { label: "First session", sortKey: "firstSessionAt" },
+    { label: "Last session", sortKey: "lastSessionAt" },
     { label: "First payload", sortKey: "firstPayloadAt" },
     { label: "Flows attempted", sortKey: "flowsAttempted", align: "right" },
     { label: "Flows judged", sortKey: "flowsJudged", align: "right" },
