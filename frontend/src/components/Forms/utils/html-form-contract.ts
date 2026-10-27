@@ -1,6 +1,7 @@
 import type {
     AnyField,
     IBaseField,
+    ISelectField,
     ParsedForm,
     TextLikeField,
 } from "../types/protocol-html-form-types";
@@ -19,6 +20,9 @@ export interface IExpectedField {
     inputType?: TextLikeField["inputType"];
     /** True when the seller form is expected to mark the field required. */
     required?: boolean;
+    /** Only meaningful for kind "select": the exact allowed `<option value="...">`
+     * set, order-insensitive. Flags missing or unexpected extra options. */
+    values?: string[];
 }
 
 export type FormContractSeverity = "error" | "warning";
@@ -37,6 +41,7 @@ export type FormContractIssueCode =
     | "missing-field"
     | "kind-mismatch"
     | "input-type-mismatch"
+    | "option-values-mismatch"
     | "required-not-marked"
     | "extra-field"
     | "unfillable-hidden"
@@ -246,6 +251,26 @@ export function validateFormContract({
                     `Field "${expected.name}" is expected to be required but the seller form does not mark it required.`,
                     expected.name
                 );
+            }
+            if (expected.values?.length && field.kind === "select") {
+                const actual = (field as ISelectField).options.map((o) => o.value);
+                const expectedSet = new Set(expected.values);
+                const actualSet = new Set(actual);
+                const missing = expected.values.filter((v) => !actualSet.has(v));
+                const extra = actual.filter((v) => !expectedSet.has(v));
+                if (missing.length || extra.length) {
+                    const parts: string[] = [];
+                    if (missing.length)
+                        parts.push(`missing ${missing.map((v) => `"${v}"`).join(", ")}`);
+                    if (extra.length)
+                        parts.push(`unexpected ${extra.map((v) => `"${v}"`).join(", ")}`);
+                    add(
+                        "option-values-mismatch",
+                        "warning",
+                        `Field "${expected.name}" options don't match the expected set (${parts.join("; ")}).`,
+                        expected.name
+                    );
+                }
             }
         }
 
