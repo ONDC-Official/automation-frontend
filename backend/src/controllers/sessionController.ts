@@ -16,7 +16,8 @@ import logger from "@ondc/automation-logger";
 import { getLoggerMeta } from "../utils/logger-meta-utilts";
 
 const SESSION_EXPIRY = 3600; // 1 hour
-const COOKIE_OPTIONS = { maxAge: SESSION_EXPIRY, httpOnly: true };
+// Express takes maxAge in milliseconds; SESSION_EXPIRY is seconds.
+const COOKIE_OPTIONS = { maxAge: SESSION_EXPIRY * 1000, httpOnly: true };
 
 // Helper function to set session cookie
 const setSessionCookie = (res: Response, sessionId: string) => {
