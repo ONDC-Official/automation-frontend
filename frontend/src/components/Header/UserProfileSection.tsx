@@ -58,24 +58,19 @@ export const UserProfileSection = ({ inDrawer = false }: { inDrawer?: boolean })
             {user ? (
                 <span
                     className={cn(
-                        "mr-3 flex flex-col items-end leading-tight",
-                        inDrawer && "min-w-0 items-start"
+                        "mr-3 flex min-w-0 flex-col leading-tight",
+                        inDrawer ? "items-start" : "max-w-56 items-end"
                     )}
                 >
                     <span
-                        className={cn(
-                            "text-sm font-semibold text-n-500 dark:text-n-0",
-                            inDrawer && "max-w-full truncate"
-                        )}
+                        className="max-w-full truncate text-sm font-semibold text-n-500 dark:text-n-0"
+                        title={getUserDisplayName(user)}
                     >
                         {getUserDisplayName(user)}
                     </span>
                     {user.organisationName ? (
                         <span
-                            className={cn(
-                                "text-xs text-n-300 dark:text-n-60",
-                                inDrawer && "max-w-full truncate"
-                            )}
+                            className="max-w-full truncate text-xs text-n-300 dark:text-n-60"
                             title={user.organisationName}
                         >
                             {user.organisationName}
