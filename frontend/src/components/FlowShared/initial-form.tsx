@@ -5,6 +5,17 @@ import FormSelect from "@components/ui/forms/form-select";
 import { trackEvent } from "@utils/analytics";
 import { IDomain, IDomainVersion } from "@/pages/schema-validation/types";
 
+// FD (ONDC:FIS14:FD) names its participants by role: the investor app sends what a BAP sends
+// and the deposit issuer what a BPP sends. The stored value stays BAP/BPP.
+const FD_DOMAIN = "ONDC:FIS14:FD";
+const npTypeOptions = (domain?: string) =>
+    domain === FD_DOMAIN
+        ? [
+              { key: "Investor App (BAP)", value: "BAP" },
+              { key: "Deposit Issuer (BPP)", value: "BPP" },
+          ]
+        : ["BAP", "BPP"];
+
 type IDomainVersionWithUsecase = IDomainVersion & {
     usecase: string[];
 };
@@ -305,7 +316,7 @@ export default function InitialFlowForm({
             <FormSelect
                 name="npType"
                 label="Select App Type"
-                options={["BAP", "BPP"]}
+                options={npTypeOptions(dynamicValue.domain)}
                 currentValue={dynamicValue.npType}
                 setSelectedValue={(data: string) => {
                     trackEvent({
