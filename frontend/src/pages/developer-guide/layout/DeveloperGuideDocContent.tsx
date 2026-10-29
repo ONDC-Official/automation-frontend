@@ -34,8 +34,18 @@ const DeveloperGuideDocContent: FC = () => {
         isError,
     } = useGetGithubDocContentQuery(slug ?? "", { skip: !slug });
 
+    // GitHub md often uses `# Title` / `## Section` + `---` — strip heading-adjacent
+    // rules so they don't leave empty vertical gaps under titles.
+    const displayContent = useMemo(() => {
+        const withoutToc = stripsEmbeddedToc ? stripMarkdownTableOfContents(content) : content;
+        return stripRedundantMarkdownHorizontalRules(withoutToc);
+    }, [content, stripsEmbeddedToc]);
+
     const docSlugs = useMemo(() => (slug ? [slug] : []), [slug]);
-    const docsRecord = useMemo(() => (slug ? { [slug]: content } : {}), [slug, content]);
+    const docsRecord = useMemo(
+        () => (slug ? { [slug]: displayContent } : {}),
+        [slug, displayContent]
+    );
     const {
         selectedSectionId,
         selectedSectionLabel,
@@ -61,13 +71,6 @@ const DeveloperGuideDocContent: FC = () => {
         setRightPanelOpen,
     });
 
-    // GitHub md often uses `# Title` / `## Section` + `---` — strip heading-adjacent
-    // rules so they don't leave empty vertical gaps under titles.
-    const displayContent = useMemo(() => {
-        const withoutToc = stripsEmbeddedToc ? stripMarkdownTableOfContents(content) : content;
-        return stripRedundantMarkdownHorizontalRules(withoutToc);
-    }, [content, stripsEmbeddedToc]);
-
     if (isLoading) {
         return <GuideContentSkeleton />;
     }
@@ -85,19 +88,6 @@ const DeveloperGuideDocContent: FC = () => {
     return (
         <div className="p-4">
             <div className="flex gap-6 items-stretch min-h-[60vh]">
-                {showsInPageToc && (
-                    <TableOfContents
-                        content={content}
-                        className="hidden xl:block w-56 shrink-0 self-start sticky overflow-y-auto"
-                        style={{
-                            top: tocOffset,
-                            maxHeight: `calc(100vh - ${tocOffset}px)`,
-                        }}
-                        offset={tocOffset}
-                        onSectionClick={selectSection}
-                        activeSectionId={selectedSectionId}
-                    />
-                )}
                 <div className="flex-1 min-w-0 relative">
                     {commentScope && (
                         <Button
@@ -164,6 +154,20 @@ const DeveloperGuideDocContent: FC = () => {
                         />
                     </div>
                 </div>
+                {showsInPageToc && (
+                    <TableOfContents
+                        content={displayContent}
+                        mainHeadingsOnly
+                        className="hidden xl:block w-64 shrink-0 self-start sticky overflow-y-auto"
+                        style={{
+                            top: tocOffset,
+                            maxHeight: `calc(100vh - ${tocOffset}px)`,
+                        }}
+                        offset={tocOffset}
+                        onSectionClick={selectSection}
+                        activeSectionId={selectedSectionId}
+                    />
+                )}
                 {commentScope && (
                     <div
                         className={cn(

@@ -4,6 +4,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
 import rehypeSlug from "rehype-slug";
+import rehypeRaw from "rehype-raw";
 import type { Components } from "react-markdown";
 import { useClipboard } from "@hooks/useClipboard";
 import {
@@ -123,7 +124,7 @@ const PreBlock: FC<{ children?: React.ReactNode }> = ({ children }) => {
                     className={
                         isFullscreen
                             ? "h-[calc(100vh-4rem)] overflow-auto bg-brand-light/30 px-4 py-4 text-sm leading-relaxed whitespace-pre text-foreground dark:bg-muted/70 [&_code]:text-inherit"
-                            : "m-0 overflow-x-auto bg-brand-light/30 px-4 py-4 text-sm leading-relaxed whitespace-pre text-foreground dark:bg-muted/70 [&_code]:text-inherit"
+                            : "m-0 max-h-[420px] overflow-auto bg-brand-light/30 px-4 py-4 text-sm leading-relaxed whitespace-pre text-foreground dark:bg-muted/70 [&_code]:text-inherit"
                     }
                 >
                     {children}
@@ -268,6 +269,29 @@ const components: Components = {
             <img src={src} alt={alt} className="my-4 max-w-full rounded-lg border border-border" />
         );
     },
+    details({ children, ...props }) {
+        return (
+            <details
+                {...props}
+                className="my-3 rounded-lg border border-border bg-surface-elevated/40 dark:bg-surface-elevated/20 overflow-hidden transition-all duration-200 group/details shadow-2xs"
+            >
+                {children}
+            </details>
+        );
+    },
+    summary({ children, ...props }) {
+        return (
+            <summary
+                {...props}
+                className="px-4 py-2.5 font-medium text-sm text-foreground bg-muted/30 hover:bg-muted/70 cursor-pointer select-none transition-colors flex items-center gap-2 list-none marker:hidden [&::-webkit-details-marker]:hidden"
+            >
+                <span className="text-slate-400 group-open/details:rotate-90 transition-transform duration-200 text-xs">
+                    ▶
+                </span>
+                <span className="flex-1">{children}</span>
+            </summary>
+        );
+    },
 };
 
 const GithubMarkdown: FC<GithubMarkdownProps> = memo(function GithubMarkdown({
@@ -397,7 +421,7 @@ const GithubMarkdown: FC<GithubMarkdownProps> = memo(function GithubMarkdown({
         <div className="github-markdown text-foreground [&_blockquote+h2]:mt-4">
             <ReactMarkdown
                 remarkPlugins={[remarkGfm]}
-                rehypePlugins={[rehypeSlug, rehypeHighlight]}
+                rehypePlugins={[rehypeRaw, rehypeSlug, rehypeHighlight]}
                 components={markdownComponents}
             >
                 {content}
