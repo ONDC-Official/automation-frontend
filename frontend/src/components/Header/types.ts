@@ -19,6 +19,8 @@ export interface INavLink {
     href?: string;
     subMenu?: { label: string; href: string }[];
     analytics?: IGAEvent;
+    /** Show a small "Beta" pill pinned to this link's top-right corner. */
+    beta?: boolean;
 }
 
 export interface INavigationMenuNavItem {
