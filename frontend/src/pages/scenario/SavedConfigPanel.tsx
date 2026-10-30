@@ -41,7 +41,7 @@ export const SavedConfigPanel = ({
                         {needsOrg ? (
                             <div className="space-y-1">
                                 <ComboBoxControl
-                                    label={ORGANISATION_LABEL}
+                                    label={isSavedOrgLocked ? "Organisation" : ORGANISATION_LABEL}
                                     placeholder="Select your organisation"
                                     value={savedOrgId}
                                     onValueChange={onOrgChange}
