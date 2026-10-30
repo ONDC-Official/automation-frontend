@@ -11,6 +11,7 @@ import { TextField } from "@components/Shadcn/TextField";
 import { ROUTES } from "@constants/routes";
 import { ENV_OPTIONS, PROFILE_PAGE_COPY } from "@pages/user-profile/constants";
 import { DomainVersionUsecaseFields } from "@pages/scenario/DomainVersionUsecaseFields";
+import { SubscriberUrlSuggestions } from "@pages/scenario/SubscriberUrlSuggestions";
 import type { INewConfigFormProps, ScenarioPreferences } from "@pages/user-profile/types";
 
 export const NewConfigForm = ({
@@ -80,6 +81,7 @@ export const NewConfigForm = ({
                             },
                         }}
                     />
+                    <SubscriberUrlSuggestions control={control} name="subscriberUrl" />
                     <DomainVersionUsecaseFields<ScenarioPreferences>
                         control={control}
                         domainOptions={domainOptions}

@@ -5,6 +5,7 @@ import { TextField } from "@components/Shadcn/TextField";
 import { DomainVersionUsecaseFields } from "@pages/scenario/DomainVersionUsecaseFields";
 import { trackSchemaValidationForm } from "@pages/scenario/helpers";
 import { SessionFormActions } from "@pages/scenario/SessionFormActions";
+import { SubscriberUrlSuggestions } from "@pages/scenario/SubscriberUrlSuggestions";
 import { IManualSessionFormProps } from "@pages/scenario/types";
 import { getScenarioDomainLabel } from "@pages/scenario/constants";
 
@@ -79,6 +80,7 @@ export const ManualSessionForm = ({
                             trackSchemaValidationForm("Added subscriber url", value)
                         }
                     />
+                    <SubscriberUrlSuggestions control={control} name="subscriberUrl" />
                     <DomainVersionUsecaseFields
                         control={control}
                         versionOptions={versionOptions}
