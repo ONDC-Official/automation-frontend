@@ -19,9 +19,10 @@ export function docUsesFlatContent(slug: string | undefined): boolean {
 
 export function docShowsInPageToc(slug: string | undefined): boolean {
     if (!slug) return false;
-    return !docUsesSidebarSections(slug) && !docUsesFlatContent(slug);
+    return !docUsesSidebarSections(slug);
 }
 
-export function docStripsEmbeddedToc(slug: string | undefined): boolean {
-    return docUsesSidebarSections(slug) || docUsesFlatContent(slug);
+export function docStripsEmbeddedToc(_slug: string | undefined): boolean {
+    return true;
 }
+
