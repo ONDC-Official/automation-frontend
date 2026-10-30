@@ -8,6 +8,6 @@ export const appEnvironment = import.meta.env.VITE_ENVIRONMENT as Environment;
 
 export const isDev = appEnvironment === Environment.DEVELOPMENT;
 
-/** Developer Guide UI/routes. Defaults to enabled when the env var is unset. */
+/** Developer Guide UI/routes. Defaults to enabled when the env var is unset */
 export const isDevGuideEnabled =
     (import.meta.env.VITE_ENABLE_DEV_GUIDE as string | undefined) !== "false";
