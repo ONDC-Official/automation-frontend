@@ -11,7 +11,10 @@ import {
 	updateSessionService,
 	setMockSession,
 } from "../services/sessionService";
-import { resolveSessionOwner } from "../services/sessionOwnerService";
+import {
+	OrganisationNotAllowedError,
+	resolveSessionOwner,
+} from "../services/sessionOwnerService";
 import { saveLog } from "../utils/console";
 import logger from "@ondc/automation-logger";
 import { getLoggerMeta } from "../utils/logger-meta-utilts";
@@ -37,6 +40,7 @@ export const createSession = async (req: Request, res: Response) => {
 		const owner = await resolveSessionOwner(
 			req.headers.authorization,
 			req.body?.userId,
+			req.body?.orgId,
 			getLoggerMeta(req)
 		);
 		const response = await createSessionService(
@@ -51,6 +55,10 @@ export const createSession = async (req: Request, res: Response) => {
 			message: response,
 		});
 	} catch (error: any) {
+		if (error instanceof OrganisationNotAllowedError) {
+			res.status(403).send({ message: error.message });
+			return;
+		}
 		logger.error("Error creating session", getLoggerMeta(req), error);
 		res
 			.status(500)

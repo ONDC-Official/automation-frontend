@@ -89,6 +89,7 @@ const Scenario = () => {
 
             const response = await createSession({
                 ...data,
+                orgId: data.orgId || undefined,
                 userId: user?.username,
                 difficulty_cache: {
                     stopAfterFirstNack: true,
@@ -191,6 +192,7 @@ const Scenario = () => {
                             usecaseId: val.usecase_id,
                             npType: val.np_type,
                             env: val.env,
+                            orgId: val.org_id,
                         };
                     });
                     setSavedPreferences(mapped);

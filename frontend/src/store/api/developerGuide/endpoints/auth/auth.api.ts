@@ -8,12 +8,7 @@ import {
     setLoginPending,
     setToken,
 } from "@store/slices/authSlice";
-import type {
-    IGetMeResponse,
-    IExchangeCodeResponse,
-    ILoginProviderResponse,
-    ISelectOrganisationResponse,
-} from "./types";
+import type { IGetMeResponse, IExchangeCodeResponse, ILoginProviderResponse } from "./types";
 
 /** Set when `exchangeCode` succeeds this page load — survives URL cleanup after navigate. */
 let oauthExchangeCompletedThisPageLoad = false;
@@ -84,26 +79,6 @@ export const authApi = devGuideApi.injectEndpoints({
                 }
             },
         }),
-        // Switch the NP Portal organisation an ONDC user works for; the login
-        // service checks membership and returns a new token carrying it.
-        selectOrganisation: builder.mutation<ISelectOrganisationResponse, string>({
-            query: (organisationId) => ({
-                url: API_ROUTES.AUTH.SELECT_ORG,
-                method: "POST",
-                data: { organisationId },
-            }),
-            onQueryStarted: async (_arg, { dispatch, queryFulfilled }) => {
-                try {
-                    const { data } = await queryFulfilled;
-                    // Store the new token before refetching the user, or getMe
-                    // would still send the old one and show the old organisation.
-                    dispatch(setToken(data.token));
-                    dispatch(authApi.util.invalidateTags(["User"]));
-                } catch {
-                    // The caller shows the error.
-                }
-            },
-        }),
     }),
 });
 
@@ -112,5 +87,4 @@ export const {
     useLazyGetMeQuery,
     useExchangeCodeMutation,
     useGetLoginProviderQuery,
-    useSelectOrganisationMutation,
 } = authApi;

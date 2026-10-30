@@ -90,7 +90,6 @@ export const API_ROUTES = {
         ME: "/auth/api/me",
         EXCHANGE: "/auth/exchange",
         PROVIDER: "/auth/provider",
-        SELECT_ORG: "/auth/api/select-org",
         SUBSCRIBE: "/auth/subscribe",
         LOOKUP: "/auth/lookup",
         GENERATE_KEYS: "/auth/api/generate-keys",

@@ -9,7 +9,6 @@ import GitHubIcon from "@assets/svgs/GitHubIcon";
 import { useLoginLabel } from "@hooks/useLoginLabel";
 import { getUserDisplayName } from "@/types/user";
 import { UserProfileMenu } from "@components/Header/UserProfileMenu";
-import { OrganisationSwitcher } from "@components/Header/OrganisationSwitcher";
 import { trackEvent } from "@utils/analytics";
 import { cn } from "@/lib/utils";
 
@@ -62,7 +61,14 @@ export const UserProfileSection = ({ inDrawer = false }: { inDrawer?: boolean })
                     >
                         {getUserDisplayName(user)}
                     </span>
-                    <OrganisationSwitcher user={user} inDrawer={inDrawer} />
+                    {user.organisationName ? (
+                        <span
+                            className="max-w-full truncate text-xs text-n-300 dark:text-n-60"
+                            title={user.organisationName}
+                        >
+                            {user.organisationName}
+                        </span>
+                    ) : null}
                 </span>
             ) : null}
 
