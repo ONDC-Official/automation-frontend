@@ -19,7 +19,7 @@ const UserProfileLayout = () => {
     }
 
     return (
-        <div className="flex min-h-[calc(100vh-4rem)] bg-surface-muted">
+        <div className="flex min-h-[calc(100vh-4rem)] flex-col bg-surface-muted md:flex-row">
             <ProfileSidebar
                 username={getUserDisplayName(user)}
                 avatarUrl={user.avatarUrl}

@@ -10,6 +10,22 @@ export interface IUser {
     authProvider?: string;
     organisationId?: string;
     organisationName?: string;
+    /** ONDC logins only: what NP Portal sent at the last login. */
+    ondcUserId?: number;
+    ondcStatus?: number;
+    organisations?: IUserOrganisation[];
+    lastLoginAt?: string;
+}
+
+export interface IUserOrganisation {
+    organisationId: string;
+    organisationName: string;
+    networkStatus: string;
+    participantId?: string;
+    npType: string;
+    isRepresentative: boolean;
+    status: number;
+    subscriberIds: string[];
 }
 
 /** Name to show people: first + last name when known, else the username. */
