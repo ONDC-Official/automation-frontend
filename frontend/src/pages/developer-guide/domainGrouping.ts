@@ -1,4 +1,5 @@
 import { DOMAIN_FRIENDLY_NAMES } from "@constants/common";
+import { isDevGuideEnabled } from "@/types/environment";
 
 import type { BuildEntry } from "./types";
 import { isDomainEnabled } from "./utils";
@@ -6,6 +7,11 @@ import { isDomainEnabled } from "./utils";
 export function getDomainShortLabel(domainKey: string): string {
     return domainKey.replace(/^ONDC:/i, "");
 }
+
+/** Domain keys always sorted to the end of their family's list, in this
+ * relative order — e.g. Gift Cards (FIS10) and Metro Card Recharge (FIS11)
+ * trail the rest of Financial Services rather than sorting alphabetically. */
+const TRAILING_DOMAIN_KEYS = ["ONDC:FIS10", "ONDC:FIS11"];
 
 /** Merge derived family keys into a shared group (e.g. NIC → LOG for logistics). */
 const DOMAIN_FAMILY_GROUP_ALIASES: Record<string, string> = {
@@ -102,8 +108,13 @@ export function groupBuildsByFamily(builds: BuildEntry[]): DomainFamilyGroup[] {
             ...family,
             label: getDomainFamilyLabel(family.familyKey),
             domains: consolidateSameNameDomains(family.domains).sort((a, b) => {
-                if (a.key === "ONDC:FIS10") return 1;
-                if (b.key === "ONDC:FIS10") return -1;
+                const aIdx = TRAILING_DOMAIN_KEYS.indexOf(a.key);
+                const bIdx = TRAILING_DOMAIN_KEYS.indexOf(b.key);
+                if (aIdx !== -1 || bIdx !== -1) {
+                    if (aIdx === -1) return -1;
+                    if (bIdx === -1) return 1;
+                    return aIdx - bIdx;
+                }
                 return a.key.localeCompare(b.key);
             }),
         }))
@@ -113,4 +124,20 @@ export function groupBuildsByFamily(builds: BuildEntry[]): DomainFamilyGroup[] {
             if (aEn !== bEn) return aEn ? -1 : 1;
             return a.label.localeCompare(b.label);
         });
+}
+
+/** Beta release scope for "Explore by Domain": whenever the Developer Guide
+ * is enabled (`isDevGuideEnabled`), hides every family except Financial
+ * Services, and within it every domain except Credit — applied identically
+ * wherever `groupBuildsByFamily`'s output feeds the UI (left sidebar nav
+ * tree, the standalone domains page), so both stay in sync from this one
+ * place. */
+export function applyDevGuideBetaDomainScope(families: DomainFamilyGroup[]): DomainFamilyGroup[] {
+    if (!isDevGuideEnabled) return families;
+    return families
+        .filter((family) => family.familyKey === "FIS")
+        .map((family) => ({
+            ...family,
+            domains: family.domains.filter((dom) => getDomainFriendlyName(dom.key) === "Credit"),
+        }));
 }

@@ -21,6 +21,9 @@ export interface SimplifiedStepGroup {
     heading?: string;
     /** action_id (step.action_id, falling back to step.api) → user-friendly display name. */
     stepLabels: Record<string, string>;
+    /** Render this group as a collapsible "Optional Step" card instead of a
+     * plain heading — see `FlowDisplaySection.optional`. */
+    optional?: boolean;
 }
 
 /** Converts this flow's `meta.display` into the groups the annotator consumes,
@@ -33,6 +36,7 @@ export function getSimplifiedGroups(flow: FlowEntry): SimplifiedStepGroup[] | nu
         return display.sections.map((section) => ({
             heading: section.name,
             stepLabels: section.actions,
+            optional: section.optional,
         }));
     }
 
@@ -113,6 +117,9 @@ export interface SimplifiedItemAnnotation {
     heading?: string;
     /** action_id → friendly label for this item's covered steps. */
     stepLabels?: Record<string, string>;
+    /** This item belongs to a group rendered as a collapsible "Optional Step"
+     * card — set on every item in the group, not just the first. */
+    optional?: boolean;
 }
 
 function stepsOfItem(item: StepDisplayItem): FlowStep[] {
@@ -171,6 +178,7 @@ export function annotateSimplifiedItems(
         if (group.heading && matchedGroupIdx !== prevGroupIdx) {
             annotation.heading = group.heading;
         }
+        if (group.optional) annotation.optional = true;
         prevGroupIdx = matchedGroupIdx;
         return annotation;
     });

@@ -89,6 +89,14 @@ export const SCENARIO_DOMAIN_LABELS: Record<string, string> = {
     "ONDC:RET18": "Health & Wellness (RET18)",
     "ONDC:RETeB2B": "eB2B (DigiDukaan) (RETeB2B)",
     "ONDC:RETINVL": "Inventory Less (RETINVL)",
+    "ONDC:FIS10": "Gift Cards (FIS10)",
+    "ONDC:FIS11": "Metro Card Recharge (FIS11)",
+    "ONDC:FIS12": "Credit (FIS12)",
+    "ONDC:FIS12:BL": "Business Loan (FIS12:BL)",
+    "ONDC:FIS12:PF": "Solar Purchase Finance (FIS12:PF)",
+    "ONDC:FIS12:SL": "Loan Against Mutual Funds (FIS12:SL)",
+    "ONDC:FIS13": "Insurance (FIS13)",
+    "ONDC:FIS14": "Investment (FIS14)",
 };
 
 /** Label for the Scenario Testing domain select; falls back to the raw key for any domain not in the map. */

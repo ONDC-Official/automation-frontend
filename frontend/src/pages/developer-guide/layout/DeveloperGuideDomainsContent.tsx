@@ -5,6 +5,7 @@ import { getDeveloperGuideUseCasePath } from "@constants/routes";
 import type { BuildEntry } from "../types";
 import {
     groupBuildsByFamily,
+    applyDevGuideBetaDomainScope,
     getDomainDisplayLabel,
     getDomainFriendlyName,
 } from "../domainGrouping";
@@ -29,12 +30,14 @@ const DeveloperGuideDomainsContent: FC = () => {
         navigate(getDeveloperGuideUseCasePath(dom.key, versionKey, usecaseLabel));
     };
 
-    const domainFamilies = useMemo(() => groupBuildsByFamily(builds), [builds]);
+    const domainFamilies = useMemo(
+        () => applyDevGuideBetaDomainScope(groupBuildsByFamily(builds)),
+        [builds]
+    );
 
     const filteredFamilies = useMemo(() => {
         const q = domainSearch.trim().toLowerCase();
         if (!q) return domainFamilies;
-
         return domainFamilies
             .map((family) => ({
                 ...family,

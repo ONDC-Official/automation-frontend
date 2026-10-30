@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@hooks/useAuth";
 import { useGitHubLogin } from "@hooks/useGitHubLogin";
 import { isDevGuideEnabled } from "@/types/environment";
+import BetaBadge from "@components/BetaBadge";
 
 const HeroInfo: FC = () => {
     const navigate = useNavigate();
@@ -34,9 +35,11 @@ const HeroInfo: FC = () => {
             </p>
             <div className="flex flex-wrap gap-4">
                 {isDevGuideEnabled ? (
-                    <Button size="lg" onClick={() => navigate(ROUTES.DEVELOPER_GUIDE)}>
-                        Read Documentation
-                    </Button>
+                    <BetaBadge>
+                        <Button size="lg" onClick={() => navigate(ROUTES.DEVELOPER_GUIDE)}>
+                            Read Documentation
+                        </Button>
+                    </BetaBadge>
                 ) : null}
                 <Button
                     size="lg"
