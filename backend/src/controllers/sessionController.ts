@@ -11,6 +11,7 @@ import {
 	updateSessionService,
 	setMockSession,
 } from "../services/sessionService";
+import { resolveSessionOwner } from "../services/sessionOwnerService";
 import { saveLog } from "../utils/console";
 import logger from "@ondc/automation-logger";
 import { getLoggerMeta } from "../utils/logger-meta-utilts";
@@ -33,9 +34,14 @@ export const createSession = async (req: Request, res: Response) => {
 	}
 
 	try {
+		const owner = await resolveSessionOwner(
+			req.headers.authorization,
+			req.body?.userId,
+			getLoggerMeta(req)
+		);
 		const response = await createSessionService(
 			sessionId,
-			req.body,
+			{ ...req.body, ...owner },
 			getLoggerMeta(req)
 		);
 		setSessionCookie(res, sessionId);

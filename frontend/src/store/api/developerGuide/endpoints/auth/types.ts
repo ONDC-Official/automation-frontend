@@ -9,6 +9,10 @@ export interface IExchangeCodeResponse {
     token?: string;
 }
 
+export interface ISelectOrganisationResponse {
+    token: string;
+}
+
 export type LoginProvider = "github" | "ondc";
 
 export interface ILoginProviderResponse {

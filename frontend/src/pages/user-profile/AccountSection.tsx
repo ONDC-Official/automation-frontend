@@ -7,6 +7,7 @@ import { ProfilePageHeader } from "@pages/user-profile/ProfilePageHeader";
 import { TagBadge } from "@pages/user-profile/components/TagBadge";
 import { PROFILE_PAGE_COPY } from "@pages/user-profile/constants";
 import { getUserDisplayName, type IUserOrganisation } from "@/types/user";
+import { cn } from "@/lib/utils";
 
 const copy = PROFILE_PAGE_COPY.account;
 
@@ -24,12 +25,18 @@ const DetailRow = ({ label, value }: { label: string; value?: string | number })
     </div>
 );
 
-const OrganisationCard = ({ org }: { org: IUserOrganisation }) => (
-    <div className="rounded-lg border border-border-default p-4">
+const OrganisationCard = ({ org, isSelected }: { org: IUserOrganisation; isSelected: boolean }) => (
+    <div
+        className={cn(
+            "rounded-lg border p-4",
+            isSelected ? "border-brand-normal" : "border-border-default"
+        )}
+    >
         <div className="flex flex-wrap items-center gap-2">
             <h3 className="min-w-0 break-words text-body-1 font-semibold text-text-primary">
                 {org.organisationName || org.organisationId}
             </h3>
+            {isSelected ? <TagBadge label="Working for" variant="domain" /> : null}
             {org.npType ? <TagBadge label={org.npType} variant="npType" /> : null}
             {org.isRepresentative ? <TagBadge label="Representative" variant="version" /> : null}
         </div>
@@ -100,7 +107,11 @@ const AccountSection = () => {
                         {organisations.length > 0 ? (
                             <div className="flex flex-col gap-4">
                                 {organisations.map((org) => (
-                                    <OrganisationCard key={org.organisationId} org={org} />
+                                    <OrganisationCard
+                                        key={org.organisationId}
+                                        org={org}
+                                        isSelected={org.organisationId === user?.organisationId}
+                                    />
                                 ))}
                             </div>
                         ) : (
