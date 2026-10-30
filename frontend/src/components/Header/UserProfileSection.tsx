@@ -6,7 +6,7 @@ import { LogIn } from "lucide-react";
 import { useGitHubLogin } from "@hooks/useGitHubLogin";
 import { Button } from "@components/Shadcn/Button";
 import GitHubIcon from "@assets/svgs/GitHubIcon";
-import { useGetLoginProviderQuery } from "@store/api";
+import { useLoginLabel } from "@hooks/useLoginLabel";
 import { getUserDisplayName } from "@/types/user";
 import { UserProfileMenu } from "@components/Header/UserProfileMenu";
 import { OrganisationSwitcher } from "@components/Header/OrganisationSwitcher";
@@ -17,14 +17,7 @@ export const UserProfileSection = ({ inDrawer = false }: { inDrawer?: boolean })
     const location = useLocation();
     const { user, logout } = useAuth();
     const { startLogin, isLoginRedirecting } = useGitHubLogin();
-    const { data: providerData } = useGetLoginProviderQuery();
-    const provider = providerData?.provider;
-    const loginLabel =
-        provider === "ondc"
-            ? "Login via ONDC"
-            : provider === "github"
-              ? "Login with GitHub"
-              : "Login";
+    const { provider, label: loginLabel } = useLoginLabel();
 
     const handleLogin = useCallback(() => {
         trackEvent({
