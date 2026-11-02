@@ -134,8 +134,17 @@ export function extractMarkdownToc(markdown: string): MarkdownTocEntry[] {
     for (const line of markdown.split("\n")) {
         const h2 = /^## (.+)/.exec(line);
         const h3 = /^### (.+)/.exec(line);
-        if (h2) toc.push({ level: 2, text: h2[1].trim(), id: slugger.slug(h2[1].trim()) });
-        else if (h3) toc.push({ level: 3, text: h3[1].trim(), id: slugger.slug(h3[1].trim()) });
+        if (h2) {
+            const text = h2[1].trim();
+            const lower = text.toLowerCase();
+            if (lower === "table of contents" || lower === "on this page") continue;
+            toc.push({ level: 2, text, id: slugger.slug(text) });
+        } else if (h3) {
+            const text = h3[1].trim();
+            const lower = text.toLowerCase();
+            if (lower === "table of contents" || lower === "on this page") continue;
+            toc.push({ level: 3, text, id: slugger.slug(text) });
+        }
     }
     return toc;
 }
