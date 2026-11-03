@@ -1,5 +1,8 @@
 import { FC, ReactNode, useMemo, useState } from "react";
-import { Button, CodeBlock, Input } from "@pages/auth-header/try-it/ui";
+import { FaCheck, FaCopy } from "react-icons/fa";
+import LoadingButton from "@components/ui/forms/loading-button";
+import { inputClass, labelClass } from "@components/ui/forms/inputClass";
+import { SegmentedTabs } from "@components/ui/SegmentedTabs";
 import { useClipboard } from "@hooks/useClipboard";
 import {
     TEST_VECTOR,
@@ -11,26 +14,38 @@ import {
     verifyAuthorizationHeader,
     type CreateHeaderResult,
     type VerifyResult,
-} from "@pages/auth-header/try-it/authHeaderCrypto";
+} from "@pages/auth-header/playground/authHeaderCrypto";
 
 type Mode = "build" | "verify" | "break";
 
-const cardShell = "rounded-xl border border-gray-200 bg-white p-6 ";
-const fieldClass =
-    "w-full rounded-lg border border-gray-200 bg-white px-3 py-2 font-mono text-sm text-gray-900   0";
-const labelClass = "mb-1 block text-sm font-semibold text-gray-900 0";
+const MODE_TABS: { id: Mode; label: string }[] = [
+    { id: "build", label: "Build a header" },
+    { id: "verify", label: "Verify a header" },
+    { id: "break", label: "Break it" },
+];
+
+const cardClass = "bg-white border border-gray-200 rounded-xl p-6";
 
 const nowSeconds = () => Math.floor(Date.now() / 1000);
+
+/** Read-only value box, same look as the Overview tab's header format examples. */
+const ValueBox: FC<{ value: string }> = ({ value }) => (
+    <div className="bg-gray-900 rounded-lg p-4 overflow-x-auto">
+        <pre className="text-green-400 text-sm font-mono whitespace-pre-wrap break-all">
+            {value}
+        </pre>
+    </div>
+);
 
 const Field: FC<{ label: string; hint?: string; children: ReactNode }> = ({
     label,
     hint,
     children,
 }) => (
-    <label className="block">
+    <label className="block space-y-1">
         <span className={labelClass}>{label}</span>
         {children}
-        {hint && <span className="mt-1 block text-xs text-gray-600 60">{hint}</span>}
+        {hint && <span className="block text-xs text-gray-500">{hint}</span>}
     </label>
 );
 
@@ -46,8 +61,8 @@ const Step: FC<{ n: number; title: string; note: string; children: ReactNode }> 
         </div>
         <div className="min-w-0 flex-1 space-y-2">
             <div>
-                <h4 className="font-semibold text-gray-900 0">{title}</h4>
-                <p className="text-sm text-gray-600 60">{note}</p>
+                <h4 className="font-semibold text-gray-900">{title}</h4>
+                <p className="text-sm text-gray-600">{note}</p>
             </div>
             {children}
         </div>
@@ -58,8 +73,8 @@ const ResultBanner: FC<{ result: VerifyResult }> = ({ result }) => (
     <div
         className={`rounded-lg border p-4 text-sm font-semibold ${
             result.valid
-                ? "border-green-300 bg-green-50 text-green-700 500/15"
-                : "border-red-300 bg-red-50 text-red-700 500/15"
+                ? "border-green-300 bg-green-50 text-green-700"
+                : "border-red-300 bg-red-50 text-red-700"
         }`}
         role="status"
     >
@@ -75,8 +90,8 @@ const VerifySteps: FC<{ result: VerifyResult }> = ({ result }) => (
                     {step.status === "pass" ? "✓" : "✗"}
                 </span>
                 <span className="min-w-0">
-                    <span className="font-semibold text-gray-900 0">{step.label}</span>
-                    <span className="block whitespace-pre-wrap break-all font-mono text-xs text-gray-600 60">
+                    <span className="font-semibold text-gray-900">{step.label}</span>
+                    <span className="block whitespace-pre-wrap break-all font-mono text-xs text-gray-600">
                         {step.detail}
                     </span>
                 </span>
@@ -108,7 +123,7 @@ const BREAK_SCENARIOS: BreakScenario[] = [
     { id: "none", label: "No change", apply: (c) => c },
     {
         id: "pretty",
-        label: "Pretty-print the payload",
+        label: "Pretty-print payload",
         apply: (c) => ({ ...c, payload: prettyPrint(c.payload) }),
     },
     {
@@ -121,7 +136,7 @@ const BREAK_SCENARIOS: BreakScenario[] = [
     },
     {
         id: "reorder",
-        label: "Reorder top-level keys",
+        label: "Reorder keys",
         apply: (c) => {
             try {
                 const obj = JSON.parse(c.payload);
@@ -134,18 +149,18 @@ const BREAK_SCENARIOS: BreakScenario[] = [
     },
     {
         id: "newline",
-        label: "Add a trailing newline",
+        label: "Trailing newline",
         apply: (c) => ({ ...c, payload: c.payload + "\n" }),
     },
     {
         id: "wrong-key",
-        label: "Use a different public key",
+        label: "Different public key",
         apply: (c) => ({ ...c, publicKey: generateDemoKeyPair().publicKey }),
     },
-    { id: "expired", label: "Verify after it expires", apply: (c) => c },
+    { id: "expired", label: "After expiry", apply: (c) => c },
 ];
 
-const TryIt: FC = () => {
+const AuthHeaderPlayground: FC = () => {
     const { copied, copyToClipboard } = useClipboard();
     const [mode, setMode] = useState<Mode>("build");
 
@@ -164,7 +179,7 @@ const TryIt: FC = () => {
     const [verifyResult, setVerifyResult] = useState<VerifyResult | null>(null);
     const [verifyAt, setVerifyAt] = useState<"now" | "created">("now");
 
-    // Break-it
+    // Break it
     const [scenarioId, setScenarioId] = useState("none");
 
     const build = useMemo((): { result?: CreateHeaderResult; error?: string } => {
@@ -198,6 +213,9 @@ const TryIt: FC = () => {
         payload === TEST_VECTOR.payload &&
         Number(created) === TEST_VECTOR.created &&
         Number(ttl) === TEST_VECTOR.ttl;
+    const matchesVector =
+        build.result?.digestBase64 === TEST_VECTOR.expectedDigest &&
+        build.result?.signatureBase64 === TEST_VECTOR.expectedSignature;
 
     const breakResult = useMemo(() => {
         if (!build.result) return null;
@@ -210,7 +228,6 @@ const TryIt: FC = () => {
         // Verify relative to the signing time so the demo also works with the fixed test-vector timestamp.
         const at = scenario.id === "expired" ? build.result.expires + 3600 : build.result.created;
         return {
-            scenario,
             changed,
             result: verifyAuthorizationHeader(
                 changed.header,
@@ -230,8 +247,6 @@ const TryIt: FC = () => {
         setTtl(String(TEST_VECTOR.ttl));
     };
 
-    const useDemoKey = () => setPrivateKey(generateDemoKeyPair().privateKey);
-
     const sendToVerify = () => {
         if (!build.result) return;
         setVerifyHeader(build.result.header);
@@ -242,54 +257,46 @@ const TryIt: FC = () => {
     };
 
     const runVerify = () => {
-        const created = Number(parseAuthorizationHeader(verifyHeader).created);
-        const at = verifyAt === "created" && Number.isInteger(created) ? created : nowSeconds();
+        const headerCreated = Number(parseAuthorizationHeader(verifyHeader).created);
+        const at =
+            verifyAt === "created" && Number.isInteger(headerCreated)
+                ? headerCreated
+                : nowSeconds();
         setVerifyResult(
             verifyAuthorizationHeader(verifyHeader, verifyPayload, verifyPublicKey, at)
         );
     };
 
-    const modeButton = (id: Mode, label: string) => (
-        <Button
-            key={id}
-            variant={mode === id ? "default" : "outline"}
-            onClick={() => setMode(id)}
-            aria-pressed={mode === id}
-        >
-            {label}
-        </Button>
-    );
-
     return (
         <div className="space-y-6">
-            <div className="rounded-lg border border-amber-300 bg-amber-50 p-4 text-sm text-gray-700 500/15 0">
+            <div className="rounded-lg border border-amber-300 bg-amber-50 p-4 text-sm text-gray-700">
                 Everything on this page runs in your browser — nothing is sent to a server. Use demo
                 keys only; <strong>never paste a production private key.</strong>
             </div>
 
-            <div className="flex flex-wrap gap-2">
-                {modeButton("build", "1 · Build a header")}
-                {modeButton("verify", "2 · Verify a header")}
-                {modeButton("break", "3 · Break it")}
-            </div>
+            <SegmentedTabs<Mode> tabs={MODE_TABS} active={mode} onChange={setMode} />
 
             {mode === "build" && (
                 <>
-                    <div className={`${cardShell} space-y-4`}>
+                    <div className={`${cardClass} space-y-4`}>
                         <div className="flex flex-wrap items-center justify-between gap-2">
-                            <h3 className="text-xl font-bold text-gray-900 0">Inputs</h3>
+                            <h3 className="text-xl font-bold text-gray-900">Inputs</h3>
                             <div className="flex flex-wrap gap-2">
-                                <Button variant="outline" onClick={useDemoKey}>
-                                    Generate demo key pair
-                                </Button>
-                                <Button variant="outline" onClick={loadTestVector}>
-                                    Load test vector
-                                </Button>
+                                <LoadingButton
+                                    type="button"
+                                    buttonText="Generate demo key pair"
+                                    onClick={() => setPrivateKey(generateDemoKeyPair().privateKey)}
+                                />
+                                <LoadingButton
+                                    type="button"
+                                    buttonText="Load test vector"
+                                    onClick={loadTestVector}
+                                />
                             </div>
                         </div>
                         <Field label="Payload (raw JSON, signed exactly as typed)">
                             <textarea
-                                className={`${fieldClass} min-h-32`}
+                                className={`${inputClass} min-h-32 font-mono`}
                                 value={payload}
                                 onChange={(e) => setPayload(e.target.value)}
                                 spellCheck={false}
@@ -297,13 +304,15 @@ const TryIt: FC = () => {
                         </Field>
                         <div className="grid gap-4 md:grid-cols-2">
                             <Field label="Subscriber ID">
-                                <Input
+                                <input
+                                    className={inputClass}
                                     value={subscriberId}
                                     onChange={(e) => setSubscriberId(e.target.value)}
                                 />
                             </Field>
                             <Field label="Unique key ID">
-                                <Input
+                                <input
+                                    className={inputClass}
                                     value={uniqueKeyId}
                                     onChange={(e) => setUniqueKeyId(e.target.value)}
                                 />
@@ -313,8 +322,8 @@ const TryIt: FC = () => {
                             label="Ed25519 private key (Base64)"
                             hint="32-byte seed or 64-byte key (seed + public key)."
                         >
-                            <Input
-                                className="font-mono"
+                            <input
+                                className={`${inputClass} font-mono`}
                                 value={privateKey}
                                 onChange={(e) => setPrivateKey(e.target.value)}
                                 placeholder="Generate a demo key pair or load the test vector"
@@ -323,30 +332,32 @@ const TryIt: FC = () => {
                         <div className="grid gap-4 md:grid-cols-2">
                             <Field label="created (Unix seconds)">
                                 <div className="flex gap-2">
-                                    <Input
+                                    <input
+                                        className={inputClass}
                                         value={created}
                                         onChange={(e) => setCreated(e.target.value)}
                                     />
-                                    <Button
-                                        variant="outline"
+                                    <LoadingButton
+                                        type="button"
+                                        buttonText="Now"
                                         onClick={() => setCreated(String(nowSeconds()))}
-                                    >
-                                        Now
-                                    </Button>
+                                    />
                                 </div>
                             </Field>
                             <Field label="TTL (seconds)">
-                                <Input value={ttl} onChange={(e) => setTtl(e.target.value)} />
+                                <input
+                                    className={inputClass}
+                                    value={ttl}
+                                    onChange={(e) => setTtl(e.target.value)}
+                                />
                             </Field>
                         </div>
                     </div>
 
-                    <div className={`${cardShell} space-y-6`}>
-                        <h3 className="text-xl font-bold text-gray-900 0">
-                            How the header is built
-                        </h3>
+                    <div className={`${cardClass} space-y-6`}>
+                        <h3 className="text-xl font-bold text-gray-900">How the header is built</h3>
                         {build.error && (
-                            <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700 500/15">
+                            <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">
                                 {build.error}
                             </p>
                         )}
@@ -357,7 +368,7 @@ const TryIt: FC = () => {
                                     title="Payload bytes"
                                     note="The exact UTF-8 bytes of the payload are hashed — any change produces a different digest."
                                 >
-                                    <p className="text-sm text-gray-900 0">
+                                    <p className="text-sm text-gray-900">
                                         {build.result.payloadBytes} bytes
                                     </p>
                                     {warnings.map((w) => (
@@ -374,12 +385,8 @@ const TryIt: FC = () => {
                                     title="BLAKE2b-512 digest"
                                     note="64-byte hash of the payload, Base64 encoded (standard Base64, not URL-safe)."
                                 >
-                                    <CodeBlock
-                                        code={build.result.digestBase64}
-                                        language="Text"
-                                        wrap
-                                    />
-                                    <p className="break-all font-mono text-xs text-gray-600 60">
+                                    <ValueBox value={build.result.digestBase64} />
+                                    <p className="break-all font-mono text-xs text-gray-600">
                                         hex: {build.result.digestHex}
                                     </p>
                                 </Step>
@@ -388,40 +395,46 @@ const TryIt: FC = () => {
                                     title="Signing string"
                                     note="Three lines joined with \n (LF). expires = created + TTL."
                                 >
-                                    <CodeBlock
-                                        code={build.result.signingString}
-                                        language="Text"
-                                        wrap
-                                    />
+                                    <ValueBox value={build.result.signingString} />
                                 </Step>
                                 <Step
                                     n={4}
                                     title="Ed25519 signature"
                                     note="The signing string is signed with the private key; the 64-byte signature is Base64 encoded."
                                 >
-                                    <CodeBlock
-                                        code={build.result.signatureBase64}
-                                        language="Text"
-                                        wrap
-                                    />
+                                    <ValueBox value={build.result.signatureBase64} />
                                 </Step>
                                 <Step
                                     n={5}
                                     title="Authorization header"
                                     note="Put this in the Authorization header of the request."
                                 >
-                                    <CodeBlock code={build.result.header} language="Text" wrap />
+                                    <ValueBox value={build.result.header} />
                                     <div className="flex flex-wrap gap-2">
-                                        <Button
+                                        <button
+                                            type="button"
                                             onClick={() => copyToClipboard(build.result!.header)}
+                                            className="flex items-center gap-2 px-3 py-1 bg-gray-700 hover:bg-gray-600 rounded text-gray-100 text-sm transition-colors"
                                         >
-                                            {copied ? "Copied" : "Copy header"}
-                                        </Button>
-                                        <Button variant="outline" onClick={sendToVerify}>
-                                            Verify this header →
-                                        </Button>
+                                            {copied ? (
+                                                <>
+                                                    <FaCheck className="text-green-400" />
+                                                    Copied!
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <FaCopy />
+                                                    Copy header
+                                                </>
+                                            )}
+                                        </button>
+                                        <LoadingButton
+                                            type="button"
+                                            buttonText="Verify this header →"
+                                            onClick={sendToVerify}
+                                        />
                                     </div>
-                                    <p className="text-sm text-gray-600 60">
+                                    <p className="text-sm text-gray-600">
                                         Matching public key:{" "}
                                         <span className="break-all font-mono">
                                             {build.result.publicKey}
@@ -431,17 +444,12 @@ const TryIt: FC = () => {
                                 {builtWithVector && (
                                     <p
                                         className={`rounded-lg p-3 text-sm font-semibold ${
-                                            build.result.digestBase64 ===
-                                                TEST_VECTOR.expectedDigest &&
-                                            build.result.signatureBase64 ===
-                                                TEST_VECTOR.expectedSignature
-                                                ? "bg-green-50 text-green-700 500/15"
-                                                : "bg-red-50 text-red-700 500/15"
+                                            matchesVector
+                                                ? "bg-green-50 text-green-700"
+                                                : "bg-red-50 text-red-700"
                                         }`}
                                     >
-                                        {build.result.digestBase64 === TEST_VECTOR.expectedDigest &&
-                                        build.result.signatureBase64 ===
-                                            TEST_VECTOR.expectedSignature
+                                        {matchesVector
                                             ? "✓ Output matches the published test vector. Your own implementation should produce exactly these values for the same inputs."
                                             : "✗ Output does not match the published test vector."}
                                     </p>
@@ -453,15 +461,15 @@ const TryIt: FC = () => {
             )}
 
             {mode === "verify" && (
-                <div className={`${cardShell} space-y-4`}>
-                    <h3 className="text-xl font-bold text-gray-900 0">Verify a header</h3>
-                    <p className="text-sm text-gray-600 60">
+                <div className={`${cardClass} space-y-4`}>
+                    <h3 className="text-xl font-bold text-gray-900">Verify a header</h3>
+                    <p className="text-sm text-gray-600">
                         In production, the public key is fetched from the Registry using the
                         subscriber ID and unique key ID in <code>keyId</code>.
                     </p>
                     <Field label="Authorization header">
                         <textarea
-                            className={`${fieldClass} min-h-24`}
+                            className={`${inputClass} min-h-24 font-mono`}
                             value={verifyHeader}
                             onChange={(e) => setVerifyHeader(e.target.value)}
                             spellCheck={false}
@@ -469,22 +477,22 @@ const TryIt: FC = () => {
                     </Field>
                     <Field label="Payload (exactly as received)">
                         <textarea
-                            className={`${fieldClass} min-h-24`}
+                            className={`${inputClass} min-h-24 font-mono`}
                             value={verifyPayload}
                             onChange={(e) => setVerifyPayload(e.target.value)}
                             spellCheck={false}
                         />
                     </Field>
                     <Field label="Signer's Ed25519 public key (Base64)">
-                        <Input
-                            className="font-mono"
+                        <input
+                            className={`${inputClass} font-mono`}
                             value={verifyPublicKey}
                             onChange={(e) => setVerifyPublicKey(e.target.value)}
                         />
                     </Field>
                     <fieldset className="space-y-1">
                         <legend className={labelClass}>Check timestamps against</legend>
-                        <label className="mr-6 inline-flex items-center gap-2 text-sm text-gray-900 0">
+                        <label className="mr-6 inline-flex items-center gap-2 text-sm text-gray-900">
                             <input
                                 type="radio"
                                 name="verify-at"
@@ -493,7 +501,7 @@ const TryIt: FC = () => {
                             />
                             Now (real verification)
                         </label>
-                        <label className="inline-flex items-center gap-2 text-sm text-gray-900 0">
+                        <label className="inline-flex items-center gap-2 text-sm text-gray-900">
                             <input
                                 type="radio"
                                 name="verify-at"
@@ -504,7 +512,7 @@ const TryIt: FC = () => {
                             the test vector)
                         </label>
                     </fieldset>
-                    <Button onClick={runVerify}>Verify</Button>
+                    <LoadingButton type="button" buttonText="Verify" onClick={runVerify} />
                     {verifyResult && (
                         <div className="space-y-3">
                             <ResultBanner result={verifyResult} />
@@ -515,41 +523,31 @@ const TryIt: FC = () => {
             )}
 
             {mode === "break" && (
-                <div className={`${cardShell} space-y-4`}>
-                    <h3 className="text-xl font-bold text-gray-900 0">Break it</h3>
-                    <p className="text-sm text-gray-600 60">
-                        Takes the header built in step 1, applies one change, and verifies again —
-                        to show what invalidates a signature.
+                <div className={`${cardClass} space-y-4`}>
+                    <h3 className="text-xl font-bold text-gray-900">Break it</h3>
+                    <p className="text-sm text-gray-600">
+                        Takes the header built in "Build a header", applies one change, and verifies
+                        again — to show what invalidates a signature.
                     </p>
                     {!build.result ? (
-                        <p className="text-sm text-amber-700">Build a header first (step 1).</p>
+                        <p className="text-sm text-amber-700">Build a header first.</p>
                     ) : (
                         <>
-                            <div className="flex flex-wrap gap-2">
-                                {BREAK_SCENARIOS.map((s) => (
-                                    <Button
-                                        key={s.id}
-                                        variant={scenarioId === s.id ? "default" : "outline"}
-                                        onClick={() => setScenarioId(s.id)}
-                                        aria-pressed={scenarioId === s.id}
-                                    >
-                                        {s.label}
-                                    </Button>
-                                ))}
-                            </div>
+                            <SegmentedTabs
+                                className="flex-wrap"
+                                tabs={BREAK_SCENARIOS.map(({ id, label }) => ({ id, label }))}
+                                active={scenarioId}
+                                onChange={setScenarioId}
+                            />
                             {breakResult && (
                                 <div className="space-y-3">
                                     <ResultBanner result={breakResult.result} />
                                     <VerifySteps result={breakResult.result} />
-                                    <details>
-                                        <summary className="cursor-pointer text-sm font-semibold text-gray-900 0">
+                                    <details className="space-y-2">
+                                        <summary className="cursor-pointer text-sm font-semibold text-gray-900">
                                             Payload that was verified
                                         </summary>
-                                        <CodeBlock
-                                            code={breakResult.changed.payload}
-                                            language="Text"
-                                            wrap
-                                        />
+                                        <ValueBox value={breakResult.changed.payload} />
                                     </details>
                                 </div>
                             )}
@@ -558,17 +556,15 @@ const TryIt: FC = () => {
                 </div>
             )}
 
-            <div className={`${cardShell} space-y-3`}>
-                <h3 className="text-xl font-bold text-gray-900 0">Test vector</h3>
-                <p className="text-sm text-gray-600 60">
+            <div className={`${cardClass} space-y-3`}>
+                <h3 className="text-xl font-bold text-gray-900">Test vector</h3>
+                <p className="text-sm text-gray-600">
                     Fixed inputs with known output, cross-checked with PyNaCl and libsodium. Run
                     your implementation with these inputs — it must produce exactly this digest and
                     signature. The key is public and for testing only; never register it.
                 </p>
-                <CodeBlock
-                    language="json"
-                    wrap
-                    code={JSON.stringify(
+                <ValueBox
+                    value={JSON.stringify(
                         {
                             private_key_seed: TEST_VECTOR.privateKey,
                             public_key: TEST_VECTOR.publicKey,
@@ -584,7 +580,7 @@ const TryIt: FC = () => {
                         2
                     )}
                 />
-                <p className="text-xs text-gray-600 60">
+                <p className="text-xs text-gray-600">
                     Derived public key check:{" "}
                     {publicKeyFromPrivate(TEST_VECTOR.privateKey) === TEST_VECTOR.publicKey
                         ? "✓"
@@ -595,4 +591,4 @@ const TryIt: FC = () => {
     );
 };
 
-export default TryIt;
+export default AuthHeaderPlayground;

@@ -1,4 +1,4 @@
-import { sortDocsByPreferredSequence } from "./utils";
+import { sortDocsByPreferredSequence } from "../utils";
 
 const doc = (slug: string, label: string) => ({ slug, label, shortDescription: "" });
 

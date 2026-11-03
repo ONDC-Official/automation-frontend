@@ -6,7 +6,7 @@ import {
     payloadWarnings,
     privateKeySeed,
     verifyAuthorizationHeader,
-} from "./authHeaderCrypto";
+} from "../authHeaderCrypto";
 
 // jsdom does not always expose TextEncoder
 if (typeof globalThis.TextEncoder === "undefined") {
