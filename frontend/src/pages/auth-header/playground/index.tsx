@@ -1,4 +1,4 @@
-import { FC, ReactNode, useMemo, useState } from "react";
+import { FC, ReactNode, useEffect, useMemo, useState } from "react";
 import { FaCheck, FaCopy } from "react-icons/fa";
 import LoadingButton from "@components/ui/forms/loading-button";
 import { inputClass, labelClass } from "@components/ui/forms/inputClass";
@@ -10,7 +10,6 @@ import {
     generateDemoKeyPair,
     parseAuthorizationHeader,
     payloadWarnings,
-    publicKeyFromPrivate,
     verifyAuthorizationHeader,
     type CreateHeaderResult,
     type VerifyResult,
@@ -100,15 +99,17 @@ const VerifySteps: FC<{ result: VerifyResult }> = ({ result }) => (
     </ol>
 );
 
+interface BreakContext {
+    header: string;
+    payload: string;
+    publicKey: string;
+}
+
 /** A change applied to a freshly signed header + payload to show what breaks verification. */
 interface BreakScenario {
     id: string;
     label: string;
-    apply: (ctx: { header: string; payload: string; publicKey: string }) => {
-        header: string;
-        payload: string;
-        publicKey: string;
-    };
+    apply: (ctx: BreakContext) => BreakContext | Promise<BreakContext>;
 }
 
 const prettyPrint = (payload: string) => {
@@ -155,7 +156,7 @@ const BREAK_SCENARIOS: BreakScenario[] = [
     {
         id: "wrong-key",
         label: "Different public key",
-        apply: (c) => ({ ...c, publicKey: generateDemoKeyPair().publicKey }),
+        apply: async (c) => ({ ...c, publicKey: (await generateDemoKeyPair()).publicKey }),
     },
     { id: "expired", label: "After expiry", apply: (c) => c },
 ];
@@ -182,28 +183,30 @@ const AuthHeaderPlayground: FC = () => {
     // Break it
     const [scenarioId, setScenarioId] = useState("none");
 
-    const build = useMemo((): { result?: CreateHeaderResult; error?: string } => {
-        if (!privateKey.trim())
-            return { error: "Enter a private key or generate a demo key pair." };
+    const [build, setBuild] = useState<{ result?: CreateHeaderResult; error?: string }>({});
+    useEffect(() => {
+        let cancelled = false;
         const createdNum = Number(created);
         const ttlNum = Number(ttl);
-        if (!Number.isInteger(createdNum) || !Number.isInteger(ttlNum) || ttlNum < 0) {
-            return { error: "created and TTL must be whole numbers of seconds." };
+        if (!privateKey.trim()) {
+            setBuild({ error: "Enter a private key or generate a demo key pair." });
+        } else if (!Number.isInteger(createdNum) || !Number.isInteger(ttlNum) || ttlNum < 0) {
+            setBuild({ error: "created and TTL must be whole numbers of seconds." });
+        } else {
+            createAuthorizationHeader({
+                payload,
+                privateKey,
+                subscriberId,
+                uniqueKeyId,
+                created: createdNum,
+                ttl: ttlNum,
+            })
+                .then((result) => !cancelled && setBuild({ result }))
+                .catch((e: Error) => !cancelled && setBuild({ error: e.message }));
         }
-        try {
-            return {
-                result: createAuthorizationHeader({
-                    payload,
-                    privateKey,
-                    subscriberId,
-                    uniqueKeyId,
-                    created: createdNum,
-                    ttl: ttlNum,
-                }),
-            };
-        } catch (e) {
-            return { error: (e as Error).message };
-        }
+        return () => {
+            cancelled = true;
+        };
     }, [payload, privateKey, subscriberId, uniqueKeyId, created, ttl]);
 
     const warnings = useMemo(() => payloadWarnings(payload), [payload]);
@@ -217,24 +220,36 @@ const AuthHeaderPlayground: FC = () => {
         build.result?.digestBase64 === TEST_VECTOR.expectedDigest &&
         build.result?.signatureBase64 === TEST_VECTOR.expectedSignature;
 
-    const breakResult = useMemo(() => {
-        if (!build.result) return null;
+    const [breakResult, setBreakResult] = useState<{
+        changed: BreakContext;
+        result: VerifyResult;
+    } | null>(null);
+    useEffect(() => {
+        let cancelled = false;
+        const built = build.result;
+        if (!built) {
+            setBreakResult(null);
+            return;
+        }
         const scenario = BREAK_SCENARIOS.find((s) => s.id === scenarioId) ?? BREAK_SCENARIOS[0];
-        const changed = scenario.apply({
-            header: build.result.header,
-            payload,
-            publicKey: build.result.publicKey,
-        });
         // Verify relative to the signing time so the demo also works with the fixed test-vector timestamp.
-        const at = scenario.id === "expired" ? build.result.expires + 3600 : build.result.created;
-        return {
-            changed,
-            result: verifyAuthorizationHeader(
+        const at = scenario.id === "expired" ? built.expires + 3600 : built.created;
+        (async () => {
+            const changed = await scenario.apply({
+                header: built.header,
+                payload,
+                publicKey: built.publicKey,
+            });
+            const result = await verifyAuthorizationHeader(
                 changed.header,
                 changed.payload,
                 changed.publicKey,
                 at
-            ),
+            );
+            if (!cancelled) setBreakResult({ changed, result });
+        })();
+        return () => {
+            cancelled = true;
         };
     }, [build.result, payload, scenarioId]);
 
@@ -256,14 +271,14 @@ const AuthHeaderPlayground: FC = () => {
         setMode("verify");
     };
 
-    const runVerify = () => {
+    const runVerify = async () => {
         const headerCreated = Number(parseAuthorizationHeader(verifyHeader).created);
         const at =
             verifyAt === "created" && Number.isInteger(headerCreated)
                 ? headerCreated
                 : nowSeconds();
         setVerifyResult(
-            verifyAuthorizationHeader(verifyHeader, verifyPayload, verifyPublicKey, at)
+            await verifyAuthorizationHeader(verifyHeader, verifyPayload, verifyPublicKey, at)
         );
     };
 
@@ -285,7 +300,9 @@ const AuthHeaderPlayground: FC = () => {
                                 <LoadingButton
                                     type="button"
                                     buttonText="Generate demo key pair"
-                                    onClick={() => setPrivateKey(generateDemoKeyPair().privateKey)}
+                                    onClick={async () =>
+                                        setPrivateKey((await generateDemoKeyPair()).privateKey)
+                                    }
                                 />
                                 <LoadingButton
                                     type="button"
@@ -382,8 +399,8 @@ const AuthHeaderPlayground: FC = () => {
                                 </Step>
                                 <Step
                                     n={2}
-                                    title="BLAKE2b-512 digest"
-                                    note="64-byte hash of the payload, Base64 encoded (standard Base64, not URL-safe)."
+                                    title="Digest (BLAKE-512)"
+                                    note="64-byte BLAKE2b hash of the payload, Base64 encoded (standard Base64, not URL-safe). ONDC labels it BLAKE-512 in the signing string."
                                 >
                                     <ValueBox value={build.result.digestBase64} />
                                     <p className="break-all font-mono text-xs text-gray-600">
@@ -393,7 +410,7 @@ const AuthHeaderPlayground: FC = () => {
                                 <Step
                                     n={3}
                                     title="Signing string"
-                                    note="Three lines joined with \n (LF). expires = created + TTL."
+                                    note="Three lines joined with \n (LF), exactly as the ONDC SDK builds them: a space after each colon, and digest: BLAKE-512=. expires = created + TTL."
                                 >
                                     <ValueBox value={build.result.signingString} />
                                 </Step>
@@ -450,8 +467,8 @@ const AuthHeaderPlayground: FC = () => {
                                         }`}
                                     >
                                         {matchesVector
-                                            ? "✓ Output matches the published test vector. Your own implementation should produce exactly these values for the same inputs."
-                                            : "✗ Output does not match the published test vector."}
+                                            ? "✓ Output matches the signature in ONDC's official signing guide. Your own implementation should produce exactly these values for the same inputs."
+                                            : "✗ Output does not match ONDC's official example."}
                                     </p>
                                 )}
                             </>
@@ -559,15 +576,16 @@ const AuthHeaderPlayground: FC = () => {
             <div className={`${cardClass} space-y-3`}>
                 <h3 className="text-xl font-bold text-gray-900">Test vector</h3>
                 <p className="text-sm text-gray-600">
-                    Fixed inputs with known output, cross-checked with PyNaCl and libsodium. Run
-                    your implementation with these inputs — it must produce exactly this digest and
-                    signature. The key is public and for testing only; never register it.
+                    The worked example from ONDC's official signing guide
+                    (developer-docs/registry/signing-verification.md). Run your implementation with
+                    these inputs — it must produce exactly this digest and signature. The keys are
+                    published for illustration only; never register them.
                 </p>
                 <ValueBox
                     value={JSON.stringify(
                         {
-                            private_key_seed: TEST_VECTOR.privateKey,
-                            public_key: TEST_VECTOR.publicKey,
+                            signing_private_key: TEST_VECTOR.privateKey,
+                            signing_public_key: TEST_VECTOR.publicKey,
                             subscriber_id: TEST_VECTOR.subscriberId,
                             unique_key_id: TEST_VECTOR.uniqueKeyId,
                             payload: TEST_VECTOR.payload,
@@ -580,12 +598,6 @@ const AuthHeaderPlayground: FC = () => {
                         2
                     )}
                 />
-                <p className="text-xs text-gray-600">
-                    Derived public key check:{" "}
-                    {publicKeyFromPrivate(TEST_VECTOR.privateKey) === TEST_VECTOR.publicKey
-                        ? "✓"
-                        : "✗"}
-                </p>
             </div>
         </div>
     );
