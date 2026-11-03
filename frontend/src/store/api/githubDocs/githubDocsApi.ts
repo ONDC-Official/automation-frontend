@@ -1,10 +1,8 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import type { DocMeta } from "@/types/apiShared/developerGuide";
 
-const GITHUB_API_BASE =
-    "https://api.github.com/repos/ONDC-Official/automation-framework/contents/docs/developer-docs";
-const GITHUB_RAW_BASE =
-    "https://raw.githubusercontent.com/ONDC-Official/automation-framework/main/docs/developer-docs";
+const GITHUB_API_BASE = "http://localhost:8787/contents";
+const GITHUB_RAW_BASE = "http://localhost:8787/raw";
 
 interface GithubContentItem {
     name: string;

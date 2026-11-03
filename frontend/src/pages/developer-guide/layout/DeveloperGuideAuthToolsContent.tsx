@@ -1,5 +1,5 @@
 import { FC, useMemo, useState } from "react";
-import { BookOpenIcon, CodeBracketIcon } from "@heroicons/react/24/outline";
+import { BookOpenIcon, CodeBracketIcon, PlayIcon } from "@heroicons/react/24/outline";
 import Header from "@pages/auth-header/Header";
 import Tabs from "@pages/auth-header/Tabs";
 import Tab from "@pages/auth-header/Tab";
@@ -16,6 +16,7 @@ const DeveloperGuideAuthToolsContent: FC = () => {
                 label: "Code Snippets",
                 icon: <CodeBracketIcon className="w-3.5 h-3.5" />,
             },
+            { id: "tryit", label: "Try It", icon: <PlayIcon className="w-3.5 h-3.5" /> },
         ],
         []
     );
