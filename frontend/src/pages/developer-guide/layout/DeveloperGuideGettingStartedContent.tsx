@@ -2,6 +2,7 @@ import { FC, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import gettingStartedContent from "../landing/getting-started.md?raw";
 import MdFileRender from "@components/MdFileRender";
+import { ONDC_PORTAL_URL } from "@constants/common";
 import { useDeveloperGuideShell } from "./DeveloperGuideShellContext";
 
 const DeveloperGuideGettingStartedContent: FC = () => {
@@ -21,7 +22,7 @@ const DeveloperGuideGettingStartedContent: FC = () => {
             <MdFileRender
                 title="Getting Started"
                 description="This section helps you quickly understand how to explore ONDC protocol flows, starting with the Unified Credit use case."
-                mdData={gettingStartedContent}
+                mdData={gettingStartedContent.replace(/\{\{ONDC_PORTAL_URL\}\}/g, ONDC_PORTAL_URL)}
                 showTableOfContents={false}
                 hideTitleBlock={!navSidebarOpen}
             />

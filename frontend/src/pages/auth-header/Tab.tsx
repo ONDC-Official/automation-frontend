@@ -1,5 +1,6 @@
 import Overview from "@pages/auth-header/overview";
 import CodeSnippets from "@pages/auth-header/code-snippets";
+import TryIt from "@pages/auth-header/try-it";
 import { TabType } from "@pages/auth-header/types";
 
 const Tab = ({ activeTab }: { activeTab: TabType }) => {
@@ -9,6 +10,8 @@ const Tab = ({ activeTab }: { activeTab: TabType }) => {
                 return <Overview />;
             case "snippets":
                 return <CodeSnippets />;
+            case "tryit":
+                return <TryIt />;
             default:
                 return null;
         }

@@ -78,7 +78,7 @@ function buildGettingStartedNav(): NavNode {
     const defaultGettingStartedPath =
         sectionLinks.length > 0
             ? (sectionLinks[0] as Extract<NavNode, { type: "link" }>).path
-            : `${ROUTES.DEVELOPER_GUIDE_GETTING_STARTED}#1-pick-a-use-case`;
+            : `${ROUTES.DEVELOPER_GUIDE_GETTING_STARTED}#1-start-your-ondc-journey`;
 
     return {
         id: "getting-started",

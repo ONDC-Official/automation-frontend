@@ -155,3 +155,7 @@ export const availableDomains = [
     { code: "ONDC:FIS12", version: "2.0.2" },
     { code: "ONDC:FIS13", version: "2.0.0" },
 ];
+
+/** ONDC Portal (sign up / sign in). Defaults to the public portal when VITE_ONDC_PORTAL_URL is unset. */
+export const ONDC_PORTAL_URL: string =
+    import.meta.env.VITE_ONDC_PORTAL_URL || "https://portal.ondc.org";
