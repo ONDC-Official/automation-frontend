@@ -24,8 +24,7 @@ import CommentsPanel from "../flowActionDetails/CommentsPanel";
 import { useDocsSectionSelection } from "../DocsViewer/useDocsSectionSelection";
 import { useInlineCommentHeading } from "../shared/hooks/useInlineCommentHeading";
 import { getDomainDisplayLabel } from "../domainGrouping";
-
-const ONDC_PORTAL_URL = "https://portal.ondc.org";
+import { ondcPortalUrl } from "@/types/environment";
 
 const GETTING_STARTED_SLUG = "getting-started";
 
@@ -297,7 +296,7 @@ const DeveloperGuideGettingStartedContent: FC = () => {
                             <Button
                                 type="button"
                                 onClick={() =>
-                                    window.open(ONDC_PORTAL_URL, "_blank", "noopener,noreferrer")
+                                    window.open(ondcPortalUrl, "_blank", "noopener,noreferrer")
                                 }
                             >
                                 Go to ONDC Portal
