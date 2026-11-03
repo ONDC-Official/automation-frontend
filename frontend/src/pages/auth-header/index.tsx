@@ -12,7 +12,7 @@ const AuthHeader = () => {
         () => [
             { id: "overview", label: "Overview", icon: <FaBook /> },
             { id: "snippets", label: "Code Snippets", icon: <FaCode /> },
-            { id: "playground", label: "Playground", icon: <FaFlask /> },
+            { id: "header-playground", label: "Header Playground", icon: <FaFlask /> },
         ],
         []
     );

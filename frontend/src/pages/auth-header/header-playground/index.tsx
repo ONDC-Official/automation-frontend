@@ -13,7 +13,7 @@ import {
     verifyAuthorizationHeader,
     type CreateHeaderResult,
     type VerifyResult,
-} from "@pages/auth-header/playground/authHeaderCrypto";
+} from "@pages/auth-header/header-playground/authHeaderCrypto";
 
 type Mode = "build" | "verify" | "break";
 

@@ -1,4 +1,4 @@
-export type TabType = "overview" | "snippets" | "playground";
+export type TabType = "overview" | "snippets" | "header-playground";
 
 export interface TabConfig {
     id: TabType;
