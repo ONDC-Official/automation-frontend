@@ -1,4 +1,10 @@
-import { FC, useCallback, useMemo, type ReactNode } from "react";
+import {
+    FC,
+    useCallback,
+    useMemo,
+    type CSSProperties,
+    type ReactNode,
+} from "react";
 import { useNavigate } from "react-router-dom";
 import {
     ChevronRightIcon,
@@ -24,6 +30,7 @@ import CommentsPanel from "../flowActionDetails/CommentsPanel";
 import { useDocsSectionSelection } from "../DocsViewer/useDocsSectionSelection";
 import { useInlineCommentHeading } from "../shared/hooks/useInlineCommentHeading";
 import { getDomainDisplayLabel } from "../domainGrouping";
+import { ondcPortalUrl } from "@/types/environment";
 
 const GETTING_STARTED_SLUG = "getting-started";
 
@@ -268,6 +275,60 @@ const DeveloperGuideGettingStartedContent: FC = () => {
                             headingAction={renderHeadingAction(GETTING_STARTED_SECTIONS[2].id)}
                         />
                         <p className="w-full text-body-1 leading-relaxed text-n-300 dark:text-n-60">
+                            Sign up or sign in on the{" "}
+                            <strong className="font-semibold text-n-900 dark:text-n-0">
+                                ONDC Portal
+                            </strong>{" "}
+                            to register as a Network Participant and begin your ONDC journey. The
+                            portal adds you to the ONDC Registry:
+                        </p>
+                        <ul className="mt-3 list-disc space-y-1 pl-6 text-body-1 leading-relaxed text-n-300 dark:text-n-60">
+                            <li>
+                                <strong className="font-semibold text-n-900 dark:text-n-0">
+                                    Pre-Production
+                                </strong>{" "}
+                                — get your subscriber ID whitelisted; the portal subscribes you
+                                directly, no DNS TXT record required.
+                            </li>
+                            <li>
+                                <strong className="font-semibold text-n-900 dark:text-n-0">
+                                    Production
+                                </strong>{" "}
+                                — generate and host a DNS TXT record; the portal then calls the
+                                admin subscription API.
+                            </li>
+                        </ul>
+                        <div className="mt-4 flex flex-wrap gap-3">
+                            <Button
+                                type="button"
+                                onClick={() =>
+                                    window.open(ondcPortalUrl, "_blank", "noopener,noreferrer")
+                                }
+                            >
+                                Go to ONDC Portal
+                            </Button>
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() =>
+                                    navigate(
+                                        `${getDeveloperGuideDocPath("protocol")}#subscription-process`
+                                    )
+                                }
+                            >
+                                View subscription process
+                            </Button>
+                        </div>
+                    </section>
+
+                    <section id={GETTING_STARTED_SECTIONS[3].id} className="scroll-mt-24">
+                        <SectionHeading
+                            sectionId={GETTING_STARTED_SECTIONS[3].id}
+                            label={GETTING_STARTED_SECTIONS[3].label}
+                            onSelect={selectSection}
+                            headingAction={renderHeadingAction(GETTING_STARTED_SECTIONS[3].id)}
+                        />
+                        <p className="w-full text-body-1 leading-relaxed text-n-300 dark:text-n-60">
                             Open any use case as your reference use case from the sidebar under{" "}
                             <strong className="font-semibold text-n-900 dark:text-n-0">
                                 Explore by domain
@@ -290,12 +351,12 @@ const DeveloperGuideGettingStartedContent: FC = () => {
                         </Button>
                     </section>
 
-                    <section id={GETTING_STARTED_SECTIONS[3].id} className="scroll-mt-24">
+                    <section id={GETTING_STARTED_SECTIONS[4].id} className="scroll-mt-24">
                         <SectionHeading
-                            sectionId={GETTING_STARTED_SECTIONS[3].id}
-                            label={GETTING_STARTED_SECTIONS[3].label}
+                            sectionId={GETTING_STARTED_SECTIONS[4].id}
+                            label={GETTING_STARTED_SECTIONS[4].label}
                             onSelect={selectSection}
-                            headingAction={renderHeadingAction(GETTING_STARTED_SECTIONS[3].id)}
+                            headingAction={renderHeadingAction(GETTING_STARTED_SECTIONS[4].id)}
                         />
                         <p className="mb-5 w-full text-body-2 leading-relaxed text-n-300 dark:text-n-60">
                             Jump to the path that matches what you need right now.
@@ -314,12 +375,12 @@ const DeveloperGuideGettingStartedContent: FC = () => {
                         </div>
                     </section>
 
-                    <section id={GETTING_STARTED_SECTIONS[4].id} className="scroll-mt-24">
+                    <section id={GETTING_STARTED_SECTIONS[5].id} className="scroll-mt-24">
                         <SectionHeading
-                            sectionId={GETTING_STARTED_SECTIONS[4].id}
-                            label={GETTING_STARTED_SECTIONS[4].label}
+                            sectionId={GETTING_STARTED_SECTIONS[5].id}
+                            label={GETTING_STARTED_SECTIONS[5].label}
                             onSelect={selectSection}
-                            headingAction={renderHeadingAction(GETTING_STARTED_SECTIONS[4].id)}
+                            headingAction={renderHeadingAction(GETTING_STARTED_SECTIONS[5].id)}
                         />
                         <p className="mb-5 w-full text-body-2 leading-relaxed text-n-300 dark:text-n-60">
                             Once a use case is open, work through it in this order.
@@ -341,12 +402,12 @@ const DeveloperGuideGettingStartedContent: FC = () => {
                         </div>
                     </section>
 
-                    <section id={GETTING_STARTED_SECTIONS[5].id} className="scroll-mt-24">
+                    <section id={GETTING_STARTED_SECTIONS[6].id} className="scroll-mt-24">
                         <SectionHeading
-                            sectionId={GETTING_STARTED_SECTIONS[5].id}
-                            label={GETTING_STARTED_SECTIONS[5].label}
+                            sectionId={GETTING_STARTED_SECTIONS[6].id}
+                            label={GETTING_STARTED_SECTIONS[6].label}
                             onSelect={selectSection}
-                            headingAction={renderHeadingAction(GETTING_STARTED_SECTIONS[5].id)}
+                            headingAction={renderHeadingAction(GETTING_STARTED_SECTIONS[6].id)}
                         />
                         <p className="mb-5 w-full text-body-2 leading-relaxed text-n-300 dark:text-n-60">
                             Short walkthroughs of how different screens and flows work in the
@@ -380,12 +441,12 @@ const DeveloperGuideGettingStartedContent: FC = () => {
                         </div>
                     </section>
 
-                    <section id={GETTING_STARTED_SECTIONS[6].id} className="scroll-mt-24">
+                    <section id={GETTING_STARTED_SECTIONS[7].id} className="scroll-mt-24">
                         <SectionHeading
-                            sectionId={GETTING_STARTED_SECTIONS[6].id}
-                            label={GETTING_STARTED_SECTIONS[6].label}
+                            sectionId={GETTING_STARTED_SECTIONS[7].id}
+                            label={GETTING_STARTED_SECTIONS[7].label}
                             onSelect={selectSection}
-                            headingAction={renderHeadingAction(GETTING_STARTED_SECTIONS[6].id)}
+                            headingAction={renderHeadingAction(GETTING_STARTED_SECTIONS[7].id)}
                         />
                         <p className="mb-5 w-full text-body-2 leading-relaxed text-n-300 dark:text-n-60">
                             Plain-language definitions for protocol and domain terms you will see in
@@ -415,7 +476,12 @@ const DeveloperGuideGettingStartedContent: FC = () => {
                         ? "mr-4 mt-4 mb-4 max-w-80 opacity-100"
                         : "mr-0 max-w-0 opacity-0 pointer-events-none"
                 )}
-                style={{ top: tocOffset, height: `calc(100vh - ${tocOffset}px)` }}
+                style={
+                    {
+                        top: tocOffset,
+                        height: `calc(100vh - ${tocOffset}px)`,
+                    } as unknown as CSSProperties
+                }
             >
                 <div className="h-full w-80">
                     <CommentsPanel
