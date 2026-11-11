@@ -10,6 +10,8 @@ import {
 	requestForFlowPermissionService,
 	updateSessionService,
 	setMockSession,
+	setStudioLiveConfig,
+	getStudioLiveConfig,
 } from "../services/sessionService";
 import { saveLog } from "../utils/console";
 import logger from "@ondc/automation-logger";
@@ -103,6 +105,87 @@ export const createPlaygroundSession = async (req: Request, res: Response) => {
 		res
 			.status(500)
 			.send({ message: "Error creating session", error: error.message });
+	}
+};
+
+/** Why a Studio live session request is malformed, or null when it is fine. */
+const checkStudioSession = (sessionData: any, studioConfig: any) => {
+	if (!sessionData || typeof sessionData !== "object")
+		return "sessionData is required.";
+	if (!sessionData.subscriberUrl || !["BAP", "BPP"].includes(sessionData.npType))
+		return "sessionData needs subscriberUrl and npType (BAP or BPP).";
+	if (!studioConfig || studioConfig.kind !== "graph-v2-live")
+		return "studioConfig must be a graph-v2-live document.";
+	if (!Array.isArray(studioConfig.graph?.nodes) || !Array.isArray(studioConfig.graph?.edges))
+		return "studioConfig.graph needs nodes and edges.";
+	if (!Array.isArray(studioConfig.journeys) || studioConfig.journeys.length === 0)
+		return "studioConfig needs at least one journey.";
+	return null;
+};
+
+/**
+ * A live session of a Protocol Studio graph. Stored like a playground session
+ * (`usecaseId: PLAYGROUND-FLOW`, so the flow proxies and the api-service route
+ * it to the mock's playground router), flagged `engine: "graph-v2"` so the mock
+ * runs the graph executor on `PLAYGROUND_V2_<sessionId>` instead of a v1 config.
+ */
+export const createStudioSession = async (req: Request, res: Response) => {
+	const sessionId = req.sessionID;
+	logger.info(`Creating studio live session with ID: ${sessionId}`, getLoggerMeta(req));
+	if (!sessionId) {
+		res.status(400).send({ message: "Session ID is required." });
+		return;
+	}
+	const { sessionData, studioConfig } = req.body ?? {};
+	const problem = checkStudioSession(sessionData, studioConfig);
+	if (problem) {
+		res.status(400).send({ message: problem });
+		return;
+	}
+	try {
+		const session = {
+			...sessionData,
+			usecaseId: "PLAYGROUND-FLOW",
+			engine: "graph-v2",
+		};
+		const sessionRes = await createSessionWithCompleteData(
+			sessionId,
+			session,
+			getLoggerMeta(req)
+		);
+		const configRes = await setStudioLiveConfig(
+			sessionId,
+			studioConfig,
+			getLoggerMeta(req)
+		);
+		res.status(201).send({
+			sessionId,
+			subscriberUrl: sessionData.subscriberUrl,
+			message: sessionRes + " & " + configRes,
+		});
+	} catch (error: any) {
+		logger.error("Error creating studio live session", getLoggerMeta(req), error);
+		res
+			.status(500)
+			.send({ message: "Error creating session", error: error.message });
+	}
+};
+
+/** The graph document of a Studio live session (for the live page). */
+export const getStudioSession = async (req: Request, res: Response) => {
+	const sessionId = req.query.session_id as string;
+	try {
+		const doc = await getStudioLiveConfig(sessionId);
+		if (!doc) {
+			res.status(404).send({ message: "Studio live session not found." });
+			return;
+		}
+		res.status(200).send(doc);
+	} catch (error: any) {
+		logger.error("Error fetching studio live session", getLoggerMeta(req), error);
+		res
+			.status(500)
+			.send({ message: "Error fetching session", error: error.message });
 	}
 };
 

@@ -113,6 +113,32 @@ export const setMockSession = async (
   return "Playground config set successfully";
 };
 
+/** Redis key of a Studio live session's graph document (read by the mock service). */
+export const studioLiveConfigKey = (sessionId: string) =>
+  "PLAYGROUND_V2_" + sessionId;
+
+export const setStudioLiveConfig = async (
+  sessionId: string,
+  studioConfig: unknown,
+  loggerMeta: any,
+) => {
+  logger.info(
+    `Setting studio live config for session ${sessionId} as ${studioLiveConfigKey(sessionId)}`,
+    loggerMeta,
+  );
+  await RedisService.setKey(
+    studioLiveConfigKey(sessionId),
+    JSON.stringify(studioConfig),
+    SESSION_EXPIRY,
+  );
+  return "Studio live config set successfully";
+};
+
+export const getStudioLiveConfig = async (sessionId: string) => {
+  const raw = await RedisService.getKey(studioLiveConfigKey(sessionId));
+  return raw ? JSON.parse(raw) : null;
+};
+
 export const getSessionService = async (sessionId: string) => {
   try {
     const sessionData = await RedisService.getKey(sessionId);

@@ -4,6 +4,8 @@ import {
 	createExpectation,
 	createPlaygroundSession,
 	createSession,
+	createStudioSession,
+	getStudioSession,
 	deleteExpectation,
 	getSession,
 	getTransactionData,
@@ -28,6 +30,15 @@ router.post(
 );
 
 router.post("/playground", createPlaygroundSession);
+
+router.post("/studio", createStudioSession);
+
+router.get(
+	"/studio",
+	validateRequiredParams(["session_id"]),
+	otelTracing("", "query.session_id"),
+	getStudioSession
+);
 
 router.post(
 	"/expectation",
