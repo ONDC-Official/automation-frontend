@@ -18,7 +18,20 @@ import {
     type OnNodesChange,
     type XYPosition,
 } from "@xyflow/react";
+import { toast } from "sonner";
+
 import "@pages/protocol-studio/ui/editor/studio-editor.css";
+import { GetRequestEndpoint } from "@components/DomainFlowRunner/utils/get-request-endpoint";
+import { useCreateStudioSessionMutation } from "@store/api";
+import {
+    buildStudioLiveSession,
+    getLiveBlocker,
+    getLivePageUrl,
+} from "@pages/protocol-studio/live/live-session";
+import {
+    StartLiveDialog,
+    type IStartLiveSubmit,
+} from "@pages/protocol-studio/ui/editor/live/start-live-dialog";
 
 import { useDragResize } from "@pages/protocol-studio/hooks/use-drag-resize";
 import { useFullscreen } from "@pages/protocol-studio/hooks/use-fullscreen";
@@ -500,6 +513,61 @@ const StudioEditorContent = ({
         }
         return status;
     }, [flat, journeys]);
+    // ─── Live session: the compiled graph promoted to the mock service ─────
+
+    const [liveOpen, setLiveOpen] = useState(false);
+    const [createStudioSession] = useCreateStudioSessionMutation();
+    const liveBlockers = useMemo(
+        () => new Map(journeys.map((j) => [j.id, getLiveBlocker(flat, j)] as const)),
+        [flat, journeys]
+    );
+    const startLive = useCallback(
+        async ({ subscriberUrl, role, journeyIds }: IStartLiveSubmit): Promise<string | null> => {
+            const executor = runGraph.executor;
+            if (!executor) return runBlocked ?? "The graph isn't compiled yet";
+            const picked = journeys.filter((j) => journeyIds.includes(j.id));
+            const { domain, version } = config.meta;
+            // `testing`: the mock against itself — one session per side, as v1 does.
+            const targets: { subscriberUrl: string; role: "BAP" | "BPP" }[] =
+                subscriberUrl === "testing"
+                    ? [
+                          {
+                              subscriberUrl: GetRequestEndpoint(domain, version, "BAP"),
+                              role: "BPP",
+                          },
+                          {
+                              subscriberUrl: GetRequestEndpoint(domain, version, "BPP"),
+                              role: "BAP",
+                          },
+                      ]
+                    : [{ subscriberUrl, role }];
+            for (const target of targets) {
+                const body = buildStudioLiveSession({
+                    config,
+                    executor,
+                    root,
+                    flat,
+                    journeys: picked,
+                    ...target,
+                });
+                const result = await createStudioSession(body);
+                if (!("data" in result) || !result.data?.sessionId)
+                    return "The live session could not be created · is the backend running?";
+                log(
+                    "success",
+                    `Live session ${result.data.sessionId} · ${target.role} ${target.subscriberUrl} · ${picked.length} journey${picked.length === 1 ? "" : "s"}`
+                );
+                window.open(
+                    getLivePageUrl(result.data.sessionId, target.subscriberUrl, target.role),
+                    "_blank"
+                );
+            }
+            toast.success("Live session created · opening in a new tab");
+            return null;
+        },
+        [runGraph.executor, runBlocked, journeys, config, root, flat, createStudioSession, log]
+    );
+
     const entryNodes = useMemo(
         () => getEntryNodes(flat).filter((node) => node.kind !== "on_demand"),
         [flat]
@@ -1541,6 +1609,8 @@ const StudioEditorContent = ({
             className="studio-editor relative min-h-0 w-full flex-1 overflow-hidden"
             data-inspector-max={isInspectorMaximized || undefined}
             data-stage={stage}
+            // e2e hook: Run stays blocked while the graph compiles.
+            data-compiling={runGraph.compiling || undefined}
             data-path-strip={(stage === "journeys" && selectedJourneyId !== null) || undefined}
             style={rootStyle}
         >
@@ -1597,6 +1667,7 @@ const StudioEditorContent = ({
                 onViewRawConfig={() => setCodeDialog("config")}
                 onViewTypes={() => setCodeDialog("types")}
                 onDownloadConfig={downloadConfig}
+                onStartLiveSession={() => setLiveOpen(true)}
             />
 
             {stage === "specification" ? (
@@ -1629,6 +1700,7 @@ const StudioEditorContent = ({
                     onGoToStage={onStageChange}
                     onDownloadConfig={downloadConfig}
                     onDownloadJourneys={downloadJourneys}
+                    onStartLiveSession={() => setLiveOpen(true)}
                 />
             ) : null}
 
@@ -1818,6 +1890,16 @@ const StudioEditorContent = ({
             ) : null}
 
             <RunDialog pending={run.pending} actions={runActions} container={rootRef.current} />
+
+            <StartLiveDialog
+                open={liveOpen}
+                journeys={journeys}
+                blockers={liveBlockers}
+                blocked={runGraph.executor ? null : runBlocked}
+                container={rootRef.current}
+                onClose={() => setLiveOpen(false)}
+                onStart={startLive}
+            />
 
             <GroupDialog
                 open={groupDialog.open}

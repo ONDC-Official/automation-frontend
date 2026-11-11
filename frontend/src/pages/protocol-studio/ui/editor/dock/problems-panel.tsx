@@ -33,6 +33,8 @@ export const ProblemsPanel = ({ problems, onReveal }: IProblemsPanelProps) => {
                                 type="button"
                                 className="studio-problem"
                                 data-level={problem.level}
+                                data-node-id={problem.nodeId}
+                                data-problem-id={problem.id}
                                 onClick={() => onReveal(problem)}
                                 disabled={!problem.nodeId && !problem.edgeId && !problem.journeyId}
                                 title={

@@ -139,7 +139,7 @@ export function SingleLocationPickerModal({
                                 <li
                                     key={i}
                                     onClick={() => selectResult(r)}
-                                    className="px-3 py-1.5 hover:bg-sky-50 cursor-pointer border-b last:border-b-0"
+                                    className="px-3 py-1.5 hover:bg-sky-50 dark:hover:bg-surface-muted cursor-pointer border-b last:border-b-0"
                                 >
                                     {r.name}
                                 </li>

@@ -305,6 +305,7 @@ export const FlowPreview = ({
                         <li
                             key={row.key}
                             className="studio-flow-row"
+                            data-node-id={row.nodeId}
                             data-status={row.status}
                             data-extra={row.extra || undefined}
                             data-clickable={row.runIndex !== null || undefined}
@@ -351,7 +352,11 @@ export const FlowPreview = ({
                         </li>
                     ))}
                     {deviation ? (
-                        <li className="studio-flow-fork studio-flow-deviation" role="alert">
+                        <li
+                            className="studio-flow-fork studio-flow-deviation"
+                            role="alert"
+                            data-alert="deviation"
+                        >
                             <p className="studio-eyebrow">
                                 <ExclamationTriangleIcon />
                                 Journey unreachable
@@ -375,7 +380,11 @@ export const FlowPreview = ({
                         </li>
                     ) : null}
                     {failure ? (
-                        <li className="studio-flow-fork studio-flow-deviation" role="alert">
+                        <li
+                            className="studio-flow-fork studio-flow-deviation"
+                            role="alert"
+                            data-alert="failure"
+                        >
                             <p className="studio-eyebrow">
                                 <ExclamationTriangleIcon />
                                 Exit condition never met
@@ -403,6 +412,7 @@ export const FlowPreview = ({
                                         type="button"
                                         className="studio-key studio-key-sm"
                                         disabled={run.busy}
+                                        data-fork-option={option.target.id}
                                         onClick={() =>
                                             void actions.choose(fork.key, option.target.id)
                                         }

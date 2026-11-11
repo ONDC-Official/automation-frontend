@@ -8,7 +8,12 @@ import type { IAuthState } from "@store/slices/authSlice";
 export const sessionPersistConfig: PersistConfig<ISessionState> = {
     key: "session",
     storage,
-    whitelist: ["autoScrollEnabled", "experimentalMode", "flowFilterTagsBySessionId"],
+    whitelist: [
+        "autoScrollEnabled",
+        "experimentalMode",
+        "studioStepThrough",
+        "flowFilterTagsBySessionId",
+    ],
 };
 
 /** Framework-health admin auth flag lives in sessionStorage (per-tab), matching legacy behavior. */

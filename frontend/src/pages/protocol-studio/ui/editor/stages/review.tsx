@@ -1,5 +1,9 @@
 import type { MockPlaygroundConfigV2Type } from "@ondc/automation-mock-runner";
-import { ArrowDownTrayIcon, ArrowTopRightOnSquareIcon } from "@heroicons/react/24/outline";
+import {
+    ArrowDownTrayIcon,
+    ArrowTopRightOnSquareIcon,
+    SignalIcon,
+} from "@heroicons/react/24/outline";
 
 import { ProblemsPanel } from "@pages/protocol-studio/ui/editor/dock/problems-panel";
 import type { Coverage } from "@pages/protocol-studio/ui/editor/journeys/derive";
@@ -24,6 +28,7 @@ export interface IReviewStageProps {
     onGoToStage: (stage: StudioStage) => void;
     onDownloadConfig: () => void;
     onDownloadJourneys: () => void;
+    onStartLiveSession: () => void;
 }
 
 const countGroups = (root: StudioGraph): number =>
@@ -68,6 +73,7 @@ export const ReviewStage = ({
     onGoToStage,
     onDownloadConfig,
     onDownloadJourneys,
+    onStartLiveSession,
 }: IReviewStageProps) => {
     const errors = problems.filter((p) => p.level === "error").length;
     const warnings = problems.filter((p) => p.level === "warning").length;
@@ -205,9 +211,25 @@ export const ReviewStage = ({
                                     Download
                                 </button>
                             </div>
+                            <div className="studio-export-row">
+                                <div className="min-w-0 flex-1">
+                                    <p className="text-[12.5px]">Live session</p>
+                                    <p className="studio-text-dim text-[11.5px]">
+                                        Run the journeys against your network participant; the mock
+                                        service plays the other side on this graph.
+                                    </p>
+                                </div>
+                                <button
+                                    type="button"
+                                    className="studio-key studio-key-sm"
+                                    onClick={onStartLiveSession}
+                                >
+                                    <SignalIcon />
+                                    Start
+                                </button>
+                            </div>
                             <p className="studio-text-faint text-[11.5px]">
-                                Compiled flows, deployment YAML and promotion to a live session
-                                arrive with the graph executor.
+                                Compiled flows and deployment YAML arrive later.
                             </p>
                         </div>
                     </section>

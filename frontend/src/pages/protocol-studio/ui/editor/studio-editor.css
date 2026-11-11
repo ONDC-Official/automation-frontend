@@ -3686,6 +3686,24 @@ textarea.bp-input {
 }
 
 /* A skipped (optional) step: present on the path, nothing ran. */
+/* Live sessions: the participant's step the mock is waiting for. */
+.studio-run-dot[data-status="awaiting"] {
+    background: var(--studio-warn);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--studio-warn) 30%, transparent);
+    animation: studio-await-pulse 1.4s ease-in-out infinite;
+}
+
+.bp-node[data-run="awaiting"] {
+    outline: 2px dashed var(--studio-warn);
+    outline-offset: 1px;
+}
+
+@keyframes studio-await-pulse {
+    50% {
+        opacity: 0.45;
+    }
+}
+
 .studio-run-dot[data-status="skipped"] {
     background: transparent;
     box-shadow: inset 0 0 0 1.5px var(--studio-text-faint);

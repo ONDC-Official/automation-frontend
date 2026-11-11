@@ -27,7 +27,11 @@ export const RunDialog = ({ pending, actions, container }: IRunDialogProps) => {
         <DialogPrimitive.Root open onOpenChange={(next) => !next && actions.cancelPending()}>
             <DialogPrimitive.Portal container={container}>
                 <DialogPrimitive.Overlay className="studio-dialog-overlay" />
-                <DialogPrimitive.Content className="studio-glass studio-form-dialog nokey">
+                <DialogPrimitive.Content
+                    className="studio-glass studio-form-dialog nokey"
+                    data-pending-kind={pending.kind}
+                    data-node-id={node.id}
+                >
                     <header className="flex items-center gap-3 px-4 pt-3 pb-2">
                         <PencilSquareIcon className="studio-code-dialog-icon" aria-hidden="true" />
                         <div className="min-w-0 flex-1">

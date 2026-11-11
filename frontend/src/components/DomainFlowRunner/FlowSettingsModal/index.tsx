@@ -24,6 +24,10 @@ export const FlowSettingsModal = ({
     onSave,
     flowTags,
     isSaving,
+    showExperimentalMode = true,
+    experimentalLabel,
+    experimentalInfo,
+    filtersTitle = "Flow Filters",
 }: IFlowSettingsModalProps) => {
     if (!draft) return null;
 
@@ -75,11 +79,14 @@ export const FlowSettingsModal = ({
                                         })
                                     }
                                     singleColumn
+                                    showExperimentalMode={showExperimentalMode}
+                                    experimentalLabel={experimentalLabel}
+                                    experimentalInfo={experimentalInfo}
                                 />
                             </CollapsibleSection>
 
                             <CollapsibleSection
-                                title="Flow Filters"
+                                title={filtersTitle}
                                 defaultOpen
                                 className="shadow-none"
                             >

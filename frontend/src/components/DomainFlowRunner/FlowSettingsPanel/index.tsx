@@ -31,6 +31,9 @@ const FlowSettingsPanel: React.FC<IFlowSettingsPanelProps> = ({
     sessionDifficulty,
     onSessionDifficultyChange,
     singleColumn = false,
+    showExperimentalMode = true,
+    experimentalLabel = "Experimental Mode",
+    experimentalInfo = "Advanced features to do custom testing through playground",
 }: IFlowSettingsPanelProps) => (
     <>
         <SwitchFieldGroup
@@ -44,13 +47,15 @@ const FlowSettingsPanel: React.FC<IFlowSettingsPanelProps> = ({
                 checked={autoScrollEnabled}
                 onCheckedChange={onAutoScrollChange}
             />
-            <SwitchField
-                id="experimental-mode"
-                label="Experimental Mode"
-                info="Advanced features to do custom testing through playground"
-                checked={experimentalMode}
-                onCheckedChange={onExperimentalModeChange}
-            />
+            {showExperimentalMode ? (
+                <SwitchField
+                    id="experimental-mode"
+                    label={experimentalLabel}
+                    info={experimentalInfo}
+                    checked={experimentalMode}
+                    onCheckedChange={onExperimentalModeChange}
+                />
+            ) : null}
         </SwitchFieldGroup>
 
         <SwitchFieldGroup

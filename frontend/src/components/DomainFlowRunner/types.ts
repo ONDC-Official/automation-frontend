@@ -108,6 +108,11 @@ export interface IFlowSettingsPanelProps {
     sessionDifficulty: FilteredDifficultyCache;
     onSessionDifficultyChange: (key: string, value: boolean) => void;
     singleColumn?: boolean;
+    /** Show the Experimental Mode switch (default true); pages it does nothing on hide it. */
+    showExperimentalMode?: boolean;
+    /** The Experimental Mode switch's label and hint, where a page names it for what it does. */
+    experimentalLabel?: string;
+    experimentalInfo?: string;
 }
 
 export type SettingsDraft = {
@@ -125,6 +130,13 @@ export interface IFlowSettingsModalProps {
     onSave: () => Promise<void>;
     flowTags: string[];
     isSaving: boolean;
+    /** Passed to the settings panel; defaults to true. */
+    showExperimentalMode?: boolean;
+    /** Passed to the settings panel. */
+    experimentalLabel?: string;
+    experimentalInfo?: string;
+    /** The filters section's title; defaults to "Flow Filters". */
+    filtersTitle?: string;
 }
 
 export interface IGuideModalProps {

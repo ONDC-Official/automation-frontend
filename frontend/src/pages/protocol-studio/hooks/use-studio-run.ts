@@ -1,14 +1,24 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import {
+    chooseV2,
+    createGraphRunV2,
+    finishV2,
+    getRunStatusV2,
     getSessionProvenanceV2,
+    skipNextV2,
+    stepV2,
+    triggerV2,
+    type DriverLogV2,
     type ForkV2,
+    type GraphRunStateV2,
     type GraphExecutorV2,
     type GraphNodeV2,
     type GraphSessionV2,
     type JourneyV2,
     type NextV2,
     type RecogniseResultV2,
+    type StepOutcomeV2,
     type StepRunV2,
 } from "@ondc/automation-mock-runner";
 
@@ -103,33 +113,24 @@ export interface StudioRunActions {
 interface RunState {
     journeyId: string | null;
     journey: JourneyV2 | null;
-    session: GraphSessionV2 | null;
-    runs: StepRunV2[];
+    /** The run itself, as the lib's driver keeps it (null before Run). */
+    graphRun: GraphRunStateV2 | null;
     pending: RunPending | null;
     /** The executor the run started on. */
     executor: GraphExecutorV2 | null;
     transactionId: string | null;
-    deviation: RunDeviation | null;
-    failure: RunFailure | null;
-    finished: boolean;
-    recognitions: Record<number, RecogniseResultV2>;
 }
 
 const EMPTY: RunState = {
     journeyId: null,
     journey: null,
-    session: null,
-    runs: [],
+    graphRun: null,
     pending: null,
     executor: null,
     transactionId: null,
-    deviation: null,
-    failure: null,
-    finished: false,
-    recognitions: {},
 };
 
-const toJourneyV2 = (journey: StudioJourney): JourneyV2 => ({
+export const toJourneyV2 = (journey: StudioJourney): JourneyV2 => ({
     id: journey.id,
     title: journey.title,
     entry: journey.entry,
@@ -139,11 +140,6 @@ const toJourneyV2 = (journey: StudioJourney): JourneyV2 => ({
     ...(journey.skips?.length ? { skips: journey.skips } : {}),
     ...(journey.exit ? { exit: journey.exit } : {}),
 });
-
-const hasInputs = (node: GraphNodeV2) => {
-    const schema = node.inputs?.jsonSchema;
-    return !!schema && typeof schema === "object" && Object.keys(schema as object).length > 0;
-};
 
 /** How many steps `runAll` may take before it stops (a cycle with no repeat cap). */
 const RUN_ALL_LIMIT = 200;
@@ -160,8 +156,9 @@ export interface IUseStudioRunOptions {
  * One simulated run of the protocol on the graph executor: v1's run loop
  * (`use-config-run.tsx`) driven by the graph. One `transaction_id` for the
  * whole run; each step runs the full pipeline; forks stop for the tester in
- * open mode and follow the journey's choices in a preset. Everything is in
- * memory and is dropped with the page.
+ * open mode and follow the journey's choices in a preset. The rules of a run
+ * live in the lib's driver (`stepV2` …), shared with the mock service; this
+ * hook plays both sides and keeps the run in memory, dropped with the page.
  */
 export const useStudioRun = ({
     executor,
@@ -182,132 +179,52 @@ export const useStudioRun = ({
         setState(next);
     }, []);
 
+    const writeLogs = useCallback(
+        (logs: DriverLogV2[]) => {
+            for (const entry of logs) log(entry.level, entry.message);
+        },
+        [log]
+    );
+
+    /** Commits a driver result: the new run state, its logs, the latest run selected. */
+    const apply = useCallback(
+        (graphRun: GraphRunStateV2, logs: DriverLogV2[], patch: Partial<RunState> = {}) => {
+            const before = stateRef.current.graphRun?.runs.length ?? 0;
+            commit({ graphRun, ...patch });
+            if (graphRun.runs.length > before) setSelected(graphRun.runs.length - 1);
+            writeLogs(logs);
+        },
+        [commit, writeLogs]
+    );
+
     /** Decides what to do about the next step: run it, or wait for the tester. */
     const step = useCallback(
         async (
             opts: { inputs?: Record<string, unknown>; formData?: Record<string, unknown> } = {}
-        ): Promise<"ran" | "pending" | "end" | "failed"> => {
-            const {
-                executor: ex,
-                session,
-                journey,
-                deviation,
-                failure,
-                finished,
-            } = stateRef.current;
-            if (!ex || !session || finished) return "end";
-            if (deviation || failure) return "failed";
-            const next = ex.next(session, journey);
+        ): Promise<StepOutcomeV2> => {
+            const { executor: ex, graphRun, journey } = stateRef.current;
+            if (!ex || !graphRun) return "end";
             commit({ pending: null });
-            if (next.failed) {
-                const last = session.events.filter((e) => !e.extra).at(-1);
-                commit({
-                    failure: {
-                        nodeId: last?.nodeId ?? "",
-                        reason: next.reason ?? "The run cannot go on",
-                    },
-                });
-                log("error", next.reason ?? "The run cannot go on");
-                return "failed";
-            }
-            if (next.fork) {
-                commit({ pending: { kind: "fork", fork: next.fork } });
-                if (journey)
-                    log("warn", `${journey.id}: fork at ${next.fork.nodeId} has no choice`);
-                return "pending";
-            }
-            if (!next.auto) {
-                if (next.reason) log("info", next.reason);
-                return "end";
-            }
-            const node = next.auto;
-            // A preset journey passes over the optional nodes it marked as skipped.
-            if (node.optional && journey?.skips?.includes(node.id)) {
-                const out = ex.skip(session, node.id);
-                if (!out.run.ok) {
-                    log("error", `${node.id}: ${out.run.error ?? "could not skip"}`);
-                    return "failed";
-                }
-                const runs = [...stateRef.current.runs, out.run];
-                commit({ session: out.session, runs });
-                setSelected(runs.length - 1);
-                log("info", `${node.id}: skipped (optional, per journey)`);
-                return "ran";
-            }
-            if (node.kind === "form" && opts.formData === undefined) {
-                commit({
-                    pending: {
-                        kind: "form",
-                        node,
-                        html: node.formHtml ? decodeBase64(node.formHtml) : "",
-                    },
-                });
-                return "pending";
-            }
-            if (
-                node.kind !== "form" &&
-                node.kind !== "decision" &&
-                opts.inputs === undefined &&
-                hasInputs(node)
-            ) {
-                commit({ pending: { kind: "inputs", node, schema: node.inputs?.jsonSchema } });
-                return "pending";
-            }
-            const out = await ex.runStep(session, node.id, opts);
-            const runs = [...stateRef.current.runs, out.run];
-            // What a mock session would have made of this payload, had it arrived.
-            let recognitions = stateRef.current.recognitions;
-            if (out.run.ok && node.kind !== "decision" && node.kind !== "form" && out.run.event) {
-                const seen = await ex.recognise(session, out.run.event.payload, journey);
-                recognitions = { ...recognitions, [runs.length - 1]: seen };
-                if (seen.node?.id !== node.id) {
-                    log(
-                        "warn",
-                        `${node.id}: its payload would ${
-                            seen.reason === "ambiguous"
-                                ? `be ambiguous between ${seen.matched.map((n) => n.id).join(", ")}`
-                                : seen.reason === "none"
-                                  ? "be recognised as no step"
-                                  : `be recognised as ${seen.node?.id ?? "nothing"}`
-                        } if it arrived from a real counterparty · check match`
-                    );
-                }
-            }
-            commit({ session: out.session, runs, recognitions });
-            setSelected(runs.length - 1);
-            if (out.run.ok && node.kind === "decision" && journey) {
-                const expected = journey.expects[node.id];
-                const actual = out.run.event?.case ?? "";
-                if (expected !== undefined && expected !== actual) {
-                    commit({ deviation: { nodeId: node.id, expected, actual } });
-                    log(
-                        "error",
-                        `${node.id}: decided "${actual}" but journey "${journey.id}" expects "${expected}" · the journey can't be reached with this session data`
-                    );
-                    return "failed";
-                }
-            }
-            if (out.run.ok) {
-                const checks = [
-                    out.run.requirements && !out.run.requirements.result?.valid
-                        ? "requirements failed"
-                        : null,
-                    out.run.validate && !out.run.validate.result?.valid ? "validate failed" : null,
-                ].filter(Boolean);
-                const again =
-                    out.run.event?.exitMet === false
-                        ? " · exit condition not met yet, runs again"
-                        : "";
-                log(
-                    checks.length ? "warn" : "success",
-                    `${node.id}: ${node.kind === "decision" ? `decided ${out.run.event?.case}` : "sent"}${checks.length ? ` · ${checks.join(", ")}` : ""}${again}`
-                );
-                return "ran";
-            }
-            log("error", `${node.id}: ${out.run.error ?? "failed"}`);
-            return "failed";
+            const out = await stepV2(ex, graphRun, journey, { plays: "both", ...opts });
+            const plan = out.plan;
+            const pending: RunPending | null =
+                out.outcome !== "pending"
+                    ? null
+                    : plan.kind === "fork"
+                      ? { kind: "fork", fork: plan.fork }
+                      : plan.kind === "form"
+                        ? {
+                              kind: "form",
+                              node: plan.node,
+                              html: plan.node.formHtml ? decodeBase64(plan.node.formHtml) : "",
+                          }
+                        : plan.kind === "inputs"
+                          ? { kind: "inputs", node: plan.node, schema: plan.schema }
+                          : null;
+            apply(out.state, out.logs, { pending });
+            return out.outcome;
         },
-        [commit, log, decodeBase64]
+        [commit, apply, decodeBase64]
     );
 
     const guarded = useCallback(
@@ -332,19 +249,10 @@ export const useStudioRun = ({
             commit({
                 journeyId: journey?.id ?? "$open",
                 journey: j,
-                session: executor.createSession({
-                    transactionId,
-                    mode: journey ? "journey" : "open",
-                    journeyId: journey?.id,
-                }),
-                runs: [],
+                graphRun: createGraphRunV2(executor, { transactionId, journey: j }),
                 pending: null,
                 executor,
                 transactionId,
-                deviation: null,
-                failure: null,
-                finished: false,
-                recognitions: {},
             });
             setSelected(null);
             log(
@@ -361,9 +269,9 @@ export const useStudioRun = ({
         (stop: (ranNodeId: string | null) => boolean) =>
             guarded(async () => {
                 for (let i = 0; i < RUN_ALL_LIMIT; i += 1) {
-                    const before = stateRef.current.runs.length;
+                    const before = stateRef.current.graphRun?.runs.length ?? 0;
                     const outcome = await step();
-                    const ran = stateRef.current.runs[before]?.nodeId ?? null;
+                    const ran = stateRef.current.graphRun?.runs[before]?.nodeId ?? null;
                     if (outcome !== "ran" || stop(ran)) return;
                 }
                 log("warn", `Stopped after ${RUN_ALL_LIMIT} steps`);
@@ -377,29 +285,20 @@ export const useStudioRun = ({
     const skip = useCallback(
         () =>
             guarded(async () => {
-                const { executor: ex, session, journey } = stateRef.current;
-                if (!ex || !session) return;
-                const next = ex.next(session, journey);
-                if (!next.auto) return;
-                const out = ex.skip(session, next.auto.id);
-                if (!out.run.ok) {
-                    log("error", `${next.auto.id}: ${out.run.error ?? "could not skip"}`);
-                    return;
-                }
-                const runs = [...stateRef.current.runs, out.run];
-                commit({ session: out.session, runs, pending: null });
-                setSelected(runs.length - 1);
-                log("info", `${next.auto.id}: skipped (optional)`);
+                const { executor: ex, graphRun, journey } = stateRef.current;
+                if (!ex || !graphRun) return;
+                const out = skipNextV2(ex, graphRun, journey);
+                apply(out.state, out.logs, out.run ? { pending: null } : {});
             }),
-        [guarded, commit, log]
+        [guarded, apply]
     );
 
     const choose = useCallback(
         (forkKey: string, targetId: string) =>
             guarded(async () => {
-                const { executor: ex, session } = stateRef.current;
-                if (!ex || !session) return;
-                commit({ session: ex.decide(session, forkKey, targetId), pending: null });
+                const { executor: ex, graphRun } = stateRef.current;
+                if (!ex || !graphRun) return;
+                commit({ graphRun: chooseV2(ex, graphRun, forkKey, targetId), pending: null });
                 log("info", `${forkKey}: chose ${targetId}`);
                 await step();
             }),
@@ -408,18 +307,23 @@ export const useStudioRun = ({
 
     const runExtra = useCallback(
         async (nodeId: string, inputs?: Record<string, unknown>) => {
-            const { executor: ex, session } = stateRef.current;
-            if (!ex || !session) return;
-            const out = await ex.runStep(session, nodeId, { extra: true, inputs });
-            const runs = [...stateRef.current.runs, out.run];
-            commit({ session: out.session, runs, pending: null });
-            setSelected(runs.length - 1);
-            log(
-                out.run.ok ? "success" : "error",
-                `${nodeId} (on demand): ${out.run.ok ? "sent" : out.run.error}`
-            );
+            const { executor: ex, graphRun } = stateRef.current;
+            if (!ex || !graphRun) return;
+            const out = await triggerV2(ex, graphRun, nodeId, inputs);
+            if (out.pending?.kind === "inputs") {
+                commit({
+                    pending: {
+                        kind: "inputs",
+                        node: out.pending.node,
+                        schema: out.pending.schema,
+                        extra: true,
+                    },
+                });
+                return;
+            }
+            apply(out.state, out.logs, { pending: null });
         },
-        [commit, log]
+        [commit, apply]
     );
 
     const submitInputs = useCallback(
@@ -439,34 +343,18 @@ export const useStudioRun = ({
     );
     const cancelPending = useCallback(() => commit({ pending: null }), [commit]);
 
+    // The inputs prompt (when the node has inputs); its submit runs the node as an extra step.
     const trigger = useCallback(
-        (nodeId: string) =>
-            guarded(async () => {
-                const { executor: ex, session } = stateRef.current;
-                if (!ex || !session) return;
-                const node = ex.getNode(nodeId);
-                if (!node) return;
-                if (hasInputs(node)) {
-                    // The inputs prompt; its submit runs the node as an extra step.
-                    commit({
-                        pending: {
-                            kind: "inputs",
-                            node,
-                            schema: node.inputs?.jsonSchema,
-                            extra: true,
-                        },
-                    });
-                    return;
-                }
-                await runExtra(nodeId);
-            }),
-        [guarded, commit, runExtra]
+        (nodeId: string) => guarded(async () => runExtra(nodeId)),
+        [guarded, runExtra]
     );
 
     const finish = useCallback(() => {
-        const { executor: ex, session, journey } = stateRef.current;
-        if (!ex || !session || !ex.next(session, journey).canEnd) return;
-        commit({ finished: true, pending: null });
+        const { executor: ex, graphRun, journey } = stateRef.current;
+        if (!ex || !graphRun) return;
+        const done = finishV2(ex, graphRun, journey);
+        if (!done) return;
+        commit({ graphRun: done, pending: null });
         log("success", "Run finished at an End node");
     }, [commit, log]);
 
@@ -483,7 +371,7 @@ export const useStudioRun = ({
     }, [commit, log]);
 
     // The executor changing under a run (code edited, graph changed) makes it stale.
-    const stale = state.session !== null && state.executor !== null && state.executor !== executor;
+    const stale = state.graphRun !== null && state.executor !== null && state.executor !== executor;
 
     // Logged once, when it turns stale.
     useEffect(() => {
@@ -492,43 +380,32 @@ export const useStudioRun = ({
 
     const run = useMemo<StudioRun>(() => {
         const ex = state.executor;
-        const session = state.session;
-        const status: Record<string, RunStatus> = {};
-        for (const r of state.runs)
-            status[r.nodeId] = r.skipped ? "skipped" : r.ok ? "done" : "failed";
-        if (state.deviation) status[state.deviation.nodeId] = "failed";
-        if (state.failure) status[state.failure.nodeId] = "failed";
+        const graphRun = state.graphRun;
+        const session = graphRun?.session ?? null;
+        const runs = graphRun?.runs ?? [];
+        const status: Record<string, RunStatus> =
+            ex && graphRun ? getRunStatusV2(ex, graphRun, state.journey, "both") : {};
         const next = ex && session ? ex.next(session, state.journey) : null;
-        // The node about to run, even one that ran before (a repeat, a loop) — but not over a failure.
-        if (
-            next?.auto &&
-            status[next.auto.id] !== "failed" &&
-            !state.deviation &&
-            !state.failure &&
-            !state.finished
-        ) {
-            status[next.auto.id] = "running";
-        }
         const lastSaved: Record<string, Record<string, unknown>> = {};
-        for (const r of state.runs) if (r.ok) lastSaved[r.nodeId] = r.saved;
+        for (const r of runs) if (r.ok) lastSaved[r.nodeId] = r.saved;
         return {
             active: session !== null,
             journeyId: state.journeyId,
             session,
-            runs: state.runs,
+            runs,
             status,
             next,
             pending: state.pending,
             busy,
             stale,
-            deviation: state.deviation,
-            failure: state.failure,
-            finished: state.finished,
-            recognitions: state.recognitions,
+            deviation: graphRun?.deviation ?? null,
+            failure: graphRun?.failure ?? null,
+            finished: graphRun?.finished ?? false,
+            recognitions: graphRun?.recognitions ?? {},
             sessionData: ex && session ? ex.getSessionData(session) : {},
             provenance: session ? getSessionProvenanceV2(session) : {},
             lastSaved,
-            selectedRun: selected !== null ? (state.runs[selected] ?? null) : null,
+            selectedRun: selected !== null ? (runs[selected] ?? null) : null,
             blocked: executor ? null : (blockedReason ?? "The graph isn't ready to run"),
         };
     }, [state, busy, stale, selected, executor, blockedReason]);

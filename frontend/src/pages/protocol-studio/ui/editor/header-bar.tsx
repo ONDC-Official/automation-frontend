@@ -7,6 +7,7 @@ import {
     CodeBracketSquareIcon,
     CubeTransparentIcon,
     WrenchScrewdriverIcon,
+    SignalIcon,
 } from "@heroicons/react/24/outline";
 
 import { Badge } from "@components/Shadcn/Badge";
@@ -49,6 +50,7 @@ export const EditorHeaderBar = ({
     onViewRawConfig,
     onViewTypes,
     onDownloadConfig,
+    onStartLiveSession,
     typesControl,
 }: IEditorHeaderBarProps) => {
     const { meta } = config;
@@ -72,6 +74,16 @@ export const EditorHeaderBar = ({
             Icon: CubeTransparentIcon,
             onSelect: onViewTypes,
         },
+        ...(onStartLiveSession
+            ? [
+                  {
+                      label: "Start live session",
+                      hint: "Run journeys against your participant, with the mock as the other side",
+                      Icon: SignalIcon,
+                      onSelect: onStartLiveSession,
+                  },
+              ]
+            : []),
     ];
 
     return (

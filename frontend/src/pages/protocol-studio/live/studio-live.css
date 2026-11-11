@@ -1,0 +1,39 @@
+/* Protocol Studio live session page. The page itself is laid out with the app's
+   Tailwind tokens, like v1's flow-testing page; these rules are only for the two
+   pieces that keep the Studio editor's look. */
+
+/* A journey card's "Graph" view: the read-only canvas, lit with the run. */
+.studio-live-graph {
+    position: relative;
+    height: 420px;
+    overflow: hidden;
+    border: 1px solid var(--border-default);
+    border-radius: 12px;
+}
+
+/* Where the inputs / form popup portals to: `.studio-editor` gives it the Studio
+   theme. It covers the viewport but takes no clicks unless a popup is open. */
+.studio-editor.studio-live-dialogs {
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    pointer-events: none;
+    background: none;
+}
+
+.studio-editor.studio-live-dialogs > * {
+    pointer-events: auto;
+}
+
+/* Dark mode, for this page only. The app's dark surfaces are pure black (#000) under
+   white text, which on a page this dense is harsh; the live page lifts them to a soft
+   charcoal ramp and quiets the borders. The utilities read `--color-surface-*` (resolved
+   on :root, see styles/tokens.css), so those are what is re-pointed here. */
+.dark .studio-live-page {
+    --color-surface-page: #0f1113;
+    --color-surface-elevated: #16191c;
+    --color-surface-muted: #1d2125;
+    --color-border-default: #282d33;
+    --color-text-primary: #e6e9ed;
+    --color-text-secondary: #9aa3ae;
+}

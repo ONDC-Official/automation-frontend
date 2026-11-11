@@ -133,6 +133,7 @@ export const JourneysCard = ({
                                 <button
                                     type="button"
                                     className="studio-journey-row"
+                                    data-journey-id={journey.id}
                                     data-selected={isSelected || undefined}
                                     aria-current={isSelected || undefined}
                                     onClick={() => onSelect(journey.id)}

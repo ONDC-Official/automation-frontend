@@ -21,6 +21,11 @@ export interface ISessionState {
     activeCallClickedToggle: boolean;
     autoScrollEnabled: boolean;
     experimentalMode: boolean;
+    /**
+     * Studio live: the mock sends one payload per click. Studio's own preference,
+     * separate from v1's Experimental Mode, and off unless the tester turns it on.
+     */
+    studioStepThrough: boolean;
     /** Per-session flow filter tags; keyed by sessionId for redux-persist. */
     flowFilterTagsBySessionId: Record<string, string[]>;
     flowFormDialogLockCount: number;
@@ -43,6 +48,7 @@ const initialState: ISessionState = {
     activeCallClickedToggle: false,
     autoScrollEnabled: true,
     experimentalMode: false,
+    studioStepThrough: false,
     flowFilterTagsBySessionId: {},
     flowFormDialogLockCount: 0,
     activeFlowLifecycleInFlight: false,
@@ -124,6 +130,9 @@ const sessionSlice = createSlice({
             if (state.experimentalMode === action.payload) return;
             state.experimentalMode = action.payload;
         },
+        setStudioStepThrough: (state, action: PayloadAction<boolean>) => {
+            state.studioStepThrough = action.payload;
+        },
         setFlowFilterTags: (
             state,
             action: PayloadAction<{ sessionId: string; tags: string[] }>
@@ -139,20 +148,32 @@ const sessionSlice = createSlice({
         },
         /** Mount flow page: set session id and reset ephemeral runtime (prefs preserved). */
         initializeFlowPage: (state, action: PayloadAction<string>) => {
-            const { autoScrollEnabled, experimentalMode, flowFilterTagsBySessionId } = state;
+            const {
+                autoScrollEnabled,
+                experimentalMode,
+                studioStepThrough,
+                flowFilterTagsBySessionId,
+            } = state;
             state.sessionId = action.payload;
             clearFlowRuntimeFields(state);
             state.autoScrollEnabled = autoScrollEnabled;
             state.experimentalMode = experimentalMode;
+            state.studioStepThrough = studioStepThrough;
             state.flowFilterTagsBySessionId = flowFilterTagsBySessionId;
         },
         /** Clear flow-runtime fields; keep persisted UI prefs (autoScroll, experimental). */
         resetFlowRuntime: (state) => {
-            const { autoScrollEnabled, experimentalMode, flowFilterTagsBySessionId } = state;
+            const {
+                autoScrollEnabled,
+                experimentalMode,
+                studioStepThrough,
+                flowFilterTagsBySessionId,
+            } = state;
             state.sessionId = "";
             clearFlowRuntimeFields(state);
             state.autoScrollEnabled = autoScrollEnabled;
             state.experimentalMode = experimentalMode;
+            state.studioStepThrough = studioStepThrough;
             state.flowFilterTagsBySessionId = flowFilterTagsBySessionId;
         },
         resetSession: () => initialState,
@@ -174,6 +195,7 @@ export const {
     setActiveCallClickedToggle,
     setAutoScrollEnabled,
     setExperimentalMode,
+    setStudioStepThrough,
     setFlowFilterTags,
     acquireFlowFormDialogLock,
     releaseFlowFormDialogLock,

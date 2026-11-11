@@ -34,6 +34,7 @@ export const API_ROUTES = {
         EXPECTATION: "/sessions/expectation",
         FLOW_PERMISSION: "/sessions/flowPermission",
         PLAYGROUND: "/sessions/playground",
+        STUDIO: "/sessions/studio",
     },
 
     // Database routes

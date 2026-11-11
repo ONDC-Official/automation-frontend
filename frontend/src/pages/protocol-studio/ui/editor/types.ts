@@ -86,7 +86,8 @@ export type CodeLanguage = "typescript" | "javascript";
 export type EditorLanguage = CodeLanguage | "json" | "yaml" | "studio-dts";
 
 /** A node's state in the current simulation. */
-export type RunStatus = "idle" | "running" | "done" | "failed" | "skipped";
+/** `awaiting`: a live run waits for the counterparty to send this node. */
+export type RunStatus = "idle" | "running" | "awaiting" | "done" | "failed" | "skipped";
 
 export interface InspectorTab {
     id: InspectorFileId;
@@ -577,6 +578,8 @@ export interface IEditorHeaderBarProps {
     /** Opens the generated types (spec payloads, sessionData, …) in the code popup. */
     onViewTypes: () => void;
     onDownloadConfig: () => void;
+    /** Opens the Start live session dialog. */
+    onStartLiveSession?: () => void;
     /** What step code is typed against: shown next to the validity badge. */
     typesControl?: React.ReactNode;
 }

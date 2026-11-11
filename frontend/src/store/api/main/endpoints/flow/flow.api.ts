@@ -9,6 +9,8 @@ import type {
     RouteResponse,
     GeocodeResult,
     TrackContextResponse,
+    IStudioLiveActionResponse,
+    IStudioLiveStatus,
 } from "./types";
 
 export const flowApi = mainApi.injectEndpoints({
@@ -62,6 +64,86 @@ export const flowApi = mainApi.injectEndpoints({
                     version,
                     session_id: sessionId,
                     flow_id: flowId,
+                },
+            }),
+            invalidatesTags: (_result, _err, { transactionId }) => [
+                { type: "Flow", id: transactionId },
+            ],
+        }),
+        // Protocol Studio live sessions: the same proxies as v1 flows, graph-v2 shapes.
+        getStudioLiveStatus: builder.query<
+            IStudioLiveStatus,
+            { transactionId: string; sessionId: string }
+        >({
+            query: ({ transactionId, sessionId }) => ({
+                url: API_ROUTES.FLOW.CURRENT_STATE,
+                method: "GET",
+                params: { transaction_id: transactionId, session_id: sessionId },
+            }),
+            providesTags: (_result, _err, { transactionId }) => [
+                { type: "Flow", id: transactionId },
+            ],
+        }),
+        startStudioLiveFlow: builder.mutation<
+            IStudioLiveActionResponse,
+            {
+                sessionId: string;
+                journeyId: string;
+                transactionId: string;
+                /** Step through: the mock sends one payload per click. */
+                stepThrough?: boolean;
+            }
+        >({
+            query: ({ sessionId, journeyId, transactionId, stepThrough }) => ({
+                url: API_ROUTES.FLOW.NEW,
+                method: "POST",
+                data: {
+                    session_id: sessionId,
+                    flow_id: journeyId,
+                    transaction_id: transactionId,
+                    ...(stepThrough !== undefined ? { step_through: stepThrough } : {}),
+                },
+            }),
+            invalidatesTags: (_result, _err, { transactionId }) => [
+                { type: "Flow", id: transactionId },
+            ],
+        }),
+        proceedStudioLiveFlow: builder.mutation<
+            IStudioLiveActionResponse,
+            {
+                sessionId: string;
+                transactionId: string;
+                inputs?: Record<string, unknown>;
+                formData?: Record<string, unknown>;
+                triggerExtra?: string;
+                finish?: boolean;
+                /** Step through: the mock sends one payload per click. */
+                stepThrough?: boolean;
+                /** Only save the settings (the run carries on if step-through was turned off). */
+                settingsOnly?: boolean;
+            }
+        >({
+            query: ({
+                sessionId,
+                transactionId,
+                inputs,
+                formData,
+                triggerExtra,
+                finish,
+                stepThrough,
+                settingsOnly,
+            }) => ({
+                url: API_ROUTES.FLOW.PROCEED,
+                method: "POST",
+                data: {
+                    session_id: sessionId,
+                    transaction_id: transactionId,
+                    ...(inputs ? { inputs } : {}),
+                    ...(formData ? { form_data: formData } : {}),
+                    ...(triggerExtra ? { trigger_extra: triggerExtra } : {}),
+                    ...(finish ? { finish: true } : {}),
+                    ...(stepThrough !== undefined ? { step_through: stepThrough } : {}),
+                    ...(settingsOnly ? { settings_only: true } : {}),
                 },
             }),
             invalidatesTags: (_result, _err, { transactionId }) => [
@@ -247,6 +329,9 @@ export const {
     useTriggerRequestActionMutation,
     useGetMappedFlowQuery,
     useLazyGetMappedFlowQuery,
+    useGetStudioLiveStatusQuery,
+    useStartStudioLiveFlowMutation,
+    useProceedStudioLiveFlowMutation,
     useProceedFlowMutation,
     useTriggerExtraMutation,
     useLazyGetRouteQuery,

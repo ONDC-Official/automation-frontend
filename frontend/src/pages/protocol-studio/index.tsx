@@ -6,6 +6,7 @@ import PageReveal from "@components/Routes/page-reveal";
 import { ROUTES } from "@constants/routes";
 import { useStudioDraft, type StudioDraft } from "@pages/protocol-studio/persistence/studio-draft";
 import { StudioStarterScreen } from "@pages/protocol-studio/ui/starter";
+import StudioLivePage from "@pages/protocol-studio/live";
 import { StudioEditor } from "@pages/protocol-studio/ui/editor";
 import { DEFAULT_STAGE, isStudioStage } from "@pages/protocol-studio/ui/editor/constants";
 import type { StudioStage } from "@pages/protocol-studio/ui/editor/types";
@@ -98,6 +99,8 @@ const ProtocolStudio: FC = () => {
                     )
                 }
             />
+            {/* Opened in a new tab by "Start live session"; needs no draft or config. */}
+            <Route path="live" element={<StudioLivePage />} />
             <Route path="*" element={<Navigate to={ROUTES.STUDIO} replace />} />
         </Routes>
     );
